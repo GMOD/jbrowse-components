@@ -196,7 +196,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
        * sync. Retention is volatile RAM only (never serialized), so it's not
        * worth a reference-counted prune at every track-removal path.
        *
-       * Each entry carries the resolved config it mirrors, so a delta or base
+       * Each entry stores the resolved config it mirrors, so a delta or base
        * replaced from outside this mixin invalidates it — see
        * `getEditableTrackConfig`.
        */
@@ -328,7 +328,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * again under its id — cannot, so the next read rebuilds the copy from
          * what now resolves. Per-id reactive on the node rather than the
          * config, so a display reading its config does not recompute when
-         * its own working copy is persisted. Per schema type as well, since
+         * the track's working copy is persisted. Per schema type as well, since
          * an id re-added under another track type resolves through that
          * type's reference.
          */
@@ -373,7 +373,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #method
-       * Whether `trackId` carries an edit over its base config, which drives
+       * Whether `trackId` has an edit over its base config, which drives
        * the "Reset track settings" item and the edited badge. Changed slots,
        * not mere presence in trackConfigDeltas: a delta can hold only
        * content-free display stubs, which must not read as an override.
@@ -535,7 +535,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       return {
         /**
          * #action
-         * Add a track config to *this session*: it lands in `sessionTracks`,
+         * Add a track config to *this session*: it is added to `sessionTracks`,
          * travels with the session when it is saved or shared, and never
          * reaches the config.json the server hands every visitor.
          *
@@ -569,14 +569,14 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * Use `addSessionTrackConf` above for those.
          *
          * An admin's track still goes to the session when it names an assembly
-         * the config.json does not carry: a session spec's assembly, a MAF
+         * the config.json does not contain: a session spec's assembly, a MAF
          * sample's genome, or a comparative view's synthesized pair. The
          * Add-track widget takes its assembly from the containing view, so an
          * admin adding a track in such a view passes a name no visitor can
-         * resolve. Publishing it would write an entry the server sends to every
-         * visitor and no visitor can draw. Adding it to the session keeps the
-         * track usable and writes no dangling entry; a snackbar names the
-         * assembly that caused the fallback.
+         * resolve. A published entry would go to every visitor, and no visitor could
+         * draw it. A session entry keeps the track usable and writes no
+         * dangling entry; a snackbar names the assembly that caused the
+         * fallback.
          *
          * **The snackbar names the assembly and not the track**, so a batch
          * produces one message: `pushSnackbarMessage` dedupes on the exact

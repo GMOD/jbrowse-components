@@ -71,13 +71,13 @@ export interface ReadVsRefFeatures {
  * space the SA entries are put in, and pairs each segment with a `mate`
  * describing its span on the read.
  *
- * This is what the "read vs ref" launchers (linear synteny + dotplot) draw
- * against a synthetic read assembly, and what the alignments feature-detail
- * widget lists split-read junctions from.
+ * The "read vs ref" launchers (linear synteny + dotplot) draw these features
+ * against a synthetic read assembly, and the alignments feature-detail widget
+ * lists split-read junctions from them.
  *
  * `getCanonicalRefName` resolves each segment's refName against the reference
- * assembly's aliases: a BAM whose header says `chr1` against a FASTA whose
- * refName is `1` otherwise yields regions no track can be opened on. Optional
+ * assembly's aliases: a BAM whose header names the sequence `chr1` against a FASTA
+ * that names it `1` otherwise yields regions no track can be opened on. Optional
  * only because a caller may not have the assembly in hand; pass it when you do.
  */
 export function buildReadVsRefFeatures(

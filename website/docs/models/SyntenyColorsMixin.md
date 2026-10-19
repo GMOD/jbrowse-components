@@ -10,7 +10,7 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 The color settings every view drawing synteny tracks shares — the linear
 synteny view, the dotplot and the circular view: `TrackColorsMixin`'s color
 object and palette, the `opacity` object and the shortest alignment drawn,
-over the tracks the view says it draws. A view supplies `syntenyTracks()`,
+over the tracks the view draws. A view supplies `syntenyTracks()`,
 its opacity default and, optionally, the field it paints by until told
 otherwise.
 
@@ -21,7 +21,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-opacity">**opacity**</span><br><code>opacity: types.stripDefault(syntenyOpacityConfigSchema, {})</code> | The opacity every alignment draws at, a [](/docs/config/syntenyopacity) object: a number for all of them, or a field each carries read into opacities, `{ field: "identity" }` or a column the tracks declare. Unset, the view's default: low on the synteny view for dense whole-genome hairballs, opaque on the dotplot. |
+| <span id="property-opacity">**opacity**</span><br><code>opacity: types.stripDefault(syntenyOpacityConfigSchema, {})</code> | The opacity every alignment draws at, a [](/docs/config/syntenyopacity) object: a number for all of them, or a field each alignment has, read into opacities, `{ field: "identity" }` or a column the tracks declare. Unset, the view's default: low on the synteny view for dense whole-genome hairballs, opaque on the dotplot. |
 | <span id="property-minalignmentlength">**minAlignmentLength**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>minAlignmentLength: types.stripDefault( types.number, DEFAULT_M…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>minAlignmentLength: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.number,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;DEFAULT_MIN_ALIGNMENT_LENGTH,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | Hide alignment blocks shorter than this many bp, which cuts whole-genome hairball noise. |
 
 <details class="inherited-members" data-pagefind-ignore>
@@ -66,7 +66,7 @@ From [TrackColorsMixin](../trackcolorsmixin): <span id="getter-colorsetting">[`c
 | <span id="method-syntenytracks">**syntenyTracks**</span><br><code>() =&gt; ComparativeTrackModel[]</code> | Overridable hook: every synteny track in the view, in paint order. |
 | <span id="method-colorabletrackconfigs">**colorableTrackConfigs**</span><br><code>() =&gt; { trackId: string; name: string; }[]</code> |  |
 | <span id="method-colorableattributenames">**colorableAttributeNames**</span><br><code>() =&gt; string[]</code> | The columns the tracks declare in their adapter's `attributeColumns` (the ortholog-table adapter's slot), one color mode each. |
-| <span id="method-legendalpha">**legendAlpha**</span><br><code>() =&gt; number</code> | The key's chips are composited by the plot's opacity, as the alignments are. |
+| <span id="method-legendalpha">**legendAlpha**</span><br><code>() =&gt; number</code> | The plot's opacity composites the key's chips, as it does the alignments. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>6 inherited methods from one model</summary>
@@ -80,7 +80,7 @@ From [TrackColorsMixin](../trackcolorsmixin): <span id="method-loadedattributera
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setopacity">**setOpacity**</span><br><code>(value: number) =&gt; void</code> | The opacity slider: the constant, or under a field its range scaled so its most opaque end lands on `value`. |
+| <span id="action-setopacity">**setOpacity**</span><br><code>(value: number) =&gt; void</code> | The opacity slider: the constant, or under a field its range scaled so its most opaque end equals `value`. |
 | <span id="action-setopacityfield">**setOpacityField**</span><br><code>(field: string) =&gt; void</code> | Fade by `field` from the current opacity down to 0.3 of it, or with `''` draw every alignment at the opacity the fade reached. |
 | <span id="action-setminalignmentlength">**setMinAlignmentLength**</span><br><code>(value: number) =&gt; void</code> |  |
 

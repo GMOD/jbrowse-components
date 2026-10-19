@@ -6,7 +6,7 @@ import { types } from '@jbrowse/mobx-state-tree'
  * #config QuantitativeRows
  * #category display
  * A quantitative display's `rows`: `source` is the one field a quantitative row
- * can be, since a wiggle carries a score per base and a subtrack name and
+ * can be, since a wiggle has a score per base and a subtrack name, and
  * nothing else to put on rows. The arrangement members are the shared `Rows`
  * object's.
  *

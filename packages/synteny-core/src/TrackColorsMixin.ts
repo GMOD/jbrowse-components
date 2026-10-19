@@ -173,7 +173,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       trackColors: types.map(types.string),
       /**
        * #property
-       * Under a text-column mode, draw only the rows that carry a label.
+       * Under a text-column mode, draw only the rows that have a label.
        */
       hideUnlabelled: types.stripDefault(types.boolean, false),
     })
@@ -201,12 +201,12 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       /**
        * #method
        * Columns the overlaid tracks declare (an ortholog table's
-       * `attributeColumns`), each of which the palette menu offers as its own
+       * `attributeColumns`), each of which the palette menu offers as a separate
        * mode, less the reserved `color` column. Overridden by the composing
        * view, which is the only thing that can reach the track configs.
        *
-       * From the CONFIG rather than from loaded data: the menu has to be right
-       * before the first fetch, and a track that declares a column carrying no
+       * From the config rather than from loaded data: the menu has to be right
+       * before the first fetch, and a track that declares a column with no
        * values paints the default color anyway.
        */
       colorableAttributeNames(): string[] {
@@ -218,7 +218,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        * covered in the data that display fetched. Overridden by the composing
        * view, which is the only thing that can reach the displays.
        *
-       * From loaded DATA rather than from the config, unlike
+       * From loaded data rather than from the config, unlike
        * `colorableAttributeNames` — a column's observed span is not declared
        * anywhere, so nothing before the first fetch can answer it.
        */
@@ -227,7 +227,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       },
       /**
        * #method
-       * Overridable hook: what the key's chips are composited by. The ribbon
+       * Overridable hook: the alpha the key's chips are composited with. The ribbon
        * views draw at a global alpha over the band's ground; a view that draws
        * opaque leaves it.
        */
@@ -284,7 +284,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        * #getter
        * What `color` declares over a field's own scale: `scale`, `domain`,
        * `range` or `scheme` for its colors, `reverse`, and a ramp's pinned
-       * ends and middle. Read off its own slots, so a key-only edit repaints
+       * ends and middle. Read from these slots alone, so a key-only edit repaints
        * nothing.
        */
       get colorPaint(): SyntenyColorPaint {
@@ -300,8 +300,8 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       },
       /**
        * #getter
-       * `color.domain`, the order a text column's labels take. Read off its
-       * own slot, so a key-only edit (`title`, `labels`) recolors nothing.
+       * `color.domain`, the order a text column's labels take. Read from that
+       * slot alone, so a key-only edit (`title`, `labels`) recolors nothing.
        */
       get colorDomain(): readonly string[] {
         return readConfObject(self.color, 'domain')
@@ -329,23 +329,23 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        * ramp scales to, what the legend labels it with, and — since it is the
        * one domain — what the two cannot disagree about.
        *
-       * MONOTONIC, which is the point. A fetch's payload reports the span of the
+       * The domain is monotonic. A fetch's payload reports the span of the
        * slice it holds, and that slice is the snapped window: painting straight
        * off it re-maps every feature onto the ramp each time a pan rolls the
        * window over, so a ribbon in the middle of the ramp turns into one at the
        * bottom while the reader is scrolling and its value has not changed. A
-       * domain that only ever widens still says what the reader is looking at —
-       * the legend prints the actual numbers — and settles instead of
+       * domain that only ever widens stays accurate for what the reader is
+       * looking at (the legend prints the actual numbers) and settles instead of
        * oscillating.
        *
-       * Monotonic UNTIL A MODE IS PICKED, which is the way back: one window
+       * The domain is monotonic only until a mode is picked, which is the way back: one window
        * holding an outlier would otherwise compress the ramp for the rest of the
-       * session, and the union above is over the LOADED spans, so
+       * session, and the union above is over the loaded spans, so
        * `resetAttributeRanges` rescales to what is on screen there and then.
        *
        * View-wide rather than per display because the floating legend is one box
        * for the whole view: two displays scaling the same ramp from different
-       * spans would make that one legend lie about one of them.
+       * spans would make that legend wrong for one of them.
        */
       get attributeRanges(): Record<string, AttributeRange> {
         const widened = self
@@ -415,7 +415,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        * #getter
        * Legend rows naming the overlaid tracks — one per track with its palette
        * color, however many levels it is on, and only under `color: { field: 'track' }`,
-       * since every other mode has a fixed legend of its own.
+       * since every other mode has a fixed legend.
        */
       get colorLegendChips(): ColorChip[] {
         if (self.colorField !== 'track') {
@@ -493,14 +493,14 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
         /**
          * #action
          * Forget the accumulated domain, leaving `attributeRanges` reporting
-         * what the LOADED fetches cover and nothing else.
+         * what the loaded fetches cover and nothing else.
          *
          * The way back from a monotonic domain, and the only one: a single
          * window holding an outlier widens the ramp for the rest of the
          * session, and `attributeRanges` unions the loaded spans over this, so
          * a reset rescales to what is on screen without waiting for a refetch.
-         * Picking a mode is what calls it — the gesture a reader makes when the
-         * ramp is telling them nothing is to choose it again.
+         * Picking a mode calls it: a reader picks the mode again when the
+         * ramp shows nothing useful.
          */
         resetAttributeRanges() {
           forgetSeenRanges()

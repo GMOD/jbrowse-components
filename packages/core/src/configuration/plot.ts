@@ -33,9 +33,8 @@ const plotLists = new WeakSet<IAnyType>()
 
 /**
  * #api core/configuration
- * Declares a list of sub-schemas a plot setting, as `plot: true` declares a
- * slot or a sub-schema one; an MST array type takes no options to carry the
- * flag.
+ * Marks a list of sub-schemas as a plot setting, as `plot: true` marks a slot
+ * or a sub-schema; an MST array type has no options in which to set the flag.
  */
 export function plotList<T extends IAnyType>(type: T): T {
   plotLists.add(unwrapType(type))
@@ -138,8 +137,8 @@ function checkKeys(draft: object, keys: readonly string[]) {
 
 /**
  * #api core/configuration
- * The text as a plot, refusing a key the display's plot does not hold. The
- * schema is the parser past this point.
+ * Parses the text as a plot and throws on a key the display's plot lacks. The
+ * schema parses the values after that.
  */
 export function parsePlot(text: string, keys: readonly string[]): Plot {
   const parsed: unknown = JSON.parse(text)
@@ -152,7 +151,7 @@ export function parsePlot(text: string, keys: readonly string[]): Plot {
 
 /**
  * #api core/configuration
- * How a draft lands on the plot. By default it patches, as a settings bag
+ * How a draft is written to the plot. By default it patches, as a settings bag
  * does; `whole` takes it for the whole plot, as the "Edit plot..." text is.
  */
 export interface PlotWriteOptions {

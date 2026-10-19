@@ -31,8 +31,8 @@ const defaultHeight = 440
  * #example
  * Hand-authored under `defaultSession.views`, with every setting written
  * directly on the view object. `uri` loads a tabular file (VCF/BED/CSV/etc)
- * straight into the grid, skipping the import form; `assembly` is used to
- * resolve genomic coordinates in the rows:
+ * straight into the grid, skipping the import form; `assembly` names the
+ * assembly that resolves genomic coordinates in the rows:
  * ```js
  * {
  *   type: 'SpreadsheetView',
@@ -136,7 +136,7 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
            * #action
            * load a new spreadsheet and set our mode to display it. When the
            * incoming data has the same columns as what's shown (i.e. a
-           * session-cached URI being re-fetched on reload), carry over the
+           * session-cached URI being re-fetched on reload), keep the
            * user's column-visibility and SV-type filter — a fresh parse only
            * supplies columns/rowSet, so a plain replace would reset them. The
            * column match keeps this from leaking view state across different
@@ -171,10 +171,11 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
 
           /**
            * #action
-           * Where a failed launch lands, which `installInitAutorun` requires of
-           * its host. Delegated rather than given a slot of its own: the import
-           * form is what is on screen before a sheet exists, and its banner is
-           * already the one place this view shows an error.
+           * Receives the error of a failed launch, which `installInitAutorun`
+           * requires of its host. It delegates to the import form rather than
+           * adding a separate slot: the import form is on screen before a sheet
+           * exists, and its banner is already the one place this view shows an
+           * error.
            */
           setError(error: unknown) {
             self.importWizard.setError(error)
@@ -191,19 +192,19 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
            * #action
            * Put the loaded file in the session as a track, so the linear and
            * breakpoint views a row opens have the records the row came from.
-           * Without it every drill-down landed on an empty view and the reader
-           * had to add the same file again by hand.
+           * Without it every drill-down opens an empty view and the reader has
+           * to add the same file again by hand.
            *
-           * Idempotent on purpose, and cheaply so: the trackId is derived from
+           * The action is idempotent, and cheaply so: the trackId is derived from
            * the file's location and `addSessionTrackConf` dedupes against
            * everything the session can already resolve, so a reloaded session
            * re-importing its cached URI reuses the track rather than stacking a
            * second one. `trackConfForImportedFile` declines outright when a
            * track for the file already exists.
            *
-           * **Nothing takes the track back out** — not `returnToImportForm`,
-           * not closing this view. The views that opened it are the reason it
-           * exists and they outlive the sheet, so removing it would empty a
+           * **No code removes the track**, neither `returnToImportForm` nor closing
+           * this view. The views that opened it need the track and they outlive
+           * the sheet, so removing it would empty a
            * linear view the reader is still reading. It is an ordinary session
            * track from that point on: it shows up in the track selector, it
            * saves with the session, and the reader closes it there. Importing a

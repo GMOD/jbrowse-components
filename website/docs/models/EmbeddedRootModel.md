@@ -9,7 +9,7 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 
 Root model shared by the single-view embedded products
 (react-linear-genome-view, react-circular-genome-view). Each product supplies
-its own model name, version, and session model, and may `.props()` on extra
+the model name, version, and session model, and may `.props()` on extra
 fields (e.g. the LGV `disableAddTracks`/`drawerViewHeight`). Internet accounts
 come from the same product-core mixin the web/desktop root models use, so
 config `internetAccounts` are auto-initialized (no manual wiring needed).
@@ -56,7 +56,7 @@ From [InternetAccountsMixin](../internetaccountsmixin): <span id="property-inter
 | Member | Description |
 | --- | --- |
 | <span id="action-setsession">**setSession**</span><br><code>(sessionSnapshot: SnapshotIn&lt;SESSION&gt;) =&gt; void</code> | Synchronous: an async caller must `await pluginManager.preloadSessionTypes(snapshot)` first. |
-| <span id="action-restoresession">**restoreSession**</span><br><code>(sessionSnapshot: SessionSnapshot) =&gt; void</code> | Load a session whose shape is only known at runtime — decoded from a URL, read back from storage, handed over by a non-TypeScript host.<br><br>Separate from `setSession` because that one takes the compiler-checked snapshot type, which a value parsed out of JSON can never satisfy. The assertion below is the whole reason this exists: it is the single place the conversion happens, instead of every caller asserting at its own site. Nothing is unchecked at runtime — MST validates the snapshot as it applies it and throws on a mismatch, which is the check that actually matters for a value this app did not author. |
+| <span id="action-restoresession">**restoreSession**</span><br><code>(sessionSnapshot: SessionSnapshot) =&gt; void</code> | Load a session whose shape is only known at runtime — decoded from a URL, read back from storage, handed over by a non-TypeScript host.<br><br>Separate from `setSession` because that one takes the compiler-checked snapshot type, which a value parsed out of JSON can never satisfy. This method exists to hold the one assertion below, so callers do not each assert at their call site. At runtime MST validates the snapshot as it applies it and throws on a mismatch, which is the check that matters for a value this app did not author. |
 | <span id="action-renamecurrentsession">**renameCurrentSession**</span><br><code>(sessionName: string) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>

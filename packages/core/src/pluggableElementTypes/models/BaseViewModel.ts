@@ -71,7 +71,7 @@ const BaseViewModel = types
      * Whether the container has this view's body in the DOM.
      *
      * `ViewContainer` mounts a view's body only while an IntersectionObserver
-     * says it is on screen, to hold the app under the WebGL2 context ceiling
+     * reports it on screen, to hold the app under the WebGL2 context ceiling
      * (`reference/GPU_PORTABILITY.md`). A view below the fold therefore has
      * no canvas, so nothing ever calls `markCanvasDrawn` and the pre-first-paint
      * term of `displayPhase` pins every display in it at `loading` with nothing
@@ -82,9 +82,9 @@ const BaseViewModel = types
      * views, workspace panels, and any test rendering a display directly — are
      * unaffected and need not set it.
      *
-     * The raw flag, written by this view's own container. A display asks
-     * `effectiveBodyMounted` instead, because a nested view has no container of
-     * its own.
+     * The raw flag, written by the container that renders this view's body. A
+     * display asks `effectiveBodyMounted` instead, because a nested view has no
+     * container writing its flag.
      */
     bodyMounted: true,
   }))
@@ -92,10 +92,10 @@ const BaseViewModel = types
     /**
      * #getter
      * Overridable hook (default true): whether this view's mounted body
-     * renders its own displays. A linear genome view collapsed to its ruler
+     * renders this view's displays. A linear genome view collapsed to its ruler
      * mounts the scalebar and none of its tracks, so a display in it can no
      * more paint than one in a view scrolled off screen. Views nested in this
-     * one are unaffected: they paint wherever their own body is.
+     * one are unaffected: they paint wherever their bodies are.
      */
     get rendersDisplays(): boolean {
       return true
@@ -111,12 +111,12 @@ const BaseViewModel = types
      * breakpoint panel) has no container writing its flag, so it reads `true`
      * forever while its whole subtree is out of the DOM, and every display in
      * it waits for a first paint that nothing will make — the hang this flag
-     * exists to prevent, one level down.
+     * prevents, one level down.
      *
-     * An ancestor that does not carry the flag at all leaves the answer alone
-     * rather than excusing the paint: only an explicit `false` unmounts, so a
-     * duck-typed stand-in that forgot it keeps waiting, which is the failure
-     * that shows up as a slow test rather than as a picture of an empty view.
+     * An ancestor with no flag at all does not change the answer: only an
+     * explicit `false` unmounts, so a duck-typed stand-in that forgot the flag
+     * keeps waiting, a failure that appears as a slow test rather than as a
+     * picture of an empty view.
      */
     get effectiveBodyMounted(): boolean {
       return this.rendersDisplays && bodyInDom(self)
@@ -129,14 +129,14 @@ const BaseViewModel = types
     },
     /**
      * #getter
-     * The tracks this view puts in the census — its own, not a nested view's.
+     * The tracks this view puts in the census, excluding a nested view's.
      *
      * Empty here, and overridden by the views that have any: the base cannot
      * read `self.tracks` for them, because what a view keeps under that name
      * is the view's business. react-msaview's holds its MSA annotation rows —
      * `{ReactComponent, model}` objects with no configuration and no displays
-     * — and a base that helped itself to them handed them to the readiness
-     * marker as tracks, which error-paged every session holding an MSA view.
+     * — and a base that read them would hand them to the readiness marker as
+     * tracks, which would error-page every session holding an MSA view.
      */
     get ownTracks(): AbstractTrackModel[] {
       return []
@@ -144,7 +144,7 @@ const BaseViewModel = types
     /**
      * #getter
      * The views nested directly inside this one, which the census counts as
-     * views in their own right — a synteny stack's genome rows, a breakpoint
+     * separate views — a synteny stack's genome rows, a breakpoint
      * split view's panels.
      *
      * Empty here for the same reason, and the dotplot is why it has to be a
@@ -166,14 +166,12 @@ const BaseViewModel = types
 
     /**
      * #action
-     * width is an important attribute of the view model, when it becomes set,
-     * it often indicates when the app can start drawing to it. certain views
-     * like lgv are strict about this because if it tries to draw before it
-     * knows the width it should draw to, it may start fetching data for
-     * regions it doesn't need to
+     * Sets the view's width, which tells the app when it can start drawing.
+     * Certain views like lgv wait for it, because drawing before the width is
+     * known may fetch data for regions the view does not need.
      *
-     * setWidth is updated by a ResizeObserver generally, the views often need
-     * to know how wide they are to properly draw genomic regions
+     * A ResizeObserver generally calls setWidth. Views need their width to draw
+     * genomic regions properly.
      */
     setWidth(newWidth: number) {
       self.width = newWidth

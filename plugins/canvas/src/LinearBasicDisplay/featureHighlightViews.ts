@@ -145,7 +145,7 @@ export function featureHighlightActions(self: FeatureHoverHost) {
     /**
      * #action
      * A text search's highlight replaces the previous search's and leaves the
-     * right-click ones, which carry a `featureId`, alone.
+     * right-click ones, which have a `featureId`, alone.
      */
     setSearchHighlight(highlight: FeatureHighlight) {
       this.setFeatureHighlights([

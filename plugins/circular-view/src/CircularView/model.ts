@@ -303,9 +303,9 @@ async function applyInit(
  *
  * #example
  * Hand-authored under `defaultSession.views`, with every setting written
- * directly on the view object. `assembly` picks the genome, a `tracks` entry may
- * carry display config inline, and `displayedRegionNames` keeps an assembly's
- * alt/unplaced contigs off the circle:
+ * directly on the view object. `assembly` names the genome, a `tracks` entry may
+ * include display config inline, and `displayedRegionNames` lists the regions
+ * to draw, which keeps an assembly's alt/unplaced contigs off the circle:
  * ```js
  * {
  *   type: 'CircularView',
@@ -369,7 +369,8 @@ function stateModelFactory(pluginManager: PluginManager) {
         type: types.literal('CircularView') as unknown as string,
         /**
          * #property
-         * similar to offsetPx in linear genome view
+         * the angular offset of the view in radians, the counterpart of offsetPx in
+         * the linear genome view
          */
         offsetRadians: types.stripDefault(types.number, defaultOffsetRadians),
         /**
@@ -763,7 +764,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        * this is displayedRegions, post-processed to elide regions that are too
        * small to see reasonably. A run of them never crosses from one assembly
-       * into the next, so each genome's arcs stay its own. Read off
+       * into the next, so each genome's arcs stay within that genome. Read off
        * `elisionMask`, so a zoom that elides nothing new rebuilds nothing
        */
       get elidedRegions() {
@@ -839,7 +840,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * the genome whose ideogram a ribbon track paints by what aligns to it
-       * from the first, rather than in its own chromosomes' colors
+       * from the first, rather than in the colors of its chromosomes
        */
       get paintedAssemblyName() {
         return this.chordSyntenyDisplays.find(
@@ -860,8 +861,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * The assemblies a pending launch names, which the gates below wait on
-       * before `displayedRegions` exist. A blob carrying only tracks
-       * names none, and waiting on one nobody named never ends.
+       * before `displayedRegions` exist. A blob with only tracks
+       * names no assembly, and waiting for an unnamed assembly never ends.
        */
       get launchAssemblyNames() {
         const launch = this.pendingLaunch
@@ -954,8 +955,8 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * What the loading screen says while `showLoading`, read off the
-       * assembly whose load is the wait; undefined otherwise.
+       * The loading screen's text while `showLoading`, taken from the
+       * assembly being waited on; undefined otherwise.
        */
       get loading() {
         return viewLoading(this.showLoading, () => this.loadingAssembly)
@@ -975,19 +976,17 @@ function stateModelFactory(pluginManager: PluginManager) {
        * view, with `disableImportForm` suppressing the whole thing rather than
        * only its first half.
        *
-       * The `||` used to bind the other way, so an error re-enabled a form the
-       * embedder had turned off. That is reachable, and the sv-inspector —
-       * `disableImportForm`'s only setter — is where: its circle is driven by
-       * the spreadsheet's assembly, so a circle left sitting on regions whose
-       * assembly the config no longer has reports an error (the case the
-       * region-binding autorun's comment describes). The inspector then grew a
-       * circular-view import form inside its own panel, offering an assembly
-       * dropdown whose Open the inspector's autorun overwrites on the next
-       * pass — a control that cannot work, in a view that asked not to have it.
+       * An error therefore never re-enables a form the embedder turned off. The
+       * sv-inspector, the only setter of `disableImportForm`, drives its circle
+       * from the spreadsheet's assembly, so a circle left sitting on regions
+       * whose assembly the config no longer has reports an error (the case the
+       * region-binding autorun's comment describes). With the form enabled, the
+       * inspector's panel would show an assembly dropdown whose Open the
+       * inspector's autorun overwrites on the next pass, a control that cannot
+       * work.
        *
-       * The error still has to be reported, so the component renders a bare
-       * ErrorBanner in that case; the form is only the *usual* place a circular
-       * view puts one.
+       * To report the error, the component renders a bare ErrorBanner in that
+       * case; the form is only the *usual* place a circular view shows one.
        */
       get showImportForm() {
         return (

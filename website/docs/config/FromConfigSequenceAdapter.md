@@ -34,13 +34,13 @@ holds the bases for each region.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "FromConfigSequenceAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Adapter slots go inside the track's `adapter`: `"adapter": { "type": "FromConfigSequenceAdapter", ... }`. `FromConfigSequenceAdapter` has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
 | <span id="slot-adapterid">**adapterId**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | stable identifier used as the adapter cache key; avoids hashing the (potentially large) features array. optional — falls back to hash. |
-| <span id="slot-features">**features**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | one entry per reference sequence, each with a `uniqueId`, `refName`, `start`, `end`, and a `seq` string holding the bases for that span. The bases live in the config, so this is for small sequences — a plasmid, a test contig — not a genome. |
+| <span id="slot-features">**features**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | one entry per reference sequence, each with a `uniqueId`, `refName`, `start`, `end`, and a `seq` string holding the bases for that span. The config holds the bases, so this suits small sequences — a plasmid, a test contig — not a genome. |
 
 ## Retired keys
 

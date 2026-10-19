@@ -261,7 +261,7 @@ export default function baseStateModelFactory(
         hiddenFeatureIds: types.stripDefault(types.array(types.string), []),
         /**
          * #property
-         * Genes the user opened from the isoform badge on their own label:
+         * Genes the user opened from the isoform badge on the gene's label:
          * these draw every isoform whatever `geneGlyphMode` or the fit
          * ladder's isoform rung would otherwise collapse them to.
          */
@@ -289,7 +289,7 @@ export default function baseStateModelFactory(
       subfeatureIdUnderMouse: undefined as string | undefined,
       /**
        * #volatile
-       * the hover tooltip's rows, each rendered as its own element — see
+       * the hover tooltip's rows, each rendered as a separate element — see
        * hoverTooltipRows for why this is a list and not one HTML string
        */
       mouseoverExtraInformation: undefined as string[] | undefined,
@@ -498,7 +498,7 @@ export default function baseStateModelFactory(
 
       /**
        * #getter
-       * Overridable hook (default on): whether intron lines carry chevrons.
+       * Overridable hook (default on): whether intron lines have chevrons.
        * Drawn from the render state, not baked by the worker, so the toggle
        * refetches nothing.
        */
@@ -762,7 +762,7 @@ export default function baseStateModelFactory(
       /**
        * #getter
        * Whether the settings reserve `below` subfeature-label rows, which
-       * is what earns the fit ladder its `bare` rung — with nothing
+       * the fit ladder's `bare` rung depends on — with nothing
        * reserved the rung would repack an identical stack.
        */
       get reservesBelowLabelRows() {
@@ -1613,7 +1613,7 @@ export default function baseStateModelFactory(
       },
       /**
        * #method
-       * The attributes the features in view carry and the sections each
+       * The attributes the features in view have and the sections each
        * would make, for the Group by dialog: the render fetch's download
        * over the visible blocks, under the same admission and byte budget.
        */
@@ -1758,7 +1758,7 @@ export default function baseStateModelFactory(
       /**
        * #method
        * Flattened "Show..." submenu: all checkbox toggles first, then the
-       * radio groups (each under its own subHeader), then the legend.
+       * radio groups (each under a subHeader), then the legend.
        */
       showSubmenuMenuItems(): MenuItem[] {
         return [

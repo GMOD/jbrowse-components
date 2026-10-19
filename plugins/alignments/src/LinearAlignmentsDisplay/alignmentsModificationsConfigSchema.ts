@@ -82,7 +82,7 @@ export const alignmentsModificationsConfigSchema = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
       description:
-        'the modification type codes drawn (m, h, a, ...); empty draws every type the reads carry',
+        'the modification type codes drawn (m, h, a, ...); empty draws every type present in the reads',
     },
   },
   { closed: true, plot: true },

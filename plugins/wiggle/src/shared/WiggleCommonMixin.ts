@@ -114,7 +114,7 @@ export function WiggleCommonMixin() {
       /**
        * #getter
        * The value bars grow from, which a color scale also reads where its
-       * own domain says nothing.
+       * domain is unset.
        */
       get origin(): number {
         return getConf(confNode(self), 'origin')

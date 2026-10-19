@@ -94,9 +94,9 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot mark
-     * The shape each score is drawn as, in the mark display's words: `bar`, a bar
-     * from the `origin` to the score; `point`, a point at it; `line`, a line
-     * through the scores; `span`, a strip whose color is the score. The
+     * The shape each score is drawn as, using the mark display's names: `bar` draws a bar
+     * from the `origin` to the score, `point` a point at it, `line` a line
+     * through the scores, and `span` a strip whose color is the score. The
      * track menu's Plot type writes it. v4's `defaultRendering` loads as its
      * `mark`: `xyplot` a bar, `scatter` a point, `density` a span, and
      * `line` and `linecenter` a line.

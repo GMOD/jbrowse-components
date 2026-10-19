@@ -65,12 +65,12 @@ width. Falls back to a zoomed-in default when no window is requested.
 Stable id for the breakpoint split view a given launcher spawns, so repeated
 launches from the same place reuse one view instead of stacking a new one each
 time. `ownerId` is whatever the launcher is: a spreadsheet view (shared by the
-sheet's row menu and the SV inspector's chord clicks, which then land in the
-same view), or a variant feature widget.
+sheet's row menu and the SV inspector's chord clicks, which then open the same
+view), or a variant feature widget.
 
-Spelling it out inline is the same string until it isn't — the dialog appends
-its own shape suffix to whatever it is handed, so a launcher that respells the
-prefix gets a second view instead of reusing the first, and nothing reports it.
+Spelling the id out inline works only while it matches this string: the dialog
+appends a shape suffix to whatever id it receives, so a launcher that respells
+the prefix opens a second view instead of reusing the first, with no error.
 
 ```js
 // type signature
@@ -95,7 +95,7 @@ cannot be found.
 ### getBreakendCoveringRegions
 
 The two canonical-refName junction positions a breakend/SV feature spans,
-through `junctionEnds`; a record naming no other end spans its own extent.
+through `junctionEnds`; a record with no other end spans the feature's extent.
 
 ```js
 // type signature
@@ -107,7 +107,7 @@ through `junctionEnds`; a record naming no other end spans its own extent.
 ### linearGenomeViewOf
 
 A feature widget's view when a launch can copy its tracks: a linear genome view,
-never a circle, whose tracks carry displays a linear panel cannot draw.
+never a circle, whose tracks have displays a linear panel cannot draw.
 
 ```js
 // type signature
@@ -118,10 +118,10 @@ never a circle, whose tracks carry displays a linear panel cannot draw.
 
 ### makeFeaturePair
 
-Both ends of a paired record, off whichever of the two things a producer states
-the far one with: the `mate` field a paired adapter fills in, or a VCF `ALT`
-this parses. `paired` is false for a record that names no other end, and `k2` is
-then a placeholder no view resolves.
+A paired record's two ends, read from whichever of the two things a producer
+states the far one with: the `mate` field a paired adapter fills in, or a VCF
+`ALT` this parses. `paired` is false for a record that names no other end, and
+`k2` is then a placeholder no view resolves.
 
 One resolver where there were three — the arc display's endpoint pair,
 `svMateLocus`'s far end for a chain walk, and `pairedEndsLocString`'s two
@@ -152,10 +152,10 @@ its first assembly with the widget's track.
 
 ### pairedEndsLocString
 
-Both ends of a paired record as one loc string an LGV opens side by side,
+A paired record's two ends as one loc string an LGV opens side by side,
 `windowBp` either side of each junction. Each panel is turned so the sequence
 its end keeps reads left to right into the join. Two ends of one contig closer
-than a window collapse to the single span between them. `undefined` for a record
+than a window merge into the single span between them. `undefined` for a record
 with one end.
 
 ```js
@@ -196,7 +196,7 @@ Where a record's other end is, in the feature's own refName namespace and
 0-based like every other coordinate on a feature.
 
 `undefined` when the record names no other end, which is most of a VCF: a plain
-SNV, or an indel that is only ever its own span.
+SNV, or an indel, which is a single span.
 
 ```js
 // type signature

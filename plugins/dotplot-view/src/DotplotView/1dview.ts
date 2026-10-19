@@ -109,7 +109,7 @@ const Dotplot1DView = Base1DView.extend(self => {
 
       /**
        * #getter
-       * The ticks that land on the drawn axis, thinned to what can be read and
+       * The ticks inside the drawn axis, thinned to what can be read and
        * flagged for labelling. Clipped before thinning: spacing is a question
        * about what is on screen, and offscreen ticks (staticBlocks run a screen
        * past each edge) would otherwise claim slots from visible ones.

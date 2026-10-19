@@ -30,9 +30,9 @@ export interface ModTypeHeader {
  * `getModPositions` answers this too, but on the way to placing every call: it
  * walks the delta list against the read sequence, which is the expensive half
  * and is only needed to DRAW marks. Anything that just wants to know what is in
- * the file — which types to offer in a menu, whether a track carries
- * modifications at all — wants this instead, and pays neither the walk nor the
- * sequence decode that feeds it.
+ * the file — which types to offer in a menu, whether a track has modifications
+ * at all — wants this instead, and avoids both the walk and the sequence decode
+ * that feeds it.
  */
 export function getModTypes(mm: string): ModTypeHeader[] {
   const out: ModTypeHeader[] = []

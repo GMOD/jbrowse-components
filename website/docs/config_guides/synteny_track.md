@@ -143,9 +143,9 @@ two files have to agree on those ids byte for byte.
 
 :::caution Gotcha
 
-The anchors file carries no coordinates: a gene is placed by matching its id
-against column 4 of a BED, byte for byte. A row naming a gene neither BED has is
-dropped, so a partial mismatch draws fewer ribbons than the file holds rather
+The anchors file has no coordinates: the adapter places a gene by matching its
+id against column 4 of a BED, byte for byte. A row naming a gene neither BED has
+is dropped, so a partial mismatch draws fewer ribbons than the file holds rather
 than erroring, and only a file where no row resolves fails the track. Ids get
 mangled by isoform suffixes, by BLAST truncating a FASTA header at the first
 space, and by jcvi stripping suffixes unless run with `--no_strip_names`. BED
@@ -160,13 +160,13 @@ the assembly does not have draws nothing at all.
 
 :::caution Gotcha
 
-A block row names four genes, the first and last on each side, and all four are
-placed by matching column 4 of a BED byte for byte. A row with any of the four
-missing is dropped, so a partial mismatch draws fewer blocks than the file holds
-rather than erroring, and only a file where no row resolves fails the track. Ids
-get mangled by isoform suffixes and by jcvi stripping suffixes unless run with
-`--no_strip_names`. BED column 1 has to match the assembly's reference sequence
-names too, and a name the assembly does not have draws nothing at all.
+A block row names four genes, the first and last on each side, and the adapter
+places all four by matching column 4 of a BED byte for byte. A row with any of
+the four missing is dropped, so a partial mismatch draws fewer blocks than the
+file holds rather than erroring, and only a file where no row resolves fails the
+track. Ids get mangled by isoform suffixes and by jcvi stripping suffixes unless
+run with `--no_strip_names`. BED column 1 has to match the assembly's reference
+sequence names too, and a name the assembly does not have draws nothing at all.
 
 :::
 
@@ -180,12 +180,13 @@ names too, and a name the assembly does not have draws nothing at all.
 columns, which is not necessarily the order `assemblyNames` lists or the order
 the genomes were given to whatever wrote the table. Get it wrong and every gene
 is looked up in another genome's BED; the track fails with the column order
-named, rather than drawing empty. The table carries no coordinates: a gene is
-placed by matching its id against column 4 of its column's BED, byte for byte.
-One column whose BED places none of its ids fails the track naming that column,
-since the rest still resolve and only the bands touching that genome would have
-been empty. BED column 1 has to match the assembly's reference sequence names,
-which is the one mismatch that still draws nothing rather than erroring.
+named, rather than drawing empty. The table has no coordinates, so the adapter
+places each gene by matching its id against column 4 of its column's BED, byte
+for byte. One column whose BED places none of its ids fails the track naming
+that column, since the rest still resolve and only the bands touching that
+genome would have been empty. BED column 1 has to match the assembly's reference
+sequence names, which is the one mismatch that still draws nothing rather than
+erroring.
 
 :::
 

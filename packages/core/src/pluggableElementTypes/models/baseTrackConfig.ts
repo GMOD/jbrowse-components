@@ -173,7 +173,7 @@ export function preprocessTrackConfigSnapshot(
  * #config BaseTrack
  * Configuration shared by all track types. Concrete tracks (FeatureTrack,
  * AlignmentsTrack, VariantTrack, ...) extend this, so every track accepts these
- * fields in addition to its own.
+ * fields in addition to the ones its type adds.
  */
 export function createBaseTrackConfig(pluginManager: PluginManager) {
   const none = types.optional(types.undefined, undefined)
@@ -264,8 +264,8 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         },
         /**
          * #slot textSearching.indexingFeatureTypesToInclude
-         * The only feature types to index, dropping every other type the file
-         * carries. Empty (the default) means no allow list, i.e. index
+         * The only feature types to index, dropping every other type in the
+         * file. Empty (the default) means no allow list, i.e. index
          * everything `indexingFeatureTypesToExclude` does not name.
          *
          * Use this instead of the exclude list when the file draws from a

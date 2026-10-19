@@ -43,8 +43,8 @@ export const variantsBandConfigSchema = ConfigurationSchema(
     /**
      * #slot
      * Letter the marks with each record's VCF ID and/or its description, as a
-     * `LinearVariantDisplay` letters the same record. What the band has room
-     * for is decided by that display's fit ladder: descriptions go first, then
+     * `LinearVariantDisplay` letters the same record. That display's fit
+     * ladder decides what the band has room for: descriptions drop first, then
      * IDs are thinned, then dropped.
      */
     showLabels: {

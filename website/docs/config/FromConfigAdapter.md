@@ -39,13 +39,13 @@ added through a URL or session spec.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "FromConfigAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Adapter slots go inside the track's `adapter`: `"adapter": { "type": "FromConfigAdapter", ... }`. `FromConfigAdapter` has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
 | <span id="slot-adapterid">**adapterId**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | stable identifier used as the adapter cache key; avoids hashing the (potentially large) features array. optional — falls back to hash. |
-| <span id="slot-features">**features**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | the features themselves, as an array of plain objects. Each needs a `uniqueId`, `refName`, `start` and `end` (0-based half-open); anything else — `name`, `type`, `score`, `strand`, nested `subfeatures` — is carried through onto the feature as-is. |
+| <span id="slot-features">**features**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | the features themselves, as an array of plain objects. Each needs a `uniqueId`, `refName`, `start` and `end` (0-based half-open); anything else — `name`, `type`, `score`, `strand`, nested `subfeatures` — is copied onto the feature unchanged. |
 
 ## Retired keys
 

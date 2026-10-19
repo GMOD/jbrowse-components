@@ -591,7 +591,7 @@ export function looseTrackExample(content: string) {
     spec.adapterType === adapterType &&
     trackTypeForAdapter(adapterType, file) === trackType
     ? section(
-        `\`${file}\` infers \`${adapterType}\` and \`${trackType}\` on its own, and \`name\` defaults to the file name. In a config declaring one assembly, \`assemblyNames\` comes from there too — see [the shortest track](${SHORTEST_TRACK}).`,
+        `JBrowse infers \`${adapterType}\` and \`${trackType}\` from \`${file}\`, and \`name\` defaults to the file name. In a config declaring one assembly, \`assemblyNames\` comes from there too — see [the shortest track](${SHORTEST_TRACK}).`,
         codeBlock(
           '{',
           `  trackId: '${track.trackId}',`,
@@ -813,7 +813,7 @@ function shorthandLine(name: string, category: string, isBase: boolean) {
   }
   const keys = shorthandKeysByAdapter()[name]?.shorthandKeys ?? []
   if (!keys.length) {
-    return `This adapter has no \`uri\` [shorthand](${FILE_TYPES_GUIDE}#the-uri-shorthand) — give it the location slots below.`
+    return `\`${name}\` has no \`uri\` [shorthand](${FILE_TYPES_GUIDE}#the-uri-shorthand) — give it the location slots below.`
   }
   return `It also accepts the [shorthand](${FILE_TYPES_GUIDE}#the-uri-shorthand) key${keys.length > 1 ? 's' : ''} ${keys.map(k => `\`${k}\``).join(', ')} in place of writing a location slot out.`
 }
@@ -860,20 +860,20 @@ function slotNesting(
   links: DisplayLinkContext,
 ) {
   if (isBase) {
-    return `\`${name}\` is a shared base schema, not a type you name in a config. Set these slots on one of the configs under **Extended by** above, each of which lists them as inherited and shows the shape in its own example.`
+    return `\`${name}\` is a shared base schema, not a type you name in a config. Set these slots on one of the configs under **Extended by** above, each of which lists them as inherited and shows the shape in an example.`
   }
   if (!isNamedType(name, category, links)) {
     return ''
   }
   const shapes: Record<string, string> = {
-    Adapter: `These slots go inside the track's \`adapter\`: \`"adapter": { "type": "${name}", ... }\`.`,
-    Display: `These slots go on a display entry: \`"displays": [{ "type": "${name}", ... }]\`, or in the track's [\`displayDefaults\`](${DISPLAYS_GUIDE}) when this is its default display.`,
+    Adapter: `Adapter slots go inside the track's \`adapter\`: \`"adapter": { "type": "${name}", ... }\`.`,
+    Display: `Display slots go on a display entry: \`"displays": [{ "type": "${name}", ... }]\`, or in the track's [\`displayDefaults\`](${DISPLAYS_GUIDE}) when this is its default display.`,
     Track:
-      'These slots are top-level fields of the track config, alongside `trackId` and `name`.',
+      'Track slots are top-level fields of the track config, alongside `trackId` and `name`.',
     Connection:
-      "These slots are top-level fields of the connection's entry in `connections`.",
+      "Connection slots are top-level fields of the connection's entry in `connections`.",
     'Internet Account':
-      "These slots are top-level fields of the account's entry in `internetAccounts`.",
+      "Account slots are top-level fields of the account's entry in `internetAccounts`.",
   }
   return shapes[category] ?? ''
 }

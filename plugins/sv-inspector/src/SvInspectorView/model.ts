@@ -228,7 +228,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * every canonical refName the visible features' chords land on, both
+       * every canonical refName the visible features' chords end on, both
        * ends included
        */
       get canonicalFeatureRefNameSet() {

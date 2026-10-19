@@ -19,29 +19,27 @@ import type { CigarCursor } from './refWindowToRead.ts'
  * invoking the callback for each. Handles both packed Uint32Array and unpacked
  * number[] CIGAR formats.
  *
- * **Driven by the POSITIONS, not by the read bases.** This used to run an inner
- * loop over every base an op spans, testing `positions[currPos] === readPos + j`
- * — so it was O(read length) to find something O(positions) in size. On the full
- * extent of `200x.longread.mod.bam` that is 43.7 Mbp of read sequence scanned to
+ * **The walk is driven by the positions, not by the read bases.** An inner loop
+ * over every base an op spans, testing `positions[currPos] === readPos + j`,
+ * takes O(read length) to find something O(positions) in size. On the full
+ * extent of `200x.longread.mod.bam` that loop scans 43.7 Mbp of read sequence to
  * place 0.84M modification calls. Within one op the read-to-reference offset is
  * a constant, so each position's answer is one addition and the ops only have to
  * be walked once: O(positions + ops).
  * `plugins/alignments/benches/cigarWalkShape.bench.ts` prices it at **1.17x on
  * the whole per-read modification pipeline**, of which this walk is 45%.
  *
- * **1.17x is the whole of it, and does not grow on a cleaner alignment.** The
- * first reading of that gap was that the op loop caps it — these reads carry
- * 7,000 ops apiece, and neither shape avoids the op loop. `cigarOpDensity.bench.ts`
- * sweeps op density over a 5,000x range and the ratio stays between 1.10x and
- * 1.18x, so that reading was wrong: what this phase is bound by is the per-CALL
- * work both shapes share — the callback, the ML lookup, the compare, the write —
- * not the traversal that differs. Changing how the scan is shaped therefore has a
+ * **1.17x is the whole speedup, and does not grow on a cleaner alignment.** The
+ * op loop does not cap it, although these reads have 7,000 ops apiece and
+ * neither shape avoids the op loop: `cigarOpDensity.bench.ts` sweeps op density
+ * over a 5,000x range and the ratio stays between 1.10x and 1.18x. What this
+ * phase is bound by is the per-call work
+ * both shapes share (the callback, the ML lookup, the compare, the write), not
+ * the traversal that differs. Changing how the scan is shaped therefore has a
  * low ceiling here, however lopsided the iteration counts look.
  *
- * `positions` must be ASCENDING, which every caller's producer guarantees. The
- * one behaviour that changed with the shape: a REPEATED position used to be
- * dropped and to block every position after it (the per-base loop could match at
- * most one position per base offset), and now emits once per occurrence.
+ * `positions` must be ascending, which every caller's producer guarantees. A
+ * repeated position emits once per occurrence.
  *
  * `from` starts the walk at a `refWindowToRead` cursor instead of the first op,
  * for positions that all lie at or past its `readStart`.

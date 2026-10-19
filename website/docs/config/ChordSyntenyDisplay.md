@@ -11,9 +11,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 The circular-view display for a `SyntenyTrack`: each alignment is a ribbon
 between the span it covers on one side and the span its mate covers on the
-other. What a ribbon's color says is the circular view's `color`, as in
-the linear synteny view, with its `alpha` and `minAlignmentLength`; these
-slots are the hovered and selected fills:
+other. The circular view's `color`, `alpha` and `minAlignmentLength` set the ribbon colors, as in
+the linear synteny view; these slots are the hovered and selected fills:
 
 ```js
 {
@@ -58,7 +57,7 @@ spans of each alignment.
 
 ## Config slots
 
-These slots go on a display entry: `"displays": [{ "type": "ChordSyntenyDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Display slots go on a display entry: `"displays": [{ "type": "ChordSyntenyDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

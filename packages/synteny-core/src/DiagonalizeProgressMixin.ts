@@ -10,9 +10,9 @@ import { types } from '@jbrowse/mobx-state-tree'
  * signal, and the flag that gates `settled` so a screenshot or browser test
  * can't capture a pre-reorder hairball.
  *
- * `withDiagonalizeProgress` drives the wait and the status/signal pair; the gate
- * is raised and lowered by the view's own init autorun, which is the only thing
- * that knows a reorder was asked for. Composed rather than duplicated so both
+ * `withDiagonalizeProgress` drives the wait and the status/signal pair; the view's
+ * init autorun raises and lowers the gate, because it alone knows a reorder
+ * was asked for. Composed rather than duplicated so both
  * views report progress, cancel, and gate identically.
  */
 export function DiagonalizeProgressMixin() {
@@ -29,7 +29,7 @@ export function DiagonalizeProgressMixin() {
       /**
        * #volatile
        * A reorder this init asked for that has not succeeded yet. Raised before
-       * any render can paint, and lowered only once the pass RESOLVES — a
+       * any render can paint, and lowered only once the pass resolves — a
        * skipped or thrown reorder leaves it up, so the view's `settled` gate
        * never reports done on an undiagonalized view and the capture fails
        * loudly (times out) instead of committing a hairball.
@@ -108,12 +108,12 @@ export function DiagonalizeProgressMixin() {
        * Abort an in-flight auto-diagonalize; `withDiagonalizeProgress`'s finally
        * clears the wait flag, revealing the (undiagonalized) view.
        *
-       * Lowers the gate too. The abort reaches the caller as a throw, which
-       * skips its `finishAutoDiagonalize()` — right for a reorder that failed
-       * on its own (`settled` stays false and a capture times out loudly rather
-       * than committing a hairball), wrong for one the user stopped: cancelling
-       * IS the user settling for this view, and a gate nothing will lower again
-       * leaves `settled` false forever.
+       * Lowers the gate too. The abort reaches the caller as a throw, and the throw
+       * skips `finishAutoDiagonalize()` — right for a reorder that failed
+       * (`settled` stays false and a capture times out loudly rather than
+       * committing a hairball), wrong for one the user stopped: cancelling is
+       * the user accepting this view as it is, and a gate nothing will lower
+       * again leaves `settled` false forever.
        */
       cancelAutoDiagonalize() {
         self.diagonalizeCancel?.()

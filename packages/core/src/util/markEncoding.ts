@@ -624,7 +624,7 @@ export function withHitIndex<T extends EncodedChannels>(
  *
  * Columnar: one pass admits the rows over `x`, `x2` and `y` alone, and none
  * runs where all three are lanes of whole numbers; every other lane is then
- * filled in its own loop over the admitted rows, a lane straight off a typed
+ * filled in a separate loop over the admitted rows, a lane straight off a typed
  * column and a categorical over a `category` column per label.
  */
 export function encodeFeatures<L extends LaneName>(
@@ -1173,8 +1173,8 @@ function keysAreNumeric(entries: readonly { value: string }[]) {
 /**
  * #api
  * A CSS color or `jexl:` color expression as a per-feature packed ABGR —
- * the unscaled arm of {@link ColorEncoding}, on its own for a display that
- * carries a plain `color` slot.
+ * the unscaled arm of {@link ColorEncoding}, used by a display that has a
+ * plain `color` slot.
  */
 export function colorEvaluator(
   color: string,

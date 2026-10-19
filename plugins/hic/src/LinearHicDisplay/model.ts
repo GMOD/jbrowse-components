@@ -324,7 +324,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * The normalization the loaded matrix carries, which falls back per
+       * The normalization the loaded matrix has, which falls back per
        * binsize (KR at 5 kb, nothing at 2.5 Mb is typical). The menu ticks
        * this. Fetch-derived, so it stays out of `rpcProps()`.
        */
@@ -463,8 +463,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #method
-       * The settings that refetch. The binsize is zoom-derived, so it travels
-       * as its own argument.
+       * The settings that refetch. The binsize is zoom-derived, so it is passed
+       * as a separate argument.
        */
       rpcProps(): { normalization: string; quantile: number } {
         return {

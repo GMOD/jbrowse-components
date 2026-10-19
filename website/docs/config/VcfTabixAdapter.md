@@ -25,7 +25,7 @@ The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a
 }
 ```
 
-`variants.vcf.gz` infers `VcfTabixAdapter` and `VariantTrack` on its own, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
+JBrowse infers `VcfTabixAdapter` and `VariantTrack` from `variants.vcf.gz`, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js
 {
@@ -53,7 +53,7 @@ Reads bgzip-compressed, tabix-indexed VCF files.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "VcfTabixAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri`, `csi` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Adapter slots go inside the track's `adapter`: `"adapter": { "type": "VcfTabixAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri`, `csi` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
@@ -61,4 +61,4 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "VcfTabixAdap
 | <span id="slot-vcfgzlocation">**vcfGzLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.vcf.gz', locationType: 'UriLocation' }</code> | location of the bgzip-compressed VCF, sorted by position. Must be bgzip rather than plain gzip, which tabix cannot index. |
 | <span id="slot-index">**index**</span><br>[TabixIndex](../tabixindex) | The tabix index location and its kind. The `uri` shorthand derives both, so a config using it states neither. |
 | <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>5_000_000</code> | Matches the feature-track default (5 Mb): the tabix byte estimate is block-granular (a small region still pulls whole BGZF blocks), so a tighter gate trips on routine variant views. VCF text downloads fast; the feature-density gate remains the backstop for genuinely over-dense views.<br>_advanced_ |
-| <span id="slot-samplestsvlocation">**samplesTsvLocation**</span><br>[`maybeFileLocation`](/docs/config_guides/slot_types#the-maybe-types) | optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (`population`, `tissue`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the `label`, `color` and `assemblyName` columns onto its species rows, over its `samples` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples |
+| <span id="slot-samplestsvlocation">**samplesTsvLocation**</span><br>[`maybeFileLocation`](/docs/config_guides/slot_types#the-maybe-types) | optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (`population`, `tissue`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the `label`, `color` and `assemblyName` columns onto its species rows, over its `samples` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples |

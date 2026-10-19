@@ -157,9 +157,9 @@ export function makeNameColorFunction(
  * The single-name form of the LUT above, because a second reader has turned up
  * that is not painting features: the off-screen mate marks stand for alignments
  * to a contig the facing row is not showing, and a mark colored like the ribbons
- * to that contig is what says a ribbon did not vanish, it moved. Two palettes
- * would put a mark and its ribbons in different colors, which is exactly the
- * drift this module exists to prevent — see the header.
+ * to that contig shows that a ribbon moved rather than vanished. Two palettes
+ * would color a mark and its ribbons differently, which this module prevents;
+ * see the header.
  */
 export function nameColorCss(
   refName: string,

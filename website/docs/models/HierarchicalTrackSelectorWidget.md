@@ -102,7 +102,7 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="action-clearfiltertext">**clearFilterText**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setfiltertext">**setFilterText**</span><br><code>(newText: string) =&gt; void</code> |  |
 | <span id="action-setcategorycollapsed">**setCategoryCollapsed**</span><br><code>(id: string, collapsed: boolean) =&gt; void</code> | the single gate on accordion state: a folder is a mode the user picked, not an accordion that happens to be shut, so every collapse/expand — one row, a bulk menu item, or "expand all" — passes it by |
-| <span id="action-setfoldercategory">**setFolderCategory**</span><br><code>(id: string, isFolder: boolean) =&gt; void</code> | folder and collapsed are the same slot, so leaving folder mode always lands on an expanded category |
+| <span id="action-setfoldercategory">**setFolderCategory**</span><br><code>(id: string, isFolder: boolean) =&gt; void</code> | folder and collapsed are the same slot, so leaving folder mode always yields an expanded category |
 | <span id="action-expandallcategories">**expandAllCategories**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-toggletrack">**toggleTrack**</span><br><code>(trackId: string) =&gt; Promise&lt;void&gt;</code> | shows or hides a track, recording one it showed as recently used |
 | <span id="action-collapsesubcategories">**collapseSubCategories**</span><br><code>() =&gt; void</code> |  |

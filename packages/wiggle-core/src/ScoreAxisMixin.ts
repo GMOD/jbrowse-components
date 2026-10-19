@@ -12,10 +12,10 @@ import type { ValueScale, YAxis } from '@jbrowse/display-ui'
 /**
  * #stateModel ScoreAxisMixin
  * #category display
- * Not a cross-cutting mixin any more: {@link ScoreScaleMixin} is its one
- * composer, and a display takes the axis by taking that. The two stay apart
- * because the halves answer different questions — this one derives, the other
- * says where the answer is written.
+ * {@link ScoreScaleMixin} is the one composer of this mixin, and a display
+ * takes the axis by taking that. The mixins stay separate because they answer
+ * different questions: this one derives the axis, and the other holds where the
+ * declaration is written.
  *
  * The axis contract apart from where it is written down. `scaleType`,
  * `manualMinScore` and `manualMaxScore` are declared here with neutral answers
@@ -69,12 +69,12 @@ export function ScoreAxisMixin() {
        * Overridable hook: what each end of the domain falls back to where the
        * config leaves its bound unset. `[undefined, undefined]` — the default —
        * means autoscale both ends, which is right for a track whose scores have
-       * no absolute meaning (a bigwig's units are its own).
+       * no absolute meaning (a bigwig's units depend on the dataset).
        *
        * A display whose scores are bounded *by construction* overrides it, so
        * the axis stops being a function of what happens to be on screen: GC
        * content is a fraction, so 0 and 1 are its real limits and mean the same
-       * thing at every locus. Autoscaled, the same GC value drew at different
+       * thing at every locus. Autoscaled, the same GC value would draw at different
        * heights depending on where the user had panned, and the track could not
        * be read across loci.
        *
@@ -132,7 +132,7 @@ export function ScoreAxisMixin() {
        * every range its `autoscaleGroup` holds, nice-rounded inside this
        * display's own bounds. Each member unions the others' own ranges and
        * never their domains, so a pinned end stays the display's that pinned
-       * it. `undefined` while this display has nothing of its own to scale.
+       * it. `undefined` while this display has no `autoscaleRange`.
        */
       get autoscaledDomain(): [number, number] | undefined {
         const own = self.autoscaleRange
@@ -185,10 +185,10 @@ export function ScoreAxisMixin() {
       },
       /**
        * #getter
-       * The axes, one per declared scale whose domain resolved: where each
-       * tick lands in the band's own pixel space, through `computeYTicks`
-       * unless the scale brought its own ladder, and where each of the
-       * scale's `rules` inside the domain lands in that same box, through the
+       * The axes, one per declared scale whose domain resolved: the position
+       * of each tick in the band's pixel space, through `computeYTicks`
+       * unless the scale supplies its own ladder, and the position of each of
+       * the scale's `rules` inside the domain in that same box, through the
        * scale type the renderer places its values by.
        */
       get axes(): YAxis[] {

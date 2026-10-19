@@ -63,8 +63,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * lists or the order the genomes were given to whatever wrote the table. Get
  * it wrong and every gene is looked up in another genome's BED; the track
  * fails with the column order named, rather than drawing empty. The table
- * carries no coordinates: a gene is placed by matching its id against column 4
- * of its column's BED, byte for byte. One column whose BED places none of its
+ * has no coordinates, so the adapter places each gene by matching its id
+ * against column 4 of its column's BED, byte for byte. One column whose BED places none of its
  * ids fails the track naming that column, since the rest still resolve and
  * only the bands touching that genome would have been empty. BED column 1 has
  * to match the assembly's reference sequence names, which is the one mismatch
@@ -138,8 +138,8 @@ const MCScanBlocksAdapter = ConfigurationSchema(
     /**
      * #slot
      * names for the extra columns that follow the gene columns, in order, so
-     * an ortholog table can carry per-link measurements the format itself has
-     * no place for: `["identity", "dn", "ds", "goc_score"]` reads column N as
+     * an ortholog table can hold per-link measurements the format has no
+     * column for: `["identity", "dn", "ds", "goc_score"]` reads column N as
      * `identity` where N is `blockAssemblies.length`. Each becomes a feature
      * attribute, so it shows in the detail panel, and `dn`/`ds` are what the
      * synteny view's `Color by value → dN/dS` reads. A cell of `.`, `NA`, `NULL` or
@@ -147,9 +147,9 @@ const MCScanBlocksAdapter = ConfigurationSchema(
      * ancestral linkage group or an orthogroup label say, is kept as text and
      * `Color by value → <column>` paints one color per distinct label; a column
      * named `color` holding CSS colors is what that mode paints a label with
-     * when the file carries one.
+     * when the file has one.
      *
-     * These describe the ROW. On a two-genome table a row is one link, which is
+     * These describe the row. On a two-genome table a row is one link, which is
      * what makes a per-link measurement meaningful; on an N-genome table a row
      * is an orthogroup spanning several pairs, so only a value that describes
      * the whole group belongs there

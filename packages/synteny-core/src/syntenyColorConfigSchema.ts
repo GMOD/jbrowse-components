@@ -59,7 +59,7 @@ export function syntenyColorSlots({
       fieldType: 'string',
       field,
       scale:
-        'none paints value and keeps the field for a switch back; linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement paints its own scale and a column one read off its values',
+        'none paints value and keeps the field for a switch back; linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement uses its preset scale and a column one read off its values',
     }),
     ...colorDomainSlot({
       domain:
@@ -67,7 +67,7 @@ export function syntenyColorSlots({
     }),
     ...colorRangeSlot({
       range:
-        "CSS colors a text column's labels or strand's values take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's own; under threshold, one per interval",
+        "CSS colors a text column's labels or strand's values take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's default stops; under threshold, one per interval",
     }),
     ...colorRampSlots,
     ...colorDomainEndsSlots,
@@ -81,8 +81,8 @@ export function syntenyColorSlots({
  * #config SyntenyColor
  * #category view
  * The linear synteny and dotplot views' `color` setting, which every track
- * in the view paints with: one color for every alignment, or a field each
- * alignment carries — its strand, the sequence at either end, the anchor
+ * in the view paints with: one color for every alignment, or a field of each
+ * alignment — its strand, the sequence at either end, the anchor
  * assembly's, the track it came from, a measurement through its preset
  * (`identity` and `dnds` on a ramp, `mapq` in the alignments display's bins,
  * `syntenicDepth` grey for a one-to-one ortholog and orange where genes share

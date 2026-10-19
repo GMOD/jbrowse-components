@@ -404,7 +404,7 @@ function renderModel(
     // afterAttach). Say so instead of letting the tables imply otherwise.
     own === 0 &&
       inherited.length &&
-      `${header.name} declares no members of its own — it composes the models below, and everything here is theirs.`,
+      `${header.name} adds no members: it composes the models below, and every member listed here comes from them.`,
     own > 0 &&
       inherited.length &&
       'Each section ends with the members a composed model contributes, linked to the page that documents them.',

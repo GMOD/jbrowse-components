@@ -10,7 +10,7 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 Holds a JBrowse Desktop session: its views, session tracks, assemblies,
 connections, theme and preferences, and the workspace layout.
 
-JBrowseDesktopSessionModel declares no members of its own — it composes the models below, and everything here is theirs.
+JBrowseDesktopSessionModel adds no members: it composes the models below, and every member listed here comes from them.
 
 ## Properties
 

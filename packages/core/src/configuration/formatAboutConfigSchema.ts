@@ -11,7 +11,7 @@ import { ConfigurationSchema } from './configurationSchema.ts'
  *
  * #example
  * On a track. The callback's variable is `config`, not `feature`, since the
- * dialog shows the track's own configuration rather than a feature:
+ * dialog shows the track's configuration and no feature:
  * ```js
  * {
  *   type: 'FeatureTrack',

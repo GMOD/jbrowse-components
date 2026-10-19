@@ -15,16 +15,16 @@ import {
  * colors, `name` (the row itself) by default, and `domain`/`range` pair those
  * values with CSS colors, so a color a reader sets on a row in the
  * arrangement dialog is an entry under `name`. Each display paints it on the
- * channel that carries a row's identity: the quantitative display's plot, or
+ * element that identifies a row: the quantitative display's plot, or
  * the tint beside its label while a score gradient paints; the multi-row
  * feature display's blocks; the multi-sample variant displays' label tint; the
  * MAF display's label tint, over the adapter's `samples[].color`; the mark
- * display's label tint, over a listed source's color. Where the rows carry
- * attributes, a samplesTsv column or a subtrack's group, `field` may name one,
+ * display's label tint, over a listed source's color. Where the rows have
+ * attributes (a samplesTsv column or a subtrack's group), `field` may name one,
  * and its values each take a palette color. Under `name` the palette deals only
- * where the rows share one panel, a wiggle overlay; stacked rows are named by
+ * where the rows share one panel, a wiggle overlay; stacked rows are identified by
  * their labels. `unknown: ''` deals none, so only the values `domain` lists take
- * a color and every other row keeps its own. A string is the field.
+ * a color and every other row keeps the color it already has. A string is the field.
  *
  * #example
  * ```js
@@ -53,11 +53,11 @@ export const rowColorConfigSchema = ConfigurationSchema(
       type: 'string',
       defaultValue: 'name',
       description:
-        "the row attribute whose values take the colors: name, the row itself, or an attribute the rows carry, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group",
+        "the row attribute whose values take the colors: name, the row itself, or an attribute of the rows, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group",
     },
     ...colorDomainSlot({
       domain:
-        "the field's values given a color of their own, in order: under name, rows by name",
+        "the field's values that get a color, in order: under name, rows by name",
     }),
     ...colorRangeSlot({
       range: 'the CSS color each value in domain takes, in the same order',

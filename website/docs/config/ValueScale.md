@@ -1,7 +1,7 @@
 ---
 id: valuescale
 title: ValueScale
-description: "The value scale of a quantitative display, written as scales.y: the wiggle plot, the alignments coverage band and the mark display, the Manhattan plot among them, each carry one, with the axis guides…"
+description: "The value scale of a quantitative display, written as scales.y: the wiggle plot, the alignments coverage band and the mark display, the Manhattan plot among them, each have one, with the axis guides…"
 sidebar_label: Display -> ValueScale
 ---
 
@@ -64,11 +64,11 @@ suggestive one:
 
 The value scale of a quantitative display, written as `scales.y`: the
 wiggle plot, the alignments coverage band and the mark display, the
-Manhattan plot among them, each carry one, with the axis guides it draws —
+Manhattan plot among them, each have one, with the axis guides it draws —
 its ticks, its `grid`, its `rules` and its `title`.
 
 Vega-Lite's spelling: a pinned end is `domainMin` or `domainMax`, an end
-left unset autoscales over the loaded regions, and `zero` says whether an
+left unset autoscales over the loaded regions, and `zero` sets whether an
 autoscaled linear or symlog axis reaches 0 whatever those regions hold.
 
 Two defaults come from the display rather than from the scale.
@@ -76,7 +76,7 @@ Two defaults come from the display rather than from the scale.
 at `1`, the extremes, on the coverage band and the mark display. `symlogConstant` starts at `0` on the wiggle family and the mark
 display and at `1` on the coverage band.
 
-Every scale carries the same guides: `rules`, reference lines at chosen
+Every scale has the same guides: `rules`, reference lines at chosen
 values, `grid`, a line at every tick, `minimalTicks`, and `title`, the
 caption beside the axis. A rule naming no `color` draws in the one color
 the chrome rules every plot in, so a red line is a claim its author makes
@@ -97,8 +97,8 @@ A setting written to it names members one by one: a member left out stays as it 
 | <span id="slot-scalesydomainmax">**scales.y.domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The top of the axis. Unset autoscales that end. |
 | <span id="slot-scalesyzero">**scales.y.zero**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Whether an autoscaled linear or symlog axis reaches 0 whatever the loaded values span, Vega-Lite's `zero`. On, a plot of values between 30 and 60 draws 0 to 60, and a bar always shows its whole height. Off, the axis spans the values alone. A pinned end is unmoved either way, a log axis has no 0, and a density plot, which maps score to color and has no axis, spans its values whatever this says. The Y axis panel's "Include 0" toggles it. |
 | <span id="slot-scalesyautoscalegroup">**scales.y.autoscaleGroup**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | A name shared by the tracks whose axes autoscale together: each unpinned end spans the data of every track in the view naming the same group, so three coverage lanes stay comparable as the view moves. A pinned end stays this track's own. The Y axis panel's "Share axis with" writes it. |
-| <span id="slot-scalesysymlogconstant">**scales.y.symlogConstant**</span><br>[`number`](/docs/config_guides/slot_types#number) = per display | Width of symlog's linear region around zero. `0` derives it from the domain, a thousandth of its largest magnitude — right for a wiggle track, whose units are its own. The coverage band starts at `1` instead, which makes symlog exactly `log(depth+1)` and puts the knee at one read.<br>_advanced_ |
-| <span id="slot-scalesydomainquantile">**scales.y.domainQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = per display | The fence for an unpinned end's outliers. An end follows the loaded values' extreme; below `1`, an extreme that would stretch the axis past twice the span this quantile of the values draws stops at that fence, and the bars past it wear the red clip strip. So `0.99` leaves a plot with no spike whole and keeps one spike from flattening the rest. Each end's quantile is measured among the values on its side of 0, so a sparse minority tail stays visible, and the span includes 0 where `zero` reaches it. A color ramp's `domainQuantile` clips at the quantile itself, since a saturated color hides nothing its key does not say. The Y axis panel's "Clip extreme outliers" toggles it. |
+| <span id="slot-scalesysymlogconstant">**scales.y.symlogConstant**</span><br>[`number`](/docs/config_guides/slot_types#number) = per display | Width of symlog's linear region around zero. `0` derives it from the domain, a thousandth of its largest magnitude — right for a wiggle track, whose units depend on the dataset. The coverage band starts at `1` instead, which makes symlog exactly `log(depth+1)` and puts the knee at one read.<br>_advanced_ |
+| <span id="slot-scalesydomainquantile">**scales.y.domainQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = per display | The fence for an unpinned end's outliers. An end follows the loaded values' extreme; below `1`, an extreme that would stretch the axis past twice the span this quantile of the values draws stops at that fence, and the bars past it show the red clip strip. So `0.99` leaves a plot with no spike whole and keeps one spike from flattening the rest. Each end's quantile is measured among the values on its side of 0, so a sparse minority tail stays visible, and the span includes 0 where `zero` reaches it. A color ramp's `domainQuantile` clips at the quantile itself, since the key shows what a saturated color stands for. The Y axis panel's "Clip extreme outliers" toggles it. |
 | <span id="slot-scalesygrid">**scales.y.grid**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Rule the plot across at every tick, ggplot2's panel grid and Vega-Lite's `axis.grid`. The Y axis panel's "Grid lines" toggles it. |
 | <span id="slot-scalesyminimalticks">**scales.y.minimalTicks**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Label only the two ends of the axis.<br>_advanced_ |
 | <span id="slot-scalesytitle">**scales.y.title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | The caption beside the axis, naming what it measures, drawn once however many bands the scale rules and at every zoom. Optional, as JBrowse's other captions are: unset, `""` or `null`, the axis has none; some text is that text. |

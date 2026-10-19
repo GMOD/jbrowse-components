@@ -80,7 +80,7 @@ export default function ldTrackDisplayConfigSchema() {
         model: types.enumeration('LDShowLabels', ['none', 'name']),
         defaultValue: 'none',
         description:
-          '`name` draws each variant name above its tick mark and `none` draws no labels, two of the modes the feature display gives its own `showLabels`',
+          '`name` draws each variant name above its tick mark and `none` draws no labels, two of the modes of the feature display `showLabels`',
         advanced: true,
       },
       /**

@@ -18,9 +18,9 @@ import type { TrackActionView } from '@jbrowse/core/util/types'
  *
  * The minimal track menus used by the embedded react views, which have no
  * track-editing actions to offer: just "About track" plus any plugin-contributed
- * items (`Core-extraTrackMenuItems`). Mirrors the shape of the full
- * `TrackMenuItemsSessionMixin` so both menu surfaces stay consistent across
- * products, minus the Settings/Copy/Delete actions.
+ * items (`Core-extraTrackMenuItems`). Has the same shape as the full
+ * `TrackMenuItemsSessionMixin`, minus the Settings/Copy/Delete actions, so
+ * both menu surfaces stay consistent across products.
  */
 export function TrackMenuSessionMixin(pluginManager: PluginManager) {
   return types.model('TrackMenuSessionMixin', {}).views(s => {

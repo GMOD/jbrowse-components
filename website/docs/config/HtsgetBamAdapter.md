@@ -33,7 +33,7 @@ Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam libra
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "HtsgetBamAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Adapter slots go inside the track's `adapter`: `"adapter": { "type": "HtsgetBamAdapter", ... }`. `HtsgetBamAdapter` has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

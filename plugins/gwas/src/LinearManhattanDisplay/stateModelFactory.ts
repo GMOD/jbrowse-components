@@ -116,8 +116,8 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The steps every mark runs before its own: the display's, then the
-       * facet's.
+       * The steps every mark runs before the mark's `transform`: the display's,
+       * then the facet's.
        */
       get sharedSteps(): MarkTransformStepConfig[] {
         return [...self.conf.transform, ...self.conf.facet.transform]
@@ -169,7 +169,7 @@ export function stateModelFactory(
       /**
        * #getter
        * The index the fetch joins r² to, a fetch input, so picking one
-       * refetches. None before the first load names a top hit.
+       * refetches. No index exists until the first load provides a top hit.
        */
       get adapterOptions(): { ld: string } | undefined {
         return self.joinsLd && self.indexSnp !== undefined
@@ -212,8 +212,9 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * Where the plot joins LD, a notice that no point on screen lies in
-       * the LD window of the index, so none can be colored by it.
+       * The notices the display shows. Where the plot joins LD, it shows one
+       * when no point on screen lies in the LD window of the index, so none
+       * can be colored by it.
        */
       get displayNotices(): string[] {
         const locus = self.joinsLd && parseChrBp(self.indexSnp ?? '')

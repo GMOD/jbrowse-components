@@ -241,11 +241,11 @@ export function BaseRootModelFactory({
       /**
        * #action
        * Starts a new session from the config's defaultSession. An `id` in it
-       * (a pasted session export carries one) is dropped, since sessions are
+       * (a pasted session export has one) is dropped, since sessions are
        * autosaved by id and each new one would otherwise overwrite the last.
-       * The name carries no date: the saved-session lists show when each was
-       * used, and a dated name saved back as the default gained another date
-       * on every new session.
+       * The name has no date, because the saved-session lists show when each was
+       * used, and a dated name saved back as the default would gain another
+       * date on every new session.
        */
       setDefaultSession() {
         const { id: _id, ...defaultSession } = self.jbrowse.defaultSession

@@ -12,9 +12,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * #example
  * The circular-view display for a `SyntenyTrack`: each alignment is a ribbon
  * between the span it covers on one side and the span its mate covers on the
- * other. What a ribbon's color says is the circular view's `color`, as in
- * the linear synteny view, with its `alpha` and `minAlignmentLength`; these
- * slots are the hovered and selected fills:
+ * other. The circular view's `color`, `alpha` and `minAlignmentLength` set the ribbon colors, as in
+ * the linear synteny view; these slots are the hovered and selected fills:
  * ```js
  * {
  *   type: 'SyntenyTrack',

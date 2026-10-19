@@ -174,7 +174,7 @@ function oklchToHex(lightness: number, chroma: number, hue: number) {
  * because a categorical palette is uneven on purpose: category10's brown and
  * its red are 5 degrees apart in hue and are told apart by chroma alone, so
  * re-lighting both to one (lightness, chroma) makes them the same color.
- * Keeping each color's own relative chroma keeps brown reading as brown.
+ * Each color keeps its relative chroma, so brown stays brown.
  *
  * In OKLCH rather than through `lighten`/`darken`, which work in sRGB, where
  * the same coefficient moves a yellow and a blue by visibly different amounts:

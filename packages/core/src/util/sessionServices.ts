@@ -21,7 +21,7 @@ const sessionServicesCache = new WeakMap<IAnyStateTreeNode, SessionServices>()
 
 /**
  * #api core/util
- * The services a session offers that cost nothing application-shaped to name.
+ * The services a session offers that need no application-specific type to name.
  * Prefer one of the narrower accessors below, which say which of them the
  * calling module actually uses.
  */

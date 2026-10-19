@@ -89,15 +89,15 @@ export default function KeyedFetchMixin() {
       },
       /**
        * #getter
-       * Overridable hook (default false): the held data answers the key, but
-       * this display knows it is not what the screen will settle on — a
-       * dependent fetch of its own is still out, or a fetch input it writes
-       * itself has moved. The same hook `MultiRegionDisplayMixin` declares,
-       * for the same reason: the key compare is structurally blind to
-       * anything the display fetches outside its primary fetch, and an export
-       * sampling `svgReady` in that window paints the half-filled frame.
+       * Overridable hook (default false): the held data matches the key, but
+       * the screen will settle on different data — a dependent fetch is still
+       * out, or a fetch input the display writes itself has moved. The same hook
+       * `MultiRegionDisplayMixin` declares, for the same reason: the key compare
+       * cannot see anything the display fetches outside its primary fetch, and
+       * an export sampling `svgReady` in that window paints the half-filled
+       * frame.
        *
-       * A term of `dataCurrent` and NOT of the skeleton's freshness gate, so it
+       * A term of `dataCurrent` and not of the skeleton's freshness gate, so it
        * holds the export and never re-runs the primary fetch. It fails hung, not
        * stale: a value that latches true parks `awaitSvgReady` on its backstop,
        * so state only what a later commit is guaranteed to clear.

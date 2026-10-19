@@ -192,9 +192,9 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       /**
        * #method
        * The assembly `asmName` names, or undefined. Reports a name it doesn't
-       * know to `Core-handleUnrecognizedAssembly` so a plugin can go supply it,
-       * which is a side effect: a caller only asking *whether* the session has
-       * the assembly wants {@link has} instead. Each name is reported at most
+       * know to `Core-handleUnrecognizedAssembly` so a plugin can supply it.
+       * That side effect is unwanted for a caller only asking *whether* the
+       * session has the assembly, which should use {@link has}. Each name is reported at most
        * once per session, since a handler resolves it out of band and the
        * assembly turning up is itself the reactive signal.
        */
@@ -335,12 +335,12 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        *
        * Resolution is a chain of events, not a duration: a handler probes and
        * adds a connection, the connection fetches a config, the config's
-       * assemblies land in the session. Each link is observable, so each is
-       * waited on rather than guessed at.
+       * assemblies are added to the session. Each link is observable, so this
+       * method waits on each instead of guessing a delay.
        *
-       * - the handler's own promise, if it returned one, covers the part before
+       * - the handler's promise, if it returned one, covers the part before
        *   the session gains anything to watch (the hubs plugin's HEAD probe)
-       * - any connection still fetching could be carrying the assembly, so its
+       * - any connection still fetching could be providing the assembly, so its
        *   `loading` flag going false is the next event. Every loading
        *   connection counts, not just one naming this assembly: a connection
        *   config need not declare what it will turn out to provide, and waiting

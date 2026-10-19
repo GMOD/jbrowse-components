@@ -139,15 +139,15 @@ export function parseSvAlt(
  * as `+1 = right` / `-1 = left` — the convention `StarFusionAdapter`'s
  * `tickDirection` states and the one every producer in the tree emits.
  *
- * The two halves read their strings with OPPOSITE polarity, which is the whole
- * reason to state them together. `Join: 'right'` says the mate piece is joined
- * to the RIGHT of the ref base, so this end keeps the sequence to its left:
- * negated. `MateDirection: 'right'` says the mate's own piece extends to the
- * right of the mate position, which is already the direction it keeps: taken as
- * read. So `N[chr2:2000[` is `{ joinDirection: -1, mateDirection: 1 }`, and that
- * is the same pair `StarFusionAdapter` emits for the fusion it describes — the
- * donor keeps the sequence below its breakpoint (-1) and the acceptor the
- * sequence above its own (+1).
+ * The two halves read their strings with opposite polarity, so one function
+ * states both. `Join: 'right'` means the mate piece is joined to the right of
+ * the ref base, so this end keeps the sequence to its left: negated.
+ * `MateDirection: 'right'` means the mate's piece extends to the right of the
+ * mate position, which is already the direction it keeps: taken as is. So
+ * `N[chr2:2000[` is `{ joinDirection: -1, mateDirection: 1 }`, the same pair
+ * `StarFusionAdapter` emits for the fusion it describes: the donor keeps the
+ * sequence below its breakpoint (-1) and the acceptor the sequence above its
+ * breakpoint (+1).
  *
  * Split out of `parseSvAlt` because a consumer holding an already-parsed
  * `Breakend` was re-deriving it by hand, in two adjacent ternaries of opposite
@@ -250,10 +250,10 @@ function alleleToken(
 /**
  * #api
  * The structural-variant class one ALT allele states, `''` for one that is not
- * structural. A symbolic allele's own id wins. Otherwise VCF 4.4's `EVENTTYPE`
- * does; then a breakend is the class its `SVTYPE` declares where that says more
- * than BND, and a sequence allele is an insertion or deletion by its length
- * against REF, else its `SVTYPE`'s class.
+ * structural. The id of a symbolic allele decides first. Otherwise VCF 4.4's
+ * `EVENTTYPE` decides; then a breakend takes the class its `SVTYPE` declares
+ * where that says more than BND, and a sequence allele is an insertion or
+ * deletion by its length against REF, else takes its `SVTYPE`'s class.
  */
 export function svClassOfAlt(
   alt: string,
@@ -404,7 +404,7 @@ function symbolicKeeps(feature: Feature, alt: string) {
  * them. `undefined` for a record naming no other end. A VCF record is read
  * through `alt`, its first ALT unless the caller names another.
  *
- * A VCF end is its own position. A paired adapter's end is a block, and the
+ * A VCF end's junction is its position. A paired adapter's end is a block, and the
  * junction is the block's edge on the side the end keeps: stated by
  * `mateDirection` where the adapter knows it, read off the strands where the
  * record states one for each end as BEDPE does, and with neither the two

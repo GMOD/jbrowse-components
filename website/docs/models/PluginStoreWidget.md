@@ -18,7 +18,7 @@ installable plugin list and the view it was opened from.
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
 | <span id="property-type">**type**</span><br><code>type: types.literal('PluginStoreWidget')</code> |  |
 | <span id="property-filtertext">**filterText**</span><br><code>filterText: ''</code> |  |
-| <span id="property-tagfilters">**tagFilters**</span><br><code>tagFilters: types.optional(types.array(types.string), [])</code> | Tags a plugin must carry to stay in the list. Plain strings, because the tag vocabulary is published in the store manifest rather than defined here — a tag this build has never seen still filters correctly. |
+| <span id="property-tagfilters">**tagFilters**</span><br><code>tagFilters: types.optional(types.array(types.string), [])</code> | Tags a plugin must have to stay in the list. Plain strings, because the tag vocabulary is published in the store manifest rather than defined here — a tag this build has never seen still filters correctly. |
 | <span id="property-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>view: types.safeReference( pluginManager.pluggableMstType('view…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>view: types.safeReference(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.pluggableMstType('view', 'stateModel'),&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
 
 ## Getters

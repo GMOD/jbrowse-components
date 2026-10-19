@@ -54,7 +54,7 @@ export function PreferencesConfigSchemaFactory() {
      * messages are about code, and a reader who cannot change the code cannot
      * act on one. Turn it on for a site that is running a plugin under
      * development; a plugin author needs nothing here, since a plugin served
-     * from localhost arms the same channel on its own, as does
+     * from localhost arms the same channel automatically, as does
      * `localStorage.jbrowseDeveloperMode`. Takes effect on reload.
      */
     developerMode: {

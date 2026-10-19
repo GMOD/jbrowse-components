@@ -12,9 +12,9 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
 Each side of a pairwise file as tables: `query` and `target`, each its assembly
 name and its contigs in the order the file first names them, with the length the
-file states (`null` where the adapter cannot tell, such as an MCScan anchors
-file, which lists genes rather than contigs). A host lays a whole-genome axis
-out of them, as the dotplot import does from an assembly.
+file states (`null` for a file such as an MCScan anchors file, which lists genes
+and no contigs). A host lays a whole-genome axis out of them, as the dotplot
+import does from an assembly.
 
 ```js
 // type signature

@@ -12,7 +12,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 The defaults are SpCas9 — `NGG` PAM, 20 nt guide, 3' PAM — and the adapter
 scans the assembly's sequence, so the config has no file location.
 A PAM occurs every few bases, so an unfiltered scan is denser than a display
-can draw; the GC window and `excludePolyT` (guides carrying `TTTT`, a
+can draw; the GC window and `excludePolyT` (guides containing `TTTT`, a
 terminator for the pol III promoters guides are expressed from) keep the
 usable ones. SaCas9 is the same track with `pam: 'NNGRRT'` and
 `guideLength: 21`:
@@ -76,7 +76,7 @@ sequence changes.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "CrisprGuideAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Adapter slots go inside the track's `adapter`: `"adapter": { "type": "CrisprGuideAdapter", ... }`. `CrisprGuideAdapter` has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

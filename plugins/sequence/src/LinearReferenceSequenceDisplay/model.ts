@@ -199,7 +199,7 @@ export function modelFactory(
       /**
        * #getter
        * The message shown where the canvas would go: zoomed past base
-       * resolution, or every row toggled off (which would otherwise collapse
+       * resolution, or every row toggled off (which would otherwise shrink
        * the track to 0px). Undefined when the sequence paints.
        */
       get placeholderMessage(): string | undefined {

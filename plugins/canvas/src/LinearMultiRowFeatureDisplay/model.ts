@@ -389,7 +389,7 @@ export default function stateModelFactory(
          * #getter
          * `TreeSidebarMixin`'s hook: the rows an order does not list sort,
          * digits by magnitude and the unanswered row last, since discovered
-         * values arrive in no order of their own.
+         * values arrive in arbitrary order.
          */
         get unlistedRowsSort(): UnlistedRowsSort {
           return 'sorted'
@@ -398,8 +398,8 @@ export default function stateModelFactory(
          * #getter
          * `TreeSidebarMixin`'s hook: the `facet`, its bands listed first and
          * then the `rowGroups` groups in the order they are declared. A row
-         * carries only its name and `group`, so a facet on a feature field
-         * bands nothing and says so in `rowBandingNotices`; banding by one
+         * has only its name and `group`, so a facet on a feature field
+         * bands nothing, and `rowBandingNotices` reports that; banding by one
          * would split rows in the worker.
          */
         get rowBanding(): RowBanding | undefined {
@@ -523,8 +523,8 @@ export default function stateModelFactory(
        * Categorical color key: an identity scale's colors, else the one the
        * color field's scale derives from the values the worker found, else
        * the one the painted colors derive, each named by the features
-       * carrying it. All are gated on there being a painting to key, since a
-       * key is a claim about colors on screen. Empty under a ramp, which
+       * that have it. All are gated on there being a painting to key, since a
+       * key describes colors on screen. Empty under a ramp, which
        * paints over all of them.
        */
       get colorLegend() {
@@ -693,7 +693,7 @@ export default function stateModelFactory(
          * #getter
          * The key each row name holds across every loaded region, assigned
          * at the name's first arrival and never moved; the instance buffers
-         * carry these.
+         * contain these.
          */
         get rowKeys(): RowKeys {
           return rowKeys
@@ -774,7 +774,7 @@ export default function stateModelFactory(
          * #getter
          * Every loaded region's `span` channels with their per-key buckets:
          * what the backend uploads, the hit test reads and the hover and
-         * export draw from. The memo lives in this closure so it outlives a
+         * export draw from. The memo is held in this closure so it outlives a
          * context-loss recovery.
          */
         get encodedChannels(): ReadonlyMap<number, MultiRowEncoded> {
@@ -881,8 +881,8 @@ export default function stateModelFactory(
          * #action
          * Repartition. The arrangement and the row colors stay: a name keyed
          * on another field matches nothing and comes back with the field. The
-         * legend's hidden categories clear. Writing `rows.field` refetches on
-         * its own.
+         * legend's hidden categories clear. Writing `rows.field` triggers a
+         * refetch.
          */
         setRowsField(field: string) {
           // Under auto, against what auto picked, so picking that radio pins

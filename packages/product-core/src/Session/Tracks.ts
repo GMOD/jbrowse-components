@@ -118,7 +118,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
            * Config for one trackId — a track, assembly sequence, or connection
            * track — or undefined. Per-id reactive: every display resolves its
            * config through this (via TrackConfigurationReference) and
-           * subscribes only to its own id, so one track's settings edit doesn't
+           * subscribes only to that track's id, so one track's settings edit doesn't
            * re-render the others.
            */
           getTrackById(id: string): AnyTrackConfig | undefined {
@@ -210,9 +210,9 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
          * destination is the jbrowse config — which in the products that compose
          * it (desktop) is the single user's own file rather than something a
          * server hands other visitors, so the two scopes are the same place.
-         * Defined here anyway so that every session has it: a feature standing a
-         * track up on the user's behalf can then call one action everywhere
-         * instead of asking which mixin it landed on.
+         * Defined here anyway so that every session has it: a feature that adds a
+         * track on the user's behalf can then call one action everywhere
+         * instead of asking which mixin the session composes.
          * `SessionTracksManagerSessionMixin` overrides it with the real
          * session-scoped store.
          */

@@ -110,14 +110,14 @@ export default function MultiRegionDisplayMixin() {
         /**
          * #getter
          * The CSS width of this display's on-screen canvas, in px — and the
-         * `canvasWidth` its `renderState` must carry, since the two have to
+         * `canvasWidth` its `renderState` must hold, since the two have to
          * agree or the bp→px mapping is scaled against a box it doesn't fill.
          *
          * `trackWidthPx`, **not** `view.width`: `TrackRenderingContainer` insets
          * the rendering component by the 2px track outline under
-         * `contain: strict`, so a `view.width`-wide canvas overhangs its own
+         * `contain: strict`, so a `view.width`-wide canvas overhangs the
          * container and the browser clips the overhang away. It renders almost
-         * identically, which is why MAF drifted onto `view.width` uncaught.
+         * identically, which is why MAF used `view.width` unnoticed.
          *
          * A getter rather than a note on each display, because the choice was
          * being made by copying a neighbour out of four plausible view getters —
@@ -221,7 +221,7 @@ export default function MultiRegionDisplayMixin() {
          * #getter
          * Overridable hook (default false), read by the fetch plan: the display
          * is drawing something in the features' place and wants no fetch while
-         * it does. `CoarseTierMixin` says it while its tier stands in, so MAF
+         * it does. `CoarseTierMixin` returns true while its tier stands in, so MAF
          * never downloads the alignments its summary replaces.
          *
          * Not `fetchInert`: that one suppresses the scrim and ends the export
@@ -254,10 +254,10 @@ export default function MultiRegionDisplayMixin() {
          * marked loaded over, at the zoom the view has.
          *
          * The default answers off the store — an entry a fetch committed
-         * carries what it stored — and off the payload's `zoomRange` where the
+         * holds what the fetch stored — and off the payload's `zoomRange` where the
          * adapter declared one (`BaseFeatureDataAdapter.getZoomRange`): a
          * BigWig tier answers a band of zooms, and the region reads as stale
-         * when the view leaves it. A payload carrying no range answers at
+         * when the view leaves it. A payload with no range answers at
          * every zoom.
          *
          * What survives an override is the question the store cannot answer:
@@ -282,7 +282,7 @@ export default function MultiRegionDisplayMixin() {
          * #getter
          * Overridable hook (default false): the held data is loaded and covers
          * the viewport, but a fetch input has moved past it, so the data is
-         * about to be refetched. A display says so here rather than overriding
+         * about to be refetched. A display sets this hook rather than overriding
          * `dataCurrent`, for the reason `FetchMixin.fetchInert` is a hook: an
          * override has to restate the freshness terms and then misses the next
          * one added.
@@ -294,26 +294,25 @@ export default function MultiRegionDisplayMixin() {
          * window renders the data that is about to be replaced. GWAS's LD
          * auto-index is that case: adopting the top hit as the index SNP is an
          * `rpcProps` change, so the very load that produced the top hit is what
-         * it invalidates — and `SettingsInvalidate` lands a tick after the
+         * it invalidates — and `SettingsInvalidate` runs a tick after the
          * write, so until it does not even `staleSettingsDrawn` has seen it.
          *
-         * The window is NOT invisible on screen, which this used to say while
-         * `displayPhase` took a spatial-only argument: alignments' per-base
+         * The window is visible on screen: alignments' per-base
          * wall spends the debounce plus the RPC painting a 1 px stripe every
          * 8 px, with nothing in the key having moved yet.
          *
          * **The input need not have settled yet.** Alignments counts the
          * debounce window ahead of its per-base bin, where the bin the data was
          * fetched under has not moved and the clear is inevitable rather than
-         * committed. That is the half of the window an export lands in, since a
-         * reader zooms and then reaches for the menu. What may NOT go in is a
-         * change that could still be taken back: this fails hung, not stale.
+         * committed. That is the half of the window in which an export starts, since a
+         * reader zooms and then reaches for the menu. A change that could still
+         * be taken back must not go in: this fails hung, not stale.
          *
-         * So state the live-vs-settled half as a **value** compare and leave
+         * State the live-vs-settled half as a **value** compare and leave
          * the stamp alone. The settled half — the stamp a fetch committed under
          * against the `zoomFetchArgs` a fetch now would send — is the
          * foundation's already, through the `isCacheValid` term in
-         * `dataCurrent`, and an override restating it buys nothing: a second
+         * `dataCurrent`, and an override restating it gains nothing: a second
          * derivation misses the field the args gain next, latches this true,
          * and every export of the display then waits out `awaitSvgReady`'s
          * backstop instead of failing.
@@ -433,8 +432,7 @@ export default function MultiRegionDisplayMixin() {
          * key that has since moved: drawn, and wrong for the current settings,
          * until the refetch `isCacheValid` already owes lands. The loading
          * scrim's third staleness term, beside spatial coverage and
-         * `dataSuperseded` — the one that used to come from `SettingsInvalidate`
-         * emptying the coverage map, and the reason it no longer has to.
+         * `dataSuperseded`.
          *
          * False on a zoom by construction: it compares the stamp's `settings`
          * tier alone, so a moved zoom tier raises no scrim.
@@ -499,17 +497,17 @@ export default function MultiRegionDisplayMixin() {
          * The assembly the data in hand came from, once it can answer about
          * refNames — `undefined` before that.
          *
-         * Read off the first LOADED region rather than the view's displayed
+         * Read off the first loaded region rather than the view's displayed
          * ones, and defined here for that reason: a display holding fetched
-         * data is asking about the assembly THAT data is on, and the view's
+         * data is asking about the assembly that data is on, and the view's
          * regions can already have moved on.
          *
          * The `initialized` gate is why this returns the assembly rather than
-         * its name. `getCanonicalRefName2` and `refNameToIndex` answer WRONGLY
+         * its name. `getCanonicalRefName2` and `refNameToIndex` answer wrongly
          * rather than throwing before the aliases land — identity, and a miss —
          * so a caller that skips the gate gets a plausible answer and no signal.
-         * Returning `undefined` until the aliases load forces the caller to write
-         * its fallback.
+         * The getter returns `undefined` until the aliases load, so the caller
+         * must write its fallback.
          */
         get loadedAssembly(): Assembly | undefined {
           const firstRegion = self.loadedRegions.values().next().value
@@ -524,7 +522,7 @@ export default function MultiRegionDisplayMixin() {
          * #getter
          * The loading scrim's staleness argument: what is drawn answers for
          * what is on screen. Spatial coverage, `dataSuperseded` and
-         * `staleSettingsDrawn`; NOT `isCacheValid`, which is `dataCurrent`'s
+         * `staleSettingsDrawn`; not `isCacheValid`, which belongs to `dataCurrent`
          * and would scrim every zoom. `displayPhase` reads it, and so
          * does a stand-in phase (`coarseTierDisplayPhase`) — one predicate,
          * so a term added here reaches both.
@@ -557,8 +555,7 @@ export default function MultiRegionDisplayMixin() {
          * failed fetch has to read as finished to the consumers outside the
          * display, and `foundationPaintInert` for the second such state and why
          * both fetch families answer it through one function. Overridable, as
-         * the hook is: a display with a third inert state of its own says so
-         * here.
+         * the hook is: a display with a third inert state overrides it.
          */
         get paintInert(): boolean {
           return foundationPaintInert(self)
@@ -568,8 +565,7 @@ export default function MultiRegionDisplayMixin() {
          * Fills `RenderLifecycleMixin`'s hook with `staleSettingsDrawn`, so
          * `painted` — and `data-display-drawn` through it — reads pending over
          * a canvas painted under the previous settings until the refetch
-         * lands. `clearAllRpcData` used to reset `canvasDrawn` for the same
-         * effect; the hook says it without blanking anything.
+         * lands, without blanking anything.
          */
         get paintSuperseded(): boolean {
           return self.staleSettingsDrawn
@@ -583,10 +579,10 @@ export default function MultiRegionDisplayMixin() {
          * reaches all three without being wired three times.
          *
          * This family's argument is `phaseViewportCurrent`: spatial coverage
-         * AND `dataSuperseded` (data a settled fetch-input change is drawing
+         * and `dataSuperseded` (data a settled fetch-input change is drawing
          * wrong right now — alignments zooming perBaseLetter from 16 bp/px to
          * 1 stays inside the loaded region and reported `ready` over a wall
-         * drawn as a 1 px stripe every 8 px) AND `staleSettingsDrawn`.
+         * drawn as a 1 px stripe every 8 px) and `staleSettingsDrawn`.
          *
          * A thunk, so a suppressed or already-loading display doesn't subscribe
          * to viewport churn.
@@ -682,7 +678,7 @@ export default function MultiRegionDisplayMixin() {
         /**
          * #action
          * Overridable hook (no-op base): drop what this display holds beside
-         * the store — a second store of its own, a verdict about the viewport
+         * the store — a second store, a verdict about the viewport
          * that was just dropped. Called by `clearAllRpcData`, which runs on a
          * displayed-regions change, on a viewport move past an error or a
          * cancel, and on `reload()`.
@@ -783,9 +779,8 @@ export default function MultiRegionDisplayMixin() {
            * Run a per-region fetch. The work callback
            * calls `ctx.commitRegion` as it stores each region's payload, which is
            * what marks it loaded — see {@link RegionFetchContext} for why this
-           * function no longer does that itself. Its only callers are the three
-           * helpers in `fetchEachRegion.ts`, which make that call for every
-           * display in the family; a display reaching past them owns both
+           * function no longer does that itself. Only the three helpers in
+           * `fetchEachRegion.ts` call it, for every display in the family; a display reaching past them owns both
            * `ctx.isStale()` guards and the commit by hand, and none does.
            *
            * The fetch key is captured here, at issue, and carried into every

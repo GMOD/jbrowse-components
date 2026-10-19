@@ -27,7 +27,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 :::caution Gotcha
 
-The anchors file carries no coordinates: a gene is placed by matching its id against column 4 of a BED, byte for byte. A row naming a gene neither BED has is dropped, so a partial mismatch draws fewer ribbons than the file holds rather than erroring, and only a file where no row resolves fails the track. Ids get mangled by isoform suffixes, by BLAST truncating a FASTA header at the first space, and by jcvi stripping suffixes unless run with `--no_strip_names`. BED column 1 has to match the assembly's reference sequence names too, and a name the assembly does not have draws nothing at all.
+The anchors file has no coordinates: the adapter places a gene by matching its id against column 4 of a BED, byte for byte. A row naming a gene neither BED has is dropped, so a partial mismatch draws fewer ribbons than the file holds rather than erroring, and only a file where no row resolves fails the track. Ids get mangled by isoform suffixes, by BLAST truncating a FASTA header at the first space, and by jcvi stripping suffixes unless run with `--no_strip_names`. BED column 1 has to match the assembly's reference sequence names too, and a name the assembly does not have draws nothing at all.
 
 :::
 
@@ -49,7 +49,7 @@ also covers converting an MCScanX run into these files.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "MCScanAnchorsAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri`, `bed1`, `bed2` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Adapter slots go inside the track's `adapter`: `"adapter": { "type": "MCScanAnchorsAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri`, `bed1`, `bed2` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

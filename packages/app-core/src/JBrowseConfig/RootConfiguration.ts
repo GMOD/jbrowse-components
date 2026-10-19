@@ -47,7 +47,7 @@ export default function RootConfiguration({
     /**
      * #slot configuration.formatDetails
      * jexl callbacks that add, rewrite or hide fields in the feature-details
-     * panel of every track at once. A track can set the same ones on its own
+     * panel of every track at once. A track can set the same ones in the track's
      * `formatDetails` and override individual keys.
      */
     formatDetails: FormatDetailsConfigSchemaFactory(),
@@ -55,7 +55,7 @@ export default function RootConfiguration({
     /**
      * #slot configuration.formatAbout
      * jexl callbacks that add, rewrite or hide fields in the About dialog of
-     * every track at once. A track can set the same ones on its own
+     * every track at once. A track can set the same ones in the track's
      * `formatAbout` and override individual keys.
      */
     formatAbout: FormatAboutConfigSchemaFactory(),

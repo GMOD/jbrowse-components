@@ -1,16 +1,16 @@
 ---
 id: scoreaxismixin
 title: ScoreAxisMixin
-description: "Not a cross-cutting mixin any more: ScoreScaleMixin is its one composer, and a display takes the axis by taking that."
+description: "ScoreScaleMixin is the one composer of this mixin, and a display takes the axis by taking that."
 sidebar_label: Mixin -> ScoreAxisMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreAxisMixin.ts).
 
-Not a cross-cutting mixin any more: ScoreScaleMixin is its one
-composer, and a display takes the axis by taking that. The two stay apart
-because the halves answer different questions — this one derives, the other
-says where the answer is written.
+ScoreScaleMixin is the one composer of this mixin, and a display
+takes the axis by taking that. The mixins stay separate because they answer
+different questions: this one derives the axis, and the other holds where the
+declaration is written.
 
 The axis contract apart from where it is written down. `scaleType`,
 `manualMinScore` and `manualMaxScore` are declared here with neutral answers
@@ -34,13 +34,13 @@ composer owns the declaration — one owner, whichever it is.
 | <span id="getter-scalezero">**scaleZero**</span><br><code>boolean</code> | Overridable: where `scales.y.zero` is written down, whether an autoscaled linear or symlog axis reaches 0. |
 | <span id="getter-manualminscore">**manualMinScore**</span><br><code>number &#124; undefined</code> | Overridable: the lower bound the config really pins, `undefined` where nothing does. |
 | <span id="getter-manualmaxscore">**manualMaxScore**</span><br><code>number &#124; undefined</code> | Overridable: the upper bound the config really pins. |
-| <span id="getter-defaultscoredomain">**defaultScoreDomain**</span><br><code>[number &#124; undefined, number &#124; undefined]</code> | Overridable hook: what each end of the domain falls back to where the config leaves its bound unset. `[undefined, undefined]` — the default — means autoscale both ends, which is right for a track whose scores have no absolute meaning (a bigwig's units are its own).<br><br>A display whose scores are bounded *by construction* overrides it, so the axis stops being a function of what happens to be on screen: GC content is a fraction, so 0 and 1 are its real limits and mean the same thing at every locus. Autoscaled, the same GC value drew at different heights depending on where the user had panned, and the track could not be read across loci.<br><br>A hook rather than a config default because the answer can depend on the data — the wiggle display reads the bounds its adapter declares, a GC content track's [0, 1] — and rather than each display re-resolving the sentinels, which is the one thing that must not be duplicated: config bounds still win, precisely because they are checked before this is consulted. |
+| <span id="getter-defaultscoredomain">**defaultScoreDomain**</span><br><code>[number &#124; undefined, number &#124; undefined]</code> | Overridable hook: what each end of the domain falls back to where the config leaves its bound unset. `[undefined, undefined]` — the default — means autoscale both ends, which is right for a track whose scores have no absolute meaning (a bigwig's units depend on the dataset).<br><br>A display whose scores are bounded *by construction* overrides it, so the axis stops being a function of what happens to be on screen: GC content is a fraction, so 0 and 1 are its real limits and mean the same thing at every locus. Autoscaled, the same GC value would draw at different heights depending on where the user had panned, and the track could not be read across loci.<br><br>A hook rather than a config default because the answer can depend on the data — the wiggle display reads the bounds its adapter declares, a GC content track's [0, 1] — and rather than each display re-resolving the sentinels, which is the one thing that must not be duplicated: config bounds still win, precisely because they are checked before this is consulted. |
 | <span id="getter-valuescales">**valueScales**</span><br><code>ValueScale[]</code> | Overridable hook (default none): the scales this display draws its y through. A display that answers it gets an axis per band of each, with its cross-hatches, placed by `DisplayChrome` and `renderDisplaySvg`, and the ticks derived below. |
 | <span id="getter-autoscalegroup">**autoscaleGroup**</span><br><code>string &#124; undefined</code> | Overridable: the group this display's unpinned ends autoscale in, beside every display in its view naming the same one. |
 | <span id="getter-autoscalerange">**autoscaleRange**</span><br><code>[number, number] &#124; undefined</code> | Overridable: what this display's own data spans, before any bound, nice-rounding or group widens it; what a group unions. |
 | <span id="getter-axisreacheszero">**axisReachesZero**</span><br><code>boolean</code> | Overridable: whether the autoscaled domain reaches 0, `scaleZero` unless the display maps its score to something with no axis. |
-| <span id="getter-autoscaleddomain">**autoscaledDomain**</span><br><code>[number, number] &#124; undefined</code> | The domain an autoscaled axis draws: `autoscaleRange`, widened to every range its `autoscaleGroup` holds, nice-rounded inside this display's own bounds. Each member unions the others' own ranges and never their domains, so a pinned end stays the display's that pinned it. `undefined` while this display has nothing of its own to scale. |
+| <span id="getter-autoscaleddomain">**autoscaledDomain**</span><br><code>[number, number] &#124; undefined</code> | The domain an autoscaled axis draws: `autoscaleRange`, widened to every range its `autoscaleGroup` holds, nice-rounded inside this display's own bounds. Each member unions the others' own ranges and never their domains, so a pinned end stays the display's that pinned it. `undefined` while this display has no `autoscaleRange`. |
 | <span id="getter-minscorebound">**minScoreBound**</span><br><code>number &#124; undefined</code> | Resolved lower bound; `undefined` means autoscale this end. |
 | <span id="getter-maxscorebound">**maxScoreBound**</span><br><code>number &#124; undefined</code> | Resolved upper bound; `undefined` means autoscale this end. |
 | <span id="getter-hasmanualscorebounds">**hasManualScoreBounds**</span><br><code>boolean</code> | Whether the user has pinned either end, which is a different question from whether either end resolved to a number: `defaultScoreDomain` fills the unset ends in, so a GC content track answers yes to the second with nothing configured. The score menu asks this one — it captions the min/max row with the range in force, and a caption off the resolved pair named a range on every freshly opened GC content track. |
-| <span id="getter-axes">**axes**</span><br><code>YAxis[]</code> | The axes, one per declared scale whose domain resolved: where each tick lands in the band's own pixel space, through `computeYTicks` unless the scale brought its own ladder, and where each of the scale's `rules` inside the domain lands in that same box, through the scale type the renderer places its values by. |
+| <span id="getter-axes">**axes**</span><br><code>YAxis[]</code> | The axes, one per declared scale whose domain resolved: the position of each tick in the band's pixel space, through `computeYTicks` unless the scale supplies its own ladder, and the position of each of the scale's `rules` inside the domain in that same box, through the scale type the renderer places its values by. |

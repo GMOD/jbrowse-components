@@ -30,7 +30,7 @@ COMPLEMENT_CODE[G] = C
  * Whether the cytosine at read position `pos` sits in the given context.
  *
  * The pattern is defined on the template (the strand the C is on), read 5'->3'.
- * For forward reads the stored sequence IS the template, so we read forward from
+ * For forward reads the stored sequence is the template, so we read forward from
  * `pos`. getModPositions works reverse-strand reads in stored-sequence space,
  * where the template runs backwards and complemented, so we read backwards from
  * `pos` and complement each base before matching.
@@ -41,13 +41,13 @@ COMPLEMENT_CODE[G] = C
  * it is two string operations per base. It is asked at that volume: the
  * fill-unmarked methylation walk asks up to twice for every aligned base of
  * every read (getMethBins), and bisulfite asks at every candidate cytosine.
- * What it is worth in the phase it sits in — which is not what it is worth on
- * its own — is `plugins/alignments/benches/modFillView.bench.ts`.
+ * `plugins/alignments/benches/modFillView.bench.ts` measures the saving within
+ * the phase this runs in, which differs from the saving in isolation.
  *
  * `charCodeAt` past either end of the string is NaN and `NaN & ~0x20` is 0 — an
  * index no pattern base equals and the complement table holds -1 at — so the
- * walk runs off the read as a non-match with no bounds test of its own.
- * `features/modCoverage/readBaseCounts.ts` folds case the same way and says so.
+ * walk runs off the read as a non-match with no separate bounds test.
+ * `features/modCoverage/readBaseCounts.ts` folds case the same way and notes it.
  */
 export function matchesCytosineContext(
   seq: string,

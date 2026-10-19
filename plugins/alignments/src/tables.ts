@@ -1201,8 +1201,8 @@ function coverageScale(
  * coverage and splice junctions, each read on the row the display's pileup
  * layout gives it and in the color the display's `color` object paints it,
  * with the key the display shows: `legend`, and `ramps`, its color bars
- * (`rampKeyOf`). Under a `facet` each section lays out on its own, every row
- * names its `section`, and `sections` lists them in stacking order;
+ * (`rampKeyOf`). Under a `facet` each section lays out separately, every row
+ * has a `section`, and `sections` lists them in stacking order;
  * ungrouped, there is one section, labelled `''`. Several regions lay out as
  * the display lays out a view's regions, on one set of rows: a read crossing
  * regions is listed in each, under one `key` and on one `row`, and every row

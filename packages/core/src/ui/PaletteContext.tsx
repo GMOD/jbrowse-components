@@ -211,7 +211,7 @@ export function useSessionPalette(
  * nothing errors. See {@link useSessionPalette} for the mechanism.
  *
  * The session is the only thing that resolves a palette here, so a host
- * supplying colors of its own mounts `PaletteProvider` directly instead.
+ * with its own palette mounts `PaletteProvider` directly instead.
  */
 export const SessionPaletteProvider = observer(function SessionPaletteProvider({
   session,

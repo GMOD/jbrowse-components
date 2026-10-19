@@ -40,9 +40,9 @@ export function blockKeySignature(blocks: { key: string }[]) {
  * starts from, and the readiness getters that read the view — `viewportEmpty`,
  * `canRender`, `paintInert`, `svgReady`, `displayPhase`.
  *
- * Installs no autoruns — each display owns its fetch trigger, sharing the
- * `installGlobalFetchAutorun` skeleton, to which it supplies only its own
- * `prepare` / `run` / `commit` phases.
+ * The mixin installs no autoruns. Each display owns its fetch trigger, using
+ * the `installGlobalFetchAutorun` skeleton and supplying its `prepare` /
+ * `run` / `commit` phases.
  *
  * #stateModel GlobalFetchMixin
  * #displayFoundationDef One non-regional dataset with no per-region partitioning, plus the render lifecycle. Installs no fetch autoruns; the display adds its own via `installGlobalFetchAutorun`.
@@ -118,8 +118,8 @@ export default function GlobalFetchMixin() {
        * Fills `RenderLifecycleMixin`'s hook off `fetchInert`: a display that
        * will never fetch here shows a placeholder where its canvas would be, so
        * `painted` and the pre-first-paint scrim term stop waiting on a paint
-       * that cannot come. Sequence and LD each carried this as a second
-       * override beside `fetchInert`, always its negation.
+       * that cannot come. This is `fetchInert` negated, so Sequence and LD need no second
+       * override.
        */
       get rendersCanvas(): boolean {
         return !self.fetchInert
@@ -132,7 +132,7 @@ export default function GlobalFetchMixin() {
        * failed fetch has to read as finished to the consumers outside the
        * display, and `foundationPaintInert` for the second such state and why
        * both fetch families answer it through one function. Overridable, as the
-       * hook is: a display with a third inert state of its own says so here.
+       * hook is: a display with a third inert state overrides it.
        */
       get paintInert(): boolean {
         return foundationPaintInert(self)
@@ -142,7 +142,7 @@ export default function GlobalFetchMixin() {
        * Policy single-sourced in `computeSvgReady`; this family supplies only
        * the freshness half, which `foundationSvgReady` reads as `dataCurrent`
        * or the vacuous currency of `viewportEmpty`. Note it requires the dataset
-       * to actually be current, NOT merely "not currently fetching": the fetch
+       * to actually be current, not merely "not currently fetching": the fetch
        * trigger is a debounced `afterAttach` autorun, so at export time
        * `isLoading` can still be false with no data yet — a
        * `displayPhase !== 'loading'` test would then capture an empty render.

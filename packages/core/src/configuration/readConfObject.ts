@@ -83,8 +83,8 @@ function readSlot(
  * Read the value at a path of a live config node, such as a track's
  * `configuration`, evaluating a `jexl:` callback with `args`.
  *
- * A snapshot is refused by the types, since a slot at its default is absent
- * from one. A `session.tracks` entry is one (`TrackConfigEntry`): read its
+ * The types reject a snapshot, because a snapshot omits a slot at its
+ * default. A `session.tracks` entry is one (`TrackConfigEntry`): read its
  * `trackId` and `type` directly, and a slot through a helper that supplies the
  * default, such as `getConfAssemblyNamesOrNone`.
  *

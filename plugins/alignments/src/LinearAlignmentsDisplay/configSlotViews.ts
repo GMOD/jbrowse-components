@@ -214,7 +214,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #getter
      * Where the arcs draw: `sashimi.placement` over the coverage band, and
-     * `down`, in the strip of their own, while the band is hidden.
+     * `down`, in a separate strip, while the band is hidden.
      */
     get effectiveSashimiPlacement(): SashimiPlacement {
       return this.showCoverage ? this.sashimiPlacement : 'down'
@@ -555,7 +555,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
     /**
      * #action
      * Writes `sashimi.show` alone. Without the coverage band the arcs draw
-     * in their own strip (`effectiveSashimiPlacement`).
+     * in a separate strip (`effectiveSashimiPlacement`).
      */
     setShowSashimi(show: boolean) {
       setConf(requireReadsConf(self), ['sashimi', 'show'], show)

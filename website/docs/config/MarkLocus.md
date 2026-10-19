@@ -9,7 +9,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 ## Example usage
 
-A BEDPE-like file whose second end sits in its own columns:
+A BEDPE-like file whose second end sits in separate columns:
 
 ```js
 {
@@ -20,8 +20,8 @@ A BEDPE-like file whose second end sits in its own columns:
 
 A mark's far end as a position that may lie on another sequence: `pos`,
 the feature field holding its coordinate, and `chrom`, the field holding
-its refName, as a paired record states its mate. Writing a field name
-directly on the encoding lands in `pos`, on the feature's own sequence.
+its refName, as a paired record states its mate. A field name written
+directly on the encoding sets `pos`, on the feature's sequence.
 Left unwritten behind a `mate` step, it is the other end the step found.
 
 ## Config slots

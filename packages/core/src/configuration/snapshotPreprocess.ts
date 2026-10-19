@@ -290,8 +290,8 @@ export function preProcessSnapshotWith(
 /**
  * #api core/configuration
  * A snapshot as `type` lifts it, without the keys it does not declare: the
- * config half of an entry that carries its owner's keys beside one, as a
- * `MultiWiggleAdapter` subadapter carries its row's `name` and `color`.
+ * config half of an entry that also holds its owner's keys, as a
+ * `MultiWiggleAdapter` subadapter holds its row's `name` and `color`.
  */
 export function declaredSnapshot(
   type: IAnyType,
@@ -312,7 +312,7 @@ export function declaredSnapshot(
 /**
  * #api core/configuration
  * A snapshot as a write to `type` admits it: the lift and checks `setConf`
- * applies, so a dialog or a validator refuses what an edit cannot hold, an
+ * applies, so a dialog or a validator rejects what an edit would reject, an
  * undeclared key included. Throws what the schema's `preProcessSnapshot`
  * throws.
  */

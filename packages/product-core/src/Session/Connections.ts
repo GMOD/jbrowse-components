@@ -170,10 +170,10 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
          * #action
          * Adds to the **config**, not the session: `jbrowse.connections`, which
          * every visitor to this instance loads. jbrowse-web overrides this so a
-         * non-admin's connection lands in `sessionConnections` instead — see
-         * WebSessionConnectionsMixin, whose `addSessionConnectionConf` is what
-         * to call when you mean the session specifically rather than "wherever
-         * this user's edits go".
+         * non-admin's connection goes to `sessionConnections` instead — see
+         * WebSessionConnectionsMixin, whose `addSessionConnectionConf` adds to
+         * the session specifically rather than to "wherever this user's edits
+         * go".
          *
          * Applications without that override (Desktop, the embedded products)
          * have only this one destination, and it is the right one there: their

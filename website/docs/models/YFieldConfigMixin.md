@@ -28,7 +28,7 @@ From [ScoreScaleMixin](../scorescalemixin): <span id="volatile-unclippedquantile
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-yfield">**yField**</span><br><code>string</code> | The feature field the worker plots on the value axis, the `y` slot, `score` by default. A fetch input: every composing display carries it in its `rpcProps()`, since the field is read where the features are. |
+| <span id="getter-yfield">**yField**</span><br><code>string</code> | The feature field the worker plots on the value axis, the `y` slot, `score` by default. A fetch input: every composing display includes it in its `rpcProps()`, since the field is read where the features are. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>23 inherited getters from 3 models</summary>

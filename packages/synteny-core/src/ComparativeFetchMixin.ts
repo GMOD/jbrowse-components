@@ -15,13 +15,9 @@ import { types } from '@jbrowse/mobx-state-tree'
  * `fetchLanded` hook, `refetching` off `isLoading` — and the one-shot
  * reversed-assembly flag.
  *
- * Until 2026-09 this was `SyntenyFetchStateMixin`, a second spelling of every
- * `FetchMixin` member the overlay reads — `fetching` for `isLoading`, its own
- * `reloadCounter` / `fetchCanceled` / `reload` / `cancelFetchByUser`, a stop
- * handed back from the installer because the rotation lived there — kept apart
- * on the grounds ADR-054 gives and ADR-105 retires. `error` kept the four flags
- * below out of that mixin: it is a `BaseDisplay` volatile the flags read, and declaring a second one to make them type-check is the ADR-041
- * hazard. `FetchMixin` is the one declaration site that already wins that
+ * `FetchMixin` is the one declaration site for `error`, a `BaseDisplay`
+ * volatile the four flags below read. Declaring a second one to make them
+ * type-check is the ADR-041 hazard, and `FetchMixin` already wins that
  * compose, so composing it lets the flags be getters here.
  *
  * `loading` and `refetching` are different questions, and the difference
@@ -48,7 +44,7 @@ export function ComparativeFetchMixin() {
        * Overridable hook (default false): a fetch has completed and data is
        * present, even if it mapped zero features. Not a feature-count test —
        * an empty-but-finished fetch has landed, or an empty plot spins its
-       * overlay forever. Each display answers off its own payload field, which
+       * overlay forever. Each display answers from a field of its payload, which
        * survives a `reload()` where `loadedFetchKey` does not, so a retry
        * shows the corner chip rather than the full overlay.
        *

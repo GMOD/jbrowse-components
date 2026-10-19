@@ -63,8 +63,8 @@ export interface RenderingBackendCallbacks<B> {
  *    one without being reinstalled.
  *  - `renderTick` — counter the render autorun observes; bumped by
  *    `renderNow()` after every upload that reached the backend, on
- *    tab-visibility restore, and when a circular ring backend starts. None of
- *    those is a pan or zoom, so off screen a moved tick means new data.
+ *    tab-visibility restore, and when a circular ring backend starts. These
+ *    are not a pan or zoom, so off screen a moved tick means new data.
  *  - `autorunsInstalled` — guards `attachRenderingBackend` so the autorun
  *    pair is spawned once per model instance, not once per backend
  *    assignment.
@@ -106,7 +106,7 @@ export function RenderLifecycleMixin() {
       /**
        * #volatile
        * current backend reference, updated on context-loss recovery.
-       * Typed `unknown` (not generic `B`) on purpose: this mixin is composed
+       * Typed `unknown` rather than generic `B`: this mixin is composed
        * by every display via a non-generic factory, so the per-display backend
        * type `B` isn't known here — it's supplied at `attachRenderingBackend<B>`
        * and narrowed with `as B` inside the autoruns. Don't "fix" the cast.
@@ -143,7 +143,7 @@ export function RenderLifecycleMixin() {
        *
        * A whole view that scrolls away is already unmounted
        * (`useViewVisibility`) and a minimized track never mounts, so what this
-       * covers is the track below the fold of a view that IS mounted: the
+       * covers is the track below the fold of a view that is mounted: the
        * display list is not windowed, and each of those tracks holds a
        * full-height multisampled target.
        */
@@ -153,8 +153,8 @@ export function RenderLifecycleMixin() {
       /**
        * #getter
        * Overridable precondition (default true): both lifecycle autoruns skip
-       * their callback entirely while this is false, so a display never has to
-       * open its own `upload`/`render` with a readiness check.
+       * their callback entirely while this is false, so a display's `upload`/`render` need
+       * no readiness check.
        *
        * The LGV mixins override it with `view.initialized`, because before the
        * view is measured its geometry throws by design (`view.width`, and so
@@ -162,7 +162,7 @@ export function RenderLifecycleMixin() {
        * is routed to `renderError` — surfacing "not measured yet" as the GPU
        * render-error banner. Because it's an observable read inside the autoruns,
        * the pair re-fires the moment it flips. This is the *precondition* axis
-       * only: whether any data has arrived stays the render callback's own gate
+       * only: whether any data has arrived stays the render callback's gate
        * (return `false` to skip a tick), which is why `renderState` getters can
        * be plain resolved values.
        */
@@ -195,12 +195,11 @@ export function RenderLifecycleMixin() {
        * will not paint its way out of, so `painted` below should answer
        * *finished* rather than *pending*. Both LGV fetch families fill it
        * through `foundationPaintInert`: a failed fetch, a standing cancel, no
-       * content on screen, or the too-large banner in the canvas's place. Named
-       * for `fetchInert` on the comparative side.
+       * content on screen, or the too-large banner in the canvas's place. The
+       * comparative side names it `fetchInert`.
        *
-       * A hook rather than a read of `error` here, for two reasons that both
-       * bite: this package is a leaf and `error` belongs to the fetch mixins,
-       * and declaring that name here would *collide* with `FetchMixin`'s
+       * A hook rather than a read of `error` here, for two reasons: this package is a leaf and `error` belongs to the
+       * fetch mixins, and declaring that name here would *collide* with `FetchMixin`'s
        * volatile — `types.compose` gives the collision to its later argument,
        * and the two families compose the two mixins in opposite orders.
        */
@@ -215,9 +214,8 @@ export function RenderLifecycleMixin() {
        * answer *pending* until the repaint lands even though `canvasDrawn` is
        * still true. The per-region fetch foundation fills it with
        * `staleSettingsDrawn` — held data drawn under settings that have since
-       * moved — which is the state `clearAllRpcData` used to express by
-       * resetting `canvasDrawn` on every settings change, blanking the display
-       * to do it. A capture waiting on `data-display-drawn` then waits for the
+       * moved — which avoids resetting `canvasDrawn` on every settings change, because
+       * the reset would blank the display. A capture waiting on `data-display-drawn` then waits for the
        * refetch rather than snapshotting the previous setting's pixels.
        *
        * A hook and not a reset of the flag, because the flag is re-marked by
@@ -242,9 +240,8 @@ export function RenderLifecycleMixin() {
        * while the fourth, `data-display-drawn`, went on publishing `"false"`
        * forever off the raw flag. That attribute is what `PENDING_DISPLAYS`
        * (`@jbrowse/browser-test-utils`) selects on, so a zoomed-out reference
-       * sequence track made every capture wait on the page run to its
-       * full timeout, and that wait swallows its own timeout without reporting
-       * it. `fetchInert` on the comparative side has the same problem: the
+       * sequence track made every capture wait for the page run's
+       * full timeout, which then ended without reporting it. `fetchInert` on the comparative side has the same problem: the
        * forgotten reader is the one outside the display, so the display has to
        * publish one name for it.
        *

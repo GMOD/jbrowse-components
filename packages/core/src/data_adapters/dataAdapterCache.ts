@@ -19,7 +19,7 @@ export function adapterConfigCacheKey(conf: Record<string, unknown> = {}) {
  * without an MD tag, CRAM to rebuild bases, GC content and the reference scans
  * for everything they answer. Such an adapter is built with that reference and
  * keyed on it as well as on its config, so one config shown on two genomes is
- * two instances, each reading its own, and an instance never changes reference
+ * two instances, each reading the reference of its genome, and an instance never changes reference
  * for its life. Every other adapter keys on its config alone: a synteny adapter
  * is fetched from each of its assemblies and reads no reference.
  */

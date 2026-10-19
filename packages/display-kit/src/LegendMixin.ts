@@ -55,7 +55,7 @@ export default function LegendMixin() {
     .volatile(() => ({
       /**
        * #volatile
-       * Ids of the scales whose section the reader closed on its own; cleared
+       * Ids of the scales whose section the reader closed; cleared
        * when the whole legend is shown again. Volatile where `showLegend` is
        * config: which sections a reader collapsed in one sitting is not how
        * the track is configured.
@@ -83,9 +83,9 @@ export default function LegendMixin() {
       /**
        * #getter
        * Overridable hook (default 0): px the on-screen key is pushed down from
-       * its own inset. A display that already draws a control of its own in
+       * the key's inset. A display that already draws a control in
        * that corner — Hi-C's resolution box — answers that control's height;
-       * the chrome adds its own axis captions on top. The export draws no
+       * the chrome adds axis captions on top. The export draws no
        * controls, so it does not read this.
        */
       get legendTop(): number {
@@ -94,7 +94,7 @@ export default function LegendMixin() {
       /**
        * #getter
        * Overridable hook (default 0): px the on-screen key is pushed left from
-       * its own inset, for a display that draws a column of text down its
+       * the key's inset, for a display that draws a column of text down its
        * right edge — the multi-way lanes' scales. Not read by the export.
        */
       get legendRight(): number {

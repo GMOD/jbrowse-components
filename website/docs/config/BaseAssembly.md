@@ -1,7 +1,7 @@
 ---
 id: baseassembly
 title: BaseAssembly
-description: "This corresponds to the assemblies section of the config"
+description: "A BaseAssembly corresponds to the assemblies section of the config"
 sidebar_label: Assembly Management -> BaseAssembly
 ---
 
@@ -67,7 +67,7 @@ infers the adapter type and index siblings):
 ### Example: with-refname-aliases-and-cytobands
 
 Adds `refNameAliases` (so `chr1` and `1` resolve to the same sequence) and
-`cytobands` (ideogram banding), each fetched from its own adapter:
+`cytobands` (ideogram banding), each fetched by a separate adapter:
 
 ```js
 {
@@ -114,7 +114,7 @@ separately:
 
 ## Overview
 
-This corresponds to the assemblies section of the config
+A `BaseAssembly` corresponds to the assemblies section of the config
 
 ### BaseAssembly - Identifier
 

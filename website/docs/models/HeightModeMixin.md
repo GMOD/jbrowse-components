@@ -27,13 +27,12 @@ computed cycle). In fixed/fit mode `fitTargetHeight` equals `height`.
 `growTargetHeight`, the height its laid-out content wants — and gets
 `grownHeight` (that, capped at `growMaxHeight`), the reactive `height`
 override, the drag-resize that leaves grow first, and the `setHeightMode`
-base. Both users previously carried character-identical copies of the last
-three, comments included.
+base.
 
 Must be composed **after** `TrackHeightMixin`: it overrides that mixin's
 `height` getter and `resizeHeight` action, and `types.compose` resolves a
-collision to the later argument. `no-restricted-syntax` fails the wrong order
-written in one `types.compose` and says what it costs.
+collision to the later argument. The `no-restricted-syntax` lint rule rejects the wrong order
+written in one `types.compose` and reports what it costs.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

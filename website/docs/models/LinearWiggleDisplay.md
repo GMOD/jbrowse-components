@@ -1,7 +1,7 @@
 ---
 id: linearwiggledisplay
 title: LinearWiggleDisplay
-description: "The quantitative display: one plot per rendering, drawn over one source or over many. rows: 'source' gives each source a row of its own, with the clustering sidebar, row labels and separators beside…"
+description: "The quantitative display: one plot per rendering, drawn over one source or over many. rows: 'source' puts each source in a separate row, with the clustering sidebar, row labels and separators beside…"
 sidebar_label: Display -> LinearWiggleDisplay
 ---
 
@@ -30,7 +30,7 @@ A complete `QuantitativeTrack` config to paste into `tracks`:
 
 The two row-ordering triggers are display *properties*, not config slots, so
 they go on the display node in a session — `defaultSession` here, and the
-same shape a `session=spec-` link carries. Written on the track config's own
+same shape a `session=spec-` link uses. Written in the track config's
 `displays` entry they would be dropped as unknown slots.
 
 `runClustering` is a transient declarative launch spec, the same idea as
@@ -39,7 +39,7 @@ automatically (no dialog) as soon as subtrack data is available, then clears
 itself so a saved session never re-triggers it. `sortRowsBy` is the other
 one, and the declarative form of the right-click "Sort rows by score here" —
 where clustering orders rows by the whole region in view, this ranks them by
-the score each carries at one base, so a cohort can open already ranked at a
+the score each has at one base, so a cohort can open already ranked at a
 candidate locus with the surrounding context still on screen. Use one or the
 other; whichever applies last owns the row order.
 
@@ -64,9 +64,9 @@ defaultSession: {
 ```
 
 The quantitative display: one plot per rendering, drawn over one source or
-over many. `rows: 'source'` gives each source a row of its own, with the
+over many. `rows: 'source'` puts each source in a separate row, with the
 clustering sidebar, row labels and separators beside them, and holds the
-arrangement a reader gives them; unset, every source shares one plot box.
+arrangement a reader sets; unset, every source shares one plot box.
 
 The configuration slots for this model are documented on its [config schema page](../../config/linearwiggledisplay).
 
@@ -126,7 +126,7 @@ From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo
 | <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> |  |
 | <span id="getter-colorsetting">**colorSetting**</span><br><code>ColorSetting</code> | The `color` object as written, `value` undefined while nothing names a color and the layout decides (`effectiveColor`). |
 | <span id="getter-rows">**rows**</span><br><code>RowsSetting &#124; undefined</code> | The `rows` object's field and order, or undefined while every source shares one plot. `source` is the only field the config admits here. |
-| <span id="getter-isrowlayout">**isRowLayout**</span><br><code>boolean</code> | Whether each source takes a row of its own, which is the whole of what `rows` decides here: the tree sidebar, the row labels, the separators, the clustering menu and the row-order sort all hang off it. |
+| <span id="getter-isrowlayout">**isRowLayout**</span><br><code>boolean</code> | Whether each source is drawn in a separate row, which is all that `rows` decides here: the tree sidebar, the row labels, the separators, the clustering menu and the row-order sort all hang off it. |
 | <span id="getter-isoverlay">**isOverlay**</span><br><code>boolean</code> | Every source in one plot box. The complement of the row layout, named for what is drawn rather than for the setting that is off. |
 | <span id="getter-discoveredrows">**discoveredRows**</span><br><code>Source[]</code> | `TreeSidebarMixin`'s hook: the adapter's sources, discovered from the loaded regions in adapter order. |
 | <span id="getter-sharespanel">**sharesPanel**</span><br><code>boolean</code> | `TreeSidebarMixin`'s hook: whether several plots share one box, where only color tells the sources apart. A lone plot has nothing to be told apart from and is the pos/neg picture a quantitative track has always drawn. |
@@ -143,19 +143,19 @@ From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo
 | <span id="getter-scorerulevalues">**scoreRuleValues**</span><br><code>number[]</code> | Overrides WiggleCommonMixin's empty base, so the axis reaches a rule of `scales.y.rules` even where the visible data does not.<br><br>Empty in density, where no rule is drawn: the domain is spent on the color ramp there, so widening it stretches the ramp over a range nothing on screen reaches. |
 | <span id="getter-numsources">**numSources**</span><br><code>number</code> |  |
 | <span id="getter-autoscalesourcenames">**autoscaleSourceNames**</span><br><code>Set&lt;string&gt;</code> |  |
-| <span id="getter-effectiverowheight">**effectiveRowHeight**</span><br><code>number</code> | Resolved per-row height. This display is always fit-to-display-height — there is no pinned-height setting and so no `rowHeight` sentinel to resolve — but it carries the same name every row display exposes its resolved height under (see agent-docs/reference/ROW_HEIGHT_AND_FIT), which is also what tree-sidebar's `TreeDrawingModel` reads. |
+| <span id="getter-effectiverowheight">**effectiveRowHeight**</span><br><code>number</code> | Resolved per-row height. This display is always fit-to-display-height — there is no pinned-height setting and so no `rowHeight` sentinel to resolve — but it uses the same name every row display exposes its resolved height under (see agent-docs/reference/ROW_HEIGHT_AND_FIT), which is also what tree-sidebar's `TreeDrawingModel` reads. |
 | <span id="getter-rowsheight">**rowsHeight**</span><br><code>number</code> | The height under `rowsTopOffset` the rows, or the one plot, fill. |
 | <span id="getter-numrows">**numRows**</span><br><code>number</code> | Rows actually drawn: overlay collapses every source onto one shared plot. Read by the render state and by everything that repeats itself per row (scalebars, cross hatches), so they can't disagree about how many rows exist. |
 | <span id="getter-plotgeometry">**plotGeometry**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ yTop: number; plotHeight: number; numRows: number; tickHeight…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ yTop: number; plotHeight: number; numRows: number; tickHeight: number; }</code></pre></dialog></span> | One row takes the scalebar-label gutter at top and bottom, so its end labels are never clipped; a stack of rows gives that up, because the axis is drawn per row and maximum density is the point. `ticks`, the render height, the on-screen canvas and the SVG clip all read this, so a tick stays on the data it labels. |
 | <span id="getter-scorerampapplies">**scoreRampApplies**</span><br><code>boolean</code> | `scoreRampApplies` over the colors the marks paint in |
-| <span id="getter-scorerampreplacesaxis">**scoreRampReplacesAxis**</span><br><code>boolean</code> | A density row has no y scale, so under the one ramp the ramp is the key and carries the domain; bars and points keep their axis beside it. |
+| <span id="getter-scorerampreplacesaxis">**scoreRampReplacesAxis**</span><br><code>boolean</code> | A density row has no y scale, so under the one ramp the ramp is the key and shows the domain; bars and points keep their axis beside it. |
 | <span id="getter-scorecolorscale">**scoreColorScale**</span><br><code>RampScale &#124; undefined</code> | The score ramp as a color scale, or undefined when there is no single ramp to describe or no domain yet. `LegendMixin`'s `colorScales` lists it, so the on-screen key and the export draw one bar. The bar is drawn from the resolved color — the same cached LUT bytes both renderers color through — so a declared ramp's key is what the track paints. |
 | <span id="getter-renderstate">**renderState**</span><br><code>WiggleGPURenderState</code> |  |
 | <span id="getter-drawsrowlabels">**drawsRowLabels**</span><br><code>boolean</code> | Overlay draws every source on one row, so it names none. |
 | <span id="getter-sidebarpanel">**sidebarPanel**</span><br><code>SvgSidebarProps</code> | The dendrogram and row labels at the display's left, which the axis sits past on screen and the export parks left of the figure. |
-| <span id="getter-valuescales">**valueScales**</span><br><code>ValueScale[]</code> | The one scale every row shares, ruling a band per row stacked down the track, past the dendrogram where one is shown. Density rows each in their own color map the scale to color rather than to y, so they rule no band and the chrome captions the domain instead; under the one ramp the ramp is the key and carries the domain itself. |
+| <span id="getter-valuescales">**valueScales**</span><br><code>ValueScale[]</code> | The one scale every row shares, ruling a band per row stacked down the track, past the dendrogram where one is shown. Density rows, one color per row, map the scale to color rather than to y, so they rule no band and the chrome captions the domain instead; under the one ramp the ramp is the key and shows the domain itself. |
 | <span id="getter-showrowseparators">**showRowSeparators**</span><br><code>boolean</code> |  |
-| <span id="getter-thresholdcolorscale">**thresholdColorScale**</span><br><code>ColorScale &#124; undefined</code> | The key a threshold with declared cuts draws: one row per interval, labelled by the span it covers. A threshold cutting at the `origin` draws none, because the axis already shows where the origin is and a `< 0` / `≥ 0` key on every bigWig says nothing a reader did not ask for. Density draws none either: there the ramp is the key. |
+| <span id="getter-thresholdcolorscale">**thresholdColorScale**</span><br><code>ColorScale &#124; undefined</code> | The key a threshold with declared cuts draws: one row per interval, labelled by the span it covers. A threshold cutting at the `origin` draws none, because the axis already shows where the origin is and a `< 0` / `≥ 0` key on every bigWig adds nothing a reader asked for. Density draws none either: there the ramp is the key. |
 | <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> | Offset the track label above the plot so the left y-axis stays pinned to the content edge instead of dodging right of the label, and so a stack of rows is not hidden behind it. One density plot draws no left axis (just a top score legend), so there let the label overlap. |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | `LegendMixin`'s hook: the score ramp or threshold key, then the row color key, except in a shared panel painting the score gradient, where no row color shows. |
 | <span id="getter-drawstree">**drawsTree**</span><br><code>boolean</code> | `TreeSidebarMixin`'s hook: off in overlay, which collapses every source onto one row, so a tree spreading its leaves over the full height would align to nothing. A subtree filter set in a row mode still applies and is still clearable from the track menu and WiggleHint. |
@@ -203,7 +203,7 @@ From [TreeSidebarMixin](../treesidebarmixin): <span id="getter-showtree">[`showT
 | <span id="method-gpuprops">**gpuProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { sources: { name: string; color?: string &#124; undefined; }[…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { sources: { name: string; color?: string &#124; undefined; }[]; rowLayout: boolean; perSource: boolean; wiggleColor: ResolvedWiggleColor; origin: number; aggregate: string; effectiveExtent: string; renderingType: string; maxGapMultiple: number; }</code></pre></dialog></span> | The row list is this display's own: the encoder places each payload source by its position here, so a filter or a reorder re-uploads bytes already in hand.<br><br>The color rides here and not in `rpcProps`: the worker ships one set of score arrays and the main thread colors each instance by its side of the cut, so a new color re-encodes and refetches nothing. |
 | <span id="method-configproblemsof">**configProblemsOf**</span><br><code>(conf: AnyConfigurationModel) =&gt; string[]</code> | The schema's rules, then what the plot cannot paint as written: threshold cuts past eight, and a gradient on a line. |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
-| <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Right-click menu, built from the column the click landed on. The position is captured here rather than read inside the onClick, because `closeContextMenu` runs first when an item is clicked. |
+| <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Right-click menu, built from the column under the click. The position is captured here rather than read inside the onClick, because `closeContextMenu` runs first when an item is clicked. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>16 inherited methods from 5 models</summary>
@@ -230,7 +230,7 @@ From [TreeSidebarMixin](../treesidebarmixin): <span id="method-expandrows">[`exp
 | <span id="action-setrowlayout">**setRowLayout**</span><br><code>(on: boolean) =&gt; void</code> | The layout half of a Plot type leaf — `Multi-row` or `Overlapping`, each holding the five plot names. Writes the field alone, so the arrangement survives a trip through the shared plot and comes back with the rows. |
 | <span id="action-setplot">**setPlot**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ mark, interpolate, rowLayout, }: { mark: "bar" &#124; "line" &#124; "p…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ mark, interpolate, rowLayout, }: { mark: "bar" &#124; "line" &#124; "point" &#124; "span"; interpolate?: "linear" &#124; "step" &#124; undefined; rowLayout: boolean; }) =&gt; void</code></pre></dialog></span> | A Plot type leaf whole, so the regions encode once and never as the new plot in the old layout. |
 | <span id="action-openplotdialog">**openPlotDialog**</span><br><code>(seed?: Plot &#124; undefined) =&gt; void</code> | The arrangement dialog's "Edit plot..." button: the color object and the rows beside it as text, the escape for a ramp, several cut points or a typed row order, none of which the dialog's own controls offer. |
-| <span id="action-sortrowsbyscoreat">**sortRowsByScoreAt**</span><br><code>(refName: string, pos: number) =&gt; boolean</code> | Rank the rows by each source's score at one genomic base. Reads the region data already in hand — no refetch, no RPC — and writes the order through `rows.domain`, the same channel clustering and the arrangement dialog write, so "Reset row order" undoes all three.<br><br>Named by coordinate rather than by loaded-region index because both entry points are: the right-click hit resolves to one, and a session's `sortRowsBy` carries one across a reload. Resolving that region and refusing the two cases where a sort would only cost a `rows.domain` write are `sortRowsAtColumn`'s, shared with the multi-row feature display's twin, and so is the returned "did it sort" the declarative entry point reads to decide whether to keep its trigger for a later fetch. |
+| <span id="action-sortrowsbyscoreat">**sortRowsByScoreAt**</span><br><code>(refName: string, pos: number) =&gt; boolean</code> | Rank the rows by each source's score at one genomic base. Reads the region data already in hand — no refetch, no RPC — and writes the order through `rows.domain`, the same channel clustering and the arrangement dialog write, so "Reset row order" undoes all three.<br><br>Named by coordinate rather than by loaded-region index because both entry points are: the right-click hit resolves to one, and a session's `sortRowsBy` holds one across a reload. Resolving that region and refusing the two cases where a sort would only cost a `rows.domain` write are `sortRowsAtColumn`'s, shared with the multi-row feature display's twin, and so is the returned "did it sort" the declarative entry point reads to decide whether to keep its trigger for a later fetch. |
 | <span id="action-fetchneeded">**fetchNeeded**</span><br><code>(needed: IndexedRegion[]) =&gt; Promise&lt;void&gt;</code> |  |
 | <span id="action-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactEl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactElement&lt;unknown, string &#124; JSXElementConstructor&lt;any&gt;&gt; &#124; Iterable&lt;ReactNode&gt; &#124; AwaitedReactNode&gt;</code></pre></dialog></span> |  |
 

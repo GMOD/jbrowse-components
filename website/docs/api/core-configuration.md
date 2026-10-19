@@ -65,8 +65,8 @@ import { ConfigurationSchemaUnion } from '@jbrowse/core/configuration'
 ## declaredSnapshot
 
 A snapshot as `type` lifts it, without the keys it does not declare: the
-config half of an entry that carries its owner's keys beside one, as a
-`MultiWiggleAdapter` subadapter carries its row's `name` and `color`.
+config half of an entry that also holds its owner's keys, as a
+`MultiWiggleAdapter` subadapter holds its row's `name` and `color`.
 
 ```js
 import { declaredSnapshot } from '@jbrowse/core/configuration'
@@ -171,8 +171,8 @@ import { mergeConfSettings } from '@jbrowse/core/configuration'
 
 ## parsePlot
 
-The text as a plot, refusing a key the display's plot does not hold. The
-schema is the parser past this point.
+Parses the text as a plot and throws on a key the display's plot lacks. The
+schema parses the values after that.
 
 ```js
 import { parsePlot } from '@jbrowse/core/configuration'
@@ -215,9 +215,8 @@ import { plotKeysOf } from '@jbrowse/core/configuration'
 
 ## plotList
 
-Declares a list of sub-schemas a plot setting, as `plot: true` declares a
-slot or a sub-schema one; an MST array type takes no options to carry the
-flag.
+Marks a list of sub-schemas as a plot setting, as `plot: true` marks a slot
+or a sub-schema; an MST array type has no options in which to set the flag.
 
 ```js
 import { plotList } from '@jbrowse/core/configuration'
@@ -245,7 +244,7 @@ import { plotOf } from '@jbrowse/core/configuration'
 
 ## PlotWriteOptions
 
-How a draft lands on the plot. By default it patches, as a settings bag
+How a draft is written to the plot. By default it patches, as a settings bag
 does; `whole` takes it for the whole plot, as the "Edit plot..." text is.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -270,7 +269,7 @@ import { plotWrites } from '@jbrowse/core/configuration'
 ## preProcessConfigSnapshot
 
 A snapshot as a write to `type` admits it: the lift and checks `setConf`
-applies, so a dialog or a validator refuses what an edit cannot hold, an
+applies, so a dialog or a validator rejects what an edit would reject, an
 undeclared key included. Throws what the schema's `preProcessSnapshot`
 throws.
 
@@ -288,8 +287,8 @@ import { preProcessConfigSnapshot } from '@jbrowse/core/configuration'
 Read the value at a path of a live config node, such as a track's
 `configuration`, evaluating a `jexl:` callback with `args`.
 
-A snapshot is refused by the types, since a slot at its default is absent
-from one. A `session.tracks` entry is one (`TrackConfigEntry`): read its
+The types reject a snapshot, because a snapshot omits a slot at its
+default. A `session.tracks` entry is one (`TrackConfigEntry`): read its
 `trackId` and `type` directly, and a slot through a helper that supplies the
 default, such as `getConfAssemblyNamesOrNone`.
 

@@ -77,7 +77,7 @@ export interface TrackControlMenu {
  * of those rules is a bug when missed and none of them shows up in a
  * screenshot. Render `menuProps` only while `open`, and portal it to
  * `document.body` — `createPortal` is the caller's to aim, the maths is here.
- * `menuProps.style` carries position only.
+ * `menuProps.style` holds position only.
  */
 export function useTrackControlMenu(
   // Runs on every close route — a pick, Escape, an outside press, a scroll —

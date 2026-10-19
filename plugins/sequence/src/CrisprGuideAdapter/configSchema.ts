@@ -16,7 +16,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * The defaults are SpCas9 — `NGG` PAM, 20 nt guide, 3' PAM — and the adapter
  * scans the assembly's sequence, so the config has no file location.
  * A PAM occurs every few bases, so an unfiltered scan is denser than a display
- * can draw; the GC window and `excludePolyT` (guides carrying `TTTT`, a
+ * can draw; the GC window and `excludePolyT` (guides containing `TTTT`, a
  * terminator for the pol III promoters guides are expressed from) keep the
  * usable ones. SaCas9 is the same track with `pam: 'NNGRRT'` and
  * `guideLength: 21`:

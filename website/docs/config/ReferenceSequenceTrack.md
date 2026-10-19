@@ -45,7 +45,7 @@ Every ReferenceSequenceTrack has a unique `trackId`, a required top-level field 
 
 ## Config slots
 
-These slots are top-level fields of the track config, alongside `trackId` and `name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Track slots are top-level fields of the track config, alongside `trackId` and `name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

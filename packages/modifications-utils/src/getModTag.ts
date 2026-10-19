@@ -11,8 +11,8 @@ function seqLength(feature: Feature) {
 
 /**
  * #api
- * The read's MM tag, or undefined when its MN tag says MM was computed on a
- * sequence of a different length than SEQ. Per SAMtags, MN catches a hard clip
+ * The read's MM tag, or undefined when its MN tag gives a different sequence
+ * length for MM than SEQ's. Per SAMtags, MN catches a hard clip
  * or trim that shifted the bases MM's deltas count, so on a mismatch every
  * position MM would place is wrong.
  */

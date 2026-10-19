@@ -14,16 +14,16 @@ The one box per display that owns the bottom-right corner.
 Two members share it: the display's own control row
 (`BottomRightIndicators`) and the chrome's background-progress chip
 (`DisplayChromeOverlays.BackgroundProgress`). Both portal into the same
-per-track overlay node, so each claiming the corner with its own
-`position: absolute` box draws one over the other. The chrome renders this
+per-track overlay node, so each member that claims the corner with its own
+`position: absolute` box draws over the other. The chrome renders this
 box, lays its chip out in it, and publishes the node here so the control row,
-rendered inside the chrome's body, lands in the same flex column.
+rendered inside the chrome's body, sits in the same flex column.
 
-- A host writing their own display over `DisplayChromeBase` builds the corner
-  from this; the chip is told to render in-flow, with no `position` and no
-  corner offsets.
+- A host writing a custom display over `DisplayChromeBase` builds the corner
+  from this; the chip renders in-flow, with no `position` and no corner
+  offsets.
 - `null` outside a chrome (a standalone mount, a unit test, the SVG export),
-  where `BottomRightIndicators` anchors its own box.
+  where `BottomRightIndicators` renders and anchors the box itself.
 
 ```js
 import { BottomRightCornerContext } from '@jbrowse/display-ui'
@@ -36,7 +36,8 @@ Context<HTMLElement | null>
 
 ## DisplayUIProvider
 
-Both bring-your-own seams at once: what a display draws that is not data.
+The overlay and track-control seams in one provider: what a display draws
+that is not data.
 
 There are two contexts underneath because two different things render them —
 the chrome around a display draws the status states, the display itself draws
@@ -50,8 +51,9 @@ consumer in this repo mounts the two together.
 <DisplayUIProvider>{tracks}</DisplayUIProvider>
 ```
 
-Both props default to the plain, toolkit-free sets, so the common case — "I
-do not want Material UI in my app" — needs no arguments and no second import.
+The `overlays` and `trackControl` props default to the plain, toolkit-free
+sets, so the common case — "I do not want Material UI in my app" — needs no
+arguments and no second import.
 
 **`overlays` is a partial set**, merged over the plain one, so replacing a
 single state is one entry rather than five:
@@ -60,39 +62,37 @@ single state is one entry rather than five:
 <DisplayUIProvider overlays={{ ErrorBar: MyErrorBar }}>
 ```
 
-Partial rather than whole for two reasons. A host writing four of the five
-states by hand only ever wanted one of them, and every example of this had
-spread `plainChromeOverlays` in to say so. And a *sixth* state is a thing
-JBrowse can add: with a whole set the host's object goes stale on upgrade —
-a compile error if they typecheck, a missing component if they ship JS — while
-a partial one keeps working and picks up the new plain default.
+The set is partial for two reasons. A host writing four of the five states
+by hand only ever wanted one of them, and every example of this had spread
+`plainChromeOverlays` in to say so. And JBrowse may add a *sixth* state: with
+a whole set the host's object falls out of date on upgrade — a compile error
+if they typecheck, a missing component if they ship JS — while a partial one
+keeps working and picks up the new plain default.
 
 Declare that object at module scope if you can. The merge is stable per
 object (`resolveOverlays`), so a constant costs one merge for the life of the
 app; a literal written inline in JSX is a new object every render, and this
 value goes into a context, so every display beneath re-renders with it.
 
-**The contexts themselves still default to `undefined`, and that stays true.**
-A display rendering outside any provider — a unit test, the SVG export,
-breakpoint-split-view's `overlayUtils` — keeps JBrowse's own Material look,
-because a plain ambient default would degrade those invisibly. Defaulting
-*this component's props* is a different thing: mounting it is a deliberate
-act, and the act means "not the Material default". Nothing gets a plain set
-without someone having asked.
+**The contexts themselves default to `undefined`.** A display rendering
+outside any provider — a unit test, the SVG export, breakpoint-split-view's
+`overlayUtils` — keeps JBrowse's own Material look, because a plain ambient
+default would switch those to plain chrome without anyone asking. Defaulting
+*this component's props* is different: mounting it is a deliberate act, and
+the act means "not the Material default".
 
 Colors are not a seam and are not here. A display reads `usePalette()` for its
-own content colors, which is a palette of strings rather than a UI toolkit, so
-it arrives through `SessionPaletteProvider`
-(`@jbrowse/core/ui/PaletteContext`) whatever these are set to. A feature track
-needs it even with plain chrome.
+content colors. The palette is a set of strings, not a UI toolkit, so it
+arrives through `SessionPaletteProvider` (`@jbrowse/core/ui/PaletteContext`)
+whatever these are set to. A feature track needs it even with plain chrome.
 
-This module reaches no `@mui/*` module, and `muiFree.test.ts` keeps it
-that way — asking for less Material UI must not download more of it. What it
-cannot do is unship the Material components a *stock display* imports:
-`DisplayChrome` and `TrackControl` are in that display's chunk either way,
-and merely stop rendering. Keeping them out of the graph means writing your
-own display component over `DisplayChromeBase`, which takes `overlays` as a
-prop and imports no toolkit. See
+This module imports no `@mui/*` module, and `muiFree.test.ts` checks that —
+asking for less Material UI must not download more of it. What it cannot do
+is unship the Material components a *stock display* imports: `DisplayChrome`
+and `TrackControl` are in that display's chunk either way, and merely stop
+rendering. To keep them out of the graph, write your own display component
+over `DisplayChromeBase`, which takes `overlays` as a prop and imports no
+toolkit. See
 [DISPLAYCHROME.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAYCHROME.md).
 
 ```js
@@ -112,11 +112,11 @@ The chrome's overlay slots guard every button with it: the terminal states
 unmount the canvas, so a click landing after the track was closed would
 otherwise run an action on a destroyed node.
 
-**`isAlive` alone is wrong here, and it throws rather than answering.** A
-host writing their own display over `DisplayChromeBase` may hand the chrome a
-plain object, and `isAlive` runs `assertIsStateTreeNode`, which throws inside
-the click handler, where React logs it and moves on: a Force load button that
-looks live and does nothing. A plain object is never destroyed, so it is
+**`isAlive` alone throws on a plain object.** A host writing a custom display
+over `DisplayChromeBase` may hand the chrome a plain object, and `isAlive`
+runs `assertIsStateTreeNode`, which throws inside the click handler, where
+React logs the error and continues: a Force load button that looks live and
+does nothing. A plain object is never destroyed, so it is
 always callable.
 
 ```js
@@ -206,16 +206,16 @@ browser's `title` attribute — positioned so it clears the display's
 like every other JBrowse tooltip instead of like whatever the host OS
 renders.
 
-`title` is what this chrome used to use, and it was the wrong tool three
-ways: it can be neither styled nor positioned, it waits about a second and
-then disappears on a timer of its own, and on a control that already carries
-an `aria-label` some screen readers announce both strings. This reaches no UI
-toolkit, so the package's no-Material-UI guarantee holds.
+The `title` attribute has three problems as a tooltip: the page cannot style
+or position it, it waits about a second and then disappears on a timer, and
+on a control that already has an `aria-label` some screen readers announce
+both strings. This imports no UI toolkit, so the package's no-Material-UI
+guarantee holds.
 
 Takes a single element child and clones it rather than wrapping it: the
 controls that want a tooltip are absolutely positioned inside a legend or sit
-in a flex row, where an extra `<span>` moves them. The child keeps its own
-handlers — these compose on top of them. MUI's `Tooltip`, which the rest of
+in a flex row, where an extra `<span>` moves them. The child's handlers still
+run, and these compose with them. MUI's `Tooltip`, which the rest of
 JBrowse's chrome is built on, uses the same trigger pattern; only the toolkit
 differs.
 
@@ -227,9 +227,9 @@ differs.
 </Tooltip>
 ```
 
-**The child still needs its own accessible name**, because this sets
+**The child still needs an accessible name**, because this sets
 `aria-describedby` and never `aria-label` — see useTooltip, which is
-this without the cloning, for a host writing its own markup.
+this without the cloning, for a host writing custom markup.
 
 ```js
 import { Tooltip } from '@jbrowse/display-ui'
@@ -247,7 +247,7 @@ into the host's overlay node, so the LGV's inter-region masks cannot bury it
 at multi-region scale. `TrackOverlaySlot` is the other end.
 
 The overlay node takes no pointer events, so anything of yours the user
-hovers or clicks sets `pointer-events: auto` on its own positioned box.
+hovers or clicks needs `pointer-events: auto` on its positioned box.
 
 With no slot above it this renders the children in place (`fallbackInline`,
 the default), which preserves chrome that is still meaningful unescaped. Pass
@@ -268,8 +268,8 @@ import { TrackOverlayPortal } from '@jbrowse/display-ui'
 The box a display is mounted in, plus the overlay node its floating chrome
 escapes into. Pair to `TrackOverlayPortal`, which is the other end.
 
-A display's React tree is sealed in a `contain: strict` sandbox — that is what
-isolates its paint, and dropping it is measured and rejected (ADR-058). A
+A display's React tree sits in a `contain: strict` sandbox, which isolates its
+paint; we measured dropping the sandbox and rejected it (ADR-058). A
 stacking context comes with the isolation, so floating chrome a display draws
 (a color key, hi-c's overlay panel, maf's row labels) cannot out-z-index
 anything painted over the track stack from outside. The escape is a node
@@ -301,7 +301,7 @@ layout and wrong in every other, and the failure — chrome painted under a
 mask — goes unseen until someone looks at the right zoom.
 
 The node takes no pointer events, so it does not eat the canvas's. Chrome that
-wants them takes them back on its own positioned box; it also carries
+wants them takes them back on its positioned box; that box also has
 `data-gesture-owner`, so anything that does is already exempt from the LGV's
 click-drag pan.
 
@@ -317,7 +317,7 @@ import { TrackOverlaySlot } from '@jbrowse/display-ui'
 ## useTooltip
 
 A hover/focus label for one control, as props to spread — the headless half
-of Tooltip, for a host writing its own chrome rather than restyling
+of Tooltip, for a host writing custom chrome rather than restyling
 ours. Same relationship `useTrackControlMenu` has to `plainTrackControl`.
 
 ```tsx
@@ -332,7 +332,7 @@ return (
 )
 ```
 
-`triggerProps` carries no `onClick`, so a control's own handler does not
+`triggerProps` has no `onClick`, so a control's `onClick` handler does not
 collide with it. Any other handler on this list has to compose rather than
 replace — spread first, then call `triggerProps.onFocus` from yours.
 
@@ -356,7 +356,7 @@ For writing your own control rather than restyling `plainTrackControl`: each
 of those rules is a bug when missed and none of them shows up in a
 screenshot. Render `menuProps` only while `open`, and portal it to
 `document.body` — `createPortal` is the caller's to aim, the maths is here.
-`menuProps.style` carries position only.
+`menuProps.style` holds position only.
 
 ```js
 import { useTrackControlMenu } from '@jbrowse/display-ui'
@@ -375,8 +375,8 @@ derive the axis from it — the score axis's counterpart to a color scale.
 `domain` is the resolved `[min, max]`; `height` the band it rules and
 `offset` the inset of the plot box inside that band (`axisPlotBox(height,
 offset)`); `minimalTicks` and `symlogConstant` how the ticks are chosen.
-`ticks` is the display's own ladder where the band's arithmetic is its own
-(the coverage band's octaves against the shader's box, the read cloud's
+`ticks` is a ladder the display supplies where the band uses arithmetic
+specific to it (the coverage band's octaves against the shader's box, the read cloud's
 decades against the arc geometry); `ScoreScaleMixin` derives one through
 `computeYTicks` otherwise.
 
@@ -384,8 +384,8 @@ decades against the arc geometry); `ScoreScaleMixin` derives one through
 the display stacks the same plot: the multi-wiggle's rows, a grouped
 alignments track's coverage band per group, each projected through the
 display's own scroll; the chrome drops the ones off screen. `[]` is a scale
-the display maps to color rather than to y (density rows each in their own
-color), which gets the `[min, max]` caption and no axis, as a scale whose
+the display maps to color rather than to y (density rows, one color per
+row), which gets the `[min, max]` caption and no axis, as a scale whose
 bands are too short for one does. `side` and `left` are which of the band's
 edges the display's own panels leave clear for a gutter: `right` where a
 group label chip takes the left, `left: n` where a dendrogram and row
@@ -405,7 +405,7 @@ drawings of it (ADR-109).
 ## ValueScaleRule
 
 One reference line a value scale declares, at a value in the scale's own
-units. `label` is free text and carries no meaning the chrome assigns: over
+units. `label` is free text, and the chrome assigns it no meaning: over
 a coverage plot "2 copies" is a claim only the author can make, since no
 ploidy can be assumed.
 

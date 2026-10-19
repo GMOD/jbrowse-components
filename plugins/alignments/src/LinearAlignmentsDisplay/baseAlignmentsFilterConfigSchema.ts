@@ -18,11 +18,11 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #category display
  * The `filter` both alignments-shaped displays read, LinearAlignmentsDisplay
  * and LGVSyntenyDisplay. The read members are the SAM flag masks, a minimum
- * mapping quality, a read name, the tags a read has to carry, and the four
+ * mapping quality, a read name, the tags a read must have, and the four
  * read categories, each `only`, `exclude` or unset for unfiltered; the default
  * excludes unmapped, QC-failed and duplicate reads (flag 1540). `connections`
  * tests the connections between mates and split segments. Every test must
- * hold, so two categories AND together: `{ split: 'only', svSignal: 'only' }`
+ * hold, so two categories both apply: `{ split: 'only', svSignal: 'only' }`
  * keeps the split reads alone.
  *
  * #example
@@ -76,13 +76,13 @@ export const baseAlignmentsFilterConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot
-     * The tags a read has to carry, every one of them: a `{ tag, value }`
-     * each, an unset value passing any read with the tag.
+     * The tags a read must have, every one of them: a `{ tag, value }`
+     * each, and an unset value matches any read with the tag.
      */
     tags: types.array(tagFilterConfigSchema),
     /**
      * #slot
-     * `only`, `exclude`, or unset for unfiltered: reads whose CIGAR carries a reference skip.
+     * `only`, `exclude`, or unset for unfiltered: reads whose CIGAR has a reference skip.
      */
     spliced: {
       type: 'maybeStringEnum',
@@ -91,7 +91,7 @@ export const baseAlignmentsFilterConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot
-     * `only`, `exclude`, or unset for unfiltered: reads carrying SV evidence, and the rest of their pair in the same displayed region. A read is evidence when it is split, carries an insertion or deletion of 50 bp or more, or is a paired primary read the aligner did not call concordant (no 0x2, a mate unmapped or on another chromosome, or a pair not facing FR). Both ends must be placed: a read at MAPQ 0 carries no evidence, a split read counts only when some other piece in its SA tag has MAPQ above 0, and a discordant read only when its mate does, where the MQ tag records it.
+     * `only`, `exclude`, or unset for unfiltered: reads with SV evidence, and the rest of their pair in the same displayed region. A read is evidence when it is split, has an insertion or deletion of 50 bp or more, or is a paired primary read the aligner did not call concordant (no 0x2, a mate unmapped or on another chromosome, or a pair not facing FR). Both ends must be placed: a read at MAPQ 0 is not evidence, a split read counts only when some other piece in its SA tag has MAPQ above 0, and a discordant read only when its mate does, as the MQ tag records.
      */
     svSignal: {
       type: 'maybeStringEnum',

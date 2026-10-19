@@ -63,11 +63,11 @@ export type ValueScaleRuleConfig = Instance<
  * #category display
  * The value scale of a quantitative display, written as `scales.y`: the
  * wiggle plot, the alignments coverage band and the mark display, the
- * Manhattan plot among them, each carry one, with the axis guides it draws —
+ * Manhattan plot among them, each have one, with the axis guides it draws —
  * its ticks, its `grid`, its `rules` and its `title`.
  *
  * Vega-Lite's spelling: a pinned end is `domainMin` or `domainMax`, an end
- * left unset autoscales over the loaded regions, and `zero` says whether an
+ * left unset autoscales over the loaded regions, and `zero` sets whether an
  * autoscaled linear or symlog axis reaches 0 whatever those regions hold.
  *
  * Two defaults come from the display rather than from the scale.
@@ -75,7 +75,7 @@ export type ValueScaleRuleConfig = Instance<
  * at `1`, the extremes, on the coverage band and the mark display. `symlogConstant` starts at `0` on the wiggle family and the mark
  * display and at `1` on the coverage band.
  *
- * Every scale carries the same guides: `rules`, reference lines at chosen
+ * Every scale has the same guides: `rules`, reference lines at chosen
  * values, `grid`, a line at every tick, `minimalTicks`, and `title`, the
  * caption beside the axis. A rule naming no `color` draws in the one color
  * the chrome rules every plot in, so a red line is a claim its author makes
@@ -207,7 +207,7 @@ export function valueScaleSchema({
        * #slot scales.y.symlogConstant
        * Width of symlog's linear region around zero. `0` derives it from
        * the domain, a thousandth of its largest magnitude — right for a
-       * wiggle track, whose units are its own. The coverage band starts
+       * wiggle track, whose units depend on the dataset. The coverage band starts
        * at `1` instead, which makes symlog exactly `log(depth+1)` and
        * puts the knee at one read.
        */
@@ -222,13 +222,13 @@ export function valueScaleSchema({
        * The fence for an unpinned end's outliers. An end follows the
        * loaded values' extreme; below `1`, an extreme that would stretch the
        * axis past twice the span this quantile of the values draws stops at
-       * that fence, and the bars past it wear the red clip strip. So `0.99`
+       * that fence, and the bars past it show the red clip strip. So `0.99`
        * leaves a plot with no spike whole and keeps one spike from flattening
        * the rest. Each end's quantile is measured among the values on its side
        * of 0, so a sparse minority tail stays visible, and the span includes 0
        * where `zero` reaches it. A color ramp's `domainQuantile` clips at the
-       * quantile itself, since a saturated color hides nothing its key does
-       * not say. The Y axis panel's "Clip extreme outliers" toggles it.
+       * quantile itself, since the key shows what a saturated color stands
+       * for. The Y axis panel's "Clip extreme outliers" toggles it.
        */
       domainQuantile: {
         type: 'number',

@@ -430,7 +430,7 @@ export default function stateModelFactory(
           fittedHeightPx: 0,
           /**
            * #volatile
-           * Read ids of the chain under the cursor — NOT chain ids; see
+           * Read ids of the chain under the cursor, not chain ids; see
            * `readIdsByChainName`, which is where they come from.
            */
           highlightedChainReadIds: [] as string[],
@@ -448,7 +448,7 @@ export default function stateModelFactory(
           /**
            * #volatile
            * Screen-px coverage band of the section under a coverage/indicator
-           * hover; the tooltip's vertical hover bar lands on it. `undefined`
+           * hover; the tooltip draws its vertical hover bar on it. `undefined`
            * when not hovering.
            */
           hoverCoverageBand: undefined as HoverCoverageBand | undefined,
@@ -484,7 +484,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * Whether the straight-line pass connects normal read pairs. Chain
-         * layout has its own pass for them. Neither pass reaches across
+         * layout has a separate pass for them. Neither pass reaches across
          * regions; that is `bezierArcScope`'s `crossRegion`.
          */
         get showLinkedReadLines() {
@@ -562,8 +562,8 @@ export default function stateModelFactory(
           /**
            * #method
            * The loaded reads differing from the reference at a variant's sort
-           * column, or with `allele` only those carrying it, over the reads
-           * spanning it. Undefined until a fetch reaching the column lands.
+           * column, or with `allele` only those with it, over the reads
+           * spanning it. Undefined until a fetch reaching the column completes.
            */
           nonReferenceAt(column: VariantSortColumn, allele?: VariantAllele) {
             let total: { count: number; depth: number } | undefined
@@ -583,8 +583,8 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Whether a fetch has landed, so an empty `detectedModifications`
-           * means these reads carry none. The modifications menu shows "Loading
+           * Whether a fetch has completed, so an empty `detectedModifications`
+           * means these reads have none. The modifications menu shows "Loading
            * modifications..." until it turns true.
            */
           get modificationsReady() {
@@ -665,7 +665,7 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Identity of the key space the fetched group keys live in, and so of
+           * Identity of the key space the fetched group keys belong to, and so of
            * every collection this model keys by group key — see
            * `groupKeySpaceOf`.
            */
@@ -675,7 +675,7 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Whether the grouping will be HONORED, decidable from settings alone
+           * Whether the grouping will be honored, decidable from settings alone
            * since chain mode drops a per-read dimension (`facetForUnit`).
            * Positions the track label, which is placed before data arrives and
            * must not jump afterwards.
@@ -686,8 +686,8 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Whether each group draws as one row, overlap depth carried by the
-           * tint layer — the collapse IN EFFECT. Reads `canCollapseSections`,
+           * Whether each group draws as one row, overlap depth shown by the
+           * tint layer — the collapse in effect. Reads `canCollapseSections`,
            * not the slot alone: a config default can be ticked where collapsing
            * is inert.
            */
@@ -709,7 +709,7 @@ export default function stateModelFactory(
           /**
            * #getter
            * Why an explicit read ordering cannot take effect, or `undefined`:
-           * one value carries both the gate and the copy naming the switch that
+           * one value holds both the gate and the message naming the switch that
            * brings it back. Chain layout takes no `sort`; its rows are
            * chains.
            */
@@ -733,7 +733,7 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Whether a single group's pileup height can be set on its own,
+           * Whether a single group's pileup height can be set for that group alone,
            * offered by the label chip's expand/fit button and the per-group
            * drag handles. Fit mode refuses: an override there opts a lane out
            * of the fit and overflows the display.
@@ -744,7 +744,7 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The per-lane height overrides IN EFFECT, not the set banked. Fit
+           * The per-lane height overrides in effect, not the set banked. Fit
            * solves one pitch from every lane's full row count, so fit mode
            * ignores the overrides without dropping them; returning to fixed
            * restores them.
@@ -919,7 +919,7 @@ export default function stateModelFactory(
           /**
            * #method
            * The read palette over `theme`, with the category colors
-           * `color` sets. SVG export passes its own theme.
+           * `color` sets. SVG export passes the theme it renders with.
            */
           colorPaletteIn(theme: JBrowsePalette): ColorPalette {
             return buildColorPaletteFromPalette(theme, {
@@ -980,8 +980,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The sections' order, where the facet reads the field the reads are
-           * colored by: a key over one field lists it as the sections stack.
+           * The sections' order, where the facet field is the one the reads are
+           * colored by: a key over one field lists the values as the sections
+           * stack.
            * Not over `mapq`, whose sections are bins and whose key is its bins
            * or its raw values.
            */
@@ -1055,7 +1056,7 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Group keys whose junctions land in the strip below coverage, i.e.
+           * Group keys whose junctions draw in the strip below coverage, i.e.
            * the lanes that strip is reserved for.
            */
           get sashimiDownArcLanes() {
@@ -1122,7 +1123,7 @@ export default function stateModelFactory(
           /**
            * #getter
            * Inputs to `belowCoverageBandsGeometry`: the settings above plus
-           * whether ANY lane has arcs or a sashimi junction bound for its
+           * whether any lane has arcs or a sashimi junction bound for its
            * strip. Pooled over the lanes, so it is the ungrouped answer; the
            * grouped stack's total is `totalBandOverhead`.
            */
@@ -1229,7 +1230,7 @@ export default function stateModelFactory(
           /**
            * #getter
            * Per-group laid-out data: group key → (region index → laid-out
-           * data). Each group lays out independently under its own cap, so a
+           * data). Each group lays out independently under a per-group cap, so a
            * dense group cannot starve the rest. Rows only; the per-read color
            * arrays bake one computed later, in `laidOutByGroup`.
            */
@@ -1248,7 +1249,7 @@ export default function stateModelFactory(
            * #getter
            * Whether the unpaired chain-strand framing is on: the one answer the
            * consensus pass, the bake (`readColorOpts`) and the key read. A
-           * boolean in its own computed, so a scheme switch that leaves the
+           * boolean in a separate computed, so a scheme switch that leaves the
            * answer alone does not re-run the frame solve.
            */
           get framesChainStrand() {
@@ -1274,7 +1275,7 @@ export default function stateModelFactory(
           /**
            * #getter
            * Per-group laid-out data with the per-read color arrays baked on.
-           * Nothing in `readColorContext` moves a read's row, so a recolor
+           * No input in `readColorContext` moves a read's row, so a recolor
            * keeps the layout memoized and `readYs` keeps its identity: the GPU
            * upload memo checks `readYs` to rewrite only the read pass. Tag
            * colors bake here, not in the worker, so tag coloring stays a
@@ -1407,7 +1408,7 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The span of the base qualities drawn, and whether a base carries
+           * The span of the base qualities drawn, and whether a base has
            * none. O(bases), so gated on showLegend like the category scan.
            */
           get baseQualitySpan(): QualitySpan {
@@ -1617,9 +1618,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Normalizer for a refName in the BAM's own spelling (an SA tag's or
+           * Normalizer for a refName in the BAM's spelling (an SA tag's or
            * RNEXT's `chr1`) rather than the assembly-canonical one a fetched
-           * read carries (`1`). Undefined when no assembly is resolved, where
+           * read has (`1`). Undefined when no assembly is resolved, where
            * consumers fall back to identity. Without it a same-chromosome split
            * junction reads as inter-chromosomal.
            */
@@ -1712,7 +1713,7 @@ export default function stateModelFactory(
           /**
            * #method
            * `arcFeedsByGroup` colored from `colors`, which the SVG export
-           * passes to draw in its own theme.
+           * passes to draw in the export's theme.
            */
           arcFeedsByGroupIn(colors: ColorPalette) {
             const { byGroup, crossRegionByGroup } = this.arcsResult
@@ -2136,7 +2137,7 @@ export default function stateModelFactory(
         /**
          * #method
          * `readIdsSharingChain` from a read id alone, for a caller holding no
-         * block — the connector mark, whose arcs carry ids. Empty outside chain
+         * block — the connector mark, whose arcs have ids. Empty outside chain
          * mode and for an id no fetched region holds.
          */
         readIdsSharingChainWith(featureId: string) {
@@ -2336,7 +2337,7 @@ export default function stateModelFactory(
           /**
            * #method
            * `sashimiFeedsByGroup` colored from `colors`, which the SVG export
-           * passes to draw in its own theme.
+           * passes to draw in the export's theme.
            */
           sashimiFeedsByGroupIn(colors: ColorPalette) {
             if (!this.drawsSashimi) {
@@ -2511,7 +2512,7 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Only the tag NAME goes to the worker, so `rpcProps` re-notifies when
+         * The worker receives the tag name alone, so `rpcProps` re-notifies when
          * the tag changes, not when the sort position or a non-tag type flips.
          */
         get sortTag() {
@@ -2820,10 +2821,10 @@ export default function stateModelFactory(
          * #method
          * Fields that invalidate the fetched data, every one worker-bound.
          * Arc-only fields (`readConnections.color` and `.filter`) are
-         * NOT here: `arcsResult` reads them and they need no refetch. Non-tag
+         * not here: `arcsResult` reads them and they need no refetch. Non-tag
          * sort changes and tag coloring (`readFillColors`, baked in
-         * `laidOutByGroup`) stay main-thread. Its own views block, after every
-         * field it reads, so it reads them off `self`: a subclass override
+         * `laidOutByGroup`) stay main-thread. It is defined in a separate views
+         * block, after every field it reads, so it reads them off `self`: a subclass override
          * captures the base as a bare function, which would lose a `this`.
          */
         rpcProps() {
@@ -2882,8 +2883,8 @@ export default function stateModelFactory(
          * Genomic bp one per-base cell stands for in the worker's extract: the
          * foundation's `settledSubPixelBinBp`, and `1` in every color mode that
          * does not paint a wall of them. Per-base quality and lettering emit an
-         * entry per aligned base of EVERY read, so sampling one base per
-         * sub-pixel window bounds the extract by the VIEWPORT, not the region.
+         * entry per aligned base of every read, so sampling one base per
+         * sub-pixel window bounds the extract by the viewport, not the region.
          * Not an `rpcProps` field — see `zoomFetchArgs`.
          */
         get perBaseBinBp() {
@@ -2893,8 +2894,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * The same bin off the LIVE zoom, read by `dataSuperseded` alone. The
-         * debounced bin is what the held data was fetched under, so it cannot
-         * say whether that data is sampled finely enough. Kept out of
+         * debounced bin is the one the held data was fetched under, so it cannot
+         * show whether that data is sampled finely enough. Kept out of
          * `zoomFetchArgs` because `FetchVisibleRegions` runs on the leading
          * edge: a live key would refetch at every octave a fast gesture passes.
          */
@@ -2992,7 +2993,7 @@ export default function stateModelFactory(
         /**
          * #action
          * The mixin's hook: the collapses and per-group height overrides,
-         * which are keyed by group key.
+         * both of which use group keys.
          */
         dropGroupState() {
           self.collapsedGroups.clear()
@@ -3163,7 +3164,7 @@ export default function stateModelFactory(
           /**
            * #action
            * Expand a fit-to-viewport group to the full `pileup.maxLayoutHeight` cap, or, if
-           * it already carries an override, drop it to return the group to the
+           * it already has an override, drop it to return the group to the
            * fit budget. Expanding overflows the viewport, which engages the
            * pileup scroll. Pairs with `groupHeightOverrides`.
            */
@@ -3180,7 +3181,7 @@ export default function stateModelFactory(
            * Drag a stacked group's pileup band taller/shorter by `dy` px. The
            * override caps the group's rows and pads the band where the rows
            * fall short, so the drag runs in both directions. The accumulation
-           * policy lives in the pure `nextGroupHeightOverride`.
+           * policy is in the pure `nextGroupHeightOverride`.
            */
           resizeGroupHeight(key: string, dy: number) {
             const section = self.renderSections.find(s => s.groupKey === key)
@@ -3469,7 +3470,7 @@ export default function stateModelFactory(
            * Open the right-click menu over a hit. The block, the clicked column
            * and the mark hit arrive as one `ContextMenuHit`, so a consumer
            * cannot read a block without its hit. Resets the read feature and,
-           * when the hit carries one, fills it by async RPC, so a repositioned
+           * when the hit has one, fills it by async RPC, so a repositioned
            * menu cannot inherit the prior read's items. Also clears the hover,
            * then re-pins the highlight box on the menu's read, in that order.
            */

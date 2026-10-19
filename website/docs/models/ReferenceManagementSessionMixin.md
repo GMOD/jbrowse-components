@@ -15,7 +15,7 @@ and an action that hides the track in those views and closes those widgets.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-getreferringmultiple">**getReferringMultiple**</span><br><code>(trackIds: string[]) =&gt; Map&lt;string, ReferringNode[]&gt;</code> | Walk the tree once and map each requested trackId to the nodes holding a `types.reference` that resolves to it (a view's track entry, a config editor widget). Track configs are matched by trackId, not identity, so a frozen base and its hydrated MST node compare equal. |
+| <span id="method-getreferringmultiple">**getReferringMultiple**</span><br><code>(trackIds: string[]) =&gt; Map&lt;string, ReferringNode[]&gt;</code> | Walk the tree once and map each requested trackId to the nodes holding a `types.reference` that resolves to it (a view's track entry, a config editor widget). The method matches track configs by trackId, not identity, so a frozen base and its hydrated MST node compare equal. |
 | <span id="method-getreferring">**getReferring**</span><br><code>(trackId: string) =&gt; ReferringNode[]</code> | The nodes currently referring to `trackId` (see getReferringMultiple). |
 
 ## Actions

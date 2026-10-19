@@ -48,7 +48,7 @@ Every LDTrackDisplay has a unique `displayId`, a required top-level field that i
 
 ## Config slots
 
-These slots go on a display entry: `"displays": [{ "type": "LDTrackDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Display slots go on a display entry: `"displays": [{ "type": "LDTrackDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
@@ -56,7 +56,7 @@ These slots go on a display entry: `"displays": [{ "type": "LDTrackDisplay", ...
 | <span id="slot-linezoneheight">**lineZoneHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | height of the band above the triangle holding the connector lines and labels<br>_advanced_ |
 | <span id="slot-color">**color**</span><br>[LDColor](../ldcolor) | The statistic the cells show, `field` `r2` or `dprime`, and the linear ramp it paints through over the statistic's 0 to 1. |
 | <span id="slot-showverticalguides">**showVerticalGuides**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | on hover, draw guides across the view at the pair's genomic positions<br>_advanced_ |
-| <span id="slot-showlabels">**showLabels**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (none, name) = <code>'none'</code> | `name` draws each variant name above its tick mark and `none` draws no labels, two of the modes the feature display gives its own `showLabels`<br>_advanced_ |
+| <span id="slot-showlabels">**showLabels**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (none, name) = <code>'none'</code> | `name` draws each variant name above its tick mark and `none` draws no labels, two of the modes of the feature display `showLabels`<br>_advanced_ |
 | <span id="slot-tickheight">**tickHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>6</code> | height of the tick marks at the genomic positions<br>_advanced_ |
 | <span id="slot-variantlayout">**variantLayout**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (genomic, columns) = <code>'columns'</code> | `'columns'` draws every SNP one uniform square wide; `'genomic'` sizes the cells by the genomic distance between SNPs. The multi-sample variant display takes the same slot for the same choice.<br>_advanced_ |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>400</code> | default height of the display, the band above the triangle included |

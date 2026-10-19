@@ -107,12 +107,11 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
            * highlight are both about the feature: the feature index derives from
            * this one (`hoveredFeatureIdx` below), and the CIGAR operator under
            * the cursor derives from nothing else — a CIGAR-detailed alignment is
-           * a staircase of segments and the pointer is on one step of it. Same
-           * choice `LinearSyntenyDisplay.hoveredInstanceIdx` makes, where
-           * `getFeature` does the translating.
+           * a staircase of segments and the pointer is on one step of it. `LinearSyntenyDisplay.hoveredInstanceIdx` makes the same choice,
+           * with `getFeature` translating.
            *
-           * It addresses `instanceData`, so it is dropped by BOTH writers of
-           * that — a zoom rebuilds the geometry without refetching.
+           * It addresses `instanceData`, so both writers of that drop it —
+           * a zoom rebuilds the geometry without refetching.
            */
           hoveredSegmentIdx: -1,
         })),
@@ -167,12 +166,12 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * rpcProps/gpuProps split. A color change recomputes this alone,
        * without re-walking a single CIGAR.
        *
-       * The opacity level is NOT read here. It rides the shader's `alpha`
+       * This getter does not read the opacity level. It rides the shader's `alpha`
        * uniform (and `drawDotplotInstances`' param) off
        * `DotplotView.dotplotRenderState`, so the slider is a redraw, not a
        * recolor — the same split synteny makes. A field's fade is
        * (`opacityFade`).
-       * Baking it in made every drag frame recompute this array, re-pack every
+       * Baking it in would make every drag frame recompute this array, re-pack every
        * instance and re-upload the buffer.
        */
       get computedColors(): Uint32Array | undefined {
@@ -326,9 +325,9 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       /**
        * #getter
        * The hovered feature redrawn over the canvas: an SVG path of its segments
-       * in plot px, plus its own packed color as CSS.
+       * in plot px, plus its packed color as CSS.
        *
-       * The hover shading is entirely this getter; neither renderer draws it. Synteny boosts alpha and darkens rgb per fragment from
+       * The hover shading comes entirely from this getter; neither renderer draws it. Synteny boosts alpha and darkens rgb per fragment from
        * a `hoveredFeatureId` uniform, which costs an instance lane, a uniform, a
        * hand-written Canvas2D twin of the same arithmetic, and a broken color
        * run in `drawDotplotInstances`' batcher. Restroking one feature — a
@@ -338,17 +337,17 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * `renderSvg` deliberately does not draw it — an off-screen export has no
        * pointer, and a transient hover has no business in a figure.
        *
-       * The cue is opacity + width, not hue: the plot's own `alpha` slider
+       * The cue is opacity + width, not hue: the plot's `alpha` slider
        * routinely sits at 0.2, so restroking opaque and a few px wider is
-       * exactly synteny's "the hovered one goes solid". Nothing here picks a
-       * highlight color, because every hue is already in use — category10 paints
+       * exactly synteny's "the hovered one goes solid". The highlight adds no
+       * color, because every hue is already in use — category10 paints
        * the chromosome modes, and red/blue/black are the strand and default
        * schemes.
        *
        * Recomputes on pan (through `plotTransform`'s `viewBpH`/`viewBpV`), so
        * the highlight stays on its feature, and only while something is
-       * hovered. `plotTransform` rather than `dotplotRenderState`, which carries
-       * `alpha` and `lineWidth` too — an opacity drag would rebuild this path
+       * hovered. `plotTransform` rather than `dotplotRenderState`, which also holds
+       * `alpha` and `lineWidth` — an opacity drag would rebuild this path
        * once a frame for a value it does not read.
        */
       get hoveredFeatureHighlight(): DotplotHoverHighlight | undefined {
@@ -389,7 +388,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * The h-axis fetch window: the visible content blocks expanded by the
        * shared pan buffer and snapped outward to a buffer-sized grid, so a pan
        * within the buffer neither refetches nor exposes an unfetched strip, and
-       * zoomed out it collapses to the whole displayed region. The v axis is
+       * zoomed out it becomes the whole displayed region. The v axis is
        * deliberately not scoped: the fetch is one-dimensional (h regions in,
        * every mate out), so a vertical pan needs no data the h window didn't
        * already bring, and must never trigger a refetch.
@@ -407,7 +406,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * fetch-input signature (see fetchKey.ts) for the view's current state.
        * The mixin appends the settings and adapter axes. Reactive: recomputes
        * when either axis's zoom or displayed-region order/orientation changes,
-       * or when a pan carries the h axis into a new snapped fetch window. As a
+       * or when a pan moves the h axis into a new snapped fetch window. As a
        * computed it only notifies when the string itself changes, which is
        * what lets the fetch autorun track it and stay quiet through sub-buffer
        * pans.
@@ -486,18 +485,18 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * result, so writing them separately let a failed refetch leave the last
        * result's warnings standing over data they no longer describe, and each
        * extra action is another round of the view's warning/upload observers
-       * per RPC completion. Same reason `LinearSyntenyDisplay.setRpcData` takes
-       * its feature and instance data together.
+       * per RPC completion. `LinearSyntenyDisplay.setRpcData` takes its feature and instance data
+       * together for the same reason.
        *
-       * The loading flags are deliberately NOT touched here: this runs as
+       * This action leaves the loading flags alone: it runs as
        * `installComparativeFetchAutorun`'s `commit`, whose `finally` clears
        * `isLoading` and the status line under the same staleness guard.
        *
-       * `setError` is not overridden either: the two callers that set one
-       * (the fetch skeleton's `catch`, `afterAttach`'s) already log it, so the
-       * override this display used to carry printed every fetch failure twice
-       * — and had to special-case `undefined` because the skeleton clears the
-       * error through the same setter before every fetch.
+       * This display does not override `setError`: the two callers that set one
+       * (the fetch skeleton's `catch`, `afterAttach`'s) already log it, so an
+       * override would print every fetch failure twice, and would have to
+       * special-case `undefined` because the skeleton clears the error through
+       * the same setter before every fetch.
        */
       setRpcData(
         data: DotplotRpcData,
@@ -529,7 +528,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * #action
        * Written by the view's `setHoveredFeature`, which points the whole plot's
        * hover at one hit — never per display from a component, so the N writes
-       * land in one MobX batch.
+       * form one MobX batch.
        */
       setHoveredSegmentIdx(idx: number) {
         self.hoveredSegmentIdx = idx

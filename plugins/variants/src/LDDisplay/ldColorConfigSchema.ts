@@ -41,9 +41,9 @@ export const ldColorConfigSchema = ConfigurationSchema(
     /**
      * #slot field
      * The file column the cells show: `r2` (R², the R2/PHASED_R2
-     * column) or `dprime` (D', the DP/ABS_DPRIME one). A file that carries
-     * only one of the two serves that one whichever is asked for, and the
-     * legend and the menu say which.
+     * column) or `dprime` (D', the DP/ABS_DPRIME one). A file with
+     * only one of the two uses that one whichever is asked for, and the
+     * legend and the menu show which.
      */
     field: {
       type: 'stringEnum',

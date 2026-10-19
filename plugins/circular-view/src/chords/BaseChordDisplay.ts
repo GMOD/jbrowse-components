@@ -52,8 +52,8 @@ const confNode = (self: object) => self as ChordConfigHost
  * What the circular view's chord and ribbon displays share: the features, the
  * slice index a feature end is looked up in, and the lifecycle getters
  * `ChordDisplayFrame` publishes. A track
- * draws on the arcs of its own assemblies, so a one-genome variant track on a
- * two-genome circle fetches and places only that genome's chords.
+ * draws on the arcs of the assemblies it names, so a one-genome variant track
+ * on a two-genome circle fetches and places only that genome's chords.
  */
 export function BaseChordDisplay() {
   return types
@@ -225,7 +225,7 @@ export function BaseChordDisplay() {
     .views(self => ({
       /**
        * #method
-       * the slice of the unrolled axis one end of a feature lands on
+       * the slice of the unrolled axis that one end of a feature falls in
        */
       axisSlice(
         assemblyName: string | undefined,

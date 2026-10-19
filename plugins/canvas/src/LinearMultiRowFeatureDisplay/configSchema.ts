@@ -56,7 +56,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```
  * Omit `rowColor` entirely and the blocks paint in the default block color.
  * A row `rowColor` does not name paints the same way, unless `unknown` gives
- * unnamed rows a color. A feature's `itemRgb` is honored as its own color with
+ * unnamed rows a color. A feature's `itemRgb` colors it with
  * no configuration at all, and `color.scale: 'identity'` names it in the key.
  * To color per feature off some other attribute, set the `color` slot to a
  * `jexl:` expression reading it.
@@ -71,9 +71,9 @@ export default function configSchemaF() {
        * One row per value of a feature attribute, and the arrangement a reader
        * gives the rows. `field` names the attribute, or a `jexl:` expression
        * derives one; empty, the default, picks one off the data (`repClass`
-       * where the features carry it, else `name`). `domain` is the row order:
+       * where the features have it, else `name`). `domain` is the row order:
        * the values it lists lead, and the rest sort, digits by magnitude, with
-       * the row of features carrying no value last. `labels`, `tree`,
+       * the row of features with no value last. `labels`, `tree`,
        * `treeProvenance` and `kept` are what the arrangement dialog, a
        * clustering run and a focus write, each as a session edit to this
        * object.
@@ -113,10 +113,10 @@ export default function configSchemaF() {
        * #slot color
        * Each block's fill, the FeatureColor object: a CSS color or `jexl:`
        * callback in `value`, or a field whose values each take a color
-       * through a scale, with a key. Unset, a feature's own itemRgb paints it
+       * through a scale, with a key. Unset, a feature's itemRgb paints it
        * if it has one, else `rowColor` paints its row's blocks, else the
-       * default block color does. `scale: 'identity'` keeps each feature's own color and
-       * names the `domain` colors in the key, which is how a file's itemRgb
+       * default block color does. `scale: 'identity'` keeps each feature's
+       * color and names the `domain` colors in the key, which is how a file's itemRgb
        * states get their names.
        *
        * #example

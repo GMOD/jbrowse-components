@@ -6,7 +6,7 @@ export type AxisSide = 'left' | 'right'
 /**
  * #api
  * One reference line a value scale declares, at a value in the scale's own
- * units. `label` is free text and carries no meaning the chrome assigns: over
+ * units. `label` is free text, and the chrome assigns it no meaning: over
  * a coverage plot "2 copies" is a claim only the author can make, since no
  * ploidy can be assumed.
  */
@@ -24,8 +24,8 @@ export interface ValueScaleRule {
  * `domain` is the resolved `[min, max]`; `height` the band it rules and
  * `offset` the inset of the plot box inside that band (`axisPlotBox(height,
  * offset)`); `minimalTicks` and `symlogConstant` how the ticks are chosen.
- * `ticks` is the display's own ladder where the band's arithmetic is its own
- * (the coverage band's octaves against the shader's box, the read cloud's
+ * `ticks` is a ladder the display supplies where the band uses arithmetic
+ * specific to it (the coverage band's octaves against the shader's box, the read cloud's
  * decades against the arc geometry); `ScoreScaleMixin` derives one through
  * `computeYTicks` otherwise.
  *
@@ -33,8 +33,8 @@ export interface ValueScaleRule {
  * the display stacks the same plot: the multi-wiggle's rows, a grouped
  * alignments track's coverage band per group, each projected through the
  * display's own scroll; the chrome drops the ones off screen. `[]` is a scale
- * the display maps to color rather than to y (density rows each in their own
- * color), which gets the `[min, max]` caption and no axis, as a scale whose
+ * the display maps to color rather than to y (density rows, one color per
+ * row), which gets the `[min, max]` caption and no axis, as a scale whose
  * bands are too short for one does. `side` and `left` are which of the band's
  * edges the display's own panels leave clear for a gutter: `right` where a
  * group label chip takes the left, `left: n` where a dendrogram and row

@@ -1,17 +1,17 @@
 ---
 id: tokenentryinternetaccount
 title: TokenEntryInternetAccount
-description: "Shared base for internet accounts whose token is supplied by the user through a dialog (HTTP Basic, external token)."
+description: "Shared base for internet accounts whose token the user supplies through a dialog (HTTP Basic, external token)."
 sidebar_label: Internet Account -> TokenEntryInternetAccount
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/tokenEntryModelFactory.ts).
 
-Shared base for internet accounts whose token is supplied by the user through
-a dialog (HTTP Basic, external token). Such accounts differ only in their
+Shared base for internet accounts whose token the user supplies through a
+dialog (HTTP Basic, external token). Such accounts differ in their
 discriminating `type` and the dialog form used to collect the token, both
-passed here. Not registered on its own — see HTTPBasicInternetAccount and
-ExternalTokenInternetAccount.
+passed here. The base is not registered itself; see HTTPBasicInternetAccount
+and ExternalTokenInternetAccount.
 
 ## Properties
 

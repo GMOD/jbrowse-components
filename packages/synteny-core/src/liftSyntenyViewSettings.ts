@@ -91,7 +91,7 @@ function liftDisplaySettings(snap: Snap) {
  * A linear synteny or dotplot view snapshot's v4.3.0 settings, lifted onto the
  * view: `colorBy` (a mode string), `alpha` and `minAlignmentLength` sat on each
  * synteny display, `colorBy` lands as `color` and `alpha` as `opacity`.
- * Launch links the genomes portal handed out carry the mode string on the
+ * Launch links from the genomes portal put the mode string on the
  * view itself, which lifts the same way.
  */
 export function liftSyntenyViewSettings(snap: Snap | undefined) {

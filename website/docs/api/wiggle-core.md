@@ -57,8 +57,8 @@ what the neighbouring points say.
 
 The mechanism stays, whole, because it is the only way to get the other
 behavior back: set `maxGapMultiple` on the track, 20 being the calibrated
-value. Nothing about `gapBreakLimit` itself changes — a caller passing a
-positive multiple gets exactly what it always got.
+value. `gapBreakLimit` itself is unchanged, so a caller passing a positive
+multiple gets the same limit.
 
 ```js
 // type signature
@@ -80,8 +80,8 @@ threshold would be either useless at one end or destructive at the other. It
 also lets the same rule serve a bp axis (wiggle's linecenter) and a px one —
 the caller picks the space, this only cares that the units are consistent.
 
-Mean, not median: it is O(1) from the endpoints, and it errs the safe way. A
-series' holes inflate their own mean, which raises the limit and so breaks
+Mean, not median: it is O(1) from the endpoints, and it errs the safe way. Holes
+in a series inflate its mean, which raises the limit and so breaks
 *less* — a line that stays connected is the status quo, whereas a spuriously
 broken one destroys data the user can see nowhere else. Sorting for a true
 median would cost O(n log n) per source per region on the encode path, for a
@@ -116,7 +116,8 @@ domain to 0 (`scales.y.zero`, ADR-182); a log domain has no 0, so a min at
 or below it floors to a positive value and a positive min stays where the
 data put it. An end given an explicit `bounds` value keeps that value
 exactly — only an autoscaled end is rounded. A log scale's floor still
-outranks a bound it cannot hold, which the `log-floor` rule reports.
+takes precedence over a bound it cannot hold, and the `log-floor` rule
+reports that.
 
 The result never descends and never collapses: a bound that would put `min`
 above `max` widens the other end instead, and one value in view widens
@@ -145,7 +146,8 @@ Uses log base-2 when `useLogScale` is true (domain is clamped to [1, max]).
 ## getScale
 
 Builds a d3 scale (linear/log/symlog) from a `ScaleOpts`, nicing the domain
-unless `nice: false` says it is already the one being drawn with.
+unless `nice: false` is set because the domain is already the one being
+drawn with.
 
 ```js
 // type signature
@@ -228,7 +230,7 @@ the two ends of its value, one array where the packer ships a single scalar.
 ## visibleStatsDomain
 
 visibleStatsRange nice-rounded inside the configured bounds: the
-domain of a display whose range is its own alone.
+domain of a display whose range comes from that display alone.
 
 ```js
 // type signature
@@ -260,9 +262,8 @@ Widens an autoscaled range so every configured rule stays on the axis.
 Without this a rule is dropped from the plot in the views where it is most
 useful. Autoscale follows the visible data, so over a homozygous deletion a
 coverage domain collapses to about `[0, 1]` and a rule at the diploid depth
-falls outside it, though the rule's position above the data is the most
-informative mark in that view, and a rule that vanishes leaves nothing
-behind to notice.
+falls outside it, though the rule's position above the data is what the reader needs to see
+in that view, and a dropped rule leaves no visible trace.
 
 Applied to the raw range, before `getNiceDomain` takes the `scales.y`
 domain bounds. Those still win: a rule outside an explicitly bounded axis

@@ -46,7 +46,7 @@ const GtfAdapter = ConfigurationSchema(
     aggregateField: {
       type: 'string',
       description:
-        'attribute naming the parent gene that transcripts are aggregated into. transcripts are grouped by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id',
+        'attribute naming the parent gene that the adapter aggregates transcripts into. The adapter groups transcripts by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id',
       defaultValue: 'gene_name',
     },
   },

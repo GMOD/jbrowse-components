@@ -243,8 +243,8 @@ export function featureColorViews(self: FeatureColorHost) {
 
     /**
      * #getter
-     * Whether a loaded feature holds no value in the painting field, or text
-     * that is no number, which a ramp's key lists beside its bar.
+     * Whether a loaded feature has no value in the painting field, or has text
+     * that is not a number; a ramp's key lists these beside its bar.
      */
     get colorValueGaps(): { missing: boolean; notNumber: boolean } {
       const { missing, notNumber } = loaded.get()

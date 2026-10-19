@@ -83,7 +83,8 @@ function specForType(
 /**
  * #api
  * Builds a d3 scale (linear/log/symlog) from a `ScaleOpts`, nicing the domain
- * unless `nice: false` says it is already the one being drawn with.
+ * unless `nice: false` is set because the domain is already the one being
+ * drawn with.
  */
 export function getScale({
   domain,
@@ -121,7 +122,8 @@ export function getScale({
  * or below it floors to a positive value and a positive min stays where the
  * data put it. An end given an explicit `bounds` value keeps that value
  * exactly — only an autoscaled end is rounded. A log scale's floor still
- * outranks a bound it cannot hold, which the `log-floor` rule reports.
+ * takes precedence over a bound it cannot hold, and the `log-floor` rule
+ * reports that.
  *
  * The result never descends and never collapses: a bound that would put `min`
  * above `max` widens the other end instead, and one value in view widens

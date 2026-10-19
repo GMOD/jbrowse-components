@@ -13,7 +13,7 @@ export interface ListedRowSource {
 
 /**
  * #api
- * Every row an adapter has, in its own order, whatever the loaded regions hold,
+ * Every row an adapter has, in the adapter's order, whatever the loaded regions hold,
  * so a row display gives a row with nothing in view its place, label and
  * color.
  */

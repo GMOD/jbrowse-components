@@ -290,7 +290,7 @@ export type VariantLayoutBackend =
  * #example
  * `unit`, `rowColor`, `rows` and `filter` are
  * config (see the display's config schema), read at runtime through `getConf`
- * and written as session edits to the track's config — they are NOT plain MST
+ * and written as session edits to the track's config — they are not plain MST
  * properties. Set them in a track's `displays` array to change the default:
  * ```js
  * displays: [
@@ -327,20 +327,20 @@ export type VariantLayoutBackend =
  * for its haplotypes. A drag, the arrangement dialog, "Sort rows by genotype here" and
  * a clustering run write it; the rows are derived from it on every read:
  *
- * 1. the adapter's samples (`adapterSamples`) are focused by `rows.kept`,
- *    which is the set the fetch asks for (`sourcesBase`, `sampleFilter`),
+ * 1. `rows.kept` focuses the adapter's samples (`adapterSamples`) to the set
+ *    the fetch asks for (`sourcesBase`, `sampleFilter`),
  * 2. phased mode expands each sample to its haplotypes (`expandedRows`), and
- *    `rows.domain` orders, `rows.labels` relabels and each row carries its
- *    resolved `rowColor` (`editableSources`, the dialog's list), each from
+ *    `rows.domain` orders them, `rows.labels` relabels them and each row has
+ *    its resolved `rowColor` (`editableSources`, the dialog's list), each from
  *    `TreeSidebarMixin` over this display's hooks,
  * 3. the focus narrows those (`clusterableSources`, what a run clusters),
  * 4. `facet` stacks those in bands (`bandedSources`), each band's rows in their
  *    arranged order,
  * 5. the result is `sources`, each row's `rowColor` its label bar.
  *
- * **The `rowColor` palette wins over a color the row already carried**, a
+ * **The `rowColor` palette wins over a color the row already has**, a
  * `samplesTsv` `color` column: a channel bound to a variable beats a per-row
- * constant, so "Color by… → (none)" is what hands the row back its own color.
+ * constant, so "Color by… → (none)" restores the row's color from that column.
  * `rowColor` holds one field's values, so a dialog color set under the palette
  * turns every row's color into a `name` pair.
  *
@@ -386,7 +386,7 @@ export function stateModelFactory(
         /**
          * #volatile
          * The displayed regions the current `cellData` was fetched for. The
-         * payload itself cannot say: a region with no variants gets no
+         * payload does not list them: a region with no variants gets no
          * `perRegionCellData` entry, and the columns payload is one entry
          * for every region.
          */
@@ -403,13 +403,13 @@ export function stateModelFactory(
         /**
          * #volatile
          * The genotype cell under the pointer, as `hoverInk` lights it; the
-         * shared tooltip slot has no reason to carry the cell's instance.
+         * shared tooltip slot holds no cell instance.
          */
         hoveredCell: undefined as HoveredCell | undefined,
         /**
          * #volatile
-         * The lane mark under the pointer — plugin-canvas's own hit, so
-         * `hoverInk` lands on the box the lane painted.
+         * The lane mark under the pointer — plugin-canvas's hit result, so
+         * `hoverInk` highlights the box the lane painted.
          */
         hoveredLaneMark: undefined as HitFeatureResult | undefined,
         /**
@@ -572,7 +572,7 @@ export function stateModelFactory(
         /**
          * #method
          * The record a click on the rows, the lane or the matrix resolved to,
-         * positional fields only: its genotypes live in the cell payload.
+         * positional fields only: its genotypes are in the cell payload.
          */
         featureById(featureId: string): Feature | undefined {
           const hit = self.simplifiedFeatureById(featureId)
@@ -621,7 +621,7 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Whether any visible variant carries a SnpEff/VEP annotation, gating
+         * Whether any visible variant has a SnpEff/VEP annotation, gating
          * the "Color by...→Consequence impact" menu option.
          */
         get hasConsequence() {
@@ -1045,7 +1045,7 @@ export function stateModelFactory(
         /**
          * #getter
          * Distinct sample-metadata attributes (from samplesTsv) the user can
-         * color rows by — every key the sources carry except internal plumbing.
+         * color rows by — every key the sources have except internal plumbing.
          */
         get colorByAttributes(): string[] {
           const sources = self.adapterSamples
@@ -1136,7 +1136,7 @@ export function stateModelFactory(
          * #getter
          * The adapter's samples narrowed to the focus, `rows.kept`: the row set
          * the fetch asks for, so it must not read `samplePloidy`. `undefined`
-         * until the samples land, a transition that wakes the fetch autorun
+         * until the samples land; that transition wakes the fetch autorun
          * (reference/FETCH_KEYS.md).
          */
         get sourcesBase(): Source[] | undefined {
@@ -1289,7 +1289,7 @@ export function stateModelFactory(
            * a change that moves no row hands back the previous array. A worker
            * row the display isn't drawing maps to `HIDDEN_ROW`, which every
            * painter's Y-cull puts below the canvas. Undefined until data lands:
-           * never fall back to identity, the worker's order is its own.
+           * never fall back to identity: the worker's order is not the screen order.
            */
           get rowRemap(): Uint32Array | undefined {
             const rowNames = self.cellData?.rowNames
@@ -1319,7 +1319,7 @@ export function stateModelFactory(
            * #getter
            * The bands stacked above the rows — the variant lane and the
            * connector-line zone — resolved once. Both the layout below and the
-           * painters read this, never their own sum: see `variantTopBands.ts`.
+           * painters read this instead of summing the bands themselves: see `variantTopBands.ts`.
            */
           get topBands() {
             return variantTopBandsGeometry({
@@ -1516,8 +1516,8 @@ export function stateModelFactory(
           },
           /**
            * #method
-           * Items for the right-click menu, built from the record
-           * `contextMenuInfo` carries.
+           * Items for the right-click menu, built from the record in
+           * `contextMenuInfo`.
            */
           contextMenuItems(): MenuItem[] {
             return variantContextMenuItems(
@@ -1717,8 +1717,8 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Each fetched region's cells as the `cell` mark's own attributes:
-         * the record's span and glyph, which the payload carries once per
+         * Each fetched region's cells as the `cell` mark's attributes:
+         * the record's span and glyph, which the payload holds once per
          * record, dealt to each of its cells. Off `cellData` alone, since
          * neither a reorder nor a recolor moves a cell's span.
          */

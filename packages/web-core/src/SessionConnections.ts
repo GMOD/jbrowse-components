@@ -88,7 +88,7 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
       return {
         /**
          * #action
-         * Add a connection config to *this session*: it lands in
+         * Add a connection config to *this session*: it is added to
          * `sessionConnections`, travels with the session when it is saved or
          * shared, and never reaches the config.json the server hands every
          * visitor. Idempotent on `connectionId`.
@@ -110,8 +110,8 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
          * everyone else's into the session. Two destinations behind one name,
          * so call it only where that really is the intent — the "Open
          * connection..." dialog, where an admin adding a hub means to add it
-         * for the whole site. Anything that means one destination should say
-         * which: `addSessionConnectionConf` above for the session,
+         * for the whole site. Code that needs one destination should call it
+         * directly: `addSessionConnectionConf` above for the session,
          * `jbrowse.addConnectionConf` for the config.
          */
         addConnectionConf(connectionConf: AnyConfiguration) {

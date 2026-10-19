@@ -15,7 +15,7 @@ behavior.
 
 The configuration slots for this model are documented on its [config schema page](../../config/externaltokeninternetaccount).
 
-ExternalTokenInternetAccount declares no members of its own — it composes the models below, and everything here is theirs.
+ExternalTokenInternetAccount adds no members: it composes the models below, and every member listed here comes from them.
 
 ## Properties
 

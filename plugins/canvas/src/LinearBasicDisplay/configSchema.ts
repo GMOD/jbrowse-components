@@ -128,7 +128,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * feature attribute carrying an isoform's curated "this one represents
+       * feature attribute holding an isoform's curated "this one represents
        * the gene" tag.
        */
       canonicalTranscriptField: {

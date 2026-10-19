@@ -246,7 +246,7 @@ export function colorRangeSlot({
 /**
  * The color for a value missing from `domain`, as d3's `ordinal.unknown`: unset,
  * the next palette color where the display deals one; a color, that color;
- * `""`, no color from this setting, so a row keeps its own, a variant cell
+ * `""`, no color from this setting, so a row keeps the color it already has, a variant cell
  * the alt hue, and a feature or mark the no-value grey. On a feature or mark it also paints a feature
  * with no value, and the key lists every value it paints as one row, Other.
  * `range` entries past the domain go unread while it is set.
@@ -255,7 +255,7 @@ export const colorUnknownSlot = {
   unknown: {
     type: 'maybeColor',
     description:
-      'color for a value missing from domain: unset the next palette color where the display deals one, a color that color, "" none from this setting, so a row keeps its own, a variant cell the alt hue and a feature the no-value grey',
+      'color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, "" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey',
   },
 } as const
 
@@ -265,7 +265,7 @@ export const colorLabelsSlot = {
     type: 'stringArray',
     defaultValue: [],
     description:
-      'key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name',
+      'key label for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its name',
   },
 } as const
 
@@ -414,8 +414,8 @@ export const colorDomainEndsSlots = {
  * that quantile of the values on its side of 0, so one spike no longer takes
  * the whole ramp and a ramp over GC spans the data rather than starting at 0.
  * `scales.y.domainQuantile` names a looser rule, fencing an end at twice the
- * span its quantile draws, since an axis wants headroom past a spike and a
- * saturated color hides nothing its key does not say.
+ * span its quantile draws, since an axis wants headroom past a spike and the
+ * key shows what a saturated color stands for.
  */
 export const colorDomainQuantileSlot = {
   domainQuantile: {
@@ -710,7 +710,7 @@ export function colorFieldOf(
  * fall in, or whose numbers run along a color ramp, with a key. A string is
  * the constant; the object binds the field, and `scale: "none"` beside a
  * field paints the constant while keeping the field for the way back.
- * `scale: "identity"` leaves each feature its own color, a file's itemRgb or
+ * `scale: "identity"` keeps each feature's color, whether a file's itemRgb or
  * what a `value` callback returns, and names the colors `domain` lists in the
  * key. Like UCSC's `itemRgb on`, it paints an itemRgb of `0,0,0` or `0` black,
  * which otherwise reads as no color, and reads a comma-free itemRgb as a packed
@@ -784,7 +784,7 @@ export const colorConfigSchema = ConfigurationSchema(
       scaleName: 'FeatureColorScale',
       fieldType: 'featureField',
       field:
-        "a feature field, or a jexl expression over feature, whose values each paint one range color with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise",
+        "a feature field, or a jexl expression over feature, whose values each take one range color, with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise",
       scale:
         "none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each feature's own color, as none does except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and categorical for any other field",
     }),

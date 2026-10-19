@@ -349,7 +349,7 @@ export function WorkspaceLayoutMixin() {
             apply(next)
             activate(targetPanelId)
           },
-          /** Drop a dragged tab on a panel edge: split, and land in the new half. */
+          /** Drop a dragged tab on a panel edge: split, and put the tab in the new half. */
           dropTabInNewSplit(
             tabId: string,
             targetPanelId: string,
@@ -409,8 +409,8 @@ export function WorkspaceLayoutMixin() {
             return tab.id
           },
           /**
-           * ViewMenu's "move to split": the view leaves for a new cell to the
-           * right (`row`) or below (`column`) of its own.
+           * ViewMenu's "move to split": the view moves to a new cell to the
+           * right (`row`) or below (`column`) of its current cell.
            */
           moveViewToSplit(viewId: string, direction: 'row' | 'column') {
             const tabId = nextId('tab')

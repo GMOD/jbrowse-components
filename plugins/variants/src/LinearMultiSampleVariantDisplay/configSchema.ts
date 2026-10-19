@@ -197,7 +197,7 @@ export default function configSchemaFactory() {
       },
       /**
        * #slot color
-       * The hue of every alt-carrying genotype cell: unset, the genotype
+       * The hue of every genotype cell with an alt allele: unset, the genotype
        * colors; a CSS color or `jexl:` callback; or a field, one of the
        * `impact`, `svType` and `phaseSet` presets or any record field, whose
        * values each take a color with a key.
@@ -208,7 +208,7 @@ export default function configSchemaFactory() {
        * Compose the cell hue with the genotype's alt dosage — the fraction of
        * its called alleles that are non-reference — so a homozygote paints the
        * hue itself and a heterozygote a lighter version of it. Off paints each
-       * alt-carrying cell its flat hue.
+       * alt cell its flat hue.
        */
       shadeByDosage: {
         type: 'boolean',
@@ -238,8 +238,8 @@ export default function configSchemaFactory() {
       /**
        * #slot facet
        * A sample-metadata attribute (a column in the adapter's
-       * samplesTsvLocation, e.g. `"population"`) whose values each take their
-       * own band of rows; or `{ field, domain }`, the listed values banding
+       * samplesTsvLocation, e.g. `"population"`) whose values each take a
+       * band of rows; or `{ field, domain }`, the listed values banding
        * first and the rest sorted. Unset, the rows keep their existing order.
        *
        * The band is applied when the rows are read, over whatever order the
@@ -265,11 +265,11 @@ export default function configSchemaFactory() {
       },
       /**
        * #slot
-       * Widen each alt-carrying cell of an insertion to a marker sized by the
+       * Widen each alt cell of an insertion to a marker sized by the
        * inserted bp, the same one `plugins/alignments` and `plugins/maf` draw,
        * with the bp count when the row is tall enough. An insertion consumes
        * almost no reference, so without it a 65 kb insertion draws at the same
-       * 2px floor as a SNP. Only cells whose genotype carries the allele widen,
+       * 2px floor as a SNP. Only cells whose genotype includes the allele widen,
        * and each keeps its genotype color. Columns have no span to correct, so
        * this applies at genomic positions only.
        */

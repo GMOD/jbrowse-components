@@ -11,8 +11,8 @@
  * also lets the same rule serve a bp axis (wiggle's linecenter) and a px one —
  * the caller picks the space, this only cares that the units are consistent.
  *
- * Mean, not median: it is O(1) from the endpoints, and it errs the safe way. A
- * series' holes inflate their own mean, which raises the limit and so breaks
+ * Mean, not median: it is O(1) from the endpoints, and it errs the safe way. Holes
+ * in a series inflate its mean, which raises the limit and so breaks
  * *less* — a line that stays connected is the status quo, whereas a spuriously
  * broken one destroys data the user can see nowhere else. Sorting for a true
  * median would cost O(n log n) per source per region on the encode path, for a
@@ -66,7 +66,7 @@ export function gapBreakLimit({
  *
  * The mechanism stays, whole, because it is the only way to get the other
  * behavior back: set `maxGapMultiple` on the track, 20 being the calibrated
- * value. Nothing about `gapBreakLimit` itself changes — a caller passing a
- * positive multiple gets exactly what it always got.
+ * value. `gapBreakLimit` itself is unchanged, so a caller passing a positive
+ * multiple gets the same limit.
  */
 export const DEFAULT_GAP_BREAK_MULTIPLE = 0

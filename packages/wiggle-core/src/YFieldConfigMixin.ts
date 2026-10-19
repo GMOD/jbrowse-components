@@ -24,7 +24,7 @@ export function YFieldConfigMixin() {
     /**
      * #getter
      * The feature field the worker plots on the value axis, the `y` slot,
-     * `score` by default. A fetch input: every composing display carries it in
+     * `score` by default. A fetch input: every composing display includes it in
      * its `rpcProps()`, since the field is read where the features are.
      */
     get yField(): string {

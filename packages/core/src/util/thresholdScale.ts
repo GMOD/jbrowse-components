@@ -36,7 +36,7 @@ export function thresholdCuts(domain: readonly (string | number)[]): number[] {
  * past, so a palette with one more entry than the domain paints it as
  * `palette[thresholdIndex(value, domain)]`. A value that is not a number is
  * in no bin and answers -1; an infinite one takes the end bin on its side, as
- * d3's threshold scale places it, so a `-log10` of a zero p-value lands in
+ * d3's threshold scale places it, so a `-log10` of a zero p-value falls in
  * the top bin.
  */
 export function thresholdIndex(
@@ -151,8 +151,8 @@ export function rampGapScales(
 
 /**
  * #api
- * Whether a field holds no value at all, as against text that fails to parse:
- * absent, empty, or a VCF's `AF=.`, which arrives as `[undefined]`.
+ * Whether a field has no value: absent, empty, or a VCF's `AF=.`, which
+ * arrives as `[undefined]`. Text that fails to parse still counts as a value.
  */
 export function isMissing(value: unknown) {
   return Array.isArray(value)

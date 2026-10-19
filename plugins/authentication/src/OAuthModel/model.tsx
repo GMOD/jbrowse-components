@@ -115,7 +115,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
        * #getter
        * The config typed off the concrete schema. `ConfigurationReference`
        * erases `self.configuration` to `any` (the reference's MST instance brand
-       * doesn't carry the schema's slot definitions), so reads go through this
+       * doesn't include the schema's slot definitions), so reads go through this
        * getter to recover per-slot types and slot-name validation.
        */
       get conf(): OAuthInternetAccountConfig {
@@ -178,7 +178,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       /**
        * #getter
        * Extra parameters to add to the authorization request. Empty here;
-       * a provider that needs one of its own overrides this.
+       * a provider that needs extra parameters overrides this.
        */
       get authFlowParams(): Record<string, string> {
         return {}
@@ -217,8 +217,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
        * answer. Both grants this account makes — trading the authorization code
        * on the way in, trading the refresh token when the access token expires
        * — are the same form-encoded request to the same endpoint answered by
-       * the same body, and OAuth 2 says so (RFC 6749 §4.1.3, §6). They differ
-       * in the grant's own parameters and in what a failure means, which is
+       * the same body, as OAuth 2 specifies (RFC 6749 §4.1.3, §6). They differ
+       * in the grant's parameters and in what a failure means, which is
        * what stays at the call sites.
        *
        * @param grant - the grant-specific parameters; `client_id` is added

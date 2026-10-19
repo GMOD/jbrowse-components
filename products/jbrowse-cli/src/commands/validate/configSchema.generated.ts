@@ -1516,7 +1516,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "aggregateField": {
-          "description": "attribute naming the parent gene that transcripts are aggregated into. transcripts are grouped by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id.",
+          "description": "attribute naming the parent gene that the adapter aggregates transcripts into. The adapter groups transcripts by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id.",
           "default": "gene_name",
           "if": {
             "type": "null"
@@ -1599,7 +1599,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "aggregateField": {
-          "description": "attribute naming the parent gene that transcripts are aggregated into. transcripts are grouped by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id.",
+          "description": "attribute naming the parent gene that the adapter aggregates transcripts into. The adapter groups transcripts by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id.",
           "default": "gene_name",
           "if": {
             "type": "null"
@@ -2510,7 +2510,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -2574,7 +2574,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -2666,7 +2666,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -2851,7 +2851,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -3049,7 +3049,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samples": {
-          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to the genome named by assemblyName, and assemblyConfigLocation gives the location to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
@@ -3069,7 +3069,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "summaryAdapter": {
-          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The \`.tai\` makes a read cost the span on screen rather than the blocks it lands in, which is why this slot was left off at first — but span is only half of it. Cost is span × depth, and measured against HPRC's own v2.1 index the constant is about **19 compressed bytes per bp** at 464 haplotypes, flat from 100 kb up: 1 Mb is a 19 MB read and chr1 whole is 4.4 GB. So a deep alignment still runs out, just linearly instead of by block. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The \`.tai\` makes a read cost the span on screen rather than the blocks that span touches, but span is only half of the cost. Cost is span × depth, and measured against HPRC's v2.1 index the constant is about **19 compressed bytes per bp** at 464 haplotypes, flat from 100 kb up: 1 Mb is a 19 MB read and chr1 whole is 4.4 GB. So a deep alignment still runs out, just linearly instead of by block. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
@@ -3080,7 +3080,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -3164,7 +3164,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samples": {
-          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to the genome named by assemblyName, and assemblyConfigLocation gives the location to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
@@ -3184,7 +3184,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "summaryAdapter": {
-          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The zoom-out tier on the same terms as \`BgzipMafAdapter\`'s: the \`.tai\` makes a read cost the span on screen rather than the blocks it lands in, but cost is span × depth and a deep alignment runs out of the second factor. Measured against HPRC's published v2.0 TAF index, 464 haplotypes cost about **2 compressed bytes per bp**, flat from 100 kb up — a ninth of the same alignment's MAF, and still 354 MB for chr6 whole. TAF moves the ceiling out by about 10x; it does not remove it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The zoom-out tier works on the same terms as \`BgzipMafAdapter\`'s: the \`.tai\` makes a read cost the span on screen rather than the number of blocks it covers, but cost is span × depth, so a deep alignment stays expensive. Measured against HPRC's published v2.0 TAF index, 464 haplotypes cost about **2 compressed bytes per bp**, flat from 100 kb up — a ninth of the same alignment's MAF, and still 354 MB for chr6 whole. TAF moves the ceiling out by about 10x; it does not remove it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
@@ -3195,7 +3195,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -3265,7 +3265,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samples": {
-          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to the genome named by assemblyName, and assemblyConfigLocation gives the location to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
@@ -3296,7 +3296,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -3383,7 +3383,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samples": {
-          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to the genome named by assemblyName, and assemblyConfigLocation gives the location to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
@@ -3403,7 +3403,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "summaryAdapter": {
-          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. A tabix MAF carries every species' bases on one line, so a wide read downloads the whole alignment and the byte gate blocks it; without this slot the track simply has no zoom-out path. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. A tabix MAF holds every species' bases on one line, so a wide read downloads the whole alignment and the byte gate blocks it; without this slot the track has no zoom-out path. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
@@ -3414,7 +3414,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -4758,7 +4758,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "a feature field, or a jexl expression over feature, whose values each paint one range color with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise.",
+              "description": "a feature field, or a jexl expression over feature, whose values each take one range color, with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise.",
               "default": "",
               "if": {
                 "type": "null"
@@ -4819,7 +4819,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "unknown": {
-              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting, so a row keeps its own, a variant cell the alt hue and a feature the no-value grey.",
+              "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
               "if": {
                 "type": "null"
               },
@@ -4828,7 +4828,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its name.",
               "if": {
                 "type": "null"
               },
@@ -5563,7 +5563,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "the field each value of which takes a row of its own.",
+              "description": "the field whose values each take a row.",
               "default": "",
               "if": {
                 "type": "null"
@@ -5595,7 +5595,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "the row attribute whose values take the colors: name, the row itself, or an attribute the rows carry, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group.",
+              "description": "the row attribute whose values take the colors: name, the row itself, or an attribute of the rows, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group.",
               "default": "name",
               "if": {
                 "type": "null"
@@ -5605,7 +5605,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domain": {
-              "description": "the field's values given a color of their own, in order: under name, rows by name.",
+              "description": "the field's values that get a color, in order: under name, rows by name.",
               "if": {
                 "type": "null"
               },
@@ -5640,7 +5640,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "unknown": {
-              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting, so a row keeps its own, a variant cell the alt hue and a feature the no-value grey.",
+              "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
               "if": {
                 "type": "null"
               },
@@ -5820,7 +5820,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "showRowSeparators": {
-          "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
+          "description": "draw a hairline between adjacent rows; off by default, because neighbouring rows that differ in color already show a boundary and the line helps only where they match — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
           "default": false,
           "if": {
             "type": "null"
@@ -5957,7 +5957,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "value": {
-          "description": "the value the tag has to hold; unset passes any read carrying the tag.",
+          "description": "the value the tag has to hold; unset passes any read with the tag.",
           "if": {
             "type": "null"
           },
@@ -6296,7 +6296,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing and svSignal color nothing, as a facet sections by them.",
+              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName color by their fixed levels and mapq by its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing and svSignal color nothing, as a facet sections by them.",
               "default": "",
               "if": {
                 "type": "null"
@@ -6320,7 +6320,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domain": {
-              "description": "for a categorical scale, the values that take the range first, in order: a preset field's own levels (strand 1 and -1; pairOrientation LR, RL, RR and LL; insertSize short, normal and long; under the insert-size and orientation fields, unmappedMate and interchrom, and in a chain under the orientation ones splitInverted, splitSameStrand, segmentInverted and segmentSameStrand; '' a read with no value), a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them, and over mapq 1, 10 and 30.",
+              "description": "for a categorical scale, the values that take the range first, in order: a preset field's levels (strand 1 and -1; pairOrientation LR, RL, RR and LL; insertSize short, normal and long; under the insert-size and orientation fields, unmappedMate and interchrom, and in a chain under the orientation ones splitInverted, splitSameStrand, segmentInverted and segmentSameStrand; '' a read with no value), a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them, and over mapq 1, 10 and 30.",
               "if": {
                 "type": "null"
               },
@@ -6371,7 +6371,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colors a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colors, cividis over mapq's bins, the tag palette or viridis.",
+              "description": "CSS colors a categorical scale hands its domain in order, or with no domain a preset field's levels in their preset order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty uses the field's default colors, cividis over mapq's bins, the tag palette or viridis.",
               "if": {
                 "type": "null"
               },
@@ -6423,7 +6423,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key label for each value domain lists, in order, or with no domain for each of a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
+              "description": "key label for each value domain lists, in order, or with no domain for each of a preset field's levels in level order, a threshold scale's bins from the lowest; an empty or missing entry shows the value's name.",
               "if": {
                 "type": "null"
               },
@@ -6749,7 +6749,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "showMismatches": {
-          "description": "draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. The line joining a spliced read across its introns draws either way, since it says the exon blocks are one read (PILEUP_MARKS).",
+          "description": "draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. The line joining a spliced read across its introns draws either way, since it shows the exon blocks are one read (PILEUP_MARKS).",
           "default": true,
           "if": {
             "type": "null"
@@ -6798,7 +6798,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "fadeLowFrequency": {
-          "description": "fade each sub-pixel mismatch, insertion, deletion and clip mark by the share of reads at its position carrying it: one every read carries stays opaque, and one under the depth-dependent noise threshold drops to the sub-pixel floor and, past one base per pixel, takes no clicks. Off draws them all at full opacity. The coverage band is not faded (see runCoveragePipeline).",
+          "description": "fade each sub-pixel mismatch, insertion, deletion and clip mark by the share of reads at its position that have it: a mark every read has stays opaque, and one under the depth-dependent noise threshold drops to the sub-pixel floor and, past one base per pixel, takes no clicks. Off draws them all at full opacity. The coverage band is not faded (see runCoveragePipeline).",
           "default": true,
           "if": {
             "type": "null"
@@ -6878,7 +6878,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "placement": {
-          "description": "where the connections draw: up over the coverage band, or down in a band of their own below it.",
+          "description": "where the connections draw: up over the coverage band, or down in a separate band below it.",
           "default": "down",
           "if": {
             "type": "null"
@@ -7021,7 +7021,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "shownModifications": {
-          "description": "the modification type codes drawn (m, h, a, ...); empty draws every type the reads carry.",
+          "description": "the modification type codes drawn (m, h, a, ...); empty draws every type present in the reads.",
           "if": {
             "type": "null"
           },
@@ -7507,7 +7507,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "unknown": {
-              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting, so a row keeps its own, a variant cell the alt hue and a feature the no-value grey.",
+              "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
               "if": {
                 "type": "null"
               },
@@ -7516,7 +7516,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its name.",
               "if": {
                 "type": "null"
               },
@@ -8030,7 +8030,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing and svSignal color nothing, as a facet sections by them.",
+              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName color by their fixed levels and mapq by its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing and svSignal color nothing, as a facet sections by them.",
               "default": "strand",
               "if": {
                 "type": "null"
@@ -8054,7 +8054,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domain": {
-              "description": "for a categorical scale, the values that take the range first, in order: a preset field's own levels (strand 1 and -1; pairOrientation LR, RL, RR and LL; insertSize short, normal and long; under the insert-size and orientation fields, unmappedMate and interchrom, and in a chain under the orientation ones splitInverted, splitSameStrand, segmentInverted and segmentSameStrand; '' a read with no value), a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them, and over mapq 1, 10 and 30.",
+              "description": "for a categorical scale, the values that take the range first, in order: a preset field's levels (strand 1 and -1; pairOrientation LR, RL, RR and LL; insertSize short, normal and long; under the insert-size and orientation fields, unmappedMate and interchrom, and in a chain under the orientation ones splitInverted, splitSameStrand, segmentInverted and segmentSameStrand; '' a read with no value), a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them, and over mapq 1, 10 and 30.",
               "if": {
                 "type": "null"
               },
@@ -8105,7 +8105,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colors a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colors, cividis over mapq's bins, the tag palette or viridis.",
+              "description": "CSS colors a categorical scale hands its domain in order, or with no domain a preset field's levels in their preset order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty uses the field's default colors, cividis over mapq's bins, the tag palette or viridis.",
               "if": {
                 "type": "null"
               },
@@ -8157,7 +8157,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key label for each value domain lists, in order, or with no domain for each of a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
+              "description": "key label for each value domain lists, in order, or with no domain for each of a preset field's levels in level order, a threshold scale's bins from the lowest; an empty or missing entry shows the value's name.",
               "if": {
                 "type": "null"
               },
@@ -8604,7 +8604,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "a feature field, or a jexl expression over feature, whose values each paint one range color with a key; cluster paints a gene by the ortholog group it carries and a placement box by its own.",
+              "description": "a feature field, or a jexl expression over feature, whose values each take one range color, with a key; cluster paints a gene, or a placement box, by its ortholog group.",
               "default": "",
               "if": {
                 "type": "null"
@@ -8662,7 +8662,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "unknown": {
-              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting, so a row keeps its own, a variant cell the alt hue and a feature the no-value grey.",
+              "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
               "if": {
                 "type": "null"
               },
@@ -8671,7 +8671,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its name.",
               "if": {
                 "type": "null"
               },
@@ -8855,7 +8855,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement paints its own scale and a column one read off its values.",
+              "description": "none paints value and keeps the field for a switch back; linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement uses its preset scale and a column one read off its values.",
               "if": {
                 "type": "null"
               },
@@ -8891,7 +8891,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colors a text column's labels or strand's values take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's own; under threshold, one per interval.",
+              "description": "CSS colors a text column's labels or strand's values take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's default stops; under threshold, one per interval.",
               "if": {
                 "type": "null"
               },
@@ -8961,7 +8961,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its name.",
               "if": {
                 "type": "null"
               },
@@ -9163,7 +9163,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "unknown": {
-              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting, so a row keeps its own, a variant cell the alt hue and a feature the no-value grey.",
+              "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
               "if": {
                 "type": "null"
               },
@@ -9172,7 +9172,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its name.",
               "if": {
                 "type": "null"
               },
@@ -10408,7 +10408,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "adapter": {
-          "description": "an adapter computing from the sequence, such as \`{ type: 'GCContentAdapter' }\`, that every lane \`tracks\` names nothing for reads through its own genome. A lane reads it only while its window is under 5 Mb, since that window is the sequence it downloads, and the band's title says to zoom in past that. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "an adapter computing from the sequence, such as \`{ type: 'GCContentAdapter' }\`, which each lane that \`tracks\` names nothing for reads through that lane's genome. A lane reads it only while its window is under 5 Mb, since that window is the sequence it downloads, and the band's title tells the reader to zoom in past that. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
@@ -10527,7 +10527,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "hideUnlabelled": {
-          "description": "under a text column, draw only the ribbons whose pair carries a label.",
+          "description": "under a text column, draw only the ribbons whose pair has a label.",
           "default": false,
           "if": {
             "type": "null"
@@ -10579,7 +10579,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "showLaneTicks": {
-          "description": "draw each lane's own coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out. Turning this off leaves the header's span and multiple as the only scale statement.",
+          "description": "draw each lane's coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out. With this off, the header's span and multiple are the only scale shown.",
           "default": true,
           "if": {
             "type": "null"
@@ -11342,7 +11342,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "unknown": {
-              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting, so a row keeps its own, a variant cell the alt hue and a feature the no-value grey.",
+              "description": "color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, \\"\\" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey.",
               "if": {
                 "type": "null"
               },
@@ -11351,7 +11351,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its name.",
               "if": {
                 "type": "null"
               },
@@ -11559,7 +11559,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "showRowSeparators": {
-          "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
+          "description": "draw a hairline between adjacent rows; off by default, because neighbouring rows that differ in color already show a boundary and the line helps only where they match — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
           "default": false,
           "if": {
             "type": "null"
@@ -11922,7 +11922,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "showLabels": {
-          "description": "\`name\` draws each variant name above its tick mark and \`none\` draws no labels, two of the modes the feature display gives its own \`showLabels\`.",
+          "description": "\`name\` draws each variant name above its tick mark and \`none\` draws no labels, two of the modes of the feature display \`showLabels\`.",
           "default": "none",
           "if": {
             "type": "null"
@@ -12303,7 +12303,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its name.",
               "if": {
                 "type": "null"
               },
@@ -12616,7 +12616,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "aggregate": {
-          "description": "the stored zoom-bin summary drawn: mean, min or max. A BigWig's zoom levels, and the bins JBrowse makes over its raw section, store all three; where the source serves raw values they are one number and the setting changes nothing.",
+          "description": "the stored zoom-bin summary drawn: mean, min or max. A BigWig's zoom levels, and the bins JBrowse makes over its raw section, store all three; where the source serves raw values the three are one number, so the setting has no effect.",
           "default": "mean",
           "if": {
             "type": "null"
@@ -12683,7 +12683,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "showRowSeparators": {
-          "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
+          "description": "draw a hairline between adjacent rows; off by default, because neighbouring rows that differ in color already show a boundary and the line helps only where they match — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
           "default": false,
           "if": {
             "type": "null"
@@ -12864,7 +12864,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key label for each domain value, one each in order; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order; a value past the end of the list shows its name.",
               "if": {
                 "type": "null"
               },
@@ -25179,7 +25179,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement paints its own scale and a column one read off its values.",
+              "description": "none paints value and keeps the field for a switch back; linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement uses its preset scale and a column one read off its values.",
               "if": {
                 "type": "null"
               },
@@ -25215,7 +25215,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colors a text column's labels or strand's values take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's own; under threshold, one per interval.",
+              "description": "CSS colors a text column's labels or strand's values take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's default stops; under threshold, one per interval.",
               "if": {
                 "type": "null"
               },
@@ -25285,7 +25285,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its name.",
               "if": {
                 "type": "null"
               },

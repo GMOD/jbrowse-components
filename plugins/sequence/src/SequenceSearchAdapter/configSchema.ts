@@ -23,7 +23,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```
  *
  * #example one strand only
- * Both strands are scanned by default. Turn one off where the motif is
+ * The adapter scans both strands by default. Turn one off where the motif is
  * strand-specific, so the track does not report the reverse-complement hit as a
  * second site:
  * ```js

@@ -191,10 +191,10 @@ export function flipCoarseCigar(s: string) {
 
 /**
  * #api
- * The coarse CIGAR as a plain CIGAR over the row's own axis, for a walk that
- * places mismatches by reference position: a run keeps only its own length, a
- * run with no own length is the insertion it amounts to, and one with no mate
- * length the deletion. Kept indels are exact, so they land where the fine
+ * The coarse CIGAR as a plain CIGAR over the row's axis, for a walk that
+ * places mismatches by reference position: a run keeps only its `own` length, a
+ * run with no `own` length is the insertion it amounts to, and one with no
+ * `mate` length the deletion. Kept indels are exact, so they land where the fine
  * tier's would.
  */
 export function coarseCigarOwnAxis(s: string) {

@@ -173,11 +173,11 @@ const TimeTraveller = types
         }
       },
       /**
-       * Start recording history for the target store. Re-runs whenever the root
-       * swaps in a new session node, so it must be idempotent: the previous
-       * registration is disposed and the history reset, because `history` is
-       * volatile while `undoIdx` is a persisted prop — carrying the old
-       * session's snapshots forward would make undo apply them to the new one.
+       * Start recording history for the target store. Runs again whenever the
+       * root replaces the session node, so it must be idempotent: it disposes
+       * the previous registration and resets the history, because `history` is
+       * volatile while `undoIdx` is a persisted prop, and old session snapshots
+       * kept would let undo apply them to the new session.
        */
       initialize() {
         targetStore = self.targetPath

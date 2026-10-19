@@ -43,7 +43,7 @@ pair, which a PIF answers from the mate's own perspective; a mate pair no
 child aligns is empty rather than an error, since a star has no such edge.
 
 The anchor is inferred as the one assembly every child names, so it is never
-written twice. Each child is any pairwise synteny adapter config with its own
+written twice. Each child is any pairwise synteny adapter config with its
 `assemblyNames` (PairwiseIndexedPAFAdapter, PAFAdapter, ChainAdapter, ...).
 
 Every mate is a lane the multiway display's picker offers, and the display
@@ -65,11 +65,11 @@ are chosen.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "MultiPairwiseSyntenyAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Adapter slots go inside the track's `adapter`: `"adapter": { "type": "MultiPairwiseSyntenyAdapter", ... }`. `MultiPairwiseSyntenyAdapter` has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-adapters">**adapters**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | the pairwise adapter configs, each naming its own pair in `assemblyNames` (or `queryAssembly`/`targetAssembly`); exactly one assembly must be common to all of them |
+| <span id="slot-adapters">**adapters**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | the pairwise adapter configs, each naming its pair in `assemblyNames` (or `queryAssembly`/`targetAssembly`); exactly one assembly must be common to all of them |
 | <span id="slot-coarsebpperpxthreshold">**coarseBpPerPxThreshold**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>10000</code> | bpPerPx threshold at which a view on "Level of detail: automatic" switches the children from their fine tier to their coarse tier. The coarse tier is offered only when every child carries one, and the threshold is raised to the largest `--coarse` bound any child's `#pif` header states.<br>_advanced_ |
 | <span id="slot-lanes">**lanes**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | The lane picker's name and heading for each mate, `[{ name, label, group }]` by assembly name; a mate not listed is offered under its name. A genome the session holds is named the way the session names it |

@@ -14,7 +14,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * child aligns is empty rather than an error, since a star has no such edge.
  *
  * The anchor is inferred as the one assembly every child names, so it is never
- * written twice. Each child is any pairwise synteny adapter config with its own
+ * written twice. Each child is any pairwise synteny adapter config with its
  * `assemblyNames` (PairwiseIndexedPAFAdapter, PAFAdapter, ChainAdapter, ...).
  *
  * Every mate is a lane the multiway display's picker offers, and the display
@@ -50,7 +50,7 @@ const MultiPairwiseSyntenyAdapter = ConfigurationSchema(
   {
     /**
      * #slot
-     * the pairwise adapter configs, each naming its own pair in
+     * the pairwise adapter configs, each naming its pair in
      * `assemblyNames` (or `queryAssembly`/`targetAssembly`); exactly one
      * assembly must be common to all of them
      */

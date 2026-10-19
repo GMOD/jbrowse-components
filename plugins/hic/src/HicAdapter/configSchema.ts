@@ -27,8 +27,8 @@ const HicAdapter = ConfigurationSchema(
   {
     /**
      * #slot
-     * location of the `.hic` contact matrix (Juicer / Juicebox format). It
-     * stores every resolution and its own index, so there is nothing else to
+     * location of the `.hic` contact matrix (Juicer / Juicebox format). The
+     * file holds every resolution and an index, so there is nothing else to
      * configure — the display picks a bin size from the current zoom.
      */
     hicLocation: {

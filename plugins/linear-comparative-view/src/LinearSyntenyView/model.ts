@@ -200,7 +200,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          * Ignored: the hierarchical selector is the only one. Declared because
-         * sessions and share links still carry it.
+         * sessions and share links still contain it.
          */
         trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
@@ -241,7 +241,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         followMatchOrientation: types.stripDefault(types.boolean, false),
         /**
          * #property
-         * One synteny band per adjacent pair of `views`, each holding its own
+         * One synteny band per adjacent pair of `views`, each holding one
          * track list. The track-selector and add-track widgets address a band
          * through `trackContainerFor`.
          */
@@ -348,8 +348,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * The zoom-out limit every row shares while `sameScale` is on
-       * (`sharedFit.ts`). Each row pulls it through its own `maxBpPerPx`,
-       * finding this view by the presence of this getter.
+       * (`sharedFit.ts`). Each row reads it through its `maxBpPerPx`,
+       * detecting this view by the presence of this getter.
        */
       get sharedFit() {
         return sharedFit(self.views, self.sameScale)
@@ -423,7 +423,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #method
        * The level that owns a given track list, by id. The track-selector and
        * add-track widgets target a level through here, since this view holds
-       * one track list per band rather than one of its own.
+       * one track list per band rather than a single list for the view.
        */
       trackContainerFor(id: string): TrackContainer | undefined {
         return self.levels.find(level => level.id === id)
@@ -622,8 +622,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * What the loading screen says while `showLoading`, read off the
-       * assembly whose load is the wait; undefined otherwise.
+       * The loading screen's text while `showLoading`, taken from the
+       * assembly being waited on; undefined otherwise.
        */
       get loading() {
         return viewLoading(this.showLoading, () => this.loadingAssembly)
@@ -674,8 +674,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Release the clicked ribbon in every band, ahead of a band pointing its
-       * own: the drawer shows one feature, so one ribbon is outlined
+       * Release the clicked ribbon in every band before a band sets a new one:
+       * the drawer shows one feature, so one ribbon is outlined
        */
       clearClickedFeatures() {
         for (const display of self.allSyntenyDisplays) {
@@ -684,10 +684,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Run a navigation of a row as the follow's own placement rather than as
+       * Run a navigation of a row as a placement by the follow rather than as
        * a gesture. While following, a gesture on any row makes that row the
-       * anchor, and the follow tells a gesture from its own work by root
-       * action: whatever `fn` navigates is a nested action of this one.
+       * anchor, and the follow distinguishes a gesture from its placements by
+       * root action: whatever `fn` navigates is a nested action of this one.
        */
       holdFollowAnchor<T>(fn: () => T) {
         return fn()
@@ -956,7 +956,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #action
        * Every row onto its whole assembly, either all on one bp/px — the
        * coarsest row's fit, so the largest genome fills its pane and the others
-       * draw shorter in proportion — or each fit to its own pane. `sameScale`
+       * draw shorter in proportion — or each fit to its pane. `sameScale`
        * latches, so the shared scale holds across later zooms.
        */
       showAllRegionsAcrossRows(sameScale: boolean) {
@@ -1132,7 +1132,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Every row back to its own whole assembly, fit to its own width, which
+       * Every row back to its whole assembly, fit to the row's width, which
        * also turns `sameScale` off.
        */
       showAllRegions() {
@@ -1344,9 +1344,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #method
          * What a bare click on the shared rubberband strip offers: one row per
-         * genome row, each holding that row's own click menu at the base it
+         * genome row, each holding that row's click menu at the base it
          * paints under `px`. A pixel rather than an offset, since each row maps
-         * it through its own `pxToBp`.
+         * it through that row's `pxToBp`.
          */
         rubberbandClickMenuItemsAtPx(px: number): MenuItem[] {
           return multiLevelRowClickMenuItems(self.views, px)

@@ -93,8 +93,8 @@ export const InternetAccount = types
     /**
      * #getter
      * Whether the fileSelector offers this account as a source to pick. Turn it
-     * off for an account that only ever matches by domain and has nothing of
-     * its own to enter — HTTP Basic, whose ephemeral per-origin accounts would
+     * off for an account that only ever matches by domain and has nothing
+     * for the user to enter — HTTP Basic, whose ephemeral per-origin accounts would
      * otherwise pile up as toggles nobody asked for.
      */
     get showInFileSelector(): boolean {
@@ -113,7 +113,7 @@ export const InternetAccount = types
     },
     /**
      * #getter
-     * The key used to store this internetAccount's token in sessionStorage
+     * The sessionStorage key that holds this internetAccount's token
      */
     get tokenKey() {
       return `${self.internetAccountId}-token`
@@ -153,11 +153,11 @@ export const InternetAccount = types
     /**
      * #action
      * This can be used by an internetAccount to validate a token works before
-     * it is used. This is run when preAuthorizationInformation is requested,
-     * so it can be used to check that a token is valid before sending it to a
-     * worker thread. It expects the token to be returned so that this action
-     * can also be used to generate a new token (e.g. by using a refresh token)
-     * if the original one was invalid. Should throw an error if a token is
+     * it is used. This runs when preAuthorizationInformation is requested,
+     * so it can check that a token is valid before sending it to a worker
+     * thread. It expects the token to be returned, so this action can also
+     * generate a new token (e.g. with a refresh token) if the original one was
+     * invalid. Should throw an error if a token is
      * invalid.
      *
      * @param token - Auth token

@@ -39,7 +39,7 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
        * #method
        * Walk the tree once and map each requested trackId to the nodes holding a
        * `types.reference` that resolves to it (a view's track entry, a config
-       * editor widget). Track configs are matched by trackId, not identity, so a
+       * editor widget). The method matches track configs by trackId, not identity, so a
        * frozen base and its hydrated MST node compare equal.
        */
       getReferringMultiple(trackIds: string[]): Map<string, ReferringNode[]> {

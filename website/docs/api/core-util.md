@@ -69,10 +69,10 @@ containing `node`, resolving aliases and casing together. Falls back to the
 input when the assembly is absent or its aliases have not loaded.
 
 Uses the view's assembly, not the track's, because displayed regions, loaded
-regions and blocks all carry the refNames the view laid out.
+regions and blocks all use the refNames the view laid out.
 
 Call it wherever a refName a *person* wrote is about to be compared against
-regions, features or blocks, which carry the assembly's canonical name. A
+regions, features or blocks, which use the assembly's canonical name. A
 refName a display copied off a region is already canonical. One from a
 session spec, a config slot or a URL is whatever the author typed.
 
@@ -133,7 +133,7 @@ import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 The host's assembly manager, for a module that resolves names and nothing
 else.
 
-Unlike the accessors in `sessionServices.ts` this one buys the caller no
+Unlike the accessors in `sessionServices.ts` this one gives the caller no
 smaller type graph — an `AssemblyManager` is an MST model a `PluginManager`
 built, so naming it costs what naming a session costs. It is here to say
 which service is wanted, and because that cost is the finding: the assembly
@@ -206,7 +206,7 @@ import { getDialogHost } from '@jbrowse/core/util'
 
 ## getEnv
 
-Returns the MST environment for a node, which carries the `pluginManager`.
+Returns the MST environment for a node, which holds the `pluginManager`.
 
 ```js
 import { getEnv } from '@jbrowse/core/util'
@@ -286,7 +286,7 @@ import { getSession } from '@jbrowse/core/util'
 
 ## getSessionServices
 
-The services a session offers that cost nothing application-shaped to name.
+The services a session offers that need no application-specific type to name.
 Prefer one of the narrower accessors below, which say which of them the
 calling module actually uses.
 
@@ -353,7 +353,7 @@ import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 Heights after growing or shrinking a stack of bands by `distance` px in all:
 the one rule every whole-stack resize uses. Each band takes its share of the
 height it has above `floor`, so the tall bands give and take the most, and
-none goes below `floor`, or below its own height if it already sits under it
+none goes below `floor`, or below its current height if it already sits under it
 (the clampBandHeight rule). Whole pixels, rounded by largest
 remainder, so the stack moves by exactly the rounded distance.
 
@@ -376,7 +376,7 @@ cannot disagree.
 Only the fold is shared; the rest stays in each display. Per-lane
 iteration runs this once per lane, sticky-vs-scrolling is a property of how
 the result is projected to the screen, and a band drawn outside its
-reservation (an overlay) carries its own draw rect beside the stack.
+reservation (an overlay) has a separate draw rect beside the stack.
 
 ```js
 import { stackBands } from '@jbrowse/core/util/bandLayout'

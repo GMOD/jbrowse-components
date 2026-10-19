@@ -104,7 +104,7 @@ export function BaseWebSessionModel({
       /**
        * #method
        * whether the user may edit this track's config (admins may edit any;
-       * everyone else only their own session tracks)
+       * everyone else only session tracks)
        */
       canEditTrack(trackId: string): boolean {
         return (

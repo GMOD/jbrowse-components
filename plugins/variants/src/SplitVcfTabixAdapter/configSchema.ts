@@ -50,8 +50,8 @@ const SplitVcfTabixAdapter = ConfigurationSchema(
     /**
      * #slot
      * index flavor for the entries this adapter derives, i.e. the ones
-     * `indexLocationMap` does not name. An index the map names says which kind
-     * it is by its `.csi`/`.tbi` extension, so one map can mix the two. `CSI` is
+     * `indexLocationMap` does not name. The adapter reads the kind of an index
+     * in the map from its `.csi`/`.tbi` extension, so one map can mix the two. `CSI` is
      * required for a reference longer than 512 Mb, which TBI cannot address.
      */
     indexType: {
@@ -66,7 +66,7 @@ const SplitVcfTabixAdapter = ConfigurationSchema(
      * #slot
      * The same 5 Mb `VcfTabixAdapter` declares, for the same reason: this
      * adapter implements `getRegionByteSize`, so its reads are byte-gated, and
-     * without a limit of its own the gate falls back to the display config's
+     * without a limit on the adapter the gate falls back to the display config's
      * conservative 1 Mb (`resolveByteLimit` prefers the adapter's). That gated
      * a split VCF five times tighter than the single-file VCF beside it, on a
      * block-granular tabix estimate that already over-quotes small regions.

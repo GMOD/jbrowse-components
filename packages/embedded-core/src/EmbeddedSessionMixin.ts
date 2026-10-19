@@ -37,8 +37,8 @@ export interface EmbeddedSessionParent {
  * `types.compose`'s overloads are declared over `IModelType<P, O, FC, FS>`, so
  * a model passed as a naked type parameter gives nothing to infer those four
  * from, and `session.view` becomes `any` at every embedder call site with no
- * type error. Passing only concrete types to `compose` keeps the products'
- * views typed.
+ * type error. When `compose` receives only concrete types, the products'
+ * views stay typed.
  *
  * Each product therefore declares its tracks mixin, `view` prop, and the
  * `views`/`addView`/`removeView` members that read `self.view`, because those
@@ -59,8 +59,8 @@ export function EmbeddedSessionMixin(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * An embedded view is drawn with no title bar above it, so its menu lives
-       * in the view's own controls.
+       * An embedded view is drawn with no title bar above it, so its menu sits
+       * in the view's controls.
        */
       get viewTitleBars() {
         return false

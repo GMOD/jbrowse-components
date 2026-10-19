@@ -11,23 +11,23 @@ The two-valued row height every multi-row display has. A `rowHeightConfigSchemaF
 
 The convention itself is
 agent-docs/reference/ROW_HEIGHT_AND_FIT.md; this is the middle link of it.
-**Both ends were already shared**: `rowHeightMenuItem` and
-`SetRowHeightDialog` in this directory are the one menu row and dialog for
-every row display, and `resolveRowHeight` in core is the one place the `0`
-sentinel resolves and a non-positive result is floored. What sat between them
-was three hand-written copies — maf, the multi-row feature painting and the
-multi-sample variant base — of the slot, the getter over it and the setter.
+`rowHeightMenuItem` and `SetRowHeightDialog` in this directory are the one
+menu row and dialog for every row display, and `resolveRowHeight` in core is
+the one place the `0` sentinel resolves and a non-positive result is floored.
+This mixin sits between them, in place of three hand-written copies — maf, the
+multi-row feature painting and the multi-sample variant base — of the slot,
+the getter over it and the setter.
 
-**This package already depended on members it did not declare.**
+**The mixin declares the members this package depends on.**
 `rowHeightMenu` restates `rowHeight` / `setRowHeight` / `setFitToHeight` as
 `RowHeightModel` and `types.ts`'s `TreeDrawingModel` restates
 `effectiveRowHeight`, so a display wiring in the shared menu and spelling one
-of them differently compiled and then failed at the first click. Slots and
-accessors now move together, matching `treeSidebarConfigSchemaFields` +
+of them differently would compile and then fail at the first click. Slots and
+accessors move together, matching `treeSidebarConfigSchemaFields` +
 `TreeSidebarMixin`.
 
-**What stays per display is the value, not the declaration**, and the doc says
-which: `autoRowHeight`, because the height available to rows is a different
+**What stays per display is the value, not the declaration.** The per-display
+members are `autoRowHeight`, because the height available to rows is a different
 quantity in each (canvas's `fitTargetHeight`, maf's `rowsHeight`, variants'
 `availableHeight`), and `setFitToHeight`, because seeding the `height` slot on
 the way in is required exactly where the `height` getter is content-derived
@@ -43,7 +43,7 @@ sizes its canvas to its content instead of scrolling a viewport.
 | Member | Description |
 | --- | --- |
 | <span id="getter-rowheight">**rowHeight**</span><br><code>number</code> | Raw per-row height setting: `0` is fit-to-display-height, any positive value is a fixed px height. The resolved value is `effectiveRowHeight` — consumers read that, never this. On the config rather than the display snapshot for the same reason `height` is: the config node outlives the display instance, so a fixed height survives unticking and reticking the track. |
-| <span id="getter-autorowheight">**autoRowHeight**</span><br><code>number</code> | The height fit mode divides between the rows, declared here and **overridden by every display** — the quantity differs in each, so this stub is a slot for the answer rather than an answer. Declaring it is what lets `effectiveRowHeight` below read a member of its own type instead of one asserted onto `self`.<br><br>A display that composes the mixin and supplies no override resolves to a 1px row, exactly as it did when this getter did not exist and the read found `undefined`: `resolveRowHeight` floors both.<br><br>Supply it as a **getter**, the way all three displays do. Mobx refuses to write a volatile over a computed, so a `.volatile` of this name throws at `create` — loudly, and before any row is drawn. |
+| <span id="getter-autorowheight">**autoRowHeight**</span><br><code>number</code> | The height fit mode divides between the rows, declared here and **overridden by every display** — the quantity differs in each, so this stub is a slot for the answer rather than an answer. Declaring it lets `effectiveRowHeight` below read a member with a declared type instead of one asserted onto `self`.<br><br>A display that composes the mixin and supplies no override resolves to a 1px row, the same as when the read finds `undefined`: `resolveRowHeight` floors both.<br><br>Supply it as a **getter**, the way all three displays do. Mobx refuses to write a volatile over a computed, so a `.volatile` of this name throws at `create` — loudly, and before any row is drawn. |
 | <span id="getter-effectiverowheight">**effectiveRowHeight**</span><br><code>number</code> | Resolved per-row height. `rowHeight === 0` divides the display's own `autoRowHeight` across the rows; any positive value is the fixed px height, used as-is however many rows there are.<br><br>Sub-pixel is legitimate and deliberately not floored here — a cohort with more rows than the track has pixels has a genuinely fractional row height, and flooring it makes the content taller than the height it was asked to fit inside. `resolveRowHeight` floors only a **non-positive** result, which consumers divide by. |
 
 ## Actions

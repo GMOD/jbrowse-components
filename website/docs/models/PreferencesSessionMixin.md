@@ -13,7 +13,7 @@ edit preferences (web, desktop) compose it; embedded sessions omit it and
 resolve preferences from the `configuration.preferences` admin defaults
 only.
 
-PreferencesSessionMixin declares no members of its own — it composes the models below, and everything here is theirs.
+PreferencesSessionMixin adds no members: it composes the models below, and every member listed here comes from them.
 
 ## Properties
 

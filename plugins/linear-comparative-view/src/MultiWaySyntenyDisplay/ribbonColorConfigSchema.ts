@@ -42,7 +42,7 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
     /**
      * #slot value
      * The color of every ribbon under the `none` scale, and of a pair
-     * carrying no value under a field.
+     * with no value under a field.
      */
     value: {
       type: 'color',

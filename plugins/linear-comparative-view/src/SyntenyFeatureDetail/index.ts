@@ -14,7 +14,7 @@ const configSchema = ConfigurationSchema('SyntenyFeatureWidget', {})
  * #stateModel SyntenyFeatureWidget
  * #category Widget
  * The feature-details widget a synteny feature opens, which is
- * `BaseFeatureWidget` plus the band the click landed in.
+ * `BaseFeatureWidget` plus the band that was clicked.
  */
 function stateModelF(pluginManager: PluginManager) {
   return types

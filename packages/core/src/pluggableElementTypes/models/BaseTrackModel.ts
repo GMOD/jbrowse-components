@@ -129,14 +129,13 @@ export function createBaseTrackModel(
       /**
        * Whether a height-resize gesture is in progress on this track. Set by
        * whichever handle owns the drag — the view's track resize handle, or a
-       * handle a display draws inside itself — and read by displays that sit an
-       * expensive per-frame layer out of the gesture.
+       * handle a display draws inside itself — and read by displays that skip an
+       * expensive per-frame layer during the gesture.
        *
-       * On the track rather than the display because the gesture belongs to the
-       * container running it, not to whatever display happens to be active: the
-       * view can bracket a drag without knowing which display it landed on, and
-       * two handles on one track share one flag rather than racing to clear
-       * each other's.
+       * The flag lives on the track rather than the display, since the
+       * container running the gesture owns it: the view can bracket a drag
+       * without knowing which display is active, and two handles on one track
+       * share one flag, so neither can clear the other's.
        */
       resizing: false,
     }))
@@ -215,12 +214,12 @@ export function createBaseTrackModel(
        * the configured displays the CONTAINING VIEW can draw and the track's
        * adapter feeds, which is the set `replaceDisplay` will accept
        *
-       * `configuration.displays` is not that set: baseTrackConfig injects one
+       * `configuration.displays` is a larger set: baseTrackConfig injects one
        * entry per display type registered for the track TYPE, across every
-       * view type, so a VariantTrack carries a ChordVariantDisplay a linear
-       * view cannot draw. The track menu's own "Display types" submenu has
-       * always filtered them; this exposes the same list to code, because the
-       * alternative is every caller re-deriving it from the plugin manager.
+       * view type, so a VariantTrack has a ChordVariantDisplay a linear
+       * view cannot draw. The track menu's "Display types" submenu filters
+       * them; this exposes the same list to code, so callers need not
+       * re-derive it from the plugin manager.
        */
       get compatibleDisplays() {
         return getCompatibleDisplays(self)
@@ -231,27 +230,27 @@ export function createBaseTrackModel(
        * #getter
        * Set when this track's file and one of its assemblies share no reference
        * name at all — the `1/2/3` file loaded against a `chr1/chr2/chr3`
-       * assembly, which otherwise draws an empty track and says nothing.
+       * assembly, which otherwise draws an empty track with no message.
        *
-       * The verdict is reached in `loadRefNameMap`, which is the only place both
-       * name sets are in scope, and recorded on the *assembly* because nothing
-       * in the assembly manager can reach a track (the session is a sibling
+       * `loadRefNameMap` decides the mismatch, since it is the only place both
+       * name sets are in scope, and records it on the *assembly* because the
+       * assembly manager cannot reach a track (the session is a sibling
        * subtree, so `getSession` from there finds only the root). The lookup
        * inverts that: the record is keyed by adapter cache key, which is exactly
-       * what `rpcSessionId` already is, so a track finds its own with no
+       * what `rpcSessionId` already is, so a track finds its record with no
        * plumbing in between.
        *
        * The names come from `getConfAssemblyNamesOrNone`, not from a raw
        * `assemblyNames` slot read: this model is shared by every track type, and
        * `ReferenceSequenceTrack`'s schema does not declare that slot — it names
        * its assembly by being the `sequence` of one. A raw read there returns
-       * `undefined` with no diagnostic at any layer, so the getter was inert for
-       * that one track type while looking like it worked. The `OrNone` half is
+       * `undefined` with no diagnostic at any layer, which would leave the getter
+       * inert for that one track type. The `OrNone` half is
        * what keeps this total: it runs on every render of every track label, and
        * an unanswerable question must not become a thrown getter.
        *
-       * Diagnostic only. It gates nothing, and a track carrying one still loads,
-       * still fetches and still draws whatever it can.
+       * Diagnostic only: a track with a mismatch still loads, fetches and draws
+       * whatever it can.
        */
       get refNameMismatch(): RefNameMismatch | undefined {
         const { assemblyManager } = getSession(self)
@@ -403,7 +402,7 @@ export function createBaseTrackModel(
          * otherwise schedule a spurious flush for every track ever shown, even
          * completely untouched ones — `reaction` only fires on an actual change.
          *
-         * `equals: compareStructural` is load-bearing, not an optimization:
+         * `equals: compareStructural` is required, not an optimization:
          * `self.configuration` is a re-resolving reference, and an undo or a
          * session restore swaps the resolved node for a new working copy.
          * Referential comparison would treat every such swap as a fresh change
@@ -465,10 +464,10 @@ export function createBaseTrackModel(
       /**
        * #action
        * The awaitable sibling of `replaceDisplay`: loads the target display's
-       * state model, then swaps to it carrying whatever settings the outgoing
+       * state model, then swaps to it with whatever settings the outgoing
        * display can hand over.
        *
-       * `replaceDisplay` stays a plain sync action and ASSERTS the model is
+       * `replaceDisplay` stays a plain sync action and asserts the model is
        * loaded, and every display state model in this tree is a dynamic import
        * until something shows one — so a caller that has not already shown the
        * target needs this. Named like `launchTrack`, which is the same problem

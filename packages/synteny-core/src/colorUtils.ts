@@ -101,9 +101,8 @@ export function legendChipColor(color: string, alpha: number, ground: string) {
  * band's ground (shadeFill in syntenyTypes.slang / resolveInstanceFill in the
  * Canvas2D renderer), so a full-saturation legend swatch reads wrong — a red
  * match ribbon shows as salmon over a white band, a blue deletion as pale blue.
- * Blending the legend chip the same way keeps the key matched to what's actually
- * on screen, which means blending it over the SAME ground the renderers cleared
- * to rather than over an assumed white.
+ * Blend the legend chip the same way, over the ground the renderers cleared to
+ * rather than an assumed white, so the key matches what is on screen.
  */
 export function blendOverGround(color: string, a: number, ground: string) {
   if (a >= 1) {

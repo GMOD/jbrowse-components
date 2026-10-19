@@ -28,7 +28,7 @@ The alignments displays' `readConnections.color` setting colors the
 read-connection arcs and the read cloud. Empty, the default, the arcs take
 the reads' `color` field where it is one an arc paints (`insertSize`,
 `pairOrientation`, `insertSizeAndOrientation`), and paint
-`insertSizeAndOrientation` under any other. A field of its own colors the
+`insertSizeAndOrientation` under any other. A field set here colors the
 arcs whatever the reads show. A bare string is refused rather than read as
 the field, since the reads' `color` reads one as a constant.
 

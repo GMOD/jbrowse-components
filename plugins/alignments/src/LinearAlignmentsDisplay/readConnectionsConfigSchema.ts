@@ -83,7 +83,7 @@ export const readConnectionsConfigSchema = ConfigurationSchema(
       ]),
       defaultValue: 'down',
       description:
-        'where the connections draw: up over the coverage band, or down in a band of their own below it',
+        'where the connections draw: up over the coverage band, or down in a separate band below it',
     },
     /**
      * #slot
@@ -95,8 +95,8 @@ export const readConnectionsConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot color
-     * The field the connections are colored by, `""` taking the reads'
-     * `color` field where a connection paints it.
+     * The field that colors the connections; `""` uses the reads' `color`
+     * field where a connection paints it.
      */
     color: alignmentsArcColorConfigSchema,
     /**

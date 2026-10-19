@@ -77,7 +77,7 @@ export function clampBandHeight(
  * Heights after growing or shrinking a stack of bands by `distance` px in all:
  * the one rule every whole-stack resize uses. Each band takes its share of the
  * height it has above `floor`, so the tall bands give and take the most, and
- * none goes below `floor`, or below its own height if it already sits under it
+ * none goes below `floor`, or below its current height if it already sits under it
  * (the {@link clampBandHeight} rule). Whole pixels, rounded by largest
  * remainder, so the stack moves by exactly the rounded distance.
  */

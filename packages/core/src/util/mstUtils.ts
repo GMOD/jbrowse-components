@@ -105,7 +105,7 @@ export function getContainingDisplay(
  * The host's assembly manager, for a module that resolves names and nothing
  * else.
  *
- * Unlike the accessors in `sessionServices.ts` this one buys the caller no
+ * Unlike the accessors in `sessionServices.ts` this one gives the caller no
  * smaller type graph — an `AssemblyManager` is an MST model a `PluginManager`
  * built, so naming it costs what naming a session costs. It is here to say
  * which service is wanted, and because that cost is the finding: the assembly
@@ -134,10 +134,10 @@ export function getRenderingServices(
  * input when the assembly is absent or its aliases have not loaded.
  *
  * Uses the view's assembly, not the track's, because displayed regions, loaded
- * regions and blocks all carry the refNames the view laid out.
+ * regions and blocks all use the refNames the view laid out.
  *
  * Call it wherever a refName a *person* wrote is about to be compared against
- * regions, features or blocks, which carry the assembly's canonical name. A
+ * regions, features or blocks, which use the assembly's canonical name. A
  * refName a display copied off a region is already canonical. One from a
  * session spec, a config slot or a URL is whatever the author typed.
  *
@@ -167,7 +167,7 @@ export function canonicalizeViewRefName(
 
 /**
  * #api core/util
- * Returns the MST environment for a node, which carries the `pluginManager`.
+ * Returns the MST environment for a node, which holds the `pluginManager`.
  */
 export function getEnv(obj: IAnyStateTreeNode) {
   return getEnvMST<{ pluginManager: PluginManager }>(obj)

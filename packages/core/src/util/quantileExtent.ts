@@ -117,8 +117,8 @@ function lowQuantileOf(a: Float32Array, n: number, quantile: number) {
  * What the open ends of a scale follow over `values[0, count)`: at a
  * `quantile` of 1 their finite extremes, and below it each end clipped at
  * that quantile of the values on its side of 0, so one spike takes neither
- * the axis nor the ramp, and a sparse tail of the other sign keeps its own
- * end. An axis that starts at 0 adds it itself. Under 0.5 reads as 0.5,
+ * the axis nor the ramp, and a sparse tail of the other sign keeps its
+ * extreme. An axis that starts at 0 adds it itself. Under 0.5 reads as 0.5,
  * where the ends meet rather than cross. `scales.y.domainQuantile` and a
  * color's `domainQuantile` both name it. `[Infinity, -Infinity]` where
  * nothing is finite.
@@ -168,7 +168,7 @@ export function quantileExtent(
  * {@link quantileExtent} ends `quantiles` draw, 0 included where the axis
  * reaches it (`zero`); that end stops at the fence. So a plot with no spike
  * shows every value and cuts none, and a spike leaves the values under it at
- * least half the axis. Quantiles that meet span their own size, as a flat
+ * least half the axis. When the quantiles meet, the span is their magnitude, as a flat
  * domain widens in `getNiceDomain`.
  */
 export function fenceOutliers({

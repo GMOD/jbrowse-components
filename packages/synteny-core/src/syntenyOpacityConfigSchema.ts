@@ -30,9 +30,9 @@ export interface SyntenyOpacitySnapshot {
  * #config SyntenyOpacity
  * #category view
  * The synteny views' `opacity` setting, as `color` is their color: one
- * opacity for every alignment, or a field each alignment carries read into
- * opacities. A number is the constant and lands in `value`; a string is the
- * field and lands in `field`. Under a field, `range` holds the opacities
+ * opacity for every alignment, or a field of each alignment read into
+ * opacities. A number is the constant and is written to `value`; a string is
+ * the field and is written to `field`. Under a field, `range` holds the opacities
  * themselves, so a field that fades a dense view keeps it dim by writing a
  * low range.
  *
@@ -69,9 +69,9 @@ export const syntenyOpacityConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot field
-     * The field each alignment is faded by: a measurement (`identity`, `mapq`, `dnds`) or
+     * The field that fades each alignment: a measurement (`identity`, `mapq`, `dnds`) or
      * a column the tracks declare in `attributeColumns`. Empty draws every
-     * alignment at `value`. Writing `opacity: "identity"` lands here.
+     * alignment at `value`. Writing `opacity: "identity"` sets it.
      *
      * #slot scale
      * `none` draws `value` and keeps the field for a switch back;

@@ -69,15 +69,15 @@ export default function createModel(
       /**
        * #method
        * One `File` menu, and only the two items an embed can honour: it can
-       * open a track or a connection into the session it was handed. The app's
-       * own File menu also starts, imports and exports sessions, which here
+       * open a track or a connection into the session it was handed. The full
+       * app's File menu also starts, imports and exports sessions, which here
        * would let a reader discard the view its host configured with no route
-       * back -- and `Add`/`Tools` have nothing to hold when there is one view
+       * back -- and `Add`/`Tools` have no items when there is one view
        * and no plugin store.
        *
        * Empty unless `menuBar` asked for it, and empty under `disableAddTracks`
-       * even then: both items are the add-track affordances that option exists
-       * to remove, so what would be left is a bar of rows the session guards
+       * even then: both items are the add-track affordances that `disableAddTracks`
+       * removes, so what would be left is a bar of rows the session guards
        * refuse. The bar draws nothing for an empty menu set.
        */
       menus() {

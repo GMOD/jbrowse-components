@@ -226,12 +226,12 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
          * the default theme. Every other named theme is a fixed preset that
          * ignores config.
          *
-         * **The mode is spliced in here**, because a palette no longer carries
-         * one and this is the last point before the export leaves the session:
+         * **The mode is spliced in here**, because a palette no longer holds a
+         * mode and this is the last point before the export leaves the session:
          * every caller hands `renderSvg` these options and nothing else, so a
          * figure exported from a dark session comes out dark. A palette pinned
-         * to its own mode, or a `name` from before the axis, states the mode
-         * itself and keeps it.
+         * to one mode, or a `name` from before the axis, already contains the
+         * mode and keeps it.
          */
         getActiveThemeOptions(name?: string): ThemeOptions {
           const all = this.allThemes()
@@ -265,8 +265,8 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
        * Pick a palette. A name from before light and dark were an axis sets
        * the mode it spelled as well, so an old share link, a saved figure spec
        * and `jbrowse-img --theme darkStock` all still mean what they said.
-       * Either that or a palette pinned to its own mode drops a held mode,
-       * which would otherwise resurface on the next palette change.
+       * A palette pinned to one mode also drops a held mode, which would
+       * otherwise resurface on the next palette change.
        */
       setThemeName(name: string) {
         const { themeName, mode } = resolveThemeSelection(name)
@@ -310,12 +310,10 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
        * Draw the session light or dark, leaving the palette alone. `system`
        * follows the OS preference. Satisfies `ThemeModeSession`, so
        * `useSessionPalette` works against an app session and an embedded one
-       * alike, and a host that follows its own dark-mode state calls this.
+       * alike, and a host that tracks dark mode itself calls this.
        *
-       * `themeOptions` carries the mode to the RPC worker, so the labels baked
-       * into a rendered image follow it along with what React draws. That used
-       * to take a write into the config `theme` slot, because mode lived
-       * inside a palette and there was nowhere else to put it.
+       * `themeOptions` includes the mode for the RPC worker, so the labels baked
+       * into a rendered image follow it along with what React draws.
        */
       setThemeMode(mode: ThemeModeSelection) {
         self.sessionThemeMode = mode

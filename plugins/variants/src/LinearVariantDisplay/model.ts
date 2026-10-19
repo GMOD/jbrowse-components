@@ -78,7 +78,7 @@ export default function stateModelFactory(
       /**
        * #getter
        * The attribute the Attribute dialog opens on, '' under the impact or
-       * SV type preset, each of which has its own row.
+       * SV type preset, each of which has a separate row.
        */
       get colorByAttribute(): string {
         return this.colorsByConsequenceImpact || this.colorsBySvType
@@ -108,10 +108,10 @@ export default function stateModelFactory(
     .views(() => ({
       /**
        * #getter
-       * Names what the track holds in every menu row, chip and indicator, so
-       * a variant track says "Variant height" and "Showing 3 variants" rather
-       * than "feature". The context menu's per-hit noun still comes from the
-       * annotation's own type where it has one.
+       * The noun for what the track holds, used in every menu row, chip and
+       * indicator, so a variant track shows "Variant height" and "Showing 3
+       * variants" rather than "feature". The context menu's per-hit noun still
+       * comes from the annotation's type where it has one.
        */
       get featureNoun() {
         return 'variant'

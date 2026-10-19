@@ -7,16 +7,16 @@ import { createContext } from 'react'
  * Two members share it: the display's own control row
  * (`BottomRightIndicators`) and the chrome's background-progress chip
  * (`DisplayChromeOverlays.BackgroundProgress`). Both portal into the same
- * per-track overlay node, so each claiming the corner with its own
- * `position: absolute` box draws one over the other. The chrome renders this
+ * per-track overlay node, so each member that claims the corner with its own
+ * `position: absolute` box draws over the other. The chrome renders this
  * box, lays its chip out in it, and publishes the node here so the control row,
- * rendered inside the chrome's body, lands in the same flex column.
+ * rendered inside the chrome's body, sits in the same flex column.
  *
- * - A host writing their own display over `DisplayChromeBase` builds the corner
- *   from this; the chip is told to render in-flow, with no `position` and no
- *   corner offsets.
+ * - A host writing a custom display over `DisplayChromeBase` builds the corner
+ *   from this; the chip renders in-flow, with no `position` and no corner
+ *   offsets.
  * - `null` outside a chrome (a standalone mount, a unit test, the SVG export),
- *   where `BottomRightIndicators` anchors its own box.
+ *   where `BottomRightIndicators` renders and anchors the box itself.
  */
 export const BottomRightCornerContext = createContext<HTMLElement | null>(null)
 

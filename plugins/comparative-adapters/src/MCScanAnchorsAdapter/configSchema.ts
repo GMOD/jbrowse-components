@@ -18,7 +18,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * See the [MCScan anchors tutorial](/docs/tutorials/mcscan_synteny_grape_peach), which
  * also covers converting an MCScanX run into these files.
  *
- * #gotcha The anchors file carries no coordinates: a gene is placed by
+ * #gotcha The anchors file has no coordinates: the adapter places a gene by
  * matching its id against column 4 of a BED, byte for byte. A row naming a
  * gene neither BED has is dropped, so a partial mismatch draws fewer ribbons
  * than the file holds rather than erroring, and only a file where no row

@@ -64,7 +64,7 @@ From [SnackbarModel](../snackbarmodel): <span id="getter-snackbarmessageset">[`s
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-getactivethemeoptions">**getActiveThemeOptions**</span><br><code>(_name?: string &#124; undefined) =&gt; ThemeOptions &#124; undefined</code> | Raw `ThemeOptions` for the active theme, which every view's SVG export threads into each display's `renderSvg` as a `configTheme` and rebuilds outside React. The config slot is the whole answer here because it is the whole of an embedded product's theming: no picker, no `allThemes`, and it is what `setThemeMode` writes and `palette` resolves from. `name` is accepted and ignored — the app session's counterpart looks a named preset up in `allThemes()`. |
+| <span id="method-getactivethemeoptions">**getActiveThemeOptions**</span><br><code>(_name?: string &#124; undefined) =&gt; ThemeOptions &#124; undefined</code> | Raw `ThemeOptions` for the active theme, which every view's SVG export threads into each display's `renderSvg` as a `configTheme` and rebuilds outside React. The config slot is the whole answer here because it is the whole of an embedded product's theming: no picker, no `allThemes`, and it is what `setThemeMode` writes and `palette` resolves from. `name` is ignored here — the app session's counterpart looks a named preset up in `allThemes()`. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>3 inherited methods from one model</summary>
@@ -78,7 +78,7 @@ From [BaseSessionModel](../basesessionmodel): <span id="method-getpreferencedefa
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setthememode">**setThemeMode**</span><br><code>(mode: PaletteMode) =&gt; void</code> | Switch the session to light or dark, leaving the host's configured colors alone. `themeOptions` carries the mode to the renderer, so labels drawn in the worker follow it, and `palette` is derived from the same args, so React-drawn elements follow it too. An embedder who sets only a React-side palette leaves the worker-drawn labels in the old mode.<br><br>This used to write `palette.mode` into the config `theme` slot, which meant merging at two levels to avoid discarding the brand the host had passed to `createViewState`. Mode is its own axis now, so there is nothing to merge and nothing to discard. |
+| <span id="action-setthememode">**setThemeMode**</span><br><code>(mode: PaletteMode) =&gt; void</code> | Switch the session to light or dark, leaving the host's configured colors alone. The renderer receives the mode in `themeOptions`, so labels drawn in the worker follow it, and `palette` is derived from the same args, so React-drawn elements follow it too. An embedder who sets only a React-side palette leaves the worker-drawn labels in the old mode.<br><br>The mode is stored in `sessionThemeMode`, apart from the config `theme` slot, so nothing is merged and the brand the host passed to `createViewState` is never discarded. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>24 inherited actions from 2 models</summary>

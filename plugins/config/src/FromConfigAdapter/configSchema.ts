@@ -35,7 +35,7 @@ const configSchema = ConfigurationSchema(
      * the features themselves, as an array of plain objects. Each needs a
      * `uniqueId`, `refName`, `start` and `end` (0-based half-open); anything
      * else — `name`, `type`, `score`, `strand`, nested `subfeatures` — is
-     * carried through onto the feature as-is.
+     * copied onto the feature unchanged.
      */
     features: {
       type: 'frozen',

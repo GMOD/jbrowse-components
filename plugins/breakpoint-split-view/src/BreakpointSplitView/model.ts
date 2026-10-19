@@ -113,7 +113,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         height: types.stripDefault(types.number, defaultHeight),
         /**
          * #property
-         * draw the links whose two ends land in the same panel, as well as the
+         * draw the links whose two ends fall in the same panel, as well as the
          * ones that cross between panels
          */
         showIntraviewLinks: types.stripDefault(types.boolean, true),
@@ -198,8 +198,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * The census entry for this view: its panels are views in their own
-       * right, and it holds no tracks outside them.
+       * The census entry for this view: its panels are separate
+       * views, and it holds no tracks outside them.
        */
       get ownViews() {
         return [...self.views]
@@ -280,8 +280,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * What the loading screen says while `showLoading`, read off the
-       * assembly whose load is the wait; undefined otherwise.
+       * The loading screen's text while `showLoading`, taken from the
+       * assembly being waited on; undefined otherwise.
        */
       get loading() {
         return viewLoading(this.showLoading, () => this.loadingAssembly)
@@ -305,11 +305,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        *
        * Per row and not one for the view, because the rows are independently
        * assembly-picked (the import form has an assembly selector per row, and
-       * `init` carries one per entry). Resolving every row's refNames through
+       * `init` holds one per entry). Resolving every row's refNames through
        * row 0's assembly is right only while they all name the same one: on a
-       * genuinely cross-assembly view the strict resolver answers `undefined`
-       * for every contig belonging to any other row, and the overlay drew NO
-       * connectors at all.
+       * genuinely cross-assembly view the strict resolver returns `undefined`
+       * for every contig belonging to any other row, so the overlay would draw
+       * no connectors at all.
        *
        * A row whose assembly has not loaded is `undefined` rather than a hole,
        * so a level index stays a level index; its features drop, as they do for
@@ -371,7 +371,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * The overlay tracks the overlay fetch asks for: the variant tracks. An
-       * alignments track's reads come off its own display instead.
+       * alignments track's reads come from the track's display instead.
        */
       get fetchedTracks(): OverlayTrack[] {
         return this.overlayTracks.filter(
@@ -450,8 +450,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * Per row, whether the track is minimized and whether its own pileup
-       * draws a junction's connector, so the overlay leaves it out. Reads no
+       * Per row, whether the track is minimized and whether the track's
+       * pileup draws a junction's connector, so the overlay leaves it out. Reads no
        * scroll or zoom.
        */
       connectorRows(trackId: string): ConnectorRow[] {
@@ -1013,7 +1013,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * What a bare click on the shared rubberband strip offers: one row per
        * panel, each holding that panel's own click menu at the base it paints
        * under `px`. A pixel rather than an offset, since each panel maps it
-       * through its own `pxToBp`.
+       * through that panel's `pxToBp`.
        */
       rubberbandClickMenuItemsAtPx(px: number): MenuItem[] {
         return multiLevelRowClickMenuItems(self.views, px)

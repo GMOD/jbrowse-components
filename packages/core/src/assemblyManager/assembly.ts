@@ -147,9 +147,9 @@ export default function assemblyFactory(
         /**
          * #volatile
          * The URL the in-flight phase is fetching, when it named one. A load
-         * that hangs shows this and not the label: "Downloading chromosome
-         * aliases" forever says nothing a user can act on, and the address of
-         * the server that stopped answering does.
+         * that hangs shows this instead of the label: a user cannot act on
+         * "Downloading chromosome aliases" shown forever, but can act on the
+         * address of the server that stopped answering.
          */
         statusSource: undefined as string | undefined,
         /**
@@ -221,11 +221,11 @@ export default function assemblyFactory(
     .actions(self => ({
       /**
        * #action
-       * Records what the in-flight load is doing. Its own actions block (rather
-       * than sitting next to setLoaded) so loadPre can hand `self.setStatus` to
-       * the adapters as a plain callback: it fires after awaits, outside the
-       * action that started the load, and a volatile write there has to go
-       * through an action of its own.
+       * Records what the in-flight load is doing. It sits in a separate actions
+       * block (rather than next to setLoaded) so loadPre can hand
+       * `self.setStatus` to the adapters as a plain callback: it fires after
+       * awaits, outside the action that started the load, and a volatile write
+       * there has to go through an action.
        */
       setStatus(status?: RpcStatus) {
         self.statusMessage = statusMessageText(status)
@@ -595,19 +595,18 @@ export default function assemblyFactory(
        * outside — off a feature, out of an RPC result, out of a session spec.
        * A name the assembly does not know comes back unchanged, and so does one
        * asked for before the aliases load, where `getCanonicalRefName` answers
-       * `undefined` for the first and THROWS for the second.
+       * `undefined` for the first and throws for the second.
        *
        * The throw is the reason to call this rather than hand-roll
        * `getCanonicalRefName(x) ?? x`: that idiom looks total and is not, and
        * these resolutions sit in getters and render paths that run from the
-       * first frame, before the alias file has landed. Answering with the input
-       * there means the comparison downstream may miss, but it misses for one
-       * frame and re-runs, where a throw out of a getter takes the view down.
-       * `initialized` is the gate for a caller that needs to know which answer
-       * it got.
+       * first frame, before the alias file has landed. The comparison
+       * downstream may miss on the input for one frame and then re-runs, where
+       * a throw out of a getter takes the view down. A caller that needs to
+       * know which answer it got checks `initialized`.
        *
        * See getCanonicalRefName() for what canonical means when
-       * `refNameAliases` carries an `override`.
+       * `refNameAliases` has an `override`.
        */
       getCanonicalRefName2(refName: string) {
         return self.initialized
@@ -710,7 +709,7 @@ export default function assemblyFactory(
        * The empty-intersection verdict for an adapter under this assembly, if
        * the map load reached one. Keyed by `adapterConfigCacheKey`, which is
        * what a track already computes as its `rpcSessionId` — so a track looks
-       * up its own diagnostic with no plumbing between here and it. Undefined
+       * up the diagnostic for its adapter with no plumbing between here and it. Undefined
        * until the map has loaded, which is the same instant the track's first
        * fetch resolves.
        */

@@ -58,9 +58,9 @@ export default function sessionModelFactory({
          * Volatile rather than a view over storage, because a view is a MobX
          * computed and this one would read no observable: it would compute once
          * inside the plugin store's `observer` and cache the list forever. And
-         * volatile rather than a property, because the list belongs to the
-         * browser rather than to this session — sharing or exporting a session
-         * must not carry it.
+         * volatile rather than a property, because the browser stores the
+         * list, not the session — sharing or exporting a session must not
+         * include it.
          */
         permanentPlugins: readPermanentPlugins(),
         /**

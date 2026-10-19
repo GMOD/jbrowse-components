@@ -68,10 +68,10 @@ function clampCharactersPerRow(n: number) {
  * #stateModel SequenceFeatureDetails
  * #category Widget
  * User preferences for the sequence readout under a feature's details, seeded
- * from and written straight back to localStorage. Nothing here is snapshotted
- * or reads the tree, so an instance is cheap and needs no lifecycle: a holder
- * that only sometimes shows a panel (e.g. a track's right-click dialog) creates
- * one when it opens rather than carrying it around.
+ * from and written straight back to localStorage. The model is not snapshotted
+ * and does not read the tree, so an instance is cheap and needs no lifecycle: a
+ * holder that only sometimes shows a panel (e.g. a track's right-click dialog)
+ * creates one when it opens and keeps none otherwise.
  *
  * `BaseFeatureWidget` holds one as `sequenceFeatureDetails`, which is where a
  * caller changing the readout reaches these actions.

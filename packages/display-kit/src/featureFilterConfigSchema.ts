@@ -5,7 +5,7 @@ import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
  * #config FeatureFilter
  * #category display
  * The tests a feature display applies to the records it fetched, its `filter`
- * slot. A display adding tests of its own extends this schema. A list is
+ * slot. A display that adds more tests extends this schema. A list is
  * shorthand for `{ expressions: [...] }`, and a settings bag names the members
  * one by one.
  *

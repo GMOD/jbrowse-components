@@ -28,7 +28,7 @@ signals on both strands:
 
 ### Example: one strand only
 
-Both strands are scanned by default. Turn one off where the motif is
+The adapter scans both strands by default. Turn one off where the motif is
 strand-specific, so the track does not report the reverse-complement hit as a
 second site:
 
@@ -63,7 +63,7 @@ sequence changes.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "SequenceSearchAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Adapter slots go inside the track's `adapter`: `"adapter": { "type": "SequenceSearchAdapter", ... }`. `SequenceSearchAdapter` has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

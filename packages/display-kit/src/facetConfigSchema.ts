@@ -41,8 +41,8 @@ export const facetConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot field
-     * The feature field each value of which packs its own labelled section
-     * of the track: a field name, a dotted path into a structured field
+     * The feature field whose values each get a labelled section of the
+     * track: a field name, a dotted path into a structured field
      * (`INFO.SVTYPE`, a read's `tags.HP`), a `jexl:` expression, or
      * `strand`. A feature with no value stacks last, under `field: none`
      * (`(no value)` for a `jexl:` field, whose sections show the value alone).
@@ -51,7 +51,7 @@ export const facetConfigSchema = ConfigurationSchema(
      * The alignments displays also take a read dimension here:
      * `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`,
      * `mapq`, `mateRefName` or `mateAssembly`. Writing `facet: "strand"`
-     * lands here.
+     * sets this slot.
      */
     field: {
       type: 'featureField',

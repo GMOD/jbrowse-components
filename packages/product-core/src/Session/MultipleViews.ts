@@ -243,14 +243,13 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
-         * Put the named views into the given relative order, leaving views not
-         * named in their own slots.
+         * Put the named views into the given relative order, leaving unnamed views
+         * in their slots.
          *
          * `session.views` is the one ordering, so this is how a channel that
          * states an order in some other vocabulary gets it applied: a session
-         * spec's `layout` names views per panel, top to bottom, and that used to
-         * be honoured by the panel assignment array's order. Now the assignment
-         * carries membership only, so the layout says it here instead, once.
+         * spec's `layout` names views per panel, top to bottom, and this applies
+         * that order. The panel assignment array holds membership only.
          */
         orderViews(ids: string[]) {
           self.views = cast(applyOrderWithin(self.views, ids, v => v.id))
@@ -277,7 +276,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * #action
          * swap `view` for a new view of `typeName`, in the slot it occupied.
          *
-         * The launchers that build a view of a DIFFERENT type out of one you are
+         * The launchers that build a view of a different type out of one you are
          * already looking at — launch synteny view, read-vs-ref, split view —
          * otherwise append, leaving the source view above the thing it produced
          * and a stack of two views showing the same locus. This is the "replace"
@@ -285,22 +284,22 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * new view lands where the reader was looking instead of at the bottom of
          * the session.
          *
-         * A launcher whose result is the SAME type as its source does not come
+         * A launcher whose result is the same type as its source does not come
          * here and should not: collapse introns offers "Replace current view" by
          * navigating the view it was invoked on, which keeps the view's identity
-         * and so lets its snackbar offer an Undo. Swapping in a new node would
-         * leave nothing to undo onto.
+         * and so lets its snackbar offer an Undo; a swapped-in new node has no
+         * earlier view to undo onto.
          *
          * The slot is `session.views`, the order views render in (a tab's
          * `viewIds` says which tab a view is in, not where in it), so the swap
-         * lands in place.
+         * puts the new view in place.
          *
-         * WHICH panel is a separate question and this does not answer it: the
-         * new view arrives in no tab, and `homeUnassignedViews` puts it in the
+         * Which panel the view joins is a separate question this does not answer: the
+         * new view starts in no tab, and `homeUnassignedViews` puts it in the
          * active panel — the same panel only when the replaced view was in the
          * active one. In practice it is, since clicking into a view activates
          * its panel, and the launch that offers a replace is a click on that
-         * view's own menu.
+         * that view's menu.
          */
         replaceView<N extends string>(
           view: IBaseViewModel,
@@ -351,7 +350,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * (`core/util/TimeTraveller`, which calls this), and every view carries
          * an `ElementId` — so MST reconciles by identifier and destroys what the
          * target lacks, inside the action, with the components still mounted.
-         * Measured on a redo across a closed view, with the restored view
+         * We measured a redo across a closed view, with the restored view
          * repainted first: 4 liveliness reads of its display before this, 0
          * after.
          *
@@ -360,14 +359,14 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * check), so identity here is the pair, not the id.
          *
          * **Views, and deliberately not what is under them.** A track or a
-         * display the snapshot drops is still destroyed in place, and that is
-         * not this door being worse than the others: `hideTrackGeneric` is a
+         * display the snapshot drops is still destroyed in place, which is no
+         * worse than the other removal paths: `hideTrackGeneric` is a
          * plain `tracks.remove` and measures louder (5 reads to undo's 4).
          * Detaching one would be worse than the destroy it replaced — a
-         * detached display is a LIVE root, and `getContainingView` walks
+         * detached display is a live root, and `getContainingView` walks
          * parents and throws when the walk finds no view, where a dead node
          * only warns. At or above the view is the only place that walk still
-         * lands, which is why ADR-069's rule stops there.
+         * ends, which is why ADR-069's rule stops there.
          */
         takeOutViewsMissingFrom(snapshot: unknown) {
           const incoming = viewsOfSessionSnapshot(snapshot)

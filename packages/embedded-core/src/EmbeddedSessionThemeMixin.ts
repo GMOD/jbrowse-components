@@ -70,7 +70,7 @@ export function EmbeddedSessionThemeMixin(pluginManager: PluginManager) {
        * outside React. The config slot is the whole answer here because it is
        * the whole of an embedded product's theming: no picker, no `allThemes`,
        * and it is what `setThemeMode` writes and `palette` resolves from. `name`
-       * is accepted and ignored — the app session's counterpart looks a named
+       * is ignored here — the app session's counterpart looks a named
        * preset up in `allThemes()`.
        */
       getActiveThemeOptions(_name?: string) {
@@ -100,16 +100,15 @@ export function EmbeddedSessionThemeMixin(pluginManager: PluginManager) {
       /**
        * #action
        * Switch the session to light or dark, leaving the host's configured
-       * colors alone. `themeOptions` carries the mode to the renderer, so
+       * colors alone. The renderer receives the mode in `themeOptions`, so
        * labels drawn in the worker follow it, and `palette` is derived from
        * the same args, so React-drawn elements follow it too. An embedder who
        * sets only a React-side palette leaves the worker-drawn labels in the
        * old mode.
        *
-       * This used to write `palette.mode` into the config `theme` slot, which
-       * meant merging at two levels to avoid discarding the brand the host had
-       * passed to `createViewState`. Mode is its own axis now, so there is
-       * nothing to merge and nothing to discard.
+       * The mode is stored in `sessionThemeMode`, apart from the config `theme`
+       * slot, so nothing is merged and the brand the host passed to
+       * `createViewState` is never discarded.
        */
       setThemeMode(mode: PaletteMode) {
         self.sessionThemeMode = mode

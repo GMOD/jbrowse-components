@@ -53,7 +53,7 @@ const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
 
 /**
  * #api
- * The opacity every alignment is drawn at before its own fade: the constant,
+ * The opacity every alignment is drawn at before the fade: the constant,
  * `defaultValue` while it is unset, or under a field the most opaque value
  * its range reaches.
  */
@@ -71,7 +71,7 @@ export function opacityLevel(
 
 /**
  * #api
- * `range` rescaled so the mapping's most opaque end lands on `value`,
+ * `range` rescaled so the mapping's most opaque end equals `value`,
  * keeping each entry's share of it. A threshold or a text column with no
  * range written draws every bin at the level, so it gets one `value` per bin
  * rather than the number column's default fade.

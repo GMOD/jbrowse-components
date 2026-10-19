@@ -28,8 +28,8 @@ const BigBedAdapter = ConfigurationSchema(
   {
     /**
      * #slot
-     * location of the BigBed file. It carries its own index and summary zoom
-     * levels, so there is no separate index to configure.
+     * location of the BigBed file. The file has an index and summary zoom
+     * levels built in, so there is no separate index to configure.
      */
     bigBedLocation: {
       type: 'fileLocation',

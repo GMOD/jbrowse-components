@@ -35,7 +35,7 @@ import { MANHATTAN_MARK } from './ldPlot.ts'
  * #example
  * LocusZoom-style coloring in two marks: every other point by its r² to
  * the index SNP in five bins, then the index alone as a pink diamond over
- * them, the key listing the bins highest first and the index as its own row.
+ * them, the key listing the bins highest first and the index in a separate row.
  * The LD data is a second source on `GWASAdapter`, so it nests under
  * `adapter`, while the plot goes in `displayDefaults`. The track menu's
  * "Color by LD to index SNP" makes the same pair of each point mark of a

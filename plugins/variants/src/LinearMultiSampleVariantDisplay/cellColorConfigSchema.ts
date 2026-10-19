@@ -14,7 +14,7 @@ import {
  * #config VariantCellColor
  * #category display
  * The multi-sample variant display's `color` setting: the hue of every
- * alt-carrying genotype cell, which `shadeByDosage` then lightens for a
+ * genotype cell with an alt allele, which `shadeByDosage` then lightens for a
  * heterozygote. Unset, the cells paint the genotype colors. A CSS color or
  * `jexl:` callback in `value` paints every alt cell of a variant; a `field`
  * gives each of its values a color with a key. Three fields are presets:

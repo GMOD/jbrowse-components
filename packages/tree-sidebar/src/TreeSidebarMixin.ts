@@ -186,17 +186,17 @@ export interface ClusterRun {
 /**
  * #stateModel TreeSidebarMixin
  * #category display
- * #crossCuttingMixin Row set with a dendrogram sidebar, its arrangement the display's `rows` config object and its row colors the `rowColor` object, each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the sidebar toggles, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through, the rows derived from it (`editableSources`, `clusterableSources`) with the arrangement dialog's `applyRowEdits`, the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. A display supplies `discoveredRows`, and `guideTreeNewick` where its adapter carries a tree, and overrides the hooks its rows need
+ * #crossCuttingMixin Row set with a dendrogram sidebar, its arrangement the display's `rows` config object and its row colors the `rowColor` object, each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the sidebar toggles, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through, the rows derived from it (`editableSources`, `clusterableSources`) with the arrangement dialog's `applyRowEdits`, the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. A display supplies `discoveredRows`, and `guideTreeNewick` where its adapter has a tree, and overrides the hooks its rows need
  *
- * The rows are derived in stages, each a computed of its own: the display's
+ * The rows are derived in stages, each a separate computed: the display's
  * `discoveredRows`, then `expandedRows` (`expandRows`: a variant display's
  * haplotypes), then `editableSources`, ordered by `rowOrder`, relabelled by
- * `rows.labels` and each carrying its resolved `rowColor`, then
+ * `rows.labels` and each with its resolved `rowColor`, then
  * `clusterableSources`, narrowed to the focus, then `bandedSources`, stacked
  * in the bands `rowBanding` names.
  *
  * A row's color is `resolvedRowColors`: its `rowColor` entry (a `name` pair,
- * or the color `dealtRowColors` deals its attribute value), else its own
+ * or the color `dealtRowColors` deals its attribute value), else the row's
  * `color`, else the row palette's color by name where `rowPaletteDeals`. The
  * sidebar draws it as a bar beside the row's label, and a display paints its
  * marks in it where `rowColorPaintsMarks`. Its key is `rowColorScales`, and a
@@ -232,7 +232,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #property
        * Transient declarative launch spec, the same idea as `runClustering`:
-       * set `{refName, pos}` to order the rows once by the value each carries
+       * set `{refName, pos}` to order the rows once by the value each row has
        * at that genomic column — the session-expressible form of the
        * right-click "Sort rows by ... here". `setupRowSortAutorun` applies it
        * once the region containing it has loaded and then clears it, so the
@@ -257,7 +257,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * Whether tree nodes are positioned by branch length (dendrogram) or
+       * Whether the tree draws nodes at their branch length (dendrogram) or
        * evenly by topology (cladogram).
        */
       get showBranchLength(): boolean {
@@ -316,8 +316,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #getter
        * The `rowColor` object: the row attribute whose values take colors,
-       * `name` where it names none, and the values given a color of their
-       * own.
+       * `name` where it names none, and the values with an assigned color.
        */
       get rowColorSetting(): RowColorSetting {
         return liftRowColor({
@@ -361,7 +360,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * Overridable hook: the guide tree the display's adapter supplies, as
        * newick, which `rowTree` draws while some rotation of it lists
        * `rows.domain`. It never enters `rows.tree`, since the adapter
-       * re-supplies it on every load. None by default.
+       * re-supplies it on every load. `undefined` by default.
        */
       get guideTreeNewick(): string | undefined {
         return undefined
@@ -372,7 +371,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * rows stand for something named by another name (a variant display's
        * haplotype rows, each answering to its sample). An order, a label, a
        * color and a focus written against the alias reach every row answering
-       * to it. None by default.
+       * to it. `undefined` by default.
        */
       get rowAlias(): RowAlias | undefined {
         return undefined
@@ -474,7 +473,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The tree the rows are arranged by, as newick: `rows.tree`, else the
+       * The tree that arranges the rows, as newick: `rows.tree`, else the
        * guide tree while `guideTreeHonoursDomain`. A reorder no rotation
        * produces hides the guide tree, and a reset brings it back.
        */
@@ -499,8 +498,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * Overridable hook: the names the rows are placed by, `rows.domain` by
-       * default; MAF leads with a drawn tree's leaves.
+       * Overridable hook: the row names in display order, `rows.domain` by
+       * default; MAF puts a drawn tree's leaves first.
        */
       get rowOrder(): readonly string[] {
         return self.rowDomain
@@ -535,7 +534,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * #getter
        * Overridable hook: what one row is called, which titles the row color
        * key where it lists the rows by name in a shared panel. "Row" by
-       * default, which only a display of its own that shares a panel would
+       * default, which only a display that shares a panel would
        * show; a wiggle overlay's rows are subtracks.
        */
       get rowNoun(): string {
@@ -543,7 +542,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * Overridable hook: the row fields that are a display's own plumbing,
+       * Overridable hook: the row fields that are display plumbing,
        * which the arrangement dialog never lists as a column.
        */
       get internalRowFields(): readonly string[] {
@@ -553,14 +552,14 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * #getter
        * Overridable hook: the row attributes a reader can color the rows by,
        * offered beside None and Each row. By default every attribute a row
-       * carries but its name, label and colors.
+       * has but its name, label and colors.
        */
       get rowColorFields(): readonly string[] {
         return extraColumns(self.expandedRows, NOT_COLOR_FIELDS)
       },
       /**
        * #getter
-       * A line for the corner notice when rows have arrived and none carries
+       * A line for the corner notice when rows have arrived and none has
        * the field `rowBanding` bands by, which then bands nothing. Each
        * display spreads it into its `notices`.
        */
@@ -619,8 +618,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * #getter
        * Whether `rowColor` gives its field's values colors the config does
        * not, so "Reset row order" is offered for a recolor too: whether
-       * `rowColorResetTarget` has anything to write. What the rows are
-       * colored by is no arrangement, so picking it is never custom.
+       * `rowColorResetTarget` has anything to write. A choice of row color
+       * source is no arrangement, so it is never custom.
        */
       get rowStylingIsCustom(): boolean {
         return (
@@ -633,7 +632,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * What the rows are colored by, as the arrangement dialog and a menu
+       * The choice of what colors the rows, as the arrangement dialog and a menu
        * offer it: '' for none dealt, `name` for a palette color each, or an
        * attribute.
        */
@@ -654,7 +653,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The attribute the rows are colored by, or '' by `name`.
+       * The attribute that colors the rows, or '' for `name`.
        */
       get rowColorAttribute(): string {
         const { field } = self.rowColorSetting
@@ -685,7 +684,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * Each row's color, by name: its `rowColor` entry, else its own
+       * Each row's color, by name: its `rowColor` entry, else the row's
        * `color`, else the palette's where `rowPaletteDeals`. The one answer
        * every display paints a row's color from.
        */
@@ -902,8 +901,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * default; off wherever the rows it would lay against are not drawn.
        * This is the single gate: the on-screen sidebar, the SVG export,
        * `spatialIndex` (subtree hover) and the tooltip dead zone the sidebar
-       * reserves all read `hierarchy`, so none keeps drawing or reserving
-       * space on its own.
+       * reserves all read `hierarchy`, so nothing keeps drawing or reserving
+       * space when the tree is off.
        */
       get drawsTree(): boolean {
         return true
@@ -992,7 +991,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * Whether the tree carries merge heights, so a dendrogram layout differs
+       * Whether the tree has merge heights, so a dendrogram layout differs
        * from the cladogram; gates the "Tree branch lengths" toggle.
        */
       get treeHasBranchLengths() {
@@ -1076,7 +1075,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         /**
          * #action
          * Arrange the rows in `rows`' order, ahead of any name the current
-         * order carries that `rows` does not. A clustering run passes its
+         * order has that `rows` does not. A clustering run passes its
          * result, and the tree and its provenance land with the order; any
          * other reorder that moves a row drops the tree, which no longer
          * describes it.
@@ -1105,7 +1104,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         /**
          * #action
          * The arrangement dialog's submit: the rows in their new order, each
-         * carrying the label the reader left on it, and the `rowColor` object
+         * with the label the reader left on it, and the `rowColor` object
          * the dialog shows, written where it differs from the config's. The
          * labels go to `rows` by the rule `labelEdits` states, and the order
          * to `rows.domain` unless it moves no row, so a submit that changes

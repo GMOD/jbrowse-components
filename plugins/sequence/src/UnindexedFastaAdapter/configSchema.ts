@@ -42,8 +42,8 @@ const UnindexedFastaAdapter = ConfigurationSchema(
     /**
      * #slot
      * location of the plain FASTA. With no index there are no byte offsets to
-     * seek to, so the whole file is downloaded and parsed on first use and held
-     * in memory.
+     * seek to, so the adapter downloads and parses the whole file on first use and
+     * holds it in memory.
      */
     fastaLocation: {
       type: 'fileLocation',

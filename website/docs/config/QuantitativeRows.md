@@ -1,7 +1,7 @@
 ---
 id: quantitativerows
 title: QuantitativeRows
-description: "A quantitative display's rows: source is the one field a quantitative row can be, since a wiggle carries a score per base and a subtrack name and nothing else to put on rows."
+description: "A quantitative display's rows: source is the one field a quantitative row can be, since a wiggle has a score per base and a subtrack name, and nothing else to put on rows."
 sidebar_label: Display -> QuantitativeRows
 ---
 
@@ -21,7 +21,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 ```
 
 A quantitative display's `rows`: `source` is the one field a quantitative row
-can be, since a wiggle carries a score per base and a subtrack name and
+can be, since a wiggle has a score per base and a subtrack name, and
 nothing else to put on rows. The arrangement members are the shared `Rows`
 object's.
 

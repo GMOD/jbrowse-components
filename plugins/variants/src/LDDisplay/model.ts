@@ -268,7 +268,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        * #getter
        * The `color` object under the preset of the loaded metric, so a stale
        * triangle during a metric switch keeps its hue. Both presets name a
-       * scheme, so the encoding always carries one.
+       * scheme, so the encoding always has one.
        */
       get colorEncoding(): ContinuousRef & { scheme: ColorSchemeName } {
         return matrixColorEncodingOf(

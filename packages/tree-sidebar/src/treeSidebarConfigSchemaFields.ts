@@ -101,7 +101,7 @@ export function treeSidebarConfigSchemaFields({
  * slot it does not have.
  */
 export function rowSeparatorsConfigSchemaFields({
-  rowSeparators = 'draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them',
+  rowSeparators = 'draw a hairline between adjacent rows; off by default, because neighbouring rows that differ in color already show a boundary and the line helps only where they match — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them',
 }: {
   /** Overridable, but the default sentence fits any row display. */
   rowSeparators?: string

@@ -133,7 +133,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
         /**
          * #getter
          * The lane an all-vs-all track draws for the view's own assembly: its
-         * mate-assembly group key IS that assembly name. Hidden as a group key
+         * mate-assembly group key is that assembly name. Hidden as a group key
          * rather than filtered out of the fetch, so unchecking the option shows
          * it again without a refetch.
          *
@@ -217,9 +217,9 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
            * #action
            * The inherited fetch, with each region's assembly respelled the way
            * the track declares it. The view names its assembly canonically and
-           * the adapter answers a region by comparing that text against its own
-           * `assemblyNames` in a worker with no assembly manager — so a track
-           * declaring an alias fetched nothing. The comparative views do the
+           * the adapter answers a region by comparing that text against its configured
+           * `assemblyNames` in a worker with no assembly manager, so a track
+           * declaring an alias would fetch nothing. The comparative views do the
            * same through `renameRegionsForAdapter`.
            */
           fetchNeeded(needed: IndexedRegion[]) {

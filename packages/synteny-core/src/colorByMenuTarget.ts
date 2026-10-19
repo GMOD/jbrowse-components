@@ -13,9 +13,9 @@ export interface ColorByMenuTrack {
 
 /**
  * #api
- * Project a view carrying `TrackColorsMixin` onto the menu builder's input.
+ * Project a view with `TrackColorsMixin` onto the menu builder's input.
  * `track` is offered once two tracks overlay, and `reference` where the view
- * says it has a reference to anchor on.
+ * has a reference to anchor on.
  */
 export function colorByMenuTargetFor(
   model: TrackColorsModel,

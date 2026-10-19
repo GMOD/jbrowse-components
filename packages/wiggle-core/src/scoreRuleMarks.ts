@@ -67,9 +67,8 @@ export function scoreRuleMarks({
  * Without this a rule is dropped from the plot in the views where it is most
  * useful. Autoscale follows the visible data, so over a homozygous deletion a
  * coverage domain collapses to about `[0, 1]` and a rule at the diploid depth
- * falls outside it, though the rule's position above the data is the most
- * informative mark in that view, and a rule that vanishes leaves nothing
- * behind to notice.
+ * falls outside it, though the rule's position above the data is what the reader needs to see
+ * in that view, and a dropped rule leaves no visible trace.
  *
  * Applied to the raw range, before `getNiceDomain` takes the `scales.y`
  * domain bounds. Those still win: a rule outside an explicitly bounded axis

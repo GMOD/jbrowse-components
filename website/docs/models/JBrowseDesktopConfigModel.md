@@ -10,7 +10,7 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 Holds JBrowse Desktop's loaded config at `rootModel.jbrowse`, adding the
 desktop-only `sourceConfigUrl` and `webExportUrl` slots.
 
-JBrowseDesktopConfigModel declares no members of its own — it composes the models below, and everything here is theirs.
+JBrowseDesktopConfigModel adds no members: it composes the models below, and every member listed here comes from them.
 
 ## Getters
 

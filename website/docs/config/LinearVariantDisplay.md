@@ -57,7 +57,7 @@ Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.
 
 ## Config slots
 
-These slots go on a display entry: `"displays": [{ "type": "LinearVariantDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Display slots go on a display entry: `"displays": [{ "type": "LinearVariantDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
@@ -70,7 +70,7 @@ These slots go on a display entry: `"displays": [{ "type": "LinearVariantDisplay
 | <span id="slot-showlabels">**showLabels**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (auto, nameAndDescription, name, description, none) = <code>'auto'</code> | Label text drawn beside each feature: "auto" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; "nameAndDescription", "name", "description", and "none" pin a choice at every zoom. Defaults to `auto`. Replaces the former showLabels on/off enum + showDescriptions boolean pair |
 | <span id="slot-maxlabelfeaturedensity">**maxLabelFeatureDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.2</code> | In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value<br>_advanced_ |
 | <span id="slot-maxdescriptionfeaturedensity">**maxDescriptionFeatureDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.1</code> | In "auto" showLabels mode, hide descriptions when visible feature density (features/pixel) exceeds this value. Lower than maxLabelFeatureDensity so descriptions drop before names<br>_advanced_ |
-| <span id="slot-color">**color**</span><br>[FeatureColor](../featurecolor) | The main fill of each feature: a CSS color or a jexl expression (`"goldenrod"`, `"jexl:…"`), or `{ field, domain, range }` to paint each value of a field its own `range` color, with a key. |
+| <span id="slot-color">**color**</span><br>[FeatureColor](../featurecolor) | The main fill of each feature: a CSS color or a jexl expression (`"goldenrod"`, `"jexl:…"`), or `{ field, domain, range }` to paint each value of a field in a `range` color, with a key. |
 | <span id="slot-showoutline">**showOutline**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | draw an outline around each feature |
 | <span id="slot-outlinecolor">**outlineColor**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | the outline's color while showOutline draws one; unset takes the theme's |
 | <span id="slot-featureheight">**featureHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>10</code> | height in pixels of the main body of each feature<br>_callback args:_ `feature` |

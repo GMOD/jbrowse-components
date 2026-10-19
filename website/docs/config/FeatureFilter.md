@@ -1,7 +1,7 @@
 ---
 id: featurefilter
 title: FeatureFilter
-description: "The tests a feature display applies to the records it fetched, its filter slot. A display adding tests of its own extends this schema."
+description: "The tests a feature display applies to the records it fetched, its filter slot. A display that adds more tests extends this schema."
 sidebar_label: Display -> FeatureFilter
 ---
 
@@ -14,7 +14,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 ```
 
 The tests a feature display applies to the records it fetched, its `filter`
-slot. A display adding tests of its own extends this schema. A list is
+slot. A display that adds more tests extends this schema. A list is
 shorthand for `{ expressions: [...] }`, and a settings bag names the members
 one by one.
 

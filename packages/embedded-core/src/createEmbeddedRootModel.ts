@@ -46,7 +46,7 @@ function migrated<T>(snapshot: T, pluginManager: PluginManager): T {
  * #category root
  * Root model shared by the single-view embedded products
  * (react-linear-genome-view, react-circular-genome-view). Each product supplies
- * its own model name, version, and session model, and may `.props()` on extra
+ * the model name, version, and session model, and may `.props()` on extra
  * fields (e.g. the LGV `disableAddTracks`/`drawerViewHeight`). Internet accounts
  * come from the same product-core mixin the web/desktop root models use, so
  * config `internetAccounts` are auto-initialized (no manual wiring needed).
@@ -134,11 +134,10 @@ export function createEmbeddedRootModel<
            *
            * Separate from `setSession` because that one takes the compiler-checked
            * snapshot type, which a value parsed out of JSON can never satisfy.
-           * The assertion below is the whole reason this exists: it is the single
-           * place the conversion happens, instead of every caller asserting at its
-           * own site. Nothing is unchecked at runtime — MST validates the snapshot
-           * as it applies it and throws on a mismatch, which is the check that
-           * actually matters for a value this app did not author.
+           * This method exists to hold the one assertion below, so callers do
+           * not each assert at their call site. At runtime MST validates the
+           * snapshot as it applies it and throws on a mismatch, which is the check
+           * that matters for a value this app did not author.
            */
           restoreSession(sessionSnapshot: SessionSnapshot) {
             pluginManager.assertSessionTypesLoaded(sessionSnapshot)

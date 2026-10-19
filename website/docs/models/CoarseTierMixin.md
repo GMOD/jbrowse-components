@@ -1,30 +1,31 @@
 ---
 id: coarsetiermixin
 title: CoarseTierMixin
-description: "The zoomed-out tier a display draws in place of its detail past its own threshold: MAF's summary bars."
+description: "The zoomed-out tier a display draws in place of its detail past a threshold the display sets: MAF's summary bars."
 sidebar_label: Mixin -> CoarseTierMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/CoarseTierMixin.ts).
 
-The zoomed-out tier a display draws in place of its detail past its own
-threshold: MAF's summary bars. This mixin adds the swap decision, the
+The zoomed-out tier a display draws in place of its detail past a threshold
+the display sets: MAF's summary bars. This mixin adds the swap decision, the
 per-region payloads and the read that fills them, through the shared fetch
-skeleton on its own rotation so the detail fetch's cancel never reaches it.
+skeleton on a separate rotation, so the detail fetch's cancel never reaches
+it.
 While the tier is up the byte gate measures the coarse read, so its refusal
 is the banner and the detail fetch stands down.
 
 The payloads live beside the foundation's per-region store, never in it,
-and the read records its own span: the two tiers fetch different widths of
-the same `displayedRegionIndex`, so one `loadedRegions` entry stamped by
-both narrowed the coarse span to the detail's on every zoom in and re-read
-the coarse adapter about an octave back out. The detail store keeps its
+and the read records a span for the coarse tier alone: the two tiers fetch
+different widths of the same `displayedRegionIndex`, so one `loadedRegions`
+entry stamped by both would narrow the coarse span to the detail's on every
+zoom in and re-read the coarse adapter about an octave back out. The detail store keeps its
 entries under the tier — a display masks them where it draws, and zooming
 back in draws what it held.
 
 A display states its tier through the hooks below: the adapter slot the
-source sits on, its own threshold, what its read depends on beyond the span,
-and the read itself. Composed after `MultiRegionDisplayMixin`, so its
+source sits on, the threshold, what the read depends on beyond the span, and
+the read itself. Composed after `MultiRegionDisplayMixin`, so its
 `displayPhase` and `svgReady` are the ones `types.compose` keeps.
 
 ## Volatiles
@@ -62,4 +63,4 @@ and the read itself. Composed after `MultiRegionDisplayMixin`, so its
 | <span id="action-setcoarsetier">**setCoarseTier**</span><br><code>(entries: CoarseTierEntry&lt;P&gt;[], read: CoarseTierRead) =&gt; void</code> |  |
 | <span id="action-clearcoarsetier">**clearCoarseTier**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setcoarsetierloading">**setCoarseTierLoading**</span><br><code>(loading: boolean) =&gt; void</code> |  |
-| <span id="action-fetchcoarsetier">**fetchCoarseTier**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(_read: CoarseTierRead, _ctx: FetchContext) =&gt; Promise&lt;CoarseTi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(_read: CoarseTierRead, _ctx: FetchContext) =&gt; Promise&lt;CoarseTierResult&lt;P&gt;&gt;</code></pre></dialog></span> | Overridable hook (no-op base): the coarse read over `read.regions`, answering one payload per region it covered or a refusal. `ctx` is the skeleton's — its `callRpc` carries the signal and the status slot, and `isStale` guards any write the read makes for itself before it returns. |
+| <span id="action-fetchcoarsetier">**fetchCoarseTier**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(_read: CoarseTierRead, _ctx: FetchContext) =&gt; Promise&lt;CoarseTi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(_read: CoarseTierRead, _ctx: FetchContext) =&gt; Promise&lt;CoarseTierResult&lt;P&gt;&gt;</code></pre></dialog></span> | Overridable hook (no-op base): the coarse read over `read.regions`, returning one payload per region it covered, or a refusal. `ctx` is the skeleton's — its `callRpc` passes the signal and the status slot, and `isStale` guards any write the read makes for itself before it returns. |

@@ -53,7 +53,7 @@ export const pileupConfigSchema = ConfigurationSchema(
       type: 'boolean',
       defaultValue: true,
       description:
-        'draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. The line joining a spliced read across its introns draws either way, since it says the exon blocks are one read (PILEUP_MARKS)',
+        'draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. The line joining a spliced read across its introns draws either way, since it shows the exon blocks are one read (PILEUP_MARKS)',
     },
     /**
      * #slot
@@ -97,7 +97,7 @@ export const pileupConfigSchema = ConfigurationSchema(
       type: 'boolean',
       defaultValue: true,
       description:
-        'fade each sub-pixel mismatch, insertion, deletion and clip mark by the share of reads at its position carrying it: one every read carries stays opaque, and one under the depth-dependent noise threshold drops to the sub-pixel floor and, past one base per pixel, takes no clicks. Off draws them all at full opacity. The coverage band is not faded (see runCoveragePipeline)',
+        'fade each sub-pixel mismatch, insertion, deletion and clip mark by the share of reads at its position that have it: a mark every read has stays opaque, and one under the depth-dependent noise threshold drops to the sub-pixel floor and, past one base per pixel, takes no clicks. Off draws them all at full opacity. The coverage band is not faded (see runCoveragePipeline)',
       advanced: true,
     },
   },

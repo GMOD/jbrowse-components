@@ -11,7 +11,7 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 
 `unit`, `rowColor`, `rows` and `filter` are
 config (see the display's config schema), read at runtime through `getConf`
-and written as session edits to the track's config — they are NOT plain MST
+and written as session edits to the track's config — they are not plain MST
 properties. Set them in a track's `displays` array to change the default:
 
 ```js
@@ -50,20 +50,20 @@ haplotype (`"<sample> HP<n>"`) in phased mode, where a sample name stands
 for its haplotypes. A drag, the arrangement dialog, "Sort rows by genotype here" and
 a clustering run write it; the rows are derived from it on every read:
 
-1. the adapter's samples (`adapterSamples`) are focused by `rows.kept`,
-   which is the set the fetch asks for (`sourcesBase`, `sampleFilter`),
+1. `rows.kept` focuses the adapter's samples (`adapterSamples`) to the set
+   the fetch asks for (`sourcesBase`, `sampleFilter`),
 2. phased mode expands each sample to its haplotypes (`expandedRows`), and
-   `rows.domain` orders, `rows.labels` relabels and each row carries its
-   resolved `rowColor` (`editableSources`, the dialog's list), each from
+   `rows.domain` orders them, `rows.labels` relabels them and each row has
+   its resolved `rowColor` (`editableSources`, the dialog's list), each from
    `TreeSidebarMixin` over this display's hooks,
 3. the focus narrows those (`clusterableSources`, what a run clusters),
 4. `facet` stacks those in bands (`bandedSources`), each band's rows in their
    arranged order,
 5. the result is `sources`, each row's `rowColor` its label bar.
 
-**The `rowColor` palette wins over a color the row already carried**, a
+**The `rowColor` palette wins over a color the row already has**, a
 `samplesTsv` `color` column: a channel bound to a variable beats a per-row
-constant, so "Color by… → (none)" is what hands the row back its own color.
+constant, so "Color by… → (none)" restores the row's color from that column.
 `rowColor` holds one field's values, so a dialog color set under the palette
 turns every row's color into a `name` pair.
 
@@ -104,10 +104,10 @@ From [TreeSidebarMixin](../treesidebarmixin): <span id="property-runclustering">
 | --- | --- |
 | <span id="volatile-samplelisting">**sampleListing**</span><br><code>AdapterRead&lt;Source[]&gt; &#124; undefined</code> | The adapter's sample list, stamped with the adapter config it answers. |
 | <span id="volatile-celldata">**cellData**</span><br><code>CellDataResult &#124; undefined</code> | The fetched per-display data, replaced whole by each fetch. |
-| <span id="volatile-celldataregionindices">**cellDataRegionIndices**</span><br><code>ReadonlySet&lt;number&gt;</code> | The displayed regions the current `cellData` was fetched for. The payload itself cannot say: a region with no variants gets no `perRegionCellData` entry, and the columns payload is one entry for every region. |
+| <span id="volatile-celldataregionindices">**cellDataRegionIndices**</span><br><code>ReadonlySet&lt;number&gt;</code> | The displayed regions the current `cellData` was fetched for. The payload does not list them: a region with no variants gets no `perRegionCellData` entry, and the columns payload is one entry for every region. |
 | <span id="volatile-celldatabpperpx">**cellDataBpPerPx**</span><br><code>number &#124; undefined</code> | The zoom the current `cellData` was fetched at, set in columns alone. The columns are the features of exactly the span on screen, so after a zoom inside the loaded span the held payload still lays out features the view no longer shows. Undefined answers at every zoom, as the position-drawn payload does. |
-| <span id="volatile-hoveredcell">**hoveredCell**</span><br><code>HoveredCell &#124; undefined</code> | The genotype cell under the pointer, as `hoverInk` lights it; the shared tooltip slot has no reason to carry the cell's instance. |
-| <span id="volatile-hoveredlanemark">**hoveredLaneMark**</span><br><code>HitFeatureResult &#124; undefined</code> | The lane mark under the pointer — plugin-canvas's own hit, so `hoverInk` lands on the box the lane painted. |
+| <span id="volatile-hoveredcell">**hoveredCell**</span><br><code>HoveredCell &#124; undefined</code> | The genotype cell under the pointer, as `hoverInk` lights it; the shared tooltip slot holds no cell instance. |
+| <span id="volatile-hoveredlanemark">**hoveredLaneMark**</span><br><code>HitFeatureResult &#124; undefined</code> | The lane mark under the pointer — plugin-canvas's hit result, so `hoverInk` highlights the box the lane painted. |
 | <span id="volatile-hoveredmatrixcell">**hoveredMatrixCell**</span><br><code>MatrixHoveredCell &#124; undefined</code> | The matrix cell under the pointer, in the equal-width column layout. |
 | <span id="volatile-backenddrawscolumns">**backendDrawsColumns**</span><br><code>boolean</code> | Whether the attached backend draws columns, so the upload sends it the payload it can draw across the swap a layout change makes. |
 
@@ -148,7 +148,7 @@ From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo
 | <span id="getter-hasaltwithoutphaseset">**hasAltWithoutPhaseSet**</span><br><code>boolean</code> | Whether phase-set coloring painted an alt cell whose call names no phase set, which keys that cell's plain hue. |
 | <span id="getter-hasunphased">**hasUnphased**</span><br><code>boolean</code> | Whether the worker painted a black unphased cell (drives the "Unphased" legend entry). |
 | <span id="getter-hasnocall">**hasNoCall**</span><br><code>boolean</code> | Whether the worker painted a no-call cell (drives the "No call" legend entry). |
-| <span id="getter-hasconsequence">**hasConsequence**</span><br><code>boolean</code> | Whether any visible variant carries a SnpEff/VEP annotation, gating the "Color by...→Consequence impact" menu option. |
+| <span id="getter-hasconsequence">**hasConsequence**</span><br><code>boolean</code> | Whether any visible variant has a SnpEff/VEP annotation, gating the "Color by...→Consequence impact" menu option. |
 | <span id="getter-hassvtype">**hasSvType**</span><br><code>boolean</code> | Whether any visible variant is a structural variant, gating the "Color by...→SV type" menu option. |
 | <span id="getter-hasphaseset">**hasPhaseSet**</span><br><code>boolean</code> | Whether any visible variant declares a phase set (PS in FORMAT), gating the "Color by...→Phase set" menu option. |
 | <span id="getter-sampleploidy">**samplePloidy**</span><br><code>Readonly&lt;Record&lt;string, number&gt;&gt; &#124; undefined</code> | Each sample's ploidy as the latest fetch reports it, the same object while a region arrival reports the same ploidies, so the phased rows are expanded again only when one changes. |
@@ -173,14 +173,14 @@ From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo
 | <span id="getter-maxmissingness">**maxMissingness**</span><br><code>number</code> | Max fraction of no-call genotypes a variant may have before it's hidden; 1 keeps every variant |
 | <span id="getter-filters">**filters**</span><br><code>SerializableFilterChain &#124; undefined</code> | The jexl filter expressions as the RPC's `filters` arg. |
 | <span id="getter-referencedrawingmode">**referenceDrawingMode**</span><br><code>string</code> |  |
-| <span id="getter-colorbyattributes">**colorByAttributes**</span><br><code>string[]</code> | Distinct sample-metadata attributes (from samplesTsv) the user can color rows by — every key the sources carry except internal plumbing. |
+| <span id="getter-colorbyattributes">**colorByAttributes**</span><br><code>string[]</code> | Distinct sample-metadata attributes (from samplesTsv) the user can color rows by — every key the sources have except internal plumbing. |
 | <span id="getter-rowcolorpaintsmarks">**rowColorPaintsMarks**</span><br><code>boolean</code> | `TreeSidebarMixin`'s hook: never, since the cells paint by genotype and a row's color shows only on its label bar. |
 | <span id="getter-internalrowfields">**internalRowFields**</span><br><code>readonly string[]</code> | `TreeSidebarMixin`'s hook: a haplotype row's `sampleName` and `HP`, which the arrangement dialog lists as no column. |
 | <span id="getter-rowcolorfields">**rowColorFields**</span><br><code>readonly string[]</code> | `TreeSidebarMixin`'s hook: the samplesTsv attributes, the ones "Color by..." offers. |
 | <span id="getter-discoveredrows">**discoveredRows**</span><br><code>ProcessedSource[]</code> | `TreeSidebarMixin`'s hook: the adapter's samples as rows, each answering to its sample name, a samplesTsv `color` column the row's own color. |
 | <span id="getter-rowalias">**rowAlias**</span><br><code>RowAlias</code> | `TreeSidebarMixin`'s hook: a haplotype row answers to its sample's name, so an order, a label, a tint or a focus written against a sample reaches each of its haplotypes. |
 | <span id="getter-rowbanding">**rowBanding**</span><br><code>RowBanding &#124; undefined</code> | `TreeSidebarMixin`'s hook: the `facet` bands the rows by a samplesTsv attribute. |
-| <span id="getter-sourcesbase">**sourcesBase**</span><br><code>Source[] &#124; undefined</code> | The adapter's samples narrowed to the focus, `rows.kept`: the row set the fetch asks for, so it must not read `samplePloidy`. `undefined` until the samples land, a transition that wakes the fetch autorun (reference/FETCH_KEYS.md). |
+| <span id="getter-sourcesbase">**sourcesBase**</span><br><code>Source[] &#124; undefined</code> | The adapter's samples narrowed to the focus, `rows.kept`: the row set the fetch asks for, so it must not read `samplePloidy`. `undefined` until the samples land; that transition wakes the fetch autorun (reference/FETCH_KEYS.md). |
 | <span id="getter-clusteringready">**clusteringReady**</span><br><code>boolean</code> | Whether the rows are at the granularity they draw, which clustering and the arrangement dialog need: phased mode draws haplotypes, which needs the `samplePloidy` a fetch brings. |
 | <span id="getter-hasclusterablerows">**hasClusterableRows**</span><br><code>boolean</code> | Whether there are at least two rows on screen to put in an order, counted over `clusterableSources`, the list a run clusters. |
 | <span id="getter-autoclusterready">**autoClusterReady**</span><br><code>boolean</code> | Whether the declarative `runClustering: true` path may fire: the fetched inputs have landed and two or more rows are on screen. |
@@ -190,8 +190,8 @@ From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo
 | <span id="getter-painteddomain">**paintedDomain**</span><br><code>string[]</code> | The cell scale's domain values an alt cell was painted for in the fetched cell data — the impact tiers or SV classes the legend lists. |
 | <span id="getter-sourcemap">**sourceMap**</span><br><code>Map&lt;string, ProcessedSource&gt;</code> | Row name -> source, for the hover tooltip. A Map because row names come from the file, and on a plain object a sample called `constructor` resolves to something inherited rather than to a miss. |
 | <span id="getter-genotypesampleindex">**genotypeSampleIndex**</span><br><code>Map&lt;string, number&gt; &#124; undefined</code> | sampleName -> column of each feature's interned `genotypeCodes`, for the tooltips (genotypeCodec.ts). Rebuilt per pointer frame, its readers being untracked pointer handlers. A keep-alive autorun was tried and throws on test stubs that resolve the cell-data RPC to a bare `[]`. |
-| <span id="getter-rowremap">**rowRemap**</span><br><code>Uint32Array&lt;ArrayBufferLike&gt; &#124; undefined</code> | Worker row -> screen row. The cells arrive numbered against the worker's `rowNames`, so rebuilding this is all a reorder costs, and a change that moves no row hands back the previous array. A worker row the display isn't drawing maps to `HIDDEN_ROW`, which every painter's Y-cull puts below the canvas. Undefined until data lands: never fall back to identity, the worker's order is its own. |
-| <span id="getter-topbands">**topBands**</span><br><code>VariantTopBands</code> | The bands stacked above the rows — the variant lane and the connector-line zone — resolved once. Both the layout below and the painters read this, never their own sum: see `variantTopBands.ts`. |
+| <span id="getter-rowremap">**rowRemap**</span><br><code>Uint32Array&lt;ArrayBufferLike&gt; &#124; undefined</code> | Worker row -> screen row. The cells arrive numbered against the worker's `rowNames`, so rebuilding this is all a reorder costs, and a change that moves no row hands back the previous array. A worker row the display isn't drawing maps to `HIDDEN_ROW`, which every painter's Y-cull puts below the canvas. Undefined until data lands: never fall back to identity: the worker's order is not the screen order. |
+| <span id="getter-topbands">**topBands**</span><br><code>VariantTopBands</code> | The bands stacked above the rows — the variant lane and the connector-line zone — resolved once. Both the layout below and the painters read this instead of summing the bands themselves: see `variantTopBands.ts`. |
 | <span id="getter-rowsheaderheight">**rowsHeaderHeight**</span><br><code>number</code> | `TreeSidebarMixin`'s hook: the variant lane and the connector-line zone, which `rowsTopOffset` stacks the focus chip's line under. |
 | <span id="getter-availableheight">**availableHeight**</span><br><code>number</code> | Height left for the rows under the bands above them, floored at 0: every consumer treats it as a pixel dimension. |
 | <span id="getter-nrow">**nrow**</span><br><code>number</code> |  |
@@ -211,7 +211,7 @@ From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo
 | <span id="getter-regioncellcolors">**regionCellColors**</span><br><code>Map&lt;number, Uint32Array&lt;ArrayBufferLike&gt;&gt;</code> | Each fetched region's cell colors through the current `color`, faded where records share pixels. Apart from the rows, so a reorder repaints nothing, and a recolor re-places nothing and refetches nothing. |
 | <span id="getter-regionfeaturecolors">**regionFeatureColors**</span><br><code>Map&lt;number, Uint32Array&lt;ArrayBufferLike&gt;&gt;</code> | Each fetched region's lane colors, which neither shading nor the phased mode moves. |
 | <span id="getter-placedregionrows">**placedRegionRows**</span><br><code>Map&lt;number, Placed&lt;VariantCellData&gt;&gt;</code> | Each fetched region with its rows placed on screen. A computed apart from the colors, so a recolor leaves it standing. |
-| <span id="getter-regioncellglyphs">**regionCellGlyphs**</span><br><code>Map&lt;number, CellGlyphs&gt;</code> | Each fetched region's cells as the `cell` mark's own attributes: the record's span and glyph, which the payload carries once per record, dealt to each of its cells. Off `cellData` alone, since neither a reorder nor a recolor moves a cell's span. |
+| <span id="getter-regioncellglyphs">**regionCellGlyphs**</span><br><code>Map&lt;number, CellGlyphs&gt;</code> | Each fetched region's cells as the `cell` mark's attributes: the record's span and glyph, which the payload holds once per record, dealt to each of its cells. Off `cellData` alone, since neither a reorder nor a recolor moves a cell's span. |
 | <span id="getter-paintedregionrows">**paintedRegionRows**</span><br><code>Map&lt;number, Placed&lt;VariantCellData&gt;&gt;</code> | Each fetched region placed (`placedRegionRows`) and painted (`regionCellColors`), the cells both layouts draw. A reorder or a recolor changes an entry's identity and `installUpload` re-uploads with no RPC. A computed, because the overlay draws in an effect where nothing is tracked. |
 | <span id="getter-perregioncellmap">**perRegionCellMap**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>Map&lt;number, VariantCellData &amp; { cellWorkerRowIndices: Uint32Arr…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>Map&lt;number, VariantCellData &amp; { cellWorkerRowIndices: Uint32Array&lt;ArrayBufferLike&gt;; } &amp; CellGlyphs &amp; { insertions?: InsertionChannels &#124; undefined; }&gt;</code></pre></dialog></span> | The one walk of the payload every genomic-position consumer reads: `paintedRegionRows` with the `cell` mark's attributes and, while `showInsertionGlyphs` is on, the insertion markers' channels. |
 | <span id="getter-columngeometry">**columnGeometry**</span><br><code>{ n: number; columnWidth: number; left: number; }</code> | Column pitch and origin in viewport pixels: `left` is where the content starts when it doesn't reach the left viewport edge. The connector lines, their hit test and the crosshair column all key off this, so columns, lines and clicks stay pixel-aligned. |
@@ -270,11 +270,11 @@ From [TreeSidebarMixin](../treesidebarmixin): <span id="getter-showtree">[`showT
 | <span id="method-regionhasdata">**regionHasData**</span><br><code>(displayedRegionIndex: number) =&gt; boolean</code> | Whether the held payload was fetched for this region: a batched fetch replaces the whole payload, so a region an earlier batch loaded keeps its `loadedRegions` entry with nothing behind it. In columns, also whether it was fetched at the zoom on screen. |
 | <span id="method-configuredfilters">**configuredFilters**</span><br><code>() =&gt; string[]</code> | The filters the `filter` config slot holds. |
 | <span id="method-basefilters">**baseFilters**</span><br><code>() =&gt; string[]</code> | What the track's config declares for `filter`, which "Clear all filters" returns to. |
-| <span id="method-featurebyid">**featureById**</span><br><code>(featureId: string) =&gt; Feature &#124; undefined</code> | The record a click on the rows, the lane or the matrix resolved to, positional fields only: its genotypes live in the cell payload. |
+| <span id="method-featurebyid">**featureById**</span><br><code>(featureId: string) =&gt; Feature &#124; undefined</code> | The record a click on the rows, the lane or the matrix resolved to, positional fields only: its genotypes are in the cell payload. |
 | <span id="method-expandrows">**expandRows**</span><br><code>(rows: ProcessedSource[]) =&gt; ProcessedSource[]</code> | `TreeSidebarMixin`'s hook: phased mode draws a row per haplotype, once `samplePloidy` lands or the order names them. |
 | <span id="method-rpcprops">**rpcProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { layout: "columns" &#124; "genomic"; sampleFilter: string[] &#124;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { layout: "columns" &#124; "genomic"; sampleFilter: string[] &#124; undefined; minMinorAlleleFrequency: number; maxMissingness: number; filters: SerializableFilterChain &#124; undefined; unit: "haplotype" &#124; "sample"; color: CellHueRead; referenceDrawingMode: string; }</code></pre></dialog></span> |  |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
-| <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Items for the right-click menu, built from the record `contextMenuInfo` carries. |
+| <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Items for the right-click menu, built from the record in `contextMenuInfo`. |
 | <span id="method-connectorlineatscreenx">**connectorLineAtScreenX**</span><br><code>(screenX: number) =&gt; ConnectorCoord &#124; undefined</code> | The connector for the column under `screenX` (the crosshair), or undefined off the ends and over a column with no genomic x. |
 | <span id="method-lanelayoutat">**laneLayoutAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(showLabels: boolean, showDescriptions: boolean) =&gt; Map&lt;number,…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(showLabels: boolean, showDescriptions: boolean) =&gt; Map&lt;number, FeatureDataResult&gt;</code></pre></dialog></span> | One fit candidate: the lane's row packed with the given label reservation. Non-incremental, a band holding thousands of marks. |
 | <span id="method-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactEl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactElement&lt;unknown, string &#124; JSXElementConstructor&lt;any&gt;&gt; &#124; Iterable&lt;ReactNode&gt; &#124; AwaitedReactNode&gt;</code></pre></dialog></span> |  |

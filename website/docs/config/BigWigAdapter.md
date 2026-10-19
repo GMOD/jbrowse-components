@@ -22,7 +22,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-`coverage.bw` infers `BigWigAdapter` and `QuantitativeTrack` on its own, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
+JBrowse infers `BigWigAdapter` and `QuantitativeTrack` from `coverage.bw`, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js
 {
@@ -42,11 +42,11 @@ Reads BigWig quantitative signal files.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "BigWigAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Adapter slots go inside the track's `adapter`: `"adapter": { "type": "BigWigAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-bigwiglocation">**bigWigLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bw', locationType: 'UriLocation' }</code> | location of the BigWig file. It carries its own index and precomputed zoom levels, so there is no separate index to configure and a whole-chromosome view reads summary bins rather than every point. |
+| <span id="slot-bigwiglocation">**bigWigLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bw', locationType: 'UriLocation' }</code> | location of the BigWig file. The file has an index and precomputed zoom levels built in, so there is no separate index to configure and a whole-chromosome view reads summary bins rather than every point. |
 | <span id="slot-source">**source**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | added as feature.get('source') on all features |
 | <span id="slot-resolutionmultiplier">**resolutionMultiplier**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | Resolution multiplier applied to every fetch: <1 fetches more points (higher resolution), >1 fetches fewer (e.g. 2 = half as many points)<br>_advanced_ |

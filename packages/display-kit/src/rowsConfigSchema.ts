@@ -35,15 +35,15 @@ export const rowsConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot field
-     * The field each value of which takes a row of its own. Writing
-     * `rows: "source"` lands here. Empty is the display's default: no rows on
+     * The field whose values each take a row. Writing
+     * `rows: "source"` sets this slot. Empty is the display's default: no rows on
      * the quantitative display, and a field picked off the data on the
      * multi-row feature display.
      */
     field: {
       type: 'featureField',
       defaultValue: '',
-      description: 'the field each value of which takes a row of its own',
+      description: 'the field whose values each take a row',
     },
   },
   {

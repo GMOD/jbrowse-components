@@ -83,7 +83,7 @@ export function featureSetActions(self: FeatureSetHost) {
 
     /**
      * #action
-     * Open or re-collapse one gene's isoforms, from the badge on its own
+     * Open or re-collapse one gene's isoforms, from the badge on the gene's
      * label.
      */
     toggleExpandedGene(featureId: string) {

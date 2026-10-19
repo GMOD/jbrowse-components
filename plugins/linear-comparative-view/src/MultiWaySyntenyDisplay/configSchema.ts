@@ -85,7 +85,7 @@ export function configSchemaFactory() {
       /**
        * #slot color
        * The gene glyphs' fill: a CSS color or `jexl:` callback, goldenrod
-       * unset, or `{ field }` to paint each value its own palette color with
+       * unset, or `{ field }` to paint each value in a palette color, with
        * a key.
        */
       color: geneColorConfigSchema,
@@ -119,7 +119,7 @@ export function configSchemaFactory() {
       hideUnlabelled: {
         type: 'boolean',
         description:
-          'under a text column, draw only the ribbons whose pair carries a label',
+          'under a text column, draw only the ribbons whose pair has a label',
         defaultValue: false,
       },
       /**
@@ -164,7 +164,7 @@ export function configSchemaFactory() {
       showLaneTicks: {
         type: 'boolean',
         description:
-          "draw each lane's own coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out. Turning this off leaves the header's span and multiple as the only scale statement",
+          "draw each lane's coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out. With this off, the header's span and multiple are the only scale shown",
         defaultValue: true,
       },
       /**

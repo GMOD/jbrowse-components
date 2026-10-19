@@ -53,7 +53,7 @@ export interface TooltipTrigger {
 /**
  * #api
  * A hover/focus label for one control, as props to spread — the headless half
- * of {@link Tooltip}, for a host writing its own chrome rather than restyling
+ * of {@link Tooltip}, for a host writing custom chrome rather than restyling
  * ours. Same relationship `useTrackControlMenu` has to `plainTrackControl`.
  *
  * ```tsx
@@ -68,7 +68,7 @@ export interface TooltipTrigger {
  * )
  * ```
  *
- * `triggerProps` carries no `onClick`, so a control's own handler does not
+ * `triggerProps` has no `onClick`, so a control's `onClick` handler does not
  * collide with it. Any other handler on this list has to compose rather than
  * replace — spread first, then call `triggerProps.onFocus` from yours.
  */

@@ -961,8 +961,8 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the track's assemblies beside the anchor for a source that declares its
-       * own lanes, empty for every other source
+       * the track's assemblies beside the anchor for a source that declares the
+       * lanes itself, empty for every other source
        */
       get configuredLanes(): string[] {
         const anchor = self.laneKey(self.anchorAssemblyName)
@@ -1160,7 +1160,7 @@ export function stateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * runs when the anchor fetch lands on `regions`. Haplotype lanes read
+       * runs when the anchor fetch for `regions` completes. Haplotype lanes read
        * off a graph stack by structure while no order is pinned, worked out
        * again only once a fetch leaves the window it was worked out on or the
        * lane selection changes, so panning never reshuffles the stack
@@ -1554,7 +1554,8 @@ export function stateModelFactory(
       },
       /**
        * #method
-       * in the px space anchored at `origin`; a lane in `frozen` keeps its own
+       * in the px space anchored at `origin`; a lane in `frozen` keeps its frozen
+       * decision
        */
       laneDecisionsAt(
         origin: number,
@@ -1924,7 +1925,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * carries no lane genes, so a gene commit re-uploads no ribbon or tick
+       * has no lane genes, so a gene commit re-uploads no ribbon or tick
        */
       get laneStack(): LaneStack {
         const { assemblyManager } = getSession(self)
@@ -2469,7 +2470,7 @@ export function stateModelFactory(
         /**
          * #getter
          * where each lane layer's marks take their color from, one per mark,
-         * read as the mark display reads its own
+         * read the way the mark display reads its colors
          */
         get laneLayerColors(): ColorSource[][] {
           return sameColors(

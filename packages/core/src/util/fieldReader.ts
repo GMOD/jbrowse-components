@@ -7,7 +7,7 @@ import type { Feature } from './simpleFeature.ts'
 /**
  * #api
  * What a channel reads off a feature: a field by name, a dotted path into a
- * structured field where no field carries the whole name (`INFO.SVTYPE` on a
+ * structured field where no field has the whole name (`INFO.SVTYPE` on a
  * VCF record), or a `jexl:` expression over `feature`. A jexl expression that
  * does not compile throws here, once, rather than on every feature.
  */
@@ -34,7 +34,7 @@ export function fieldReader(
 
 /**
  * #api
- * Whether a field ref is a bare name: what `feature.get` answers on its own,
+ * Whether a field ref is a bare name that `feature.get` reads directly,
  * with no path to walk and no expression to evaluate. A loop over a plain name
  * keeps the direct call, and only a config that writes a path pays for one.
  */

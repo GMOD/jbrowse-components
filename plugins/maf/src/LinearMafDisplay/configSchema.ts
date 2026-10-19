@@ -79,7 +79,7 @@ export default function configSchemaF() {
       ...rowHeightConfigSchemaFields(),
       /**
        * #slot color
-       * The field the aligned cells are colored by; see
+       * The field that colors the aligned cells; see
        * [MafColor](../mafcolor).
        *
        * #example
@@ -189,7 +189,7 @@ export default function configSchemaF() {
       },
       /**
        * #slot
-       * Draw the reference species as a row of its own. Under mismatch coloring
+       * Draw the reference species as a separate row. Under mismatch coloring
        * every cell in it matches by definition, so UCSC omits it. The row the
        * worker named as the reference (`refSampleId`) is the one dropped.
        *

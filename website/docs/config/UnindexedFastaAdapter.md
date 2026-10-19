@@ -30,11 +30,11 @@ whole sequence in memory, so use `IndexedFastaAdapter` for large genomes.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "UnindexedFastaAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Adapter slots go inside the track's `adapter`: `"adapter": { "type": "UnindexedFastaAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
 | <span id="slot-rewriterefnames">**rewriteRefNames**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | jexl expression rewriting each sequence name as the FASTA is parsed, e.g. `jexl:split(refName, ' ')[0]` to keep only the first word of a description line. Left empty, names are used as written; an expression returning nothing falls back to the original name.<br>_callback args:_ `refName` |
-| <span id="slot-fastalocation">**fastaLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/seq.fa', locationType: 'UriLocation' }</code> | location of the plain FASTA. With no index there are no byte offsets to seek to, so the whole file is downloaded and parsed on first use and held in memory. |
+| <span id="slot-fastalocation">**fastaLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/seq.fa', locationType: 'UriLocation' }</code> | location of the plain FASTA. With no index there are no byte offsets to seek to, so the adapter downloads and parses the whole file on first use and holds it in memory. |
 | <span id="slot-metadatalocation">**metadataLocation**</span><br>[`maybeFileLocation`](/docs/config_guides/slot_types#the-maybe-types) | Optional metadata file |

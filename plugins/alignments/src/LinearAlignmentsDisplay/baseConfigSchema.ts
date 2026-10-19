@@ -20,9 +20,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config BaseLinearAlignmentsDisplay
  * The slots LinearAlignmentsDisplay and LGVSyntenyDisplay share: the coverage,
  * pileup and read connection bands, and the `filter`, `unit`, `facet`, `sort`
- * and `color` every band reads. LinearAlignmentsDisplay adds what only reads
- * carry, the sashimi band, `filter.junctions`, `baseColor` and
- * `modifications`; a synteny block has no introns, basecaller tags or
+ * and `color` every band reads. LinearAlignmentsDisplay adds the sashimi band,
+ * `filter.junctions`, `baseColor` and `modifications`, which apply only to
+ * reads; a synteny block has no introns, basecaller tags or
  * qualities.
  */
 export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
@@ -80,9 +80,9 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
     facet: sectionFacetConfigSchema,
     /**
      * #slot
-     * Only consulted while `facet` is in effect. Collapsing trades each
-     * section's stack for one row, with overlap depth carried by the tint
-     * shading instead of by row count — the compact reading for a track with
+     * Only consulted while `facet` is in effect. When set, each
+     * section draws as one row instead of a stack, and tint shading shows
+     * overlap depth instead of row count — the compact reading for a track with
      * many sections (an all-vs-all synteny track's mate genomes). A section
      * expanded from its label chip opts back out and draws a true stack.
      */
@@ -107,7 +107,7 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
     /**
      * #slot scales
      * The coverage band's value scale — the one thing on this display drawn
-     * against an axis, the pileup having no value and the arcs their own
+     * against an axis, the pileup has no value and the arcs use
      * `arcBandYScale`. `symlogConstant` starts at 1 rather than the wiggle
      * family's 0, which makes symlog exactly `log(depth+1)`: the knee sits at
      * one read, the smallest depth there is. `domainQuantile` stays at 1, the
@@ -147,8 +147,8 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * #slot readConnections
      * The connections between mates and split segments: `show` (default
      * off), `mark` (`arc` or `cloud`), `height`, `placement`, `lineWidth`,
-     * `color` and `showOrdinaryPairs`; `filter.connections` says which
-     * connections draw.
+     * `color` and `showOrdinaryPairs`; `filter.connections` filters the
+     * connections drawn.
      */
     readConnections: readConnectionsConfigSchema,
   },

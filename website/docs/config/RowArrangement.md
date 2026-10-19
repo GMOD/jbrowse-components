@@ -1,7 +1,7 @@
 ---
 id: rowarrangement
 title: RowArrangement
-description: "The rows setting of a display whose rows are its own — a sample, a species — rather than the values of a field: the arrangement a reader gives them, which every product writes as a session edit to…"
+description: "The rows setting of a display whose rows are samples or species rather than the values of a field."
 sidebar_label: Display -> RowArrangement
 ---
 
@@ -16,9 +16,9 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-The `rows` setting of a display whose rows are its own — a sample, a
-species — rather than the values of a field: the arrangement a reader gives
-them, which every product writes as a session edit to this object. The
+The `rows` setting of a display whose rows are samples or species rather
+than the values of a field. It holds the arrangement a reader gives the
+rows, which every product writes as a session edit to this object: the
 order, the labels, the tree with its provenance and the focus, each by row
 name. The field-keyed displays' `Rows` object is this plus `field`.
 

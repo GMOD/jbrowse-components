@@ -22,7 +22,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-`features.bb` infers `BigBedAdapter` and `FeatureTrack` on its own, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
+JBrowse infers `BigBedAdapter` and `FeatureTrack` from `features.bb`, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js
 {
@@ -46,12 +46,12 @@ Reads BigBed files, the indexed binary form of BED.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "BigBedAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Adapter slots go inside the track's `adapter`: `"adapter": { "type": "BigBedAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-bigbedlocation">**bigBedLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bb', locationType: 'UriLocation' }</code> | location of the BigBed file. It carries its own index and summary zoom levels, so there is no separate index to configure. |
+| <span id="slot-bigbedlocation">**bigBedLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bb', locationType: 'UriLocation' }</code> | location of the BigBed file. The file has an index and summary zoom levels built in, so there is no separate index to configure. |
 | <span id="slot-scorecolumn">**scoreColumn**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The column to use as a "score" attribute |
 | <span id="slot-aggregatefield">**aggregateField**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'geneName2'</code> | An attribute to aggregate features with |
 | <span id="slot-disablegeneheuristic">**disableGeneHeuristic**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications) |

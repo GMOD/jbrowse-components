@@ -9,8 +9,8 @@ import { TrackOverlayContext } from './TrackOverlayContext.ts'
  * The box a display is mounted in, plus the overlay node its floating chrome
  * escapes into. Pair to `TrackOverlayPortal`, which is the other end.
  *
- * A display's React tree is sealed in a `contain: strict` sandbox — that is what
- * isolates its paint, and dropping it is measured and rejected (ADR-058). A
+ * A display's React tree sits in a `contain: strict` sandbox, which isolates its
+ * paint; we measured dropping the sandbox and rejected it (ADR-058). A
  * stacking context comes with the isolation, so floating chrome a display draws
  * (a color key, hi-c's overlay panel, maf's row labels) cannot out-z-index
  * anything painted over the track stack from outside. The escape is a node
@@ -42,7 +42,7 @@ import { TrackOverlayContext } from './TrackOverlayContext.ts'
  * mask — goes unseen until someone looks at the right zoom.
  *
  * The node takes no pointer events, so it does not eat the canvas's. Chrome that
- * wants them takes them back on its own positioned box; it also carries
+ * wants them takes them back on its positioned box; that box also has
  * `data-gesture-owner`, so anything that does is already exempt from the LGV's
  * click-drag pan.
  */

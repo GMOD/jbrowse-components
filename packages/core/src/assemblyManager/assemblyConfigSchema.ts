@@ -28,7 +28,7 @@ function fileAdapterShorthand(typeFor: (uri: string) => string) {
 /**
  * #config BaseAssembly
  * #category assemblyManagement
- * This corresponds to the assemblies section of the config
+ * A `BaseAssembly` corresponds to the assemblies section of the config
  *
  * #example minimal
  * A hand-authored human assembly. `sequence` is a `ReferenceSequenceTrack` whose
@@ -81,7 +81,7 @@ function fileAdapterShorthand(typeFor: (uri: string) => string) {
  *
  * #example with-refname-aliases-and-cytobands
  * Adds `refNameAliases` (so `chr1` and `1` resolve to the same sequence) and
- * `cytobands` (ideogram banding), each fetched from its own adapter:
+ * `cytobands` (ideogram banding), each fetched by a separate adapter:
  * ```js
  * {
  *   name: 'hg38',

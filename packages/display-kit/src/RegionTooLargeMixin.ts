@@ -87,7 +87,7 @@ export default function RegionTooLargeMixin() {
       /**
        * #volatile
        * The `gateViewport` key the gate last asked the adapter about, on either
-       * axis — the viewport AND the settings it asked under. Separate from
+       * axis — the viewport and the settings it asked under. Separate from
        * `byteEstimate` because a density refusal measures no bytes.
        */
       gateMeasuredViewportKey: undefined as unknown,
@@ -115,9 +115,9 @@ export default function RegionTooLargeMixin() {
        * #getter
        * The display's `fetchSizeLimit` slot, from
        * `regionTooLargeConfigSchemaFields`. `number | undefined`, because
-       * `getConf` answers `undefined` for a slot a composing display's schema
-       * never declared and typing it `number` hid the whole failure —
-       * `resolveByteLimit` falls back closed, and says why.
+       * `getConf` returns `undefined` for a slot a composing display's schema
+       * never declared, which typing it `number` would hide —
+       * `resolveByteLimit` falls back closed, and reports why.
        */
       get configuredFetchSizeLimit(): number | undefined {
         return getConf(host(self), 'fetchSizeLimit')
@@ -368,9 +368,8 @@ export default function RegionTooLargeMixin() {
       /**
        * #action
        * Overridable hook (no-op base): drop what the other axis measured, on
-       * the trigger that invalidates this one. The two used to clear on
-       * different triggers, so re-pointing an adapter dropped the bytes and
-       * left `densityTooLarge` speaking for the previous file.
+       * the trigger that invalidates this one, so re-pointing an adapter never
+       * leaves `densityTooLarge` reporting on the previous file.
        */
       clearGateMeasurements() {},
 

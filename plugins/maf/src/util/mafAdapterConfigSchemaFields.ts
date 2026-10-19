@@ -24,7 +24,7 @@ import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesT
 export function mafAdapterConfigSchemaFields({
   summaryAdapter,
 }: {
-  /** e.g. "The zoom-out tier. A tabix MAF carries every species' bases…" */
+  /** e.g. "The zoom-out tier. A tabix MAF holds every species' bases…" */
   summaryAdapter: string
 }) {
   return {
@@ -34,7 +34,7 @@ export function mafAdapterConfigSchemaFields({
     samples: {
       type: 'frozen',
       description:
-        'string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it',
+        'string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to the genome named by assemblyName, and assemblyConfigLocation gives the location to load that assembly from when the session lacks it',
       defaultValue: [],
     },
     /**

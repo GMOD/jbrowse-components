@@ -57,7 +57,7 @@ export interface BandStack<K extends string> {
  * Only the fold is shared; the rest stays in each display. Per-lane
  * iteration runs this once per lane, sticky-vs-scrolling is a property of how
  * the result is projected to the screen, and a band drawn outside its
- * reservation (an overlay) carries its own draw rect beside the stack.
+ * reservation (an overlay) has a separate draw rect beside the stack.
  */
 export function stackBands<K extends string>(
   order: readonly K[],

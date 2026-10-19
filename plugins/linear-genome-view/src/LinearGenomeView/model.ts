@@ -378,17 +378,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          * Left edge of the viewport, in linearized bp — the concatenated
-         * `displayedRegions` space that `offsetPx` indexes, which carries no
+         * `displayedRegions` space that `offsetPx` indexes, which has no
          * inter-region padding, so the two differ only by `bpPerPx`. May be
-         * negative, which is the view scrolled past the left end.
+         * negative when the view is scrolled past the left end.
          *
-         * The viewport is stored as the genomic WINDOW it frames rather than as
-         * the pixels that framed it, because pixels mean nothing without the
-         * width they were measured at and a snapshot does not carry one. Storing
-         * them anyway is why a session authored in a 1000px window used to open
-         * at 500px showing half the region its author was looking at, while the
-         * same location as a `&loc=` opened correctly — the two ways to share a
-         * view disagreed, and only the one that stores intent was right.
+         * The view stores the genomic window it frames rather than the pixels
+         * that framed it, because pixels mean nothing without the width they
+         * were measured at and a snapshot does not include one. A session
+         * authored in a 1000px window therefore shows the same region when
+         * opened at 500px, as the same location given as a `&loc=` does: both
+         * ways to share a view store intent.
          */
         windowStartBp: types.stripDefault(types.number, 0),
 
@@ -403,14 +402,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * MIGRATION ONLY, and permanent: share links written before the window
-         * was stored carry `bpPerPx`/`offsetPx`, and there are many of them.
+         * Used for migration only, and permanent: share links written before the
+         * window was stored contain `bpPerPx`/`offsetPx`, and there are many of
+         * them.
          *
-         * A snapshot written before the window was stored carries `offsetPx` and
+         * A snapshot written before the window was stored has `offsetPx` and
          * `bpPerPx` but not the width they were measured at, so the window they
          * framed cannot be recovered. `windowStartBp` can (it is
          * `offsetPx * bpPerPx`, no width needed); the width in bp cannot. This
-         * carries the old `bpPerPx` to the first measure, which adopts it at
+         * property holds the old `bpPerPx` until the first measure, which adopts it at
          * whatever width arrives — exactly what the old code did — and clears
          * this. So an old link keeps its old behavior rather than being
          * reinterpreted, and everything authored since restores its window.
@@ -899,8 +899,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * What the loading screen says while `showLoading`, read off the
-       * assembly whose load is the wait; undefined otherwise.
+       * The loading screen's text while `showLoading`, taken from the
+       * assembly being waited on; undefined otherwise.
        */
       get loading() {
         return viewLoading(this.showLoading, () => this.loadingAssembly)
@@ -961,12 +961,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * `width`/`staticBlocks` throw by design before the view has been
        * measured and navigated.
        *
-       * **Not `initialized`**, which is the trap this getter exists to close.
+       * Use this getter rather than `initialized`.
        * That one answers "have the assembly's regions loaded", which is only
        * the first of two async steps: navigating then populates
        * `displayedRegions`, and in the window between the two `initialized` is
        * already true while there is still nothing on screen. `showLoading`
-       * folds in `awaitingInitNavigation`, the getter that exists for exactly
+       * folds in `awaitingInitNavigation`, the getter for exactly
        * that gap.
        *
        * `error` is the third outcome and is why this is not a bare
@@ -1052,7 +1052,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * rendered height of a single track, collapsing to a fixed height when
+       * rendered height of a single track, using a fixed height when
        * minimized. Shared by trackHeights and getTrackYOffset so the two can't
        * disagree. Reads `activeDisplay` — the display TrackContainer actually
        * mounts — rather than re-picking `displays[0]`, so the view's height math
@@ -1203,8 +1203,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * or 0 for a standalone view, a mode that is off, and a stack that cannot
        * answer yet.
        *
-       * Pulled rather than pushed down into a volatile: the number is a
-       * function of every row's fit, all of which move on a resize, and a
+       * A getter rather than a volatile the container writes: the number is a
+       * function of every row's fit, all of which change on a resize, and a
        * stored copy would be stale by the next layout.
        */
       get sharedFitBpPerPx() {
@@ -1795,7 +1795,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        * Helper method for the fetchSequence.
-       * Retrieves the corresponding regions that were selected by the
+       * Returns the regions the user selected with the
        * rubberband
        *
        * @param leftOffset - `object as {start, end, index, offset}`, offset = start
@@ -1945,8 +1945,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * cancel an in-flight animated zoom. The animation already yields to any
-       * other zoom on its own, so this is for stopping it *without* changing the
+       * cancel an in-flight animated zoom. Any other zoom already stops the
+       * animation, so this is for stopping it *without* changing the
        * zoom — the slider grabbing the thumb, before it has a value to commit.
        */
       function cancelZoomAnimation() {
@@ -1976,8 +1976,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        * an ideogram only reads correctly against an entire chromosome: on a
        * sub-region it is a meaningless slice of bands, and the centromere shows
-       * up as a lone half-triangle. The chromosome needs bands of its own too:
-       * a cytoband file often lists only the main chromosomes, not chrM or the
+       * up as a lone half-triangle. The chromosome also needs bands: a cytoband
+       * file often lists only the main chromosomes, not chrM or the
        * unplaced scaffolds
        */
       get canShowCytobands() {
@@ -1994,7 +1994,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * the `showCytobands` setting gated by whether cytobands can be shown at
-       * all (whole chromosome with bands of its own) and by the header
+       * all (whole chromosome with bands in the cytoband file) and by the header
        * overview they draw in being on, which the SVG export follows too
        */
       get effectiveShowCytobands() {
@@ -2128,9 +2128,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #getter
          * dynamic blocks represent the exact coordinates of the currently
-         * visible genome regions on the screen. they are similar to static
-         * blocks, but static blocks can go offscreen while dynamic blocks
-         * represent exactly what is on screen
+         * visible genome regions on the screen. Static blocks can go
+         * offscreen, while dynamic blocks represent exactly what is on screen
          */
         get dynamicBlocks() {
           return calculateDynamicBlocks(self)
@@ -2172,12 +2171,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * The frame exists because those three are laid out across every
          * displayed region rather than across the viewport — it overhangs on
          * both sides — so their `x` values are stable under a scroll and only
-         * this number moves. `scalebarRefNameLabels` is the exception and says
-         * so: its `transform` is already a screen x, because a sticky label's
+         * this number moves. `scalebarRefNameLabels` is the exception: its `transform` is already a screen x, because a sticky label's
          * position is a function of the scroll rather than of block geometry.
          *
-         * **The subtraction must happen here, in float64, and that is the
-         * load-bearing part.** `offsetPx` is a whole-genome pixel coordinate —
+         * **The subtraction must happen here, in float64.** `offsetPx` is a whole-genome pixel coordinate —
          * hg38 chr1 at base resolution is already past 1e10 — and a length that
          * size does not survive the trip through CSS: the transform matrix is
          * float32 by the time it reaches the compositor, where consecutive
@@ -2189,13 +2186,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * assemblies at high zoom, which is not where anyone tests. Both
          * operands here are large and their difference is bounded by the
          * overhang (a block or two), so what reaches CSS is small and exact.
-         * Same rule as the GPU side, one layer up —
+         * This applies the GPU side's rule one layer up; see
          * `agent-docs/reference/BP_PRECISION.md`.
          *
          * Published because it is the one piece of coordinate arithmetic a host
          * drawing its own chrome would otherwise have to know, and because
-         * having it written out at each call site is how the two in-tree copies
-         * came to disagree about rounding. Round it where the content is text
+         * copies written out at each call site disagree about rounding. Round it where the content is text
          * (a fractional offset blurs a label); leave it alone for paths and
          * boxes.
          */
@@ -2248,11 +2244,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * sticky, transform, maxWidth, paddingLeft, text}` each. One per run of
          * same-refName regions, plus a "sticky" one pinned to the viewport's
          * left edge naming the refName under it, so panning into a chromosome
-         * does not scroll its own name off the screen.
+         * does not scroll the chromosome's name off the screen.
          *
-         * Three rules live in here that a host drawing region names will
-         * otherwise rediscover the hard way, and two of them are invisible until
-         * the data is awkward:
+         * This getter applies three rules that a host drawing region names would
+         * otherwise have to rediscover, and two of them are invisible until the
+         * data is awkward:
          *
          * - the sticky label rides the rightmost run that has scrolled off the
          *   left, not the region's first block — that one is gone from
@@ -2264,7 +2260,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          *   is fitted to the whole run, and `displayedRegionIndex` /
          *   `lastDisplayedRegionIndex` bracket what it stands for.
          * - a name is drawn whole or not at all, measured against the space its
-         *   run leaves. Clipped to its own width, `chr16` reads as `chr1` —
+         *   run leaves. Clipped to that space, `chr16` reads as `chr1` —
          *   a different chromosome rather than a shortened name, which is why
          *   this is a fit test rather than an ellipsis.
          *
@@ -2284,7 +2280,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * pins to its right edge rather than the viewport's, and the coordinate
          * numbers stay out from under it. The SVG export deliberately
          * calls `getScalebarRefNameLabels` itself with no prefix rather than
-         * reading this, since it draws its own assembly name above the ruler.
+         * reading this, since it draws the assembly name itself above the ruler.
          */
         get scalebarRefNameLabels() {
           return getScalebarRefNameLabels({
@@ -2299,7 +2295,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * Every span along the row that is not track data, as plain geometry in
          * the staticBlocks frame — the same frame as gridlineTicks and
          * scalebarLabels, so one `translateX(staticBlocksTranslateX)` places all
-         * three. A host drawing its own chrome needs all three kinds:
+         * three. A host that draws the row's chrome itself needs all three kinds:
          *
          * - `seam`: the 3px bar at a region's right edge. Displayed regions are
          *   laid out **contiguously** (calculateStaticBlocks emits boundary
@@ -2314,11 +2310,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
          *   but the 24 chromosomes are under a pixel wide), so a host that
          *   skips them leaves that part of the row empty.
          * - `boundary`: past the start of the first region or the end of the
-         *   last. Greying it shows the last region's seam as the edge of a
+         *   last. Greying it makes the last region's seam read as the edge of a
          *   filled area, where it would otherwise look like a line in the
          *   middle of the track.
          *
-         * Elided blocks get no seam even though they carry the flag: at the
+         * Elided blocks get no seam even though they have the flag: at the
          * zoom where regions elide, one bar per region would fill the row solid
          * grey.
          *
@@ -2428,7 +2424,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * array of fresh objects on every pan and zoom frame, so a component
          * that derived this number itself re-rendered on every frame of every
          * gesture — to produce, whenever content fills the track, the unchanged
-         * `trackWidthPx`. Reading the scalar lets MobX's `===` stop the chain at
+         * `trackWidthPx`. A component that reads the scalar lets MobX's `===` stop the chain at
          * this computed instead. Measured over 20 zoom frames: the wiggle
          * family's three body instances fell from 66 renders to 7.
          */
@@ -2575,17 +2571,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * as a navigation that didn't happen, and wiggle's autoscale domain is
        * computed over the window the user just left — measured at `[0,200]`
        * against a correct `[0,300]` when a 40bp coarse window survived a jump to
-       * 4040bp on screen. Only the per-region fetch moving to the leading edge
-       * made that reachable: at 600ms the data never landed inside the hole.
+       * 4040bp on screen.
        *
-       * **The continuous paths deliberately do not come through here.** The
+       * **The continuous paths do not call this.** The
        * spring zoom writes through `zoomTo` per frame and a drag through
        * `scrollTo`, so this adds no per-frame work; the settle is idempotent
        * (`setCoarseDynamicBlocks` compares block keys), so the debounced
-       * autorun's own follow-up run costs nothing.
+       * autorun's follow-up run costs nothing.
        *
-       * Every placer calls it, and `placersSettleCoarseBlocks.test.ts` is what
-       * makes that true of the next one — it scans this file for the writes and
+       * Every placer calls it, and `placersSettleCoarseBlocks.test.ts` enforces
+       * that for the next one: it scans this file for the writes and
        * fails on a placer that reaches neither the settle nor its named list of
        * continuous paths. Two passes by hand missed four.
        */
@@ -2650,8 +2645,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * Place the viewport by the pair of PIXEL quantities it used to be stored
-       * as. Prefer `setWindow`: pixels mean nothing without the width they were
+       * Place the viewport by `bpPerPx` and `offsetPx`, the pixel pair the view
+       * stored before it stored the window. Prefer `setWindow`: pixels mean nothing without the width they were
        * measured at, so a round trip through here is only exact while the width
        * holds still. Kept for callers that genuinely have pixels — a wheel
        * gesture, a rubberband.
@@ -2665,7 +2660,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        * Place the viewport by the pair it is actually STORED as: the window's
-       * width and left edge, both in bp. `setNewView`'s bp-space twin, and the
+       * width and left edge, both in bp. The bp-space counterpart of `setNewView`, and the
        * right one for anything that captures a viewport and puts it back later
        * (an Undo, a saved location) — those two moments can be a window resize
        * apart, and this pair survives one where a pixel pair does not.
@@ -2697,8 +2692,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * The worst jump of them to leave unsettled: the coarse blocks are keyed
-       * by `displayedRegionIndex`, so a set that outlives the region list has a
+       * Settles the coarse blocks, since this is the worst jump to leave
+       * unsettled: they are keyed by `displayedRegionIndex`, so a set that outlives the region list has a
        * consumer reading one contig's data against another's blocks.
        */
       setDisplayedRegions(regions: Region[]) {
@@ -3247,7 +3242,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        * returns menu items for a highlight context menu. plugins can extend
-       * this via Core-extendPluggableElement to add their own items
+       * this via Core-extendPluggableElement to add items
        */
       highlightMenuItems(_highlight: HighlightType): MenuItem[] {
         return []

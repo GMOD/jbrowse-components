@@ -21,7 +21,7 @@ const stateModelFactory = (configSchema: HTTPBasicInternetAccountConfigModel) =>
     /**
      * #getter
      * There is nothing to pick: an HTTP Basic account matches by domain and
-     * prompts on its own. RpcManager also mints one of these per origin on a
+     * prompts without being picked. RpcManager also mints one of these per origin on a
      * 401, so offering them would fill the picker with a toggle per server the
      * session happened to touch.
      */

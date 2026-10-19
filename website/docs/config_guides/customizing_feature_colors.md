@@ -52,8 +52,8 @@ properties (`feature.type`); in the plugin's JavaScript the same feature is a
 Named BED columns past `name`/`score`/`strand` (`itemRgb`, `thickStart`, ...)
 are only guaranteed for BED12 or a track with an `autoSql`/`columnNames`. For a
 BED7-BED11 file JBrowse cannot know what the extra columns mean, so it exposes
-them generically as `field6`, `field7`, ... and a jexl callback reading
-`feature.itemRgb` gets `undefined`. Set `columnNames` to refer to them by name.
+them generically as `field6`, `field7`, ... and `feature.itemRgb` reads as
+`undefined` in a jexl callback. Set `columnNames` to refer to them by name.
 
 :::
 

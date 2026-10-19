@@ -105,7 +105,7 @@ From [TriangleMatrixMixin](../trianglematrixmixin): <span id="volatile-rpcdata">
 | <span id="getter-awaitingprerequisite">**awaitingPrerequisite**</span><br><code>boolean</code> | Retry is two-stage: the contact fetch declines until the header it needs lands, and the header's arrival wakes it. `infoFetchFailure.test.ts` pins it. |
 | <span id="getter-showresolutionbox">**showResolutionBox**</span><br><code>boolean</code> | Whether the resolution box is up; the chrome starts the key below it. |
 | <span id="getter-legendtop">**legendTop**</span><br><code>number</code> |  |
-| <span id="getter-appliednormalization">**appliedNormalization**</span><br><code>string</code> | The normalization the loaded matrix carries, which falls back per binsize (KR at 5 kb, nothing at 2.5 Mb is typical). The menu ticks this. Fetch-derived, so it stays out of `rpcProps()`. |
+| <span id="getter-appliednormalization">**appliedNormalization**</span><br><code>string</code> | The normalization the loaded matrix has, which falls back per binsize (KR at 5 kb, nothing at 2.5 Mb is typical). The menu ticks this. Fetch-derived, so it stays out of `rpcProps()`. |
 | <span id="getter-scaletype">**scaleType**</span><br><code>ScaleTypeCode</code> |  |
 | <span id="getter-autoresolutionidx">**autoResolutionIdx**</span><br><code>number</code> | The binsize index auto mode picks: the largest at most 2 bp/px, about half a bin per pixel, else the finest. |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The count ramp, once there is a domain to span. The ends are where the ramp paints them, and a top below the largest loaded count reads `≥`. |
@@ -145,7 +145,7 @@ From [TriangleMatrixMixin](../trianglematrixmixin): <span id="getter-heightmode"
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { normalization: string; quantile: number; }</code> | The settings that refetch. The binsize is zoom-derived, so it travels as its own argument. |
+| <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { normalization: string; quantile: number; }</code> | The settings that refetch. The binsize is zoom-derived, so it is passed as a separate argument. |
 | <span id="method-hittest">**hitTest**</span><br><code>(mouseX: number, mouseY: number) =&gt; HicContactItem &#124; undefined</code> | The contact under a display-px point, through the inverse of the transform the matrix was drawn with. |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-rendersvg">**renderSvg**</span><br><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |

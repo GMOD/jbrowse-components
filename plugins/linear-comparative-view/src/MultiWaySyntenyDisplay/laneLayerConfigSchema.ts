@@ -68,7 +68,7 @@ export const laneLayerConfigSchema = ConfigurationSchema(
       type: 'maybeFrozen',
       defaultValue: undefined,
       description:
-        "an adapter computing from the sequence, such as `{ type: 'GCContentAdapter' }`, that every lane `tracks` names nothing for reads through its own genome. A lane reads it only while its window is under 5 Mb, since that window is the sequence it downloads, and the band's title says to zoom in past that",
+        "an adapter computing from the sequence, such as `{ type: 'GCContentAdapter' }`, which each lane that `tracks` names nothing for reads through that lane's genome. A lane reads it only while its window is under 5 Mb, since that window is the sequence it downloads, and the band's title tells the reader to zoom in past that",
     },
     /**
      * #slot height

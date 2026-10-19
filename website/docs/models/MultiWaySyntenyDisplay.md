@@ -141,7 +141,7 @@ From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderre
 | <span id="getter-pinnedlanes">**pinnedLanes**</span><br><code>ReadonlyMap&lt;string, LanePin&gt;</code> |  |
 | <span id="getter-pinnedlaneflips">**pinnedLaneFlips**</span><br><code>ReadonlyMap&lt;string, LaneFlipPin&gt;</code> |  |
 | <span id="getter-domain">**domain**</span><br><code>string[]</code> | `rows.domain` in each placed lane's own spelling, so an order a config wrote with an alias merges with one a drag writes |
-| <span id="getter-configuredlanes">**configuredLanes**</span><br><code>string[]</code> | the track's assemblies beside the anchor for a source that declares its own lanes, empty for every other source |
+| <span id="getter-configuredlanes">**configuredLanes**</span><br><code>string[]</code> | the track's assemblies beside the anchor for a source that declares the lanes itself, empty for every other source |
 | <span id="getter-laneselection">**laneSelection**</span><br><code>readonly string[] &#124; undefined</code> | undefined means every lane, and a hidden lane stays in force |
 | <span id="getter-hiddenlanes">**hiddenLanes**</span><br><code>readonly string[]</code> |  |
 | <span id="getter-fetchlaneselection">**fetchLaneSelection**</span><br><code>string[] &#124; undefined</code> | undefined unless the adapter declares its lanes, and lists each held genome under every name the session knows it by |
@@ -186,7 +186,7 @@ From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderre
 | <span id="getter-lanelayersources">**laneLayerSources**</span><br><code>Map&lt;string, LaneLayerSource&gt;[]</code> |  |
 | <span id="getter-lanelayerreads">**laneLayerReads**</span><br><code>{ specs: LaneLayerFetchSpec[]; pastCap: boolean[]; }</code> | `pastCap` flags a layer that skipped a lane past `LANE_TEMPLATE_MAX_BP` |
 | <span id="getter-lanelayersfetchspecs">**laneLayersFetchSpecs**</span><br><code>LaneLayerFetchSpec[]</code> |  |
-| <span id="getter-lanestack">**laneStack**</span><br><code>LaneStack</code> | carries no lane genes, so a gene commit re-uploads no ribbon or tick |
+| <span id="getter-lanestack">**laneStack**</span><br><code>LaneStack</code> | has no lane genes, so a gene commit re-uploads no ribbon or tick |
 | <span id="getter-lanemaps">**laneMaps**</span><br><code>ReadonlyMap&lt;number, LaneMap&gt;</code> |  |
 | <span id="getter-laneheaderrows">**laneHeaderRows**</span><br><code>LaneHeaderRow[]</code> |  |
 | <span id="getter-pairlinks">**pairLinks**</span><br><code>ReadonlyMap&lt;string, LaneLinks&gt;</code> | the alignments the source answered for each adjacent mate-lane pair, keyed `upper\|lower`; a pair it has not answered draws nothing |
@@ -206,7 +206,7 @@ From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderre
 | <span id="getter-legendright">**legendRight**</span><br><code>number</code> |  |
 | <span id="getter-lanelayerplacements">**laneLayerPlacements**</span><br><code>LaneLayerPlacement[]</code> | each payload's region placed in its lane's own frame; a payload whose lane or contig no longer draws is left out |
 | <span id="getter-lanelayerdomains">**laneLayerDomains**</span><br><code>([number, number] &#124; undefined)[]</code> | undefined for a layer no drawn lane holds values for yet |
-| <span id="getter-lanelayercolors">**laneLayerColors**</span><br><code>ColorSource[][]</code> | where each lane layer's marks take their color from, one per mark, read as the mark display reads its own |
+| <span id="getter-lanelayercolors">**laneLayerColors**</span><br><code>ColorSource[][]</code> | where each lane layer's marks take their color from, one per mark, read the way the mark display reads its colors |
 | <span id="getter-selectedglyphhits">**selectedGlyphHits**</span><br><code>GlyphHit[][]</code> | the selected feature's glyph hits per row, which a pan leaves alone |
 | <span id="getter-lanelayercolorscales">**laneLayerColorScales**</span><br><code>(MarkColorScale &#124; undefined)[][]</code> | the ramp or threshold each lane layer's bars paint numbers through, one per mark and undefined for a mark colored another way; a ramp's domain covers the values of every drawn lane, as `laneLayerDomains` does for y, so one value takes one color in all of them |
 | <span id="getter-lanelayertitles">**laneLayerTitles**</span><br><code>{ key: string; text: string; top: number; }[]</code> |  |
@@ -271,7 +271,7 @@ From [LodTierInfoMixin](../lodtierinfomixin): <span id="getter-adapterheader">[`
 | <span id="method-holdstemporarily">**holdsTemporarily**</span><br><code>(assemblyName: string) =&gt; boolean</code> |  |
 | <span id="method-lanelabel">**laneLabel**</span><br><code>(assemblyName: string) =&gt; string</code> |  |
 | <span id="method-laneframeof">**laneFrameOf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(decision: LaneDecision, assemblyName: string) =&gt; RowFrame &#124; un…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(decision: LaneDecision, assemblyName: string) =&gt; RowFrame &#124; undefined</code></pre></dialog></span> | undefined once the pivot is off the displayed regions |
-| <span id="method-lanedecisionsat">**laneDecisionsAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(origin: number, previous: ReadonlyMap&lt;string, LaneDecision &#124; u…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(origin: number, previous: ReadonlyMap&lt;string, LaneDecision &#124; undefined&gt;, frozen: ReadonlyMap&lt;string, LaneDecision&gt;) =&gt; Map&lt;string, LaneDecision &#124; undefined&gt;</code></pre></dialog></span> | in the px space anchored at `origin`; a lane in `frozen` keeps its own |
+| <span id="method-lanedecisionsat">**laneDecisionsAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(origin: number, previous: ReadonlyMap&lt;string, LaneDecision &#124; u…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(origin: number, previous: ReadonlyMap&lt;string, LaneDecision &#124; undefined&gt;, frozen: ReadonlyMap&lt;string, LaneDecision&gt;) =&gt; Map&lt;string, LaneDecision &#124; undefined&gt;</code></pre></dialog></span> | in the px space anchored at `origin`; a lane in `frozen` keeps its frozen decision |
 | <span id="method-bandcellon">**bandCellOn**</span><br><code>(page: string) =&gt; MultiWayCell</code> |  |
 | <span id="method-lanegenelabels">**laneGeneLabels**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(fontFamily: string &#124; undefined, pinnedGroups?: ReadonlySet&lt;str…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(fontFamily: string &#124; undefined, pinnedGroups?: ReadonlySet&lt;string&gt;, width?: number) =&gt; PlacedLaneLabel[]</code></pre></dialog></span> | placed in the stack's px |
 | <span id="method-coloredlayersof">**coloredLayersOf**</span><br><code>(held: HeldLaneLayer) =&gt; EncodedChannels[]</code> | a held payload's layers, each colored as its mark declares |
@@ -317,7 +317,7 @@ From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScale
 | <span id="action-setshowgenelabels">**setShowGeneLabels**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setgenetextfield">**setGeneTextField**</span><br><code>(field: string) =&gt; void</code> |  |
 | <span id="action-setlodmode">**setLodMode**</span><br><code>(mode: LodMode) =&gt; void</code> |  |
-| <span id="action-holdlaneorder">**holdLaneOrder**</span><br><code>(regions: FetchRegion[]) =&gt; void</code> | runs when the anchor fetch lands on `regions`. Haplotype lanes read off a graph stack by structure while no order is pinned, worked out again only once a fetch leaves the window it was worked out on or the lane selection changes, so panning never reshuffles the stack |
+| <span id="action-holdlaneorder">**holdLaneOrder**</span><br><code>(regions: FetchRegion[]) =&gt; void</code> | runs when the anchor fetch for `regions` completes. Haplotype lanes read off a graph stack by structure while no order is pinned, worked out again only once a fetch leaves the window it was worked out on or the lane selection changes, so panning never reshuffles the stack |
 | <span id="action-chooselanes">**chooseLanes**</span><br><code>(names: string[]) =&gt; void</code> |  |
 | <span id="action-hidelane">**hideLane**</span><br><code>(assemblyName: string) =&gt; void</code> |  |
 | <span id="action-showlane">**showLane**</span><br><code>(assemblyName: string) =&gt; void</code> |  |

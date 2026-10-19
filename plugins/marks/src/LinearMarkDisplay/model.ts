@@ -574,7 +574,7 @@ export function stateModelFactory(
         /**
          * #getter
          * `TreeSidebarMixin`'s hook: none, since a row is a value of the rows
-         * field and carries no attribute of its own.
+         * field and has no attributes.
          */
         get rowColorFields(): readonly string[] {
           return []
@@ -614,9 +614,9 @@ export function stateModelFactory(
          * #getter
          * The adapter's row listing where it names the rows drawn: its field
          * is `rows.field`, or the key a `flatten` in the shared steps wrote
-         * over its field. Undefined for an adapter that lists none, one that
-         * lists another field, and until the current adapter config's
-         * listing lands.
+         * over its field. Undefined for an adapter that lists no rows, for one
+         * that lists another field, and until the listing for the current
+         * adapter config arrives.
          */
         get rowListing(): RowSourceListing | undefined {
           const listing = readFor(self, self.sourceListing)
@@ -860,7 +860,7 @@ export function stateModelFactory(
           /**
            * #getter
            * 1 at each key the row table draws, undefined while every key a
-           * loaded region carries is drawn: a focus moves it, a reorder does
+           * loaded region has is drawn: a focus moves it, a reorder does
            * not.
            */
           get drawnKeys(): Uint8Array | undefined {
@@ -1111,7 +1111,7 @@ export function stateModelFactory(
         /**
          * #getter
          * bands a span stacks into: the facet's rows, one per row drawn under
-         * `rows`, or else the highest `row` any loaded layer carries, plus one
+         * `rows`, or else the highest `row` any loaded layer has, plus one
          */
         get rowCount(): number {
           const { rowCount } = self.facetLayout
@@ -1380,7 +1380,7 @@ export function stateModelFactory(
          * #method
          * A draft as the rule list reads it, merged over `plot` and lifted by
          * the config schema, throwing what a config file would be refused
-         * for. Nothing on this display is touched.
+         * for. It changes no state on this display.
          */
         liftMarkPlot(plot: MarkPlot): MarkPlotSettings {
           return markPlotSettingsOf(self.liftPlot(plot))
@@ -1400,8 +1400,8 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Overridable hook: notices a display derives from its own state and
-         * the view, beside the adapter's. Manhattan's says when the LD index
+         * Overridable hook: notices a display derives from its state and
+         * the view, beside the adapter's. Manhattan's reports when the LD index
          * SNP is out of reach of the screen.
          */
         get displayNotices(): string[] {
@@ -1419,7 +1419,7 @@ export function stateModelFactory(
          * #getter
          * The config's lines, `dataNotices`, and the keys whose values
          * collide: what the corner's problems notice lists. The skipped count
-         * has a chip of its own.
+         * appears in a separate chip.
          */
         get cornerNotices(): string[] {
           return [
@@ -1433,8 +1433,8 @@ export function stateModelFactory(
          * #getter
          * `dataNotices`, the colliding keys, and a mark whose every loaded
          * feature was skipped, which a mistyped field is: a display with any
-         * of them still draws, so an agent's settle report is where a caller
-         * that cannot see the corner learns of them.
+         * of them still draws, so an agent's settle report lists them for a caller
+         * that cannot see the corner.
          */
         get liveNotices(): string[] {
           const { skipped, total, fields } = this.skippedFeatures
@@ -1484,7 +1484,7 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * the color keys the loaded regions carry, one per scale the marks
+         * the color keys for the loaded regions, one per scale the marks
          * drawing at the view's zoom resolve through, each headed with its
          * channel's `title`
          */
@@ -1590,7 +1590,7 @@ export function stateModelFactory(
         /**
          * #getter
          * Two or more clusterable rows once the row listing settles, and a
-         * mark that carries a value.
+         * mark that has a value.
          */
         get autoClusterReady(): boolean {
           return (
@@ -1673,7 +1673,7 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * A chip drag's reorder lands on the declaration.
+         * A chip drag's reorder writes to the declaration.
          */
         setFacetDomain(domain: string[]) {
           if (self.facet) {
@@ -1844,7 +1844,7 @@ export function stateModelFactory(
          * The categorical analogue of the min/max dialog's "Use current
          * range": every value a colliding shape key lists goes into the
          * shape's `domain`, in key order after what it already lists, so each
-         * takes a shape of its own.
+         * takes a separate shape.
          */
         pinDistinctShapes() {
           for (const key of self.sharedKeys) {

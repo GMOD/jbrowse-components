@@ -25,11 +25,11 @@ const SUBPIXEL_OVERFLOW = 0.5
  * #category display
  * #crossCuttingMixin Internal vertical scroll. `scrollContentHeight` and `scrollViewportHeight` (both default 0 = doesn't scroll). Brings the derived `scrollableHeight`, the clamped `setScrollTop` and the autorun that re-clamps when content shrinks
  *
- * The display height lives on the `height` config slot, so it survives a track
+ * The `height` config slot stores the display height, so it survives a track
  * being unticked and reticked. Displays with an auto-fit mode override the
  * `height` getter.
  *
- * It also owns the **internal vertical scroll** of every display that paints a
+ * The mixin also owns the **internal vertical scroll** of every display that paints a
  * fixed canvas at `-scrollTop`: a display overrides the two height hooks, and
  * passes itself to `ScrollChrome` and the wheel hooks.
  */

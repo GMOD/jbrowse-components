@@ -23,8 +23,8 @@ export function SyntenyFadeMixin() {
        * #property
        * Fade a sub-pixel-thin ribbon's opacity by its on-screen width, so an
        * unfiltered whole-genome view doesn't read as a full-opacity hairball.
-       * 'auto' fades once a display is dominated by sub-pixel ribbons and
-       * leaves a sparse comparison at full alpha; 'on'/'off' pin it. Resolved
+       * 'auto' fades once sub-pixel ribbons dominate a display and
+       * leaves a sparse comparison at full alpha; 'on'/'off' fix the value. Resolved
        * view-wide by `fadeThinAlignments`.
        */
       fadeThinAlignmentsMode: types.stripDefault(
@@ -54,7 +54,7 @@ export function SyntenyFadeMixin() {
       /**
        * #getter
        * The resolved fade-thin flag every display renders by. 'auto' fades once
-       * any loaded display is dominated by sub-pixel ribbons, latched with a
+       * sub-pixel ribbons dominate any loaded display, latched with a
        * deadband (`fadesThinAt`, ADR-083) so a view near the threshold does not
        * flip while panning. View-wide, so every display fades together.
        */

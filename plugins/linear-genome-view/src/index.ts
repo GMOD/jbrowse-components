@@ -25,7 +25,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
   configurationSchema = ConfigurationSchema('LinearGenomeViewConfigSchema', {
     /**
      * #slot configuration.LinearGenomeViewPlugin.trackLabels
-     * The placement of a track's name: `offset` gives it its own line above the
+     * The placement of a track's name: `offset` puts it on a line above the
      * data, `overlapping` floats it over the top of the data to save vertical
      * space, `hidden` omits it. The view menu's "Track labels" submenu sets the
      * same thing per session

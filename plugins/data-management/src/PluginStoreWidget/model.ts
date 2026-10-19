@@ -26,7 +26,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       filterText: '',
       /**
        * #property
-       * Tags a plugin must carry to stay in the list. Plain strings, because the
+       * Tags a plugin must have to stay in the list. Plain strings, because the
        * tag vocabulary is published in the store manifest rather than defined
        * here — a tag this build has never seen still filters correctly.
        */

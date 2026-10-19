@@ -32,7 +32,7 @@ identity. Anything worth keeping gets pinned.
 
 The per-feature attribute a field reads: `mapq` is the comparative
 adapters' `mappingQual`, which they omit for MAPQ 255, so it paints and
-keys as no value; any other field reads its own name.
+keys as no value; any other field uses its name.
 
 ```js
 // type signature
@@ -51,7 +51,7 @@ chips and the SVG export.
 Light in every theme. The ribbons are translucent color that reads as tint
 over a light ground and as murk over a dark one, so a dark theme's paper made
 a whole-genome band nearly unreadable. The band is the one sheet in the app
-that keeps its own ground. The dotplot's plot area is the same sheet, since
+with a fixed light ground. The dotplot's plot area is the same sheet, since
 it paints the same color schemes, whose default is black.
 
 ```js
@@ -63,7 +63,7 @@ it paints the same color schemes, whose default is black.
 
 ## bandInk
 
-The inks a band draws in, off its own ground rather than the page theme, at
+The inks a band draws in, from the band's ground rather than the page theme, at
 the light theme's weights: a dark theme's text and dividers are white and
 vanish on the band.
 
@@ -77,9 +77,8 @@ vanish on the band.
 ## bandPalette
 
 The light palette, whose paper is `BAND_GROUND_COLOR`. Chrome on the band
-that has a palette token of its own, such as the dotplot's gridlines and
-region boundaries, reads it here and so matches the light theme in either
-mode.
+with a palette token, such as the dotplot's gridlines and region boundaries,
+takes it from this palette and so matches the light theme in either mode.
 
 ```js
 // type signature
@@ -95,9 +94,8 @@ The synteny canvas draws every ribbon at the view's global alpha over the
 band's ground (shadeFill in syntenyTypes.slang / resolveInstanceFill in the
 Canvas2D renderer), so a full-saturation legend swatch reads wrong — a red
 match ribbon shows as salmon over a white band, a blue deletion as pale blue.
-Blending the legend chip the same way keeps the key matched to what's actually
-on screen, which means blending it over the SAME ground the renderers cleared
-to rather than over an assumed white.
+Blend the legend chip the same way, over the ground the renderers cleared to
+rather than an assumed white, so the key matches what is on screen.
 
 ```js
 // type signature
@@ -110,10 +108,10 @@ to rather than over an assumed white.
 
 What a view holding `SyntenyColorsMixin` hands the view it opens on the same
 alignments: the color it paints by, which a view on its default scheme
-leaves to the new view's own, the pinned track colors, the unlabelled
-filter and the length filter. Opacity stays each view's own default, since a
-linear ribbon, a dotplot point and a circle's ribbon draw at densities of
-their own.
+leaves to the new view's default, the pinned track colors, the unlabelled
+filter and the length filter. Opacity keeps each view's default, since a
+linear ribbon, a dotplot point and a circle's ribbon draw at different
+densities.
 
 ```js
 // type signature
@@ -138,9 +136,9 @@ is painting, and the per-track swatches once more than one track overlays.
 
 ## colorByMenuTargetFor
 
-Project a view carrying `TrackColorsMixin` onto the menu builder's input.
+Project a view with `TrackColorsMixin` onto the menu builder's input.
 `track` is offered once two tracks overlay, and `reference` where the view
-says it has a reference to anchor on.
+has a reference to anchor on.
 
 ```js
 // type signature
@@ -152,9 +150,9 @@ says it has a reference to anchor on.
 ## colorByScales
 
 The active mode's key as color scales — what a view's `colorScales` lists,
-and so what `ChromeLegend` and `SvgLegend` draw. A ramp keeps its own end
-labels (identity's `0%` and `100%`, dN/dS's `≥2`) through `format`, and is
-followed by a no-value row once a row carried no value; chips are blended
+and so what `ChromeLegend` and `SvgLegend` draw. A ramp takes its end
+labels (identity's `0%` and `100%`, dN/dS's `≥2`) from `format`, and a
+no-value row follows it once a row has no value; chips are blended
 over the band's ground by the view's alpha, so the key matches the
 on-screen composited ribbon colors, subject to `legendChipColor`'s
 legibility floor; a mode with no fixed key (a color per sequence name) is a
@@ -243,7 +241,7 @@ answers a feature's two refNames in the order the color modes read them:
 
 ## identityFadeMenuItem
 
-The Identity fade toggle of a view carrying `SyntenyViewMixin`: `opacity`
+The Identity fade toggle of a view with `SyntenyViewMixin`: `opacity`
 read from `identity`, or back to the constant.
 
 ```js
@@ -324,7 +322,7 @@ readonly ["colorBy", "alpha"]
 A linear synteny or dotplot view snapshot's v4.3.0 settings, lifted onto the
 view: `colorBy` (a mode string), `alpha` and `minAlignmentLength` sat on each
 synteny display, `colorBy` lands as `color` and `alpha` as `opacity`.
-Launch links the genomes portal handed out carry the mode string on the
+Launch links from the genomes portal put the mode string on the
 view itself, which lifts the same way.
 
 ```js
@@ -336,7 +334,7 @@ view itself, which lifts the same way.
 
 ## minLengthMenuItem
 
-The Min length row of a view carrying `SyntenyViewMixin`.
+The Min length row of a view with `SyntenyViewMixin`.
 
 ```js
 // type signature
@@ -354,9 +352,9 @@ renderers want packed ABGR.
 The single-name form of the LUT above, because a second reader has turned up
 that is not painting features: the off-screen mate marks stand for alignments
 to a contig the facing row is not showing, and a mark colored like the ribbons
-to that contig is what says a ribbon did not vanish, it moved. Two palettes
-would put a mark and its ribbons in different colors, which is exactly the
-drift this module exists to prevent — see the header.
+to that contig shows that a ribbon moved rather than vanished. Two palettes
+would color a mark and its ribbons differently, which this module prevents;
+see the header.
 
 ```js
 // type signature
@@ -380,7 +378,7 @@ mapping scaled alike at both ends answers the same.
 
 ## opacityLevel
 
-The opacity every alignment is drawn at before its own fade: the constant,
+The opacity every alignment is drawn at before the fade: the constant,
 `defaultValue` while it is unset, or under a field the most opaque value
 its range reaches.
 
@@ -393,8 +391,8 @@ its range reaches.
 
 ## opacityMenuItem
 
-The Opacity row of a view carrying `SyntenyViewMixin`, reset to that view's
-own default. Under a field it moves the field's most opaque end.
+The Opacity row of a view with `SyntenyViewMixin`, reset to that view's
+default. Under a field it moves the field's most opaque end.
 
 ```js
 // type signature
@@ -405,7 +403,7 @@ own default. Under a field it moves the field's most opaque end.
 
 ## opacityRangeAt
 
-`range` rescaled so the mapping's most opaque end lands on `value`,
+`range` rescaled so the mapping's most opaque end equals `value`,
 keeping each entry's share of it. A threshold or a text column with no
 range written draws every bin at the level, so it gets one `value` per bin
 rather than the number column's default fade.
@@ -513,8 +511,8 @@ The color object that paints by `field`, written over `current`: display-kit's
 
 One track's menu as a submenu named for the track: the session's track
 actions (About track, Settings) beside the track's own items; the menu orders
-them by priority. A linear view hangs this off the track label; a view that draws no label
-puts it in its own menu. `view` is whatever shows and launches the track.
+them by priority. A linear view attaches this to the track label; a view that draws no label
+puts it in the view's menu. `view` is whatever shows and launches the track.
 
 ```js
 // type signature

@@ -28,8 +28,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
     ),
     /**
      * #property
-     * The name of the menu row that opened it, "Y axis" or "Coverage axis",
-     * so the heading says the same.
+     * The name of the menu row that opened the widget, "Y axis" or "Coverage
+     * axis"; the heading shows the same name.
      */
     label: types.optional(types.string, 'Y axis'),
   })

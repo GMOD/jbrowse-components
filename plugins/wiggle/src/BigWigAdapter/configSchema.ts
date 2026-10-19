@@ -32,8 +32,8 @@ const BigWigAdapter = ConfigurationSchema(
   {
     /**
      * #slot
-     * location of the BigWig file. It carries its own index and precomputed
-     * zoom levels, so there is no separate index to configure and a
+     * location of the BigWig file. The file has an index and precomputed
+     * zoom levels built in, so there is no separate index to configure and a
      * whole-chromosome view reads summary bins rather than every point.
      */
     bigWigLocation: {

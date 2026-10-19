@@ -100,7 +100,7 @@ export function visibleStatsRange<Payload, Item, Stats>({
 /**
  * #api
  * {@link visibleStatsRange} nice-rounded inside the configured bounds: the
- * domain of a display whose range is its own alone.
+ * domain of a display whose range comes from that display alone.
  */
 export function visibleStatsDomain<Payload, Item, Stats>({
   bounds,

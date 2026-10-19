@@ -81,7 +81,7 @@ const UNPAIRED_END: FeatureEnd = {
 
 /**
  * #api
- * Both ends of a paired record, off whichever of the two things a producer
+ * A paired record's two ends, read from whichever of the two things a producer
  * states the far one with: the `mate` field a paired adapter fills in, or a VCF
  * `ALT` this parses. `paired` is false for a record that names no other end,
  * and `k2` is then a placeholder no view resolves.
@@ -143,7 +143,7 @@ export type FeaturePair = ReturnType<typeof makeFeaturePair>
  * 0-based like every other coordinate on a feature.
  *
  * `undefined` when the record names no other end, which is most of a VCF: a
- * plain SNV, or an indel that is only ever its own span.
+ * plain SNV, or an indel, which is a single span.
  */
 export function svMateLocus(feature: Feature) {
   const { k2, paired } = makeFeaturePair(
@@ -155,10 +155,10 @@ export function svMateLocus(feature: Feature) {
 
 /**
  * #api
- * Both ends of a paired record as one loc string an LGV opens side by side,
+ * A paired record's two ends as one loc string an LGV opens side by side,
  * `windowBp` either side of each junction. Each panel is turned so the sequence
  * its end keeps reads left to right into the join. Two ends of one contig
- * closer than a window collapse to the single span between them. `undefined`
+ * closer than a window merge into the single span between them. `undefined`
  * for a record with one end.
  */
 export function pairedEndsLocString(feature: Feature, windowBp: number) {
@@ -228,7 +228,8 @@ export function toCanonicalRefName(assembly: Assembly) {
 /**
  * #api
  * The two canonical-refName junction positions a breakend/SV feature spans,
- * through `junctionEnds`; a record naming no other end spans its own extent.
+ * through `junctionEnds`; a record with no other end spans the feature's
+ * extent.
  */
 export function getBreakendCoveringRegions({
   feature,
@@ -325,7 +326,7 @@ export function hasBreakpointSplitView(model: IAnyStateTreeNode) {
 /**
  * #api
  * A feature widget's view when a launch can copy its tracks: a linear genome
- * view, never a circle, whose tracks carry displays a linear panel cannot draw.
+ * view, never a circle, whose tracks have displays a linear panel cannot draw.
  */
 export function linearGenomeViewOf(view?: {
   type: string
@@ -436,13 +437,13 @@ export function splitRegionAtPosition<
  * Stable id for the breakpoint split view a given launcher spawns, so repeated
  * launches from the same place reuse one view instead of stacking a new one
  * each time. `ownerId` is whatever the launcher is: a spreadsheet view (shared
- * by the sheet's row menu and the SV inspector's chord clicks, which then land
- * in the same view), or a variant feature widget.
+ * by the sheet's row menu and the SV inspector's chord clicks, which then open
+ * the same view), or a variant feature widget.
  *
- * Spelling it out inline is the same string until it isn't — the dialog appends
- * its own shape suffix to whatever it is handed, so a launcher that respells the
- * prefix gets a second view instead of reusing the first, and nothing reports
- * it.
+ * Spelling the id out inline works only while it matches this string: the
+ * dialog appends a shape suffix to whatever id it receives, so a launcher that
+ * respells the prefix opens a second view instead of reusing the first, with no
+ * error.
  */
 export function breakpointSplitViewId(ownerId: string, assemblyName: string) {
   return `${ownerId}_${assemblyName}_breakpointsplitview`

@@ -50,11 +50,11 @@ export function getModProbabilities(feature: Feature) {
  * The ML tag as its raw 0..255 bytes, without the scaling `getModProbabilities`
  * applies.
  *
- * The byte is a LOSSLESS stand-in for the probability — every value on this
- * path is exactly `(N + 0.5) / 256` — and it is monotonic in it, so anything
- * that only compares probabilities (picking the most likely call at a
- * position, testing a threshold) can work in bytes and divide once, at the end,
- * for the few calls that survive. A caller that needs the numbers themselves
+ * The byte maps to the probability without loss — every value on this path is
+ * exactly `(N + 0.5) / 256` — and in the same order, so anything that only
+ * compares probabilities (picking the most likely call at a position, testing a
+ * threshold) can work in bytes and divide once, at the end, for the few calls
+ * that survive. A caller that needs the numbers themselves
  * still wants `getModProbabilities`.
  */
 export function getModProbabilityBytes(feature: Feature) {

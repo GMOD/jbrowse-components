@@ -14,8 +14,8 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 /**
  * #api
- * The Opacity row of a view carrying `SyntenyViewMixin`, reset to that view's
- * own default. Under a field it moves the field's most opaque end.
+ * The Opacity row of a view with `SyntenyViewMixin`, reset to that view's
+ * default. Under a field it moves the field's most opaque end.
  */
 export function opacityMenuItem(model: {
   opacityLevel: number
@@ -46,7 +46,7 @@ export function opacityMenuItem(model: {
 
 /**
  * #api
- * The Identity fade toggle of a view carrying `SyntenyViewMixin`: `opacity`
+ * The Identity fade toggle of a view with `SyntenyViewMixin`: `opacity`
  * read from `identity`, or back to the constant.
  */
 export function identityFadeMenuItem(model: {
@@ -83,7 +83,7 @@ export function reorderChromosomesMenuItem(open: () => void): MenuItem {
 
 /**
  * #api
- * The Min length row of a view carrying `SyntenyViewMixin`.
+ * The Min length row of a view with `SyntenyViewMixin`.
  */
 export function minLengthMenuItem(model: {
   minAlignmentLength: number

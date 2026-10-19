@@ -1,7 +1,7 @@
 ---
 id: markfacet
 title: MarkFacet
-description: "The mark display's facet: the Facet the feature and alignments displays take, one labelled section of the track per value of a field, plus the steps the facet runs over each section's features alone,…"
+description: "The mark display's facet: the Facet the feature and alignments displays take, one labelled section of the track per value of a field, plus the steps the facet runs separately over each section's…"
 sidebar_label: Display -> MarkFacet
 ---
 
@@ -19,10 +19,11 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 The mark display's `facet`: the [Facet](../facet) the feature and alignments
 displays take, one labelled section of the track per value of a field, plus
-the steps the facet runs over each section's features alone, after the
-display's `transform` and before every mark's own. A `pileup` here packs
-each section on its own rows, which every mark then stands in. A string is
-the field; with no field the steps run over the one section there is.
+the steps the facet runs separately over each section's features, after the
+display's `transform` and before every mark's `transform`. A `pileup` here
+packs each section into separate rows, and every mark then draws in them. A
+string is the field; with no field the steps run over the one section there
+is.
 
 ## Related links
 
@@ -35,9 +36,9 @@ A setting written to it replaces it whole, since its members are alternatives: a
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-transform">**transform**</span><br>[MarkTransform](../marktransform) | Steps over each section's features alone, after the display's `transform` and before any mark's own: a `pileup` here packs each section on its own rows, and every mark stands in them. |
+| <span id="slot-transform">**transform**</span><br>[MarkTransform](../marktransform) | Steps that run separately over each section's features, after the display's `transform` and before any mark's `transform`: a `pileup` here packs each section into separate rows, and every mark draws in them. |
 | <span class="slot-group">Inherited from [SectionFacet](../sectionfacet)</span> | <span class="slot-group-count">1 slot</span> |
 | <span id="slot-hidden">**hidden**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | The keys of the sections hidden from the stack, as a section chip's Hide writes them; "Show all" clears it. |
 | <span class="slot-group">Inherited from [Facet](../facet)</span> | <span class="slot-group-count">2 slots</span> |
-| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field each value of which packs its own labelled section of the track: a field name, a dotted path into a structured field (`INFO.SVTYPE`, a read's `tags.HP`), a `jexl:` expression, or `strand`. A feature with no value stacks last, under `field: none` (`(no value)` for a `jexl:` field, whose sections show the value alone). The multi-sample variant displays read a sample attribute instead, and the multi-row display `group`, its `rowGroups`. The alignments displays also take a read dimension here: `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `mapq`, `mateRefName` or `mateAssembly`. Writing `facet: "strand"` lands here. |
+| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field whose values each get a labelled section of the track: a field name, a dotted path into a structured field (`INFO.SVTYPE`, a read's `tags.HP`), a `jexl:` expression, or `strand`. A feature with no value stacks last, under `field: none` (`(no value)` for a `jexl:` field, whose sections show the value alone). The multi-sample variant displays read a sample attribute instead, and the multi-row display `group`, its `rowGroups`. The alignments displays also take a read dimension here: `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `mapq`, `mateRefName` or `mateAssembly`. Writing `facet: "strand"` sets this slot. |
 | <span id="slot-domain">**domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | The values whose sections stack first, in order; the rest follow sorted. Empty stacks every section sorted, and a `strand` facet forward, reverse, then unstranded (`1`, `-1`, `0`). |

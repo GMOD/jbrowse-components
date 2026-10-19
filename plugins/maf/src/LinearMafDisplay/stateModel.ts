@@ -302,7 +302,7 @@ export default function stateModelFactory(
       .volatile(() => ({
         /**
          * #volatile
-         * The last frames fetch was refused by its `byteLimit`, so the strip
+         * The `byteLimit` refused the last frames fetch, so the strip
          * stops drawing; the menu reads this to say so.
          *
          * Never in `rpcProps()`: the fetch writes it, the loop trap
@@ -485,7 +485,7 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * `TreeSidebarMixin`'s hook: none, since a species row carries no
+         * `TreeSidebarMixin`'s hook: none, since a species row has no
          * attribute to color it by.
          */
         get rowColorFields(): readonly string[] {
@@ -495,7 +495,7 @@ export default function stateModelFactory(
          * #getter
          * `TreeSidebarMixin`'s hook: a copy row answers to its sample, so an
          * order, label, color or focus written against the sample reaches its
-         * copies. None while no row is a copy.
+         * copies. Undefined while no row is a copy.
          */
         get rowAlias(): RowAlias | undefined {
           const names = self.sourcesVolatile.map(s => s.name)
@@ -562,7 +562,7 @@ export default function stateModelFactory(
          * #getter
          * Whether the species list has arrived from the adapter. `rowsVisible`
          * and the render callback's first-paint gate read this, since an empty
-         * `sources` cannot tell.
+         * `sources` is ambiguous.
          */
         get sourcesKnown(): boolean {
           return self.sourcesVolatile.length > 0
@@ -571,7 +571,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * The focus `rows.kept` as the worker sees it: a sorted plain array
-         * read off config alone. Sorting keeps a re-cluster's new leaf order
+         * read off config alone. The sort keeps a re-cluster's new leaf order
          * out of the fetch key (reference/FETCH_KEYS.md, "Row order is not a
          * fetch input").
          */
@@ -613,7 +613,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * The coverage band is on and has data: `showCoverage` alone is not
-         * enough, since the summary tier carries no `coverage.coverageDepths`.
+         * enough, since the summary tier has no `coverage.coverageDepths`.
          *
          * Layout, paint, hit tests and export read this; only the track menu
          * reads `showCoverage`, so the tick keeps the user's choice across
@@ -625,8 +625,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * The conservation band is on and has data: twin of
-         * `coverageBandActive`, since the identity scores come off alignment
-         * blocks the summary tier does not carry.
+         * `coverageBandActive`, since the identity scores are computed from
+         * alignment blocks, which the summary tier lacks.
          *
          * Layout, paint and export read this; the menu tick reads
          * `showConservation`.
@@ -721,7 +721,7 @@ export default function stateModelFactory(
            * (`placeMafRegionData`). Everything that draws, hit-tests or
            * measures rows reads this.
            *
-           * The memo lives in this closure to outlive a context-loss recovery;
+           * The memo is held in this closure so it outlives a context-loss recovery;
            * `afterAttach` installs the observer it needs.
            */
           get rpcDataMap(): ReadonlyMap<number, MafRegionData> {
@@ -866,8 +866,8 @@ export default function stateModelFactory(
          * stacked bands, which is the rows canvas. Zero when alignments are
          * hidden.
          *
-         * A viewport, not the content: extra rows are reached by scrolling
-         * (`scrollContentHeight`, `scrollableHeight`). Capped at
+         * This is the viewport height, not the content height: the user scrolls to
+         * extra rows (`scrollContentHeight`, `scrollableHeight`). Capped at
          * `maxRowsHeight` to stay under the canvas backing-store limit.
          */
         get rowsHeight() {
@@ -882,7 +882,7 @@ export default function stateModelFactory(
          * #getter
          * The legal range for a dragged band (coverage, conservation): the
          * stated maximum, each band apart, so a drag cannot squash the rows to
-         * nothing or push its own handle off the display, and the drag floor.
+         * nothing or push the band's handle off the display, and the drag floor.
          */
         get resizableBandBounds(): BandBounds {
           return { max: self.statedBandBounds.max }
@@ -896,11 +896,11 @@ export default function stateModelFactory(
          *
          * Not floored at 1px: a sub-pixel row is the right answer for more
          * species than pixels, and flooring would regrow the track past
-         * `fitTargetHeight`. The non-positive guard lives in
-         * `effectiveRowHeight`.
+         * `fitTargetHeight`. `effectiveRowHeight` holds the
+         * non-positive guard.
          *
-         * A fixed height is used as-is; the canvas-size ceiling lives on
-         * `rowsHeight`.
+         * A fixed height is used as-is; `rowsHeight` holds the canvas-size
+         * ceiling.
          */
         get autoRowHeight() {
           return self.rowsHeight / self.nrow
@@ -1018,7 +1018,7 @@ export default function stateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * Reorder the rows by the base each species carries in the reference
+         * Reorder the rows by the base each species has in the reference
          * column at (refName, pos), writing the order to `rows.domain` as
          * clustering and the arrangement dialog do, so "Reset row order" undoes
          * all three.
@@ -1041,8 +1041,8 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #method
-         * Items for the right-click menu, built from the column the click
-         * landed on. Captured when the menu opens, since `closeContextMenu`
+         * Items for the right-click menu, built from the column under the
+         * click. Captured when the menu opens, since `closeContextMenu`
          * runs before an item's onClick.
          */
         contextMenuItems(): MenuItem[] {
@@ -1109,7 +1109,7 @@ export default function stateModelFactory(
         // #endregion
         /**
          * #getter
-         * Genomic bp the GPU encoder collapses into one cell: the foundation's
+         * Genomic bp the GPU encoder merges into one cell: the foundation's
          * `settledSubPixelBinBp`. Zoomed in this is `1`; once a base falls
          * below half a CSS pixel the encoder samples one per bin.
          */
@@ -1137,8 +1137,8 @@ export default function stateModelFactory(
          * #method
          * The fetch inputs both tiers send through `rpcArgs` and cache under.
          * The focus is a row set since the worker ships only those genomes; the
-         * row order is not, since the client places the rows. Nothing
-         * fetch-derived goes here (`singleFetchPerRegion.test.ts`).
+         * row order is not, since the client places the rows. No
+         * fetch-derived state belongs here (`singleFetchPerRegion.test.ts`).
          */
         rpcProps() {
           return { rowFocus: self.rowFocusKey }
@@ -1289,7 +1289,7 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #method
-         * Where the rows `[startRow, endRow)` sit in their own genomes across
+         * Where the rows `[startRow, endRow)` sit in their genomes across
          * the reference bp range `[startBp, endBp)`, the loci an "open this
          * species here" navigation targets. A row contributes nothing with no
          * aligned base in the range, no fetched block covering it, or a genome
@@ -1536,7 +1536,7 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * What the row bars' height carries now, or undefined where each row
+         * What the row bars' height encodes now, or undefined where each row
          * is one band of cells.
          */
         get rowsY(): MafYField | undefined {
@@ -1587,7 +1587,7 @@ export default function stateModelFactory(
          * #method
          * The hover on `rowIndex` at the cursor's genomic position: an aligned
          * base, an insertion, a deletion or a bridged region, tagged with the
-         * sample label. `bp` carries both readings of the cursor (`HoverBp`),
+         * sample label. `bp` holds both readings of the cursor (`HoverBp`),
          * which differ on a reversed region.
          */
         rowHoverInfo(
@@ -2001,8 +2001,8 @@ export default function stateModelFactory(
         /**
          * #action
          * Clears the verdict with the data: it describes a read of the viewport
-         * just thrown away, and chromosome nav would otherwise carry "too much
-         * data" onto an unmeasured region.
+         * just thrown away, and chromosome nav would otherwise show "too much
+         * data" for an unmeasured region.
          */
         clearDisplaySpecificData() {
           self.framesGateBlocked = false

@@ -55,13 +55,13 @@ export function BaseSessionModel<
       name: types.string,
       /**
        * #property
-       * used to keep track of which view is in focus
+       * id of the view in focus
        */
       focusedViewId: types.maybe(types.string),
       /**
        * #property
        * translucent bands over genomic regions; every view draws the ones on
-       * its own assemblies
+       * the assemblies it shows
        */
       highlights: types.stripDefault(
         types.array(types.frozen<HighlightType>()),
@@ -80,8 +80,8 @@ export function BaseSessionModel<
        * #property
        * views, tracks, displays and widgets `pruneUnbuildableNodes` took out of
        * the tree because this build has no plugin for their type, each with the
-       * anchor that puts it back. Nothing in the session reads its contents,
-       * and `pruneUnbuildableNodes` defines their structure.
+       * anchor that puts it back. No session code reads its contents, and
+       * `pruneUnbuildableNodes` defines their structure.
        *
        * It is a **declared property** because MST drops undeclared snapshot
        * keys without error. Without this declaration the held nodes survive
@@ -125,7 +125,7 @@ export function BaseSessionModel<
        * config defaults, kept off the snapshot since prefs are local UI.
        *
        * An `observable.map` (not a plain object reassigned wholesale) so each
-       * preference is its own tracked key: writing one (`setScrollZoom`) can't
+       * preference is a separate tracked key: writing one (`setScrollZoom`) can't
        * invalidate a reader of another. A single spread-replaced object made
        * every setter wake every reader, so toggling scroll-to-zoom re-fetched
        * every track.
@@ -286,9 +286,9 @@ export function BaseSessionModel<
       /**
        * #action
        * set the global selection, i.e. the globally-selected object. can be a
-       * feature, a view, just about anything
+       * feature, a view, or any other object
        *
-       * A feature is unwrapped on the way in, so app state never holds a
+       * A feature is unwrapped on the way in, so app state holds no
        * jexlFeatureProxy. `isFeature` accepts a proxy, but on one `id` is a
        * data field rather than the method the Feature type promises — every
        * consumer doing `isFeature(selection) ? selection.id() : …` would throw.
@@ -363,8 +363,8 @@ export function BaseSessionModel<
        * #action
        * set a runtime user-preference override (see `getPreference`). Mutates
        * volatile state; products persist these to localStorage. An `undefined`
-       * value deletes the key (rather than leaving a phantom entry that
-       * `getPreference` reads as absent) so the store never holds dead keys.
+       * value deletes the key, so the store holds no dead keys that
+       * `getPreference` would read as absent.
        */
       setPreferenceOverride(key: string, value: unknown) {
         if (value === undefined) {
@@ -410,20 +410,18 @@ export function BaseSessionModel<
       },
       /**
        * #action
-       * `undefined` is "no view is focused", which the property has always been
-       * able to hold (`types.maybe`) and this had no way to spell. Nothing
-       * cleared it on teardown as a result: a view that was focused when it left
-       * the session left its id behind, and since every consumer compares
-       * `focusedViewId === view.id`, the id matched nothing, the focus ring
-       * vanished with nothing to say why, and the dead id persisted into a saved
-       * or shared session. `takeOut` clears it now.
+       * `undefined` is "no view is focused", which the property can hold
+       * (`types.maybe`). `takeOut` sets it when the focused view leaves the
+       * session. Otherwise the dead id would match no view, since every
+       * consumer compares `focusedViewId === view.id`, the focus ring would
+       * vanish, and the id would persist into a saved or shared session.
        */
       setFocusedViewId(viewId: string | undefined) {
         self.focusedViewId = viewId
       },
       /**
        * #action
-       * Dismiss the dialog on screen as its own close button would, so a
+       * Dismiss the dialog on screen as the dialog's close button would, so a
        * dialog that settles a promise on close (an internet account's token
        * prompt) settles it, and drop it from the queue if it did not.
        */

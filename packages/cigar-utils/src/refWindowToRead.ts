@@ -30,8 +30,8 @@ export interface ReadWindow extends CigarCursor {
  * The read offsets `[readStart, readEnd)` holding every aligned base whose
  * read-relative reference offset lies in `[refStart, refEnd)`, and the op a
  * `getNextRefPos` walk over them starts at. Aligned read offsets map to
- * ascending reference offsets, so the range holds no other aligned base; a
- * clip or insertion inside it maps to no reference offset. The returned
+ * ascending reference offsets, so the range holds exactly those bases; a
+ * clip or insertion inside it has no reference offset. The returned
  * `refStart`/`refEnd` are the requested ones clipped to the read's span.
  *
  * The op loop adds each op's lengths through the masks above rather than

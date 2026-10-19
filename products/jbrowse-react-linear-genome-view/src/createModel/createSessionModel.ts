@@ -68,7 +68,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * #getter
        * Pin the header, and scroll the tracks under it, whenever the view is
        * bounded -- which is the only time it means anything, since an unbounded
-       * view scrolls with the host's page and has nothing of its own to pin
+       * view scrolls with the host's page and has nothing to pin
        * against. The LGV model reads this off the session
        * (`stickyViewHeaders === true`) and so does the embedded view title
        * above it, the same two readers the web app has.

@@ -20,7 +20,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  *
  * #example
  * `samples` names the rows in the order they are drawn, and has to match the
- * species keys in the file — a bigMaf carries the alignment but not a display
+ * species keys in the file — a bigMaf has the alignment but no display
  * order, so an omitted or misspelled name shows as a missing row rather than an
  * error:
  * ```js

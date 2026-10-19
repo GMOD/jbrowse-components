@@ -11,8 +11,8 @@ import { BASE_COLOR_FIELDS } from '../shared/alignmentsColor.ts'
  * `modifications` paints the MM/ML calls and `bisulfite` the conversion state
  * against the reference, both under the display's `modifications` settings;
  * `baseQuality` and `base` paint every aligned base. A string is the field.
- * While a modification field paints, mismatches draw grey, and a read with no
- * `color` of its own takes a pale strand tint.
+ * While a modification field paints, mismatches draw grey, and a read that no
+ * `color` paints takes a pale strand tint.
  *
  * #example
  * ```js

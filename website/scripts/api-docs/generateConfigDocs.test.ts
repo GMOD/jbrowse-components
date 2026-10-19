@@ -187,7 +187,7 @@ describe('the loose { trackId, uri } form of an example', () => {
 
   test("carries the example's own id, uri and assemblies", () => {
     const loose = looseTrackExample(fence(bam))
-    expect(loose).toContain('`sample.bam` infers `BamAdapter`')
+    expect(loose).toContain('JBrowse infers `BamAdapter`')
     expect(loose).toContain("trackId: 'ngs-reads',")
     expect(loose).toContain("uri: 'https://example.com/sample.bam',")
     expect(loose).toContain("assemblyNames: ['hg38'],")

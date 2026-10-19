@@ -113,7 +113,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * #slot color
        * The main fill of each feature: a CSS color or a jexl expression
        * (`"goldenrod"`, `"jexl:…"`), or `{ field, domain, range }` to paint
-       * each value of a field its own `range` color, with a key.
+       * each value of a field in a `range` color, with a key.
        */
       color: colorConfigSchema,
       /**

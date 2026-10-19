@@ -303,7 +303,7 @@ get colorsBySvType() {
 /**
  * #getter
  * The attribute the Attribute dialog opens on, '' under the impact or
- * SV type preset, each of which has its own row.
+ * SV type preset, each of which has a separate row.
  */
 get colorByAttribute(): string {
   return this.colorsByConsequenceImpact || this.colorsBySvType
@@ -368,7 +368,7 @@ featureIdUnderMouse: undefined as string | undefined,
 subfeatureIdUnderMouse: undefined as string | undefined,
 /**
  * #volatile
- * the hover tooltip's rows, each rendered as its own element — see
+ * the hover tooltip's rows, each rendered as a separate element — see
  * hoverTooltipRows for why this is a list and not one HTML string
  */
 mouseoverExtraInformation: undefined as string[] | undefined,

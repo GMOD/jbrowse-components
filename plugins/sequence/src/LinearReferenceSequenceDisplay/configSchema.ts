@@ -8,8 +8,8 @@ import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionToo
  *
  * #example
  * The display goes in the `displays` array of the assembly's `sequence` track,
- * which is where a `ReferenceSequenceTrack` is authored — it names no assembly
- * of its own. `showForward`, `showReverse`, and `showTranslation` toggle the
+ * which is where a `ReferenceSequenceTrack` is authored, so the display sets
+ * no assembly name. `showForward`, `showReverse`, and `showTranslation` toggle the
  * strand and translation rows:
  * ```js
  * sequence: {

@@ -12,13 +12,13 @@ export const STRAND_FIELD = 'strand'
 /**
  * #api
  * The structural-variant class `svClassOf` names. A VCF record and a BEDPE
- * row carry it, and the mark display's `mate` step writes it per allele.
+ * row have it, and the mark display's `mate` step writes it per allele.
  */
 export const SV_TYPE_FIELD = 'svType'
 
 /**
  * #api
- * The row a feature with nothing in a categorical field lands on, so a key
+ * The row a feature with no categorical value is placed on, so a key
  * says why a mark is grey rather than listing a blank value.
  */
 export const NO_VALUE_LABEL = '(no value)'
@@ -66,8 +66,8 @@ export interface CategoricalField {
 
 /**
  * #api
- * What a key names each of `keys`, from a color object's `labels`: one each in
- * order, an empty or missing entry leaving that key its own name. Every key
+ * The display name of each of `keys`, from a color object's `labels`: one each
+ * in order, and the key itself where an entry is empty or missing. Every key
  * that takes `labels` reads them through this, so a config means one thing by
  * them everywhere.
  */
@@ -90,7 +90,7 @@ export function keyNames(
  * #api
  * `labels` names the `domain`'s values in a key, one each in order, where a
  * config spells them for a reader rather than as the data does. `held` deals
- * each key the domain does not list a color of its own on first sight
+ * each key the domain does not list a color when the key first appears
  * (`categoricalScale`); the caller keeps it for as long as the colors should
  * hold. `unknown` paints every such key, and the no-value key, one color
  * instead, `''` the no-value grey.
@@ -173,8 +173,8 @@ export function categoricalField(
  * #api
  * Deals `keys` their colors in `field.compare` order, so the colors a set
  * of keys first seen together takes do not depend on the order they arrive
- * in. Each new key avoids every color the session has dealt, so one region
- * of several can deal its own keys. A no-op for a field that deals nothing.
+ * in. Each new key avoids every color the session has dealt, so regions
+ * dealing keys separately never repeat a color. A no-op for a field that deals nothing.
  */
 export function dealKeyColors(field: CategoricalField, keys: Iterable<string>) {
   for (const key of [...new Set(keys)].sort(field.compare)) {

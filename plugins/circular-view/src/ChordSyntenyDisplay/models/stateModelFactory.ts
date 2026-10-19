@@ -335,8 +335,8 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        * #getter
        * the alignments the canvas draws, by their place in `features`, the
        * widest first so every narrower ribbon draws over them: both ends on
-       * the circle, at least the view's `minAlignmentLength` long on their
-       * own side, and not hidden by the view's color
+       * the circle, at least the view's `minAlignmentLength` long on each
+       * side, and not hidden by the view's color
        */
       get ribbonPicks(): Uint32Array {
         const feet = this.ribbonFeet
@@ -394,9 +394,9 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * the stretches of each painted-genome slice the drawn ribbons land on,
+       * the stretches of each painted-genome slice covered by the drawn ribbons,
        * by slice index, each in the ideogram color of the first genome's
-       * chromosome it comes from; what `ideogramPaint` bins, and unmoved by a
+       * chromosome it comes from; what `ideogramPaint` bins, and unchanged by a
        * zoom
        */
       get paintSpans(): ReadonlyMap<number, PaintRun[]> {
@@ -528,7 +528,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       /**
        * #getter
        * the ribbon fill the circle's key shows: the one color every ribbon
-       * paints when the view's mode keys nothing of its own
+       * paints when the view's mode has no key of its own
        */
       get legendColor(): string | undefined {
         const { view } = self

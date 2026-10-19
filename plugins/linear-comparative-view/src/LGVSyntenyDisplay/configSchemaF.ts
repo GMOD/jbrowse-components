@@ -73,9 +73,9 @@ export default function configSchemaF() {
       /**
        * #slot
        * Hide the lane an all-vs-all track draws for the view's own assembly.
-       * That lane holds no self-alignment line — aligners skip each sequence's
-       * own diagonal — so it carries only the assembly's internal paralogy, and
-       * readers consistently read it as missing data. Only meaningful when
+       * That lane has no self-alignment line, because aligners skip each
+       * sequence's diagonal, so it shows only the assembly's internal paralogy,
+       * which readers consistently read as missing data. Only meaningful when
        * grouping by mate assembly.
        */
       hideSelfAlignments: {

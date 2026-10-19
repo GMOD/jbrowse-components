@@ -153,8 +153,8 @@ export function getFeatureAtIndex(
  *
  * Pure-data model. The containing LinearSyntenyView owns the shared GPU
  * backend, the upload autorun (which watches every display's `instanceData`
- * and keys it by `displayKey`), and the render autorun. This display only
- * carries per-track state and the `renderParams` the view reads out.
+ * and keys it by `displayKey`), and the render autorun. This display holds
+ * only per-track state and the `renderParams` the view reads out.
  *
  * #example
  * A complete `SyntenyTrack` config to paste into `tracks`. The adapter needs
@@ -373,10 +373,10 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * Mean on-screen width (px, axis 0) of this display's alignment blocks with
        * every already-wide block counted as `FADE_WIDE_BLOCK_PX`, or 0 until a
        * fetch lands and both views connect. The fade only affects sub-pixel
-       * ribbons (perpW < 1), so a capped mean well under 1 means the view is
-       * dominated by thin ribbons — exactly what width-proportional fade
-       * declutters, and `LinearSyntenyView.fadeThinAlignments` decides 'auto' off
-       * the narrowest of these.
+       * ribbons (perpW < 1), so a capped mean well under 1 means thin ribbons
+       * dominate the view — exactly what width-proportional fade declutters —
+       * and `LinearSyntenyView.fadeThinAlignments` decides 'auto' from the
+       * narrowest of these.
        *
        * O(numFeats) per zoom rather than per fetch, because the cap is a px
        * width: 4.2 ms over a million-block whole-genome PAF, where the answer is
@@ -495,7 +495,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * state — the same tracked deps the fetch autorun refetches on. The
        * mixin appends the settings and adapter axes. Reactive: flips the
        * instant any of them changes. Before both connected views are ready it
-       * collapses to a degenerate signature (empty region sig, no
+       * reduces to a degenerate signature (empty region sig, no
        * fetch-window/zoom keys) that no connected fetch can produce — a real
        * fetch requires non-empty displayedRegions — so `dataCurrent` reads
        * false until a real fetch lands. Non-nullable so it mirrors dotplot's.
@@ -542,11 +542,10 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The LinearSyntenyView this display's level sits in. Duck-typed, and that
-       * is the load-bearing part: this getter is the last edge of the
-       * view -> level -> display -> view cycle, and naming the view's model here
-       * is what made `levels` an `IAnyModelType` and every read off a level
-       * `any`. `parentViewDuck.ts` carries the rest, including why ADR-055's
+       * The LinearSyntenyView this display's level sits in. Duck-typed: this
+       * getter is the last edge of the view -> level -> display -> view cycle,
+       * and naming the view's model here made `levels` an `IAnyModelType` and
+       * every read off a level `any`. `parentViewDuck.ts` has the rest, including why ADR-055's
        * interface form does not substitute on a four-node loop.
        */
       get view() {
@@ -554,8 +553,8 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #method
-       * The parent feature under an INSTANCE index, what the pick engine and
-       * the hover and click state carry; `getFeatureAtIndex` takes a feature
+       * The parent feature under an INSTANCE index, which the pick engine and
+       * the hover and click state hold; `getFeatureAtIndex` takes a feature
        * index
        */
       getFeature(index: number) {
@@ -754,18 +753,18 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * The detail tier this level's fetch asks the adapter for, resolved here on
        * the main thread so it can enter `currentFetchKey`.
        *
-       * It cannot be resolved adapter-side from `bpPerPx`: the refetch key carries
+       * It cannot be resolved adapter-side from `bpPerPx`: the refetch key contains
        * only `bpPerPxBucketKey`, a log2 bucket, and the default 10000 threshold
        * sits *inside* bucket 13 (8192..16384). Zooming across the threshold within
-       * one bucket therefore changed nothing the key could see, and the view kept
+       * one bucket changes nothing the key can see, so the view would keep
        * drawing the coarse tier's gap-free ribbons while reporting itself current.
        *
        * The zoom fed in is `min` of both axes, because CIGAR detail is worth
        * drawing when the band is wide on EITHER axis — buildSyntenyGeometry's
        * MIN_CIGAR_PX_WIDTH gate uses `max(widthPx0, widthPx1)` — so dropping to
        * coarse is only safe once BOTH axes are past the threshold. Taking the
-       * query axis alone lost indel detail on a band whose query was zoomed out
-       * but whose target was zoomed in.
+       * query axis alone would lose indel detail on a band whose query is zoomed
+       * out but whose target is zoomed in.
        *
        * The tier the adapter will serve, once `lodTierInfo` has landed: a file
        * with no coarse tier is 'fine' at any zoom, and the threshold is clamped
@@ -918,7 +917,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * Stable key for this display's outline cell, beside the `displayKey` its
        * ribbons upload under. Two cells rather than one so a click re-uploads
        * the handful of records the outline traces instead of the track's whole
-       * buffer — hashed off a name of its own for the same reason `displayKey`
+       * buffer — hashed from a separate name for the same reason `displayKey`
        * is hashed rather than indexed.
        */
       get outlineKey() {

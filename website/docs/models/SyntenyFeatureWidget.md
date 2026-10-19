@@ -1,14 +1,14 @@
 ---
 id: syntenyfeaturewidget
 title: SyntenyFeatureWidget
-description: "The feature-details widget a synteny feature opens, which is BaseFeatureWidget plus the band the click landed in."
+description: "The feature-details widget a synteny feature opens, which is BaseFeatureWidget plus the band that was clicked."
 sidebar_label: Widget -> SyntenyFeatureWidget
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/SyntenyFeatureDetail/index.ts).
 
 The feature-details widget a synteny feature opens, which is
-`BaseFeatureWidget` plus the band the click landed in.
+`BaseFeatureWidget` plus the band that was clicked.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

@@ -63,10 +63,9 @@ export interface ThresholdRef {
 
 /**
  * #api
- * A numeric field read through a linear or log scale into a ramp. Each end of
- * the domain is pinned by `domainMin` or `domainMax`, or is the region's own
- * extreme where unset, so pinning both keeps colors consistent across a
- * whole view. The ramp is `range`'s CSS colors, evenly spaced, where it
+ * A numeric field read through a linear or log scale into a ramp. `domainMin` or
+ * `domainMax` pins each end of the domain, which otherwise takes the region's
+ * extreme, so pinning both keeps colors consistent across a whole view. The ramp is `range`'s CSS colors, evenly spaced, where it
  * lists any, else the named `scheme`; `reverse` turns it round.
  */
 export interface ContinuousRef {
@@ -127,9 +126,9 @@ export interface LocusRef {
 /**
  * #api
  * A numeric field read through a linear or log scale into a width in CSS px:
- * `range` is the px at each end of the domain (1 to 6 unset), and each end of
- * the domain is pinned by `domainMin` or `domainMax` or follows the loaded
- * regions' extremes where unset, as a color ramp's does. A feature holding
+ * `range` is the px at each end of the domain (1 to 6 unset), and
+ * `domainMin` or `domainMax` pins each end of the domain, which otherwise
+ * follows the loaded regions' extremes, as a color ramp's does. A feature holding
  * no number takes the range's first px.
  */
 export interface SizeRef {
@@ -151,8 +150,8 @@ export type SizeEncoding = number | FieldRef | SizeRef
 /**
  * #api
  * The declared mapping from a feature's fields to a mark's channels. Every
- * positional channel is a field: `x` defaults to `start` and `x2` to `end`, a
- * mark that plots no value leaves `y` off, and the scale `y` is read through
+ * positional channel is a field. `x` defaults to `start` and `x2` to `end`; a
+ * mark that plots no value leaves `y` off; the scale `y` is read through
  * belongs to the display rather than to the encoding. `shape` is read by the
  * `point` mark alone, `row` — an integer field, 0 where missing — by every
  * mark, which stands a feature in the band it names.
@@ -174,8 +173,8 @@ export interface MarkEncoding {
 /**
  * #api
  * The lanes a caller asks the encoder to fill, beyond `x` and `x2`, which
- * every payload carries, and `featureIndex`, which one carries where a
- * feature was skipped: a mark's channels, and `index` for the Flatbush a
+ * every payload has, and `featureIndex`, which a payload has where a feature
+ * was skipped: a mark's channels, and `index` for the Flatbush a
  * hover reads. A lane not asked for is neither
  * allocated nor transferred, and a caller that never hovers declines the
  * index, which is most of the encoder's cost after the walk.
@@ -325,8 +324,8 @@ export type ScaleTable = ColorScaleTable | ShapeScaleTable
  * #api
  * One encoding's channels over one region's features, dense and
  * index-aligned: instance `i` of every array is the same feature, and
- * `featureIndex[i]` says which one of the input list it was, or it is absent
- * where instance `i` is feature `i` ({@link featureIndexAt}). A lane is
+ * `featureIndex[i]` is its index in the input list, and the array is
+ * absent where instance `i` is feature `i` ({@link featureIndexAt}). A lane is
  * present when the caller asked for it ({@link LaneName}); {@link Encoded}
  * is this type with a known lane set required.
  */
@@ -498,8 +497,8 @@ export interface FormulaStep {
  * edges over the fields `as` names — `start` and `end` by default, so an
  * `aggregate` grouped by those counts per bin and the bar spans the bin.
  *
- * With `field` (`start` by default) a feature lands in the one bin that field
- * falls in. With `fields`, an interval's start and end, it is cut at the bin
+ * With `field` (`start` by default) a feature is placed in the one bin that
+ * field falls in. With `fields`, an interval's start and end, it is cut at the bin
  * edges into one piece per bin it overlaps, each piece writing `overlap`, the
  * bases of the interval inside its bin; a zero-length interval (an insertion)
  * is one piece of overlap 0 in the bin holding its position, and one whose
@@ -524,7 +523,7 @@ export type BinStep = {
  *
  * `weight` names a field each row counts by: `count` is then the sum of the
  * weights, `sum` the sum of value times weight, and `mean` that over the sum
- * of the weights, a row whose weight is not a number counting for nothing. A
+ * of the weights. A row whose weight is not a number counts for nothing. A
  * weight moves no minimum or maximum, so `min` and `max` read none.
  */
 export interface AggregateOp {
@@ -537,7 +536,7 @@ export interface AggregateOp {
 /**
  * #api
  * One feature per distinct `groupby` value set (one for the whole region
- * with none), spanning its members' extent, carrying the group's fields and
+ * with none), spanning its members' extent, with the group's fields and
  * every `ops` entry.
  */
 export interface AggregateStep {
@@ -586,7 +585,7 @@ export interface CoverageStep {
  * `key`. Each answer reads the element's own fields first and the feature it
  * came from for everything else, so an exon still knows its gene's name and
  * strand and a species row its block's reference span. A feature whose field
- * holds no array and no record drops out unless `keepEmpty` says otherwise.
+ * holds no array and no record drops out unless `keepEmpty` is true.
  */
 export interface FlattenStep {
   type: 'flatten'
@@ -602,7 +601,7 @@ export interface FlattenStep {
  * #api
  * Replace each aligned row with its cells against the reference: one feature
  * per run of columns in one `state` — `match`, `mismatch` or `gap` — on the
- * row's own reference span, a mismatch run carrying its `base` and a match or
+ * row's reference span, a mismatch run with its `base` and a match or
  * mismatch run `match` as 1 or 0, and one interbase feature per `insertion`,
  * standing at the reference base it precedes with the inserted bases in
  * `base` and their count in `length`. The row's `field` (`seq`) is the
@@ -623,7 +622,7 @@ export interface CellsStep {
  * write it to the field `as` (`row`). `fields` names the interval read
  * (`start`, `end`); `padding` is bp of clearance kept between two features
  * sharing a row. The answer is the input in start order, so a `span`
- * encoding `row` stacks it. Under a facet it packs each section on its own.
+ * encoding `row` stacks it. Under a facet it packs each section separately.
  */
 export interface PileupStep {
   type: 'pileup'
@@ -636,10 +635,10 @@ export interface PileupStep {
  * #api
  * One feature per other end a record states: the `mate` a paired adapter
  * fills in (BEDPE, STAR-Fusion), or each VCF `ALT` naming a locus, a
- * breakend's mate or a symbolic allele's `END` on `CHR2` or its own
- * sequence. Each answer carries `mate` (`refName`, `start`, `end`, 0-based
- * and half-open, and the far end's `mateDirection`), its own end's
- * `mateDirection`, the `alt` it came from and `svType`, the structural
+ * breakend's mate or a symbolic allele's `END` on `CHR2` or on the
+ * record's sequence. Each answer has `mate` (`refName`, `start`, `end`, 0-based
+ * and half-open, and the far end's `mateDirection`), `mateDirection` for its
+ * own end, the `alt` it came from and `svType`, the structural
  * class the allele states (`svClassOfAlt`). A record naming no other end drops
  * out, and two records or alleles stating one pair of ends answer once.
  */
@@ -696,9 +695,9 @@ export type CoreGetEncodedLayersArgs = {
 export interface FacetSpec {
   field: FieldRef
   /**
-   * Steps over each section's features, before every layer's own: a `pileup`
-   * here packs each section on its own rows, which every layer then stands
-   * in.
+   * Steps over each section's features, before each layer's steps: a `pileup`
+   * here packs each section separately, and every layer then stands in the
+   * packed rows.
    */
   transform?: TransformStep[]
 }

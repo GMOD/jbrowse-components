@@ -22,9 +22,9 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 The alignments displays' `sort` setting: the pileup's row order. A
 whole-window order is a string — `"position"` (by start, the default),
-`"length"` (widest first), `"spliced"` (reads whose CIGAR carries a skip
+`"length"` (widest first), `"spliced"` (reads whose CIGAR has a skip
 first), `"split"` (reads aligned in pieces first) or `"svSignal"` (the
-structural-variant evidence first, in tiers: split reads, then reads carrying
+structural-variant evidence first, in tiers: split reads, then reads with
 an insertion or deletion of 50 bp or more, then paired reads the aligner did
 not call concordant, each with both ends placed above MAPQ 0, as the
 `svSignal` filter counts it). A column sort ranks the reads over one base,

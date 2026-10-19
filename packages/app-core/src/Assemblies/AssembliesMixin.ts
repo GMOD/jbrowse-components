@@ -42,12 +42,12 @@ export function AssembliesMixin(
       return {
         /**
          * #method
-         * The assembly config answering to `name`, as its name or one of its
-         * aliases, from any of the three arrays the assemblyManager draws on,
-         * or undefined.
+         * The assembly config whose name or one of whose aliases is `name`,
+         * from any of the three arrays the assemblyManager draws on, or
+         * undefined.
          *
          * One namespace, because `name` is the assembly config's MST
-         * identifier: a second config carrying a name one of the others
+         * identifier: a second config with a name one of the others
          * already has doesn't fail at the add, it makes every
          * `assembly.configuration` safeReference in the manager ambiguous, and
          * MST then throws on every read of one — inside the manager's own

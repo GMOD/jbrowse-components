@@ -117,8 +117,8 @@ const markShapeSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.encoding.shape.labels
-     * The key's name for each `domain` value, one each in order; one past the
-     * list keeps its own name.
+     * The key's name for each `domain` value, one each in order; a value past
+     * the end of the list shows its name.
      */
     labels: {
       type: 'stringArray',
@@ -182,7 +182,7 @@ const markEncodingSchema = ConfigurationSchema(
      * reads what the steps before this mark's encode wrote, the way a ggplot2
      * stat names what its geom plots: a `coverage` step's depth, or the one
      * summary an `aggregate` with one op writes. A bar or point with neither
-     * draws nothing, and the track's corner notice says so, while a text with
+     * draws nothing and the track shows a corner notice, while a text with
      * neither stands at the apex of a link drawn between its two ends, or in
      * the middle of its band where none is. The scale it is read through is
      * the display's `scales.y`.
@@ -275,7 +275,7 @@ const markSchema = ConfigurationSchema(
   {
     /**
      * #slot marks.mark
-     * `bar` stands between `origin` and `y`; `point` is a shape at `y` over
+     * `bar` spans from `origin` to `y`; `point` is a shape at `y` over
      * the middle of `x` to `x2`; `rule` is a line across `x` to `x2` at `y`,
      * `encoding.size` px thick; `line` is a stroke through consecutive
      * values, held across each span or run centre to centre as `interpolate`
@@ -283,8 +283,8 @@ const markSchema = ConfigurationSchema(
      * `x2`; `text` prints a field
      * over the middle of `x` to `x2`, just above `y` where it names one, at
      * the apex of a link drawn between the same two ends, and in the middle of
-     * its band otherwise, and a label that would overlap one
-     * already placed to its left is left out; `link` is a curve from `x` up
+     * its band otherwise, and the display omits a label that would overlap one
+     * already placed to its left; `link` is a curve from `x` up
      * and over to `x2`, which may lie on another sequence, its apex at `y`
      * where it names one.
      */
@@ -320,9 +320,9 @@ const markSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.linkShape
-     * The shape of a link mark: `dome`, a half-ellipse whose apex is the pair's
-     * half-width clamped to the band, `arc`, a true semicircle that may leave
-     * it, or `line`, a straight segment between the feet, on the baseline or
+     * The shape of a link mark: `dome` is a half-ellipse whose apex is the pair's
+     * half-width clamped to the band, `arc` a true semicircle that may leave
+     * it, and `line` a straight segment between the feet, on the baseline or
      * at the `y` value. Past three block widths a dome or arc becomes a
      * circle whose legs rise from each foot.
      */
@@ -472,7 +472,7 @@ export function configSchemaFactory() {
        * sidebar, the row labels, clustering and the arrangement dialog, whose
        * order, labels, tree and focus this object holds. Beside a `facet`, the
        * facet draws; on another field that asks for bands of rows, which are
-       * not drawn yet, and a notice says so.
+       * not drawn yet, the display shows a notice.
        *
        * #example
        * ```js
@@ -485,8 +485,8 @@ export function configSchemaFactory() {
       rows: rowsConfigSchema,
       /**
        * #slot rowColor
-       * The bar beside each row's label, the marks keeping their own color:
-       * under the default field `name`, a row's value paired with a color in
+       * The bar beside each row's label; the marks keep their color. Under
+       * the default field `name`, a row's value paired with a color in
        * `domain`/`range`, which the arrangement dialog writes.
        */
       rowColor: rowColorConfigSchema,

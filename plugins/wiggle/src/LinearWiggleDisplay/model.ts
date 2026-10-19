@@ -112,9 +112,9 @@ const WiggleClusterDialog = lazy(
  * #category display
  *
  * The quantitative display: one plot per rendering, drawn over one source or
- * over many. `rows: 'source'` gives each source a row of its own, with the
+ * over many. `rows: 'source'` puts each source in a separate row, with the
  * clustering sidebar, row labels and separators beside them, and holds the
- * arrangement a reader gives them; unset, every source shares one plot box.
+ * arrangement a reader sets; unset, every source shares one plot box.
  *
  * #example
  * A complete `QuantitativeTrack` config to paste into `tracks`:
@@ -138,7 +138,7 @@ const WiggleClusterDialog = lazy(
  * #example
  * The two row-ordering triggers are display *properties*, not config slots, so
  * they go on the display node in a session — `defaultSession` here, and the
- * same shape a `session=spec-` link carries. Written on the track config's own
+ * same shape a `session=spec-` link uses. Written in the track config's
  * `displays` entry they would be dropped as unknown slots.
  *
  * `runClustering` is a transient declarative launch spec, the same idea as
@@ -147,7 +147,7 @@ const WiggleClusterDialog = lazy(
  * itself so a saved session never re-triggers it. `sortRowsBy` is the other
  * one, and the declarative form of the right-click "Sort rows by score here" —
  * where clustering orders rows by the whole region in view, this ranks them by
- * the score each carries at one base, so a cohort can open already ranked at a
+ * the score each has at one base, so a cohort can open already ranked at a
  * candidate locus with the surrounding context still on screen. Use one or the
  * other; whichever applies last owns the row order.
  * ```js
@@ -238,7 +238,7 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Whether each source takes a row of its own, which is the whole of what
+       * Whether each source is drawn in a separate row, which is all that
        * `rows` decides here: the tree sidebar, the row labels, the separators,
        * the clustering menu and the row-order sort all hang off it.
        */
@@ -422,7 +422,7 @@ export default function stateModelFactory(
        * #getter
        * Resolved per-row height. This display is always fit-to-display-height —
        * there is no pinned-height setting and so no `rowHeight` sentinel to
-       * resolve — but it carries the same name every row display exposes its
+       * resolve — but it uses the same name every row display exposes its
        * resolved height under (see agent-docs/reference/ROW_HEIGHT_AND_FIT),
        * which is also what tree-sidebar's `TreeDrawingModel` reads.
        */
@@ -494,7 +494,7 @@ export default function stateModelFactory(
       /**
        * #getter
        * A density row has no y scale, so under the one ramp the ramp is the
-       * key and carries the domain; bars and points keep their axis beside it.
+       * key and shows the domain; bars and points keep their axis beside it.
        */
       get scoreRampReplacesAxis() {
         return self.isDensityMode && this.scoreRampApplies
@@ -531,10 +531,10 @@ export default function stateModelFactory(
       /**
        * #getter
        * The one scale every row shares, ruling a band per row stacked down the
-       * track, past the dendrogram where one is shown. Density rows each in
-       * their own color map the scale to color rather than to y, so they
+       * track, past the dendrogram where one is shown. Density rows, one
+       * color per row, map the scale to color rather than to y, so they
        * rule no band and the chrome captions the domain instead; under the
-       * one ramp the ramp is the key and carries the domain itself.
+       * one ramp the ramp is the key and shows the domain itself.
        */
       get valueScales(): ValueScale[] {
         if (self.scoreRampReplacesAxis) {
@@ -602,7 +602,7 @@ export default function stateModelFactory(
        * The key a threshold with declared cuts draws: one row per interval,
        * labelled by the span it covers. A threshold cutting at the `origin`
        * draws none, because the axis already shows where the origin is and a
-       * `< 0` / `≥ 0` key on every bigWig says nothing a reader did not ask
+       * `< 0` / `≥ 0` key on every bigWig adds nothing a reader asked
        * for. Density draws none either: there the ramp is the key.
        */
       get thresholdColorScale(): ColorScale | undefined {
@@ -764,7 +764,7 @@ export default function stateModelFactory(
        *
        * Named by coordinate rather than by loaded-region index because both
        * entry points are: the right-click hit resolves to one, and a session's
-       * `sortRowsBy` carries one across a reload. Resolving that region and
+       * `sortRowsBy` holds one across a reload. Resolving that region and
        * refusing the two cases where a sort would only cost a `rows.domain` write
        * are `sortRowsAtColumn`'s, shared with the multi-row feature display's
        * twin, and so is the returned "did it sort" the declarative entry point
@@ -898,7 +898,7 @@ export default function stateModelFactory(
 
       /**
        * #method
-       * Right-click menu, built from the column the click landed on. The
+       * Right-click menu, built from the column under the click. The
        * position is captured here rather than read inside the onClick, because
        * `closeContextMenu` runs first when an item is clicked.
        */

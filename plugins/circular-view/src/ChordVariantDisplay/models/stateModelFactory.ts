@@ -153,8 +153,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       /**
        * #getter
        * every held record's two ends on the circle's unrolled axis, by the
-       * record's place in `features`: its own start, and its mate's position
-       * where it names one, else its own end. `junction` is the two ends
+       * record's place in `features`: its start, and its mate's position
+       * where it has one, else its end. `junction` is the two ends
        * unordered, which a breakend pair's two records share.
        */
       get chordFeet() {
@@ -334,8 +334,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #method
-       * the chord a drawn record's id names, as the SVG side draws it;
-       * undefined for an id the lanes do not hold, and for a chord whose ends
+       * the chord for a drawn record's id, as the SVG side draws it;
+       * undefined for an id not in the lanes, and for a chord whose ends
        * are under a pixel apart
        */
       shapeFor(featureId: string) {

@@ -15,13 +15,9 @@ the two-way loading answer a shared canvas wants — `loading` off the
 `fetchLanded` hook, `refetching` off `isLoading` — and the one-shot
 reversed-assembly flag.
 
-Until 2026-09 this was `SyntenyFetchStateMixin`, a second spelling of every
-`FetchMixin` member the overlay reads — `fetching` for `isLoading`, its own
-`reloadCounter` / `fetchCanceled` / `reload` / `cancelFetchByUser`, a stop
-handed back from the installer because the rotation lived there — kept apart
-on the grounds ADR-054 gives and ADR-105 retires. `error` kept the four flags
-below out of that mixin: it is a `BaseDisplay` volatile the flags read, and declaring a second one to make them type-check is the ADR-041
-hazard. `FetchMixin` is the one declaration site that already wins that
+`FetchMixin` is the one declaration site for `error`, a `BaseDisplay`
+volatile the four flags below read. Declaring a second one to make them
+type-check is the ADR-041 hazard, and `FetchMixin` already wins that
 compose, so composing it lets the flags be getters here.
 
 `loading` and `refetching` are different questions, and the difference
@@ -53,7 +49,7 @@ From [FetchMixin](../fetchmixin): <span id="volatile-activesignal">[`activeSigna
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-fetchlanded">**fetchLanded**</span><br><code>boolean</code> | Overridable hook (default false): a fetch has completed and data is present, even if it mapped zero features. Not a feature-count test — an empty-but-finished fetch has landed, or an empty plot spins its overlay forever. Each display answers off its own payload field, which survives a `reload()` where `loadedFetchKey` does not, so a retry shows the corner chip rather than the full overlay.<br><br>Default false is the strict answer — a display that forgets the override shows its first-load overlay forever (diagnosable) rather than reporting done over an empty plot. |
+| <span id="getter-fetchlanded">**fetchLanded**</span><br><code>boolean</code> | Overridable hook (default false): a fetch has completed and data is present, even if it mapped zero features. Not a feature-count test — an empty-but-finished fetch has landed, or an empty plot spins its overlay forever. Each display answers from a field of its payload, which survives a `reload()` where `loadedFetchKey` does not, so a retry shows the corner chip rather than the full overlay.<br><br>Default false is the strict answer — a display that forgets the override shows its first-load overlay forever (diagnosable) rather than reporting done over an empty plot. |
 | <span id="getter-hasdrawable">**hasDrawable**</span><br><code>boolean</code> | Overridable hook: the display holds something an SVG export can draw. Defaults to `fetchLanded`; the dotplot answers with its instance geometry rather than its `geometry` computed, because `svgReady` is polled outside any reactive context and a `geometry` read there recolors every segment per poll. |
 | <span id="getter-loading">**loading**</span><br><code>boolean</code> | First load, nothing on screen yet: drives the full striped overlay. Deliberately not `&& isLoading`, which would blink the overlay off during the pre-fetch debounce gap. Excludes `error` so error UI and loading UI never show at once, and `fetchInert` so a display that will never fetch rests instead of spinning on data that is not coming. |
 | <span id="getter-refetching">**refetching**</span><br><code>boolean</code> | A fetch is running over a stale plot still on screen (zoom, reorder, pan past the buffer): drives a corner indicator rather than the full overlay, so a viewport change does not mask what is drawn. |

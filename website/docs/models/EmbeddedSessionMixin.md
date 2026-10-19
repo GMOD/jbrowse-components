@@ -17,8 +17,8 @@ and tracks mixin as parameters does not typecheck usefully:
 `types.compose`'s overloads are declared over `IModelType<P, O, FC, FS>`, so
 a model passed as a naked type parameter gives nothing to infer those four
 from, and `session.view` becomes `any` at every embedder call site with no
-type error. Passing only concrete types to `compose` keeps the products'
-views typed.
+type error. When `compose` receives only concrete types, the products'
+views stay typed.
 
 Each product therefore declares its tracks mixin, `view` prop, and the
 `views`/`addView`/`removeView` members that read `self.view`, because those
@@ -59,7 +59,7 @@ From [EmbeddedSessionThemeMixin](../embeddedsessionthememixin): <span id="volati
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-viewtitlebars">**viewTitleBars**</span><br><code>boolean</code> | An embedded view is drawn with no title bar above it, so its menu lives in the view's own controls. |
+| <span id="getter-viewtitlebars">**viewTitleBars**</span><br><code>boolean</code> | An embedded view is drawn with no title bar above it, so its menu sits in the view's controls. |
 | <span id="getter-version">**version**</span><br><code>string</code> |  |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  |
 | <span id="getter-assemblymanager">**assemblyManager**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; { aft…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; { afterAttach(): void; removeAssembly(asm: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; IStateTreeNode&lt;…&gt;): void; addAssembly(configuration: any): void; } &amp; IStateTreeNode&lt;…&gt;</code></pre></dialog></span> |  |

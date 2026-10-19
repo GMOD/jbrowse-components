@@ -21,11 +21,11 @@ type TokenEntryForm = React.FC<{
 
 /**
  * #stateModel TokenEntryInternetAccount
- * Shared base for internet accounts whose token is supplied by the user through
- * a dialog (HTTP Basic, external token). Such accounts differ only in their
+ * Shared base for internet accounts whose token the user supplies through a
+ * dialog (HTTP Basic, external token). Such accounts differ in their
  * discriminating `type` and the dialog form used to collect the token, both
- * passed here. Not registered on its own — see HTTPBasicInternetAccount and
- * ExternalTokenInternetAccount.
+ * passed here. The base is not registered itself; see HTTPBasicInternetAccount
+ * and ExternalTokenInternetAccount.
  */
 export function tokenEntryModelFactory<Type extends string>(
   modelName: string,

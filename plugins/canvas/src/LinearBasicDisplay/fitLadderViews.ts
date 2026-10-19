@@ -286,7 +286,7 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     /**
      * #getter
-     * The most isoforms any trimmable gene ON SCREEN has — the top of the
+     * The most isoforms any trimmable gene on screen has — the top of the
      * solve's bracket, and the count above which a trim can take nothing
      * away.
      */
@@ -344,8 +344,8 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     /**
      * #method
-     * Measures a labelled stack's height at any body scale. Each scale is
-     * its own prep, since the pack reads body heights from it.
+     * Measures a labelled stack's height at any body scale. Each scale
+     * needs a separate prep, since the pack reads body heights from it.
      */
     bodyScaleHeightProbe(
       cache: PackHeightCache,
@@ -370,7 +370,7 @@ export function fitLadderViews(self: FitLadderHost) {
      * #getter
      * The smallest body scale the labelled rungs may pack at: the tallest
      * body stays `LABELED_BODY_TO_FONT_RATIO` of the label font, and the
-     * shortest stays drawn. A body carrying an overlay subfeature label
+     * shortest stays drawn. A body with an overlay subfeature label
      * holds its text, so none shrinks under it.
      */
     get fitLabeledBodyFloor() {

@@ -458,7 +458,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        * folder and collapsed are the same slot, so leaving folder mode always
-       * lands on an expanded category
+       * yields an expanded category
        */
       setFolderCategory(id: string, isFolder: boolean) {
         self.setCategoryMode(id, isFolder ? 'folder' : undefined)

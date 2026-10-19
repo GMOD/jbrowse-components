@@ -14,9 +14,9 @@ items act on cannot disagree. Brings `contextMenuInfo`, `openContextMenu`
 and `closeContextMenu`; the display supplies `contextMenuItems()`, and
 `DisplayChrome` renders the menu for every display composing this
 
-`Info` is the display's own resolution of the click — the multi-row painting
-carries the feature under it, multi-wiggle and MAF a column — and every one
-of them carries the anchor. The items are built from this value when the
+`Info` is what the display resolves the click to — the multi-row painting
+holds the feature under it, multi-wiggle and MAF a column — and every one
+of them holds the anchor. The items are built from this value when the
 menu opens, not read inside an item's `onClick`, because `closeContextMenu`
 runs first when an item is clicked.
 

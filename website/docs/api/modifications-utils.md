@@ -55,11 +55,11 @@ probabilities scaled to 0..1.
 The ML tag as its raw 0..255 bytes, without the scaling `getModProbabilities`
 applies.
 
-The byte is a LOSSLESS stand-in for the probability — every value on this
-path is exactly `(N + 0.5) / 256` — and it is monotonic in it, so anything
-that only compares probabilities (picking the most likely call at a
-position, testing a threshold) can work in bytes and divide once, at the end,
-for the few calls that survive. A caller that needs the numbers themselves
+The byte maps to the probability without loss — every value on this path is
+exactly `(N + 0.5) / 256` — and in the same order, so anything that only
+compares probabilities (picking the most likely call at a position, testing a
+threshold) can work in bytes and divide once, at the end, for the few calls
+that survive. A caller that needs the numbers themselves
 still wants `getModProbabilities`.
 
 ```js
@@ -71,8 +71,8 @@ still wants `getModProbabilities`.
 
 ## getModTag
 
-The read's MM tag, or undefined when its MN tag says MM was computed on a
-sequence of a different length than SEQ. Per SAMtags, MN catches a hard clip
+The read's MM tag, or undefined when its MN tag gives a different sequence
+length for MM than SEQ's. Per SAMtags, MN catches a hard clip
 or trim that shifted the bases MM's deltas count, so on a mismatch every
 position MM would place is wrong.
 
@@ -90,9 +90,9 @@ The modification types an MM tag declares, from its headers alone.
 `getModPositions` answers this too, but on the way to placing every call: it
 walks the delta list against the read sequence, which is the expensive half
 and is only needed to DRAW marks. Anything that just wants to know what is in
-the file — which types to offer in a menu, whether a track carries
-modifications at all — wants this instead, and pays neither the walk nor the
-sequence decode that feeds it.
+the file — which types to offer in a menu, whether a track has modifications
+at all — wants this instead, and avoids both the walk and the sequence decode
+that feeds it.
 
 ```js
 // type signature
@@ -155,7 +155,7 @@ double-paint or, as it did, drop every OTHER type the read declares.
 Whether the cytosine at read position `pos` sits in the given context.
 
 The pattern is defined on the template (the strand the C is on), read 5'->3'.
-For forward reads the stored sequence IS the template, so we read forward from
+For forward reads the stored sequence is the template, so we read forward from
 `pos`. getModPositions works reverse-strand reads in stored-sequence space,
 where the template runs backwards and complemented, so we read backwards from
 `pos` and complement each base before matching.
@@ -166,13 +166,13 @@ to arithmetic, where lower-casing the character and the pattern base beside
 it is two string operations per base. It is asked at that volume: the
 fill-unmarked methylation walk asks up to twice for every aligned base of
 every read (getMethBins), and bisulfite asks at every candidate cytosine.
-What it is worth in the phase it sits in — which is not what it is worth on
-its own — is `plugins/alignments/benches/modFillView.bench.ts`.
+`plugins/alignments/benches/modFillView.bench.ts` measures the saving within
+the phase this runs in, which differs from the saving in isolation.
 
 `charCodeAt` past either end of the string is NaN and `NaN & ~0x20` is 0 — an
 index no pattern base equals and the complement table holds -1 at — so the
-walk runs off the read as a non-match with no bounds test of its own.
-`features/modCoverage/readBaseCounts.ts` folds case the same way and says so.
+walk runs off the read as a non-match with no separate bounds test.
+`features/modCoverage/readBaseCounts.ts` folds case the same way and notes it.
 
 ```js
 // type signature

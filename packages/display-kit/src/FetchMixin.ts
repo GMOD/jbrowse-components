@@ -152,8 +152,7 @@ export default function FetchMixin() {
        * that survives a `reload()` override that forgets to invalidate, which
        * is the dead Retry button `makeRetryContractCheck` reports. Declared
        * here because this is the one mixin every fetch foundation composes,
-       * the same argument that put `fetchInert` below; the comparative family
-       * carried its own until ADR-105.
+       * the same argument that put `fetchInert` below.
        */
       reloadCounter: 0,
 
@@ -217,16 +216,14 @@ export default function FetchMixin() {
        * `isLoading`, `error`, `fetchGeneration`, `fetchCanceled` — and nothing
        * else.
        *
-       * It was two implementations of that machine until 2026-08-20, which is
-       * how they came to disagree about whether a completed fetch releases its
-       * signal. A display's *primary* fetch is this wrapper; a second concurrent
-       * fetch on the same node holds a rotation of its own, which is why the
+       * A display's *primary* fetch is this wrapper; a second concurrent
+       * fetch on the same node holds a separate rotation, which is why the
        * primitive is the thing that exists and this is the thing built on it
        * (ADR-054 §1, the one section ADR-105 keeps).
        *
        * It is lent this display's `statusWindow`, so the fetch takes a slot on
-       * the one field rather than opening a second window over it — the whole
-       * point of `StatusReporter`.
+       * the one field rather than opening a second window over it, which is the
+       * purpose of `StatusReporter`.
        */
       fetchRotation: createAbortRotation(self, {
         statusWindow: self.statusWindow,
@@ -256,7 +253,7 @@ export default function FetchMixin() {
       /**
        * #getter
        * Overridable hook (default false): the states where this display
-       * deliberately never fetches, so it holds no data and none is coming.
+       * deliberately skips fetching, so its data stays empty.
        * Sequence sets it past base resolution ("Zoom in to see sequence"); LD
        * sets it with the triangle toggled off.
        *
@@ -308,7 +305,7 @@ export default function FetchMixin() {
        * `fetchInert` rather than on either: HiC's contacts fetch declines until
        * `CoreGetInfo` lands, and `LinearMultiSampleVariantDisplay`'s
        * `fetchNeeded` declines until `sourcesBase` does. Both have a `reload()`
-       * that wakes the prerequisite's autorun as well as their own.
+       * that wakes the prerequisite's autorun as well as the display's.
        *
        * **It has to be strictly narrower than the gate it explains.** One that
        * restates the gate's negation makes every decline a deferred one. No run
@@ -333,11 +330,11 @@ export default function FetchMixin() {
        * until its lane genes and lane links first arrive, so an export or a
        * capture never lands between the ortholog fetch and the gene models that
        * fill the lanes. `TreeSidebarMixin` sets it while a declared
-       * `runClustering` run is due, so neither draws the rows before it orders
-       * them.
+       * `runClustering` run is due, so the display draws no rows before clustering
+       * orders them.
        *
        * A hook rather than a `displayPhase` override, for the reason
-       * `fetchInert` is one: that display carried the override, restating the
+       * `fetchInert` is one: that display overrode the getter, restating the
        * foundation's two arguments verbatim to append one term, and a copy like
        * that misses any term added to the foundation later.
        *
@@ -363,7 +360,7 @@ export default function FetchMixin() {
          * different axes.
          *
          * `undefined` inside the payload is a real state and a class instance
-         * compares by its own fields, which a serialized key could not say;
+         * compares by its fields, which a serialized key could not say;
          * `makeSettingsFetchInputs` has why.
          */
         get settingsFetchInputs(): unknown {
@@ -438,11 +435,11 @@ export default function FetchMixin() {
        * node, and its late status repainting the overlay of the fetch that
        * replaced it is the failure this guards. `runFetch` passes `!isStale()`,
        * and every display gets that through `ctx.statusCallback` unasked;
-       * a caller outside a fetch (the clustering autorun) passes its own run's
-       * flag. Defaulting to `isAlive` made the loose answer the easy one and
+       * a caller outside a fetch (the clustering autorun) passes a flag for its
+       * run. Defaulting to `isAlive` made the loose answer the easy one and
        * five displays took it.
        *
-       * `runFetch`'s own slot is opened by the rotation; this is for an
+       * The rotation opens the slot for `runFetch`; this method is for an
        * operation outside any fetch, the tree sidebar's clustering run.
        */
       openStatusStream(isCurrent: () => boolean) {
@@ -465,9 +462,9 @@ export default function FetchMixin() {
       /**
        * #action
        * User-initiated cancel from the loading overlay. Stops the in-flight
-       * fetch and lands in a durable `fetchCanceled` state. Unlike
-       * `cancelFetch`, it does NOT bump fetchGeneration — so the fetch autoruns
-       * don't immediately restart the load. The user retries via `reload`
+       * fetch and sets the durable `fetchCanceled` state. Unlike
+       * `cancelFetch`, it does not bump fetchGeneration, so the fetch autoruns
+       * do not immediately restart the load. The user retries via `reload`
        * (the overlay's retry button), or it clears on the next viewport change.
        */
       cancelFetchByUser() {
@@ -482,7 +479,7 @@ export default function FetchMixin() {
        * overlay flips from "canceled" to "loading" now rather than when the
        * debounced fetch begins, and bump the counter every fetch trigger reads
        * unconditionally. Each foundation chains this and adds the one
-       * invalidation its own freshness gate needs; a display with extra
+       * invalidation its freshness gate needs; a display with extra
        * teardown chains the foundation's. `reloadReachesCounter.test.ts` reads
        * every `reload()` in the tree for the override that forgets.
        */
@@ -497,7 +494,7 @@ export default function FetchMixin() {
        * display destroyed mid-fetch (track/view closed while loading) never
        * signals the worker to abort the now-useless work, and its in-flight HTTP
        * reads keep downloading. MST auto-chains lifecycle hooks, so a composing
-       * display can still define its own beforeDestroy.
+       * display can still define a beforeDestroy.
        */
       beforeDestroy() {
         self.stopActiveFetch()
@@ -518,7 +515,7 @@ export default function FetchMixin() {
        * The `onBegin` half of a fetch's bookkeeping: publish the in-flight
        * signal (`isLoading`) and clear the durable user-cancel — a load starting
        * is the single clear point that covers every retrigger path (reload,
-       * viewport change, settings invalidate). An action of its own for the
+       * viewport change, settings invalidate). A separate action for the
        * same reason `endFetch` is: `installFetch`'s lifecycle callbacks run
        * outside any MST flow this mixin owns.
        */
@@ -532,7 +529,7 @@ export default function FetchMixin() {
       },
       /**
        * #action
-       * The `finally` half of `runFetch`'s bookkeeping, an action of its own
+       * The `finally` half of `runFetch`'s bookkeeping, a separate action
        * because `runFetchOnce`'s `finally` resumes on a microtask the flow does
        * not own — a direct volatile write there is outside the action context,
        * which is the one thing hoisting the sequence into a shared function

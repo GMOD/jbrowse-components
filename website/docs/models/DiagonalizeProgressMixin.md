@@ -12,9 +12,9 @@ The auto-diagonalize lifecycle state shared by the comparative views
 signal, and the flag that gates `settled` so a screenshot or browser test
 can't capture a pre-reorder hairball.
 
-`withDiagonalizeProgress` drives the wait and the status/signal pair; the gate
-is raised and lowered by the view's own init autorun, which is the only thing
-that knows a reorder was asked for. Composed rather than duplicated so both
+`withDiagonalizeProgress` drives the wait and the status/signal pair; the view's
+init autorun raises and lowers the gate, because it alone knows a reorder
+was asked for. Composed rather than duplicated so both
 views report progress, cancel, and gate identically.
 
 ## Volatiles
@@ -23,7 +23,7 @@ views report progress, cancel, and gate identically.
 | Member | Description |
 | --- | --- |
 | <span id="volatile-awaitingautodiagonalize">**awaitingAutoDiagonalize**</span><br><code>boolean</code> | True while the init autorun is waiting on the diagonalize RPC. Gates the canvas off — otherwise the user watches an undiagonalized hairball flash before the reorder kicks in. |
-| <span id="volatile-pendingautodiagonalize">**pendingAutoDiagonalize**</span><br><code>boolean</code> | A reorder this init asked for that has not succeeded yet. Raised before any render can paint, and lowered only once the pass RESOLVES — a skipped or thrown reorder leaves it up, so the view's `settled` gate never reports done on an undiagonalized view and the capture fails loudly (times out) instead of committing a hairball.<br><br>One flag rather than a requested/complete pair: the two only ever moved together, and every state a pair can drift into either wedges the gate shut or opens it on the wrong pass. |
+| <span id="volatile-pendingautodiagonalize">**pendingAutoDiagonalize**</span><br><code>boolean</code> | A reorder this init asked for that has not succeeded yet. Raised before any render can paint, and lowered only once the pass resolves — a skipped or thrown reorder leaves it up, so the view's `settled` gate never reports done on an undiagonalized view and the capture fails loudly (times out) instead of committing a hairball.<br><br>One flag rather than a requested/complete pair: the two only ever moved together, and every state a pair can drift into either wedges the gate shut or opens it on the wrong pass. |
 | <span id="volatile-diagonalizestatus">**diagonalizeStatus**</span><br><code>StatusChannel</code> | Live status from the auto-diagonalize RPC (download %, parse, algorithm phase) shown on the reordering spinner; blank outside that wait.<br><br>A `StatusChannel` rather than a status field plus a setter: there is one operation to narrate here, and the channel is that pair with the message/fraction split already done, so the spinner reads `{ message, fraction }` instead of calling `statusMessageText` / `statusFraction` at every render site. |
 | <span id="volatile-diagonalizecancel">**diagonalizeCancel**</span><br><code>(() =&gt; void) &#124; undefined</code> | Aborts the in-flight auto-diagonalize, so the spinner's Cancel can reach it; undefined when none is running. |
 | <span id="volatile-diagonalizeerror">**diagonalizeError**</span><br><code>unknown</code> | Why the last reorder failed, while its gate is still up; cleared by the next run, a finish or a cancel |
@@ -38,4 +38,4 @@ views report progress, cancel, and gate identically.
 | <span id="action-finishautodiagonalize">**finishAutoDiagonalize**</span><br><code>() =&gt; void</code> | A reorder resolved, the init's or a manual one, so the view on screen is the diagonalized one — open the gate. |
 | <span id="action-setdiagonalizeerror">**setDiagonalizeError**</span><br><code>(error: unknown) =&gt; void</code> |  |
 | <span id="action-setdiagonalizecancel">**setDiagonalizeCancel**</span><br><code>(arg?: (() =&gt; void) &#124; undefined) =&gt; void</code> |  |
-| <span id="action-cancelautodiagonalize">**cancelAutoDiagonalize**</span><br><code>() =&gt; void</code> | Abort an in-flight auto-diagonalize; `withDiagonalizeProgress`'s finally clears the wait flag, revealing the (undiagonalized) view.<br><br>Lowers the gate too. The abort reaches the caller as a throw, which skips its `finishAutoDiagonalize()` — right for a reorder that failed on its own (`settled` stays false and a capture times out loudly rather than committing a hairball), wrong for one the user stopped: cancelling IS the user settling for this view, and a gate nothing will lower again leaves `settled` false forever. |
+| <span id="action-cancelautodiagonalize">**cancelAutoDiagonalize**</span><br><code>() =&gt; void</code> | Abort an in-flight auto-diagonalize; `withDiagonalizeProgress`'s finally clears the wait flag, revealing the (undiagonalized) view.<br><br>Lowers the gate too. The abort reaches the caller as a throw, and the throw skips `finishAutoDiagonalize()` — right for a reorder that failed (`settled` stays false and a capture times out loudly rather than committing a hairball), wrong for one the user stopped: cancelling is the user accepting this view as it is, and a gate nothing will lower again leaves `settled` false forever. |

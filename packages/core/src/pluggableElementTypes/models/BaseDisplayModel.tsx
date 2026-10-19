@@ -144,12 +144,7 @@ function stateModelFactory() {
        *
        * Declared here because a cross-display consumer can only read a name the
        * base declares — the same reason `FetchMixin.fetchInert` is a
-       * hook rather than a getter each display invents. The container used to
-       * read `featureUnderMouse`, which only the wiggle, alignments and
-       * Manhattan families spelled that way — canvas said `hoveredFeature`,
-       * variants `hoveredGenotype` — so the channel carried a hover from a third
-       * of the display types and nothing said which. It also asked only
-       * `displays[0]` of each track.
+       * hook rather than a getter each display invents.
        *
        * `unknown` because the payload genuinely differs — a read, a wiggle bin,
        * a SNP, a genotype cell — and `session.hovered` is typed to match ("can
@@ -162,16 +157,15 @@ function stateModelFactory() {
 
       /**
        * #getter
-       * Overridable hook (default `'feature'`): the SINGULAR word for one of
+       * Overridable hook (default `'feature'`): the singular word for one of
        * the things this display draws, as a menu row or a chip says it —
        * "Hide this read", "Showing 3 variants".
        *
        * Declared here for the same reason as `hoveredFeature` above: it is read
-       * across the display boundary, by chrome that has no idea which display
+       * across the display boundary, by chrome that does not know which display
        * it is drawing for (`SoloSelectionChip`, alignments' group-label
        * overlay), and a name only the base declares is a name every such
-       * consumer can rely on. Two displays declared it independently and one of
-       * those declarations WAS this default.
+       * consumer can rely on.
        *
        * **A control keeps the generic word; content takes this one.** "Variant
        * height" reads as a different setting from "Feature height" when it is
@@ -228,9 +222,9 @@ function stateModelFactory() {
 
       /**
        * #method
-       * What a config says that cannot be drawn as written: by default the
-       * schema's rules over its color objects and `scales.y`, the ones
-       * `jbrowse validate` runs. A display with rules of its own overrides it.
+       * The problems in a config that cannot be drawn as written: by default
+       * the schema's rules over its color objects and `scales.y`, the ones
+       * `jbrowse validate` runs. A display with additional rules overrides it.
        * `plotProblems` asks it of a draft and `notices` of the live config,
        * so Edit plot and the corner never disagree.
        */
@@ -240,8 +234,8 @@ function stateModelFactory() {
 
       /**
        * #getter
-       * What the loaded data says beside the config, such as a field no
-       * fetched feature carries. None unless a display overrides it.
+       * Notices from the loaded data beside the config, such as a field no
+       * fetched feature has. Empty unless a display overrides it.
        */
       get liveNotices(): string[] {
         return []
@@ -269,12 +263,11 @@ function stateModelFactory() {
        * reports. The writing twin of that getter, and what
        * `installClearHoverOnViewportChange` calls.
        *
-       * A display that STORES its hover owes an override; one that derives it
+       * A display that stores its hover owes an override; one that derives it
        * from the live pointer (Hi-C, LD) owes nothing, and the default
        * costs it nothing. Declared here so the clear can be installed for every
        * display rather than remembered per display — forgetting it is the
-       * failure ARCHITECTURE.md's stored-hover section is about, and it used to
-       * be six closures at six call sites, which is six chances to omit one.
+       * failure ARCHITECTURE.md's stored-hover section is about.
        */
       clearHoveredFeature() {},
 
@@ -394,7 +387,7 @@ function stateModelFactory() {
       /**
        * #getter
        * The lines the display chrome's corner chip lists: `notices`, less any
-       * a display shows in a chip of its own.
+       * a display shows in a separate chip.
        */
       get cornerNotices(): string[] {
         return (self as unknown as { notices: string[] }).notices
@@ -424,7 +417,7 @@ function stateModelFactory() {
       /**
        * #method
        * A draft as the config would hold it, merged over `plot`, throwing what
-       * a config file would be refused for. Nothing on the display changes.
+       * a config file would be refused for. It leaves the display unchanged.
        */
       liftPlot(draft: Plot, options?: PlotWriteOptions): AnyConfigurationModel {
         return liftPlotDraft(

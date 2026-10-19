@@ -289,7 +289,7 @@ export function linearSyntenyViewHelperModelFactory(
        * The canvas has painted and no display is still fetching, so what is on
        * screen is final. Drives `synteny_canvas`'s `data-display-drawn`, which
        * screenshot capture and the browser suites wait on — so it means "done",
-       * not "first paint". `comparativeReadiness` says why an error answers this
+       * not "first paint". `comparativeReadiness` documents why an error answers this
        * and "is every display finished" differently.
        */
       get settled() {
@@ -382,7 +382,7 @@ export function linearSyntenyViewHelperModelFactory(
       },
       /**
        * #getter
-       * One canvas-wide block per cell, so a ribbon's outline draws over its own
+       * One canvas-wide block per cell, so a ribbon's outline draws over the ribbon's
        * fill and a later track over an earlier one.
        */
       get syntenyBlocks() {
@@ -438,7 +438,7 @@ export function linearSyntenyViewHelperModelFactory(
       /**
        * #getter
        * The pointer is over a ribbon somewhere in this band. Drives the canvas
-       * cursor, which is the only thing that says a ribbon can be clicked at
+       * cursor, which is the only signal that a ribbon can be clicked at
        * all — the hover shading is subtle at the default 0.25 opacity.
        */
       get hoveringFeature() {
@@ -482,7 +482,7 @@ export function linearSyntenyViewHelperModelFactory(
        * draw on it.
        *
        * `connectedRows` is the other half: a band whose rows are not up has no
-       * tracks either and is *not* finished. This family carries a second guard
+       * tracks either and is *not* finished. This family has a second guard
        * one layer up — `ComparativeSurface.initPending`, for the level that
        * exists from the moment its rows do while init adds its tracks several
        * awaits later — but that one is about the init blob, not about the rows,
@@ -518,7 +518,7 @@ export function linearSyntenyViewHelperModelFactory(
     .actions(self => ({
       /**
        * #action
-       * What clicking a mark does: show where its alignments land on the
+       * What clicking a mark does: show where its alignments fall on the
        * facing row. The row scrolls to them, or gains the contig or a slice of
        * it, and never loses a region it was showing. The click takes the
        * follow anchor, and the Undo gives back the anchor and every row's

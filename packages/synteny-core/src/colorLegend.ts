@@ -349,9 +349,9 @@ export function getColorBySwatch(
 /**
  * #api
  * The active mode's key as color scales — what a view's `colorScales` lists,
- * and so what `ChromeLegend` and `SvgLegend` draw. A ramp keeps its own end
- * labels (identity's `0%` and `100%`, dN/dS's `≥2`) through `format`, and is
- * followed by a no-value row once a row carried no value; chips are blended
+ * and so what `ChromeLegend` and `SvgLegend` draw. A ramp takes its end
+ * labels (identity's `0%` and `100%`, dN/dS's `≥2`) from `format`, and a
+ * no-value row follows it once a row has no value; chips are blended
  * over the band's ground by the view's alpha, so the key matches the
  * on-screen composited ribbon colors, subject to `legendChipColor`'s
  * legibility floor; a mode with no fixed key (a color per sequence name) is a

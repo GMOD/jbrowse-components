@@ -52,7 +52,7 @@ import { TrackOverlayContext } from './TrackOverlayContext.ts'
  * at multi-region scale. `TrackOverlaySlot` is the other end.
  *
  * The overlay node takes no pointer events, so anything of yours the user
- * hovers or clicks sets `pointer-events: auto` on its own positioned box.
+ * hovers or clicks needs `pointer-events: auto` on its positioned box.
  *
  * With no slot above it this renders the children in place (`fallbackInline`,
  * the default), which preserves chrome that is still meaningful unescaped. Pass

@@ -48,7 +48,7 @@ export function isMeasureField(field: string): field is SyntenyMeasureField {
  * #api
  * The per-feature attribute a field reads: `mapq` is the comparative
  * adapters' `mappingQual`, which they omit for MAPQ 255, so it paints and
- * keys as no value; any other field reads its own name.
+ * keys as no value; any other field uses its name.
  */
 export function attributeOf(field: string) {
   return field === 'mapq' ? 'mappingQual' : field

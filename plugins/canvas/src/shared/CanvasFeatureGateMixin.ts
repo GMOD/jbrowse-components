@@ -125,8 +125,8 @@ export default function CanvasFeatureGateMixin() {
       /**
        * #action
        * `RegionTooLargeMixin`'s hook: the density axis drops its counts on the
-       * trigger that drops the byte estimate, so one gate cannot hold two
-       * measurements of two different files.
+       * trigger that drops the byte estimate, so a gate's measurements always
+       * come from one file.
        */
       clearGateMeasurements() {
         self.densityStatsPerRegion.clear()

@@ -101,7 +101,7 @@ From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="getter-tree">[`t
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-canedittrack">**canEditTrack**</span><br><code>(trackId: string) =&gt; boolean</code> | whether the user may edit this track's config (admins may edit any; everyone else only their own session tracks) |
+| <span id="method-canedittrack">**canEditTrack**</span><br><code>(trackId: string) =&gt; boolean</code> | whether the user may edit this track's config (admins may edit any; everyone else only session tracks) |
 | <span id="method-gettrackactions">**getTrackActions**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(config: AnyTrackConfig, view?: TrackActionView &#124; undefined) =&gt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(config: AnyTrackConfig, view?: TrackActionView &#124; undefined) =&gt; MenuItem[]</code></pre></dialog></span> | raw track actions (Settings, Copy, Delete) without submenu wrapper |
 
 <details class="inherited-members" data-pagefind-ignore>

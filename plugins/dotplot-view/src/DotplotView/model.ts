@@ -259,8 +259,9 @@ export default function stateModelFactory(pm: PluginManager) {
           drawCigar: types.stripDefault(types.boolean, true),
           /**
            * #property
-           * carry each axis' ruler ticks across the plot as faint lines, the way
-           * LinearGenomeView's gridlines carry its own down over the tracks
+           * extend each axis' ruler ticks across the plot as faint lines, the way
+           * LinearGenomeView's gridlines extend its ruler ticks down over the
+           * tracks
            */
           showGridlines: types.stripDefault(types.boolean, true),
           /**
@@ -285,9 +286,9 @@ export default function stateModelFactory(pm: PluginManager) {
            * #property
            * Hide alignments whose sequence identity is below this fraction
            * (0-1), enforced per feature in buildLineSegments beside
-           * minAlignmentLength. A feature carrying no identity at all is kept
-           * at every threshold — the alternative blanks a plot whose adapter
-           * simply never reported one.
+           * minAlignmentLength. A feature with no identity is kept at every
+           * threshold, because dropping it would blank a plot whose adapter
+           * never reported identity.
            */
           minIdentity: types.stripDefault(types.number, DEFAULT_MIN_IDENTITY),
           /**
@@ -422,13 +423,13 @@ export default function stateModelFactory(pm: PluginManager) {
          * axes in step with this array, so one name leaves the other axis with
          * no regions and `initialized` never comes true — the view sat on its
          * spinner saying "Loading" forever, with the assembly it was supposedly
-         * waiting for already loaded. Extra names fail the other way: nothing
-         * reads past the second, so a third assembly is not plotted and nothing
-         * says so.
+         * waiting for already loaded. Extra names fail the other way: the view
+         * reads only the first two, so a third assembly is not plotted and no
+         * message says so.
          *
-         * Only reachable from a hand-authored snapshot — `setAssemblyNames`
+         * Only a hand-authored snapshot can reach this — `setAssemblyNames`
          * writes both, and `applyInit` already rejects an init naming one — and
-         * that snapshot is the case this error reports. Zero names is not an error: it
+         * this error reports that case. Zero names is not an error: it
          * is the import form.
          */
         get axisAssemblyError() {
@@ -443,10 +444,9 @@ export default function stateModelFactory(pm: PluginManager) {
          * #getter
          * The view's terminal state: whatever the import form's submit threw,
          * else a pair of axes that cannot lay out, else whatever the assemblies
-         * did. Declared here rather than beside `menuItems` so every reader below
-         * is the same expression — `showImportForm` and `showLoading` each used
-         * to re-spell it, and `showLoading` spelled it as a two-term `&&` that a
-         * third source of error would have to be added to in three places.
+         * did. Declared here so every reader below uses the same expression;
+         * re-spelling it in `showImportForm` and `showLoading` would mean adding
+         * a third source of error in three places.
          */
         get error(): unknown {
           return (
@@ -481,11 +481,10 @@ export default function stateModelFactory(pm: PluginManager) {
          * is why the `settled` gate reads this.
          *
          * Read by `settled`, deliberately **not** by `showLoading` — a plot
-         * whose axes are up is worth showing while the rest lands. LGV's
+         * whose axes are up is worth showing while the rest loads. LGV's
          * equivalent is `awaitingInitNavigation`, a narrower thing (init set
          * and nothing on screen at all) that it does fold into `showLoading`;
-         * it used to share this name, and the two disagree exactly where a
-         * reader would assume they agree.
+         * the two differ exactly where a reader would assume they agree.
          */
         get initPending() {
           return !!self.pendingLaunch
@@ -522,8 +521,8 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
-         * What the loading screen says while `showLoading`, read off the
-         * assembly whose load is the wait; undefined otherwise.
+         * The loading screen's text while `showLoading`, taken from the
+         * assembly being waited on; undefined otherwise.
          */
         get loading() {
           return viewLoading(this.showLoading, () => this.loadingAssembly)
@@ -544,7 +543,7 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
-         * Plot area width. Floored at 0: the axis borders have their own
+         * Plot area width. Floored at 0: the axis borders have a
          * MIN_BORDER floor, so a container narrower than that would otherwise
          * yield a negative canvas dimension and a negative maxBpPerPx.
          */
@@ -560,9 +559,9 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
-         * The setting is on and neither axis has a ruler to cast — a ticked
-         * checkbox doing nothing observable, which the menu says out loud
-         * rather than looking broken. The whole-genome view is this.
+         * The setting is on and neither axis has ruler ticks to extend across
+         * the plot. The ticked checkbox then changes nothing, so the menu says
+         * why instead of looking broken. The whole-genome view is this.
          */
         get gridlinesEmpty() {
           return (
@@ -695,14 +694,14 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #getter
          * Canvas has painted and no display is still fetching, so what's on
-         * screen is the final settled content. Drives the
-         * `data-display-drawn` on `dotplot_webgl_canvas` that screenshot capture and the
-         * browser-test suites wait on — so it must mean "done", not just
+         * screen is the final settled content. The `data-display-drawn` on
+         * `dotplot_webgl_canvas`, which screenshot capture and the browser-test
+         * suites wait on, reads this — so it must mean "done", not just
          * "first paint".
          *
-         * Not the same question as "is every display finished" — see
-         * `comparativeReadiness`, which holds both and says why an error answers
-         * them differently.
+         * This differs from "is every display finished" — see
+         * `comparativeReadiness`, which holds both and explains why an error
+         * answers them differently.
          */
         get settled() {
           return comparativeSurfaceSettled(
@@ -848,15 +847,15 @@ export default function stateModelFactory(pm: PluginManager) {
          * Resolved on the model rather than through the rendering backend, which
          * is where this departs from synteny's `backend.pick(...)`: dotplot
          * geometry is already here in absolute cumBp (`display.instanceData`), so
-         * this answers with NO backend attached at all — before the first paint,
+         * this answers with no backend attached at all — before the first paint,
          * through a context loss that has not recovered, and in a test with no
          * canvas. (Both of synteny's backends implement `pick`, so its hover is
          * not GPU-only either despite `gpuRenderingBackend`'s name; what it cannot
          * do is answer while nothing is attached. It lives in the backend because
-         * the projected geometry it indexes does, which also means each backend
-         * builds its own index.)
+         * the projected geometry it indexes does, so each backend builds a
+         * separate index.)
          *
-         * Nearest wins ACROSS tracks too, ties going to the later track (the one
+         * Nearest wins across tracks too, ties going to the later track (the one
          * drawn on top) — see `pickDotplotFeature` for why a dotplot answers
          * nearest where a ribbon answers topmost.
          */
@@ -892,8 +891,8 @@ export default function stateModelFactory(pm: PluginManager) {
          * #getter
          * Render-lifecycle precondition (overrides `RenderLifecycleMixin`'s
          * default-true hook): before the axes have regions and a measured
-         * width there is nothing to paint against. Gating the autorun pair
-         * here lets `dotplotRenderState` stay a resolved getter.
+         * width there is nothing to paint against. With the autorun pair
+         * gated here, `dotplotRenderState` can stay a resolved getter.
          */
         get canRender() {
           return self.initialized
@@ -941,7 +940,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * Point the whole plot's hover state at one pick hit: the track whose
          * geometry was hit takes the segment index, every other track clears, so
          * `undefined` (a miss) clears the plot. An action rather than a loop in
-         * the pointer handler so the N writes land in one MobX batch — and so
+         * the pointer handler so the N writes run in one MobX batch — and so
          * nothing outside the model has to resolve a `displayKey` to a display.
          * Same shape as the synteny level's `setHoveredFeature`.
          */
@@ -1065,14 +1064,14 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #action
-         * Pan both axes one gesture step. Each delta is in its own axis'
-         * scroll direction, not screen px — the vertical axis lays out
-         * bottom-up, and both callers (wheel, drag) already hold the flipped
-         * value for their own reasons.
+         * Pan both axes one gesture step. Each delta is in the scroll direction
+         * of its axis, not screen px — the vertical axis lays out bottom-up,
+         * and both callers (wheel, drag) already hold the flipped value for
+         * other reasons.
          *
          * One action rather than two `scroll` calls, because an MST action is
-         * a MobX action: unbatched, the render autorun ran twice per
-         * pointermove and drew a whole frame against a moved h axis and a
+         * a MobX action: unbatched, the render autorun would run twice per
+         * pointermove and draw a whole frame against a moved h axis and a
          * stale v one.
          */
         scrollXY(dx: number, dy: number) {
@@ -1083,7 +1082,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * #action
          * Zoom both axes by `factor`, holding the locus under a plot-area
          * point still. The anchor is the same component-px `Coord` the drag
-         * handlers pass around, so each axis takes it through its own
+         * handlers pass around, so each axis converts it with that axis's
          * `fromScreenPx`, as `getCoords` does.
          *
          * Multiplying both axes by one factor keeps wheel zoom

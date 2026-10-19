@@ -129,8 +129,8 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot sashimi
        * The splice-junction arcs, drawn in the coverage band: `show`,
-       * `height`, `placement` and `showCounts`; `filter.junctions` says which
-       * junctions draw.
+       * `height`, `placement` and `showCounts`; `filter.junctions` filters the
+       * junctions drawn.
        */
       sashimi: sashimiConfigSchema,
     },

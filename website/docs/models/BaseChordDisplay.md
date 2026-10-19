@@ -10,8 +10,8 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 What the circular view's chord and ribbon displays share: the features, the
 slice index a feature end is looked up in, and the lifecycle getters
 `ChordDisplayFrame` publishes. A track
-draws on the arcs of its own assemblies, so a one-genome variant track on a
-two-genome circle fetches and places only that genome's chords.
+draws on the arcs of the assemblies it names, so a one-genome variant track
+on a two-genome circle fetches and places only that genome's chords.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 
@@ -73,7 +73,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | --- | --- |
 | <span id="method-assemblyof">**assemblyOf**</span><br><code>(assemblyName: string &#124; undefined) =&gt; string &#124; undefined</code> | the assembly on the circle a feature names, in whatever spelling the adapter wrote. A feature that names none, as a VCF record does not, is on the track's first assembly. |
 | <span id="method-canonicalrefname">**canonicalRefName**</span><br><code>(assemblyName: string, refName: string) =&gt; string</code> | a refName as the adapter wrote it, in the assembly's canonical spelling |
-| <span id="method-axisslice">**axisSlice**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(assemblyName: string &#124; undefined, refName: string) =&gt; AxisSlic…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(assemblyName: string &#124; undefined, refName: string) =&gt; AxisSlice &#124; undefined</code></pre></dialog></span> | the slice of the unrolled axis one end of a feature lands on |
+| <span id="method-axisslice">**axisSlice**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(assemblyName: string &#124; undefined, refName: string) =&gt; AxisSlic…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(assemblyName: string &#124; undefined, refName: string) =&gt; AxisSlice &#124; undefined</code></pre></dialog></span> | the slice of the unrolled axis that one end of a feature falls in |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>6 inherited methods from one model</summary>

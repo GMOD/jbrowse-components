@@ -33,7 +33,7 @@ read one, skipping values that are not numbers. The output field is `as`, else
 
 `weight` names a field each row counts by: `count` is then the sum of the
 weights, `sum` the sum of value times weight, and `mean` that over the sum of
-the weights, a row whose weight is not a number counting for nothing. A weight
+the weights. A row whose weight is not a number counts for nothing. A weight
 moves no minimum or maximum, so `min` and `max` read none.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
@@ -41,7 +41,7 @@ moves no minimum or maximum, so `min` and `max` read none.
 ### AggregateStep
 
 One feature per distinct `groupby` value set (one for the whole region with
-none), spanning its members' extent, carrying the group's fields and every `ops`
+none), spanning its members' extent, with the group's fields and every `ops`
 entry.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
@@ -126,7 +126,7 @@ Place every feature in a genome-aligned bin of `step` bp, writing the bin's
 edges over the fields `as` names — `start` and `end` by default, so an
 `aggregate` grouped by those counts per bin and the bar spans the bin.
 
-With `field` (`start` by default) a feature lands in the one bin that field
+With `field` (`start` by default) a feature is placed in the one bin that field
 falls in. With `fields`, an interval's start and end, it is cut at the bin edges
 into one piece per bin it overlaps, each piece writing `overlap`, the bases of
 the interval inside its bin; a zero-length interval (an insertion) is one piece
@@ -169,15 +169,15 @@ Which way the sequence each end of a breakend KEEPS runs from its breakpoint, as
 `+1 = right` / `-1 = left` — the convention `StarFusionAdapter`'s
 `tickDirection` states and the one every producer in the tree emits.
 
-The two halves read their strings with OPPOSITE polarity, which is the whole
-reason to state them together. `Join: 'right'` says the mate piece is joined to
-the RIGHT of the ref base, so this end keeps the sequence to its left: negated.
-`MateDirection: 'right'` says the mate's own piece extends to the right of the
-mate position, which is already the direction it keeps: taken as read. So
-`N[chr2:2000[` is `{ joinDirection: -1, mateDirection: 1 }`, and that is the
-same pair `StarFusionAdapter` emits for the fusion it describes — the donor
-keeps the sequence below its breakpoint (-1) and the acceptor the sequence above
-its own (+1).
+The two halves read their strings with opposite polarity, so one function states
+both. `Join: 'right'` means the mate piece is joined to the right of the ref
+base, so this end keeps the sequence to its left: negated.
+`MateDirection: 'right'` means the mate's piece extends to the right of the mate
+position, which is already the direction it keeps: taken as is. So
+`N[chr2:2000[` is `{ joinDirection: -1, mateDirection: 1 }`, the same pair
+`StarFusionAdapter` emits for the fusion it describes: the donor keeps the
+sequence below its breakpoint (-1) and the acceptor the sequence above its
+breakpoint (+1).
 
 Split out of `parseSvAlt` because a consumer holding an already-parsed
 `Breakend` was re-deriving it by hand, in two adjacent ternaries of opposite
@@ -219,12 +219,12 @@ Resolve user-authored refName text against the assembly of the view containing
 assembly is absent or its aliases have not loaded.
 
 Uses the view's assembly, not the track's, because displayed regions, loaded
-regions and blocks all carry the refNames the view laid out.
+regions and blocks all use the refNames the view laid out.
 
 Call it wherever a refName a _person_ wrote is about to be compared against
-regions, features or blocks, which carry the assembly's canonical name. A
-refName a display copied off a region is already canonical. One from a session
-spec, a config slot or a URL is whatever the author typed.
+regions, features or blocks, which use the assembly's canonical name. A refName
+a display copied off a region is already canonical. One from a session spec, a
+config slot or a URL is whatever the author typed.
 
 Without it, matching depends on the assembly: `chr12` matches on an assembly
 canonicalized `chr12` and matches nothing on one canonicalized `12`. The same
@@ -252,9 +252,9 @@ import { canonicalizeViewRefName } from '@jbrowse/core/util'
 
 `labels` names the `domain`'s values in a key, one each in order, where a config
 spells them for a reader rather than as the data does. `held` deals each key the
-domain does not list a color of its own on first sight (`categoricalScale`); the
-caller keeps it for as long as the colors should hold. `unknown` paints every
-such key, and the no-value key, one color instead, `''` the no-value grey.
+domain does not list a color when the key first appears (`categoricalScale`);
+the caller keeps it for as long as the colors should hold. `unknown` paints
+every such key, and the no-value key, one color instead, `''` the no-value grey.
 
 ```js
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
@@ -293,8 +293,8 @@ lacks.
 ### CellsStep
 
 Replace each aligned row with its cells against the reference: one feature per
-run of columns in one `state` — `match`, `mismatch` or `gap` — on the row's own
-reference span, a mismatch run carrying its `base` and a match or mismatch run
+run of columns in one `state` — `match`, `mismatch` or `gap` — on the row's
+reference span, a mismatch run with its `base` and a match or mismatch run
 `match` as 1 or 0, and one interbase feature per `insertion`, standing at the
 reference base it precedes with the inserted bases in `base` and their count in
 `length`. The row's `field` (`seq`) is the aligned text, and the reference's is
@@ -437,8 +437,7 @@ a scale, which a legend can describe, and share the config's member names.
 ### colorEvaluator
 
 A CSS color or `jexl:` color expression as a per-feature packed ABGR — the
-unscaled arm of ColorEncoding, on its own for a display that carries a plain
-`color` slot.
+unscaled arm of ColorEncoding, used by a display that has a plain `color` slot.
 
 ```js
 import { colorEvaluator } from '@jbrowse/core/util/markEncoding'
@@ -541,10 +540,10 @@ import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
 
 ### ContinuousRef
 
-A numeric field read through a linear or log scale into a ramp. Each end of the
-domain is pinned by `domainMin` or `domainMax`, or is the region's own extreme
-where unset, so pinning both keeps colors consistent across a whole view. The
-ramp is `range`'s CSS colors, evenly spaced, where it lists any, else the named
+A numeric field read through a linear or log scale into a ramp. `domainMin` or
+`domainMax` pins each end of the domain, which otherwise takes the region's
+extreme, so pinning both keeps colors consistent across a whole view. The ramp
+is `range`'s CSS colors, evenly spaced, where it lists any, else the named
 `scheme`; `reverse` turns it round.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
@@ -577,8 +576,8 @@ import { darkAtLowEnd } from '@jbrowse/core/util/colorRamp'
 
 Deals `keys` their colors in `field.compare` order, so the colors a set of keys
 first seen together takes do not depend on the order they arrive in. Each new
-key avoids every color the session has dealt, so one region of several can deal
-its own keys. A no-op for a field that deals nothing.
+key avoids every color the session has dealt, so regions dealing keys separately
+never repeat a color. A no-op for a field that deals nothing.
 
 ```js
 import { dealKeyColors } from '@jbrowse/core/util/categoricalField'
@@ -608,8 +607,8 @@ import { dealShownKeyColors } from '@jbrowse/core/util/categoricalField'
 ### declaredSnapshot
 
 A snapshot as `type` lifts it, without the keys it does not declare: the config
-half of an entry that carries its owner's keys beside one, as a
-`MultiWiggleAdapter` subadapter carries its row's `name` and `color`.
+half of an entry that also holds its owner's keys, as a `MultiWiggleAdapter`
+subadapter holds its row's `name` and `color`.
 
 ```js
 import { declaredSnapshot } from '@jbrowse/core/configuration'
@@ -663,10 +662,10 @@ caller that named them.
 ### EncodedChannels
 
 One encoding's channels over one region's features, dense and index-aligned:
-instance `i` of every array is the same feature, and `featureIndex[i]` says
-which one of the input list it was, or it is absent where instance `i` is
-feature `i` (featureIndexAt). A lane is present when the caller asked for it
-(LaneName); Encoded is this type with a known lane set required.
+instance `i` of every array is the same feature, and `featureIndex[i]` is its
+index in the input list, and the array is absent where instance `i` is feature
+`i` (featureIndexAt). A lane is present when the caller asked for it (LaneName);
+Encoded is this type with a known lane set required.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -703,8 +702,8 @@ Flatbush. Pure: the RPC around it owns the adapter, the filters and the
 transferables.
 
 Columnar: one pass admits the rows over `x`, `x2` and `y` alone, and none runs
-where all three are lanes of whole numbers; every other lane is then filled in
-its own loop over the admitted rows, a lane straight off a typed column and a
+where all three are lanes of whole numbers; every other lane is then filled in a
+separate loop over the admitted rows, a lane straight off a typed column and a
 categorical over a `category` column per label.
 
 ```js
@@ -805,7 +804,7 @@ Where a value axis's open ends stand below a `domainQuantile` of 1: at the
 quantileExtent ends `quantiles` draw, 0 included where the axis reaches it
 (`zero`); that end stops at the fence. So a plot with no spike shows every value
 and cuts none, and a spike leaves the values under it at least half the axis.
-Quantiles that meet span their own size, as a flat domain widens in
+When the quantiles meet, the span is their magnitude, as a flat domain widens in
 `getNiceDomain`.
 
 ```js
@@ -820,7 +819,7 @@ import { fenceOutliers } from '@jbrowse/core/util/quantileExtent'
 ### fieldReader
 
 What a channel reads off a feature: a field by name, a dotted path into a
-structured field where no field carries the whole name (`INFO.SVTYPE` on a VCF
+structured field where no field has the whole name (`INFO.SVTYPE` on a VCF
 record), or a `jexl:` expression over `feature`. A jexl expression that does not
 compile throws here, once, rather than on every feature.
 
@@ -871,7 +870,7 @@ sample and a MAF block one per species, each with its key in `key`. Each answer
 reads the element's own fields first and the feature it came from for everything
 else, so an exon still knows its gene's name and strand and a species row its
 block's reference span. A feature whose field holds no array and no record drops
-out unless `keepEmpty` says otherwise.
+out unless `keepEmpty` is true.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -886,11 +885,12 @@ feature.
 
 The host's assembly manager, for a module that resolves names and nothing else.
 
-Unlike the accessors in `sessionServices.ts` this one buys the caller no smaller
-type graph — an `AssemblyManager` is an MST model a `PluginManager` built, so
-naming it costs what naming a session costs. It is here to say which service is
-wanted, and because that cost is the finding: the assembly manager is the one
-thing on `AbstractSessionModel` a third-party host cannot simply implement.
+Unlike the accessors in `sessionServices.ts` this one gives the caller no
+smaller type graph — an `AssemblyManager` is an MST model a `PluginManager`
+built, so naming it costs what naming a session costs. It is here to say which
+service is wanted, and because that cost is the finding: the assembly manager is
+the one thing on `AbstractSessionModel` a third-party host cannot simply
+implement.
 
 ```js
 import { getAssemblyHost } from '@jbrowse/core/util'
@@ -991,7 +991,7 @@ import { getDialogHost } from '@jbrowse/core/util'
 
 ### getEnv
 
-Returns the MST environment for a node, which carries the `pluginManager`.
+Returns the MST environment for a node, which holds the `pluginManager`.
 
 ```js
 import { getEnv } from '@jbrowse/core/util'
@@ -1071,7 +1071,7 @@ import { getSession } from '@jbrowse/core/util'
 
 ### getSessionServices
 
-The services a session offers that cost nothing application-shaped to name.
+The services a session offers that need no application-specific type to name.
 Prefer one of the narrower accessors below, which say which of them the calling
 module actually uses.
 
@@ -1157,8 +1157,8 @@ import { isBreakend } from '@jbrowse/core/util/svAlt'
 
 ### isMissing
 
-Whether a field holds no value at all, as against text that fails to parse:
-absent, empty, or a VCF's `AF=.`, which arrives as `[undefined]`.
+Whether a field has no value: absent, empty, or a VCF's `AF=.`, which arrives as
+`[undefined]`. Text that fails to parse still counts as a value.
 
 ```js
 import { isMissing } from '@jbrowse/core/util/thresholdScale'
@@ -1171,9 +1171,9 @@ import { isMissing } from '@jbrowse/core/util/thresholdScale'
 
 ### isPlainFieldRef
 
-Whether a field ref is a bare name: what `feature.get` answers on its own, with
-no path to walk and no expression to evaluate. A loop over a plain name keeps
-the direct call, and only a config that writes a path pays for one.
+Whether a field ref is a bare name that `feature.get` reads directly, with no
+path to walk and no expression to evaluate. A loop over a plain name keeps the
+direct call, and only a config that writes a path pays for one.
 
 ```js
 import { isPlainFieldRef } from '@jbrowse/core/util/fieldReader'
@@ -1193,7 +1193,7 @@ adapter's row (BEDPE, STAR-Fusion). Refnames are as the record spells them.
 `undefined` for a record naming no other end. A VCF record is read through
 `alt`, its first ALT unless the caller names another.
 
-A VCF end is its own position. A paired adapter's end is a block, and the
+A VCF end's junction is its position. A paired adapter's end is a block, and the
 junction is the block's edge on the side the end keeps: stated by
 `mateDirection` where the adapter knows it, read off the strands where the
 record states one for each end as BEDPE does, and with neither the two blocks
@@ -1211,8 +1211,8 @@ import { junctionEnds } from '@jbrowse/core/util/svAlt'
 
 ### keyNames
 
-What a key names each of `keys`, from a color object's `labels`: one each in
-order, an empty or missing entry leaving that key its own name. Every key that
+The display name of each of `keys`, from a color object's `labels`: one each in
+order, and the key itself where an entry is empty or missing. Every key that
 takes `labels` reads them through this, so a config means one thing by them
 everywhere.
 
@@ -1228,7 +1228,7 @@ import { keyNames } from '@jbrowse/core/util/categoricalField'
 ### LaneName
 
 The lanes a caller asks the encoder to fill, beyond `x` and `x2`, which every
-payload carries, and `featureIndex`, which one carries where a feature was
+payload has, and `featureIndex`, which a payload has where a feature was
 skipped: a mark's channels, and `index` for the Flatbush a hover reads. A lane
 not asked for is neither allocated nor transferred, and a caller that never
 hovers declines the index, which is most of the encoder's cost after the walk.
@@ -1341,10 +1341,10 @@ JSON and the feature it hangs from.
 ### MarkEncoding
 
 The declared mapping from a feature's fields to a mark's channels. Every
-positional channel is a field: `x` defaults to `start` and `x2` to `end`, a mark
-that plots no value leaves `y` off, and the scale `y` is read through belongs to
-the display rather than to the encoding. `shape` is read by the `point` mark
-alone, `row` — an integer field, 0 where missing — by every mark, which stands a
+positional channel is a field. `x` defaults to `start` and `x2` to `end`; a mark
+that plots no value leaves `y` off; the scale `y` is read through belongs to the
+display rather than to the encoding. `shape` is read by the `point` mark alone,
+`row` — an integer field, 0 where missing — by every mark, which stands a
 feature in the band it names.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
@@ -1381,9 +1381,9 @@ import { matedBy } from '@jbrowse/core/util/featureTransforms'
 
 One feature per other end a record states: the `mate` a paired adapter fills in
 (BEDPE, STAR-Fusion), or each VCF `ALT` naming a locus, a breakend's mate or a
-symbolic allele's `END` on `CHR2` or its own sequence. Each answer carries
+symbolic allele's `END` on `CHR2` or on the record's sequence. Each answer has
 `mate` (`refName`, `start`, `end`, 0-based and half-open, and the far end's
-`mateDirection`), its own end's `mateDirection`, the `alt` it came from and
+`mateDirection`), `mateDirection` for its own end, the `alt` it came from and
 `svType`, the structural class the allele states (`svClassOfAlt`). A record
 naming no other end drops out, and two records or alleles stating one pair of
 ends answer once.
@@ -1440,8 +1440,8 @@ number
 
 ### NO_VALUE_LABEL
 
-The row a feature with nothing in a categorical field lands on, so a key says
-why a mark is grey rather than listing a blank value.
+The row a feature with no categorical value is placed on, so a key says why a
+mark is grey rather than listing a blank value.
 
 ```js
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
@@ -1517,8 +1517,8 @@ import { OTHER_VALUES_LABEL } from '@jbrowse/core/util/categoricalField'
 
 ### parsePlot
 
-The text as a plot, refusing a key the display's plot does not hold. The schema
-is the parser past this point.
+Parses the text as a plot and throws on a key the display's plot lacks. The
+schema parses the values after that.
 
 ```js
 import { parsePlot } from '@jbrowse/core/configuration'
@@ -1576,7 +1576,7 @@ greedy first fit in start order, the packing a pileup is — and write it to the
 field `as` (`row`). `fields` names the interval read (`start`, `end`); `padding`
 is bp of clearance kept between two features sharing a row. The answer is the
 input in start order, so a `span` encoding `row` stacks it. Under a facet it
-packs each section on its own.
+packs each section separately.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -1612,8 +1612,8 @@ import { plotKeysOf } from '@jbrowse/core/configuration'
 
 ### plotList
 
-Declares a list of sub-schemas a plot setting, as `plot: true` declares a slot
-or a sub-schema one; an MST array type takes no options to carry the flag.
+Marks a list of sub-schemas as a plot setting, as `plot: true` marks a slot or a
+sub-schema; an MST array type has no options in which to set the flag.
 
 ```js
 import { plotList } from '@jbrowse/core/configuration'
@@ -1641,8 +1641,8 @@ import { plotOf } from '@jbrowse/core/configuration'
 
 ### PlotWriteOptions
 
-How a draft lands on the plot. By default it patches, as a settings bag does;
-`whole` takes it for the whole plot, as the "Edit plot..." text is.
+How a draft is written to the plot. By default it patches, as a settings bag
+does; `whole` takes it for the whole plot, as the "Edit plot..." text is.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
 
@@ -1665,7 +1665,7 @@ import { plotWrites } from '@jbrowse/core/configuration'
 ### preProcessConfigSnapshot
 
 A snapshot as a write to `type` admits it: the lift and checks `setConf`
-applies, so a dialog or a validator refuses what an edit cannot hold, an
+applies, so a dialog or a validator rejects what an edit would reject, an
 undeclared key included. Throws what the schema's `preProcessSnapshot` throws.
 
 ```js
@@ -1682,7 +1682,7 @@ import { preProcessConfigSnapshot } from '@jbrowse/core/configuration'
 What the open ends of a scale follow over `values[0, count)`: at a `quantile` of
 1 their finite extremes, and below it each end clipped at that quantile of the
 values on its side of 0, so one spike takes neither the axis nor the ramp, and a
-sparse tail of the other sign keeps its own end. An axis that starts at 0 adds
+sparse tail of the other sign keeps its extreme. An axis that starts at 0 adds
 it itself. Under 0.5 reads as 0.5, where the ends meet rather than cross.
 `scales.y.domainQuantile` and a color's `domainQuantile` both name it.
 `[Infinity, -Infinity]` where nothing is finite.
@@ -1789,10 +1789,10 @@ import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
 Read the value at a path of a live config node, such as a track's
 `configuration`, evaluating a `jexl:` callback with `args`.
 
-A snapshot is refused by the types, since a slot at its default is absent from
-one. A `session.tracks` entry is one (`TrackConfigEntry`): read its `trackId`
-and `type` directly, and a slot through a helper that supplies the default, such
-as `getConfAssemblyNamesOrNone`.
+The types reject a snapshot, because a snapshot omits a slot at its default. A
+`session.tracks` entry is one (`TrackConfigEntry`): read its `trackId` and
+`type` directly, and a slot through a helper that supplies the default, such as
+`getConfAssemblyNamesOrNone`.
 
 ```js
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -1825,9 +1825,9 @@ of the assembly it is displayed against: BAM and SAM for mismatches without an
 MD tag, CRAM to rebuild bases, GC content and the reference scans for everything
 they answer. Such an adapter is built with that reference and keyed on it as
 well as on its config, so one config shown on two genomes is two instances, each
-reading its own, and an instance never changes reference for its life. Every
-other adapter keys on its config alone: a synteny adapter is fetched from each
-of its assemblies and reads no reference.
+reading the reference of its genome, and an instance never changes reference for
+its life. Every other adapter keys on its config alone: a synteny adapter is
+fetched from each of its assemblies and reads no reference.
 
 ```js
 import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -1867,8 +1867,8 @@ the original — tab20's construction, which pairs a light and a dark of each hu
 SHIFT rather than a fixed lightness, and SCALE rather than a fixed chroma,
 because a categorical palette is uneven on purpose: category10's brown and its
 red are 5 degrees apart in hue and are told apart by chroma alone, so
-re-lighting both to one (lightness, chroma) makes them the same color. Keeping
-each color's own relative chroma keeps brown reading as brown.
+re-lighting both to one (lightness, chroma) makes them the same color. Each
+color keeps its relative chroma, so brown stays brown.
 
 In OKLCH rather than through `lighten`/`darken`, which work in sRGB, where the
 same coefficient moves a yellow and a blue by visibly different amounts: a lap
@@ -1922,8 +1922,9 @@ files, a MAF its species.
 
 ### RowSourceListing
 
-Every row an adapter has, in its own order, whatever the loaded regions hold, so
-a row display gives a row with nothing in view its place, label and color.
+Every row an adapter has, in the adapter's order, whatever the loaded regions
+hold, so a row display gives a row with nothing in view its place, label and
+color.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/rowSources.ts)
 
@@ -1996,7 +1997,7 @@ import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
 Heights after growing or shrinking a stack of bands by `distance` px in all: the
 one rule every whole-stack resize uses. Each band takes its share of the height
 it has above `floor`, so the tall bands give and take the most, and none goes
-below `floor`, or below its own height if it already sits under it (the
+below `floor`, or below its current height if it already sits under it (the
 clampBandHeight rule). Whole pixels, rounded by largest remainder, so the stack
 moves by exactly the rounded distance.
 
@@ -2105,8 +2106,8 @@ So a host that mounts only the provider gets light-mode labels on a dark page,
 from a canvas whose every other pixel is right, and nothing errors. See
 useSessionPalette for the mechanism.
 
-The session is the only thing that resolves a palette here, so a host supplying
-colors of its own mounts `PaletteProvider` directly instead.
+The session is the only thing that resolves a palette here, so a host with its
+own palette mounts `PaletteProvider` directly instead.
 
 ```js
 import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
@@ -2178,10 +2179,10 @@ binds the field to a scale.
 ### SizeRef
 
 A numeric field read through a linear or log scale into a width in CSS px:
-`range` is the px at each end of the domain (1 to 6 unset), and each end of the
-domain is pinned by `domainMin` or `domainMax` or follows the loaded regions'
-extremes where unset, as a color ramp's does. A feature holding no number takes
-the range's first px.
+`range` is the px at each end of the domain (1 to 6 unset), and `domainMin` or
+`domainMax` pins each end of the domain, which otherwise follows the loaded
+regions' extremes, as a color ramp's does. A feature holding no number takes the
+range's first px.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -2203,7 +2204,7 @@ call this function, so the reserved and painted positions cannot disagree.
 Only the fold is shared; the rest stays in each display. Per-lane iteration runs
 this once per lane, sticky-vs-scrolling is a property of how the result is
 projected to the screen, and a band drawn outside its reservation (an overlay)
-carries its own draw rect beside the stack.
+has a separate draw rect beside the stack.
 
 ```js
 import { stackBands } from '@jbrowse/core/util/bandLayout'
@@ -2260,7 +2261,7 @@ import { SV_MIN_LENGTH } from '@jbrowse/core/util/svAlt'
 ### SV_TYPE_FIELD
 
 The structural-variant class `svClassOf` names. A VCF record and a BEDPE row
-carry it, and the mark display's `mate` step writes it per allele.
+have it, and the mark display's `mate` step writes it per allele.
 
 ```js
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
@@ -2289,10 +2290,10 @@ import { svClassOf } from '@jbrowse/core/util/svAlt'
 ### svClassOfAlt
 
 The structural-variant class one ALT allele states, `''` for one that is not
-structural. A symbolic allele's own id wins. Otherwise VCF 4.4's `EVENTTYPE`
-does; then a breakend is the class its `SVTYPE` declares where that says more
-than BND, and a sequence allele is an insertion or deletion by its length
-against REF, else its `SVTYPE`'s class.
+structural. The id of a symbolic allele decides first. Otherwise VCF 4.4's
+`EVENTTYPE` decides; then a breakend takes the class its `SVTYPE` declares where
+that says more than BND, and a sequence allele is an insertion or deletion by
+its length against REF, else takes its `SVTYPE`'s class.
 
 ```js
 import { svClassOfAlt } from '@jbrowse/core/util/svAlt'
@@ -2369,7 +2370,7 @@ The bin a value falls in: how many of the ascending cut points it is at or past,
 so a palette with one more entry than the domain paints it as
 `palette[thresholdIndex(value, domain)]`. A value that is not a number is in no
 bin and answers -1; an infinite one takes the end bin on its side, as d3's
-threshold scale places it, so a `-log10` of a zero p-value lands in the top bin.
+threshold scale places it, so a `-log10` of a zero p-value falls in the top bin.
 
 ```js
 import { thresholdIndex } from '@jbrowse/core/util/thresholdScale'

@@ -34,16 +34,16 @@ function compose<E>(
  * like every other JBrowse tooltip instead of like whatever the host OS
  * renders.
  *
- * `title` is what this chrome used to use, and it was the wrong tool three
- * ways: it can be neither styled nor positioned, it waits about a second and
- * then disappears on a timer of its own, and on a control that already carries
- * an `aria-label` some screen readers announce both strings. This reaches no UI
- * toolkit, so the package's no-Material-UI guarantee holds.
+ * The `title` attribute has three problems as a tooltip: the page cannot style
+ * or position it, it waits about a second and then disappears on a timer, and
+ * on a control that already has an `aria-label` some screen readers announce
+ * both strings. This imports no UI toolkit, so the package's no-Material-UI
+ * guarantee holds.
  *
  * Takes a single element child and clones it rather than wrapping it: the
  * controls that want a tooltip are absolutely positioned inside a legend or sit
- * in a flex row, where an extra `<span>` moves them. The child keeps its own
- * handlers — these compose on top of them. MUI's `Tooltip`, which the rest of
+ * in a flex row, where an extra `<span>` moves them. The child's handlers still
+ * run, and these compose with them. MUI's `Tooltip`, which the rest of
  * JBrowse's chrome is built on, uses the same trigger pattern; only the toolkit
  * differs.
  *
@@ -55,9 +55,9 @@ function compose<E>(
  * </Tooltip>
  * ```
  *
- * **The child still needs its own accessible name**, because this sets
+ * **The child still needs an accessible name**, because this sets
  * `aria-describedby` and never `aria-label` — see {@link useTooltip}, which is
- * this without the cloning, for a host writing its own markup.
+ * this without the cloning, for a host writing custom markup.
  */
 const Tooltip = observer(function Tooltip({
   title,

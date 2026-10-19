@@ -30,23 +30,23 @@ const confNode = (self: object) => self as RowHeightHost
  *
  * The convention itself is
  * agent-docs/reference/ROW_HEIGHT_AND_FIT.md; this is the middle link of it.
- * **Both ends were already shared**: `rowHeightMenuItem` and
- * `SetRowHeightDialog` in this directory are the one menu row and dialog for
- * every row display, and `resolveRowHeight` in core is the one place the `0`
- * sentinel resolves and a non-positive result is floored. What sat between them
- * was three hand-written copies — maf, the multi-row feature painting and the
- * multi-sample variant base — of the slot, the getter over it and the setter.
+ * `rowHeightMenuItem` and `SetRowHeightDialog` in this directory are the one
+ * menu row and dialog for every row display, and `resolveRowHeight` in core is
+ * the one place the `0` sentinel resolves and a non-positive result is floored.
+ * This mixin sits between them, in place of three hand-written copies — maf, the
+ * multi-row feature painting and the multi-sample variant base — of the slot,
+ * the getter over it and the setter.
  *
- * **This package already depended on members it did not declare.**
+ * **The mixin declares the members this package depends on.**
  * `rowHeightMenu` restates `rowHeight` / `setRowHeight` / `setFitToHeight` as
  * `RowHeightModel` and `types.ts`'s `TreeDrawingModel` restates
  * `effectiveRowHeight`, so a display wiring in the shared menu and spelling one
- * of them differently compiled and then failed at the first click. Slots and
- * accessors now move together, matching `treeSidebarConfigSchemaFields` +
+ * of them differently would compile and then fail at the first click. Slots and
+ * accessors move together, matching `treeSidebarConfigSchemaFields` +
  * `TreeSidebarMixin`.
  *
- * **What stays per display is the value, not the declaration**, and the doc says
- * which: `autoRowHeight`, because the height available to rows is a different
+ * **What stays per display is the value, not the declaration.** The per-display
+ * members are `autoRowHeight`, because the height available to rows is a different
  * quantity in each (canvas's `fitTargetHeight`, maf's `rowsHeight`, variants'
  * `availableHeight`), and `setFitToHeight`, because seeding the `height` slot on
  * the way in is required exactly where the `height` getter is content-derived
@@ -76,13 +76,13 @@ export function RowHeightMixin() {
        * #getter
        * The height fit mode divides between the rows, declared here and
        * **overridden by every display** — the quantity differs in each, so this
-       * stub is a slot for the answer rather than an answer. Declaring it is
-       * what lets `effectiveRowHeight` below read a member of its own type
+       * stub is a slot for the answer rather than an answer. Declaring it
+       * lets `effectiveRowHeight` below read a member with a declared type
        * instead of one asserted onto `self`.
        *
        * A display that composes the mixin and supplies no override resolves to
-       * a 1px row, exactly as it did when this getter did not exist and the
-       * read found `undefined`: `resolveRowHeight` floors both.
+       * a 1px row, the same as when the read finds `undefined`:
+       * `resolveRowHeight` floors both.
        *
        * Supply it as a **getter**, the way all three displays do. Mobx refuses
        * to write a volatile over a computed, so a `.volatile` of this name
