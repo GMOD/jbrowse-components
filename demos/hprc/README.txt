@@ -7,7 +7,7 @@ built so that JBrowse can query a locus without downloading the graph.
 
 The hprc-v2.*-mc-grch38.* files below are that set. This prefix also serves two
 other demos' files, which have their own provenance: hprc_cfhr_*.genes.gff3.gz
-is eight haplotypes' CAT annotation from HPRC, which the gbz lanes draw as
+is eight haplotypes' CAT annotation from HPRC, which the walk lanes draw as
 each haplotype's gene row; hprc_abca7_trgt.vcf.gz is PacBio's
 TRGT genotypes at the ABCA7 VNTR (Zenodo 8329210) that
 build_hprc_abca7_trgt.sh writes, hprc_curated_vntrs.bed is a hand-written
@@ -325,7 +325,7 @@ Curated VNTRs
   the record draws each copy in its unit's color.
 
   hprc_samples.tsv is the samplesTsvLocation of both KIV-2 tracks and of the
-  gbz-base graph track, whose walk rows Group by… splits: one row per
+  walk-lane graph track, whose walk rows Group by… splits: one row per
   sample of the records (name, population, superpopulation, sex), from HPRC's
   release 2 sample table and the 1000 Genomes superpopulation codes, written
   by scripts/build_hprc_samples.sh, which also prints the KIV-2B counts by
