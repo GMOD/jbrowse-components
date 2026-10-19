@@ -113,10 +113,12 @@ on [staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org) until
 JBrowse 5 ships. Open hg38 there, type `TNNT3` into the location box and turn
 the track on.
 
-The [TNNT3 gene page](https://staging.genomes.jbrowse.org/gene/?gene=TNNT3)
-links the same window from its **Conserved gene order** section.
+The
+[TNNT3 conserved gene order page](https://staging.genomes.jbrowse.org/conserved-gene-order/?gene=TNNT3&ref=9606)
+opens the same window across twelve genomes with **Open TNNT3 in JBrowse across
+12 genomes**.
 
-<Figure src="/img/genomes_synteny/star_link.png" caption="The TNNT3 gene page's Conserved gene order section, with Multi-way synteny lanes boxed." />
+<Figure src="/img/genomes_synteny/star_link.png" caption="The TNNT3 conserved gene order page, with its JBrowse link boxed." />
 
 The track holds only genomes UCSC publishes a liftOver chain to. In its track
 menu:

@@ -141,8 +141,8 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
 **Lanes → Choose lanes...** takes `HG00097.1`, `HG00099.1`, `HG00099.2` and
 `HG01978.1`. Then:
 
-- **The band between two lanes** crosses itself where the lower lane runs the
-  block in the other direction.
+- **A lane whose walk runs the block backwards** draws it mirrored in place, and
+  its header names the inversion.
 - **HPRC release 2 bubbles** in the track selector adds the graph's bubbles.
   `gfatools bubble` flags one as `inversion` when its paths disagree about
   orientation.
@@ -153,7 +153,7 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
   jexl:feature.inversion
   ```
 
-<Figure caption="FLNA / EMD with the bubbles track filtered to inversions. The band crosses where the lower lane runs the shaded span backwards." src="/img/pangenome/hprc_inversion.png" />
+<Figure caption="FLNA / EMD with the bubbles track filtered to inversions. The bottom two lanes draw the shaded span mirrored in place, and their headers name it." src="/img/pangenome/hprc_inversion.png" />
 
 ## What the lanes leave out {#limits}
 

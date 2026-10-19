@@ -372,7 +372,8 @@ const TNNT3_FRAME = {
   readyTimeout: 120000,
 }
 
-const TNNT3_GENE_PAGE = 'https://staging.genomes.jbrowse.org/gene/?gene=TNNT3'
+const TNNT3_GENE_ORDER_PAGE =
+  'https://staging.genomes.jbrowse.org/conserved-gene-order/?gene=TNNT3&ref=9606'
 const STAR_LINK = 'a[title^="One lane per genome"]'
 
 // hg38's multi-way liftOver track at TNNT3, cut with Lanes → Choose lanes to
@@ -4303,7 +4304,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The staging gene page's link into hg38's multi-way star, which production
+  // The staging conserved gene order page's link into hg38's multi-way star, which production
   // gates off until a released host carries MultiWaySyntenyDisplay
   // (`features.multiwayStar` in jb2hubs). The ortholog table re-sorts while
   // "Working out which species" shows, moving the link down the page.
@@ -4311,12 +4312,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'genomes_synteny/star_link',
     noSession: true,
-    url: TNNT3_GENE_PAGE,
+    url: TNNT3_GENE_ORDER_PAGE,
     readySelector: STAR_LINK,
     readyTimeout: 90000,
     viewportWidth: 1100,
     viewportHeight: 760,
-    liveLabel: 'Open the TNNT3 gene page',
+    liveLabel: 'Open the TNNT3 conserved gene order page',
     diffThreshold: 0.02,
     actions: [
       {
