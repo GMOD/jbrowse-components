@@ -7,15 +7,16 @@
 #
 # A stack aligned to GRCh38 alone cannot place what two haplotypes share and
 # GRCh38 lacks, so each row is aligned to its neighbour instead. Which haplotype
-# has which structure comes from HPRC's own graph database: every haplotype's
-# coordinate at a unique window either side of the locus gives its span across
-# it, and the spans fall into the classes of Yilmaz et al. 2024. The locus is
+# has which structure comes from the graph's haplotype walks, as gfa-to-tabix
+# --walks files them: every haplotype's coordinate at a unique window either
+# side of the locus gives its span across it, and the spans fall into the
+# classes of Yilmaz et al. 2024. The locus is
 # then fetched from each chosen assembly by range request, minimap2 aligns each
 # adjacent pair, and the coordinates are lifted back onto the whole contigs so
 # the rows draw on the assemblies' own coordinates under their gene models.
 #
 # Requires: curl, awk, python3, samtools (built with libcurl, for the range
-#           requests), minimap2, and Node.js for `npx`
+#           requests), minimap2, and Node.js with npm for walk_spans.mjs
 # Usage:    bash build_amylase_haplotypes.sh [outdir]
 #
 # Your own haplotypes: replace MANIFEST. A row is the JBrowse assembly name, the
@@ -34,36 +35,33 @@ cd "$OUT"
 
 HPRC=https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC
 HOSTED=https://jbrowse.org/pangenome/hprc-grch38
-GBZ_DB=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
-GBZ_INDEX=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db
+WALKS=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-f3.GRCh38.walks.bed.gz
 
-echo "== every haplotype's span across the locus, from the graph database"
+echo "== every haplotype's span across the locus, from the walk file"
+[ -s walk_spans.mjs ] || curl -fsSLO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/walk_spans.mjs
+[ -d node_modules/@jbrowse/graph-walks ] ||
+  npm install --no-save --silent @jbrowse/graph-walks@2.1.0 @gmod/tabix@3 generic-filehandle2@2
 # One window inside RNPC3 and one past AMY1C, both single-copy, so each
-# haplotype crosses each exactly once. --context 0 reads the window alone, and
-# --alignments prints one record per haplotype with its own coordinates.
-for side in left:103540000..103541000 right:103800000..103801000; do
-  [ -s "${side%%:*}.json" ] || npx --yes -p @gmod/gbz-base gbz-base-query "$GBZ_DB" \
-    --haplotype-index "$GBZ_INDEX" --sample GRCh38 --contig chr1 \
-    --interval "${side#*:}" --context 0 --alignments >"${side%%:*}.json"
+# haplotype crosses each exactly once
+for side in left:103540000:103541000 right:103800000:103801000; do
+  IFS=: read -r name start end <<<"$side"
+  [ -s "$name.tsv" ] || node walk_spans.mjs "$WALKS" 'GRCh38#0#chr1' "$start" "$end" >"$name.tsv"
 done
 python3 - <<'PY'
-import json
-import re
-
 # GRCh38's own distance between the two windows
 REFERENCE = 103800000 - 103540000
 
 
 def positions(path):
     found = {}
-    for record in json.load(open(path)):
-        if record.get('resolved'):
-            sample, haplotype, contig = re.sub(r'\[.*', '', record['name']).split('#')
-            found[f'{sample}#{haplotype}'] = (contig, record['hapStart'], record['strand'])
+    for line in open(path):
+        name, start, _, strand = line.rstrip('\n').split('\t')
+        sample, haplotype, contig = name.split('#')
+        found.setdefault(f'{sample}#{haplotype}', (contig, int(start), strand))
     return found
 
 
-left, right = positions('left.json'), positions('right.json')
+left, right = positions('left.tsv'), positions('right.tsv')
 with open('locus_spans.tsv', 'w') as fh:
     fh.write('haplotype\tcontig\tstrand\tleft\tright\tspan\tspan_minus_GRCh38\n')
     for name in sorted(left):
