@@ -26,55 +26,49 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 ## Prerequisites
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
-- htslib (`bgzip`, `tabix`), `bcftools` and `pigz`
+- htslib (`bgzip`, `tabix`) and `bcftools`
 - [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 1.1.0 or later, for the
   graph's files and the walk index
 - [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
 - [`minigraph`](https://github.com/lh3/minigraph), for each assembly's path
   through the graph
-- [`vg`](https://github.com/vgteam/vg) 1.69.0+, for haplotype walks, and
-  [`gbz-base`](https://github.com/jltsiren/gbz-base) with
-  [`gbz-haplotype-index`](https://crates.io/crates/gbz-haplotype-index) to serve
-  them from a gbz-base database
+- [`vg`](https://github.com/vgteam/vg), for a plain GFA's bubbles
 
-<!-- TUTORIAL_INSTALL htslib,bcftools,pigz,gfa-to-tabix,gfatools,minigraph,vg,gbz-base,gbz-haplotype-index START -->
+<!-- TUTORIAL_INSTALL htslib,bcftools,gfa-to-tabix,gfatools,minigraph,vg START -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install tabix bcftools pigz
+sudo apt install tabix bcftools
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge htslib bcftools pigz gfatools \
-  minigraph vg
+conda install -c bioconda -c conda-forge htslib bcftools gfatools minigraph \
+  vg
 # any platform
-cargo install gfa-to-tabix gbz-base gbz-haplotype-index
+cargo install gfa-to-tabix
 ```
 
-<!-- TUTORIAL_INSTALL htslib,bcftools,pigz,gfa-to-tabix,gfatools,minigraph,vg,gbz-base,gbz-haplotype-index END -->
+<!-- TUTORIAL_INSTALL htslib,bcftools,gfa-to-tabix,gfatools,minigraph,vg END -->
 
 ## Download the data
 
 The input is [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710)'s
-Minigraph-Cactus graph. `gfa-to-tabix build` reads the rGFA as a local file; the
-gbz-base sections read the other two. Fetch the rGFA first and the rest when you
-reach those sections:
+Minigraph-Cactus graph. `gfa-to-tabix build` reads the rGFA, and the walk index
+reads the base-level GFA, both as local files. Fetch the rGFA first and the
+base-level GFA when you reach [the walks](#haplotype-walks-tabix):
 
 ```bash
 B=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38
 # SV-resolution rGFA, 0.8 GB
 wget -c $B.sv.gfa.gz
-# the graph in vg's format, 5.5 GB
-wget -c $B.gbz
-# the same graph as a gbz-base database, 10 GB
-wget -c $B.gbz.db
+# base-level GFA with every haplotype's walk, 64 GB
+wget -c $B.gfa.gz
 ```
 
 <details>
 <summary>Other files (no download needed)</summary>
 
-| What it is                         | File                                                                                                                                                                               |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The base-level GFA                 | [hprc-v2.1-mc-grch38.gfa.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz) |
-| The finished files, for comparison | [README.txt](https://jbrowse.org/demos/hprc/README.txt)                                                                                                                            |
+| What it is                         | File                                                    |
+| ---------------------------------- | ------------------------------------------------------- |
+| The finished files, for comparison | [README.txt](https://jbrowse.org/demos/hprc/README.txt) |
 
 </details>
 
@@ -137,7 +131,7 @@ word for a bubble is snarl):
 
 ```bash
 # -p: the reference path to decompose against
-vg deconstruct -a -p K12#1#chr graph.gbz > graph.snarls.vcf
+vg deconstruct -a -p K12#1#chr graph.gfa > graph.snarls.vcf
 printf 'K12#1#chr\tchr\n' > rename_chrs.tsv
 bcftools annotate --rename-chrs rename_chrs.tsv graph.snarls.vcf \
   | bcftools sort -Oz -o graph.snarls.vcf.gz
@@ -328,14 +322,17 @@ range of the file per window. A chunk holds the reference's path through it
 once, each distinct route a haplotype takes off that path once, and every other
 walk's piece as the list of routes it takes.
 
-`vg convert` writes the GBZ as a GFA whose W lines are the walks. Index that GFA
-against both of HPRC's references:[^walks-cost]
+The base-level GFA holds each walk as a W line. Index it against both of HPRC's
+references:[^walks-cost]
 
 ```bash
-vg convert -f hprc-v2.1-mc-grch38.gbz | pigz > hprc-v2.1-mc-grch38.W.gfa.gz
-gfa-to-tabix hprc-v2.1-mc-grch38.W.gfa.gz --walks --refs GRCh38,CHM13 \
+# --refs: one walk file per reference sample, in its coordinates
+gfa-to-tabix hprc-v2.1-mc-grch38.gfa.gz --walks --refs GRCh38,CHM13 \
   -o hprc-v2.1-mc-grch38
 ```
+
+`vg convert -f graph.gbz` writes the same GFA for a graph published only as a
+GBZ.
 
 The tool writes one file and its `.tbi` index for each sample in `--refs`, named
 `<prefix>.<sample>.walks.bed.gz`, so a track on GRCh38 reads an index that
@@ -430,6 +427,9 @@ The HPRC tracks built this way open at chr22:20,000,000-20,100,000 on
 [hs1, from the CHM13 set](https://jbrowse.org/code/jb2/main/?config=test_data/graphgenomeview/hprc.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hs1%22%2C%22loc%22%3A%22chr22%3A20%2C000%2C000-20%2C100%2C000%22%2C%22tracks%22%3A%5B%22hprc_v2_1_walks_hs1%22%5D%7D%5D%7D)
 and
 [hg38, from the GRCh38 set](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/hprc/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr22%3A20%2C000%2C000-20%2C100%2C000%22%2C%22tracks%22%3A%5B%22hprc_v2_1_walks%22%5D%7D%5D%7D).
+The [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc) reads the GRCh38
+set for its **Haplotypes** launch, for the graph it draws under a clicked row,
+and for its BandageJS link.
 
 The track menu's **Haplotypes** submenu switches the track between **The track's
 default haplotypes**, **Every haplotype in the graph** and **Chosen in
@@ -446,77 +446,6 @@ same for any set of haplotypes, because the browser downloads every haplotype's
 rows and drops the unwanted ones by name. `walkStepBudget` caps the walk steps a
 window keeps, counting only the haplotypes the track draws, so fewer haplotypes
 draw a wider window.
-
-## Building a gbz-base database of haplotype walks {#haplotype-walks-a-gbz-base-database}
-
-A `.gbz` is vg's indexed form of a graph, with one walk per haplotype. The
-browser also reads it as a **gbz-base database**, the graph in SQLite, which
-three commands build. The same lanes take more requests this way: 27 against 5
-for eight haplotypes across the 260 kb CFH cluster. gfa-to-tabix's
-[comparison with gbz-base](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/gbz-comparison.md)
-lists what each holds, their sizes on HPRC v2.1 and when to pick which.
-
-Build the distance-index chains. vg 1.69.0 or newer reads them out of a distance
-index, and a top-level one (`vg index --no-nested-distance`) is enough:
-
-```bash
-vg chains graph.gbz graph.dist > graph.chains
-```
-
-Build the database, one row per node and per path, plus the chains. Without
-`--chains`, a window comes back as the reference walk alone.
-
-```bash
-gbz-base construct --chains graph.chains graph.gbz
-```
-
-Name the haplotypes. `gbz-base` reports the walks in a subgraph as `unknown#1`,
-`unknown#2`, and `gbz-haplotype-index` writes their names to a companion file.
-It reads the database beside the GBZ to check that the two match:
-
-```bash
-# --interval: bp between recorded GBWT positions per path; denser is bigger
-#   and faster
-# --anchor-spacing: bp between anchor nodes on the reference path, so a window
-#   reads the chosen haplotypes' paths
-gbz-haplotype-index --interval 16384 --anchor-spacing 131072 \
-  graph.gbz graph.gbz.db graph.haplotype-index.db
-```
-
-`cargo install gbz-base` and `cargo install gbz-haplotype-index` install the two
-tools. The browser reads only the format 3 companion that `gbz-haplotype-index`
-0.3.0 and later writes.[^gbz-cost]
-
-Serve the database and the companion from URLs that answer range requests, and
-point the track's `uri` and `haplotypeIndexLocation` at them. `assemblyNames`
-and `assemblyNameToPanSN` work as in the walk-file track above:
-
-```json addtrack
-{
-  "type": "GraphTrack",
-  "trackId": "my_graph_gbz_lanes",
-  "name": "My graph: haplotypes vs the reference, read from the graph",
-  "assemblyNames": ["hg38", "HG00097.1", "HG00099.1"],
-  "adapter": {
-    "type": "GbzBaseSyntenyAdapter",
-    "uri": "https://example.com/graphs/my_graph.gbz.db",
-    "haplotypeIndexLocation": {
-      "uri": "https://example.com/graphs/my_graph.haplotype-index.db"
-    },
-    "assemblyNames": ["hg38"],
-    "assemblyNameToPanSN": { "hg38": "GRCh38#0" },
-    "context": 1000
-  },
-  "displays": [
-    { "type": "MultiWaySyntenyDisplay", "height": 600 },
-    { "type": "LinearGraphDisplay" }
-  ]
-}
-```
-
-The adapter rejects a companion built from a graph with a different path count.
-Past `nodeLimit` nodes, or 5 Mb for the Graph display, both displays ask the
-reader to zoom in.
 
 ## Reproduce it end to end
 
@@ -547,11 +476,8 @@ alone:
 gfa-to-tabix fold hprc-v2.1-mc-grch38.sv.gfa.gz --below 10000 -o hprc.fold10000
 ```
 
-The walk files come from the two commands under
-[Indexing haplotype walks](#haplotype-walks-tabix). The
-[gbz-base companion](#haplotype-walks-a-gbz-base-database) for HPRC's 5.5 GB
-`.gbz` and 10 GB gbz-base database has its recipe, with the download urls, in
-[gbz-haplotype-index](https://github.com/GMOD/gbz-haplotype-index/blob/main/docs/haplotype-index.md#building-hprc-release-21s-index).
+The walk files come from the command under
+[Indexing haplotype walks](#haplotype-walks-tabix).
 
 ## See also
 
@@ -568,8 +494,6 @@ The walk files come from the two commands under
   [The rGFA format](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md) and
   [gfatools](https://github.com/lh3/gfatools): the `SN`/`SO`/`SR` tags and the
   bubble calls.
-- [gbz-base](https://github.com/jltsiren/gbz-base): a GBZ as a SQLite database,
-  range-requested per window.
 - [gfa-to-tabix](https://github.com/GMOD/gfa-to-tabix#walks): `--walks`, and the
   [rows it writes](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/walks-format.md).
 - [gfa-to-tabix and gbz-base compared](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/gbz-comparison.md):
@@ -586,8 +510,3 @@ The walk files come from the two commands under
 [^walks-cost]:
     On a 24-core machine `gfa-to-tabix` took 29 minutes and 13 GB of memory, and
     wrote 2.9 GB for the two references.
-
-[^gbz-cost]:
-    Over HPRC's 464 haplotypes the companion is 5.1 GB, built in 35 minutes on
-    22 threads of a 125 GB machine. On a 16-thread Intel Mac the build aborts
-    inside libmalloc's nano zone; `MallocNanoZone=0` or `--threads 8` avoids it.

@@ -77,10 +77,10 @@ so a whole chromosome draws as a graph, and zoomed back in it cuts the segments
 again.
 
 Two adapters cut a subgraph: `RgfaTabixAdapter` over the index, and
-`GbzBaseSyntenyAdapter` over a gbz-base database, whose cut includes the
-haplotypes' walks. A `BedTabixAdapter` over the `RgfaTabixAdapter` index pair
-draws only as a lane. To skip indexing entirely, [Route 2](#route-2-a-gfa-file)
-opens a GFA as a file.
+`WalkTabixSyntenyAdapter` over `gfa-to-tabix --walks` files, whose cut includes
+the haplotypes' walks. A `BedTabixAdapter` over the `RgfaTabixAdapter` index
+pair draws only as a lane. To skip indexing entirely,
+[Route 2](#route-2-a-gfa-file) opens a GFA as a file.
 
 ## Segment coordinates by format
 
@@ -282,9 +282,10 @@ A GFA small enough for the view to draw whole opens in a separate view
 A graph indexed once on the command line opens as a track that cuts each window
 as you browse ([Route 1](#route-1-a-graph-track-browsable-by-locus)):
 
-1. Index the graph with `gfa-to-tabix build`, as Route 1 shows, or build a
-   gbz-base database as [](/docs/tutorials/pangenome_prepare_graph) does. Keep
-   the output files together in one folder
+1. Index the graph with `gfa-to-tabix build`, as Route 1 shows, and its
+   haplotype walks with `gfa-to-tabix --walks`, as
+   [](/docs/tutorials/pangenome_prepare_graph) does. Keep the output files
+   together in one folder
 2. **File → Open track...**, then pick **Add pangenome graph track** from the
    dropdown at the top of the form
 3. Choose the file type, then **Choose File** for the one file it names:
