@@ -342,7 +342,7 @@ export const trioSpecs: ScreenshotSpec[] = [
     // track carries no color legend (the four row labels already are the key,
     // so the display sets showLegend: false), which is why this is shorter than
     // the legend-bearing paintings and why the gate below is the canvas.
-    viewportHeight: 305,
+    viewportHeight: 337,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
       loc: 'chr1:1-248,956,422',
@@ -487,6 +487,6 @@ export const trioSpecs: ScreenshotSpec[] = [
       readyTimeout: 60000,
       // sized to the content: the painting carries no color legend, so the
       // default 800 left ~200 px of page background under the variant track
-      viewportHeight: 598,
+      viewportHeight: 650,
     })),
 ]

@@ -107,24 +107,20 @@ alignment exists.
 ## Stacking many genomes under hg38 in one multi-way track {#many-genomes-at-once}
 
 A liftOver track pairs hg38 with one other genome. hg38's staging config also
-has **hg38 vs 240 genomes (liftOver, multi-way)**, one track over all of hg38's
-liftOver chains. The track draws hg38 on top and a lane per genome below, each
-lane with the gene models annotated on that genome, and is on
-[staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org) until JBrowse
-5 ships.
+has **hg38 vs 242 genomes (liftOver, multi-way)**, one track over all of hg38's
+liftOver chains, which draws hg38 on top and a lane per genome below. It lives
+on [staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org) until
+JBrowse 5 ships. Open hg38 there, type `TNNT3` into the location box and turn
+the track on.
 
-Open [the TNNT3 gene page](https://staging.genomes.jbrowse.org/gene/?gene=TNNT3)
-and scroll to **Conserved gene order**, which draws the genes around _TNNT3_ in
-the 80 species nearest human. **☰ Multi-way synteny lanes** at the top of that
-figure opens the track over the same hg38 window, with a lane for each of those
-species the track holds.
+The [TNNT3 gene page](https://staging.genomes.jbrowse.org/gene/?gene=TNNT3)
+links the same window across twelve genomes from its **Conserved gene order**
+section.
 
-<Figure src="/img/genomes_synteny/star_link.png" caption="The TNNT3 gene page's Conserved gene order section, with the Multi-way synteny lanes link boxed." />
+<Figure src="/img/genomes_synteny/star_link.png" caption="The TNNT3 gene page's Conserved gene order section, with its JBrowse link boxed." />
 
-The track holds only genomes UCSC publishes a liftOver chain to. Where the gene
-page's assembly for a species has no chain, its lane is the newest build of that
-species that does. The link opens a lane for every species it found, too many to
-read at once, so in the track menu:
+The track holds only genomes UCSC publishes a liftOver chain to. In its track
+menu:
 
 - Pick **Lanes → Choose lanes...** and tick chimp, orangutan, rhesus, gray mouse
   lemur, Chinese tree shrew, naked mole-rat, elephant and platypus, a span from
@@ -161,7 +157,7 @@ can put one person's two chromosomes under the reference. At 17q21.31 the H2
 haplotype is a 900 kb inversion (Stefansson et al. 2005), and H9 has one of
 each. On hg38 at
 [staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org), turn on
-**hg38 vs 240 genomes (liftOver, multi-way)**, type
+**hg38 vs 242 genomes (liftOver, multi-way)**, type
 `chr17:45,300,000-46,800,000` into the location box, then in the track menu:
 
 - Pick **Lanes → Choose lanes...** and tick the two H9 haplotypes, the HG002
@@ -171,7 +167,7 @@ each. On hg38 at
 - Turn off **Show... → Gene labels**, since the RefSeq track above names the
   genes
 
-<Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes, ribbons colored by strand. The H9 hap2 lane's ribbons turn blue across MAPT and KANSL1." />
+<Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes, ribbons colored by strand. The H9 hap2 lane draws its inversion straight and names it in its header." />
 
 ## See also
 

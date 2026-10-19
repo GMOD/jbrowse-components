@@ -435,7 +435,11 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           loc: 'chr:2,554,007-2,570,007',
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
-            { trackId: 'ecoli_cactus_maf', type: 'LinearMafDisplay' },
+            {
+              trackId: 'ecoli_cactus_maf',
+              type: 'LinearMafDisplay',
+              height: 130,
+            },
           ],
         },
       ],

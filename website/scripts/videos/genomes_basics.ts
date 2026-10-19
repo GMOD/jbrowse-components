@@ -86,6 +86,7 @@ export const genomesBasicsVideos: VideoSpec[] = [
       },
       { type: 'waitForText', text: 'Filter by...' },
       { type: 'click', text: 'Filter by...' },
+      { type: 'click', text: 'Edit filters...' },
       { type: 'waitForText', text: 'Add condition' },
       // The dialog opens on one empty row, since this track declares no
       // filters of its own.

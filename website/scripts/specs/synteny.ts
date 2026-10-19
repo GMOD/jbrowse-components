@@ -373,12 +373,10 @@ const TNNT3_FRAME = {
 }
 
 const TNNT3_GENE_PAGE = 'https://staging.genomes.jbrowse.org/gene/?gene=TNNT3'
-const STAR_LINK = 'a[href*="_liftOver_multiway"]'
+const STAR_LINK = 'a[title^="One lane per genome"]'
 
-// The session STAR_LINK carries (starUrl in jb2hubs
-// website/src/components/multiSyntenyDrilldown.ts), cut with Lanes → Choose
-// lanes to eight genomes from chimp to platypus, ribbons colored by strand.
-// The full link opens 26 lanes, 34 px each, which drew as a grey wall. These
+// hg38's multi-way liftOver track at TNNT3, cut with Lanes → Choose lanes to
+// eight genomes from chimp to platypus, ribbons colored by strand. These
 // eight are all drawn forward but platypus, so a blue ribbon is an inversion
 // against hg38 and not a contig the assembly happened to store reversed.
 function tnnt3StarSession() {

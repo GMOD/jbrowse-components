@@ -880,7 +880,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // gene track, then the variant track: its lane, all 86 sample rows, the
     // group swatch legend and the genotype legend under it. Both halves stay
     // the same height, since the pair is read across.
-    viewportHeight: 1323,
+    viewportHeight: 1278,
     // The gene's name, because the RefSeq row cannot supply it, and what a cell
     // records: AMY2B is known for its copy number, and a "1/1" here marks a
     // carrier of the duplication. The pill sits left of the block over lane
@@ -968,7 +968,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr15',
     readyTimeout: 90000,
-    viewportHeight: 1323,
+    viewportHeight: 1278,
     // The same height in the lane as the AMY2B pill, so the pair reads as one
     // figure; the caption says who carries it. The offsets are smaller than the AMY2B part's because the anchor is
     // an insertion near the middle of a 5.5 kb window rather than a block whose

@@ -694,7 +694,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG002',
     readyTimeout: 60000,
-    viewportHeight: 1200,
+    viewportHeight: 1234,
   },
 
   // Multi-sample variant display on the 1000 Genomes phase-3 SV ensemble

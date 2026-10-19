@@ -158,13 +158,16 @@ const ANOGAM3_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/anoG
 // The page prints Cameroon's two tracks; Gabon's are the same with its own
 // files.
 type AgPopulation = 'CMgam' | 'GAgam'
+// The page loads its own AgamP4 assembly; the figure opens the anoGam3 hub
+// (above), so a page track is moved onto it.
 function agPageTrack(cameroonTrackId: string, pop: AgPopulation) {
   const cameroon = pageTrack('tutorials/ld_mosquitoes.md', cameroonTrackId)
-  return JSON.parse(
+  const track = JSON.parse(
     JSON.stringify(cameroon)
       .replaceAll('CMgam', pop)
       .replaceAll('cmgam', pop.toLowerCase()),
   ) as typeof cameroon
+  return { ...track, assemblyNames: ['anoGam3'] }
 }
 
 // THE HEIGHT ARITHMETIC. An unsquashed LD panel draws its triangle at natural

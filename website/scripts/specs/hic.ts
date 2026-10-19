@@ -61,14 +61,12 @@ function matrix(trackId: string, height: number) {
     trackId,
     // Named explicitly, though the track resolves to it anyway, because the
     // figure-recipe builder needs a display type to map `heightMode` to its
-    // menu item: that slot is shared with the two LD heatmaps, so unlike
-    // `useColorPercentile` the field name alone cannot settle which display it means,
-    // and an unresolved entry lands in spec-recipe-unmapped.txt instead of
-    // giving the reader a click path.
+    // menu item: that slot is shared with the two LD heatmaps, so the field name
+    // alone cannot settle which display it means, and an unresolved entry lands
+    // in spec-recipe-unmapped.txt instead of giving the reader a click path.
     type: 'LinearHicDisplay',
     height,
-    color: { scale: 'linear' },
-    useColorPercentile: true,
+    color: { scale: 'linear', domainQuantile: 0.95 },
     selectedNormalization: 'NONE',
     // Square bins, NOT heightMode: 'fit'. A pair's contacts are drawn at depth
     // |x2-x1|/2, so with the two breakpoints ~560 css px apart on screen the

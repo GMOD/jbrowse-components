@@ -135,10 +135,10 @@ where every track in the figure has a call.
 
 The **gnomAD v4.1.1 - gnomAD v4.1.1 Exomes** track, under Variation and Repeats,
 opens as several thousand variant records over _TP53_, one block of color.
-**Filter by...** in the track menu takes rows of field, operator and value over
-the track's columns. Type a column name into the field box, which lists the
-file's columns with the description the file gives each. A record has to pass
-every row:
+**Filter by... → Edit filters...** in the track menu takes rows of field,
+operator and value over the track's columns. Type a column name into the field
+box, which lists the file's columns with the description the file gives each. A
+record has to pass every row:
 
 - `annot` is `pLoF` keeps gnomAD's predicted loss-of-function consequence class
   (the others are missense, synonymous and other)

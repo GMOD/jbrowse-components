@@ -322,6 +322,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
     viewportWidth: 1100,
     // 300 + 300 of matrix, their two track headers, and the ~185px of app bar,
     // overview, navigation row and ruler the two lanes now share once.
-    viewportHeight: 830,
+    viewportHeight: 856,
   },
 ]

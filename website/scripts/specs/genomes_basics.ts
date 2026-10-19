@@ -514,7 +514,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'TP53',
     readyTimeout: 120000,
-    viewportHeight: 1080,
+    viewportHeight: 825,
     diffThreshold: 0.02,
   },
 
@@ -690,6 +690,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', text: 'Filter by...' },
+          { type: 'click', text: 'Edit filters...' },
           { type: 'waitForText', text: 'Add condition' },
           { type: 'type', selector: FILTER_FIELD, value: GNOMAD_PLOF.field },
           { type: 'press', key: 'Tab' },

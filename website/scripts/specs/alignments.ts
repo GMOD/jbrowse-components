@@ -1091,10 +1091,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   },
 
   // The two halves of the faint-contacts comparison. Same region, same ramp;
-  // the only difference is where the color scale saturates. With
-  // useColorPercentile off the diagonal owns the scale (maxScore) and the
-  // TAD interiors wash out; on (the default) it saturates at the 95th
-  // percentile and off-diagonal structure separates from background. Kept as
+  // the only difference is where the color scale saturates. At a
+  // domainQuantile of 1 the diagonal owns the scale (maxScore) and the TAD
+  // interiors wash out; at 0.95 (the default) off-diagonal structure separates
+  // from background. Kept as
   // two declarative specs composed below, so each state stays an openable live
   // link and neither can drift from a menu-driving capture.
   //
@@ -1110,17 +1110,17 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // one the stack needs the caption to say which frame is which.
   ...(
     [
-      ['hic/percentile_off', false, 'Emphasize faint contacts OFF'],
-      ['hic/percentile_on', true, 'Emphasize faint contacts ON (the default)'],
+      ['hic/percentile_off', 1, 'Emphasize faint contacts OFF'],
+      ['hic/percentile_on', 0.95, 'Emphasize faint contacts ON (the default)'],
     ] as const
-  ).map(([name, useColorPercentile, label]) => ({
+  ).map(([name, domainQuantile, label]) => ({
     mode: 'url' as const,
     name,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: 'chr8:52,000,000-56,200,000',
       trackLabels: 'offset',
-      tracks: [{ trackId: 'hic', useColorPercentile, height: 330 }],
+      tracks: [{ trackId: 'hic', color: { domainQuantile }, height: 330 }],
     }),
     // the whole 330px display has to be inside the capture, or the label
     // anchored to the bottom of the track band is drawn off the frame

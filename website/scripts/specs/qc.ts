@@ -247,7 +247,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     // report suggested: at 723 the run reports 110 px CLIPPED instead, the two
     // heuristics disagreeing by more than either's slack, so this is set from
     // the render.
-    viewportHeight: 790,
+    viewportHeight: 844,
     // One label per panel, saying what its color is (review: "unclear what we
     // are showing ... need red text annotations if possible"). The legend gives
     // the colors a name and the caption gives the lanes theirs; what neither

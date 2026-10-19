@@ -297,7 +297,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyText: 'chrI',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 716,
+    viewportHeight: 640,
     hideTooltip: true,
     // park the cursor in the nav bar so no coverage-band hover tooltip lingers
     // over the capture
@@ -418,7 +418,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     // taller frame so all 26 compact rows + the grow-mode gene lane sit inside
-    viewportHeight: 716,
+    viewportHeight: 640,
     hideTooltip: true,
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
@@ -649,7 +649,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     viewportWidth: 780,
     // sized off the run's own CLIPPED/blank report, not off the PNG: 800 was
     // right for the 460px display, and the display is 380 now.
-    viewportHeight: 720,
+    viewportHeight: 745,
     hideTooltip: true,
     annotations: [
       {

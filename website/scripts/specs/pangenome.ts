@@ -147,7 +147,11 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               unit: 'haplotype',
               height: 170,
             },
-            { trackId: 'ecoli_pggb_maf', type: 'LinearMafDisplay' },
+            {
+              trackId: 'ecoli_pggb_maf',
+              type: 'LinearMafDisplay',
+              height: 130,
+            },
           ],
         },
       ],
@@ -342,7 +346,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     // the rows figure's width, so the two stack flush
     viewportWidth: 1000,
-    viewportHeight: 640,
+    viewportHeight: 746,
     // The same arm the rows figure boxes, on both axes here: a dotplot cell is
     // `{hLoc, vLoc}` and resolves through the plot's own axes, so this
     // follows the data rather than a measured pixel. See the note on
@@ -557,7 +561,11 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
             // 5 -> 1 step, and now the four non-K12 rows going blank across
             // exactly the prophage. Each comes from a different file and none of
             // them is the others' summary.
-            { trackId: 'ecoli_pggb_maf', type: 'LinearMafDisplay' },
+            {
+              trackId: 'ecoli_pggb_maf',
+              type: 'LinearMafDisplay',
+              height: 130,
+            },
           ],
         },
       ],
