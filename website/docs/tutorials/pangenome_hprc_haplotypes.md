@@ -115,7 +115,7 @@ Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc) and click the
 this window**, click **Haplotypes**. A lane missing _CFHR3_ and _CFHR1_ (Hughes
 et al. 2006), such as HG00253's second haplotype, breaks across both genes.
 
-<Figure caption="The CFH cluster from the haplotypes launch: RefSeq genes over one lane per structural form, each lane a haplotype's walk drawn with its own CAT genes. The HG00253 haplotype 2 lane opens a hole where its walk skips GRCh38's CFHR3 and CFHR1, and its header names the deletion." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
+<Figure caption="The CFH cluster from the haplotypes launch. The HG00253 haplotype 2 lane opens a hole where its walk skips CFHR3 and CFHR1." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
 
 ## GSTT1: a gene GRCh38's chromosome lacks
 
@@ -133,7 +133,7 @@ we'll move to `chr22:23,950,001-24,060,000`, choose `HG00128.2`, `HG01960.1`,
   the upper one lacks, and runs unbroken between two haplotypes that both have
   it.
 
-<Figure caption="The GSTT1 window from the haplotypes launch with ten lanes under the RefSeq genes after Order lanes by structure. The band fans open under the last lane that matches GRCh38, where the lane below holds sequence GRCh38 lacks; the lanes below it join in unbroken bands, and each of their headers lists the insertion and deletion its walk records against GRCh38." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
+<Figure caption="GSTT1 with ten lanes ordered by structure." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
 
 ## FLNA / EMD: two genes in the opposite order {#inversions}
 
@@ -158,7 +158,7 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
   jexl:feature.inversion
   ```
 
-<Figure caption="The FLNA / EMD window with the RefSeq genes, the bubbles track filtered to inversions and four lanes, the kept bubble shaded. The bottom two lanes draw the shaded span mirrored in place, so every lane's FLNA and EMD line up, and each of their headers names the span as an inversion." src="/img/pangenome/hprc_inversion.png" />
+<Figure caption="FLNA / EMD with the bubbles track filtered to inversions. The bottom two lanes draw the shaded span mirrored in place." src="/img/pangenome/hprc_inversion.png" />
 
 ## What the lanes leave out {#limits}
 

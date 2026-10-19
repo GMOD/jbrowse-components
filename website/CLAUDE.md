@@ -46,9 +46,11 @@ The rules below apply under `website/`, including `docs/` and `tutorials/`.
   figure could show goes stale with nothing to flag it. Measurements go in a
   table, the script or a spec comment.
 - An aside a first-time reader does not need is a footnote (`[^name]`).
-- Captions name the tracks and the one visual takeaway. If a caption needs a
-  paragraph of background, fix the figure. Keep specific values out of captions
-  and callouts.
+- **A caption says what JBrowse is drawing**, in one or two short sentences:
+  what is on screen, and at most one mark's reading. Its subjects are tracks,
+  lanes, bands and controls; the biology stops at the locus name. Shorten one by
+  deleting sentences, not by compressing them. Keep specific values out of
+  captions and callouts.
 - **A callout says what the picture cannot.** Delete one that names the largest
   thing in the frame. Shading where something starts and stops is fine.
 - **Something in the frame comes out negative**: a reader cannot see "dense"

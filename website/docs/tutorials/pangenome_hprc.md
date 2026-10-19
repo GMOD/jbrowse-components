@@ -77,7 +77,7 @@ The page draws a map of the window: GRCh38's genes, then one row per structural
 form the haplotypes fall into, commonest first, each with its share of the
 haplotypes aligned there.
 
-<Figure caption="The HPRC page answering its HLA / MHC example: the Gene or region box and its examples, then the window's map, one row per structural form with its share of the haplotypes. GRCh38's own structure is one row among many, and most haplotypes fall in forms too rare to list. The boxed button opens the window in JBrowse." src="/img/pangenome/genomes_hprc_loci.png" />
+<Figure caption="The HPRC page's map of its HLA / MHC example. The boxed button opens the window in JBrowse." src="/img/pangenome/genomes_hprc_loci.png" />
 
 **Open in JBrowse** opens the window in a JBrowse tab; once a row is clicked, it
 opens that form's haplotype as a lane instead. **More about this window** counts
@@ -146,7 +146,7 @@ level, JBrowse draws one node per bubble, so the whole chromosome fits. A curve
 of segments per bubble (how many pieces of sequence each bubble holds) shows how
 much the haplotypes disagree at each locus.
 
-<Figure caption="GRCh38 chr1 with the cytogenetic bands, three loci the HPRC pages open, and two tracks built from the graph's bubbles. The blue curve is segments per bubble; the second track draws one node per bubble as gold blocks. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
+<Figure caption="GRCh38 chr1 with the cytogenetic bands and two tracks built from the graph's bubbles." src="/img/pangenome/hprc_whole_chromosome.png" />
 
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds this
 overview and writes the `coarse` slot.
@@ -163,7 +163,7 @@ haplotype. Then:
 - Type `C4A` in the location box, pick the chr6 hit, and zoom out twice to take
   in _C4B_.
 
-<Figure caption="The C4 locus as a force-directed graph under the hg38 genes for the same window, colored by reference position. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips one whole copy of the tandem C4-CYP21-TNX module." src="/img/pangenome/hprc_graph_anatomy.png" />
+<Figure caption="C4 as a force-directed graph under the hg38 genes. The dashed arc skips one copy of the C4-CYP21-TNX module." src="/img/pangenome/hprc_graph_anatomy.png" />
 
 The graph has four kinds of object:
 
@@ -200,7 +200,7 @@ opens below the first, on that haplotype's chromosome 6, framed on the allele
 with its CAT (Comparative Annotation Toolkit) gene annotation. Zoom out a few
 steps.
 
-<Figure caption="First, MHC class II in the force-directed layout, the NA20809.2 allele ringed with its right-click menu open on Open in NA20809.2. Second, the view that entry opens, NA20809 haplotype 2's chromosome 6 with its CAT genes." src="/img/pangenome/hprc_haplotype_launch.png" />
+<Figure caption="MHC class II with an allele's right-click menu open, and the view Open in NA20809.2 opens." src="/img/pangenome/hprc_haplotype_launch.png" />
 
 The haplotype's CAT annotation has _HLA-DRB9_ and _HLA-DRB6_ either side of the
 allele and no _HLA-DRB5_, the gene it hangs across on hg38.
@@ -250,13 +250,13 @@ Take **Clustering → Cluster rows by genotype...** in the track menu and press
 **Run clustering**. The rows reorder so haplotypes with the same alleles sit
 together, with a dendrogram beside them.
 
-<Video src="/media/pangenome/hprc_cluster_callset.mp4" caption="The 462-haplotype VCF at MHC class II clustered from the track menu: Clustering, Cluster rows by genotype, Run clustering, and the rows arriving in their new order with a dendrogram beside them." />
+<Video src="/media/pangenome/hprc_cluster_callset.mp4" caption="The VCF at MHC class II clustered from the track menu." />
 
 Right-click the charcoal allele beside _HLA-DRB5_ in the force-directed graph
 and take **Highlight in hg38**: a band marks the span of GRCh38 it replaces,
 which covers most of _HLA-DRB5_.
 
-<Figure caption="The VCF and the graph in one window. The band is the span the HLA-DRB5 allele replaces, over every haplotype clustered by genotype: blue where a haplotype has an allele of 50 bp or more. Below, the force-directed graph, where an arrow runs from the band to the same allele as the graph draws it, alleles in charcoal." src="/img/pangenome/hprc_graph_vs_callset.png" />
+<Figure caption="The VCF clustered by genotype over the force-directed graph. The arrow runs from the HLA-DRB5 allele's band to the same allele in the graph." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 The VCF holds the _HLA-DRB5_ allele as four records, one for each of its
 sequences, which differ by a base or two. The blue block under the band is the
@@ -299,7 +299,7 @@ sequence that haplotype lacks. Then:
   the window in view, because HPRC's file ships no guide tree.
 - **Reset row order** restores the order in the file.
 
-<Figure caption="C4 with the RefSeq genes, the VCF's haplotypes clustered by genotype, a subtree of them as alignment rows clustered by identity, and the graph track in the force-directed layout. The band marks the pseudogene pair between C4A and C4B, and the haplotypes with no sequence across the module gather into one block." src="/img/maf_hprc_pangenome.png" />
+<Figure caption="C4 with the RefSeq genes, the VCF, alignment rows and the graph track. The arrow runs from the shaded band to the graph segment holding it." src="/img/maf_hprc_pangenome.png" />
 
 The VCF's widest blue block is one record, a deletion of a whole C4-CYP21-TNX
 module, which is the dashed arc in the C4 graph. Every alignment row in the

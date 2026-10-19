@@ -112,7 +112,7 @@ open it from the HPRC page:
 The strip along the top of the track draws each reference segment at its
 position on the ruler, in the color of its node below.
 
-<Figure caption="The LPA window with the RefSeq genes, UniProt's kringle domains and the HPRC bubbles above the force-directed graph track, the KIV-2 array's bubble boxed. In the graph the array is the knot of loops on the right, haloed and labelled as a repeat array, and LPA is pinned under the backbone with its exons along it." src="/img/pangenome/hprc_lpa_kiv2.png" />
+<Figure caption="LPA over the force-directed graph track. The KIV-2 array is the haloed knot of loops on the right." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
 Each loop in the knot is a different number of copies. Click the array's purple
 label to lay the bubble's segments out alone, with a button back to the window.
@@ -139,7 +139,7 @@ backbone is the thick line and copies on one haplotype are thin loops. Pick
 `HG00133` under **Haplotypes**: its route stays dark while everything else
 fades, and a readout gives its length against the reference walk.
 
-<Figure caption="The eight-haplotype KIV-2 cut under the same window's genes, bubbles and rGFA segments, with HG00133 picked under Haplotypes. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
+<Figure caption="The KIV-2 cut with HG00133 picked under Haplotypes. The dark links are copies HG00133 walks and GRCh38 does not." src="/img/pangenome/graph_kiv2_walks.png" />
 
 ## Every haplotype's KIV-2 array as a bar {#every-haplotypes-copies}
 
@@ -156,7 +156,7 @@ At KIV-2 each copy a haplotype adds is a run of new nodes, so its added copies
 read as the purple stretch of its bar. The rows pack to fit the track, too thin
 to letter, so hover a bar for its haplotype, length and excess over GRCh38.
 
-<Figure caption="Every HPRC haplotype's walk across the KIV-2 array in walk rows, longest first under GRCh38's, beneath LPA with the KIV-2 bubble boxed in the bubbles track. The purple stretch of each bar is kringle copies off GRCh38's path, and the bar ends step down one copy at a time." src="/img/pangenome/graph_kiv2_walk_rows.png" />
+<Figure caption="Every HPRC haplotype's walk across the KIV-2 array in walk rows. Purple is sequence off GRCh38's path." src="/img/pangenome/graph_kiv2_walk_rows.png" />
 
 Click the KIV-2 bubble boxed in the bubbles track. Its details give
 `shortestAlleleLength` and `longestAlleleLength`, the shortest and longest
@@ -206,7 +206,7 @@ colored by its type. Hover a copy for its haplotype.
 **Group by… → superpopulation** in the view's menu splits the bars by that
 column of the samples table.
 
-<Figure caption="The KIV-2 record over every HPRC haplotype grouped by superpopulation, within each group those with the most KIV-2B copies first, then longest, each copy colored by its type. KIV-2B leads every array that holds it. Arrays opening with a block of KIV-2B copies gather in the AMR, EAS and SAS sections; in EUR, KIV-2B is mostly a single opening copy, and most AFR arrays hold none." src="/img/pangenome/hprc_kiv2_copies_by_superpopulation.png" />
+<Figure caption="The KIV-2 record's repeat copies grouped by superpopulation, each copy colored by its type." src="/img/pangenome/hprc_kiv2_copies_by_superpopulation.png" />
 
 The track selector also holds `LPA KIV-2 copies by unit, eight HPRC haplotypes`,
 few enough bars to label each by name.
@@ -361,7 +361,7 @@ gets a black tick at the allele TRGT called for it (paired by length), red where
 the two lie more than 10% apart. At full size, as in the next section, the bars
 also divide into motif-length units.
 
-<Figure caption="The ABCA7 VNTR in walk rows, one bar per HPRC haplotype, longest first and packed to fit, with the TRGT record picked under Repeat and the catalogue track marking the VNTR on GRCh38. The black ticks tracing the bar ends are TRGT's calls agreeing with the walks; each red tick is a call more than 10% from its walk." src="/img/pangenome/hprc_abca7_repeat_units.png" />
+<Figure caption="The ABCA7 VNTR in walk rows with the TRGT record picked under Repeat. Ticks are TRGT's calls, red where a call is far from its walk." src="/img/pangenome/hprc_abca7_repeat_units.png" />
 
 ## Samples where reads and assemblies disagree
 
@@ -383,7 +383,7 @@ Click the TRGT record to see why. Its sample table gives `AL`, the allele
 lengths behind each tick, and `SD`, the number of reads spanning each allele;
 one of HG02559's alleles has an `SD` of 0.
 
-<Figure caption="Seven samples' walks through the ABCA7 VNTR in pairs, each bar marked with the allele TRGT called for it as a tick. A tick at the end of its bar is agreement, a red readout is a walk far from its allele, and a grey tick is an allele no read spanned." src="/img/pangenome/hprc_abca7_disagreements.png" />
+<Figure caption="Seven samples' walks through the ABCA7 VNTR, each marked with TRGT's allele as a tick." src="/img/pangenome/hprc_abca7_disagreements.png" />
 
 ## The ABCA7 alleles across 94 samples
 
@@ -418,7 +418,7 @@ opens above the details. With 94 samples the card starts on **By allele**: one
 bar per allele, longest first. Hover a copy for its allele, that allele's share
 and its length.
 
-<Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele: one bar per TRGT allele as copies of the motif, longest first. The dotted line is GRCh38's allele, and all but a handful of the bars run past it." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
+<Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. The dotted line is GRCh38's allele." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
 
 Click a bar: the other bars fade and the **Samples** card narrows to the samples
 with that allele. **By haplotype** swaps in one bar per called allele, and
@@ -442,7 +442,7 @@ one per structure:
 - **Walk rows** under the **Layout** row and **Uniform** under the **Color** row
   draw each haplotype's route as a bar.
 
-<Figure caption="The five haplotypes' walks across the amylase array in walk rows, longest first, under GRCh38's bar, each boxed with its own CAT genes so its AMY1 copies can be counted on the bar. Blue is on GRCh38's path through the graph and purple off it. Each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/hprc_amylase_walk_rows.png" />
+<Figure caption="Five haplotypes' walks across the amylase array, each over its own CAT genes. Purple is sequence off GRCh38's path." src="/img/pangenome/hprc_amylase_walk_rows.png" />
 
 HG00133.1 has GRCh38's three _AMY1_ copies and its length, and its bar still
 shows a long purple stretch, because the graph routes copies of a duplication
@@ -592,7 +592,7 @@ copy:
 }
 ```
 
-<Figure caption="HG01361.1, hg38, HG00133.1, NA18608.2 and HG00232.1, one AMY1 copy at the top to seven at the bottom, each aligned to the row under it by minimap2 and colored by strand. Each step up in copies opens a wedge over the genes only the longer row has." src="/img/multiway_synteny/hprc_amylase_stack.png" />
+<Figure caption="Five haplotypes, one AMY1 copy at the top to seven at the bottom, each aligned to the row below by minimap2." src="/img/multiway_synteny/hprc_amylase_stack.png" />
 
 ## See also
 
