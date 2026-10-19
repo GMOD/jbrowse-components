@@ -126,9 +126,12 @@ test('SyRI calls color their ribbons, and a lane unaligned on both sides opens n
       Math.sign(t.ribbons.upperEnd[i]! - t.ribbons.upperStart[i]!),
     ).not.toBe(Math.sign(t.ribbons.lowerEnd[i]! - t.ribbons.lowerStart[i]!))
   }
-  // Cvi's centromere: 216 kb of its own sequence between two records against
-  // 280 kb of Col-0's, unaligned on both sides, which states no deletion
-  expect(indexes(t.segments.lane, l => l === 2)).toHaveLength(1)
+  // Cvi's one hole is 30.6 kb of Col-0 against 12.6 kb of its own sequence;
+  // its centromere, 216 kb of its own against 280 kb, outweighs no deletion
+  const cvi = indexes(t.segments.lane, l => l === 2)
+  expect(cvi).toHaveLength(2)
+  expect(t.segments.end[cvi[0]!]).toBe(15_426_914)
+  expect(t.segments.start[cvi[1]!]).toBe(15_426_914)
 
   const pinned = await engine.multiway({
     ...SYRI,

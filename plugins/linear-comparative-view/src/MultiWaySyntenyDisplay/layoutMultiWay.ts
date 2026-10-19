@@ -116,6 +116,7 @@ interface LaneRun {
   laneEnd: number
   anchorStart: number
   anchorEnd: number
+  anchors: { start: number; end: number }[]
 }
 
 /**
@@ -137,6 +138,7 @@ function laneRunsOf(sorted: readonly LanePiece[]) {
         last.laneEnd = Math.max(last.laneEnd, lane.end)
         last.anchorStart = Math.min(last.anchorStart, anchor.start)
         last.anchorEnd = Math.max(last.anchorEnd, anchor.end)
+        last.anchors.push(anchor)
       } else {
         runs.push({
           orientation: lane.orientation,
@@ -145,6 +147,7 @@ function laneRunsOf(sorted: readonly LanePiece[]) {
           laneEnd: lane.end,
           anchorStart: anchor.start,
           anchorEnd: anchor.end,
+          anchors: [anchor],
         })
       }
     }
@@ -152,12 +155,25 @@ function laneRunsOf(sorted: readonly LanePiece[]) {
   return runs
 }
 
+function coveredBp(
+  pieces: readonly { start: number; end: number }[],
+  start: number,
+  end: number,
+) {
+  let bp = 0
+  for (const piece of pieces) {
+    bp += Math.max(0, Math.min(end, piece.end) - Math.max(start, piece.start))
+  }
+  return bp
+}
+
 /**
- * Inversions: a run whose neighbours on both sides are the other strand, in
- * anchor order, with its anchor span between theirs. Records through a
- * segdup breakpoint run past each other, so each side may overlap by what the
- * lane overlaps at that seam. A reverse hit elsewhere on the anchor is no
- * inversion, and neither the vote nor the drawn direction enters.
+ * Inversions: a run whose neighbours on both sides are the other strand,
+ * with its anchor span between their outer ends and mostly outside what they
+ * cover. A segdup-flanked breakpoint (8p23.1's REPD and REPP) puts paralog
+ * hits at the flanks' inner ends, which is why the test reads their outer
+ * ends. A reverse hit elsewhere on the anchor, or an inverted copy of a
+ * flank, is no inversion; neither the vote nor the drawn direction enters.
  */
 function laneInversionsOf(sorted: readonly LanePiece[]): LaneChange[] {
   const runs = laneRunsOf(sorted)
@@ -166,29 +182,26 @@ function laneInversionsOf(sorted: readonly LanePiece[]): LaneChange[] {
     const left = runs[i - 1]!
     const run = runs[i]!
     const right = runs[i + 1]!
+    const span = run.anchorEnd - run.anchorStart
     if (
       left.orientation === right.orientation &&
       run.orientation !== left.orientation &&
       left.refName === run.refName &&
       right.refName === run.refName &&
-      run.anchorEnd - run.anchorStart >= SPLIT_AT_GAP_BP
+      span >= SPLIT_AT_GAP_BP
     ) {
-      const slack =
-        Math.max(0, left.laneEnd - run.laneStart) +
-        Math.max(0, run.laneEnd - right.laneStart)
       const [lo, hi] =
         left.orientation > 0
-          ? [left.anchorEnd, right.anchorStart]
-          : [right.anchorEnd, left.anchorStart]
-      if (
-        lo <= hi + slack &&
-        run.anchorStart >= lo - slack &&
-        run.anchorEnd <= hi + slack
-      ) {
+          ? [left.anchorStart, right.anchorEnd]
+          : [right.anchorStart, left.anchorEnd]
+      const flanked =
+        coveredBp(left.anchors, run.anchorStart, run.anchorEnd) +
+        coveredBp(right.anchors, run.anchorStart, run.anchorEnd)
+      if (run.anchorStart >= lo && run.anchorEnd <= hi && flanked < span / 2) {
         out.push({
           at: run.laneStart,
           laneBp: run.laneEnd - run.laneStart,
-          bp: run.anchorEnd - run.anchorStart,
+          bp: span,
           kind: 'inversion',
         })
       }
@@ -288,15 +301,14 @@ export function frameOpenings(frame: RowFrame) {
   return frame.openings ?? NO_OPENINGS
 }
 
-// Two pieces of one record cut in one fetch window; between two windows lies
-// anchor the fetch never read, which the record states nothing about
 function oneRecord(left: MatePlacement, right: MatePlacement) {
   const record: unknown = left.feature.get('recordId')
-  return (
-    record !== undefined &&
-    record === right.feature.get('recordId') &&
-    left.feature.get('clipWindow') === right.feature.get('clipWindow')
-  )
+  return record !== undefined && record === right.feature.get('recordId')
+}
+
+// Between two fetch windows lies anchor the fetch never read
+function oneWindow(left: MatePlacement, right: MatePlacement) {
+  return left.feature.get('clipWindow') === right.feature.get('clipWindow')
 }
 
 /**
@@ -346,20 +358,19 @@ function placedAnchorOf(groups: MultiWayGroup[]) {
 }
 
 /**
- * Openings: where a lane's anchor ends sit at least `SPLIT_AT_GAP_BP` further
- * apart than its pieces, and the gap is a deletion: the two pieces are one
- * alignment record, or they abut (a lane gap under `SPLIT_AT_GAP_BP`) and the
- * lane places the anchor between them nowhere. Two records meeting where that
- * stretch went elsewhere in the lane are a rearrangement's breakpoint, whose
- * anchor distance runs to megabases. An opening is the net of the two gaps,
- * so what follows sits under its own anchor stretch.
- *
- * Changes: what the records state. Within one record, the anchor and lane
- * gaps are a deletion and an insertion, each listed at its own size once it
- * reaches `SPLIT_AT_GAP_BP`, never netted into one; across two records only an
- * opening's deletion; and each run of the other strand set in place between
- * two runs (`laneInversionsOf`). Named records are genes, whose spacing says
- * nothing.
+ * What a lane states across each gap between two consecutive pieces of one
+ * contig, in one fetch window: the anchor stretch between them is a deletion
+ * and the lane's own stretch an insertion, each listed at its own size once
+ * it reaches `SPLIT_AT_GAP_BP` and never netted into one. That holds within
+ * one record, and across two where the lane places the anchor stretch
+ * nowhere; two records meeting where that stretch went elsewhere in the lane
+ * are a rearrangement's breakpoint, whose anchor distance runs to megabases.
+ * The lane's own stretch is placed nowhere, or the pieces would not be
+ * consecutive. An opening is the net of the two, so what follows sits under
+ * its own anchor stretch; between two fetch windows lies anchor the fetch
+ * never read, which opens and states nothing. A run of the other strand set
+ * in place between two runs is an inversion (`laneInversionsOf`). Named
+ * records are genes, whose spacing says nothing.
  */
 export function laneIndelsOf(groups: MultiWayGroup[]) {
   const pieces = new Map<
@@ -393,31 +404,28 @@ export function laneIndelsOf(groups: MultiWayGroup[]) {
       if (anchorGap === undefined) {
         return
       }
+      if (
+        !oneWindow(left.lane, right.lane) ||
+        (!oneRecord(left.lane, right.lane) &&
+          placedAnchor(
+            assemblyName,
+            left.anchor.refName,
+            left.lane.orientation < 0 ? right.anchor.end : left.anchor.end,
+            left.lane.orientation < 0 ? left.anchor.start : right.anchor.start,
+          ))
+      ) {
+        return
+      }
       const at = left.lane.end
       const net = anchorGap - laneGap
-      if (oneRecord(left.lane, right.lane)) {
-        if (laneGap >= 0 && net >= SPLIT_AT_GAP_BP) {
-          openings.push({ at, bp: net })
-        }
-        if (anchorGap >= SPLIT_AT_GAP_BP) {
-          changes.push({ at, laneBp: 0, bp: anchorGap, kind: 'deletion' })
-        }
-        if (anchorGap >= 0 && laneGap >= SPLIT_AT_GAP_BP) {
-          changes.push({ at, laneBp: laneGap, bp: laneGap, kind: 'insertion' })
-        }
-      } else if (
-        laneGap >= 0 &&
-        laneGap < SPLIT_AT_GAP_BP &&
-        net >= SPLIT_AT_GAP_BP &&
-        !placedAnchor(
-          assemblyName,
-          left.anchor.refName,
-          left.lane.orientation < 0 ? right.anchor.end : left.anchor.end,
-          left.lane.orientation < 0 ? left.anchor.start : right.anchor.start,
-        )
-      ) {
+      if (laneGap >= 0 && net >= SPLIT_AT_GAP_BP) {
         openings.push({ at, bp: net })
-        changes.push({ at, laneBp: 0, bp: net, kind: 'deletion' })
+      }
+      if (anchorGap >= SPLIT_AT_GAP_BP) {
+        changes.push({ at, laneBp: 0, bp: anchorGap, kind: 'deletion' })
+      }
+      if (anchorGap >= 0 && laneGap >= SPLIT_AT_GAP_BP) {
+        changes.push({ at, laneBp: laneGap, bp: laneGap, kind: 'insertion' })
       }
     })
     changes.push(...laneInversionsOf(list))

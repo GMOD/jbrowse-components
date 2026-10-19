@@ -159,21 +159,25 @@ cost is linear in lanes.
   label a source's header declares (`laneLabel`).
 - **Lane changes chip**: the header lists what the records state across the gaps
   the shown frame meets, largest first, two then a count, in the HPRC portal's
-  words (`laneIndelsOf`'s `changes`, `laneHeaderRows`). Between two runs of one
-  record cut in one fetch window (`clipWindow`; between two windows lies anchor
-  the fetch never read), the anchor gap and the lane gap each list at their own size once they
-  reach `SPLIT_AT_GAP_BP`, so a 935 kb stretch replaced by 900 kb reads "935 kb
-  deletion, 900 kb insertion". The hole opens at the net of the two, so what
-  follows sits under its own anchor stretch. Netting the chip into one deletion
-  or one shift infers an allele
+  words (`laneIndelsOf`'s `changes`, `laneHeaderRows`). Across each gap
+  between two consecutive pieces of a lane contig cut in one fetch window
+  (`clipWindow`; between two windows lies anchor the fetch never read), the
+  anchor gap and the lane gap each list at their own size once they reach
+  `SPLIT_AT_GAP_BP`, within one record, or across two where the lane places
+  the anchor stretch nowhere. A 935 kb stretch replaced by 900 kb reads "935 kb
+  deletion, 900 kb insertion", and HG00133#1's LRRC37A duplicon at MAPT, two
+  records in the PIF, reads "420 kb deletion, 230 kb insertion". The hole opens
+  at the net of the two, so what follows sits under its own anchor stretch.
+  Netting the chip into one deletion or one shift infers an allele
   ([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)).
-  The chip names an inversion by its anchor span where a run of the other strand
-  sits between two runs, in anchor order, with its anchor span between theirs
-  (`laneInversionsOf`); a reverse hit elsewhere on the anchor is no inversion,
-  and the vote's `[rev]` plays no part. Two records state nothing between them,
-  so a hole opens across records only where they abut (lane gap under
-  `SPLIT_AT_GAP_BP`): SyRI's Cvi centromere, 216 kb of its own unaligned
-  sequence against 280 kb of Col-0's, opens none.
+- **The chip names an inversion** by its anchor span where a run of the other
+  strand sits between two runs, inside their outer anchor ends and mostly
+  outside what they cover (`laneInversionsOf`). 8p23.1's breakpoints sit in
+  the REPD/REPP segdups, whose paralog hits make the flanks' inner ends land
+  out of anchor order, so the test reads the outer ends: all seven carriers in
+  `hprc_multiway` name it, at 4 to 5.1 Mb. A reverse hit elsewhere on the
+  anchor, or an inverted copy of a flank, is no inversion, and the vote's
+  `[rev]` plays no part.
 - **A lane inside a deletion longer than the window**: with `splitAtGapBp`,
   `clipFeatureToRegion` answers a record whose gap between two runs holds the
   whole window with that gap alone, marked `spansWindow`, and
@@ -182,11 +186,10 @@ cost is linear in lanes.
   at the foot of the stack, and its header reads "inside a 1.2 Mb deletion".
   A deletion two records state is out of reach, since neither record meets
   the window.
-- **The chip lists no insertion that two records state.** The graph plugin
-  stamps one `recordId` on every run of a walk record from 7.1.12, so at GSTT1
-  HG00099#1's walk lane reads "54 kb insertion, 37 kb deletion".
-  `hprc_multiway_gfa.pif.gz` stores that insertion as a gap between separate
-  file records, so its lane names only the 37 kb deletion.
+- **Graph and PIF lanes read GSTT1 alike.** The graph plugin stamps one
+  `recordId` on every run of a walk record from 7.1.12, and
+  `hprc_multiway_gfa.pif.gz` writes HG00099#1's insertion as a gap between two
+  records; both read "54 kb insertion, 37 kb deletion".
 - **Lane links**: `laneLinksFetchSpecs`; `lanePairsOnAnchor` adapters are asked for
   each adjacent pair on the anchor's merged blocks, and `lanePairBatches` ones
   for all of them in one call. Only pairs whose gutter is within a screen of the

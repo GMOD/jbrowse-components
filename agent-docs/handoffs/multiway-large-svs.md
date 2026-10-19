@@ -25,6 +25,10 @@ of a lane inside a long deletion says so instead of the lane drawing blank.
   | CFHR3-CFHR1 | chr1:196.7-196.9 Mb | 4 carriers | "85 kb deletion", as today |
   | GSTT1 | chr22:23.95-24.06 Mb | HG00099#1 | as today |
 
+  Captured from the branch's dev server on the PIF track, 2026-10-18: all four
+  rows hold. MAPT's H2 reads "870 kb inversion"; HG00133#1 and HG00099#1
+  read "420 kb deletion, 230 kb insertion"; GSTT1's PIF lanes now read what
+  the graph track does. The walk track waits on item 3.
 - On walk stacks, the MAPT H2 lane sits at an end of the stack.
 - The R export and the display stack a graph track in the same order.
 - AMY1 and KIV-2 goldens unchanged; MAPT and FLNA goldens move only as items 3
@@ -50,11 +54,13 @@ Done-when, per item:
 - **5**: one pure ordering function, gate included (`lanePairsOnAnchor` and
   `laneFetchKinds.lanePairs`), called by the model and `multiwayTables`; a
   graph-source fixture orders the same both ways.
-- **1**: within one record, both gaps at `SPLIT_AT_GAP_BP` or more list both
-  ("900 kb insertion, 935 kb deletion"), keyed on both gaps, not the net;
-  `LaneOpening` carries the stated deletion beside the net `bp`. Across
-  records a hole opens only where `laneGap < SPLIT_AT_GAP_BP`. CFHR3-CFHR1's
-  two records abut at lane gap 0 and keep their hole.
+- **1**: across a gap between consecutive pieces cut in one fetch window,
+  within one record or across two where the lane places the anchor stretch
+  nowhere, each side at `SPLIT_AT_GAP_BP` or more lists at its own size
+  ("935 kb deletion, 900 kb insertion"); the hole opens at the net. Built
+  stricter first (across records only where pieces abut); the MAPT capture
+  showed that drop HG00133#1's LRRC37A duplicon hole, which the PIF writes as
+  two records.
 - **2**: `laneProfiles` returns forward, reversed and inserted bands; the distance is
   `min(d(a,b), d(a, swapBands(b)))`, likewise against the anchor; a lane
   reversed whole sits with collinear lanes, an in-place inversion carrier at
@@ -65,15 +71,16 @@ Done-when, per item:
   choose; one id per record. We measure its per-window time at MAPT and 8p23.
 - **4**: a run is maximal consecutive same-strand pieces of one contig after
   setting aside nested pieces (`forEachLaneGap`'s reach rule); named
-  "N kb inverted" when both lane neighbours are the other strand and
-  collinear with each other, allowing the overlap each flank states with the
-  interior at its seam.
+  "N kb inversion" when both lane neighbours are the other strand and the run
+  sits inside their outer anchor ends, mostly outside what they cover. The
+  inner-end version named 4 of 8p23's 7 carriers; this one names all 7.
 - **7**: the worker emits a deletion op spanning the fetched window as a hole
   feature with `recordId` and stated length; the display splits hole features
   out before grouping, so nothing frames, votes, profiles or draws on them;
   the lane header names it without a frame. Two-record deletions and walk
   lanes that skip the window are out of reach.
-- **6**: template reads use a finer grid where the lane fetch's could pass the cap, down to a quarter of the span (bound 2.5x the span);
+- **6**: template reads use a finer grid where the lane fetch's could pass
+  the cap, down to a quarter of the span (bound 2.5x the span);
   `bc85b6305b`'s span-bound clause stays, since it stops a pan blink.
 
 ## Waiting on a call

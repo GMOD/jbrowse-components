@@ -524,14 +524,16 @@ describe('what a lane states across a gap against the anchor', () => {
     })
   })
 
-  test('nothing under SPLIT_AT_GAP_BP, and no insertion between two records', () => {
+  test('nothing under SPLIT_AT_GAP_BP; an insertion between two records is one too', () => {
     expect(read(gapped(0, 9_999, ['r', 'r']))).toEqual({
       openings: [],
       changes: [],
     })
     expect(read(gapped(0, 30_000, ['r', 's']))).toEqual({
       openings: [],
-      changes: [],
+      changes: [
+        { at: at + 40_000, laneBp: 30_000, bp: 30_000, kind: 'insertion' },
+      ],
     })
   })
 
@@ -555,10 +557,18 @@ describe('what a lane states across a gap against the anchor', () => {
     })
   })
 
-  test('two records 900 kb apart in the lane state nothing between them', () => {
-    expect(read(gapped(935_000, 900_000, ['r', 's']))).toEqual({
-      openings: [],
-      changes: [],
+  test('two records name both sides of the gap between them and open the net, as one record does', () => {
+    expect(read(gapped(935_000, 900_000, ['r', 's']))).toEqual(
+      read(gapped(935_000, 900_000, ['r', 'r'])),
+    )
+    // MAPT's LRRC37A duplicon in HG00133#1: 416 kb of GRCh38 against 233 kb
+    // of its own sequence, which the PIF writes as two records
+    expect(read(gapped(416_324, 233_466, ['r', 's']))).toEqual({
+      openings: [{ at: at + 40_000, bp: 182_858 }],
+      changes: [
+        { at: at + 40_000, laneBp: 0, bp: 416_324, kind: 'deletion' },
+        { at: at + 40_000, laneBp: 233_466, bp: 233_466, kind: 'insertion' },
+      ],
     })
   })
 
@@ -645,6 +655,32 @@ describe('an inversion the lane carries against the anchor', () => {
     ).toEqual([
       { at: at + 40_000, laneBp: 900_000, bp: 900_000, kind: 'inversion' },
     ])
+  })
+
+  // HG01960#1 at 8p23.1: each flank's inner end is a hit on the paralogous
+  // REPD/REPP copy at the other breakpoint, out of anchor order
+  test('names an inversion whose segdup-flanked breakpoints put paralog hits at the flanks inner ends', () => {
+    expect(
+      named([
+        run('l1', 0, 0, 500_000, 1),
+        run('l2', 500_000, 760_000, 230_000, 1),
+        run('m', 730_000, 800_000, 4_000_000, -1),
+        run('r1', 4_730_000, 600_000, 150_000, 1),
+        run('r2', 4_880_000, 4_900_000, 1_000_000, 1),
+      ]),
+    ).toEqual([
+      { at: at + 730_000, laneBp: 4_000_000, bp: 4_000_000, kind: 'inversion' },
+    ])
+  })
+
+  test('names nothing for an inverted copy of a flank', () => {
+    expect(
+      named([
+        run('l', 0, 0, 500_000, 1),
+        run('m', 500_000, 100_000, 300_000, -1),
+        run('r', 800_000, 500_000, 400_000, 1),
+      ]),
+    ).toEqual([])
   })
 
   test('names nothing with one flank', () => {
