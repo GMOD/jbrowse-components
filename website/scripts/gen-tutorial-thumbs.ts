@@ -264,11 +264,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   sv_visualization_cgiab: {
-    // the split reads of the translocation between the two panels' callouts,
-    // centered on the curves that join them
-    src: 'sv_cgiab/translocation_breakpoint_split.png',
-    band: [0.27, 0.6],
-    position: 'center',
+    // the five SV callsets over one breakend, framed on the track labels and the
+    // breakend. This figure has no callout paint, which every other figure of
+    // the page carries.
+    src: 'sv_cgiab/sv_callset_comparison.png',
+    band: [0.16, 0.62],
+    xband: [0, 0.45],
+    position: 'left',
   },
   cnv_cgiab: {
     // depth over BAF genome-wide
