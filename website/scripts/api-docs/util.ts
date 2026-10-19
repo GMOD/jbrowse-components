@@ -1427,10 +1427,16 @@ function resolveComposedModels(checker: ts.TypeChecker, node: ts.Node) {
   const walk = (n: ts.Node) => {
     if (ts.isCallExpression(n) && isTypesMember(n.expression, 'compose')) {
       for (const arg of n.arguments) {
-        add(composedArgRef(checker, arg))
+        const ref = composedArgRef(checker, arg)
+        if (ref) {
+          add(ref)
+        } else {
+          walk(arg)
+        }
       }
+    } else {
+      ts.forEachChild(n, walk)
     }
-    ts.forEachChild(n, walk)
   }
   walk(node)
   add(returnedBaseRef(checker, node))

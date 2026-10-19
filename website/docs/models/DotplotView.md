@@ -54,13 +54,13 @@ Each section ends with the members a composed model contributes, linked to the p
 <details class="inherited-members" data-pagefind-ignore>
 <summary>8 inherited properties from 4 models</summary>
 
-From [BaseViewModel](../baseviewmodel): <span id="property-displayname">[`displayName`](../baseviewmodel#property-displayname)</span>, <span id="property-minimized">[`minimized`](../baseviewmodel#property-minimized)</span>
-
 From [SyntenyViewMixin](../syntenyviewmixin): <span id="property-lodmode">[`lodMode`](../syntenyviewmixin#property-lodmode)</span>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="property-opacity">[`opacity`](../syntenycolorsmixin#property-opacity)</span>, <span id="property-minalignmentlength">[`minAlignmentLength`](../syntenycolorsmixin#property-minalignmentlength)</span>
 
 From [TrackColorsMixin](../trackcolorsmixin): <span id="property-color">[`color`](../trackcolorsmixin#property-color)</span>, <span id="property-trackcolors">[`trackColors`](../trackcolorsmixin#property-trackcolors)</span>, <span id="property-hideunlabelled">[`hideUnlabelled`](../trackcolorsmixin#property-hideunlabelled)</span>
+
+From [BaseViewModel](../baseviewmodel): <span id="property-displayname">[`displayName`](../baseviewmodel#property-displayname)</span>, <span id="property-minimized">[`minimized`](../baseviewmodel#property-minimized)</span>
 
 </details>
 
@@ -76,17 +76,17 @@ From [TrackColorsMixin](../trackcolorsmixin): <span id="property-color">[`color`
 <details class="inherited-members" data-pagefind-ignore>
 <summary>17 inherited volatiles from 6 models</summary>
 
-From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../baseviewmodel#volatile-width)</span>, <span id="volatile-bodymounted">[`bodyMounted`](../baseviewmodel#volatile-bodymounted)</span>
-
-From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="volatile-canvasdrawn">[`canvasDrawn`](../renderlifecyclemixin#volatile-canvasdrawn)</span>, <span id="volatile-paintcount">[`paintCount`](../renderlifecyclemixin#volatile-paintcount)</span>, <span id="volatile-currentrenderingbackend">[`currentRenderingBackend`](../renderlifecyclemixin#volatile-currentrenderingbackend)</span>, <span id="volatile-rendertick">[`renderTick`](../renderlifecyclemixin#volatile-rendertick)</span>, <span id="volatile-autorunsinstalled">[`autorunsInstalled`](../renderlifecyclemixin#volatile-autorunsinstalled)</span>, <span id="volatile-rendererror">[`renderError`](../renderlifecyclemixin#volatile-rendererror)</span>, <span id="volatile-offscreen">[`offScreen`](../renderlifecyclemixin#volatile-offscreen)</span>
-
-From [DiagonalizeProgressMixin](../diagonalizeprogressmixin): <span id="volatile-awaitingautodiagonalize">[`awaitingAutoDiagonalize`](../diagonalizeprogressmixin#volatile-awaitingautodiagonalize)</span>, <span id="volatile-pendingautodiagonalize">[`pendingAutoDiagonalize`](../diagonalizeprogressmixin#volatile-pendingautodiagonalize)</span>, <span id="volatile-diagonalizestatus">[`diagonalizeStatus`](../diagonalizeprogressmixin#volatile-diagonalizestatus)</span>, <span id="volatile-diagonalizecancel">[`diagonalizeCancel`](../diagonalizeprogressmixin#volatile-diagonalizecancel)</span>, <span id="volatile-diagonalizeerror">[`diagonalizeError`](../diagonalizeprogressmixin#volatile-diagonalizeerror)</span>
-
-From [ImportFormSyntenyMixin](../importformsyntenymixin): <span id="volatile-importformsyntenytrackselections">[`importFormSyntenyTrackSelections`](../importformsyntenymixin#volatile-importformsyntenytrackselections)</span>
-
 From [SyntenyViewMixin](../syntenyviewmixin): <span id="volatile-colorlegenddismissedfor">[`colorLegendDismissedFor`](../syntenyviewmixin#volatile-colorlegenddismissedfor)</span>
 
 From [TrackColorsMixin](../trackcolorsmixin): <span id="volatile-seenattributeranges">[`seenAttributeRanges`](../trackcolorsmixin#volatile-seenattributeranges)</span>
+
+From [ImportFormSyntenyMixin](../importformsyntenymixin): <span id="volatile-importformsyntenytrackselections">[`importFormSyntenyTrackSelections`](../importformsyntenymixin#volatile-importformsyntenytrackselections)</span>
+
+From [DiagonalizeProgressMixin](../diagonalizeprogressmixin): <span id="volatile-awaitingautodiagonalize">[`awaitingAutoDiagonalize`](../diagonalizeprogressmixin#volatile-awaitingautodiagonalize)</span>, <span id="volatile-pendingautodiagonalize">[`pendingAutoDiagonalize`](../diagonalizeprogressmixin#volatile-pendingautodiagonalize)</span>, <span id="volatile-diagonalizestatus">[`diagonalizeStatus`](../diagonalizeprogressmixin#volatile-diagonalizestatus)</span>, <span id="volatile-diagonalizecancel">[`diagonalizeCancel`](../diagonalizeprogressmixin#volatile-diagonalizecancel)</span>, <span id="volatile-diagonalizeerror">[`diagonalizeError`](../diagonalizeprogressmixin#volatile-diagonalizeerror)</span>
+
+From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="volatile-canvasdrawn">[`canvasDrawn`](../renderlifecyclemixin#volatile-canvasdrawn)</span>, <span id="volatile-paintcount">[`paintCount`](../renderlifecyclemixin#volatile-paintcount)</span>, <span id="volatile-currentrenderingbackend">[`currentRenderingBackend`](../renderlifecyclemixin#volatile-currentrenderingbackend)</span>, <span id="volatile-rendertick">[`renderTick`](../renderlifecyclemixin#volatile-rendertick)</span>, <span id="volatile-autorunsinstalled">[`autorunsInstalled`](../renderlifecyclemixin#volatile-autorunsinstalled)</span>, <span id="volatile-rendererror">[`renderError`](../renderlifecyclemixin#volatile-rendererror)</span>, <span id="volatile-offscreen">[`offScreen`](../renderlifecyclemixin#volatile-offscreen)</span>
+
+From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../baseviewmodel#volatile-width)</span>, <span id="volatile-bodymounted">[`bodyMounted`](../baseviewmodel#volatile-bodymounted)</span>
 
 </details>
 
@@ -137,15 +137,15 @@ From [TrackColorsMixin](../trackcolorsmixin): <span id="volatile-seenattributera
 <details class="inherited-members" data-pagefind-ignore>
 <summary>27 inherited getters from 5 models</summary>
 
-From [BaseViewModel](../baseviewmodel): <span id="getter-rendersdisplays">[`rendersDisplays`](../baseviewmodel#getter-rendersdisplays)</span>, <span id="getter-effectivebodymounted">[`effectiveBodyMounted`](../baseviewmodel#getter-effectivebodymounted)</span>, <span id="getter-ownviews">[`ownViews`](../baseviewmodel#getter-ownviews)</span>
-
-From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="getter-renderscanvas">[`rendersCanvas`](../renderlifecyclemixin#getter-renderscanvas)</span>, <span id="getter-paintsuperseded">[`paintSuperseded`](../renderlifecyclemixin#getter-paintsuperseded)</span>, <span id="getter-painted">[`painted`](../renderlifecyclemixin#getter-painted)</span>
-
 From [SyntenyViewMixin](../syntenyviewmixin): <span id="getter-haslodcapableadapter">[`hasLodCapableAdapter`](../syntenyviewmixin#getter-haslodcapableadapter)</span>, <span id="getter-showlegend">[`showLegend`](../syntenyviewmixin#getter-showlegend)</span>, <span id="getter-legendspec">[`legendSpec`](../syntenyviewmixin#getter-legendspec)</span>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="getter-defaultopacity">[`defaultOpacity`](../syntenycolorsmixin#getter-defaultopacity)</span>, <span id="getter-opacitysetting">[`opacitySetting`](../syntenycolorsmixin#getter-opacitysetting)</span>, <span id="getter-opacityfade">[`opacityFade`](../syntenycolorsmixin#getter-opacityfade)</span>, <span id="getter-opacitylevel">[`opacityLevel`](../syntenycolorsmixin#getter-opacitylevel)</span>, <span id="getter-opacityfield">[`opacityField`](../syntenycolorsmixin#getter-opacityfield)</span>
 
 From [TrackColorsMixin](../trackcolorsmixin): <span id="getter-colorsetting">[`colorSetting`](../trackcolorsmixin#getter-colorsetting)</span>, <span id="getter-colorpaint">[`colorPaint`](../trackcolorsmixin#getter-colorpaint)</span>, <span id="getter-colorvalue">[`colorValue`](../trackcolorsmixin#getter-colorvalue)</span>, <span id="getter-colordomain">[`colorDomain`](../trackcolorsmixin#getter-colordomain)</span>, <span id="getter-colorrange">[`colorRange`](../trackcolorsmixin#getter-colorrange)</span>, <span id="getter-colorableattributes">[`colorableAttributes`](../trackcolorsmixin#getter-colorableattributes)</span>, <span id="getter-attributeranges">[`attributeRanges`](../trackcolorsmixin#getter-attributeranges)</span>, <span id="getter-colorabletracks">[`colorableTracks`](../trackcolorsmixin#getter-colorabletracks)</span>, <span id="getter-trackcolorassignments">[`trackColorAssignments`](../trackcolorsmixin#getter-trackcolorassignments)</span>, <span id="getter-colorfield">[`colorField`](../trackcolorsmixin#getter-colorfield)</span>, <span id="getter-haslegendkey">[`hasLegendKey`](../trackcolorsmixin#getter-haslegendkey)</span>, <span id="getter-colorlegendchips">[`colorLegendChips`](../trackcolorsmixin#getter-colorlegendchips)</span>, <span id="getter-colorscales">[`colorScales`](../trackcolorsmixin#getter-colorscales)</span>
+
+From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="getter-renderscanvas">[`rendersCanvas`](../renderlifecyclemixin#getter-renderscanvas)</span>, <span id="getter-paintsuperseded">[`paintSuperseded`](../renderlifecyclemixin#getter-paintsuperseded)</span>, <span id="getter-painted">[`painted`](../renderlifecyclemixin#getter-painted)</span>
+
+From [BaseViewModel](../baseviewmodel): <span id="getter-rendersdisplays">[`rendersDisplays`](../baseviewmodel#getter-rendersdisplays)</span>, <span id="getter-effectivebodymounted">[`effectiveBodyMounted`](../baseviewmodel#getter-effectivebodymounted)</span>, <span id="getter-ownviews">[`ownViews`](../baseviewmodel#getter-ownviews)</span>
 
 </details>
 
@@ -216,18 +216,18 @@ From [TrackColorsMixin](../trackcolorsmixin): <span id="method-legendcigarops">[
 <details class="inherited-members" data-pagefind-ignore>
 <summary>31 inherited actions from 7 models</summary>
 
-From [BaseViewModel](../baseviewmodel): <span id="action-setdisplayname">[`setDisplayName`](../baseviewmodel#action-setdisplayname)</span>, <span id="action-setbodymounted">[`setBodyMounted`](../baseviewmodel#action-setbodymounted)</span>, <span id="action-setminimized">[`setMinimized`](../baseviewmodel#action-setminimized)</span>
-
-From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="action-markcanvasdrawn">[`markCanvasDrawn`](../renderlifecyclemixin#action-markcanvasdrawn)</span>, <span id="action-resetcanvasdrawn">[`resetCanvasDrawn`](../renderlifecyclemixin#action-resetcanvasdrawn)</span>, <span id="action-stoprenderingbackend">[`stopRenderingBackend`](../renderlifecyclemixin#action-stoprenderingbackend)</span>, <span id="action-rendernow">[`renderNow`](../renderlifecyclemixin#action-rendernow)</span>, <span id="action-setoffscreen">[`setOffScreen`](../renderlifecyclemixin#action-setoffscreen)</span>, <span id="action-setrendererror">[`setRenderError`](../renderlifecyclemixin#action-setrendererror)</span>, <span id="action-attachrenderingbackend">[`attachRenderingBackend`](../renderlifecyclemixin#action-attachrenderingbackend)</span>
-
-From [DiagonalizeProgressMixin](../diagonalizeprogressmixin): <span id="action-setawaitingautodiagonalize">[`setAwaitingAutoDiagonalize`](../diagonalizeprogressmixin#action-setawaitingautodiagonalize)</span>, <span id="action-beginautodiagonalize">[`beginAutoDiagonalize`](../diagonalizeprogressmixin#action-beginautodiagonalize)</span>, <span id="action-finishautodiagonalize">[`finishAutoDiagonalize`](../diagonalizeprogressmixin#action-finishautodiagonalize)</span>, <span id="action-setdiagonalizeerror">[`setDiagonalizeError`](../diagonalizeprogressmixin#action-setdiagonalizeerror)</span>, <span id="action-setdiagonalizecancel">[`setDiagonalizeCancel`](../diagonalizeprogressmixin#action-setdiagonalizecancel)</span>, <span id="action-cancelautodiagonalize">[`cancelAutoDiagonalize`](../diagonalizeprogressmixin#action-cancelautodiagonalize)</span>
-
-From [ImportFormSyntenyMixin](../importformsyntenymixin): <span id="action-setimportformsyntenytrack">[`setImportFormSyntenyTrack`](../importformsyntenymixin#action-setimportformsyntenytrack)</span>, <span id="action-clearimportformsyntenytracks">[`clearImportFormSyntenyTracks`](../importformsyntenymixin#action-clearimportformsyntenytracks)</span>
-
 From [SyntenyViewMixin](../syntenyviewmixin): <span id="action-setlodmode">[`setLodMode`](../syntenyviewmixin#action-setlodmode)</span>, <span id="action-setshowlegend">[`setShowLegend`](../syntenyviewmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../syntenyviewmixin#action-dismisslegendsection)</span>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="action-setopacity">[`setOpacity`](../syntenycolorsmixin#action-setopacity)</span>, <span id="action-setopacityfield">[`setOpacityField`](../syntenycolorsmixin#action-setopacityfield)</span>, <span id="action-setminalignmentlength">[`setMinAlignmentLength`](../syntenycolorsmixin#action-setminalignmentlength)</span>
 
 From [TrackColorsMixin](../trackcolorsmixin): <span id="action-observeattributeranges">[`observeAttributeRanges`](../trackcolorsmixin#action-observeattributeranges)</span>, <span id="action-resetattributeranges">[`resetAttributeRanges`](../trackcolorsmixin#action-resetattributeranges)</span>, <span id="action-sethideunlabelled">[`setHideUnlabelled`](../trackcolorsmixin#action-sethideunlabelled)</span>, <span id="action-setcolorfield">[`setColorField`](../trackcolorsmixin#action-setcolorfield)</span>, <span id="action-setcolordomain">[`setColorDomain`](../trackcolorsmixin#action-setcolordomain)</span>, <span id="action-settrackcolor">[`setTrackColor`](../trackcolorsmixin#action-settrackcolor)</span>, <span id="action-cleartrackcolors">[`clearTrackColors`](../trackcolorsmixin#action-cleartrackcolors)</span>
+
+From [ImportFormSyntenyMixin](../importformsyntenymixin): <span id="action-setimportformsyntenytrack">[`setImportFormSyntenyTrack`](../importformsyntenymixin#action-setimportformsyntenytrack)</span>, <span id="action-clearimportformsyntenytracks">[`clearImportFormSyntenyTracks`](../importformsyntenymixin#action-clearimportformsyntenytracks)</span>
+
+From [DiagonalizeProgressMixin](../diagonalizeprogressmixin): <span id="action-setawaitingautodiagonalize">[`setAwaitingAutoDiagonalize`](../diagonalizeprogressmixin#action-setawaitingautodiagonalize)</span>, <span id="action-beginautodiagonalize">[`beginAutoDiagonalize`](../diagonalizeprogressmixin#action-beginautodiagonalize)</span>, <span id="action-finishautodiagonalize">[`finishAutoDiagonalize`](../diagonalizeprogressmixin#action-finishautodiagonalize)</span>, <span id="action-setdiagonalizeerror">[`setDiagonalizeError`](../diagonalizeprogressmixin#action-setdiagonalizeerror)</span>, <span id="action-setdiagonalizecancel">[`setDiagonalizeCancel`](../diagonalizeprogressmixin#action-setdiagonalizecancel)</span>, <span id="action-cancelautodiagonalize">[`cancelAutoDiagonalize`](../diagonalizeprogressmixin#action-cancelautodiagonalize)</span>
+
+From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="action-markcanvasdrawn">[`markCanvasDrawn`](../renderlifecyclemixin#action-markcanvasdrawn)</span>, <span id="action-resetcanvasdrawn">[`resetCanvasDrawn`](../renderlifecyclemixin#action-resetcanvasdrawn)</span>, <span id="action-stoprenderingbackend">[`stopRenderingBackend`](../renderlifecyclemixin#action-stoprenderingbackend)</span>, <span id="action-rendernow">[`renderNow`](../renderlifecyclemixin#action-rendernow)</span>, <span id="action-setoffscreen">[`setOffScreen`](../renderlifecyclemixin#action-setoffscreen)</span>, <span id="action-setrendererror">[`setRenderError`](../renderlifecyclemixin#action-setrendererror)</span>, <span id="action-attachrenderingbackend">[`attachRenderingBackend`](../renderlifecyclemixin#action-attachrenderingbackend)</span>
+
+From [BaseViewModel](../baseviewmodel): <span id="action-setdisplayname">[`setDisplayName`](../baseviewmodel#action-setdisplayname)</span>, <span id="action-setbodymounted">[`setBodyMounted`](../baseviewmodel#action-setbodymounted)</span>, <span id="action-setminimized">[`setMinimized`](../baseviewmodel#action-setminimized)</span>
 
 </details>

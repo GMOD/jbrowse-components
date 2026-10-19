@@ -62,9 +62,9 @@ From [SnackbarModel](../snackbarmodel): <span id="getter-snackbarmessageset">[`s
 <details class="inherited-members" data-pagefind-ignore>
 <summary>5 inherited methods from 2 models</summary>
 
-From [BaseSessionModel](../basesessionmodel): <span id="method-getpreferencedefault">[`getPreferenceDefault`](../basesessionmodel#method-getpreferencedefault)</span>, <span id="method-getpreference">[`getPreference`](../basesessionmodel#method-getpreference)</span>, <span id="method-getpreferencechanges">[`getPreferenceChanges`](../basesessionmodel#method-getpreferencechanges)</span>
-
 From [ReferenceManagementSessionMixin](../referencemanagementsessionmixin): <span id="method-getreferringmultiple">[`getReferringMultiple`](../referencemanagementsessionmixin#method-getreferringmultiple)</span>, <span id="method-getreferring">[`getReferring`](../referencemanagementsessionmixin#method-getreferring)</span>
+
+From [BaseSessionModel](../basesessionmodel): <span id="method-getpreferencedefault">[`getPreferenceDefault`](../basesessionmodel#method-getpreferencedefault)</span>, <span id="method-getpreference">[`getPreference`](../basesessionmodel#method-getpreference)</span>, <span id="method-getpreferencechanges">[`getPreferenceChanges`](../basesessionmodel#method-getpreferencechanges)</span>
 
 </details>
 
@@ -82,10 +82,10 @@ From [ReferenceManagementSessionMixin](../referencemanagementsessionmixin): <spa
 <details class="inherited-members" data-pagefind-ignore>
 <summary>25 inherited actions from 3 models</summary>
 
+From [ReferenceManagementSessionMixin](../referencemanagementsessionmixin): <span id="action-dereferencetrack">[`dereferenceTrack`](../referencemanagementsessionmixin#action-dereferencetrack)</span>
+
 From [BaseSessionModel](../basesessionmodel): <span id="action-setselection">[`setSelection`](../basesessionmodel#action-setselection)</span>, <span id="action-clearselection">[`clearSelection`](../basesessionmodel#action-clearselection)</span>, <span id="action-sethovered">[`setHovered`](../basesessionmodel#action-sethovered)</span>, <span id="action-sethighlightsvisible">[`setHighlightsVisible`](../basesessionmodel#action-sethighlightsvisible)</span>, <span id="action-sethighlightlabelsvisible">[`setHighlightLabelsVisible`](../basesessionmodel#action-sethighlightlabelsvisible)</span>, <span id="action-addhighlight">[`addHighlight`](../basesessionmodel#action-addhighlight)</span>, <span id="action-removehighlight">[`removeHighlight`](../basesessionmodel#action-removehighlight)</span>, <span id="action-updatehighlight">[`updateHighlight`](../basesessionmodel#action-updatehighlight)</span>, <span id="action-sethighlights">[`setHighlights`](../basesessionmodel#action-sethighlights)</span>, <span id="action-setpreferenceoverride">[`setPreferenceOverride`](../basesessionmodel#action-setpreferenceoverride)</span>, <span id="action-clearpreferenceoverrides">[`clearPreferenceOverrides`](../basesessionmodel#action-clearpreferenceoverrides)</span>, <span id="action-clearpreferenceoverride">[`clearPreferenceOverride`](../basesessionmodel#action-clearpreferenceoverride)</span>, <span id="action-setscrollzoom">[`setScrollZoom`](../basesessionmodel#action-setscrollzoom)</span>, <span id="action-setname">[`setName`](../basesessionmodel#action-setname)</span>, <span id="action-setfocusedviewid">[`setFocusedViewId`](../basesessionmodel#action-setfocusedviewid)</span>, <span id="action-removeactivedialog">[`removeActiveDialog`](../basesessionmodel#action-removeactivedialog)</span>, <span id="action-queuedialog">[`queueDialog`](../basesessionmodel#action-queuedialog)</span>, <span id="action-removedialog">[`removeDialog`](../basesessionmodel#action-removedialog)</span>
 
 From [SnackbarModel](../snackbarmodel): <span id="action-notify">[`notify`](../snackbarmodel#action-notify)</span>, <span id="action-notifyerror">[`notifyError`](../snackbarmodel#action-notifyerror)</span>, <span id="action-seterrordialog">[`setErrorDialog`](../snackbarmodel#action-seterrordialog)</span>, <span id="action-pushsnackbarmessage">[`pushSnackbarMessage`](../snackbarmodel#action-pushsnackbarmessage)</span>, <span id="action-popsnackbarmessage">[`popSnackbarMessage`](../snackbarmodel#action-popsnackbarmessage)</span>, <span id="action-removesnackbarmessage">[`removeSnackbarMessage`](../snackbarmodel#action-removesnackbarmessage)</span>
-
-From [ReferenceManagementSessionMixin](../referencemanagementsessionmixin): <span id="action-dereferencetrack">[`dereferenceTrack`](../referencemanagementsessionmixin#action-dereferencetrack)</span>
 
 </details>

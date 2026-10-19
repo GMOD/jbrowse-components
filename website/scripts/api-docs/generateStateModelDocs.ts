@@ -189,9 +189,12 @@ function resolveComposedRef(ref: ComposedRef, index: ModelIndex) {
   )
 }
 
-// The transitive composition chain (direct parents first), via the shared graph
-// walk. Composed models that don't resolve to a documented #stateModel are
-// skipped — they contribute no member section.
+// The transitive composition chain, nearest definition first. `types.compose`
+// runs its arguments' initializers left to right, so a later argument's member
+// replaces an earlier one's; walking each model's parents last-to-first makes
+// the first ancestor that declares a name the one whose definition the model
+// ends up with. Composed models that don't resolve to a documented #stateModel
+// are skipped — they contribute no member section.
 function collectAncestors(model: ModelWithHeader, index: ModelIndex) {
   return collectTransitive(
     model,
@@ -199,7 +202,8 @@ function collectAncestors(model: ModelWithHeader, index: ModelIndex) {
     m =>
       m.header.composedOf
         .map(ref => resolveComposedRef(ref, index))
-        .filter((m): m is ModelWithHeader => Boolean(m)),
+        .filter((m): m is ModelWithHeader => Boolean(m))
+        .reverse(),
   )
 }
 
