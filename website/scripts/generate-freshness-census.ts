@@ -1,5 +1,6 @@
-// Generates SVG_EXPORT.md's roster of who answers `dataCurrent` by comparing
-// signatures, and what each pair of signatures is built from.
+// Generates SVG_EXPORT.md's roster of `isDataCurrent` call sites: the
+// displays' `dataCurrent` foundations and the caches and gates that judge held
+// data the same way, with what each pair of signatures is built from.
 //
 // The roster was prose and drifted the way a hand-written roster does:
 // `isDataCurrent`'s own JSDoc said "the four displays that share it" while six
@@ -106,15 +107,14 @@ function main() {
   )
 
   const body = [
-    '',
-    `${rows.length} models across ${packages.size} packages answer \`dataCurrent\` ` +
-      'by comparing the signature their data was loaded for against the one the ' +
-      'live view calls for. A display joins by calling `isDataCurrent` and leaves ' +
-      'by not calling it.',
+    `${rows.length} calls across ${packages.size} packages compare the signature ` +
+      'held data was loaded for against the one live state calls for. A display ' +
+      "foundation's `dataCurrent` is one such call; the others judge an adapter " +
+      'cache, a prerequisite fetch or a byte gate the same way.',
     '',
     '<!-- prettier-ignore -->',
     ...markdownTableLines(
-      ['Model', 'Loaded signature', 'Live signature'],
+      ['Caller', 'Loaded signature', 'Live signature'],
       rows.map(r => [`\`${r.file}\``, `\`${r.loaded}\``, `\`${r.live}\``]),
     ),
   ]

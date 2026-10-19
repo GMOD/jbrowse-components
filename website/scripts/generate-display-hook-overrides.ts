@@ -355,7 +355,6 @@ function main() {
   })
 
   const body = [
-    '',
     `${HOOKS.length} overridable hooks. **Sitting on the default** is what a display that does not override one gets.`,
     '',
     '<!-- prettier-ignore -->',

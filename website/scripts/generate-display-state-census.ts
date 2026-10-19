@@ -10,13 +10,12 @@
 // states about them. A number a reader could recount is a table by
 // agent-docs/CLAUDE.md's own rule.
 //
-// **A display is a directory whose `index.ts` calls
-// `pluginManager.addDisplayType`.** That is the registration itself rather than
-// a name pattern, so a new display joins the table by being registered and a
-// retired one leaves by not being. The receiver is load-bearing:
-// `AlignmentsTrack/index.ts` calls `track.addDisplayType` to hang a display off
-// a *track*, which registers nothing and would otherwise have arrived as an
-// all-zero row.
+// **A display is a directory whose `index.ts` constructs `new DisplayType(`.**
+// That is the registration itself rather than a name pattern, so a new display
+// joins the table by being registered and a retired one leaves by not being.
+// Matching `addDisplayType` instead would also catch
+// `AlignmentsTrack/index.ts`'s `track.addDisplayType`, which hangs a display off
+// a *track*, registers nothing, and would arrive as an all-zero row.
 //
 // **Attribution is by directory**, the same allowance
 // generate-display-hook-overrides.ts makes and for the same reason: the
@@ -60,9 +59,9 @@ const SKIP_DIRS = new Set([
   '__pycache__',
 ])
 
-// The plugin's own registration, not a harness's: `testEnv.ts` and
-// `testUtils.ts` also call `addDisplayType`, to have a display to drive, and
-// neither registers a display type this repo ships.
+// The plugin's own registration, not a harness's: test harnesses also
+// construct displays to drive, and none registers a display type this repo
+// ships.
 const isRegistration = (file: string) => basename(file) === 'index.ts'
 
 interface Census {
@@ -96,9 +95,6 @@ function displayDirs() {
       if (!isRegistration(file)) {
         continue
       }
-      // The construction, not the call that registers it: a plugin names its
-      // manager what it likes (dotplot-view's is `pm`), and a track's own
-      // `addDisplayType` attaches a display someone else registered.
       if (readFileSync(file, 'utf8').includes('new DisplayType(')) {
         dirs.push(dirname(file))
       }
@@ -125,7 +121,6 @@ function main() {
     rows.reduce((sum, row) => sum + row[key], 0)
 
   const body = [
-    '',
     `${rows.length} registered displays declare ${total('slots')} config slots, ` +
       `${total('properties')} MST properties and ${total('volatiles')} volatiles ` +
       "between them — counting what each display's own directory declares.",
