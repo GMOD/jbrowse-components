@@ -216,6 +216,18 @@ export interface FitStage extends LabelReservation {
   maxIsoforms: number | undefined
 }
 
+// A `below` subfeature label survives only where the kept rung kept its row
+// unsqueezed. An overlay label reserves no row and is sized to its body where
+// it is placed, so it is never dropped here.
+export function showsSubfeatureLabels(
+  stage: Pick<FitStage, 'scale' | 'dropBelowLabelRows'>,
+  reservesBelowLabelRows: boolean,
+) {
+  return (
+    !reservesBelowLabelRows || (stage.scale === 1 && !stage.dropBelowLabelRows)
+  )
+}
+
 export function fittedHeight(
   stage: Pick<FitStage, 'contentHeight' | 'fixedHeight' | 'scale'>,
 ) {

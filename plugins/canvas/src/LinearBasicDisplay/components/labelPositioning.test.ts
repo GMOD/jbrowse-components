@@ -258,6 +258,29 @@ describe('forEachRenderedLabel', () => {
     expect(resolved.label.isOverlay).toBe(true)
   })
 
+  // The backing rect is fontSize + 1 tall from the body's top, so the text may
+  // be no taller than the body plus the row's padding.
+  test('sizes an overlay label to the body it sits on', () => {
+    const overlayOn = (topY: number, featureHeight: number) =>
+      makeLabelData('f1', {
+        topY,
+        featureHeight,
+        subfeatureLabel: { ...makeLabel({ text: 'sub' }), isOverlay: true },
+      })
+    const placed = (labelData: FeatureLabelData) =>
+      collect(makeData({ f1: labelData }), FULL_REGION, {
+        showLabels: false,
+        showDescriptions: false,
+      })[0]?.labels[0]
+
+    expect(placed(overlayOn(40, 20))).toMatchObject({
+      labelY: 40,
+      fontSize: LABEL_FONT,
+    })
+    expect(placed(overlayOn(40, 8))).toMatchObject({ labelY: 40, fontSize: 9 })
+    expect(placed(overlayOn(40, 5))).toBeUndefined()
+  })
+
   // A subfeature label outlives both feature-label flags but not the fit squeeze,
   // which scales the row it was reserved in while the text keeps its font size.
   test('drops the subfeature label when the fit squeeze has hidden it', () => {

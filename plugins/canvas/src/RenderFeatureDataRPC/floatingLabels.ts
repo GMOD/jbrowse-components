@@ -7,9 +7,8 @@ import {
 } from './constants.ts'
 import { hasVisibleText, truncateLabel, truncateToWidth } from './util.ts'
 
-import type { SubfeatureLabels } from './displayModes.ts'
+import type { SubfeatureLabelPlacement } from './labelUtils.ts'
 import type {
-  FeatureDataResult,
   FloatingLabelsDataMap,
   LabelItem,
   LabelKinds,
@@ -72,23 +71,16 @@ export function createMoreIsoformsLabel(hidden: number, expanded: boolean) {
   }
 }
 
-export function createTranscriptFloatingLabel({
-  displayLabel,
-  featureHeight,
-  subfeatureLabels,
-}: {
-  displayLabel: string
-  featureHeight: number
-  subfeatureLabels: string
-}) {
-  const isOverlay = subfeatureLabels === 'overlay'
-
+// `isOverlay` is what the main thread places and colors by: an overlay label
+// sits on its body on a light backing rect and stays dark, one below follows the
+// theme text color.
+export function createTranscriptFloatingLabel(
+  displayLabel: string,
+  placement: SubfeatureLabelPlacement,
+) {
   return {
-    // `isOverlay` is what the main thread colors by: an overlay label sits on
-    // a light backing rect and stays dark, an inline one follows the theme text
-    // color.
-    ...labelItem(truncateLabel(displayLabel), isOverlay ? -featureHeight : 0),
-    isOverlay,
+    ...labelItem(truncateLabel(displayLabel)),
+    isOverlay: placement === 'overlay',
   }
 }
 
@@ -100,27 +92,4 @@ export function labelKindsOf(labels: FloatingLabelsDataMap): LabelKinds {
     kinds.subfeature ||= !!label.subfeatureLabel
   }
   return kinds
-}
-
-/**
- * Whether subfeature labels sit on their bodies in these regions. `auto`
- * overlays only what the worker labeled, cleavage products alone, so a track
- * with none keeps the unlabeled fit floor. A fixture without `labelKinds` is
- * tallied from its labels.
- */
-export function overlaysSubfeatureLabels(
-  mode: SubfeatureLabels,
-  regions: Iterable<
-    Pick<FeatureDataResult, 'labelKinds' | 'floatingLabelsData'>
-  >,
-) {
-  if (mode !== 'auto') {
-    return mode === 'overlay'
-  }
-  for (const { labelKinds, floatingLabelsData } of regions) {
-    if ((labelKinds ?? labelKindsOf(floatingLabelsData)).subfeature) {
-      return true
-    }
-  }
-  return false
 }

@@ -251,8 +251,9 @@ describe('the rung that packed a layout says what it reserved', () => {
           )
           expect(display.renderedShowLabels).toBe(stage.showLabels)
           expect(display.renderedShowDescriptions).toBe(stage.showDescriptions)
+          // Only a `below` label owns a row the squeeze can take
           expect(display.renderedShowSubfeatureLabels).toBe(
-            stage.scale >= 1 && !stage.dropBelowLabelRows,
+            !shape.below || (stage.scale >= 1 && !stage.dropBelowLabelRows),
           )
           // The hit box and the highlight boxes price the ungated subfeature
           // label off this, so it has to be the size the pack reserved at —

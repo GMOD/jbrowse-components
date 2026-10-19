@@ -130,18 +130,16 @@ const FloatingLabel = observer(function FloatingLabel({
   resolved,
   featureId,
   displayedRegionIndex,
-  renderedLabelFontSize,
   clickable,
   labelClasses,
 }: {
   resolved: PlainResolvedLabel
   featureId: string
   displayedRegionIndex: number
-  renderedLabelFontSize: number
   clickable: boolean
   labelClasses: LabelClasses
 }) {
-  const { label, labelX, labelY, color, kind } = resolved
+  const { label, labelX, labelY, fontSize, color, kind } = resolved
   return (
     <FloatingText
       data-testid={clickable ? `feature-${kind}-${label.text}` : undefined}
@@ -155,7 +153,7 @@ const FloatingLabel = observer(function FloatingLabel({
       x={labelX}
       y={labelY}
       color={color}
-      fontSize={renderedLabelFontSize}
+      fontSize={fontSize}
     >
       {label.text}
     </FloatingText>
@@ -311,7 +309,6 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
               resolved={resolved}
               featureId={featureId}
               displayedRegionIndex={displayedRegionIndex}
-              renderedLabelFontSize={renderedLabelFontSize}
               clickable={clickable}
               labelClasses={labelClasses}
             />

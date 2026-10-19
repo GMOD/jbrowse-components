@@ -41,6 +41,9 @@ export const LABEL_EDGE_GUTTER_PX = 4
 // feature fill, single-sourced so the DOM overlay and the SVG export match.
 export const LABEL_OVERLAY_BACKGROUND = 'rgba(255,255,255,0.65)'
 
+// An overlay label draws no taller than its bar and is dropped below this size.
+export const OVERLAY_LABEL_MIN_FONT_PX = 7
+
 // Where a label's alphabetic baseline sits below the top of its box, as a
 // fraction of the font size. Labels are positioned by their TOP edge for the
 // DOM overlay's sake, and canvas `fillText` takes the baseline, so the SVG

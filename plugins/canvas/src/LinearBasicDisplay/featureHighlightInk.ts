@@ -157,12 +157,15 @@ function labelRects(
       makeBpMapper(block),
       block,
       context,
-    ).map(placed => ({
-      left: placed.labelX,
-      top: placed.labelY - scrollY,
-      width: renderedTextWidth(placed.label.textWidth, fontSize),
-      height: fontSize,
-    }))
+    ).map(placed => {
+      const size = placed.kind === 'more' ? fontSize : placed.fontSize
+      return {
+        left: placed.labelX,
+        top: placed.labelY - scrollY,
+        width: renderedTextWidth(placed.label.textWidth, size),
+        height: size,
+      }
+    })
   }
   return []
 }

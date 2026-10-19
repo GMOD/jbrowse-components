@@ -49,7 +49,6 @@ import { toJS } from 'mobx'
 
 import { themedColorTable } from '../RenderFeatureDataRPC/colorClasses.ts'
 import { renderedTextWidth } from '../RenderFeatureDataRPC/constants.ts'
-import { overlaysSubfeatureLabels } from '../RenderFeatureDataRPC/floatingLabels.ts'
 import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { pickDisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
@@ -91,6 +90,7 @@ import {
   featureHighlightViews,
 } from './featureHighlightViews.ts'
 import { featureSetActions, featureSetViews } from './featureSetViews.ts'
+import { showsSubfeatureLabels } from './fitLadder.ts'
 import { fitLadderViews, fitLadderVolatiles } from './fitLadderViews.ts'
 import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
 import { heightViews } from './heightViews.ts'
@@ -769,17 +769,6 @@ export default function baseStateModelFactory(
       get reservesBelowLabelRows() {
         return self.effectiveSubfeatureLabels === 'below'
       },
-      /**
-       * #getter
-       * Whether subfeature labels sit on their bodies, which then keep
-       * their height on every rung that draws them.
-       */
-      get overlaysSubfeatureLabels() {
-        return overlaysSubfeatureLabels(
-          self.effectiveSubfeatureLabels,
-          self.rpcDataMap.values(),
-        )
-      },
     }))
     .views(fitLadderViews)
     .views(self => {
@@ -881,14 +870,11 @@ export default function baseStateModelFactory(
       },
       /**
        * #getter
-       * A subfeature label (a transcript name under its gene) is
-       * worker-baked and its row is reserved in the pack, so it survives
-       * every rung that kept those rows and goes only where the kept rung
-       * spent them at zero.
+       * A subfeature label is worker-baked, so the fit decides only whether
+       * the kept rung left a `below` label its row.
        */
       get renderedShowSubfeatureLabels() {
-        const { scale, dropBelowLabelRows } = self.fitStage
-        return scale === 1 && !dropBelowLabelRows
+        return showsSubfeatureLabels(self.fitStage, self.reservesBelowLabelRows)
       },
       /**
        * #getter

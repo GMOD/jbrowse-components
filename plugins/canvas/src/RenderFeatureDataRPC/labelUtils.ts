@@ -146,8 +146,19 @@ export function sharedChildLabelRows(
  * when this text is visible. Both the reservation and the emit go through this, so a track
  * labelling its children by `product` reserves the row it then paints into.
  */
-// A cleavage product's row reads its INSDC `product`, which NCBI writes in
-// place of a Name, before the track's name label.
+// A polyprotein and its cleavage products are named by their INSDC `product`,
+// which NCBI writes in place of a Name, before the track's name label.
+export function productLabelText(
+  feature: Feature,
+  config: DisplayConfig,
+  jexl: JexlInstance | undefined,
+) {
+  return (
+    toLabelString(feature.get('product')) ??
+    readFeatureName(config, feature, jexl)
+  )
+}
+
 export function subfeatureLabelText(
   feature: Feature,
   config: DisplayConfig,
@@ -155,10 +166,8 @@ export function subfeatureLabelText(
 ) {
   return (
     (isCleavageProduct(feature)
-      ? toLabelString(feature.get('product'))
-      : undefined) ??
-    readFeatureName(config, feature, jexl) ??
-    getFeatureName(feature)
+      ? productLabelText(feature, config, jexl)
+      : readFeatureName(config, feature, jexl)) ?? getFeatureName(feature)
   )
 }
 

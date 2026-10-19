@@ -18,7 +18,6 @@ export function paintLabels(
   labels: ResolvedLabel[],
   fontSize: number,
 ) {
-  const nameFont = `${fontSize}px sans-serif`
   const badgeFont = `italic ${fontSize * MORE_ISOFORMS_FONT_SCALE}px sans-serif`
   let curFont = ''
   const setFont = (font: string) => {
@@ -37,14 +36,14 @@ export function paintLabels(
       }
       setFont(badgeFont)
     } else {
-      setFont(nameFont)
+      setFont(`${resolved.fontSize}px sans-serif`)
       if (resolved.label.isOverlay) {
         ctx.fillStyle = LABEL_OVERLAY_BACKGROUND
         ctx.fillRect(
           labelX - 1,
           labelY,
-          renderedTextWidth(label.textWidth, fontSize) + 2,
-          fontSize + 1,
+          renderedTextWidth(label.textWidth, resolved.fontSize) + 2,
+          resolved.fontSize + 1,
         )
       }
     }
@@ -53,10 +52,11 @@ export function paintLabels(
     // off the shared line's size so a smaller badge sits on the name's baseline.
     // An explicit y rather than textBaseline='top', which SvgCanvas maps to
     // dominant-baseline "hanging" and SVG consumers place inconsistently.
+    const lineSize = resolved.kind === 'more' ? fontSize : resolved.fontSize
     ctx.fillText(
       label.text,
       labelX,
-      Math.round(labelY + fontSize * LABEL_BASELINE_RATIO),
+      Math.round(labelY + lineSize * LABEL_BASELINE_RATIO),
     )
   }
 }

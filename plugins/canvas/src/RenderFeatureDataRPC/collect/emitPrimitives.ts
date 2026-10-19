@@ -272,11 +272,10 @@ export function emitSubfeatureLabel(
   const { featureId, displayLabel, placement, featureHeight } = args
   const { minX, maxX, topY } = args
   if (placement !== 'none' && hasVisibleText(displayLabel)) {
-    const subfeatureLabel = createTranscriptFloatingLabel({
+    const subfeatureLabel = createTranscriptFloatingLabel(
       displayLabel,
-      featureHeight,
-      subfeatureLabels: placement,
-    })
+      placement,
+    )
     // Merge rather than replace: one FeatureLabelData carries name/description
     // alongside the subfeature label, so a set here must preserve any entry
     // already recorded under this id.

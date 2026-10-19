@@ -87,37 +87,19 @@ describe('floatingLabels', () => {
   })
 
   describe('createTranscriptFloatingLabel', () => {
-    const baseArgs = {
-      displayLabel: 'Test Transcript',
-      featureHeight: 10,
-      subfeatureLabels: 'below',
-    }
-
-    it('sets isOverlay to false for "below" mode', () => {
-      const label = createTranscriptFloatingLabel({
-        ...baseArgs,
-        subfeatureLabels: 'below',
-      })
-      expect(label.isOverlay).toBe(false)
-      expect(label.relativeY).toBe(0)
-    })
-
-    it('sets isOverlay to true for "overlay" mode', () => {
-      const label = createTranscriptFloatingLabel({
-        ...baseArgs,
-        subfeatureLabels: 'overlay',
-        featureHeight: 20,
-      })
-      expect(label.isOverlay).toBe(true)
-      expect(label.relativeY).toBe(-20)
+    it('marks an overlay label, which the main thread places on its body', () => {
+      const below = createTranscriptFloatingLabel('Test Transcript', 'below')
+      const overlay = createTranscriptFloatingLabel(
+        'Test Transcript',
+        'overlay',
+      )
+      expect(below).toMatchObject({ isOverlay: false, relativeY: 0 })
+      expect(overlay).toMatchObject({ isOverlay: true, relativeY: 0 })
     })
 
     it('truncates long labels', () => {
       const longLabel = 'A'.repeat(100)
-      const label = createTranscriptFloatingLabel({
-        ...baseArgs,
-        displayLabel: longLabel,
-      })
+      const label = createTranscriptFloatingLabel(longLabel, 'below')
       expect(label.text.length).toBeLessThan(longLabel.length)
       expect(label.text).toContain('…')
     })

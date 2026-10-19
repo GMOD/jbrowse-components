@@ -5,6 +5,7 @@ import {
   LABEL_EDGE_GUTTER_PX,
   LABEL_PADDING_PX,
   LABEL_TOP_GAP_PX,
+  OVERLAY_LABEL_MIN_FONT_PX,
   renderedTextWidth,
 } from '../../RenderFeatureDataRPC/constants.ts'
 
@@ -208,6 +209,7 @@ export interface PlainPlacedLabel {
   label: LabelItem & { isOverlay?: boolean }
   labelX: number
   labelY: number
+  fontSize: number
   kind: 'name' | 'desc' | 'sub'
 }
 
@@ -306,10 +308,12 @@ export function placeFeatureLabels(
     label: PlainPlacedLabel['label'],
     padding: number,
     kind: PlainPlacedLabel['kind'],
+    size = fontSize,
   ) => {
     const placed = {
       label,
-      ...computeLabelPosition(label, padding, bounds, fontSize),
+      ...computeLabelPosition(label, padding, bounds, size),
+      fontSize: size,
       kind,
       color: colors && plainLabelColor(label, kind, colors),
     }
@@ -341,9 +345,14 @@ export function placeFeatureLabels(
     const relativeY = nameLabel ? fontSize : 0
     add({ ...descriptionLabel, relativeY }, LABEL_TOP_GAP_PX, 'desc')
   }
-  if (subfeatureLabel) {
-    // An overlay subfeature label sits on the feature body, which its relativeY
-    // already lifts it to, so it takes no top gap.
+  if (subfeatureLabel?.isOverlay) {
+    // Sized to the body it sits on, so its backing never reaches the next row
+    const { featureHeight } = labelData
+    const size = Math.min(fontSize, featureHeight + 1)
+    if (size >= OVERLAY_LABEL_MIN_FONT_PX) {
+      add({ ...subfeatureLabel, relativeY: -featureHeight }, 0, 'sub', size)
+    }
+  } else if (subfeatureLabel) {
     add(subfeatureLabel, 0, 'sub')
   }
   return out

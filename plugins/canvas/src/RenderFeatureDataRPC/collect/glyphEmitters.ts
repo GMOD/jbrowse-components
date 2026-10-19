@@ -6,8 +6,8 @@ import { PAM_LABEL, findPamSubfeature } from '../glyphs/crisprGuide.ts'
 import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
 import { transcriptCoords } from '../glyphs/transcriptCoords.ts'
 import {
+  productLabelText,
   readFeatureLabels,
-  readFeatureName,
   subfeatureLabelPlacement,
   subfeatureLabelText,
 } from '../labelUtils.ts'
@@ -267,7 +267,7 @@ function processMatureProteinLayout(
   const byCdsSegment = aminoAcidsByFeature(cdsFeature, ctx)
   const aminoAcids = byCdsSegment && [...byCdsSegment.values()].flat()
 
-  const cdsLabel = readFeatureName(ctx.config, cdsFeature, ctx.jexl)
+  const cdsLabel = productLabelText(cdsFeature, ctx.config, ctx.jexl)
 
   // Two polyprotein CDS children of one gene carry the same cleavage products at
   // identical coordinates, so their labels need the owning CDS to tell them

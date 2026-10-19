@@ -76,7 +76,6 @@ export interface FitLadderHost {
   autoHeight: boolean
   showsEveryIsoform: boolean
   reservesBelowLabelRows: boolean
-  overlaysSubfeatureLabels: boolean
   fitTargetHeight: number
   labelFontSize: number
   incrementalLayout: IncrementalLayout
@@ -370,20 +369,14 @@ export function fitLadderViews(self: FitLadderHost) {
      * #getter
      * The smallest body scale the labelled rungs may pack at: the tallest
      * body stays `LABELED_BODY_TO_FONT_RATIO` of the label font, and the
-     * shortest stays drawn. A body with an overlay subfeature label
-     * holds its text, so none shrinks under it.
+     * shortest stays drawn.
      */
     get fitLabeledBodyFloor() {
-      return self.overlaysSubfeatureLabels
-        ? 1
-        : labeledBodyFloorScale(
-            maxDrawnBoxHeight(
-              this.baseLaidOutDataMap,
-              self.fitMeasureFeatureIds,
-            ),
-            this.fitSmallestBoxPx,
-            self.labelFontSize,
-          )
+      return labeledBodyFloorScale(
+        maxDrawnBoxHeight(this.baseLaidOutDataMap, self.fitMeasureFeatureIds),
+        this.fitSmallestBoxPx,
+        self.labelFontSize,
+      )
     },
     /**
      * #getter

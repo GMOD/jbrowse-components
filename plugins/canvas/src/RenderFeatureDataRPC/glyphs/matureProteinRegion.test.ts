@@ -1,6 +1,7 @@
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { collectRenderData } from '../collectRenderData.ts'
+import { FEATURE_NAME_FIELD } from '../featureNameField.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
 import { findGlyph } from './findGlyph.ts'
 import {
@@ -323,7 +324,7 @@ describe('collectRenderData for mature protein regions', () => {
     ).toBe(true)
   })
 
-  it('resolves the subfeature hover label from the labels.name config', () => {
+  it('names each product by its product attribute under the default name field', () => {
     const matures = [
       mockFeature({
         type: 'mature_protein_region_of_CDS',
@@ -346,7 +347,7 @@ describe('collectRenderData for mature protein regions', () => {
     })
     const config = mockDisplayConfig({
       labels: {
-        name: "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')",
+        name: FEATURE_NAME_FIELD,
         description: '',
       },
     })
@@ -365,7 +366,7 @@ describe('collectRenderData for mature protein regions', () => {
   it('disambiguates a mature region shared by two polyprotein CDS under one gene (ORF1a/ORF1ab)', () => {
     const config = mockDisplayConfig({
       labels: {
-        name: "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')",
+        name: FEATURE_NAME_FIELD,
         description: '',
       },
     })
@@ -415,7 +416,7 @@ describe('collectRenderData for mature protein regions', () => {
   it('does not clutter labels with the CDS name for a single-polyprotein gene', () => {
     const config = mockDisplayConfig({
       labels: {
-        name: "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')",
+        name: FEATURE_NAME_FIELD,
         description: '',
       },
     })
@@ -478,7 +479,7 @@ describe('collectRenderData for mature protein regions', () => {
     const config = mockDisplayConfig({
       subfeatureLabels: 'below',
       labels: {
-        name: "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')",
+        name: FEATURE_NAME_FIELD,
         description: '',
       },
     })
@@ -516,7 +517,7 @@ describe('collectRenderData for mature protein regions', () => {
     const config = mockDisplayConfig({
       subfeatureLabels: 'none',
       labels: {
-        name: "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')",
+        name: FEATURE_NAME_FIELD,
         description: '',
       },
     })

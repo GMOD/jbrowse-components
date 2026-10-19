@@ -25,6 +25,7 @@ import {
   featureGroupSections,
   sectionIdsOf,
 } from './LinearBasicDisplay/facet.ts'
+import { showsSubfeatureLabels } from './LinearBasicDisplay/fitLadder.ts'
 import {
   fitLadderViews,
   fitLadderVolatiles,
@@ -50,7 +51,6 @@ import {
 import { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
 import { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
 import { executeRenderFeatureData } from './RenderFeatureDataRPC/executeRenderFeatureData.ts'
-import { overlaysSubfeatureLabels } from './RenderFeatureDataRPC/floatingLabels.ts'
 import { labelFontSize } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { pickDisplayConfig } from './RenderFeatureDataRPC/renderConfig.ts'
 import { ROOT_CHILD_ORDINAL } from './RenderFeatureDataRPC/rpcTypes.ts'
@@ -470,7 +470,6 @@ export async function featureTables(
     autoHeight: heightMode === 'grow',
     showsEveryIsoform: readConfObject(conf, 'geneGlyphMode') === 'all',
     reservesBelowLabelRows: subfeatureLabels === 'below',
-    overlaysSubfeatureLabels: overlaysSubfeatureLabels(subfeatureLabels, raws),
     fitTargetHeight: trackHeight,
     labelFontSize: fontSize,
   }).fitStage
@@ -505,7 +504,10 @@ export async function featureTables(
   const labels = {
     showLabels: stage.showLabels,
     showDescriptions: stage.showDescriptions,
-    showSubfeatureLabels: stage.scale === 1 && !stage.dropBelowLabelRows,
+    showSubfeatureLabels: showsSubfeatureLabels(
+      stage,
+      subfeatureLabels === 'below',
+    ),
     fontSize: stage.dropBelowLabelRows ? 0 : fontSize,
     colors: labelColors(palette),
   }

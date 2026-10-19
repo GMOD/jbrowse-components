@@ -333,12 +333,8 @@ export const featuresSpecs: ScreenshotSpec[] = [
   },
 
   // Viral polyprotein: the enterovirus D ORF1 CDS is cleaved into mature
-  // peptides (mature_protein_region_of_CDS). They render as stacked rows, each
-  // colored from a distinct palette and individually hoverable; the labels.name
-  // config in the track surfaces each region's GFF `product` (VP1, 2A, 3C, …).
-  // subfeatureLabels:'overlay' draws each product name on its peptide bar (the
-  // matureProteinRegion glyph now emits floating labels like the transcript
-  // glyph does).
+  // peptides (mature_protein_region_of_CDS), stacked one row each and named on
+  // their bars from the GFF `product` by default.
   {
     mode: 'url',
     name: 'gene_track_mature_peptides',
@@ -353,7 +349,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
           // tall enough for the gene row + all 12 stacked mature peptides
           type: 'LinearBasicDisplay',
           height: 220,
-          subfeatureLabels: 'overlay',
           filter: { genes: 'only' },
         },
       ],
