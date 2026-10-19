@@ -48,7 +48,10 @@ export interface CategoricalScale {
   domain?: readonly string[]
   // Each value names a set of the display's rows, so a click on its key row
   // can focus them (`LegendHost.focusLegendEntry`). A scale coloring features
-  // or cells leaves this unset and its rows stay inert.
+  // or cells leaves this unset and its rows stay inert. Click-to-hide on such
+  // a row was declined: written as a filter line, the key would
+  // edit the filter dialog behind the reader's back, and kept on the color
+  // setting, it would be a second way to hide features.
   focusesRows?: boolean
   // A line under the title, for what the swatches themselves cannot say: that
   // a numeric field landed on a categorical scale, and which slot changes it.
