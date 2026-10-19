@@ -174,6 +174,8 @@ const readEvidence = ({
               showConnectors: connectorCurves,
             },
             unit: 'chain',
+            // paints each split segment by its strand against its molecule
+            color: { field: 'pairOrientation' },
             height: connectorCurves ? 345 : 195,
             facet: 'split',
             showLegend: true,
