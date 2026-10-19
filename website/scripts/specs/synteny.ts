@@ -2080,7 +2080,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     url: portalHaplotypeLanes(PORTAL_LOCI.gstt1),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
-    viewportHeight: 960,
+    viewportHeight: 900,
   },
 
   // SyRI's typed regions between two Arabidopsis accessions

@@ -115,7 +115,7 @@ Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc) and click the
 this window**, click **Haplotypes**. A lane missing _CFHR3_ and _CFHR1_ (Hughes
 et al. 2006), such as HG00253's second haplotype, breaks across both genes.
 
-<Figure caption="The CFH cluster from the haplotypes launch: RefSeq genes over one lane per structural configuration, each lane a haplotype's contig read from the graph, under its CAT genes. HG00253's second haplotype lacks CFHR3 and CFHR1, and its lane breaks across both." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
+<Figure caption="The CFH cluster from the haplotypes launch: RefSeq genes over one lane per structural form, each lane a haplotype's walk drawn with its own CAT genes. The HG00253 haplotype 2 lane opens a hole where its walk skips GRCh38's CFHR3 and CFHR1, and its header names the deletion." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
 
 ## GSTT1: a gene GRCh38's chromosome lacks
 
@@ -133,7 +133,7 @@ we'll move to `chr22:23,950,001-24,060,000`, choose `HG00128.2`, `HG01960.1`,
   the upper one lacks, and runs unbroken between two haplotypes that both have
   it.
 
-<Figure caption="The GSTT1 window from the haplotypes launch with ten lanes ordered by structure, under the RefSeq genes. The lanes that match GRCh38 come first; under the last of them the band fans open across the inserted sequence, and the haplotypes below with the gene join in unbroken bands." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
+<Figure caption="The GSTT1 window from the haplotypes launch with ten lanes under the RefSeq genes after Order lanes by structure. The band fans open under the last lane that matches GRCh38, where the lane below holds sequence GRCh38 lacks; the lanes below it join in unbroken bands, and each of their headers lists the insertion and deletion its walk records against GRCh38." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
 
 ## FLNA / EMD: two genes in the opposite order {#inversions}
 
@@ -145,8 +145,9 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
 **Lanes → Choose lanes...** takes `HG00097.1`, `HG00099.1`, `HG00099.2` and
 `HG01978.1`. Then:
 
-- **The band between two lanes** crosses itself where the lower lane runs the
-  block in the other direction.
+- **A lane whose walk runs the block backwards** draws it mirrored in place, so
+  its genes line up with the lanes above, and its header names the span as an
+  inversion.
 - **HPRC release 2 bubbles** in the track selector adds the graph's bubbles, the
   places where haplotype paths split and rejoin. `gfatools bubble` flags one as
   `inversion` when its paths disagree about orientation.
@@ -157,7 +158,7 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
   jexl:feature.inversion
   ```
 
-<Figure caption="The FLNA / EMD window with the RefSeq genes, the bubbles track filtered to inversions and four lanes, the flagged bubble shaded. The band crosses between HG00099's two haplotypes and runs straight between the two lanes under it, which both have EMD ahead of FLNA." src="/img/pangenome/hprc_inversion.png" />
+<Figure caption="The FLNA / EMD window with the RefSeq genes, the bubbles track filtered to inversions and four lanes, the kept bubble shaded. The bottom two lanes draw the shaded span mirrored in place, so every lane's FLNA and EMD line up, and each of their headers names the span as an inversion." src="/img/pangenome/hprc_inversion.png" />
 
 ## What the lanes leave out {#limits}
 
