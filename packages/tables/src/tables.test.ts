@@ -777,6 +777,28 @@ test("a chain's overlapping segments come back as spans on its row, in a neutral
   expect(chained.overlaps.color.every(c => /^#[0-9a-f]{6}$/.test(c))).toBe(true)
 })
 
+test('collapseSections on a faceted display is dropped with a warning, as the tables stack each section', async () => {
+  const faceted = await engine.alignments({
+    ...BAM,
+    display: { facet: { field: 'strand' } },
+  })
+  const collapsed = await engine.alignments({
+    ...BAM,
+    display: { facet: { field: 'strand' }, collapseSections: true },
+  })
+  const plain = await engine.alignments({
+    ...BAM,
+    display: { collapseSections: true },
+  })
+  expect(faceted.warnings).toEqual([])
+  expect(collapsed.warnings).toEqual([
+    expect.stringContaining('collapseSections is dropped'),
+  ])
+  expect(collapsed.reads.row).toEqual(faceted.reads.row)
+  expect(collapsed.overlaps.start).toHaveLength(0)
+  expect(plain.warnings).toEqual([])
+})
+
 test('a chain’s overlaps and their key row come back only where the display draws them, from a 3 px read', async () => {
   const label = 'Pair/chain reads overlap here'
   const plain = await engine.alignments(OVERLAP)

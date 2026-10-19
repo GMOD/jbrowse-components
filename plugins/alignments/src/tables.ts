@@ -1558,6 +1558,10 @@ export async function alignmentTables(
       layoutOrder,
       chain,
       softClippingAsked,
+      collapseAsked:
+        !chain &&
+        facetSetting !== undefined &&
+        readConfObject(conf, 'collapseSections'),
       sections: order.map(({ key }) => sectionData.get(key)!),
       regions: regionBounds,
     }),
@@ -1565,10 +1569,12 @@ export async function alignmentTables(
 }
 
 /**
- * What the layout drops of the display's `sort` and `showSoftClipping`
- * without saying so, in words a host can show: a column sort with no `pos`,
- * a sort the regions' contigs or reads leave nowhere to apply, and under
- * `unit: 'chain'` any sort or soft clipping, as chains lay out by chain.
+ * What the layout drops of the display's `sort`, `showSoftClipping` and
+ * `collapseSections` without saying so, in words a host can show: a column
+ * sort with no `pos`, a sort the regions' contigs or reads leave nowhere to
+ * apply, under `unit: 'chain'` any sort or soft clipping, as chains lay out
+ * by chain, and a collapse of the facet's sections, which the tables lay out
+ * as stacks.
  */
 function layoutWarnings({
   sortType,
@@ -1576,6 +1582,7 @@ function layoutWarnings({
   layoutOrder,
   chain,
   softClippingAsked,
+  collapseAsked,
   sections,
   regions,
 }: {
@@ -1584,10 +1591,16 @@ function layoutWarnings({
   layoutOrder: LayoutOrder
   chain: boolean
   softClippingAsked: boolean
+  collapseAsked: boolean
   sections: ReadonlyMap<number, WorkerPileupData>[]
   regions: ReadonlyMap<number, RegionBounds>
 }) {
   const warnings = new Set<string>()
+  if (collapseAsked) {
+    warnings.add(
+      'the tables lay each facet section out as a stack of rows, so collapseSections is dropped, with the overlap tint it draws',
+    )
+  }
   if (!isLayoutOrder(sortType) && !sortColumn) {
     warnings.add(`the sort by ${sortType} names no pos, so it is dropped`)
   }
