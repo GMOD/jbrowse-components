@@ -118,6 +118,32 @@ function restamp(feature: Feature, source: string) {
   })
 }
 
+interface Contig {
+  refName: string
+  length?: number
+  hasData?: boolean | null
+}
+
+async function contigsOf(
+  adapter: BaseFeatureDataAdapter & { getContigs?: unknown },
+  opts?: BaseOptions,
+): Promise<Contig[]> {
+  if (typeof adapter.getContigs === 'function') {
+    return (
+      adapter as { getContigs: (o?: BaseOptions) => Promise<Contig[]> }
+    ).getContigs(opts)
+  }
+  const refNames = await adapter.getRefNames(opts)
+  return refNames.map(refName => ({ refName, hasData: null }))
+}
+
+function anyHasData(hasData: (boolean | null)[]) {
+  if (hasData.includes(true)) {
+    return true
+  }
+  return hasData.every(h => h === false) ? false : null
+}
+
 function isText(value: unknown): value is string {
   return typeof value === 'string' && value !== ''
 }
@@ -196,6 +222,32 @@ export default class MultiWiggleAdapter
       ),
     )
     return [...new Set(allNames.flat())]
+  }
+
+  /**
+   * Each contig a subadapter lists, at the longest length any states, holding
+   * data where one says so, empty where all say so, else null.
+   */
+  public async getContigs(opts?: BaseOptions) {
+    const adapters = await this.getAdapters()
+    const perSource = await Promise.all(
+      adapters.map(a => namingSource(a.source, contigsOf(a.dataAdapter, opts))),
+    )
+    const merged = new Map<string, Contig[]>()
+    for (const contig of perSource.flat()) {
+      merged.set(contig.refName, [
+        ...(merged.get(contig.refName) ?? []),
+        contig,
+      ])
+    }
+    return [...merged].map(([refName, contigs]) => {
+      const lengths = contigs.flatMap(c => c.length ?? [])
+      return {
+        refName,
+        length: lengths.length ? Math.max(...lengths) : undefined,
+        hasData: anyHasData(contigs.map(c => c.hasData ?? null)),
+      }
+    })
   }
 
   private async getFilteredAdapters(sources?: { name: string }[]) {

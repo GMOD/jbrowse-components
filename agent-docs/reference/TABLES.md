@@ -58,8 +58,9 @@ What follows from it:
   `rowLimit` refuses a read whose largest table passes it.
 - **`fileRegions` gives each contig's length and whether it holds data.**
   `end` is the length the assembly (when the call names one), the `@SQ`
-  `LN`, the BigWig or BigBed chrom table or a VCF's `##contig` line states,
-  else 2^31-1, and `lengthKnown` says which. `hasData` is true where a CRAI
+  `LN`, the BigWig or BigBed chrom table or a VCF's `##contig` line states
+  (a multi-wiggle's longest over its BigWigs), else 2^31-1, and
+  `lengthKnown` says which. `hasData` is true where a CRAI
   or a BAI/CSI count shows reads, or where a tabix index or the parsed
   records name the contig; false where a CRAI shows none; null where the
   index cannot tell (a BAI counts 0 for an empty contig and an unindexed

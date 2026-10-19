@@ -8,6 +8,7 @@ import {
   CRAM,
   DOG_VCF,
   GFF3,
+  MULTI_BIGWIG,
   OVERLAP,
   SIGNED_BIGWIG,
 } from './volvox.fixture.ts'
@@ -91,6 +92,16 @@ test('a BigWig’s contigs take its chrom table’s lengths, holding data or not
   })
   expect(t.lengthKnown.every(Boolean)).toBe(true)
   expect(t.hasData.every(h => h === null)).toBe(true)
+})
+
+test('a multi-wiggle’s contigs take its BigWigs’ chrom table lengths', async () => {
+  const t = await engine.fileRegions({
+    adapterConfig: MULTI_BIGWIG.adapterConfig,
+  })
+  expect(t.refName).toEqual(['ctgA', 'ctgB'])
+  expect(t.end).toEqual(['ctgA', 'ctgB'].map(n => FAI_LENGTH.get(n)))
+  expect(t.lengthKnown).toEqual([true, true])
+  expect(t.hasData).toEqual([null, null])
 })
 
 test('a file stating no lengths reads to the int32 end, unless the assembly gives them', async () => {

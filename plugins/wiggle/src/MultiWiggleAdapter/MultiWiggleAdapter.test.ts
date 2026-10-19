@@ -84,6 +84,39 @@ describe('MultiWiggleAdapter.getZoomRange', () => {
   })
 })
 
+describe('MultiWiggleAdapter.getContigs', () => {
+  it('lists every subadapter’s contigs at the longest length any states', async () => {
+    const subadapters = [
+      {
+        getContigs: async () => [
+          { refName: 'chr1', length: 100, hasData: null },
+          { refName: 'chr2', length: 50, hasData: false },
+        ],
+      },
+      {
+        getContigs: async () => [
+          { refName: 'chr1', length: 120, hasData: true },
+          { refName: 'chr2', length: undefined, hasData: false },
+        ],
+      },
+      { getRefNames: async () => ['chr1', 'chr3'] },
+    ]
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: subadapters.map((_, i) => `https://x/${i}.bw`),
+      }),
+      jest.fn().mockImplementation(async (conf: { source: string }) => ({
+        dataAdapter: subadapters[Number(conf.source)],
+      })),
+    )
+    expect(await adapter.getContigs()).toEqual([
+      { refName: 'chr1', length: 120, hasData: true },
+      { refName: 'chr2', length: 50, hasData: false },
+      { refName: 'chr3', length: undefined, hasData: null },
+    ])
+  })
+})
+
 describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
   it('derives source names from URI filenames', async () => {
     const mockGetSubAdapter = jest
