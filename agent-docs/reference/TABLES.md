@@ -373,10 +373,13 @@ isoforms and row height the browser gives up to fit the track; `heightMode:
   stay out.
 - `legend` and `legendTitle`, the color field's key (`featureColorKey`, the
   display's own), and `ramps`, a ramp's color bar.
+- `sections`, under the display's `facet`: each section's `key`, `label`,
+  and `top` and `height` in px, its chip row included, in stacking order.
+  Each feature names its section's `label`, and a section `facet.hidden`
+  lists leaves every table. Ungrouped, one section labelled `''` spans the
+  track.
 
-The layout is the display's grown to its content, as under `heightMode:
-'grow'`: no fit ladder, no facet sections. `@jbrowse/tables` installs the
-BED, GFF3 and GTF plugins, which register adapters and nothing else, and
+`@jbrowse/tables` installs the BED, GFF3 and GTF plugins, which register adapters and nothing else, and
 registers `FromConfigAdapter` (`@jbrowse/plugin-config/adapters`), so a
 track that writes its features inline in its config reads as a file does.
 

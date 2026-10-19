@@ -31,15 +31,15 @@ from the view menu (`menuItems.ts`):
 
 | Display                           | Reader               | Adapters                                         |
 | --------------------------------- | -------------------- | ------------------------------------------------ |
-| `LinearBasicDisplay`              | `jbrowse_features`   | GFF3, GTF, BED (plain or tabix), BigBed          |
+| `LinearBasicDisplay`              | `jbrowse_features`   | GFF3, GTF, BED (each plain or tabix), BigBed     |
 | `LinearVariantDisplay`            | `jbrowse_features`   | VCF (plain or tabix)                             |
 | `LinearMultiSampleVariantDisplay` | `jbrowse_variants`   | VCF (plain or tabix)                             |
 | `LinearWiggleDisplay`             | `jbrowse_wiggle`     | BigWig, multi-BigWig                             |
 | `LinearAlignmentsDisplay`         | `jbrowse_alignments` | BAM, CRAM                                        |
 
 Any other display, a file opened from disk in jbrowse-web (a `blob:` URL R
-cannot reach), and a setting ggjbrowse cannot draw (facets on a feature
-track) land in the script header.
+cannot reach), and a setting ggjbrowse draws otherwise (a `mateRefName`
+color) land in the script header.
 
 ## Settled decisions
 

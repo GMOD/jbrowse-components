@@ -1,11 +1,11 @@
 ---
 name: r-export-next-steps
-description: "The R script export (view menu → Export R script, plugins/linear-genome-view/src/LinearGenomeView/rExport/) is a doorway to ggjbrowse: reader calls plus one jbrowse_stack(). On main. Open: the ggjbrowse vignette and first R users, real-data checks, and the unchecked multi-region wiggle autoscale."
+description: "The R script export (view menu → Export R script, plugins/linear-genome-view/src/LinearGenomeView/rExport/) is a doorway to ggjbrowse: reader calls plus one jbrowse_stack(). On main. Open: the ggjbrowse vignette and first R users, real-data checks, and ggjbrowse matching a bare contig name through the engine's canonical names."
 ---
 
 # R export: what is left
 
-Revised 2026-10-11. The export writes a short script of ggjbrowse reader calls
+Revised 2026-10-19. The export writes a short script of ggjbrowse reader calls
 and one `jbrowse_stack()`; [R_EXPORT.md](../reference/R_EXPORT.md) has where
 the code is, what it reads and the settled decisions, and
 `website/docs/user_guides/r_export.md` is the user-facing page. ggjbrowse is
@@ -19,6 +19,12 @@ not wanted.
    `@jbrowse/tables` publishes, an r-universe build so V8 installs as a
    binary, then two or three R users with their own tracks.
 2. **Real data:** an hg38 BAM at a deep locus, a CRAM, a ten-track session.
+3. **ggjbrowse names a whole contig by its alias:** `parsed_regions()`
+   matches a bare name against the file's contigs as typed, so `12` for a
+   file spelling it `chr12` is refused while the locus `12:1-100` reads.
+   The engine now gives `fileRegions` and `regions` a `canonical` column and
+   `canonicalNames({ assembly, refNames })` (TABLES.md); R matches the
+   name's canonical against the contigs'.
 
 ## ggjbrowse API review (2026-10-11)
 
@@ -39,11 +45,9 @@ Still open, smaller:
 
 - `inherit.aes = FALSE` drops plot-level aesthetics.
 - A join on `features` does not reach `geom_jbrowse_glyphs`' other tables.
-- A bad contig among several loci, and a reversed or overlong locus, pass
-  silently.
+- R reads a locus past its contig's end without a warning.
 - `width` vs `px_per_bp`.
 - Printed regions are 0-based.
-- `jbrowse_sequence` takes no locus.
 - Two tracks on different contigs with the same span stack under one label.
 
 ## Gallery comparison (2026-10-11)
@@ -54,11 +58,10 @@ matrix paints its grey reference rows, section labels read across. A ramp
 keys as a bar since ggjbrowse 0.6.0 (the tables' `ramps`, `rampKeyOf`), and
 `baseColor: baseQuality` paints each base (`qualities`).
 
-Unchecked: ggjbrowse reads each region of a multi-region wiggle on its own,
-so each region autoscales, and paints density, over its own scores, while
-`bind_regions` reports the union domain and the first region's ramp. If the
-browser autoscales over every region together, a two-region density figure
-differs from the view.
+A multi-region wiggle autoscales over every region together, as the
+browser does: `wiggleTables` (`plugins/wiggle/src/tables.ts`) runs
+`computeAutoscaleDomain` over every region's sources, and ggjbrowse's
+`test-wiggle.R` checks that two loci share one axis and one ramp.
 
 Reads now draw at the display's `featureHeight` (ggjbrowse 0.3.0, engine
 d4744ce27e reporting the band pixel sizes), and the script saves at
@@ -69,9 +72,7 @@ super-compact pileups match the browser. Matrix row labels fit their rows
 ## Simplicity review (2026-10-11), not taken
 
 - Move `settingNotes` into ggjbrowse as reader warnings, so direct R users
-  hear about a `mateRefName` color or a feature-track facet too.
-- One adapter-guessing table on each side: R repeats the index-beside-file
-  block three times, and `READERS` lacks `GtfTabixAdapter`.
+  hear about a `mateRefName` color too.
 - The reader could write `inset` into its tables and drop `jbrowse_layer`'s
   `rows`/`finish`, at the cost of a drawing detail in the data.
 - Keep `on_axis()` at the top of the `autoplot` methods: `arc_top()` reads
@@ -93,6 +94,21 @@ Still open:
   within the row, which reads as fine stripes.
 - The strand facet could also stack every section's coverage above every
   section's reads, the old R layout, as an option for both apps.
+
+## ggjbrowse fixes through ea5a69d (2026-10-19)
+
+- Arcs and arc ticks draw at the display's px width; read as points, they
+  drew twice as thick.
+- Curved ribbons follow the display's Bezier in y as well as x.
+- Insertions draw as `insertionGlyph.slang` sizes them, and indels fade by
+  size below a pixel on top of the frequency fade.
+- Junction counts show only under `sashimi.showCounts`, and letters at the
+  display's 6.5 px a base.
+- A feature file's contig of unknown length ends at its last record; other
+  readers take the length the file states, which a multi-wiggle now reports
+  (its BigWigs' longest).
+- A region that is reversed or starts before base 1 is refused, and a
+  region on a contig the file lacks warns.
 
 ## Dropped 0.9 branch (2026-10-18)
 
