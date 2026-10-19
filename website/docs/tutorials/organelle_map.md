@@ -12,8 +12,13 @@ We draw the human mitochondrial genome as a circular map, the way plasmid and
 organelle genomes are usually pictured, with base-pair ticks around one closed
 ring and the genes along it in a row per strand, colored by feature type. The
 same steps make a map of any small circular sequence that NCBI annotates, from a
-chloroplast to a plasmid. The circular view draws a feature track as a ring and
-closes a sequence its assembly marks as circular, leaving no gap at its origin.
+chloroplast to a plasmid. We:
+
+- download the sequence and its genes
+- load the genome, marked as circular so the ring closes with no gap at its
+  origin, and the genes
+- open the genome in the circular view
+- check _ND6_ against the GFF3
 
 ## Prerequisites
 

@@ -7,9 +7,13 @@ tutorial_category: Cancer genomics
 ---
 
 Tumors from different patients tend to gain and lose the same regions, because
-those regions contain a gene driving the cancer. We stack copy-number segment
-calls for 1104 TCGA breast tumors, one row per tumor colored by gain or loss, so
-a recurrent event shows as a vertical stripe.
+those regions contain a gene driving the cancer. With copy-number segment calls
+for 1104 TCGA breast tumors we:
+
+- stack the segments, one row per tumor colored by gain or loss, so a recurrent
+  event shows as a vertical stripe
+- cluster the tumors by copy-number profile
+- add a track of gain and loss frequency, and split it by clinical group
 
 ## Prerequisites
 

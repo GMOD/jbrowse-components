@@ -11,14 +11,15 @@ tutorial_subcategory: Whole-genome alignments
 
 We look at one human locus across eight other mammals at once, from alignments
 that already exist. UCSC publishes a liftOver chain from hg38 to every genome it
-hosts, and jbrowse.org keeps each chain as an indexed alignment file. One track
-composes eight of them into a lane per genome under the human view, and each
-lane draws the RefSeq gene models from that genome's UCSC hub.
+hosts, and jbrowse.org keeps each chain as an indexed alignment file. We:
 
-At _TP53_ most ape lanes come out nearly continuous, while mouse, dog and cow
-show where their chains gap. Eight megabases away every lane breaks and most
-reverse, and the page ends by reading one of those breaks back out of its chain
-file.
+- compose eight chains into one track, a lane per genome under the human view,
+  each lane drawing the RefSeq gene models from that genome's UCSC hub
+- stack nine genomes at _TP53_, where most ape lanes are nearly continuous and
+  mouse, dog and cow show where their chains gap
+- stack them at _PMP22_, eight megabases away, where every lane breaks and most
+  reverse
+- read one of those breaks back out of its chain file
 
 ## Prerequisites
 

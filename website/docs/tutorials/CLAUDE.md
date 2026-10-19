@@ -37,6 +37,11 @@ follows is what no check sees.
   the page looks at and why, in the reader's terms, before any JBrowse noun or
   display class name. The opening names the task and lists the loci.
   `pangenome_hprc_haplotypes` is the page to copy.
+- **The opening ends in a bulleted list of what we do**: a sentence ending "We:"
+  (or "we:"), then three to five one-line bullets, one per stage of the page in
+  the order the page runs them, each opening with a verb. No label over it. The
+  lead-in stays two to four sentences; the bullets name the steps and the loci,
+  not the findings. A sprawling page needs this most.
 - Readers skip prose and copy commands, so cut content rather than compress it,
   but never cut a route a reader can run on their own data.
 - Say each thing once. Prose beside a figure says what the caption cannot; prose

@@ -9,10 +9,11 @@ tutorial_category: Transcriptomics & proteins
 ---
 
 Differential transcript usage tests whether a gene changes which of its isoforms
-it expresses between two conditions, here skeletal muscle and liver. We run the
-test with satuRn, a Bioconductor package, on ENCODE quantifications, write each
-transcript's statistic into the GFF3 attribute column, and color the gene track
-by it.
+it expresses between two conditions, here skeletal muscle and liver. We:
+
+- run the test with satuRn, a Bioconductor package, on ENCODE quantifications
+- write each transcript's statistic into the GFF3 attribute column
+- color the gene track by that statistic
 
 ## Prerequisites
 

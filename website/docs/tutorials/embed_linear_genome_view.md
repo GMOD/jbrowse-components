@@ -7,7 +7,11 @@ tutorial_category: Configuration & embedding
 
 We embed a JBrowse linear genome view in a web page with one `<script>` tag and
 no build step. The `<LinearGenomeView>` component takes three objects,
-`assembly`, `tracks` and `view`, and draws the genome browser from them.
+`assembly`, `tracks` and `view`, and draws the genome browser from them. We:
+
+- embed the view with one script tag
+- point it at your own data files
+- use the same component in a React app
 
 ## Prerequisites
 

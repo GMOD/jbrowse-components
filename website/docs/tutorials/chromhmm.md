@@ -6,11 +6,12 @@ tutorial_category: Epigenomics & single cell
 ---
 
 ChromHMM labels each region of the genome with a chromatin state, promoter,
-enhancer, heterochromatin and so on, once per cell type. We merge many
-per-cell-type segmentation BEDs into one file, which JBrowse draws as a single
-track with one color-coded row per cell type. We read it at two loci: the _HOXA_
-cluster, where each cell type opens the genes matching its place along the body
-axis, and _PAX5_, a B-cell gene with genic enhancers only in B cells.
+enhancer, heterochromatin and so on, once per cell type. We:
+
+- merge per-cell-type segmentation BEDs into one file
+- draw it as a single track with one color-coded row per cell type
+- read it at _HOXA_, where each cell type opens the genes matching its place
+  along the body axis, and at _PAX5_, which has genic enhancers only in B cells
 
 ## Prerequisites
 

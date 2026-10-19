@@ -15,15 +15,16 @@ population-genetic statistics: π dips at the sweep and Fst rises across the
 inversion. The inversion flips a stretch of 2L end to end and suppresses
 recombination between the inverted and standard arrangements in a heterozygote
 ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)).
-From a multi-sample VCF of 205 inbred lines we compute three statistics per
-window:
+From a multi-sample VCF of 205 inbred lines we:
 
-- Fst, how far apart two groups' allele frequencies sit
-- nucleotide diversity (π), how much sequences differ within a group
-- Tajima's D, below zero where rare variants are in excess, as after a sweep
-
-We load each as a [quantitative track](/docs/user_guides/quantitative_track) on
-dm6, read the _Cyp6g1_ sweep against the genes, then read the inversion.
+- compute three statistics per window: Fst (how far apart two groups' allele
+  frequencies sit), nucleotide diversity π (how much sequences differ within a
+  group) and Tajima's D (below zero where rare variants are in excess, as after
+  a sweep)
+- load each as a [quantitative track](/docs/user_guides/quantitative_track) on
+  dm6
+- read the _Cyp6g1_ sweep against the genes
+- read the inversion, including per-sample inversion genotypes
 
 ## Prerequisites
 

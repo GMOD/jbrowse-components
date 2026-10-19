@@ -8,18 +8,16 @@ tutorial_subcategory: Whole-genome alignments
 ---
 
 Strains of one bacterial species share most of their chromosome and differ by
-gene islands one strain picked up and by stretches that flipped. We align five
-_E. coli_ strains against each other with minimap2, stack them in a linear
-synteny view, and read where they differ: Sakai's Shiga-toxin prophage, the
-phenylacetate (paa) operon three strains lack, and IAI39's inversions.
+gene islands one strain picked up and by stretches that flipped. With five _E.
+coli_ strains we:
 
-We'll start by aligning the five strains with `minimap2 -X`, which writes one
-all-vs-all PAF, an alignment of every genome against every other. Then we:
-
+- align them with `minimap2 -X`, which writes one all-vs-all PAF, an alignment
+  of every genome against every other
 - load the PAF with `MultiGenomePAFAdapter` and stack the five assemblies as
-  rows
-- add a gene track per strain, and read one strain against the rest in a single
-  pileup
+  rows in a linear synteny view
+- add a gene track per strain and read one strain against the rest in a single
+  pileup, at Sakai's Shiga-toxin prophage, the phenylacetate (paa) operon three
+  strains lack, and IAI39's inversions
 
 The alternative to one all-vs-all file is a separate alignment for each pair of
 adjacent rows, which [](/docs/tutorials/synteny_visualization) follows through

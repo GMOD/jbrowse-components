@@ -9,11 +9,14 @@ tutorial_category: Population genomics
 
 The [BXD mice](https://genenetwork.org) are about 200 recombinant-inbred strains
 bred down from two parents, C57BL/6J (B6, the "B" parent) and DBA/2J (the "D"
-parent), so each strain is a mosaic of blocks from one or the other. We paint
-each strain by which parent gave it each block and stack the painting under a
-GeneNetwork QTL scan of coat color (a QTL is a region linked to variation in a
-trait). Banding the strains by coat color then shows which blocks under each
-peak set it.
+parent), so each strain is a mosaic of blocks from one or the other. We:
+
+- paint each strain by which parent gave it each block, from GeneNetwork's BXD
+  genotype file
+- stack the painting under a GeneNetwork QTL scan of coat color (a QTL is a
+  region linked to variation in a trait)
+- band the strains by coat color to show which blocks under each peak set it
+- read _Myo5a_, the dilute locus, under the chr9 peak
 
 ## Prerequisites
 

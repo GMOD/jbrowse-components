@@ -7,10 +7,14 @@ guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
 
-Every setting in a track menu has a name you can type into a config. We change
-three settings on one CRAM track by clicking, read their names back out of the
-session JSON, and use those names in a shareable link, a saved session file and
-`config.json`.
+Every setting in a track menu has a name you can type into a config. On one CRAM
+track we:
+
+- change three settings by clicking and read their names back out of the session
+  JSON
+- use those names in a shareable link, a saved session file and `config.json`
+- check which wins when a session and the track config set the same setting
+- pass the same settings to an embedded component
 
 ## Prerequisites
 

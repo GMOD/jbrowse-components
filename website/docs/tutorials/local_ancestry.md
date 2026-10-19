@@ -12,8 +12,11 @@ tutorial_subcategory: Dog10K
 Two of the Dog10K breeds are wolf hybrids, so some stretches of their genome
 trace back to a gray wolf ancestor and the rest to domestic dogs.
 [FLARE](https://github.com/browning-lab/flare) calls which of the two sources
-each stretch of DNA came from, against a wolf panel and 219 other breeds, and we
-paint the result as one colored row per haplotype (one copy of a chromosome).
+each stretch of DNA came from, against a wolf panel and 219 other breeds. We:
+
+- run FLARE on the two wolfdog breeds
+- paint the result as one colored row per haplotype (one copy of a chromosome)
+- read the wolf blocks along chr1 in the wolfdogs against controls
 
 ## Prerequisites
 

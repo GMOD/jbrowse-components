@@ -10,12 +10,15 @@ tutorial_subcategory: Ortholog tables
 ---
 
 Genomes too far apart to align base by base still keep their genes in order
-along the chromosomes. We stack related genomes on OrthoFinder orthogroups, sets
-of genes descended from one ancestral gene and inferred from protein similarity
-alone, and read where gene order holds and where a duplication doubles it. The
-page converts the orthogroups to a `.blocks` table that JBrowse reads and builds
-the `wheat` set through to a stacked view, then opens four more sets:
-vertebrates, drosophila, nightshades (`solanaceae`) and grasses.
+along the chromosomes. OrthoFinder infers orthogroups, sets of genes descended
+from one ancestral gene, from protein similarity alone. We:
+
+- run OrthoFinder and convert the orthogroups to a `.blocks` table that JBrowse
+  reads
+- build the `wheat` set through to a stacked synteny view
+- open four more sets: vertebrates, drosophila, nightshades (`solanaceae`) and
+  grasses
+- read where gene order holds and where a duplication doubles it
 
 ## Prerequisites
 

@@ -9,12 +9,14 @@ tutorial_category: Cancer genomics
 ---
 
 A fusion caller writes a table of gene pairs, each with the coordinate of the
-transcript junction where the RNA joins the two genes. We load STAR-Fusion's
-short-read calls beside long RNA reads from the same cell line and count the
-molecules crossing each junction. Then we find where the chromosome broke. In
-K562, the BCR-ABL1 DNA break lies in the first intron of _ABL1_, well before the
-junction the caller reports. The break under NUP214-XKR3, another junction on
-the same amplified segment, sits at the reported junction.
+transcript junction where the RNA joins the two genes. In the K562 cell line we:
+
+- load STAR-Fusion's short-read calls beside long RNA reads and count the
+  molecules crossing each junction
+- triage the calls in the SV inspector and read the split RNA reads at
+  _BCR_-_ABL1_
+- find where the chromosome broke under _BCR_-_ABL1_ and under _NUP214_-_XKR3_,
+  and compare each DNA break with the junction the caller reports
 
 ## Prerequisites
 

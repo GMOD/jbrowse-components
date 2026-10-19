@@ -11,9 +11,14 @@ tutorial_category: genomes.jbrowse.org
 Repeat classes spread along a genome differently: over a window of 17q21, SINE
 copies fill it end to end while LINE copies come in clusters. A RepeatMasker
 track draws every class in one packed row of colored blocks, where that
-difference is hard to read. The same file opened as a
-[multi-row feature display](/docs/user_guides/multirow_feature_track) draws one
-labelled row per class.
+difference is hard to read. We:
+
+- open the same file as a
+  [multi-row feature display](/docs/user_guides/multirow_feature_track), one
+  labelled row per class
+- pin the row order and colors in a track config
+- check the rows against the RepeatMasker file
+- serve your own RepeatMasker output the same way
 
 JBrowse reads the classes from the file, so no data preparation is needed. Every
 genome at [genomes.jbrowse.org](https://genomes.jbrowse.org), and any UCSC or

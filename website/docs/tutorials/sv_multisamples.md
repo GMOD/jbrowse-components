@@ -9,9 +9,14 @@ tutorial_category: Structural variation
 ---
 
 Take the deletion of _RHD_, the RhD blood group gene, out of the 1000 Genomes
-ensemble SV callset, sort the cohort's genotypes at it, then open three of those
-samples' reads and watch the coverage go to zero, halve, and stay flat. The page
-ends on a complex call from the same cohort whose coverage does none of that.
+ensemble SV callset. We:
+
+- load the callset, the reads and the copy-number store
+- sort the cohort's genotypes at the deletion
+- open three samples' reads and watch the coverage go to zero, halve, and stay
+  flat
+- read a complex call from the same cohort, whose coverage does none of that, by
+  its read-pair orientation
 
 ## Prerequisites
 

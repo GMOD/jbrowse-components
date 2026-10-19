@@ -7,11 +7,16 @@ tutorial_category: Configuration & embedding
 ---
 
 We build a genome browser configuration from the command line with
-[`@jbrowse/cli`](/docs/cli): a few commands produce one folder, a `config.json`
-next to your data files, which then opens in JBrowse Desktop and serves on the
-web. The CLI records each file by a path _relative_ to `config.json`, so Desktop
-resolves the paths against the folder on disk and a web server resolves them
-against the served config's URL.
+[`@jbrowse/cli`](/docs/cli). The commands produce one folder, a `config.json`
+next to your data files. The CLI records each file by a path _relative_ to
+`config.json`, so Desktop resolves the paths against the folder on disk and a
+web server resolves them against the served config's URL. We:
+
+- compress and index the data files
+- build the config with `add-assembly` and `add-track`, and set a default view
+  with a session
+- open the folder in JBrowse Desktop
+- serve the folder on the web and index gene names for search
 
 ## Prerequisites
 

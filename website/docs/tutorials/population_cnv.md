@@ -9,9 +9,14 @@ tutorial_category: Structural variation
 
 Copy number varies from person to person, and we show the whole 1000 Genomes
 panel at once: one heatmap row per individual, colored by how far that person
-strays from the diploid baseline of 2. JBrowse draws the heatmap from per-sample
-BigWigs, and past a few hundred samples the per-file requests dominate the load
-time, so the second half of the page packs the values into one Zarr store.
+strays from the diploid baseline of 2. We:
+
+- load per-sample BigWigs as one heatmap track
+- read six individuals' profiles at _CCL3L1_ and a simple deletion at _UGT2B17_
+- pack the values into one Zarr store, because past a few hundred samples the
+  per-file requests dominate the load time
+- load the whole panel from the store and sort a nested chr3 deletion by
+  clustering
 
 ## Prerequisites
 

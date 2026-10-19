@@ -10,11 +10,14 @@ tutorial_subcategory: Ortholog tables
 ---
 
 Grape and peach keep long runs of genes in the same order, though the genomes
-have diverged too far to align base by base. We load a
-[jcvi](https://github.com/tanghaibao/jcvi) MCScan run of the two into a synteny
-view, where a ribbon joins each orthologous gene pair between the grape and
-peach views and a bar marks each block (a run of gene pairs in conserved order),
-then into a dotplot.
+have diverged too far to align base by base. We:
+
+- produce the gene BEDs and anchor files with
+  [jcvi](https://github.com/tanghaibao/jcvi) MCScan
+- load the two into a synteny view, where a ribbon joins each orthologous gene
+  pair and a bar marks each block (a run of gene pairs in conserved order)
+- read one gene pair up close and tandem copies that share one ortholog
+- view the gene pairs as a dotplot, and convert an MCScanX run the same way
 
 ## Prerequisites
 

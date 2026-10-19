@@ -13,14 +13,16 @@ We stack six ape genomes under a human locus in the order of their family tree
 and compare each genome with the one above it, so a change of orientation shows
 up between the two lineages that differ. The comparisons come from the Cactus
 alignment of the telomere-to-telomere ape genomes, whose authors publish a chain
-for every pair of genomes in it. One indexed file holds the chains the lanes
-need, and each lane draws the RefSeq genes of that ape's hub on
-[genomes.jbrowse.org](https://genomes.jbrowse.org).
+for every pair of genomes in it. We:
 
-At _TP53_ every ape runs in one orientation down to the siamang. On 17q12 a
-block runs one way in chimpanzee, bonobo and gorilla and the other way in human,
-both orangutans and the siamang, and the page ends by counting that block's
-aligned bases out of the file.
+- extract the chains between neighbouring genomes into one indexed file
+- build one track over the six apes, each lane drawing the RefSeq genes of that
+  ape's hub on [genomes.jbrowse.org](https://genomes.jbrowse.org)
+- read _TP53_ down the tree, where every ape runs in one orientation to the
+  siamang
+- read a block on 17q12 that runs one way in chimpanzee, bonobo and gorilla and
+  the other way in human, both orangutans and the siamang, and count its aligned
+  bases out of the file
 
 ## Prerequisites
 

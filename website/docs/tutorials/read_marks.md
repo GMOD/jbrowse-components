@@ -9,13 +9,18 @@ tutorial_category: Grammar of graphics
 ---
 
 A read pair that straddles a deletion maps with a long insert (the distance
-between its reads), and a heterozygous deletion halves the read depth. We plot
-those two fields from NA12878's reads to find a deletion on chromosome 20
-without a variant caller, scan the whole chromosome for the same signature, and
-check the hits against the 1000 Genomes callset. The plots use JBrowse's mark
-display, which maps feature fields to plot channels. In grammar-of-graphics
-terms, a `mark` is the shape drawn and `scales.y` the y scale. The mark display
-is experimental and its config shape may change.
+between its reads), and a heterozygous deletion halves the read depth. With
+NA12878's reads we:
+
+- plot read depth as bars over a deletion on chromosome 20 and insert size as
+  one point per read pair, finding the deletion without a variant caller
+- scan the whole chromosome for clusters of long-insert pairs
+- check the hits against the 1000 Genomes callset
+
+The plots use JBrowse's mark display, which maps feature fields to plot
+channels. In grammar-of-graphics terms, a `mark` is the shape drawn and
+`scales.y` the y scale. The mark display is experimental and its config shape
+may change.
 
 ## Prerequisites
 

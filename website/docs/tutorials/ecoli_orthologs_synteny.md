@@ -12,12 +12,14 @@ tutorial_subcategory: Ortholog tables
 We look at one K-12 operon across forty-three other E. coli and Shigella genomes
 at once, without aligning any of them. RefSeq's bacterial pipeline gives an
 orthologous gene the same symbol in every strain that names it, so the ortholog
-table is a join on the gene name over the GFF3 files. Each genome becomes a lane
-under the K-12 view, holding the gene models annotated in that genome. The join
-connects genes that share a symbol, which covers the core genome, and joins a
-symbol K-12 lacks between the strains that have it. The page ends at a cluster
-that differs between strains, where many genes in each lane draw grey with no
-ribbon.
+table is a join on the gene name over the GFF3 files. We:
+
+- build the join and load it as an ortholog track
+- draw each genome as a lane under the K-12 view, holding the gene models
+  annotated in that genome
+- read the _atp_ operon across forty-four genomes
+- read the O-antigen cluster, which differs between strains, to see where the
+  gene-symbol join stops
 
 ## Prerequisites
 

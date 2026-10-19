@@ -10,10 +10,14 @@ tutorial_subcategory: Ortholog tables
 ---
 
 The ratio of non-synonymous to synonymous substitution rates, dN/dS, measures
-the selection pressure on a protein-coding gene between two species. jcvi builds
-a human against rhesus macaque ortholog table, `kaks_from_pairs.py` measures dN
-and dS on every pair, and JBrowse colors each ortholog link on a synteny track
-by the ratio. We then read the lysozyme neighbourhood on human chromosome 12.
+the selection pressure on a protein-coding gene between two species. We:
+
+- build a human against rhesus macaque ortholog table with jcvi, and measure dN
+  and dS on every pair with `kaks_from_pairs.py`
+- load the table as a synteny track, with each ortholog link colored by the
+  ratio
+- read the lysozyme (_LYZ_) neighbourhood on human chromosome 12, with the
+  conserved neighbour _YEATS4_ as the control
 
 ## Prerequisites
 

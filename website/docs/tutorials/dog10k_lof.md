@@ -11,11 +11,14 @@ tutorial_subcategory: Dog10K
 
 Some dogs are poor metabolizers of the drugs the liver enzyme CYP1A2 clears,
 because they have a premature stop codon in _CYP1A2_. The literature names the
-variant only by its protein change, so we derive its genome coordinate by
-translating the reference coding sequence, slice the gene out of the 397 GB
-Dog10K SNV callset over HTTP, and read the genotypes across breeds with the wild
-canids as the control. A copy-number track then shows the gene's expansion
-across every canid in the collection.
+variant only by its protein change. We:
+
+- derive its genome coordinate by translating the reference coding sequence
+- slice the gene out of the 397 GB Dog10K SNV callset over HTTP and load the
+  slice as a variant track
+- read the genotypes across breeds, with the wild canids as the control
+- add a copy-number track to show the gene's expansion across every canid in the
+  collection
 
 ## Prerequisites
 

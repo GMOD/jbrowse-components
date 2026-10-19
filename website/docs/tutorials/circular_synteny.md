@@ -14,11 +14,15 @@ tutorial_subcategory: Whole-genome alignments
 
 We lay the human and mouse chromosomes around one circle and draw UCSC's
 hg38-to-mm39 liftOver chain as ribbons between them, so one picture shows where
-the autosomes have been shuffled and where the X has not. The Circos-style
-circular genome view opens on both assemblies at once, reads the chain from the
-indexed copy on jbrowse.org, and orders the mouse arc to follow the human one.
-We then add a gene density ring over both genomes and read one ribbon and one
-ring value back from the indexed alignment file and the bigWig they came from.
+the autosomes have been shuffled and where the X has not. We:
+
+- declare both assemblies and load the chain as an indexed alignment
+- open the Circos-style circular genome view on both and order the mouse arc to
+  follow the human one
+- color the ribbons by strand and read the X chromosome as the control
+- add a gene density ring over both genomes
+- check one ribbon and one ring value against the indexed alignment file and the
+  bigWig they came from
 
 ## Prerequisites
 

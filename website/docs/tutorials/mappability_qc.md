@@ -9,12 +9,15 @@ tutorial_category: Structural variation
 ---
 
 A pileup looks the same whether its reads belong at a locus or merely landed
-there. At the _SMN1_/_SMN2_ duplication on chromosome 5, we tell the two apart
-with tracks that genomes.jbrowse.org publishes for hg38 (reference mappability,
-gnomAD coverage and problematic-region annotations) and a public 1000 Genomes
-CRAM colored by mapping quality. We then ask whether the finished T2T-CHM13
-reference resolves the duplication, and compare the locus against a control
-window from the same sample.
+there. At the _SMN1_/_SMN2_ duplication on chromosome 5 we:
+
+- tell the two apart with tracks that genomes.jbrowse.org publishes for hg38
+  (reference mappability, gnomAD coverage and problematic-region annotations)
+  and a public 1000 Genomes CRAM colored by mapping quality
+- ask whether the finished T2T-CHM13 reference resolves the duplication
+- compare depth and mapping quality against a control window from the same
+  sample
+- read long-read SV calls across the region
 
 ## Prerequisites
 

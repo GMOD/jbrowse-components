@@ -10,8 +10,12 @@ tutorial_category: genomes.jbrowse.org
 ---
 
 genomes.jbrowse.org hosts a ready-made JBrowse config for every UCSC genome,
-with that genome's UCSC track catalog. We open hg38, find _TP53_, and turn on
-its conservation, regulation and variant tracks from the catalog.
+with that genome's UCSC track catalog. On hg38 we:
+
+- search for _TP53_ and trim its isoforms
+- turn on conservation (phyloP) and regulation tracks from the catalog
+- filter gnomAD's _TP53_ variants to predicted loss of function
+- repeat the search on a GenArk genome, the axolotl
 
 ## Opening a genome
 

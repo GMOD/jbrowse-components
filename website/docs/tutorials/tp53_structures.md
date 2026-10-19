@@ -10,11 +10,14 @@ tutorial_category: Transcriptomics & proteins
 ---
 
 The p53 protein has a predicted structure covering every residue and crystal
-structures covering the parts that fold. We open three of them in one view
-beside the _TP53_ gene, each mapped to the same transcript, click a cancer
-hotspot on a crystal to find its codon, and open an NMR ensemble of the
-transactivation domain. The protein3d plugin maps each structure to the
-transcript, and Mol\* draws the structures.
+structures covering the parts that fold. The protein3d plugin maps each
+structure to the transcript, and Mol\* draws the structures. We:
+
+- open three structures in one view beside the _TP53_ gene, each mapped to the
+  same transcript
+- click a cancer hotspot on a crystal to find its codon, and check the codon
+  against the reference sequence
+- open an NMR ensemble of the transactivation domain
 
 ## Prerequisites
 

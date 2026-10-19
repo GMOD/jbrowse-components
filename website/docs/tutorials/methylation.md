@@ -8,11 +8,13 @@ tutorial_category: Epigenomics & single cell
 
 Nanopore and PacBio basecallers record each read's DNA methylation in
 base-modification tags (`MM` and `ML`), and JBrowse draws those calls straight
-from the BAM. We follow one dataset, HG002 nanopore reads over the _SNRPN_
-imprinting center, where one parent's copy is methylated and the other's is not,
-from per-read calls to an aggregate profile to the two parental alleles pulled
-apart, and then a moving average of each allele across the whole imprinted
-domain.
+from the BAM. At the _SNRPN_ imprinting center, one parent's copy is methylated
+and the other's is not. In HG002 nanopore reads there we:
+
+- color each read by its per-base methylation calls
+- tally the calls into an aggregate profile with modkit
+- split the reads by haplotype to pull the two parental alleles apart
+- smooth each allele into a moving average across the imprinted domain
 
 ## Prerequisites
 

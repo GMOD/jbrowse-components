@@ -9,10 +9,11 @@ tutorial_category: Epigenomics & single cell
 
 Pooling the reads of each single-cell cluster, called pseudobulking, and placing
 them on the genome shows which cell types express a marker gene, and where in
-the gene their reads land. We pool the 10x 5k peripheral blood (PBMC) dataset
-into one coverage BigWig per cell type outside JBrowse and load the set as one
-multi-wiggle track with a row per cell type. Then we add one row per cell under
-the pooled rows.
+the gene their reads land. With the 10x 5k peripheral blood (PBMC) dataset we:
+
+- pool the reads into one coverage BigWig per cell type, outside JBrowse
+- load the set as one multi-wiggle track with a row per cell type
+- add one row per cell under the pooled rows, from a Zarr store
 
 ## Prerequisites
 

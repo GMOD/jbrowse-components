@@ -8,12 +8,15 @@ tutorial_category: Epigenomics & single cell
 ---
 
 Whole-genome bisulfite sequencing (WGBS) and enzymatic methyl sequencing
-(EM-seq) measure DNA methylation with short reads. We align an _Arabidopsis
-thaliana_ WGBS run with bwameth, load the BAM, and color each read by its
-methylation in the CpG, CHG and CHH contexts. JBrowse computes the calls from
-the C→T changes in the reads, so the BAM needs no base-modification tags
+(EM-seq) measure DNA methylation with short reads. JBrowse computes the calls
+from the C→T changes in the reads, so the BAM needs no base-modification tags
 (`MM`/`ML`, which nanopore and PacBio basecallers write) and no methylation
-caller runs first.
+caller runs first. With an _Arabidopsis thaliana_ WGBS run we:
+
+- align the reads with bwameth
+- load the BAM and color each read by its methylation in the CpG, CHG and CHH
+  contexts
+- compare gene-body methylation with transposon silencing
 
 ## Prerequisites
 

@@ -10,9 +10,13 @@ tutorial_category: Cancer genomics
 
 The COLO829 somatic structural-variant callset lists over a hundred junctions,
 the points where two distant loci are joined, and each one is worth checking
-against the reads. We render every junction as an image of the reads at both
-ends with `jb2export batch`, then render the matched normal the same way as the
-control.
+against the reads. We:
+
+- render every junction as an image of the reads at both ends with
+  `jb2export batch`
+- render the matched normal the same way, as the control
+- sort the calls into somatic, germline or unsupported from the curves
+- open a call in the browser, and render calls from other SV callers
 
 ## Prerequisites
 

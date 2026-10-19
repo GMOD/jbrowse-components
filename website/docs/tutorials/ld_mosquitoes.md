@@ -9,10 +9,12 @@ tutorial_category: Population genomics
 
 The 2La chromosomal inversion of the malaria mosquito _Anopheles gambiae_ spans
 about 22 Mb and suppresses crossing over, so linkage disequilibrium (LD, the
-correlation between variants) runs across it as one block. We compute the LD
-with `plink2 --r2-phased`, draw it with an [`LDTrack`](/docs/config/ldtrack),
-and load the inversion as a structural variant genotyped per mosquito beneath
-it.
+correlation between variants) runs across it as one block. We:
+
+- compute the LD with `plink2 --r2-phased`
+- draw it with an [`LDTrack`](/docs/config/ldtrack)
+- load the inversion as a structural variant genotyped per mosquito beneath it
+- compare the LD block with the karyotypes in Cameroon and Gabon
 
 ## Prerequisites
 

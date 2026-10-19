@@ -11,9 +11,13 @@ tutorial_category: Genes & annotation
 We look at where the genes sit along human chromosome 1 and which transposons
 sit near them: Alu elements pile up where the genes are, and L1 elements spread
 more evenly. A whole chromosome holds more genes, and far more repeat copies,
-than a browser fetches at once, so we count each file's features per kilobase
-into a small bigWig with `jbrowse make-density` and show those counts as tracks,
-then zoom in to see the genes themselves.
+than a browser fetches at once. We:
+
+- count each file's features per kilobase into a small bigWig with
+  `jbrowse make-density`
+- show the counts as gene and repeat density tracks along chromosome 1
+- zoom in to 1q21 to see the genes themselves
+- check the tracks against counts taken straight from the files
 
 ## Prerequisites
 
