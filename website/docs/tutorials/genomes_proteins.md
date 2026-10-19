@@ -213,9 +213,9 @@ and choose **Launch MSA view**. The dialog opens on its **Orthologs** tab:
 
 Press **Submit**. The alignment opens below the genome view, with a tree on the
 left and NCBI's conserved domains drawn over the residues once NCBI returns
-them. It opens at residue zoom on the N terminus; **Fit horizontally**, under
-the toolbar's fit and zoom button, puts the whole alignment on screen, which is
-the zoom the domain blocks read at.
+them. It opens at residue zoom on the N terminus; **View → Zoom → Fit width** in
+the alignment's menu bar puts the whole alignment on screen, which is the zoom
+the domain blocks read at.
 
 <Figure src="/img/genomes_msa/launch_sequence.png" caption="NLRP1's right-click menu, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds." />
 

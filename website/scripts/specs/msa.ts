@@ -299,22 +299,14 @@ export const msaSpecs: ScreenshotSpec[] = [
           ...SUBMIT_AND_WAIT,
           // The view opens at colWidth 12, which is residue zoom: about a
           // hundred columns of a ~1500-column alignment, and none of the domain
-          // blocks this frame is of. Fit horizontally is the one action that
-          // puts the whole protein on screen, and it computes the width instead
-          // of stepping 0.75x per click toward a floor that would still leave
-          // the C terminus off the right edge.
-          //
-          // The selector is the toolbar button's `tooltip` prop, which
-          // CascadingMenuButton now puts on the MUI IconButton as its
-          // `aria-label` while a real MUI Tooltip carries the title. It is the
-          // only thing distinguishing this button from the icon buttons beside
-          // it. An earlier bundle passed the prop through as a raw `tooltip`
-          // DOM attribute, and that spelling is what this stage used to match.
-          {
-            type: 'click',
-            selector: 'button[aria-label="Fit / zoom options"]',
-          },
-          { type: 'click', text: 'Fit horizontally' },
+          // blocks this frame is of. Fit width is the one action that puts the
+          // whole protein on screen, and it computes the width instead of
+          // stepping 0.75x per click toward a floor that would still leave the
+          // C terminus off the right edge. A bare `Zoom` text would match the
+          // genome view's "Zoom on scroll" first.
+          { type: 'click', selector: '[data-testid="view_menu"]' },
+          { type: 'click', selector: '[role="menuitem"]::-p-text(Zoom)' },
+          { type: 'click', text: 'Fit width' },
           { type: 'delay', ms: 1000 },
           ...COLLAPSE_DOMAIN_KEY,
         ],
