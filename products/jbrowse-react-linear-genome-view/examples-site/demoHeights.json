@@ -34,6 +34,7 @@
   "shadow-dom": 145,
   "show-track": 170,
   "single-cell-umap": 1694,
+  "static-first-paint": 234,
   "track-shorthand": 512,
   "track-sizing": 715,
   "two-views": 288,

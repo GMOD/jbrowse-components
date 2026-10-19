@@ -227,6 +227,13 @@ export const pages: ExamplePage[] = [
     skipSmoke: true,
   },
   {
+    slug: 'static-first-paint',
+    title: 'A picture first, then the view',
+    description:
+      'A screenshot paints with the page; the engine loads near the viewport.',
+    group: 'Integration',
+  },
+  {
     slug: 'external-plugin',
     title: 'External plugin',
     description: 'loadPlugins fetches a bundle at runtime.',

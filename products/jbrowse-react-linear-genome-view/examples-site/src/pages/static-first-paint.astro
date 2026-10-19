@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/StaticFirstPaint.tsx'
+import code from '../examples/StaticFirstPaint.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="static-first-paint" code={code}>
+  <Demo client:load />
+</ExamplePage>

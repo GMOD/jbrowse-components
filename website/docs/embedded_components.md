@@ -161,6 +161,71 @@ a track written in full, with its `adapter`, `displays` and `type`, or one on a
 `FromConfigAdapter`, goes to `createViewState` unchanged. A
 `JBrowseLinearGenomeView` track list moves over as it is.
 
+## A picture first, then the view {#static-first-paint}
+
+An embedded view shows an empty box until its JavaScript, its assembly and its
+first track fetch have all arrived. A screenshot of the view's opening state
+paints with the page instead, and the live view takes over once it has drawn.
+The [live example](https://jbrowse.org/storybook/lgv/static-first-paint/) has
+the full source.
+
+- **Shoot the poster from the view itself**, at the width the embed will have.
+  `waitForJBrowseReady` from `@jbrowse/capture` holds until every track has
+  drawn. A `jb2export` figure has no toolbar and uses different fonts, so the
+  page would jump when the live view replaced it.
+- **Load the engine when the box nears the viewport.** An `IntersectionObserver`
+  plus a dynamic `import()` (`React.lazy`) means a page with several embeds pays
+  only for the ones the reader scrolls to.
+- **Keep the poster up until the view reads ready.** Each component publishes
+  `[data-app-phase="ready"]` once its tracks have drawn. Wait for it with
+  `data-app-views` above 0, then two animation frames, so the view's pending
+  renders paint before the poster comes down.
+- **Hide the loading view with `opacity: 0`.** The LGV, CGV and app components
+  set `all: initial` on their root to keep the host page's CSS out. That also
+  resets an inherited `visibility`, so under `visibility: hidden` the loading
+  scrim shows through the poster.
+- **Crop the poster on a narrower screen.** Give it `width: 100%`, the height it
+  was shot at, `object-fit: cover` and `object-position: left top`. The view
+  keeps its height at any width, so the box keeps its height through the swap
+  and the poster's text stays at full size.
+
+The script that shoots the example's poster, run against the built page:
+
+<!-- include: products/jbrowse-react-linear-genome-view/examples-site/scripts/capture-poster.mjs#shoot -->
+
+```js
+import { fileURLToPath } from 'node:url'
+
+import { launchBrowser, waitForJBrowseReady } from '@jbrowse/capture'
+
+const url =
+  process.argv[2] ?? 'http://localhost:4321/storybook/lgv/static-first-paint/'
+const embed = '.demo astro-island > div'
+const out = fileURLToPath(
+  new URL('../public/static-first-paint.png', import.meta.url),
+)
+
+const browser = await launchBrowser()
+try {
+  const page = await browser.newPage()
+  await page.setViewport({ width: 1400, height: 900, deviceScaleFactor: 2 })
+  await page.goto(url)
+  await waitForJBrowseReady(page)
+  // the page takes its old poster down once the view has drawn
+  await page.waitForFunction(
+    s => !document.querySelector(`${s} img`),
+    {},
+    embed,
+  )
+  const element = await page.$(embed)
+  await element.screenshot({ path: out })
+  const { width, height } = await element.boundingBox()
+  console.log(`wrote ${out}, ${width}x${height} CSS px`)
+} finally {
+  await browser.close()
+}
+```
+
 ## Bundler examples
 
 | Package                              | Bundler   | Demo                                            | Source                                                                              |
