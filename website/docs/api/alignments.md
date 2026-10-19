@@ -8,6 +8,31 @@ Auto-generated from exported functions tagged `#api` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how to
 import these from a plugin.
 
+## alignmentMarkAlpha
+
+The px width and opacity the pileup draws each insertion, deletion,
+mismatch and clip at `pxPerBp`, through the shaders' generated twins, for
+a host that draws the marks at its figure's scale. `fade` is a mark's `fade`
+column, `length` its length in bp (a deletion's `end - start`), `quality`
+a mismatch's; `featureHeight` is `readPitch.featureHeight`, and the two
+switches are the display's `pileup.fadeLowFrequency` and
+`pileup.fadeLowBaseQuality`.
+
+- An insertion's `widthPx` is `insertionBarWidthPx`, and its `alpha`
+  `insertionSizeAlpha` times, under `LONG_INSERTION_MIN_LENGTH`,
+  `frequencyFadeGate` over `pxPerBp` squared.
+- A deletion's `alpha` is `sizeAlpha` of its width in px times
+  `frequencyFadeGate` over that width squared.
+- A mismatch's `alpha` is `qualityFade` times `frequencyFadeGate` over
+  `pxPerBp`, and a clip's that gate alone.
+
+```js
+// type signature
+({…}: { pxPerBp: number; featureHeight: number; fadeLowFrequency: boolean; fadeLowBaseQuality?: boolean | undefined; insertions?: { length: readonly number[]; fade: readonly number[]; } | undefined; deletions?: { length: readonly number[]; fade: readonly number[]; } | undefined; mismatches?: { fade: readonly number[]; quality: readonly number[]; } | undefined; clips?: { fade: readonly number[]; } | undefined; }) => { insertions: { widthPx: number[]; alpha: number[]; }; deletions: { alpha: number[]; }; mismatches: { alpha: number[]; }; clips: { alpha: number[]; }; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/tables.ts)
+
 ## alignmentTables
 
 A region's reads, or several regions', as the alignments display fetches,

@@ -221,7 +221,8 @@ of the depth at its site, zeroed below the display's depth-dependent
 threshold, which is what the pileup fades a sub-pixel mark by (the shaders'
 `frequencyAlpha`: `width + fade * (1 - width)` for a mark under a pixel
 wide), so a host can fade sequencing errors as the display does without
-porting the threshold. The display's `baseColor` and `modifications`
+porting the threshold. `alignmentMarkAlpha` finishes the fade at the host's
+px per bp (below). The display's `baseColor` and `modifications`
 objects select its per-base layer the same way `color` does: under
 `{ field: 'modifications' }` the reads' base modifications come back as
 `modifications` (position, read, type code and name, probability, whether
@@ -243,6 +244,31 @@ insertions, soft clips and hard clips stacked in that order, `from` and `to`
 in reads), with `indicators` (the positions whose events pass the display's
 share of the local depth, and the most common `type` there). The display
 draws neither while `settings.showInterbaseIndicators` is false.
+
+**`alignmentMarkAlpha` draws a mark as the pileup does at a host's zoom.**
+A host's px per bp depends on its figure, so the host calls it once per
+figure with the marks' columns, and the engine runs the shaders' generated
+twins:
+
+- **In:** `pxPerBp`, `featureHeight` (`readPitch.featureHeight`),
+  `fadeLowFrequency` and `fadeLowBaseQuality` (`config.pileup`'s), and any of
+  `insertions` (`length`, `fade`), `deletions` (`length` in bp, `end - start`
+  of a gap whose `type` is `deletion`, and `fade`), `mismatches` (`fade`,
+  `quality`) and `clips` (`fade`).
+- **Out:** `insertions.widthPx` and `insertions.alpha`, and `alpha` for
+  `deletions`, `mismatches` and `clips`, one per mark in the order given.
+  `widthPx` is in px; `alpha` runs from 0 (not drawn) to 1.
+- An insertion is `insertionBarWidthPx` wide, and its alpha is
+  `insertionSizeAlpha` times, for one shorter than
+  `LONG_INSERTION_MIN_LENGTH` (10 bp), `frequencyFadeGate` over `pxPerBp`
+  squared.
+- A deletion's alpha is `sizeAlpha` of its width in px times
+  `frequencyFadeGate` over that width squared.
+- A mismatch's alpha is `qualityFade` times `frequencyFadeGate` over
+  `pxPerBp`, and a clip's is that gate alone.
+
+The bundle serves it as `jbrowse.alignmentMarkAlpha`, beside
+`variantDensityAlpha`.
 
 `coverageScale` is the band's depth axis as the display autoscales it:
 `domain` over every shown section's visible depths under `scales.y` (quantile,

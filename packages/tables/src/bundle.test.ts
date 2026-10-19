@@ -65,6 +65,7 @@ let jbrowse: {
   features: (args: string) => Promise<string>
   wiggle: (args: string) => Promise<string>
   variants: (args: string) => Promise<string>
+  alignmentMarkAlpha: (args: string) => Promise<string>
   synteny: (args: string) => Promise<string>
   dotplot: (args: string) => Promise<string>
   contigs: (args: string) => Promise<string>
@@ -243,6 +244,29 @@ test('the bundle reads a file under its alias through an assembly, in a bare hos
     start: [0, 0],
     end: [50001, 6079],
   })
+})
+
+test('the bundle fades a region’s marks as the engine does, at a host’s px per bp', async () => {
+  const engine = createTablesEngine()
+  const t = await engine.alignments(BAM)
+  const deletion = t.gaps.type.map(type => type === 'deletion')
+  const args = {
+    pxPerBp: 0.05,
+    featureHeight: t.readPitch.featureHeight,
+    fadeLowFrequency: true,
+    insertions: { length: t.insertions.length, fade: t.insertions.fade },
+    deletions: {
+      length: t.gaps.start
+        .map((start, i) => t.gaps.end[i]! - start)
+        .filter((_, i) => deletion[i]),
+      fade: t.gaps.fade.filter((_, i) => deletion[i]),
+    },
+    mismatches: { fade: t.mismatches.fade, quality: t.mismatches.quality },
+    clips: { fade: t.clips.fade },
+  }
+  expect(read(await jbrowse.alignmentMarkAlpha(JSON.stringify(args)))).toEqual(
+    engine.alignmentMarkAlpha(args),
+  )
 })
 
 test('the bundle answers a PAF as the engine does, in a bare host', async () => {

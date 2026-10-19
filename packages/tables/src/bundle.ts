@@ -29,6 +29,8 @@ const cacheArgs = ({ limit }: { limit?: number | null }) =>
     send(await engine.variants(JSON.parse(args))),
   variantDensityAlpha: async (args: string) =>
     send(engine.variantDensityAlpha(JSON.parse(args))),
+  alignmentMarkAlpha: async (args: string) =>
+    send(engine.alignmentMarkAlpha(JSON.parse(args))),
   synteny: async (args: string) => send(await engine.synteny(JSON.parse(args))),
   dotplot: async (args: string) => send(await engine.dotplot(JSON.parse(args))),
   contigs: async (args: string) => send(await engine.contigs(JSON.parse(args))),

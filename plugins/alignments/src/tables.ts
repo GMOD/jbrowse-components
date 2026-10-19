@@ -8,7 +8,10 @@ import {
   LABEL_FADE_FLOOR,
   LABEL_FADE_HI_RATIO,
   LABEL_FADE_LO_RATIO,
+  LONG_INSERTION_MIN_LENGTH,
   MIN_HEIGHT_FOR_TEXT,
+  insertionBarWidth,
+  insertionSizeAlpha,
   interbaseEdgePx,
   labelFont,
   pairDirectionOfNum,
@@ -115,8 +118,13 @@ import {
   spliceMotifLabel,
 } from './features/sashimi/motif.ts'
 import { arcSlotCategory, buildArcColorPalette } from './shaders/palettes.ts'
+import {
+  frequencyFadeGate,
+  sizeAlpha,
+} from './shaders/slang/alignmentsUniforms.js.generated.ts'
 import { CONNECTING_LINE_ALPHA } from './shaders/slang/connectingLine.consts.generated.ts'
 import { GAP_SKIP } from './shaders/slang/gap.consts.generated.ts'
+import { qualityFade } from './shaders/slang/mismatch.js.generated.ts'
 import {
   ALIGNMENTS_FIELD_PRESETS,
   alignmentsColorEncoding,
@@ -1746,6 +1754,77 @@ function drawnBands<
         ...drawn,
         gaps: rowsAt(drawn.gaps, i => drawn.gaps.type[i] === 'skip'),
       }
+}
+
+/**
+ * #api
+ * The px width and opacity the pileup draws each insertion, deletion,
+ * mismatch and clip at `pxPerBp`, through the shaders' generated twins, for
+ * a host that draws the marks at its figure's scale. `fade` is a mark's `fade`
+ * column, `length` its length in bp (a deletion's `end - start`), `quality`
+ * a mismatch's; `featureHeight` is `readPitch.featureHeight`, and the two
+ * switches are the display's `pileup.fadeLowFrequency` and
+ * `pileup.fadeLowBaseQuality`.
+ *
+ * - An insertion's `widthPx` is `insertionBarWidthPx`, and its `alpha`
+ *   `insertionSizeAlpha` times, under `LONG_INSERTION_MIN_LENGTH`,
+ *   `frequencyFadeGate` over `pxPerBp` squared.
+ * - A deletion's `alpha` is `sizeAlpha` of its width in px times
+ *   `frequencyFadeGate` over that width squared.
+ * - A mismatch's `alpha` is `qualityFade` times `frequencyFadeGate` over
+ *   `pxPerBp`, and a clip's that gate alone.
+ */
+export function alignmentMarkAlpha({
+  pxPerBp,
+  featureHeight,
+  fadeLowFrequency,
+  fadeLowBaseQuality = false,
+  insertions = { length: [], fade: [] },
+  deletions = { length: [], fade: [] },
+  mismatches = { fade: [], quality: [] },
+  clips = { fade: [] },
+}: {
+  pxPerBp: number
+  featureHeight: number
+  fadeLowFrequency: boolean
+  fadeLowBaseQuality?: boolean
+  insertions?: { length: readonly number[]; fade: readonly number[] }
+  deletions?: { length: readonly number[]; fade: readonly number[] }
+  mismatches?: { fade: readonly number[]; quality: readonly number[] }
+  clips?: { fade: readonly number[] }
+}) {
+  const gate = (base: number, fade: number) =>
+    frequencyFadeGate(base, fade, fadeLowFrequency)
+  return {
+    insertions: {
+      widthPx: insertions.length.map(length =>
+        insertionBarWidth(length, pxPerBp, featureHeight),
+      ),
+      alpha: insertions.length.map(
+        (length, i) =>
+          insertionSizeAlpha(length, pxPerBp) *
+          (length < LONG_INSERTION_MIN_LENGTH
+            ? gate(pxPerBp * pxPerBp, insertions.fade[i]!)
+            : 1),
+      ),
+    },
+    deletions: {
+      alpha: deletions.length.map((length, i) => {
+        const widthPx = length * pxPerBp
+        return sizeAlpha(widthPx) * gate(widthPx * widthPx, deletions.fade[i]!)
+      }),
+    },
+    mismatches: {
+      alpha: mismatches.fade.map(
+        (fade, i) =>
+          qualityFade(mismatches.quality[i]!, fadeLowBaseQuality) *
+          gate(pxPerBp, fade),
+      ),
+    },
+    clips: {
+      alpha: clips.fade.map(fade => gate(pxPerBp, fade)),
+    },
+  }
 }
 
 export type AlignmentTables = Awaited<ReturnType<typeof alignmentTables>>

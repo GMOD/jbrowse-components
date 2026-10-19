@@ -2,6 +2,7 @@ import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
+  alignmentMarkAlpha,
   alignmentTables,
   referenceSequence,
   registerAlignmentsAdapters,
@@ -309,6 +310,7 @@ export function createTablesEngine() {
         ),
     ),
     variantDensityAlpha,
+    alignmentMarkAlpha,
     synteny: trimmed((args: SyntenyTablesArgs) =>
       syntenyTables(pluginManager, args),
     ),
