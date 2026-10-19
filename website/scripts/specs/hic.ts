@@ -142,7 +142,7 @@ export const hicSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'hic/bcr_abl1_translocation',
     url: lgvSession(DEMO_CONFIG, junctionView),
-    viewportHeight: 1100,
+    viewportHeight: 1120,
     readySelector: displayPainted('hic-display'),
     // Two 2Mb windows means three region pairs per track (chr9xchr9, chr22xchr22,
     // chr9xchr22) at 5kb bins, over range requests into a 55GB and a 20GB file.

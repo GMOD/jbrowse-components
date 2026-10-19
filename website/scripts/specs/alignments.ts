@@ -1124,7 +1124,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     // the whole 330px display has to be inside the capture, or the label
     // anchored to the bottom of the track band is drawn off the frame
-    viewportHeight: 532,
+    viewportHeight: 544,
     readySelector: displayPainted('hic-display'),
     readyTimeout: HIC_READY_TIMEOUT,
     slowLiveSession: false,
