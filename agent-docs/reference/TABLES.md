@@ -90,7 +90,9 @@ stop at the region's ends: the worker counts depth wherever its reads reach,
 which past the region is a partial count. A band or mark the display's
 `show` members hide (`coverage.show`, `pileup.show`, `pileup.showMismatches`,
 `coverage.showInterbaseIndicators`, `sashimi.show`) comes back as empty
-tables.
+tables. `pileup.showMismatches: false` empties `mismatches` and `insertions`
+and drops the deletions from `gaps`, as the display's marks do; the skips
+and `clips` stay.
 `@jbrowse/tables` composes them (`createTablesEngine`) and adds
 `missingContig` to each table: where the region's contig is not one the file
 lists, the tables come back empty, as the browser draws such a track, and

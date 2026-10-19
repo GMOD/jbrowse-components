@@ -1115,17 +1115,25 @@ function coverageBand(
 }
 
 /** A table's rows whose `position` passes `keep`. */
-function rowsWhere<T extends { position: ArrayLike<number> }>(
+function rowsWhere<
+  T extends Record<string, ArrayLike<unknown>> & {
+    position: ArrayLike<number>
+  },
+>(table: T, keep: (position: number) => boolean) {
+  return rowsAt(table, i => keep(table.position[i]!))
+}
+
+/** A table's rows whose index passes `keep`. */
+function rowsAt<T extends Record<string, ArrayLike<unknown>>>(
   table: T,
-  keep: (position: number) => boolean,
+  keep: (row: number) => boolean,
 ) {
-  const rows = Array.from(table.position, (p, i) => (keep(p) ? i : -1)).filter(
-    i => i >= 0,
-  )
+  const length = Math.max(0, ...Object.values(table).map(c => c.length))
+  const rows = Array.from({ length }, (_, i) => i).filter(keep)
   return Object.fromEntries(
     Object.entries(table).map(([name, column]) => [
       name,
-      rows.map(i => (column as ArrayLike<unknown>)[i]),
+      rows.map(i => column[i]),
     ]),
   ) as { [K in keyof T]: T[K] extends ArrayLike<infer V> ? V[] : never }
 }
@@ -1672,7 +1680,7 @@ const BAND_TABLES = {
       'chains',
       'overlaps',
     ],
-    showMismatches: ['mismatches'],
+    showMismatches: ['mismatches', 'insertions'],
   },
   coverage: {
     show: [
@@ -1687,11 +1695,16 @@ const BAND_TABLES = {
   sashimi: { show: ['junctions'] },
 } as const
 
-/** The tables, each of a band the display does not draw left empty. */
-function drawnBands<T extends Record<string, Record<string, unknown[]>>>(
-  bands: ReturnType<typeof composingBands>,
-  tables: T,
-) {
+/**
+ * The tables, each of a band the display does not draw left empty. Under
+ * `pileup.showMismatches: false` the display drops the deletions and keeps
+ * the skips, which join a spliced read's blocks, so `gaps` keeps its skips.
+ */
+function drawnBands<
+  T extends Record<string, Record<string, unknown[]>> & {
+    gaps: { type: string[] }
+  },
+>(bands: ReturnType<typeof composingBands>, tables: T) {
   const hidden = new Set<string>(
     Object.entries(BAND_TABLES).flatMap(([band, members]) =>
       Object.entries(members).flatMap(([member, names]) =>
@@ -1699,7 +1712,7 @@ function drawnBands<T extends Record<string, Record<string, unknown[]>>>(
       ),
     ),
   )
-  return Object.fromEntries(
+  const drawn = Object.fromEntries(
     Object.entries(tables).map(([name, table]) => [
       name,
       hidden.has(name)
@@ -1707,6 +1720,12 @@ function drawnBands<T extends Record<string, Record<string, unknown[]>>>(
         : table,
     ]),
   ) as T
+  return bands.pileup.showMismatches
+    ? drawn
+    : {
+        ...drawn,
+        gaps: rowsAt(drawn.gaps, i => drawn.gaps.type[i] === 'skip'),
+      }
 }
 
 export type AlignmentTables = Awaited<ReturnType<typeof alignmentTables>>

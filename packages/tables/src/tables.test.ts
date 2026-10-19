@@ -371,6 +371,38 @@ test('a band the display hides leaves its tables empty', async () => {
   expect(noPileup.coverage.depth).toEqual(shown.coverage.depth)
 })
 
+test('pileup.showMismatches off drops what the display drops: mismatches, insertions and deletions, not skips or clips', async () => {
+  const shown = await engine.alignments(LONG_READS)
+  const hidden = await engine.alignments({
+    ...LONG_READS,
+    display: { pileup: { showMismatches: false } },
+  })
+  expect(shown.mismatches.position.length).toBeGreaterThan(0)
+  expect(shown.insertions.position.length).toBeGreaterThan(0)
+  expect(shown.gaps.type).toContain('deletion')
+  expect(hidden.mismatches.position).toHaveLength(0)
+  expect(hidden.insertions.position).toHaveLength(0)
+  expect(hidden.gaps.type).not.toContain('deletion')
+  expect(hidden.clips).toEqual(shown.clips)
+  expect(hidden.reads.start).toEqual(shown.reads.start)
+  const spliced = await engine.alignments(SPLICED)
+  const splicedHidden = await engine.alignments({
+    ...SPLICED,
+    display: { pileup: { showMismatches: false } },
+  })
+  const skips = (gaps: typeof spliced.gaps) =>
+    Object.fromEntries(
+      Object.entries(gaps).map(([name, column]) => [
+        name,
+        Array.from(column as ArrayLike<unknown>).filter(
+          (_, i) => gaps.type[i] === 'skip',
+        ),
+      ]),
+    )
+  expect(spliced.gaps.type).toContain('skip')
+  expect(splicedHidden.gaps).toEqual(skips(spliced.gaps))
+})
+
 test('base modifications paint under the modifications layer, keyed with the reads', async () => {
   const plain = await engine.alignments(METHYLATED)
   expect(plain.modifications.position.length).toBe(0)
