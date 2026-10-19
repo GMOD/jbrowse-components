@@ -12,15 +12,15 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
 A multi-genome synteny track as the multi-way display stacks it under a linear
 genome view, as tables: `lanes`, the anchor first and then each mate lane in the
-order it stacks, with the contig, zoom and orientation it picked; `segments`,
-the stretches of each lane's sequence across the view, cut where a lane opens a
-hole for a deletion, each with the px it spans; `blocks`, each alignment's
-placement on each lane; `ribbons`, what each gutter draws in paint order, a
-trapezoid from a span on its upper lane to a span on its lower one, with its
-color and the alpha it composites at; `alignments`, the records the ribbons
-draw; `legend`, the key; and `config`, the display's config with its defaults
-filled. Positions are genomic on each lane, and px across the view's `width`,
-where a lane's own frame puts them.
+order a fresh load stacks it, with the contig, zoom and orientation it picked;
+`segments`, the stretches of each lane's sequence across the view, cut where a
+lane opens a hole for a deletion, each with the px it spans; `blocks`, each
+alignment's placement on each lane; `ribbons`, what each gutter draws in paint
+order, a trapezoid from a span on its upper lane to a span on its lower one,
+with its color and the alpha it composites at; `alignments`, the records the
+ribbons draw; `legend`, the key; and `config`, the display's config with its
+defaults filled. Positions are genomic on each lane, and px across the view's
+`width`, where a lane's own frame puts them.
 
 ```js
 // type signature

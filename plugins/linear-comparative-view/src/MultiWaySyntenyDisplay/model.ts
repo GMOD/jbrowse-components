@@ -686,7 +686,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * each lane's deletions and insertions against the anchor, read off
+       * each lane's holes and stated changes against the anchor, read off
        * every fetched group rather than the viewport's, so one appears once
        * both its pieces arrive and not as the second scrolls in
        */
@@ -695,15 +695,15 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * each lane's holes, one per deletion in `laneIndels`
+       * each lane's holes, one per deletion `laneIndels` opens
        */
       get laneOpenings() {
         return this.laneIndels.openings
       },
       /**
        * #getter
-       * each lane's deletions and insertions as its records state them, for
-       * the header
+       * each lane's deletions, insertions and inversions as its records state
+       * them, for the header
        */
       get laneChanges() {
         return this.laneIndels.changes

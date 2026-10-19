@@ -11,7 +11,7 @@ import these from a plugin.
 
 A multi-genome synteny track as the multi-way display stacks it under a
 linear genome view, as tables: `lanes`, the anchor first and then each
-mate lane in the order it stacks, with the contig, zoom and orientation
+mate lane in the order a fresh load stacks it, with the contig, zoom and orientation
 it picked; `segments`, the stretches of each lane's sequence across the
 view, cut where a lane opens a hole for a deletion, each with the px it
 spans; `blocks`, each alignment's placement on each lane; `ribbons`, what
