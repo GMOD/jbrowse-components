@@ -61,8 +61,8 @@ otherwise render as unnamed rows above the genes; the `filter`'s
 
 ### Local files
 
-This runs on local files as a plain node script with no browser involved, using
-React SSR to create the SVG
+The tool runs on local files as a plain node script with no browser, and creates
+the SVG with React SSR
 
 ```bash
 ## generate an indexed fasta e.g. fai file
@@ -80,9 +80,9 @@ If `--out` is not specified it writes SVG to stdout
 
 ### Remote files
 
-An example with remote files, human hg19 and several tracks. Note the use of
---aliases, which smoothes over refname differences e.g. fasta contains 1 for
-chr1, and bigbed contains chr1, gff contains NC_000001.10
+An example with remote files, human hg19 and several tracks. `--aliases`
+reconciles refname differences, e.g. the fasta contains 1 for chr1, the bigbed
+contains chr1 and the gff contains NC_000001.10
 
 <!-- jb2export: remote_files -->
 
@@ -237,10 +237,10 @@ jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
 <Figure src="/img/jbrowse-img/alignments_pileup.png" caption="A coverage histogram over a read pileup, with mismatches highlighted" />
 
 Track modifiers color, sort, and group the reads. `sort:base` orders the pileup
-by the base each read has at the center position: here, HG008-T PacBio HiFi
-reads over the `CUZD1` gene, where the sort pulls every read with a ~1.8 kb
-somatic deletion into one contiguous band so the heterozygous deletion (and its
-coverage dip) pops out of the pileup:
+by the base each read has at the center position. Here it sorts HG008-T PacBio
+HiFi reads over the `CUZD1` gene, so every read with a ~1.8 kb somatic deletion
+falls into one contiguous band and the heterozygous deletion (and its coverage
+dip) is visible in the pileup:
 
 <!-- jb2export: alignments_readgroup -->
 
@@ -271,11 +271,10 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 `baseColor:methylation` paints per-base CpG methylation calls from a
 modified-base (`MM`/`ML`) BAM/CRAM: methylated cytosines red, unmethylated blue.
 This COLO829 nanopore CRAM (hg38, streamed from the ONT open-data S3) with the
-UCSC CpG-island BED on top shows the methylated flanks giving way to the
-unmethylated island cores, read against the annotated island boundaries.
-`showLegend=true` draws the color key, worth adding to any export whose coloring
-is not the default one: the app leaves it off, where a reader can open the track
-menu instead.
+UCSC CpG-island BED on top shows methylated flanks and unmethylated island
+cores, read against the annotated island boundaries. `showLegend=true` draws the
+color key. The app leaves the legend off because a reader can open the track
+menu, so add it to any export whose coloring is not the default.
 
 <!-- jb2export: methylation -->
 
@@ -290,14 +289,14 @@ jb2export --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
 <Figure src="/img/jbrowse-img/methylation.png" caption="COLO829 nanopore reads colored by per-base CpG methylation over a CpG island" />
 
 `sashimi:auto` overlays splice-junction arcs on the coverage band, sized by the
-number of reads spanning each junction: the standard RNA-seq splice view.
-`coverage.height=` makes the coverage/sashimi band tall so the arcs are legible,
-and `scales.y.type=log` is what puts every exon on the plot: RNA-seq depth here
-spans three orders of magnitude, so on a linear axis the tallest exon is the
-only one with any height and the arcs land over a flat line. This
-strand-specific paired-end RNA-seq (hg19, public) over `B2M` shows the long
-first intron as one big arc and the closely-spaced downstream exons as smaller
-arcs, with the spliced read pairs (green mate lines) below:
+number of reads spanning each junction. `coverage.height=` makes the
+coverage/sashimi band tall so the arcs are legible, and `scales.y.type=log` puts
+every exon on the plot, because RNA-seq depth here spans three orders of
+magnitude, so on a linear axis the tallest exon is the only one with any height
+and the arcs sit over a flat line. This strand-specific paired-end RNA-seq
+(hg19, public) over `B2M` shows the long first intron as one big arc and the
+closely-spaced downstream exons as smaller arcs, with the spliced read pairs
+(green mate lines) below:
 
 <!-- jb2export: sashimi_junctions -->
 
@@ -309,19 +308,18 @@ jb2export --hub hg19 --track hg19-ncbiRefSeqCurated height:90 \
 
 <Figure src="/img/jbrowse-img/sashimi_junctions.png" caption="RNA-seq sashimi plot over B2M: splice-junction arcs on the coverage band sized by junction read depth, over the spliced read pileup" />
 
-This 1000 Genomes ONT sample (HG00151, long reads streamed from the 1000G-ONT
-S3) over a ~1.2 kb inversion on chr1 draws the same event three ways:
+Three modifiers draw the ~1.2 kb chr1 inversion in the 1000 Genomes ONT sample
+HG00151 (long reads streamed from the 1000G-ONT S3):
 
 - **`arcs:up` / `arcs:down`** draws a read-connection arc for every split
-  (supplementary) read, linking its two alignment segments, the arc color
-  encoding the junction's orientation: here the two breakpoints joined by
-  **purple inversion-junction arcs**, where a read's two halves map in opposite
-  orientations.
-- **`unit=chain`** chains each read's split segments, so the same inversion
-  reads in the pileup itself: a **blue reverse-strand core between red
-  forward-strand flanks**, spanning breakpoint to breakpoint.
-- **`facet=split`** puts those reads in their own labelled section above the
-  flat background pileup.
+  (supplementary) read, linking its two alignment segments and colored by the
+  junction's orientation. Here **purple inversion-junction arcs** join the two
+  breakpoints, where a read's two halves map in opposite orientations.
+- **`unit=chain`** chains each read's split segments, so the inversion shows in
+  the pileup itself as a **blue reverse-strand core between red forward-strand
+  flanks**, spanning breakpoint to breakpoint.
+- **`facet=split`** puts those reads in a separate labelled section above the
+  background pileup.
 
 <!-- jb2export: sv_read_arcs -->
 
@@ -335,27 +333,26 @@ jb2export --hub hg38 \
 
 ### Breakpoint split views
 
-Both sides of a junction, stacked, with a curve per read that leaves one panel
-and arrives in the other. Everything above draws an SV in **reference**
-coordinates; this draws the two loci it joins.
+The `breakpoint` subcommand stacks both sides of a junction and draws a curve
+for each read that has alignments in two panels. Everything above draws an SV in
+**reference** coordinates; the breakpoint view draws the two loci it joins.
 
 **Repeating `--loc` stacks a panel; whitespace inside one `--loc` adds a window
-to that panel** — the meaning a space already has for a linear view. So the
+to that panel**, the meaning a space already has for a linear view. So the
 two-breakend case is two bare `--loc` flags with no shell quoting, and a quoted
 `--loc` is how a panel takes two windows.
 
-A connector is drawn dashed when the read holding it has a supplementary
-alignment at a locus that is not on screen: the view is reporting an incomplete
-picture, and the fix is to give it the missing panel. COLO829's der(3) is a
-closed cycle over three chromosomes, so the junction below needs a chr10 panel
-between the two it appears to join, and with it every connector in the figure is
-solid.
+A connector is drawn dashed when the read it joins has a supplementary alignment
+at a locus that is not on screen. A dashed connector means a panel is missing,
+so add that panel. COLO829's der(3) is a closed cycle over three chromosomes, so
+the junction below needs a chr10 panel between the two it appears to join, and
+with it every connector in the figure is solid.
 
 **One render per sample, and the control is the other render.** A somatic call
-is the difference between the tumour and its matched normal, so the figure that
-argues it is two of these side by side: the same `--loc` list and the same
-`--width`, one `--track` each. The connecting curves are drawn per track, so
-they fill the tumour render and the normal render has none.
+is the difference between the tumour and its matched normal, so a figure for one
+is two renders side by side, with the same `--loc` list and the same `--width`
+and one `--track` each. The connecting curves are drawn per track, so the tumour
+render has them and the normal render has none.
 
 <!-- jb2export: sv_review_tumor -->
 
@@ -383,18 +380,18 @@ jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
 
 <Figure src="/img/jbrowse-img/sv_review_normal.png" caption="The three der(3) loci in the matched normal, with no connecting curves in any panel" />
 
-Both commands take these two modifiers:
+The tumour and normal commands each take two modifiers:
 
-- **`force:true`** is there because the chr3 panel is 1.2 kb of 200x nanopore,
-  which is over the byte gate; without it that panel draws the gate's message
-  instead of reads.
-- **`featureHeight:super-compact`** draws each read 1 px tall, which is what
-  keeps six pileups on one screen.
+- **`force:true`** overrides the byte gate, which the chr3 panel exceeds at 1.2
+  kb of 200x nanopore; without it that panel draws the gate's message instead of
+  reads.
+- **`featureHeight:super-compact`** draws each read 1 px tall, so six pileups
+  fit on one screen.
 
 **A reconstructed allele is an assembly, so it is a third render.** Once the
-junctions have been resolved into a derivative contig, the three loci above stop
-needing three panels: they are one axis, in order. That contig is an assembly in
-the same config, so the only thing that changes is which `--assembly` is named.
+junctions have been resolved into a derivative contig, the three loci above form
+one axis, in order, so they need one panel instead of three. That contig is an
+assembly in the same config, so only the `--assembly` argument changes.
 
 <!-- jb2export: sv_review_derivative -->
 
@@ -407,11 +404,11 @@ jb2export --config https://jbrowse.org/demos/cancer_sv/config.json \
 
 <Figure src="/img/jbrowse-img/sv_review_derivative.png" caption="The COLO829 der(3) allele as a single 39.5 kb contig: 32.7 kb of chr3, 199 bp of chr10 and 183 bp of chr12 end to end, with the spanning reads running through every junction" />
 
-Putting the three beside each other is your docs' job; jb2export does not
-compose them.
+jb2export writes one image per command, so place the three beside each other in
+your docs.
 
-To do that for a whole callset rather than one junction, `jb2export batch`
-renders one image per row of a BEDPE. See the
+To render a whole callset, `jb2export batch` renders one image per row of a
+BEDPE. See the
 [SV callset review tutorial](https://jbrowse.org/jb2/docs/tutorials/sv_callset_review/),
 and `jb2export batch --help`.
 
@@ -452,9 +449,9 @@ jb2export --fasta ref.fa --bam linked.bam unit=chain --loc chr1:1-50000
 `--loc all` shows the full assembly, and several bigwig plotting options help
 draw a bigwig genome-wide.
 
-This logscale, manual-minmax example plots the SKBR3 breast-cancer cell line's
-read coverage genome-wide (hg19, public bigwig), where the amplifications and
-deletions of the cancer karyotype stand out:
+The logscale, manual-minmax example below plots the SKBR3 breast-cancer cell
+line's read coverage genome-wide (hg19, public bigwig), where the amplifications
+and deletions of the cancer karyotype are visible:
 
 <!-- jb2export: skbr3_cov -->
 
@@ -482,8 +479,8 @@ jb2export --loc all \
 `MultiQuantitativeTrack`, where each subtrack shares one autoscale so the rows
 are directly comparable. Its argument is either a comma-separated list of BigWig
 files (local paths or URLs), or a `.json` file holding an array (of plain BigWig
-paths/URLs, or of _subadapter_ objects that give each row its own `name`,
-`color`, and `group`):
+paths/URLs, or of _subadapter_ objects that set `name`, `color`, and `group` for
+each row):
 
 ```bash
 ## quick shorthand: a comma-separated file list, one row per file
@@ -493,14 +490,13 @@ jb2export --hub hg38 --multiwig a.bw,b.bw,c.bw height:300 --loc GAPDH --out mult
 jb2export --hub hg38 --multiwig sources.json height:520 --loc GCG --out multi.png
 ```
 
-This example renders the CATlas single-cell ATAC accessibility-by-cell-type data
-(Zhang et al 2021): 16 human cell types, each a BigWig, wired up with per-row
+The example below renders the CATlas single-cell ATAC accessibility-by-cell-type
+data (Zhang et al 2021): 16 human cell types, each a BigWig, set up with per-row
 labels/colors/groups in
 [`data/scatac_catlas.json`](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-img/data/scatac_catlas.json),
 over the `GCG` (glucagon) locus. The **Alpha (glucagon)** row (the pancreatic
 cell type that expresses GCG) shows strong open chromatin across the gene while
-the other 15 cell types stay quiet on the shared scale, a clean readout of
-cell-type-specific chromatin accessibility at a marker gene:
+the other 15 cell types show little signal on the shared scale:
 
 <!-- jb2export: scatac_multiwiggle -->
 
@@ -574,11 +570,10 @@ Feature tracks (`--gffgz`, `--bigbed`, `--bedgz`, or a hosted `--track`) render
 their glyphs with labels, and `--refseq` adds the assembly's reference-sequence
 track. Zoomed to base level, it shows the DNA bases and the six-frame
 translation (green start codons, red stops). This human example zooms into a
-`TP53` intron/CDS boundary so the gene track's structure reads at base level:
-the intron thins to a connector line, the coding exon begins as a solid CDS
-block, and that block edge lines up with a specific reference base and reading
-frame. The `filter`'s `"genes":"only"` keeps the RefSeq track to its gene
-features:
+`TP53` intron/CDS boundary. The intron thins to a connector line, the coding
+exon begins as a solid CDS block, and the block's edge lines up with a specific
+reference base and reading frame. The `filter`'s `"genes":"only"` keeps the
+RefSeq track to its gene features:
 
 <!-- jb2export: gene_track -->
 
@@ -592,9 +587,9 @@ jb2export --hub hg38 \
 
 ### Themes
 
-`--themeName` selects a palette — `default`, `stock` or `minimal` — and
-`--themeMode` draws it `light` or `dark`. The names from before those were
-separate — `darkStock`, `lightMinimal` and the rest — still work.
+`--themeName` selects a palette (`default`, `stock` or `minimal`) and
+`--themeMode` draws it `light` or `dark`. The combined names `darkStock`,
+`lightMinimal` and the rest still work.
 
 <!-- jb2export: dark_theme -->
 
@@ -611,7 +606,8 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:100 \
 Per-track settings use a colon-based syntax that follows the track file
 argument, e.g. `--bam reads.bam color:strand height:400`. This is the full list
 of named modifiers. Any other display setting is a
-[slot write](#any-display-setting-slotpathvalue) in the slot's own spelling.
+[slot write](#any-display-setting-slotpathvalue), spelled as the display spells
+the slot.
 
 Modifiers are grouped below by the track types they apply to. Passing one to a
 track type it does not apply to (say `sashimi:up` on a BigWig) prints a warning
@@ -619,10 +615,10 @@ naming the types it does work on. A track whose display none of these target
 (GWAS, MAF, LD, marks, synteny, sequence) takes only the all-tracks modifiers
 and [slot writes](#any-display-setting-slotpathvalue).
 
-A modifier **value** the modifier can't use — `arcs:upp`, `height:8o`,
-`force:ture` — is an error, not a warning: the tool writes one figure and exits,
-so a warning would scroll past and leave you with a wrong image. The `force`
-modifier also reads bare, so `force` on its own means `force:true`.
+A modifier **value** the modifier can't use, such as `arcs:upp`, `height:8o` or
+`force:ture`, is an error. The tool writes one figure and exits, so a warning
+would scroll past and leave you with a wrong image. The bare form `force` means
+`force:true`.
 
 **All tracks**
 
@@ -634,8 +630,8 @@ modifier also reads bare, so `force` on its own means `force:true`.
 | `name:label`    | `name:"Tumor"`         | Track label (defaults to the filename)               |
 | `index:path`    | `index:reads.bam.csi`  | Index file, when it isn't a sibling of the data file |
 
-A track is identified by its filename, so two inputs sharing one —
-`--bam tumor/sample.bam --bam normal/sample.bam` — would both be labelled
+A track is identified by its filename, so two inputs with the same filename
+(`--bam tumor/sample.bam --bam normal/sample.bam`) would both be labelled
 `sample.bam`. Both render, but pass `name:` to tell them apart in the figure.
 
 With no `index:`, a **local** file's index is whichever of these siblings is
@@ -651,8 +647,8 @@ actually there, opened as the type it is:
 
 <!-- INJECT_INDEX_SPELLINGS END -->
 
-A remote file is not probed, since checking costs a request, so a hosted `.csi`
-still wants an explicit `index:`.
+The tool does not probe a remote file, because checking costs a request. A
+hosted `.csi` therefore needs an explicit `index:`.
 
 By default each track uses its primary display. `display:value` selects an
 alternate one. These friendly aliases are recognized (any other value is passed
@@ -674,16 +670,17 @@ Reads & coloring:
 | `baseColor:field`              | `baseColor:methylation`      | Draw a per-base layer over the reads, whatever `color:` fills them with (see fields below) |
 | `sort:type` or `sort:type:tag` | `sort:strand`, `sort:tag:RG` | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`)                              |
 
-Which reads are drawn. These filter before the coverage pipeline as well as
-before layout, so a filter that removes reads removes them from the coverage
-band too.
+The modifiers below choose which reads are drawn. They filter before the
+coverage pipeline as well as before layout, so a filter that removes reads
+removes them from the coverage band too.
 
-The last four name a read category and take one vocabulary: `only` keeps that
-category, `exclude` drops it, and omitting the modifier leaves it alone. They
-are AND-ed with each other and with the masks above. The SV export is
-`svSignal:only`. Passing `all` is accepted and stores nothing, which lets a
-script pass a category through from a variable that may be empty. The
-`properPairs:` modifier of 5.0 betas is an error naming `svSignal:only`.
+The last four modifiers in the table, `svSignal:`, `split:`, `alone:` and
+`spliced:`, name a read category and take one vocabulary: `only` keeps that
+category, `exclude` drops it, and omitting the modifier leaves it alone. A read
+must pass each of them and the masks above. The SV export is `svSignal:only`.
+Passing `all` is accepted and stores nothing, which lets a script pass a
+category through from a variable that may be empty. The `properPairs:` modifier
+of 5.0 betas is an error naming `svSignal:only`.
 
 | Modifier                 | Example                | Description                                                                                                                                                                                                                                                                                                            |
 | ------------------------ | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -692,8 +689,8 @@ script pass a category through from a variable that may be empty. The
 | `filterTag:TAG:value`    | `filterTag:HP:1`       | Keep only reads whose tag has this value. Repeatable, and every one must pass                                                                                                                                                                                                                                          |
 | `svSignal:only\|exclude` | `svSignal:only`        | SV evidence, and the rest of the read's pair in the same window: a split read, an insertion or deletion of 50 bp or more, or a paired read the aligner did not call concordant (no 0x2, a mate unmapped or on another chromosome, or a pair not facing FR). `mapq:` judges each read alone                             |
 | `split:only\|exclude`    | `split:only`           | Reads the aligner gave a supplementary segment (SAM flag 0x800), read off the SA tag                                                                                                                                                                                                                                   |
-| `alone:only\|exclude`    | `alone:exclude`        | Reads with no mate or split segment of their own in the window                                                                                                                                                                                                                                                         |
-| `spliced:only\|exclude`  | `spliced:only`         | Reads whose CIGAR has a reference skip (N) — an intron, in RNA-seq                                                                                                                                                                                                                                                     |
+| `alone:only\|exclude`    | `alone:exclude`        | Reads with no mate or split segment in the window                                                                                                                                                                                                                                                                      |
+| `spliced:only\|exclude`  | `spliced:only`         | Reads whose CIGAR has a reference skip (N), an intron in RNA-seq                                                                                                                                                                                                                                                       |
 
 Overlays & subtracks:
 
@@ -708,7 +705,7 @@ Layout & sizing:
 | ------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
 | `featureHeight:preset\|N` | `featureHeight:super-compact`, `featureHeight:4` | Per-read height (spacing between reads is derived from it). Presets: `normal` (7px), `compact` (3px), `super-compact` (1px) |
 
-Settings written as slots, in the display's own spelling:
+Settings written as slots, spelled as the display spells them:
 
 | Write                                    | Description                                                                                                                                                |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -719,7 +716,7 @@ Settings written as slots, in the display's own spelling:
 | `coverage.show=false`                    | Hide the coverage subtrack                                                                                                                                 |
 | `pileup.show=false`                      | Hide the pileup; with `coverage.height`, a coverage-only view                                                                                              |
 | `coverage.height=200`                    | Height of the coverage subtrack, and of `arcs:up` arcs drawn over it                                                                                       |
-| `readConnections.height=120`             | Height of the arcs' or read cloud's own band, under `arcs:down` and `arcs:cloud`, or `arcs:up` with `coverage.show=false`                                  |
+| `readConnections.height=120`             | Height of the arcs' or read cloud's band, under `arcs:down` and `arcs:cloud`, or `arcs:up` with `coverage.show=false`                                      |
 | `readConnections.lineWidth=2`            | Stroke width for read-connection arcs and lines                                                                                                            |
 | `sashimi.height=120`                     | Height of the sashimi arc band                                                                                                                             |
 | `filter.junctions.minReads=3`            | Minimum reads a splice junction needs before its arc is drawn                                                                                              |
@@ -737,8 +734,8 @@ Anything else is a CSS color, painting every read with it:
 | `insertSize`               | Paired-end insert size                         |
 | `pairOrientation`          | Paired-end orientation                         |
 | `insertSizeAndOrientation` | Combined insert size + orientation             |
-| `mateRefName`              | Reference the mate landed on                   |
-| `mateAssembly`             | Assembly the mate landed on, for synteny reads |
+| `mateRefName`              | Reference the mate maps to                     |
+| `mateAssembly`             | Assembly the mate maps to, for synteny reads   |
 | `tags.<TAG>`               | Color by any BAM tag, as `color.field=tags.HP` |
 
 Available `baseColor:` fields:
@@ -753,10 +750,10 @@ Available `baseColor:` fields:
 
 **Feature tracks (GFF3/BED/BigBed) and VCF tracks**
 
-These share one display base, so every modifier below applies to both.
-`facet=<field>` stacks the track into one labelled section per value: `strand`,
-an attribute, or a dotted path such as `INFO.SVTYPE`. `color.field=<attribute>`
-colors by one.
+Feature and VCF tracks share one display base, so every modifier below applies
+to both. `facet=<field>` stacks the track into one labelled section per value:
+`strand`, an attribute, or a dotted path such as `INFO.SVTYPE`.
+`color.field=<attribute>` colors by one.
 
 | Modifier                            | Example                 | Description                                                                                                                                                                                                       |
 | ----------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -767,9 +764,8 @@ colors by one.
 **BigWig tracks**
 
 A BigWig's score axis is the `scales.y` setting, which also applies to a
-BAM/CRAM track's coverage band, where `scales.y.type=log` is usually what an
-RNA-seq figure wants. `mark` names how the scores draw: `bar`, `point`, `line`
-or `span`.
+BAM/CRAM track's coverage band, where `scales.y.type=log` is the usual setting
+for RNA-seq. `mark` names how the scores draw: `bar`, `point`, `line` or `span`.
 
 | Write                                           | Description                              |
 | ----------------------------------------------- | ---------------------------------------- |
@@ -793,11 +789,12 @@ jb2export --fasta ref.fa \
 ### Any display setting (`slot.path=value`)
 
 A modifier written `slot.path=value` sets that slot of the track's display, so
-every setting in the [config docs](https://jbrowse.org/jb2/docs/config/) is
-reachable without a modifier of its own. Paths nest with dots. A path into a
-setting, such as `color.domain`, changes that one member and keeps the rest of
-what the track's config or a named modifier gave the setting, in whatever order
-the modifiers come:
+you can set any setting in the
+[config docs](https://jbrowse.org/jb2/docs/config/) without a dedicated
+modifier. Paths nest with dots, and a path into a setting, such as
+`color.domain`, changes that one member and keeps the rest of what the track's
+config or a named modifier gave the setting, in whatever order the modifiers
+come:
 
 ```bash
 ## a numeric tag on a color ramp
@@ -814,16 +811,15 @@ jb2export --fasta ref.fa --bam reads.bam color.field=tags.HP color.domain=1,2 \
 - a comma makes a list, and a trailing comma a list of one: `color.range=tan,`
 - a digit segment indexes a list, so `color.range.0=tan` changes the first color
   of a range and `marks.1.encoding.color.value=red` the second mark of a
-  declared plot, where `color.range=tan,teal` says what the whole range is. An
-  index has to be one the list already reaches, so fill `0` before `1`. A list
-  written from nothing reads better as one JSON modifier than as a path per
-  member
-- a `jexl:` item keeps the commas inside its own brackets and quotes:
-  `filter=jexl:get(feature,'score')>5,` is a list of one filter
-- a location keeps the commas grouping its digits:
+  declared plot, whereas `color.range=tan,teal` sets the whole range. An index
+  has to be one the list already reaches, so fill `0` before `1`. A list written
+  from nothing reads better as one JSON modifier than as a path per member
+- a `jexl:` item keeps the commas inside brackets and quotes, so
+  `filter=jexl:get(feature,'score')>5,` is a list of one filter, and a location
+  keeps the commas grouping its digits, so
   `clusterRegion=chr2:135,787,850-135,876,467` is one region
 - a slot the display does not declare, or a key its object refuses, fails the
-  export with the display's own message
+  export with the message the display reports
 
 ### Declaring what to draw (`display:marks`)
 
@@ -832,14 +828,14 @@ jb2export --fasta ref.fa --bam reads.bam color.field=tags.HP color.domain=1,2 \
 draws the marks you declare instead of the glyphs its track type would: a list
 of bars, points, spans, text or links, each naming which feature fields feed
 which channel. It opens over a BAM, CRAM, VCF, GFF3, BED, BigBed, BigWig or
-MultiWiggle track — everything but `--hic` — so what differs between them is
-only which fields answer. A read's `score` is its MAPQ; a variant has its
+MultiWiggle track, which is everything but `--hic`, so the tracks differ in
+which fields they provide. A read's `score` is its MAPQ; a variant has its
 quality as `QUAL` and no `score` at all, so a mark over a VCF names the field it
-wants; a BigWig past its raw section answers a zoom level's mean as `score`,
+wants; a BigWig past its raw section provides a zoom level's mean as `score`,
 with `minScore` and `maxScore` beside it.
 
-A whole plot is a list of objects, so state it as one JSON modifier — the same
-shape the track's config or a session spec would hold. Here one BigWig draws
+A whole plot is a list of objects, so state it as one JSON modifier, which has
+the structure the track's config or a session spec holds. Here one BigWig draws
 three marks in one plot: each bin's mean as bars, and its least and greatest
 value as points.
 
@@ -849,8 +845,9 @@ jb2export --fasta ref.fa --bigwig conservation.bw display:marks height:300 \
   --loc chr1:1-100000 --out out.svg
 ```
 
-A mark has a `transform` list run before it draws, which nests the same way — a
-binned count is two steps, and the aggregate's `ops` a list inside the second:
+A mark has a `transform` list run before it draws, which nests the same way. A
+binned count is two steps, and the aggregate's `ops` is a list inside the
+second:
 
 ```bash
 jb2export --fasta ref.fa --gffgz genes.gff.gz display:marks height:160 \
@@ -858,25 +855,24 @@ jb2export --fasta ref.fa --gffgz genes.gff.gz display:marks height:160 \
   --loc chr1:1-10,000,000 --out density.svg
 ```
 
-**A path changes one mark of a list, where the JSON states the list whole.** So
-a track whose config already declares the plot takes
+**A path changes one mark of a list, where the JSON states the list whole.** A
+track whose config already declares the plot takes
 `marks.1.encoding.color.value=red` to repaint its second mark and leave the rest
-alone, the way `color.domain=` edits one member of a color object — and
-`marks.2` before anything has written `marks.0` and `marks.1` is an error rather
-than a list with holes in it.
+alone, the way `color.domain=` edits one member of a color object. `marks.2`
+before anything has written `marks.0` and `marks.1` is an error, because a list
+cannot have holes.
 
-A mark the display cannot draw as declared — a bar naming no `y`, or a `y` the
-data does not have — fails the export with the rule the display itself states,
-rather than writing a picture of an empty plot.
+A mark the display cannot draw as declared, such as a bar naming no `y` or a `y`
+the data does not have, fails the export with the rule the display reports, and
+jb2export writes no image of an empty plot.
 
 ### Raw display settings (JSON)
 
-A modifier that starts with `{` is parsed as JSON. Each key states its setting
-whole, the way a session spec does, so a `color` object here replaces the one
-the track's config wrote — which is what makes it the readable way to state a
-list of objects such as `marks`, and the only way to write a value a path
-cannot, such as a color with commas of its own. Use compact JSON (a single shell
-token, no spaces):
+A modifier that starts with `{` is parsed as JSON. A JSON key sets its whole
+setting, as a session spec does, so writing a `color` object here replaces the
+one in the track's config. JSON is the readable way to write a list of objects
+such as `marks`, and the only way to write a value a path cannot, such as a
+color that contains commas. Use compact JSON (a single shell token, no spaces):
 
 ```bash
 jb2export --fasta ref.fa --bam reads.bam '{"color":{"range":["rgb(217,201,163)"]}}' \
@@ -896,9 +892,9 @@ the first assembly and the target side is the second.
 The examples below use the public yeast comparison (S. cerevisiae R64 vs the
 YJM1447 strain) and reproduce as-is with network access.
 
-A whole-genome dotplot: every query contig on x, every target contig on y.
-`--autoDiagonalize` reorders the target contigs so the main alignment forms a
-clean diagonal:
+The dotplot below is whole-genome, with every query contig on x and every target
+contig on y. `--autoDiagonalize` reorders the target contigs so the main
+alignment forms a clean diagonal:
 
 <!-- jb2export: yeast_dotplot -->
 
@@ -912,9 +908,9 @@ jb2export dotplot \
 
 <Figure src="/img/jbrowse-img/yeast_dotplot.png" caption="Whole-genome dotplot of two yeast assemblies (R64 vs the YJM1447 strain)" />
 
-A linear synteny ribbon between one chromosome in each assembly (here YJM1447
-chr `I` vs R64 chr `I`, accession `NC_001133.9`). `--drawCurves` renders the
-ribbon as a smooth bezier instead of straight trapezoids:
+The linear synteny ribbon below joins one chromosome in each assembly (here
+YJM1447 chr `I` vs R64 chr `I`, accession `NC_001133.9`). `--drawCurves` renders
+the ribbon as a smooth bezier instead of straight trapezoids:
 
 <!-- jb2export: yeast_synteny -->
 
@@ -932,24 +928,23 @@ jb2export synteny \
 
 Omitting `--loc`/`--loc2` shows the whole assembly on that axis (note: `dotplot`
 ignores `--loc` and always shows the whole genome). `--autoDiagonalize` and
-`--drawCurves` are the CLI shortcuts for the busiest-comparison knobs; the full
-set is available via `--spec` (see the table below). Run
+`--drawCurves` are the CLI shortcuts for the options that help busy comparisons;
+the full set is available via `--spec` (see the table below). Run
 `jb2export dotplot --help` for the full list of comparative options.
 
 ### Multi-way synteny (three or more assemblies)
 
-Stack any number of assemblies straight from the command line: repeat the
-assembly flag for each one and place each alignment file between the two
-assemblies it compares. Assemblies stack top-to-bottom in the order written, and
-each synteny file becomes the ribbon for the gap it sits in. No config or spec
-JSON is required.
+Stack any number of assemblies straight from the command line, with no config or
+spec JSON: repeat the assembly flag for each one and place each alignment file
+between the two assemblies it compares. Assemblies stack top-to-bottom in the
+order written, and each synteny file becomes the ribbon for the gap it sits in.
 
 Use `--chromSizes` instead of `--fasta` for a whole-genome comparison: it builds
 the assembly from a `chrom.sizes` file (two tab-separated columns,
 `name<TAB>length`), skipping the multi-GB sequence a genome-wide dotplot never
 draws.
 
-So the flags alternate, and each one's position is what it means:
+The flags alternate, and the position of each flag determines its role:
 
 ```text
 --chromSizes a.chrom.sizes    assembly 1, the top row
@@ -959,7 +954,7 @@ So the flags alternate, and each one's position is what it means:
 --chromSizes c.chrom.sizes    assembly 3, the bottom row
 ```
 
-which as a command is:
+As a command:
 
 ```bash
 jb2export synteny \
@@ -971,29 +966,29 @@ jb2export synteny \
   --out synteny.svg
 ```
 
-Per-assembly options ride on the assembly flag as `key:value` modifiers, e.g.
-`--fasta a.fa loc:chr1 aliases:a.aliases.txt`. The busy-comparison knobs are
-flags:
+Per-assembly options attach to the assembly flag as `key:value` modifiers, e.g.
+`--fasta a.fa loc:chr1 aliases:a.aliases.txt`. The options for busy comparisons
+are these flags:
 
-| Flag                   | Effect                                                          |
-| ---------------------- | --------------------------------------------------------------- |
-| `--autoDiagonalize`    | Reorders each lower assembly's chromosomes for least overlap    |
-| `--minAlignmentLength` | Hides alignments shorter than N bp — the main de-spaghetti knob |
-| `--colorBy query`      | Tints each ribbon by its query chromosome                       |
-| `--opacity`            | Ribbon opacity (0–1); lower values reveal overlap density       |
-| `--drawCurves`         | Bezier ribbons instead of straight trapezoids                   |
-| `--levelHeights`       | Per-level pixel height (comma-separated, e.g. `300,300`)        |
+| Flag                   | Effect                                                        |
+| ---------------------- | ------------------------------------------------------------- |
+| `--autoDiagonalize`    | Reorders each lower assembly's chromosomes for least overlap  |
+| `--minAlignmentLength` | Hides alignments shorter than N bp, the main declutter option |
+| `--colorBy query`      | Tints each ribbon by its query chromosome                     |
+| `--opacity`            | Ribbon opacity (0–1); lower values reveal overlap density     |
+| `--drawCurves`         | Bezier ribbons instead of straight trapezoids                 |
+| `--levelHeights`       | Per-level pixel height (comma-separated, e.g. `300,300`)      |
 
 > **Query vs. target orientation.** PAF/BLAST list the query first, so the
 > assembly written _above_ the alignment is the query. A chain/delta liftover
 > maps target→query (a UCSC `targetToQuery.over.chain`), so there the assembly
-> above is the _target_. `jb2export` handles this per format automatically: just
-> write the assemblies in stacked order.
+> above is the _target_. `jb2export` handles this per format, so write the
+> assemblies in stacked order.
 
 Alternatively, drive the view from a session-spec JSON with `--spec` (assemblies
-and comparison tracks supplied via `--config`). The spec is the same shape used
-by the JBrowse Web URL `&session=spec-` parameter, so JSON copied out of a
-browser URL works directly: see
+and comparison tracks supplied via `--config`). The spec has the same format as
+the JBrowse Web URL `&session=spec-` parameter, so JSON copied out of a browser
+URL works directly. See
 [URL query parameter API](https://jbrowse.org/jb2/docs/urlparams/#linear-synteny-view-multi-way)
 for the full format. A flat `tracks` list puts each track on every gap between
 adjacent `views` that its `assemblyNames` cover; one sub-array per gap names
@@ -1006,14 +1001,14 @@ jb2export --config jbrowse.json --spec spec.json --out synteny.svg
 
 Without a `--spec`, `synteny --config` stacks the config's assemblies in the
 order they are listed and places each SyntenyTrack by its `assemblyNames`: a
-pairwise track lands in the one gap between the two genomes it names, and a
-track listing three or more (a `MultiGenomePAFAdapter` or `MCScanBlocksAdapter`
-file covering N genomes, as built in the
+pairwise track goes in the one gap between the two genomes it names, and a track
+listing three or more (a `MultiGenomePAFAdapter` or `MCScanBlocksAdapter` file
+covering N genomes, as built in the
 [all-vs-all](https://jbrowse.org/jb2/docs/tutorials/allvsall_synteny/) and
 [multiway](https://jbrowse.org/jb2/docs/tutorials/multiway_synteny_grape_peach_cacao/)
 synteny tutorials) backs every band whose pair it covers. A track covering no
-adjacent pair — an A-vs-C alignment in an A/B/C stack — is reported and skipped
-rather than drawn between the wrong two genomes.
+adjacent pair, such as an A-vs-C alignment in an A/B/C stack, is reported and
+skipped.
 
 A whole-genome example (peach vs grape, the chrom.sizes come from this repo and
 the alignment PAF from S3):
@@ -1030,11 +1025,11 @@ jb2export synteny --chromSizes data/comparative/peach.chrom.sizes \
 
 <Figure src="/img/jbrowse-img/grape_peach_synteny.png" caption="Whole-genome synteny, grape vs peach, with autoDiagonalize and colorBy query" />
 
-A mammalian-scale test: human (hs1/T2T) vs mouse (mm39) liftOver, where the
-`--minAlignmentLength 500000` filter is what keeps the plot from turning into
-spaghetti. `--chromSizes` means no multi-GB sequence is downloaded (whole-genome
-synteny draws none); the chrom.sizes are committed and the liftOver chain
-streams from the web, so this reproduces with only the public chain:
+The mammalian-scale example is a human (hs1/T2T) vs mouse (mm39) liftOver, where
+the `--minAlignmentLength 500000` filter keeps the plot readable. With
+`--chromSizes`, the command downloads no multi-GB sequence (whole-genome synteny
+draws none); the chrom.sizes are committed and the liftOver chain streams from
+the web, so the example reproduces with only the public chain:
 
 <!-- jb2export: hs1_mm39_synteny -->
 
@@ -1048,10 +1043,10 @@ jb2export synteny --chromSizes data/comparative/hs1.chrom.sizes \
 
 <Figure src="/img/jbrowse-img/hs1_mm39_synteny.png" caption="Mammalian-scale synteny, human (hs1) vs mouse (mm39)" />
 
-A three-level stack: hg38, hs1 (T2T), and mm39, with one ribbon per adjacent
-pair: the conserved hg38↔hs1 build liftover on top (near-vertical bands) and the
-diverged hs1↔mm39 human–mouse synteny below. Each UCSC liftOver `.chain` sits
-between the two assemblies it relates (`hg38ToHs1` between hg38 and hs1,
+The three-level stack of hg38, hs1 (T2T) and mm39 has one ribbon per adjacent
+pair, with the conserved hg38↔hs1 build liftover on top (near-vertical bands)
+and the diverged hs1↔mm39 human–mouse synteny below. Each UCSC liftOver `.chain`
+goes between the two assemblies it relates (`hg38ToHs1` between hg38 and hs1,
 `hs1ToMm39` between hs1 and mm39):
 
 <!-- jb2export: hg38_hs1_mm39_synteny -->
@@ -1070,20 +1065,20 @@ jb2export synteny --chromSizes data/comparative/hg38.chrom.sizes \
 
 ### All-vs-all alignments (PGGB, minimap2 -X)
 
-The stacks above take one alignment file per gap. An all-vs-all PAF — every
-genome aligned against every other, from
+The stacks above take one alignment file per gap. An all-vs-all PAF holds every
+pair (every genome aligned against every other, from
 [PGGB](https://github.com/pangenome/pggb) or from `minimap2 -X` over
-[PanSN](https://github.com/pangenome/PanSN-spec)-named contigs — already holds
-every pair, so it is instead **one track that backs every band**: the file is
-read once, and each band asks the adapter for its own pair of assemblies.
+[PanSN](https://github.com/pangenome/PanSN-spec)-named contigs), so it is **one
+track that backs every band**: the tool reads the file once, and the adapter
+returns the alignments for each band's pair of assemblies.
 
-That makes it a `--config` case. `--paf` builds a pairwise `PAFAdapter`, which
-reads the whole file as a single query-vs-target comparison, so repeating the
-same all-vs-all file across the gaps fails every band past the first with
-`AssemblyNotInAdapterError` — the PanSN prefixes that say which genome each
-record belongs to mean nothing to that adapter. The adapter that reads them is
-`MultiGenomePAFAdapter` (or `MultiGenomeIndexedPAFAdapter` for a `make-pif`
-index), named in a config:
+An all-vs-all PAF therefore needs `--config`. `--paf` builds a pairwise
+`PAFAdapter`, which reads the whole file as a single query-vs-target comparison,
+so repeating the same all-vs-all file across the gaps fails every band past the
+first with `AssemblyNotInAdapterError`, because that adapter ignores the PanSN
+prefixes that say which genome each record belongs to. `MultiGenomePAFAdapter`
+(or `MultiGenomeIndexedPAFAdapter` for a `make-pif` index) reads the prefixes,
+and a config names it:
 
 ```json addtrack
 {
@@ -1106,9 +1101,9 @@ The
 builds this track and the five strain assemblies it names.
 
 Where a config holds more than one such track, the `--spec` file names the one
-the stack uses. The hosted demo below is that case — it has the same five
-strains aligned four ways (minimap2, pggb/wfmash, cactus, and untangle) — and
-its spec names one of them:
+the stack uses. The hosted demo below is such a config. It has the five strains
+aligned four ways (minimap2, pggb/wfmash, cactus, and untangle), and its spec
+names one of them:
 
 ```json
 {
@@ -1145,7 +1140,7 @@ are where they differ; the crossings in the bottom band are IAI39's inversions
 against the others.
 
 All the example images in this README (including the comparative ones above) are
-regenerated by `pnpm screenshots --filter jbrowse-img` from the repo root: see
+regenerated by `pnpm screenshots --filter jbrowse-img` from the repo root. See
 the `CliSpec` entries in
 [`website/scripts/screenshot-specs.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/screenshot-specs.ts).
 
@@ -1154,25 +1149,25 @@ the `CliSpec` entries in
 The `circular` subcommand renders one assembly's chord tracks (e.g. a VCF of
 structural variants) as a circular ideogram with chords drawn between the two
 breakends of each rearrangement. It is single-assembly and shows the whole
-genome (no `--loc`); each track picks its chord display automatically.
+genome (no `--loc`); the tool picks each track's chord display automatically.
 
-The tracks it draws are the ones the track flags and `--track` name. Name them
-over a `--hub` or a large `--config`, whose hundreds of tracks would otherwise
-all be opened — which is what a run naming none still means.
+The command draws the tracks that the track flags and `--track` name. Name
+tracks when you use a `--hub` or a large `--config`, because their hundreds of
+tracks would otherwise all be opened, as happens in a run that names none.
 
-Display modifiers do not apply here, and a run that passes one says so: the
-modifiers name slots on the LINEAR displays, and this view draws a variant track
-as chords instead. Settings for a circular view go in the config the track comes
-from, or in a `--spec`.
+Display modifiers do not apply to the circular view, and a run that passes one
+reports that. The modifiers name slots on the linear displays, and the circular
+view draws a variant track as chords. Settings for a circular view go in the
+config the track comes from, or in a `--spec`.
 
 ```bash
 jb2export circular --fasta ref.fa --vcfgz sv.vcf.gz --out circular.svg
 ```
 
-This example uses SKBR3 (a breast-cancer cell line) long-read Sniffles SV calls
-on hg19: each inter-chromosomal chord is a translocation, the classic dense
-rearranged-cancer-genome view. `--fasta` reads only the `.fai` for chromosome
-names and lengths (the circular view fetches no sequence):
+The example below uses SKBR3 (a breast-cancer cell line) long-read Sniffles SV
+calls on hg19, and each inter-chromosomal chord is a translocation. `--fasta`
+reads only the `.fai` for chromosome names and lengths (the circular view
+fetches no sequence):
 
 <!-- jb2export: circular_chords -->
 
@@ -1187,11 +1182,11 @@ jb2export circular --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 Run `jb2export circular --help` for the full list of options.
 
 Two genomes on one circle come from a config and a session spec, the way the
-comparative views do. This one is the
+comparative views do. The example uses the
 [circular synteny tutorial](https://jbrowse.org/jb2/docs/tutorials/circular_synteny/)'s
-hosted config: human and mouse liftOver blocks as ribbons, inside a ring of
-genes per 100 kb for both genomes. The spec names the pair of assemblies and
-opens the ring with its density rendering:
+hosted config, which draws human and mouse liftOver blocks as ribbons inside a
+ring of genes per 100 kb for both genomes. The spec names the pair of assemblies
+and opens the ring with its density rendering:
 
 <!-- jb2export: circular_synteny -->
 
@@ -1250,11 +1245,12 @@ example resolves data/volvox/volvox.dup.vcf.gz
 See data/volvox/config.json for a config that contains localPaths, or
 data/config.json for a config that just contains URLs
 
-A mark display (`LinearMarkDisplay`) loads a `marks` list whose slots disagree
-with each other, and the app says what it cannot draw in the track's corner
-chip. jb2export prints each of those problems to stderr, and fails without
-writing an image on one the display's rule list calls an error, such as a bar
-naming no `y`. `jbrowse validate` checks a config file against the same rules.
+When a mark display (`LinearMarkDisplay`) loads a `marks` list whose slots
+disagree with each other, the app lists what it cannot draw in the track's
+corner chip. jb2export prints each of those problems to stderr, and exits
+without writing an image on a problem the display's rule list classes as an
+error, such as a bar naming no `y`. `jbrowse validate` checks a config file
+against the same rules.
 
 ### Use a session file exported from jbrowse
 
@@ -1272,12 +1268,12 @@ jb2export --config data/config.json --session data/skbr3/session.json \
 <Figure src="/img/jbrowse-img/skbr3_session.png" caption="SKBR3 whole-genome read coverage, restored from a saved session file" />
 
 The session names its tracks by trackId, so the `--config` you pass has to be
-the one those ids come from — `data/config.json` here, which defines hg19 and
-the `ngmlr_cov` coverage track that `data/skbr3/session.json` opens.
+the one those ids come from. Here that is `data/config.json`, which defines hg19
+and the `ngmlr_cov` coverage track that `data/skbr3/session.json` opens.
 
-`data/skbr3/session.json` is also worth reading as the short way to write one by
-hand. A view says where to go and what to open with settings written directly on
-it, and each track entry has its own display settings inline:
+`data/skbr3/session.json` shows the short way to write a session by hand. A view
+sets the locus and the tracks to open with settings written directly on it, and
+each track entry holds its display settings inline:
 
 ```json
 {
@@ -1300,9 +1296,8 @@ it, and each track entry has its own display settings inline:
 }
 ```
 
-Omitting `loc` shows the whole genome. Those inline track keys are the same
-vocabulary as the track's config — anything the track menu can set, a session
-can ask for here.
+Omitting `loc` shows the whole genome. The inline track keys use the vocabulary
+of the track's config, so a session can set anything the track menu can.
 
 ### Track order on the command line
 
@@ -1312,7 +1307,7 @@ Example:
 jb2export --bam file1.bam --bigwig file.bw --bam file2.bam
 ```
 
-This will respect the order of the tracks and list file1.bam, file.bw, and
+jb2export keeps the order of the tracks and lists file1.bam, file.bw, and
 file2.bam in that order, which is why the command line parser is a custom one
 
 ## Overriding render defaults
@@ -1328,9 +1323,9 @@ jb2export --bam file.bam force:true --loc 1:1,100,000-1,200,000 --fasta hg19.fa
 
 ### Render only the SNPCoverage track of an alignments track
 
-`pileup.show=false` collapses the alignments display down to coverage-only; size
-the coverage band with `coverage.height=N` to match `height:N`, the overall
-track height. Reproducible with the bundled volvox alignments:
+`pileup.show=false` reduces the alignments display to coverage only; size the
+coverage band with `coverage.height=N` to match `height:N`, the overall track
+height. Reproducible with the bundled volvox alignments:
 
 <!-- jb2export: snpcov -->
 
@@ -1363,19 +1358,13 @@ equals sign (`--width=1200`).
 Specify a filename (local) or http(s) URL. Can be repeated for multiple tracks
 of the same type, e.g. `--bam file1.bam --bam file2.bam`
 
-- `--bam`
-- `--cram`
-- `--bigwig`
-- `--multiwig` — many BigWigs as one multi-row `MultiQuantitativeTrack`; its
+- `--bam`, `--cram`, `--bigwig`, `--vcfgz`, `--gffgz`, `--bigbed`, `--bedgz`,
+  `--hic`
+- `--multiwig` — many BigWigs as one multi-row `MultiQuantitativeTrack`; the
   argument is a comma-separated BigWig file list (local paths or URLs) or a
   `.json` sources file (an array of BigWig paths/URLs, or of subadapter objects
-  with per-row `name`/`color`/`group`) — see
+  with per-row `name`/`color`/`group`); see
   [MultiWiggle](#multiwiggle-many-bigwigs-in-one-track)
-- `--vcfgz`
-- `--gffgz`
-- `--bigbed`
-- `--bedgz`
-- `--hic`
 
 ### Config file params (optional)
 
@@ -1743,8 +1732,8 @@ limit. Add `force:true` after the track to override it. See
 ## See also
 
 - [@jbrowse/capture](https://www.npmjs.com/package/@jbrowse/capture) drives a
-  real browser instead of rendering server-side. Slower, and it downloads
-  Chromium, but it photographs the whole application — canvas and WebGPU
-  displays, menus, dialogs — and can click through it.
+  real browser instead of rendering server-side. It is slower and downloads
+  Chromium, but it captures the whole application (canvas and WebGPU displays,
+  menus and dialogs) and can click through it.
 - [Using JBrowse with AI agents](https://jbrowse.org/jb2/docs/agents/) for the
   loop these tools fit into.

@@ -17,7 +17,8 @@ bin, count, pack or measure coverage, and a zoom range it draws in.
 
 Reach for it when a field is the picture: a BED score, a segment's log ratio, a
 peak's signal and q-value, a read's MAPQ, a variant's `QUAL`. The format-typed
-displays still own what is not a field — mismatches, genotypes, isoform tiering.
+displays still cover mismatches, genotypes and isoform tiering, which are not
+fields.
 
 ## A worked example
 
@@ -48,15 +49,15 @@ Bars from a BED score column, colored by strand, with the color key on screen:
 }
 ```
 
-Listing the display first makes it the one the track opens with. Every other
-slot has a default: `x` is `start`, `x2` is `end`, bars grow from an `origin` of
-0, and the axis autoscales to what is on screen.
+The track opens with the display listed first. Every other slot has a default:
+`x` is `start`, `x2` is `end`, bars grow from an `origin` of 0, and the axis
+autoscales to what is on screen.
 
 ## The vocabulary, for a ggplot2 or Vega-Lite reader
 
 A reader who knows ggplot2 or Vega-Lite can read a `marks` config through the
-names those libraries use. Each row is one idea; the last column is where this
-display spells it, and the sections below take each in turn. GenomeSpy shares
+names those libraries use. Each row is one idea; the last column gives this
+display's spelling, and the sections below cover each in turn. GenomeSpy shares
 Vega-Lite's names and adds the genomic transforms, so it appears where it adds
 one.
 
@@ -82,7 +83,7 @@ one.
 | a log-like axis through zero | `scale_y_continuous(transform = "pseudo_log")` | `"y": {"scale": {"type": "symlog", "constant"}}` | `"scales": {"y": {"type": "symlog", "symlogConstant"}}` |
 | fixed axis ends | `coord_cartesian(ylim)` | `"scale": {"domain": [lo, hi]}` | `domainMin` and `domainMax` on `scales.y` |
 | one axis over a faceted plot | `facet_*(scales = "fixed")` | the default | always: every section and row reads the display's one `scales.y` |
-| one axis over several tracks | — | `"resolve": {"scale": {"y": "shared"}}` on a concatenation | `scales.y.autoscaleGroup` |
+| one axis over several tracks | | `"resolve": {"scale": {"y": "shared"}}` on a concatenation | `scales.y.autoscaleGroup` |
 | an axis caption | `labs(y = "…")` | `"axis": {"title"}` | `scales.y.title` |
 | a key heading | `labs(fill = "…")` | `"legend": {"title"}` | `title` on the color |
 | which values the key lists | `scale_fill_manual(breaks)` | `"legend": {"values"}` | `breaks` on the color or shape |
@@ -106,12 +107,12 @@ one.
 
 Two names mean something else here. Vega-Lite's `row` is a facet channel; on
 this display `encoding.row` is the band a feature stands in, the integer a
-`pileup` step writes, and the facet is the display's own `facet`. And a
-positional channel is a bare field where Vega-Lite's has a scale, because the y
-scale is the display's `scales.y` and every mark reads one axis. There is no
-stacked bar and no `opacity` channel: a bar stands on its own from the baseline.
-A mark's size is `encoding.size`, as its color is `encoding.color`: a number is
-a point's diameter, a rule's thickness or a link's stroke, and a field maps a
+`pileup` step writes, and the facet is the display's `facet`. A positional
+channel is a bare field here, where Vega-Lite's has a scale, because the y scale
+is the display's `scales.y` and every mark reads one axis. The display has no
+stacked bar and no `opacity` channel; every bar rises from the baseline. A
+mark's size is `encoding.size`, as its color is `encoding.color`: a number is a
+point's diameter, a rule's thickness or a link's stroke, and a field maps a
 link's width.
 
 ## The encoding
@@ -123,13 +124,13 @@ Each mark's `encoding` maps feature fields to the channels its type reads:
 | `x`     | every mark                             | a field holding the left edge in bp; `start` by default                                                                                                                                                                                                     |
 | `x2`    | every mark                             | the right edge; `end` by default                                                                                                                                                                                                                            |
 | `y`     | `bar`, `point`, `rule`, `line`, `text` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped. A `text` may leave it empty and stand at the apex of a link between its two ends, or in the middle of its band |
-| `row`   | every mark                             | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's                                                                        |
+| `row`   | every mark                             | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, in the mark's, the facet's or the display's                                                                          |
 | `color` | every mark                             | a field through a scale (below), or a constant `{ "value": … }` holding a CSS color or a jexl callback returning one; a bare string is a field                                                                                                              |
 | `shape` | `point`                                | `circle`, `triangle-down` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                                                                                       |
-| `size`  | `point`, `rule`, `line`, `link`        | a number of px, a point's diameter, a rule's thickness, a line's width or a link's stroke; or, on a link, a field read through a linear or log scale into a range of px (below)                                                                             |
+| `size`  | `point`, `rule`, `line`, `link`        | a number of px, a point's diameter, a rule's thickness, a line's width or a link's stroke; or, on a link, a field read through a linear or log scale into a px range (below)                                                                                |
 | `text`  | `text`                                 | the field printed, `name` by default; a feature with nothing there prints nothing                                                                                                                                                                           |
 
-A field name is read straight off the feature (`score`, `strand`, or any column
+A field name is read directly from the feature (`score`, `strand`, or any column
 a BED `columnNames` or a GFF attribute names). A `jexl:` expression over
 `feature` is accepted wherever a field name is, for a derived channel:
 
@@ -169,8 +170,9 @@ grammar of graphics gives one scale per aesthetic. With a multiscale pair
 
 `autoscaleGroup` shares the axis across tracks: every track in the view naming
 the same group autoscales over all of their data, so a plot and a wiggle or
-coverage track stay comparable as the view moves. An end one track pins stays
-its own. **Share axis with** in the **Y axis...** panel writes it.
+coverage track stay comparable as the view moves. An end pinned on one track
+applies to that track alone. **Share axis with** in the **Y axis...** panel
+writes it.
 
 ### Reference lines and the axis title
 
@@ -214,8 +216,8 @@ of a multiscale pair.
 
 A count per bin per strand, or a depth per haplotype, is one bar per category at
 each position, and drawn from the origin at one x they cover each other. Give
-each category its own place instead. Two categories mirror across the axis, one
-drawn upward and one down through a `formula` negating its value:
+each category a separate place instead. Two categories mirror across the axis,
+one drawn upward and one down through a `formula` negating its value:
 
 ```json
 "marks": [
@@ -267,8 +269,8 @@ heights compare.
 
 A coverage run in the hundreds and a per-read mapping quality in the tens cannot
 be read off one axis, and the display draws only one. Write them as two tracks,
-each with its own display and its own `scales.y`, so each axis has the field it
-measures and the reader can stack them in whatever order the comparison wants.
+one display and one `scales.y` per track, so each axis has the field it measures
+and the reader can stack the tracks in whatever order the comparison needs.
 
 Where the two quantities answer the same question at different zooms, one track
 still does it: give each mark a zoom range and they never draw together.
@@ -286,9 +288,8 @@ still does it: give each mark a zoom range and they never draw together.
 ```
 
 The coverage draws zoomed out and the per-read value zoomed in, and the axis at
-each zoom is the drawing mark's. A right-hand second axis was withdrawn in
-v5.0.0: the reader of that picture cannot tell which bars belong to which
-numbers.
+each zoom is the drawing mark's. v5.0.0 withdrew the right-hand second axis,
+because with two axes each bar could belong to either set of numbers.
 
 ## Color scales
 
@@ -306,14 +307,14 @@ readable.
 - **categorical** —
   `{ "field": "strand", "scale": "categorical", "range": ["#1f77b4", "#ff7f0e"] }`
 
-  `domain` lists values in legend order and spends `range` from the first entry;
-  values it leaves out follow, sorted. Each value it leaves out takes a color of
-  its own the first time the track shows it, and keeps it as other regions load;
-  one no other value competes with paints the color derived from itself.
-  `unknown`, d3's name, paints every value the domain leaves out one color
-  instead, a feature with no value too, and the key names them one row, Other.
-  One row per color, so two values painted alike share a row. A key of one
-  color, or over 20 rows, is not drawn.
+  `domain` lists values in legend order and takes `range` entries from the
+  first; values it leaves out follow, sorted. Each value it leaves out takes a
+  distinct color the first time the track shows it, and keeps that color as
+  other regions load; a value that no other value competes with paints the color
+  derived from the value. `unknown`, d3's name, paints every value the domain
+  leaves out one color instead, a feature with no value too, and the key names
+  them one row, Other. One row per color, so two values painted alike share a
+  row. A key of one color, or over 20 rows, is not drawn.
 
 - **linear** or **log** —
   `{ "field": "signal", "scale": "linear", "domainMin": 0, "domainMax": 50, "range": ["white", "red"] }`
@@ -340,19 +341,19 @@ again: a field named or dropped, a switch between categories and numbers, or a
 is that text, `""` draws no heading. Marks share one key only under one title,
 and share a ramp only with both ends pinned.
 
-Three more members shape the key and paint nothing. `breaks` lists only the
-values it names, in that order, while every value still takes its color.
-`descending` lists a threshold's intervals from the highest down. `missingLabel`
-names the grey row for features with nothing in the field.
+Three more members shape the key and paint nothing. `breaks` lists the values it
+names, in that order, and every value still takes its color. `descending` lists
+a threshold's intervals from the highest down. `missingLabel` names the grey row
+for features with nothing in the field.
 
 ## Shape scales
 
-A scale belongs to a channel, not only to color. `shape` takes the same
-categorical form — `{ "field": "svType", "scale": "categorical" }` — with
-`range` listing the shapes to hand out as a color scale's lists colors
-(`circle`, `triangle-down`, `diamond` in that order when left off) and `domain`
-the values in legend order. The legend then has a second key whose swatches are
-the shapes themselves:
+Other channels take a scale too. `shape` takes the same categorical form,
+`{ "field": "svType", "scale": "categorical" }`, where `range` lists the shapes
+to hand out as a color scale's lists colors (`circle`, `triangle-down`,
+`diamond` in that order when left off) and `domain` lists the values in legend
+order. The legend then has a second key whose swatches are the shapes
+themselves:
 
 ```json
 {
@@ -377,9 +378,9 @@ names them, and **Pin distinct shapes** writes the key's values into `domain`.
 
 ## Several marks
 
-`marks` draws in order, a later entry over an earlier one, all over one score
-axis and one fetch per region. Points over bars from the same file, with the
-points' color a callback:
+The display draws `marks` in order, a later entry over an earlier one, all over
+one score axis and one fetch per region. Points over bars from the same file,
+with the points' color a callback:
 
 ```json
 "marks": [
@@ -404,12 +405,12 @@ value that belongs to an interval — a window's Fst, a segment's copy number:
 
 A `line` strokes through consecutive values on a row. `interpolate: "step"`, the
 default, holds each value across its span and steps to the next where two spans
-abut, dropping to `origin` across a gap, so a bedGraph or a BigWig tier reads as
-the data says; `"linear"` runs from one span's centre to the next, which is
-smoother where the spans are few. `encoding.size` is the width in px, 1 unset. A
-color scale over the field `y` plots colors the stroke by the value under each
-pixel, so a threshold at 0 with two colors paints a rise across zero in both,
-changing at the axis.
+abut, dropping to `origin` across a gap, so a bedGraph or a BigWig tier draws
+the values as stored; `"linear"` runs from one span's centre to the next, which
+is smoother where the spans are few. `encoding.size` is the width in px, 1
+unset. A color scale over the field `y` plots colors the stroke by the value
+under each pixel, so a threshold at 0 with two colors paints a rise across zero
+in both, changing at the axis.
 
 ```json
 {
@@ -421,7 +422,7 @@ changing at the axis.
 
 A `span` has no `y`: it paints a band from `x` to `x2` in its color, for an
 interval whose extent is the point. With no `row` every span shares one band;
-with one — `{ "mark": "span", "encoding": { "row": "sampleIndex" } }` — the plot
+with one, `{ "mark": "span", "encoding": { "row": "sampleIndex" } }`, the plot
 divides into as many bands as the highest row on screen needs. A color scale
 over a field makes the span a heatmap:
 `{ "mark": "span", "encoding": { "color": { "field": "score", "scale": "linear", "range": ["white", "red"] } } }`
@@ -467,21 +468,21 @@ middle of its row band otherwise. Bars with each feature's name over them:
 }
 ```
 
-Labels are placed left to right, and one overlapping a label already placed, or
-running off the edge, is left out — ggplot2's `check_overlap`. One sitting too
-near the top of its band goes under the value instead. The text takes the mark's
-`color`, or the theme's, with a halo so it reads over the bars, and answers no
-hover; the mark it labels does.
+The display places labels left to right and omits a label that overlaps one
+already placed or runs off the edge, as ggplot2's `check_overlap` does. A label
+too near the top of its band goes under the value instead. The text takes the
+mark's `color`, or the theme's, with a halo so it stays legible over the bars,
+and shows no hover; the mark it labels does.
 
 Every feature whose middle is in view is a candidate before the culling, so a
-text mark wants a `maxBpPerPx` that stops it once the features outrun the
-labels. On the circular view the labels stand on the linear track only.
+text mark needs a `maxBpPerPx` that stops it once there are more features than
+labels fit. On the circular view the labels appear on the linear track only.
 
 ## Links
 
 A `link` mark draws a curve from `x` up and over to `x2`. Over a BED with
-start-end pairs that is the feature's own two ends, and `encoding.size` strokes
-each curve by a field through a linear or log scale into a range of pixels.
+start-end pairs, `x` to `x2` is the feature's two ends, and `encoding.size`
+strokes each curve by a field through a linear or log scale into a pixel range.
 Splice junctions from a STAR file, stroked by read support and labelled with it:
 
 ```json addtrack
@@ -526,10 +527,10 @@ pair, colored by whatever field the reads have:
 }
 ```
 
-**A track whose records name a mate draws the links with nothing configured**:
+**A track whose records name a mate draws the links with no configuration**:
 pick **Marks** from the track menu's display types over a BEDPE, a STAR-Fusion
-file or an SV VCF and the display writes the mark and the step below for itself.
-Write them out to say more — a color by type, a stroke by score, a shape:
+file or an SV VCF and the display writes the mark and the step below. Write them
+out to add more: a color by type, a stroke by score, a shape:
 
 ```json addtrack
 {
@@ -566,18 +567,18 @@ side of the junction the rearranged sequence keeps. A link answers a hover and a
 click along its stroke, and the SVG export writes it as a path.
 
 A `text` mark naming no `y` labels the link on its two ends: each label sits
-just inside its own curve's apex, or just over it where the curve is too small
+just inside the apex of its curve, or just over it where the curve is too small
 to hold it. A pair wide enough to straighten into legs has no apex on the band
 and prints no label.
 
 ## Facets
 
-The display's `facet` gives each value of a field its own band of rows, named by
-a chip a reader can hide the section from. The facet splits the features first,
-runs its own `transform` over each section alone, and every mark then runs its
-own steps over each section, so a `pileup` in the facet's `transform` packs each
-section on its own rows with every mark standing in them, and a `coverage` in a
-mark's counts each section's depth:
+The display's `facet` gives each value of a field a separate band of rows, named
+by a chip a reader can hide the section from. The facet splits the features
+first and runs the facet's `transform` over each section alone. Every mark then
+runs its steps over each section, so a `pileup` in the facet's `transform` packs
+each section into separate rows with every mark standing in them, and a
+`coverage` in a mark's counts each section's depth:
 
 ```json
 "displays": [
@@ -589,13 +590,13 @@ mark's counts each section's depth:
 ]
 ```
 
-A `pileup` in the display's own `transform` runs before the split, so it packs
+A `pileup` in the display's `transform` runs before the split, so it packs
 across every section and leaves each section the rows the others fill; the
 facet's is the one that packs per section.
 
 A section's rows keep the facet's value through a `coverage` or an `aggregate`,
 the way a ggplot2 stat keeps its facet variable, so a color over the field the
-plot is split on paints each section's depth its own color:
+plot is split on paints the depth in each section with that section's color:
 
 ```json
 {
@@ -612,16 +613,17 @@ plot is split on paints each section's depth its own color:
 
 The field is read the way a channel reads one: a name, a dotted path
 (`INFO.SVTYPE`), or a `jexl:` expression. Where the value has to be computed
-first, the display's own `transform` runs before the split:
+first, the display's `transform` runs before the split:
 
 Sections order a name holding a number by that number, so chr2 before chr10, and
 the rest by code point. `domain` sets the order: listed values first, the rest
-sorted after. A domain orders the sections and never changes which exist.
+sorted after. A domain orders the sections and leaves the set of sections
+unchanged.
 
-Dragging a section's chip onto another section writes the drawn order back as
-the facet's `domain`, and **Show... → Reset section order**<!-- menu-path-ok -->
-clears it. A hidden section leaves the legend and the value axis along with the
-plot.
+When a reader drags a section's chip onto another section, the display writes
+the drawn order back as the facet's `domain`, and **Show... → Reset section
+order**<!-- menu-path-ok --> clears it. A hidden section leaves the legend and
+the value axis along with the plot.
 
 Haplotagged reads split by their `HP` tag, the tag lifted into a field by a
 `formula` so the chips and the key name it `HP`:
@@ -645,10 +647,10 @@ Haplotagged reads split by their `HP` tag, the tag lifted into a field by a
 
 <Figure src="/img/mark_display/facet.png" caption="HG002 ONT reads faceted by their HP tag: each haplotype's reads packed into a separate band under the chip that names it, and the untagged reads in a third."/>
 
-`facet` and its `domain` are the same slot and the same ordering rule the gene,
-alignments, variant, multiway synteny and multi-row displays each take their own
-way — [grouping and lane order](/docs/config_guides/grouping_and_ordering) has
-the shared mechanism across all of them.
+`facet` and its `domain` are the same slot and the same ordering rule that the
+gene, alignments, variant, multiway synteny and multi-row displays each take in
+a separate form. [](/docs/config_guides/grouping_and_ordering) describes the
+shared mechanism across all of them.
 
 ## Rows
 
@@ -668,40 +670,41 @@ file, the value axis repeated on each row tall enough to hold it.
 
 A label names each row, and the track menu has what the other row displays have:
 **Cluster rows by similarity...**, **Edit colors/arrangement...**, and **Sort
-rows by value here** on a right-click. As an object `rows` takes the order too —
-`{ "field": "source", "domain": ["tumor", "normal"] }` — and a reorder, a
+rows by value here** on a right-click. As an object, `rows` takes the order too,
+`{ "field": "source", "domain": ["tumor", "normal"] }`, and a reorder, a
 clustering run or a clade off the tree is written there, so undo, **Reset row
 order** and a share link all reach it.
 
 The rows divide the plot between them by default, so every row shows.
 `"rowHeight": 20` pins each row at 20 px instead, and the rows that do not fit
 scroll: a wheel over the rows or the scrollbar at the right reaches them, and
-shift+wheel resizes them. `0`, the default, fits them to the plot again, which
-is what **Row height → Squeeze to fit view** writes. The menu's Normal and
-Compact presets also set every span's `rowProportion`, so the rows stand apart.
+shift+wheel resizes them. `0`, the default, fits them to the plot again, and
+**Row height → Squeeze to fit view** writes it. The menu's Normal and Compact
+presets also set every span's `rowProportion`, so the rows stand apart.
 
 The display's [`rowColor`](/docs/config/linearmarkdisplay/#slot-rowcolor) paints
-the bar beside each row's label and leaves the marks their own color.
+the bar beside each row's label and leaves the marks' colors unchanged.
 `{ "domain": ["tumor"], "range": ["#e15759"] }` pairs a row's value with a
 color, the form **Edit colors/arrangement...** writes.
 
 `facet` and `rows` both split the features on a field, and differ in what a
-value gets: a facet section is as deep as its packing and wears a chip, where a
-row is one row. Beside a facet the facet draws: on the same field that is the
-whole picture, and on another it asks for bands of rows, which are not drawn
-yet, so the track says so. A mark display picked from the track menu over a
-multi-BigWig opens with `rows: "source"`, a row per file in the adapter's order,
-unless the display already names a `facet` or `rows`.
+value gets: a facet section is as deep as its packing and has a chip, where a
+row is one row. Beside a facet, the facet draws: with `rows` on the same field
+the facet is the whole picture, and with `rows` on another field the track shows
+a warning, because bands of rows are not drawn yet. A mark display picked from
+the track menu over a multi-BigWig opens with `rows: "source"`, a row per file
+in the adapter's order, unless the display already names a `facet` or `rows`.
 
 A row per species over a MAF is the same `rows`, once a `flatten` has fanned
 each alignment block out. A MAF block is one feature with an `alignments` record
 keyed by species, and `flatten` over a record writes each entry's key to the
-field `key` names, so `rows: "species"` finds a row per species in the features
-themselves. The adapter lists its species too, so every species has a row
-whether or not the loaded regions align it, in the guide tree's order with the
-tree drawn beside the rows, as on the MAF display. Each row keeps its block's
-reference span and has the species' `chr`, `srcStart`, `strand`, `srcSize` and
-`seq`; a span colored by `chr` is the MAF display's color by source chromosome:
+field `key` names, so `rows: "species"` reads one value per species from the
+features themselves. The adapter lists its species too, so every species has a
+row whether or not the loaded regions align it, in the guide tree's order with
+the tree drawn beside the rows, as on the MAF display. Each row keeps its
+block's reference span and has the species' `chr`, `srcStart`, `strand`,
+`srcSize` and `seq`; a span colored by `chr` is the MAF display's color by
+source chromosome:
 
 ```json addtrack
 {
@@ -789,22 +792,22 @@ A VCF's samples fan out the same way, `flatten` over `samples` with
 ## Transforms
 
 A mark's `transform` is a list of steps over the region's features, run in the
-worker before the encoding, in order, each reading what the last answered. The
-display's own `transform` takes the same steps and runs before every mark's.
-Each step names its `type` and takes that step's own settings, which the
+worker before the encoding, in order, each reading what the last wrote. The
+display's `transform` takes the same steps and runs before every mark's. Each
+step names its `type` and takes the settings for that step, which the
 [MarkTransform config reference](/docs/config/marktransform) lists; a key
 belonging to another step is refused where the config is read:
 
-| Step        | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges to the two fields `as` names (`start`, `end`)                                                                                                                                                                                                                                                                                                                   |
-| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field; an empty `groupby` takes the edges the last `bin` before it wrote, in this mark's `transform`, the facet's or the display's                                                                                                                                                                        |
-| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                                                                                                                                                                                                                                                                |
-| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`) or per entry of a record keyed by name (a VCF's `samples`, a MAF block's `alignments`), each reading its parent for what it lacks, with its position in the field `index` names and its key in the field `key` names; `keepEmpty` holds on to a feature whose field is empty                                                                                                     |
-| `cells`     | replaces each aligned row with its runs of columns in one `state` — `match`, `mismatch` or `gap` — against the reference, reading the row's `field` (`seq`) and the same field on the feature the row was fanned out of, and one interbase `insertion` per run of inserted bases, at the reference base it precedes; a mismatch run has its `base`, an insertion its bases in `base` and their count in `length`, and a match or mismatch run `match` as 1 or 0 |
-| `pileup`    | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                                                                                                                                                                                                                                                              |
+| Step        | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges to the two fields `as` names (`start`, `end`)                                                                                                                                                                                                                                                                                                                 |
+| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` (`count`, or `sum`/`mean`/`min`/`max` of a `field`) as a new field; an empty `groupby` takes the edges the last `bin` before it wrote, in this mark's `transform`, the facet's or the display's                                                                                                                                                                        |
+| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                                                                                                                                                                                                                                                              |
+| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`) or per entry of a record keyed by name (a VCF's `samples`, a MAF block's `alignments`), each reading its parent for what it lacks, with its position in the field `index` names and its key in the field `key` names; `keepEmpty` holds on to a feature whose field is empty                                                                                                   |
+| `cells`     | replaces each aligned row with its runs of columns in one `state` (`match`, `mismatch` or `gap`) against the reference, reading the row's `field` (`seq`) and the same field on the feature the row was fanned out of, and one interbase `insertion` per run of inserted bases, at the reference base it precedes; a mismatch run has its `base`, an insertion its bases in `base` and their count in `length`, and a match or mismatch run `match` as 1 or 0 |
+| `pileup`    | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                                                                                                                                                                                                                                                            |
 
 A field a step reads is a name or a dotted path into a structured field, so a
 VCF's `INFO.DP` is the `field` of a `mean` and `INFO.SVTYPE` a `groupby`. A
@@ -812,13 +815,13 @@ computed value is a `formula`'s to write, for the steps after it to read.
 
 A `bin` then an `aggregate` is a density: one bar per bin, its height the count
 of features starting in it. The `aggregate` groups by the edges the `bin` wrote
-unless it names its own, whether that `bin` sits in the same `transform` or in
-the display's.
+unless it sets `groupby`, whether the `bin` is in the same `transform` or in the
+display's.
 
 The aggregate's fields are `count` and `mean_score` here, and either can feed
-`y` or a color scale. `coverage` answers the other question — how many features
-overlap each position — for a repeat annotation, a set of peaks or any interval
-file with no summary track beside it:
+`y` or a color scale. `coverage` counts how many features overlap each position,
+for a repeat annotation, a set of peaks or any interval file with no summary
+track beside it:
 
 ```json
 {
@@ -830,10 +833,10 @@ file with no summary track beside it:
 A mark that names no `y` plots what its steps wrote, the way a ggplot2 stat
 names what its geom draws (`after_stat`): the depth a `coverage` writes, or the
 one summary an `aggregate` with a single op writes. An aggregate writing two
-summaries leaves the choice to `y`. A link behind a `mate` step reaches the
-other end the step found without naming `x2`, and a written channel always wins.
+summaries needs `y` to choose one. A link behind a `mate` step reaches the other
+end the step found without naming `x2`, and a written channel takes precedence.
 
-`pileup` is the packing a read pileup is, said as a step. It writes the lowest
+`pileup` expresses the packing of a read pileup as a step. It writes the lowest
 row on which each feature overlaps nothing already there, and a `span` reading
 that row draws the packing:
 
@@ -849,20 +852,20 @@ that row draws the packing:
 ```
 
 Over an `AlignmentsTrack` that is a declared pileup, colored by any field a read
-answers. A mark whose `encoding.row` is empty reads the field the last `pileup`
-before it wrote — its own, the facet's or the display's — so `"encoding": {}`
+has. A mark whose `encoding.row` is empty reads the field the last `pileup`
+before it wrote (the mark's, the facet's or the display's), so `"encoding": {}`
 draws the packing. The plot takes as many bands as the highest row needs, so
 rows thin as depth grows and the track keeps its height.
 
-The display's `filter` expressions run before every mark's own steps.
+The display's `filter` expressions run before every mark's steps.
 
 ## A picture per zoom level
 
 Each mark can name the zoom range it draws in, in bp per pixel: `minBpPerPx`
 draws it only at or above that width, `maxBpPerPx` only below it, and 0 sets no
 bound. A density on one mark and the features on another make one track that
-shows the count per bin zoomed out and each feature's own value zoomed in, from
-one fetch per region:
+shows the count per bin zoomed out and each feature's value zoomed in, from one
+fetch per region:
 
 ```json
 "marks": [
@@ -884,10 +887,10 @@ one fetch per region:
 
 <Figure src="/img/mark_display/multiscale.png" caption="One Alu track, twice: across 3 Mb the binned mark draws and the axis is elements per 10 kb; across 30 kb the raw mark draws and the axis is each element's divergence from its consensus."/>
 
-A mark outside its range is off entirely — not drawn, not hovered, and out of
-the y-axis, the legend and the row count — so the axis at each zoom is the
-drawing mark's. `scales.y.title` holds at every zoom, so a pair plotting two
-quantities takes a title covering both, or none.
+A mark outside its range is off entirely (not drawn, not hovered, and out of the
+y-axis, the legend and the row count), so the axis at each zoom is the drawing
+mark's. `scales.y.title` holds at every zoom, so a pair plotting two quantities
+takes a title covering both, or none.
 
 ### A bin that follows the zoom
 
@@ -958,52 +961,53 @@ each reported under its id:
 <!-- MARK_RULES END -->
 
 `jbrowse validate` reports the same list over a config file, which has none of
-the half-written states an editor passes through, at the level the table gives:
+the half-written states an editor passes through, at the level the table lists:
 an error is a mark that draws nothing, never draws, or names a step that cannot
-run. The display's own `transform` steps are checked the way a mark's are. Each
+run. The display's `transform` steps are checked the way a mark's are. Each
 finding names the slot, and the mark when the slot is a mark's, and `--json`
 shows the rule's id beside it.
 
 ## What the track menu offers
 
-**Edit marks...** is the whole plot as controls. Above, the plot's own settings:
-the field its sections stack by (`facet`) and the field that gives each value a
-row (`rows`), each with the order its values take, and the axis every mark
-stands on, with its title, type, pinned ends and grid. Below, the marks in paint
-order on the left, and on the right the selected mark's type, its steps, and a
-field picker per channel that type reads.
+**Edit marks...** is the whole plot as controls. Above are the settings of the
+plot as a whole: the field its sections stack by (`facet`) and the field that
+gives each value a row (`rows`), each with the order its values take, and the
+axis every mark stands on, with its title, type, pinned ends and grid. Below,
+the marks in paint order on the left, and on the right the selected mark's type,
+its steps, and a field picker per channel that type reads.
 
 <Figure src="/img/mark_display/edit_plot.png" caption="Edit marks over an Alu track declaring a multiscale pair: the two marks in paint order on the left, and on the right the selected mark's type, a picker per channel a bar reads, and the zoom range that hands over to the binned count."/>
 
 A picker takes free text as well as a scanned field or one the mark's steps
 write, so `INFO.DP`, `count`, a `jexl:` expression or a constant all go through.
-Under a field naming a scale sits the kind it reads through, then what that kind
-reads: a categorical scale's values in order, their colors and their names in
-the key; a threshold's cut points and a color per interval; a ramp's `scheme`,
-its `reverse`, the ends that pin it, its middle, and whether an open end follows
-the extremes or a percentile — an end left empty spans the loaded regions, so
-pinning both is what fixes a figure's colors. A list is comma-separated.
-Changing the kind drops the members the new one does not paint.
+Under a field that names a scale, the editor shows the kind of scale and then
+what that kind reads: a categorical scale's values in order, their colors and
+their names in the key; a threshold's cut points and a color per interval; a
+ramp's `scheme`, its `reverse`, the ends that pin it, its middle, and whether an
+open end follows the extremes or a percentile. An end left empty spans the
+loaded regions, so pinning both fixes a figure's colors. A list is
+comma-separated. When the kind changes, the editor drops the members the new
+kind does not paint.
 
-A mark's steps are a list of their own, each named by what it writes, with its
-settings in place and a list of common ones to add — a count per bin, a
-coverage, a filter. A step writing a value fills a bar that names no `y`. Beside
-**Add mark**, **Add zoomed-out density** appends the count per bin that draws
-from 100 bp per px out and hands the marks above it the closer zooms.
+The editor lists a mark's steps, each named by what it writes and shown with its
+settings in place, with a list of common steps to add: a count per bin, a
+coverage, a filter. A step that writes a value fills a bar that names no `y`.
+Beside **Add mark**, **Add zoomed-out density** appends the count per bin that
+draws from 100 bp per px out and hands the marks above it the closer zooms.
 
-The form shows rather than rewrites a channel the mark's type stopped reading,
-and a far end naming its own sequence field. The rules run as you type and each
-finding sits under the control that caused it. The corner notice opens the same
-dialog.
+The form shows, without rewriting, a channel the mark's type stopped reading and
+a far end that names a separate sequence field. The rules run as you type and
+each finding sits under the control that caused it. The corner notice opens the
+same dialog.
 
 **Edit as text...**, inside it, is the same plot as text, which **Advanced →
 Edit plot...** in the track menu also opens, and **Back to form** there returns.
-A setting left out stays as it is; `null` clears one. Neither editor refuses a
-plot the rules complain about, since the display draws what it can; Apply
-refuses only what a config file is refused for.
+A setting left out stays as it is; `null` clears one. Each editor accepts a plot
+that the rules report, since the display draws what it can; Apply refuses only
+what a config file is refused for.
 
 With no `marks` at all a display plots `score` as bars, links a record to the
-other end it names, or opens the dialog where the fields say neither.
+other end it names, or opens the dialog where the fields supply neither.
 
 The **Y axis...** row opens the panel that writes `scales.y` as you change it:
 scale type, min and max, Include 0, outlier clipping, grid lines and reference
@@ -1036,16 +1040,17 @@ the session names the mark display for it.
   ramps, thresholds, bins, pileups, facets, labels, links and rows.
 - [](/docs/tutorials/alu_age) plots a BED column as bars colored by another
   column and counts the rows per zoom-following bin.
-- [](/docs/tutorials/read_marks) plots a BAM's own fields: depth as a coverage
-  step, insert size as a point per pair on a track of its own, the reads stacked
-  and colored by a ramp, and a derived BED scanning a chromosome.
+- [](/docs/tutorials/read_marks) plots a BAM's fields: depth as a coverage step,
+  insert size as a point per pair on a separate track, the reads stacked and
+  colored by a ramp, and a derived BED scanning a chromosome.
 
 ## When a plugin is the next step
 
-A drawing that is not a bar, a point, a rule, a span or a label needs a **mark
-type** of its own: one shader, one painter and one hit test, declared as a mark
-over the same worker channels this display reads:
-[](/docs/developer_guides/creating_gpu_display) writes one. A display that lays
-features out its own way, or gives a channel a meaning the encoding cannot say —
-Manhattan's color by LD to an index SNP — is the rung after that, and
-[](/docs/developer_guides/plotting_features) composes one.
+A drawing that is not a bar, a point, a rule, a span or a label needs a new
+**mark type**: one shader, one painter and one hit test, declared as a mark over
+the same worker channels this display reads. See
+[](/docs/developer_guides/creating_gpu_display) to write one. A display that
+uses a custom feature layout, or that gives a channel a meaning the encoding
+cannot express, such as Manhattan's color by LD to an index SNP, is the next
+step after that. See [](/docs/developer_guides/plotting_features) to compose
+one.

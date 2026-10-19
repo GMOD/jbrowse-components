@@ -6,10 +6,10 @@ guide_category: Core concepts
 
 Extension points are named callback chains. A producer fires one with
 `evaluateExtensionPoint`; plugins register callbacks with `addToExtensionPoint`,
-each receiving the previous callback's return value. Points that accumulate a
-list take `contributeToExtensionPoint` instead, where a callback returns only
-its own entries, and points that only notify take `listenToExtensionPoint`,
-where it returns nothing.
+each receiving the previous callback's return value. A point that accumulates a
+list takes `contributeToExtensionPoint`, whose callback returns the entries to
+add. A point that only notifies takes `listenToExtensionPoint`, whose callback
+returns nothing.
 
 ## Using extension points
 
@@ -49,8 +49,8 @@ Built-in points are registered in the `ExtensionPointRegistry` interface in
 known name, so callbacks get typed `args` and evaluate calls return the correct
 type without a cast.
 
-Register your own point the same way. The spreadsheet view's launcher is a
-complete example — an exported args interface, then the augmentation naming it:
+Register your own point the same way the spreadsheet view's launcher does, with
+an exported args interface and then the augmentation naming it:
 
 <!-- include: plugins/spreadsheet-view/src/LaunchSpreadsheetView/index.ts#registry -->
 
@@ -86,17 +86,18 @@ Three things generalize from it:
   through, and a callback returns what it was given. A point that accumulates
   declares an array for both.
 - **`props`**, the third and optional key, declares the context object passed
-  unchanged to every callback — see [`Core-replaceWidget`](#core-replacewidget)
+  unchanged to every callback; see [`Core-replaceWidget`](#core-replacewidget)
   for one that has it.
 - **The `declare module` block** goes in any file that is part of your plugin's
-  compilation; putting it beside the registration keeps the two from drifting.
+  compilation; putting it beside the registration keeps the two consistent.
 
 ### Points that resolve to UI
 
-A point whose value is a component or an element names one of three shapes, so a
-seam is one line: `'Core-extraFeaturePanel': ComponentList<FeaturePanelProps>`
-is the whole declaration. The shape is also what decides which producer renders
-the point and which helper registers on it:
+A point whose value is a component or an element declares one of three shapes,
+so a seam is one line:
+`'Core-extraFeaturePanel': ComponentList<FeaturePanelProps>` is the whole
+declaration. The shape also determines which producer renders the point and
+which helper registers on it:
 
 <!-- include: packages/core/src/PluginManager.ts#uiShapes -->
 
@@ -148,13 +149,12 @@ export interface ElementList<P> {
 }
 ```
 
-`args` alone cannot say which shape a point has. A `TrackTypeGuesser` takes an
+`args` alone does not identify a point's shape. A `TrackTypeGuesser` takes an
 argument and returns a string, the same signature a function component has, so a
-structural test admits it as a wrappable slot. `kind` exists only in the type:
-nothing sets it at runtime, and nothing reads it. `extensionPointShapes.test.ts`
-pins each seam against the points of the other shapes, and fails a new
-`ComponentList` or `ElementList` declared the long way, which would otherwise be
-a point no producer accepts.
+structural test admits it as a wrappable slot. `kind` exists only in the type
+and is absent at runtime. `extensionPointShapes.test.ts` pins each seam against
+the points of the other shapes, and fails a new `ComponentList` or `ElementList`
+declared the long way, which would otherwise be a point no producer accepts.
 
 ## API
 
@@ -196,12 +196,13 @@ can call is the one the point's shape calls for.
 There is a fourth fire method, `evaluateAsyncExtensionPointStrict`, which is
 `evaluateAsyncExtensionPoint` without the swallow-and-continue: a callback that
 throws propagates to the producer instead of being logged. Every `LaunchView-`
-point is fired that way, so a launcher that throws reaches the user as an error
-rather than as an empty session. Producers of accumulating points want the plain
-runner, where one plugin failing does not cost the others their entries.
+point is fired that way, so a launcher that throws reaches the user as an error.
+Producers of accumulating points want the plain runner, where one plugin failing
+does not cost the others their entries.
 
-These are the only signatures on this page that are not generated from source;
-they name placeholder arguments so the seven read side by side.
+The API block above holds the only signatures on this page that are not
+generated from source. It uses placeholder argument names so the seven read side
+by side.
 
 ## Registering on a point
 
@@ -286,11 +287,11 @@ export default function SequenceFeatureHoverHighlightExtensionF(
 ### wrapComponent: filling a component slot {#wrapcomponent-the-one-way-to-fill-a-slot}
 
 A point declared [`ComponentSlot`](#points-that-resolve-to-ui) resolves to one
-component, and `wrapComponent`, from `@jbrowse/core/ui`, is how a plugin fills
-it. Your component is handed whatever fills the slot so far as
-`DefaultComponent`: render it and you have added to the default, leave it out
-and you have replaced it. There is no separate "replace" call, and writing it
-this way lets the next plugin still wrap yours.
+component, and a plugin fills it with `wrapComponent`, from `@jbrowse/core/ui`.
+Your component is handed whatever fills the slot so far as `DefaultComponent`:
+render it and you have added to the default, leave it out and you have replaced
+it. There is no separate "replace" call, and writing it this way lets the next
+plugin still wrap yours.
 
 <!-- include: packages/core/src/ui/PluggableComponent.test.tsx#wrapComponent -->
 
@@ -313,11 +314,11 @@ cannot, and JBrowse logs a warning naming the slot when that happens.
 
 ### matchesTrackSelector: which tracks a contribution is for
 
-Every track-scoped point fires for every track, so a contribution that does not
-say which tracks it wants applies to all of them — a wrapper takes over every
-widget that opens, a panel appears on every feature. `matchesTrackSelector`,
-also from `@jbrowse/core/ui`, answers whether the props you were handed belong
-to a track `select` names. What you do with the answer depends on the point:
+Every track-scoped point fires for every track, so a contribution with no track
+selector applies to all of them: a wrapper takes over every widget that opens,
+and a panel appears on every feature. `matchesTrackSelector`, also from
+`@jbrowse/core/ui`, answers whether the props you were handed belong to a track
+`select` names. What you do with the answer depends on the point:
 
 - a **wrapper** renders the component it was handed
 - a **panel** renders `null`
@@ -364,9 +365,9 @@ track config the About points provide, so one call scopes a contribution to any
 of them. Anything the fields cannot express joins the same condition; the panel
 below adds `depth` to it.
 
-Don't reach for `matchTrackId` from `@jbrowse/core/util` — that one tests an id
-against patterns you supply, so the copy-track normalization is back to being
-yours to remember.
+Don't reach for `matchTrackId` from `@jbrowse/core/util`. It tests an id against
+patterns you supply, so you have to handle the copy-track normalization
+yourself.
 
 Matching is on the model because the config that produced a feature details
 widget isn't always retrievable.
@@ -402,21 +403,21 @@ position, any text typed into it, and any panel the user had expanded.
 ### Firing a point that renders
 
 A producer whose point resolves to UI fires it as JSX from `@jbrowse/core/ui`.
-One component per shape, all three shown in the API block above:
+There is one component per shape, and the API block above shows all three:
 
 - `PluggableComponent` for a `single` point, where `component` is the default
   the slot resolves to when no plugin claims it.
 - `PluggableComponents` for a `list` point whose entries are components — the
-  panel points. It renders each one with the point's props, inside its own
-  `<Suspense>`, so a panel can be `React.lazy`.
+  panel points. It renders each one with the point's props, inside a
+  `<Suspense>` for each panel, so a panel can be `React.lazy`.
 - `PluggableElements` for a `list` point whose entries are already-rendered
   `ReactNode`s — the overlay points.
 
-All three are observers, so a contributor that scopes itself on an observable is
-re-evaluated when that observable changes. Which one a point takes is decided by
-its registry entry: each accepts only the points of its own shape, so pointing
-one at another's point is a compile error rather than a component that renders
-nothing.
+All three components are observers, so a contributor that scopes itself on an
+observable is re-evaluated when that observable changes. A point's registry
+entry decides which component the point takes: each component accepts only the
+points of its shape, so pointing one at another shape's point is a compile
+error.
 
 A point fired this way has no string-literal call site, so its `#extensionPoint`
 docs tag goes on its `ExtensionPointRegistry` entry instead.
@@ -439,20 +440,19 @@ pluginManager.listenToExtensionPoint(
 ```
 
 Every callback registered on a notification point runs, since there is no value
-for a later one to overwrite. The `notify` shape in the listing below means
-this.
+for a later one to overwrite; the listing below marks these points `notify`.
 
 `addToExtensionPoint` rejects these names because of the promise handling. An
 `async` callback's promise is the point's completion signal, and two of them are
-**joined**, so a producer waiting on the folded value learns when every handler
-has finished. A hand-written callback that returns its own promise gets that
-wrong, and gets it wrong invisibly: the symptom is a producer that stops waiting
-early, which reads as a race rather than as the wrong registration method.
+**joined**, so a producer waiting on the folded value can tell when every
+handler has finished. A hand-written callback that returns a promise breaks this
+join and raises no error: the producer stops waiting early, which looks like a
+race.
 
-`Core-handleUnrecognizedAssembly` works that way — a handler supplies the
-assembly out of band, and its promise lets `waitForAssembly` stop waiting on an
-event rather than on a clock. The producer there fires the point with the
-**sync** runner and awaits the folded value itself; only
+`Core-handleUnrecognizedAssembly` is a notification point of this kind: a
+handler supplies the assembly out of band, and its promise lets
+`waitForAssembly` stop waiting without a timeout. The producer there fires the
+point with the **sync** runner and awaits the folded value itself; only
 `evaluateAsyncExtensionPoint` awaits each callback in turn.
 
 ## Extension point listing
@@ -460,8 +460,8 @@ event rather than on a clock. The producer there fires the point with the
 Generated from the `#extensionPoint` tags at each point's fire/registration
 site. The detailed sections that follow are hand-written.
 
-**Shape** says what happens when a second plugin registers on the same point,
-and is derived from the point's `args`:
+The **Shape** column shows what happens when a second plugin registers on the
+same point, and the generator derives it from the point's `args`:
 
 - **`list`** accumulates, so every plugin's contribution survives; register with
   `contributeToExtensionPoint`.
@@ -536,9 +536,9 @@ it must select the one it means.
 Most view and display types register their state model lazily. For those the
 point fires when the state model loads rather than at startup, so
 `elt.stateModel = extend(elt.stateModel)` in the callback sees a loaded model
-and works the way it did in v4. A callback that instead changes something the
-host reads before any model loads, such as a display's `configSchema`, runs too
-late for a lazy element.
+and works as it did in v4. A callback that instead changes something the host
+reads before any model loads, such as a display's `configSchema`, runs too late
+for a lazy element.
 
 For the two common cases use `extendViewType` / `extendDisplayType`, which check
 the `group` and look the name up in a registry:
@@ -560,18 +560,19 @@ extendViewType(pluginManager, 'LinearGenomeView', stateModel =>
 `stateModel` arrives typed, so `self` is typed through the rest of the chain
 with no `as`. The name is checked too: register your view or display in the
 registry beside its state model type, and a typo or a rename becomes a compile
-error instead of an extension that stops applying without one.
+error, where an unchecked name would leave the extension unapplied with no
+error.
 
-`extendViewType` and `extendDisplayType` both take an array of names as well as
-one, which is how a contribution reaches a family of displays — a family here is
-a shared mixin set rather than a chain, so there is no parent type to name.
+`extendViewType` and `extendDisplayType` take either one name or an array of
+names. An array lets a contribution reach a family of displays, which share a
+mixin set and have no parent type to name.
 
-For the commonest reason to reach for these — adding an entry to somebody else's
-menu — go one level higher still and use `addViewMenuItems` /
-`addDisplayMenuItems`, which own the super-capture and the concatenation. See
+To add an entry to somebody else's menu, the commonest reason to extend a type,
+use `addViewMenuItems` / `addDisplayMenuItems`, which handle the super-capture
+and the concatenation. See
 [Adding track context-menu items](/docs/developer_guides/menus#adding-track-context-menu-items).
-Extend the state model when the contribution needs state or actions of its own,
-so the menu items and what they call stay in one place.
+Extend the state model when the contribution needs new state or actions, so the
+menu items and what they call stay in one place.
 
 <!-- include: plugins/linear-genome-view/src/LinearGenomeView/model.ts#registry -->
 
@@ -595,26 +596,26 @@ type: synchronous
 Infer an adapter type from a location in the "Add track" workflow. See the
 [add track workflow guide](/docs/developer_guides/creating_addtrack_workflow).
 
-The formats JBrowse ships with are rows in `@jbrowse/add-track-core`'s table —
-filename regex, adapter type, location field, index layout, track type — which
+The formats JBrowse ships with are rows in `@jbrowse/add-track-core`'s table
+(filename regex, adapter type, location field, index layout, track type), which
 `CorePlugin` guesses from and `@jbrowse/cli`'s `add-track` reads too, so a file
 resolves to the same adapter config in the app and on the command line. Core
-guesses a row only when `pluginManager.hasAdapterType` says the build has that
-adapter, so a build without the alignments plugin still guesses nothing for a
-`.bam`. Register on this point to add a format the table does not describe.
+guesses a row only when `pluginManager.hasAdapterType` returns true for that
+adapter, so a build without the alignments plugin guesses nothing for a `.bam`.
+Register on this point to add a format the table does not describe.
 
 Use `addAdapterGuesser` rather than calling `addToExtensionPoint` directly:
 these two points are chains of responsibility, where each callback wraps the
 previously registered guesser and delegates to it when it has no match. The
 helper does that wiring, so your callback just returns a config when it
-recognizes the file and `undefined` when it doesn't. Delegating by hand is easy
-to get subtly wrong: dropping the optional `file` argument on the way through
-hides it from every guesser registered before yours.
+recognizes the file and `undefined` when it doesn't. Delegating by hand risks
+dropping the optional `file` argument on the way through, which hides it from
+every guesser registered before yours.
 
 The chain is first-match-wins, so it returns exactly one adapter and cannot
-express "or this other one". Where two adapters genuinely read the same
-extension, the one the chain does not pick declares that on its own
-registration, and the "Add track" form offers it alongside the guess:
+express "or this other one". Where two adapters read the same extension, the one
+the chain does not pick declares that in its adapter registration, and the "Add
+track" form offers it alongside the guess:
 
 <!-- include: plugins/comparative-adapters/src/MultiGenomePAFAdapter/index.ts#alsoReads -->
 
@@ -708,9 +709,9 @@ export interface AboutPanelProps {
 }
 ```
 
-No in-tree plugin registers on either: a track that wants to change its own
-About dialog sets the `formatAbout` config slot. These are the programmatic
-equivalent, for tracks you do not own.
+No in-tree plugin registers on either. To change the About dialog of a track you
+own, set its `formatAbout` config slot; these points are the programmatic
+equivalent for tracks you do not own.
 
 `Core-extraAboutPanel` and `Core-replaceAbout` are declared together — one
 accumulates an array, the other threads a single component:
@@ -729,9 +730,9 @@ declare module '@jbrowse/core/PluginManager' {
 }
 ```
 
-A single-component slot, so it is filled with
-[`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot) exactly as
-`Core-replaceWidget` is. Example: a new About dialog for one track, leaving
+`Core-replaceAbout` is a single-component slot, so a plugin fills it with
+[`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot) exactly as it fills
+`Core-replaceWidget`. This example gives one track a new About dialog and leaves
 every other track's alone.
 
 <!-- include: packages/product-core/src/ui/aboutExtensionPoints.test.tsx#replaceAbout -->
@@ -765,9 +766,10 @@ registration order.
 - `props` - [`AboutPanelProps`](#core-replaceabout), also passed to your
   component
 
-Return value: your component, or `undefined` to add no panel — the array itself
-is never in reach, so nothing you return can drop another plugin's panel. Each
-panel renders its own card chrome, so use `BaseCard` for a titled section.
+Return value: your component, or `undefined` to add no panel. A callback never
+receives the array, so nothing you return can drop another plugin's panel. A
+panel supplies the card chrome around its content, so use `BaseCard` for a
+titled section.
 
 Example: adds an extra about dialog panel for a particular track ID
 
@@ -788,27 +790,26 @@ function addExtraAboutPanel(pluginManager: PluginManager) {
 }
 ```
 
-`ExtraAboutPanel` there is declared at module scope and renders its own card
-chrome (`BaseCard`, from
-`@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard`, gives a titled
-section). Declaring it inside the callback instead makes it a new element type
-on each evaluation, so the panel remounts and loses its state. Panels render
+`ExtraAboutPanel` is declared at module scope and renders `BaseCard`, from
+`@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard`, which gives a
+titled section. If the callback declares the panel, each evaluation creates a
+new element type, so the panel remounts and loses its state. Panels render
 inside a `<Suspense>`, so `React.lazy` is fine.
 
-The dialog fires this for whatever track was opened, so a panel that renders
-unconditionally lands on every track's About dialog.
-[`matchesTrackSelector`](#matchestrackselector-which-tracks-a-contribution-is-for)
-is how it says which tracks it is for, the same way a feature panel does — and
-it reads the track config these points provide rather than a widget model, so a
-`trackId` selector here also matches the user's copies of that track.
+The dialog fires this point for whichever track was opened, so a panel that
+renders unconditionally appears in every track's About dialog. A panel selects
+its tracks with
+[`matchesTrackSelector`](#matchestrackselector-which-tracks-a-contribution-is-for),
+as a feature panel does. Here the selector reads the track config these points
+provide, so a `trackId` selector also matches the user's copies of that track.
 
 ### Core-replaceWidget
 
 type: synchronous
 
 Provide a different component for a given widget, drawer, or modal. This is a
-`single` point, since one widget renders: a callback returns its own component
-to take the slot, or the accumulated one to opt out.
+`single` point, since one widget renders: a callback returns a component to take
+the slot, or the accumulated one to opt out.
 [`Core-extraFeaturePanel`](#core-extrafeaturepanel) is the point for _adding_ a
 panel to a feature details widget.
 
@@ -830,16 +831,16 @@ export interface ReplaceWidgetProps {
 
 Return value: the new React component.
 
-Nothing in this repo registers on it: a display that wants its own feature
-details widget names one with a `featureWidgetType` getter instead. Reach for
-this point to replace a widget you do **not** own.
+No plugin in this repo registers on it: a display that wants a dedicated feature
+details widget names one with a `featureWidgetType` getter instead. Use this
+point to replace a widget you do **not** own.
 
-This point fires whenever **any** widget opens, so a callback that does not
-scope itself takes over the drawer, the modal, and every feature details panel.
-Fill it with [`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot) and
-scope it with
+`Core-replaceWidget` fires whenever **any** widget opens, so a callback that
+does not scope itself takes over the drawer, the modal, and every feature
+details panel. Fill it with
+[`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot) and scope it with
 [`matchesTrackSelector`](#matchestrackselector-which-tracks-a-contribution-is-for),
-which are how every component slot is filled and scoped.
+as for every component slot.
 
 ### Core-extraFeaturePanel
 
@@ -865,10 +866,10 @@ export default function ScoreFeaturePanelF(pluginManager: PluginManager) {
 
 Return value: your component, or `undefined` to add no panel.
 
-The point fires for every feature details widget there is, so the panel says
-which tracks it belongs on itself, with the same
+The point fires for every feature details widget, so the panel selects its
+tracks with the same
 [`matchesTrackSelector`](#matchestrackselector-which-tracks-a-contribution-is-for)
-the widget points use. It renders its own card chrome too, so it starts at
+the widget points use. The panel also supplies its card chrome, so it starts at
 `BaseCard`:
 
 <!-- include: example-plugins/score-example/src/ScoreFeaturePanel/index.tsx#panel -->
@@ -886,15 +887,15 @@ function ScoreFeaturePanel(props: FeaturePanelProps) {
 }
 ```
 
-`widgetType` means nothing here: a feature detail widget's type varies by track
-type, so `trackType` is the field that means "my kind of track". A plain-string
+A feature detail widget's type varies by track type, so `widgetType` has no use
+here and `trackType` is the field for "my kind of track". A plain-string
 `trackId` matches the user's copies of that track too.
 
-The `feature` being shown and the `depth` of the card showing it are what no
-selector can reach, and both are ordinary conditions around the panel's own JSX,
-as above. The point fires once per card, including the nested card for every
-subfeature, so `depth === 0` is how a panel says "only the feature the user
-clicked".
+No selector can test the `feature` being shown or the `depth` of the card
+showing it, so a panel tests both with ordinary conditions around its JSX, as
+above. The point fires once per card, including the nested card for every
+subfeature, so a panel tests `depth === 0` to match only the feature the user
+clicked.
 
 Your panel receives the point's props:
 
@@ -921,12 +922,11 @@ export interface FeaturePanelProps {
 the widget was open; `trackId` and `trackType` stay defined either way. Derive
 the session with `getSession(model)` if you need it.
 
-If you fire this point yourself, or need a panel that decides per render, the
-underlying contract is an accumulating array — `args` is
-`React.ComponentType<FeaturePanelProps>[]`, empty by default — registered on
-with [`contributeToExtensionPoint`](#accumulating-points). The helper is still
-the better default: it does the track scoping, which nothing else can do for
-you.
+If you fire this point yourself, or need a panel that decides per render,
+register on the underlying contract with
+[`contributeToExtensionPoint`](#accumulating-points): `args` is
+`React.ComponentType<FeaturePanelProps>[]`, empty by default. The helper is
+still the better default, since it does the track scoping.
 
 ### Core-preProcessTrackConfig
 
@@ -962,11 +962,11 @@ declare module '../../PluginManager.ts' {
 
 The snapshot is an open record because the point fires before anything validates
 it. Return a new snapshot (or the mutated one; both fire sites clone first).
-This declaration lives inside core, so it augments the module by relative path;
-a plugin writes `declare module '@jbrowse/core/PluginManager'` for the same
+This declaration is inside core, so it augments the module by relative path; a
+plugin writes `declare module '@jbrowse/core/PluginManager'` for the same
 effect.
 
-For the common case — a _display's_ config across a format change — declare it
+For the common case of a _display's_ config across a format change, declare it
 rather than registering a handler. A name an older release used goes in the
 config schema's `retired`:
 
@@ -1006,13 +1006,13 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
 ```
 
 Each entry maps the old name to the members its value becomes. One declaration
-serves every door into a display setting: a `displays` entry, the
-`displayDefaults` shorthand — which routes an old name to the display that
-retired it, rather than reporting a key no display declares — a session spec or
+covers every entry point into a display setting: a `displays` entry, the
+`displayDefaults` shorthand (which routes an old name to the display that
+retired it instead of reporting a key no display declares), a session spec or
 share link, an agent's settings bag, and the session migration.
 
 A retired **value** in a slot the display still declares is the schema's
-`preProcessSnapshot`, which runs on the same doors.
+`preProcessSnapshot`, which runs on the same entry points.
 
 `retiredTypes` names the display types this one replaced, on the `DisplayType`:
 
@@ -1023,13 +1023,13 @@ retiredTypes: [{ type: 'LinearFeatureDisplay' }],
 retiredState: retiredFilterState,
 ```
 
-A config or a session naming one loads as this display, the entry rewritten
-first by that entry's `migrate`, which is where the settings the old type's
-picture needs go. It runs before every `Core-preProcessTrackConfig` handler, so
-a handler reads current names.
+A config or a session naming one loads as this display, with the entry rewritten
+first by that entry's `migrate`, which sets the settings the old type's picture
+needs. `migrate` runs before every `Core-preProcessTrackConfig` handler, so a
+handler reads current names.
 
 `retiredState` does the same for an old session's display instance: `keys` names
-the props it held that are config slots now, and `lift` answers the slots they
+the props it held that are config slots now, and `lift` returns the slots they
 become, which the session migration writes into the track's config.
 
 ### Core-addTrackComponent
@@ -1040,16 +1040,16 @@ type: synchronous
 - `props` - `{ model }` - the add-track widget model
 
 Adapter-specific fields shown in the "Add track" widget, below the adapter and
-track-type selectors. It is a single-component fold: return your own component
-when the selected adapter is one you handle, and the accumulated component
-otherwise.
+track-type selectors. The point is a single-component fold: return your own
+component when the selected adapter is one you handle, and the accumulated
+component otherwise.
 
 Register with `addAddTrackComponent` (from `@jbrowse/core/util`) rather than
-with [`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot), which is the
-general way to fill a slot. This is the one slot with its own entry point,
-because it writes two points from one declaration of your adapter types: the
-fold here, and `Core-addTrackComponentAdapterTypes`, a plain list of the same
-claims for callers that have an adapter name and no model.
+with [`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot), the general
+way to fill a slot. This slot has a dedicated helper because the helper writes
+two points from one declaration of your adapter types: the fold here, and
+`Core-addTrackComponentAdapterTypes`, a plain list of the same claims for
+callers that have an adapter name and no model.
 
 <!-- include: plugins/gwas/src/GWASAddTrackComponent/index.tsx#register -->
 
@@ -1172,14 +1172,14 @@ type: async
 One point per launchable view type, named `LaunchView-` plus the view type.
 `loadSessionSpec` fires it with the spec's view object as its args plus
 `session`, and the launcher forwards that object to `addView`, where the view's
-own `preProcessSnapshot` sorts the launch keys from the properties. A view type
-with no registered point cannot be launched from a spec, and `loadSessionSpec`
+`preProcessSnapshot` sorts the launch keys from the properties. A view type with
+no registered point cannot be launched from a spec, and `loadSessionSpec`
 reports that by name.
 
-Register one to make your own view type launchable — see
+Register one to make your own view type launchable; see
 [](/docs/developer_guides/creating_view). A second callback on a built-in one
-sees the launch args the chain passes along, rather than the view the first
-callback created.
+receives the launch args the chain passes along, not the view the first callback
+created.
 
 Each launcher's args are that view type's spec fields, documented once in the
 URL parameter guide and typed by the `Launch*Args` interface exported beside the
@@ -1204,10 +1204,10 @@ Two spec keys never reach a launcher:
 
 - **`type`** is the dispatch key.
 - **`displayName`** is applied by `loadSessionSpec` to whatever view the launch
-  created, so it works for plugin-provided types whose launcher never heard of
+  created, so it works for plugin-provided types whose launcher does not handle
   it.
 
-`id` is each launcher's own job, and every one above honors it.
+Each launcher handles `id` itself, and every one above honors it.
 
 ### LinearGenomeView-TracksContainerComponent
 
@@ -1277,11 +1277,11 @@ Registered contract:
 Called when a search result is selected in the LinearGenomeView search box,
 after navigation (if the result has a location). Useful for taking further
 action, e.g. selecting a corresponding feature. It's a
-[notification point](#notification-points): the payload lives in `props` (passed
-unchanged to every callback) rather than `args`, so callbacks can't alter what
-later callbacks see, and every plugin registered on it runs. Register with
-`listenToExtensionPoint`; the canvas plugin's registration, which highlights the
-feature the result names, is the worked example in that section.
+[notification point](#notification-points): the payload is in `props` (passed
+unchanged to every callback), so callbacks can't alter what later callbacks see,
+and every plugin registered on it runs. Register with `listenToExtensionPoint`;
+the canvas plugin's registration, which highlights the feature the result names,
+is the worked example in that section.
 
 ### SyntenyImportForm-Options
 
@@ -1375,9 +1375,9 @@ export interface SyntenyFileFormatOption {
 user's file selection is complete, or `undefined` when the selection is cleared.
 
 Four of the built-in formats (`.paf`, `.delta`, `.out`, `.chain`) come from one
-helper in `@jbrowse/synteny-core` — the three `.anchors`/`.pif.gz` variants need
-a second file or a different selector and have their own — and it is the
-smallest complete example of the shape:
+helper in `@jbrowse/synteny-core`, which is the smallest complete example of a
+format. The three `.anchors`/`.pif.gz` variants need a second file or a
+different selector, so they are defined separately:
 
 <!-- include: packages/synteny-core/src/defaultSyntenyFileFormats.tsx#simpleFormat -->
 
@@ -1435,10 +1435,10 @@ function makeSimpleFormat(
 
 Two things to copy from it:
 
-- **The component owns the file-location state** and calls `onAdapterChange` on
-  _every_ change, including the swap toggle after a file is already chosen —
-  reporting only on the file pick leaves the form holding an adapter with the
-  assemblies the wrong way round.
+- **The component holds the file-location state** and calls `onAdapterChange` on
+  _every_ change, including the swap toggle after a file is already chosen. If
+  the component reports only on the file pick, the form holds an adapter with
+  the assemblies the wrong way round.
 - **`StandardFormatSelector` is exported from `@jbrowse/synteny-core`**, so a
   plugin format gets the same file/swap UI as the built-ins.
 
@@ -1454,7 +1454,7 @@ type: synchronous
 
 Desktop only. The start screen runs before any session exists, so these points
 fire on a plugin manager built from the user's **global plugins** alone (the
-ones in the "Global plugins" dialog) — a plugin listed only in a config is not
+ones in the "Global plugins" dialog). A plugin listed only in a config is not
 loaded yet and cannot extend this screen.
 
 `loadPluginManager(configPath)` builds a session's plugin manager and
@@ -1494,8 +1494,8 @@ type: synchronous
   panel component
 - `props` - `{ setPluginManager, loadPluginManager }`
 
-Desktop only, and the same component slot as `Core-replaceWidget` — fill it with
-[`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot), rendering the
+Desktop only. It is the same component slot as `Core-replaceWidget`, so fill it
+with [`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot), rendering the
 `DefaultComponent` you were handed to keep the built-in panel below your own
 chrome. If your component throws while rendering, the start screen falls back to
 the built-in panel and shows an error above it.
@@ -1504,7 +1504,8 @@ the built-in panel and shows an error above it.
 
 type: synchronous
 
-Same shape as `Desktop-StartScreenLaunchPanel`, for the recent sessions panel.
+`Desktop-StartScreenRecentSessionsPanel` is a component slot like
+`Desktop-StartScreenLaunchPanel`, for the recent sessions panel.
 
 ### Adding your own extension points
 
