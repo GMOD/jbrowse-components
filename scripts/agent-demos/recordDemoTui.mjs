@@ -21,7 +21,6 @@ import { spawn, spawnSync, execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import http from 'node:http'
 import net from 'node:net'
-import os from 'node:os'
 import path from 'node:path'
 
 // The TUI driving is demoCore's, not this file's own: the startup choosers, the
@@ -31,7 +30,9 @@ import path from 'node:path'
 // which is why it still matched `❯` — a shell prompt — as readiness and keyed
 // turn detection on `esc to interrupt`, which 2.1.263 no longer draws.
 import {
+  bridgeIsLive,
   capture as capturePane,
+  defaultSocketPath,
   delay,
   tmux,
   typePrompt as typePromptInto,
@@ -39,6 +40,14 @@ import {
   waitTuiReady,
   writeCaptions,
 } from './demoCore.mjs'
+
+// fail() runs cleanup(), which reads these, from the guards above main
+let renderer
+let app
+let sessionTerm
+let recorder
+let tilingPopup
+let headlessShell
 
 const repoRoot = path.resolve(
   path.dirname(new URL(import.meta.url).pathname),
@@ -202,15 +211,9 @@ if (!tileKeys.some(v => v.includes('<Super>Left'))) {
       '(and -right), or enable the Tiling Assistant extension',
   )
 }
-const socketPath = path.join(
-  os.tmpdir(),
-  `jbrowse-desktop-mcp-${os.userInfo().username.replaceAll(/[^\w.-]+/g, '_')}`,
-  'mcp.sock',
-)
-if (fs.existsSync(socketPath)) {
-  fail(
-    `a JBrowse bridge socket already exists at ${socketPath} — close JBrowse`,
-  )
+const socketPath = defaultSocketPath()
+if (await bridgeIsLive(socketPath)) {
+  fail(`JBrowse is already running (bridge at ${socketPath}) — close it`)
 }
 
 // ------------------------------------------------------------ http: build + config
@@ -337,12 +340,6 @@ async function waitTurnDone(before) {
 }
 
 // ------------------------------------------------------------ main
-let renderer
-let app
-let sessionTerm
-let recorder
-let tilingPopup
-let headlessShell
 function cleanup() {
   try {
     fs.writeFileSync(path.join(outDir, 'stop.flag'), '')

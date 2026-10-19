@@ -19,6 +19,28 @@ export function defaultSocketPath() {
   return path.join(os.tmpdir(), `jbrowse-desktop-mcp-${label}`, 'mcp.sock')
 }
 
+// A crashed take leaves the socket file behind, so existence alone is not the
+// question — whether something answers on it is. A dead one is removed.
+export async function bridgeIsLive(socketPath = defaultSocketPath()) {
+  if (!fs.existsSync(socketPath)) {
+    return false
+  }
+  const live = await new Promise(resolve => {
+    const s = net.createConnection(socketPath, () => {
+      s.destroy()
+      resolve(true)
+    })
+    s.on('error', () => {
+      resolve(false)
+    })
+  })
+  if (!live) {
+    console.log(`removing a stale bridge socket at ${socketPath}`)
+    fs.rmSync(socketPath, { force: true })
+  }
+  return live
+}
+
 const MIME = {
   '.html': 'text/html',
   '.js': 'text/javascript',

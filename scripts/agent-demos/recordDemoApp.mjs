@@ -29,7 +29,6 @@
 import { spawn, spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import { createRequire } from 'node:module'
-import net from 'node:net'
 import path from 'node:path'
 
 import {
@@ -53,6 +52,7 @@ import {
 } from './appClient.mjs'
 import {
   appViewport,
+  bridgeIsLive,
   defaultSocketPath,
   delay,
   serve,
@@ -119,23 +119,9 @@ if (
   )
 }
 
-// A crashed take leaves the socket file behind, so existence alone is not the
-// question — whether something answers on it is.
 const socketPath = defaultSocketPath()
-if (fs.existsSync(socketPath)) {
-  const live = await new Promise(resolve => {
-    const s = net.createConnection(socketPath, () => {
-      s.destroy()
-      resolve(true)
-    })
-    s.on('error', () => {
-      resolve(false)
-    })
-  })
-  if (live) {
-    fail(`JBrowse is already running (bridge at ${socketPath}) — close it`)
-  }
-  fs.rmSync(socketPath, { force: true })
+if (await bridgeIsLive(socketPath)) {
+  fail(`JBrowse is already running (bridge at ${socketPath}) — close it`)
 }
 
 fs.mkdirSync(outDir, { recursive: true })
