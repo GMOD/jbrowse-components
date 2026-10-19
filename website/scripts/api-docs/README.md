@@ -22,8 +22,7 @@ This is not part of the build — run it manually and commit the result.
 neighbouring `normalizeSnapshot`. The block is extracted with the declaration it
 precedes, and anything read off that declaration's source — spread-in slot
 tables — is empty otherwise, while the page still renders because slots come
-from their own `#slot` tags. Twenty-four schemas were in that state; the
-generator throws on it now.
+from their own `#slot` tags. The generator throws on a misplaced block.
 
 It looks for comments named
 
@@ -51,9 +50,9 @@ and
 ```
 
 The comment can sit directly above a `const`, `function`, or `export default`
-declaration. The extractor reads JSDoc that's attached to the declaration via
-TypeScript's parser, so make sure there is no blank line between the JSDoc and
-the declaration it documents.
+declaration. TypeScript's parser attaches a JSDoc to the next declaration, blank
+lines or not, so a comment with another declaration between it and the one it
+means documents that other one.
 
 Only one `#config`/`#stateModel` per file is supported. The generator runs the
 TypeScript compiler (which spiders across many files to resolve a single one),
@@ -109,11 +108,9 @@ Then, in statemodels
 Each `#stateModel` page is five sections — Properties, Volatiles, Getters,
 Methods, Actions. A section is a table of the model's own members, then a fold
 holding one line per composed model, naming the members it contributes, each
-linked to its row on the page that documents it. A member redeclared by a more
-specific model appears once, at its most-specific definition. A full row per
-inherited member was two thirds of the rows in the directory, and put a copy of
-every `BaseDisplay` docstring on 21 pages. The names left unfolded were still a
-third of the directory's bytes.
+linked to its row on the page that documents it. A member several composed
+models declare appears once, under the model whose definition wins: the later
+argument to `types.compose`, as in MST.
 
 A row is name-over-type in one cell and the full documentation in the next, so
 the prose gets the width. Long types and authored `#example` blocks open in a
@@ -193,8 +190,7 @@ Any `#config`, `#stateModel`, `#slot`, `#getter`, `#action`, `#method`, or
 prominently at the top of the generated page (before the prose description), so
 they are the first thing a reader sees.
 
-Write an `#example` block **after** the rest of the doc text so it stays out of
-the prose that `extends` resolution reads:
+Write an `#example` block **after** the rest of the doc text:
 
 ````js
 /**
@@ -278,9 +274,7 @@ structural pass can't see, unresolved `baseConfiguration` references, and
 adapters whose example defaulted to `FeatureTrack`. A section stays in the file
 at `(0)` so a regression is a `+` line under a heading that was already there.
 
-This replaces relying on `console.warn`: a warning fails nothing and scrolls
-past in a CI log, which is how 40 config pages and 90 model pages came to be
-bare, and how 101 slots came to render an empty Description cell.
+A tracked list fails CI on a new gap, where a `console.warn` would scroll past.
 
 **One gap is fatal instead of tracked.** A slot a `#config` schema declares but
 never tags with `#slot` is absent from its page entirely rather than rendered
@@ -306,10 +300,7 @@ pointless since regen overwrites it.
 **The complete list of markers, and which docs render each, is generated**: the
 `MARKER_INDEX` table in `agent-docs/reference/GENERATED_DOC_BLOCKS.md`. A list
 here would be the same enumeration these generators exist to stop
-hand-maintaining, and was — it named eight of the thirty-two markers in use,
-sourced `#color` to the file that re-exports the colors rather than the one that
-declares them, and described a per-generator CLI that had already been replaced
-by `markers.ts`. Below is how to write one, not what exists.
+hand-maintaining, so this section covers how to write one.
 
 A few, as examples of the shapes:
 
@@ -332,9 +323,9 @@ about the set. The four that need the whole-repo program — `DISPLAY_TYPES`,
 directly and gated by its own `--check` instead.
 
 Either way `assertMarkersAndDocsAgree` holds the two ends together: a marker no
-doc renders, and a doc block no generator writes, are both errors. Neither was
-before, and both are silent — the second keeps whatever was committed, and the
-first reports itself up to date forever.
+doc renders, and a doc block no generator writes, are both errors. Unchecked,
+both would be silent — the second keeps whatever was committed, and the first
+reports itself up to date forever. A block that renders empty is an error too.
 
 Tag forms (all pipe-delimited, parsed by `parsePipeTags` in `util.ts`):
 
