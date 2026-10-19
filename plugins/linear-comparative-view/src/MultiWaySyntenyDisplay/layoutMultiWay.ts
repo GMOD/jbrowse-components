@@ -117,6 +117,7 @@ interface LaneRun {
   anchorStart: number
   anchorEnd: number
   anchors: { start: number; end: number }[]
+  pieces: LanePiece[]
 }
 
 /**
@@ -139,6 +140,7 @@ function laneRunsOf(sorted: readonly LanePiece[]) {
         last.anchorStart = Math.min(last.anchorStart, anchor.start)
         last.anchorEnd = Math.max(last.anchorEnd, anchor.end)
         last.anchors.push(anchor)
+        last.pieces.push({ lane, anchor })
       } else {
         runs.push({
           orientation: lane.orientation,
@@ -148,6 +150,7 @@ function laneRunsOf(sorted: readonly LanePiece[]) {
           anchorStart: anchor.start,
           anchorEnd: anchor.end,
           anchors: [anchor],
+          pieces: [{ lane, anchor }],
         })
       }
     }
@@ -175,9 +178,38 @@ function coveredBp(
  * ends. A reverse hit elsewhere on the anchor, or an inverted copy of a
  * flank, is no inversion; neither the vote nor the drawn direction enters.
  */
-function laneInversionsOf(sorted: readonly LanePiece[]): LaneChange[] {
+/**
+ * An inverted run's pieces as the inversions it holds: inside one, the anchor
+ * runs against the lane, and where it turns back a second inversion starts
+ * beside the first (HG02055#1 at 8p23.1 holds a 400 kb one beside REPD)
+ */
+function invertedBlocksOf(run: LaneRun) {
+  const blocks: LanePiece[][] = []
+  for (const piece of run.pieces) {
+    const block = blocks.at(-1)
+    const last = block?.at(-1)
+    const continues =
+      last !== undefined &&
+      (run.orientation < 0
+        ? piece.anchor.end <= last.anchor.start + SPLIT_AT_GAP_BP
+        : piece.anchor.start >= last.anchor.end - SPLIT_AT_GAP_BP)
+    if (block && continues) {
+      block.push(piece)
+    } else {
+      blocks.push([piece])
+    }
+  }
+  return blocks.map(pieces => ({
+    laneStart: Math.min(...pieces.map(p => p.lane.start)),
+    laneEnd: Math.max(...pieces.map(p => p.lane.end)),
+    anchorStart: Math.min(...pieces.map(p => p.anchor.start)),
+    anchorEnd: Math.max(...pieces.map(p => p.anchor.end)),
+  }))
+}
+
+function laneInversionsOf(sorted: readonly LanePiece[]) {
   const runs = laneRunsOf(sorted)
-  const out: LaneChange[] = []
+  const out: { change: LaneChange; turn: LaneTurn }[] = []
   for (let i = 1; i < runs.length - 1; i++) {
     const left = runs[i - 1]!
     const run = runs[i]!
@@ -198,11 +230,28 @@ function laneInversionsOf(sorted: readonly LanePiece[]): LaneChange[] {
         coveredBp(left.anchors, run.anchorStart, run.anchorEnd) +
         coveredBp(right.anchors, run.anchorStart, run.anchorEnd)
       if (run.anchorStart >= lo && run.anchorEnd <= hi && flanked < span / 2) {
-        out.push({
-          at: run.laneStart,
-          laneBp: run.laneEnd - run.laneStart,
-          bp: span,
-          kind: 'inversion',
+        const blocks = invertedBlocksOf(run)
+        blocks.forEach((block, k) => {
+          if (block.anchorEnd - block.anchorStart >= SPLIT_AT_GAP_BP) {
+            const before = blocks[k - 1]?.laneEnd ?? left.laneEnd
+            const after = blocks[k + 1]?.laneStart ?? right.laneStart
+            out.push({
+              change: {
+                at: block.laneStart,
+                laneBp: block.laneEnd - block.laneStart,
+                bp: block.anchorEnd - block.anchorStart,
+                kind: 'inversion',
+              },
+              // where a neighbour runs past the seam, the seam falls midway
+              turn: {
+                start: Math.max(
+                  block.laneStart,
+                  (block.laneStart + before) / 2,
+                ),
+                end: Math.min(block.laneEnd, (block.laneEnd + after) / 2),
+              },
+            })
+          }
         })
       }
     }
@@ -236,7 +285,76 @@ export interface RowFrame {
   /** other blocks of the contig the lane places a comparable share on */
   alsoAt: LaneBlock[]
   openings?: readonly LaneOpening[]
+  turns?: readonly LaneTurn[]
   morphFrom?: readonly { frame: RowFrame; weight: number }[]
+}
+
+/**
+ * A stretch of lane bp the frame draws mirrored in place, an inversion its
+ * records state, so its ribbons and genes read in its flanks' direction
+ */
+export interface LaneTurn {
+  start: number
+  end: number
+}
+
+const NO_TURNS: readonly LaneTurn[] = []
+
+export function frameTurns(frame: Pick<RowFrame, 'turns'>) {
+  return frame.turns ?? NO_TURNS
+}
+
+/**
+ * Where an interval's start sits on a turn's start, or its end on a turn's
+ * end, the point belongs to the turn; a lone point on a seam does not
+ */
+export type SeamSide = 'start' | 'end' | 'point'
+
+/**
+ * The drawn coordinate of an opened one: mirrored inside each turn, which
+ * keeps its own opened span. A mirror is its own inverse, so this maps drawn
+ * back to opened too.
+ */
+export function drawnOfOpened(
+  frame: Pick<RowFrame, 'openings' | 'turns'>,
+  opened: number,
+  side: SeamSide = 'point',
+) {
+  const openings = frame.openings ?? NO_OPENINGS
+  for (const { start, end } of frameTurns(frame)) {
+    const a = openedBp(openings, start, true)
+    const b = openedBp(openings, end)
+    if (
+      (opened > a && opened < b) ||
+      (side === 'start' && opened === a) ||
+      (side === 'end' && opened === b)
+    ) {
+      return a + b - opened
+    }
+  }
+  return opened
+}
+
+/**
+ * The lane bp a stretch of drawn coordinate shows, widened to every turn it
+ * meets, since a mirrored turn shows its far end beside its near seam
+ */
+export function laneExtentOfDrawn(frame: RowFrame, lo: number, hi: number) {
+  const openings = frameOpenings(frame)
+  const a = laneBpOfOpened(openings, drawnOfOpened(frame, lo))
+  const b = laneBpOfOpened(openings, drawnOfOpened(frame, hi))
+  let min = Math.min(a, b)
+  let max = Math.max(a, b)
+  for (const turn of frameTurns(frame)) {
+    if (
+      openedBp(openings, turn.start, true) < hi &&
+      openedBp(openings, turn.end) > lo
+    ) {
+      min = Math.min(min, turn.start)
+      max = Math.max(max, turn.end)
+    }
+  }
+  return { min, max }
 }
 
 /** An interval's start at an opening sits after the hole, all else before. */
@@ -395,6 +513,7 @@ export function laneIndelsOf(groups: MultiWayGroup[]) {
   const placedAnchor = placedAnchorOf(groups)
   const openingsByLane = new Map<string, LaneOpening[]>()
   const changesByLane = new Map<string, LaneChange[]>()
+  const turnsByLane = new Map<string, LaneTurn[]>()
   for (const [key, list] of pieces) {
     const assemblyName = key.slice(0, key.indexOf('\u0000'))
     list.sort((a, b) => a.lane.start - b.lane.start)
@@ -428,12 +547,19 @@ export function laneIndelsOf(groups: MultiWayGroup[]) {
         changes.push({ at, laneBp: laneGap, bp: laneGap, kind: 'insertion' })
       }
     })
-    changes.push(...laneInversionsOf(list))
+    const inversions = laneInversionsOf(list)
+    changes.push(...inversions.map(i => i.change))
     if (openings.length) {
       openingsByLane.set(key, openings)
     }
     if (changes.length) {
       changesByLane.set(key, changes)
+    }
+    if (inversions.length) {
+      turnsByLane.set(
+        key,
+        inversions.map(i => i.turn),
+      )
     }
   }
   return {
@@ -441,6 +567,8 @@ export function laneIndelsOf(groups: MultiWayGroup[]) {
       openingsByLane.get(`${assemblyName}\u0000${refName}`) ?? NO_OPENINGS,
     changes: (assemblyName: string, refName: string): readonly LaneChange[] =>
       changesByLane.get(`${assemblyName}\u0000${refName}`) ?? NO_CHANGES,
+    turns: (assemblyName: string, refName: string): readonly LaneTurn[] =>
+      turnsByLane.get(`${assemblyName}\u0000${refName}`) ?? NO_TURNS,
   }
 }
 
@@ -732,8 +860,8 @@ export function frameReach(frame: RowFrame) {
 /** `frameReach` in the lane's own px, ascending */
 export function frameReachPx(frame: RowFrame, width: number): Span {
   const { min, max } = frameReach(frame)
-  const a = openedX(frame, min, width)
-  const b = openedX(frame, max, width)
+  const a = drawnX(frame, min, width)
+  const b = drawnX(frame, max, width)
   return a <= b ? [a, b] : [b, a]
 }
 
@@ -747,14 +875,10 @@ export function frameTickXs(frame: RowFrame, interval: number, width: number) {
   const span = Math.min(...framesOf(frame).map(f => f.max - f.min))
   if (interval > 0 && span / interval <= MAX_LANE_TICKS) {
     const reach = frameReach(frame)
-    const openings = frameOpenings(frame)
-    const last = laneBpOfOpened(openings, reach.max)
+    const { min, max } = laneExtentOfDrawn(frame, reach.min, reach.max)
     for (
-      let bp = Math.max(
-        0,
-        Math.ceil(laneBpOfOpened(openings, reach.min) / interval) * interval,
-      );
-      bp <= last;
+      let bp = Math.max(0, Math.ceil(min / interval) * interval);
+      bp <= max;
       bp += interval
     ) {
       xs.push(rowFrameX(frame, bp, width))
@@ -763,13 +887,50 @@ export function frameTickXs(frame: RowFrame, interval: number, width: number) {
   return xs
 }
 
-function openedX(frame: RowFrame, opened: number, width: number) {
-  const t = (opened - frame.min) / (frame.max - frame.min)
+function drawnX(frame: RowFrame, drawn: number, width: number) {
+  const t = (drawn - frame.min) / (frame.max - frame.min)
   return frame.flipped ? width * (1 - t) : width * t
+}
+
+function openedX(
+  frame: RowFrame,
+  opened: number,
+  width: number,
+  side: SeamSide = 'point',
+) {
+  return drawnX(frame, drawnOfOpened(frame, opened, side), width)
 }
 
 export function rowFrameX(frame: RowFrame, bp: number, width: number) {
   return openedX(frame, openedBp(frameOpenings(frame), bp), width)
+}
+
+/**
+ * An ascending interval's drawn ends, in its own order. One crossing a turn's
+ * seam keeps the side holding most of it: a seam falls midway where records
+ * run past each other, so what crosses is overlap both sides state.
+ */
+function drawnEnds(frame: RowFrame, start: number, end: number) {
+  let lo = start
+  let hi = end
+  for (const turn of frameTurns(frame)) {
+    for (const seam of [turn.start, turn.end]) {
+      if (seam > lo && seam < hi) {
+        if (seam - lo >= hi - seam) {
+          hi = seam
+        } else {
+          lo = seam
+        }
+      }
+    }
+  }
+  const openings = frameOpenings(frame)
+  const openedLo = openedBp(openings, lo, true)
+  const openedHi = Math.max(openedLo, openedBp(openings, hi))
+  return [
+    drawnOfOpened(frame, openedLo, 'start'),
+    drawnOfOpened(frame, openedHi, 'end'),
+  ] as const
 }
 
 /** A px pair in the interval's own order, clipped to `frameReach`. */
@@ -780,43 +941,52 @@ export function frameSpan(
   width: number,
 ): Span | undefined {
   const { min, max } = frameReach(frame)
-  const openings = frameOpenings(frame)
-  const lo = openedBp(openings, Math.min(start, end), true)
-  const hi = Math.max(lo, openedBp(openings, Math.max(start, end)))
-  if (!doesIntersect2(min, max, lo, hi)) {
+  const [drawnLo, drawnHi] = drawnEnds(
+    frame,
+    Math.min(start, end),
+    Math.max(start, end),
+  )
+  if (
+    !doesIntersect2(
+      min,
+      max,
+      Math.min(drawnLo, drawnHi),
+      Math.max(drawnLo, drawnHi),
+    )
+  ) {
     return undefined
   }
-  const a = openedX(frame, clamp(lo, min, max), width)
-  const b = openedX(frame, clamp(hi, min, max), width)
+  const a = drawnX(frame, clamp(drawnLo, min, max), width)
+  const b = drawnX(frame, clamp(drawnHi, min, max), width)
   return start <= end ? [a, b] : [b, a]
 }
 
-function cutAtOpenings(
-  openings: readonly LaneOpening[],
-  start: number,
-  end: number,
-) {
-  const cuts = openings.filter(o => o.at > start && o.at < end).map(o => o.at)
-  const bounds = [start, ...cuts, end]
+/** an ascending interval in pieces, cut at every hole and every turn's seams */
+function cutAtSeams(frame: RowFrame, start: number, end: number) {
+  const seams = [
+    ...frameOpenings(frame).map(o => o.at),
+    ...frameTurns(frame).flatMap(t => [t.start, t.end]),
+  ]
+    .filter(at => at > start && at < end)
+    .sort((a, b) => a - b)
+  const bounds = [start, ...new Set(seams), end]
   return bounds.slice(1).map((to, i) => [bounds[i]!, to] as const)
 }
 
-/** `frameSpan` of each piece of an ascending interval, cut at every hole */
+/** `frameSpan` of each piece of an ascending interval, cut at every seam */
 export function frameSpans(
   frame: RowFrame,
   start: number,
   end: number,
   width: number,
 ): Span[] {
-  return cutAtOpenings(frameOpenings(frame), start, end).flatMap(
-    ([from, to]) => {
-      const span = frameSpan(frame, from, to, width)
-      return span ? [span] : []
-    },
-  )
+  return cutAtSeams(frame, start, end).flatMap(([from, to]) => {
+    const span = frameSpan(frame, from, to, width)
+    return span ? [span] : []
+  })
 }
 
-/** each hole-free piece of a stretch of the lane, with its px span */
+/** each seam-free piece of a stretch of the lane, with its px span */
 export function frameSegments(
   frame: RowFrame,
   start: number,
@@ -824,12 +994,12 @@ export function frameSegments(
   width: number,
 ) {
   const openings = frameOpenings(frame)
-  return cutAtOpenings(openings, start, end).map(([from, to]) => ({
+  return cutAtSeams(frame, start, end).map(([from, to]) => ({
     start: from,
     end: to,
     px: [
-      openedX(frame, openedBp(openings, from, true), width),
-      openedX(frame, openedBp(openings, to), width),
+      openedX(frame, openedBp(openings, from, true), width, 'start'),
+      openedX(frame, openedBp(openings, to), width, 'end'),
     ] as Span,
   }))
 }
@@ -859,18 +1029,14 @@ export function groupRunsOnRow(
   frame: RowFrame,
 ): PlacementRun[] {
   const { min, max } = frameExtent(frame)
-  const openings = frameOpenings(frame)
   const placements = (group.mates.get(assemblyName) ?? [])
-    .filter(
-      p =>
-        p.refName === frame.refName &&
-        doesIntersect2(
-          min,
-          max,
-          openedBp(openings, p.start, true),
-          openedBp(openings, p.end),
-        ),
-    )
+    .filter(p => {
+      if (p.refName !== frame.refName) {
+        return false
+      }
+      const [a, b] = drawnEnds(frame, p.start, p.end)
+      return doesIntersect2(min, max, Math.min(a, b), Math.max(a, b))
+    })
     .sort((a, b) => a.start - b.start)
   const runs: {
     min: number
@@ -929,30 +1095,35 @@ export function groupRunSpansOnRow(
   interval: MultiWayPlacement
   feature: Feature
 }[] {
-  // every run holds a placement the frame shows, so `frameSpan` answers
-  return groupRunsOnRow(group, assemblyName, frame).map(run => {
-    const [a, b] = frameSpan(frame, run.min, run.max, width)!
-    return {
-      span: run.orientation < 0 ? ([b, a] as const) : ([a, b] as const),
-      orientation: run.orientation,
-      interval: {
-        refName: frame.refName,
-        start: run.min,
-        end: run.max,
-        name: run.name,
-        rows: run.rows,
-      },
-      feature: run.feature,
+  return groupRunsOnRow(group, assemblyName, frame).flatMap(run => {
+    const span = frameSpan(frame, run.min, run.max, width)
+    if (!span) {
+      return []
     }
+    const [a, b] = span
+    return [
+      {
+        span: run.orientation < 0 ? ([b, a] as const) : ([a, b] as const),
+        orientation: run.orientation,
+        interval: {
+          refName: frame.refName,
+          start: run.min,
+          end: run.max,
+          name: run.name,
+          rows: run.rows,
+        },
+        feature: run.feature,
+      },
+    ]
   })
 }
 
 export function laneFetchWindow(frame: RowFrame) {
   const span = frame.max - frame.min
-  const openings = frameOpenings(frame)
+  const shown = laneExtentOfDrawn(frame, frame.min, frame.max)
   return {
-    min: Math.min(laneBpOfOpened(openings, frame.min), frame.fitMax - span),
-    max: Math.max(laneBpOfOpened(openings, frame.max), frame.fitMin + span),
+    min: Math.min(shown.min, frame.fitMax - span),
+    max: Math.max(shown.max, frame.fitMin + span),
   }
 }
 

@@ -178,6 +178,25 @@ cost is linear in lanes.
   `hprc_multiway` name it, at 4 to 5.1 Mb. A reverse hit elsewhere on the
   anchor, or an inverted copy of a flank, is no inversion, and the vote's
   `[rev]` plays no part.
+- **A lane draws an inversion straight, in place** (`LaneTurn`,
+  `drawnOfOpened`). Each run the chip names as an inversion is a turn of the
+  lane's frame: inside it the drawn coordinate is the opened one mirrored
+  across the turn's own opened span, so its ribbons and genes read in the
+  flanks' direction and nothing outside it moves. A mirror is its own
+  inverse, so one function maps both ways. Turns ride every frame from the
+  fit on, so the vote, the alignment and the pivot all read the straightened
+  lane and the frame follows the flanks without the vote changing. Spans,
+  segments and lane-pair ribbons cut at a turn's seams as at a hole's; a seam
+  where a flank runs past the turn falls midway; and a lane fetch over a seam
+  widens to the whole turn, whose far end it shows. A record crossing a seam
+  keeps the side holding most of it (`drawnEnds`). One run of the other
+  strand can hold two inversions side by side, where its anchor turns back
+  (`invertedBlocksOf`); each is its own turn and chip entry, as HG02055#1's
+  400 kb one beside REPD is. At 8p23.1 all seven
+  carriers draw straight against hg38, and the chip still names each. Open: a
+  template layer reads the widened window as one region, so near a turn
+  larger than about a span it passes `LANE_TEMPLATE_MAX_BP` and drops; the
+  fix is a region per drawn piece.
 - **A lane inside a deletion longer than the window**: with `splitAtGapBp`,
   `clipFeatureToRegion` answers a record whose gap between two runs holds the
   whole window with that gap alone, marked `spansWindow`, and

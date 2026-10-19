@@ -5,6 +5,12 @@ description: In a linear synteny view, read an inversion straight by splitting t
 
 # Straighten an inversion by reversing its span
 
+MultiWaySyntenyDisplay draws its lanes this way since 2026-10-18, as turns
+mirrored inside each lane's frame rather than as split regions
+([../../reference/MULTIWAY_SYNTENY_DISPLAY.md](../../reference/MULTIWAY_SYNTENY_DISPLAY.md),
+"A lane draws an inversion straight"). What follows is the LinearSyntenyView
+row, which is still open.
+
 A whole-row flip turns an inversion's flanks anti-parallel, so the ribbons
 either side cross in an X. Reversing only the inverted span keeps every ribbon
 straight:

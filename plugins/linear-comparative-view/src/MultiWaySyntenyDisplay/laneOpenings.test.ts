@@ -12,7 +12,9 @@ import { buildLanes, laneGeometry } from './laneStack.ts'
 import {
   frameSegments,
   frameSpan,
+  frameSpans,
   groupFeatures,
+  groupRunSpansOnRow,
   laneIndelsOf,
   laneOpeningsOf,
   rowFrameX,
@@ -683,10 +685,205 @@ describe('an inversion the lane carries against the anchor', () => {
     ).toEqual([])
   })
 
+  test('names two inversions side by side in one run of the other strand, each turned on its own', () => {
+    const groups = groupFeatures([
+      run('l', 0, 0, 40_000, 1),
+      run('a', 40_000, 40_000, 200_000, -1),
+      run('b', 240_000, 240_000, 700_000, -1),
+      run('r', 940_000, 940_000, 40_000, 1),
+    ])
+    expect(named(groups.flatMap(g => [g.feature as SimpleFeature]))).toEqual([
+      { at: at + 40_000, laneBp: 200_000, bp: 200_000, kind: 'inversion' },
+      { at: at + 240_000, laneBp: 700_000, bp: 700_000, kind: 'inversion' },
+    ])
+    expect(laneIndelsOf(groups).turns('HG01123.1', ref)).toEqual([
+      { start: at + 40_000, end: at + 240_000 },
+      { start: at + 240_000, end: at + 940_000 },
+    ])
+  })
+
   test('names nothing with one flank', () => {
     expect(
       named([run('l', 0, 0, 40_000, 1), run('m', 40_000, 40_000, 900_000, -1)]),
     ).toEqual([])
+  })
+})
+
+describe('a lane draws an inversion straight, in place', () => {
+  const [ref, at] = CARRIERS['HG01123.1']
+  const width = 1000
+  const unitBp = 980_000
+  const pxOf = (bp: number) => ((bp - WINDOW_START) / unitBp) * width
+  const run = (
+    id: string,
+    lane: number,
+    anchor: number,
+    length: number,
+    orientation: number,
+  ) =>
+    piece(
+      id,
+      WINDOW_START + anchor,
+      WINDOW_START + anchor + length,
+      [{ assemblyName: 'HG01123.1', refName: ref, start: at + lane }],
+      orientation,
+    )
+  const groups = groupFeatures([
+    run('l', 0, 0, 40_000, 1),
+    run('m', 40_000, 40_000, 900_000, -1),
+    run('r', 940_000, 940_000, 40_000, 1),
+  ])
+  const { openings, turns } = laneIndelsOf(groups)
+  const frameWith = (turnsOf?: typeof turns) => {
+    const center = (g: MultiWayGroup) => (g.anchor.start + g.anchor.end) / 2
+    const d = decideLaneFrames({
+      groups,
+      openingsOf: openings,
+      turnsOf,
+      assemblyNames: ['HG01123.1'],
+      anchorX: new Map(groups.map(g => [g.key, pxOf(center(g))])),
+      anchorCoordOf: g => ({ refName: 'chr1', coord: center(g) }),
+      pxOfAnchor: c => pxOf(c.coord),
+      unitBp,
+      width,
+      previous: new Map(),
+    }).get('HG01123.1')!
+    return frameFromDecision(
+      d,
+      pxOf(d.pivotAnchor.coord),
+      unitBp,
+      width,
+      false,
+      openings('HG01123.1', ref),
+      turnsOf?.('HG01123.1', ref),
+    )
+  }
+  const interior = groups.find(g => g.key === 'm')!
+
+  test('turns the inverted run, its seams where the runs meet', () => {
+    expect(turns('HG01123.1', ref)).toEqual([
+      { start: at + 40_000, end: at + 940_000 },
+    ])
+  })
+
+  test("draws the turned run's ribbon untwisted, under its own anchor stretch", () => {
+    const frame = frameWith(turns)
+    expect(frame.flipped).toBe(false)
+    const { span } = groupRunSpansOnRow(interior, 'HG01123.1', frame, width)[0]!
+    expect(span[0]).toBeLessThan(span[1])
+    expect(span[0]).toBeCloseTo(pxOf(WINDOW_START + 40_000), 0)
+    expect(span[1]).toBeCloseTo(pxOf(WINDOW_START + 940_000), 0)
+  })
+
+  test('without turns the same run twists', () => {
+    const { span } = groupRunSpansOnRow(
+      interior,
+      'HG01123.1',
+      frameWith(),
+      width,
+    )[0]!
+    expect(span[0]).toBeGreaterThan(span[1])
+  })
+
+  test('a turned run that outweighs its flanks leaves the lane unflipped', () => {
+    const many = groupFeatures([
+      run('l', 0, 0, 20_000, 1),
+      ...Array.from({ length: 10 }, (_, k) =>
+        run(
+          `m${k}`,
+          20_000 + 90_000 * k,
+          920_000 - 90_000 * (k + 1),
+          90_000,
+          -1,
+        ),
+      ),
+      run('r', 920_000, 920_000, 20_000, 1),
+    ])
+    const indels = laneIndelsOf(many)
+    const center = (g: MultiWayGroup) => (g.anchor.start + g.anchor.end) / 2
+    const decide = (turnsOf?: typeof turns) =>
+      decideLaneFrames({
+        groups: many,
+        openingsOf: indels.openings,
+        turnsOf,
+        assemblyNames: ['HG01123.1'],
+        anchorX: new Map(many.map(g => [g.key, pxOf(center(g))])),
+        anchorCoordOf: g => ({ refName: 'chr1', coord: center(g) }),
+        pxOfAnchor: c => pxOf(c.coord),
+        unitBp,
+        width,
+        previous: new Map(),
+      }).get('HG01123.1')!
+    expect(decide().flipped).toBe(true)
+    expect(decide(indels.turns).flipped).toBe(false)
+  })
+
+  // ten 90 kb pieces turned over lane 20-920 kb; a 200 kb frame at the lane's
+  // start draws the turn's far end, whose lane bp lies outside the frame
+  test('a frame edge cutting a turn draws the far end it shows', () => {
+    const pieces = groupFeatures([
+      run('l', 0, 0, 20_000, 1),
+      ...Array.from({ length: 10 }, (_, k) =>
+        run(
+          `m${k}`,
+          20_000 + 90_000 * k,
+          920_000 - 90_000 * (k + 1),
+          90_000,
+          -1,
+        ),
+      ),
+      run('r', 920_000, 920_000, 20_000, 1),
+    ])
+    const frame = {
+      refName: ref,
+      min: at,
+      max: at + 200_000,
+      flipped: false,
+      fitMin: at,
+      fitMax: at + 940_000,
+      alsoOn: [],
+      alsoOnMore: 0,
+      alsoAt: [],
+      turns: laneIndelsOf(pieces).turns('HG01123.1', ref),
+    }
+    const far = pieces.find(g => g.key === 'm9')!
+    const spans = groupRunSpansOnRow(far, 'HG01123.1', frame, width)
+    expect(spans).toHaveLength(1)
+    expect(spans[0]!.span[0]).toBeCloseTo((20_000 / 200_000) * width, 0)
+    expect(spans[0]!.span[1]).toBeCloseTo((110_000 / 200_000) * width, 0)
+  })
+
+  test('a flank running past the midway seam keeps to its own side', () => {
+    const overlapping = groupFeatures([
+      run('l', 0, 0, 40_100, 1),
+      run('m', 40_000, 40_000, 900_000, -1),
+      run('r', 940_000, 940_000, 40_000, 1),
+    ])
+    const indels = laneIndelsOf(overlapping)
+    expect(indels.turns('HG01123.1', ref)).toEqual([
+      { start: at + 40_050, end: at + 940_000 },
+    ])
+    const frame = {
+      refName: ref,
+      min: at,
+      max: at + 980_000,
+      flipped: false,
+      fitMin: at,
+      fitMax: at + 980_000,
+      alsoOn: [],
+      alsoOnMore: 0,
+      alsoAt: [],
+      turns: indels.turns('HG01123.1', ref),
+    }
+    const [, end] = frameSpan(frame, at, at + 40_100, width)!
+    expect(end).toBeCloseTo((40_050 / 980_000) * width, 0)
+  })
+
+  test('cuts a stretch at a seam, each piece mapped its own way', () => {
+    const frame = frameWith(turns)
+    const [flank, turned] = frameSpans(frame, at + 20_000, at + 60_000, width)
+    expect(flank![0]).toBeLessThan(flank![1])
+    expect(turned![0]).toBeGreaterThan(turned![1])
   })
 })
 

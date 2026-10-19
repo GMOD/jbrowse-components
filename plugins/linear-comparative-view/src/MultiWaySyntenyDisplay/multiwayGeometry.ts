@@ -37,6 +37,7 @@ import { STRAND_GAP_PX } from './laneStack.ts'
 import {
   frameMagnification,
   frameOpenings,
+  frameTurns,
   frameReachPx,
   frameTickXs,
   groupSpansLanes,
@@ -110,9 +111,13 @@ function lines(...parts: (string | undefined)[]) {
   return parts.filter(Boolean).join('\n')
 }
 
+// a turn's seams cut a ribbon as a hole does, so each piece maps one way
 function holesOn(lane: Lane, refName: string) {
   return lane.frame && lane.canon(lane.frame.refName) === lane.canon(refName)
-    ? frameOpenings(lane.frame).map(o => o.at)
+    ? [
+        ...frameOpenings(lane.frame).map(o => o.at),
+        ...frameTurns(lane.frame).flatMap(t => [t.start, t.end]),
+      ]
     : []
 }
 
