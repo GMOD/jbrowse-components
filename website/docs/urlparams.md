@@ -448,8 +448,7 @@ property the state model declares.
 no direct representation in the view's state — `assembly`,
 `displayedRegionNames`, `grow`, `highlight`, `loc`, `nav`, `showHitTrack`,
 `tracklist`. There are no others; a key outside this set and the table below is
-a typo, and the launcher names it in a console warning rather than dropping it
-silently.
+a typo, and the launcher names it in a console warning.
 
 **Properties**, which are whatever the state model declares and the view
 restores natively:
@@ -458,19 +457,19 @@ restores natively:
 | Property | What it does |
 | --- | --- |
 | [`colorByCDS`](/docs/models/lineargenomeview#property-colorbycds) | color CDS segments by reading frame |
-| [`displayedRegions`](/docs/models/lineargenomeview#property-displayedregions) | currently displayed regions, can be a single chromosome, arbitrary subsections, or the entire set of chromosomes in the genome, but it not advised to use the entire set of chromosomes if your assembly is very fragmented |
+| [`displayedRegions`](/docs/models/lineargenomeview#property-displayedregions) | currently displayed regions, can be a single chromosome, arbitrary subsections, or the entire set of chromosomes in the genome. The entire set is not advised if your assembly is very fragmented |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
 | [`hideHeader`](/docs/models/lineargenomeview#property-hideheader) | drop the header bar entirely — location box, navigation buttons and overview |
 | [`hideHeaderOverview`](/docs/models/lineargenomeview#property-hideheaderoverview) | keep the header, drop the whole-chromosome overview strip below it |
 | [`hideNoTracksActive`](/docs/models/lineargenomeview#property-hidenotracksactive) | suppress the "No tracks active" placeholder, for an embed that opens with no tracks on purpose |
-| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
+| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 | [`scalebarOnly`](/docs/models/lineargenomeview#property-scalebaronly) | when true, only the header and coordinate scalebar are rendered |
 | [`showAminoAcids`](/docs/models/lineargenomeview#property-showaminoacids) | draw translated codons on coding features once zoomed in far enough: an alternating per-codon shading, and the amino acid letters on top of it at base-level zoom. Independent of `colorByCDS`, which only recolors the segments by frame. |
 | [`showCenterLine`](/docs/models/lineargenomeview#property-showcenterline) | show the "center line". A personal preference: never in a session snapshot. It, showCytobands, trackLabels, colorByCDS, showAminoAcids and showTrackOutlines start from this browser's last choice, which their setters record. |
 | [`showCytobands`](/docs/models/lineargenomeview#property-showcytobands) | whether to show the "cytobands" in the overview scale bar (the resolved, capability-gated value is the `effectiveShowCytobands` getter) |
 | [`showGridlines`](/docs/models/lineargenomeview#property-showgridlines) | show the "gridlines" in the track area |
 | [`showTrackOutlines`](/docs/models/lineargenomeview#property-showtrackoutlines) | show the track outlines |
-| [`trackLabels`](/docs/models/lineargenomeview#property-tracklabels) | how to display the track labels, can be "overlapping", "offset", or "hidden", or empty string "" (which results in the LinearGenomeViewPlugin config default being used). the resolved value is the `effectiveTrackLabels` getter. see LinearGenomeViewPlugin https://jbrowse.org/jb2/docs/config/lineargenomeviewconfigschema/ docs for how conf is used |
+| [`trackLabels`](/docs/models/lineargenomeview#property-tracklabels) | how to display the track labels, can be "overlapping", "offset", or "hidden", or empty string "" (which uses the LinearGenomeViewPlugin config default). The resolved value is the `effectiveTrackLabels` getter. See the LinearGenomeViewPlugin docs at https://jbrowse.org/jb2/docs/config/lineargenomeviewconfigschema/ for how the config is used |
 | [`trackSelectorType`](/docs/models/lineargenomeview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and share links persist it. |
 | [`windowStartBp`](/docs/models/lineargenomeview#property-windowstartbp) | Left edge of the viewport, in linearized bp — the concatenated `displayedRegions` space that `offsetPx` indexes, which has no inter-region padding, so the two differ only by `bpPerPx`. May be negative when the view is scrolled past the left end.<br><br>The view stores the genomic window it frames rather than the pixels that framed it, because pixels mean nothing without the width they were measured at and a snapshot does not include one. A session authored in a 1000px window therefore shows the same region when opened at 500px, as the same location given as a `&loc=` does: both ways to share a view store intent. |
 | [`windowWidthBp`](/docs/models/lineargenomeview#property-windowwidthbp) | Width of the viewport in bp. Zero means "not established yet": no width has been measured, so there is nothing to divide by. The first measure fills it in, and `bpPerPx` is `windowWidthBp / width` from then on. |
@@ -623,7 +622,7 @@ holds:
 | Launch key | What it does |
 | --- | --- |
 | `assembly` | the assembly whose chromosomes the circle draws, or the assemblies, in the order their slices are laid out — a synteny ribbon plot wants both ends of its alignments on the circle. Optional because a spec view is untyped user input; without one the view opens on its import form |
-| `autoDiagonalize` | On a circle of two genomes carrying a synteny track, reorder the second genome's chromosomes to follow the first's and lay them out mirrored, so the ribbons read as a band of parallel arcs rather than crossing at the center. The figure is hidden behind a "Reordering chromosomes" screen during the wait. Same key and same pass as the linear synteny view's and the dotplot's |
+| `autoDiagonalize` | On a circle of two genomes with a synteny track, reorder the second genome's chromosomes to follow the first's and lay them out mirrored, so the ribbons form a band of parallel arcs instead of crossing at the center. The figure is hidden behind a "Reordering chromosomes" screen during the wait. Same key and same pass as the linear synteny view's and the dotplot's |
 | `displayedRegionNames` | whole chromosomes to draw, in this order; the rest of the assembly's contigs are left off the circle. A list applies to every assembly on the circle, and `{ hg38: ['chr1'], mm39: ['chr2'] }` restricts each one separately, leaving an assembly it does not name whole |
 
 **Properties**, which are whatever the state model declares and the view
@@ -643,7 +642,7 @@ restores natively:
 | [`hideUnlabelled`](/docs/models/trackcolorsmixin#property-hideunlabelled) | Under a text-column mode, draw only the rows that have a label. |
 | [`hideVerticalResizeHandle`](/docs/models/circularview#property-hideverticalresizehandle) | chrome switch, for an embed that drives the view itself |
 | [`minAlignmentLength`](/docs/models/syntenycolorsmixin#property-minalignmentlength) | Hide alignment blocks shorter than this many bp, which cuts whole-genome hairball noise. |
-| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
+| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 | [`minimumRadiusPx`](/docs/models/circularview#property-minimumradiuspx) | how far in the circle may be zoomed, as a floor on the radius; it is what caps bpPerPx |
 | [`minVisibleWidth`](/docs/models/circularview#property-minvisiblewidth) | arcs thinner than this many pixels are elided instead of drawn, so a few thousand unplaced contigs do not become a ring of hairlines |
 | [`offsetRadians`](/docs/models/circularview#property-offsetradians) | the angular offset of the view in radians, the counterpart of offsetPx in the linear genome view |
@@ -718,7 +717,7 @@ restores natively:
 | [`lodMode`](/docs/models/syntenyviewmixin#property-lodmode) | Level-of-detail tier selection for PIF adapters. 'auto' uses the adapter's bpPerPx threshold; 'fine' forces the per-row CIGAR tier (t/q); 'coarse' forces the tier whose CIGAR is folded to its large indels (T/Q) when present. One value for the view, so every track draws at the same tier. |
 | [`minAlignmentLength`](/docs/models/syntenycolorsmixin#property-minalignmentlength) | Hide alignment blocks shorter than this many bp, which cuts whole-genome hairball noise. |
 | [`minIdentity`](/docs/models/dotplotview#property-minidentity) | Hide alignments whose sequence identity is below this fraction (0-1), enforced per feature in buildLineSegments beside minAlignmentLength. A feature with no identity is kept at every threshold, because dropping it would blank a plot whose adapter never reported identity. |
-| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
+| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 | [`opacity`](/docs/models/syntenycolorsmixin#property-opacity) | The opacity every alignment draws at, a [](/docs/config/syntenyopacity) object: a number for all of them, or a field each alignment has, read into opacities, `{ field: "identity" }` or a column the tracks declare. Unset, the view's default: low on the synteny view for dense whole-genome hairballs, opaque on the dotplot. |
 | [`showGridlines`](/docs/models/dotplotview#property-showgridlines) | extend each axis' ruler ticks across the plot as faint lines, the way LinearGenomeView's gridlines extend its ruler ticks down over the tracks |
 | [`showTickLabels`](/docs/models/dotplotview#property-showticklabels) | number each axis' major ticks; off keeps the tick marks and the chromosome names |
@@ -842,7 +841,7 @@ restores natively:
 | [`levels`](/docs/models/linearsyntenyview#property-levels) | One synteny band per adjacent pair of `views`, each holding one track list. The track-selector and add-track widgets address a band through `trackContainerFor`. |
 | [`lodMode`](/docs/models/syntenyviewmixin#property-lodmode) | Level-of-detail tier selection for PIF adapters. 'auto' uses the adapter's bpPerPx threshold; 'fine' forces the per-row CIGAR tier (t/q); 'coarse' forces the tier whose CIGAR is folded to its large indels (T/Q) when present. One value for the view, so every track draws at the same tier. |
 | [`minAlignmentLength`](/docs/models/syntenycolorsmixin#property-minalignmentlength) | Hide alignment blocks shorter than this many bp, which cuts whole-genome hairball noise. |
-| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
+| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 | [`opacity`](/docs/models/syntenycolorsmixin#property-opacity) | The opacity every alignment draws at, a [](/docs/config/syntenyopacity) object: a number for all of them, or a field each alignment has, read into opacities, `{ field: "identity" }` or a column the tracks declare. Unset, the view's default: low on the synteny view for dense whole-genome hairballs, opaque on the dotplot. |
 | [`overdrawPx`](/docs/models/linearsyntenyview#property-overdrawpx) | pixels beyond the visible viewport edge that synteny lines are still drawn. Effective up to the pan buffer (`syntenyPanBufferPx`: 2000px, or half the viewport when that is wider) — the worker emits CIGAR detail and location markers only that far, so a larger value draws ribbons whose detail stops partway along them. |
 | [`showOffscreenMates`](/docs/models/linearsyntenyview#property-showoffscreenmates) | Mark the alignments the view cannot draw a ribbon for, along both edges of each band. Costs a second query per pair of rows. |
@@ -919,7 +918,7 @@ every setting the view's menu offers:
 | [`height`](/docs/models/breakpointsplitview#property-height) | the height of the whole view in pixels, panels and overlay together |
 | [`interactiveOverlay`](/docs/models/breakpointsplitview#property-interactiveoverlay) | make the alignment squiggles drawn between the panels clickable, rather than a static overlay |
 | [`linkViews`](/docs/models/breakpointsplitview#property-linkviews) | sync scroll and zoom across the panels, so panning one pans them all |
-| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
+| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 | [`showHeader`](/docs/models/breakpointsplitview#property-showheader) | show the view's own header bar, above the panels' own |
 | [`showIntraviewLinks`](/docs/models/breakpointsplitview#property-showintraviewlinks) | draw the links whose two ends fall in the same panel, as well as the ones that cross between panels |
 
@@ -948,7 +947,7 @@ holds:
 | Launch key | What it does |
 | --- | --- |
 | `assembly` | the assembly the sheet's rows are read against. With only this and no `uri`, the view opens on its import form with that assembly already selected rather than the first one in the config |
-| `baseUri` | what a relative `uri` resolves against. A config loaded from a URL stamps this beside every `uri` it carries, a `defaultSession` view's included, so the sheet's file resolves against the config the way a track's does |
+| `baseUri` | what a relative `uri` resolves against. A config loaded from a URL gets this beside every `uri` in it, a `defaultSession` view's included, so the sheet's file resolves against the config the way a track's does |
 | `fileType` | the file's format. Otherwise detected from the extension, falling back to VCF, so name it for a file the extension does not identify |
 | `filterText` | search-box text, applied once the file is loaded |
 | `svEventFilter` | the rearrangement event to open the sheet narrowed to: a value of the file's `INFO.EVENT`, matched whole |
@@ -964,7 +963,7 @@ restores natively:
 | [`drilldownTracks`](/docs/models/spreadsheetview#property-drilldowntracks) | trackIds the views a row opens start with, beside the loaded file's own track: the tumor and normal alignments, a coverage track, an assembly's synteny track |
 | [`height`](/docs/models/spreadsheetview#property-height) | the height of the sheet in pixels |
 | [`hideVerticalResizeHandle`](/docs/models/spreadsheetview#property-hideverticalresizehandle) | chrome switch, for an embed that sizes the view itself |
-| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
+| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 
 <!-- SPEC_KEYS SpreadsheetView END -->
 
@@ -997,7 +996,7 @@ holds:
 | Launch key | What it does |
 | --- | --- |
 | `assembly` | the assembly both halves are read against. With only this and no `uri`, the view opens on its import form with that assembly already selected rather than the first one in the config |
-| `baseUri` | what a relative `uri` resolves against. A config loaded from a URL stamps this beside every `uri` it carries, a `defaultSession` view's included, so the sheet's file resolves against the config the way a track's does |
+| `baseUri` | what a relative `uri` resolves against. A config loaded from a URL gets this beside every `uri` in it, a `defaultSession` view's included, so the sheet's file resolves against the config the way a track's does |
 | `drilldownTracks` | trackIds every view a row or chord opens starts with, beside the callset's own track: the tumor and normal alignments, a coverage track, an assembly's synteny track |
 | `fileType` | the file's format. Otherwise detected from the extension, falling back to VCF, so name it for a file the extension does not identify |
 | `filterText` | search-box text for the spreadsheet half, applied once the file is loaded. The circular half draws the rows it leaves, so this is what makes a chord subset reachable from a link |
@@ -1012,7 +1011,7 @@ restores natively:
 | --- | --- |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
 | [`height`](/docs/models/svinspectorview#property-height) | height of the whole view in pixels |
-| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
+| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 | [`onlyDisplayRelevantRegionsInCircularView`](/docs/models/svinspectorview#property-onlydisplayrelevantregionsincircularview) | draw only the chromosomes the visible rows touch |
 | [`spreadsheetWidthFraction`](/docs/models/svinspectorview#property-spreadsheetwidthfraction) | share of the view's width given to the spreadsheet |
 

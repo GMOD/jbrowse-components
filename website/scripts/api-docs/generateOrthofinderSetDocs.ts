@@ -28,7 +28,7 @@ const FILE = 'scripts/build_orthofinder_synteny.sh'
 const CUTS = [
   {
     name: 'MAXSEQ',
-    cuts: 'sequence regions kept per genome, the ones carrying the most genes',
+    cuts: 'sequence regions kept per genome, the ones with the most genes',
   },
   {
     name: 'MAXCOPIES',

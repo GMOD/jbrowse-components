@@ -223,7 +223,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
               pm.extensionPointCallbackCount(point),
               () =>
                 pm.evaluateExtensionPoint(
-                  /** #extensionPoint Core-handleUnrecognizedAssembly | sync | Supply an assembly config when a referenced assembly is unknown. May return a promise settling when the handler has finished trying, which is what lets waitForAssembly stop waiting without a timeout */
+                  /** #extensionPoint Core-handleUnrecognizedAssembly | sync | Supply an assembly config when a referenced assembly is unknown. May return a promise settling when the handler has finished trying, so waitForAssembly can stop waiting without a timeout */
                   'Core-handleUnrecognizedAssembly',
                   undefined,
                   {

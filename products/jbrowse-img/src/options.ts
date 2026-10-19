@@ -228,7 +228,7 @@ const comparativeOptionDefs: OptionDef[] = [
   },
   {
     name: 'colorBy',
-    description: `Color synteny ribbons by: ${orList(syntenyColorByModes)}. "query" gives each query chromosome its own color; "reference" needs a stack of three or more genomes and "track" more than one alignment file`,
+    description: `Color synteny ribbons by: ${orList(syntenyColorByModes)}. "query" gives each query chromosome a separate color; "reference" needs a stack of three or more genomes and "track" more than one alignment file`,
   },
   {
     name: 'opacity',
@@ -607,7 +607,7 @@ export function buildBatchHelp(scriptName: string) {
     "The reads joining an image's windows are drawn between them, as arcs in",
     'a linear view and as curves in a breakpoint view, and the manifest counts',
     'them. Each alignments track lays out its SV evidence first: split reads,',
-    'then reads carrying an insertion or deletion of 50 bases or more, then',
+    'then reads with an insertion or deletion of 50 bases or more, then',
     'discordant pairs, unless the track sets arcs: or sort= itself.',
     '',
     'Where a record on one contig spells out its alleles, or is a symbolic',
@@ -616,11 +616,11 @@ export function buildBatchHelp(scriptName: string) {
     'insertion at the base after it, and an insertion of 50 bases or more',
     'wherever in the window the aligner placed it. A deletion of 50 bases or',
     'more is a gap of half its length or more. In an image of one window',
-    'every alignments track with no sort: of its own is sorted there and a',
+    'every alignments track that sets no sort: is sorted there and a',
     'band marks the bases the record changes. Such a track also grows to hold',
     'its pileup, up to 250 px, so rows are the same height on every image and',
-    'a deep pileup stops there with its carriers on top; a height:,',
-    'heightMode: or growMaxHeight= of its own wins.',
+    'a deep pileup stops there with the variant reads on top; a height:,',
+    'heightMode: or growMaxHeight= set on the track wins.',
     '',
     'The module graph loads once for the whole callset, so this is much faster',
     `than a shell loop over "${scriptName} breakpoint".`,
@@ -640,7 +640,7 @@ export function buildBatchHelp(scriptName: string) {
       ],
       [
         'batch --vcf snvs.vcf.gz --hub hg38 --bam tumor.bam --passOnly',
-        'Small variants at base resolution, carriers of each sorted to the top',
+        'Small variants at base resolution, reads with each variant sorted to the top',
       ],
       [
         'batch --bedpe linx_links.bedpe --hub hg38 --bam tumor.bam',

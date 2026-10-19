@@ -121,7 +121,7 @@ SETNAME=$(basename "${SET%.*}")
 OUTDIR="${2:-orthofinder_${SETNAME}_build}"
 MANIFEST=""
 
-# Sequence regions kept per genome, the ones carrying the most genes: Ensembl
+# Sequence regions kept per genome, the ones with the most genes: Ensembl
 # lists every unplaced scaffold, and a row with 30,000 of them is unreadable. 30
 # is tight on a karyotype larger than that (chicken has ~40) or a fragmented
 # assembly, which the chrom.sizes step below reports as a low drawable share.

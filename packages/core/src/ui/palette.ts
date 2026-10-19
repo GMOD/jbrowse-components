@@ -533,7 +533,7 @@ export const tagColorPalette = [
 ]
 
 /**
- * #color theme-colors | Feature (default) | A feature with no color of its own — no `color` slot, no BED itemRgb
+ * #color theme-colors | Feature (default) | A feature with no `color` slot and no BED itemRgb
  *
  * What an uncolored feature is painted. Lives here rather than in the display
  * that draws most of them because it is not one display's default: the
@@ -648,7 +648,7 @@ const codonNonsynonymous = '#e8930c'
 const codonSynonymous = '#3a7bd5'
 /** #color maf | Stop gained | MAF codon view: a stop the reference codon is not */
 const codonStop = '#cc2222'
-/** #color alignments-indicators | Insertion | Reads carry an insertion relative to the reference */
+/** #color alignments-indicators | Insertion | Reads with an insertion relative to the reference */
 const insertion = '#800080'
 /** #color theme-colors | Deletion | Deletion markers in alignments */
 const deletion = '#808080'

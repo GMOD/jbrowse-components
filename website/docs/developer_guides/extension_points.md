@@ -483,7 +483,7 @@ plugin before you put there.
 | --- | --- | --- | --- |
 | `Core-addTrackComponent` | sync |  | Inject a custom React component into the add-track widget |
 | `Core-addTrackComponentAdapterTypes` | sync | list | Adapter types whose add-track picker supplies the assembly |
-| `Core-describeAssemblies` | async | single | Describe, in one batch, assemblies the session does not hold: each one's assembly config and gene adapter, read without connecting anything. Each callback adds to the descriptions the one before it returned |
+| `Core-describeAssemblies` | async | single | Describe, in one batch, assemblies absent from the session: each one's assembly config and gene adapter, read without connecting anything. Each callback adds to the descriptions the one before it returned |
 | `Core-extendPluggableElement` | sync | single | Mutate any pluggable element after it is created |
 | `Core-extendSession` | sync | single | Extend the session model with extra state or actions |
 | `Core-extendWorker` | sync | single | Take a booted RPC web worker: subscribe to the events it emits, post to it, or wrap its `call`. Fired once per booted worker, not per call |
@@ -492,7 +492,7 @@ plugin before you put there.
 | `Core-extraTrackMenuItems` | sync | list | Add items to a single track's menu |
 | `Core-guessAdapterForLocation` | sync | single | Guess an adapter config from a file location |
 | `Core-guessTrackTypeForLocation` | sync | single | Guess a track type from a file location |
-| `Core-handleUnrecognizedAssembly` | sync | notify | Supply an assembly config when a referenced assembly is unknown. May return a promise settling when the handler has finished trying, which is what lets waitForAssembly stop waiting without a timeout |
+| `Core-handleUnrecognizedAssembly` | sync | notify | Supply an assembly config when a referenced assembly is unknown. May return a promise settling when the handler has finished trying, so waitForAssembly can stop waiting without a timeout |
 | `Core-preferencesDialogPanels` | sync | list | Add tabs to the preferences dialog |
 | `Core-preProcessTrackConfig` | sync | single | Rewrite a track config snapshot before it is instantiated |
 | `Core-replaceAbout` | sync |  | Replace or wrap a track's About dialog body |

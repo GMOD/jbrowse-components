@@ -843,7 +843,7 @@ export function emitShaderModule(inputs: CodegenInputs) {
       ? [`export * from './${baseName}.consts.generated.ts'`]
       : []),
     '',
-    // #shaderExport SOURCE | a loader per target, `wgsl()` and `glsl()`, each an `import()` of the module holding that text alone; `slangPass` carries it onto the descriptor and the HAL awaits it when it is built
+    // #shaderExport SOURCE | a loader per target, `wgsl()` and `glsl()`, each an `import()` of the module holding that text alone; `slangPass` puts it on the descriptor and the HAL awaits it when it is built
     `export const SOURCE: ${sourceType} = {`,
     ...loaders.map(
       t => `  ${t}: () => import('./${shaderTextFile(baseName, t)}'),`,
@@ -966,7 +966,7 @@ export function emitInterface(inputs: CodegenInputs) {
     )
   }
   if (coverage !== undefined) {
-    // #shaderExport COVERAGE | 'analytic' when the shader declares that its fragments compute their own coverage, so a display registering only such passes allocates no MSAA target
+    // #shaderExport COVERAGE | 'analytic' when the shader declares that its fragments compute coverage themselves, so a display registering only such passes allocates no MSAA target
     lines.push(`export const COVERAGE = '${coverage}' as const`, '')
   }
 
@@ -997,7 +997,7 @@ export function emitInterface(inputs: CodegenInputs) {
     // rather than loudly. See assertModeledFieldType.
     assertModeledStruct(`${baseName}.slang uniform block`, u)
     const totalBytes = cb.elementVarLayout.binding.size
-    // #shaderExport UNIFORMS_SIZE_BYTES | size of the uniform block; `slangPass` carries it onto the descriptor
+    // #shaderExport UNIFORMS_SIZE_BYTES | size of the uniform block; `slangPass` puts it on the descriptor
     lines.push(`export const UNIFORMS_SIZE_BYTES = ${totalBytes}`, '')
 
     // Per-view offset maps. Each uniform field appears only under the map

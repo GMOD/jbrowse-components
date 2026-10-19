@@ -14,7 +14,7 @@ import {
 // hand-copied). Each documented color is tagged at its definition site with a
 // JSDoc `#color` tag — same docs-from-source idea as `#api`/`#config`:
 //
-//   /** #color alignments-indicators | Insertion | Reads carry an insertion */
+//   /** #color alignments-indicators | Insertion | Reads with an insertion */
 //   const insertion = '#800080'
 //
 // i.e. `#color <group> | <label> | <description>`. A guide opts a group in by

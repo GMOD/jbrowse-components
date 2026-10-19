@@ -20,7 +20,7 @@ const keySpaceHost = (self: object) => self as GroupKeySpaceHost
 /**
  * #stateModel HiddenGroupsMixin
  * #category display
- * #crossCuttingMixin The sections a reader hid from an in-track grouping's chips: the `facet.hidden` keys while the stack groups by the facet's field, `hideGroup` and `showAllGroups` writing them, the `displayHiddenGroupKeys` hook a display uses to hide a lane for itself, `hiddenGroupKeys` folding both, `groupStateKey` (with the `ownGroupState` hook) for a live figure to key on, and the `dropGroupState` reset that fires when the host's `groupKeySpace` moves
+ * #crossCuttingMixin The sections a reader hid from an in-track grouping's chips: the `facet.hidden` keys while the stack groups by the facet's field, `hideGroup` and `showAllGroups` writing them, the `displayHiddenGroupKeys` hook a display uses to hide a lane, `hiddenGroupKeys` folding both, `groupStateKey` (with the `ownGroupState` hook) for a live figure to key on, and the `dropGroupState` reset that fires when the host's `groupKeySpace` moves
  *
  * The hidden sections are config, `facet.hidden`, so they ride a session and
  * a share link, and a new `field` written whole starts with none. A key names

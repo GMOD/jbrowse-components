@@ -941,22 +941,22 @@ each reported under its id:
 | `ramp-range` | warning | A linear or log color whose `range` lists one color, which paints every value alike. |
 | `domain-ends` | warning | A scale's `domainMax` below its `domainMin`: a color ramp's, a width's or `scales.y`'s. |
 | `domain-quantile` | warning | A color ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. |
-| `log-floor` | warning | A log scale's `domainMin` at or below 0, which it cannot hold, so the end floors above it. |
+| `log-floor` | warning | A log scale's `domainMin` at or below 0, which a log scale cannot represent, so the end floors above it. |
 | `field-spells-constant` | warning | A color's or a shape's `field` spelling a CSS color or a shape name, which is a constant written `{ value }`. |
 | `labels-domain` | warning | A color's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. |
 | `unknown-domain` | warning | A categorical color's `unknown` with no `domain`, so it paints every value. |
-| `unknown-scale` | warning | An `unknown` on a color painting through no categorical scale, which reads it nowhere. |
+| `unknown-scale` | warning | An `unknown` on a color painting through no categorical scale, so nothing reads it. |
 | `window-frame` | warning | A `window`'s `frame` other than two whole row offsets or `null`, the first not past the second, so the step reads its default. |
 | `unread-gap` | warning | A `gapBp` on a mark that draws no line. |
 | `step-pair` | warning | A `bin`'s `as` or `fields`, or a `pileup`'s `fields`, naming other than two fields, so the step reads its defaults. |
 | `bin-field-and-fields` | warning | A `bin` naming a `field` beside the `fields` it cuts at the bin edges, which leaves the `field` unread. |
-| `unread-weight` | warning | A `weight` on a `min` or a `max`, which no weight moves. |
+| `unread-weight` | warning | A `weight` on a `min` or a `max`, where it has no effect. |
 | `unwritten-field` | warning | Another channel naming a field that no `aggregate` or `coverage` step before it writes, so it reads no value; the field a `facet` or `rows` splits on counts as written. |
 | `value-beside-rows` | warning | A mark other than a span drawn beside one that stacks rows, standing in the first of them. |
 | `two-packings` | warning | Two `pileup` steps packing one plot, whose rows share numbers. |
 | `cross-section-packing` | warning | A `pileup` in the display's `transform` under a `facet`, packing across every section. |
 | `rows-beside-facet` | warning | `rows` beside a `facet` on another field, where the facet draws alone. |
-| `packing-under-rows` | warning | A `pileup` or a `row` field under `rows`, whose packed rows share their value's one row. |
+| `packing-under-rows` | warning | A `pileup` or a `row` field under `rows`, where the packed rows share one row per value. |
 
 <!-- MARK_RULES END -->
 

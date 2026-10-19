@@ -102,7 +102,7 @@ src/
   index.ts                       the plugin class; installs the display, the RPC method and the feature panel
   LinearScoreDisplay/
     configSchema.ts              config slots (color, scoreColumn)
-    findScoreHit.ts              the display's hit: `nearestMarkHit` asks the mark's `hitNearest`, which its `ink` implies, about every instance under the cursor
+    findScoreHit.ts              the display's hit: `nearestMarkHit` asks the mark's `hitNearest` (implied by its `ink`) about every instance under the cursor
     index.ts                     registers the display type; the model and the component both load lazily
     model.ts                     MST model: rpcDataMap, renderState, fetchNeeded, startRenderingBackend, renderSvg
     renderSvg.tsx                SVG export: the mark list painted through renderDisplaySvg
@@ -333,16 +333,16 @@ union of all three, plus the three strings the text modules hold:
 | `WGSL_SOURCE` | the compiled WGSL, in `<base>.wgsl.generated.ts`; reach it through `SOURCE.wgsl()` |
 | `GLSL_VERTEX` | the compiled WebGL2 vertex stage, in `<base>.glsl.generated.ts`; reach it through `SOURCE.glsl()` |
 | `GLSL_FRAGMENT` | the compiled WebGL2 fragment stage, beside the vertex stage |
-| `SOURCE` | a loader per target, `wgsl()` and `glsl()`, each an `import()` of the module holding that text alone; `slangPass` carries it onto the descriptor and the HAL awaits it when it is built |
+| `SOURCE` | a loader per target, `wgsl()` and `glsl()`, each an `import()` of the module holding that text alone; `slangPass` puts it on the descriptor and the HAL awaits it when it is built |
 | `BINDINGS` | every binding the shader declares and the stages that read it; the WebGPU bind-group layout is built from it |
 | `VERTS_PER_INSTANCE` | vertices per instance, from the shader's const of that name; the draw call reads it |
 | `TOPOLOGY` | the primitive topology `vs_main` emits for, when the shader declares one |
 | `BLEND_STATE` | the blend the fragment stage's output wants, when the shader declares one |
-| `COVERAGE` | 'analytic' when the shader declares that its fragments compute their own coverage, so a display registering only such passes allocates no MSAA target |
+| `COVERAGE` | 'analytic' when the shader declares that its fragments compute coverage themselves, so a display registering only such passes allocates no MSAA target |
 | `COMPUTE_ENTRY_POINT` | the compute entry point name, for a compute shader |
 | `WORKGROUP_SIZE_X` | the compute workgroup width |
 | `WORKGROUP_SIZE_Y` | the compute workgroup height, for a kernel dispatched over a 2D grid |
-| `UNIFORMS_SIZE_BYTES` | size of the uniform block; `slangPass` carries it onto the descriptor |
+| `UNIFORMS_SIZE_BYTES` | size of the uniform block; `slangPass` puts it on the descriptor |
 | `UNIFORM_OFFSET_F32 / _U32 / _I32` | per-field indices into the uniform scratch buffer, one map per view |
 | `UNIFORM_SLOT_ARRAYS` | element counts for array-valued uniform slots |
 | `Uniforms` | the uniform block as a TS interface, one field per shader uniform; `writeUniforms` takes it |

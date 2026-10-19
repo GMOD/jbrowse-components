@@ -1,4 +1,4 @@
-// #exampleFile shared | the display's hit: `nearestMarkHit` asks the mark's `hitNearest`, which its `ink` implies, about every instance under the cursor
+// #exampleFile shared | the display's hit: `nearestMarkHit` asks the mark's `hitNearest` (implied by its `ink`) about every instance under the cursor
 import { backToFront, nearestMarkHit } from '@jbrowse/render-core/marks'
 
 import { SCORE_MARKS } from './scoreMarks.ts'

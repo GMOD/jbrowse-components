@@ -60,8 +60,7 @@ const BaseViewModel = types
 
     /**
      * #property
-     * collapse the view to its header bar, keeping it in the session rather
-     * than closing it
+     * collapse the view to its header bar and keep it in the session
      */
     minimized: types.stripDefault(types.boolean, false),
   })

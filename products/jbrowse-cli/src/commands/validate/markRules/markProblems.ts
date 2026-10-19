@@ -80,7 +80,7 @@ export const MARK_RULES = {
   'domain-ends': 'warning',
   /** A color ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. */
   'domain-quantile': 'warning',
-  /** A log scale's `domainMin` at or below 0, which it cannot hold, so the end floors above it. */
+  /** A log scale's `domainMin` at or below 0, which a log scale cannot represent, so the end floors above it. */
   'log-floor': 'warning',
   /** A color's or a shape's `field` spelling a CSS color or a shape name, which is a constant written `{ value }`. */
   'field-spells-constant': 'warning',
@@ -88,7 +88,7 @@ export const MARK_RULES = {
   'labels-domain': 'warning',
   /** A categorical color's `unknown` with no `domain`, so it paints every value. */
   'unknown-domain': 'warning',
-  /** An `unknown` on a color painting through no categorical scale, which reads it nowhere. */
+  /** An `unknown` on a color painting through no categorical scale, so nothing reads it. */
   'unknown-scale': 'warning',
   /** A `minBpPerPx` not below the mark's `maxBpPerPx`, so the mark never draws. */
   'empty-zoom-range': 'error',
@@ -106,7 +106,7 @@ export const MARK_RULES = {
   'bin-field-and-fields': 'warning',
   /** A `sum`, `mean`, `min` or `max` naming no `field`. */
   'op-field': 'error',
-  /** A `weight` on a `min` or a `max`, which no weight moves. */
+  /** A `weight` on a `min` or a `max`, where it has no effect. */
   'unread-weight': 'warning',
   /** A step's field written as a `jexl:` expression, where a step reads a name or a dotted path. */
   'step-field-expression': 'error',
@@ -122,7 +122,7 @@ export const MARK_RULES = {
   'cross-section-packing': 'warning',
   /** `rows` beside a `facet` on another field, where the facet draws alone. */
   'rows-beside-facet': 'warning',
-  /** A `pileup` or a `row` field under `rows`, whose packed rows share their value's one row. */
+  /** A `pileup` or a `row` field under `rows`, where the packed rows share one row per value. */
   'packing-under-rows': 'warning',
 } as const satisfies Record<string, MarkProblemLevel>
 

@@ -518,7 +518,7 @@ Two cuts are environment variables:
 <!-- prettier-ignore -->
 | Variable | Default | What it cuts |
 | --- | --- | --- |
-| <code>MAXSEQ</code> | 30 | sequence regions kept per genome, the ones carrying the most genes |
+| <code>MAXSEQ</code> | 30 | sequence regions kept per genome, the ones with the most genes |
 | <code>MAXCOPIES</code> | 4 | genes in one orthogroup cell past which it is a gene family rather than a set of copies |
 
 <!-- ORTHOFINDER_CUTS END -->

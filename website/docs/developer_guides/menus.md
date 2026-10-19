@@ -213,7 +213,7 @@ the Material UI barrel into every host that installs the plugin.
 | `subMenuIfAny` | a submenu row, or no row while it has nothing to hold |
 | `toggleItem` | a checkbox row whose setter takes the new value |
 | `TRACK_MENU_PRIORITY` | the `priority` of each shared track menu row, higher first |
-| `withHint` | a row label carrying an aside that is only sometimes there |
+| `withHint` | a row label with an aside that is only sometimes there |
 | `withSubHeader` | a section heading, present only if the section is |
 
 <!-- MENU_ITEM_BUILDERS END -->

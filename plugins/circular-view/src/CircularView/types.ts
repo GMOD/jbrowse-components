@@ -27,9 +27,9 @@ export interface CircularViewCommands {
   // separately, leaving an assembly it does not name whole
   displayedRegionNames?: string[] | Record<string, string[]>
   tracks?: TrackInit[]
-  // On a circle of two genomes carrying a synteny track, reorder the second
+  // On a circle of two genomes with a synteny track, reorder the second
   // genome's chromosomes to follow the first's and lay them out mirrored, so the
-  // ribbons read as a band of parallel arcs rather than crossing at the center.
+  // ribbons form a band of parallel arcs instead of crossing at the center.
   // The figure is hidden behind a "Reordering chromosomes" screen during the
   // wait. Same key and same pass as the linear synteny view's and the dotplot's
   autoDiagonalize?: boolean

@@ -350,7 +350,7 @@ function installLaneDescriptions(self: MultiWaySyntenyDisplayModel) {
           // eslint-disable-next-line no-restricted-syntax -- EFFECT INPUT: a plugin's reads before its first await belong to its answer, and the lanes to ask about are the trigger
           untracked(() =>
             pluginManager
-              /** #extensionPoint Core-describeAssemblies | async | Describe, in one batch, assemblies the session does not hold: each one's assembly config and gene adapter, read without connecting anything. Each callback adds to the descriptions the one before it returned */
+              /** #extensionPoint Core-describeAssemblies | async | Describe, in one batch, assemblies absent from the session: each one's assembly config and gene adapter, read without connecting anything. Each callback adds to the descriptions the one before it returned */
               .evaluateAsyncExtensionPoint(
                 'Core-describeAssemblies',
                 {},

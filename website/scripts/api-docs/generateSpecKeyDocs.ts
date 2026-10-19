@@ -484,7 +484,7 @@ function renderGroup(
         ),
       ]
     : [
-        `**Launch keys**, resolved once on attach and then discarded, because they have no direct representation in the view's state — ${launch.map(k => `\`${k.name}\``).join(', ')}. There are no others; a key outside this set and the table below is a typo, and the launcher names it in a console warning rather than dropping it silently.`,
+        `**Launch keys**, resolved once on attach and then discarded, because they have no direct representation in the view's state — ${launch.map(k => `\`${k.name}\``).join(', ')}. There are no others; a key outside this set and the table below is a typo, and the launcher names it in a console warning.`,
       ]
 
   return [

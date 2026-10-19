@@ -341,7 +341,7 @@ first reports itself up to date forever.
 Tag forms (all pipe-delimited, parsed by `parsePipeTags` in `util.ts`):
 
 ```js
-/** #color alignments-indicators | Insertion | Reads carry an insertion */
+/** #color alignments-indicators | Insertion | Reads with an insertion */
 /** #jexlFunction String functions | charAt('abc', 2) | c */
 /** #extensionPoint Core-extendSession | sync | Extend the session model */
 ```

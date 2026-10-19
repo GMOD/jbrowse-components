@@ -45,7 +45,7 @@ export function blockKeySignature(blocks: { key: string }[]) {
  * `run` / `commit` phases.
  *
  * #stateModel GlobalFetchMixin
- * #displayFoundationDef One non-regional dataset with no per-region partitioning, plus the render lifecycle. Installs no fetch autoruns; the display adds its own via `installGlobalFetchAutorun`.
+ * #displayFoundationDef One non-regional dataset with no per-region partitioning, plus the render lifecycle. Installs no fetch autoruns; the display installs them with `installGlobalFetchAutorun`.
  * #category display
  */
 export default function GlobalFetchMixin() {

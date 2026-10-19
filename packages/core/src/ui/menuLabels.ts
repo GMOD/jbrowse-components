@@ -13,7 +13,7 @@
  */
 
 /**
- * #menuBuilder withHint | a row label carrying an aside that is only sometimes there
+ * #menuBuilder withHint | a row label with an aside that is only sometimes there
  *
  * `withHint('Row separators', tooShort ? 'needs rows 4px or taller' :
  * undefined)`.

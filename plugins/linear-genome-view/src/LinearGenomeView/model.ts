@@ -420,9 +420,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          * currently displayed regions, can be a single chromosome, arbitrary
-         * subsections, or the entire  set of chromosomes in the genome, but it not
-         * advised to use the entire set of chromosomes if your assembly is very
-         * fragmented
+         * subsections, or the entire set of chromosomes in the genome. The entire
+         * set is not advised if your assembly is very fragmented
          */
         displayedRegions: types.stripDefault(types.frozen<Region[]>(), []),
 
@@ -489,11 +488,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          * how to display the track labels, can be "overlapping", "offset", or
-         * "hidden", or empty string "" (which results in the
-         * LinearGenomeViewPlugin config default being used). the resolved value
-         * is the `effectiveTrackLabels` getter. see LinearGenomeViewPlugin
-         * https://jbrowse.org/jb2/docs/config/lineargenomeviewconfigschema/ docs for
-         * how conf is used
+         * "hidden", or empty string "" (which uses the LinearGenomeViewPlugin
+         * config default). The resolved value is the `effectiveTrackLabels`
+         * getter. See the LinearGenomeViewPlugin docs at
+         * https://jbrowse.org/jb2/docs/config/lineargenomeviewconfigschema/ for
+         * how the config is used
          */
         trackLabels: types.optional(
           types.string,

@@ -125,7 +125,7 @@ const NAME_GROUPS: NameGroup[] = [
   },
   {
     label:
-      'react-dom, which a rendering library should not ask its host for — react-msaview owns its copy from 71e835ae, which `jbrowse-plugin-msaview` 3.6.0 and `-tview` 2.2.3 carry',
+      'react-dom, which a rendering library should not ask its host for — react-msaview owns its copy from 71e835ae, which `jbrowse-plugin-msaview` 3.6.0 and `-tview` 2.2.3 include',
     names: ['renderToStaticMarkup'],
   },
   {
