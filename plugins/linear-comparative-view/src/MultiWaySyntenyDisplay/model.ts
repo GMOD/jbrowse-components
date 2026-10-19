@@ -23,6 +23,7 @@ import {
   openFeatureWidget,
 } from '@jbrowse/core/util'
 import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
+import { withImpliedField } from '@jbrowse/core/util/colorScale'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
@@ -187,6 +188,7 @@ import {
   packedPx,
   ribbonPickState,
 } from './multiwayRenderTypes.ts'
+import { RIBBON_IMPLIED_FIELD } from './ribbonColorConfigSchema.ts'
 import {
   laneFetchesFor,
   rowsReadAgainstAnchor,
@@ -592,7 +594,10 @@ export function stateModelFactory(
           setConf(
             self,
             'ribbonColor',
-            colorForField(ribbonColorSetting(), field),
+            colorForField(
+              withImpliedField(ribbonColorSetting(), RIBBON_IMPLIED_FIELD),
+              field,
+            ),
           )
           self.seenAttributeRanges = {}
           observeRibbonFeatures(self.fetchedFeatures?.features ?? [])

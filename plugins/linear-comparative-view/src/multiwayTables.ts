@@ -16,7 +16,6 @@ import {
   isAttributeLabels,
   locateCum,
   orderAttributeLabels,
-  paintedField,
   readChannelValue,
   unpack,
 } from '@jbrowse/synteny-core'
@@ -56,6 +55,7 @@ import {
 } from './MultiWaySyntenyDisplay/layoutMultiWay.ts'
 import { ribbonColorScales } from './MultiWaySyntenyDisplay/legend.ts'
 import { buildRibbonGeometry } from './MultiWaySyntenyDisplay/multiwayGeometry.ts'
+import { paintedRibbonColor } from './MultiWaySyntenyDisplay/ribbonColorConfigSchema.ts'
 import {
   laneFetchesFor,
   rowsReadAgainstAnchor,
@@ -213,8 +213,7 @@ function readDisplay({
   const color = conf.ribbonColor
   const setting = colorSnapshotOf(color)
   return {
-    value: String(readConfObject(color, 'value')),
-    field: paintedField(setting),
+    ...paintedRibbonColor(setting),
     paint: colorPaintOf(color),
     domain: readConfObject(color, 'domain'),
     range: readConfObject(color, 'range'),

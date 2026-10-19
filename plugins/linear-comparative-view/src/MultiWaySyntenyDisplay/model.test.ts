@@ -480,12 +480,13 @@ test('the key names the anchor lane genes a name-hashed color slot draws', () =>
   const entries = geneKeyOf(display)
   expect(entries.map(i => i.label)).toEqual(['atpA', 'atpB'])
   expect(new Set(entries.map(i => i.color)).size).toBe(2)
-  expect(display.colorScales.map(s => s.id)).toEqual(['genes'])
+  expect(display.colorScales.map(s => s.id)).toEqual(['genes', 'ribbons'])
   expect(display.hasLegendKey).toBe(true)
 })
 
 test('a flat color slot has nothing to key', () => {
   const display = createDisplay()
+  setConf(display, 'ribbonColor', { value: 'grey' })
   display.setLaneGenes(
     new Map([
       [
@@ -764,10 +765,26 @@ test('the strand ribbon mode adds its own section', () => {
     display.laneGenesFetchSpecs,
     display.anchorAssemblyName,
   )
+  expect(display.colorScales.map(s => s.id)).toEqual(['genes', 'ribbons'])
+
+  display.setRibbonColorField('')
   expect(display.colorScales.map(s => s.id)).toEqual(['genes'])
+})
+
+test('ribbons color by strand until the setting names a field or a color', () => {
+  const display = createDisplay()
+  expect(display.ribbonColorField).toBe('strand')
+
+  display.setRibbonColorField('')
+  expect(display.ribbonColorField).toBe('')
+  expect(display.ribbonColor).toBe('rgba(130,130,130,0.3)')
 
   display.setRibbonColorField('strand')
-  expect(display.colorScales.map(s => s.id)).toEqual(['genes', 'ribbons'])
+  expect(display.ribbonColorField).toBe('strand')
+
+  setConf(display, 'ribbonColor', { value: 'red' })
+  expect(display.ribbonColorField).toBe('')
+  expect(display.ribbonColor).toBe('red')
 })
 
 test('the drawing toggles write the slots the display reads back', () => {

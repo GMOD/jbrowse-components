@@ -5,10 +5,11 @@ import {
   colorFieldOf,
   colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { colorPaintOf, paintedField } from '@jbrowse/synteny-core'
+import { colorPaintOf } from '@jbrowse/synteny-core'
 
 import { laneLayersPx } from './laneLayers.ts'
 import { geneLabelRowPx } from './laneStack.ts'
+import { paintedRibbonColor } from './ribbonColorConfigSchema.ts'
 
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { GeneColorSettings } from './geneColor.ts'
@@ -27,7 +28,8 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get ribbonColor(): string {
-      return getConf(self, ['ribbonColor', 'value'])
+      return paintedRibbonColor(colorSnapshotOf(self.configuration.ribbonColor))
+        .value
     },
     /**
      * #getter
@@ -39,10 +41,8 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get ribbonColorField(): string {
-      return paintedField({
-        scale: getConf(self, ['ribbonColor', 'scale']),
-        field: getConf(self, ['ribbonColor', 'field']),
-      })
+      return paintedRibbonColor(colorSnapshotOf(self.configuration.ribbonColor))
+        .field
     },
     /** #getter */
     get ribbonColorDomain(): string[] {

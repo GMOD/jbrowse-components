@@ -69,7 +69,7 @@ test('an all-vs-all PAF stacks a lane per genome, with ribbons down each gutter'
     [38_158, 54_801],
   ])
   expect(second.map(r => r.lowerChrom)).toEqual(['ctgA', 'ctgA'])
-  expect(new Set(t.ribbons.color)).toEqual(new Set(['#828282']))
+  expect(new Set(t.ribbons.color)).toEqual(new Set(['#ff6347']))
   expect(t.ribbons.alpha[0]).toBeCloseTo(0.3, 2)
 
   const linked =
@@ -77,7 +77,10 @@ test('an all-vs-all PAF stacks a lane per genome, with ribbons down each gutter'
   expect(t.alignments.assembly[linked]).toBe('volvox_ins')
   expect(t.alignments.mateAssembly[linked]).toBe('volvox_del')
   expect(column(t.alignments, 'identity')[linked]).toBe(1)
-  expect(t.legend.label).toEqual([])
+  expect(t.legend.label).toEqual([
+    'Same orientation as lane above',
+    'Inverted vs lane above',
+  ])
 })
 
 test('the rows slot orders the lanes and keeps the ones it names', async () => {
