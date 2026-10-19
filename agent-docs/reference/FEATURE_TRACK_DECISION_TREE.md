@@ -54,10 +54,11 @@ those name a meaning rather than a shape.
   so no name goes while a body could shrink instead, then grows the bodies back
   into the room the dropped names freed. A `decimated` pack that keeps no name
   hands on to `bodies`.
-- **The fit ladder never shrinks a body carrying an overlay subfeature label**: with
-  `subfeatureLabels: 'overlay'` the floor is 1, so `thinned` shrinks nothing
-  and `decimated` packs at full height. Shortened, a SARS-CoV-2 peptide row
-  sat 5.8 px under its 11 px name, which then ran over the rows beside it.
+- **An overlay subfeature label is sized to its body**, at most the body's
+  height plus 1 px, and dropped below 7 px (`placeFeatureLabels`), so the rungs
+  shrink bodies under it like any other. At a fixed 11 px a shortened
+  SARS-CoV-2 peptide row sat 5.8 px under its name, which ran over the rows
+  beside it.
 - The `isoforms` rung bisects the transcripts-per-gene the track can hold. It
   sits above `decimated` because the policy is **names before isoforms**, and
   when even one per gene overflows the rungs below inherit that 1 rather than
