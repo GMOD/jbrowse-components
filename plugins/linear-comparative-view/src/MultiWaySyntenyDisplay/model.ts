@@ -707,13 +707,6 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * each lane's inversions, which its frame draws mirrored in place
-       */
-      get laneTurns() {
-        return this.laneIndels.turns
-      },
-      /**
-       * #getter
        * each lane's deletions, insertions and inversions as its records state
        * them, for the header
        */
@@ -1499,7 +1492,6 @@ export function stateModelFactory(
               self.canvasWidth,
               self.anchorReversed,
               self.laneOpenings(assemblyName, decision.refName),
-              self.laneTurns(assemblyName, decision.refName),
             )
           : undefined
       },
@@ -1588,7 +1580,6 @@ export function stateModelFactory(
           pinned: self.pinnedLanes,
           pinnedFlips: self.pinnedLaneFlips,
           openingsOf: self.laneOpenings,
-          turnsOf: self.laneTurns,
         })
       },
     }))
@@ -1631,7 +1622,6 @@ export function stateModelFactory(
             (base.rung * self.visibleBpSpan) / self.canvasWidth,
             self.anchorReversed,
             self.laneOpenings(assemblyName, base.refName),
-            self.laneTurns(assemblyName, base.refName),
           )
           setFrozenDecision(assemblyName, nudged)
           self.laneDecisions = new Map(self.laneDecisions).set(

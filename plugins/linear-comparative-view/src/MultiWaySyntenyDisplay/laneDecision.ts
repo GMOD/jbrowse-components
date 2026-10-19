@@ -1,12 +1,10 @@
 import { weightedMedian } from '../keepNearMedian.ts'
 import { NEARLY_ALL, preferIncumbent } from '../syntenyHysteresis.ts'
 import {
-  drawnOfOpened,
   frameOpenings,
-  frameTurns,
   groupRunsOnRow,
   laneBpOfOpened,
-  laneIndelsOf,
+  laneOpeningsOf,
   lanePointOfOpened,
   openedBp,
   openedOfLanePoint,
@@ -17,7 +15,6 @@ import type {
   FetchRegion,
   LaneBlock,
   LaneOpening,
-  LaneTurn,
   MultiWayGroup,
   MultiWayPlacement,
   RowFrame,
@@ -27,10 +24,6 @@ type OpeningsOf = (
   assemblyName: string,
   refName: string,
 ) => readonly LaneOpening[]
-
-type TurnsOf = (assemblyName: string, refName: string) => readonly LaneTurn[]
-
-const NO_TURNS_OF: TurnsOf = () => []
 
 export interface AnchorCoord {
   refName: string
@@ -86,16 +79,12 @@ export function nudgeDecision(
   bpPerPx: number,
   anchorReversed: boolean,
   openings: readonly LaneOpening[] = [],
-  turns: readonly LaneTurn[] = [],
 ): LaneDecision {
   const mirrored = d.flipped !== anchorReversed
-  const layout = { openings, turns }
-  const drawn =
-    drawnOfOpened(layout, openedOfLanePoint(openings, pivotOf(d))) +
-    (mirrored ? 1 : -1) * dxPx * bpPerPx
   const { bp, inHole } = lanePointOfOpened(
     openings,
-    drawnOfOpened(layout, drawn),
+    openedOfLanePoint(openings, pivotOf(d)) +
+      (mirrored ? 1 : -1) * dxPx * bpPerPx,
   )
   return { ...d, pivotLaneBp: bp, pivotInHoleBp: inHole }
 }
@@ -340,30 +329,23 @@ function fitBlocks(
   }
 }
 
-// read in drawn coordinates, so a turned run votes with its flanks
 function anchorOrderSign(
   groups: MultiWayGroup[],
   assemblyName: string,
   refName: string,
-  layout: Pick<RowFrame, 'openings' | 'turns'>,
 ) {
-  const openings = layout.openings ?? []
-  const drawn = (bp: number) => drawnOfOpened(layout, openedBp(openings, bp))
   let sum = 0
   let strand = 0
   let prev: number | undefined
   for (const group of groups) {
     const p = group.mates.get(assemblyName)?.find(m => m.refName === refName)
     if (p) {
-      const m = drawn(mid(p))
+      const m = mid(p)
       if (prev !== undefined) {
         sum += Math.sign(m - prev)
       }
       prev = m
-      const turned = frameTurns(layout).some(
-        t => mid(p) > t.start && mid(p) < t.end,
-      )
-      strand += (turned ? -1 : 1) * p.orientation * group.weight
+      strand += p.orientation * group.weight
     }
   }
   return sum || strand
@@ -382,21 +364,12 @@ export function computeRowFrame(
     unitBp,
     incumbent,
     undefined,
-    laneIndelsOf(groups).openings,
-    laneIndelsOf(groups).turns,
+    laneOpeningsOf(groups),
   )?.frame
 }
 
-function withLayout(
-  frame: RowFrame,
-  openings: readonly LaneOpening[],
-  turns: readonly LaneTurn[],
-) {
-  return {
-    ...frame,
-    ...(openings.length ? { openings } : {}),
-    ...(turns.length ? { turns } : {}),
-  }
+function withOpenings(frame: RowFrame, openings: readonly LaneOpening[]) {
+  return openings.length ? { ...frame, openings } : frame
 }
 
 type FitIncumbent = Pick<
@@ -411,7 +384,6 @@ function fitLane(
   incumbent: FitIncumbent | undefined,
   pinned: LanePin | undefined,
   openingsOf: OpeningsOf,
-  turnsOf: TurnsOf,
 ) {
   const released = incumbent?.pinned && incumbent.refName !== pinned?.refName
   const contig = pickContig(
@@ -433,7 +405,6 @@ function fitLane(
     held && { lo: held.fitMin, hi: held.fitMax },
   )
   const openings = openingsOf(assemblyName, contig.refName)
-  const turns = turnsOf(assemblyName, contig.refName)
   const openedLo = openedBp(openings, fit.lo, true)
   const openedHi = Math.max(openedLo + 1, openedBp(openings, fit.hi))
   const rung =
@@ -445,16 +416,12 @@ function fitLane(
   return {
     rung,
     pinned: onPin,
-    frame: withLayout(
+    frame: withOpenings(
       {
         refName: contig.refName,
         min,
         max: min + span,
-        flipped:
-          anchorOrderSign(groups, assemblyName, contig.refName, {
-            openings,
-            turns,
-          }) < 0,
+        flipped: anchorOrderSign(groups, assemblyName, contig.refName) < 0,
         fitMin: fit.lo,
         fitMax: fit.hi,
         alsoOn: contig.alsoOn,
@@ -462,7 +429,6 @@ function fitLane(
         alsoAt,
       },
       openings,
-      turns,
     ),
   }
 }
@@ -471,8 +437,6 @@ interface LanePlacement {
   group: MultiWayGroup
   key: string
   center: number
-  /** `center` drawn, which the vote ranks by, so a turned run reads straight */
-  drawn: number
   weight: number
 }
 
@@ -482,15 +446,12 @@ function lanePlacements(
   frame: RowFrame,
 ): LanePlacement[] {
   const out: LanePlacement[] = []
-  const openings = frameOpenings(frame)
   for (const group of groups) {
     for (const run of groupRunsOnRow(group, assemblyName, frame)) {
-      const center = (run.min + run.max) / 2
       out.push({
         group,
         key: group.key,
-        center,
-        drawn: drawnOfOpened(frame, openedBp(openings, center)),
+        center: (run.min + run.max) / 2,
         weight: Math.max(run.max - run.min, 1),
       })
     }
@@ -549,14 +510,14 @@ function orientationVote(upperX: Map<string, number>, lane: LanePlacement[]) {
 
 // A Fenwick tree over the centers' ranks sums the earlier weight below a run.
 function weightedPairs(runs: LanePlacement[]) {
-  const ranks = [...new Set(runs.map(r => r.drawn))].sort((a, b) => a - b)
-  const rankOf = new Map(ranks.map((drawn, i) => [drawn, i + 1]))
+  const ranks = [...new Set(runs.map(r => r.center))].sort((a, b) => a - b)
+  const rankOf = new Map(ranks.map((center, i) => [center, i + 1]))
   const tree = new Float64Array(ranks.length + 1)
   let seen = 0
   let total = 0
   let backwards = 0
   for (const run of runs) {
-    const rank = rankOf.get(run.drawn)!
+    const rank = rankOf.get(run.center)!
     const weight = run.group.weight
     let atOrBelow = 0
     for (let i = rank; i > 0; i -= i & -i) {
@@ -622,7 +583,7 @@ function weightInside(placements: LanePlacement[], frame: RowFrame) {
   const openings = frameOpenings(frame)
   let inside = 0
   for (const p of placements) {
-    const center = drawnOfOpened(frame, openedBp(openings, p.center))
+    const center = openedBp(openings, p.center)
     if (center >= frame.min && center <= frame.max) {
       inside += p.weight
     }
@@ -632,12 +593,9 @@ function weightInside(placements: LanePlacement[], frame: RowFrame) {
 
 function openedAt(frame: RowFrame, px: number, width: number) {
   const bpPerPx = (frame.max - frame.min) / width
-  return drawnOfOpened(
-    frame,
-    frame.flipped
-      ? frame.min + (width - px) * bpPerPx
-      : frame.min + px * bpPerPx,
-  )
+  return frame.flipped
+    ? frame.min + (width - px) * bpPerPx
+    : frame.min + px * bpPerPx
 }
 
 export function laneBpAt(frame: RowFrame, px: number, width: number) {
@@ -652,19 +610,15 @@ export function frameFromDecision(
   width: number,
   anchorReversed = false,
   openings: readonly LaneOpening[] = [],
-  turns: readonly LaneTurn[] = [],
 ): RowFrame {
   const span = d.rung * unitBp
   const bpPerPx = span / width
   const flipped = d.flipped !== anchorReversed
-  const pivot = drawnOfOpened(
-    { openings, turns },
-    openedOfLanePoint(openings, pivotOf(d)),
-  )
+  const pivot = openedOfLanePoint(openings, pivotOf(d))
   const min = flipped
     ? pivot - (width - pivotPx) * bpPerPx
     : pivot - pivotPx * bpPerPx
-  return withLayout(
+  return withOpenings(
     {
       refName: d.refName,
       min,
@@ -677,7 +631,6 @@ export function frameFromDecision(
       alsoAt: d.alsoAt,
     },
     openings,
-    turns,
   )
 }
 
@@ -697,8 +650,6 @@ export interface DecideLaneFramesOpts {
   frozen?: ReadonlyMap<string, LaneDecision>
   /** read off every fetched group, so a hole does not wait on the viewport */
   openingsOf: OpeningsOf
-  /** the inversions each lane draws mirrored in place, read the same way */
-  turnsOf?: TurnsOf
 }
 
 function sameDecision(a: LaneDecision, b: LaneDecision) {
@@ -743,7 +694,6 @@ export function decideLaneFrames({
   pinnedFlips,
   frozen,
   openingsOf,
-  turnsOf = NO_TURNS_OF,
 }: DecideLaneFramesOpts) {
   const out = new Map<string, LaneDecision | undefined>()
   if (unitBp <= 0 || width <= 0) {
@@ -766,7 +716,6 @@ export function decideLaneFrames({
           width,
           anchorReversed,
           openingsOf(assemblyName, kept.refName),
-          turnsOf(assemblyName, kept.refName),
         )
         upperX = lanePlacementXs(
           lanePlacements(groups, assemblyName, frame),
@@ -784,7 +733,6 @@ export function decideLaneFrames({
       prev,
       pinned?.get(assemblyName),
       openingsOf,
-      turnsOf,
     )
     if (fit === undefined) {
       out.set(assemblyName, undefined)
@@ -842,7 +790,6 @@ export function decideLaneFrames({
         width,
         anchorReversed,
         frameOpenings(aligned),
-        frameTurns(aligned),
       )
       if (
         weightInside(placements, heldFrame) >=
@@ -900,7 +847,6 @@ export function decideLaneFrames({
               width,
               anchorReversed,
               frameOpenings(aligned),
-              frameTurns(aligned),
             )
           : aligned
       upperX = lanePlacementXs(

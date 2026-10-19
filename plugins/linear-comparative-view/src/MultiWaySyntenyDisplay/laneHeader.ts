@@ -1,7 +1,7 @@
 import { assembleLocString, getBpDisplayStr } from '@jbrowse/core/util'
 import { measureText } from '@jbrowse/core/util/measureText'
 
-import { laneExtentOfDrawn } from './layoutMultiWay.ts'
+import { frameOpenings, laneBpOfOpened } from './layoutMultiWay.ts'
 
 import type { Lane } from './laneStack.ts'
 import type { LaneBlock, LaneChange } from './layoutMultiWay.ts'
@@ -100,12 +100,12 @@ export function laneRegion(lane: Pick<Lane, 'frame' | 'canon'>) {
   if (!frame) {
     return undefined
   }
-  const shown = laneExtentOfDrawn(frame, frame.min, frame.max)
-  const start = Math.max(0, Math.round(shown.min))
+  const openings = frameOpenings(frame)
+  const start = Math.max(0, Math.round(laneBpOfOpened(openings, frame.min)))
   return {
     refName: lane.canon(frame.refName),
     start,
-    end: Math.max(start + 1, Math.round(shown.max)),
+    end: Math.max(start + 1, Math.round(laneBpOfOpened(openings, frame.max))),
   }
 }
 

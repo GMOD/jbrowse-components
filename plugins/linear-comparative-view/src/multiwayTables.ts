@@ -45,11 +45,12 @@ import {
 import {
   anchorlessGroupsOf,
   clipGroupToAnchor,
+  frameOpenings,
   frameSegments,
   groupFeatures,
-  laneExtentOfDrawn,
+  laneBpOfOpened,
   laneFetchRegion,
-  laneIndelsOf,
+  laneOpeningsOf,
   rowAssembliesOf,
   tickIntervalFor,
 } from './MultiWaySyntenyDisplay/layoutMultiWay.ts'
@@ -318,9 +319,9 @@ function laneTables(lanes: Lane[], axis: ComparativeAxis, width: number) {
         )
       })
     } else if (frame) {
-      const shown = laneExtentOfDrawn(frame, frame.min, frame.max)
-      const lo = Math.max(0, Math.ceil(shown.min))
-      const hi = Math.floor(shown.max)
+      const openings = frameOpenings(frame)
+      const lo = Math.max(0, Math.ceil(laneBpOfOpened(openings, frame.min)))
+      const hi = Math.floor(laneBpOfOpened(openings, frame.max))
       for (const s of frameSegments(frame, lo, hi, width)) {
         segment(i, frame.refName, s.start, s.end, s.px)
       }
@@ -479,7 +480,7 @@ export async function multiwayTables(
   )
   const features = dedupe(fetched.features, f => f.id())
   const groups = groupFeatures(features)
-  const { openings: openingsOf, turns: turnsOf } = laneIndelsOf(groups)
+  const openingsOf = laneOpeningsOf(groups)
   const drawn = (name: string) =>
     selection === undefined || selection.includes(name)
   const rowsVsAnchor = rowsReadAgainstAnchor(capabilities, starAnchor)
@@ -535,7 +536,6 @@ export async function multiwayTables(
     previous: new Map(),
     pinned: new Map(Object.entries(pins)),
     openingsOf,
-    turnsOf,
   })
   const frameOf = (decision: LaneDecision, assemblyName: string) => {
     const pivot = place.pxOf(
@@ -551,7 +551,6 @@ export async function multiwayTables(
           width,
           reversed,
           openingsOf(assemblyName, decision.refName),
-          turnsOf(assemblyName, decision.refName),
         )
   }
   const rowFrames = new Map<string, RowFrame | undefined>(
