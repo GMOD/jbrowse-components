@@ -255,11 +255,19 @@ A host's px per bp depends on its figure, so the host calls it once per
 figure with the marks' columns, and the engine runs the shaders' generated
 twins:
 
-- **In:** `pxPerBp`, `featureHeight` (`readPitch.featureHeight`),
-  `fadeLowFrequency` and `fadeLowBaseQuality` (`config.pileup`'s), and any of
+- **In:** `pxPerBp`, a finite number of at least 0, and any of
   `insertions` (`length`, `fade`), `deletions` (`length` in bp, `end - start`
   of a gap whose `type` is `deletion`, and `fade`), `mismatches` (`fade`,
-  `quality`) and `clips` (`fade`).
+  `quality`, the Phred score, 255 where the read has none) and `clips`
+  (`fade`).
+- **Settings:** `featureHeight` (`readPitch.featureHeight`),
+  `fadeLowFrequency` and `fadeLowBaseQuality` (`config.pileup`'s). Each one
+  left out takes the pileup config's default: a 7 px read, `true` and
+  `false`.
+- **Columns:** a column may be a number, read as one mark, as R's jsonlite
+  unboxes a one-row table. The call refuses a missing column, naming it,
+  and a table whose columns differ in length. `mismatches.quality` may be
+  left out while `fadeLowBaseQuality` is false.
 - **Out:** `insertions.widthPx` and `insertions.alpha`, and `alpha` for
   `deletions`, `mismatches` and `clips`, one per mark in the order given.
   `widthPx` is in px; `alpha` runs from 0 (not drawn) to 1.

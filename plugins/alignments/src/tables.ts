@@ -77,6 +77,7 @@ import {
   orderedGroups,
 } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
+import { pileupConfigSchema } from './LinearAlignmentsDisplay/pileupConfigSchema.ts'
 import {
   baseQualitySpanAcrossGroups,
   presentMapqs,
@@ -124,6 +125,7 @@ import {
 } from './shaders/slang/alignmentsUniforms.js.generated.ts'
 import { CONNECTING_LINE_ALPHA } from './shaders/slang/connectingLine.consts.generated.ts'
 import { GAP_SKIP } from './shaders/slang/gap.consts.generated.ts'
+import { QUAL_UNAVAILABLE } from './shaders/slang/mismatch.consts.generated.ts'
 import { qualityFade } from './shaders/slang/mismatch.js.generated.ts'
 import {
   ALIGNMENTS_FIELD_PRESETS,
@@ -1769,15 +1771,70 @@ function drawnBands<
       }
 }
 
+type MarkColumn = number | readonly number[]
+
+/**
+ * The columns `names` of one mark kind's table as arrays of one length, a
+ * scalar read as one mark, as R's jsonlite unboxes a one-row table. A table
+ * left out is no marks; a column left out takes `defaults`' value, or is
+ * refused.
+ */
+function markColumns<N extends string>(
+  kind: string,
+  table: Partial<Record<N, MarkColumn | null>> | null | undefined,
+  names: readonly N[],
+  defaults: Partial<Record<N, number>> = {},
+) {
+  const given: Partial<Record<N, MarkColumn | null>> = table ?? {}
+  const none = table === undefined || table === null
+  const arrays = names.map(name => {
+    const column: MarkColumn | null | undefined = given[name]
+    if (column === undefined || column === null) {
+      return undefined
+    }
+    if (typeof column === 'number') {
+      return [column]
+    }
+    if (!Array.isArray(column)) {
+      throw new Error(`${kind}.${name} is a number or an array of numbers`)
+    }
+    return column as readonly number[]
+  })
+  const rows = none ? 0 : Math.max(0, ...arrays.map(a => a?.length ?? 0))
+  return Object.fromEntries(
+    names.map((name, i) => {
+      const column = arrays[i]
+      if (column === undefined) {
+        const fallback = defaults[name]
+        if (fallback === undefined && !none) {
+          throw new Error(`${kind}.${name} is missing`)
+        }
+        return [name, Array.from({ length: rows }, () => fallback!)]
+      }
+      if (column.length !== rows) {
+        const longest = names[arrays.findIndex(a => a?.length === rows)]!
+        throw new Error(
+          `${kind}.${name} has ${column.length} rows where ${kind}.${longest} has ${rows}`,
+        )
+      }
+      return [name, column]
+    }),
+  ) as Record<N, readonly number[]>
+}
+
+let pileupDefaults: AnyConfigurationModel | undefined
+
 /**
  * #api
- * The px width and opacity the pileup draws each insertion, deletion,
- * mismatch and clip at `pxPerBp`, through the shaders' generated twins, for
- * a host that draws the marks at its figure's scale. `fade` is a mark's `fade`
- * column, `length` its length in bp (a deletion's `end - start`), `quality`
- * a mismatch's; `featureHeight` is `readPitch.featureHeight`, and the two
- * switches are the display's `pileup.fadeLowFrequency` and
- * `pileup.fadeLowBaseQuality`.
+ * Each insertion's width in px and each insertion's, deletion's, mismatch's
+ * and clip's alpha as the pileup draws them at `pxPerBp`, through the
+ * shaders' generated twins, for a host that draws the marks at its figure's
+ * scale. `fade` is a mark's `fade` column, `length` its length in bp (a
+ * deletion's `end - start`) and `quality` a mismatch's, 255 where the read
+ * has none. A column may be a number, for one mark. `featureHeight` is
+ * `readPitch.featureHeight`, and the two switches are the display's
+ * `pileup.fadeLowFrequency` and `pileup.fadeLowBaseQuality`; each of the
+ * three takes the pileup config's default when left out.
  *
  * - An insertion's `widthPx` is `insertionBarWidthPx`, and its `alpha`
  *   `insertionSizeAlpha` times, under `LONG_INSERTION_MIN_LENGTH`,
@@ -1785,57 +1842,81 @@ function drawnBands<
  * - A deletion's `alpha` is `sizeAlpha` of its width in px times
  *   `frequencyFadeGate` over that width squared.
  * - A mismatch's `alpha` is `qualityFade` times `frequencyFadeGate` over
- *   `pxPerBp`, and a clip's that gate alone.
+ *   `pxPerBp`, and a clip's that gate alone. `quality` may be left out
+ *   while `fadeLowBaseQuality` is false.
  */
 export function alignmentMarkAlpha({
   pxPerBp,
   featureHeight,
   fadeLowFrequency,
-  fadeLowBaseQuality = false,
-  insertions = { length: [], fade: [] },
-  deletions = { length: [], fade: [] },
-  mismatches = { fade: [], quality: [] },
-  clips = { fade: [] },
+  fadeLowBaseQuality,
+  insertions,
+  deletions,
+  mismatches,
+  clips,
 }: {
   pxPerBp: number
-  featureHeight: number
-  fadeLowFrequency: boolean
+  featureHeight?: number
+  fadeLowFrequency?: boolean
   fadeLowBaseQuality?: boolean
-  insertions?: { length: readonly number[]; fade: readonly number[] }
-  deletions?: { length: readonly number[]; fade: readonly number[] }
-  mismatches?: { fade: readonly number[]; quality: readonly number[] }
-  clips?: { fade: readonly number[] }
+  insertions?: { length: MarkColumn; fade: MarkColumn }
+  deletions?: { length: MarkColumn; fade: MarkColumn }
+  mismatches?: { fade: MarkColumn; quality?: MarkColumn }
+  clips?: { fade: MarkColumn }
 }) {
+  if (!Number.isFinite(pxPerBp) || pxPerBp < 0) {
+    throw new Error(`pxPerBp is ${pxPerBp}; it takes a finite number >= 0`)
+  }
+  pileupDefaults ??= pileupConfigSchema.create()
+  const height: number =
+    featureHeight ?? readConfObject(pileupDefaults, 'readHeight')
+  if (!Number.isFinite(height) || height < 0) {
+    throw new Error(
+      `featureHeight is ${featureHeight}; it takes a finite number >= 0`,
+    )
+  }
+  const byFrequency: boolean =
+    fadeLowFrequency ?? readConfObject(pileupDefaults, 'fadeLowFrequency')
+  const byQuality: boolean =
+    fadeLowBaseQuality ?? readConfObject(pileupDefaults, 'fadeLowBaseQuality')
+  const ins = markColumns('insertions', insertions, ['length', 'fade'])
+  const del = markColumns('deletions', deletions, ['length', 'fade'])
+  const mis = markColumns(
+    'mismatches',
+    mismatches,
+    ['fade', 'quality'],
+    byQuality ? {} : { quality: QUAL_UNAVAILABLE },
+  )
+  const clip = markColumns('clips', clips, ['fade'])
   const gate = (base: number, fade: number) =>
-    frequencyFadeGate(base, fade, fadeLowFrequency)
+    frequencyFadeGate(base, fade, byFrequency)
   return {
     insertions: {
-      widthPx: insertions.length.map(length =>
-        insertionBarWidth(length, pxPerBp, featureHeight),
+      widthPx: ins.length.map(length =>
+        insertionBarWidth(length, pxPerBp, height),
       ),
-      alpha: insertions.length.map(
+      alpha: ins.length.map(
         (length, i) =>
           insertionSizeAlpha(length, pxPerBp) *
           (length < LONG_INSERTION_MIN_LENGTH
-            ? gate(pxPerBp * pxPerBp, insertions.fade[i]!)
+            ? gate(pxPerBp * pxPerBp, ins.fade[i]!)
             : 1),
       ),
     },
     deletions: {
-      alpha: deletions.length.map((length, i) => {
+      alpha: del.length.map((length, i) => {
         const widthPx = length * pxPerBp
-        return sizeAlpha(widthPx) * gate(widthPx * widthPx, deletions.fade[i]!)
+        return sizeAlpha(widthPx) * gate(widthPx * widthPx, del.fade[i]!)
       }),
     },
     mismatches: {
-      alpha: mismatches.fade.map(
+      alpha: mis.fade.map(
         (fade, i) =>
-          qualityFade(mismatches.quality[i]!, fadeLowBaseQuality) *
-          gate(pxPerBp, fade),
+          qualityFade(mis.quality[i]!, byQuality) * gate(pxPerBp, fade),
       ),
     },
     clips: {
-      alpha: clips.fade.map(fade => gate(pxPerBp, fade)),
+      alpha: clip.fade.map(fade => gate(pxPerBp, fade)),
     },
   }
 }

@@ -100,3 +100,47 @@ test('with fadeLowFrequency off only size and quality fade a mark', () => {
   expect(t.mismatches.alpha).toEqual([1])
   expect(t.clips.alpha).toEqual([1])
 })
+
+test('a column may be one number, and a setting left out takes the pileup default', () => {
+  const one = alignmentMarkAlpha({
+    pxPerBp: 0.5,
+    insertions: { length: 3, fade: 0.2 },
+    deletions: { length: 2, fade: 0 },
+    mismatches: { fade: 0.5 },
+    clips: { fade: 0 },
+  })
+  const many = alignmentMarkAlpha({
+    pxPerBp: 0.5,
+    featureHeight: 7,
+    fadeLowFrequency: true,
+    fadeLowBaseQuality: false,
+    insertions: { length: [3], fade: [0.2] },
+    deletions: { length: [2], fade: [0] },
+    mismatches: { fade: [0.5], quality: [255] },
+    clips: { fade: [0] },
+  })
+  expect(one).toEqual(many)
+  expect(one.clips.alpha[0]).toBe(0.5)
+})
+
+test('a missing column, columns of two lengths and a bad pxPerBp are refused', () => {
+  const call =
+    (args: Partial<Parameters<typeof alignmentMarkAlpha>[0]>) => () =>
+      alignmentMarkAlpha({ pxPerBp: 1, ...args })
+  expect(call({ mismatches: { quality: [30] } as never })).toThrow(
+    'mismatches.fade is missing',
+  )
+  expect(
+    call({ fadeLowBaseQuality: true, mismatches: { fade: [0.5] } }),
+  ).toThrow('mismatches.quality is missing')
+  expect(call({ insertions: { length: [1, 2], fade: [0] } })).toThrow(
+    'insertions.fade has 1 rows where insertions.length has 2',
+  )
+  expect(call({ clips: { fade: 'x' as never } })).toThrow(
+    'clips.fade is a number or an array of numbers',
+  )
+  for (const pxPerBp of [-1, Number.NaN, Infinity]) {
+    expect(call({ pxPerBp })).toThrow(`pxPerBp is ${pxPerBp}`)
+  }
+  expect(call({ pxPerBp: 0 })).not.toThrow()
+})
