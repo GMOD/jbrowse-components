@@ -1,8 +1,7 @@
+import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 
 import puppeteer from 'puppeteer'
-
-export const BASE_CHROME_ARGS = ['--no-sandbox', '--disable-setuid-sandbox']
 
 const CHROME_PATHS = [
   '/usr/bin/google-chrome',
@@ -14,6 +13,38 @@ const CHROME_PATHS = [
 export function findChromeExecutable(): string | undefined {
   return process.env.CHROME_PATH ?? CHROME_PATHS.find(p => fs.existsSync(p))
 }
+
+const UA_PLATFORMS: Partial<Record<NodeJS.Platform, string>> = {
+  darwin: 'Macintosh; Intel Mac OS X 10_15_7',
+  win32: 'Windows NT 10.0; Win64; x64',
+}
+
+// Chrome's user agent without "Headless", which EBI's Proteins API answers
+// with a reset stream. A launch flag reaches the RPC workers' fetches, which
+// page.setUserAgent does not.
+function userAgentArgs() {
+  try {
+    const version = /\d+\.\d+\.\d+\.\d+/.exec(
+      execFileSync(findChromeExecutable() ?? puppeteer.executablePath(), [
+        '--version',
+      ]).toString(),
+    )?.[0]
+    const platform = UA_PLATFORMS[process.platform] ?? 'X11; Linux x86_64'
+    return version
+      ? [
+          `--user-agent=Mozilla/5.0 (${platform}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${version} Safari/537.36`,
+        ]
+      : []
+  } catch {
+    return []
+  }
+}
+
+export const BASE_CHROME_ARGS = [
+  '--no-sandbox',
+  '--disable-setuid-sandbox',
+  ...userAgentArgs(),
+]
 
 export interface LaunchOptions {
   headless?: boolean

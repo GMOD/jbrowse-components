@@ -734,7 +734,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
               filter: ['jexl:feature.inversion'],
               height: 60,
             },
-            INV_LANES_VIEW.tracks[1],
+            // strand-colored, so the mirrored span reads as inverted
+            { ...INV_LANES_VIEW.tracks[1], ribbonColor: { field: 'strand' } },
           ],
         },
       ],
