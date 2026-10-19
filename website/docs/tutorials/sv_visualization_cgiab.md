@@ -290,7 +290,7 @@ do below. The figure also shows the HiFiCNV depth, which
 [part 2](/docs/tutorials/cnv_cgiab#building-depth-per-bin-and-b-allele-frequency-tracks)
 builds.
 
-<Figure caption="One benchmark rearrangement's breakends in five SV callsets, over the HiFiCNV depth and the benchmark's CNV track." src="/img/sv_cgiab/sv_callset_comparison.png" />
+<Figure caption="One benchmark rearrangement's breakends in the SV callsets, over the HiFiCNV depth and the benchmark's CNV track." src="/img/sv_cgiab/sv_callset_comparison.png" />
 
 ## Aligning the tumor assembly to GRCh38
 
@@ -426,7 +426,7 @@ synteny track, then enter `chr13 chr3` in the GRCh38 search box.
 **Add row** in the import form gives each haplotype a separate row: hap2,
 GRCh38, hap1, with ribbons between each adjacent pair.
 
-<Figure caption="A three-row synteny view: hap2, GRCh38 chr13 and chr3, and the fused chr3_chr13_hap1 scaffold." src="/img/sv_cgiab/synteny_view.png" />
+<Figure caption="A synteny view of hap2, GRCh38 chr13 and chr3, and the fused chr3_chr13_hap1 scaffold." src="/img/sv_cgiab/synteny_view.png" />
 
 The [dotplot view guide](/docs/user_guides/dotplot_view) and the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view) cover these

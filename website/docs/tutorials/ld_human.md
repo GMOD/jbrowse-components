@@ -243,7 +243,7 @@ pointed at `https://jbrowse.org/demos/popgen/lct_1kg38_chr2_pooled.ld.gz`:
 ## Clustering LCT haplotypes into the block the triangle draws
 
 The triangle summarises haplotypes, the variants on each chromosome along the
-block. A track over the six-population VCF draws them below it in equal-width
+block. A track over the multi-population VCF draws them below it in equal-width
 columns, one row per chromosome, with `rowColor` as a color scale on each row's
 label bar. For your own cohort, write a samples TSV with `name` and `population`
 columns and point `samplesTsvLocation` at it:
@@ -290,11 +290,11 @@ Cluster the rows by genotype two ways:
   the matrix. It is the hub's ClinVar track filtered with
   `jexl:feature.phenotypeList=='LACTASE PERSISTENCE'`.
 
-### Subsampling six populations for the haplotype matrix {#rows-have-to-be-worth-a-pixel}
+### Subsampling populations for the haplotype matrix {#rows-have-to-be-worth-a-pixel}
 
 Over the whole release each haplotype row falls below a pixel, so the figure
-reads 25 samples from each of six populations. The script behind it centers on
-one `bcftools` call over a list of 150 sample IDs, one per line:
+reads the same number of samples from each population. The script behind it
+centers on one `bcftools` call over a list of sample IDs, one per line:
 
 <!-- from: scripts/build_lct_haploblock.sh -->
 
@@ -304,12 +304,11 @@ bcftools view -S sub.samples --force-samples -Oz -o lct_1kg38_chr2_6pop.vcf.gz p
 
 ## Allele frequency per population across the LCT block {#allele-frequency-per-population}
 
-Twenty-five people from each of the six populations are enough to sort
-haplotypes and too few to read a frequency off. `bcftools +fill-tags` therefore
-computes each population's allele frequency over all of its unrelated samples
-and writes it into one INFO field per population. Its `-S` table holds a sample
-ID and a group on each line, tab-separated, so the same command takes any
-grouping:
+A few people from each population are enough to sort haplotypes and too few to
+read a frequency off. `bcftools +fill-tags` therefore computes each population's
+allele frequency over all of its unrelated samples and writes it into one INFO
+field per population. Its `-S` table holds a sample ID and a group on each line,
+tab-separated, so the same command takes any grouping:
 
 <!-- from: scripts/build_lct_population_af.sh -->
 
@@ -394,7 +393,7 @@ six bigWigs as a row each, on one axis from 0 to 1:
 Open it over `chr2:135,844,000-135,858,000`, the stretch of _MCM6_ that holds
 `rs4988235`:
 
-<Figure src="/img/ld/lct_population_af.png" caption="Alternate allele frequency in six 1000 Genomes populations, a row each on one axis. The highlight marks rs4988235."/>
+<Figure src="/img/ld/lct_population_af.png" caption="Alternate allele frequency in the 1000 Genomes populations, a row each on one axis. The highlight marks rs4988235."/>
 
 - At `rs4988235` the allele is common in the two northern European populations
   (CEU, FIN) and rarer in PJL (Punjabi) and TSI (Tuscan), the spread
@@ -428,18 +427,18 @@ Three more scripts build the other files:
 
 - [`build_lct_fst_scan.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_fst_scan.sh)
   writes the wide Fst track, scoring the same panels with the same estimator
-  over 40 Mb of chr2 with _LCT_ at its middle, one value per variant. It prints
-  where `rs4988235` ranks across the span.
+  over a wide stretch of chr2 with _LCT_ at its middle, one value per variant.
+  It prints where `rs4988235` ranks across the span.
 - [`build_lct_haploblock.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_haploblock.sh)
   builds the [subsampled haplotype matrix](#rows-have-to-be-worth-a-pixel) from
-  the same number of unrelated samples in each of the six populations, which
-  span the lactase-persistence allele from common to absent, so none outweighs
-  the rest in the clustering. It prints the allele's frequency in each, over the
-  release and over the subsample.
+  the same number of unrelated samples in each population, which span the
+  lactase-persistence allele from common to absent, so none outweighs the rest
+  in the clustering. It prints the allele's frequency in each, over the release
+  and over the subsample.
 - [`build_lct_population_af.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_population_af.sh)
   builds the [per-population frequencies](#allele-frequency-per-population) from
-  every unrelated sample of the six populations in the pooled slice, and prints
-  the frequencies at `rs4988235` to check the bars against.
+  every unrelated sample of the populations in the pooled slice, and prints the
+  frequencies at `rs4988235` to check the bars against.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_fst_scan.sh

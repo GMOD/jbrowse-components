@@ -141,7 +141,7 @@ All the per-cell-type BigWigs go into one `MultiQuantitativeTrack` whose
 an optional `color` and `group`. Swap each `uri` for the BigWig your pooling
 step wrote.
 
-The fence lists three of the twelve cell types the figure draws; the
+The fence lists some of the cell types the figure draws; the
 [build script](#reproduce-it-end-to-end) writes the whole list, and the hosted
 demo config, https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has
 it as `pbmc5k_scatac_pseudobulk_hg38`:

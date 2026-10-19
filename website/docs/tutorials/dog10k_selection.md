@@ -17,7 +17,7 @@ a major reason. In the Dog10K collection of sequenced dogs and wolves, we:
 - scan every window of the genome for Fst, a 0-to-1 measure of how far apart two
   groups' allele frequencies sit, between fourteen toy breeds and eleven giant
   breeds, and draw it as a Manhattan track
-- slice the _IGF1_ peak out of the 397 GB SNV callset over HTTP and load it as a
+- slice the _IGF1_ peak out of the SNV callset over HTTP and load it as a
   multi-sample variant track with a sample-metadata TSV
 - cluster the animals by genotype to see the haplotype each size class has and
   where the wolves fall
@@ -170,8 +170,9 @@ Small breeds share a haplotype at _IGF1_ that large breeds largely lack
 the two groups the scan compared plus the twelve Greek gray wolves, taken from
 the Dog10K sample table by breed name. They include whole breeds, because
 several breeds depart from the pattern one animal at a time and the clustering
-below has to show that variation. The SNV callset is a single 397 GB VCF over
-1,987 canids with a tabix index beside it, and `bcftools` reads only the window:
+below has to show that variation. The SNV callset is a single large VCF over
+every sequenced canid with a tabix index beside it, and `bcftools` reads only
+the window:
 
 <!-- from: scripts/build_dog10k_igf1.sh -->
 
@@ -188,7 +189,7 @@ bcftools view -r chr15:41350000-41750000 -S igf1.samples --force-samples \
 tabix -p vcf dog10k_igf1.vcf.gz
 ```
 
-A site that is reference in all 167 animals draws an empty column, so the second
+A site that is reference in every animal draws an empty column, so the second
 `bcftools view` drops it.
 
 ## Loading the IGF1 slice with a sample-metadata TSV
@@ -242,7 +243,7 @@ so they start out grouped by breed. Clustering reads the region on screen, and
 over the whole window the undifferentiated sites dilute the separating columns,
 so we cluster the core first:
 
-1. Zoom to the 140 kb core, `chr15:41,440,000-41,580,000`.
+1. Zoom to the core, `chr15:41,440,000-41,580,000`.
 2. Choose **Clustering → Cluster rows by genotype...** in the track menu, then
    **Run clustering**. The rows reorder by genotype similarity and a dendrogram
    appears in the sidebar.
@@ -373,4 +374,4 @@ bash build_dog10k_igf1.sh       # writes ./dog10k_igf1_build/
 [^drift]:
     Breeds are closed populations, so drift (random change in allele frequency)
     inside one large breed raises Fst just as differentiation between the groups
-    does. Pooling fourteen breeds against eleven dilutes drift in any one breed.
+    does. Pooling many breeds on each side dilutes drift in any one breed.

@@ -21,7 +21,7 @@ each over several. We:
   its set
 - open it as a dotplot, with one genome's chromosomes sorted by where their
   orthologs sit on the other
-- stack six genomes in a linear synteny view, with ribbons colored by set
+- stack the genomes in a linear synteny view, with ribbons colored by set
 - check the set counts against the odp tables
 
 ## Prerequisites
@@ -69,7 +69,7 @@ assigned as a column beside it, which a synteny track can read. Your own genomes
 need odp's table with its `gene_group` and `color` columns, written when odp
 runs with `plot_LGs: True`, and a `.chrom` file per genome.
 
-The dotplot uses two genomes and the stack at the end adds four:
+The dotplot uses two genomes and the stack at the end adds more:
 
 | Code   | Species                                | Used in           |
 | ------ | -------------------------------------- | ----------------- |
@@ -80,7 +80,7 @@ The dotplot uses two genomes and the stack at the end adds four:
 | `BFL`  | amphioxus _Branchiostoma floridae_     | stack only        |
 | `CLAa` | cladorhizid sponge                     | stack only        |
 
-odp's group database was built from five genomes, three of them on this page:
+odp's group database was built from a set of genomes, some of them on this page:
 the jellyfish, _Ephydatia_ and amphioxus. The comb jellies and the cladorhizid
 took no part in it. odp compares genomes two at a time, so the deposit holds one
 table per pair, each listing every reciprocal best protein hit between its two
@@ -215,7 +215,7 @@ session's `color` is a color scale, a `field` mapped to colors:
 Inside a block the points fill the square, because gene order along each
 chromosome has shuffled. Each gene stays on its chromosome.
 
-## Stacking six genomes, ribbons colored by linkage group
+## Stacking the genomes, ribbons colored by linkage group
 
 Figure 1d of Schultz et al. 2023 stacks the same tables, one row per genome,
 with ribbons between neighbours colored by group. A linear synteny view does
@@ -287,7 +287,7 @@ the `opacity` mapping:
 }
 ```
 
-<Figure caption="Six genomes in the paper's order, ribbons colored by linkage group, solid on significantly paired chromosomes and faint elsewhere." src="/img/linkage_groups/alg_stack.png" />
+<Figure caption="The genomes in the paper's order, ribbons colored by linkage group, solid on significantly paired chromosomes and faint elsewhere." src="/img/linkage_groups/alg_stack.png" />
 
 Amphioxus and _Ephydatia_ helped build the group database, so the bundles
 running through them are expected. The cladorhizid sponge took no part, and in
@@ -325,7 +325,7 @@ the tools under [Prerequisites](#prerequisites) and works in three steps:
 2. Convert each pair's odp table into a `.blocks` table and two BEDs, taking
    each gene's extent from the `.chrom` files and keeping the group, color and
    `break_FET` columns.
-3. Write the six assemblies, one track per pair, and the dotplot session.
+3. Write the assemblies, one track per pair, and the dotplot session.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_odp_linkage_groups_synteny.sh

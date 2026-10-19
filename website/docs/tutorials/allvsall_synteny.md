@@ -13,8 +13,8 @@ coli_ strains we:
 
 - align them with `minimap2 -X`, which writes one all-vs-all PAF, an alignment
   of every genome against every other
-- load the PAF with `MultiGenomePAFAdapter` and stack the five assemblies as
-  rows in a linear synteny view
+- load the PAF with `MultiGenomePAFAdapter` and stack the assemblies as rows in
+  a linear synteny view
 - add a gene track per strain and read one strain against the rest in a single
   pileup, at Sakai's Shiga-toxin prophage, the phenylacetate (paa) operon three
   strains lack, and IAI39's inversions
@@ -100,7 +100,7 @@ done > all.fa
 minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 ```
 
-## Setting up the five assemblies
+## Setting up the assemblies
 
 Each strain FASTA becomes an assembly whose name matches an entry in
 `assemblyNames` on the track:
@@ -187,18 +187,18 @@ Only the `adapter` block differs from the un-indexed version:
 `make-pif` also writes a coarse copy of the alignments for zoomed-out
 views.[^coarse]
 
-## Stacking the five strains {#stacking-the-genomes}
+## Stacking the strains {#stacking-the-genomes}
 
 ### Stacking the strains from the import form {#from-the-ui}
 
 1. **Add → Linear synteny view** opens the form in **Quick start**.
-2. Choose `ecoli_ava`, whose five assemblies become rows.
+2. Choose `ecoli_ava`, whose assemblies become rows.
 3. Click **Launch**.
 
 **Manual** mode builds the stack by hand: **Add row** per strain, and the
 connector button between each pair to pick its track.
 
-<Figure caption="The all-vs-all Quick start in the import form, the ecoli_ava track filling in its five assemblies as rows." src="/img/multiway_synteny/ecoli_import_form.png" />
+<Figure caption="The all-vs-all Quick start in the import form, the ecoli_ava track filling in its assemblies as rows." src="/img/multiway_synteny/ecoli_import_form.png" />
 
 ### Stacking the strains in a defaultSession
 
@@ -276,7 +276,7 @@ reading strain by strain:
 3. **Show... → Coverage** adds a histogram of how many other strains cover each
    base.
 
-The figure below shows K-12's phenylacetate (paa) operon, where three strains
+The figure below shows K-12's phenylacetate (paa) operon, where some strains
 stop at the shaded edge and NCTC86 runs through, with a track of the pangenome
 graph's segments, built with minigraph in the
 [E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli), above the
@@ -285,14 +285,14 @@ sections.
 <Figure caption="Above, K-12 against every other sample in the file, grouped by mate assembly. Below, the same window as a graph." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
 At whole-chromosome zoom, the same sections also fit on the K-12 row of the
-five-strain stack:
+strain stack:
 
 - List IAI39 second in the session's `views`.
 - Add `ecoli_ava` to the K-12 row from that row's track selector.
 - Pick **Strand** from the palette button, so an inversion is blue in both
   halves.
 
-<Figure caption="The one-vs-all sections on the K-12 row of the five-strain stack, colored by strand." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
+<Figure caption="The one-vs-all sections on the K-12 row of the strain stack, colored by strand." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
 ### Percent identity per strain
 
@@ -412,8 +412,8 @@ tools under [Prerequisites](#prerequisites):
    so each pair is aligned once and no strain aligns to itself.
 3. Rename each GFF's chromosome features to `chr` too, so the genes load on that
    strain's row.
-4. Write the config with the five assemblies, the gene tracks, the all-vs-all
-   track and the five-row session.
+4. Write the config with the assemblies, the gene tracks, the all-vs-all track
+   and the session.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_pangenome_synteny.sh

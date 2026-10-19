@@ -1,7 +1,7 @@
 ---
 title: CNV cohort (TCGA)
 description:
-  Plot somatic copy number across a thousand tumors, one row per sample
+  Plot somatic copy number across a cohort of tumors, one row per sample
 guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---

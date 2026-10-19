@@ -8,9 +8,9 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-The COLO829 somatic structural-variant callset lists over a hundred junctions,
-the points where two distant loci are joined, and each one is worth checking
-against the reads. We:
+The COLO829 somatic structural-variant callset lists many junctions, the points
+where two distant loci are joined, and each one is worth checking against the
+reads. We:
 
 - render every junction as an image of the reads at both ends with
   `jb2export batch`
@@ -153,7 +153,7 @@ jb2export breakpoint \
   --width 1000 --out der3_tumor.png
 ```
 
-<Figure caption="COLO829's der(3) loci in three panels with tumor and normal nanopore reads, and the same loci as one reconstructed contig on the right." src="/img/jbrowse-img/sv_review_pair.png" />
+<Figure caption="COLO829's der(3) loci in separate panels with tumor and normal nanopore reads, and the same loci as one reconstructed contig on the right." src="/img/jbrowse-img/sv_review_pair.png" />
 
 `featureHeight:super-compact` in the `jb2export breakpoint` command draws each
 read 1 px tall, which fits six pileups on one screen.
@@ -177,7 +177,7 @@ jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
 A somatic call has curves in `tumor/` and none in `normal/`. Each call and its
 control share a file name across the two directories:
 
-<Figure caption="Three rows of the two batch directories, tumor on the left and normal on the right, each labelled with its file name." src="/img/jbrowse-img/sv_callset_sheet.png" />
+<Figure caption="Rows of the two batch directories, tumor on the left and normal on the right, each labelled with its file name." src="/img/jbrowse-img/sv_callset_sheet.png" />
 
 The caller filed the chr1 to chr19 junction as somatic, but the curves in the
 normal mark it as germline.

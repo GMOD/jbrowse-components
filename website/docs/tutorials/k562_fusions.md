@@ -270,7 +270,7 @@ shape drawn per record. A record that names its partner breakend draws as a
 ([mark display](/docs/config_guides/mark_display#links)), and a call whose
 partner is on another chromosome draws a stem at its breakpoint.
 
-<Figure caption="chr9 from ABL1 past NUP214: STAR-Fusion junctions, 10X DNA breakends and DepMap copy number, the three DNA breaks banded." src="/img/cancer_sv/k562_amplicon_dna.png" />
+<Figure caption="chr9 from ABL1 past NUP214: STAR-Fusion junctions, 10X DNA breakends and DepMap copy number, the DNA breaks banded." src="/img/cancer_sv/k562_amplicon_dna.png" />
 
 | Junction        | RNA junction (STAR-Fusion)        | DNA break (10X)           | Apart                 |
 | --------------- | --------------------------------- | ------------------------- | --------------------- |

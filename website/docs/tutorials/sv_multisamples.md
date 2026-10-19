@@ -178,7 +178,7 @@ The figure below has three tracks over NCBI RefSeq genes:
 
 - the callset as a genotype matrix, one row per sample, sorted by genotype at
   the _RHD_ deletion
-- QuicK-mer2 copy number for 2504 individuals, one row each and clustered on
+- QuicK-mer2 copy number for every individual, one row each and clustered on
   this window, where blue is a copy lost against the diploid white and red a
   copy gained
 - the same records in the ordinary variant display, each labelled with its id
@@ -198,7 +198,7 @@ comparable:
 - Share one axis from **Coverage axis... → Share axis with**, ticking the other
   two tracks, so the samples compare by height.
 
-<Figure caption="Coverage over RHD in three samples on one shared axis, the RHD span banded." src="/img/multisv_rhd_dosage.png" />
+<Figure caption="Coverage over RHD in samples of each genotype on one shared axis, the RHD span banded." src="/img/multisv_rhd_dosage.png" />
 
 Coverage over the deleted span in the top row sits just above zero. The
 neighbouring gene _RHCE_, just right of _RHD_, is nearly identical, so some

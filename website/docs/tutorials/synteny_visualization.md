@@ -15,7 +15,7 @@ assemblies. We:
 
 - align each pair of genomes and load the assemblies and the PAF
 - open the whole-genome alignment in a dotplot
-- stack the three strains in a linear synteny view, and color genes by ortholog
+- stack the strains in a linear synteny view, and color genes by ortholog
 - index a large alignment as PIF
 
 Aligning each pair of genomes separately is one of two routes to a stacked view.
@@ -166,7 +166,7 @@ each axis and a synteny file by hand.
 To open any of those pieces at base resolution, drag a box across it, then
 right-click inside the box and choose **Linear synteny view**.
 
-## Stacking the three strains
+## Stacking the strains
 
 A synteny band joins matching regions of two adjacent rows only, so a 26695 /
 CHC155 / J99 stack needs the two adjacent alignments:
@@ -190,7 +190,7 @@ above, then:
 2. Pick an assembly per row, with **Add row** for the third.
 3. Click the arrow between each adjacent pair to choose that band's synteny
    track: 26695 against CHC155, then CHC155 against J99.
-4. Click **Launch**, and all three strains stack in one view.
+4. Click **Launch**, and all the strains stack in one view.
 
 Zoom each row in once with its magnifier, then open each strain's gene track,
 **NCBI RefSeq - RefSeq All (GFF)**, from the track selector for that row.
@@ -216,12 +216,12 @@ effectively an ortholog id. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, a track's `color`
 is a color scale, a `field` mapped to colors. Pick **Color by... →
 Attribute...** on each gene track's menu and enter `gene` as the field. An
-ortholog is one color down all three panels, and features with no `gene` value
+ortholog is one color down all the panels, and features with no `gene` value
 (most genes here have only a locus tag) stay grey. Inside the inversion, _rsmA_
 and _rlmN_ trade places in J99. **Advanced → Edit plot...** in the same menu
 shows the setting as text and applies edits live.
 
-<Figure caption="Left, the Color by attribute dialog on the first gene track. Right, the three strains after applying it, a shared symbol one color down all three." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
+<Figure caption="Left, the Color by attribute dialog on the first gene track. Right, the strains after applying it, a shared symbol one color down all of them." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 
 The config below is the same setting on the hub's gene track:
 
@@ -269,8 +269,8 @@ in three steps:
    alignments and the assemblies come from the same files.
 2. Align 26695 to CHC155, CHC155 to J99 and 26695 to J99 with
    `minimap2 -x asm20 --eqx`.
-3. Write the config with the three hub assemblies and gene tracks, the three
-   pairwise synteny tracks, and a default session stacking all three strains.
+3. Write the config with the hub assemblies and gene tracks, the pairwise
+   synteny tracks, and a default session stacking all the strains.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hpylori_synteny.sh

@@ -478,7 +478,7 @@ with the depth track above the BAF:
 
 <Figure caption="Chromosome 17: the segmented copy ratio, the HiFiCNV depth, the BAF and the benchmark CNV calls." src="/img/sv_cgiab/cnv_chr17_loh.png" />
 
-Together, depth and BAF separate four states:
+Together, depth and BAF separate these states:
 
 | depth       | BAF             | Interpretation            |
 | ----------- | --------------- | ------------------------- |

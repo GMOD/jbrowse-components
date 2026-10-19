@@ -3,7 +3,7 @@ title: 'Variants on protein structures part 2: degenerative myelopathy in dogs'
 sidebar_label: Proteins (variants pt 2, dog SOD1)
 description:
   Open dog SOD1 on codon 40 beside a crystal structure of the E40K protein that
-  causes degenerative myelopathy, then read the allele across 1,987 breed dogs,
+  causes degenerative myelopathy, then read the allele across breed dogs,
   village dogs and wild canids from the Dog10K callset
 guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins

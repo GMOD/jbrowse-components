@@ -7,12 +7,12 @@ guide_category: Tutorials
 tutorial_category: Pangenomes
 ---
 
-The bovine super-pangenome builds twelve assemblies into one graph on the
-ARS-UCD1.2 cattle reference, a Hereford that is itself one of the twelve:
-taurine and indicine breeds, yak, bison and gaur. Each assembly is a named path
-through the graph, and `vg deconstruct` turns those paths into a VCF, so one
-locus reads both as a graph of where sequence is present and absent and as a
-callset listing which assemblies have it. We:
+The bovine super-pangenome builds a set of assemblies into one graph on the
+ARS-UCD1.2 cattle reference, a Hereford that is itself one of them: taurine and
+indicine breeds, yak, bison and gaur. Each assembly is a named path through the
+graph, and `vg deconstruct` turns those paths into a VCF, so one locus reads
+both as a graph of where sequence is present and absent and as a callset listing
+which assemblies have it. We:
 
 - read a whole chromosome with one node per variant region
 - at _HSPA1A_, compare the graph's list of alleles with the callset

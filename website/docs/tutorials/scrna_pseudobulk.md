@@ -157,9 +157,8 @@ bedGraphToBigWig CD8_T.all.bg hg38.chrom.sizes bw/CD8_T.bw
 ## Loading the per-cell-type BigWigs as one track
 
 One `MultiQuantitativeTrack` holds the set, one `BigWigAdapter` subadapter per
-cell type with its `name`, `color`, and `group`. The fence lists the first three
-of the nine rows in the figure below; the build script writes all nine, and the
-hosted config,
+cell type with its `name`, `color`, and `group`. The fence lists the first rows
+in the figure below; the build script writes all of them, and the hosted config,
 https://jbrowse.org/code/jb2/main/test_data/scrna_pbmc5k/config.json, has them
 as `pbmc5k_scrna_pseudobulk_hg38`:
 

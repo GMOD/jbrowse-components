@@ -210,9 +210,9 @@ names. The key has one row per color, so `INVTR` shares a row with `TRANS` and
 
 <Figure caption="Chromosome 4 in Col-0 above and Ler below, SyRI regions colored by type. The crossed ribbon is the inversion." src="/img/syri/col_ler_chr4.png" />
 
-## Stacking six accessions, one SyRI run per band
+## Stacking the accessions, one SyRI run per band
 
-The `syri_pangenome` track stacks all six, each band drawing the SyRI run
+The `syri_pangenome` track stacks all of them, each band drawing the SyRI run
 between the two genomes it joins:
 
 ```json session config=test_data/syri/config.json
@@ -246,7 +246,7 @@ between the two genomes it joins:
 }
 ```
 
-<Figure caption="Six Arabidopsis accessions stacked, each band the SyRI comparison of the two genomes it joins." src="/img/syri/six_accessions.png" />
+<Figure caption="Arabidopsis accessions stacked, each band the SyRI comparison of the two genomes it joins." src="/img/syri/six_accessions.png" />
 
 ## Every accession in Columbia coordinates
 
@@ -353,13 +353,13 @@ the crossed ribbon spans and the orange block on the Ler row.
 The script needs the tools under [Prerequisites](#prerequisites) and works in
 four steps:
 
-1. Fetch the six assemblies and keep the five nuclear chromosomes, named `Chr1`
-   to `Chr5`, since SyRI pairs chromosomes by name.
+1. Fetch the assemblies and keep the nuclear chromosomes, named `Chr1` to
+   `Chr5`, since SyRI pairs chromosomes by name.
 2. Align each accession to Col-0 and to the accession above it, and run SyRI on
    each alignment.
 3. Convert each SyRI table to PAF records and reference-coordinate BED rows.
-4. Write the config with the six assemblies, the stacked track and the Col-0
-   regions track.
+4. Write the config with the assemblies, the stacked track and the Col-0 regions
+   track.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_syri_synteny.sh

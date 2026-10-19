@@ -15,7 +15,7 @@ population-genetic statistics: π dips at the sweep and Fst rises across the
 inversion. The inversion flips a stretch of 2L end to end and suppresses
 recombination between the inverted and standard arrangements in a heterozygote
 ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)).
-From a multi-sample VCF of 205 inbred lines we:
+From a multi-sample VCF of inbred lines we:
 
 - compute Fst (the distance between two groups' allele frequencies), π
   (diversity within a group) and Tajima's D (below zero after a sweep) per
@@ -158,8 +158,8 @@ other. A mismatch with no alias draws an empty track and raises no error.
 The DGRP VCF holds variant sites only, so `--window-pi` counts every position
 missing from the file as invariant and callable, and a window that lost sites to
 filtering shows low diversity.[^pixy] Filtering also shifts the whole baseline
-of Tajima's D, so read D at a locus against the genome-wide background of the
-205 lines.
+of Tajima's D, so read D at a locus against the genome-wide background of all
+the lines.
 
 ## Loading the scans in JBrowse
 
@@ -305,7 +305,7 @@ and applies edits live.
 ## Reading the Cyp6g1 sweep in Tajima's D and π
 
 Search `Cyp6g1` in the location box and add three `QuantitativeTrack`s shaped
-like the Fst track above, each over all 205 lines: Tajima's D, π, and the
+like the Fst track above, each over all the lines: Tajima's D, π, and the
 called-variant count per window (column 4 of the table π comes from).
 
 ```json addtrack loc=chr2R:12,000,000-12,400,000

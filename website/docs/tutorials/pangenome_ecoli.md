@@ -1,8 +1,8 @@
 ---
 title: Pangenome (pggb)
 description:
-  Build a five-strain pggb pangenome graph and load its linear projections plus
-  the graph itself in JBrowse
+  Build a pggb pangenome graph of several strains and load its linear
+  projections plus the graph itself in JBrowse
 guide_category: Tutorials
 tutorial_category: Pangenomes
 ---
@@ -161,10 +161,10 @@ jbrowse make-pif ecoli_pggb_ava.paf
 }
 ```
 
-Stack the five strains with **Add → Linear synteny view**, whose Quick start
-fills in a row per assembly the track lists.
+Stack the strains with **Add → Linear synteny view**, whose Quick start fills in
+a row per assembly the track lists.
 
-<Figure caption="The wfmash alignment pggb built the graph from, five strains stacked." src="/img/pangenome/pggb_synteny.png" />
+<Figure caption="The wfmash alignment pggb built the graph from, the strains stacked." src="/img/pangenome/pggb_synteny.png" />
 
 Select a span on K12's ruler and pick **Launch → Linear synteny view** to stack
 the strains over that span alone. The same selection on another strain's row,
@@ -630,8 +630,8 @@ runs every step above except the E146 read mapping. The script:
 
 1. Downloads the assemblies and builds the graph with pggb.
 2. Writes the synteny, variant, MAF, depth, presence and graph tracks from it.
-3. Downloads JBrowse and writes a `config.json` with the five assemblies, their
-   gene tracks, every other track on this page, and a default session.
+3. Downloads JBrowse and writes a `config.json` with the assemblies, their gene
+   tracks, every other track on this page, and a default session.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_pangenome_graph.sh

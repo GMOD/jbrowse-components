@@ -193,7 +193,7 @@ Add four accessibility rows to the prediction:
 - Type `ATAC` and tick both again; ticks survive the filter change.
 - Click **Add 4 selected** to put all four in one track on one axis.
 
-<Figure caption="Predicted DNase and ATAC for K562 and GM12878, four rows on one shared y-axis." src="/img/alphagenome/accessibility_shared_axis.png" />
+<Figure caption="Predicted DNase and ATAC for K562 and GM12878, the rows on one shared y-axis." src="/img/alphagenome/accessibility_shared_axis.png" />
 
 The GM12878 rows have peaks too, at open chromatin that is not transcribed.
 
@@ -206,11 +206,11 @@ K562 and GM12878 polyA junctions and zoom in to _TAL1_.[^junctions]
 
 ## The predicted GM12878 contact map over the whole window
 
-AlphaGenome predicts Hi-C-style contact maps at 2 kb bins for about a dozen cell
-lines, GM12878 among them. Add the GM12878 contact map and zoom out to the whole
-predicted megabase:
+AlphaGenome predicts Hi-C-style contact maps for a set of cell lines, GM12878
+among them. Add the GM12878 contact map and zoom out to the whole predicted
+megabase:
 
-<Figure caption="The predicted GM12878 contact map across the window at 2 kb bins." src="/img/alphagenome/contact_map.png" />
+<Figure caption="The predicted GM12878 contact map across the window." src="/img/alphagenome/contact_map.png" />
 
 ## Scoring a TAL1 variant against the reference
 

@@ -13,10 +13,10 @@ We look at one human locus across eight other mammals at once, from alignments
 that already exist. UCSC publishes a liftOver chain from hg38 to every genome it
 hosts, and jbrowse.org keeps each chain as an indexed alignment file. We:
 
-- compose eight chains into one multi-way synteny track, a lane per genome under
+- compose the chains into one multi-way synteny track, a lane per genome under
   the human view, each lane drawing the RefSeq gene models from that genome's
   UCSC hub
-- stack nine genomes at _TP53_ and at _PMP22_
+- stack the genomes at _TP53_ and at _PMP22_
 - read each lane's span, width multiple and ribbons
 - check one lane against its chain file
 
@@ -104,15 +104,15 @@ tabix -H https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz | awk 
 tabix -l https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz | grep -c '^[TQ]'
 ```
 
-## Composing the eight chains into one track
+## Composing the chains into one track
 
 One `SyntenyTrack` names hg38 and every genome it stacks. Its adapter, a
 `MultiPairwiseSyntenyAdapter`, holds one `PairwiseIndexedPAFAdapter` per chain:
 
 - Each child names its two assemblies as `query,target`, with the genome the
   chain lifts to first. The anchor is the one assembly every chain names.
-- The config below is cut to three genomes for the page, and the hosted config
-  has all eight.
+- The config below is cut to a few genomes for the page, and the hosted config
+  has all of them.
 - The assemblies and their gene tracks come from the hub configs unchanged, and
   each lane finds its gene models through the session, so this track is the only
   addition to the hub entries.
@@ -168,7 +168,7 @@ A genome of your own loads from its FASTA instead:
 on a pairwise synteny track. The menu offers it once every child has a coarse
 tier, which the `tabix -l` line above checks on each file.
 
-## Stacking nine genomes at TP53 and at PMP22
+## Stacking the genomes at TP53 and at PMP22
 
 Opened on hg38 around _TP53_, the track draws a lane per genome under the human
 axis, each fitted to wherever its chain places the window. Each lane header

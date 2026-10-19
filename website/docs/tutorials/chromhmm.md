@@ -12,14 +12,14 @@ enhancer, heterochromatin and so on, once per cell type. We:
 - load it as one feature track with a row per cell type, each segment colored by
   state
 - add a legend, filter states and cluster the rows by similarity
-- load Roadmap's 127 epigenomes and read _HOXA_ and _PAX5_
+- load Roadmap's epigenomes and read _HOXA_ and _PAX5_
 
 ## Prerequisites
 
 - `wget`
 - htslib (`bgzip`, `tabix`)
 - `node`, for the [JBrowse CLI](/docs/cli)
-- `python3`, for the [127-epigenome build](#reproduce-it-end-to-end) only
+- `python3`, for the [Roadmap build](#reproduce-it-end-to-end) only
 - `jq`, for the Roadmap tissue groups only
 
 <!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli START -->
@@ -37,9 +37,8 @@ npm install -g @jbrowse/cli
 
 ## The data
 
-Two hg19 ChromHMM releases, both 15-state segmentations: UCSC's nine-cell-type
-ENCODE Broad HMM set, and the Roadmap Epigenomics compendium across 127
-epigenomes.
+Two hg19 ChromHMM releases, both 15-state segmentations: UCSC's ENCODE Broad HMM
+set, and the Roadmap Epigenomics compendium.
 
 The page's commands build local files from these, and the tracks over those read
 them from disk; every other track reads a hosted copy. The
@@ -69,8 +68,8 @@ step takes your own per-cell-type segmentation BEDs.
 `1_Active_Promoter`) and its color in `itemRgb`. The nine
 [UCSC ENCODE Broad HMM](http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHmm/)
 15-state BEDs concatenate into one BED with a trailing `cellType` field, which
-the multi-row feature display turns into one row per value, so 9 cell types
-(or 127) share one config, one adapter and one fetch:
+the multi-row feature display turns into one row per value, so any number of
+cell types share one config, one adapter and one fetch:
 
 ```text
 #chrom  chromStart  chromEnd  name               score  strand  thickStart  thickEnd  itemRgb      cellType
@@ -225,18 +224,18 @@ these actions for reading the rest:
 - Right-click a column and pick **Sort rows by name here** to rank the rows by
   the state (`name`) each has at that base.
 
-## Roadmap's 127 epigenomes at PAX5 and HOXA
+## Roadmap's epigenomes at PAX5 and HOXA
 
 The
 [Roadmap Epigenomics](https://egg2.wustl.edu/roadmap/web_portal/chr_state_learning.html)
-15-state segmentations of 127 epigenomes merge the same way, into one track and
-one fetch. Their state names are mnemonics (`12_EnhBiv`, `14_ReprPCWk`), so this
-track labels its colors with `scale: "identity"`: the file's `itemRgb` still
-paints each block, and `labels` spells out the fifteen `domain` colors in order.
-The merged file is hosted, so the track loads as it stands. The track omits
-three settings the PAX5 figure uses: a `rows.domain` naming every epigenome,
-grouped by tissue, and the `rowGroups` and `rowColor` built later in this
-section that color the label bars. The hosted demo config,
+15-state segmentations of the Roadmap epigenomes merge the same way, into one
+track and one fetch. Their state names are mnemonics (`12_EnhBiv`,
+`14_ReprPCWk`), so this track labels its colors with `scale: "identity"`: the
+file's `itemRgb` still paints each block, and `labels` spells out the fifteen
+`domain` colors in order. The merged file is hosted, so the track loads as it
+stands. The track omits three settings the PAX5 figure uses: a `rows.domain`
+naming every epigenome, grouped by tissue, and the `rowGroups` and `rowColor`
+built later in this section that color the label bars. The hosted demo config,
 https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has the track with
 all three:
 
@@ -309,9 +308,9 @@ epigenomes. Over _PAX5_:
 - spleen and blood mononuclear cells, which hold B cells, and a few ES, iPS and
   neural progenitor lines show _PAX5_ transcribed without the enhancers
 
-<Figure src="/img/chromhmm.png" caption="All 127 Roadmap epigenomes over chr9, banded by tissue group with facet. PAX5 is boxed."/>
+<Figure src="/img/chromhmm.png" caption="All the Roadmap epigenomes over chr9, banded by tissue group with facet. PAX5 is boxed."/>
 
-Listing six epigenome names in `rows.domain` (the order) and `rows.kept` (the
+Listing epigenome names in `rows.domain` (the order) and `rows.kept` (the
 subset) narrows the same track to lung fibroblasts, foreskin fibroblasts and ES
 cells over HOXA, which reproduces the chromatin domains
 [Rinn et al. 2007](https://doi.org/10.1016/j.cell.2007.05.022) mapped in
@@ -365,10 +364,10 @@ fibroblasts from different parts of the body:
 **Clustering → Cluster rows by similarity...** in the track menu replaces the
 tissue order with one derived from the data at whatever locus is in view.
 
-<Video src="/media/epigenomics/chromhmm_cluster.mp4" caption="Cluster rows by similarity on the 127-epigenome track, which redraws the rows in blocks with a dendrogram." />
+<Video src="/media/epigenomics/chromhmm_cluster.mp4" caption="Cluster rows by similarity on the Roadmap epigenome track, which redraws the rows in blocks with a dendrogram." />
 
-With 127 rows in one track a row is a few pixels tall and its label barely
-legible, so we group the rows by the 19 Roadmap tissue groups with three
+With a row per epigenome in one track, a row is a few pixels tall and its label
+barely legible, so we group the rows by the Roadmap tissue groups with three
 settings:
 
 - [`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) tags
@@ -418,8 +417,8 @@ appends the mnemonic to a name that two epigenomes share, which a `STD_NAME`
 match leaves as one row.
 
 The hosted track orders the rows by tissue group through `rows.domain` and
-leaves `facet` out, so clustering runs over all 127 together and the label bars
-show which tissues a cluster spans. The PAX5 figure adds `facet` with this
+leaves `facet` out, so clustering runs over all the rows together and the label
+bars show which tissues a cluster spans. The PAX5 figure adds `facet` with this
 `domain`, which stacks the groups in the paper's order:
 
 ```json
@@ -473,8 +472,8 @@ npx --yes serve chromhmm_build/jbrowse2 # then open the printed URL
 ```
 
 [`build_chromhmm_roadmap.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_chromhmm_roadmap.sh)
-builds the 127-epigenome track by the same merge. Roadmap's segmentations are
-bare BED4, so the script fills in what the ENCODE files had:
+builds the Roadmap epigenome track by the same merge. Roadmap's segmentations
+are bare BED4, so the script fills in what the ENCODE files had:
 
 1. paints each segment its state's color from `colormap_15_coreMarks.tab`,
    giving the merged file the `itemRgb` column that draws it
@@ -503,9 +502,9 @@ EIDS=E003,E116,E123,E127 bash build_chromhmm_roadmap.sh
 npx --yes serve chromhmm_roadmap_build/jbrowse2
 ```
 
-`EIDS` picks a subset, here the four Roadmap re-analyses of the ENCODE lines in
-the nine-cell-type track. Leave it out for all 127, which takes about twenty
-minutes and ~12 GB of scratch.
+`EIDS` picks a subset, here the Roadmap re-analyses of the ENCODE lines in the
+ENCODE track. Leave it out for every epigenome, which takes tens of minutes and
+gigabytes of scratch.
 
 ## See also
 

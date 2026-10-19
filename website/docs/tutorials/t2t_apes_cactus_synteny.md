@@ -2,22 +2,22 @@
 title: Synteny from a Cactus alignment (T2T apes)
 sidebar_label: Synteny (Cactus lanes, apes)
 description:
-  Stack six T2T ape genomes under a human locus in tree order, each joined to
-  its neighbour by the Cactus chain between the two
+  Stack T2T ape genomes under a human locus in tree order, each joined to its
+  neighbour by the Cactus chain between the two
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Whole-genome alignments
 ---
 
-We stack six ape genomes under a human locus in the order of their family tree
-and compare each genome with the one above it, so a change of orientation shows
-up between the two lineages that differ. The comparisons come from the Cactus
+We stack ape genomes under a human locus in the order of their family tree and
+compare each genome with the one above it, so a change of orientation shows up
+between the two lineages that differ. The comparisons come from the Cactus
 alignment of the telomere-to-telomere ape genomes, whose authors publish a chain
 for every pair of genomes in it. We:
 
 - extract the chains between neighbouring genomes into one indexed file
-- load them as one multi-way synteny track over the six apes, each lane drawing
-  the RefSeq genes of that ape's hub on
+- load them as one multi-way synteny track over the apes, each lane drawing the
+  RefSeq genes of that ape's hub on
   [genomes.jbrowse.org](https://genomes.jbrowse.org)
 - color the ribbons by strand to read orientation at _TP53_ and at a block on
   17q12
@@ -117,7 +117,7 @@ jbrowse make-pif apes.paf --out apes.pif.gz
 are the pairs no two neighbouring lanes need, such as chimpanzee against the
 siamang.
 
-## One track over the six apes
+## One track over the apes
 
 A `MultiGenomeIndexedPAFAdapter` reads the file and finds each genome by its
 PanSN prefix. `rows.domain` stacks the lanes in tree order, so each lane's
@@ -210,7 +210,7 @@ opens with it:
 
 Navigate to `chr17:33,200,000-35,800,000`, on 17q12.
 
-<Figure caption="17q12 over the same six lanes, colored by strand." src="/img/multiway_synteny/t2t_apes_cactus_17q.png" />
+<Figure caption="17q12 over the same lanes, colored by strand." src="/img/multiway_synteny/t2t_apes_cactus_17q.png" />
 
 Down the stack, the orientation changes from human to chimpanzee and back from
 gorilla to the Sumatran orangutan, so chimpanzee, bonobo and gorilla have the

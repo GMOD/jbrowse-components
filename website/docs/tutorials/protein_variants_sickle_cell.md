@@ -81,15 +81,15 @@ record.
 
 <Figure src="/img/protein/hbb_gwas_catalog.png" caption="The GWAS Catalog under HBB." />
 
-The 134 records at rs334 include malaria, haemolytic anaemias, glycated
-haemoglobin (HbA1c) and kidney function.
+The records at rs334 include malaria, haemolytic anaemias, glycated haemoglobin
+(HbA1c) and kidney function.
 
 ## Sickle allele by ancestry in 1000 Genomes
 
-The 1000 Genomes callset is a VCF of 3,202 genomes, and JBrowse can draw one row
-per genome, colored by a column of a sample sheet. The release's ped file holds
-each genome's population and superpopulation. This turns it into the sheet
-JBrowse reads, sorted so each superpopulation is one block of rows:
+The 1000 Genomes callset is a VCF with a column per genome, and JBrowse can draw
+one row per genome, colored by a column of a sample sheet. The release's ped
+file holds each genome's population and superpopulation. This turns it into the
+sheet JBrowse reads, sorted so each superpopulation is one block of rows:
 
 ```bash
 awk 'BEGIN{OFS="\t"} NR>1 {print $2,$6,$7}' samples_ped_population.txt \

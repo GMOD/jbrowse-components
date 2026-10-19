@@ -152,7 +152,7 @@ The L1 track and the simple-repeat control follow, with the file names swapped:
 
 ## Gene and repeat density along chromosome 1
 
-Add the four tracks above, then open chromosome 1 with all four.
+Add the tracks above, then open chromosome 1 with all of them.
 
 <Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with RefSeq genes, Alu, L1 and simple repeats, each as features per kilobase on its own scale." />
 
@@ -200,7 +200,7 @@ tabix Simple_repeat.bed.gz chr1:155,000,000-156,000,000 | wc -l
 | 60 to 61 Mb   | 4     | 146  | 295 | 235            |
 
 The gene count runs with the Alu count, while L1 and the simple repeats come out
-about the same in both, the same pattern the four tracks show.
+about the same in both, the same pattern the tracks show.
 
 ## Reproduce it end to end
 
@@ -209,8 +209,8 @@ wraps every step above. It:
 
 1. fetches the two UCSC tables and the reference lengths
 2. cuts the RepeatMasker table into the three family BEDs
-3. counts each of the four files per kilobase into a bigWig
-4. writes a JBrowse with the four files and their four bigWigs as tracks
+3. counts each file per kilobase into a bigWig
+4. writes a JBrowse with the files and their bigWigs as tracks
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_gene_density.sh

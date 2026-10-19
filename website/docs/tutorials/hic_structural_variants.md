@@ -95,8 +95,7 @@ adding any track.
 
 ## Adding the Hi-C and contact-domain tracks
 
-The `.hic` files are 20 GB and 55 GB, and JBrowse requests only the bins on
-screen.
+The `.hic` files are tens of GB, and JBrowse requests only the bins on screen.
 
 ```json addtrack
 {

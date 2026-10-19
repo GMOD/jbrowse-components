@@ -116,8 +116,8 @@ below. We measured each on HPRC release 2.1 in October 2026.
 - **The VCF has no record for the largest events.** HPRC removes every site with
   an allele over 100 kb from the VCF and keeps the smaller sites nested inside
   it. The **Variants** launch therefore cannot show UGT2B17's 117 kb deletion,
-  which 229 haplotypes have. AMY1, GYPA / GYPB, PRSS1 / PRSS2, UGT2B17 and NPHP1
-  offer no **Variants** launch, because the matrix over each is blank. The
+  which many haplotypes have. AMY1, GYPA / GYPB, PRSS1 / PRSS2, UGT2B17 and
+  NPHP1 offer no **Variants** launch, because the matrix over each is blank. The
   page's table restores those sites from the release's unfiltered VCF, so the
   table can name a deletion the **Variants** launch does not draw.
 - **The Structure column is a summary.** A size is rounded to two figures, and a
@@ -267,7 +267,7 @@ that removes the whole stretch.
 
 HPRC also publishes its alignment as `hprc-v2.1-mc-grch38.full.maf.gz`, a
 multiple alignment with one row of bases per haplotype. A `.tai` index beside
-the 53 GB file makes a locus one ranged read:
+the large file makes a locus one ranged read:
 
 ```json addtrack loc=chr6:31,980,000-32,050,000
 {

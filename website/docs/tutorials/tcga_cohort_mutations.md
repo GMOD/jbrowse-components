@@ -1,7 +1,7 @@
 ---
 title: Mutation cohort (TCGA)
 description:
-  Read somatic point mutations across a thousand tumors as a genotype matrix,
+  Read somatic point mutations across a cohort of tumors as a genotype matrix,
   faceted by clinical annotation
 guide_category: Tutorials
 tutorial_category: Cancer genomics

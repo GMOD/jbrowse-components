@@ -217,7 +217,7 @@ minimap2 -cx asm5 -s 50 GRCh38.fa contigs.fa > der3.vs_reference.paf
 jbrowse make-pif der3.vs_reference.paf
 ```
 
-The published contig aligns to the reference in four blocks:
+The published contig aligns to the reference in these blocks:
 
 ```text
     derivative       0-32732   + -> chr3:25,326,821-25,359,568

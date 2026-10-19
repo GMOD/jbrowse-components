@@ -119,9 +119,9 @@ Zoom out to the whole gene, and tick five Regulation and Expression tracks:
 - **Layered H3K27Ac (hg19)**
 - **EPDnew Promoters - EPDnew v6**
 
-The Layered H3K4Me3 and H3K27Ac tracks each hold seven cell lines and open with
-all seven in one plot box, UCSC's layered arrangement. Their names include hg19
-from ENCODE3's release, but the config points at the hg38 files.
+The Layered H3K4Me3 and H3K27Ac tracks each hold several cell lines and open
+with all of them in one plot box, UCSC's layered arrangement. Their names
+include hg19 from ENCODE3's release, but the config points at the hg38 files.
 
 **Plot type → Multi-row → XY plot** in the track menu gives each cell line a
 row.
@@ -134,7 +134,7 @@ where every track in the figure has a call.
 ## Filtering gnomAD's TP53 variants to predicted loss of function
 
 The **gnomAD v4.1.1 - gnomAD v4.1.1 Exomes** track, under Variation and Repeats,
-opens as several thousand variant records over _TP53_, one block of color.
+opens as a dense run of variant records over _TP53_, one block of color.
 **Filter by... → Edit filters...** in the track menu takes rows of field,
 operator and value over the track's columns. Type a column name into the field
 box, which lists the file's columns with the description the file gives each. A

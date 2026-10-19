@@ -1,23 +1,23 @@
 ---
-title: Synteny from gene symbols (44 E. coli genomes)
+title: Synteny from gene symbols (E. coli genomes)
 sidebar_label: Synteny (gene-symbol lanes, bacteria)
 description:
-  Stack forty-four E. coli and Shigella genomes under K-12 at one operon by
-  joining their RefSeq annotations on the gene symbol, with no alignment step
+  Stack E. coli and Shigella genomes under K-12 at one operon by joining their
+  RefSeq annotations on the gene symbol, with no alignment step
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Ortholog tables
 ---
 
-We look at one K-12 operon across forty-three other E. coli and Shigella genomes
-at once, without aligning any of them. RefSeq's bacterial pipeline gives an
-orthologous gene the same symbol in every strain that names it, so the ortholog
-table is a join on the gene name over the GFF3 files. We:
+We look at one K-12 operon across other E. coli and Shigella genomes at once,
+without aligning any of them. RefSeq's bacterial pipeline gives an orthologous
+gene the same symbol in every strain that names it, so the ortholog table is a
+join on the gene name over the GFF3 files. We:
 
 - build the join and load it as an ortholog track
 - add each genome as a lane under the K-12 view, with the gene models annotated
   in that genome
-- read the _atp_ operon across all forty-four lanes
+- read the _atp_ operon across all the lanes
 - read the O-antigen cluster, which differs between strains, to see where the
   gene-symbol join stops
 
@@ -51,7 +51,7 @@ chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 Forty-four RefSeq assemblies, each fetched by accession with the `datasets` CLI:
 the classic reference strains across phylogroups A, B1, B2, D and E, four
 Shigella, and complete genomes picked by striding a `datasets summary` listing.
-The five strains the [pangenome graph](/docs/tutorials/pangenome_ecoli) and
+The strains the [pangenome graph](/docs/tutorials/pangenome_ecoli) and
 [all-vs-all](/docs/tutorials/allvsall_synteny) pages build from are all here
 under the same accessions (MG1655 is the strain those pages call K12). The
 [build script](#reproduce-it-end-to-end) pins and fetches every accession and
@@ -150,11 +150,11 @@ and tabix-indexed GFF3 the build made above:
 }
 ```
 
-One `SyntenyTrack` names all forty-four assemblies, with `blockAssemblies` and
+One `SyntenyTrack` names every assembly, with `blockAssemblies` and
 `bedLocations` in the order the helper printed. The config below keeps the four
 genomes the command above joined, and the hosted
-[config.json](https://jbrowse.org/demos/ecoli_orthologs/config.json) has all
-forty-four:
+[config.json](https://jbrowse.org/demos/ecoli_orthologs/config.json) has every
+assembly:
 
 ```json addtrack
 {
@@ -182,7 +182,7 @@ forty-four:
 }
 ```
 
-## Reading the atp operon across forty-four genomes
+## Reading the atp operon across the genomes
 
 At the _atp_ operon (the ATP synthase genes) on K-12, the track draws a lane per
 genome under the K-12 axis. Each lane is drawn in its genome's coordinates, and
@@ -227,7 +227,7 @@ sets `height` to fit every lane:
 }
 ```
 
-<Figure caption="The atp operon on K-12 over forty-three lanes, each with its own RefSeq genes. Lanes marked [rev] are mirrored, so their ribbons draw straight." src="/img/multiway_synteny/ecoli_symbol_atp_operon.png" />
+<Figure caption="The atp operon on K-12 over its lanes, each with its own RefSeq genes. Lanes marked [rev] are mirrored, so their ribbons draw straight." src="/img/multiway_synteny/ecoli_symbol_atp_operon.png" />
 
 ## The O-antigen cluster, where the gene-symbol join stops
 
@@ -278,7 +278,7 @@ transfer and have no K-12 counterpart to join. An
 [OrthoFinder](/docs/tutorials/orthofinder_synteny) run would add genes the
 annotations named differently, and the
 [all-vs-all alignment](/docs/tutorials/allvsall_synteny) draws this locus base
-by base for five strains.
+by base for the strains.
 
 ## Reproduce it end to end
 

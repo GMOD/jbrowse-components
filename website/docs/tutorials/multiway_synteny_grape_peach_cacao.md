@@ -13,7 +13,7 @@ genomes at once, into one wide table with a column per species. We:
 - load the `.blocks` file with `MCScanBlocksAdapter` and stack grape, peach and
   cacao as rows of one synteny view, zoomed to a conserved block
 - tell direct gene pairs from transitive ones
-- open one grape locus against all seven genomes as a multi-way track, one lane
+- open one grape locus against all the genomes as a multi-way track, one lane
   per genome
 - redraw each lane in the coordinates of its genome, and restack the genomes
   around a locus
@@ -274,7 +274,7 @@ dialog. As a `defaultSession`, the same stack ordered peach-cacao-grape:
 ```
 
 - `tracks` names the track once, and it backs both bands because its
-  `assemblyNames` list all three genomes
+  `assemblyNames` list every genome
 - `collapseEmptyRows` gives each trackless row a bare scale bar
 - `color` is a color scale, a `field` mapped to colors; the `reference` field
   colors both bands by the chromosomes of the shared middle row
@@ -293,7 +293,7 @@ its peach-cacao band is the transitive one; a peach, grape, cacao stack makes
 both bands direct. The [script](#reproduce-it-end-to-end) prints, per column
 pair, the rows where both cells resolve.
 
-## Zooming to one block conserved in all three genomes
+## Zooming to one block conserved in every genome
 
 We'll stack peach over grape over cacao. Then:
 
@@ -306,7 +306,7 @@ We'll stack peach over grape over cacao. Then:
 
 <Figure caption="One conserved block at gene level with each genome's gene track, ribbons colored by syntenic depth." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
 
-## One grape locus against all seven genomes
+## One grape locus against all the genomes
 
 `grape.blocks` has seven columns. A track naming all seven in `blockAssemblies`
 and `bedLocations` draws every mate (the ortholog in each other genome) at once

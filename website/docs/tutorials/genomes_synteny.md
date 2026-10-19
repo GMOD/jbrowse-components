@@ -115,8 +115,8 @@ the track on.
 
 The
 [TNNT3 conserved gene order page](https://staging.genomes.jbrowse.org/conserved-gene-order/?gene=TNNT3&ref=9606)
-opens the same window across twelve genomes with **Open TNNT3 in JBrowse across
-12 genomes**.
+opens the same window across its genomes with **Open TNNT3 in JBrowse across 12
+genomes**.
 
 <Figure src="/img/genomes_synteny/star_link.png" caption="The TNNT3 conserved gene order page, with its JBrowse link boxed." />
 
@@ -130,7 +130,7 @@ menu:
   the two lanes it joins run the same way and blue where one is inverted against
   the other
 
-<Figure src="/img/genomes_synteny/star_lanes.png" caption="hg38 at TNNT3 over eight genomes from chimp to platypus, ribbons colored by strand." />
+<Figure src="/img/genomes_synteny/star_lanes.png" caption="hg38 at TNNT3 over genomes from chimp to platypus, ribbons colored by strand." />
 
 [Reading the stack](/docs/tutorials/hg38_vertebrates_synteny#reading-the-stack)
 covers the lane labels, `[rev]`, the ribbons and the lane menus.

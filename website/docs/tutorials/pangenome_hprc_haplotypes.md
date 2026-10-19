@@ -202,8 +202,8 @@ jbrowse make-pif graph.paf --csi --out graph.pif.gz
 
 The HPRC build runs that conversion on the release graph. It:
 
-1. downloads the 63 GB release graph
-2. converts eight haplotypes' walks against GRCh38's and indexes the PAF
+1. downloads the release graph
+2. converts the haplotypes' walks against GRCh38's and indexes the PAF
 3. fetches each haplotype's contig lengths and CAT genes
 4. writes a `config.json` with one assembly per haplotype
 

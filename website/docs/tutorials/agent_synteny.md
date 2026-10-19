@@ -14,7 +14,7 @@ that have no published alignment and inspects the result in JBrowse Desktop.
 Typed one at a time, the requests ask the agent to:
 
 - align the two genomes with minimap2 and open them side by side, genes and all
-- add a dotplot of the pair, restricted to the six chromosome arms
+- add a dotplot of the pair, restricted to the chromosome arms
 - count alignment blocks by strand, to find where the two genomes run in
   opposite directions
 - navigate the view to what it found
@@ -50,9 +50,9 @@ hub config holds the 2bit sequence, a chromAlias file, an NCBI RefSeq gene track
 and a Trix text index.
 
 No download is needed, since the agent fetches both sequences itself and aligns
-them in about seven minutes on 16 threads and 14 GB of memory. For a pair of
-your own, swap in your `.pif.gz` and assemblies, as _Ask the agent to align and
-open the two genomes_ shows.
+them, a step that takes minutes and gigabytes of memory. For a pair of your own,
+swap in your `.pif.gz` and assemblies, as _Ask the agent to align and open the
+two genomes_ shows.
 
 <details>
 <summary>The files</summary>
@@ -126,8 +126,7 @@ order no chromosome name resolves and the synteny band draws empty.
 Add a dotplot of the same two assemblies underneath.
 ```
 
-With the axes restricted to the six chromosome arms, the plot shows one
-diagonal:
+With the axes restricted to the chromosome arms, the plot shows one diagonal:
 
 ```text
 Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
@@ -137,7 +136,7 @@ Ask the agent to quantify what restricting the axes drops. Add one more request,
 to color the dotplot by strand, so a reversed block draws in blue and a forward
 one in red.
 
-<Figure caption="The alignment as a dotplot cut to the six chromosome arms, colored by strand." src="/img/agent_synteny/dotplot_arms.png" />
+<Figure caption="The alignment as a dotplot cut to the chromosome arms, colored by strand." src="/img/agent_synteny/dotplot_arms.png" />
 
 ## Ask where the two genomes run in opposite directions
 

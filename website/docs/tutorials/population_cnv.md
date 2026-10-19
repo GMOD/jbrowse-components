@@ -12,8 +12,8 @@ panel at once: one heatmap row per individual, colored by how far that person
 strays from the diploid baseline of 2. We:
 
 - load per-sample BigWigs as one multi-row heatmap track
-- compare six individuals' profiles at _CCL3L1_, and a deletion at _UGT2B17_
-  against the 1000 Genomes SV map
+- compare individuals' profiles at _CCL3L1_, and a deletion at _UGT2B17_ against
+  the 1000 Genomes SV map
 - pack the values into one Zarr store, because past a few hundred samples the
   per-file requests dominate the load time
 - load the whole panel from the store and cluster the rows to sort a nested chr3
@@ -148,12 +148,12 @@ https://jbrowse.org/code/jb2/main/test_data/config_demo.json, so
 [the panel opens on a copy-number-polymorphic window of chr3](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr3%3A162%2C275%2C163-163%2C360%2C944%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22pur_copynumber_1000g%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22height%22%3A420%2C%22defaultRendering%22%3A%22density%22%2C%22scales%22%3A%7B%22y%22%3A%7B%22domainQuantile%22%3A1%7D%7D%2C%22showTree%22%3Afalse%7D%5D%7D%5D%7D&sessionName=Screenshot)
 with these settings already applied.
 
-## Six individuals' copy-number profiles at CCL3L1
+## Individuals' copy-number profiles at CCL3L1
 
 Navigate to `chr17:36,080,000-36,270,000`, around _CCL3L1_ (a chemokine gene
-with a variable number of copies), and load six individuals spanning the range
-of copy number as a second track. It draws step lines on one pinned axis, so
-each plateau lines up with a copy count:
+with a variable number of copies), and load individuals spanning the range of
+copy number as a second track. It draws step lines on one pinned axis, so each
+plateau lines up with a copy count:
 
 ```json addtrack loc=chr17:36,080,000-36,270,000
 {
@@ -235,12 +235,12 @@ VCF on the same assembly:
 
 ## Load the whole panel from one Zarr store {#a-zarr-store-for-the-whole-panel}
 
-The PUR panel track in `config_demo.json` holds 104 individuals, and the full
-1000 Genomes panel has 2504.
+The PUR panel track in `config_demo.json` holds the PUR individuals, not the
+full 1000 Genomes panel.
 [`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)
-measures the requests, bytes and time to fill the _CCL3L1_ window from all 2504
-BigWigs and from a Zarr store of the same samples, using the readers the browser
-uses. It takes the converter's `name`/`group`/`url` TSV, which the
+measures the requests, bytes and time to fill the _CCL3L1_ window from every
+sample's BigWig and from a Zarr store of the same samples, using the readers the
+browser uses. It takes the converter's `name`/`group`/`url` TSV, which the
 [build script](#reproduce-it-end-to-end) writes:
 
 ```bash
@@ -313,7 +313,7 @@ With the plugin loaded, the adapter's `uri` names the store:
 A relative `uri` resolves against the config that holds it, so a store beside
 your `config.json` takes `qm2_cn_1kb.zarr`.
 
-<Figure caption="All 2504 individuals from one Zarr store, clustered. Red is a gain, blue a loss, white two copies." src="/img/cnv1000g/zarr_cohort.png" />
+<Figure caption="Every individual from one Zarr store, clustered. Red is a gain, blue a loss, white two copies." src="/img/cnv1000g/zarr_cohort.png" />
 
 ## A deletion nested inside another on chr3, sorted by clustering
 
@@ -347,7 +347,7 @@ this one to drop every record under 5 kb:
 jexl:alleleLength(feature)>=5000
 ```
 
-<Figure caption="All 2504 individuals over the nested deletion, clustered, under HGSVC3 structural variants." src="/img/paper/cohort_cnv.png" />
+<Figure caption="Every individual over the nested deletion, clustered, under HGSVC3 structural variants." src="/img/paper/cohort_cnv.png" />
 
 ## Building a Zarr store from per-sample BigWigs
 
@@ -370,8 +370,8 @@ node build_signal_zarr.ts \
   --levels 1000,10000
 ```
 
-The `build_signal_zarr.ts` command above built the hosted store from all 2504
-samples over the windows in the figures.
+The `build_signal_zarr.ts` command above built the hosted store from every
+sample over the windows in the figures.
 
 Three things shape the store:
 
@@ -426,7 +426,7 @@ the lab's estimate as a check.
 [`build_1000g_cnv_zarr.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_1000g_cnv_zarr.sh)
 builds the store above. The script:
 
-1. Derives the full 2504-sample list from the Kidd lab `trackDb`.
+1. Derives the full sample list from the Kidd lab `trackDb`.
 2. Fetches the converter and its two npm packages.
 3. Runs the converter over the tutorial's windows, or over every main contig
    with `--whole-genome`.

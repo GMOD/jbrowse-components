@@ -48,7 +48,7 @@ The graph view is a beta plugin, and walk rows is its newest layout. The
 - for your own array in [Which copy is which](#which-copy-is-which):
   [`gbz-base`](https://github.com/jltsiren/gbz-base), to cut the graph
 - for [Which copy is which](#which-copy-is-which) and
-  [The ABCA7 alleles across 94 samples](#the-abca7-alleles-across-94-samples):
+  [The ABCA7 alleles across the samples](#the-abca7-alleles-across-the-samples):
   Node, to run the plugin's scripts
 - for [Reproduce it end to end](#reproduce-it-end-to-end):
   [DuckDB](https://duckdb.org), and for its amylase build `samtools` built with
@@ -72,8 +72,8 @@ cargo install gbz-base
 ## The data
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) and PacBio's TRGT
-genotypes of 100 of its samples (Dolzhenko et al. 2024), 94 of which have a call
-at _ABCA7_.
+genotypes of a subset of its samples (Dolzhenko et al. 2024), most of which have
+a call at _ABCA7_.
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
@@ -119,7 +119,7 @@ label to lay the bubble's segments out alone, with a button back to the window.
 The rGFA records segments and links, and the haplotypes track records each
 haplotype's route through them, its walk.
 
-## Eight haplotypes' routes through the KIV-2 array {#one-haplotypes-copies}
+## Haplotypes' routes through the KIV-2 array {#one-haplotypes-copies}
 
 A **walk** is one haplotype's route through the graph, and the haplotypes track
 reads one per haplotype from tabix-indexed files. In the same window:
@@ -261,7 +261,7 @@ An intron of _ABCA7_ holds a VNTR (variable-number tandem repeat) tied to
 Alzheimer's disease risk (De Roeck et al. 2018). Each haplotype's walk length
 comes from its assembly, and PacBio's
 [TRGT](https://github.com/PacificBiosciences/trgt), a tandem repeat genotyper
-for HiFi reads, measured the same repeat in 94 HPRC samples. We host its _ABCA7_
+for HiFi reads, measured the same repeat in HPRC samples. We host its _ABCA7_
 call as this track:
 
 ```json addtrack loc=chr19:1,049,000-1,050,500
@@ -365,10 +365,10 @@ also divide into motif-length units.
 
 ## Samples where reads and assemblies disagree
 
-To compare seven samples, keep the _ABCA7_ record picked under **Repeat**.
-**Samples → Choose samples...**, under the **Layout** row of the graph track's
-menu, takes HG00099, HG03688, HG00741, HG02647, HG01943, HG02559 and HG04199 in
-that order. Their walks show in pairs in that order and fall into three groups:
+To compare samples, keep the _ABCA7_ record picked under **Repeat**. **Samples →
+Choose samples...**, under the **Layout** row of the graph track's menu, takes
+HG00099, HG03688, HG00741, HG02647, HG01943, HG02559 and HG04199 in that order.
+Their walks show in pairs in that order and fall into groups:
 
 - HG00099, HG03688 and HG00741 tick at each bar's end: reads and assemblies
   agree.
@@ -383,9 +383,9 @@ Click the TRGT record to see why. Its sample table gives `AL`, the allele
 lengths behind each tick, and `SD`, the number of reads spanning each allele;
 one of HG02559's alleles has an `SD` of 0.
 
-<Figure caption="Seven samples' walks through the ABCA7 VNTR, each marked with TRGT's allele as a tick." src="/img/pangenome/hprc_abca7_disagreements.png" />
+<Figure caption="Samples' walks through the ABCA7 VNTR, each marked with TRGT's allele as a tick." src="/img/pangenome/hprc_abca7_disagreements.png" />
 
-## The ABCA7 alleles across 94 samples
+## The ABCA7 alleles across the samples
 
 TRGT writes each allele as its full sequence, so the details are a wall of
 `CCCCGTGAGC`. The TandemRepeat plugin's script rewrites the record as `<CNV:TR>`
@@ -414,9 +414,9 @@ track:
 ```
 
 Open `chr19:1,049,000-1,050,500` and click the record. A **Tandem repeat** card
-opens above the details. With 94 samples the card starts on **By allele**: one
-bar per allele, longest first. Hover a copy for its allele, that allele's share
-and its length.
+opens above the details. With this many samples the card starts on **By
+allele**: one bar per allele, longest first. Hover a copy for its allele, that
+allele's share and its length.
 
 <Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. The dotted line is GRCh38's allele." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
 
@@ -431,8 +431,8 @@ measured.
 ## Amylase: counting AMY1 copies per haplotype {#amylase}
 
 A gene array varies the same way a tandem repeat does, in whole gene copies. We
-draw five haplotypes' routes through the salivary amylase array as walk rows,
-one per structure:
+draw haplotypes' routes through the salivary amylase array as walk rows, one per
+structure:
 
 - On the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc), click the
   **AMY1** example, then **Haplotypes** under **More about this window**.
@@ -442,7 +442,7 @@ one per structure:
 - **Walk rows** under the **Layout** row and **Uniform** under the **Color** row
   draw each haplotype's route as a bar.
 
-<Figure caption="Five haplotypes' walks across the amylase array, each over its own CAT genes. Purple is sequence off GRCh38's path." src="/img/pangenome/hprc_amylase_walk_rows.png" />
+<Figure caption="Haplotypes' walks across the amylase array, each over its own CAT genes. Purple is sequence off GRCh38's path." src="/img/pangenome/hprc_amylase_walk_rows.png" />
 
 HG00133.1 has GRCh38's three _AMY1_ copies and its length, and its bar still
 shows a long purple stretch, because the graph routes copies of a duplication
@@ -461,9 +461,9 @@ Yilmaz et al. (2024) name each structure by its _AMY1_ count:
 
 ## Reproduce it end to end
 
-PacBio publishes TRGT's calls for 100 HPRC samples as a TRGTdb, 94 of which have
-a call at _ABCA7_, and the build turns that locus into the VCF this page loads,
-without re-genotyping anything. It:
+PacBio publishes TRGT's calls for a subset of HPRC samples as a TRGTdb, most of
+which have a call at _ABCA7_, and the build turns that locus into the VCF this
+page loads, without re-genotyping anything. It:
 
 1. downloads the TRGTdb and the repeat catalogue
 2. reads the locus's alleles and every sample's calls out of the database
@@ -490,8 +490,8 @@ duckdb -json -c "
     where chrom = 'chr19' and start = 1049407)"
 ```
 
-The amylase build draws five haplotypes as a synteny stack, each aligned to the
-row under it. It works in four steps, and the commands below run each one on any
+The amylase build draws haplotypes as a synteny stack, each aligned to the row
+under it. It works in four steps, and the commands below run each one on any
 gbz-base database and any bgzipped, indexed assembly:
 
 1. Ask the graph where each haplotype crosses two single-copy windows, one
@@ -592,7 +592,7 @@ copy:
 }
 ```
 
-<Figure caption="Five haplotypes, one AMY1 copy at the top to seven at the bottom, each aligned to the row below by minimap2." src="/img/multiway_synteny/hprc_amylase_stack.png" />
+<Figure caption="Haplotypes from the fewest AMY1 copies at the top to the most at the bottom, each aligned to the row below by minimap2." src="/img/multiway_synteny/hprc_amylase_stack.png" />
 
 ## See also
 

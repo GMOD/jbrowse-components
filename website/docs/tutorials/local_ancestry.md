@@ -95,9 +95,9 @@ accessions:
 Local ancestry labels each stretch of a chromosome with the reference panel (a
 labelled set of animals) it most resembles. The
 [Dog10K consortium](https://www.dog10kgenomes.org/)'s panel of 1929 canids
-includes both wolfdog breeds, 57 gray wolves and hundreds of breed dogs. As
-targets, FLARE paints one dog from each of the 219 breeds with four or more
-sequenced animals, to catch a wolf cross in any breed, plus:
+includes both wolfdog breeds, gray wolves and many breed dogs. As targets, FLARE
+paints one dog from each breed with enough sequenced animals, to catch a wolf
+cross in any breed, plus:
 
 - **The two wolfdog breeds**: the Saarloos Wolfdog and the Czechoslovakian
   Wolfdog are 20th-century crosses between German Shepherd Dogs and captive gray
@@ -143,9 +143,9 @@ AFGH000001	Dog
 
 ### Slicing one chromosome out of the phased BCF
 
-The panel is a single 6 GB BCF, which `bcftools` reads over HTTP by range
+The panel is a single large BCF, which `bcftools` reads over HTTP by range
 request. The chromosome subset splits into `chr1.ref.vcf.gz` (the two panels)
-and `chr1.gt.vcf.gz` (the 243 targets).
+and `chr1.gt.vcf.gz` (the targets).
 
 <!-- from: scripts/build_dog10k_wolfdog_ancestry.sh -->
 
@@ -293,12 +293,12 @@ scale whose `scale: "identity"` names the BED's `itemRgb` colors in the key.
 **Advanced → Edit plot...** in the track menu shows `rows` and `color` as text
 and applies edits live.
 
-`rows.domain` is abbreviated here; the build script writes all sixty-four rows
-in descending order of chr1 wolf fraction from FLARE's summary. For your own
+`rows.domain` is abbreviated here; the build script writes every row in
+descending order of chr1 wolf fraction from FLARE's summary. For your own
 animals:
 
 - omit `domain` and cluster the rows, or list the animals in the order you want
-- load a second BED of all 243 animals the same way, with no `domain`: at two
+- load a second BED of all the animals the same way, with no `domain`: at two
   rows per animal there is no room for labels, so the named-animals track shows
   the labels and the all-animals track the extent
 
@@ -337,8 +337,8 @@ one line per animal:
   ([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
 
 **Clustering** → **Cluster rows by similarity...** in the track menu orders the
-rows of the full 243-animal track by their blocks. It puts the held-out wolves
-on a small branch with the wolfdog haplotypes with the most wolf, apart from the
+rows of the full-cohort track by their blocks. It puts the held-out wolves on a
+small branch with the wolfdog haplotypes with the most wolf, apart from the
 breed dogs. Clustering runs over the region in view, and a chip in the corner of
 the tree shows the locus.
 

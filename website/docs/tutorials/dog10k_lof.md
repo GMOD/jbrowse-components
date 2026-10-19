@@ -14,8 +14,8 @@ because they have a premature stop codon in _CYP1A2_. The literature names the
 variant only by its protein change. We:
 
 - derive its genome coordinate by translating the reference coding sequence
-- slice the gene out of the 397 GB Dog10K SNV callset over HTTP and load the
-  slice as a multi-sample variant track
+- slice the gene out of the Dog10K SNV callset over HTTP and load the slice as a
+  multi-sample variant track
 - cluster the samples to read genotypes across breeds, with wild canids as the
   control
 - load a copy-number BED as a multi-row feature track across every canid
@@ -51,7 +51,7 @@ opens by path and JBrowse Web takes through **Add track**.
 
 The Dog10K consortium's public share
 ([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)), read
-directly over HTTP with no local copy of the 397 GB callset.
+directly over HTTP with no local copy of the callset.
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
@@ -124,8 +124,8 @@ bcftools query -r chr30:38261635 -f '%CHROM\t%POS\t%REF\t%ALT\t%FILTER\t%AC\t%AN
 
 ## Slicing CYP1A2 out of the Dog10K SNV callset
 
-The Dog10K SNV callset is a single 397 GB VCF over 1,987 canids with a tabix
-index, so `bcftools` fetches one gene over HTTP:
+The Dog10K SNV callset is a single large VCF over every sequenced canid with a
+tabix index, so `bcftools` fetches one gene over HTTP:
 
 <!-- from: scripts/build_dog10k_cyp1a2.sh -->
 
@@ -298,11 +298,11 @@ names in drawing order.
 <Figure caption="Copy number over CYP1A2, named animals above and the whole collection below." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
 The upper track holds every Golden Retriever, Labrador Retriever and Boxer in
-the collection, plus the four wolves from the genotype figure. Every Golden has
-the expansion, every Boxer has two copies, and the Labradors split one dog to
-the next.
+the collection, plus the wolves from the genotype figure. Every Golden has the
+expansion, every Boxer has two copies, and the Labradors split one dog to the
+next.
 
-The four wolves, the control, all have the expansion, so unlike the stop-gained
+The wolves, the control, all have the expansion, so unlike the stop-gained
 allele it is shared with wild canids and predates domestication. Their calls
 rest on callset depth alone, since none of the dogs with published reads is a
 wolf.
@@ -333,8 +333,8 @@ builds the genotype track. It:
 2. builds the sample list from the Dog10K sample table and slices the gene out
    of the callset
 3. prints the genotypes at the stop so you can check the figure against the data
-4. genotypes that one site over all 1,987 canids for the breed and wild-canid
-   counts quoted above
+4. genotypes that one site over every canid for the breed and wild-canid counts
+   quoted above
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_cyp1a2.sh
@@ -344,14 +344,14 @@ bash build_dog10k_cyp1a2.sh   # writes ./dog10k_cyp1a2_build/
 [`build_dog10k_cyp1a2_cn.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_cyp1a2_cn.sh)
 builds the copy-number tracks. It:
 
-1. reads depth over the gene and the sequence around it from each of the 15
+1. reads depth over the gene and the sequence around it from each of the
    published CRAMs, counting only positions RepeatMasker leaves unmasked, the
    same restriction QuicK-mer2's unique k-mers make
 2. scales each window against that dog's own flanks, taken as two copies, and
    prints each dog's copy number over the element beside the spread of its
    flanks around two
 3. takes the same ratio from the callset's per-sample depth for every canid, and
-   prints how closely it agrees with the CRAM estimate in the 15 dogs
+   prints how closely it agrees with the CRAM estimate in those dogs
 4. drops any flanking window whose median across the animals is off two, rounds
    the rest to whole copies, and writes one painted row per animal
 

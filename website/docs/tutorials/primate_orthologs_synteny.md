@@ -14,8 +14,8 @@ orthologous gene the same symbol in every species it annotates, so an ortholog
 table is a join on the gene name, built from eight GFF3 files in seconds. We:
 
 - build the join, and set up each lane's assembly from its hub
-- load the table as an eight-genome ortholog track, each primate a lane under
-  the human view in the coordinates of that primate's genome
+- load the table as a multi-genome ortholog track, each primate a lane under the
+  human view in the coordinates of that primate's genome
 - read the _TP53_ neighbourhood and a 17q window across the lanes
 - read human chromosome 2 against the ape chromosomes it fused from
 
@@ -182,9 +182,9 @@ annotation, add one per genome from a bgzipped, tabix-indexed GFF3
 }
 ```
 
-## Loading the eight-genome ortholog track
+## Loading the multi-genome ortholog track
 
-One `SyntenyTrack` names all eight assemblies, and `blockAssemblies` and
+One `SyntenyTrack` names every assembly, and `blockAssemblies` and
 `bedLocations` hold one entry per table column, in the order the helper printed.
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the display's
 `color` is a color scale, and `{ "field": "cluster" }` maps each gene's ortholog

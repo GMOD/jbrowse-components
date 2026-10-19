@@ -167,12 +167,12 @@ to, from a bgzip-compressed, indexed FASTA:
 Sakai, CFT073, NCTC86 and IAI39 load the same way, one assembly per strain,
 named as in the `assemblyNames` of the tracks below.
 
-## Synteny between all five strains (halSynteny)
+## Synteny between all the strains (halSynteny)
 
 [`halSynteny`](https://github.com/ComparativeGenomicsToolkit/hal) reads the
 HAL's base-level alignment and emits synteny blocks per genome pair as PSL with
 no sample tag in its sequence names, so the
-[build script](#reproduce-it-end-to-end) runs it for all ten pairs and converts
+[build script](#reproduce-it-end-to-end) runs it for every pair and converts
 each to PAF with PanSN `sample#0#chr` names.
 
 Index the combined PAF so a range query fetches only the region in view:
@@ -202,8 +202,8 @@ strain:
 }
 ```
 
-To stack the five strains, a linear synteny view takes one panel per strain and
-names the track once in `tracks`, which puts it on every band. Put this in the
+To stack the strains, a linear synteny view takes one panel per strain and names
+the track once in `tracks`, which puts it on every band. Put this in the
 session's `views`, or use **Add → Linear synteny view**, whose Quick start fills
 in a row per assembly the track lists.
 
@@ -228,7 +228,7 @@ In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `color` is a
 color scale that maps each ribbon's `strand` to red where the two strains run
 the same way and blue where one is inverted against the other.
 
-<Figure caption="The Minigraph-Cactus graph's halSynteny projection, five strains stacked and colored by strand." src="/img/pangenome_cactus/synteny.png" />
+<Figure caption="The Minigraph-Cactus graph's halSynteny projection, the strains stacked and colored by strand." src="/img/pangenome_cactus/synteny.png" />
 
 ## Variants against K12 (vg deconstruct)
 
@@ -547,7 +547,7 @@ Open `mc/ecoli.viz/chr.full.viz.png`, the
 raster `--viz` wrote, with one row per strain and graph node order on the
 horizontal axis.
 
-<Figure caption="The five-strain graph drawn by odgi viz, one row per strain, on graph node order. The gold band marks the locus the next figure opens." src="/img/pangenome_cactus/graph.png" />
+<Figure caption="The graph drawn by odgi viz, one row per strain, on graph node order. The gold band marks the locus the next figure opens." src="/img/pangenome_cactus/graph.png" />
 
 The `odgi pav` track contains the same paths. Drawn on K12's coordinates, in the
 raster's row order and colors, they differ only on the horizontal axis. The gold
@@ -571,7 +571,7 @@ runs everything above in one shot. It:
 3. indexes the base-level graph by following the reference's paths, as
    [the graph-hosting tutorial](/docs/tutorials/pangenome_prepare_graph#reproduce-it-end-to-end)
    describes
-4. writes a `config.json` with the five assemblies, per-strain gene tracks, the
+4. writes a `config.json` with the assemblies, per-strain gene tracks, the
    projection and segments tracks, the plugin declaration and a default session
 
 ```bash

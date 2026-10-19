@@ -10,7 +10,7 @@ tutorial_subcategory: Dog10K
 ---
 
 Dog breeds differ by large structural variants, some of them tied to a breed's
-traits. We slice four loci out of the Dog10K callsets over HTTP and show each
+traits. We slice loci out of the Dog10K callsets over HTTP and show each
 animal's genotype as one row, labelled by breed, under the gene the variant sits
 in:
 
@@ -104,7 +104,7 @@ cells below mark affected animals and lighter ones mark carriers.
 ## Slicing the NHEJ1 locus out of the Paragraph callset
 
 The Paragraph callset (Manta's structural variant calls, genotyped in every
-sample with Illumina's Paragraph) is a 5.9 GB VCF across 1,879 dogs and wolves,
+sample with Illumina's Paragraph) is a large VCF across dogs and wolves,
 published on [Zenodo](https://doi.org/10.5281/zenodo.14968873) with a tabix
 index, so `bcftools` fetches only the locus. Zenodo serves the data and index
 from separate URLs, so the index is named explicitly:
@@ -309,9 +309,9 @@ so the two tracks line up row for row:
 }
 ```
 
-A samples TSV labels these 86 rows. Its first column is the sample name and
-every other column is an attribute that `rowColor` can name. The _RNASE1_ track
-is the same config with the other slice's `uri`.
+A samples TSV labels these rows. Its first column is the sample name and every
+other column is an attribute that `rowColor` can name. The _RNASE1_ track is the
+same config with the other slice's `uri`.
 
 <Figure caption="Left: a duplication over pancreatic amylase. Right: an insertion in pancreatic ribonuclease. The same animals are in the same order in both." src="/img/dog10k-diet-genes.png" />
 

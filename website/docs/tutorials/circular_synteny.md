@@ -139,10 +139,10 @@ jbrowse make-pif pair.paf
 jbrowse add-track pair.pif.gz -a query,target --load copy
 ```
 
-A liftOver chain set holds a few hundred chains that cover the genome and tens
-of thousands of short ones, mostly repeats and gene copies. **Min length** in
-the view's menu drops the short ones, and the sessions below set it to 100 kb
-with `minAlignmentLength`.
+A liftOver chain set holds long chains that cover the genome and many short
+ones, mostly repeats and gene copies. **Min length** in the view's menu drops
+the short ones, and the sessions below set it to 100 kb with
+`minAlignmentLength`.
 
 ## Opening both genomes on one circle
 

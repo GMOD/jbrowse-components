@@ -15,7 +15,7 @@ from one ancestral gene, from protein similarity alone. We:
 
 - run OrthoFinder and convert the orthogroups to a `.blocks` table that JBrowse
   reads
-- load the `wheat` orthogroups as a synteny track and stack the six genomes in a
+- load the `wheat` orthogroups as a synteny track and stack the genomes in a
   synteny view
 - open four more sets the same way: vertebrates, drosophila, nightshades
   (`solanaceae`) and grasses
@@ -71,9 +71,9 @@ own.
 | **`drosophila`**, Ensembl Metazoa release 63                                                                                                                                                                         | [release-63/](https://ftp.ensemblgenomes.ebi.ac.uk/pub/metazoa/release-63/) |
 | **Sequence reports**, fetched from NCBI by accession: _T. timopheevii_ GCA_963921465.1, tomato GCA_000188115.5, and the non-melanogaster flies GCA_016746395.2, GCA_016746365.2, GCA_009870125.2 and GCA_030788295.1 | [GCA/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/)                       |
 
-## The wheat set: six genomes of one polyploid history {#wheat}
+## The wheat set: genomes of one polyploid history {#wheat}
 
-The `wheat` set is six genomes of wheat's polyploid history:
+The `wheat` set is the genomes of wheat's polyploid history:
 
 - **Aegilops tauschii**, diploid D donor
 - **bread wheat**, hexaploid, A+B+D
@@ -234,8 +234,8 @@ refNames:
 
 ## Stacking the wheat genomes
 
-**Add → Linear synteny view**, pick `wheat_orthogroups` and add the six genomes
-in the order tauschii, wheat, durum, emmer, urartu, timopheevii; the
+**Add → Linear synteny view**, pick `wheat_orthogroups` and add the genomes in
+the order tauschii, wheat, durum, emmer, urartu, timopheevii; the
 [all-vs-all tutorial](/docs/tutorials/allvsall_synteny#from-the-ui) walks the
 dialog. Two view-menu items shape the stack, and the session below sets both:
 

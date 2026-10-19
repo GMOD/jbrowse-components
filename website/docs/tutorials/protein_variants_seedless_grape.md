@@ -13,10 +13,11 @@ tutorial_subcategory: Variants on protein structures
 
 Most seedless grapes owe it to one missense change in _VviAGL11_, a MADS box
 transcription factor that regulates seed development. Arginine 197 becomes
-leucine (R197L), and in 124 cultivars only this change was fully linked with
-seedlessness ([Royo et al. 2018](https://doi.org/10.1104/pp.18.00259)). The PDB
-has no structure of the protein, so we open the codon beside its AlphaFold model
-and read how confident the prediction is at residue 197. We'll:
+leucine (R197L), and among the cultivars tested only this change was fully
+linked with seedlessness
+([Royo et al. 2018](https://doi.org/10.1104/pp.18.00259)). The PDB has no
+structure of the protein, so we open the codon beside its AlphaFold model and
+read how confident the prediction is at residue 197. We'll:
 
 - open _VviAGL11_ on codon 197 from the protein browser, on the Pinot Noir
   reference
