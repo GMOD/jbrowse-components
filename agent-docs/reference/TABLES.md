@@ -131,6 +131,11 @@ copied.
 - `readPitch` gives the read height (`pileup.readHeight`) and the gap below a read
   (`featureSpacingForHeight`). Under `heightMode: 'fit'` the browser
   squeezes the pitch to the track's height, which is the host's.
+- Under `unit: 'chain'`, `chains` holds each chain's line and `overlaps` the
+  spans where two of its reads both align. The display draws no overlap
+  below a 3 px read (`shouldDrawOverlaps`), so there `overlaps` comes back
+  empty. Where an overlap is drawn, `legend` ends with the display's own
+  row for it, "Pair/chain reads overlap here".
 
 **A table takes the display's own config and answers what the display draws
 with it.** `alignmentTables` takes `display`, the `LinearAlignmentsDisplay`

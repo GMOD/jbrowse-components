@@ -78,7 +78,10 @@ import {
   baseQualitySpanAcrossGroups,
   presentMapqs,
 } from './LinearAlignmentsDisplay/qualitySpans.ts'
-import { intronAlpha } from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import {
+  intronAlpha,
+  shouldDrawOverlaps,
+} from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { executeRenderAlignmentData } from './RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
 import {
   appliedPileupSort,
@@ -408,6 +411,7 @@ function colorReads(
   readColorOpts: { chainMode?: boolean; framesChainStrand?: boolean },
   facet: { field: string; domain?: readonly string[] } | undefined,
   refNamePosition: RefNamePosition | undefined,
+  overlaps: 'chain' | undefined,
 ) {
   const { labels, title, ...setting } = colorSnapshotOf(node)
   const encoding = alignmentsColorEncoding(setting)
@@ -477,6 +481,7 @@ function colorReads(
     ),
   )
   const legend = getReadDisplayLegendItems({
+    overlaps,
     colorBy,
     baseLayer,
     detectedModifications,
@@ -970,16 +975,19 @@ function qualities(d: WorkerPileupData, plainRead: string) {
  * The chains that join more than one read: the span of each, on the row its
  * reads share, with the hairline's color and opacity; and the spans where two
  * of a chain's reads both align, in the neutral the display fills them with.
- * Both are empty unless the display's unit is a chain.
+ * Both are empty unless the display's unit is a chain, and the overlaps also
+ * where `drawsOverlaps` is false, as the display draws none below a 3 px read.
  */
 function chainTables(
   laid: LaidOutPileupData | undefined,
+  drawsOverlaps: boolean,
   color: string,
   overlapColor: string,
 ) {
   const [start, end] = pairs(laid?.connectingLinePositions ?? new Uint32Array())
+  const overlapped = drawsOverlaps ? laid : undefined
   const [overlapStart, overlapEnd] = pairs(
-    laid?.overlapPositions ?? new Uint32Array(),
+    overlapped?.overlapPositions ?? new Uint32Array(),
   )
   return {
     chains: {
@@ -992,7 +1000,7 @@ function chainTables(
     overlaps: {
       start: overlapStart,
       end: overlapEnd,
-      row: Array.from(laid?.overlapYs ?? []),
+      row: Array.from(overlapped?.overlapYs ?? []),
       color: Array.from(overlapStart, () => overlapColor),
     },
   }
@@ -1374,6 +1382,11 @@ export async function alignmentTables(
           }),
         ]),
       )
+  const drawsOverlaps = shouldDrawOverlaps({
+    chainMode: chain,
+    collapseSections: false,
+    featureHeight,
+  })
   const colors = colorReads(
     conf.color,
     baseLayer,
@@ -1382,6 +1395,12 @@ export async function alignmentTables(
     facetSetting,
     colorBy.type === 'mateRefName'
       ? positionIn(refNames ?? (await dataAdapter.getRefNames()))
+      : undefined,
+    drawsOverlaps &&
+      [...laidByGroup.values()].some(map =>
+        [...map.values()].some(d => d.overlapPositions.length > 0),
+      )
+      ? 'chain'
       : undefined,
   )
   const paint = markColors(colors.palette, baseLayer)
@@ -1433,6 +1452,7 @@ export async function alignmentTables(
               tables: {
                 ...chainTables(
                   chain ? laid : undefined,
+                  drawsOverlaps,
                   normalizedRgbToHex(colors.palette.colorConnectingLine),
                   normalizedRgbToHex(colors.palette.colorOverlap),
                 ),

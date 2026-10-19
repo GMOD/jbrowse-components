@@ -777,6 +777,26 @@ test("a chain's overlapping segments come back as spans on its row, in a neutral
   expect(chained.overlaps.color.every(c => /^#[0-9a-f]{6}$/.test(c))).toBe(true)
 })
 
+test('a chain’s overlaps and their key row come back only where the display draws them, from a 3 px read', async () => {
+  const label = 'Pair/chain reads overlap here'
+  const plain = await engine.alignments(OVERLAP)
+  const chained = await engine.alignments({
+    ...OVERLAP,
+    display: { unit: 'chain' },
+  })
+  const thin = await engine.alignments({
+    ...OVERLAP,
+    display: { unit: 'chain', pileup: { readHeight: 2 } },
+  })
+  expect(plain.legend.label).not.toContain(label)
+  const row = chained.legend.label.indexOf(label)
+  expect(row).toBe(chained.legend.label.length - 1)
+  expect(chained.legend.color[row]).toBe(chained.overlaps.color[0])
+  expect(thin.overlaps.start).toHaveLength(0)
+  expect(thin.chains.start).toEqual(chained.chains.start)
+  expect(thin.legend.label).not.toContain(label)
+})
+
 test('a chain over split reads paints a read by its strand against its chain’s', async () => {
   const both = {
     ...LONG_READS,
