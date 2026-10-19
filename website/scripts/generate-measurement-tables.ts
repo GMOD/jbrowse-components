@@ -101,10 +101,7 @@ if (generated.length === 0) {
   process.exit(1)
 }
 
-checkOrWriteAll(
-  generated,
-  'run `pnpm measurement-tables` and commit the result',
-)
+checkOrWriteAll(generated, 'run `pnpm autogen` and commit the result')
 
 if (!check) {
   // The count that should go down. `hand` means a human typed the values in and

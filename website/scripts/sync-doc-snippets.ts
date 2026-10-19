@@ -260,7 +260,7 @@ if (stale.length > 0) {
     console.error(
       `Doc snippets are out of date with their source:\n${stale
         .map(s => `  ${s}`)
-        .join('\n')}\nRun 'pnpm sync-doc-snippets' and commit the result.`,
+        .join('\n')}\nRun 'pnpm autogen' and commit the result.`,
     )
     process.exit(1)
   }

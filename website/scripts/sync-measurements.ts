@@ -238,7 +238,7 @@ if (generated.length === 0) {
   process.exit(1)
 }
 
-checkOrWriteAll(generated, 'run `pnpm sync-measurements` and commit the result')
+checkOrWriteAll(generated, 'run `pnpm autogen` and commit the result')
 
 if (!check) {
   console.log(`${sources.size} measurement(s) published`)

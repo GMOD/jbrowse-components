@@ -371,7 +371,7 @@ if (check) {
       }
     }
     console.error(
-      '\nscripts/spec-recipe-unmapped.txt is out of date — add a verified click-path to src/lib/spec-recipe/fields.ts, or run `pnpm check-spec-recipes` and commit the list',
+      '\nscripts/spec-recipe-unmapped.txt is out of date — add a verified click-path to src/lib/spec-recipe/fields.ts, or run `pnpm autogen` and commit the list',
     )
     process.exit(1)
   }
