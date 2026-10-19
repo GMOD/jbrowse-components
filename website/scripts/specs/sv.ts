@@ -525,7 +525,7 @@ export const svSpecs: ScreenshotSpec[] = [
 
   // Whole-genome CNV: COLO829 melanoma tumor vs matched normal coverage as a
   // single multi-quantitative bigWig track, shown at chromosome scale (no `loc`
-  // → showAllRegionsInAssembly) with the default 99th-percentile clip so
+  // → showAllRegionsInAssembly) on a pinned 0-100 axis so
   // copy-number gains/losses stand out. The two sources use the default multiwiggle palette
   // (no explicit per-source colors). Rebuilt from the old server-side share link
   // as a self-contained sessionSpec/MultiWiggleAdapter over the two COLO829
@@ -590,6 +590,9 @@ export const svSpecs: ScreenshotSpec[] = [
               // shrink scatter points (default 2px) so the dense CNV cloud
               // reads as fine structure rather than blobs
               size: 1,
+              // pinned: the outlier fence leaves a spike half the axis, which
+              // flattens the copy-number steps this figure is for
+              scales: { y: { domainMin: 0, domainMax: 100 } },
             },
           ],
         },
@@ -1957,15 +1960,15 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
-              // scatter of the per-bin average depth; autoscale (no fixed
-              // min/max) since HiFiCNV depth is raw coverage, not a ±ratio
+              // scatter of the per-bin average depth, pinned at 150 so the
+              // outlier fence's spike room does not flatten the arm step
               mark: 'point',
               color: '#0068d1',
               extent: 'none',
               size: 1,
               resolution: 10,
               height: 180,
-              scales: { y: { grid: true } },
+              scales: { y: { domainMin: 0, domainMax: 150, grid: true } },
             },
             {
               trackId: 'hg008_baf',
