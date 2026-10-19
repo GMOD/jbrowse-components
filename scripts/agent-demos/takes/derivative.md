@@ -10,7 +10,7 @@ script that first derived them, `sv_multihop.py`, is gone (ADR-140), so the
 numbers below are the answer key.
 
 ```
-node scripts/agent-demos/agentDemo.mjs out/derivative scripts/agent-demos/takes/derivative.mjs
+node scripts/agent-demos/recordDemoTui.mjs ~/agent-takes/derivative scripts/agent-demos/takes/derivative.mjs
 ```
 
 Shoot this one last. It is the longest, and its payoff depends on the other two
@@ -37,7 +37,7 @@ reference pulled by remote `faidx` from the hosted GRCh38, whose sequence names
 are unprefixed:
 
 ```bash
-mkdir -p out/derivative/cwd && cd out/derivative/cwd
+mkdir -p ~/agent-takes/derivative/cwd && cd ~/agent-takes/derivative/cwd
 WF=https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup
 curl -sL -o COLO829.somatic-sv.vcf.gz $WF/COLO829.wf-somatic-sv.vcf.gz
 curl -sL -o COLO829.somatic-sv.vcf.gz.tbi $WF/COLO829.wf-somatic-sv.vcf.gz.tbi
@@ -175,26 +175,25 @@ grouped by a tag the agent writes from that classification.
 | `samtools consensus` exists here         | samtools 1.23                                                              |
 | The config opens in Desktop              | `open` on the `--jbrowse-out` config plus the synteny spec above, over MCP |
 
-## Rehearsal, 2026-09-01
+## Take 2, 2026-10-19
 
-Shot once through the harness. `derivative-take1-transcript.txt` beside this
-file is the record; the clip and poster are
-`website/static/media/mcp/agent_derivative_take1.*` (79 s after `encode.mjs`).
+Shot with `recordDemoTui.mjs`, terminal in frame; the clip is
+`mcp/agent_derivative_take2` (125 s after collapsing static frames with ffmpeg's
+`mpdecimate`). Take 1 (2026-09-01, `agentDemo.mjs`, JBrowse window only) asked
+turn four as "prove no read clips at a junction" and is retired.
 
-| Turn                      | Wall  | Outcome                                                                                                                                              |
-| ------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| chains across three chr   | 310 s | junction graph over the 68 BND rows, one three-chromosome component, shown as a three-locus view with read arcs                                      |
-| rebuild the allele        | 357 s | 29 spanning reads, 57,134 bp backbone, three consensus rounds converged, 39,549 bp contig; the four segments match the table above to the base       |
-| reads on both coordinates | 233 s | synteny view, derivative over the three reference windows, tumor reads on both rows, soft clips shown                                                |
-| prove no read clips       | 155 s | 0 of 31 crossing alignments clip at any junction; the 131, 61 and 44 that do clip are normal-allele reads whose tails map to the next reference base |
+| Turn                      | Wall  | Outcome                                                                                                                    |
+| ------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------- |
+| chains across three chr   | 165 s | the one PASS cluster at chr3:25.36, chr10:58.72 and chr12:72.27 Mb, about 30 reads through all three, a three-locus view   |
+| rebuild the allele        | 563 s | 20,384 bp consensus from 33 reads, the four segments of the table above in reverse-complement orientation                  |
+| reads on both coordinates | 116 s | synteny view, derivative over GRCh38, the 33 reads on both rows                                                            |
+| reads per allele          | 243 s | 222 breakpoint reads aligned to both, tagged `JS:Z:DER/REF/AMBIGUOUS/UNASSIGNED`, both rows grouped and colored by the tag |
 
-The agent realigned all 326 locus reads to the contig rather than only the 29
-spanning ones, so the normal allele is on the derivative track too and clips at
-every junction. It caught that, audited the CIGARs, mapped the clipped tails
-back to the reference, and answered the turn as "no read that crosses a junction
-clips at it", which is the stronger claim. The tree's 0 of 29 is the spanning
-subset of the same count. That correction is the best moment of the three takes
-and the turn should stay worded as it is.
+The agent's counts, at 100 bp anchors and MAPQ 20, match the table above: 33, 31
+and 33 derivative reads, 116 and 118 reference reads at the chr3 breakends, 39
+at chr12, 24 at chr10. It labelled reads that cross chr3:25,359,111 but stop
+before 25,359,568 ambiguous, since the derivative's reversed chr3 arm also runs
+through 25,359,111.
 
 ## Open
 

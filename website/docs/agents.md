@@ -21,13 +21,13 @@ binned, smoothed over a window several bins wide.
 
 <Video src="/media/mcp/agent_geo_ratio_take1.mp4" caption="An agent opening hg38 at CDKN1A, adding four GEO ATAC-seq bigWigs, deriving a log2 ratio track and checking it against control loci." />
 
-Two more with a shell beside the app, filmed against only the JBrowse window.
-The captions are what the agent said and sent; only the questions were written
-in advance.
+Two more with a shell beside the app; only the questions were written in
+advance. The synteny clip shows the JBrowse window alone, captioned with what
+the agent said and sent, and the derivative clip has the terminal in frame.
 
 <Video src="/media/mcp/agent_synteny_take1.mp4" caption="An agent opening two fly genomes with no published alignment, running minimap2 in the background and adding a whole-genome dotplot." />
 
-<Video src="/media/mcp/agent_derivative_take1.mp4" caption="An agent rebuilding a three-chromosome derivative allele from tumor reads, loading it as an assembly and showing the reads on it beside the reference." />
+<Video src="/media/mcp/agent_derivative_take2.mp4" caption="An agent rebuilding a three-chromosome derivative allele from tumor reads, then grouping the reads on it and on the reference by the allele each one runs through." />
 
 ## Claude Desktop or Claude Code, with JBrowse Desktop
 

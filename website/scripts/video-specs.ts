@@ -96,11 +96,11 @@ export const externalClips: ExternalClip[] = [
       'Claude Code over the Desktop MCP socket with a shell: two fly genomes with no published alignment, aligned with minimap2, shown as synteny and dotplot, the largest inversion found and navigated to',
   },
   {
-    name: 'mcp/agent_derivative_take1',
+    name: 'mcp/agent_derivative_take2',
     width: 1920,
-    height: 1222,
+    height: 1044,
     description:
-      'Claude Code over the Desktop MCP socket with a shell: a three-chromosome somatic rearrangement found in a callset, its allele rebuilt from the tumor reads, loaded as an assembly and audited at every junction',
+      'Claude Code over the Desktop MCP socket with a shell and the terminal in frame: a three-chromosome somatic rearrangement found in a callset, its allele rebuilt from the tumor reads, and the reads at every junction counted and grouped by the allele they support',
   },
 ]
 

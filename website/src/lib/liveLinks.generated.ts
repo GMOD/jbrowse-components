@@ -3272,9 +3272,9 @@ export const videoFrames: Record<
     "width": 1920,
     "height": 1222
   },
-  "mcp/agent_derivative_take1": {
+  "mcp/agent_derivative_take2": {
     "width": 1920,
-    "height": 1222
+    "height": 1044
   }
 }
 
