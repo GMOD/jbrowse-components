@@ -192,7 +192,7 @@ The dialog also offers to color reads by the tag; with methylation coloring on,
 that box starts unchecked, and leaving it unchecked keeps the coloring.
 **Advanced → Edit plot...** shows the resulting `facet` as text.
 
-<Video src="/media/methylation/group_by_hp.mp4" caption="Group by... → Tag... on the HP tag, the dialog finding values 1 and 2 in the reads." />
+<Video src="/media/methylation/group_by_hp.mp4" caption="Group by... → Tag... with HP, splitting the pileup by haplotype." />
 
 <Figure caption="HG002 ONT reads over the SNRPN CpG island colored by 5mC. Top: file order. Bottom: grouped by the HP tag." src="/img/methylation/hg002_snrpn_group_by_hp.png" links="Ungrouped=methylation/hg002_snrpn_ungrouped,Grouped by HP=methylation/hg002_snrpn_grouped" />
 

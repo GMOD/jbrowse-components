@@ -161,7 +161,7 @@ each axis and a synteny file by hand.
 
 <Figure caption="The dotplot import form in Manual mode." src="/img/sv_synteny/dotplot_import.png" />
 
-<Figure caption="26695 (x) against J99 (y). The backbone runs anti-diagonal, since the two assemblies were deposited in opposite orientations." src="/img/sv_synteny/dotplot.png" />
+<Figure caption="26695 (x) against J99 (y). The backbone runs anti-diagonal." src="/img/sv_synteny/dotplot.png" />
 
 To open any of those pieces at base resolution, drag a box across it, then
 right-click inside the box and choose **Linear synteny view**.

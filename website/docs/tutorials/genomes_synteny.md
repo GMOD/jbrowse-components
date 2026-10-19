@@ -114,10 +114,9 @@ JBrowse 5 ships. Open hg38 there, type `TNNT3` into the location box and turn
 the track on.
 
 The [TNNT3 gene page](https://staging.genomes.jbrowse.org/gene/?gene=TNNT3)
-links the same window across twelve genomes from its **Conserved gene order**
-section.
+links the same window from its **Conserved gene order** section.
 
-<Figure src="/img/genomes_synteny/star_link.png" caption="The TNNT3 gene page's Conserved gene order section, with its JBrowse link boxed." />
+<Figure src="/img/genomes_synteny/star_link.png" caption="The TNNT3 gene page's Conserved gene order section, with Multi-way synteny lanes boxed." />
 
 The track holds only genomes UCSC publishes a liftOver chain to. In its track
 menu:
@@ -167,7 +166,7 @@ each. On hg38 at
 - Turn off **Show... → Gene labels**, since the RefSeq track above names the
   genes
 
-<Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes, ribbons colored by strand. The H9 hap2 lane draws its inversion straight and names it in its header." />
+<Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes, ribbons colored by strand. The H9 hap2 lane's ribbons turn blue, and its header names the inversion." />
 
 ## See also
 

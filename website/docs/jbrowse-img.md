@@ -1177,7 +1177,7 @@ jb2export circular --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --width 800 --out circular_chords.png
 ```
 
-<Figure src="/img/jbrowse-img/circular_chords.png" caption="Circular chord plot of SKBR3 structural variants on hg19, inter-chromosomal chords marking translocations" />
+<Figure src="/img/jbrowse-img/circular_chords.png" caption="SKBR3 structural variants on hg19 as a circular view, each chord joining one variant's two breakpoints" />
 
 Run `jb2export circular --help` for the full list of options.
 

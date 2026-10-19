@@ -288,7 +288,7 @@ genotype directly from the pileup, independent of the caller's `GT` field: a
 locus where some reads invert and the rest run through unbroken is one inverted
 copy and one uninverted.
 
-<Figure caption="Nanopore reads grouped by Group by... → Split read (SA tag) over an inversion call." src="/img/inversion_long_read.png" />
+<Figure caption="Nanopore reads grouped by split read over an inversion call. The split reads above break into three pieces, the middle one reversed." src="/img/inversion_long_read.png" />
 
 ### One read against the reference
 

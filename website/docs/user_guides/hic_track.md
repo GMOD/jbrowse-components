@@ -24,7 +24,7 @@ converting first, e.g. with `hicConvertFormat` from HiCExplorer.
 
 ## Reading the contact matrix
 
-<Figure caption="A Hi-C contact matrix for hg19 chr8:50.4–61.3Mb with a gene track above." src="/img/hic_track.png" />
+<Figure caption="A Hi-C contact matrix for hg19 chr8:50.4–61.3Mb with a gene track above. The diagonal runs along the top edge." src="/img/hic_track.png" />
 
 Mousing over the matrix draws a V-shaped guide down to the two positions the bin
 under the cursor pairs, with a tooltip giving both loci and the contact score.
@@ -181,7 +181,7 @@ matrix in the same track:
   further, and the file has a color per class in its `itemRgb` column, so the
   track paints itself with no color configuration.
 
-<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over one window, the band at EBF1." links="Open this view=hic/compartment_switch" />
+<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over one window. At the EBF1 band they take opposite signs." links="Open this view=hic/compartment_switch" />
 
 Two things about that figure are worth copying whenever you compare compartments
 between samples, since getting either wrong invents a difference.

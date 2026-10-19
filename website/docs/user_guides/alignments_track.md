@@ -224,7 +224,7 @@ Grouping by strand also works as a check on the reads. A position colored in one
 band and not the other comes from one strand alone, the signature of a
 basecalling error; a position that disagrees in both bands is a real variant.
 
-<Figure caption="Nanopore reads grouped by strand, each band's coverage from that strand's reads alone." src="/img/alignments/strand_split_coverage.png" />
+<Figure caption="Nanopore reads grouped by strand, each band's coverage from that strand's reads alone. The left box disagrees in the reverse band only, the right box in both." src="/img/alignments/strand_split_coverage.png" />
 
 **Track menu → Read connections → SV channels (pairs by orientation)** groups by
 pair orientation, drops the pileup and turns the arcs on together, so each

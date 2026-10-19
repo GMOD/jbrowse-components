@@ -464,7 +464,7 @@ The benchmark's `total_copy_number` is absolute, so CN 2 is diploid; 9p has
 already lost a copy, so CN 1 is the local background here. Widen the view
 several hundred kilobases right to read CN 2 against it.
 
-<Figure caption="CDKN2A in the tumor and normal coverage, the read pileup and the CNV calls." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
+<Figure caption="Tumor and normal coverage, the pileup and the CNV calls over CDKN2A." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
 ### Chromosome 17: two kinds of loss of heterozygosity
 

@@ -146,7 +146,7 @@ level, JBrowse draws one node per bubble, so the whole chromosome fits. A curve
 of segments per bubble (how many pieces of sequence each bubble holds) shows how
 much the haplotypes disagree at each locus.
 
-<Figure caption="GRCh38 chr1 with the cytogenetic bands and two tracks built from the graph's bubbles." src="/img/pangenome/hprc_whole_chromosome.png" />
+<Figure caption="GRCh38 chr1 with the cytogenetic bands and two tracks built from the graph's bubbles: segments per bubble as a blue curve, and one node per bubble as gold blocks." src="/img/pangenome/hprc_whole_chromosome.png" />
 
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds this
 overview and writes the `coarse` slot.

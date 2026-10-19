@@ -126,7 +126,7 @@ from ENCODE3's release, but the config points at the hg38 files.
 **Plot type → Multi-row → XY plot** in the track menu gives each cell line a
 row.
 
-<Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53's promoter tracks. Left: two marks' cell lines in one plot, and the Plot type menu that separates them. Right: a row per cell line." />
+<Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53's promoter. Left: the Plot type menu over the overlaid marks. Right: a row per cell line." />
 
 _TP53_ is on the minus strand, so its promoter sits at the high-coordinate end,
 where every track in the figure has a call.
@@ -144,12 +144,11 @@ record has to pass every row:
   (the others are missense, synonymous and other)
 - `AF` ≥ `0.001` drops the rarest variants
 
-<Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu and the Filter by... dialog." />
+<Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu and the filter dialog Edit filters... opens." />
 
 <Video src="/media/genomes_basics/gnomad_filter.mp4" caption="gnomAD Exomes over TP53, filtered to one consequence class from the track menu." />
 
-Once a filter is in effect, the track menu's filter row opens a submenu with
-**Edit filters...** and **Clear all filters**.
+Once a filter is in effect, the same submenu adds **Clear all filters**.
 
 The filter works on any column a BigBed has. ClinVar's clinical classification
 is the column `clinSign`, so the row `clinSign` is `Pathogenic` filters that

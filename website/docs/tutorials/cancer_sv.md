@@ -316,7 +316,7 @@ Each hg38 window is wider than the piece the allele uses, and the read track
 shows split alignments only, so its coverage counts reads that cross a junction
 and steps down as each arm ends.
 
-<Figure caption="The derivative's segments at base scale: the truth set's calls over the reads against hg38 above, and the reads realigned to the allele below." src="/img/cancer_sv/derivative_inserts.png" />
+<Figure caption="The derivative at base scale: reads against hg38 above, realigned to the allele below." src="/img/cancer_sv/derivative_inserts.png" />
 
 <Figure caption="Tumor ONT reads over one junction, against hg38 on the left and realigned to the derivative on the right. The panes are at different zooms." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
 

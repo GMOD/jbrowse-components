@@ -327,7 +327,7 @@ The chr9 peak falls on _Myo5a_, the dilute locus (its mutation lightens coat
 color). The same grouped painting, with the gene track filtered to _Myo5a_,
 splits the sections the other way:
 
-<Figure src="/img/qtl/bxd_myo5a_locus.png" caption="chr9, banded the same way."/>
+<Figure src="/img/qtl/bxd_myo5a_locus.png" caption="chr9, banded the same way. Under the peak the black and brown bands are blue, the grey and dilute brown bands red."/>
 
 ## Reproduce it end to end
 

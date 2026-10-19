@@ -131,7 +131,10 @@ Each circle below opens from a separate demo config. The human and chimpanzee
 one reads the hosted UCSC liftOver chain, built by
 `scripts/build_circular_synteny.sh` with `QUERY=panTro6`. The other two start
 from nothing but two FASTA files: `scripts/build_circular_synteny_fasta.sh`
-aligns them with minimap2 and indexes the result with `jbrowse make-pif`.
+aligns them with minimap2 and indexes the result with `jbrowse make-pif`. The
+circles show the human chr2 fusion and the chimp pericentric inversions (Yunis
+and Prakash 1982), the rearrangements between two Yersinia pestis strains (Deng
+et al. 2002) and the Brassica rapa triplication (Wang et al. 2011).
 
 <Figure src="/img/circular_synteny/chimp_strand.png" caption="Human and chimpanzee colored by strand." />
 

@@ -163,7 +163,7 @@ the track's `color` is a color scale on the `mapq` field:
 Open `chr5:69,200,000-71,700,000` for the whole region, and a second view at
 `chr5:70,850,000-71,500,000` for the reads.
 
-<Figure src="/img/qc/smn_block_and_reads.png" caption="Top: SMN2 and SMN1 with gnomAD coverage, GIAB's difficult regions and the SV callset. Below: a second view with Umap mappability and reads colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
+<Figure src="/img/qc/smn_block_and_reads.png" caption="Top: the SMN region with coverage and difficult-region tracks. Below: reads colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
 
 GIAB flags two long intervals, much larger than the gene, and the gnomAD track
 stays low across both. Beyond them, GIAB flags nothing larger than a few

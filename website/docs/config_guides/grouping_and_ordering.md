@@ -91,7 +91,7 @@ whatever order the VCF lists them:
 
 The domain in each case is a genetics decision, not an alphabetical one: dosage
 order in the mosquito figure, standard-before-inverted in the fly figure, both
-read straight off the figure's caption.
+read off the `domain` lists above.
 [LD in mosquitoes](/docs/tutorials/ld_mosquitoes#reading-the-2la-ld-block-against-the-karyotype-rows)
 works through the mosquito one, and
 [population genomics](/docs/tutorials/population_genomics#the-inversion-genome-wide-and-within-each-arrangement)
@@ -225,7 +225,7 @@ At a larger scale, a `rows.domain` of six names with `rows.kept` narrows a
 127-epigenome track to the three tissues a figure is about, in the order the
 comparison reads:
 
-<Figure src="/img/chromhmm_hoxa_fibroblasts.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA."/>
+<Figure src="/img/chromhmm_hoxa_fibroblasts.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA, with HOXA1-A7 and HOXA9-A13 boxed."/>
 
 [The ChromHMM tutorial](/docs/tutorials/chromhmm#the-legend-filtering-and-row-order)
 has both tracks in full, plus what an unset `rows.domain` does instead:

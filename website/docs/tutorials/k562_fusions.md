@@ -219,7 +219,7 @@ alignment (the second piece of the split read) on chr9. In the track menu:
 A vertical line at the _BCR_ donor marks molecules whose _ABL1_ alignment falls
 in neither window.
 
-<Figure caption="BCR beside two ABL1 windows as three regions of one view, split reads only with supplementary alignments linked." src="/img/cancer_sv/k562_bcr_abl_split.png" />
+<Figure caption="BCR beside two ABL1 windows, showing split reads only." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 
 ## Where the DNA broke under BCR-ABL1 and NUP214-XKR3
 

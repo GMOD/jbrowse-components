@@ -534,7 +534,7 @@ the other four skip. To see it:
   the strains-per-segment track counts the strains, and the MAF's rows name
   them.
 
-<Figure caption="1.6 kb of K12 past flhD as tracks above and as the graph track below. The shaded span is the IS1 element the other four strains route around." src="/img/pangenome_cactus/graph_bubble.png" />
+<Figure caption="1.6 kb of K12 past flhD as tracks above and as the graph track below. The shaded span is the IS1 element." src="/img/pangenome_cactus/graph_bubble.png" />
 
 In the track menu, **Show... → Show deletion edges** hides the dashed link the
 graph draws for the other four strains' route, which is labelled with the length
@@ -553,7 +553,7 @@ The `odgi pav` track contains the same paths. Drawn on K12's coordinates, in the
 raster's row order and colors, they differ only on the horizontal axis. The gold
 band marks `chr:1,000,000-1,100,000` in both.
 
-<Figure caption="The same paths and colors on K12's coordinates, the gold band the same 100 kb." src="/img/pangenome_cactus/graph_correspondence.png" />
+<Figure caption="The same paths and colors on K12's coordinates." src="/img/pangenome_cactus/graph_correspondence.png" />
 
 The graph axis counts pangenome bases, so a locus where other strains have
 sequence K12 lacks takes up more of it. The band contains Sakai's _stx2_

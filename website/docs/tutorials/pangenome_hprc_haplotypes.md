@@ -141,8 +141,8 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
 **Lanes → Choose lanes...** takes `HG00097.1`, `HG00099.1`, `HG00099.2` and
 `HG01978.1`. Then:
 
-- **A lane whose walk runs the block backwards** draws it mirrored in place, and
-  its header names the inversion.
+- **The band between two lanes** crosses itself where the lower lane runs the
+  block in the other direction.
 - **HPRC release 2 bubbles** in the track selector adds the graph's bubbles.
   `gfatools bubble` flags one as `inversion` when its paths disagree about
   orientation.
@@ -153,7 +153,7 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
   jexl:feature.inversion
   ```
 
-<Figure caption="FLNA / EMD with the bubbles track filtered to inversions. The bottom two lanes draw the shaded span mirrored in place." src="/img/pangenome/hprc_inversion.png" />
+<Figure caption="FLNA / EMD with the bubbles track filtered to inversions. The band crosses where the lower lane runs the shaded span backwards." src="/img/pangenome/hprc_inversion.png" />
 
 ## What the lanes leave out {#limits}
 
@@ -164,10 +164,11 @@ limits of the graph and the VCF behind them.
 - **A lane can be empty and correct.** Where a haplotype's deletion is longer
   than the window, the graph has no walk for it there and the launch opens no
   row.
-- **A lane can stop partway** where the graph's alignment of that haplotype
-  stops.
+- **A lane can stop partway**, at the end of the graph's alignment of that
+  haplotype; its sequence can run on past it.
 - **One lane stands for many haplotypes.** The page picks one haplotype per
-  structural form, grouped by structural variants of 50 bp or more.
+  structural form, grouped by structural variants of 50 bp or more, so two
+  haplotypes in one form can still differ in everything smaller.
 - **Near-identical gene copies share one path**, so a lane at RHD / RHCE or
   CYP2D6 cannot show how many copies a haplotype has.
 

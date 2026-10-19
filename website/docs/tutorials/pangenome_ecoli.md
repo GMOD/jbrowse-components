@@ -620,7 +620,7 @@ over the same files colors each segment by that count:
 Type `chr:1,299,499-1,300,693`, the IS5 element. **Advanced → Edit plot...** in
 the track menu shows the `color` block as text and applies edits live.
 
-<Figure caption="The depth curve over the strains-per-segment track, colored by how many strains have each segment." src="/img/pangenome/pggb_carriage_lane.png" />
+<Figure caption="The IS5 element: the depth curve over the strains-per-segment track. Red marks a segment K12 alone has." src="/img/pangenome/pggb_carriage_lane.png" />
 
 ## Reproduce it end to end
 

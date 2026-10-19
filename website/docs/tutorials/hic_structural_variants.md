@@ -278,7 +278,7 @@ The K562 track uses
 On an eigenvector track already open, **Y axis... → Range** writes the same two
 ends. Open both eigenvector tracks over _EBF1_ on chr5:
 
-<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over one window, the band at EBF1." links="Open this view=hic/compartment_switch" />
+<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over one window. At the EBF1 band they take opposite signs." links="Open this view=hic/compartment_switch" />
 
 The band over _EBF1_ is in the A compartment in GM12878, a B-lymphoblastoid
 line, and the B compartment in K562, an erythroleukemia, while the sequence

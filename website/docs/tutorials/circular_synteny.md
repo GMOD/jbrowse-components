@@ -235,7 +235,7 @@ Hover the mouse chr11 band on the circle opened above to dim every ribbon that
 misses it. The tooltip lists each human chromosome aligned to it with the share
 it covers.
 
-<Figure src="/img/circular_synteny/band_hover.png" caption="Hovering mouse chr11 dims every ribbon that does not touch it, and the tooltip lists the human chromosomes it is assembled from." />
+<Figure src="/img/circular_synteny/band_hover.png" caption="Hovering mouse chr11 dims every ribbon that does not touch it, and the tooltip lists the human chromosomes aligned to it." />
 
 ## Coloring the ribbons by strand
 
@@ -259,7 +259,7 @@ The X chromosome has stayed whole across the two lineages, so no ribbon at the
 The figure also has the gene density ring that
 [Gene density as a ring](#gene-density-as-a-ring) builds.
 
-<Figure src="/img/circular_synteny/x_control.png" caption="Human chr1, chr2 and chrX against the same three mouse chromosomes, with a gene density ring inside the ideogram." />
+<Figure src="/img/circular_synteny/x_control.png" caption="Human chr1, chr2 and chrX against the same three mouse chromosomes, with a gene density ring. The X ribbons stay between the two X arcs." />
 
 Chain rows under the 100 kb **Min length** cut do join the X to autosomes: the
 PIF holds short rows between human chrX and mouse autosomes, each a repeat or
