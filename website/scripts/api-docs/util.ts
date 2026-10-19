@@ -2226,7 +2226,21 @@ export function exampleCell(examples: Example[]) {
 // cell in a column out to its widest member, so one long slot description
 // inflates a whole page (LinearAlignmentsDisplay: 57KB of padding) and editing
 // that one description reflows every row into the diff.
+// GFM splits a row on every `|` not written `\|`, a code span included, so an
+// unescaped pipe in a description or a `string | number` type shifts the cells
+// after it. Each caller assembles its own row, so the count is checked here.
+function cellCount(row: string) {
+  return row.replaceAll('\\|', '').split('|').length - 2
+}
+
 export function markdownTable(headers: string[], rows: string[]) {
+  for (const row of rows) {
+    if (cellCount(row) !== headers.length) {
+      throw new Error(
+        `a table row has ${cellCount(row)} cells under ${headers.length} headers (${headers.join(', ')}); escape the \`|\` in a cell with tableCell or codeCell:\n  ${row}`,
+      )
+    }
+  }
   return rows.length
     ? [
         '<!-- prettier-ignore -->',

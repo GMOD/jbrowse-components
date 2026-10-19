@@ -6,6 +6,7 @@ import {
   exampleSection,
   filterUnseenByName,
   lastTaggedLine,
+  markdownTable,
   markerBlockNames,
   overviewSection,
   parseTaggedComment,
@@ -291,6 +292,20 @@ describe('filterUnseenByName', () => {
     const farther = filterUnseenByName(seen, [{ name: 'featureHeight' }])
     expect(closer.map(i => i.name)).toEqual(['featureHeight'])
     expect(farther).toEqual([])
+  })
+})
+
+describe('markdownTable', () => {
+  test('accepts an escaped pipe inside a cell', () => {
+    expect(markdownTable(['A', 'B'], ['| `a \\| b` | c |'])).toContain(
+      'a \\| b',
+    )
+  })
+
+  test('refuses a row an unescaped pipe splits', () => {
+    expect(() =>
+      markdownTable(['A', 'B'], ['| `string | number` | c |']),
+    ).toThrow(/3 cells under 2 headers/)
   })
 })
 
