@@ -179,8 +179,8 @@ jbrowse-desktop --genome hg19 --track ncbiRefSeqCurated --loc BRCA1
 
 - `jbrowse-desktop` stands for the binary's full path, which
   [differs per platform](https://jbrowse.org/jb2/docs/quickstart_desktop/#launching-from-the-command-line).
-- Desktop does not apply display modifiers such as `height:` or `color:` yet,
-  and names the ones it skipped.
+- Desktop skips display modifiers such as `height:` and `color:` for now, and
+  image flags such as `--width`, and names what it skipped.
 
 ## Output formats
 

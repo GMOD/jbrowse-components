@@ -217,7 +217,7 @@ export async function launchFromPlan(
   )
   if (plan.unapplied.length) {
     pluginManager.rootModel?.session?.notify(
-      `JBrowse Desktop does not apply these track settings from the command line yet: ${plan.unapplied.join(', ')}`,
+      `JBrowse Desktop did not apply these command-line arguments: ${plan.unapplied.join(', ')}`,
       'warning',
     )
   }

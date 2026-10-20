@@ -57,6 +57,12 @@ test('--assembly picks a config genome', () => {
   expect(plan('--config c.json').config).toBe('/work/c.json')
 })
 
+test('--fasta keeps its aliases: and cytobands: modifiers', () => {
+  expect(plan('--fasta ref.fa aliases:al.txt').assembly).toMatchObject({
+    refNameAliases: { adapter: { location: { localPath: '/work/al.txt' } } },
+  })
+})
+
 test('two files with one basename both open', () => {
   expect(plan('ref.fa t/s.bam n/s.bam').show).toEqual(['s.bam', 's.bam-2'])
 })

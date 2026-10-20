@@ -151,30 +151,59 @@ export type ArgvTarget = LaunchTarget | { type: 'invalid'; message: string }
 
 const flagName = (arg: string) => arg.replace(/^-+/, '').split('=')[0] ?? ''
 
+const isFlag = (arg: string) => arg.startsWith('-') && arg !== '-'
+
+// Desktop's own flags, and whether each takes the argument after it
+const DESKTOP_FLAGS = new Map([
+  ['renderer', true],
+  ['mcp', false],
+])
+
 /**
- * The arguments that belong to the shared launch grammar. The rest are
- * Desktop's own (`--renderer webgl`, `--mcp`) or switches Chromium and
- * Electron put in argv, a second launch's included, which carry any value
- * after an `=`. Left in, a switch would take the file after it as its value.
+ * Splits argv into the shared launch grammar and the flags Desktop leaves out.
  *
- * A bare config.json beside data files is the config they open on, so
- * `jbrowse-desktop project/config.json reads.bam` reads as `--config`.
+ * - A launch flag keeps the argument after it as its value, whatever it is.
+ * - A kebab-case or single-dash flag (`--no-sandbox`, macOS's `-psn_…`) is a
+ *   Chromium, Electron or OS switch, which carries any value after an `=` and
+ *   so takes nothing after it.
+ * - Any other flag is one of jb2export's that Desktop does not take (`--width
+ *   1400`, `--multiwig a.bw,b.bw`): it goes with its value, and is reported,
+ *   so the value cannot read as a file of its own.
+ * - A bare config.json is the config the files open on, so `jbrowse-desktop
+ *   project/config.json reads.bam` reads as `--config`.
  */
 function launchArgs(args: readonly string[]) {
   const kept: string[] = []
+  const ignored: string[] = []
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]!
-    if (arg.startsWith('-') && arg !== '-' && !launchFlags.has(flagName(arg))) {
-      if (arg === '--renderer') {
+    const name = flagName(arg)
+    const next = args[i + 1]
+    const takesNext = !arg.includes('=') && next !== undefined && !isFlag(next)
+    if (!isFlag(arg)) {
+      if (arg.toLowerCase().endsWith('.json')) {
+        kept.push('--config', arg)
+      } else {
+        kept.push(arg)
+      }
+    } else if (launchFlags.has(name)) {
+      kept.push(arg)
+      if (takesNext) {
+        kept.push(next)
         i++
       }
-    } else if (!arg.startsWith('-') && arg.toLowerCase().endsWith('.json')) {
-      kept.push('--config', arg)
-    } else {
-      kept.push(arg)
+    } else if (DESKTOP_FLAGS.has(name)) {
+      if (DESKTOP_FLAGS.get(name) && takesNext) {
+        i++
+      }
+    } else if (arg.startsWith('--') && !name.includes('-')) {
+      ignored.push(takesNext ? `${arg} ${next}` : arg)
+      if (takesNext) {
+        i++
+      }
     }
   }
-  return kept
+  return { kept, ignored }
 }
 
 // A command line that names what to open with the launch grammar: a data
@@ -207,10 +236,23 @@ export function findLaunchTarget(
     const url = protocolArgs.map(parseProtocolUrl).find(Boolean)
     return url ? { type: 'link', url } : undefined
   }
+  const { kept, ignored } = launchArgs(args)
+  const session = kept.find(a => !isFlag(a) && hasSessionExtension(a))
   if (usesLaunchGrammar(args)) {
     try {
-      const plan = launchPlan(parseArgv(launchArgs(args)), cwd)
-      return { type: 'plan', plan: asPlanJson(plan) }
+      if (session) {
+        throw new Error(
+          `${session} is a saved session, which opens on its own; a genome, data files and --loc open a new one`,
+        )
+      }
+      const plan = launchPlan(parseArgv(kept), cwd)
+      return {
+        type: 'plan',
+        plan: asPlanJson({
+          ...plan,
+          unapplied: [...ignored, ...plan.unapplied],
+        }),
+      }
     } catch (e) {
       return {
         type: 'invalid',
@@ -218,6 +260,14 @@ export function findLaunchTarget(
       }
     }
   }
-  const file = args.find(a => hasLaunchExtension(a))
-  return file ? { type: 'file', path: path.resolve(cwd, file) } : undefined
+  const file = args.find(a => !isFlag(a) && hasLaunchExtension(a))
+  const stray = kept.find(a => !isFlag(a) && !hasLaunchExtension(a))
+  return file
+    ? { type: 'file', path: path.resolve(cwd, file) }
+    : stray
+      ? {
+          type: 'invalid',
+          message: `JBrowse Desktop cannot open ${stray}. It opens a session (.jbrowse), a config.json, a jbrowse:// link, or a genome and data files JBrowse recognizes by name (FASTA, BAM, VCF, BigWig, ...)`,
+        }
+      : undefined
 }

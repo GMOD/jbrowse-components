@@ -62,6 +62,22 @@ export interface BatchEntry {
   annotations?: Annotation[] | string
 }
 
+const BATCH_KEYS = new Set<string>([
+  'out',
+  'genome',
+  'config',
+  'assembly',
+  'loc',
+  'tracks',
+  'spec',
+  'session',
+  'width',
+  'height',
+  'dpr',
+  'fullPage',
+  'annotations',
+] satisfies (keyof BatchEntry)[])
+
 export function readBatch(value: string): BatchEntry[] {
   const parsed = parseJson('batch manifest', value)
   if (!Array.isArray(parsed)) {
@@ -70,6 +86,12 @@ export function readBatch(value: string): BatchEntry[] {
   for (const [i, entry] of parsed.entries()) {
     if (typeof entry?.out !== 'string') {
       throw new Error(`batch capture ${i} has no "out" image path`)
+    }
+    const unknown = Object.keys(entry).find(key => !BATCH_KEYS.has(key))
+    if (unknown) {
+      throw new Error(
+        `batch capture ${i} has a key no capture reads: "${unknown}" (it takes ${[...BATCH_KEYS].join(', ')})`,
+      )
     }
   }
   return parsed as BatchEntry[]

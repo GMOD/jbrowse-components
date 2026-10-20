@@ -195,8 +195,9 @@ jbrowse-desktop myproject/config.json extra.bw --loc chr1:1-100,000
   [genomes.jbrowse.org](https://genomes.jbrowse.org), and `--track` adds one of
   its tracks by trackId (`jb2export list hg38` prints them).
 - Paths resolve against the directory the command runs in.
-- Display settings such as `height:200` are not applied yet; Desktop names the
-  ones it skipped once the session opens.
+- Desktop skips display settings such as `height:200` for now, and jb2export's
+  image flags such as `--width`, and names what it skipped once the session
+  opens.
 
 ### Opening a session, config or link
 

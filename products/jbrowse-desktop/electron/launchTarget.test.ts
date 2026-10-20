@@ -176,6 +176,45 @@ describe('data files on the command line', () => {
     expect(target('--renderer', 'webgl')).toBeUndefined()
   })
 
+  test('--config keeps its value, path or URL', () => {
+    expect(target('--config', 'proj/config.json', 'reads.bam')).toMatchObject({
+      type: 'plan',
+      plan: { config: '/home/me/proj/config.json', show: ['reads.bam'] },
+    })
+    expect(target('--config', 'https://h.org/config.json')).toMatchObject({
+      type: 'plan',
+      plan: { config: 'https://h.org/config.json' },
+    })
+  })
+
+  test("jb2export's flags Desktop does not take go with their values, named", () => {
+    expect(
+      target('--width', '1400', 'ref.fa', '--multiwig', 'a.bw,b.bw', 'r.bam'),
+    ).toMatchObject({
+      type: 'plan',
+      plan: {
+        show: ['r.bam'],
+        unapplied: ['--width 1400', '--multiwig a.bw,b.bw'],
+      },
+    })
+    expect(target('ref.fa', '--tracks', 't.json')).toMatchObject({
+      type: 'plan',
+      plan: { config: undefined, unapplied: ['--tracks t.json'] },
+    })
+  })
+
+  test('a file Desktop cannot open says so', () => {
+    expect(target('notes.txt')).toEqual({
+      type: 'invalid',
+      message: expect.stringMatching(/cannot open notes\.txt/) as string,
+    })
+    expect(target('s.jbrowse', '--loc', 'chr1:1-100')).toEqual({
+      type: 'invalid',
+      message: expect.stringMatching(/s\.jbrowse is a saved session/) as string,
+    })
+    expect(openFileTarget('/data/notes.txt')).toMatchObject({ type: 'invalid' })
+  })
+
   test('a plan that cannot be built says why', () => {
     expect(target('reads.bam')).toEqual({
       type: 'invalid',

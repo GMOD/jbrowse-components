@@ -120,8 +120,9 @@ export function launchPlan(entries: Entry[], cwd: string): LaunchPlan {
       return [key, [abs(file), ...mods.map(absMod)]]
     }
   })
+  const fastaMods = entries.find(([key]) => key === 'fasta')?.[1].slice(1) ?? []
   const genomeFile: Entry | undefined = fasta
-    ? ['fasta', [abs(fasta)]]
+    ? ['fasta', [abs(fasta), ...fastaMods.map(absMod)]]
     : resolved.find(
         ([key, [file = '']]) =>
           key === FILE_FLAG && isSequenceAdapter(fileAdapter(file)),

@@ -31,6 +31,9 @@ test('a batch manifest is an array whose every capture names its image', () => {
   expect(readBatch('[{"loc":"BRCA1","out":"a.png"}]')).toEqual([
     { loc: 'BRCA1', out: 'a.png' },
   ])
+  expect(() => readBatch('[{"hub":"hg38","out":"a.png"}]')).toThrow(
+    'batch capture 0 has a key no capture reads: "hub"',
+  )
   expect(() => readBatch('{"out":"a.png"}')).toThrow(
     'the batch manifest must be a JSON array of captures',
   )
