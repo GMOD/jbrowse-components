@@ -169,12 +169,23 @@ const HBB_DOMAINS = 'msaview-domains-msa-HBB'
 const HBB_CODON_7 = 'chr11:5226956-5227046[rev]'
 const HBB_EXON_2_START = 'chr11:5226750-5226799[rev]'
 
+// codon 7 on the genome; every linked view writes the label, the alignment on
+// column 7 and the structure beside Val6
+const E6V = {
+  assemblyName: 'hg38',
+  refName: 'chr11',
+  start: 5227000,
+  end: 5227003,
+  label: 'E6V',
+}
+
 function hbbSession({
   msaEnd = 31,
   ...options
 }: Partial<SessionOptions> &
   Pick<SessionOptions, 'tracks'> & { msaEnd?: number }) {
   const session = structuredClone(HBB_SESSION)
+  session.highlights = [E6V]
   session.views[1]!.relativeTo = 'human_query'
   session.views[2]!.colorScheme = 'mapped-chain'
   return linkedSession(
@@ -187,16 +198,6 @@ function hbbSession({
 }
 
 const HBB_FONT_SIZE = 23
-// Val6 of 2HBS's first β chain, named as the structure file numbers it
-const HBB_STRUCTURE: Annotation = {
-  type: 'text',
-  text: 'Sickle valine',
-  fontSize: HBB_FONT_SIZE,
-  leader: true,
-  anchor: { residue: 'B:6' },
-  dx: -60,
-  dy: -330,
-}
 const SICKLE_CODON = 'The sickle-cell change: GAG to GTG'
 const SICKLE_CARRIERS =
   'Sickle allele, carried mostly by African-ancestry genomes'
@@ -432,10 +433,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     url: hbbSession({ tracks: [HBB_GENE_TRACK] }),
     ...READY,
     actions: hoverAlignment({ dx: 193, dy: 232 }),
-    annotations: [
-      codonCallout(SICKLE_CODON, HBB_GENES, RS334, HBB_FONT_SIZE),
-      HBB_STRUCTURE,
-    ],
+    annotations: [codonCallout(SICKLE_CODON, HBB_GENES, RS334, HBB_FONT_SIZE)],
   },
   {
     mode: 'url',
@@ -478,7 +476,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     ...READY,
     viewportHeight: 1210,
     actions: hoverAlignment({ dx: 193, dy: 8 }),
-    annotations: [...kgCallouts(190), HBB_STRUCTURE],
+    annotations: kgCallouts(190),
   },
   {
     mode: 'url',
@@ -503,9 +501,8 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         selector: `[data-track-overlay-slot]:has([data-testid="trackRenderingContainer-lgv-HBB-${HBB_DOMAINS}"]) [aria-label="Hide legend"]`,
       },
       { type: 'waitForAppSettled' },
-      ...hoverAlignment({ dx: 93, dy: 8 }),
+      ...RESET_ZOOM,
     ],
-    annotations: [HBB_STRUCTURE],
   },
   {
     mode: 'url',

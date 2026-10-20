@@ -69,6 +69,11 @@ on _HBB_ residue 7 with structure 2HBS:
 - pick **Use as reference row** on the `human_query` tip of the alignment's
   tree: the human sequence pins above the alignment, and a residue matching it
   draws as a dot
+- drag across codon 7, the `E` of the gene's translation, in the genome view's
+  ruler, and pick **Highlight region**
+- click the link chip at the top of the new band, pick **Edit label...** and
+  type `E6V`. The genome view writes the label on the band, the alignment on
+  column 7 and the structure beside Val6
 - hover column 7 of the `human_query` row in the alignment
 
 Residue 7 counts the initiator methionine, which the mature protein loses, so
