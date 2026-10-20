@@ -78,7 +78,7 @@ test('an alpha change rebuilds neither geometry nor colors', async () => {
   expect(view.dotplotRenderState.alpha).toBe(0.5)
 }, 45000)
 
-// opacity and minAlignmentLength are stored on the view, not per display. They
+// opacity and the length filter are stored on the view, not per display. They
 // used to be per display while every control was view-level and fanned its
 // setter out over the displays that existed at the time — so a track shown after
 // the slider moved rendered at the default while the slider said otherwise.
@@ -87,7 +87,7 @@ test('a track shown after a settings change inherits them', async () => {
   // both moved off their defaults BEFORE the second track exists, which is
   // exactly what a fan-out setter cannot reach
   view.setOpacity(0.5)
-  view.setMinLength(1e9)
+  view.setLowerBound('length', 1e9)
 
   view.showTrack('peach_grape_small')
   await waitFor(
@@ -108,7 +108,7 @@ test('a track shown after a settings change inherits them', async () => {
   expect(view.minLength).toBe(1e9)
   expect(added.geometry.instanceCount).toBe(0)
 
-  view.setMinLength(0)
+  view.setLowerBound('length', 0)
   expect(added.geometry.instanceCount).toBeGreaterThan(0)
 
   // opacity reaches the newcomer without any per-display state to inherit: one

@@ -28,10 +28,11 @@ import { closure } from './moduleClosure.ts'
 // own header promises this check: it exists so `RpcRegistry.ts` can name
 // CoreGetEncodedLayers' wire shape without pulling render-core's graph through
 // it, and every leaf that reaches the registry pays for an edge added here.
-// Its three are itself, `BaseAdapter/zoomRange.ts`, which is a module for one
+// Its four are itself, `BaseAdapter/zoomRange.ts`, which is a module for one
 // interface for this reason — `types.ts` beside it carries the status and
-// abort graph through `BaseOptions` — and `colorSchemes.ts`, a module for one
-// list for the same reason.
+// abort graph through `BaseOptions` — `colorSchemes.ts`, a module for one list
+// for the same reason, and the import-free `stepOutputs.ts`, which holds the
+// aggregate op list.
 
 const root = join(__dirname, '..')
 
@@ -85,7 +86,7 @@ const CEILINGS = [
   {
     entry: 'packages/core/src/util/markEncodingTypes.ts',
     runtime: 5,
-    types: 3,
+    types: 4,
   },
   // No headroom: `jbrowse validate` carries a copy of every file here
   // (scripts/generateMarkRules.ts), so an edge added to the rule list is a

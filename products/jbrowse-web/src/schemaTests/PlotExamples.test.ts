@@ -158,7 +158,6 @@ test("each display's plot settings", () => {
     ],
     LinearVariantDisplay: ['color', 'facet', 'filter', 'labels'],
     LinearWiggleDisplay: [
-      'aggregate',
       'color',
       'extent',
       'interpolate',
