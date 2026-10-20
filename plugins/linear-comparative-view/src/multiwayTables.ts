@@ -581,7 +581,7 @@ export async function multiwayTables(
             ? await fetch(regions, {
                 ...(pairsOnAnchor ? { queryAssemblyName: upper } : {}),
                 targetAssemblyName: lower,
-              }).catch(() => undefined)
+              })
             : undefined
         if (pair?.features.length) {
           laneLinks.set(lanePairKey(upper, lower), {

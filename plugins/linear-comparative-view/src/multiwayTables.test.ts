@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 
+import * as getFeatures from './MultiWaySyntenyDisplay/MultiWayGetFeatures.ts'
 import { multiwayTables, registerComparativeAdapters } from './tables.ts'
 
 function engine(capabilities: string[]) {
@@ -39,16 +40,7 @@ const SYRI = {
 }
 
 test('a source answering lane pairs on the anchor exports its lanes stacked by structure, as the display stacks them', async () => {
-  const dense = await multiwayTables(engine([]), SYRI)
   const stacked = await multiwayTables(engine(['lanePairsOnAnchor']), SYRI)
-  expect(dense.assemblyNames).toEqual([
-    'Col-0',
-    'Kyo',
-    'Cvi',
-    'Sha',
-    'Eri',
-    'Ler',
-  ])
   expect(stacked.assemblyNames).toEqual([
     'Col-0',
     'Kyo',
@@ -57,4 +49,29 @@ test('a source answering lane pairs on the anchor exports its lanes stacked by s
     'Ler',
     'Cvi',
   ])
+})
+
+test('a reference-anchored file not declaring lane pairs on the anchor fails the export naming the missing pair', async () => {
+  await expect(multiwayTables(engine([]), SYRI)).rejects.toThrow(
+    /no alignments between "Kyo" and "Cvi"/,
+  )
+})
+
+test('a failed lane-pair fetch fails the export instead of reading as no alignments', async () => {
+  const real = getFeatures.executeMultiWayFeatures
+  const spy = jest
+    .spyOn(getFeatures, 'executeMultiWayFeatures')
+    .mockImplementation(async args => {
+      if (args.opts?.targetAssemblyName !== undefined) {
+        throw new Error('pair fetch failed')
+      }
+      return real(args)
+    })
+  try {
+    await expect(
+      multiwayTables(engine(['lanePairsOnAnchor']), SYRI),
+    ).rejects.toThrow('pair fetch failed')
+  } finally {
+    spy.mockRestore()
+  }
 })
