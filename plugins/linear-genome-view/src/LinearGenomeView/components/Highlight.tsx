@@ -1,21 +1,19 @@
 import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import { getSession } from '@jbrowse/core/util'
 import CloseIcon from '@mui/icons-material/Close'
+import EditIcon from '@mui/icons-material/Edit'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import { observer } from 'mobx-react'
 
 import HighlightBand from './HighlightBand.tsx'
 import HighlightChip from './HighlightChip.tsx'
+import HighlightLabelDialog from './HighlightLabelDialog.tsx'
 import { getHighlightColor } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 import type { HighlightType } from '../types.ts'
 
 type LGV = LinearGenomeViewModel
-
-// A band narrower than the link-icon chip clips it into a smudge, so below this
-// width the chip is dropped (the band itself still draws).
-const CHIP_MIN_WIDTH = 24
 
 const Highlight = observer(function Highlight({
   model,
@@ -38,30 +36,45 @@ const Highlight = observer(function Highlight({
       label={label}
       gaps={model.nonGenomicTrackBands()}
     >
-      {coords.width >= CHIP_MIN_WIDTH ? (
-        <HighlightChip
-          color={bandColor}
-          label={label}
-          tooltip={highlight.label ?? 'Highlighted region'}
-          menuItems={[
-            {
-              label: 'Dismiss highlight',
-              icon: CloseIcon,
-              onClick: () => {
-                getSession(model).removeHighlight(highlight)
-              },
+      <HighlightChip
+        color={bandColor}
+        label={label}
+        tooltip={highlight.label ?? 'Highlighted region'}
+        menuItems={[
+          {
+            label: 'Edit label...',
+            icon: EditIcon,
+            onClick: () => {
+              const session = getSession(model)
+              session.queueDialog(handleClose => [
+                HighlightLabelDialog,
+                {
+                  label: highlight.label,
+                  onSubmit: (label: string | undefined) => {
+                    session.updateHighlight(highlight, { label })
+                  },
+                  handleClose,
+                },
+              ])
             },
-            {
-              label: 'Turn off highlights',
-              icon: VisibilityOffIcon,
-              onClick: () => {
-                getSession(model).setHighlightsVisible(false)
-              },
+          },
+          {
+            label: 'Dismiss highlight',
+            icon: CloseIcon,
+            onClick: () => {
+              getSession(model).removeHighlight(highlight)
             },
-            ...model.highlightMenuItems(highlight),
-          ]}
-        />
-      ) : null}
+          },
+          {
+            label: 'Turn off highlights',
+            icon: VisibilityOffIcon,
+            onClick: () => {
+              getSession(model).setHighlightsVisible(false)
+            },
+          },
+          ...model.highlightMenuItems(highlight),
+        ]}
+      />
     </HighlightBand>
   ) : null
 })

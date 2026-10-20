@@ -1,7 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import TracksContainer from './TracksContainer.tsx'
 
@@ -41,7 +41,7 @@ const HIGHLIGHT = {
 }
 const NARROW_HIGHLIGHT = { ...HIGHLIGHT, end: 110 }
 
-async function setup(highlight = HIGHLIGHT) {
+async function setup(highlight: typeof HIGHLIGHT = HIGHLIGHT) {
   const session = createTestSession()
   session.addAssemblyConf(assemblyConf)
   session.addView('LinearGenomeView', {
@@ -63,7 +63,7 @@ async function setup(highlight = HIGHLIGHT) {
       <TracksContainer model={model}>{null}</TracksContainer>
     </ThemeProvider>,
   )
-  return model
+  return { model, session }
 }
 
 test('a band draws its chip with no pointer anywhere near it', async () => {
@@ -72,10 +72,9 @@ test('a band draws its chip with no pointer anywhere near it', async () => {
   expect(screen.queryByTestId('highlight-chip')).toBeTruthy()
 })
 
-test('a band too narrow for the chip draws without one', async () => {
+test('a band narrower than its chip still draws it, beside the band', async () => {
   await setup(NARROW_HIGHLIGHT)
-  expect(await screen.findByTestId('highlight-band')).toBeTruthy()
-  expect(screen.queryByTestId('highlight-chip')).toBeNull()
+  expect(await screen.findByTestId('highlight-chip')).toBeTruthy()
 })
 
 // A codon at gene zoom is narrower than its label. The band clips what it
@@ -84,4 +83,21 @@ test("a band's label sits outside the band, which would clip it", async () => {
   await setup(NARROW_HIGHLIGHT)
   const label = await screen.findByText('a region')
   expect(screen.getByTestId('highlight-band').contains(label)).toBe(false)
+})
+
+test("the chip's Edit label names the session's highlight", async () => {
+  const { session } = await setup()
+  fireEvent.click(await screen.findByTestId('highlight-chip'))
+  fireEvent.click(await screen.findByText('Edit label...'))
+  const [Dialog, props] = session.queueOfDialogs[0]!
+  render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <Dialog {...props} />
+    </ThemeProvider>,
+  )
+  fireEvent.change(screen.getByLabelText('Label'), {
+    target: { value: '  E6V ' },
+  })
+  fireEvent.click(screen.getByText('Submit'))
+  expect(session.highlights.map(h => h.label)).toEqual(['E6V'])
 })
