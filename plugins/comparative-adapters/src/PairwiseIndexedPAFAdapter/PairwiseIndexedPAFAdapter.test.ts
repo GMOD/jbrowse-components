@@ -421,7 +421,6 @@ describe('PairwiseIndexedPAFAdapter', () => {
       const adapter = makeAdapter(pifInsCoarsePath, ['volvox_ins', 'volvox'])
       expect(await adapter.getHeader()).toEqual({
         version: 2,
-        writer: expect.stringMatching(/^jbrowse-cli\//),
         tiers: ['fine', 'coarse'],
         coarseGap: 1000,
         cigars: 'all',

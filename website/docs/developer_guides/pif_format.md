@@ -95,21 +95,38 @@ counts and tags, so identity coloring does not jump at a tier switch.
 One meta line, sorted first and kept by tabix (`tabix -H file.pif.gz`):
 
 ```tsv
-#pif	version:i:2	writer:Z:jbrowse-cli/5.0.0	tiers:Z:fine,coarse	coarse:i:10000	cigars:Z:all
+#pif	version:i:2	tiers:Z:fine,coarse	coarse:i:10000	cigars:Z:all
 ```
 
 | Field     | Meaning                                                      |
 | --------- | ------------------------------------------------------------ |
-| `version` | format generation: 2 adds `pi:i:` on every line and `writer` |
-| `writer`  | the tool and version that built the file                     |
+| `version` | format generation: 2 adds `pi:i:` on every line              |
 | `tiers`   | `fine` or `fine,coarse`                                      |
 | `coarse`  | the coarse tier's bound in bp, absent when there is no tier  |
 | `cigars`  | whether every input row had a CIGAR: `all`, `some` or `none` |
 
 Every field is optional, and files built before the header have none. A reader
-ignores a header key it does not know, so a new key needs no version bump, and a
-writer must not bump for one. A writer raises `version` only when a reader of
-the previous generation would misread the rows.
+skips a header key it does not know, such as the `writer:Z:` key that files from
+the 5.0.0 betas carry.
+
+### Format version
+
+`version` states the format generation, and nothing in the header names the tool
+or its release.
+
+- For one input and one set of options, every release that writes one `version`
+  writes the same uncompressed bytes, header and sorted rows. The CLI's tests
+  pin them (`products/jbrowse-cli/test/data/pif-golden/`).
+- `jbrowse make-pif --format-version` prints `version` and exits without reading
+  input. A pipeline can stamp each PIF with it and rebuild only when it changes.
+- A writer raises `version` when a reader of the previous generation would
+  misread the new bytes, or when files already built should be rebuilt. A commit
+  making any other byte change, such as a header key readers can skip, keeps
+  `version` and regenerates the pinned bytes on purpose.
+- The promise covers the uncompressed bytes only. bgzip and tabix from the
+  `PATH` compress and index them, and another htslib build can write different
+  `.gz` bytes for the same content. A consumer that needs byte-identical
+  `.pif.gz` files pins its bgzip build.
 
 ## Coarse tier
 
@@ -172,6 +189,7 @@ jbrowse make-pif input.paf --coarse 1000   # runs within 1kb
 jbrowse make-pif input.paf --no-coarse     # fine t/q tier only
 jbrowse make-pif input.paf --csi           # CSI index, for chromosomes > 512Mb
 jbrowse make-pif input.paf --out out.pif.gz
+jbrowse make-pif --format-version          # prints the format version, e.g. 2
 ```
 
 [`coarseBpPerPxThreshold`](/docs/config/pairwiseindexedpafadapter/#slot-coarsebpperpxthreshold)

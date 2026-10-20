@@ -526,15 +526,16 @@ describe('the #pif header', () => {
     })
     expect(parsePifHeader('')).toEqual({})
     expect(
+      parsePifHeader('#pif\tversion:i:2\ttiers:Z:fine\tcigars:Z:none\n'),
+    ).toEqual({ version: 2, tiers: ['fine'], cigars: 'none' })
+  })
+
+  test('skips the writer a 5.0.0 beta wrote', () => {
+    expect(
       parsePifHeader(
-        '#pif\tversion:i:2\twriter:Z:jbrowse-cli/5.0.0\ttiers:Z:fine\tcigars:Z:none\n',
+        '#pif\tversion:i:2\twriter:Z:jbrowse-cli/5.0.0-beta.7\ttiers:Z:fine\tcigars:Z:none\n',
       ),
-    ).toEqual({
-      version: 2,
-      writer: 'jbrowse-cli/5.0.0',
-      tiers: ['fine'],
-      cigars: 'none',
-    })
+    ).toEqual({ version: 2, tiers: ['fine'], cigars: 'none' })
   })
 
   test('a newer generation keeps only its version', () => {

@@ -134,7 +134,8 @@ read directly, its pairs translate to `cr` runs one for one.
   of one PAF row, and the indexed adapters build `uniqueId` and `syntenyId`
   from it the way the in-memory PAF adapter does (`<row>-<t|q>-<assembly>`),
   so a selection survives the tier switch. A version-1 file keeps its file
-  offsets. The header also names its `writer`.
+  offsets. The header also named its `writer` until
+  [ADR-235](adr-235-a-pifs-bytes-follow-its-format-version.md) dropped it.
 - `--coarse` is the tier's accuracy bound, not a "split gap": indels over half
   of it are kept and a run's line is within it. `coarseBpPerPxThreshold` must
   still be at least `--coarse`, for the same reason as before.

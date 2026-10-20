@@ -660,14 +660,13 @@ export type PifLine = ReturnType<typeof parsePifLine>
 
 /**
  * What a PIF's `#pif` header line states (make-pif writes it since the coarse
- * CIGAR, ADR-104): the format generation, the writer, the tiers written, the
- * coarse tier's accuracy bound in bp, and whether every input row carried a
- * CIGAR. Every field is optional because a file built before the header has
- * none.
+ * CIGAR, ADR-104): the format generation, the tiers written, the coarse tier's
+ * accuracy bound in bp, and whether every input row carried a CIGAR. Every
+ * field is optional because a file built before the header has none. The
+ * parser skips any other key, such as the `writer` that 5.0.0 betas wrote.
  */
 export interface PifMeta {
   version?: number
-  writer?: string
   tiers?: string[]
   coarseGap?: number
   cigars?: 'all' | 'some' | 'none'
@@ -703,8 +702,6 @@ export function parsePifHeader(header: string): PifMeta {
     const value = m?.[2]
     if (key === 'version' && value !== undefined) {
       meta.version = +value
-    } else if (key === 'writer' && value !== undefined) {
-      meta.writer = value
     } else if (key === 'tiers' && value !== undefined) {
       meta.tiers = value.split(',')
     } else if (key === 'coarse' && value !== undefined) {

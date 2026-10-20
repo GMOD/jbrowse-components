@@ -14,8 +14,6 @@ import {
   swapIndelCigar,
 } from '@jbrowse/cigar-utils'
 
-import { version } from '../../version.ts'
-
 import type { Writable } from 'node:stream'
 
 // Default gap (bp) of the coarse tier's coarse CIGAR: how far a straight line
@@ -49,15 +47,18 @@ export interface PifStats {
   skipped: number
 }
 
-// Generation 2 (2026-09): every row carries `pi:i:`, the input row's index,
-// and the header names the writer.
+// Generation 2 (2026-09) writes `pi:i:`, the input row's index, on every row.
+// golden.test.ts pins the bytes one generation writes; ADR-235 states the bump
+// rule.
 export const PIF_FORMAT_VERSION = 2
 
 /**
  * The one meta line a PIF carries, sorted first by the C-locale sort and kept
- * by tabix as a header. It states the format generation, the writer, the
- * tiers written, the coarse tier's accuracy bound (`--coarse`), and whether
- * every input row had a CIGAR — the facts a reader cannot recover from the rows.
+ * by tabix as a header. It states the format generation, the tiers
+ * written, the coarse tier's accuracy bound (`--coarse`), and whether every
+ * input row had a CIGAR — the facts a reader cannot recover from the rows. It
+ * states no writer or CLI release, so a PIF's bytes change with its generation
+ * alone (ADR-235).
  */
 export function pifHeader(coarseGap: number | undefined, stats: PifStats) {
   const cigars =
@@ -68,7 +69,7 @@ export function pifHeader(coarseGap: number | undefined, stats: PifStats) {
         : 'some'
   const tiers = coarseGap === undefined ? 'fine' : 'fine,coarse'
   const bound = coarseGap === undefined ? '' : `\tcoarse:i:${coarseGap}`
-  return `#pif\tversion:i:${PIF_FORMAT_VERSION}\twriter:Z:jbrowse-cli/${version}\ttiers:Z:${tiers}${bound}\tcigars:Z:${cigars}\n`
+  return `#pif\tversion:i:${PIF_FORMAT_VERSION}\ttiers:Z:${tiers}${bound}\tcigars:Z:${cigars}\n`
 }
 
 function panSNSample(refName: string) {

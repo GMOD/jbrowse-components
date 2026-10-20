@@ -10,6 +10,7 @@ import {
 import {
   DEFAULT_BGZIP_THREADS,
   DEFAULT_COARSE_GAP,
+  PIF_FORMAT_VERSION,
   createPIF,
   getOutputFilename,
   missingPairs,
@@ -46,6 +47,11 @@ export async function run(args?: string[]) {
       description:
         'Compression threads for bgzip. Defaults to 4. Raise it on a machine with cores to spare, or set 1 to leave the rest of the machine alone.',
     },
+    'format-version': {
+      type: 'boolean',
+      description:
+        "Print the PIF format version this command writes (the header's version:i:) and exit. A pipeline can stamp its PIFs with it and rebuild them only when it changes.",
+    },
   } as const
   const { values: flags, positionals } = parseArgs({
     args,
@@ -73,6 +79,9 @@ export async function run(args?: string[]) {
     '',
     '# give bgzip more (or fewer) compression threads than the default 4',
     '$ jbrowse make-pif input.paf --threads 8',
+    '',
+    '# print the PIF format version, e.g. to decide whether a PIF needs rebuilding',
+    '$ jbrowse make-pif --format-version',
   ]
 
   const notes =
@@ -89,6 +98,11 @@ export async function run(args?: string[]) {
       usage: 'jbrowse make-pif <file> [options]',
       options,
     })
+    return
+  }
+
+  if (flags['format-version']) {
+    console.log(PIF_FORMAT_VERSION)
     return
   }
 

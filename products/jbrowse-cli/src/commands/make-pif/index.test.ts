@@ -8,13 +8,12 @@ import { Writable } from 'node:stream'
 import { gunzipSync, gzipSync } from 'node:zlib'
 
 import { runCommand, runInTmpDir } from '../../testUtil.ts'
-import { version } from '../../version.ts'
 import { PIF_FORMAT_VERSION, createPIF, pifHeader } from './pif-generator.ts'
 
 const base = path.join(__dirname, '..', '..', '..', 'test', 'data')
 const simplePaf = path.join(base, 'volvox_inv_indels.paf')
 
-const HEADER = `#pif\tversion:i:${PIF_FORMAT_VERSION}\twriter:Z:jbrowse-cli/${version}`
+const HEADER = `#pif\tversion:i:${PIF_FORMAT_VERSION}`
 
 const exists = (p: string) => fs.existsSync(p)
 
@@ -32,12 +31,14 @@ test('make-pif', async () => {
     const fn = `${path.basename(simplePaf, '.paf')}.pif.gz`
     await runCommand(['make-pif', simplePaf, '--out', fn])
     expect(exists(fn)).toBeTruthy()
-    expect(
-      gunzipSync(fs.readFileSync(fn))
-        .toString()
-        .replace(`writer:Z:jbrowse-cli/${version}`, 'writer:Z:jbrowse-cli/x'),
-    ).toMatchSnapshot()
+    expect(gunzipSync(fs.readFileSync(fn)).toString()).toMatchSnapshot()
   })
+})
+
+test('--format-version prints the generation the header states and reads no input', async () => {
+  const { stdout, error } = await runCommand(['make-pif', '--format-version'])
+  expect(error).toBeUndefined()
+  expect(stdout).toBe(`${PIF_FORMAT_VERSION}\n`)
 })
 
 test('the four rows of one alignment share a pi:i: row index', async () => {

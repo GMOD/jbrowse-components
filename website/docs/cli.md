@@ -673,6 +673,11 @@ Options:
                              it on a machine with cores to spare, or set 1 to
                              leave the rest of the machine alone.
 
+      --format-version       Print the PIF format version this command writes
+                             (the header's version:i:) and exit. A pipeline can
+                             stamp its PIFs with it and rebuild them only when
+                             it changes.
+
 Notes:
 
 Use --csi for assemblies containing sequences longer than ~512 Mb. The default
@@ -682,7 +687,7 @@ sh, sort, bgzip, and tabix on the PATH.
 
 Examples:
 
-# creates input.pif.gz and input.pif.gz.tbi in the same directory
+# creates input.pif.gz and input.pif.gz.tbi in the current directory
 $ jbrowse make-pif input.paf
 
 # specify the output file, also creates output.pif.gz.tbi
@@ -699,6 +704,9 @@ $ jbrowse make-pif input.paf --no-coarse
 
 # give bgzip more (or fewer) compression threads than the default 4
 $ jbrowse make-pif input.paf --threads 8
+
+# print the PIF format version, e.g. to decide whether a PIF needs rebuilding
+$ jbrowse make-pif --format-version
 ```
 
 ## jbrowse make-density
