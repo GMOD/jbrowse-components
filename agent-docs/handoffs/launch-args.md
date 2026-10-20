@@ -1,49 +1,45 @@
 ---
 name: launch-args
-description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop: each turns argv into a session spec, and only the last step differs (render, screenshot, open a window). Goal: docs that say 'do this with jbrowse-img... and launch Desktop the same way'. Closes GMOD/jbrowse-components#4303 properly. In progress; none of these packages is released, so breaking changes are fine."
+description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --hub renamed --genome, docs. Open: display modifiers in Desktop (a spec cannot carry five of them), img rendering through loadSessionSpec, jb2capture local files, the package's first npm publish."
 ---
 
 # Launch arguments: one grammar for img, capture and Desktop
 
-Started 2026-10-20. Desktop today takes a `.jbrowse`, a `config.json` or a
-`jbrowse://` link on argv (`products/jbrowse-desktop/electron/launchTarget.ts`)
-and shows a "cannot open" notice for a data file (`findUnopenableFile`), which
-this thread replaces.
+Started 2026-10-20 (GMOD/jbrowse-components#4303). The goal is docs that can
+say "do this with jb2export, and launch Desktop the same way". None of the
+packages is released, so breaking changes are fine.
 
-## Grammar
+## Where it lives
 
-| Argument | Meaning |
-| --- | --- |
-| `--genome hg38` / `--config path\|URL` | where assemblies and tracks come from (`--genome` replaces img/capture's `--hub`, which collides with urlparams `hubURL=`, a UCSC track hub) |
-| `--fasta`, `--chromSizes`, `--aliases`, `--cytobands` | an assembly from files |
-| `--bam`, `--cram`, `--vcfgz`, `--gffgz`, `--bigwig`, ... `file [mods]` | a file as a track, typed |
-| bare `reads.bam` | the same, typed by extension |
-| `--track id [mods]` | a trackId from the genome or config |
-| `--assembly`, `--loc` | which assembly, and where |
-| `--spec`, `--session` | anything flags cannot say |
-| `--out` | img and capture only |
+- `packages/launch-args/src/`: the tokenizer (`parseArgv.ts`, with the
+  bare-file rule), file-to-config building through the add-track format table
+  (`fileInput.ts`, `fileAdapter.ts` from `@jbrowse/cli`), Desktop's plan
+  (`launchPlan.ts`), `--genome` URLs (`genome.ts`) and `--track` lookup
+  (`trackIds.ts`, node-free, exported as the `./trackIds` subpath).
+- Desktop: `electron/launchTarget.ts` (`findLaunchTarget` builds a plan or an
+  `invalid` reason), `electron/electron.ts` (single-instance lock data,
+  open-file), `src/components/StartScreen/launchFromLink.ts`
+  (`launchFromPlan`).
+- jb2export: `readData.ts` builds tracks with `fileTrack`; `main.ts` passes its
+  boolean flags to the tokenizer.
 
-**Positional rule.** img's `parseArgv` attaches every token after a flag to
-that flag, so `--loc chr1:1-100 reads.bam` drops the BAM. A modifier is
-`<registered name>:` or `<registered name>=`; any other token with a known data
-extension, or a URL, is a positional file; anything else is an error. A ':'
-test alone fails on locstrings, URLs and `C:\` paths.
+## Traps
+
+- **Chromium reorders a second launch's argv** in the `second-instance` event,
+  switches first. The second instance sends its own `process.argv` and cwd as
+  `requestSingleInstanceLock` data; `forwardedLaunch` reads it.
+- **Unknown flags in Desktop's argv are Chromium or Electron switches**, which
+  take values after `=`; `launchArgs` drops them before parsing, or a switch
+  swallows the file after it.
+- **jb2export's integration tests run the built `esm/`** of every workspace
+  package; a stale `packages/launch-args/esm` fails them with errors that look
+  like real bugs. `pnpm build:esm` in `products/jbrowse-img` first.
 
 ## Next, in order
 
-1. **`@jbrowse/launch-args`**, a Node package (not core: everything core exports
-   is plugin ABI, and this needs `fs` for sibling index files). Pure argv →
-   `{ config pieces, spec | session snapshot }`, from img's `parseArgv`,
-   `makeConfigs`, `readData`, `comparativeArgs`, `spec`. Imports only narrow
-   core subpaths. img switches to it. First npm publish needs a human.
-2. **Desktop** consumes it: a `LaunchTarget` `{ type: 'spec' }` built only
-   from argv, never from a `jbrowse://` link, so a link cannot yield a
-   `localPath`. A `--genome`/`--config` URL goes through the renderer's
-   `fetchConfig` so the plugin-trust gate runs; the main process does not fetch
-   it. Only plain-slot modifiers at first (`height`, `force`, `display`,
-   `heightMode`, `arcs`, `sashimi`, `baseColor`, a constant `color`).
-3. **Spec extensions in core** for what a spec cannot say today
-   (`plugins/.../applyTrackOpts.ts` does these on a live model):
+1. **Display modifiers in Desktop.** Desktop reports `height:`, `color:` and
+   the rest as not applied. Five cannot be written as session-spec keys today
+   (`products/jbrowse-img/src/applyTrackOpts.ts` does them on a live model):
    - path keys merged onto the configured value (`"color.field"`,
      `"filterBy.flagExclude"`), since a whole-object write loses the default
      `flagExclude` and ADR-215 makes `color` whole; tag filters need an "add"
@@ -52,12 +48,19 @@ test alone fails on locstrings, URLs and `C:\` paths.
      `--loc`)
    - a plugin-free track type → display category table, since `color:` and
      `featureHeight:` write different keys per category
-4. **img renders through `loadSessionSpec`**, deleting the live-model half of
-   `applyTrackOpts`. Without this, img and Desktop drift.
-5. **One "Launch arguments" docs page**; the img, capture and Desktop pages
-   link it with their own extra flags.
-6. **capture** moves onto the module last. Local files need serving to its
-   browser: file:// fails (workers), a loopback server hits Chrome's
-   local-network access checks from an https origin, and Puppeteer request
-   interception is unverified for worker requests. Until then capture refuses a
-   local path with a clear error, and the docs sentence names img and Desktop.
+
+   Then `buildDisplaySnapshot` (pure) moves to the package and both apps use it.
+2. **img renders through `loadSessionSpec`**, deleting the live-model half of
+   `applyTrackOpts`, so img and Desktop cannot drift.
+3. **jb2capture local files.** It drives a web instance, so local files need
+   serving to its browser: file:// fails (workers), a loopback server hits
+   Chrome's local-network access checks from an https origin, and Puppeteer
+   request interception is unverified for worker requests. Until then the docs
+   sentence names jb2export and Desktop. capture still keeps its own copy of
+   the genome URL (`products/jbrowse-capture/src/genome.ts`) to stay
+   puppeteer-only.
+4. **Comparative views from Desktop's command line** (`--fasta` twice, `--paf`):
+   jb2export's `comparativeArgs.ts` has the grammar; Desktop's plan builds one
+   linear view.
+5. **Publish `@jbrowse/launch-args`.** `@jbrowse/cli`, `@jbrowse/img` and
+   Desktop depend on it; its first npm publish needs a human.
