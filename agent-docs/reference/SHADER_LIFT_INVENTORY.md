@@ -131,7 +131,7 @@ is no longer shared with anything.
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `glyphExpand` | tests only — `pointGlyphPad.test.ts` |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
-| `lineValueAtColorYPx` | nothing |
+| `lineValueAtColorYPx` | tests only — `lineRampAlongY.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
 | `wideCircleHullPoint` | tests only — `arcHull.test.ts` |
 | `wideCircleLeg` | tests only — `arcHull.test.ts`, `wideCircleLeg.test.ts` |
