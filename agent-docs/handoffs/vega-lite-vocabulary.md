@@ -42,6 +42,10 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
 2. **The other filter families as predicate lists**: alignments, canvas,
    variant, MAF and junction/connection rows. First bench the flag fusion
    against today's `flagInclude`/`flagExclude`/`minMapq` path.
+   The same pass moves each band's layer toggles and thresholds into its
+   layers' `show` and `filter` (ADR-238 "Layers inside a part"):
+   `coverage.interbase`, `coverage.alleles`, `pileup.mismatches`,
+   `sashimi.labels`, the modification layer.
 3. **Legends, with step 1**: Vega-Lite gives each channel its own `legend`,
    so `legend.show` on the channel takes over every display's `showLegend`.
 4. **Wiggle's `resolution` and Hi-C's `resolutionBias`** under `data`, each

@@ -159,6 +159,42 @@ The indels are a part of the alignment mark:
 | `indels: {}` | indels drawn in their op colors, `full` |
 | `indels: { encoding: { opacity: { value: 0 } } }` | indels left as gaps, `matches` |
 
+### Layers inside a part
+
+Amended 2026-10-20. A band such as alignments `coverage` is already drawn as a
+list of layers (`coverageBandMarks.ts`): depth bars, allele segments,
+modification segments, the interbase histogram, its indicator triangles and
+the clip strips. A setting inside a part that switches one of those layers is
+the layer's `show`, and a threshold for drawing a layer's records is a
+predicate in the layer's own `filter`:
+
+| Today | Grammar |
+|---|---|
+| `coverage.showInterbaseIndicators` | `coverage.interbase.show` |
+| `coverage.minAlleleFraction` | `coverage.alleles.filter: [{ field: 'fraction', gte }]` |
+| `INDICATOR_THRESHOLD` and the minimum depth in `interbaseCoverage.ts` | the default `coverage.interbase.filter`, which an author can see and edit |
+| `pileup.showMismatches` | `pileup.mismatches.show` |
+| `sashimi.showCounts` | `sashimi.labels.show`, a text layer |
+| `modifications.threshold`, `cytosineContext`, `shownModifications` | predicates on the modification layer: `probability`, `context`, `code` |
+| `variants`' `minMinorAlleleFrequency`, `maxMissingness` | `{ field: 'maf', gte }`, `{ field: 'missingness', lte }` |
+
+- **`minAlleleFraction` is a filter, not a color rule.** ADR-232 called it
+  one, but the allele layer omits a segment below the share and the grey
+  depth bar shows through, which is what a filter on that layer draws.
+- **This is not the `filter.alleles` ADR-232 rejected.** That rejection was
+  of one display-wide setting driving both the coverage floor and the pileup
+  fade. A layer's own filter reaches only that layer, and
+  `pileup.fadeLowFrequency` stays a render rule.
+- **A layer's filter costs what the hand-written test does.** The allele
+  painter compares each segment's fraction already, and the interbase rule
+  already runs in the worker, so a compiled predicate replaces a compare with
+  the same compare.
+- **Open: `pileup.fadeLowBaseQuality`** reads as
+  `mismatches.encoding.opacity: { field: 'qual' }`. GRAMMAR_OF_GRAPHICS.md
+  kept the fades as booleans because an opacity object would take one legal
+  value, and the channel object of this ADR may change that. The alignments
+  stage settles it.
+
 ## Rejected
 
 | Proposal | Why not |
