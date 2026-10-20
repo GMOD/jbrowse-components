@@ -1,5 +1,6 @@
 import {
   findLaunchTarget,
+  findUnopenableFile,
   parseProtocolUrl,
   toProtocolUrl,
 } from './launchTarget.ts'
@@ -125,6 +126,21 @@ test('matches a launch file extension case-insensitively', () => {
   expect(
     findLaunchTarget(['jbrowse-desktop', '/tmp/Config.JSON'], '/home/me'),
   ).toEqual({ type: 'file', path: '/tmp/Config.JSON' })
+})
+
+test('names a data file the launch cannot open', () => {
+  const files = new Set(['/home/me/reads.bam', '/home/me/my.jbrowse'])
+  const isFile = (p: string) => files.has(p)
+  expect(
+    findUnopenableFile(['jbrowse-desktop', 'reads.bam'], '/home/me', isFile),
+  ).toBe('/home/me/reads.bam')
+  expect(
+    findUnopenableFile(
+      ['jbrowse-desktop', '--renderer', 'webgl', 'my.jbrowse', 'missing.fa'],
+      '/home/me',
+      isFile,
+    ),
+  ).toBeUndefined()
 })
 
 test('ignores flags and the argv[0] binary path', () => {

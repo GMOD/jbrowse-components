@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import path from 'node:path'
 
 import { autoUpdater as nativeAutoUpdater, app, dialog } from 'electron'
@@ -21,6 +22,7 @@ import { resolveLaunchMode } from './launchMode.ts'
 import {
   JBROWSE_PROTOCOL,
   findLaunchTarget,
+  findUnopenableFile,
   parseProtocolUrl,
 } from './launchTarget.ts'
 import { describeLaunchLink } from './linkPrompt.ts'
@@ -157,6 +159,28 @@ async function confirmOpenLink(url: string, parent: BrowserWindow | null) {
     ? dialog.showMessageBox(parent, options)
     : dialog.showMessageBox(options))
   return response === 0
+}
+
+function isFile(filePath: string) {
+  return !!fs.statSync(filePath, { throwIfNoEntry: false })?.isFile()
+}
+
+async function explainUnopenableFile(
+  argv: readonly string[],
+  cwd: string,
+  parent: BrowserWindow | null,
+) {
+  const file = findUnopenableFile(argv, cwd, isFile)
+  if (file) {
+    const message = `JBrowse Desktop cannot open ${path.basename(file)} from the command line`
+    const detail =
+      'A command-line argument can be a session (.jbrowse) or a config.json, such as one @jbrowse/cli builds. Open a genome with "Open new genome" on the start screen, and add a data file with File → Open track...'
+    console.error(`${message}. ${detail}`)
+    const options = { type: 'info' as const, message, detail }
+    await (parent
+      ? dialog.showMessageBox(parent, options)
+      : dialog.showMessageBox(options))
+  }
 }
 
 // Tracks the single main window. Concurrent ensureWindow calls during creation
@@ -347,7 +371,14 @@ function runApp() {
       app.on('second-instance', (_event, argv, workingDirectory) => {
         // Windows/Linux hand a jbrowse:// link to the running instance here, as
         // an argv entry — the same path a file argument takes
-        openTarget(findLaunchTarget(argv, workingDirectory)).catch(logError)
+        const target = findLaunchTarget(argv, workingDirectory)
+        openTarget(target)
+          .then(() =>
+            target
+              ? undefined
+              : explainUnopenableFile(argv, workingDirectory, wm.current),
+          )
+          .catch(logError)
       })
       app.on('open-file', (event, filePath) => {
         event.preventDefault()
@@ -389,7 +420,13 @@ function runApp() {
       }
 
       await initializeFileSystem(paths)
-      await openTarget(await initialTarget)
+      const target = await initialTarget
+      await openTarget(target)
+      if (!target) {
+        explainUnopenableFile(process.argv, process.cwd(), wm.current).catch(
+          logError,
+        )
+      }
     } catch (error) {
       showFatalError('Failed to initialize application', error)
     }

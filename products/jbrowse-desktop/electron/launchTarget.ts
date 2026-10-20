@@ -147,3 +147,21 @@ export function findLaunchTarget(
   const file = args.find(a => hasLaunchExtension(a))
   return file ? { type: 'file', path: path.resolve(cwd, file) } : undefined
 }
+
+/**
+ * A command-line file argument that {@link findLaunchTarget} will not open,
+ * such as a FASTA or BAM, so the launch can say why the start screen came up
+ * empty. Only an existing regular file counts, so a flag's value
+ * (`--renderer webgl`) or a dev run's app directory never does.
+ */
+export function findUnopenableFile(
+  argv: readonly string[],
+  cwd: string,
+  isFile: (filePath: string) => boolean,
+) {
+  return argv
+    .slice(1)
+    .filter(a => !a.startsWith('-') && !isProtocolUrl(a))
+    .map(a => path.resolve(cwd, a))
+    .find(p => !hasLaunchExtension(p) && isFile(p))
+}
