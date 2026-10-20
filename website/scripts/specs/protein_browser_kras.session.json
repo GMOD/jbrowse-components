@@ -6,7 +6,7 @@
       "type": "LinearGenomeView",
       "colorByCDS": true,
       "hideHeaderOverview": true,
-      "showGridlines": false,
+      "axis": { "grid": false },
       "init": {
         "assembly": "hg38",
         "loc": "chr12:25245234-25245424[rev] chr12:25227194-25227452[rev] chr12:25225574-25225813[rev] chr12:25209755-25209951[rev]",

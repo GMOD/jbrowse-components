@@ -2175,12 +2175,6 @@ export const viewFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  showTickLabels: (value, { viewType }) => {
-    const path = settingsPath(viewType, 'Tick labels')
-    return typeof value === 'boolean' && path && viewType === 'DotplotView'
-      ? { path: `${path} (${value ? 'checked' : 'unchecked'})` }
-      : undefined
-  },
   // Applied by initHelpers as levels[i].setHeight(h), and the only thing that
   // calls setHeight from the UI is the ResizeHandle bar under each level
   // (LinearComparativeRenderArea) — there is no menu entry or dialog for it.
@@ -2222,16 +2216,26 @@ export const viewFields: Record<string, FieldRecipe> = {
           note: 'Offered once the view has a track.',
         }
       : undefined,
-  showGridlines: (value, { viewType }) => {
-    if (typeof value !== 'boolean') {
-      return undefined
-    }
-    const path = settingsPath(viewType, 'Gridlines')
-    return viewType === 'LinearGenomeView'
-      ? { path: `View menu → Show... → Guidelines (${checked(value)})` }
-      : viewType === 'DotplotView' && path
-        ? { path: `${path} (${checked(value)})` }
-        : undefined
+  // a view's `axis` guide: `grid` carries the ruler's ticks across the
+  // plot, `labels` numbers them
+  axis: (value, { viewType }) => {
+    const { grid, labels } = asRecord(value) ?? {}
+    const gridPath =
+      viewType === 'LinearGenomeView'
+        ? 'View menu → Show... → Guidelines'
+        : viewType === 'LinearSyntenyView'
+          ? settingsPath(viewType, 'Location markers')
+          : settingsPath(viewType, 'Gridlines')
+    const labelsPath =
+      viewType === 'DotplotView' ? settingsPath(viewType, 'Tick labels') : undefined
+    return [
+      ...(typeof grid === 'boolean' && gridPath
+        ? [{ path: `${gridPath} (${checked(grid)})` }]
+        : []),
+      ...(typeof labels === 'boolean' && labelsPath
+        ? [{ path: `${labelsPath} (${checked(labels)})` }]
+        : []),
+    ]
   },
   lineWidth: (value, { viewType }) => {
     const path = settingsPath(viewType, 'Line width')

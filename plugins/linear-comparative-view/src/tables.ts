@@ -71,7 +71,7 @@ export interface SyntenyTablesArgs {
    * `color` (a CSS color, or the color object's slots such as
    * `{ field: 'strand' }`), `opacity` (a number, or the opacity object),
    * `filter` (a list of field predicates), `cigarMode` (`full`, `matches` or `off`),
-   * `drawLocationMarkers`, `fadeThinAlignmentsMode` (`auto`, `on`, `off`) and
+   * `axis` (`grid` draws the location markers), `fadeThinAlignmentsMode` (`auto`, `on`, `off`) and
    * the level's `height` in px, which the thin-ribbon fade measures against.
    */
   view?: {
@@ -79,7 +79,7 @@ export interface SyntenyTablesArgs {
     opacity?: OpacityArg
     filter?: FilterArg
     cigarMode?: 'full' | 'matches' | 'off'
-    drawLocationMarkers?: boolean
+    axis?: { grid?: boolean }
     fadeThinAlignmentsMode?: 'auto' | 'on' | 'off'
     height?: number
   }
@@ -337,7 +337,7 @@ export async function syntenyTables(
   const config = {
     filter: view.filter ?? [],
     cigarMode: view.cigarMode ?? 'full',
-    drawLocationMarkers: view.drawLocationMarkers ?? false,
+    axis: { grid: view.axis?.grid ?? false },
     fadeThinAlignmentsMode: view.fadeThinAlignmentsMode ?? 'auto',
     height: view.height ?? DEFAULT_LEVEL_HEIGHT,
   }
@@ -395,7 +395,7 @@ export async function syntenyTables(
     featureData,
     ...colorArgs,
     valueColor: settings.valueColor,
-    drawLocationMarkers: config.drawLocationMarkers,
+    drawLocationMarkers: config.axis.grid,
     groundColor: bandGroundColor(),
   })
   const featureColor = createComparativeColorFunction({

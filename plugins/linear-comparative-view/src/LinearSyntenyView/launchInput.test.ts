@@ -40,18 +40,18 @@ test('a launch key written on the view object reaches the launch state', async (
 })
 
 // The gap the partition closed: a property was authorable only once someone
-// wrote an arm for it, and `drawLocationMarkers` shipped without one. None of
+// wrote an arm for it, and the location markers shipped without one. None of
 // these names is mentioned in this plugin's launch code at all.
 test('any declared property lands natively, named nowhere in the launch path', async () => {
   const view = await open({
     views: ROWS,
-    drawLocationMarkers: true,
+    axis: { grid: true },
     lodMode: 'coarse',
     overdrawPx: 42,
     cigarMode: 'matches',
     opacity: { field: 'identity' },
   })
-  expect(view.drawLocationMarkers).toBe(true)
+  expect(view.axisGrid).toBe(true)
   expect(view.lodMode).toBe('coarse')
   expect(view.overdrawPx).toBe(42)
   expect(view.cigarMode).toBe('matches')

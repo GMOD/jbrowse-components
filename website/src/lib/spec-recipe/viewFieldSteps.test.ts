@@ -63,12 +63,18 @@ test('the legend toggle of the circular view is in its view menu', () => {
   expect(stepPaths('showLegend', true, 'LinearSyntenyView')).toEqual([])
 })
 
-test('guidelines are a Show... row on the genome view and a Gridlines row on the dotplot', () => {
-  expect(stepPaths('showGridlines', false, 'LinearGenomeView')).toEqual([
+test('an axis grid names the menu each view keeps it in', () => {
+  expect(stepPaths('axis', { grid: false }, 'LinearGenomeView')).toEqual([
     'View menu → Show... → Guidelines (unchecked)',
   ])
-  expect(stepPaths('showGridlines', false, 'DotplotView')).toEqual([
+  expect(
+    stepPaths('axis', { grid: false, labels: false }, 'DotplotView'),
+  ).toEqual([
     'Dotplot display settings (the sliders button in the view header) → Gridlines (unchecked)',
+    'Dotplot display settings (the sliders button in the view header) → Tick labels (unchecked)',
+  ])
+  expect(stepPaths('axis', { grid: true }, 'LinearSyntenyView')).toEqual([
+    'Synteny display settings (the sliders button in the view header) → Location markers (checked)',
   ])
 })
 

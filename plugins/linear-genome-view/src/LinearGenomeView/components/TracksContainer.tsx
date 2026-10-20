@@ -54,7 +54,7 @@ const TracksContainer = observer(function TracksContainer({
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
   const sideScroll = useSideScroll(model)
-  const { showGridlines, showCenterLine } = model
+  const { axisGrid: showGridlines, showCenterLine } = model
   const ref = useRef<HTMLDivElement>(null)
   // shift-drag range select over the whole tracks area. This is intentionally
   // a separate range-select instance from the one inside <Rubberband> (the

@@ -70,7 +70,7 @@
         "showCenterLine": false,
         "showCytobands": true,
         "trackLabels": "offset",
-        "showGridlines": true,
+        "axis": { "grid": true },
         "highlight": [],
         "colorByCDS": false,
         "showTrackOutlines": true

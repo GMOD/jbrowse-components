@@ -111,7 +111,7 @@ export interface CreateViewStateBaseOptions {
    * The view to open, written flat the way a session spec or a config's view is
    * (ADR-099): where to navigate (`loc`), which tracks to show (`tracks`),
    * `highlight`, `tracklist`, and any of the view's own settings beside them
-   * (`hideHeader`, `showGridlines`, `trackLabels`). `type` and `assembly` are
+   * (`hideHeader`, `axis`, `trackLabels`). `type` and `assembly` are
    * filled in.
    *
    * It is the default session's view, so it is read once at create, excludes

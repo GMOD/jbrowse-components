@@ -349,7 +349,7 @@ const FOLLOW_SCROLL_PANELS = haplotypeSession(
   `chr8_PATERNAL:${FOLLOW_SCROLL_RANGE}`,
   [CHAIN_BLOCKS, geneLane('MAT', { height: 60 })],
   [CHAIN_BLOCKS, geneLane('PAT', { height: 60 })],
-  { drawLocationMarkers: true },
+  { axis: { grid: true } },
 )
 
 // One large indel in an otherwise collinear chain, so the markers visibly fan

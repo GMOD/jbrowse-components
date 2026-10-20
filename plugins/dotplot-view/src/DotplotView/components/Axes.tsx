@@ -100,7 +100,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewWidth, borderY, hview, showTickLabels } = model
+  const { viewWidth, borderY, hview, axisLabels: showTickLabels } = model
   // Horizontal-axis labels are drawn vertically (rotated -90° about their anchor).
   const rotate = -90
   const {
@@ -195,7 +195,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewHeight, borderX, vview, showTickLabels } = model
+  const { viewHeight, borderX, vview, axisLabels: showTickLabels } = model
   const {
     offsetPx,
     dynamicBlocks,

@@ -137,7 +137,7 @@ export interface InitState {
 //
 // It used to be a hand-written eight, and the model has grown past it:
 // `hideHeader`, `hideHeaderOverview`, `hideNoTracksActive`, `labelsVisible`,
-// `scalebarOnly`, `showCytobands`, `showGridlines` and `showTrackOutlines` were
+// `scalebarOnly`, `showCytobands`, `axis` and `showTrackOutlines` were
 // all declared, all settable from the menu, and all dropped in silence by a
 // spec that named them — which is most of what a figure or an embed wants to
 // say. The partition reads the same set off the model at wrap time.

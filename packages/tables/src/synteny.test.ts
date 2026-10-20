@@ -24,7 +24,7 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
   expect(t.config).toMatchObject({
     filter: [],
     cigarMode: 'full',
-    drawLocationMarkers: false,
+    axis: { grid: false },
     fadeThinAlignmentsMode: 'auto',
     height: 100,
     color: { field: '' },
@@ -81,7 +81,7 @@ test('the view settings color by strand, set the opacity and hide short blocks',
       color: { field: 'strand' },
       opacity: 0.6,
       filter: [{ field: 'length', gte: 400 }],
-      drawLocationMarkers: true,
+      axis: { grid: true },
     },
   })
   const match = t.ribbons.kind

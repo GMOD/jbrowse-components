@@ -1,5 +1,5 @@
 import { canonicalLocString } from '@jbrowse/core/TextSearch/places'
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import {
@@ -53,6 +53,7 @@ import { contentRightEdgePx } from '@jbrowse/display-kit/regionHost'
 import {
   cast,
   getParent,
+  getSnapshot,
   hasParent,
   isAlive,
   types,
@@ -65,6 +66,7 @@ import {
   navToOption,
 } from '../searchUtils.ts'
 import { doAfterAttach } from './afterAttach.ts'
+import { linearGenomeViewAxisConfigSchema } from './axisConfigSchema.ts'
 import { getCytobands, shouldSwapTracks } from './components/util.ts'
 import {
   HEADER_BAR_HEIGHT,
@@ -501,9 +503,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * show the "gridlines" in the track area
+         * The ruler's guide, a [](/docs/config/lineargenomeviewaxis) object:
+         * `{ grid: false }` stops its ticks running down through the tracks.
          */
-        showGridlines: types.stripDefault(types.boolean, true),
+        axis: types.stripDefault(linearGenomeViewAxisConfigSchema, {}),
 
         /**
          * #property
@@ -628,6 +631,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .views(self => ({
+      /**
+       * #getter
+       * `axis.grid`: whether the ruler's ticks run down through the tracks.
+       */
+      get axisGrid(): boolean {
+        return readConfObject(self.axis, 'grid')
+      },
       // The viewport in pixels, derived from the window it frames — declared
       // ahead of every other getter so that the ~300 reads of `self.bpPerPx` /
       // `self.offsetPx` across the codebase go on resolving by name. Only the
@@ -1456,8 +1466,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setShowGridlines(b: boolean) {
-        self.showGridlines = b
+      setAxisGrid(grid: boolean) {
+        self.axis = cast({ ...getSnapshot(self.axis), grid })
       },
       /**
        * #action

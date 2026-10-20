@@ -82,7 +82,7 @@ describe('LinearSyntenyViewInit type', () => {
   test('accepts any declared view property, in the property own type', () => {
     const init: LinearSyntenyViewInit = {
       views: [{ assembly: 'hg38' }, { assembly: 'mm39' }],
-      drawLocationMarkers: true,
+      axis: { grid: true },
       overdrawPx: 500,
       cigarMode: 'matches',
       lodMode: 'coarse',

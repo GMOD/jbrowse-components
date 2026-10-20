@@ -180,6 +180,7 @@ function dragToHighlight(a: PxToBpResult, b: PxToBpResult): HighlightType {
   }
 }
 
+import { dotplotAxisConfigSchema } from './axisConfigSchema.ts'
 import { DEFAULT_ALPHA, DEFAULT_LINE_WIDTH, defaultHeight } from './consts.ts'
 
 // Floor for the resize handle. Below this the axis borders (which floor at
@@ -256,17 +257,12 @@ export default function stateModelFactory(pm: PluginManager) {
           drawCigar: types.stripDefault(types.boolean, true),
           /**
            * #property
-           * extend each axis' ruler ticks across the plot as faint lines, the way
-           * LinearGenomeView's gridlines extend its ruler ticks down over the
-           * tracks
+           * Both genome axes' guide, a [](/docs/config/dotplotaxis) object:
+           * `grid` extends each axis' ruler ticks across the plot as faint
+           * lines, the way LinearGenomeView's `axis.grid` extends its ruler
+           * down over the tracks, and `labels` numbers the major ticks.
            */
-          showGridlines: types.stripDefault(types.boolean, true),
-          /**
-           * #property
-           * number each axis' major ticks; off keeps the tick marks and the
-           * chromosome names
-           */
-          showTickLabels: types.stripDefault(types.boolean, true),
+          axis: types.stripDefault(dotplotAxisConfigSchema, {}),
           /**
            * #property
            * The coordinate system, a [](/docs/config/syntenycoord) object:
@@ -554,7 +550,7 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         get gridlinesEmpty() {
           return (
-            self.showGridlines &&
+            this.axisGrid &&
             self.hview.gridlines.length === 0 &&
             self.vview.gridlines.length === 0
           )
@@ -576,6 +572,20 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         get views() {
           return [self.hview, self.vview]
+        },
+        /**
+         * #getter
+         * `axis.grid`: whether each axis' ticks run across the plot.
+         */
+        get axisGrid(): boolean {
+          return readConfObject(self.axis, 'grid')
+        },
+        /**
+         * #getter
+         * `axis.labels`: whether each axis numbers its major ticks.
+         */
+        get axisLabels(): boolean {
+          return readConfObject(self.axis, 'labels')
         },
         /**
          * #getter
@@ -962,14 +972,14 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          */
-        setShowGridlines(flag: boolean) {
-          self.showGridlines = flag
+        setAxisGrid(grid: boolean) {
+          self.axis = cast({ ...getSnapshot(self.axis), grid })
         },
         /**
          * #action
          */
-        setShowTickLabels(flag: boolean) {
-          self.showTickLabels = flag
+        setAxisLabels(labels: boolean) {
+          self.axis = cast({ ...getSnapshot(self.axis), labels })
         },
         /**
          * #action

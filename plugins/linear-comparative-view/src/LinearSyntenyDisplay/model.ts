@@ -606,7 +606,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           trackColor: this.trackColor,
           valueColor: this.view.colorValue,
           opacity: this.view.opacityFade,
-          drawLocationMarkers: this.view.drawLocationMarkers,
+          drawLocationMarkers: this.view.axisGrid,
           groundColor: this.groundColor,
           namePosition: this.paintedRefNamePosition,
           attributeRanges: this.view.attributeRanges,

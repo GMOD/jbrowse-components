@@ -14,7 +14,7 @@ export interface ImgRecipe {
   dropped: string[]
 }
 
-const LINEAR_FLAGS = new Set(['trackLabels', 'showGridlines'])
+const LINEAR_FLAGS = new Set(['trackLabels', 'axis'])
 const LINEAR_CARRIED = new Set(['type', 'assembly', 'loc', 'tracks'])
 
 export function quote(arg: string) {
@@ -45,7 +45,9 @@ function linearArgs(view: SpecView) {
   return [
     ['--assembly', view.assembly, '--loc', view.loc].map(a => quote(a!)),
     ...(view.trackLabels ? [['--trackLabels', String(view.trackLabels)]] : []),
-    ...(view.showGridlines ? [['--showGridlines']] : []),
+    ...((view.axis as { grid?: boolean } | undefined)?.grid
+      ? [['--showGridlines']]
+      : []),
     ...specTracks(view).map(trackArgs),
   ]
 }

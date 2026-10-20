@@ -37,9 +37,9 @@ export function syntenySettingsMenuItems(
     }),
     toggleItem(
       'Location markers',
-      model.drawLocationMarkers,
+      model.axisGrid,
       v => {
-        model.setDrawLocationMarkers(v)
+        model.setAxisGrid(v)
       },
       {
         helpText:

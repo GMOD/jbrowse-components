@@ -590,7 +590,7 @@ test('hiding tick labels gives their margin back to the plot', async () => {
   })) as any
   const model = session.views[0]
   const { borderX, borderY } = model
-  model.setShowTickLabels(false)
+  model.setAxisLabels(false)
   expect(model.borderX).toBeLessThan(borderX)
   expect(model.borderY).toBeLessThan(borderY)
 })

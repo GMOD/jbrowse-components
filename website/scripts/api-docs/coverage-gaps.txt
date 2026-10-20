@@ -372,6 +372,8 @@ DotplotView.initializeDisplayedRegions
 DotplotView.initialized
 DotplotView.menuItems
 DotplotView.setAssemblyNames
+DotplotView.setAxisGrid
+DotplotView.setAxisLabels
 DotplotView.setCursorMode
 DotplotView.setDrawCigar
 DotplotView.setError
@@ -379,8 +381,6 @@ DotplotView.setHeight
 DotplotView.setLaunch
 DotplotView.setLineWidth
 DotplotView.setRatio
-DotplotView.setShowGridlines
-DotplotView.setShowTickLabels
 DotplotView.setWidth
 DotplotView.showAllRegions
 DotplotView.squareViewProportional
@@ -796,6 +796,7 @@ LinearGenomeView.rubberBandMenuItems
 LinearGenomeView.rubberbandClickMenuItems
 LinearGenomeView.scalebarHeight
 LinearGenomeView.scrollTo
+LinearGenomeView.setAxisGrid
 LinearGenomeView.setCoarseDynamicBlocks
 LinearGenomeView.setColorByCDS
 LinearGenomeView.setDraggingTrackId
@@ -811,7 +812,6 @@ LinearGenomeView.setScrollZoom
 LinearGenomeView.setShowAminoAcids
 LinearGenomeView.setShowCenterLine
 LinearGenomeView.setShowCytobands
-LinearGenomeView.setShowGridlines
 LinearGenomeView.setShowTrackOutlines
 LinearGenomeView.setTrackLabelBand
 LinearGenomeView.setTrackLabels
@@ -1005,9 +1005,9 @@ LinearSyntenyView.initialized
 LinearSyntenyView.menuItems
 LinearSyntenyView.ownViews
 LinearSyntenyView.rubberBandMenuItems
+LinearSyntenyView.setAxisGrid
 LinearSyntenyView.setCigarMode
 LinearSyntenyView.setDiagonalizeAnchorRow
-LinearSyntenyView.setDrawLocationMarkers
 LinearSyntenyView.setError
 LinearSyntenyView.setFollowAnchorIndex
 LinearSyntenyView.setFollowMatchOrientation

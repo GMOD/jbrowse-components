@@ -62,6 +62,7 @@ import { followDirection } from '../SyntenyFollow/followDirection.ts'
 import { EMPTY_FOLLOW_REPORT } from '../SyntenyFollow/followHost.ts'
 import { installSyntenyFollow } from '../SyntenyFollow/installSyntenyFollow.ts'
 import { doAfterAttach } from './afterAttach.ts'
+import { linearSyntenyAxisConfigSchema } from './axisConfigSchema.ts'
 import { DEFAULT_ALPHA, DEFAULT_OVERDRAW_PX } from './consts.ts'
 import { linearSyntenyLaunchKeys } from './launchKeys.ts'
 import { levelHeightForCount } from './levelHeightBudget.ts'
@@ -178,11 +179,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         mark: types.stripDefault(syntenyMarkConfigSchema, {}),
         /**
          * #property
-         * Continue the query row's scalebar grid down through every band: a tick
-         * at each round query coordinate, joined to the coordinate the alignment
+         * Each row's ruler guide, a [](/docs/config/linearsyntenyaxis)
+         * object: `{ grid: true }` continues the query row's scalebar ticks
+         * down through every band, each joined to the coordinate the alignment
          * pairs it with.
          */
-        drawLocationMarkers: types.stripDefault(types.boolean, false),
+        axis: types.stripDefault(linearSyntenyAxisConfigSchema, {}),
         /**
          * #property
          * The marks along both edges of each band for the alignments the view
@@ -360,6 +362,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return [...new Set(self.views.flatMap(v => v.assemblyNames))]
       },
 
+      /**
+       * #getter
+       * `axis.grid`: whether the ruler ticks run down through the bands.
+       */
+      get axisGrid(): boolean {
+        return readConfObject(self.axis, 'grid')
+      },
       /**
        * #getter
        * Whether the `offscreen` part draws.
@@ -1151,8 +1160,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setDrawLocationMarkers(arg: boolean) {
-        self.drawLocationMarkers = arg
+      setAxisGrid(grid: boolean) {
+        self.axis = cast({ ...getSnapshot(self.axis), grid })
       },
       /**
        * #action

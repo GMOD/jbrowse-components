@@ -129,11 +129,11 @@ test("a view's own settings sit beside where it opens, and both reach the view",
   const state = createViewState({
     assembly,
     tracks,
-    view: { loc: 'ctgA:1..100', hideHeader: true, showGridlines: false },
+    view: { loc: 'ctgA:1..100', hideHeader: true, axis: { grid: false } },
   })
   const { view } = state.session
   expect(view.hideHeader).toBe(true)
-  expect(view.showGridlines).toBe(false)
+  expect(view.axisGrid).toBe(false)
   expect(view.pendingLaunch).toMatchObject({
     assembly: 'volvox',
     loc: 'ctgA:1..100',

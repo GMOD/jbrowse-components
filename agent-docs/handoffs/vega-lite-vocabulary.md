@@ -24,6 +24,8 @@ spelling, not a new house word. That means no new `min*`, `max*`, `show*` or
 - The linear synteny view's `offscreen.show`, which replaced
   `showOffscreenMates`. It is the first part built on ADR-231's `show`
   member, which ADR-238's amendment puts in the place of `null`.
+- `axis` on the linear genome, dotplot and linear synteny views, which
+  replaced their `showGridlines`, `showTickLabels` and `drawLocationMarkers`.
 
 ## Next, one concept at a time across the app
 
@@ -37,9 +39,6 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    variant, MAF and junction/connection rows. First bench the flag fusion
    against today's `flagInclude`/`flagExclude`/`minMapq` path.
 3. **Guides**:
-   - `axis` takes over LinearGenomeView's `showGridlines`, the dotplot's
-     `showGridlines` and `showTickLabels`, and the synteny view's
-     `drawLocationMarkers`.
    - `legend.show` takes over every `showLegend`.
 4. **`render.antialias`** takes over `fadeThinAlignmentsMode` and
    `pileup.fadeLowFrequency`.

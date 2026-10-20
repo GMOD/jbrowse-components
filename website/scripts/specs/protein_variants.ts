@@ -68,7 +68,7 @@ function linkedSession(
   const session = structuredClone(base)
   const [lgv, msa, protein] = session.views as [ViewJson, ViewJson, ViewJson]
   lgv.init = { ...lgv.init, loc, tracks }
-  lgv.showGridlines = true
+  lgv.axis = { grid: true }
   msa.height = msaHeight
   msa.displayName = msaName
   msa.showDomains = domains

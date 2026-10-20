@@ -209,8 +209,8 @@ test.each([
   ['CIGAR indels', 'setDrawCigar', 'drawCigar'],
   // matched loosely because the label carries `withHint`, which appends an
   // aside at a zoom with no ruler to cast
-  [/^Gridlines/, 'setShowGridlines', 'showGridlines'],
-  ['Tick labels', 'setShowTickLabels', 'showTickLabels'],
+  [/^Gridlines/, 'setAxisGrid', 'axisGrid'],
+  ['Tick labels', 'setAxisLabels', 'axisLabels'],
 ] as const)(
   'a checkbox row reports the model and writes it back',
   async (name, setter, prop) => {

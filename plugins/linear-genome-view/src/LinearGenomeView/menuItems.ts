@@ -259,9 +259,9 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       {
         label: 'Guidelines',
         type: 'checkbox',
-        checked: self.showGridlines,
+        checked: self.axisGrid,
         onClick: () => {
-          self.setShowGridlines(!self.showGridlines)
+          self.setAxisGrid(!self.axisGrid)
         },
       },
       {

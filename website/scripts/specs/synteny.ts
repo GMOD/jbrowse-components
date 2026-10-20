@@ -1564,7 +1564,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // below as not (review: "i can see gridlines near the top row of
             // the multiwaysyntenydisplay, but not on the rest"). Each lane's own
             // ticks stay.
-            showGridlines: false,
+            axis: { grid: false },
             tracks: [
               // 120, not 60: the drop is from five genomes to two on a 0-5
               // axis, which at 60 px is a 24 px step read as a hairline

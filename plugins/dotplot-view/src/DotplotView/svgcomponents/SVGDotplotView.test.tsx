@@ -259,7 +259,7 @@ test('with tick labels off the export keeps the tick marks and names but prints 
     expect(on).toContain(`>${label}</text>`)
   }
 
-  view.setShowTickLabels(false)
+  view.setAxisLabels(false)
   const off = await renderToSvg(view, {})
   for (const label of labels) {
     expect(off).not.toContain(`>${label}</text>`)

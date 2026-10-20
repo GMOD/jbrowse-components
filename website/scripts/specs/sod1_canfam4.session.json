@@ -6,7 +6,7 @@
       "type": "LinearGenomeView",
       "colorByCDS": true,
       "hideHeaderOverview": true,
-      "showGridlines": true,
+      "axis": { "grid": true },
       "init": {
         "assembly": "canFam4",
         "loc": "chr31:27123013-27123103",

@@ -51,9 +51,9 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
               'Gridlines',
               model.gridlinesEmpty ? 'none at this zoom' : undefined,
             ),
-            model.showGridlines,
+            model.axisGrid,
             flag => {
-              model.setShowGridlines(flag)
+              model.setAxisGrid(flag)
             },
             {
               helpText:
@@ -62,9 +62,9 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
           ),
           toggleItem(
             'Tick labels',
-            model.showTickLabels,
+            model.axisLabels,
             flag => {
-              model.setShowTickLabels(flag)
+              model.setAxisLabels(flag)
             },
             {
               helpText:

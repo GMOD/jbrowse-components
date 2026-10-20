@@ -171,8 +171,8 @@ interface DotplotAxisParent {
   viewHeight: number
   ratio: 1 | undefined
   sharedFitBpPerPx: number
-  showGridlines: boolean
-  showTickLabels: boolean
+  axisGrid: boolean
+  axisLabels: boolean
 }
 
 // One axis of the plot, as long as the plot dimension it runs along. The
@@ -208,7 +208,7 @@ function plotAxis(length: 'viewWidth' | 'viewHeight') {
           self.displayedRegions,
           self.bpPerPx,
           self.refNameLabels,
-          getParent<DotplotAxisParent>(self).showTickLabels,
+          getParent<DotplotAxisParent>(self).axisLabels,
         )
       },
 
@@ -239,7 +239,7 @@ function plotAxis(length: 'viewWidth' | 'viewHeight') {
       // could not number itself anywhere — which at whole-genome zoom is the
       // usual case. All or nothing per axis; see `tickLines`.
       get gridlines() {
-        return getParent<DotplotAxisParent>(self).showGridlines
+        return getParent<DotplotAxisParent>(self).axisGrid
           ? tickLines(
               self.visibleTickPositions,
               px => this.toScreenPx(px),

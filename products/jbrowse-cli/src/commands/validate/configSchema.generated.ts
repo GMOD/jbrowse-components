@@ -24470,6 +24470,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "LinearGenomeViewAxis": {
+      "title": "LinearGenomeViewAxis",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "grid": {
+          "description": "carry the ruler's ticks down through the tracks.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearGenomeViewTrackEntry": {
       "title": "LinearGenomeViewTrackEntry",
       "description": "A track to open in a LinearGenomeView: a trackId, or an object whose other keys are the display's config slots and state written inline.",
@@ -25046,8 +25067,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "trackLabels": {
           "type": "string"
         },
-        "showGridlines": {
-          "type": "boolean"
+        "axis": {
+          "$ref": "#/$defs/LinearGenomeViewAxis"
         },
         "colorByCDS": {
           "type": "boolean"
@@ -26299,6 +26320,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "DotplotAxis": {
+      "title": "DotplotAxis",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "grid": {
+          "description": "carry each axis' ruler ticks across the plot.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "labels": {
+          "description": "number the ticks along each axis; off keeps the ticks and sequence names.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "SyntenyCoord": {
       "title": "SyntenyCoord",
       "type": "object",
@@ -26429,11 +26481,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "drawCigar": {
           "type": "boolean"
         },
-        "showGridlines": {
-          "type": "boolean"
-        },
-        "showTickLabels": {
-          "type": "boolean"
+        "axis": {
+          "$ref": "#/$defs/DotplotAxis"
         },
         "coord": {
           "$ref": "#/$defs/SyntenyCoord"
@@ -26588,6 +26637,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "LinearSyntenyAxis": {
+      "title": "LinearSyntenyAxis",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "grid": {
+          "description": "carry each row's ruler ticks down through the ribbons.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "SyntenyOffscreen": {
       "title": "SyntenyOffscreen",
       "type": "object",
@@ -26721,8 +26791,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "mark": {
           "$ref": "#/$defs/SyntenyMark"
         },
-        "drawLocationMarkers": {
-          "type": "boolean"
+        "axis": {
+          "$ref": "#/$defs/LinearSyntenyAxis"
         },
         "offscreen": {
           "$ref": "#/$defs/SyntenyOffscreen"

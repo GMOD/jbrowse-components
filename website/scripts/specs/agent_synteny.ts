@@ -102,7 +102,7 @@ export const agentSyntenySpecs: ScreenshotSpec[] = [
           ],
           tracks: [PIF],
           color: { field: 'strand' },
-          showTickLabels: false,
+          axis: { labels: false },
           height: 760,
         },
       ],
