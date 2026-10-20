@@ -29,9 +29,8 @@ import { triangleAxis } from '@jbrowse/display-kit/triangleTransform'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
-  SCALE_TYPE_LINEAR,
-  SCALE_TYPE_LOG,
   denormalizeScore,
+  scaleTypeCode,
 } from '@jbrowse/render-core/scoreScale'
 
 import { legendStops } from './components/colorRamp.ts'
@@ -73,10 +72,10 @@ type HicColorEncoding = ContinuousRef & {
   domainQuantile: number
 }
 
-function contactsLabel(normalization: string, log = false) {
+function contactsLabel(normalization: string, scale?: HicColorScale) {
   const qualifiers = [
     normalization === 'NONE' ? undefined : normalization,
-    log ? 'log' : undefined,
+    scale === 'linear' ? undefined : scale,
   ].filter(q => q !== undefined)
   return qualifiers.length ? `Contacts (${qualifiers.join(', ')})` : 'Contacts'
 }
@@ -106,7 +105,7 @@ interface HicFileInfo {
  *     {
  *       type: 'LinearHicDisplay',
  *       displayId: 'hic-LinearHicDisplay',
- *       color: { scale: 'log', domainMax: 500 },
+ *       color: { scale: 'symlog', domainMax: 500 },
  *       resolutionBias: 1,
  *     },
  *   ],
@@ -171,7 +170,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #getter
        * The `color` object as it paints, through the shared reader and
-       * `count`'s preset: a linear or log ramp whose `reverse`, where unset,
+       * `count`'s preset: a linear, symlog or log ramp whose `reverse`, where unset,
        * follows whether the scheme runs dark at its low end. The `scheme` and
        * `domainQuantile` slots have defaults, so both are always set.
        */
@@ -347,9 +346,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #getter
        */
       get scaleType() {
-        return self.colorScaleType === 'log'
-          ? SCALE_TYPE_LOG
-          : SCALE_TYPE_LINEAR
+        return scaleTypeCode(self.colorScaleType)
       },
       /**
        * #getter
@@ -390,7 +387,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             id: 'contacts',
             title: contactsLabel(
               self.appliedNormalization,
-              scaleType === SCALE_TYPE_LOG,
+              self.colorScaleType,
             ),
             domain,
             stops: legendStops(self.colorRamp),
@@ -525,11 +522,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #action
-       * The Log scale toggle: `color.scale` log, or unset for `count`'s
-       * linear preset.
+       * The Log scale toggle: `color.scale` symlog, which keeps every nonzero
+       * count visible, or unset for `count`'s linear preset.
        */
       setLogScale(log: boolean) {
-        setConf(self, ['color', 'scale'], log ? 'log' : undefined)
+        setConf(self, ['color', 'scale'], log ? 'symlog' : undefined)
       },
       /**
        * #action

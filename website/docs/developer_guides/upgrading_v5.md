@@ -469,7 +469,7 @@ stop loading, with no migration.
 | v4 | v5 |
 | --- | --- |
 | `colorScheme: 'fall'` | `color: { scheme: 'fall' }` |
-| `useLogScale: true` | `color: { scale: 'log' }` |
+| `useLogScale: true` | `color: { scale: 'symlog' }` |
 
 `setUseLogScale` is `setLogScale(true | false)`. [](/docs/config/hiccolor) lists
 the members.

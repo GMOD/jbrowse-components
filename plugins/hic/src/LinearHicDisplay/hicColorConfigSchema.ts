@@ -5,7 +5,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { FieldPresets } from '@jbrowse/display-kit/colorConfigSchema'
 
-export const HIC_COLOR_SCALES = ['linear', 'log'] as const
+export const HIC_COLOR_SCALES = ['linear', 'symlog', 'log'] as const
 
 export type HicColorScale = (typeof HIC_COLOR_SCALES)[number]
 
@@ -22,8 +22,8 @@ export const DEFAULT_HIC_COLOR_SCHEME: ColorSchemeName = 'juicebox'
 /**
  * #config HicColor
  * #category display
- * The Hi-C display's `color`: a bin's contact count through a `linear` or
- * `log` scale onto a named `scheme`. An unset `domainMax` follows the loaded
+ * The Hi-C display's `color`: a bin's contact count through a `linear`,
+ * `symlog` or `log` scale onto a named `scheme`. An unset `domainMax` follows the loaded
  * counts, saturating at their `domainQuantile`, the 95th percentile by
  * default, or at their maximum at a quantile of 1; setting it gives every
  * zoom, and every track that sets the same number, one scale. The slots are
@@ -34,7 +34,7 @@ export const DEFAULT_HIC_COLOR_SCHEME: ColorSchemeName = 'juicebox'
  * ```js
  * {
  *   type: 'LinearHicDisplay',
- *   color: { scale: 'log', scheme: 'viridis', domainMax: 500 },
+ *   color: { scale: 'symlog', scheme: 'viridis', domainMax: 500 },
  * }
  * ```
  */
@@ -97,7 +97,7 @@ export const hicColorConfigSchema = ConfigurationSchema(
       type: 'maybeStringEnum',
       model: types.enumeration('HicColorScale', [...HIC_COLOR_SCALES]),
       description:
-        'linear, or log2 of the count, which lifts sparse long-range bins off the floor; unset is linear',
+        "linear; symlog, d3's log(1 + count), which the Log scale toggle writes: it lifts sparse long-range bins off the floor and leaves only 0 transparent; or log, log2 of the count from a pinned domainMin or else 1, every bin at or below which draws transparent. Unset is linear",
     },
     /**
      * #slot domainMax
@@ -105,7 +105,7 @@ export const hicColorConfigSchema = ConfigurationSchema(
     domainMax: {
       type: 'maybeNumber',
       description:
-        "the top of a linear or log scale's domain; unset follows the loaded values",
+        "the top of the scale's domain; unset follows the loaded counts",
     },
   },
   {

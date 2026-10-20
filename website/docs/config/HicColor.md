@@ -1,14 +1,14 @@
 ---
 id: hiccolor
 title: HicColor
-description: "The Hi-C display's color: a bin's contact count through a linear or log scale onto a named scheme."
+description: "The Hi-C display's color: a bin's contact count through a linear, symlog or log scale onto a named scheme."
 sidebar_label: Display -> HicColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/hicColorConfigSchema.ts).
 
-The Hi-C display's `color`: a bin's contact count through a `linear` or
-`log` scale onto a named `scheme`. An unset `domainMax` follows the loaded
+The Hi-C display's `color`: a bin's contact count through a `linear`,
+`symlog` or `log` scale onto a named `scheme`. An unset `domainMax` follows the loaded
 counts, saturating at their `domainQuantile`, the 95th percentile by
 default, or at their maximum at a quantile of 1; setting it gives every
 zoom, and every track that sets the same number, one scale. The slots are
@@ -20,7 +20,7 @@ them as they judge any other display's.
 ```js
 {
   type: 'LinearHicDisplay',
-  color: { scale: 'log', scheme: 'viridis', domainMax: 500 },
+  color: { scale: 'symlog', scheme: 'viridis', domainMax: 500 },
 }
 ```
 
@@ -36,5 +36,5 @@ A setting written to it replaces it whole, since its members are alternatives: a
 | <span id="slot-reverse">**reverse**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | Unset turns round a scheme dark at its low end, since an unpainted bin is the page behind the matrix. |
 | <span id="slot-domainmin">**domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the bottom of the scale; unset is 0 |
 | <span id="slot-domainquantile">**domainQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.95</code> | The value an unset `domainMax` follows: the loaded counts' quantile, `0.95` so faint off-diagonal contacts read, or at `1` their maximum. The track menu's "Emphasize faint contacts" toggles it. Every color ramp reads the word this way; `scales.y` reads it as an outlier fence. |
-| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (linear, log) | linear, or log2 of the count, which lifts sparse long-range bins off the floor; unset is linear |
-| <span id="slot-domainmax">**domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the top of a linear or log scale's domain; unset follows the loaded values |
+| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (linear, symlog, log) | linear; symlog, d3's log(1 + count), which the Log scale toggle writes: it lifts sparse long-range bins off the floor and leaves only 0 transparent; or log, log2 of the count from a pinned domainMin or else 1, every bin at or below which draws transparent. Unset is linear |
+| <span id="slot-domainmax">**domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the top of the scale's domain; unset follows the loaded counts |

@@ -25,7 +25,7 @@ alike share one scale, and runs one binsize coarser than the zoom picks:
     {
       type: 'LinearHicDisplay',
       displayId: 'hic-LinearHicDisplay',
-      color: { scale: 'log', domainMax: 500 },
+      color: { scale: 'symlog', domainMax: 500 },
       resolutionBias: 1,
     },
   ],
@@ -87,8 +87,8 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-availablenormalizations">**availableNormalizations**</span><br><code>string[] &#124; undefined</code> |  |
 | <span id="getter-availableresolutions">**availableResolutions**</span><br><code>number[] &#124; undefined</code> | Smallest first, so a negative `resolutionBias` is always finer. |
 | <span id="getter-resolutionbias">**resolutionBias**</span><br><code>number</code> |  |
-| <span id="getter-colorencoding">**colorEncoding**</span><br><code>HicColorEncoding</code> | The `color` object as it paints, through the shared reader and `count`'s preset: a linear or log ramp whose `reverse`, where unset, follows whether the scheme runs dark at its low end. The `scheme` and `domainQuantile` slots have defaults, so both are always set. |
-| <span id="getter-colorscaletype">**colorScaleType**</span><br><code>"linear" &#124; "log"</code> |  |
+| <span id="getter-colorencoding">**colorEncoding**</span><br><code>HicColorEncoding</code> | The `color` object as it paints, through the shared reader and `count`'s preset: a linear, symlog or log ramp whose `reverse`, where unset, follows whether the scheme runs dark at its low end. The `scheme` and `domainQuantile` slots have defaults, so both are always set. |
+| <span id="getter-colorscaletype">**colorScaleType**</span><br><code>"linear" &#124; "log" &#124; "symlog"</code> |  |
 | <span id="getter-colorscheme">**colorScheme**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>"blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma"…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>"blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma" &#124; "purpleorange" &#124; "redblue" &#124; "redgreyblue" &#124; "reds" &#124; "redyellowblue" &#124; "viridis"</code></pre></dialog></span> |  |
 | <span id="getter-colorreverse">**colorReverse**</span><br><code>boolean</code> | `color.reverse`, or where unset whether the scheme runs dark at its low end. |
 | <span id="getter-colorramp">**colorRamp**</span><br><code>Uint8Array&lt;ArrayBufferLike&gt;</code> | The ramp's 256 entries: the GPU's texture, the Canvas2D fill and the legend read this one table. It reads `colorScheme` and `colorReverse` rather than the encoding, so a domain edit re-uploads no texture. |
@@ -172,7 +172,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | Member | Description |
 | --- | --- |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: HicRenderingBackend) =&gt; void</code> |  |
-| <span id="action-setlogscale">**setLogScale**</span><br><code>(log: boolean) =&gt; void</code> | The Log scale toggle: `color.scale` log, or unset for `count`'s linear preset. |
+| <span id="action-setlogscale">**setLogScale**</span><br><code>(log: boolean) =&gt; void</code> | The Log scale toggle: `color.scale` symlog, which keeps every nonzero count visible, or unset for `count`'s linear preset. |
 | <span id="action-setcolorfollowspercentile">**setColorFollowsPercentile**</span><br><code>(f: boolean) =&gt; void</code> |  |
 | <span id="action-setcolorrange">**setColorRange**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ min, max, quantile, }: { min: number &#124; undefined; max: numbe…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ min, max, quantile, }: { min: number &#124; undefined; max: number &#124; undefined; quantile: number; }) =&gt; void</code></pre></dialog></span> | The Color range dialog's ends and quantile; an undefined end follows the loaded counts. |
 | <span id="action-resetcolorrange">**resetColorRange**</span><br><code>() =&gt; void</code> | Back to the base config's ends and quantile, so an admin's declared range survives. |

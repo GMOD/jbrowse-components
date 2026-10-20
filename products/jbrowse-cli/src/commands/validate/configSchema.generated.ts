@@ -13459,19 +13459,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "linear, or log2 of the count, which lifts sparse long-range bins off the floor; unset is linear.",
+              "description": "linear; symlog, d3's log(1 + count), which the Log scale toggle writes: it lifts sparse long-range bins off the floor and leaves only 0 transparent; or log, log2 of the count from a pinned domainMin or else 1, every bin at or below which draws transparent. Unset is linear.",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
                   "linear",
+                  "symlog",
                   "log"
                 ]
               }
             },
             "domainMax": {
-              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+              "description": "the top of the scale's domain; unset follows the loaded counts.",
               "if": {
                 "type": "null"
               },

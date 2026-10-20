@@ -131,7 +131,7 @@ function percentileName(quantile: number) {
 
 function colorScaleMenuItems(self: HicMenuSelf): MenuItem[] {
   return [
-    toggleItem('Log scale', self.colorScaleType === 'log', self.setLogScale),
+    toggleItem('Log scale', self.colorScaleType !== 'linear', self.setLogScale),
     toggleItem(
       `Emphasize faint contacts (${percentileName(self.saturationQuantile)} percentile)`,
       self.colorFollowsPercentile,

@@ -220,8 +220,8 @@ describe('hic color rows on a display', () => {
   it('Log scale writes color.scale, and unticking leaves no delta', () => {
     const { display } = createDisplay()
     click(display, 'Log scale')
-    expect(display.plot).toEqual({ color: { scale: 'log' } })
-    expect(display.colorEncoding.scale).toBe('log')
+    expect(display.plot).toEqual({ color: { scale: 'symlog' } })
+    expect(display.colorEncoding.scale).toBe('symlog')
     click(display, 'Log scale')
     expect(display.plot).toEqual({})
     expect(display.colorEncoding.scale).toBe('linear')

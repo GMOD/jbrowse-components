@@ -24,7 +24,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   name: 'Hi-C',
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'HicAdapter', uri: 'https://example.com/contacts.hic' },
- *   displayDefaults: { color: { scale: 'log' }, resolutionBias: 1 },
+ *   displayDefaults: { color: { scale: 'symlog' }, resolutionBias: 1 },
  * }
  * ```
  */

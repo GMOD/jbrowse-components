@@ -1,7 +1,12 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
-import { SCALE_TYPE_LOG } from '@jbrowse/render-core/scoreScale'
+import {
+  SCALE_TYPE_LOG,
+  SCALE_TYPE_SYMLOG,
+  makeScoreNormalizer,
+} from '@jbrowse/render-core/scoreScale'
 
+import { MIN_VISIBLE_ALPHA } from './components/shaders/hic.consts.generated.ts'
 import { INSTANCE_STRIDE_WORDS } from './components/shaders/hic.iface.generated.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -86,10 +91,30 @@ test('a pinned top gives a key before any data lands', () => {
 // the log scale floors at a count of 1, so that is where the key starts
 test('a log key starts where the ramp does', () => {
   const display = loaded()
-  display.setLogScale(true)
+  setConf(display, ['color', 'scale'], 'log')
   expect(display.renderState.scaleType).toBe(SCALE_TYPE_LOG)
   expect(display.colorScales[0]).toMatchObject({
     title: 'Contacts (log)',
     domain: [1, 40],
   })
+})
+
+// A KR map holds many counts below 1, and a raw one many counts of exactly 1:
+// the juicebox ramp's alpha is t, so the toggle must keep them above the
+// discard, which log's floor of 1 does not
+test('the Log scale toggle keeps counts at or below 1 visible', () => {
+  const display = loaded()
+  display.setLogScale(true)
+  const { scaleType, domainMin, domainMax } = display.renderState
+  expect(scaleType).toBe(SCALE_TYPE_SYMLOG)
+  expect(display.colorScales[0]).toMatchObject({
+    title: 'Contacts (symlog)',
+    domain: [0, 40],
+  })
+  const t = makeScoreNormalizer(domainMin, domainMax, scaleType, 1)
+  expect(t(0)).toBe(0)
+  expect(t(0.4)).toBeGreaterThan(MIN_VISIBLE_ALPHA)
+  expect(t(1)).toBeGreaterThan(MIN_VISIBLE_ALPHA)
+  const log = makeScoreNormalizer(1, domainMax, SCALE_TYPE_LOG, 1)
+  expect(log(1)).toBeLessThan(MIN_VISIBLE_ALPHA)
 })

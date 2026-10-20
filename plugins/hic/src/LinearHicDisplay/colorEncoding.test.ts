@@ -1,10 +1,7 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { darkAtLowEnd, rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
-import {
-  SCALE_TYPE_LINEAR,
-  SCALE_TYPE_LOG,
-} from '@jbrowse/render-core/scoreScale'
+import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { autorun, getDependencyTree } from 'mobx'
 
 import { INSTANCE_STRIDE_WORDS } from './components/shaders/hic.iface.generated.ts'
@@ -59,7 +56,7 @@ const CASES: {
   { scheme: 'blues', domainQuantile: 1 },
 ]
 
-describe.each(['linear', 'log'] as const)('a %s scale', scale => {
+describe.each(['linear', 'symlog', 'log'] as const)('a %s scale', scale => {
   test.each(CASES)('paints what the hand-built ramp did: %j', color => {
     const display = loaded({ ...color, scale })
     const reverse = color.reverse ?? darkAtLowEnd(color.scheme)
@@ -73,9 +70,7 @@ describe.each(['linear', 'log'] as const)('a %s scale', scale => {
       color.domainMax ?? loadedMax,
     ])
     expect(display.colorDomain).toEqual(shared.domain)
-    expect(display.renderState.scaleType).toBe(
-      scale === 'log' ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
-    )
+    expect(display.renderState.scaleType).toBe(scaleTypeCode(scale))
   })
 })
 
