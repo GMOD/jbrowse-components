@@ -5,7 +5,14 @@ interface RegionBounds {
   regionEnd: number
 }
 
-const genomic = (bp: number) => bp
+// Maps genomic bp onto the drawn axis; `seams` are where the cut stretches
+// land on it, ascending.
+export interface DrawnAxis {
+  (bp: number): number
+  readonly seams: readonly number[]
+}
+
+const genomic: DrawnAxis = Object.assign((bp: number) => bp, { seams: [] })
 
 /**
  * Genomic bp with the stretches between one ref group's regions cut out: the
@@ -18,7 +25,7 @@ const genomic = (bp: number) => bp
  * distances stay genomic, so one region, or regions that touch, pack exactly as
  * on genomic bp.
  */
-export function drawnAxis(regions: Iterable<RegionBounds>) {
+export function drawnAxis(regions: Iterable<RegionBounds>): DrawnAxis {
   const spans = mergeSpans(
     [...regions].map(r => [r.regionStart, r.regionEnd] as const),
   )
@@ -33,7 +40,7 @@ export function drawnAxis(regions: Iterable<RegionBounds>) {
   if (gaps.length === 0) {
     return genomic
   }
-  return (bp: number) => {
+  const toDrawnBp = (bp: number) => {
     let lo = 0
     let hi = gaps.length
     while (lo < hi) {
@@ -49,4 +56,35 @@ export function drawnAxis(regions: Iterable<RegionBounds>) {
       ? bp - gap.hiddenBefore - (Math.min(bp, gap.end) - gap.start)
       : bp
   }
+  return Object.assign(toDrawnBp, {
+    seams: gaps.map(gap => gap.start - gap.hiddenBefore),
+  })
+}
+
+// How many seams lie strictly before `drawnBp`.
+function seamsBefore(seams: readonly number[], drawnBp: number) {
+  let lo = 0
+  let hi = seams.length
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1
+    if (seams[mid]! < drawnBp) {
+      lo = mid + 1
+    } else {
+      hi = mid
+    }
+  }
+  return lo
+}
+
+// The last seam at or before `drawnBp`, -Infinity when none is.
+export function seamAtOrBefore({ seams }: DrawnAxis, drawnBp: number) {
+  const i = seamsBefore(seams, drawnBp)
+  return seams[i] === drawnBp
+    ? drawnBp
+    : (seams[i - 1] ?? Number.NEGATIVE_INFINITY)
+}
+
+// The first seam at or after `drawnBp`, Infinity when none is.
+export function seamAtOrAfter({ seams }: DrawnAxis, drawnBp: number) {
+  return seams[seamsBefore(seams, drawnBp)] ?? Number.POSITIVE_INFINITY
 }

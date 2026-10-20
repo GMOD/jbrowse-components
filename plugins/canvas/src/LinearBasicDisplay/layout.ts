@@ -22,6 +22,7 @@ import type {
   FeatureDataResult,
   FlatbushItem,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { DrawnAxis } from './drawnAxis.ts'
 import type { FeatureFacet } from './facet.ts'
 import type { IsoformGapSpread } from './isoformGapFloor.ts'
 import type { IsoformBadge, IsoformTrim } from './isoformTrim.ts'
@@ -80,7 +81,7 @@ interface SectionPrep {
 }
 
 interface RefSections {
-  toDrawnBp: (bp: number) => number
+  toDrawnBp: DrawnAxis
   sections: SectionPrep[]
   // The features of hidden sections, which leave the pack.
   hiddenIds: Set<string>
@@ -475,7 +476,7 @@ export function createIsoformCountProbe(
 
 interface RefGroup {
   regions: [number, LayoutRegionData][]
-  toDrawnBp: (bp: number) => number
+  toDrawnBp: DrawnAxis
 }
 
 // Shared by the committed layout and the probe so both pack the same groups

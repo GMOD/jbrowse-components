@@ -12,6 +12,7 @@ import {
   planDensityCollapse,
   renderedSpanPx,
 } from './densityCollapse.ts'
+import { seamAtOrAfter, seamAtOrBefore } from './drawnAxis.ts'
 import { isoformGapSpreadPx } from './isoformGapFloor.ts'
 import { planIsoformTrims } from './isoformTrim.ts'
 import {
@@ -32,6 +33,7 @@ import type {
   IsoformStack,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Span } from '../shared/mergeSpans.ts'
+import type { DrawnAxis } from './drawnAxis.ts'
 import type { IsoformTrimPlan } from './isoformTrim.ts'
 import type { LabelWidths } from './labelReservation.ts'
 import type {
@@ -56,6 +58,10 @@ interface FeatureGeometry {
   readonly gene: boolean
   // A hidden stretch between regions cuts it, so less of it draws than it spans.
   readonly cut: boolean
+  // The nearest seams outside its drawn span, past which its name's rows never
+  // reach: the seam bar keeps them clear of what runs into it.
+  readonly seamBeforeBp: number
+  readonly seamAfterBp: number
   hasReversed: boolean
   hasNonReversed: boolean
 }
@@ -161,7 +167,7 @@ function gatherFeatureGeometry(
   reversedRegions: ReadonlySet<number>,
   metrics: DisplayModeMetrics,
   featureIds: ReadonlySet<string> | undefined,
-  toDrawnBp: (bp: number) => number,
+  toDrawnBp: DrawnAxis,
 ) {
   const features = new Map<string, FeatureGeometry>()
   for (const [displayedRegionIndex, data] of regions) {
@@ -184,6 +190,8 @@ function gatherFeatureGeometry(
           startBp,
           endBp,
           cut: endBp - startBp < item.endBp - item.startBp,
+          seamBeforeBp: seamAtOrBefore(toDrawnBp, startBp),
+          seamAfterBp: seamAtOrAfter(toDrawnBp, endBp),
           bodyHeightPx: bodyHeightPx(
             item.featureHeightPx,
             item.labelRows,
@@ -211,7 +219,7 @@ export function prepareRefPack(
   regions: [number, FeatureDataResult][],
   inputs: PackPrepInputs,
   metrics: DisplayModeMetrics,
-  toDrawnBp: (bp: number) => number,
+  toDrawnBp: DrawnAxis,
   featureIds?: ReadonlySet<string>,
 ): PackPrep {
   const {
@@ -546,17 +554,26 @@ function reservedBoxPx(
   // A name never starts before its body's edge, the right one in a flipped
   // region, and its rows keep LABEL_LEAD_PX clear there. They start at the
   // first grid row wholly below the text, so what sits beside the body can
-  // overlap the text box by at most ROW_PADDING - LABEL_TOP_GAP_PX.
+  // overlap the text box by at most ROW_PADDING - LABEL_TOP_GAP_PX. The rows
+  // never reach back past a seam: the seam bar is that clearance, and
+  // reaching it would collide with whatever runs into the seam from the other
+  // side.
   const labelRows =
     ext.labelTopPx === undefined
       ? undefined
       : {
           top: ext.labelTopPx + LABEL_TOP_GAP_PX,
           left: geom.hasNonReversed
-            ? Math.min(leftPx, bodyLeftPx - LABEL_LEAD_PX)
+            ? Math.max(
+                Math.min(leftPx, bodyLeftPx - LABEL_LEAD_PX),
+                geom.seamBeforeBp / bpPerPx + 1,
+              )
             : leftPx,
           right: geom.hasReversed
-            ? Math.max(rightPx, bodyRightPx + LABEL_LEAD_PX)
+            ? Math.min(
+                Math.max(rightPx, bodyRightPx + LABEL_LEAD_PX),
+                geom.seamAfterBp / bpPerPx - 1,
+              )
             : rightPx,
         }
   return { leftPx, rightPx, labelRows }

@@ -9,6 +9,7 @@ import {
   packStackedGenes,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { scaleLaidOutData } from './applyLayout.ts'
+import { drawnAxis } from './drawnAxis.ts'
 import { featureGroupSections } from './facet.ts'
 import { solveLabelRoomFactor, solveLabelRoomFactors } from './fitLadder.ts'
 import { namedLabelTiers } from './labelReservation.ts'
@@ -751,6 +752,44 @@ describe('labels and trims across a seam between regions of one ref', () => {
       minX: 1000,
     })
   })
+
+  // `blk` pushes `tail`, which runs into the hidden stretch and so ends on the
+  // seam, down a row. `head` starts beside `blk`, `startBp` past the seam, and
+  // its name hangs into the row `tail` ends in.
+  it.each([1000, 1002])(
+    'hangs a name starting at %i, past a seam, beside what ends there',
+    startBp => {
+      const out = layout(
+        new Map([
+          [
+            0,
+            makeFeatureData({
+              features: [
+                { featureId: 'blk', startBp: 40, endBp: 90, height: 10 },
+                { featureId: 'tail', startBp: 50, endBp: 600, height: 10 },
+              ],
+              bounds: [0, 100],
+            }),
+          ],
+          [
+            1,
+            {
+              ...labeledFeatureData([
+                { featureId: 'head', startBp, endBp: 1300, height: 10 },
+              ]),
+              regionStart: 1000,
+              regionEnd: 1500,
+            },
+          ],
+        ]),
+        1,
+      )
+      expect(topOf(out.get(1)!, 'head')).toBe(topOf(out.get(0)!, 'blk'))
+      expect(topOf(out.get(0)!, 'tail')).toBeGreaterThan(
+        topOf(out.get(0)!, 'blk'),
+      )
+    },
+  )
 
   it('names the sliver again once zooming in draws enough of it', () => {
     const labels = labelsAt(0.5)
@@ -2222,7 +2261,7 @@ test('a flattened band plans no density collapse', () => {
     regions,
     inputs,
     displayModeMetrics(inputs),
-    bp => bp,
+    drawnAxis([]),
   )
   expect(stacked.collapsedFeatureIds.size).toBeGreaterThan(0)
 
@@ -2231,7 +2270,7 @@ test('a flattened band plans no density collapse', () => {
     regions,
     flat,
     displayModeMetrics(flat),
-    bp => bp,
+    drawnAxis([]),
   )
   expect(flattened.collapsedFeatureIds.size).toBe(0)
   expect(flattened.collapsedSpansPx).toEqual([])

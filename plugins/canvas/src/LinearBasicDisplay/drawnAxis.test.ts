@@ -1,4 +1,4 @@
-import { drawnAxis } from './drawnAxis.ts'
+import { drawnAxis, seamAtOrAfter, seamAtOrBefore } from './drawnAxis.ts'
 
 const exons = [
   { regionStart: 0, regionEnd: 100 },
@@ -45,4 +45,15 @@ test('is genomic bp for one region, or for regions that touch or overlap', () =>
 test('reads regions in any order', () => {
   const at = drawnAxis([...exons].reverse())
   expect(at(1050)).toBe(150)
+})
+
+test('lists the seams where it cuts, ascending', () => {
+  const axis = drawnAxis(exons)
+  expect(axis.seams).toEqual([100, 200])
+  expect(seamAtOrBefore(axis, 150)).toBe(100)
+  expect(seamAtOrBefore(axis, 200)).toBe(200)
+  expect(seamAtOrBefore(axis, 50)).toBe(Number.NEGATIVE_INFINITY)
+  expect(seamAtOrAfter(axis, 150)).toBe(200)
+  expect(seamAtOrAfter(axis, 100)).toBe(100)
+  expect(seamAtOrAfter(axis, 250)).toBe(Number.POSITIVE_INFINITY)
 })
