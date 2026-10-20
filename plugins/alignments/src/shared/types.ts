@@ -1,3 +1,5 @@
+import { isValidTag } from '@jbrowse/core/util'
+
 import type { CategoryFilter } from '@jbrowse/display-kit/categoryFilter'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
@@ -310,15 +312,14 @@ export type ColumnSortField =
 
 // Every named value of the `sort` slot's `field`; a `tags.XX` field joins them.
 export const SORT_FIELDS = [...LAYOUT_ORDERS, ...COLUMN_SORT_FIELDS] as const
-export type SortField = LayoutOrder | ColumnSortField
+
+export function isTagSortField(field: string): field is `tags.${string}` {
+  return field.startsWith('tags.') && isValidTag(field.slice('tags.'.length))
+}
 
 export function isColumnSortField(field: string): field is ColumnSortField {
   const named: readonly string[] = COLUMN_SORT_FIELDS
-  return named.includes(field) || /^tags\.[A-Za-z][A-Za-z0-9]$/.test(field)
-}
-
-export function isSortField(field: string): field is SortField {
-  return isLayoutOrder(field) || isColumnSortField(field)
+  return named.includes(field) || isTagSortField(field)
 }
 
 export interface SortColumn {

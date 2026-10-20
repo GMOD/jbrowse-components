@@ -3805,7 +3805,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "string"
+              "type": "(AlignmentsSortField | SamTagField)"
             },
             {
               "name": "pos",
@@ -4594,7 +4594,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "string"
+              "type": "(AlignmentsSortField | SamTagField)"
             },
             {
               "name": "pos",

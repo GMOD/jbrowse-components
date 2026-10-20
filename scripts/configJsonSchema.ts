@@ -296,13 +296,17 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   function unwrap(type: MstType) {
     let cur = type
     let jexl = false
-    let color: 'CssColor' | 'CssColorEntry' | undefined
+    let named: 'CssColor' | 'CssColorEntry' | 'SamTagField' | undefined
     for (let i = 0; i < 16; i++) {
       if (cur.name === 'JexlString') {
         jexl = true
       }
-      if (cur.name === 'CssColor' || cur.name === 'CssColorEntry') {
-        color = cur.name
+      if (
+        cur.name === 'CssColor' ||
+        cur.name === 'CssColorEntry' ||
+        cur.name === 'SamTagField'
+      ) {
+        named = cur.name
       }
       const sub = cur.getSubTypes()
       if (!sub || typeof sub !== 'object' || Array.isArray(sub)) {
@@ -310,7 +314,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       }
       cur = sub
     }
-    return { type: cur, jexl, color }
+    return { type: cur, jexl, named }
   }
 
   function collapseAnyOf(branches: JsonSchema[]): JsonSchema {
@@ -366,12 +370,12 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       const restated = restatedDefName(meta)
       return restated ? ref(restated) : configObject(raw, meta, depth)
     }
-    const { type, jexl, color } = unwrap(raw)
+    const { type, jexl, named } = unwrap(raw)
     if (jexl) {
       return ref('JexlString')
     }
-    if (color) {
-      return ref(color)
+    if (named) {
+      return ref(named)
     }
     if (type !== raw) {
       return mstSchema(type, depth)
@@ -986,6 +990,12 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     pattern: String.raw`^\s*(?:${colorForms})\s*$`,
     description:
       'A CSS color: a name like "red", "#rgb" / "#rrggbb" / "#rrggbbaa", "rgb()" / "rgba()" / "hsl()" / "hsla()", or a BED triple like "255,0,0".',
+  }
+  defs.SamTagField = {
+    type: 'string',
+    pattern: '^tags\\.[A-Za-z][A-Za-z0-9]$',
+    description:
+      'A SAM tag on each read, written `tags.` and the two-character tag, e.g. "tags.HP".',
   }
   defs.FileLocation = {
     description:

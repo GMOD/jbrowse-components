@@ -2,26 +2,27 @@ import {
   ConfigurationSchema,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import {
   SORT_FIELDS,
   isColumnSortField,
   isLayoutOrder,
-  isSortField,
+  isTagSortField,
 } from '../shared/types.ts'
 
 import type { LayoutOrder, SortColumn } from '../shared/types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-function refuseUnknownSortField<S>(snap: S) {
-  const field: unknown = (snap as { field?: unknown } | undefined)?.field
-  if (typeof field === 'string' && !isSortField(field)) {
-    throw new Error(
-      `sort.field "${field}" is none of ${SORT_FIELDS.join(', ')} or a tags.XX tag`,
-    )
-  }
-  return snap
-}
+// Named, so the JSON schema states it as the `tags.XX` pattern
+// (scripts/configJsonSchema.ts) as it states a CSS color.
+const SamTagField = types.refinement(
+  'SamTagField',
+  types.string,
+  isTagSortField,
+  value =>
+    `${JSON.stringify(value)} is none of ${SORT_FIELDS.join(', ')}, and no SAM tag field (tags.XX)`,
+)
 
 /**
  * #config AlignmentsSort
@@ -60,6 +61,10 @@ export const alignmentsSortConfigSchema = ConfigurationSchema(
      */
     field: {
       type: 'string',
+      model: types.union(
+        types.enumeration('AlignmentsSortField', [...SORT_FIELDS]),
+        SamTagField,
+      ),
       defaultValue: 'position',
       description:
         'position, length, spliced, split or svSignal order the whole window; strand, base, mapq, pairOrientation, a tags.XX tag, insertion, softclip or hardclip rank the reads over the column at pos',
@@ -92,7 +97,6 @@ export const alignmentsSortConfigSchema = ConfigurationSchema(
     writes: 'whole',
     closed: true,
     plot: true,
-    preProcessSnapshot: refuseUnknownSortField,
   },
 )
 

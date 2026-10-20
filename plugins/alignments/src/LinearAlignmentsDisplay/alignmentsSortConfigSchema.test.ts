@@ -14,9 +14,9 @@ test('a field is a sort field or a SAM tag, spelt as color and facet spell one',
     sortOfSnap({ field: 'tags.HP', pos: 1, refName: '1' }).sortColumn,
   ).toBeDefined()
   expect(() => sortOfSnap({ field: 'basePair' })).toThrow(
-    /sort.field "basePair" is none of .*base/,
+    /"basePair".*AlignmentsSortField \| SamTagField/,
   )
-  expect(() => sortOfSnap({ field: 'tags.HAPLOTYPE' })).toThrow(/tags\.XX/)
+  expect(() => sortOfSnap({ field: 'tags.HAPLOTYPE' })).toThrow(/SamTagField/)
 })
 
 test('a whole-window order is the layout order, with no column', () => {

@@ -3,6 +3,7 @@ import {
   getConfigurationSchemaMetadata,
   liftRetiredSpellings,
 } from '@jbrowse/core/configuration'
+import { isValidTag } from '@jbrowse/core/util'
 import { retiredScaleSpellings } from '@jbrowse/wiggle-core'
 
 import { TAG_FIELD_PREFIX } from '../shared/facetLabels.ts'
@@ -236,7 +237,7 @@ function sortSlot(value: unknown): DisplayEntry {
   const field =
     v5 !== 'tag'
       ? v5
-      : typeof tag === 'string'
+      : typeof tag === 'string' && isValidTag(tag)
         ? `${TAG_FIELD_PREFIX}${tag}`
         : undefined
   return field && typeof pos === 'number' && typeof refName === 'string'

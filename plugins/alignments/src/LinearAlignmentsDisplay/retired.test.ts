@@ -226,6 +226,11 @@ test('a v4 sort carries into sort by its v5 name, counted from 0', () => {
   ).toEqual({ sort: { field: 'tags.HP', pos: 4, refName: 'ctgA' } })
   expect(
     retiredState.lift({
+      sortedBy: { type: 'tag', pos: 5, refName: 'ctgA', tag: '' },
+    }),
+  ).toEqual({})
+  expect(
+    retiredState.lift({
       sortedBy: { type: 'Start location', pos: 5, refName: 'ctgA' },
     }),
   ).toEqual({})
