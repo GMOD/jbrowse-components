@@ -9,6 +9,8 @@ export const RAMP_LOG = 2
 
 export const RAMP_THRESHOLD = 3
 
+export const RAMP_SYMLOG = 4
+
 export const MAX_COLOR_CUTS = 8
 
 export const MAX_COLOR_BANDS = 9

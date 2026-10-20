@@ -809,7 +809,9 @@ export function encodeFeatures<L extends LaneName>(
     typeof colorEncoding === 'object' ? colorEncoding : undefined
   const rampEncoding =
     declaredScale &&
-    (declaredScale.scale === 'linear' || declaredScale.scale === 'log')
+    (declaredScale.scale === 'linear' ||
+      declaredScale.scale === 'log' ||
+      declaredScale.scale === 'symlog')
       ? declaredScale
       : undefined
   const thresholdEncoding =

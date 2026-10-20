@@ -231,7 +231,8 @@ export function resolveWiggleColor(
       }
     }
     case 'linear':
-    case 'log': {
+    case 'log':
+    case 'symlog': {
       const { range = [], scheme, reverse = false, domainMid } = encoding
       const rampLut = rampLutOf({ range, scheme, reverse })
       const ends = range.length

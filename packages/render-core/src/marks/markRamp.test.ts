@@ -1,3 +1,4 @@
+import { scaleTypeCode } from '../scoreScale.ts'
 import { INSTANCE_STRIDE_BYTES } from '../shaders/barMark.generated.ts'
 import { GLSL_VERTEX as BAR_GLSL } from '../shaders/barMark.glsl.generated.ts'
 import { WGSL_SOURCE as BAR_WGSL } from '../shaders/barMark.wgsl.generated.ts'
@@ -8,6 +9,7 @@ import {
   RAMP_NO_VALUE_BITS,
   RAMP_NO_VALUE_COLOR,
 } from '../shaders/markColor.generated.ts'
+import { rampScaleType } from '../shaders/markColor.js.generated.ts'
 import { GLSL_VERTEX as POINT_GLSL } from '../shaders/pointMark.glsl.generated.ts'
 import { WGSL_SOURCE as POINT_WGSL } from '../shaders/pointMark.wgsl.generated.ts'
 import { GLSL_VERTEX as SPAN_GLSL } from '../shaders/spanMark.glsl.generated.ts'
@@ -231,6 +233,25 @@ test('the ramp reaches the shader as its mode, domain and middle, the threshold 
   expect(rampUniforms({ ...ramp, mid: 25 }).rampMidNorm).toBe(0.25)
   expect(rampUniforms({ ...ramp, scale: 'log' }).rampMode).toBe(2)
 })
+
+test('a symlog ramp keeps 1 off the bottom of a domain from 0, where log floors it', () => {
+  const c = bars([0, 1, 100])
+  const symlog = paintColors(c, 3, { ...ramp, scale: 'symlog' }) as Uint32Array
+  const log = paintColors(c, 3, { ...ramp, scale: 'log' }) as Uint32Array
+  expect((symlog[0]! >>> 0) & 255).toBe(0)
+  expect((symlog[1]! >>> 0) & 255).toBe(
+    Math.round((255 * Math.log1p(1)) / Math.log1p(100)),
+  )
+  expect((log[1]! >>> 0) & 255).toBe(0)
+})
+
+test.each(['linear', 'log', 'symlog'] as const)(
+  "the shader reads a %s ramp's mode as the scale type the Canvas2D bake uses",
+  scale => {
+    const { rampMode } = rampUniforms({ ...ramp, scale })
+    expect(rampScaleType(rampMode)).toBe(scaleTypeCode(scale))
+  },
+)
 
 const RED = 0xff0000ff
 const GREEN = 0xff00ff00

@@ -8,6 +8,7 @@ import { SHAPE_CODES } from '@jbrowse/core/util/shapeNames'
 import { RAMP_NO_VALUE_BITS, rampValueBits } from '@jbrowse/render-core/marks'
 
 import type { StoredLayer } from './markList.ts'
+import type { RampScaleName } from '@jbrowse/core/util/colorScale'
 
 interface ScannedLanes {
   row: Uint32Array | undefined
@@ -109,13 +110,14 @@ function scanChunk(
 
 // A scaled lane's extent over the drawn instances as the encoder measured the
 // region's: a log scale over the positive values, and a declared quantile
-// clipping each end, which the extremes a scan keeps cannot say.
+// clipping each end, which the extremes a scan keeps cannot say. Linear and
+// symlog read every finite value.
 function drawnExtent(
   values: Float32Array,
   row: Uint32Array | undefined,
   drawnKeys: Uint8Array | undefined,
   count: number,
-  scale: 'linear' | 'log',
+  scale: RampScaleName,
   quantile?: number,
 ) {
   const kept = new Float32Array(count)

@@ -538,6 +538,7 @@ export function colorEncodingOf<V extends string | undefined>(
       }
     case 'linear':
     case 'log':
+    case 'symlog':
       return {
         field,
         scale,

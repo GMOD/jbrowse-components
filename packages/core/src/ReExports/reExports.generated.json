@@ -2864,11 +2864,13 @@
         "IDENTITY_SCALE",
         "MAPQ_BINS",
         "MEASURE_FIELD_PRESETS",
+        "RAMP_SCALES",
         "UNIVERSAL_FIELD_PRESETS",
         "colorNotices",
         "colorProblems",
         "colorSlotsOf",
         "fieldScaleOf",
+        "isRampScale",
         "noticeLines",
         "paintedScale",
         "presetOf",
@@ -5848,6 +5850,7 @@
         "RAMP_NOT_A_NUMBER_COLOR",
         "RAMP_NO_VALUE_BITS",
         "RAMP_NO_VALUE_COLOR",
+        "RAMP_SYMLOG",
         "RAMP_THRESHOLD"
       ],
       "worker": "real"

@@ -1,6 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
-  COLOR_SCALES,
   FEATURE_FIELD_PRESETS,
   colorChannelOptions,
   colorChannelSlots,
@@ -14,6 +13,8 @@ import {
   colorTitleSlot,
   colorUnknownSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
+
+import { MARK_COLOR_SCALES } from './markVocabulary.ts'
 
 /**
  * #config MarkColor
@@ -102,7 +103,7 @@ export const markColorSchema = ConfigurationSchema(
     },
     // #endregion
     ...colorChannelSlots({
-      scales: COLOR_SCALES,
+      scales: MARK_COLOR_SCALES,
       scaleName: 'MarkColorScale',
       fieldType: 'featureField',
       field:

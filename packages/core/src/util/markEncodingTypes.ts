@@ -7,6 +7,7 @@
 // holds the ceiling.
 
 import type { ZoomRange } from '../data_adapters/BaseAdapter/zoomRange.ts'
+import type { RampScaleName } from './colorScale.ts'
 import type { ColorSchemeName } from './colorSchemes.ts'
 import type { AggregateOpName } from './stepOutputs.ts'
 
@@ -64,14 +65,15 @@ export interface ThresholdRef {
 
 /**
  * #api
- * A numeric field read through a linear or log scale into a ramp. `domainMin` or
- * `domainMax` pins each end of the domain, which otherwise takes the region's
- * extreme, so pinning both keeps colors consistent across a whole view. The ramp is `range`'s CSS colors, evenly spaced, where it
- * lists any, else the named `scheme`; `reverse` turns it round.
+ * A numeric field read through a linear, log or symlog scale into a ramp.
+ * `domainMin` or `domainMax` pins each end of the domain, which otherwise
+ * takes the region's extreme, so pinning both keeps colors consistent across a
+ * whole view. The ramp is `range`'s CSS colors, evenly spaced, where it lists
+ * any, else the named `scheme`; `reverse` turns it round.
  */
 export interface ContinuousRef {
   field: FieldRef
-  scale: 'linear' | 'log'
+  scale: RampScaleName
   domainMin?: number
   domainMax?: number
   /** The value the ramp's middle stop sits at; the domain's centre unset. */
@@ -241,7 +243,7 @@ export type ColorScaleTable =
   | {
       kind: 'ramp'
       field: string
-      scale: 'linear' | 'log'
+      scale: RampScaleName
       /** What the ramp spans here: each declared end, else `extent`'s. */
       domain: [number, number]
       /**

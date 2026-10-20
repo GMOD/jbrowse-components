@@ -110,7 +110,7 @@ export type MarkValueScaleType = 'linear' | 'log' | 'symlog'
  */
 export interface MarkRamp {
   domain: [number, number]
-  scale: 'linear' | 'log'
+  scale: MarkValueScaleType
   lut: Uint8Array
   /** The value the ramp's middle stop sits at; the domain's middle when absent. */
   mid?: number

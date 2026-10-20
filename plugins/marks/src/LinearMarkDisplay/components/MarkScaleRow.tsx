@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { LabeledCheckbox } from '@jbrowse/core/ui'
+import { isRampScale } from '@jbrowse/core/util/colorScale'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -8,7 +9,6 @@ import { observer } from 'mobx-react'
 import {
   RAMP_ENDS,
   channelScale,
-  isRamp,
   listMember,
   scaleMember,
 } from '../markEdit.ts'
@@ -56,7 +56,7 @@ function listsOf(channel: EditChannel, scale: string): ListMember[] {
   if (channel === 'size') {
     return ['range']
   }
-  if (isRamp(scale)) {
+  if (isRampScale(scale)) {
     return channel === 'color' ? ['range'] : []
   }
   return scale === 'threshold'
@@ -144,7 +144,7 @@ const MarkScaleRow = observer(function MarkScaleRow({
   if (scale === '') {
     return null
   }
-  const ramp = isRamp(scale)
+  const ramp = isRampScale(scale)
   const colorRamp = ramp && channel === 'color'
   return (
     <div

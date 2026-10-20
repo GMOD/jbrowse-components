@@ -47,6 +47,15 @@ export const DEFAULT_ROW_PROPORTION = 1
 /** The cuts a threshold color paints, render-core's `MAX_COLOR_CUTS`. */
 export const MAX_THRESHOLD_CUTS = 8
 
+/** The scales a mark's `color` offers. */
+export const MARK_COLOR_SCALES = [
+  'none',
+  'categorical',
+  'linear',
+  'log',
+  'threshold',
+] as const
+
 export const SIZE_SCALES = ['linear', 'log'] as const
 export type SizeScaleName = (typeof SIZE_SCALES)[number]
 

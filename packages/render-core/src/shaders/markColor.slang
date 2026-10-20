@@ -25,7 +25,8 @@
 // and uploads no table. A threshold's interval is `thresholdBand`, the count of
 // ascending cuts a value is at or past, which is `thresholdIndex`'s rule in
 // `@jbrowse/core/util/thresholdScale` and the painter's.
-//! export-consts: RAMP_NONE, RAMP_LINEAR, RAMP_LOG, RAMP_THRESHOLD, MAX_COLOR_CUTS, MAX_COLOR_BANDS, RAMP_NO_VALUE_BITS, RAMP_NO_VALUE_COLOR, RAMP_NOT_A_NUMBER_COLOR
+//! export-consts: RAMP_NONE, RAMP_LINEAR, RAMP_LOG, RAMP_THRESHOLD, RAMP_SYMLOG, MAX_COLOR_CUTS, MAX_COLOR_BANDS, RAMP_NO_VALUE_BITS, RAMP_NO_VALUE_COLOR, RAMP_NOT_A_NUMBER_COLOR
+//! js-export: rampScaleType
 module markColor;
 
 import colorPack;
@@ -37,6 +38,15 @@ public static const int RAMP_NONE = 0;
 public static const int RAMP_LINEAR = 1;
 public static const int RAMP_LOG = 2;
 public static const int RAMP_THRESHOLD = 3;
+public static const int RAMP_SYMLOG = 4;
+
+// The `scoreScale` scale type a ramp mode reads its domain through; symlog's
+// constant is 1, as `continuousColorScale` passes it.
+public int rampScaleType(int rampMode) {
+  return rampMode == RAMP_LOG
+    ? SCALE_TYPE_LOG
+    : rampMode == RAMP_SYMLOG ? SCALE_TYPE_SYMLOG : 0;
+}
 
 // The most cuts a threshold parts a plot at, and the intervals between them:
 // the uniform block holds this many.
@@ -117,11 +127,10 @@ public float4 markScaleColor(
   if (rampMode == RAMP_THRESHOLD) {
     return bands[thresholdBand(value, cutCount, cutsLo, cutsHi)];
   }
-  int scaleType = rampMode == RAMP_LOG ? SCALE_TYPE_LOG : 0;
   return rampColor(
     ramp,
     rampMidT(
-      normalizeScore(value, rampMin, rampMax, scaleType, 1.0),
+      normalizeScore(value, rampMin, rampMax, rampScaleType(rampMode), 1.0),
       rampMidNorm,
     ),
   );

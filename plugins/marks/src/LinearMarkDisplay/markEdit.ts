@@ -1,14 +1,18 @@
 import {
-  COLOR_SCALES,
   FEATURE_FIELD_PRESETS,
   fieldScaleOf,
+  isRampScale,
 } from '@jbrowse/core/util/colorScale'
 import { isCssColor } from '@jbrowse/core/util/cssColorParse'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
 
 import { MARK_SPECS } from './markSpecs.ts'
-import { DEFAULT_MARK_TYPE, SIZE_SCALES } from './markVocabulary.ts'
+import {
+  DEFAULT_MARK_TYPE,
+  MARK_COLOR_SCALES,
+  SIZE_SCALES,
+} from './markVocabulary.ts'
 
 import type { MarkSnapshot } from './markProblems.ts'
 import type { MarkChannel, MarkSpec } from './markSpecs.ts'
@@ -91,10 +95,6 @@ export type ListMember = (typeof LIST_MEMBERS)[number]
 /** The ends a ramp is pinned by, which a width ramp shares with a color one. */
 export const RAMP_ENDS = ['domainMin', 'domainMax'] as const
 
-export function isRamp(scale: unknown) {
-  return scale === 'linear' || scale === 'log'
-}
-
 /** The members a ramp of this channel paints: a color's stops, and the ends. */
 function rampMembers(channel: EditChannel): readonly ScaleMember[] {
   return channel === 'color'
@@ -114,7 +114,7 @@ function rampMembers(channel: EditChannel): readonly ScaleMember[] {
  */
 export function channelScales(channel: EditChannel): readonly string[] {
   return channel === 'color'
-    ? COLOR_SCALES.filter(scale => scale !== 'none')
+    ? MARK_COLOR_SCALES.filter(scale => scale !== 'none')
     : channel === 'shape'
       ? ['categorical']
       : channel === 'size'
@@ -251,8 +251,10 @@ export function withChannelScale(
 ): DraftMark {
   const declared = channelObject(mark, channel) ?? {}
   const kept = [
-    ...(isRamp(scale) ? rampMembers(channel) : []),
-    ...(isRamp(scale) && isRamp(channelScale(mark, channel)) ? ['range'] : []),
+    ...(isRampScale(scale) ? rampMembers(channel) : []),
+    ...(isRampScale(scale) && isRampScale(channelScale(mark, channel))
+      ? ['range']
+      : []),
     'title',
     'missingLabel',
     ...(scale === 'categorical' ? ['unknown'] : []),
@@ -328,7 +330,7 @@ export function withListMember(
 }
 
 function readsNumbers(scale: unknown) {
-  return isRamp(scale) || scale === 'threshold'
+  return isRampScale(scale) || scale === 'threshold'
 }
 
 /**

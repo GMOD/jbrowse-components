@@ -1036,7 +1036,7 @@ test('a color ramp pins the end it names, and a domain beside it is named as unr
   ]).createDisplay()
   expect(display.notices).toEqual([
     expect.stringMatching(
-      /^mark 0 encoding.color.domain: a linear or log scale reads no domain/,
+      /^mark 0 encoding.color.domain: a linear, log or symlog scale reads no domain/,
     ),
   ])
   // a color over the plotted field is the display's own, not a fetch input

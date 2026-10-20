@@ -1,9 +1,4 @@
-import {
-  SCALE_TYPE_LOG,
-  denormalizeScore,
-  rampMidNorm,
-  scaleTypeCode,
-} from '../scoreScale.ts'
+import { denormalizeScore, rampMidNorm, scaleTypeCode } from '../scoreScale.ts'
 import { rampMidT } from '../shaders/colorRampLut.js.generated.ts'
 import {
   MAX_COLOR_BANDS,
@@ -14,11 +9,17 @@ import {
   RAMP_NOT_A_NUMBER_COLOR,
   RAMP_NO_VALUE_BITS,
   RAMP_NO_VALUE_COLOR,
+  RAMP_SYMLOG,
   RAMP_THRESHOLD,
 } from '../shaders/markColor.generated.ts'
 import { normalizeScore } from '../shaders/scoreScale.js.generated.ts'
 
-import type { MarkColorScale, MarkRamp, MarkThreshold } from './types.ts'
+import type {
+  MarkColorScale,
+  MarkRamp,
+  MarkThreshold,
+  MarkValueScaleType,
+} from './types.ts'
 
 /**
  * A color channel as a shape reads it: `color`, the packed ABGR the worker
@@ -43,6 +44,12 @@ interface RampBake {
 }
 
 const NO_COLORS = new Uint32Array(0)
+
+const RAMP_MODES: Record<MarkValueScaleType, number> = {
+  linear: RAMP_LINEAR,
+  log: RAMP_LOG,
+  symlog: RAMP_SYMLOG,
+}
 
 /** Whether a color scale is a threshold rather than a ramp. */
 export function isThreshold(scale: MarkColorScale): scale is MarkThreshold {
@@ -112,7 +119,7 @@ export function rampUniforms(scale: MarkColorScale | undefined) {
   }
   return {
     ...none,
-    rampMode: scale.scale === 'log' ? RAMP_LOG : RAMP_LINEAR,
+    rampMode: RAMP_MODES[scale.scale],
     rampMin: scale.domain[0],
     rampMax: scale.domain[1],
     rampMidNorm: midNormOf(scale),
@@ -261,14 +268,14 @@ function thresholdColorOf(scale: MarkThreshold) {
 
 function rampColorOf(ramp: MarkRamp) {
   const [min, max] = ramp.domain
-  const log = ramp.scale === 'log'
+  const type = scaleTypeCode(ramp.scale)
   const midNorm = midNormOf(ramp)
   const { lut } = ramp
   const entries = lut.length / 4
   return (value: number) => {
     const t = rampMidT(
       Number.isFinite(value)
-        ? normalizeScore(value, min, max, log ? SCALE_TYPE_LOG : 0, 1)
+        ? normalizeScore(value, min, max, type, 1)
         : value > 0
           ? 1
           : 0,
@@ -302,7 +309,7 @@ export function rampAsThreshold(
 ): MarkThreshold {
   const [min, max] = ramp.domain
   const colorOf = rampColorOf(ramp)
-  const type = ramp.scale === 'log' ? SCALE_TYPE_LOG : 0
+  const type = scaleTypeCode(ramp.scale)
   const at = (t: number) => denormalizeScore(t, min, max, type, 1)
   if (!(at(1) > at(0))) {
     const floor = at(0)

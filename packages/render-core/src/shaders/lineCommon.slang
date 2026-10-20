@@ -132,8 +132,7 @@ public float4 lineFragmentColor(float colorYPx, float4 cutYsLo, float4 cutYsHi, 
   float value = lineValueAtColorYPx(
     colorYPx, bandTop, u.rowBandPx,
     u.domainMin, u.domainMax, u.valueScaleType, u.valueSymlogConstant);
-  int rampScale = u.rampMode == RAMP_LOG ? SCALE_TYPE_LOG : 0;
   return rampColor(
     ramp,
-    rampMidT(normalizeScore(value, u.rampMin, u.rampMax, rampScale, 1.0), u.rampMidNorm));
+    rampMidT(normalizeScore(value, u.rampMin, u.rampMax, rampScaleType(u.rampMode), 1.0), u.rampMidNorm));
 }

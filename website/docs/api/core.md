@@ -348,10 +348,11 @@ import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
 
 ## ContinuousRef
 
-A numeric field read through a linear or log scale into a ramp. `domainMin` or
-`domainMax` pins each end of the domain, which otherwise takes the region's
-extreme, so pinning both keeps colors consistent across a whole view. The ramp is `range`'s CSS colors, evenly spaced, where it
-lists any, else the named `scheme`; `reverse` turns it round.
+A numeric field read through a linear, log or symlog scale into a ramp.
+`domainMin` or `domainMax` pins each end of the domain, which otherwise
+takes the region's extreme, so pinning both keeps colors consistent across a
+whole view. The ramp is `range`'s CSS colors, evenly spaced, where it lists
+any, else the named `scheme`; `reverse` turns it round.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -1183,7 +1184,7 @@ follows the widened domain with no table baked again.
 import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
 
 // type signature
-(table: {…}, extent: [number, number]) => { kind: "ramp"; field: string; scale: "linear" | "log"; domain: [number, number]; pinned: [boolean, boolean]; domainMid?: number | undefined; range?: string[] | undefined; scheme?: "blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "redyellowblue" | "viridis" | undefined; reverse?: boolean | undefined; extent: [number, number]; quantile?: number | undefined; lut: Uint8Array<…>; missing?: boolean | undefined; notNumber?: boolean | undefined; }
+(table: {…}, extent: [number, number]) => { kind: "ramp"; field: string; scale: "linear" | "log" | "symlog"; domain: [number, number]; pinned: [boolean, boolean]; domainMid?: number | undefined; range?: string[] | undefined; scheme?: "blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "redyellowblue" | "viridis" | undefined; reverse?: boolean | undefined; extent: [number, number]; quantile?: number | undefined; lut: Uint8Array<…>; missing?: boolean | undefined; notNumber?: boolean | undefined; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)

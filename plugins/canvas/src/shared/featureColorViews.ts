@@ -93,7 +93,9 @@ export function featureColorViews(self: FeatureColorHost) {
     const field = typeof current === 'object' ? current.field : undefined
     const quantile =
       typeof current === 'object' &&
-      (current.scale === 'linear' || current.scale === 'log')
+      (current.scale === 'linear' ||
+        current.scale === 'log' ||
+        current.scale === 'symlog')
         ? (current.domainQuantile ?? 1)
         : 1
     let min = Infinity
@@ -253,13 +255,15 @@ export function featureColorViews(self: FeatureColorHost) {
 
     /**
      * #getter
-     * The ramp a linear or log color paints through, over the loaded
+     * The ramp a linear, log or symlog color paints through, over the loaded
      * values where an end is left open.
      */
     get colorRamp() {
       const current = this.colorEncoding
       return typeof current === 'object' &&
-        (current.scale === 'linear' || current.scale === 'log')
+        (current.scale === 'linear' ||
+          current.scale === 'log' ||
+          current.scale === 'symlog')
         ? continuousColorScale(
             current,
             current.domainMin !== undefined && current.domainMax !== undefined

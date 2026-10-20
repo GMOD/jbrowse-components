@@ -4,12 +4,24 @@
  * displays read one statement.
  */
 
+/**
+ * The scales that run a numeric field along a color ramp. `symlog` is d3's
+ * with constant 1, sign(x)·log(1 + |x|): it needs no positive floor, so a
+ * count of 1 stays apart from 0 where `log` floors both together.
+ */
+export const RAMP_SCALES = ['linear', 'log', 'symlog'] as const
+
+export type RampScaleName = (typeof RAMP_SCALES)[number]
+
+export function isRampScale(scale: unknown): scale is RampScaleName {
+  return scale === 'linear' || scale === 'log' || scale === 'symlog'
+}
+
 /** How a color object maps its `field`; `none` paints `value`. */
 export const COLOR_SCALES = [
   'none',
   'categorical',
-  'linear',
-  'log',
+  ...RAMP_SCALES,
   'threshold',
 ] as const
 
@@ -471,13 +483,13 @@ export function colorProblems(
       })
     }
   }
-  if (scale === 'linear' || scale === 'log') {
+  if (isRampScale(scale)) {
     if (domain.length > 0) {
       problems.push({
         rule: 'ramp-domain',
         slot: 'domain',
         message:
-          "a linear or log scale reads no domain, which is a categorical scale's order and a threshold scale's cuts; a ramp's ends are domainMin and domainMax where the color has them",
+          "a linear, log or symlog scale reads no domain, which is a categorical scale's order and a threshold scale's cuts; a ramp's ends are domainMin and domainMax where the color has them",
       })
     }
     if (range.length === 1) {
@@ -485,7 +497,7 @@ export function colorProblems(
         rule: 'ramp-range',
         slot: 'range',
         message:
-          'a linear or log ramp runs between at least two colors, and one paints every value alike; a single color is value',
+          'a linear, log or symlog ramp runs between at least two colors, and one paints every value alike; a single color is value',
       })
     }
     problems.push(

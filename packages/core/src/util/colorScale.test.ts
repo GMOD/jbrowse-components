@@ -162,7 +162,7 @@ test('a notice line names the setting and the slot', () => {
       { field: 'x', scale: 'linear', domain: ['0'] },
       { '*': { scale: 'categorical' } },
     )[0],
-  ).toMatch(/^color\.domain: a linear or log scale reads no domain/)
+  ).toMatch(/^color\.domain: a linear, log or symlog scale reads no domain/)
 })
 
 test('an identity scale names one color per label, with or without a field', () => {
