@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useLayoutEffect } from 'react'
 
 import { observer } from 'mobx-react'
 
@@ -67,7 +67,8 @@ const ContextMenu = observer(function ContextMenu({
 }) {
   const clearTrackedPointer = useClearTrackedPointer()
   const open = anchor !== undefined
-  useEffect(() => {
+  // before paint, so the hover never draws under a menu that has opened
+  useLayoutEffect(() => {
     if (open) {
       clearTrackedPointer()
     }

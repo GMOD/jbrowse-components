@@ -87,6 +87,7 @@ function Body({
 
 function setup() {
   const model = TestChromeModel.create({})
+  const onPointerPosition = jest.fn()
   function Harness() {
     const [anchor, setAnchor] = useState<ContextMenuAnchor | undefined>()
     return (
@@ -103,6 +104,7 @@ function setup() {
           model={model}
           factory={stubFactory}
           testid="probe-display"
+          onPointerPosition={onPointerPosition}
         >
           {({ mouseTracker }) => (
             <Body
@@ -121,6 +123,7 @@ function setup() {
   const pointer = () => screen.getByTestId('pointer').textContent
   return {
     pointer,
+    onPointerPosition,
     move(clientX: number, clientY: number) {
       fireEvent.mouseMove(screen.getByTestId('probe-display'), {
         clientX,
@@ -148,11 +151,16 @@ test('picking an item drops the pointer the menu opened over', () => {
 // end its hover on, and a hover derived from the pointer would light the
 // feature under the menu and keep its tooltip up.
 test('opening the menu drops the pointer it opened over', () => {
-  const { pointer, move, openMenu } = setup()
+  const { pointer, onPointerPosition, move, openMenu } = setup()
   move(40, 12)
+  expect(onPointerPosition).toHaveBeenLastCalledWith(
+    expect.objectContaining({ x: 40, y: 12 }),
+  )
   openMenu()
   expect(screen.getByText('View subsequences')).toBeTruthy()
   expect(pointer()).toBe('no pointer')
+  // what a display's hover clears on
+  expect(onPointerPosition).toHaveBeenLastCalledWith(undefined)
 })
 
 // Dismissing without picking detaches the same hover chain, so it owes the same

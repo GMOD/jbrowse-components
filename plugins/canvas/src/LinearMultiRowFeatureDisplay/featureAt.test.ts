@@ -419,6 +419,30 @@ describe('featureAt', () => {
     expect(display.hoverInk[0]!.top).toBe(before!.top)
   })
 
+  // The menu's hit is held, not derived, so it carries the row's name and the
+  // highlight resolves that row against the live order.
+  it('an open menu marks its feature on the row it moved to', () => {
+    const { display } = twoRowDisplay(
+      region([
+        { row: 'a', start: 100, end: 200, id: 'top' },
+        { row: 'b', start: 300, end: 400, id: 'bottom' },
+      ]),
+    )
+    const hit = display.featureAt(350, 75)
+    display.openContextMenu({
+      clientX: 0,
+      clientY: 0,
+      refName: 'ctgA',
+      pos: 350,
+      hit,
+    })
+    const [before] = display.hoverInk
+
+    display.setRowOrder([{ name: 'b' }, { name: 'a' }])
+
+    expect(display.hoverInk[0]!.top).toBeLessThan(before!.top)
+  })
+
   // The bound is the sidebar's interactive edge, not where labels are drawn
   // from: a hit under the resize handle would fight the drag.
   it('is undefined over the tree sidebar and its resize handle', () => {
