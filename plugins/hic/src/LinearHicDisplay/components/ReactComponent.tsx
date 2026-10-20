@@ -91,10 +91,7 @@ const HicPointer = observer(function HicPointer({
   model: LinearHicDisplayModel
   mouseState: MouseState
 }) {
-  const { rpcData, canvasWidth, height, yScalar } = model
-  const item = model.isLoadingOrCanceled
-    ? undefined
-    : model.hitTest(mouseState.x, mouseState.y)
+  const { rpcData, canvasWidth, height, yScalar, hoveredFeature: item } = model
   return (
     <>
       <ContactAxisGuides
@@ -130,6 +127,9 @@ const LinearHicReactComponent = observer(function LinearHicReactComponent({
       factory={HicRenderer}
       testid="hic-display"
       style={{ cursor: 'crosshair', width, overflow: 'hidden' }}
+      onPointerPosition={state => {
+        model.setPointer(state)
+      }}
     >
       {({ canvasRef, mouseTracker }) => (
         <>

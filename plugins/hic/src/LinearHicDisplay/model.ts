@@ -14,6 +14,7 @@ import {
 import { clipQuantileOf } from '@jbrowse/core/util/quantileExtent'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
+import PointerHoverMixin from '@jbrowse/display-kit/PointerHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import TriangleMatrixMixin from '@jbrowse/display-kit/TriangleMatrixMixin'
 import {
@@ -117,6 +118,13 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       GlobalFetchMixin(),
       LegendMixin(),
       TriangleMatrixMixin<HicDataResult>(),
+      PointerHoverMixin<HicContactItem>(
+        (a, b) =>
+          a.bin1 === b.bin1 &&
+          a.bin2 === b.bin2 &&
+          a.region1Idx === b.region1Idx &&
+          a.region2Idx === b.region2Idx,
+      ),
       types.model({
         /**
          * #property
@@ -484,6 +492,16 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         }
         const { x, y } = self.screenToCell(mouseX, mouseY)
         return findContactAt(data, x, y)
+      },
+      /**
+       * #method
+       * No contact while the matrix loads: a global display replaces its
+       * whole frame, so the cells it holds are on their way out.
+       */
+      hoverHitAt(mouseX: number, mouseY: number) {
+        return self.isLoadingOrCanceled
+          ? undefined
+          : this.hitTest(mouseX, mouseY)
       },
     }))
     .actions(self => ({

@@ -12,13 +12,13 @@ export interface PointerPx {
  * #crossCuttingMixin A hover derived from the pointer. The hit type, as the type parameter. Brings the `pointer` volatile, `setPointer` for the chrome's `onPointerPosition`, the `hoverHitAt` hook a display overrides, and the `hoveredFeature` getter `BaseDisplay` declares as a hook
  * #category display
  *
- * The other way to answer `hoveredFeature` beside `StoredHoverMixin`: the
- * display stores where the pointer is, never what is under it, and the hover
- * is `hoverHitAt(pointer)`. A pan, a zoom, a scroll or a fetch landing under a
- * stationary cursor re-resolves the hit, so nothing has to clear it on the
- * viewport's axes and `clearHoveredFeature` stays `BaseDisplay`'s no-op. The
- * pointer goes away through the chrome, which reports `undefined` when it
- * leaves, a banner replaces the container, or a context menu opens or closes.
+ * The derived counterpart of `StoredHoverMixin`: the display stores the
+ * pointer's position, and the hover is `hoverHitAt` at that position. A pan, a
+ * zoom, a scroll or a fetch landing under a stationary cursor re-resolves the
+ * hit, so no reaction clears it on the viewport's axes and
+ * `clearHoveredFeature` stays `BaseDisplay`'s no-op. The chrome drops the
+ * pointer, reporting `undefined` when it leaves, a banner replaces the
+ * container, or a context menu opens or closes.
  *
  * `sameHit` names the fields that make two hits one hover: a hit test hands
  * back a fresh object per call, and without it every pointer move would

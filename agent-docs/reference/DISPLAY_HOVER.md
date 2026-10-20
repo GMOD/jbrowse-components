@@ -1,6 +1,6 @@
 ---
 name: display-hover
-description: Why a stored hover is a volatile the viewport can invalidate, which mixin clears it on which axes, and the `hoveredFeature` hook every display publishes it through. Read before storing a hit in a display or a view that owns a shared canvas.
+description: Why a stored hover goes stale under a still cursor and what clears it, the derived `PointerHoverMixin` that needs no clear, and the `hoveredFeature` hook every display publishes through. Read before storing a hit in a display or a view that owns a shared canvas.
 kind: spec
 ---
 
@@ -38,9 +38,21 @@ hover state without a hover write re-firing it.
 
 ## Deriving is the other correct design
 
-MAF's tooltip stores no hit: its body re-runs `mafHitTest` from the live pointer
-on every render. The row under the pointer is stored through `StoredHoverMixin`
-and takes the same clear.
+`PointerHoverMixin<T>` (display-kit) stores the pointer's position, and its
+`hoveredFeature` is the display's `hoverHitAt` at that position, a computed that
+`sameHit` holds to one value per hit. A zoom, pan, scroll, reorder or fetch
+re-resolves it, so no reaction clears it on the viewport's axes and
+`clearHoveredFeature` stays `BaseDisplay`'s no-op. Multirow and HiC use it.
+
+- **The chrome owns the pointer.** Pass `model.setPointer` as the chrome's
+  `onPointerPosition`. The chrome reports `undefined` when the pointer leaves,
+  a banner replaces the container, or a `ContextMenu` opens or closes.
+- **Put a gate in `hoverHitAt`.** A global display answers no hit while
+  `isLoadingOrCanceled`, and its override says so.
+
+MAF's tooltip stores no hit either: its body re-runs `mafHitTest` from the live
+pointer on every render. The row under the pointer is stored through
+`StoredHoverMixin` and takes the clear.
 
 ## Publish it as `hoveredFeature`
 
@@ -58,9 +70,9 @@ outer one.
 
 ## Store or derive, never half
 
-**Store** when the hit is expensive or several components read it, then answer
-the clear: override `clearHoveredFeature` under `MultiRegionDisplayMixin`, or
-install your own reaction elsewhere. **Derive** when the hit test is a lookup and
-one component consumes it. Storing a hit and leaving the clear to the pointer
-handlers is the one wrong choice, since they cover only the case where the
-pointer moved.
+**Derive** through `PointerHoverMixin` when the hit test is cheap enough to re-run
+on every change it reads, which a lookup is. **Store** when it is not (the
+pileup's), then answer the clear: override `clearHoveredFeature` under
+`MultiRegionDisplayMixin`, or install your own reaction elsewhere. Storing a hit
+and leaving the clear to the pointer handlers is the one wrong choice, since
+they cover only the case where the pointer moved.

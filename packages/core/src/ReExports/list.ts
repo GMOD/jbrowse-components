@@ -460,6 +460,7 @@ export default [
   '@jbrowse/display-kit/planRegionFetch',
   '@jbrowse/display-kit/PlotDialog',
   '@jbrowse/display-kit/plotMenu',
+  '@jbrowse/display-kit/PointerHoverMixin',
   '@jbrowse/display-kit/regionCommit',
   '@jbrowse/display-kit/regionHost',
   '@jbrowse/display-kit/regionTooLargeConfigSchemaFields',

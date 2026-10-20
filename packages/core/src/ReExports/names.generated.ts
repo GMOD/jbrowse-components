@@ -460,6 +460,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/planRegionFetch': ['isBlockCovered', 'planRegionFetch', 'regionAssemblyMismatchMessage', 'retryOutcomeForPlan'],
   '@jbrowse/display-kit/PlotDialog': ['default'],
   '@jbrowse/display-kit/plotMenu': ['editPlotMenuItems', 'openPlotDialog'],
+  '@jbrowse/display-kit/PointerHoverMixin': ['default'],
   '@jbrowse/display-kit/regionCommit': ['makeCommitChecks', 'payloadServesZoom'],
   '@jbrowse/display-kit/regionHost': ['contentRightEdgePx'],
   '@jbrowse/display-kit/regionTooLargeConfigSchemaFields': ['regionTooLargeConfigSchemaFields'],

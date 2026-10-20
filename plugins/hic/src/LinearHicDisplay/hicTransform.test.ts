@@ -130,6 +130,26 @@ describe('hitTest inverts what the renderer drew', () => {
   })
 })
 
+// The hover is resolved from where the pointer stands, so a frame that stops
+// describing the data takes it away under a cursor that never moved.
+test('the hover is the contact under the pointer, and none once the load is canceled', () => {
+  const { display } = createDisplay()
+  display.setRpcData(makeData([{ bin1: 2, bin2: 5 }], 64))
+  const { viewScale, viewOffsetX, yScalar } = display.renderState
+  display.setPointer(
+    triangleDataToScreen(2 * W + W / 2, 5 * W + W / 2, {
+      viewScale,
+      viewOffsetX,
+      yScalar,
+      yOffsetPx: 0,
+    }),
+  )
+  expect(display.hoveredFeature).toMatchObject({ bin1: 2, bin2: 5 })
+
+  display.cancelFetchByUser()
+  expect(display.hoveredFeature).toBeUndefined()
+})
+
 // The fixture is honest about the layer below: hovering the same cell centers in
 // data space directly must find the same contacts, so a failure above is the
 // transform and not the lookup.

@@ -59,7 +59,9 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 | <span id="volatile-fileinfo">**fileInfo**</span><br><code>AdapterRead&lt;HicFileInfo&gt; &#124; undefined</code> | The file's normalizations and binsizes, stamped with the adapter config they answer. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>24 inherited volatiles from 7 models</summary>
+<summary>25 inherited volatiles from 8 models</summary>
+
+From [PointerHoverMixin](../pointerhovermixin): <span id="volatile-pointer">[`pointer`](../pointerhovermixin#volatile-pointer)</span>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="volatile-rpcdata">[`rpcData`](../trianglematrixmixin#volatile-rpcdata)</span>
 
@@ -116,7 +118,9 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> | The static blocks plus the binsize, so a pan inside them redraws and only a block entering or a binsize step refetches. Undefined until the header lands. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>78 inherited getters from 9 models</summary>
+<summary>78 inherited getters from 10 models</summary>
+
+From [PointerHoverMixin](../pointerhovermixin): <span id="getter-hoveredfeature">[`hoveredFeature`](../pointerhovermixin#getter-hoveredfeature)</span>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="getter-heightmode">[`heightMode`](../trianglematrixmixin#getter-heightmode)</span>, <span id="getter-matrixtop">[`matrixTop`](../trianglematrixmixin#getter-matrixtop)</span>, <span id="getter-canvaswidth">[`canvasWidth`](../trianglematrixmixin#getter-canvaswidth)</span>, <span id="getter-viewtransform">[`viewTransform`](../trianglematrixmixin#getter-viewtransform)</span>, <span id="getter-matrixregions">[`matrixRegions`](../trianglematrixmixin#getter-matrixregions)</span>, <span id="getter-matrixheight">[`matrixHeight`](../trianglematrixmixin#getter-matrixheight)</span>, <span id="getter-matrixblocks">[`matrixBlocks`](../trianglematrixmixin#getter-matrixblocks)</span>, <span id="getter-yscalar">[`yScalar`](../trianglematrixmixin#getter-yscalar)</span>, <span id="getter-triangletransform">[`triangleTransform`](../trianglematrixmixin#getter-triangletransform)</span>, <span id="getter-triangleframe">[`triangleFrame`](../trianglematrixmixin#getter-triangleframe)</span>
 
@@ -134,7 +138,7 @@ From [RegionTooLargeMixin](../regiontoolargemixin): <span id="getter-gateenabled
 
 From [TrackHeightMixin](../trackheightmixin): <span id="getter-configuredheight">[`configuredHeight`](../trackheightmixin#getter-configuredheight)</span>, <span id="getter-allottedheight">[`allottedHeight`](../trackheightmixin#getter-allottedheight)</span>, <span id="getter-height">[`height`](../trackheightmixin#getter-height)</span>, <span id="getter-resizing">[`resizing`](../trackheightmixin#getter-resizing)</span>, <span id="getter-scrollcontentheight">[`scrollContentHeight`](../trackheightmixin#getter-scrollcontentheight)</span>, <span id="getter-scrollviewportheight">[`scrollViewportHeight`](../trackheightmixin#getter-scrollviewportheight)</span>, <span id="getter-scrollableheight">[`scrollableHeight`](../trackheightmixin#getter-scrollableheight)</span>
 
-From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`](../basedisplay#getter-parenttrack)</span>, <span id="getter-renderingcomponent">[`RenderingComponent`](../basedisplay#getter-renderingcomponent)</span>, <span id="getter-displayblurb">[`DisplayBlurb`](../basedisplay#getter-displayblurb)</span>, <span id="getter-adapterconfig">[`adapterConfig`](../basedisplay#getter-adapterconfig)</span>, <span id="getter-isminimized">[`isMinimized`](../basedisplay#getter-isminimized)</span>, <span id="getter-hoveredfeature">[`hoveredFeature`](../basedisplay#getter-hoveredfeature)</span>, <span id="getter-featurenoun">[`featureNoun`](../basedisplay#getter-featurenoun)</span>, <span id="getter-featurewidgettype">[`featureWidgetType`](../basedisplay#getter-featurewidgettype)</span>, <span id="getter-livenotices">[`liveNotices`](../basedisplay#getter-livenotices)</span>, <span id="getter-plotkeys">[`plotKeys`](../basedisplay#getter-plotkeys)</span>, <span id="getter-plot">[`plot`](../basedisplay#getter-plot)</span>, <span id="getter-confignotices">[`configNotices`](../basedisplay#getter-confignotices)</span>, <span id="getter-notices">[`notices`](../basedisplay#getter-notices)</span>, <span id="getter-cornernotices">[`cornerNotices`](../basedisplay#getter-cornernotices)</span>, <span id="getter-plotexamples">[`plotExamples`](../basedisplay#getter-plotexamples)</span>, <span id="getter-configdocsurl">[`configDocsUrl`](../basedisplay#getter-configdocsurl)</span>
+From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`](../basedisplay#getter-parenttrack)</span>, <span id="getter-renderingcomponent">[`RenderingComponent`](../basedisplay#getter-renderingcomponent)</span>, <span id="getter-displayblurb">[`DisplayBlurb`](../basedisplay#getter-displayblurb)</span>, <span id="getter-adapterconfig">[`adapterConfig`](../basedisplay#getter-adapterconfig)</span>, <span id="getter-isminimized">[`isMinimized`](../basedisplay#getter-isminimized)</span>, <span id="getter-featurenoun">[`featureNoun`](../basedisplay#getter-featurenoun)</span>, <span id="getter-featurewidgettype">[`featureWidgetType`](../basedisplay#getter-featurewidgettype)</span>, <span id="getter-livenotices">[`liveNotices`](../basedisplay#getter-livenotices)</span>, <span id="getter-plotkeys">[`plotKeys`](../basedisplay#getter-plotkeys)</span>, <span id="getter-plot">[`plot`](../basedisplay#getter-plot)</span>, <span id="getter-confignotices">[`configNotices`](../basedisplay#getter-confignotices)</span>, <span id="getter-notices">[`notices`](../basedisplay#getter-notices)</span>, <span id="getter-cornernotices">[`cornerNotices`](../basedisplay#getter-cornernotices)</span>, <span id="getter-plotexamples">[`plotExamples`](../basedisplay#getter-plotexamples)</span>, <span id="getter-configdocsurl">[`configDocsUrl`](../basedisplay#getter-configdocsurl)</span>
 
 </details>
 
@@ -145,6 +149,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | --- | --- |
 | <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { normalization: string; quantile: number; }</code> | The settings that refetch. The binsize is zoom-derived, so it is passed as a separate argument. |
 | <span id="method-hittest">**hitTest**</span><br><code>(mouseX: number, mouseY: number) =&gt; HicContactItem &#124; undefined</code> | The contact under a display-px point, through the inverse of the transform the matrix was drawn with. |
+| <span id="method-hoverhitat">**hoverHitAt**</span><br><code>(mouseX: number, mouseY: number) =&gt; HicContactItem &#124; undefined</code> | No contact while the matrix loads: a global display replaces its whole frame, so the cells it holds are on their way out. |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-rendersvg">**renderSvg**</span><br><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |
 
@@ -181,7 +186,9 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-stepresolution">**stepResolution**</span><br><code>(delta: number) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>36 inherited actions from 8 models</summary>
+<summary>37 inherited actions from 9 models</summary>
+
+From [PointerHoverMixin](../pointerhovermixin): <span id="action-setpointer">[`setPointer`](../pointerhovermixin#action-setpointer)</span>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="action-setrpcdata">[`setRpcData`](../trianglematrixmixin#action-setrpcdata)</span>, <span id="action-setheightmode">[`setHeightMode`](../trianglematrixmixin#action-setheightmode)</span>
 

@@ -4646,6 +4646,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/PointerHoverMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/regionCommit": {
       "package": "@jbrowse/display-kit",
       "names": [
