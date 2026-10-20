@@ -75,10 +75,10 @@ function isLoopback(url: { hostname: string }) {
 
 /**
  * Whether a config's plugins load without the cross-origin prompt: the
- * config comes from this origin, or both this app and the config run on the
- * developer's own machine, such as a dev build on one port reading a plugin
- * build served on another. A link from anywhere else still prompts, since its
- * config is not on loopback.
+ * config comes from this origin, or a dev build and the config both run on
+ * loopback, such as a plugin build served on another port. A release build
+ * served on localhost still prompts, since anything on the machine can serve
+ * it a config.
  */
 export function configNeedsNoPrompt(
   configUrl: { origin: string; hostname: string },
@@ -86,7 +86,9 @@ export function configNeedsNoPrompt(
 ) {
   return (
     configUrl.origin === appUrl.origin ||
-    (isLoopback(configUrl) && isLoopback(appUrl))
+    (process.env.NODE_ENV === 'development' &&
+      isLoopback(configUrl) &&
+      isLoopback(appUrl))
   )
 }
 

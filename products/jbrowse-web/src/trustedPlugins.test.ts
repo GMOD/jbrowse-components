@@ -72,14 +72,37 @@ test('a definition that names no loader is never remembered alongside real ones'
   expect(arePluginsRemembered([apollo, {} as PluginDefinition])).toBe(false)
 })
 
+function withNodeEnv(env: string, fn: () => void) {
+  const prev = process.env.NODE_ENV
+  process.env.NODE_ENV = env
+  try {
+    fn()
+  } finally {
+    process.env.NODE_ENV = prev
+  }
+}
+
 test('a dev build reads a config from another loopback port without a prompt', () => {
   const app = new URL('http://localhost:3000/')
-  expect(
-    configNeedsNoPrompt(new URL('http://localhost:9000/c.json'), app),
-  ).toBe(true)
-  expect(
-    configNeedsNoPrompt(new URL('http://127.0.0.1:9000/c.json'), app),
-  ).toBe(true)
+  withNodeEnv('development', () => {
+    expect(
+      configNeedsNoPrompt(new URL('http://localhost:9000/c.json'), app),
+    ).toBe(true)
+    expect(
+      configNeedsNoPrompt(new URL('http://127.0.0.1:9000/c.json'), app),
+    ).toBe(true)
+  })
+})
+
+test('a release build on localhost prompts for a config on another port', () => {
+  withNodeEnv('production', () => {
+    expect(
+      configNeedsNoPrompt(
+        new URL('http://localhost:9000/c.json'),
+        new URL('http://localhost:3000/'),
+      ),
+    ).toBe(false)
+  })
 })
 
 test('a config from elsewhere still prompts, on a dev build or a deployed one', () => {
