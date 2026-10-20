@@ -17,10 +17,11 @@ import {
   getEnv,
   getPaletteHost,
   getSession,
-  isObject,
   isFeature,
+  isObject,
   morphClockMs,
   openFeatureWidget,
+  persistTrackConfigNow,
 } from '@jbrowse/core/util'
 import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
 import { withImpliedField } from '@jbrowse/core/util/colorScale'
@@ -582,6 +583,7 @@ export function stateModelFactory(
         setSelectedLanes(names: readonly string[] | undefined) {
           setConf(self, ['rows', 'kept'], names ?? [])
           self.hiddenLaneNames = undefined
+          persistTrackConfigNow(self)
         },
         /** #action */
         setRibbonColorField(field: string) {
@@ -1231,6 +1233,7 @@ export function stateModelFactory(
           setConf(self, ['rows', 'kept'], kept)
         }
         self.hiddenLaneNames = hidden.length ? hidden : undefined
+        persistTrackConfigNow(self)
       },
       /** #action */
       showHiddenLanes() {

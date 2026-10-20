@@ -1,5 +1,6 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
+import { persistTrackConfigNow } from '@jbrowse/core/util/mstUtils'
 import {
   colorEncodingOf,
   colorFieldOf,
@@ -137,6 +138,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      */
     setDomain(domain: string[]) {
       setConf(self, ['rows', 'domain'], domain)
+      persistTrackConfigNow(self)
     },
     /** #action */
     setBridgeSkippedLanes(flag: boolean) {

@@ -1,4 +1,8 @@
-import { getEnv as getEnvMST, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import {
+  getEnv as getEnvMST,
+  hasParent,
+  isStateTreeNode,
+} from '@jbrowse/mobx-state-tree'
 
 import { cachedParent, findParentThatIs } from './parentWalk.ts'
 import {
@@ -82,6 +86,19 @@ export function getContainingTrack(
     () => findParentThatIs(node, isTrackModel),
     'no containing track found',
   )
+}
+
+/**
+ * #api core/util
+ * Write the containing track's config to the session now, not after its
+ * 400 ms wait, so an edit is one undo step the moment it lands: every writer
+ * of a row arrangement, a lane choice or an axis setting calls it (ADR-157).
+ * Does nothing for a node outside a track.
+ */
+export function persistTrackConfigNow(node: IAnyStateTreeNode) {
+  if (hasParent(node)) {
+    getContainingTrack(node).persistConfigurationNow?.()
+  }
 }
 
 /**

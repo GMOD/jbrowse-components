@@ -1,4 +1,4 @@
-import { getContainingTrack } from '@jbrowse/core/util/mstUtils'
+import { persistTrackConfigNow } from '@jbrowse/core/util/mstUtils'
 
 import type { ScoreAxisDisplay } from './types.ts'
 
@@ -6,5 +6,5 @@ import type { ScoreAxisDisplay } from './types.ts'
 // debounced save, so undo steps one edit at a time.
 export function writeThrough(display: ScoreAxisDisplay, edit: () => void) {
   edit()
-  getContainingTrack(display).persistConfigurationNow?.()
+  persistTrackConfigNow(display)
 }

@@ -1,9 +1,9 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import { capitalizeFirst, getContainingTrack } from '@jbrowse/core/util'
+import { capitalizeFirst, persistTrackConfigNow } from '@jbrowse/core/util'
 import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowArrangementConfigSchema'
-import { getSnapshot, hasParent, types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
 import { arrangeRows, bandRows, orderRowsByDomain } from './arrangeRows.ts'
@@ -1049,9 +1049,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         setConf(host(self), ['rows', member], value)
       }
       function persist() {
-        if (hasParent(self)) {
-          getContainingTrack(self).persistConfigurationNow?.()
-        }
+        persistTrackConfigNow(self)
       }
       function writeTree(run?: ClusterRun) {
         write('tree', run?.tree)

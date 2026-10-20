@@ -2,14 +2,14 @@ import { parseCigar2 } from '@jbrowse/cigar-utils'
 import { setConf } from '@jbrowse/core/configuration'
 import { DEAL_COLOR_DIFFERENCE, colorDifference } from '@jbrowse/core/ui/colors'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
-import { SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, getContainingTrack } from '@jbrowse/core/util'
 import {
   NO_VALUE_LABEL,
   categoricalField,
 } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { takeSnackbarAction, testAssembly } from '@jbrowse/display-test-utils'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { addMiddleware, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-canvas'
 import {
   categoricalColor,
@@ -2752,4 +2752,21 @@ test('a lane the window shows none of, inside a deletion its record states, is a
   expect(display.rowAssemblies).toEqual(['volvox_random', 'volvox_ins'])
   const row = display.laneHeaderRows.find(r => r.assemblyName === 'volvox_ins')
   expect(row?.changes?.text).toBe('inside a 1.2 Mb deletion')
+})
+
+// ADR-157: a lane choice or order lands in the session at once, so it is one
+// undo step, the hide-set written beside it included.
+test('each lane write saves the track config to the session at once', () => {
+  const { display } = createDisplayWithSession()
+  const saves: string[] = []
+  addMiddleware(getContainingTrack(display), (call, next) => {
+    if (call.name === 'persistConfigurationNow') {
+      saves.push(call.name)
+    }
+    return next(call)
+  })
+  display.setSelectedLanes(['volvox_random'])
+  display.setDomain(['volvox_random', 'volvox'])
+  display.showLane('volvox')
+  expect(saves).toHaveLength(3)
 })
