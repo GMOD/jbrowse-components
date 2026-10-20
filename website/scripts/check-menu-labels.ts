@@ -35,7 +35,7 @@
 // under it belongs to a plugin.
 //
 // Run: `pnpm check-menu-labels`, or the root `pnpm check-docs`.
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 import {
@@ -79,6 +79,11 @@ const SUPPRESS = '<!-- menu-path-ok -->'
 const LIBRARY_SRC = (name: string, ...rest: string[]) =>
   join(libraryCheckout(name), ...rest)
 const GRAPH_SRC = pluginSourceDirs('graphgenomeviewer')
+const PROTEIN_SRC = [
+  ...pluginSourceDirs('protein3d'),
+  ...pluginSourceDirs('msaview'),
+  LIBRARY_SRC('react-msaview', 'packages', 'lib', 'src'),
+]
 
 // A page can name labels from more than one plugin — the proteins page walks
 // one right-click menu that protein3d and msaview each contribute a launcher
@@ -105,15 +110,12 @@ const EXTERNAL_PLUGIN_PAGES = new Map([
   ['tutorials/pangenome_cattle.md', GRAPH_SRC],
   ['tutorials/pangenome_mouse.md', GRAPH_SRC],
   ['tutorials/pangenome_prepare_graph.md', GRAPH_SRC],
-  [
+  ...[
     'tutorials/genomes_proteins.md',
-    [
-      ...pluginSourceDirs('protein3d'),
-      ...pluginSourceDirs('msaview'),
-      LIBRARY_SRC('react-msaview', 'packages', 'lib', 'src'),
-    ],
-  ],
-  ['tutorials/protein_variants_sickle_cell.md', pluginSourceDirs('protein3d')],
+    ...readdirSync(join(docsDir, 'tutorials'))
+      .filter(f => f.startsWith('protein_variants_') && f.endsWith('.md'))
+      .map(f => `tutorials/${f}`),
+  ].map(page => [page, PROTEIN_SRC] as const),
 ])
 
 // Prose names for an affordance rather than labels the app renders: the docs
