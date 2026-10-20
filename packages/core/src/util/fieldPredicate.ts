@@ -18,7 +18,7 @@ export interface FieldPredicate {
   lte?: number
   gt?: number
   gte?: number
-  oneOf?: readonly (string | number)[]
+  oneOf?: readonly (string | number | boolean)[]
   valid?: boolean
 }
 
