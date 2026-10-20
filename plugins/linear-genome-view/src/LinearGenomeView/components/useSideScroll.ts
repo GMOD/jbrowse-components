@@ -16,7 +16,7 @@ const PAN_CLICK_THRESHOLD_PX = 4
 // as `data-gesture-owner`. `data-pan-dragging` is present from press to
 // release; `data-pan-moved` is set once the press travels past the threshold
 // or becomes a pinch, and cleared by the next press, so it still answers for
-// the click that follows the release: `clickCapture` swallows that click
+// the click that follows the release: `onClickCapture` swallows that click
 // before any track sees it.
 const PAN_DRAGGING_ATTR = 'data-pan-dragging'
 const PAN_MOVED_ATTR = 'data-pan-moved'
@@ -59,16 +59,22 @@ export function useSideScroll(model: LinearGenomeViewModel) {
     [],
   )
 
-  function pointerDown(event: React.PointerEvent) {
+  // The marker outlives the gesture that set it, so every press clears it, in
+  // the capture phase: a track that keeps its own press and stops it bubbling
+  // (multiway's lane slide, maf's drag select) would otherwise leave the last
+  // pan's marker standing to swallow its click.
+  function onPointerDownCapture(event: React.PointerEvent) {
+    if (!gestureRef.current) {
+      event.currentTarget.removeAttribute(PAN_MOVED_ATTR)
+    }
+  }
+
+  function onPointerDown(event: React.PointerEvent) {
     const host = event.currentTarget
     if (gestureRef.current) {
       gestureRef.current.join(event)
       return
     }
-    // Cleared for EVERY press, ahead of the returns below: the marker outlives
-    // the gesture that set it, and a stale true is what the next reader of
-    // this DOM contract would inherit.
-    host.removeAttribute(PAN_MOVED_ATTR)
     if (event.shiftKey || event.button !== 0 || !event.isPrimary) {
       return
     }
@@ -194,11 +200,11 @@ export function useSideScroll(model: LinearGenomeViewModel) {
   // The browser fires `click` after a release on whatever the press and the
   // release share, which over a track is its canvas, so a pan that ended on a
   // gene would open that gene's details.
-  function clickCapture(event: React.MouseEvent) {
+  function onClickCapture(event: React.MouseEvent) {
     if (event.currentTarget.hasAttribute(PAN_MOVED_ATTR)) {
       event.stopPropagation()
     }
   }
 
-  return { pointerDown, clickCapture }
+  return { onPointerDownCapture, onPointerDown, onClickCapture }
 }

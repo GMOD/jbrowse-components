@@ -66,8 +66,7 @@ const TracksContainer = observer(function TracksContainer({
       ref={ref}
       data-testid="tracksContainer"
       className={classes.tracksContainer}
-      onPointerDown={sideScroll.pointerDown}
-      onClickCapture={sideScroll.clickCapture}
+      {...sideScroll}
       onMouseDown={range.mouseDown}
       onMouseMove={event => {
         range.mouseMove(event)

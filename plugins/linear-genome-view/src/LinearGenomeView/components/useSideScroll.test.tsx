@@ -77,9 +77,9 @@ function Harness({
   children?: React.ReactNode
   onCanvasClick?: () => void
 }) {
-  const { pointerDown, clickCapture } = useSideScroll(model)
+  const sideScroll = useSideScroll(model)
   return (
-    <div onPointerDown={pointerDown} onClickCapture={clickCapture}>
+    <div {...sideScroll}>
       <div data-testid="canvas" onClick={onCanvasClick}>
         canvas
       </div>
@@ -352,6 +352,32 @@ test('a press on a button clears it too', () => {
     fireEvent.pointerDown(getByTestId('chip-menu'), { button: 0, clientX: 60 })
   })
   expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(false)
+})
+
+// Multiway's lane slide and maf's drag select keep their press and stop it
+// bubbling, so the container's own press handler never runs for it.
+test('a press a track stops still clears it, so its click lands', () => {
+  const model = fakeView()
+  const onLaneClick = jest.fn()
+  const { getByTestId } = render(
+    <Harness model={model}>
+      <div
+        data-testid="lane"
+        onPointerDown={event => {
+          event.stopPropagation()
+        }}
+        onClick={onLaneClick}
+      />
+    </Harness>,
+  )
+  const lane = getByTestId('lane')
+
+  dragFrom(getByTestId('canvas'))
+  act(() => {
+    fireEvent.pointerDown(lane, { button: 0, clientX: 60 })
+  })
+  fireEvent.click(lane)
+  expect(onLaneClick).toHaveBeenCalledTimes(1)
 })
 
 // The legend's own marker, on the path where it is the only thing there is:
