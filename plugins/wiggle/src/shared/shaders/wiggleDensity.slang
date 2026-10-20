@@ -1,10 +1,10 @@
 // Density (and multirowdensity — one code path, `rowIndex`/`numRows` are what
 // differ) as a composed shape: `rowRect`'s geometry, `scoreScale`'s normalizer,
-// wiggleCommon's inline white-to-track-color ramp. One instance is a rect
-// filling its whole row over [startBp, endBp), colored by its score through
-// the uniform domain — the score stays in the instance buffer and the domain
-// stays a uniform, so an autoscale move on pan is one uniform write, never a
-// buffer re-upload (ADR-094's load-bearing cardinality).
+// colorRampLut's ramp. One instance is a rect filling its whole row over
+// [startBp, endBp), colored by its score through the uniform domain — the
+// score stays in the instance buffer and the domain stays a uniform, so an
+// autoscale move on pan is one uniform write, never a buffer re-upload
+// (ADR-094's load-bearing cardinality).
 //
 // Draws off PASS_FILL's buffer: the record is `WiggleFillInstance`, declared in
 // wiggleCommon and shared with `wiggle.slang` the way canvas's chevron and line
@@ -24,15 +24,13 @@
 // the pre-composition density branch let sub-pixel rows miss every pixel center
 // and drop out. Only reachable when numRows outgrows the canvas height.
 //
-// The default color resolves in the vertex stage, as it always has: every
-// fragment of a density quad is one flat color, so per-vertex is the cheaper
-// stage. The alternative named-ramp mode (`u.rampLut`) samples the
-// shared 256×1 LUT texture instead — the same colorRampLut module and binding
-// slot HiC and LD sample through — and that sample has to be the fragment's,
-// because the HALs bind textures with fragment-stage visibility only. The
-// vertex stage therefore carries both the resolved default color and the ramp
-// position `t`, and the fragment picks by the uniform; `t` is per-instance
-// flat, so the varying interpolates nothing.
+// A gradient (`u.rampLut`, a heatmap's unset color included) samples the
+// shared 256×1 LUT texture — the same colorRampLut module and binding slot HiC
+// and LD sample through — and that sample has to be the fragment's, because
+// the HALs bind textures with fragment-stage visibility only. Otherwise the
+// cell paints its instance color, a threshold band's or the constant. The
+// vertex stage carries both, and the fragment picks by the uniform; `t` is
+// per-instance flat, so the varying interpolates nothing.
 //! targets: wgsl, glsl
 
 import hpmath;
@@ -74,16 +72,11 @@ DensityVsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
 
   float norm = normalizeScore(
     inst.score, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant);
-  float pivotNorm = normalizeScore(
-    u.pivot, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant);
-
-  float t = densityGradientT(norm, pivotNorm);
 
   DensityVsOut o;
   o.position = rowRectClipPos(
     inst.startEnd.x, inst.startEnd.y, inst.rowIndex, vid, r);
-  o.color = float4(
-    lerp(float3(1.0), unpackRGBA(inst.color).rgb, t), 1.0);
+  o.color = float4(unpackRGBA(inst.color).rgb, 1.0);
   o.rampT = rampMidT(norm, u.rampMidNorm);
   return o;
 }

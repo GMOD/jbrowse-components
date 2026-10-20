@@ -403,8 +403,9 @@ const rhdPanel = sessionSpec('test_data/1000g_cnv/config.json', {
           scales: { y: { domainMin: 0, domainMax: 4 } },
           color: {
             field: 'score',
-            scale: 'threshold',
-            range: ['#2166ac', '#b2182b'],
+            scale: 'linear',
+            range: ['#2166ac', '#ffffff', '#b2182b'],
+            domainMid: 2,
             title: 'Copy number',
           },
           // 480 -> 330, and directly under the matrix rather than with the

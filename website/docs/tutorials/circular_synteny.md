@@ -300,7 +300,8 @@ jbrowse make-density hg38ToMm39.genes.gff.gz --chrom-sizes hg38ToMm39.chrom.size
 
 The track names both assemblies. Its display defaults draw a heatmap strip whose
 color is the average over each pixel's bins. `mark` is the shape drawn, and
-`color` is a color scale mapping the `score` field to a `range` of two colors:
+`color` is a `linear` color scale mapping the `score` field across a `range`
+from white at the fewest genes in view to orange at the most:
 
 ```json addtrack
 {
@@ -312,18 +313,16 @@ color is the average over each pixel's bins. `mark` is the shape drawn, and
     "mark": "span",
     "color": {
       "field": "score",
-      "scale": "threshold",
-      "range": ["#e01e26", "#d95f02"]
+      "scale": "linear",
+      "range": ["#ffffff", "#d95f02"]
     },
     "height": 40
   }
 }
 ```
 
-**Edit colors/arrangement...** in the track menu sets the `color` pair, one
-color below the display's `origin` and one above. A density strip fades from
-white at the `origin`, which is 0 here, so every bin fades toward the second
-color and the first never paints.
+**Edit colors/arrangement... → Edit plot...** in the track menu changes the
+ramp's colors.
 
 Rings stack inward from the ideogram in the order the view's `tracks` lists
 them, and the ribbons draw inside the innermost ring, so the density entry goes
@@ -368,8 +367,8 @@ before the synteny track:
             "mark": "span",
             "color": {
               "field": "score",
-              "scale": "threshold",
-              "range": ["#e01e26", "#d95f02"]
+              "scale": "linear",
+              "range": ["#ffffff", "#d95f02"]
             },
             "height": 40
           },

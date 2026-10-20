@@ -1,4 +1,3 @@
-import type { MarkColorSource } from '../shared/wiggleColor.ts'
 import type { Source } from '../util.ts'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
@@ -45,22 +44,4 @@ export function sourceWarnings(
   return [
     ...new Set([...rpcDataMap.values()].flatMap(data => data.warnings ?? [])),
   ]
-}
-
-/**
- * The grey a source with no color paints in beside dealt ones in one panel,
- * as ggplot's `na.value`: the default plot color would read as a dealt one.
- */
-export const UNCOLORED_ROW = '#999'
-
-/** The color a source's marks paint in, by `wiggleMarkColoring`'s rule. */
-export function markColorOf(
-  source: Pick<Source, 'color' | 'rowColor'>,
-  markColor: MarkColorSource,
-) {
-  return markColor === 'row'
-    ? source.rowColor
-    : markColor === 'own'
-      ? source.color
-      : undefined
 }

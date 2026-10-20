@@ -1,8 +1,5 @@
-import {
-  markColorOf,
-  sourceWarnings,
-  sourcesFromRegionData,
-} from './sourcesLogic.ts'
+import { UNCOLORED_ROW, wiggleMarkSources } from '../shared/wiggleColor.ts'
+import { sourceWarnings, sourcesFromRegionData } from './sourcesLogic.ts'
 import { makeSource } from './testEnv.ts'
 
 import type { Source } from '../util.ts'
@@ -14,29 +11,38 @@ const sources: Source[] = [
   { name: 'c', color: '#0c0c0c' },
 ]
 
-describe('markColorOf', () => {
-  it("paints each row's resolved row color", () => {
-    expect(sources.map(s => markColorOf(s, 'row'))).toEqual([
-      '#a0a0a0',
-      '#0000ff',
-      undefined,
-    ])
+describe('wiggleMarkSources', () => {
+  const colors = (opts: Parameters<typeof wiggleMarkSources>[1]) =>
+    wiggleMarkSources(sources, opts).map(s => s.color)
+
+  it("paints each row's resolved row color, never the file's own", () => {
+    expect(
+      colors({
+        rowColorPaintsMarks: true,
+        paletteDeals: false,
+        anyRowColored: true,
+      }),
+    ).toEqual(['#a0a0a0', '#0000ff', undefined])
   })
 
-  it('paints the row its own color, which a density row fades to', () => {
-    expect(sources.map(s => markColorOf(s, 'own'))).toEqual([
-      '#0a0a0a',
-      undefined,
-      '#0c0c0c',
-    ])
+  it('paints no source color while a written color or a gradient does', () => {
+    expect(
+      colors({
+        rowColorPaintsMarks: false,
+        paletteDeals: false,
+        anyRowColored: true,
+      }),
+    ).toEqual([undefined, undefined, undefined])
   })
 
-  it('paints no source color under a written color', () => {
-    expect(sources.map(s => markColorOf(s, 'none'))).toEqual([
-      undefined,
-      undefined,
-      undefined,
-    ])
+  it('greys a row left uncolored beside dealt ones', () => {
+    expect(
+      colors({
+        rowColorPaintsMarks: true,
+        paletteDeals: true,
+        anyRowColored: true,
+      }),
+    ).toEqual(['#a0a0a0', '#0000ff', UNCOLORED_ROW])
   })
 })
 

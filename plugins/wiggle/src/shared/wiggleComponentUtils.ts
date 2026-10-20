@@ -121,7 +121,6 @@ export function makeWiggleRenderState(
     diameterPx: self.size,
     lineWidth: self.lineWidth,
     origin: self.origin,
-    pivot: self.wiggleColor.pivot,
     cuts: self.wiggleColor.cuts,
     innerColors: self.wiggleColor.innerColors.map(c =>
       cssColorToNormalizedRgb(c),

@@ -85,7 +85,13 @@ box and the export's clip translate. Wiggle-core's `ScorePlotChrome` and
 is what the Manhattan and mark displays (no such getter) draw in.
 
 **`color` maps `score` alone; a subtrack's color is `rowColor`'s.** Unset,
-`effectiveColor` is the threshold pair a quantitative track has always drawn.
+`effectiveColor` is the threshold pair a quantitative track has always drawn,
+and on a density plot a `linear` ramp from the negative color through white at
+the `origin` to the positive color (`paintedWiggleColor`). That ramp through
+`rampMidT` is the white fade the density shader used to compute, so the default
+heatmap kept its pixels when the fade went; `densityColorParity.test.ts` holds
+the retired fade's arithmetic as the oracle. One scale word means one thing on
+every mark: `threshold` paints solid bands on a heatmap as on bars.
 Several sources sharing one plot box (`sharesPanel`) are told apart by the row
 palette instead, which deals each one a tableau10 color by name while
 `rowColorPaintsMarks`, and `perSource` then paints each on both sides of the
@@ -94,12 +100,11 @@ cut. `colorEncoding` resolves the color through display-kit's
 and `resolveWiggleColor` turns that into
 `{ posColor, negColor, pivot, rampLut, rampMid }`, which is the whole
 of what the layers and both backends read. `pivot` is where the color parts and
-never where bars grow from: the render state carries both, bars read `origin`,
-and the lines, band and density fade read `pivot`. A gradient (`rampLut`, from
+never where bars grow from: bars read `origin`, and the layers part their
+colors at `pivot` and the cuts. A gradient (`rampLut`, from
 `linear`, through the y scale's type) colors each bar, point and density cell
 by its score's position, `rampMid`, the config's `domainMid`, on its middle
-stop, and never reads `origin`; the white fade, a threshold's density, measures
-distance from `pivot`. The lines alone still part under a gradient, at
+stop, and never reads `origin`. The lines alone still part under a gradient, at
 `domainMid ?? origin` in its two end colors, with a corner notice saying so.
 The gradient follows the y domain and y scale, so the color declares no
 `domainMin`/`domainMax` and no `log`. `score` is the one field the schema
@@ -246,14 +251,12 @@ split cost.
 
 ## A band splits into solid layers only when the bars nest
 
-`isDensityMode || (isFilled && bands.length > 1)`. Back-to-front, largest
-magnitude first — the opposite order on each side of the origin, which a single
-band order can't express. Filled bars split at the origin they grow from and
-carry `colorsAbgr` for the pivot where a threshold cuts elsewhere; density
-splits at the pivot. Under a gradient bars and points carry no color lane and
-no min-max tint: the ramp is the whole color. Density needs it because
-`drawDensity` builds one gradient per layer, and it is the only mode that
-reaches the split with a single band (`mean`). Everything else keeps each band
+`isFilled && bands.length > 1`. Back-to-front, largest magnitude first — the
+opposite order on each side of the origin, which a single band order can't
+express. Filled bars split at the origin they grow from and carry `colorsAbgr`
+for the pivot where a threshold cuts elsewhere. Under a gradient bars, points
+and density cells carry no color lane and no min-max tint: the ramp is the
+whole color. Everything else, a threshold heatmap included, keeps each band
 whole and carries `colorsAbgr`, one packed color per instance — or none at all
 where both sides of the pivot come out the same color, which is what a
 solid-color track is.
@@ -271,25 +274,24 @@ magenta. Whiskers adds a `band` layer under the line, split the same way.
 
 ## The color key follows the scale
 
-The ramp wherever `scoreGradientPaints` — density, and bars or points under
-`linear` — a row per source for `categorical`, a row per interval for a
+The ramp wherever `scoreGradientPaints` — bars, points and density under
+`linear`, a heatmap's unset color included — a row per interval for a
 `threshold` whose cut the config declared, and none for a string. A threshold
-cutting at the `origin` draws none either: the axis already shows where the
-origin is. Density's white fade is keyed only while no mark paints a row
-color (`scoreRampApplies` reads `markSources`); a declared gradient ignores row
-colors, so it is keyed regardless, and only density gives the ramp the axis's
-place.
+cutting at the `origin` draws none on bars, points and lines, where the axis
+already shows where the origin is; a heatmap has no axis, so its threshold
+keys that cut too. A gradient ignores row colors, so it is keyed regardless,
+and only density gives the ramp the axis's place.
 
 **The row colors are keyed by tree-sidebar's one row color key**
 (`rowColorScales`, TREE_SIDEBAR.md): an overlay of several subtracks keys each by
 name, a row per subtrack keys only an attribute such as `group`, and an overlay
-keys them only while its marks paint them: an overlaid density with row
-colors keys each row, and a written color keys none.
+keys them only while its marks paint them, so a written color or a gradient
+keys none.
 
-**`scoreGradientPaints` leaves a row's color on its label bar only**, and the
-plot's per-row fade end is the row's own `color`, which nothing in the UI
-reaches. The arrangement dialog's one swatch column edits `rowColor` whatever
-paints the plot.
+**`scoreGradientPaints` leaves a row's color on its label bar only.** The
+arrangement dialog's one swatch column edits `rowColor` whatever paints the
+plot. An overlaid heatmap of several sources draws every strip on row 0, the
+last covering the rest, and says so in the corner (`liveNotices`).
 
 ## The whole color UI is one menu row
 
@@ -309,7 +311,9 @@ because a channel replaces its setting. Three rules it turns on:
   figures declare a range and no domain.
 - **Two swatches only edit where they can say the whole picture.** A ramp or a
   threshold past one cut reads out beside the reason; a color per subtrack
-  hides the line, since the grid below is already that control.
+  hides the line, since the grid below is already that control. A heatmap's
+  ramp through white is its two ends (`isWhiteMiddleRamp`), so it edits, and
+  writes the ramp back with its middle at the cut (`plotColorOf`).
   `plotColorLine.test.ts` round-trips every shape a shipped config holds.
 - **`Edit plot...` in the dialog is the escape**, on the display's `plot` — a
   ramp, several cut points, hand-written stops, a typed row order. ADR-204.
@@ -326,11 +330,12 @@ resolved `rowColor` and writes the dialog's submit. `group` has no config home,
 so a `group` pasted into the bulk editor is not kept.
 
 **`markSources` is what the plot paints**, by one rule the model and
-`wiggleTables` share (`wiggleMarkColoring`). A written `color` paints every
-mark, so no source color reaches them. Unset, a source's marks take its
-`rowColor`, except a density row in a stack of rows, which fades to the
-source's own `color` so an attribute's row color never stands in for the
-score's scale. The encoder and the tooltip read `markSources`; the label bar
+`wiggleTables` share (`wiggleMarkColoring`, `wiggleMarkSources`). A written
+`color` or a gradient paints every mark, so no source color reaches them.
+Unset, a source's marks take its `rowColor`. A file's own `color` reaches the
+marks only through `rowColor`, never past a heatmap's ramp, where a fade to
+each row's file color once keyed nothing and spent hue on two variables. The
+encoder and the tooltip read `markSources`; the label bar
 reads `rowColor` always, so a color set on a row stays on its bar when a
 gradient starts painting rather than going into the ramp. A `group` colors
 nothing until `rowColor` names it.

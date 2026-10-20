@@ -380,7 +380,6 @@ describe('the wiggle mark list', () => {
     backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
       ...DEFAULT_STATE,
       renderingType: RENDERING_TYPE_LINE,
-      pivot: -2,
       cuts: [-2, 0, 2],
       innerColors: [
         [0.5, 0.5, 0.5],
@@ -656,7 +655,6 @@ describe('the wiggle mark list', () => {
     backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
       ...DEFAULT_STATE,
       origin: 5,
-      pivot: 5,
       cuts: [5],
       innerColors: [],
     })

@@ -25,18 +25,17 @@ export const UNIFORM_OFFSET_F32 = {
   diameterPx: 11,
   lineWidth: 12,
   origin: 13,
-  pivot: 14,
-  rampMidNorm: 15,
-  symlogConstant: 16,
-  devicePixelRatio: 17,
+  rampMidNorm: 14,
+  symlogConstant: 15,
+  devicePixelRatio: 16,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_I32 = {
   scaleType: 4,
   renderingType: 5,
-  rampLut: 18,
-  numCuts: 19,
+  rampLut: 17,
+  numCuts: 18,
 } as const
 
 
@@ -95,7 +94,6 @@ export interface Uniforms {
   diameterPx: number
   lineWidth: number
   origin: number
-  pivot: number
   rampMidNorm: number
   symlogConstant: number
   devicePixelRatio: number
@@ -122,12 +120,11 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[11] = uniforms.diameterPx
   f32[12] = uniforms.lineWidth
   f32[13] = uniforms.origin
-  f32[14] = uniforms.pivot
-  f32[15] = uniforms.rampMidNorm
-  f32[16] = uniforms.symlogConstant
-  f32[17] = uniforms.devicePixelRatio
-  i32[18] = uniforms.rampLut
-  i32[19] = uniforms.numCuts
+  f32[14] = uniforms.rampMidNorm
+  f32[15] = uniforms.symlogConstant
+  f32[16] = uniforms.devicePixelRatio
+  i32[17] = uniforms.rampLut
+  i32[18] = uniforms.numCuts
   f32[20] = uniforms.cuts[0][0]
   f32[21] = uniforms.cuts[0][1]
   f32[22] = uniforms.cuts[0][2]

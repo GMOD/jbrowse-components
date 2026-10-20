@@ -1,5 +1,5 @@
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
-import { plotColorEdit, plotColorLine } from './plotColorLine.ts'
+import { plotColorEdit, plotColorOf } from './plotColorLine.ts'
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
 import type { WiggleMark } from '../util.ts'
@@ -41,14 +41,14 @@ function makeDisplay({
 }
 
 function lineOf(display: ReturnType<typeof makeDisplay>) {
-  return plotColorLine(display.wiggleColor, display.rowPaletteDeals)
+  return plotColorOf(display).line
 }
 
 // The whole contract in one call: read the line, write it back unchanged, and
 // the colors the plot paints have not moved.
 function roundTrips(display: ReturnType<typeof makeDisplay>) {
   const before = lineOf(display)
-  display.applyPlot({ color: plotColorEdit(display.colorSetting, before) })
+  display.applyPlot({ color: plotColorOf(display).edit(before) })
   return { before, after: lineOf(display) }
 }
 
@@ -101,9 +101,25 @@ describe('what the line reads out', () => {
     ).toBe(5)
   })
 
-  // Density reads the same pair as the two ends of its white fade, so the line
-  // is the whole color story there too — it is not a gradient.
-  it('still edits in density, where the pair is the fade\u2019s two ends', () => {
+  // A heatmap's unset color is a ramp through white, and its two ends are the
+  // whole of it, so the line edits them and writes the ramp back.
+  it('edits a heatmap ramp through white as its two ends', () => {
+    const display = makeDisplay({ mark: 'span' })
+    expect(display.scoreGradientPaints).toBe(true)
+    expect(lineOf(display)).toMatchObject({ mode: 'edit', cut: 0 })
+    display.applyPlot({
+      color: plotColorOf(display).edit({ above: '#b2182b', below: '#2166ac' }),
+    })
+    expect(display.colorSetting).toMatchObject({
+      scale: 'linear',
+      range: ['#2166ac', '#ffffff', '#b2182b'],
+      domainMid: 0,
+    })
+    expect(lineOf(display)).toMatchObject({ above: '#b2182b', mode: 'edit' })
+  })
+
+  // A threshold on a heatmap paints solid bands, as on bars.
+  it('edits a threshold heatmap as the two sides of its cut', () => {
     const display = makeDisplay({
       mark: 'span',
       color: {
@@ -112,12 +128,9 @@ describe('what the line reads out', () => {
         range: ['#2166ac', '#b2182b'],
       },
     })
-
-    expect(display.scoreGradientPaints).toBe(true)
-    expect(lineOf(display)).toMatchObject({
-      above: '#b2182b',
-      mode: 'edit',
-    })
+    expect(display.scoreGradientPaints).toBe(false)
+    expect(lineOf(display)).toMatchObject({ above: '#b2182b', mode: 'edit' })
+    expect(roundTrips(display).after).toEqual(roundTrips(display).before)
   })
 })
 

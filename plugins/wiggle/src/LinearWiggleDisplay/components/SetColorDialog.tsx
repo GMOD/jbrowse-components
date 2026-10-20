@@ -1,7 +1,7 @@
 import { SetColorDialog } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
-import { plotColorEdit, plotColorLine } from '../plotColorLine.ts'
+import { plotColorOf } from '../plotColorLine.ts'
 
 import type { ResolvedWiggleColor } from '../../shared/wiggleColor.ts'
 import type { Source } from '../../util.ts'
@@ -17,6 +17,8 @@ export default observer(function WiggleSetColorDialog({
     wiggleColor: ResolvedWiggleColor
     rowPaletteDeals: boolean
     colorSetting: ColorSetting
+    effectiveColor: ColorSetting
+    isDensityMode: boolean
     discoveredRows: readonly unknown[]
     applyPlot: (draft: Plot) => void
     openPlotDialog: () => void
@@ -26,7 +28,7 @@ export default observer(function WiggleSetColorDialog({
   // One subtrack has nothing to arrange, so the dialog is the plot's colors
   // and the buttons — which is the whole color UI a plain BigWig needs.
   const showRows = model.discoveredRows.length > 1
-  const line = plotColorLine(model.wiggleColor, model.rowPaletteDeals)
+  const { line, edit } = plotColorOf(model)
   return (
     <SetColorDialog
       model={model}
@@ -43,7 +45,7 @@ export default observer(function WiggleSetColorDialog({
               reason: line.reason,
               onSubmit: next => {
                 model.applyPlot({
-                  color: plotColorEdit(model.colorSetting, next),
+                  color: edit(next),
                 })
               },
             }

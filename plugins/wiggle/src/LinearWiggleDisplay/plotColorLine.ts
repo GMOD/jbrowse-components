@@ -1,5 +1,7 @@
 import { colorForValue } from '@jbrowse/display-kit/colorConfigSchema'
 
+import { WIGGLE_SPAN_MIDDLE } from '../shared/wiggleColor.ts'
+
 import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
@@ -26,9 +28,27 @@ export interface PlotColorLine {
   reason?: string
 }
 
+/**
+ * Whether a color is a heatmap's two-sided ramp, white in the middle, which
+ * two swatches say whole: its two ends.
+ */
+export function isWhiteMiddleRamp(color: {
+  scale?: string
+  range: readonly string[]
+  scheme?: string
+}) {
+  return (
+    color.scale === 'linear' &&
+    !color.scheme &&
+    color.range.length === 3 &&
+    color.range[1]!.toLowerCase() === WIGGLE_SPAN_MIDDLE
+  )
+}
+
 export function plotColorLine(
   resolved: ResolvedWiggleColor,
   perSource: boolean,
+  heatmapRamp = false,
 ): PlotColorLine {
   const line = {
     above: resolved.posColor,
@@ -37,6 +57,9 @@ export function plotColorLine(
   }
   if (perSource) {
     return { ...line, mode: 'hide' }
+  }
+  if (heatmapRamp) {
+    return { ...line, mode: 'edit' }
   }
   if (resolved.rampLut !== null) {
     return { ...line, mode: 'read', reason: 'a gradient paints this plot' }
@@ -54,7 +77,9 @@ export function plotColorLine(
 }
 
 /**
- * What a swatch writes. One color on both sides is a flat plot: the string
+ * What a swatch writes. On a heatmap it is the ramp through white at the cut,
+ * one color on both sides fading from white to it, and the cut written as
+ * `domainMid`. Elsewhere one color on both sides is a flat plot: the string
  * form, or over a written field that field parked under `scale: 'none'`, so
  * its cut, labels and title come back when the sides part again.
  *
@@ -67,7 +92,17 @@ export function plotColorLine(
 export function plotColorEdit(
   color: ColorSetting,
   { above, below }: { above: string; below: string },
+  heatmap?: { cut: number },
 ): string | Partial<ColorSetting> {
+  if (heatmap) {
+    return {
+      field: 'score',
+      scale: 'linear',
+      range: [below, WIGGLE_SPAN_MIDDLE, above],
+      domainMid: color.domainMid ?? heatmap.cut,
+      ...(color.title === undefined ? {} : { title: color.title }),
+    }
+  }
   if (above === below) {
     return color.field ? colorForValue(color, above) : above
   }
@@ -78,5 +113,30 @@ export function plotColorEdit(
     range: [below, above],
     ...(color.labels?.length ? { labels: [...color.labels] } : {}),
     ...(color.title === undefined ? {} : { title: color.title }),
+  }
+}
+
+/**
+ * The line a display shows and the write a swatch edit makes, together, so
+ * the dialog and anything else reading the line agree on what a heatmap's
+ * two swatches mean.
+ */
+export function plotColorOf(model: {
+  wiggleColor: ResolvedWiggleColor
+  rowPaletteDeals: boolean
+  isDensityMode: boolean
+  effectiveColor: ColorSetting
+  colorSetting: ColorSetting
+}) {
+  const heatmap = model.isDensityMode && isWhiteMiddleRamp(model.effectiveColor)
+  const line = plotColorLine(model.wiggleColor, model.rowPaletteDeals, heatmap)
+  return {
+    line,
+    edit: (next: { above: string; below: string }) =>
+      plotColorEdit(
+        model.colorSetting,
+        next,
+        heatmap ? { cut: line.cut } : undefined,
+      ),
   }
 }

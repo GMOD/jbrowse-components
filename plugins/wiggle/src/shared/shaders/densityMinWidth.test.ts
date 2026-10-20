@@ -1,3 +1,4 @@
+import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import {
   CANVAS_SEAM_PX,
   makeBpMapper,
@@ -11,7 +12,7 @@ import {
 import { createCanvas } from 'canvas'
 
 import { WIGGLE_MIN_PX } from '../../util.ts'
-import { makeDensityRgbStringFn } from '../getDensityColor.ts'
+import { makeDensityLutFillFn } from '../getDensityColor.ts'
 import { drawDensity } from '../wiggleDrawFunctions.ts'
 
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
@@ -33,7 +34,8 @@ import type { SourceRenderData } from '@jbrowse/wiggle-core'
 // carries a twentieth of a pixel of ink each.
 const WIDTH = 400
 const ROW_HEIGHT = 12
-const COLOR = { r: 0, g: 0, b: 255 }
+// A white-to-blue ramp, so ink is how far a pixel moved from white
+const LUT = rampLutOf({ range: ['#ffffff', '#0000ff'] })
 const DOMAIN: [number, number] = [0, 40]
 const SUPERSAMPLE = 16
 
@@ -158,23 +160,21 @@ function canvasRow(b: Bins, floorPx?: number) {
       scaleType: 'linear' as never,
       symlogConstant: 1,
       origin: 0,
-      pivot: 0,
       cuts: [],
       innerColors: [],
-      rampLut: null,
+      rampLut: LUT,
       rampMid: undefined,
-      ...COLOR,
+      rgb: '#0000ff',
     })
   } else {
     // drawDensity's own loop with the floor as a parameter, pinned against the
     // shipped call below so the no-floor arm is the same painter.
-    const colorFn = makeDensityRgbStringFn(
+    const colorFn = makeDensityLutFillFn(
       DOMAIN[0],
       DOMAIN[1],
       'linear' as never,
-      COLOR.r,
-      COLOR.g,
-      COLOR.b,
+      LUT,
+      undefined,
     )
     const toX = makeBpMapper(block)
     for (let i = 0; i < n; i++) {

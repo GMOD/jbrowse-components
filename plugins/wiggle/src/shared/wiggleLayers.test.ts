@@ -212,17 +212,14 @@ describe('makeSummaryLayers', () => {
       normalizedRgbToABGR(...posColor),
       normalizedRgbToABGR(...negColor),
     ])
-    const density = makeSummaryLayers({
+    const [density] = makeSummaryLayers({
       ...opts,
       renderingType: RENDERING_TYPE_DENSITY,
     })
-    expect(density.map(l => [l.color, [...l.featureScores]])).toEqual([
-      [posColor, [atCut[0]]],
-      [negColor, [0.5]],
-    ])
+    expect([...density!.colorsAbgr!]).toEqual([...bars!.colorsAbgr!])
   })
 
-  test('density splits a lone band into solid sides', () => {
+  test('a threshold heatmap colors each cell by its band, solid', () => {
     const result = makeSummaryLayers({
       data: summaryData,
       ...base,
@@ -234,8 +231,11 @@ describe('makeSummaryLayers', () => {
       origin: 3,
       renderingType: RENDERING_TYPE_DENSITY,
     })
-    expect(result.map(l => [...l.featureScores])).toEqual([[4], [2]])
-    expect(result.every(l => l.colorsAbgr === undefined)).toBe(true)
+    expect(result.map(l => [...l.featureScores])).toEqual([[2, 4]])
+    expect([...result[0]!.colorsAbgr!]).toEqual([
+      normalizedRgbToABGR(...negColor),
+      normalizedRgbToABGR(...posColor),
+    ])
   })
 
   test('returns single layer when no summary variation', () => {

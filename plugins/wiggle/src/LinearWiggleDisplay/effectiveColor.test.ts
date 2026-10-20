@@ -185,7 +185,7 @@ test('a threshold cut moves the color, and the bars still grow from the origin',
     height: 50,
     numRows: 1,
   })
-  expect([state.origin, state.pivot]).toEqual([0, 2])
+  expect([state.origin, state.cuts[0]]).toEqual([0, 2])
 })
 
 test('a threshold range that does not fit its cuts is a notice', () => {
@@ -269,14 +269,17 @@ test('a color per source on xyplot draws no gradient key', () => {
   expect(scoreKey(display)).toBeUndefined()
 })
 
-test('density keeps its key: the fade is keyed until a row brings its own color', () => {
+// A heatmap's unset color is its ramp, which no row's own color replaces, so
+// the key describes every row.
+test('a heatmap keys its ramp, rows with their own colors included', () => {
   const display = scoredDisplay([{ name: 'a' }])
   display.setMark('span')
   expect(scoreKey(display)?.kind).toBe('ramp')
   expect(display.valueScales).toEqual([])
   const colored = scoredDisplay([{ name: 'a', color: '#ff0000' }])
   colored.setMark('span')
-  expect(scoreKey(colored)).toBeUndefined()
+  expect(scoreKey(colored)?.kind).toBe('ramp')
+  expect(colored.markSources[0]!.color).toBeUndefined()
 })
 
 // The gradient's one table ignores a row's own color, so the key still

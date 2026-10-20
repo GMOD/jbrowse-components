@@ -64,7 +64,6 @@ interface WiggleParams {
   diameterPx: number
   lineWidth: number
   origin: number
-  pivot: number
   cuts: number[]
   innerColors: [number, number, number][]
   rampMid: number | undefined
@@ -92,7 +91,6 @@ function wiggleParams(
     diameterPx: state.diameterPx,
     lineWidth: state.lineWidth,
     origin: state.origin,
-    pivot: state.pivot,
     cuts: state.cuts,
     innerColors: state.innerColors,
     rampMid: state.rampMid,
@@ -130,7 +128,6 @@ function writeWiggleUniforms(
     diameterPx: p.diameterPx,
     lineWidth: p.lineWidth,
     origin: p.origin,
-    pivot: p.pivot,
     rampMidNorm: rampMidNorm(
       p.domainY[0],
       p.domainY[1],
@@ -176,15 +173,6 @@ function cutQuad(
     cuts[from + 2] ?? 0,
     cuts[from + 3] ?? 0,
   ]
-}
-
-function rgb255(source: SourceRenderData) {
-  const [r, g, b] = source.color
-  return {
-    r: Math.round(r * 255),
-    g: Math.round(g * 255),
-    b: Math.round(b * 255),
-  }
 }
 
 function cssRgb(source: SourceRenderData) {
@@ -263,7 +251,7 @@ const densityShape = wiggleShape(
   },
   type => type === RENDERING_TYPE_DENSITY,
   row => {
-    drawDensity({ ...row, ...rgb255(row.source) })
+    drawDensity({ ...row, rgb: cssRgb(row.source) })
   },
 )
 

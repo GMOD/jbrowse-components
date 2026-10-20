@@ -32,61 +32,82 @@ export interface ResolvedWiggleColor {
   posColor: string
   /** Below `pivot`. */
   negColor: string
-  /** The lowest cut, and where the density fade is white. */
+  /** The lowest cut, or a gradient's middle stop. */
   pivot: number
   /** Where the color changes, ascending, `pivot` first; at most `MAX_WIGGLE_CUTS`. */
   cuts: number[]
   /** The colors between `negColor` and `posColor`, one per band between two cuts. */
   innerColors: string[]
-  /** A ramp's 256 entries, or null for the white fade off `posColor`/`negColor`. */
+  /** A ramp's 256 entries, or null where no gradient paints. */
   rampLut: Uint8Array | null
   /** The score at the ramp's middle stop; unset runs the ramp straight across the domain. */
   rampMid: number | undefined
 }
 
 /**
- * Whether color is spent on the score: density always, and bars or points
- * under a declared gradient. A line parts in two colors even then.
+ * Whether color is spent on the score: a gradient, on bars, points and
+ * density. A line parts in two colors even then.
  */
 export function scoreGradientPaints(
   wiggleColor: ResolvedWiggleColor,
   renderingType: string,
 ) {
-  return (
-    renderingType === 'density' ||
-    (wiggleColor.rampLut !== null && !isLineMode(renderingType))
-  )
+  return wiggleColor.rampLut !== null && !isLineMode(renderingType)
 }
-
-/** Which of a source's colors its marks paint in, if either. */
-export type MarkColorSource = 'row' | 'own' | 'none'
 
 /**
  * How a plot spends color, for the model and `wiggleTables` alike. A written
- * `color` paints every mark. Unset, a source's marks take its row color, but
- * a density row in a stack of rows fades to the source's own color, so an
- * attribute's row color never stands in for the score's scale.
+ * `color` paints every mark, and so does a gradient. Unset, a source's marks
+ * take its row color.
  */
 export function wiggleMarkColoring({
   colorSetting,
   wiggleColor,
   renderingType,
-  rowLayout,
 }: {
   colorSetting: { value?: unknown; field?: string }
   wiggleColor: ResolvedWiggleColor
   renderingType: string
-  rowLayout: boolean
 }) {
   const gradientPaints = scoreGradientPaints(wiggleColor, renderingType)
   const written = colorSetting.value !== undefined || !!colorSetting.field
-  const rowColorPaintsMarks = !written && !gradientPaints
-  const markColor: MarkColorSource = written
-    ? 'none'
-    : rowColorPaintsMarks || !rowLayout
-      ? 'row'
-      : 'own'
-  return { gradientPaints, rowColorPaintsMarks, markColor }
+  return { gradientPaints, rowColorPaintsMarks: !written && !gradientPaints }
+}
+
+/** Whether several sources share one plot box, where only color tells them apart. */
+export function wiggleSharesPanel(rowLayout: boolean, sourceCount: number) {
+  return !rowLayout && sourceCount > 1
+}
+
+/**
+ * The grey a source with no color paints in beside dealt ones in one panel,
+ * as ggplot's `na.value`: the default plot color would read as a dealt one.
+ */
+export const UNCOLORED_ROW = '#999'
+
+/**
+ * Each source and the color its marks paint in, for the model and
+ * `wiggleTables` alike: its row color while row colors paint the marks, else
+ * none, the plot's own. Where the palette deals a shared panel and some row
+ * took a color, a row left without one paints `UNCOLORED_ROW`.
+ */
+export function wiggleMarkSources(
+  sources: readonly { name: string; rowColor?: string }[],
+  {
+    rowColorPaintsMarks,
+    paletteDeals,
+    anyRowColored,
+  }: {
+    rowColorPaintsMarks: boolean
+    paletteDeals: boolean
+    anyRowColored: boolean
+  },
+): { name: string; color?: string }[] {
+  const uncolored = paletteDeals && anyRowColored ? UNCOLORED_ROW : undefined
+  return sources.map(s => ({
+    name: s.name,
+    color: (rowColorPaintsMarks ? s.rowColor : undefined) ?? uncolored,
+  }))
 }
 
 /** A wiggle color as it paints. Unset beside `score`, the scale is the bicolor cut. */
@@ -94,13 +115,33 @@ export function wiggleColorEncoding(color: ColorSetting) {
   return colorEncodingOf(color, WIGGLE_FIELD_PRESETS)
 }
 
+/** The middle stop of a heatmap's unset ramp, where a score at the `origin` lands. */
+export const WIGGLE_SPAN_MIDDLE = '#ffffff'
+
 /**
- * The `color` object as it paints: naming neither `value` nor `field`, it is
- * `score`, the pos/neg pair through a threshold at its cuts or the `origin`
- * unless it writes another scale.
+ * The `color` object as it paints. Naming neither `value` nor `field`, a
+ * heatmap (`span`) is a ramp through white at the `origin`, the negative
+ * color below it and the positive color above; every other mark is `score`
+ * through a threshold at its cuts or the `origin`, unless it writes another
+ * scale.
  */
-export function paintedWiggleColor<C extends ColorSetting>(color: C): C {
-  return withImpliedField(color, WIGGLE_IMPLIED_FIELD)
+export function paintedWiggleColor<C extends ColorSetting>(
+  color: C,
+  { span, origin }: { span: boolean; origin: number },
+): C {
+  return span && color.value === undefined && !color.field
+    ? {
+        ...color,
+        field: WIGGLE_IMPLIED_FIELD,
+        scale: 'linear',
+        range: [
+          WIGGLE_NEG_COLOR_DEFAULT,
+          WIGGLE_SPAN_MIDDLE,
+          WIGGLE_POS_COLOR_DEFAULT,
+        ],
+        domainMid: origin,
+      }
+    : withImpliedField(color, WIGGLE_IMPLIED_FIELD)
 }
 
 /**
@@ -109,7 +150,9 @@ export function paintedWiggleColor<C extends ColorSetting>(color: C): C {
  * gradient on a line, which parts in its two end colors.
  */
 export function wiggleColorProblems(color: ColorSetting, rendering: string) {
-  const encoding = wiggleColorEncoding(paintedWiggleColor(color))
+  const encoding = wiggleColorEncoding(
+    paintedWiggleColor(color, { span: rendering === 'density', origin: 0 }),
+  )
   const cuts = thresholdCutsOf(encoding).length
   return [
     ...(cuts > MAX_WIGGLE_CUTS

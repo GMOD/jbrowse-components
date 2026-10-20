@@ -39,8 +39,7 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
   scaleTitle: string
   /**
    * Whether one color ramp describes the whole plot: a gradient outside the
-   * line renderings, or density's fade. Each display has its own reason a
-   * ramp can still be the wrong legend.
+   * line renderings.
    */
   scoreRampApplies: boolean
 }
@@ -67,12 +66,13 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
      * color through — so a declared ramp's key is what the track paints.
      */
     get scoreColorScale(): RampScale | undefined {
-      return self.scoreRampApplies && self.domain
+      const { rampLut, rampMid } = self.wiggleColor
+      return self.scoreRampApplies && self.domain && rampLut
         ? scoreRampScale(
             self.domain,
             self.scaleType,
             self.symlogConstant,
-            self.wiggleColor,
+            { rampLut, rampMid },
             self.scaleTitle || 'Score',
           )
         : undefined

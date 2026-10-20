@@ -64,7 +64,7 @@ describe('a written color paints every mark', () => {
 
 describe('the key names what an overlaid density paints', () => {
   it.each([true, false])(
-    'file colors %p: row colors on the marks key as rows, and no single ramp claims them',
+    'file colors %p: the ramp paints every strip and is the key',
     fileColors => {
       const display = makeDisplay({
         rows: false,
@@ -74,9 +74,9 @@ describe('the key names what an overlaid density paints', () => {
           rowColor: { domain: ['a', 'b'], range: ['red', 'blue'] },
         },
       })
-      expect(markColors(display)).toEqual(['red', 'blue'])
-      expect(display.scoreRampApplies).toBe(false)
-      expect(display.colorScales.map(s => s.kind)).toContain('categorical')
+      expect(markColors(display)).toEqual([undefined, undefined])
+      expect(display.scoreRampApplies).toBe(true)
+      expect(display.colorScales.map(s => s.kind)).not.toContain('categorical')
     },
   )
 

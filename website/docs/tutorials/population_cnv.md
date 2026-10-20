@@ -115,8 +115,9 @@ copy of a duplicated sequence. The config lists two of the panel's 104 PUR
     "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
     "color": {
       "field": "score",
-      "scale": "threshold",
-      "range": ["#2166ac", "#b2182b"],
+      "scale": "linear",
+      "range": ["#2166ac", "#ffffff", "#b2182b"],
+      "domainMid": 2,
       "title": "Copy number"
     }
   }
@@ -302,8 +303,9 @@ With the plugin loaded, the adapter's `uri` names the store:
     "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
     "color": {
       "field": "score",
-      "scale": "threshold",
-      "range": ["#2166ac", "#b2182b"],
+      "scale": "linear",
+      "range": ["#2166ac", "#ffffff", "#b2182b"],
+      "domainMid": 2,
       "title": "Copy number"
     }
   }

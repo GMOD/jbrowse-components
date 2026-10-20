@@ -141,7 +141,7 @@ it('offers the reference lines only where the rules draw', () => {
     },
   )
   colored.setMark('span')
-  expect(colored.valueScales[0]!.bandTops).toEqual([])
+  expect(colored.valueScales).toEqual([])
   expect(colored.scoreRulesDrawn).toBe(false)
 })
 

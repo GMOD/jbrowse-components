@@ -77,10 +77,7 @@ export interface WiggleGPURenderState {
   lineWidth: number
   // The score xyplot bars grow from, the `origin` config slot.
   origin: number
-  // The score the color parts at: which side a line, band or bar paints, and
-  // where the two-sided density fade is white. A threshold's cut, else `origin`.
-  pivot: number
-  // Where the color changes, ascending, `pivot` first, and the color of each
+  // Where the color changes, ascending, the lowest first, and the color of each
   // band between two of them; the lowest and highest bands take each layer's
   // own `negColor` and `color`.
   cuts: number[]

@@ -18,6 +18,7 @@
 // pins the property the arms are here to price; a real-GPU capture would only
 // re-take these same numbers.
 import { BigWig } from '@gmod/bbi'
+import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import {
   CANVAS_SEAM_PX,
   makeBpMapper,
@@ -29,7 +30,7 @@ import {
 } from '@jbrowse/render-core/shaders/rowRect'
 import { createCanvas } from 'canvas'
 
-import { makeDensityRgbStringFn } from '../src/shared/getDensityColor.ts'
+import { makeDensityLutFillFn } from '../src/shared/getDensityColor.ts'
 import { drawDensity } from '../src/shared/wiggleDrawFunctions.ts'
 import { WIGGLE_MIN_PX } from '../src/util.ts'
 
@@ -52,7 +53,8 @@ const WIDTH = Number(args.get('screenPx') ?? 1000)
 const KEEP_EVERY = Number(args.get('sparseEvery') ?? 8)
 
 const ROW_HEIGHT = 20
-const COLOR = { r: 0, g: 0, b: 255 }
+// A white-to-blue ramp, so ink is how far a pixel moved from white
+const LUT = rampLutOf({ range: ['#ffffff', '#0000ff'] })
 const SUPERSAMPLE = 16
 
 const bw = new BigWig({ path: file })
@@ -94,13 +96,12 @@ const block: RenderBlock = {
   displayedRegionIndex: 0,
 }
 
-const colorFn = makeDensityRgbStringFn(
+const colorFn = makeDensityLutFillFn(
   domainY[0],
   domainY[1],
   'linear' as never,
-  COLOR.r,
-  COLOR.g,
-  COLOR.b,
+  LUT,
+  undefined,
 )
 
 function gpuRow(
@@ -173,12 +174,11 @@ function canvasRow(scene: Scene, floorPx?: number) {
       scaleType: 'linear' as never,
       symlogConstant: 1,
       origin: 0,
-      pivot: 0,
       cuts: [],
       innerColors: [],
-      rampLut: null,
+      rampLut: LUT,
       rampMid: undefined,
-      ...COLOR,
+      rgb: '#0000ff',
     })
   } else {
     const toX = makeBpMapper(block)

@@ -53,14 +53,15 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { renderingOf } from '../renderingTypes.ts'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
-import { scoreRampApplies } from '../shared/scoreRampScale.ts'
 import {
   declaredCuts,
   paintedWiggleColor,
   resolveWiggleColor,
   wiggleColorEncoding,
   wiggleMarkColoring,
+  wiggleMarkSources,
   wiggleColorProblems,
+  wiggleSharesPanel,
 } from '../shared/wiggleColor.ts'
 import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
@@ -71,12 +72,7 @@ import {
 } from '../shared/wiggleMenuItems.tsx'
 import { WIGGLE_RENDERINGS } from '../util.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
-import {
-  UNCOLORED_ROW,
-  markColorOf,
-  sourceWarnings,
-  sourcesFromRegionData,
-} from './sourcesLogic.ts'
+import { sourceWarnings, sourcesFromRegionData } from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
@@ -284,7 +280,7 @@ export default function stateModelFactory(
        * always drawn.
        */
       get sharesPanel(): boolean {
-        return self.isOverlay && self.discoveredRows.length > 1
+        return wiggleSharesPanel(!self.isOverlay, self.discoveredRows.length)
       },
       /**
        * #getter
@@ -301,7 +297,10 @@ export default function stateModelFactory(
        * pair about the `origin`.
        */
       get effectiveColor(): ColorSetting {
-        return paintedWiggleColor(self.colorSetting)
+        return paintedWiggleColor(self.colorSetting, {
+          span: self.isDensityMode,
+          origin: self.origin,
+        })
       },
 
       /**
@@ -332,14 +331,13 @@ export default function stateModelFactory(
           colorSetting: self.colorSetting,
           wiggleColor: this.wiggleColor,
           renderingType: self.renderingType,
-          rowLayout: self.isRowLayout,
         })
       },
 
       /**
        * #getter
-       * Whether color is spent on the score: density always, where the white
-       * fade counts, and bars or points under a declared `linear` color.
+       * Whether a gradient spends color on the score: bars, points and
+       * density under a `linear` color, which is a heatmap's unset one.
        * Lines part in two colors even then.
        */
       get scoreGradientPaints() {
@@ -351,7 +349,14 @@ export default function stateModelFactory(
        * What the loaded sources said they could not serve.
        */
       get liveNotices(): string[] {
-        return sourceWarnings(self.rpcDataMap)
+        return [
+          ...sourceWarnings(self.rpcDataMap),
+          ...(self.isDensityMode && self.sharesPanel
+            ? [
+                'rows: an overlaid heatmap draws every source on one strip, the last covering the rest; put the sources on rows',
+              ]
+            : []),
+        ]
       },
 
       /**
@@ -377,22 +382,15 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Each source and the color its marks paint in (`markColorOf`), which
-       * the encoder and the tooltip read. Where the palette deals the shared
-       * panel and some row took a color, a row left without one paints
-       * `UNCOLORED_ROW` grey rather than the plot color, which reads as one
-       * of the dealt.
+       * Each source and the color its marks paint in (`wiggleMarkSources`),
+       * which the encoder and the tooltip read.
        */
       get markSources(): { name: string; color?: string }[] {
-        const { markColor } = self.markColoring
-        const uncolored =
-          self.rowPaletteDeals && self.resolvedRowColors.size > 0
-            ? UNCOLORED_ROW
-            : undefined
-        return self.sources.map(s => ({
-          name: s.name,
-          color: markColorOf(s, markColor) ?? uncolored,
-        }))
+        return wiggleMarkSources(self.sources, {
+          rowColorPaintsMarks: self.rowColorPaintsMarks,
+          paletteDeals: self.rowPaletteDeals,
+          anyRowColored: self.resolvedRowColors.size > 0,
+        })
       },
 
       /**
@@ -481,14 +479,11 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * `scoreRampApplies` over the colors the marks paint in
+       * Whether one color ramp describes the plot: wherever a gradient paints,
+       * since its one table ignores the rows' colors.
        */
       get scoreRampApplies() {
-        return scoreRampApplies(
-          self.scoreGradientPaints,
-          self.wiggleColor,
-          this.markSources,
-        )
+        return self.scoreGradientPaints
       },
 
       /**
@@ -603,11 +598,19 @@ export default function stateModelFactory(
        * labelled by the span it covers. A threshold cutting at the `origin`
        * draws none, because the axis already shows where the origin is and a
        * `< 0` / `≥ 0` key on every bigWig adds nothing a reader asked
-       * for. Density draws none either: there the ramp is the key.
+       * for. A heatmap has no axis, so its threshold keys the origin's cut
+       * too.
        */
       get thresholdColorScale(): ColorScale | undefined {
-        const cuts = declaredCuts(self.colorEncoding)
-        if (self.isDensityMode || cuts.length === 0) {
+        const encoding = self.colorEncoding
+        const threshold =
+          typeof encoding === 'object' && encoding.scale === 'threshold'
+        const declared = declaredCuts(encoding)
+        const cuts =
+          declared.length > 0 || !self.isDensityMode || !threshold
+            ? declared
+            : self.wiggleColor.cuts
+        if (cuts.length === 0) {
           return undefined
         }
         const { posColor, negColor, innerColors } = self.wiggleColor
@@ -656,7 +659,7 @@ export default function stateModelFactory(
         if (this.thresholdColorScale) {
           scales.push(this.thresholdColorScale)
         }
-        if (self.isRowLayout || self.markColoring.markColor === 'row') {
+        if (self.isRowLayout || self.rowColorPaintsMarks) {
           scales.push(...self.rowColorScales)
         }
         return scales

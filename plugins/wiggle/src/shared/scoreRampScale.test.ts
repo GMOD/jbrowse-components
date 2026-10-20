@@ -4,10 +4,7 @@ import {
   denormalizeScore,
 } from '@jbrowse/render-core/scoreScale'
 
-import {
-  makeDensityLutFillFn,
-  makeDensityRgbStringFn,
-} from './getDensityColor.ts'
+import { makeDensityLutFillFn } from './getDensityColor.ts'
 import { scoreRampScale } from './scoreRampScale.ts'
 import { makeWiggleRenderState } from './wiggleComponentUtils.ts'
 
@@ -15,18 +12,18 @@ import { makeWiggleRenderState } from './wiggleComponentUtils.ts'
 // score has to land on the same ink in both. `symlogConstant` is the input
 // that can separate them: the config slot holds a raw value whose `0` means
 // "derive from the domain", and only the renderer's resolution of it is the
-// number actually painted with. `rampLutOf` is the other: a named ramp
-// swaps the plot onto a LUT, and a key still drawing the default fade
-// describes a picture the track no longer paints.
+// number actually painted with.
 
 const DOMAIN: [number, number] = [0, 1000]
+// A heatmap's unset ramp, white at the origin
+const HEATMAP_LUT = rampLutOf({ range: ['#2166ac', '#ffffff', '#b2182b'] })
 const RAMP = {
   posColor: '#b2182b',
   negColor: '#2166ac',
   pivot: 0,
   cuts: [0],
   innerColors: [],
-  rampMid: undefined,
+  rampMid: 0,
 }
 
 // A configured constant well away from the auto value this domain derives
@@ -42,8 +39,8 @@ function makeModel(symlogConstant: number, scheme?: 'viridis') {
     origin: 0,
     wiggleColor: {
       ...RAMP,
-      rampLut: scheme ? rampLutOf({ scheme }) : null,
-      rampMid: undefined,
+      rampLut: scheme ? rampLutOf({ scheme }) : HEATMAP_LUT,
+      rampMid: scheme ? undefined : 0,
       perSource: false,
     },
   }
@@ -66,14 +63,12 @@ function stops(model: ReturnType<typeof makeModel>) {
 function plotColorAt(model: ReturnType<typeof makeModel>, offset: number) {
   const state = renderState(model)
   const [min, max] = DOMAIN
-  return makeDensityRgbStringFn(
+  return makeDensityLutFillFn(
     min,
     max,
     state.scaleType,
-    178,
-    24,
-    43,
-    state.origin,
+    model.wiggleColor.rampLut,
+    model.wiggleColor.rampMid,
     state.symlogConstant,
   )(denormalizeScore(offset, min, max, state.scaleType, state.symlogConstant))
 }
@@ -138,40 +133,25 @@ test('named-ramp stops are the render LUT entries the plot paints', () => {
   )
 })
 
-// The bar is sampled from the real ramp: the loss end of a 0..6 domain pivoted
-// at 2 can only reach half saturation, and the key says so rather than
-// painting a full-strength blue. A symmetric domain saturates both ends.
-test('an off-center pivot shows its short side unsaturated', () => {
-  const ramp = { ...RAMP, pivot: 2, rampLut: null }
+// The bar is sampled from the real ramp: the loss end of a 0..6 domain with
+// its white at 2 can only reach half saturation, and the key says so rather
+// than painting a full-strength blue. A symmetric domain saturates both ends.
+test('an off-center middle shows its short side unsaturated', () => {
+  const ramp = { rampLut: HEATMAP_LUT, rampMid: 2 }
   const off = scoreRampScale([0, 6], 'linear', 1, ramp, 'Score').stops
-  expect(off.at(0)).toEqual({ offset: 0, color: 'rgb(144,178,213)' })
-  expect(off.at(-1)).toEqual({ offset: 1, color: 'rgb(178,24,43)' })
+  const end = (i: number) =>
+    `rgba(${HEATMAP_LUT[i * 4]},${HEATMAP_LUT[i * 4 + 1]},${HEATMAP_LUT[i * 4 + 2]},1.000)`
+  expect(off.at(0)!.color).not.toBe(end(0))
+  expect(off.at(-1)!.color).toBe(end(255))
   const even = scoreRampScale([0, 4], 'linear', 1, ramp, 'Score').stops
-  expect(even.at(0)!.color).toBe('rgb(33,102,172)')
-  expect(even.at(-1)!.color).toBe('rgb(178,24,43)')
-})
-
-test('a CSS color the picker writes is parsed, not read as hex', () => {
-  const scale = scoreRampScale(
-    [0, 4],
-    'linear',
-    1,
-    {
-      ...RAMP,
-      posColor: 'rgb(178, 24, 43)',
-      pivot: 2,
-      rampLut: null,
-      rampMid: undefined,
-    },
-    'Score',
-  )
-  expect(scale.stops.at(-1)!.color).toBe('rgb(178,24,43)')
+  expect(even.at(0)!.color).toBe(end(0))
+  expect(even.at(-1)!.color).toBe(end(255))
 })
 
 // The key stands in for the axis, so its middle is the plot's middle: under
 // log that is the geometric mean of the domain, not its arithmetic midpoint.
 test('a log key puts the geometric mean at its middle', () => {
-  const ramp = { ...RAMP, rampLut: rampLutOf({ scheme: 'viridis' }) }
+  const ramp = { rampLut: rampLutOf({ scheme: 'viridis' }), rampMid: undefined }
   const middle = scoreRampScale(
     [1, 10_000],
     'log',
@@ -195,7 +175,7 @@ test('the scale names its domain ends through the score formatter', () => {
     [0, 1500],
     'log',
     1,
-    { ...RAMP, rampLut: null },
+    { rampLut: HEATMAP_LUT, rampMid: undefined },
     'Score',
   )
   expect(scale.title).toBe('Score (log)')

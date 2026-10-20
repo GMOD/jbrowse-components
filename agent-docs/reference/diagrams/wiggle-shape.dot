@@ -24,7 +24,7 @@ digraph wiggle_shape {
   range [label="one line through every bin,\ncolored by the origin side it is on;\na min-max extent adds a\ntranslucent band under it"]
   bands [label="one band without an extent,\nthree under min-max; each value\ncolored by its own sign\nagainst the origin"]
 
-  nests [label="density, or filled bars\nthat nest"]
+  nests [label="filled bars\nthat nest"]
   bands -> nests
   nests -> split [label=" yes"]
   nests -> whole [label=" no"]

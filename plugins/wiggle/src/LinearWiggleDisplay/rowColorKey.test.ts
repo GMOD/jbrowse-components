@@ -1,6 +1,6 @@
 import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 
-import { UNCOLORED_ROW } from './sourcesLogic.ts'
+import { UNCOLORED_ROW } from '../shared/wiggleColor.ts'
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
 import type { WiggleSourceData } from '@jbrowse/wiggle-core'

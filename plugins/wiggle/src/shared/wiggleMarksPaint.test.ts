@@ -201,7 +201,6 @@ describe('the wiggle painters', () => {
     paintWiggle(ctx, new Map([[0, [source]]]), [defaultBlock], {
       ...defaultState,
       origin: 5,
-      pivot: 5,
       cuts: [5],
       innerColors: [],
     })
@@ -702,7 +701,6 @@ test('a line on a cut takes the color above it, as the shader does', () => {
     ...lineState,
     renderingType: RENDERING_TYPE_LINE_CENTER,
     domainY: [0, 1],
-    pivot: 0.7,
     cuts: [0.7],
   })
   expect(mock.strokeStyles).toEqual(['rgb(128,128,128)'])
@@ -1209,7 +1207,6 @@ describe('line plots color by pivot side', () => {
     paintWiggle(mock.ctx, new Map([[0, [source]]]), [lineBlock], {
       ...state,
       renderingType: RENDERING_TYPE_LINE_CENTER,
-      pivot: -2,
       cuts: [-2, 2],
       innerColors: [[0, 1, 0]],
     })

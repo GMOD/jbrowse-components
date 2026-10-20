@@ -5,7 +5,6 @@
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { thresholdBandOf } from '@jbrowse/render-core/marks'
 import {
-  RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
   getEffectiveScores,
@@ -240,35 +239,18 @@ export function makeSummaryLayers({
 }): WiggleLayer[] {
   const colorBands = { cuts, colors: [negColor, ...innerColors, posColor] }
   const { featurePositions, numFeatures } = data
-  const isDensityMode = renderingType === RENDERING_TYPE_DENSITY
   const isFilled = renderingType === RENDERING_TYPE_XYPLOT
   const bands = summaryBands(data, summaryField, extent)
 
   // Split each band into solid-color pos/neg layers, or keep it whole and color
-  // per instance? Two things force the split:
-  //   - density paints a row from the layer color alone (`drawDensity` builds
-  //     one gradient function per layer and has no per-instance path), and
-  //   - filled bars of MORE THAN ONE band nest around the origin — every band
-  //     shares the origin edge and extends to its value — so they must paint
-  //     back-to-front, largest magnitude first. That order is opposite between
-  //     the two sides (positive: max..min; negative: min..max), which a single
-  //     band order can't express.
+  // per instance? Filled bars of MORE THAN ONE band force the split: they nest
+  // around the origin — every band shares the origin edge and extends to its
+  // value — so they must paint back-to-front, largest magnitude first. That
+  // order is opposite between the two sides (positive: max..min; negative:
+  // min..max), which a single band order can't express.
   // Everything else keeps the band whole and colors per instance: scatter
-  // doesn't overpaint. A lone filled band is in that group too — its pos and
+  // doesn't overpaint, density tiles its row, and a lone filled band's pos and
   // neg bars grow away from the origin in opposite directions and never overlap.
-  if (isDensityMode) {
-    const sides = bands.map(b =>
-      splitAtValue(
-        featurePositions,
-        b.scores,
-        numFeatures,
-        pivot,
-        b.posTint(posColor),
-        b.negTint(negColor),
-      ),
-    )
-    return stackSides(sides)
-  }
   if (gradient) {
     const layers =
       isFilled && bands.length > 1

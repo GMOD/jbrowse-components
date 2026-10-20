@@ -12,16 +12,12 @@ import {
   SCALE_TYPE_SYMLOG,
 } from '@jbrowse/wiggle-core'
 
-import {
-  makeDensityLutFillFn,
-  makeDensityRgbStringFn,
-} from './getDensityColor.ts'
+import { makeDensityLutFillFn } from './getDensityColor.ts'
 import {
   GLSL_FRAGMENT as FILL_GLSL_FRAGMENT,
   GLSL_VERTEX as FILL_GLSL_VERTEX,
 } from './shaders/wiggle.glsl.generated.ts'
 import { WGSL_SOURCE as FILL_WGSL_SOURCE } from './shaders/wiggle.wgsl.generated.ts'
-import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
 import { GLSL_FRAGMENT } from './shaders/wiggleDensity.glsl.generated.ts'
 import { WGSL_SOURCE } from './shaders/wiggleDensity.wgsl.generated.ts'
 import { WIGGLE_MARKS } from './wiggleMarks.ts'
@@ -29,68 +25,6 @@ import { WIGGLE_MARKS } from './wiggleMarks.ts'
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
 import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import type { WiggleRenderingType } from '@jbrowse/wiggle-core'
-
-// Gate C of agent-docs/architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md: both backends land on
-// the same density color, swept across every scale type. The GPU path is
-// wiggleDensity.slang's vertex stage —
-//
-//   lerp(white, trackColor, densityGradientT(
-//     normalizeScore(score, ...), normalizeScore(origin, ...)))
-//
-// — and both of its decisions are the generated twins imported here:
-// `normalizeScore` from scoreScale.slang (swept against the hand-written
-// factory by normalizeScoreParity.test.ts) and `densityGradientT` from
-// wiggleCommon.slang (swept by densityGradientParity.test.ts). The Canvas2D and
-// SVG path is `makeDensityRgbStringFn`, which quantizes the same t into a
-// 256-bucket string LUT. So the two sides can differ by at most one LUT bucket
-// — under one 8-bit channel step — and at the ramp's ends, where t is exactly 0
-// or 1, they must agree exactly.
-//
-// The one piece of the shader chain with no generated twin is the final
-// per-channel lerp, `255 + (channel - 255) * t`, mirrored below; a lifted twin
-// would need vec3 support the codegen refuses by name (wgslToJs.ts). Its two
-// endpoints are pinned exactly instead.
-
-function gpuDensityChannels(
-  score: number,
-  domainMin: number,
-  domainMax: number,
-  scaleType: number,
-  symlogConstant: number,
-  origin: number,
-  rgb: [number, number, number],
-) {
-  const norm = normalizeScore(
-    score,
-    domainMin,
-    domainMax,
-    scaleType,
-    symlogConstant,
-  )
-  const zeroNorm = normalizeScore(
-    origin,
-    domainMin,
-    domainMax,
-    scaleType,
-    symlogConstant,
-  )
-  const t = densityGradientT(norm, zeroNorm)
-  return rgb.map(c => 255 + (c - 255) * t)
-}
-
-function parseRgb(s: string): [number, number, number] {
-  const m = /^rgb\((\d+),(\d+),(\d+)\)$/.exec(s)
-  if (!m) {
-    throw new Error(`not an rgb string: ${s}`)
-  }
-  return [Number(m[1]), Number(m[2]), Number(m[3])]
-}
-
-const TRACK_COLORS: [number, number, number][] = [
-  [0, 0, 255],
-  [255, 0, 0],
-  [37, 118, 189],
-]
 
 // The named-ramp (LUT) mode's GPU side: the generated normalizer, then
 // colorRampLut.slang's `rampMidT` against the `rampMidNorm` uniform, then
@@ -222,96 +156,78 @@ function samples([min, max]: [number, number]) {
   ]
 }
 
-describe.each(CASES)(
-  '$name',
-  ({ domain, scaleType, symlogConstant, origin }) => {
-    const [min, max] = domain
-    describe.each(TRACK_COLORS)('track color rgb(%i,%i,%i)', (r, g, b) => {
-      const canvasFn = makeDensityRgbStringFn(
+// A heatmap's unset color is a ramp through white at the origin
+// (`paintedWiggleColor`), which replaced a white fade the shader computed per
+// instance. `retiredFade` is that fade's arithmetic: the distance from the
+// origin as a fraction of the origin's distance to the farther domain end,
+// lerped from white to the side's color. `rampMidT` through a three-stop LUT
+// is the same function, so both backends land within the LUT's own step of it.
+function retiredFade(
+  score: number,
+  [min, max]: [number, number],
+  scaleType: ScaleTypeCode,
+  symlogConstant: number,
+  origin: number,
+  [neg, pos]: [number, number, number][],
+) {
+  const norm = normalizeScore(score, min, max, scaleType, symlogConstant)
+  const zeroNorm = normalizeScore(origin, min, max, scaleType, symlogConstant)
+  const t = Math.abs(norm - zeroNorm) / Math.max(zeroNorm, 1 - zeroNorm)
+  const side = norm < zeroNorm ? neg! : pos!
+  return side.map(c => 255 + (c - 255) * t)
+}
+
+describe('the default heatmap ramp draws the fade it replaced', () => {
+  const NEG: [number, number, number] = [224, 30, 38]
+  const POS: [number, number, number] = [0, 104, 209]
+  const lut = rampLutOf({
+    range: ['rgb(224,30,38)', '#ffffff', 'rgb(0,104,209)'],
+  })
+  const step = maxAdjacentStep(lut)
+
+  test('one LUT step is a few channel units', () => {
+    expect(step).toBeGreaterThan(0)
+    expect(step).toBeLessThanOrEqual(3)
+  })
+
+  describe.each(CASES.filter(c => c.domain[1] > c.domain[0]))(
+    '$name',
+    ({ domain, scaleType, symlogConstant, origin }) => {
+      const [min, max] = domain
+      const canvasFn = makeDensityLutFillFn(
         min,
         max,
         scaleType,
-        r,
-        g,
-        b,
+        lut,
         origin,
         symlogConstant,
       )
-
-      test.each(samples(domain))(
-        'both backends land within one LUT bucket at score %p',
-        score => {
-          const gpu = gpuDensityChannels(
-            score,
-            min,
-            max,
-            scaleType,
-            symlogConstant,
-            origin,
-            [r, g, b],
-          )
-          const canvas = parseRgb(canvasFn(score))
-          for (let i = 0; i < 3; i++) {
-            // One bucket of the 256-entry LUT moves a channel by at most
-            // |c - 255| / 255 <= 1, plus the LUT's own |0 truncation: under 2
-            // channel steps end to end, where a diverged normalizer or a
-            // wrong-way asymmetric ramp is tens.
-            expect(Math.abs(gpu[i]! - canvas[i]!)).toBeLessThan(2)
-          }
-        },
-      )
-
-      test('the pivot is white on both backends, exactly', () => {
-        const gpu = gpuDensityChannels(
+      test.each(samples(domain))('score %p, on both backends', score => {
+        const fade = retiredFade(
+          score,
+          domain,
+          scaleType,
+          symlogConstant,
           origin,
+          [NEG, POS],
+        )
+        const gpu = gpuLutChannels(
+          lut,
+          score,
           min,
           max,
           scaleType,
           symlogConstant,
           origin,
-          [r, g, b],
         )
-        expect(gpu).toEqual([255, 255, 255])
-        expect(canvasFn(origin)).toBe('rgb(255,255,255)')
-      })
-
-      test('the far end of the domain is the track color', () => {
-        // maxDist picks whichever end sits further from the pivot, and a
-        // degenerate domain has no far end. The GPU side is exact — t is
-        // x / max(x, ...) = 1 — while the Canvas factory hoists the
-        // normalizer's reciprocal out of its loop, so its t can land at
-        // 0.99999… and one LUT bucket short: within one channel step, not
-        // string-equal.
-        const far = max === min ? null : origin - min < max - origin ? max : min
-        if (far !== null) {
-          const gpu = gpuDensityChannels(
-            far,
-            min,
-            max,
-            scaleType,
-            symlogConstant,
-            origin,
-            [r, g, b],
-          )
-          expect(gpu.map(Math.round)).toEqual([r, g, b])
-          const canvas = parseRgb(canvasFn(far))
-          for (const [i, c] of [r, g, b].entries()) {
-            expect(Math.abs(canvas[i]! - c)).toBeLessThanOrEqual(1)
-          }
+        const canvas = parseRgba(canvasFn(score))
+        for (let i = 0; i < 3; i++) {
+          expect(Math.abs(gpu[i]! - fade[i]!)).toBeLessThanOrEqual(step)
+          expect(Math.abs(canvas[i]! - fade[i]!)).toBeLessThanOrEqual(step)
         }
       })
-    })
-  },
-)
-
-test('a score above a degenerate domain is the track color on both backends', () => {
-  const canvasFn = makeDensityRgbStringFn(5, 5, SCALE_TYPE_LINEAR, 0, 0, 255)
-  const gpu = (score: number) =>
-    gpuDensityChannels(score, 5, 5, SCALE_TYPE_LINEAR, 1, 0, [0, 0, 255])
-  expect(gpu(6)).toEqual([0, 0, 255])
-  expect(canvasFn(6)).toBe('rgb(0,0,255)')
-  expect(gpu(5)).toEqual([255, 255, 255])
-  expect(canvasFn(5)).toBe('rgb(255,255,255)')
+    },
+  )
 })
 
 // The named-ramp gauge (agent-docs/architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md): a named

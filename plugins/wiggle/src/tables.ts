@@ -27,36 +27,28 @@ import {
 
 import BigWigAdapterF from './BigWigAdapter/index.ts'
 import linearWiggleDisplayConfigSchema from './LinearWiggleDisplay/configSchema.ts'
-import {
-  UNCOLORED_ROW,
-  markColorOf,
-} from './LinearWiggleDisplay/sourcesLogic.ts'
 import { multiQuantitativeWiggleConfigSchema } from './MultiQuantitativeTrack/displaySchema.ts'
 import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import { executeRenderMultiWiggleData } from './RenderMultiWiggleDataRPC/executeRenderMultiWiggleData.ts'
 import { renderingOf } from './renderingTypes.ts'
 import { RESOLUTION_MAX, RESOLUTION_MIN } from './shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from './shared/buildSourceRenderData.ts'
-import {
-  makeDensityLutFillFn,
-  makeDensityRgbStringFn,
-} from './shared/getDensityColor.ts'
-import { scoreRampApplies, scoreRampScale } from './shared/scoreRampScale.ts'
+import { makeDensityLutFillFn } from './shared/getDensityColor.ts'
+import { scoreRampScale } from './shared/scoreRampScale.ts'
 import { WHISKER_BAND_OPACITY } from './shared/shaders/wiggleBand.consts.generated.ts'
 import {
   paintedWiggleColor,
   resolveWiggleColor,
   wiggleColorEncoding,
   wiggleMarkColoring,
+  wiggleMarkSources,
+  wiggleSharesPanel,
 } from './shared/wiggleColor.ts'
 import { centerLinksToPrevious } from './shared/wiggleComponentUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type {
-  SourceRenderData,
-  ValueScaleRuleConfig,
-} from '@jbrowse/wiggle-core'
+import type { ValueScaleRuleConfig } from '@jbrowse/wiggle-core'
 
 /** Registers the adapters `wiggleTables` reads through, BigWig and multi-wiggle. */
 export function registerWiggleAdapters(pluginManager: PluginManager) {
@@ -162,12 +154,15 @@ export async function wiggleTables(
   const setting = colorSettingOf(conf.color)
   const wiggleColor = resolveWiggleColor(
     wiggleColorEncoding(
-      paintedWiggleColor({
-        ...setting,
-        field: setting.field ?? '',
-        labels: readConfObject(conf.color, 'labels'),
-        title: readConfObject(conf.color, 'title'),
-      }),
+      paintedWiggleColor(
+        {
+          ...setting,
+          field: setting.field ?? '',
+          labels: readConfObject(conf.color, 'labels'),
+          title: readConfObject(conf.color, 'title'),
+        },
+        { span: density, origin },
+      ),
     ),
     origin,
   )
@@ -224,10 +219,13 @@ export async function wiggleTables(
     data.sources,
     readConfObject(conf.rows, 'domain'),
   )
-  const { gradientPaints, rowColorPaintsMarks, markColor } = wiggleMarkColoring(
-    { colorSetting: setting, wiggleColor, renderingType, rowLayout },
-  )
-  const paletteDeals = !rowLayout && sources.length > 1 && rowColorPaintsMarks
+  const { gradientPaints, rowColorPaintsMarks } = wiggleMarkColoring({
+    colorSetting: setting,
+    wiggleColor,
+    renderingType,
+  })
+  const paletteDeals =
+    wiggleSharesPanel(rowLayout, sources.length) && rowColorPaintsMarks
   const rowColor = liftRowColor({
     field: readConfObject(conf.rowColor, 'field'),
     domain: readConfObject(conf.rowColor, 'domain'),
@@ -240,27 +238,23 @@ export async function wiggleTables(
     dealtValueColors(rowColor, () => sources, paletteDeals),
     undefined,
   )
-  const uncolored =
-    paletteDeals && rowColors.size > 0 ? UNCOLORED_ROW : undefined
-  const markSources = sources.map(s => ({
-    name: s.name,
-    color:
-      markColorOf(
-        { color: s.color, rowColor: rowColors.get(s.name) },
-        markColor,
-      ) ?? uncolored,
-  }))
-  const ramp = scoreRampApplies(gradientPaints, wiggleColor, markSources)
-    ? rampKeyOf(
-        scoreRampScale(
-          domain,
-          scaleType,
-          readConfObject(scale, 'symlogConstant'),
-          wiggleColor,
-          readConfObject(scale, 'title') || 'Score',
-        ),
-      )
-    : undefined
+  const markSources = wiggleMarkSources(
+    sources.map(s => ({ name: s.name, rowColor: rowColors.get(s.name) })),
+    { rowColorPaintsMarks, paletteDeals, anyRowColored: rowColors.size > 0 },
+  )
+  const { rampLut, rampMid } = wiggleColor
+  const ramp =
+    gradientPaints && rampLut
+      ? rampKeyOf(
+          scoreRampScale(
+            domain,
+            scaleType,
+            readConfObject(scale, 'symlogConstant'),
+            { rampLut, rampMid },
+            readConfObject(scale, 'title') || 'Score',
+          ),
+        )
+      : undefined
   const regionLayers = results.map(result =>
     buildSourceRenderData(result, {
       sources: markSources,
@@ -279,42 +273,17 @@ export async function wiggleTables(
     })),
   )
   const scaleCode = scaleTypeCode(scaleType)
-  const gradient = gradientPaints && !density
-  const colorOf = (layer: SourceRenderData) => {
-    if (density) {
-      if (wiggleColor.rampLut) {
-        return makeDensityLutFillFn(
-          domain[0],
-          domain[1],
-          scaleCode,
-          wiggleColor.rampLut,
-          wiggleColor.rampMid,
-          symlogConstant,
-        )
-      }
-      const [r, g, b] = layer.color.map(c => c * 255)
-      return makeDensityRgbStringFn(
-        domain[0],
-        domain[1],
-        scaleCode,
-        r!,
-        g!,
-        b!,
-        wiggleColor.pivot,
-        symlogConstant,
-      )
-    }
-    return gradient
+  const rampFill =
+    gradientPaints && rampLut
       ? makeDensityLutFillFn(
           domain[0],
           domain[1],
           scaleCode,
-          wiggleColor.rampLut!,
-          wiggleColor.rampMid,
+          rampLut,
+          rampMid,
           symlogConstant,
         )
       : undefined
-  }
 
   const marks = {
     region: [] as number[],
@@ -335,14 +304,13 @@ export async function wiggleTables(
   const innerColors = wiggleColor.innerColors.map(cssColorToHex)
   regionLayers.forEach((layers, regionIndex) => {
     layers.forEach(({ layer, source, row }, index) => {
-      const fill = colorOf(layer)
       const own = normalizedRgbToHex(layer.color)
       const bandColors = layer.negColor
         ? [normalizedRgbToHex(layer.negColor), ...innerColors, own]
         : undefined
       const colorAt = (score: number, i: number) =>
-        fill
-          ? cssColorToHex(fill(score))
+        rampFill
+          ? cssColorToHex(rampFill(score))
           : layer.colorsAbgr
             ? abgrToHex(layer.colorsAbgr[i]!)
             : bandColors

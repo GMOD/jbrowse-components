@@ -54,9 +54,9 @@ Config bounds are still checked first.
   source on row 0 of one box.
 - The plot type, the summary `y` names and the resolved extent together decide the
   **layers**: three summary bands under a min-max extent, one without.
-- Nested filled bars and density split into solid layers drawn back to front,
-  largest magnitude first. Everything else keeps one band with per-instance
-  colors.
+- Nested filled bars split into solid layers drawn back to front, largest
+  magnitude first. Everything else, density included, keeps one band with
+  per-instance colors.
 - A line plot is one continuous line through every bin in every summary
   mode, colored by which side of the origin the line is on, so it changes
   color where it crosses rather than per bin. Whiskers adds a translucent
@@ -76,7 +76,7 @@ scheme }` over `score` — and a subtrack's color is `rowColor`'s:
 | --- | --- | --- | --- |
 | shared: several sources in one box | the threshold pair, each source painting its row color on both sides | `rowColor` | by name |
 | row: a row per source, or a lone plot | the threshold pair about the `origin` | `rowColor` | by an attribute only |
-| density, either of the above | the **score ramp** | the row's own `color` (overlay: `rowColor`) | by an attribute only |
+| density, either of the above | the **score ramp**, through white at the `origin` | the ramp | by an attribute only |
 
 A written `color`, a constant or a scale, paints every mark in any layout;
 the table is what an unset one leaves to the rows. A row's `rowColor` draws
@@ -88,9 +88,8 @@ its label bar in every layout that has row labels.
   is the whole of what the encoder and both backends read: the pair every mode
   partitions by, the value they part at, the density LUT, and whether a source
   paints its own color on both sides.
-- **In density, `color` is a scale, not an identity**, so the marks fade to
-  the row's own color and its `rowColor` shows only on the label bar, which the
-  ramp ignores.
+- **In density, `color` is a scale, not an identity**, so every cell reads
+  the one ramp and a row's `rowColor` shows only on the label bar.
 - The color key follows the scale, so which channel it reads and what an unset
   one falls back to come from the same table.
 - One cursor hands out every palette entry, the color's `range` and then the
@@ -113,7 +112,8 @@ its label bar in every layout that has row labels.
   across every hole on Canvas2D.
 - **A color put on a density row replaces the scale it is read by.** A
   copy-number heatmap grouped by population came out one hue per population with
-  a shared blue for losses, encoding nothing.
+  a shared blue for losses, encoding nothing. A file's own color was the last
+  row color a heatmap faded to, and it went for the same reason.
 - **The palette used to be two independent sequences**, so a track mixing
   grouped and ungrouped subadapters gave the same entry to the first group and
   the first ungrouped row — one color for two things, in the plot and in the

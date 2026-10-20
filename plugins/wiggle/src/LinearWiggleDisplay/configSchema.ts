@@ -167,9 +167,10 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     /**
      * #slot color
      * One CSS color, or `score` through a scale — `threshold` for the
-     * bicolor plot, `linear` for the density ramp. Unset, it is the pos/neg
-     * pair about the `origin`, and several sources in one plot box each
-     * paint their row color.
+     * bicolor plot, `linear` for a gradient. Unset, it is the pos/neg pair
+     * about the `origin`, a density plot's ramp through white at the
+     * `origin`, and several sources in one plot box each paint their row
+     * color.
      * #example
      * ```json
      * {

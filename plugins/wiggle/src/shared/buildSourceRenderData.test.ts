@@ -204,18 +204,18 @@ describe('buildSourceRenderData summaryField (bicolor, no solid color)', () => {
     },
   )
 
-  // Density paints a row from the layer color alone (drawDensity has no
-  // per-instance path), so there the band is split into two solid layers.
-  test('min mode splits the band into pos/neg layers in density', () => {
+  // Under a threshold a heatmap cell paints its band's color, solid, as a bar
+  // does, so the band stays whole and colors per instance.
+  test('min mode colors each heatmap cell by its band', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
       summaryField: 'minScore',
       effectiveExtent: 'none',
       renderingType: 'density',
     })
-    expect(out.map(s => [...s.featureScores])).toEqual([[2], [-8]])
-    expect(out[0]!.color).not.toEqual(out[1]!.color)
-    expect(out[0]!.colorsAbgr).toBeUndefined()
+    expect(out.map(s => [...s.featureScores])).toEqual([[2, -8]])
+    const [above, below] = out[0]!.colorsAbgr!
+    expect(above).not.toBe(below)
   })
 
   // An all-positive band (ordinary coverage) has no negative side to draw.
@@ -232,18 +232,16 @@ describe('buildSourceRenderData summaryField (bicolor, no solid color)', () => {
 
   // density has no min-max variant. The model resolves that before this ever
   // sees it (`effectiveExtent`, covered in densityMode.test.ts), so what
-  // arrives here is 'none' — and density is the one mode that still needs
-  // solid-color layers, `drawDensity` building one gradient per layer.
-  test('density + mean splits into solid pos/neg layers', () => {
+  // arrives here is 'none', one band.
+  test('density + mean keeps one band', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
       summaryField: 'score',
       effectiveExtent: 'none',
       renderingType: 'density',
     })
-    expect(out).toHaveLength(2)
-    expect(out[0]!.featureScores).toEqual(new Float32Array([5]))
-    expect(out[1]!.featureScores).toEqual(new Float32Array([-5]))
+    expect(out).toHaveLength(1)
+    expect(out[0]!.featureScores).toEqual(new Float32Array([5, -5]))
   })
 })
 

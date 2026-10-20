@@ -234,16 +234,17 @@ test('rows: a run lands its tree, a reorder drops it, a reset returns to the see
   expect(derived(display)).toMatchSnapshot()
 })
 
-// In one shared box there is no label to tint, so a color set in the dialog
-// goes to the plot whatever the gradient, as it did before the port.
-test('overlay, density: a dialog edit paints the plot', async () => {
+// A heatmap reads its color scale alone, so a color set in the dialog is kept
+// on `rowColor` and paints no strip; an overlaid heatmap says to use rows.
+test('overlay, density: a dialog edit is kept and paints no strip', async () => {
   const display = await loaded(GROUPED, { defaultRendering: 'density' })
   display.applyRowEdits(display.editableSources, {
     domain: ['Grain1'],
     range: ['#00f'],
   })
-  expect(display.markSources[0]).toEqual({ name: 'Grain1', color: '#00f' })
+  expect(display.markSources[0]).toEqual({ name: 'Grain1', color: undefined })
   expect(pairedColorsOf(display.rowColorSetting).get('Grain1')).toBe('#00f')
+  expect(display.liveNotices.join('\n')).toContain('one strip')
 })
 
 // The Edit plot box writes rows whole: an order typed over what it shows keeps

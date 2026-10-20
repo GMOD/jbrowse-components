@@ -25,7 +25,6 @@
 // back from there.
 //! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, NO_PREV_START, MIN_FILL_WIDTH_PX, MAX_WIGGLE_CUTS
 //! consts-out: packages/wiggle-core/src/wiggleRenderModes.generated.ts
-//! js-export: densityGradientT
 module wiggleCommon;
 
 import hpmath;
@@ -86,19 +85,15 @@ public struct Uniforms {
   public float  lineWidth;
   // The score xyplot bars grow from.
   public float  origin;
-  // The score the color parts at: the line and band color sides and the
-  // density fade's white. A threshold's cut, else `origin`.
-  public float  pivot;
   // Where a gradient's middle stop sits, as a normalized score:
   // `domainMid`'s, else 0.5, which runs the ramp straight across the domain.
   //
   // The only score the JS side normalizes for the shader, and it does not
-  // generalize to `origin`, `pivot` and `cuts`, whose per-vertex normalize
+  // generalize to `origin` and `cuts`, whose per-vertex normalize
   // looks like the same saving. Nothing is ever COMPARED to `rampMidNorm` — it
-  // positions a ramp — while each of those three is tested against a score the
+  // positions a ramp — while each of those two is tested against a score the
   // shader normalized itself, and the two tie only while one normalize places
-  // both. `bandCutTie.test.ts` sabotages the cut version; the pivot's is
-  // densityColorParity.test.ts §"the pivot is white on both backends, exactly".
+  // both. `bandCutTie.test.ts` sabotages the cut version.
   public float  rampMidNorm;
   // symlog's linear-region width, already resolved on the JS side (a 0 in the
   // config means "derive from the domain", and that rule lives there so both
@@ -110,9 +105,8 @@ public struct Uniforms {
   // horizontal cuts and the center line's capsule both read it.
   public float  devicePixelRatio;
   // 1 = a gradient: density, xyplot and scatter color through the bound
-  // 256×1 colorRamp LUT texture, 0 = the instance color (density's white
-  // fade off it). The LUT cannot encode multiwiggle's PER-ROW track colors,
-  // so it is the alternative a config names.
+  // 256×1 colorRamp LUT texture, 0 = the instance color. The LUT cannot
+  // encode multiwiggle's PER-ROW track colors, so a gradient paints them all.
   public int    rampLut;
   // How many of `cuts` are in use, at least 1: the pivot.
   public int    numCuts;
@@ -170,19 +164,4 @@ public float4 bandColorAt(float centerLineYPx, float4 cutYsLo, float4 cutYsHi, U
   return band == 0 ? negColor
     : band == u.numCuts ? posColor
     : u.innerColor[band - 1];
-}
-
-// Density mode's gradient position: how far this score sits from the pivot,
-// as a fraction of the pivot's distance to the further end of the normalized
-// domain. 0 paints white, 1 paints the track color.
-//
-// Takes normalized scores rather than raw ones so the ramp is one decision and
-// the normalizer another — `scoreScale.slang` owns the second and exports its
-// own twin. `//! js-export`ed:
-// getDensityColor.ts carried it verbatim, keeping a `max(maxDist, 0.0001)` floor
-// that can never fire (maxDist >= 0.5 always) purely so a reader comparing the
-// two backends saw identical arithmetic.
-public float densityGradientT(float norm, float zeroNorm) {
-  float maxDist = max(zeroNorm, 1.0 - zeroNorm);
-  return abs(norm - zeroNorm) / max(maxDist, 0.0001);
 }

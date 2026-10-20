@@ -25,10 +25,7 @@ import { normalizeScoreUnclamped } from '@jbrowse/render-core/shaders/scoreScale
 import { appendPointMarker, makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_MIN_PX } from '../util.ts'
-import {
-  makeDensityLutFillFn,
-  makeDensityRgbStringFn,
-} from './getDensityColor.ts'
+import { makeDensityLutFillFn } from './getDensityColor.ts'
 import { WHISKER_BAND_OPACITY } from './shaders/wiggleBand.consts.generated.ts'
 import { centerLinksToPrevious } from './wiggleComponentUtils.ts'
 
@@ -54,9 +51,7 @@ export interface RowDraw {
   symlogConstant: number
   // The score xyplot bars grow from.
   origin: number
-  // The lowest cut, and the white of the two-sided density fade.
-  pivot: number
-  // Where a line's and band's color changes, ascending, `pivot` first, and
+  // Where a line's and band's color changes, ascending, and
   // the color of each band between two of them.
   cuts: number[]
   innerColors: [number, number, number][]
@@ -197,35 +192,14 @@ export function drawXYPlot(row: RowDraw & { rgb: string }) {
   }
 }
 
-export function drawDensity(
-  row: RowDraw & { r: number; g: number; b: number },
-) {
-  const {
-    ctx,
-    source,
-    block,
-    rowHeight,
-    rowTop,
-    domainY,
-    scaleType,
-    symlogConstant,
-    pivot,
-    r,
-    g,
-    b,
-  } = row
-  const colorFn =
-    makeRampFill(row) ??
-    makeDensityRgbStringFn(
-      domainY[0],
-      domainY[1],
-      scaleType,
-      r,
-      g,
-      b,
-      pivot,
-      symlogConstant,
-    )
+export function drawDensity(row: RowDraw & { rgb: string }) {
+  const { ctx, source, block, rowHeight, rowTop, rgb } = row
+  const rampFill = makeRampFill(row)
+  const colorsAbgr = rampFill ? undefined : source.colorsAbgr
+  let lastAbgr = NO_COLOR
+  if (!colorsAbgr && !rampFill) {
+    ctx.fillStyle = rgb
+  }
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)
@@ -234,10 +208,18 @@ export function drawDensity(
   const bandHeight = drawnRowHeightPx(rowHeight, 1)
   const bandTop = rowTop + rowBandOffsetPx(rowHeight, 1)
   for (let i = 0; i < n; i++) {
+    if (rampFill) {
+      ctx.fillStyle = rampFill(scores[i]!)
+    } else if (colorsAbgr) {
+      const c = colorsAbgr[i]!
+      if (c !== lastAbgr) {
+        setAbgrFill(ctx, c)
+        lastAbgr = c
+      }
+    }
     const x1 = toX(positions[i * 2]!)
     const x2 = toX(positions[i * 2 + 1]!)
     const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + CANVAS_SEAM_PX)
-    ctx.fillStyle = colorFn(scores[i]!)
     ctx.fillRect(spanLeft(x1, x2, w), bandTop, w, bandHeight)
   }
 }
