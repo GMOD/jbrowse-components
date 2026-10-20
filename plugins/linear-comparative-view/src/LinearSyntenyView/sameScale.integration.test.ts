@@ -133,18 +133,18 @@ test('the mode is saved, the ceiling it implies is not', async () => {
   view.showAllRegionsAcrossRows(true)
 
   const snap = getSnapshot(view)
-  expect(snap.sameScale).toBe(true)
+  expect(snap.coord).toEqual({ ratio: 1 })
   expect(snap.views[0]).not.toHaveProperty('sharedFitBpPerPx')
 })
 
 // Back to each row filling its own pane, which is the way off the mode.
 test('show all regions hands each row back its own fit', async () => {
-  const view = await launch({ views, sameScale: true })
+  const view = await launch({ views, coord: { ratio: 1 } })
   const [small, large] = view.views
 
   view.showAllRegions()
 
-  expect(view.sameScale).toBe(false)
+  expect(view.ratio).toBeUndefined()
   expect(small!.maxBpPerPx).toBeCloseTo(small!.fitBpPerPx)
   expect(small!.displayedRegionsTotalPx).toBeCloseTo(
     large!.displayedRegionsTotalPx,
@@ -152,7 +152,7 @@ test('show all regions hands each row back its own fit', async () => {
 })
 
 test('a flat sameScale applies the shared scale on load', async () => {
-  const view = await launch({ views, sameScale: true })
+  const view = await launch({ views, coord: { ratio: 1 } })
   const [small, large] = view.views
 
   expect(small!.bpPerPx).toBeCloseTo(large!.bpPerPx)
@@ -177,21 +177,21 @@ const placed = [
 
 test('both spellings re-fit, and the nested one says it is deprecated', async () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-  const flat = await launch({ views: placed, sameScale: true })
-  const nested = await launch({ init: { views: placed, sameScale: true } })
+  const flat = await launch({ views: placed, coord: { ratio: 1 } })
+  const nested = await launch({ init: { views: placed, coord: { ratio: 1 } } })
   expect(warn).toHaveBeenCalledWith(expect.stringContaining('deprecated'))
   warn.mockRestore()
 
-  expect(flat.sameScale).toBe(true)
+  expect(flat.ratio).toBe(1)
   expect(flat.views[0]!.bpPerPx).toBeCloseTo(flat.views[1]!.bpPerPx)
-  expect(nested.sameScale).toBe(true)
+  expect(nested.ratio).toBe(1)
   expect(nested.views[0]!.bpPerPx).toBeCloseTo(nested.views[1]!.bpPerPx)
 })
 
 // the ceiling would draw a gene launch at chromosome scale
 test('rows placed on loci share the coarsest locus scale', async () => {
   const view = await launch({
-    sameScale: true,
+    coord: { ratio: 1 },
     views: [
       { assembly: 'small', loc: 'ctgA:5001-5400' },
       { assembly: 'large', loc: 'ctgA:50001-51000' },
@@ -211,7 +211,7 @@ test('rows placed on loci share the coarsest locus scale', async () => {
 test('a restored session with the mode on is not re-zoomed', async () => {
   const session = setup()
   const view = (await session.launchView('LinearSyntenyView', {
-    sameScale: true,
+    coord: { ratio: 1 },
     views: [
       {
         type: 'LinearGenomeView',
@@ -233,7 +233,7 @@ test('a restored session with the mode on is not re-zoomed', async () => {
   view.setWidth(800)
   await when(() => view.views.every(v => v.initialized))
 
-  expect(view.sameScale).toBe(true)
+  expect(view.ratio).toBe(1)
   // the saved zoom, not the shared ceiling the mode implies
   expect(view.views[0]!.bpPerPx).toBe(4)
   expect(view.views[0]!.maxBpPerPx).toBeGreaterThan(4)
@@ -252,7 +252,7 @@ test('a restored session with the mode on attaches before any width', async () =
       errors.push(args[0])
     })
   const view = (await session.launchView('LinearSyntenyView', {
-    sameScale: true,
+    coord: { ratio: 1 },
     views: [
       {
         type: 'LinearGenomeView',
@@ -318,7 +318,7 @@ test('a restored row zoomed out past its own fit is left where it was saved', as
   await when(() => view.views.every(v => v.initialized))
 
   const [small, large] = view.views
-  expect(view.sameScale).toBe(false)
+  expect(view.ratio).toBeUndefined()
   // both saved past their own fit, which is the state a clamp would move
   expect(small!.fitBpPerPx).toBeLessThan(500)
   expect(large!.fitBpPerPx).toBeLessThan(500)
@@ -355,7 +355,7 @@ test('a restored session with the mode OFF attaches before any width', async () 
   })) as LinearSyntenyViewModel
 
   expect(errors).toEqual([])
-  expect(view.sameScale).toBe(false)
+  expect(view.ratio).toBeUndefined()
   expect(view.sharedFit).toEqual({ answered: true, bpPerPx: 0 })
 
   // still under the spy: a guard that only deferred the throw would land here
@@ -443,14 +443,14 @@ test('sameScale keeps the rows where views[].loc put them', async () => {
       { assembly: 'small', loc: 'ctgB' },
       { assembly: 'large', loc: 'ctgB' },
     ],
-    sameScale: true,
+    coord: { ratio: 1 },
   })
   const [small, large] = view.views
 
   expect(small!.displayedRegions.map(r => r.refName)).toEqual(['ctgB'])
   expect(large!.displayedRegions.map(r => r.refName)).toEqual(['ctgB'])
   // ...and they are still on one scale
-  expect(view.sameScale).toBe(true)
+  expect(view.ratio).toBe(1)
   expect(small!.bpPerPx).toBeCloseTo(large!.bpPerPx)
 })
 

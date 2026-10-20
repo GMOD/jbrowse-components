@@ -45,6 +45,7 @@ import {
   getSyntenyTracks,
   releaseTemporaryAssemblies,
   reorderChromosomesMenuItem,
+  syntenyCoordConfigSchema,
   syntenyMarkConfigSchema,
 } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
@@ -135,7 +136,7 @@ function takeOutRow(row: LinearGenomeViewModel) {
  * }
  * ```
  * The launch keys are `views`, `tracks`, `levelHeights`, `autoDiagonalize`,
- * `sameScale` and `collapseEmptyRows`; everything else is a property below and
+ * `coord` and `collapseEmptyRows`; everything else is a property below and
  * needs no list to join.
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
@@ -221,12 +222,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         followSynteny: types.stripDefault(types.boolean, false),
         /**
          * #property
-         * Hold every genome row on one bp/px — the coarsest row's fit — so the
-         * rows compare by drawn length instead of each filling its pane. Moves
-         * the rows' zoom-out limit (`sharedFit`), so it holds across later
-         * zooms.
+         * The coordinate system, a [](/docs/config/syntenycoord) object:
+         * `{ ratio: 1 }` holds every genome row on one bp/px, the coarsest
+         * row's fit, so the rows compare by drawn length instead of each
+         * filling its pane. It moves the rows' zoom-out limit (`sharedFit`),
+         * so it holds across later zooms.
          */
-        sameScale: types.stripDefault(types.boolean, false),
+        coord: types.stripDefault(syntenyCoordConfigSchema, {}),
         /**
          * #property
          * Which genome row drives the others while following.
@@ -357,12 +359,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * The zoom-out limit every row shares while `sameScale` is on
+       * The zoom-out limit every row shares while `coord.ratio` is 1
        * (`sharedFit.ts`). Each row reads it through its `maxBpPerPx`,
        * detecting this view by the presence of this getter.
        */
       get sharedFit() {
-        return sharedFit(self.views, self.sameScale)
+        return sharedFit(self.views, this.ratio === 1)
+      },
+      /**
+       * #getter
+       * `coord.ratio`: 1 while every row is held at one bp/px.
+       */
+      get ratio(): 1 | undefined {
+        return readConfObject(self.coord, 'ratio') === 1 ? 1 : undefined
       },
       /**
        * #getter
@@ -973,11 +982,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #action
        * Every row onto its whole assembly, either all on one bp/px — the
        * coarsest row's fit, so the largest genome fills its pane and the others
-       * draw shorter in proportion — or each fit to its pane. `sameScale`
+       * draw shorter in proportion — or each fit to its pane. `coord.ratio`
        * latches, so the shared scale holds across later zooms.
        */
       showAllRegionsAcrossRows(sameScale: boolean) {
-        this.setSameScale(sameScale)
+        this.setRatio(sameScale ? 1 : undefined)
         for (const view of self.views) {
           view.showAllRegionsInAssembly()
         }
@@ -990,8 +999,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setSameScale(sameScale: boolean) {
-        self.sameScale = sameScale
+      setRatio(ratio: 1 | undefined) {
+        self.coord = cast(ratio === undefined ? {} : { ratio })
       },
       /**
        * #action
@@ -1005,11 +1014,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Latch `sameScale` and zoom every row onto the shared scale, keeping
+       * Latch `coord.ratio` and zoom every row onto the shared scale, keeping
        * each row's regions and centre.
        */
       applySharedScale() {
-        this.setSameScale(true)
+        this.setRatio(1)
         for (const view of self.views) {
           if (view.initialized) {
             view.zoomTo(view.maxBpPerPx)
@@ -1150,7 +1159,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        * Every row back to its whole assembly, fit to the row's width, which
-       * also turns `sameScale` off.
+       * also clears `coord.ratio`.
        */
       showAllRegions() {
         self.showAllRegionsAcrossRows(false)
@@ -1390,13 +1399,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
         // Rows pull the ceiling, but `bpPerPx` is clamped only where it is
         // written, so a ceiling that drops strands them above it. Gated on
-        // `sameScale` too: mode off answers without reading a row, and a
+        // `coord.ratio` too: unset answers without reading a row, and a
         // restored row saved past its own fit should stay there.
         addDisposer(
           self,
           autorun(
             function comparativeViewSameScaleAutorun() {
-              if (self.sameScale && self.sharedFit.answered) {
+              if (self.ratio === 1 && self.sharedFit.answered) {
                 for (const view of self.views) {
                   if (view.initialized) {
                     view.clampZoomToCeiling()

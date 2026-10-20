@@ -16,7 +16,7 @@ const SHOW_ALL_REGIONS_LABELS = [
 describe('navigationMenuItems', () => {
   function build(
     state: Partial<{
-      sameScale: boolean
+      ratio: 1 | undefined
       followSynteny: boolean
       followAnchorIndex: number
       followMatchOrientation: boolean
@@ -25,7 +25,7 @@ describe('navigationMenuItems', () => {
     const calls: unknown[] = []
     const items = navigationMenuItems({
       views: [{ assemblyNames: ['hg002mat'] }, { assemblyNames: ['hg002pat'] }],
-      sameScale: false,
+      ratio: undefined,
       followSynteny: false,
       followAnchorIndex: 0,
       followMatchOrientation: false,
@@ -130,7 +130,7 @@ describe('navigationMenuItems', () => {
   test('the mark follows the fit rule in force', () => {
     for (const [state, expected] of [
       [{}, 'Show all regions - each row fit to width'],
-      [{ sameScale: true }, 'Show all regions - same bp per pixel'],
+      [{ ratio: 1 }, 'Show all regions - same bp per pixel'],
     ] as const) {
       const { items } = build(state)
       expect(

@@ -99,7 +99,7 @@
         "tracks": ["vertebrates_orthogroups"],
         "color": { "field": "reference" },
         "autoDiagonalize": true,
-        "sameScale": true,
+        "coord": { "ratio": 1 },
         "collapseEmptyRows": true
       }
     ]

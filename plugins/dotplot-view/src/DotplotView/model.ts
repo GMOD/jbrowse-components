@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { readConfObject } from '@jbrowse/core/configuration'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -47,6 +48,7 @@ import {
   comparativeSurfaceSettled,
   liftSyntenyViewSettings,
   releaseTemporaryAssemblies,
+  syntenyCoordConfigSchema,
 } from '@jbrowse/synteny-core'
 import DataUsageIcon from '@mui/icons-material/DataUsage'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -267,11 +269,12 @@ export default function stateModelFactory(pm: PluginManager) {
           showTickLabels: types.stripDefault(types.boolean, true),
           /**
            * #property
-           * When true, hview and vview are kept at the same bpPerPx so the
-           * dotplot stays square. Wheel zoom already preserves the ratio;
-           * box-zoom and other independent ops trigger an autorun resync.
+           * The coordinate system, a [](/docs/config/syntenycoord) object:
+           * `{ ratio: 1 }` keeps hview and vview at one bpPerPx so the plot
+           * stays square. Wheel zoom already preserves the ratio; box-zoom
+           * and other independent ops trigger an autorun resync.
            */
-          lockAspectRatio: types.stripDefault(types.boolean, false),
+          coord: types.stripDefault(syntenyCoordConfigSchema, {}),
           /**
            * #property
            * Line width in CSS pixels of every alignment in the plot
@@ -576,7 +579,14 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
-         * The zoom-out limit both axes share under `lockAspectRatio`: one
+         * `coord.ratio`: 1 while both axes are held at one bp/px.
+         */
+        get ratio(): 1 | undefined {
+          return readConfObject(self.coord, 'ratio') === 1 ? 1 : undefined
+        },
+        /**
+         * #getter
+         * The zoom-out limit both axes share under `coord.ratio`: one
          * bpPerPx has to fit the LONGER genome, so it is the larger of the two
          * axes' own fits. Read back by each axis as its `maxBpPerPx` (see
          * `axisMaxBpPerPx`), so every route to a zoom — the buttons, the wheel,
@@ -964,8 +974,8 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          */
-        setLockAspectRatio(flag: boolean) {
-          self.lockAspectRatio = flag
+        setRatio(ratio: 1 | undefined) {
+          self.coord = cast(ratio === undefined ? {} : { ratio })
         },
         /**
          * #action
@@ -1139,7 +1149,7 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #action
-         * zooms into clicked and dragged region. Under `lockAspectRatio` both
+         * zooms into clicked and dragged region. Under `coord.ratio` both
          * axes take the larger of the two fits, so the whole box stays in view
          * on the axis whose plot dimension is shorter.
          */
@@ -1147,12 +1157,13 @@ export default function stateModelFactory(pm: PluginManager) {
           const result = self.getCoords(mousedown, mouseup)
           if (result) {
             const { hview, vview } = self
-            const floor = self.lockAspectRatio
-              ? Math.max(
-                  computeMoveToLayout(hview, result.x1, result.x2).bpPerPx,
-                  computeMoveToLayout(vview, result.y2, result.y1).bpPerPx,
-                )
-              : 0
+            const floor =
+              self.ratio === 1
+                ? Math.max(
+                    computeMoveToLayout(hview, result.x1, result.x2).bpPerPx,
+                    computeMoveToLayout(vview, result.y2, result.y1).bpPerPx,
+                  )
+                : 0
             hview.moveTo(result.x1, result.x2, floor)
             vview.moveTo(result.y2, result.y1, floor)
           }

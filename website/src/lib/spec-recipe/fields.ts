@@ -2361,13 +2361,16 @@ export const viewFields: Record<string, FieldRecipe> = {
   // row beside it, 'Show all regions - each row fit to width', is the way back
   // off. Both are top-level rows in the header menu carrying the name they
   // share in the label, so a reader picks between them in place.
-  sameScale: value =>
-    value === true
-      ? {
-          path: 'Synteny view header → View options → Show all regions - same bp per pixel',
-          note: 'Row length becomes genome size, which is what makes the rows comparable.',
-        }
-      : undefined,
+  // `{ ratio: 1 }`: every position axis on one bp/px
+  coord: (value, { viewType }) =>
+    asRecord(value)?.ratio !== 1
+      ? undefined
+      : viewType === 'DotplotView'
+        ? { path: 'Dotplot header → the ⋮ menu → Lock aspect ratio (same bp/px)' }
+        : {
+            path: 'Synteny view header → View options → Show all regions - same bp per pixel',
+            note: 'Row length becomes genome size, which is what makes the rows comparable.',
+          },
   // How a standalone graph view gets its data: it opens on its own import form
   // ("Load a GFA graph"), which reads a whole file.
   gfaLocation: value =>

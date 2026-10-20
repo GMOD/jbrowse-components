@@ -2500,7 +2500,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // length is genome size here too: human's 3.1 Gb against the
             // 0.9-1.5 Gb of the four below it, with gar and zebrafish (0.90 and
             // 1.35) the pair the bottom band is really about.
-            sameScale: true,
+            coord: { ratio: 1 },
             // see the grasses spec below for why these settings; the three
             // OrthoFinder figures are the same picture on different genomes
             collapseEmptyRows: true,
@@ -2554,7 +2554,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   },
 
   // orthofinder_synteny.md: tomato, potato, pepper, Nicotiana attenuata and
-  // coffee as the outgroup. sameScale makes the row LENGTHS the point here:
+  // coffee as the outgroup. coord.ratio makes the row LENGTHS the point here:
   // the five carry comparable gene counts (25-39k) over 0.38 to 2.9 Gb of
   // sequence, so pepper's row runs nearly four times tomato's while answering
   // it gene for gene. N. attenuata's assembly is the one still on scaffolds,
@@ -2580,7 +2580,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: ['solanaceae_orthogroups'],
             color: { field: 'reference' },
             autoDiagonalize: true,
-            sameScale: true,
+            coord: { ratio: 1 },
             collapseEmptyRows: true,
             levelHeights: [180, 180, 180, 180],
             opacity: 0.2,
@@ -2634,7 +2634,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             color: { field: 'reference' },
             autoDiagonalize: true,
             diagonalizeAnchorRow: 1,
-            sameScale: true,
+            coord: { ratio: 1 },
             collapseEmptyRows: true,
             levelHeights: [150, 150, 150, 150, 150, 150],
             opacity: 0.15,
@@ -2677,7 +2677,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             color: { field: 'reference' },
             autoDiagonalize: true,
             diagonalizeAnchorRow: 1,
-            sameScale: true,
+            coord: { ratio: 1 },
             collapseEmptyRows: true,
             levelHeights: [150, 150, 150, 150, 150, 150],
             opacity: 0.5,
@@ -2723,7 +2723,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // maize 2.14 Gb), so it is also where the shared scale costs the
             // most frame: the four small rows are drawn between an eighth and a
             // third of maize's length.
-            sameScale: true,
+            coord: { ratio: 1 },
             // No row carries a track, so every row was spending ~90px on a "No
             // tracks active / Open track selector" block: five of them, down the
             // middle of the frame, over half the height the ribbons had.
@@ -2799,7 +2799,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // ratio is the block lengths and nothing else - maize's genome is ~5x rice's
   // and its syntenic blocks are stretched to match, and each row's span is
   // stated in the header above it. Both ways out are worse, and both
-  // were rendered: sameScale puts the stack on maize's scale and leaves rice
+  // were rendered: coord.ratio puts the stack on maize's scale and leaves rice
   // and sorghum a sliver at the left edge, while widening rice to close the gap
   // (tried at 290 kb and 410 kb) does flatten the wedges but fills the top band
   // with ribbons from genes the maize windows do not reach, so the two bands
@@ -2959,7 +2959,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // two rows at a 3x horizontal ratio, fanning what is really a clean
             // 1:1 D-genome correspondence. Same scale, the row lengths ARE the
             // genome sizes and a D chromosome sits over its own copy.
-            sameScale: true,
+            coord: { ratio: 1 },
             // see the grasses spec above for why these four settings; the three
             // OrthoFinder figures are the same picture on different genomes
             collapseEmptyRows: true,
@@ -3103,7 +3103,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // is a fact about 4A; reordering and flipping the top row to
             // straighten the ribbons would rewrite the thing being shown.
             autoDiagonalize: false,
-            // and no sameScale either: 4A is one chromosome against a 4.2 Gb
+            // and no coord.ratio either: 4A is one chromosome against a 4.2 Gb
             // genome, so a shared bp/px draws it as a sixth of the frame. Each
             // row fitted to the pane puts 4A across the full width, which is
             // what separates its three segments.

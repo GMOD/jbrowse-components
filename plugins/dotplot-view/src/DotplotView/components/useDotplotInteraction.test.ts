@@ -38,7 +38,7 @@ function setup(cursorMode: 'move' | 'crosshair') {
     setHoveredFeature,
     pickFeatureAt,
     cursorMode,
-    lockAspectRatio: false,
+    ratio: undefined,
   } as unknown as DotplotViewModel
   const { result, unmount } = renderHook(() => useDotplotInteraction(model))
   return {

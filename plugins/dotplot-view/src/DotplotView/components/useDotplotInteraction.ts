@@ -82,7 +82,8 @@ export interface DotplotInteraction {
 export function useDotplotInteraction(
   model: DotplotViewModel,
 ): DotplotInteraction {
-  const { cursorMode, lockAspectRatio } = model
+  const { cursorMode } = model
+  const lockAspectRatio = model.ratio === 1
 
   // eslint-disable-next-line @eslint-react/use-state -- callback ref (ref={el}), not a setState setter
   const [refEl, setRefEl] = useState<HTMLDivElement | null>(null)

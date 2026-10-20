@@ -26299,6 +26299,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "SyntenyCoord": {
+      "title": "SyntenyCoord",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "ratio": {
+          "description": "1 holds every position axis at one bp per pixel; unset lets each zoom on its own.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "const": 1
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "DotplotViewTrackEntry": {
       "title": "DotplotViewTrackEntry",
       "description": "A track to open in a DotplotView: a trackId, or an object whose other keys are the display's config slots and state written inline.",
@@ -26415,8 +26435,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "showTickLabels": {
           "type": "boolean"
         },
-        "lockAspectRatio": {
-          "type": "boolean"
+        "coord": {
+          "$ref": "#/$defs/SyntenyCoord"
         },
         "lineWidth": {
           "type": "number"
@@ -26696,7 +26716,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "followSynteny": {
           "type": "boolean"
         },
-        "sameScale": {
+        "coord": {
           "description": "Launch key, resolved by the LinearSyntenyView launcher on open."
         },
         "followAnchorIndex": {

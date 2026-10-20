@@ -836,7 +836,7 @@ print(json.dumps({
           # genome size and the size differences between the genomes (which
           # for the wheat set is the subject) are visible rather than
           # normalized away by fitting each row to the pane
-          "sameScale": True,
+          "coord": {"ratio": 1},
           # no row carries a track, so each would otherwise spend ~90px on a
           # "No tracks active" block; a row is one click from expanding, and
           # the reclaimed height goes to the ribbons

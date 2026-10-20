@@ -7,7 +7,7 @@ interface FitRow {
 }
 
 /**
- * The one bp/px every row is held at while `sameScale` is on: one scale has to
+ * The one bp/px every row is held at while `coord.ratio` is 1: one scale has to
  * fit the LARGEST genome, so it is the coarsest of the rows' own fits. Rows
  * pull it back through `maxBpPerPx`, making it a limit rather than a value
  * written past one.

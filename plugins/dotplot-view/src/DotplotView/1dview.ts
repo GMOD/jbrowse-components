@@ -169,7 +169,7 @@ const Dotplot1DView = Base1DView.extend(self => {
 interface DotplotAxisParent {
   viewWidth: number
   viewHeight: number
-  lockAspectRatio: boolean
+  ratio: 1 | undefined
   sharedFitBpPerPx: number
   showGridlines: boolean
   showTickLabels: boolean
@@ -197,9 +197,7 @@ function plotAxis(length: 'viewWidth' | 'viewHeight') {
       // actions so every route to a zoom obeys it.
       get maxBpPerPx() {
         const parent = getParent<DotplotAxisParent>(self)
-        return parent.lockAspectRatio
-          ? parent.sharedFitBpPerPx
-          : self.fitBpPerPx
+        return parent.ratio === 1 ? parent.sharedFitBpPerPx : self.fitBpPerPx
       },
 
       // The margin this axis' labels need beside the plot. Derived from regions

@@ -99,18 +99,20 @@ const DotplotControls = observer(function DotplotControls({
             onClick: () => {
               model.squareView()
             },
-            helpText: model.lockAspectRatio
-              ? 'No effect while the aspect ratio is locked — the lock already keeps both axes at the same bp/px.'
-              : 'Puts both axes on the same bp per pixel, the average of the two.',
+            helpText:
+              model.ratio === 1
+                ? 'No effect while the aspect ratio is locked — the lock already keeps both axes at the same bp/px.'
+                : 'Puts both axes on the same bp per pixel, the average of the two.',
           },
           {
             label: 'Rectangular view - same total bp',
             onClick: () => {
               model.squareViewProportional()
             },
-            helpText: model.lockAspectRatio
-              ? 'Overridden while the aspect ratio is locked — the lock re-equalizes bp/px immediately after.'
-              : 'Zooms both axes to show the same total bp, whatever their widths.',
+            helpText:
+              model.ratio === 1
+                ? 'Overridden while the aspect ratio is locked — the lock re-equalizes bp/px immediately after.'
+                : 'Zooms both axes to show the same total bp, whatever their widths.',
           },
           {
             label: 'Show all regions',
@@ -130,14 +132,14 @@ const DotplotControls = observer(function DotplotControls({
           }),
           toggleItem(
             'Lock aspect ratio (same bp/px)',
-            model.lockAspectRatio,
+            model.ratio === 1,
             // no squareView() call: the aspect-lock autorun observes this flag
             // and squares the axes the moment it goes on. Doing it here too ran
             // applySquare a second time over already-equal axes, whose centerAt
             // rounds offsetPx — so turning the lock on could nudge the plot by a
             // pixel for no reason.
             flag => {
-              model.setLockAspectRatio(flag)
+              model.setRatio(flag ? 1 : undefined)
             },
             {
               helpText:

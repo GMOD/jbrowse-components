@@ -239,8 +239,8 @@ the order tauschii, wheat, durum, emmer, urartu, timopheevii; the
 [all-vs-all tutorial](/docs/tutorials/allvsall_synteny#from-the-ui) walks the
 dialog. Two view-menu items shape the stack, and the session below sets both:
 
-- **Show all regions - same bp per pixel** (`sameScale` in a session spec) puts
-  the rows on one bp/px, so row length on screen matches genome size.
+- **Show all regions - same bp per pixel** (`coord: { ratio: 1 }` in a session
+  spec) puts the rows on one bp/px, so row length on screen matches genome size.
 - **Rows → Re-order chromosomes** (`autoDiagonalize` in a session spec) sorts
   each row's chromosomes against its neighbour so the links run along a
   diagonal.
@@ -264,7 +264,7 @@ so the bands take a while to draw:
           { "assembly": "timopheevii" }
         ],
         "tracks": ["wheat_orthogroups"],
-        "sameScale": true,
+        "coord": { "ratio": 1 },
         "autoDiagonalize": true,
         "collapseEmptyRows": true,
         "opacity": 0.15

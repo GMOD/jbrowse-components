@@ -295,7 +295,7 @@ test('locking the aspect ratio squares the axes on its own', async () => {
   model.hview.setBpPerPx(2)
   expect(model.hview.bpPerPx).not.toBe(model.vview.bpPerPx)
 
-  model.setLockAspectRatio(true)
+  model.setRatio(1)
   expect(model.hview.bpPerPx).toBe(model.vview.bpPerPx)
 
   // and it keeps them squared as one axis is zoomed independently
@@ -346,7 +346,7 @@ async function setupUnequalAxes() {
   })) as any
   const view = session.views[0]
   view.setWidth(800)
-  view.setLockAspectRatio(true)
+  view.setRatio(1)
   view.showAllRegions()
   return view
 }
@@ -384,7 +384,7 @@ test('a locked plot zooms back out to the full extent it started at', async () =
 
 test('an unlocked plot still stops each axis at its own fit', async () => {
   const model = await setupUnequalAxes()
-  model.setLockAspectRatio(false)
+  model.setRatio(undefined)
   for (let i = 0; i < 8; i++) {
     model.zoomOut()
   }
@@ -398,7 +398,7 @@ test('an unlocked plot still stops each axis at its own fit', async () => {
 test('a box zoom on a locked plot keeps the whole box on both axes', async () => {
   const model = await setup()
   model.setWidth(800)
-  model.setLockAspectRatio(true)
+  model.setRatio(1)
   const { viewHeight } = model
   expect(model.viewWidth).not.toBe(viewHeight)
 

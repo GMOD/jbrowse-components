@@ -8733,7 +8733,7 @@ export const configManifest: ConfigManifest = {
         "drawCigar",
         "showGridlines",
         "showTickLabels",
-        "lockAspectRatio",
+        "coord",
         "lineWidth",
         "hview",
         "vview",
@@ -8771,7 +8771,7 @@ export const configManifest: ConfigManifest = {
         "launch",
         "trackSelectorType",
         "followSynteny",
-        "sameScale",
+        "coord",
         "followAnchorIndex",
         "diagonalizeAnchorRow",
         "followMatchOrientation",
@@ -8781,8 +8781,8 @@ export const configManifest: ConfigManifest = {
       "launchKeys": [
         "autoDiagonalize",
         "collapseEmptyRows",
+        "coord",
         "levelHeights",
-        "sameScale",
         "tracks",
         "views"
       ],

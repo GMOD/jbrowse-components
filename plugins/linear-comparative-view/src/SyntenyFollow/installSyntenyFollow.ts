@@ -52,7 +52,7 @@ export interface FollowPair {
 
 export interface SyntenyFollowHost extends FollowAnchorHost {
   followMatchOrientation: boolean
-  sameScale: boolean
+  ratio: 1 | undefined
   followPairs: FollowPair[]
   setFollowReport: (report: Partial<FollowReport>) => void
   views: readonly { displayedRegions: readonly unknown[]; bpPerPx: number }[]
@@ -181,7 +181,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
 
   // under "same bp per pixel" a spread row draws no finer than the anchor
   const spreadFloor = () =>
-    self.sameScale ? self.views[self.followAnchorIndex]?.bpPerPx : undefined
+    self.ratio === 1 ? self.views[self.followAnchorIndex]?.bpPerPx : undefined
 
   // The rows a held navigation is still landing on, with how many: its tail
   // arrives after an await as fresh root actions under gesture names

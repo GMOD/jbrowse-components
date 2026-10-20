@@ -13,7 +13,7 @@ import type { LinearSyntenyViewCommands } from './types.ts'
 // the levels between the rows hold theirs — so a spec's per-level trackId list
 // collides with nothing.
 //
-// `sameScale` is `replay`, the one kind that is not remapped: the value lands
+// `coord` is `replay`, the one kind that is not remapped: the value lands
 // on the declared property, and a copy rides in the blob because launching also
 // has to zoom the rows onto the shared scale, after `autoDiagonalize` has
 // rewritten and re-centred them. `color`, `alpha`,
@@ -31,7 +31,7 @@ export const linearSyntenyLaunchKeys =
       levelHeights: { kind: 'launch' },
       autoDiagonalize: { kind: 'launch' },
       collapseEmptyRows: { kind: 'launch' },
-      sameScale: { kind: 'replay' },
+      coord: { kind: 'replay' },
     },
     { passThrough: LIFTED_VIEW_KEYS },
   )

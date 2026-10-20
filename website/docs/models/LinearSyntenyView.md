@@ -28,7 +28,7 @@ a ribbon:
 ```
 
 The launch keys are `views`, `tracks`, `levelHeights`, `autoDiagonalize`,
-`sameScale` and `collapseEmptyRows`; everything else is a property below and
+`coord` and `collapseEmptyRows`; everything else is a property below and
 needs no list to join.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
@@ -48,7 +48,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-launch">**launch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>launch: types.frozen&lt; LaunchInput&lt;LinearSyntenyViewCommands&gt; &#124;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>launch: types.frozen&lt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;LaunchInput&lt;LinearSyntenyViewCommands&gt; &#124; undefined&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&gt;()</code></pre></dialog></span> | Transient launch state: the settings written on the view object that need resolving before they can be view state — the genome rows to open, the synteny tracks for each band, the shared scale. The afterAttach autorun applies and clears it. Not written by hand: author every setting directly on the view. |
 | <span id="property-trackselectortype">**trackSelectorType**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>trackSelectorType: types.stripDefault(types.string, 'hierarchic…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>trackSelectorType: types.stripDefault(types.string, 'hierarchical')</code></pre></dialog></span> | Ignored: the hierarchical selector is the only one. Declared because sessions and share links still contain it. |
 | <span id="property-followsynteny">**followSynteny**</span><br><code>followSynteny: types.stripDefault(types.boolean, false)</code> | The non-anchor rows follow the anchor row through the alignment, moving to whatever region aligns to its window. |
-| <span id="property-samescale">**sameScale**</span><br><code>sameScale: types.stripDefault(types.boolean, false)</code> | Hold every genome row on one bp/px — the coarsest row's fit — so the rows compare by drawn length instead of each filling its pane. Moves the rows' zoom-out limit (`sharedFit`), so it holds across later zooms. |
+| <span id="property-coord">**coord**</span><br><code>coord: types.stripDefault(syntenyCoordConfigSchema, {})</code> | The coordinate system, a [](/docs/config/syntenycoord) object: `{ ratio: 1 }` holds every genome row on one bp/px, the coarsest row's fit, so the rows compare by drawn length instead of each filling its pane. It moves the rows' zoom-out limit (`sharedFit`), so it holds across later zooms. |
 | <span id="property-followanchorindex">**followAnchorIndex**</span><br><code>followAnchorIndex: types.stripDefault(types.number, 0)</code> | Which genome row drives the others while following. |
 | <span id="property-diagonalizeanchorrow">**diagonalizeAnchorRow**</span><br><code>diagonalizeAnchorRow: types.stripDefault(types.number, 0)</code> | Which genome row "Re-order chromosomes" keeps as it is: the rows below it are ordered against the row above them, and the rows above it against the row below. It matters wherever the top row is not the one whose order means something: `linkage_groups/alg_stack` stacks six genomes whose linkage groups are the jellyfish row's chromosomes, and anchored on the top row every row below is ordered off a comb jelly instead. |
 | <span id="property-followmatchorientation">**followMatchOrientation**</span><br><code>followMatchOrientation: types.stripDefault(types.boolean, false)</code> | While following, flip a row whose placing alignment runs the other way from the anchor's, so the two pan in the same direction. |
@@ -109,7 +109,8 @@ From [BaseViewModel](../baseviewmodel): <span id="volatile-bodymounted">[`bodyMo
 | <span id="getter-error">**error**</span><br><code>unknown</code> | The view's own failure or the first failed row's, so an export or launcher waiting on a stack with a failed row is told why. |
 | <span id="getter-stackerror">**stackError**</span><br><code>unknown</code> | The failure that leaves the stack nothing to show: the view's own, or every row's. One failed row reports itself in its place in the stack. |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  |
-| <span id="getter-sharedfit">**sharedFit**</span><br><code>SharedFit</code> | The zoom-out limit every row shares while `sameScale` is on (`sharedFit.ts`). Each row reads it through its `maxBpPerPx`, detecting this view by the presence of this getter. |
+| <span id="getter-sharedfit">**sharedFit**</span><br><code>SharedFit</code> | The zoom-out limit every row shares while `coord.ratio` is 1 (`sharedFit.ts`). Each row reads it through its `maxBpPerPx`, detecting this view by the presence of this getter. |
+| <span id="getter-ratio">**ratio**</span><br><code>1 &#124; undefined</code> | `coord.ratio`: 1 while every row is held at one bp/px. |
 | <span id="getter-interpolate">**interpolate**</span><br><code>"bump" &#124; "linear"</code> | The curve every ribbon side takes, `mark.interpolate`. |
 | <span id="getter-allsyntenydisplays">**allSyntenyDisplays**</span><br><code>LinearSyntenyDisplayModel[]</code> | Every synteny display across every level. |
 | <span id="getter-hiddenfeaturecount">**hiddenFeatureCount**</span><br><code>number</code> |  |
@@ -204,10 +205,10 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 | <span id="action-hidetrack">**hideTrack**</span><br><code>(trackId: string, level?: any) =&gt; void</code> |  |
 | <span id="action-panstack">**panStack**</span><br><code>(dx: number) =&gt; void</code> | A band's drag, over `bandGestureRows`. The rows' scrolls nest under this action, so none of them reads as a gesture that would take the anchor. |
 | <span id="action-squareview">**squareView**</span><br><code>() =&gt; void</code> | Every row onto the rows' average bp/px, each keeping its centre. |
-| <span id="action-showallregionsacrossrows">**showAllRegionsAcrossRows**</span><br><code>(sameScale: boolean) =&gt; void</code> | Every row onto its whole assembly, either all on one bp/px — the coarsest row's fit, so the largest genome fills its pane and the others draw shorter in proportion — or each fit to its pane. `sameScale` latches, so the shared scale holds across later zooms. |
-| <span id="action-setsamescale">**setSameScale**</span><br><code>(sameScale: boolean) =&gt; void</code> |  |
+| <span id="action-showallregionsacrossrows">**showAllRegionsAcrossRows**</span><br><code>(sameScale: boolean) =&gt; void</code> | Every row onto its whole assembly, either all on one bp/px — the coarsest row's fit, so the largest genome fills its pane and the others draw shorter in proportion — or each fit to its pane. `coord.ratio` latches, so the shared scale holds across later zooms. |
+| <span id="action-setratio">**setRatio**</span><br><code>(ratio: 1 &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setdiagonalizeanchorrow">**setDiagonalizeAnchorRow**</span><br><code>(row: number) =&gt; void</code> |  |
-| <span id="action-applysharedscale">**applySharedScale**</span><br><code>() =&gt; void</code> | Latch `sameScale` and zoom every row onto the shared scale, keeping each row's regions and centre. |
+| <span id="action-applysharedscale">**applySharedScale**</span><br><code>() =&gt; void</code> | Latch `coord.ratio` and zoom every row onto the shared scale, keeping each row's regions and centre. |
 | <span id="action-clearview">**clearView**</span><br><code>() =&gt; void</code> | Back to the import form. Drops `launch` too, which `hasSomethingToShow` keys off while there are no rows. |
 | <span id="action-compactallviews">**compactAllViews**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-expandallviews">**expandAllViews**</span><br><code>() =&gt; void</code> |  |
@@ -219,7 +220,7 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 | <span id="action-setdrawlocationmarkers">**setDrawLocationMarkers**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowoffscreenmates">**setShowOffscreenMates**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setoverdrawpx">**setOverdrawPx**</span><br><code>(arg: number) =&gt; void</code> |  |
-| <span id="action-showallregions">**showAllRegions**</span><br><code>() =&gt; void</code> | Every row back to its whole assembly, fit to the row's width, which also turns `sameScale` off. |
+| <span id="action-showallregions">**showAllRegions**</span><br><code>() =&gt; void</code> | Every row back to its whole assembly, fit to the row's width, which also clears `coord.ratio`. |
 | <span id="action-setlaunch">**setLaunch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(launch?: LaunchInput&lt;LinearSyntenyViewCommands&gt; &#124; undefined) =…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(launch?: LaunchInput&lt;LinearSyntenyViewCommands&gt; &#124; undefined) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-exportsvg">**exportSvg**</span><br><code>(opts?: ExportSvgOptions) =&gt; Promise&lt;string&gt;</code> |  |
 | <span id="action-openincircularsyntenyview">**openInCircularSyntenyView**</span><br><code>() =&gt; void</code> | a circular view of this view's two genomes with its synteny tracks as ribbons, the second genome reordered to follow the first, and this view's color and length filter |

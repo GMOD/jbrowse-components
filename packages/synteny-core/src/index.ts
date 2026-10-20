@@ -188,6 +188,7 @@ export {
   RIBBON_INTERPOLATIONS,
   syntenyMarkConfigSchema,
 } from './syntenyMarkConfigSchema.ts'
+export { syntenyCoordConfigSchema } from './syntenyCoordConfigSchema.ts'
 export type { RibbonInterpolation } from './syntenyMarkConfigSchema.ts'
 export { comparativeFilter, comparativeLaneOf } from './filterLanes.ts'
 export type { FilterExtras } from './filterLanes.ts'

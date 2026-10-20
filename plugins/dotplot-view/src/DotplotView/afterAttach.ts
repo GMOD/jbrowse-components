@@ -444,7 +444,7 @@ function setupAspectLockAutorun(self: DotplotViewModel) {
         // unconditionally would write offsetPx on every run and retrigger this
         // autorun. Wheel zoom already keeps the axes equal; only box-zoom and
         // other per-axis operations split them.
-        if (self.lockAspectRatio && self.hview.bpPerPx !== self.vview.bpPerPx) {
+        if (self.ratio === 1 && self.hview.bpPerPx !== self.vview.bpPerPx) {
           self.squareView()
         }
       },

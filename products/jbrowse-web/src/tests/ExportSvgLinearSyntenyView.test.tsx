@@ -336,9 +336,9 @@ test('export svg of synteny bakes in the off-screen mate stubs', async () => {
     curveRibbons(view)
 
     // Both rows were saved at 100 bp/px, zoomed out past either row's own
-    // fit-to-width (77.12 and 68.76 here). `sameScale` is off, so no shared
+    // fit-to-width (77.12 and 68.76 here). `coord.ratio` is unset, so no shared
     // ceiling exists and nothing should re-clamp them: the session opens where
-    // it was left. Dropping the `sameScale` term from the clamp autorun's
+    // it was left. Dropping the `coord.ratio` term from the clamp autorun's
     // guard drags both rows down to those fits, which widens ctgA from 499.01
     // to 527.5 in the export below.
     //

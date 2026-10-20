@@ -173,7 +173,7 @@ const Host = types
   .volatile(() => ({
     followSynteny: true,
     followMatchOrientation: true,
-    sameScale: false,
+    ratio: undefined as 1 | undefined,
     followReport: EMPTY_FOLLOW_REPORT,
     followAnchorIndex: 0,
     followPairs: [] as FollowPair[],
@@ -187,7 +187,7 @@ const Host = types
       self.views = views
     },
     setSameScale(arg: boolean) {
-      self.sameScale = arg
+      self.ratio = arg ? 1 : undefined
     },
     setFollowMatchOrientation(arg: boolean) {
       self.followMatchOrientation = arg

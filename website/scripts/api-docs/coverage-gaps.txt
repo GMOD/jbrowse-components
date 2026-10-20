@@ -378,7 +378,7 @@ DotplotView.setError
 DotplotView.setHeight
 DotplotView.setLaunch
 DotplotView.setLineWidth
-DotplotView.setLockAspectRatio
+DotplotView.setRatio
 DotplotView.setShowGridlines
 DotplotView.setShowTickLabels
 DotplotView.setWidth
@@ -1015,7 +1015,7 @@ LinearSyntenyView.setFollowSynteny
 LinearSyntenyView.setInterpolate
 LinearSyntenyView.setLaunch
 LinearSyntenyView.setOverdrawPx
-LinearSyntenyView.setSameScale
+LinearSyntenyView.setRatio
 LinearSyntenyView.setScrollZoom
 LinearSyntenyView.setShowOffscreenMates
 LinearSyntenyView.setViews

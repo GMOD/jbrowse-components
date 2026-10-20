@@ -673,10 +673,10 @@ Two behavior changes have no migration:
   array of built track snapshots, the form that predates synteny levels, is now
   read as a request to open those tracks instead of being converted to
   `levels[0]`. Write `levels: [{ "tracks": [...] }]` instead.
-- **`sameScale` re-fits on launch.** Setting it in a spec latched the shared
-  zoom limit without re-zooming the rows, so rows placed by `loc`, and rows
-  after an `autoDiagonalize`, kept a scale the mode rules out. Restoring a saved
-  session still only latches, since those rows already hold a window.
+- **`coord: { ratio: 1 }` re-fits on launch.** Setting it in a spec latched the
+  shared zoom limit without re-zooming the rows, so rows placed by `loc`, and
+  rows after an `autoDiagonalize`, kept a scale the mode rules out. Restoring a
+  saved session still only latches, since those rows already hold a window.
 
 ## Extension points changed shape
 

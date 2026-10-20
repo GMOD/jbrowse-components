@@ -98,5 +98,5 @@ test('the aspect lock row reports the model and writes it back', async () => {
   expect(row()).not.toBeChecked()
 
   fireEvent.click(row())
-  expect(model.lockAspectRatio).toBe(true)
+  expect(model.ratio).toBe(1)
 })

@@ -43,7 +43,7 @@ interface NavigationModel extends FollowHost {
   views: { assemblyNames: string[] }[]
   squareView: () => void
   showAllRegionsAcrossRows: (sameScale: boolean) => void
-  sameScale: boolean
+  ratio: 1 | undefined
   followMatchOrientation: boolean
   setFollowSynteny: (flag: boolean) => void
   setFollowMatchOrientation: (arg: boolean) => void
@@ -68,16 +68,12 @@ const SHOW_ALL_REGIONS_MODES = [
  * The three zoom commands that act on every row at once, and the follow.
  *
  * The two show-all-regions rows act on a click and carry a mark: the mark names
- * the fit rule the rows are under (`sameScale`), which holds after a zoom back
+ * the fit rule the rows are under (`coord.ratio`), which holds after a zoom back
  * in.
  */
 export function navigationMenuItems(model: NavigationModel): MenuItem[] {
-  const {
-    sameScale,
-    followSynteny,
-    followAnchorIndex,
-    followMatchOrientation,
-  } = model
+  const { ratio, followSynteny, followAnchorIndex, followMatchOrientation } =
+    model
   return [
     {
       label: 'Square view - average bp per pixel',
@@ -86,7 +82,7 @@ export function navigationMenuItems(model: NavigationModel): MenuItem[] {
         model.squareView()
       },
     },
-    ...radioItems(SHOW_ALL_REGIONS_MODES, sameScale ? 'same' : 'fit', m => {
+    ...radioItems(SHOW_ALL_REGIONS_MODES, ratio === 1 ? 'same' : 'fit', m => {
       model.showAllRegionsAcrossRows(m === 'same')
     }),
     {

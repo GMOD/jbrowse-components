@@ -50,7 +50,7 @@ test('any declared property lands natively, named nowhere in the launch path', a
     opacity: 0.55,
     drawCigar: false,
     lineWidth: 3,
-    lockAspectRatio: false,
+    coord: { ratio: 1 },
     lodMode: 'coarse',
     color: { field: 'query' },
     filter: [{ field: 'length', gte: 1000 }],
@@ -58,7 +58,7 @@ test('any declared property lands natively, named nowhere in the launch path', a
   expect(view.opacityLevel).toBe(0.55)
   expect(view.drawCigar).toBe(false)
   expect(view.lineWidth).toBe(3)
-  expect(view.lockAspectRatio).toBe(false)
+  expect(view.ratio).toBe(1)
   expect(view.lodMode).toBe('coarse')
   expect(view.colorField).toBe('query')
   expect(view.minLength).toBe(1000)

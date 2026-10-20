@@ -346,11 +346,11 @@ async function applyInit(
   }
   // The replay step, last as it always was: after the diagonalize, which
   // rewrites a reordered row's displayedRegions and re-centers it. The PROPERTY
-  // is what is read — `sameScale` already landed on it, however it was
+  // is what is read — `coord` already landed on it, however it was
   // spelled — and what a launch adds is the zoom the write alone does not do.
   // A plain session restore runs none of this, and its rows keep the scale they
   // were saved at.
-  if (self.sameScale) {
+  if (self.ratio === 1) {
     applyLaunchScale(self, init)
   }
 }
