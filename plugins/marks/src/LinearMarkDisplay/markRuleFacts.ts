@@ -16,10 +16,8 @@ export {
   isFieldPair,
   stepsOutput,
 } from '@jbrowse/core/util/stepOutputs'
-export type {
-  AggregateOpName,
-  StepOutline,
-} from '@jbrowse/core/util/stepOutputs'
+export type { AggregateOpName } from '@jbrowse/core/util/stepOutputs'
+export type { StepOutline } from '@jbrowse/core/util/stepOutputs'
 export { isNamedColor } from '@jbrowse/core/util/color/cssColorsLevel4'
 export { isJexl } from '@jbrowse/core/util/jexlStrings'
 export {

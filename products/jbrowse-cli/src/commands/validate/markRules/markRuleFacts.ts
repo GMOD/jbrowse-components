@@ -11,7 +11,8 @@ export {
   isFieldPair,
   stepsOutput,
 } from './stepOutputs.ts'
-export type { AggregateOpName, StepOutline } from './stepOutputs.ts'
+export type { AggregateOpName } from './stepOutputs.ts'
+export type { StepOutline } from './stepOutputs.ts'
 export { isNamedColor } from './cssColorsLevel4.ts'
 export { isJexl } from './jexlStrings.ts'
 export {
