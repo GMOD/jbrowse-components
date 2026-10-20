@@ -116,7 +116,7 @@ async function buildViews(
             session.notify(message, 'warning')
           },
         ),
-        // The row's LGV props (trackLabels, showAminoAcids, colorByCDS, …) go
+        // The row's LGV props (trackLabels, showAminoAcids, colorByFrame, …) go
         // onto its snapshot, minus the launch keys this file applies itself.
         // The LGV's own partition then takes every property it declares and
         // reports a typo, with no list here to keep in step.

@@ -134,7 +134,7 @@ function regionFor(layout: ReturnType<typeof layoutSubfeatures>) {
       regionStart: 0,
       regionEnd: 100_000,
       config: labelledConfig(),
-      colorByCDS: false,
+      colorByFrame: false,
       jexl,
     }),
     featureCount: 1,

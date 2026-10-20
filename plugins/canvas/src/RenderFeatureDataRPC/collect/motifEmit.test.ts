@@ -20,7 +20,7 @@ function mockFeature(data: Record<string, unknown>): Feature {
 function makeContext(): RenderContext {
   return {
     config: mockDisplayConfig(),
-    colorByCDS: false,
+    colorByFrame: false,
     jexl: createJexlInstance(),
   }
 }

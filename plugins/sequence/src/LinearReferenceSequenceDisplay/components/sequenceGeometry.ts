@@ -51,10 +51,10 @@ function fromFrameQuad({ main }: ColorQuad): SeqColor {
 
 export function buildColorPalette(
   palette: JBrowsePalette,
-  colorByCDS: boolean,
+  colorByFrame: boolean,
 ): ColorPalette {
   // [null, f1, f2, f3, f-3, f-2, f-1], so `.at(frame)` reads either sign
-  const framePalette = colorByCDS ? palette.framesCDS : palette.frames
+  const framePalette = colorByFrame ? palette.framesCDS : palette.frames
   return {
     bases: new Map(
       Object.entries(palette.bases).map(([base, quad]) => [

@@ -158,3 +158,13 @@ test('launching a track under a retired display type opens its successor', async
 
   expect(displayOf(state).type).toBe('LinearWiggleDisplay')
 })
+
+test('a v4 share link with colorByCDS opens with colorByFrame on', async () => {
+  const { view } = v4Session({})
+  const state = await restored({
+    name: 'v4',
+    view: { ...view, tracks: [], colorByCDS: true },
+  })
+
+  expect(state.session.view.colorByFrame).toBe(true)
+})

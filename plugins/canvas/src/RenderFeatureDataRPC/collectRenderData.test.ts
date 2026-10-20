@@ -67,7 +67,7 @@ function collect(
     regionStart: 0,
     regionEnd: 1000,
     config,
-    colorByCDS: false,
+    colorByFrame: false,
     peptideDataMap: undefined,
     jexl,
     ...overrides,
@@ -286,7 +286,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       { start: 109, end: 118 },
     ])
     const result = collect(layout, {
-      colorByCDS: true,
+      colorByFrame: true,
       peptideDataMap: new Map([['cds1', { protein: 'MFKLST' }]]),
     })
 
@@ -307,7 +307,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       { start: 109, end: 118 }, // VP2
     ])
     const result = collect(layout, {
-      colorByCDS: true,
+      colorByFrame: true,
       peptideDataMap: new Map([['cds1', { protein: 'MFKLST' }]]),
     })
 
@@ -326,7 +326,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
   it('excludes the trailing stop codon from every region', () => {
     const { layout } = polyproteinLayout(100, 121, [{ start: 100, end: 118 }])
     const result = collect(layout, {
-      colorByCDS: true,
+      colorByFrame: true,
       peptideDataMap: new Map([['cds1', { protein: 'MFKLST*' }]]),
     })
     const overlay = result.aminoAcidOverlay!
@@ -354,7 +354,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       -1,
     )
     const result = collect(layout, {
-      colorByCDS: true,
+      colorByFrame: true,
       peptideDataMap: new Map([['cds1', { protein: 'MFKLST' }]]),
     })
     const byRow = (y: number) =>
@@ -370,7 +370,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
 
   it('emits no amino-acid overlay when peptide data is absent', () => {
     const { layout } = polyproteinLayout(100, 118, [{ start: 100, end: 118 }])
-    const result = collect(layout, { colorByCDS: true })
+    const result = collect(layout, { colorByFrame: true })
     expect(result.aminoAcidOverlay).toBeUndefined()
   })
 })
@@ -956,7 +956,7 @@ describe('color key', () => {
       regionStart: 0,
       regionEnd: 1000,
       config: mockDisplayConfig(overrides),
-      colorByCDS: false,
+      colorByFrame: false,
       peptideDataMap: undefined,
       jexl,
     })
@@ -1015,7 +1015,7 @@ describe('color key', () => {
       regionStart: 0,
       regionEnd: 1000,
       config: mockDisplayConfig({ color: { field: 'dif' } }),
-      colorByCDS: false,
+      colorByFrame: false,
       peptideDataMap: undefined,
       jexl,
     })
@@ -1087,7 +1087,7 @@ describe("a glyph's own palette is the default the track's color beats", () => {
       regionStart: 0,
       regionEnd: 2000,
       config: repeatConfig,
-      colorByCDS: false,
+      colorByFrame: false,
       peptideDataMap: undefined,
       jexl,
     })

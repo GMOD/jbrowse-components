@@ -75,7 +75,7 @@ function linkedSession(
   msa.region = region
   protein.height = 780
   if (domains) {
-    lgv.colorByCDS = false
+    lgv.colorByFrame = false
     msa.domainsOnGenome = true
     delete protein.colorScheme
     protein.color = { field: 'domain' }

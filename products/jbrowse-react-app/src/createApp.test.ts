@@ -71,14 +71,14 @@ test('a launch key and a persisted property both land written flat', async () =>
         type: 'LinearGenomeView',
         assembly: 'volvox',
         loc: 'ctgA:1-10',
-        colorByCDS: true,
+        colorByFrame: true,
       },
     ],
   })
 
   const view = controller.viewState.session.views[0]!
   expect(view.launch).toMatchObject({ assembly: 'volvox', loc: 'ctgA:1-10' })
-  expect(view.colorByCDS).toBe(true)
+  expect(view.colorByFrame).toBe(true)
 
   controller.destroy()
 })
@@ -91,7 +91,9 @@ test('a flat view warns about nothing, a nested init is refused', async () => {
 
   const flat = await createApp(mount(), {
     assemblies,
-    views: [{ type: 'LinearGenomeView', assembly: 'volvox', colorByCDS: true }],
+    views: [
+      { type: 'LinearGenomeView', assembly: 'volvox', colorByFrame: true },
+    ],
   })
   await settled()
   expect(warn).not.toHaveBeenCalled()
@@ -117,13 +119,13 @@ test('addView takes the flat shape too', async () => {
   const id = controller.addView({
     type: 'LinearGenomeView',
     assembly: 'volvox',
-    colorByCDS: true,
+    colorByFrame: true,
   })
 
   const view = controller.viewState.session.views[0]!
   expect(view.id).toBe(id)
   expect(view.launch).toMatchObject({ assembly: 'volvox' })
-  expect(view.colorByCDS).toBe(true)
+  expect(view.colorByFrame).toBe(true)
 
   controller.destroy()
 })

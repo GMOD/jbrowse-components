@@ -22,7 +22,7 @@ export function cdsInTranscriptionOrder(
 }
 
 // Returns undefined when the feature has no pre-translated peptide (zoomed out,
-// or colorByCDS off) so callers fall back to plain boxes.
+// or colorByFrame off) so callers fall back to plain boxes.
 export function aminoAcidsByFeature(feature: Feature, ctx: RenderContext) {
   const strand = feature.get('strand') ?? 0
   const peptide = ctx.peptideDataMap?.get(feature.id())

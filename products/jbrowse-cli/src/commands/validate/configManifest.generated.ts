@@ -8690,7 +8690,7 @@ export const configManifest: ConfigManifest = {
         "showCytobands",
         "trackLabels",
         "axis",
-        "colorByCDS",
+        "colorByFrame",
         "showAminoAcids",
         "showTrackOutlines",
         "scalebarOnly",
@@ -8709,6 +8709,7 @@ export const configManifest: ConfigManifest = {
       ],
       "passThrough": [
         "bpPerPx",
+        "colorByCDS",
         "offsetPx",
         "showCytobandsSetting"
       ]

@@ -86,7 +86,7 @@ function makeGene(i: number) {
 const features = Array.from({ length: genes }, (_, i) => makeGene(i))
 const regionStart = 0
 const regionEnd = genes * GENE_BP
-const ctx = { config, colorByCDS: false, jexl }
+const ctx = { config, colorByFrame: false, jexl }
 
 function layoutAll() {
   const out: FeatureLayout[] = []

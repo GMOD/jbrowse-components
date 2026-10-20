@@ -288,7 +288,7 @@ const FrozenSvgFigure = memo(function FrozenSvgFigure({
  * (hidden sections, collapses, height overrides: `groupStateKey`), which are
  * volatile and in no snapshot; **the reload counter**, since a Retry or a Force
  * load leaves every snapshot as it was while the figure has an error or a
- * too-large note to replace; **the view's coloring toggles** (`colorByCDS`,
+ * too-large note to replace; **the view's coloring toggles** (`colorByFrame`,
  * `showAminoAcids`), named one by one because the view's own snapshot moves
  * every pan frame; **the width**, since a resize can widen the canvas without
  * moving the locus; **the theme**, since each display bakes colors into its own
@@ -334,7 +334,7 @@ function figureKey(view: LinearGenomeViewModel, themeName: string | undefined) {
         display?.reloadCounter,
       ]
     }),
-    view.colorByCDS,
+    view.colorByFrame,
     view.showAminoAcids,
     session.getActiveThemeOptions?.(themeName),
     session.highlightsVisible ? view.highlights : false,

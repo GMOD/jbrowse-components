@@ -664,7 +664,7 @@ LinearCanvasBaseDisplay.clearPinnedFeatures
 LinearCanvasBaseDisplay.clearSelection
 LinearCanvasBaseDisplay.clearSolo
 LinearCanvasBaseDisplay.colorByAttribute
-LinearCanvasBaseDisplay.colorByCDS
+LinearCanvasBaseDisplay.colorByFrame
 LinearCanvasBaseDisplay.contentHeight
 LinearCanvasBaseDisplay.displayMode
 LinearCanvasBaseDisplay.effectiveShowDescriptions
@@ -797,7 +797,7 @@ LinearGenomeView.scalebarHeight
 LinearGenomeView.scrollTo
 LinearGenomeView.setAxisGrid
 LinearGenomeView.setCoarseDynamicBlocks
-LinearGenomeView.setColorByCDS
+LinearGenomeView.setColorByFrame
 LinearGenomeView.setDraggingTrackId
 LinearGenomeView.setError
 LinearGenomeView.setHideHeader

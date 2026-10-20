@@ -471,7 +471,7 @@ export const RingHost = types
     get tracks() {
       return self.view.tracks
     },
-    get colorByCDS() {
+    get colorByFrame() {
       return false
     },
     get showAminoAcids() {

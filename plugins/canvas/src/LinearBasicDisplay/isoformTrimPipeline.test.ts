@@ -70,7 +70,7 @@ function layoutAt(
     regionStart: 0,
     regionEnd: 10_000,
     config,
-    colorByCDS: false,
+    colorByFrame: false,
     jexl,
     peptideDataMap,
   })

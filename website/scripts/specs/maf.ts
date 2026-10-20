@@ -321,7 +321,7 @@ export const mafSpecs: ScreenshotSpec[] = [
           assembly: 'ce11',
           loc: 'chrI:2,999,200-2,999,370',
           trackLabels: 'offset',
-          colorByCDS: true,
+          colorByFrame: true,
           tracks: [
             // compact gene lane, collapsed to the longest coding transcript, so
             // the dnj-28 / nduf-5 CDS context sits above the codon translation
@@ -515,7 +515,7 @@ export const mafSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           trackLabels: 'offset',
-          colorByCDS: true,
+          colorByFrame: true,
           // window trimmed to sit fully inside one GAPDH coding exon: the
           // original ran a few bp past the exon 3' end, so the species that have
           // no aligned block there drew empty "bridge" e-lines on the right that

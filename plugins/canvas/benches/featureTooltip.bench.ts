@@ -99,7 +99,7 @@ const features =
     : Array.from({ length: genes }, (_, i) => makeGene(i))
 const ctx = {
   config,
-  colorByCDS: false,
+  colorByFrame: false,
   jexl,
   tooltipOf: tooltipReader(config, jexl),
 }

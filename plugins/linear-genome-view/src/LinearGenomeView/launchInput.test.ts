@@ -109,10 +109,10 @@ test('a plain view prop stays on the snapshot', () => {
   const view = open({
     type: 'LinearGenomeView',
     assembly: 'hg38',
-    colorByCDS: true,
+    colorByFrame: true,
     hideHeader: true,
   })
-  expect(view.colorByCDS).toBe(true)
+  expect(view.colorByFrame).toBe(true)
   expect(view.hideHeader).toBe(true)
   expect(view.launch).toEqual({ assembly: 'hg38' })
 })
@@ -128,6 +128,18 @@ test('a legacy viewport snapshot converts rather than reporting typos', () => {
   expect(warnings()).toEqual([])
   expect(view.legacyBpPerPx).toBe(10)
   expect(view.windowStartBp).toBe(10000)
+})
+
+test("v4's colorByCDS opens as colorByFrame and saves under the new name", () => {
+  const view = open({
+    type: 'LinearGenomeView',
+    assembly: 'hg38',
+    colorByCDS: true,
+  })
+  expect(warnings()).toEqual([])
+  expect(view.colorByFrame).toBe(true)
+  expect(getSnapshot(view)).not.toHaveProperty('colorByCDS')
+  expect(getSnapshot(view).colorByFrame).toBe(true)
 })
 
 // Kept only while there is nothing on screen, so an autosave firing mid-load

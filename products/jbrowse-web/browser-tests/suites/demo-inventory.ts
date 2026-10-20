@@ -166,7 +166,7 @@ const localDemos: TestSuite = {
       assembly: 'Wuhan-Hu-1',
       loc: 'NC_045512.2:266-21555',
       tracks: ['ncbi_genes_with_mature_peptides'],
-      viewOptions: { colorByCDS: true },
+      viewOptions: { colorByFrame: true },
     }),
     // Guards the repeat_region glyph: the intact LTR retrotransposon must render
     // its overlapping subparts (LTRs/TSDs/internal element) rather than collapse

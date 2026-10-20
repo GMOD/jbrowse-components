@@ -122,7 +122,7 @@ export function boxColor(
   level: Feature = feature,
   glyphDefault?: string,
 ): ClassedColor {
-  const { config, colorByCDS, jexl } = ctx
+  const { config, colorByFrame, jexl } = ctx
   // An unset slot lets the file's own color speak and any set value beats it.
   // A UTR reads `utrColor` only when that slot is set, so `color` alone paints a
   // whole transcript rather than just its coding part; the fallback below keys
@@ -148,7 +148,7 @@ export function boxColor(
   const featurePhase = feature.get('phase')
 
   if (
-    colorByCDS &&
+    colorByFrame &&
     isCDS(feature) &&
     (featureStrand === 1 || featureStrand === -1) &&
     featurePhase !== undefined

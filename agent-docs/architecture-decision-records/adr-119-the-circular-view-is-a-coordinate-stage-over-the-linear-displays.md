@@ -199,7 +199,7 @@ fragments differently, and only the order is read from it.
 
 - `containingLgv` answers the strip too, so a display that names the linear
   genome view as its view gets the strip's `bpToPx`, `pxToBp`, coarse blocks
-  and whole-base regions, and `false` for `colorByCDS` and `showAminoAcids`.
+  and whole-base regions, and `false` for `colorByFrame` and `showAminoAcids`.
   A member the strip does not carry — `navTo`, `showTrack`, the chrome
   settings — is `undefined` there, and a display reaching for one in a render
   path is the display that stays off the circle; the alignments pileup's

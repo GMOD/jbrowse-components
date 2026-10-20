@@ -183,7 +183,7 @@ describe('SARS-CoV-2 ORF1ab translation', () => {
       jexl: JexlF(),
       regionStart: 0,
       regionEnd: GENOMES.sars.end,
-      colorByCDS: true,
+      colorByFrame: true,
       peptideDataMap,
     })
     const nsp12Top = data.subfeatureInfos.find(

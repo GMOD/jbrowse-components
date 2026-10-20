@@ -179,7 +179,7 @@ export function sessionSpec(config: string, session: object) {
 
 // The overwhelmingly common spec shape: a session with a single
 // LinearGenomeView. `view` carries the view-level props (assembly/loc/tracks and
-// any extras like colorByCDS/trackLabels); `type: 'LinearGenomeView'` is filled
+// any extras like colorByFrame/trackLabels); `type: 'LinearGenomeView'` is filled
 // in. Encodes identically to the hand-written `sessionSpec(cfg, { views: [{ type:
 // 'LinearGenomeView', ...view }] })`, so it never changes a rendered image.
 export function lgvSession(

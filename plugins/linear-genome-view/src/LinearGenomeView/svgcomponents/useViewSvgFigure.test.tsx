@@ -99,7 +99,7 @@ function displayModel(
               data-legend={self.legendSpec.sections.map(s => s.id).join(',')}
               data-hidden={[...self.hiddenGroups].join(',')}
               data-reload={self.reloadCounter}
-              data-cds={String(view.colorByCDS)}
+              data-cds={String(view.colorByFrame)}
             />
           )
         },
@@ -657,10 +657,10 @@ test('toggling color by CDS redraws the figure', async () => {
   const { svg } = await renderFigure(view)
   const cds = () =>
     svg().querySelector<SVGRectElement>('[data-testid="body"]')?.dataset.cds
-  const before = view.colorByCDS
+  const before = view.colorByFrame
 
   await act(async () => {
-    view.setColorByCDS(!before)
+    view.setColorByFrame(!before)
     await Promise.resolve()
   })
 

@@ -94,7 +94,7 @@ export function emitIntronLines(
 export function emitCodonRects(
   args: {
     aminoAcids: AggregatedAminoAcid[]
-    // `color` is undefined when `colorByCDS` painted the box by reading frame,
+    // `color` is undefined when `colorByFrame` painted the box by reading frame,
     // leaving no string to lighten — the tint then rides as a class of its own.
     baseColor: ClassedColor
     topPx: number

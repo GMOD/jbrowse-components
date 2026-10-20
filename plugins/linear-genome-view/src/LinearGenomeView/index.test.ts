@@ -3273,15 +3273,15 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
     const model = makeModel({
       assembly: 'volvox',
       loc: 'ctgA:1-1000',
-      colorByCDS: true,
+      colorByFrame: true,
     } as InitState)
     await waitFor(() => {
       expect(model.pendingLaunch).toBeUndefined()
     })
     expect(console.warn).not.toHaveBeenCalledWith(
-      expect.stringContaining('ignored unknown key(s): colorByCDS'),
+      expect.stringContaining('ignored unknown key(s): colorByFrame'),
     )
-    expect(model.colorByCDS).toBe(true)
+    expect(model.colorByFrame).toBe(true)
   })
 
   test('init.nav false hides the header', async () => {
@@ -3330,7 +3330,7 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
         type: 'LinearGenomeView',
         showCytobands: false,
         trackLabels: 'hidden',
-        colorByCDS: true,
+        colorByFrame: true,
         showAminoAcids: false,
         showTrackOutlines: false,
       }),
@@ -3348,16 +3348,16 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
         showCytobands: false,
       }),
     )
-    a.setColorByCDS(true)
+    a.setColorByFrame(true)
     a.setTrackLabels('offset')
     a.setShowCenterLine(true)
     expect(storedEntries()).toEqual({
-      'lgv-colorByCDS': 'true',
+      'lgv-colorByFrame': 'true',
       'lgv-trackLabels': 'offset',
       'lgv-showCenterLine': 'true',
     })
     const b = LinearGenomeModel.create({ type: 'LinearGenomeView' })
-    expect(b.colorByCDS).toBe(true)
+    expect(b.colorByFrame).toBe(true)
     expect(b.trackLabels).toBe('offset')
     expect(b.showCenterLine).toBe(true)
     expect(b.showCytobands).toBe(true)
@@ -3373,13 +3373,13 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
     )
     localStorage.setItem('lgv-showCytobands', 'false')
     localStorage.setItem('lgv-trackLabels', 'hidden')
-    localStorage.setItem('lgv-colorByCDS', 'true')
+    localStorage.setItem('lgv-colorByFrame', 'true')
     localStorage.setItem('lgv-showAminoAcids', 'false')
     localStorage.setItem('lgv-showTrackOutlines', 'false')
     const reader = LinearGenomeModel.create(snap)
     expect(reader.showCytobands).toBe(true)
     expect(reader.trackLabels).toBe('')
-    expect(reader.colorByCDS).toBe(false)
+    expect(reader.colorByFrame).toBe(false)
     expect(reader.showAminoAcids).toBe(true)
     expect(reader.showTrackOutlines).toBe(true)
     localStorage.clear()

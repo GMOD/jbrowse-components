@@ -16,7 +16,7 @@ import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 // toggle out of the RPC cache key.
 export interface RenderContext {
   config: DisplayConfig
-  colorByCDS: boolean
+  colorByFrame: boolean
   peptideDataMap?: Map<string, PeptideData>
   jexl: JexlInstance
   // Reads `config.facetField`, built once per walk.

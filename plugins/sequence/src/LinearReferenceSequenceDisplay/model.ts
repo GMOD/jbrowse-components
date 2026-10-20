@@ -149,7 +149,7 @@ export function modelFactory(
        * not be the session's.
        */
       colorPaletteIn(palette: JBrowsePalette): ColorPalette {
-        return buildColorPalette(palette, self.view.colorByCDS)
+        return buildColorPalette(palette, self.view.colorByFrame)
       },
       /**
        * #getter

@@ -38,7 +38,7 @@ function bed12Child(childType: string, parentItemRgb?: string): Feature {
 }
 
 function fill(feature: Feature, config: DisplayConfig = mockDisplayConfig()) {
-  return boxColor(feature, { config, colorByCDS: false, jexl }).color
+  return boxColor(feature, { config, colorByFrame: false, jexl }).color
 }
 
 describe('boxColor (BED itemRgb)', () => {
@@ -192,7 +192,7 @@ describe('boxColor (color by a field)', () => {
   function painter(
     field: string,
     { color, ...extra }: MockDisplayConfigOverrides = {},
-    colorByCDS = false,
+    colorByFrame = false,
   ) {
     const config = mockDisplayConfig({
       ...extra,
@@ -203,7 +203,7 @@ describe('boxColor (color by a field)', () => {
     })
     const colorKey = createColorKey(config, jexl)!
     colorKey.enterRecord({ strand: undefined, groupKey: undefined })
-    const ctx = { config, colorByCDS, jexl }
+    const ctx = { config, colorByFrame, jexl }
     const scale = categoricalField(field)
     const keyOf = (valueIndex: number) => scale.key(colorKey.values[valueIndex])
     return {

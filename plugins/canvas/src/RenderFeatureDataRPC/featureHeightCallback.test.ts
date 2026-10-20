@@ -40,7 +40,7 @@ function render(feature: Feature, config: DisplayConfig) {
     regionStart: 0,
     regionEnd: 1000,
     config,
-    colorByCDS: false,
+    colorByFrame: false,
     jexl,
   })
 }

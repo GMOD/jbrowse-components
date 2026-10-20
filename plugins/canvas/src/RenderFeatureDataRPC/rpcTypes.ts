@@ -34,9 +34,9 @@ export interface RenderFeatureDataArgs extends GatedFetchArgs {
   // Read by the density gates alone; every zoom-dependent decision arrives
   // resolved.
   bpPerPx: number
-  colorByCDS?: boolean
+  colorByFrame?: boolean
   // The amino-acid overlay, already judged against the zoom. Implies a
-  // sequence fetch, which is why it is separate from colorByCDS.
+  // sequence fetch, which is why it is separate from colorByFrame.
   peptides?: boolean
   // Translation-table fallback for transcripts whose features lack a
   // transl_table attribute.

@@ -457,7 +457,7 @@ restores natively:
 | Property | What it does |
 | --- | --- |
 | [`axis`](/docs/models/lineargenomeview#property-axis) | The ruler's guide, a [](/docs/config/lineargenomeviewaxis) object: `{ grid: false }` stops its ticks running down through the tracks. |
-| [`colorByCDS`](/docs/models/lineargenomeview#property-colorbycds) | color CDS segments by reading frame |
+| [`colorByFrame`](/docs/models/lineargenomeview#property-colorbyframe) | color CDS segments by reading frame |
 | [`displayedRegions`](/docs/models/lineargenomeview#property-displayedregions) | currently displayed regions, can be a single chromosome, arbitrary subsections, or the entire set of chromosomes in the genome. The entire set is not advised if your assembly is very fragmented |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
 | [`hideHeader`](/docs/models/lineargenomeview#property-hideheader) | drop the header bar entirely — location box, navigation buttons and overview |
@@ -465,8 +465,8 @@ restores natively:
 | [`hideNoTracksActive`](/docs/models/lineargenomeview#property-hidenotracksactive) | suppress the "No tracks active" placeholder, for an embed that opens with no tracks on purpose |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 | [`scalebarOnly`](/docs/models/lineargenomeview#property-scalebaronly) | when true, only the header and coordinate scalebar are rendered |
-| [`showAminoAcids`](/docs/models/lineargenomeview#property-showaminoacids) | draw translated codons on coding features once zoomed in far enough: an alternating per-codon shading, and the amino acid letters on top of it at base-level zoom. Independent of `colorByCDS`, which only recolors the segments by frame. |
-| [`showCenterLine`](/docs/models/lineargenomeview#property-showcenterline) | show the "center line". A personal preference: never in a session snapshot. It, showCytobands, trackLabels, colorByCDS, showAminoAcids and showTrackOutlines start from this browser's last choice, which their setters record. |
+| [`showAminoAcids`](/docs/models/lineargenomeview#property-showaminoacids) | draw translated codons on coding features once zoomed in far enough: an alternating per-codon shading, and the amino acid letters on top of it at base-level zoom. Independent of `colorByFrame`, which only recolors the segments by frame. |
+| [`showCenterLine`](/docs/models/lineargenomeview#property-showcenterline) | show the "center line". A personal preference: never in a session snapshot. It, showCytobands, trackLabels, colorByFrame, showAminoAcids and showTrackOutlines start from this browser's last choice, which their setters record. |
 | [`showCytobands`](/docs/models/lineargenomeview#property-showcytobands) | whether to show the "cytobands" in the overview scale bar (the resolved, capability-gated value is the `effectiveShowCytobands` getter) |
 | [`showTrackOutlines`](/docs/models/lineargenomeview#property-showtrackoutlines) | show the track outlines |
 | [`trackLabels`](/docs/models/lineargenomeview#property-tracklabels) | how to display the track labels, can be "overlapping", "offset", or "hidden", or empty string "" (which uses the LinearGenomeViewPlugin config default). The resolved value is the `effectiveTrackLabels` getter. See the LinearGenomeViewPlugin docs at https://jbrowse.org/jb2/docs/config/lineargenomeviewconfigschema/ for how the config is used |
@@ -493,6 +493,7 @@ restores natively:
 - `showCytobandsSetting` is the old name of `showCytobands`. It is not a
   declared property, but the view converts it on the way in, so a v4 link or
   saved spec naming it still works; write `showCytobands` in a new one.
+- `colorByCDS` is the old name of `colorByFrame`, converted the same way.
 
 #### Live example: alignments display settings
 
@@ -771,7 +772,7 @@ both. Include `assemblyName` to tie a band to one axis of a non-self plot.
 
 - Each entry in `views` is one genome row, a linear genome view, so it takes the
   [LGV's](#linear-genome-view) keys and launch props (`trackLabels`,
-  `colorByCDS`, `showAminoAcids`), and its `tracks` entries take
+  `colorByFrame`, `showAminoAcids`), and its `tracks` entries take
   [inline display options](#advanced-track-configuration).
 - `displayedRegionNames` restricts a row to a subset of its assembly, with
   [globs](#glob-region-names), so a whole-genome view can put one haplotype on

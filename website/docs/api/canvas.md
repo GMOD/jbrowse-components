@@ -65,7 +65,7 @@ every table.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, regions, display, bpPerPx, colorByCDS, aminoAcids, geneticCodeId, byteLimit, }: FeatureTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, regions, display, bpPerPx, colorByFrame, aminoAcids, geneticCodeId, byteLimit, }: FeatureTablesArgs) => Promise<…>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/tables.ts)

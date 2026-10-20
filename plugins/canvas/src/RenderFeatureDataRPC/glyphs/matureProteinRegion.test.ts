@@ -297,7 +297,7 @@ describe('collectRenderData for mature protein regions', () => {
       regionStart: 0,
       regionEnd,
       config,
-      colorByCDS: false,
+      colorByFrame: false,
       peptideDataMap: undefined,
       jexl,
     })
@@ -646,7 +646,7 @@ describe('a frameshift polyprotein CDS', () => {
       regionStart: 0,
       regionEnd: 1000,
       config,
-      colorByCDS: translated,
+      colorByFrame: translated,
       peptideDataMap: translated
         ? new Map([[feature.id(), { protein: 'MABCDEFGHIJKLMNOPQRS*' }]])
         : undefined,

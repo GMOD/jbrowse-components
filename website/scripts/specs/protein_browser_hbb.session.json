@@ -4,7 +4,7 @@
     {
       "id": "lgv-HBB",
       "type": "LinearGenomeView",
-      "colorByCDS": true,
+      "colorByFrame": true,
       "hideHeaderOverview": true,
       "axis": { "grid": false },
       "init": {

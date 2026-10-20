@@ -337,7 +337,7 @@ function isTrackSelectorVisible(self: IAnyStateTreeNode) {
  *   views: [
  *     {
  *       type: 'LinearGenomeView',
- *       colorByCDS: true,
+ *       colorByFrame: true,
  *       assembly: 'hg38',
  *       loc: 'chr1:1,000,000-1,100,000',
  *       tracks: ['genes', 'alignments'],
@@ -347,7 +347,7 @@ function isTrackSelectorVisible(self: IAnyStateTreeNode) {
  * ```
  * `assembly`, `loc`, `tracks`, `tracklist`, `nav` and `highlight` need
  * on-attach resolution and are captured into the `launch` property below;
- * `colorByCDS`, `showAminoAcids`, `showCenterLine` and `trackLabels` are plain
+ * `colorByFrame`, `showAminoAcids`, `showCenterLine` and `trackLabels` are plain
  * view props MST restores natively. Both are written the same way.
  * At runtime the same model is driven imperatively — every property and action
  * below is reachable on `viewState.session.views[0]`:
@@ -469,7 +469,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          * show the "center line". A personal preference: never in a session
-         * snapshot. It, showCytobands, trackLabels, colorByCDS, showAminoAcids
+         * snapshot. It, showCytobands, trackLabels, colorByFrame, showAminoAcids
          * and showTrackOutlines start from this browser's last choice, which
          * their setters record.
          */
@@ -512,16 +512,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * color CDS segments by reading frame
          */
-        colorByCDS: types.optional(types.boolean, () =>
-          localStorageGetBoolean('lgv-colorByCDS', false),
+        colorByFrame: types.optional(types.boolean, () =>
+          localStorageGetBoolean('lgv-colorByFrame', false),
         ),
 
         /**
          * #property
          * draw translated codons on coding features once zoomed in far enough:
          * an alternating per-codon shading, and the amino acid letters on top of
-         * it at base-level zoom. Independent of `colorByCDS`, which only recolors
-         * the segments by frame.
+         * it at base-level zoom. Independent of `colorByFrame`, which only
+         * recolors the segments by frame.
          */
         showAminoAcids: types.optional(types.boolean, () =>
           localStorageGetBoolean('lgv-showAminoAcids', true),
@@ -1349,9 +1349,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setColorByCDS(flag: boolean) {
-        self.colorByCDS = flag
-        localStorageSetBoolean('lgv-colorByCDS', flag)
+      setColorByFrame(flag: boolean) {
+        self.colorByFrame = flag
+        localStorageSetBoolean('lgv-colorByFrame', flag)
       },
       /**
        * #action
@@ -3415,12 +3415,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return snap
       }
       // v4's `showCytobandsSetting` persists as the bare `showCytobands` prop
-      // (the capability-gated getter is `effectiveShowCytobands`).
-      const { showCytobandsSetting, offsetPx, bpPerPx, ...rest } = snap
+      // (the capability-gated getter is `effectiveShowCytobands`), and v4's
+      // `colorByCDS` as `colorByFrame`.
+      const { showCytobandsSetting, colorByCDS, offsetPx, bpPerPx, ...rest } =
+        snap
       return {
         ...(showCytobandsSetting !== undefined
           ? { showCytobands: showCytobandsSetting }
           : {}),
+        ...(colorByCDS !== undefined ? { colorByFrame: colorByCDS } : {}),
         // The viewport used to persist as pixels. Half of that converts
         // exactly and needs no width — the left edge in bp is offsetPx *
         // bpPerPx — and half of it cannot convert at all, because the width

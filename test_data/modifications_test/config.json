@@ -72,7 +72,7 @@
         "trackLabels": "offset",
         "axis": { "grid": true },
         "highlight": [],
-        "colorByCDS": false,
+        "colorByFrame": false,
         "showTrackOutlines": true
       }
     ],

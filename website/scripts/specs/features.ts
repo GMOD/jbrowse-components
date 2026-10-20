@@ -315,7 +315,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: 'chr3:49,395,505-49,395,625',
-      colorByCDS: true,
+      colorByFrame: true,
       trackLabels: 'offset',
       tracks: [
         'Pd8Wh30ei9R',

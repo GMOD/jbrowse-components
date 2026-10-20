@@ -29,13 +29,13 @@ describe('viewsToSession', () => {
 
   it('carries a persisted view property through beside the launch keys', () => {
     const session = viewsToSession('s', [
-      { type: 'LinearGenomeView', assembly: 'hg38', colorByCDS: true },
+      { type: 'LinearGenomeView', assembly: 'hg38', colorByFrame: true },
     ])
     expect(session.views?.[0]).toEqual({
       id: 'view-0',
       type: 'LinearGenomeView',
       assembly: 'hg38',
-      colorByCDS: true,
+      colorByFrame: true,
     })
   })
 

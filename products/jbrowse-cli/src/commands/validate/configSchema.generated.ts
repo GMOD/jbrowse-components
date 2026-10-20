@@ -25100,7 +25100,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "axis": {
           "$ref": "#/$defs/LinearGenomeViewAxis"
         },
-        "colorByCDS": {
+        "colorByFrame": {
           "type": "boolean"
         },
         "showAminoAcids": {
@@ -25168,6 +25168,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         },
         "showCytobandsSetting": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "colorByCDS": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }

@@ -23,7 +23,7 @@ exports[`export session with alignments and gff tracks 1`] = `
     "sessionPlugins": [],
     "views": [
       {
-        "colorByCDS": false,
+        "colorByFrame": false,
         "displayedRegions": [
           {
             "assemblyName": "volvox",

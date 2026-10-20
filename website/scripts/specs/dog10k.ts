@@ -1400,7 +1400,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       loc: 'chr30:38,261,590-38,261,690',
       // Which of the three forward frames is the coding one, answered by
       // color correspondence rather than by a label (review: "consider turning
-      // on colorByCDS"). It does NOT single out a frame -- what it does is swap
+      // on colorByFrame"). It does NOT single out a frame -- what it does is swap
       // the translation rows from `palette.frames` to `palette.framesCDS`
       // (sequenceGeometry.ts), which is the same bright per-frame palette a
       // gene track paints its CDS with. So the third row comes out the gene
@@ -1411,7 +1411,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       //
       // It is a VIEW prop, not a display one: it sits beside `loc`, not in the
       // sequence track's entry.
-      colorByCDS: true,
+      colorByFrame: true,
       // No view highlight on the codon, deliberately. It tints every track it
       // crosses, and over the genotype lane that washes the het/hom blues into
       // teal and olive -- the one column the figure is about stops matching the
@@ -1467,7 +1467,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // the card cropped through as well while it came off this figure; this is
     // that number taken off, and the run reports 0.
     viewportHeight: 951,
-    // The sequence track puts CGA and its Arg on screen; `colorByCDS` above is
+    // The sequence track puts CGA and its Arg on screen; `colorByFrame` above is
     // what says which of the three forward frames it is read in (the third,
     // codons beginning at positions == 1 mod 3 here from the exon's phase-2
     // start at 38,261,549; the other two carry an unrelated red stop 30 bp left

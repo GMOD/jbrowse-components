@@ -41,14 +41,14 @@ describe('the worker emits a class where it cannot resolve a color', () => {
     })
     const { color, colorClass } = boxColor(cds, {
       config: mockDisplayConfig(),
-      colorByCDS: true,
+      colorByFrame: true,
       jexl,
     })
     expect(color).toBeUndefined()
     expect(colorClass).toBe(cdsFrameClass(1))
   })
 
-  it('keeps a literal color when colorByCDS is off', () => {
+  it('keeps a literal color when colorByFrame is off', () => {
     const cds = new SimpleFeature({
       uniqueId: 'c1',
       refName: 'ctgA',
@@ -60,7 +60,7 @@ describe('the worker emits a class where it cannot resolve a color', () => {
     })
     const { color, colorClass } = boxColor(cds, {
       config: mockDisplayConfig({ color: 'red' }),
-      colorByCDS: false,
+      colorByFrame: false,
       jexl,
     })
     expect(color).toBe('red')
@@ -76,7 +76,7 @@ describe('the worker emits a class where it cannot resolve a color', () => {
     })
     const stroke = strokeColor(feature, {
       config: mockDisplayConfig(),
-      colorByCDS: false,
+      colorByFrame: false,
       jexl,
     })
     // nothing to pack: the class names the color and the main-thread encode

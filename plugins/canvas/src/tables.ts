@@ -105,7 +105,7 @@ export interface FeatureTablesArgs {
    */
   bpPerPx: number
   /** Paint each CDS by its reading frame, as the view's "Color by CDS" does. */
-  colorByCDS?: boolean
+  colorByFrame?: boolean
   /**
    * Translate each CDS over `sequenceAdapter` once the zoom reaches a base a
    * px, as the view's "Amino acids when zoomed in" does: codon stripes in `rects`, and
@@ -359,7 +359,7 @@ export async function featureTables(
     regions = region ? [region] : [],
     display = {},
     bpPerPx,
-    colorByCDS = false,
+    colorByFrame = false,
     aminoAcids = true,
     geneticCodeId,
     byteLimit = DEFAULT_BYTE_LIMIT,
@@ -408,7 +408,7 @@ export async function featureTables(
             bpPerPx,
           ),
           bpPerPx,
-          colorByCDS,
+          colorByFrame,
           peptides: aminoAcids && shouldRenderPeptideBackground(bpPerPx),
           geneticCodeId,
           byteLimit,

@@ -625,9 +625,9 @@ export default function baseStateModelFactory(
       /**
        * #getter
        */
-      get colorByCDS() {
+      get colorByFrame() {
         const view = containingLgv(self)
-        return view.colorByCDS
+        return view.colorByFrame
       },
 
       /**
@@ -679,7 +679,7 @@ export default function baseStateModelFactory(
               ? {}
               : { facetField: self.facet.field }),
           },
-          colorByCDS: self.colorByCDS,
+          colorByFrame: self.colorByFrame,
           // Undefined while collecting, so building the set neither
           // refetches nor hides anything.
           soloFeatureIds:

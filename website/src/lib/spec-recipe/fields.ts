@@ -2330,7 +2330,7 @@ export const viewFields: Record<string, FieldRecipe> = {
       ? { path: `View menu → Show... → ${option}` }
       : undefined
   },
-  colorByCDS: value =>
+  colorByFrame: value =>
     typeof value === 'boolean'
       ? {
           path: `View menu → Show... → CDS reading frame colors (${value ? 'checked' : 'unchecked'})`,

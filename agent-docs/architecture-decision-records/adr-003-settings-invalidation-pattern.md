@@ -28,7 +28,7 @@ per setting, and not `reaction` + object return + custom `equals`** — still ho
 Display types that use `MultiRegionDisplayMixin` + `withFetchLifecycle` (canvas
 `LinearBasicDisplay`, wiggle `LinearWiggleDisplay` / `MultiLinearWiggleDisplay`,
 alignments `LinearAlignmentsDisplay`) all need to invalidate and re-fetch when
-user-facing settings change — e.g. `showOnlyGenes`, `colorByCDS`, `filterBy`,
+user-facing settings change — e.g. `showOnlyGenes`, `colorByFrame`, `filterBy`,
 `resolution`.
 
 Before standardization, three different patterns existed across these types:
@@ -39,7 +39,7 @@ in the effect:
 
 ```typescript
 reaction(
-  () => ({ subfeatureLabels, colorByCDS, geneGlyphMode, showOnlyGenes, displayMode }),
+  () => ({ subfeatureLabels, colorByFrame, geneGlyphMode, showOnlyGenes, displayMode }),
   () => {
     if (self.loadedRegions.size > 0 || self.regionTooLarge) {
       self.refetchForCurrentView()
@@ -112,7 +112,7 @@ This was evaluated and rejected for settings changes:
 - For `showOnlyGenes`, keeping old features visible is actively confusing:
   features the user just asked to hide remain rendered until the fetch
   completes.
-- For `colorByCDS`, `displayMode`, and `geneGlyphMode`, a brief blank canvas is
+- For `colorByFrame`, `displayMode`, and `geneGlyphMode`, a brief blank canvas is
   no worse than seeing transiently incorrect features.
 - `softReset()` (preserve `rpcDataMap`) is appropriate when the existing data is
   still valid but needs repositioning — specifically the zoom-relayout path

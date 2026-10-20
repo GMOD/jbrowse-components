@@ -18,7 +18,7 @@ export const sampleConfigs: readonly SampleLink[] = [
     label: 'Human basic',
   },
   {
-    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"10:87863113-87971930","type":"LinearGenomeView","colorByCDS":true,"tracks":["ncbi_refseq_109_hg38_latest"]}]}',
+    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"10:87863113-87971930","type":"LinearGenomeView","colorByFrame":true,"tracks":["ncbi_refseq_109_hg38_latest"]}]}',
     label: 'Human PTEN gene (NCBI RefSeq GFF, color by CDS frame)',
   },
   {
@@ -78,7 +78,7 @@ export const sampleConfigs: readonly SampleLink[] = [
     label: 'GWAS LD (GIANT BMI, FTO locus)',
   },
   {
-    href: '?config=test_data/sars-cov2/config.json&session=spec-{"views":[{"assembly":"Wuhan-Hu-1","loc":"NC_045512.2:266-21555","type":"LinearGenomeView","colorByCDS":true,"tracks":["ncbi_genes_with_mature_peptides"]}]}',
+    href: '?config=test_data/sars-cov2/config.json&session=spec-{"views":[{"assembly":"Wuhan-Hu-1","loc":"NC_045512.2:266-21555","type":"LinearGenomeView","colorByFrame":true,"tracks":["ncbi_genes_with_mature_peptides"]}]}',
     label: 'SARS-CoV2 polyprotein (ORF1ab peptides)',
   },
   {
@@ -90,7 +90,7 @@ export const sampleConfigs: readonly SampleLink[] = [
     label: 'Human mitochondrion (transl_table=2, polyA stops)',
   },
   {
-    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"3:49358083-49358183","type":"LinearGenomeView","colorByCDS":true,"tracks":["ncbi_refseq_109_hg38_latest"]}]}',
+    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"3:49358083-49358183","type":"LinearGenomeView","colorByFrame":true,"tracks":["ncbi_refseq_109_hg38_latest"]}]}',
     label: 'GPX1 selenoprotein (UGA→Sec readthrough)',
   },
   {

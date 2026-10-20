@@ -284,9 +284,9 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       {
         label: 'CDS reading frame colors',
         type: 'checkbox',
-        checked: self.colorByCDS,
+        checked: self.colorByFrame,
         onClick: () => {
-          self.setColorByCDS(!self.colorByCDS)
+          self.setColorByFrame(!self.colorByFrame)
         },
       },
       {

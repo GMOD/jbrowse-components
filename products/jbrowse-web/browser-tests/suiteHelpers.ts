@@ -84,7 +84,7 @@ export interface LgvSnapshotOpts extends SnapshotTestCommon {
   // override the snapshot target when it isn't the display's `canvas` child
   // (e.g. a paired-arc display whose painted element IS the canvas)
   snapshotSelector?: string
-  // further session-spec view fields, e.g. `{ colorByCDS: true }`
+  // further session-spec view fields, e.g. `{ colorByFrame: true }`
   viewOptions?: Record<string, unknown>
 }
 

@@ -23,7 +23,7 @@ export function buildFeatureRenderData({
   jexl,
   regionStart,
   regionEnd,
-  colorByCDS = false,
+  colorByFrame = false,
   expandedGeneIds,
   peptideDataMap,
   report,
@@ -33,7 +33,7 @@ export function buildFeatureRenderData({
   jexl: JexlInstance
   regionStart: number
   regionEnd: number
-  colorByCDS?: boolean
+  colorByFrame?: boolean
   expandedGeneIds?: ReadonlySet<string>
   peptideDataMap?: Map<string, PeptideData>
   report?: () => void
@@ -58,7 +58,7 @@ export function buildFeatureRenderData({
     regionStart,
     regionEnd,
     config,
-    colorByCDS,
+    colorByFrame,
     peptideDataMap,
     jexl,
   })

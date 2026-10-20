@@ -35,7 +35,7 @@ export type SyntenyTrackInit =
  */
 export interface LinearSyntenyViewCommands extends SyntenyViewSharedCommands {
   // The genome rows, top to bottom; a row is an LGV, so it takes the LGV's own
-  // launch props (trackLabels, showAminoAcids, colorByCDS, …) alongside what to
+  // launch props (trackLabels, showAminoAcids, colorByFrame, …) alongside what to
   // show. Optional because hand-authored JSON is what fills this and a spec
   // naming only a setting partitions into a launch blob with no rows at all;
   // `applyInit` reads that as the import form.

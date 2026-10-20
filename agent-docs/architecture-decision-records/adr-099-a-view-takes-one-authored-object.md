@@ -75,7 +75,7 @@ grounds now.
 
 - **Flattening `init` centrally in `loadSessionSpec`** erases the
   command-vs-prop distinction before the only code that can draw it has seen the
-  snapshot, so `init: { colorByCDS: true }` would work from a spec while the
+  snapshot, so `init: { colorByFrame: true }` would work from a spec while the
   identical config dropped it. A `preProcessSnapshot` "hoist" was written to
   paper over that asymmetry — a `types.frozen` blob quietly relocating its own
   keys — and both were backed out.

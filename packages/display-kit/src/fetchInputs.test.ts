@@ -74,8 +74,8 @@ describe('fetchInputs', () => {
     const solo = observable.box(true)
     const settings = settingsOver(() =>
       solo.get()
-        ? { colorByCDS: true, soloFeatureIds: undefined }
-        : { colorByCDS: true },
+        ? { colorByFrame: true, soloFeatureIds: undefined }
+        : { colorByFrame: true },
     )
     const dispose = observed(settings)
     const before = settings.get()

@@ -35,7 +35,7 @@ test('the spec reaches addView flat, id and all', async () => {
       assembly: 'volvox',
       loc: 'ctgA:1-100',
       tracks: ['gff3tabix_genes'],
-      colorByCDS: true,
+      colorByFrame: true,
     },
   )
 
@@ -44,7 +44,7 @@ test('the spec reaches addView flat, id and all', async () => {
     assembly: 'volvox',
     loc: 'ctgA:1-100',
     tracks: ['gff3tabix_genes'],
-    colorByCDS: true,
+    colorByFrame: true,
   })
 })
 
