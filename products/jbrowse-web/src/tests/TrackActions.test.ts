@@ -139,7 +139,7 @@ test('launchTrack switches a shown track to the display type it names', async ()
   )
   expect(track!.activeDisplay.type).toBe('LinearMarkDisplay')
   expect(getSnapshot(track!.activeDisplay.configuration)).toMatchObject({
-    marks: [{ mark: 'span' }],
+    marks: [{ mark: { type: 'span' } }],
   })
   expect(session.snackbarMessages).toHaveLength(0)
 })
