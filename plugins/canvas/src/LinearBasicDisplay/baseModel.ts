@@ -139,6 +139,7 @@ import type { FeatureFacet, FeatureGroupSection } from './facet.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type { RegionInstanceIndex } from './featureHighlightInk.ts'
 import type { GeneGlyphMode } from './geneGlyphMode.ts'
+import type { LayoutRegionData } from './layoutInputs.ts'
 import type { GroupByScanOptions } from './scanGroupByCandidates.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
@@ -166,8 +167,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Region identity rides in the stored payload: the layout groups by ref, and
 // a canonical refName is not what `Region.refName` carries.
-type LoadedFeatureData = FeatureDataResult & {
-  regionKey: string
+type LoadedFeatureData = LayoutRegionData & {
   assemblyName: string
   refName: string
   reversed: boolean
@@ -180,6 +180,8 @@ function loadedFeatureData(
   return {
     ...data,
     regionKey: layoutRegionKey(region),
+    regionStart: region.start,
+    regionEnd: region.end,
     assemblyName: region.assemblyName,
     refName: region.refName,
     reversed: !!region.reversed,

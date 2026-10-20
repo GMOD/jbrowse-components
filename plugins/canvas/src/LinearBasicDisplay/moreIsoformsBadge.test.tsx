@@ -20,6 +20,7 @@ import { computeLabelExtraWidth } from './components/labelPositioning.ts'
 import { FloatingLabelsLayer } from './components/overlayElements.tsx'
 import { MIN_ISOFORM_BADGE_GENE_PX } from './isoformTrim.ts'
 import { computeLaidOutData } from './layout.ts'
+import { WHOLE_REF } from './layoutTestUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -127,6 +128,7 @@ const INPUTS: LayoutInputs = {
 function regionFor(layout: ReturnType<typeof layoutSubfeatures>) {
   return {
     regionKey: 'v:ctgA',
+    ...WHOLE_REF,
     ...collectRenderData({
       layouts: [layout],
       regionStart: 0,
@@ -337,6 +339,7 @@ const NEIGHBOUR_BP = Math.round(
 function rowOfNeighbour(isoforms: number, maxIsoformsPerGene?: number) {
   const region = {
     regionKey: 'v:ctgA',
+    ...WHOLE_REF,
     ...packStackedGenes([
       {
         featureId: 'gene1',

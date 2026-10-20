@@ -5,6 +5,7 @@ import { layoutSubfeatures } from '../RenderFeatureDataRPC/glyphs/subfeatures.ts
 import { ROOT_CHILD_ORDINAL } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import { mockDisplayConfig } from '../RenderFeatureDataRPC/testUtils.ts'
 import { computeLaidOutData } from './layout.ts'
+import { WHOLE_REF } from './layoutTestUtils.ts'
 
 import type { LayoutRegionData } from './layoutInputs.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -77,6 +78,7 @@ function layoutAt(
     ...packed,
     featureCount: 1,
     regionKey: 'volvox:ctgA',
+    ...WHOLE_REF,
   } as unknown as LayoutRegionData
   return computeLaidOutData(new Map([[0, raw]]), {
     bpPerPx: 1,

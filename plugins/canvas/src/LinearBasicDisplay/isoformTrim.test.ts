@@ -4,6 +4,7 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { maxIsoformCount, trimIsoformStack } from './isoformTrim.ts'
 import { computeLaidOutData } from './layout.ts'
+import { WHOLE_REF } from './layoutTestUtils.ts'
 
 import type { IsoformStack } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LayoutInputs, LayoutRegionData } from './layoutInputs.ts'
@@ -121,6 +122,7 @@ const REGIONS: ReadonlyMap<number, LayoutRegionData> = new Map([
     0,
     {
       regionKey: 'v:ctgA',
+      ...WHOLE_REF,
       ...packStackedGenes([
         { featureId: 'gene1', startBp: 0, endBp: 1000, isoforms: 6 },
         { featureId: 'gene2', startBp: 5000, endBp: 6000, isoforms: 2 },

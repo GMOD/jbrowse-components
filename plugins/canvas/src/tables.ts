@@ -443,7 +443,13 @@ export async function featureTables(
   // keyed by contig, as the display keys its regions, so the regions of one
   // contig pack as one group
   const rpcDataMap = new Map(
-    raws.map((raw, i) => [i, { ...raw, regionKey: regions[i]!.refName }]),
+    raws.map((raw, i) => {
+      const { refName, start, end } = regions[i]!
+      return [
+        i,
+        { ...raw, regionKey: refName, regionStart: start, regionEnd: end },
+      ]
+    }),
   )
   const stage = fitLadderViews({
     ...fitLadderVolatiles(),

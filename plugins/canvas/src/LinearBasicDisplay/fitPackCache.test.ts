@@ -6,6 +6,7 @@ import {
   packStackedGenes,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createPackHeightCache, createPackHeightProbe } from './layout.ts'
+import { WHOLE_REF } from './layoutTestUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -237,6 +238,7 @@ describe('the pack cache', () => {
         {
           ...genes,
           regionKey: 'volvox:ctgA',
+          ...WHOLE_REF,
           flatbushItems: genes.flatbushItems.map((item, i) => ({
             ...item,
             gene: i % 2 === 0,

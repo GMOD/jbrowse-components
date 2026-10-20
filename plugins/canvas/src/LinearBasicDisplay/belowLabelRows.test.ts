@@ -11,6 +11,7 @@ import { mockDisplayConfig } from '../RenderFeatureDataRPC/testUtils.ts'
 import { labelColors } from './components/labelColors.ts'
 import { forEachRenderedLabel } from './components/labelPositioning.ts'
 import { computeLaidOutData } from './layout.ts'
+import { WHOLE_REF } from './layoutTestUtils.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -106,6 +107,7 @@ function layoutAt(
     ...packed,
     featureCount: 1,
     regionKey: 'volvox:ctgA',
+    ...WHOLE_REF,
   } as unknown as LayoutRegionData
   return computeLaidOutData(new Map([[0, raw]]), {
     bpPerPx: 1,

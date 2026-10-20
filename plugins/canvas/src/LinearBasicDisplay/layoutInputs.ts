@@ -13,10 +13,15 @@ import type { FeatureFacet } from './facet.ts'
 
 export type LabelDecimation = 'all' | 'fitWidth'
 
-// `regionKey` rides on the region, not in a parallel map: grouping is by this
-// key, and reading it off the region makes a missing key a type error instead
-// of a silent mis-stack.
-export type LayoutRegionData = FeatureDataResult & { regionKey: string }
+// `regionKey` and the bounds ride on the region, not in a parallel map:
+// grouping is by the key and the packer cuts the bp between the bounds, and
+// reading them off the region makes a missing one a type error instead of a
+// silent mis-stack.
+export type LayoutRegionData = FeatureDataResult & {
+  regionKey: string
+  regionStart: number
+  regionEnd: number
+}
 
 // The assembly is part of the key: two displayed regions can spell one refName
 // on different assemblies, and grouped together their absolute bp coordinates

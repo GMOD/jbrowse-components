@@ -12,6 +12,7 @@ import {
   planDensityCollapse,
   renderedSpanPx,
 } from './densityCollapse.ts'
+import { drawnAxis } from './drawnAxis.ts'
 import { isoformGapSpreadPx } from './isoformGapFloor.ts'
 import { planIsoformTrims } from './isoformTrim.ts'
 import {
@@ -38,6 +39,7 @@ import type {
   DisplayModeMetrics,
   LabelRoomFactorFreeInputs,
   LayoutInputs,
+  LayoutRegionData,
   PackPrepInputs,
 } from './layoutInputs.ts'
 
@@ -78,6 +80,8 @@ interface LabelInfo {
 }
 
 export interface PackPrep {
+  // Every bp in the prep is on this axis; trims arrive genomic and go through it.
+  toDrawnBp: (bp: number) => number
   labelInfoByFeatureId: Map<string, LabelInfo>
   features: Map<string, FeatureGeometry>
   stacks: [string, IsoformStack][]
@@ -102,6 +106,7 @@ function gatherLabelInfo(
   labelFontPx: number,
   featureIds: ReadonlySet<string> | undefined,
   bpPerPx: number,
+  toDrawnBp: (bp: number) => number,
 ) {
   const labelInfoByFeatureId = new Map<string, LabelInfo>()
   for (const [, data] of regions) {
@@ -128,7 +133,8 @@ function gatherLabelInfo(
       info.widths = widerLabelWidths(info.widths, widths)
       if (isPart && rendered.subfeature > 0) {
         const reachBp = rendered.subfeature * bpPerPx
-        const { minX, maxX } = labelData
+        const minX = toDrawnBp(labelData.minX)
+        const maxX = toDrawnBp(labelData.maxX)
         info.partLabelReach = {
           high: Math.max(
             info.partLabelReach?.high ?? -Infinity,
@@ -155,6 +161,7 @@ function gatherFeatureGeometry(
   reversedRegions: ReadonlySet<number>,
   metrics: DisplayModeMetrics,
   featureIds: ReadonlySet<string> | undefined,
+  toDrawnBp: (bp: number) => number,
 ) {
   const features = new Map<string, FeatureGeometry>()
   for (const [displayedRegionIndex, data] of regions) {
@@ -172,8 +179,8 @@ function gatherFeatureGeometry(
         }
       } else {
         features.set(item.featureId, {
-          startBp: item.startBp,
-          endBp: item.endBp,
+          startBp: toDrawnBp(item.startBp),
+          endBp: toDrawnBp(item.endBp),
           bodyHeightPx: bodyHeightPx(
             item.featureHeightPx,
             item.labelRows,
@@ -198,7 +205,7 @@ function gatherFeatureGeometry(
 // `featureIds` narrows the pack to one group's section; the density collapse
 // and the label overhang are then decided among that section's own features.
 export function prepareRefPack(
-  regions: [number, FeatureDataResult][],
+  regions: [number, LayoutRegionData][],
   inputs: PackPrepInputs,
   metrics: DisplayModeMetrics,
   featureIds?: ReadonlySet<string>,
@@ -211,6 +218,7 @@ export function prepareRefPack(
     labelDecimation = 'all',
   } = inputs
 
+  const toDrawnBp = drawnAxis(regions.map(([, data]) => data))
   const labelInfoByFeatureId = gatherLabelInfo(
     regions,
     showLabels,
@@ -218,12 +226,14 @@ export function prepareRefPack(
     metrics.labelFontPx,
     featureIds,
     bpPerPx,
+    toDrawnBp,
   )
   const features = gatherFeatureGeometry(
     regions,
     reversedRegions,
     metrics,
     featureIds,
+    toDrawnBp,
   )
 
   const labeledFeatureIds = new Set<string>()
@@ -247,6 +257,7 @@ export function prepareRefPack(
   }
 
   return {
+    toDrawnBp,
     labelInfoByFeatureId,
     features,
     stacks,
@@ -308,8 +319,8 @@ export function trimPreparedRef(
             )
           : geom.bodyHeightPx) +
         isoformGapSpreadPx(stack, heightMultiplier, trim),
-      startBp: trim ? trim.startBp : geom.startBp,
-      endBp: trim ? trim.endBp : geom.endBp,
+      startBp: trim ? prep.toDrawnBp(trim.startBp) : geom.startBp,
+      endBp: trim ? prep.toDrawnBp(trim.endBp) : geom.endBp,
       badgeWidthPx:
         badge && showLabels && prep.labelInfoByFeatureId.get(id)?.hasName
           ? paddedLabelWidthPx(

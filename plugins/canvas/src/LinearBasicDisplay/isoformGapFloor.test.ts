@@ -6,6 +6,7 @@ import {
 import { packStackedGenes } from '../RenderFeatureDataRPC/testUtils.ts'
 import { isoformGapExtrasPx, isoformGapSpreadPx } from './isoformGapFloor.ts'
 import { computeLaidOutData } from './layout.ts'
+import { WHOLE_REF } from './layoutTestUtils.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -23,7 +24,7 @@ const INPUTS: LayoutInputs = {
 
 function laidOut(displayMode: DisplayMode, genes: StackedGeneSpec[]) {
   const regions: ReadonlyMap<number, LayoutRegionData> = new Map([
-    [0, { regionKey: 'v:ctgA', ...packStackedGenes(genes) }],
+    [0, { regionKey: 'v:ctgA', ...WHOLE_REF, ...packStackedGenes(genes) }],
   ])
   return computeLaidOutData(regions, { ...INPUTS, displayMode }).get(0)!
 }

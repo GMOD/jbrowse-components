@@ -7,6 +7,7 @@ import {
   createIsoformCountProbe,
 } from './layout.ts'
 import { maxBottom } from './layoutQueries.ts'
+import { WHOLE_REF } from './layoutTestUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { LayoutInputs, LayoutRegionData } from './layoutInputs.ts'
@@ -32,7 +33,14 @@ const TRACK_HEIGHT = 145
 const BP_PER_PX = 73.9
 
 const REGIONS: ReadonlyMap<number, LayoutRegionData> = new Map([
-  [0, { regionKey: 'hg38:chr10', ...packStackedGenes([OPN4, LDB3]) }],
+  [
+    0,
+    {
+      regionKey: 'hg38:chr10',
+      ...WHOLE_REF,
+      ...packStackedGenes([OPN4, LDB3]),
+    },
+  ],
 ])
 
 const INPUTS: LayoutInputs = {

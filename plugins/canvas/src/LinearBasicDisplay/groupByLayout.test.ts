@@ -9,6 +9,7 @@ import { scaleLaidOutData } from './applyLayout.ts'
 import { featureGroupSections } from './facet.ts'
 import { computeLaidOutData } from './layout.ts'
 import { maxBottom } from './layoutQueries.ts'
+import { WHOLE_REF } from './layoutTestUtils.ts'
 import { isPlacedRow } from './rowPlacement.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -37,6 +38,7 @@ function regionData(
   }
   return {
     regionKey: 'v:ctgA',
+    ...WHOLE_REF,
     ...makeBaseFeatureData({
       flatbushItems: features.map(f =>
         makeFlatbushItem({

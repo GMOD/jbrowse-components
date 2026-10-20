@@ -18,7 +18,7 @@ import {
 } from './layout.ts'
 import { displayModeMetrics } from './layoutInputs.ts'
 import { featureIdsTouchingBlocks, maxBottom } from './layoutQueries.ts'
-import { packedContentHeight } from './layoutTestUtils.ts'
+import { WHOLE_REF, packedContentHeight } from './layoutTestUtils.ts'
 import { prepareRefPack } from './packRef.ts'
 
 import type {
@@ -38,10 +38,17 @@ function makeFeatureData(opts: {
     gene?: boolean
   }[]
   regionKey?: string
+  bounds?: [number, number]
 }): LayoutRegionData {
   const { features } = opts
+  const [regionStart, regionEnd] = opts.bounds ?? [
+    WHOLE_REF.regionStart,
+    WHOLE_REF.regionEnd,
+  ]
   return {
     regionKey: opts.regionKey ?? 'v:ctgA',
+    regionStart,
+    regionEnd,
     ...makeBaseFeatureData({
       flatbushItems: features.map(f =>
         makeFlatbushItem({
@@ -581,6 +588,64 @@ test('same-chromosome discontiguous regions share spanning feature Y', () => {
   const s1 = out.get(0)!.flatbushItems.find(f => f.featureId === 'spanning')!
   const s2 = out.get(1)!.flatbushItems.find(f => f.featureId === 'spanning')!
   expect(s1.topPx).toBe(s2.topPx)
+})
+
+// Collapsed introns: ctgA:0-100 and ctgA:1000-1100 draw side by side.
+describe('features meeting at a seam between regions of one ref', () => {
+  const rowsOf = (left: [number, number], right: [number, number]) => {
+    const out = layout(
+      new Map([
+        [
+          0,
+          makeFeatureData({
+            features: [
+              {
+                featureId: 'left',
+                startBp: left[0],
+                endBp: left[1],
+                height: 20,
+              },
+            ],
+            bounds: [0, 100],
+          }),
+        ],
+        [
+          1,
+          makeFeatureData({
+            features: [
+              {
+                featureId: 'right',
+                startBp: right[0],
+                endBp: right[1],
+                height: 20,
+              },
+            ],
+            bounds: [1000, 1100],
+          }),
+        ],
+      ]),
+      1,
+    )
+    return [
+      out.get(0)!.flatbushItems[0]!.topPx,
+      out.get(1)!.flatbushItems[0]!.topPx,
+    ]
+  }
+
+  it('stack when they touch on screen, however far apart in bp', () => {
+    const [left, right] = rowsOf([20, 100], [1000, 1080])
+    expect(left).not.toBe(right)
+  })
+
+  it('stack when one runs on into the hidden intron', () => {
+    const [left, right] = rowsOf([20, 600], [1000, 1080])
+    expect(left).not.toBe(right)
+  })
+
+  it('share a row when the screen leaves room between them', () => {
+    const [left, right] = rowsOf([20, 60], [1040, 1080])
+    expect(left).toBe(right)
+  })
 })
 
 test('the two pieces of a feature cut at a circular origin share a row', () => {
@@ -2385,6 +2450,7 @@ test('thousands of sub-pixel variants collapse onto one row, not thousands', () 
 test('compact mode scales aminoAcidOverlay height alongside its top', () => {
   const data = {
     regionKey: 'v:ctgA',
+    ...WHOLE_REF,
     ...makeBaseFeatureData({
       flatbushItems: [
         makeFlatbushItem({

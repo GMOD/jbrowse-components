@@ -74,5 +74,7 @@ export function buildLaneRenderData({
     }),
     // two blocks of one chromosome pack against each other
     regionKey: layoutRegionKey(region),
+    regionStart: region.start,
+    regionEnd: region.end,
   }
 }
