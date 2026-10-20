@@ -171,7 +171,7 @@ export const junctionScaffold = (
     views: [
       {
         type: 'LinearSyntenyView',
-        drawCurves: true,
+        mark: { interpolate: 'bump' },
         levelHeights: [150],
         opacity: 0.35,
         showOffscreenMates: false,
@@ -258,7 +258,7 @@ export const scaffoldOverview = (
     views: [
       {
         type: 'LinearSyntenyView',
-        drawCurves: true,
+        mark: { interpolate: 'bump' },
         levelHeights: [200, 200],
         // the last chr13 block before the junction is 155 kb
         filter: [{ field: 'length', gte: 100000 }],

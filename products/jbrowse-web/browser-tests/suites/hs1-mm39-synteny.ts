@@ -23,7 +23,7 @@ const suite: TestSuite = {
         type: 'LinearSyntenyView',
         tracks: ['hs1ToMm39.over.chain.pif'],
         filter: [{ field: 'length', gte: 500000 }],
-        drawCurves: true,
+        mark: { interpolate: 'bump' },
         autoDiagonalize: true,
         color: { field: 'query' },
         opacity: 0.4,

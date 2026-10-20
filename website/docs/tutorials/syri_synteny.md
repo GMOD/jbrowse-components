@@ -192,7 +192,7 @@ Open the first 6 Mb of chromosome 4 in both accessions and pick **syri** under
           "field": "syri",
           "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
         },
-        "drawCurves": true,
+        "mark": { "interpolate": "bump" },
         "opacity": 0.9,
         "fadeThinAlignmentsMode": "off",
         "collapseEmptyRows": true,
@@ -235,7 +235,7 @@ between the two genomes it joins:
           "field": "syri",
           "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
         },
-        "drawCurves": true,
+        "mark": { "interpolate": "bump" },
         "opacity": 0.9,
         "fadeThinAlignmentsMode": "off",
         "collapseEmptyRows": true,

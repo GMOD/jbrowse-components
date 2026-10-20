@@ -374,7 +374,7 @@ cat > session.json <<'JSON'
       "tracks": [["primate_orthologs"]],
       "color": { "field": "dnds" },
       "opacity": 0.95,
-      "drawCurves": true
+      "mark": { "interpolate": "bump" }
     }
   ]
 }

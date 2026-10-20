@@ -100,7 +100,7 @@ test('a colorBy mode string lands as color', async () => {
 test('an omitted property keeps its default', async () => {
   const view = await open({ views: ROWS })
   expect(view.cigarMode).toBe('full')
-  expect(view.drawCurves).toBe(false)
+  expect(view.interpolate).toBe('linear')
 })
 
 describe('the v4 nested form', () => {

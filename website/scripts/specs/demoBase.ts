@@ -81,7 +81,7 @@ export function ecoliAvaStack(trackId: string) {
     // chords whatever the capture environment holds, because the slant IS the
     // signal on a whole-genome stack. The live ecoli_pangenome demo omits it,
     // so an explicit value does not mark the track edited on every load.
-    drawCurves: false,
+    mark: { interpolate: 'linear' },
     filter: [{ field: 'length', gte: 10000 }],
     levelHeights: [110, 110, 110, 110],
     collapseEmptyRows: true,

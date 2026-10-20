@@ -155,7 +155,7 @@ session = {
             ],
             'tracks': ['graph_adjacent'],
             'color': {'field': 'strand'},
-            'drawCurves': True,
+            'mark': {'interpolate': 'bump'},
         }
     ]
 }

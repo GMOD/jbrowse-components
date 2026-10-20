@@ -77,7 +77,7 @@ export function hpyloriSyntenyWithGenes({
         type: 'LinearSyntenyView',
         // curved bezier ribbons connect the aligned blocks more legibly than
         // straight quadrilaterals across the three stacked strains
-        drawCurves: true,
+        mark: { interpolate: 'bump' },
         // 2-D form: tracks[i] is the synteny shown between views[i] and
         // views[i+1]. A flat string[] is treated as a single level-0 entry, so
         // the level-1 band (chc155 vs j99) stayed empty — this nests each track
@@ -189,7 +189,7 @@ export function hg38ChimpSynteny(
       {
         type: 'LinearSyntenyView',
         cigarMode,
-        drawCurves: true,
+        mark: { interpolate: 'bump' },
         tracks: [['hg38_panTro6_synteny']],
         views: [
           {
@@ -483,7 +483,7 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
         {
           type: 'LinearSyntenyView',
           tracks: [trackIds],
-          drawCurves: false,
+          mark: { interpolate: 'linear' },
           levelHeights: [260],
           collapseEmptyRows: true,
           views: [
@@ -979,7 +979,7 @@ export function ecoliOneVsAllUrl(levelHeight: number) {
             { assembly: 'NCTC86' },
           ],
           tracks: ['ecoli_ava'],
-          drawCurves: false,
+          mark: { interpolate: 'linear' },
           // Strand, not the 'default' red the standalone multi-way figure
           // uses, because strand is what the two halves have in common:
           // LGVSyntenyDisplay colors its lanes by strand already, so an
@@ -1118,7 +1118,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         {
           type: 'LinearSyntenyView',
           tracks: ['grape_peach_synteny_mcscan'],
-          drawCurves: false,
+          mark: { interpolate: 'linear' },
           color: { field: 'query' },
           // higher alpha + a taller synteny band give the ribbons room to read,
           // and autoDiagonalize reorders the panels into clean diagonals
@@ -1270,7 +1270,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
             ],
             tracks: ['grape_peach_cacao_blocks'],
-            drawCurves: true,
+            mark: { interpolate: 'bump' },
             color: { field: 'syntenicDepth' },
           },
         ],
@@ -2066,7 +2066,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           ],
           tracks: ['amylase_adjacent'],
           color: { field: 'strand' },
-          drawCurves: true,
+          mark: { interpolate: 'bump' },
           levelHeights: [110, 110, 110, 110],
         },
       ],
@@ -2105,7 +2105,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           ],
           tracks: [['syri_pangenome']],
           color: { field: 'syri', domain: SYRI_TYPES },
-          drawCurves: true,
+          mark: { interpolate: 'bump' },
           opacity: 0.9,
           fadeThinAlignmentsMode: 'off',
           collapseEmptyRows: true,
@@ -2131,7 +2131,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           views: SYRI_ACCESSIONS.map(assembly => ({ assembly })),
           tracks: ['syri_pangenome'],
           color: { field: 'syri', domain: SYRI_TYPES },
-          drawCurves: true,
+          mark: { interpolate: 'bump' },
           opacity: 0.9,
           fadeThinAlignmentsMode: 'off',
           collapseEmptyRows: true,
@@ -2336,7 +2336,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [['primate_orthologs']],
             color: { field: 'dnds' },
             opacity: 0.95,
-            drawCurves: true,
+            mark: { interpolate: 'bump' },
           },
         ],
       },
@@ -2518,7 +2518,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // with a few strong diagonals on it. At 0.3 a single ortholog is
             // visible and the bundles are solid without flooding their bands.
             opacity: 0.3,
-            drawCurves: false,
+            mark: { interpolate: 'linear' },
           },
         ],
       },
@@ -2584,7 +2584,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             collapseEmptyRows: true,
             levelHeights: [180, 180, 180, 180],
             opacity: 0.2,
-            drawCurves: false,
+            mark: { interpolate: 'linear' },
           },
         ],
       },
@@ -2638,7 +2638,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             collapseEmptyRows: true,
             levelHeights: [150, 150, 150, 150, 150, 150],
             opacity: 0.15,
-            drawCurves: false,
+            mark: { interpolate: 'linear' },
           },
         ],
       },
@@ -2681,7 +2681,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             collapseEmptyRows: true,
             levelHeights: [150, 150, 150, 150, 150, 150],
             opacity: 0.5,
-            drawCurves: false,
+            mark: { interpolate: 'linear' },
           },
         ],
       },
@@ -2742,7 +2742,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // links arrive as tight bundles and this is as high as it can go;
             // the vertebrates figure takes twice it, for the opposite reason.
             opacity: 0.15,
-            // Straight chords, though this is the one case the drawCurves
+            // Straight chords, though this is the one case the curved
             // docstring recommends itself for. Rendered both: the bezier version
             // is by far the prettier picture and the worse figure, because a
             // curve leaves its chromosome vertically and only bends toward its
@@ -2750,7 +2750,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // where they cross and stop pointing at anything. Which chromosome
             // maps to which is the whole content here, and a straight chord is
             // the line that says it.
-            drawCurves: false,
+            mark: { interpolate: 'linear' },
           },
         ],
       },
@@ -2891,7 +2891,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // knot where the two fans meet on maize 5's side. Straight costs
             // nothing on the top band, which is parallel either way, and is what
             // makes the bottom one readable as two fans rather than one tangle.
-            drawCurves: false,
+            mark: { interpolate: 'linear' },
             // Under 1, which is what this had when it was two near-solid fans.
             // The reasoning for full strength was about density and is right as
             // far as it goes - ~50 ribbons never accumulate the way the
@@ -2965,7 +2965,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             collapseEmptyRows: true,
             levelHeights: [170, 170, 170, 170, 170],
             opacity: 0.15,
-            drawCurves: false,
+            mark: { interpolate: 'linear' },
           },
         ],
       },
@@ -3115,7 +3115,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // a taller band, and at 0.15 the two translocated bundles read as
             // smoke beside the native one.
             opacity: 0.5,
-            drawCurves: false,
+            mark: { interpolate: 'linear' },
           },
         ],
       },
@@ -3255,7 +3255,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
             ],
             tracks: [['ecoli_ava']],
-            drawCurves: true,
+            mark: { interpolate: 'bump' },
           },
         ],
       },
@@ -3686,7 +3686,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
       views: [
         {
           type: 'LinearSyntenyView',
-          drawCurves: true,
+          mark: { interpolate: 'bump' },
           // both MCScan tracks on one level: the coarse anchor set plus the
           // simple per-gene anchors drawn over it
           tracks: [
@@ -3818,7 +3818,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             },
           ],
           tracks: [['grape_peach_synteny_mcscan']],
-          drawCurves: false,
+          mark: { interpolate: 'linear' },
           levelHeights: [220],
           // `alpha` is the default 0.2 (review: "we should just use default
           // 0.2"), so there is no key here at all.
@@ -3886,7 +3886,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             },
           ],
           tracks: [['grape_peach_synteny_mcscan']],
-          drawCurves: false,
+          mark: { interpolate: 'linear' },
           levelHeights: [220],
           color: { field: 'syntenicDepth' },
         },
@@ -3912,7 +3912,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'LinearSyntenyView',
           tracks: ['hs1ToMm39.over.chain.pif'],
           filter: [{ field: 'length', gte: 500000 }],
-          drawCurves: false,
+          mark: { interpolate: 'linear' },
           autoDiagonalize: true,
           color: { field: 'query' },
           opacity: 0.4,
@@ -3944,7 +3944,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ...TNNT3_FRAME,
     name: 'synteny_hg38_hs1_tnnt3',
     url: tnnt3Session(
-      { drawCurves: true, cigarMode: 'matches' },
+      { mark: { interpolate: 'bump' }, cigarMode: 'matches' },
       { markLinc01150: true },
     ),
   },
@@ -3991,7 +3991,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // curved ribbons trace where each block lands instead of shearing across
     // the gap; 'matches' leaves the CIGAR indels see-through so the strand
     // coloring is the only thing painting the ribbons
-    url: tnnt3Session({ drawCurves: true, cigarMode: 'matches' }),
+    url: tnnt3Session({ mark: { interpolate: 'bump' }, cigarMode: 'matches' }),
     annotations: [
       {
         type: 'text',
@@ -4263,7 +4263,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
       // brings the panTro6 hub's tracks (jbrowse.org/ucsc/panTro6/config.json) —
       // which is where panTro6-ncbiRefSeq and panTro6-rmsk come from.
       //
-      // drawCurves and cigarMode 'matches' ("Transparent indels"), both review
+      // curved ribbons and cigarMode 'matches' ("Transparent indels"), both review
       // asks and both only meaningful on THIS frame: an indel drawn as a gap
       // rather than as a painted wedge is what makes the L1HS read as the human
       // side having sequence the chimp side does not, instead of as one more
@@ -4276,7 +4276,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             {
               type: 'LinearSyntenyView',
               tracks: [['hg38_to_panTro6_liftOver']],
-              drawCurves: true,
+              mark: { interpolate: 'bump' },
               cigarMode: 'matches',
               views: [
                 {
@@ -4995,7 +4995,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   //    axis for. A palindrome arm meets its partner inverted, so the crossings
   //    the plot draws as an X are the minus-strand color and the collinear
   //    self-match running the length of the panel is the plus-strand one.
-  //  - `drawCurves` with `cigarMode: 'matches'` (the menu's "Transparent
+  //  - curved ribbons with `cigarMode: 'matches'` (the menu's "Transparent
   //    indels"). Bezier edges leave and arrive perpendicular to their panels, so
   //    the two arms pinch at the palindrome's own centre and flare against the
   //    panel edges rather than crossing as one hard X; the indels inside each
@@ -5014,7 +5014,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'LinearSyntenyView',
           tracks: ['hs1_chrY_self'],
           color: { field: 'strand' },
-          drawCurves: true,
+          mark: { interpolate: 'bump' },
           cigarMode: 'matches',
           filter: [{ field: 'length', gte: 100000 }],
           opacity: 0.4,

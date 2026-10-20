@@ -63,7 +63,7 @@
         "color": { "field": "query" },
         "filter": [{ "field": "length", "gte": 500000 }],
         "levelHeights": [500],
-        "drawCurves": true,
+        "mark": { "interpolate": "bump" },
         "opacity": 0.4
       }
     ]

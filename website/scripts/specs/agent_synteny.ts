@@ -46,7 +46,7 @@ function flySynteny(
     tracks: [[PIF]],
     collapseEmptyRows: !genes,
     levelHeights: [360],
-    drawCurves: false,
+    mark: { interpolate: 'linear' },
     // Red forward, blue reverse, which is the one thing the colinear frame and
     // the inversion frames differ by.
     color: { field: 'strand' },

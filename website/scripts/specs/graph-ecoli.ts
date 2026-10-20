@@ -1348,7 +1348,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           // others". Top band runs unbroken across the island, bottom band
           // starts at its right edge.
           tracks: [ECOLI_AVA_TRACK],
-          drawCurves: true,
+          mark: { interpolate: 'bump' },
           // Default alpha. This spec used to halve it, because wfmash maps
           // all-to-all in both directions and the adapter unioned both
           // perspectives of the anchor, so every band was two ribbons over one
@@ -1769,7 +1769,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearSyntenyView',
           tracks: [[ECOLI_AVA_TRACK]],
-          drawCurves: true,
+          mark: { interpolate: 'bump' },
           levelHeights: [200],
           views: [
             {

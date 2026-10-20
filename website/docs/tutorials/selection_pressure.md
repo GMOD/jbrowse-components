@@ -215,8 +215,8 @@ Two view settings matter for a view this sparse:
 - **Opacity** on the sliders button in the view header sets `opacity`, which
   defaults to 0.25 for whole-genome views where ribbons overlap. 0.95 shows the
   color as it is.
-- **Curved lines** on the same menu sets `drawCurves`, which separates stacked
-  neighbours.
+- **Curved lines** on the same menu sets `mark: { interpolate: 'bump' }`, which
+  separates stacked neighbours.
 
 ## Reading lysozyme (LYZ) against its neighbours by dN/dS
 
@@ -246,7 +246,7 @@ dN/dS. In your own build, pick **Color by value → dN/dS**.
         "tracks": [["primate_orthologs"]],
         "color": { "field": "dnds" },
         "opacity": 0.95,
-        "drawCurves": true
+        "mark": { "interpolate": "bump" }
       }
     ]
   }

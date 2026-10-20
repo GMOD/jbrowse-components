@@ -262,7 +262,7 @@ function haplotypeSession(
         // strand is the whole point here: it is what makes the inverted block
         // the one sweep crossing an otherwise same-color frame
         color: { field: 'strand' },
-        drawCurves: true,
+        mark: { interpolate: 'bump' },
         tracks: [['hg002v1.2_mat_vs_pat']],
         ...viewProps,
         views: [

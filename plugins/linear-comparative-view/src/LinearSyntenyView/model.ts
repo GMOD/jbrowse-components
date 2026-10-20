@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { readConfObject } from '@jbrowse/core/configuration'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import {
@@ -21,7 +22,13 @@ import {
   pendingLaunch,
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
-import { addDisposer, cast, detach, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  cast,
+  detach,
+  getSnapshot,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import {
   multiLevelRowClickMenuItems,
   multiLevelRowMenuItems,
@@ -38,6 +45,7 @@ import {
   getSyntenyTracks,
   releaseTemporaryAssemblies,
   reorderChromosomesMenuItem,
+  syntenyMarkConfigSchema,
 } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
 import DataUsageIcon from '@mui/icons-material/DataUsage'
@@ -87,6 +95,7 @@ import type {
   AttributeRange,
   CigarOpMask,
   ComparativeTrackModel,
+  RibbonInterpolation,
 } from '@jbrowse/synteny-core'
 
 // lazies
@@ -121,7 +130,7 @@ function takeOutRow(row: LinearGenomeViewModel) {
  *   type: 'LinearSyntenyView',
  *   views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
  *   tracks: ['hg38_vs_mm10.paf'],
- *   drawCurves: true,
+ *   mark: { interpolate: 'bump' },
  *   color: { field: 'query' },
  * }
  * ```
@@ -161,9 +170,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         * Draw every band's ribbons as bezier curves rather than straight chords.
+         * How every band's ribbons draw, a [](/docs/config/syntenymark)
+         * object: `{ interpolate: 'bump' }` curves their sides.
          */
-        drawCurves: types.stripDefault(types.boolean, false),
+        mark: types.stripDefault(syntenyMarkConfigSchema, {}),
         /**
          * #property
          * Continue the query row's scalebar grid down through every band: a tick
@@ -353,6 +363,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get sharedFit() {
         return sharedFit(self.views, self.sameScale)
+      },
+      /**
+       * #getter
+       * The curve every ribbon side takes, `mark.interpolate`.
+       */
+      get interpolate(): RibbonInterpolation {
+        return readConfObject(self.mark, 'interpolate')
       },
 
       /**
@@ -1103,8 +1120,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setDrawCurves(arg: boolean) {
-        self.drawCurves = arg
+      setInterpolate(interpolate: RibbonInterpolation) {
+        self.mark = cast({ ...getSnapshot(self.mark), interpolate })
       },
       /**
        * #action

@@ -32,8 +32,8 @@ export function syntenySettingsMenuItems(
   const { cigarMode, hasCigarData } = model
   return [
     identityFadeMenuItem(model),
-    toggleItem('Curved lines', model.drawCurves, v => {
-      model.setDrawCurves(v)
+    toggleItem('Curved lines', model.interpolate === 'bump', v => {
+      model.setInterpolate(v ? 'bump' : 'linear')
     }),
     toggleItem(
       'Location markers',

@@ -40,7 +40,7 @@ export default function MultiwaySynteny() {
           type: 'LinearSyntenyView',
           views: strains.map(s => ({ assembly: s.name })),
           tracks: ['ecoli_ava'],
-          drawCurves: true,
+          mark: { interpolate: 'bump' },
           filter: [{ field: 'length', gte: 10000 }],
         },
       ]}

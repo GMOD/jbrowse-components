@@ -239,9 +239,9 @@ test('the CIGAR row sets the mode it names', async () => {
 // visit — which is what `CascadingMenu` gives a checkbox row by its type.
 test('a checkbox row writes its boolean and leaves the menu up', async () => {
   const view = await openMenu()
-  expect(view.drawCurves).toBe(false)
+  expect(view.interpolate).toBe('linear')
   fireEvent.click(screen.getByText('Curved lines'))
-  expect(view.drawCurves).toBe(true)
+  expect(view.interpolate).toBe('bump')
   expect(screen.getByText('Location markers')).toBeTruthy()
 })
 
@@ -253,11 +253,11 @@ test('a checkbox row writes its boolean and leaves the menu up', async () => {
 test('a checkbox row renders the value it resolved, not a constant', async () => {
   const view = await openMenu()
   act(() => {
-    view.setDrawCurves(true)
+    view.setInterpolate('bump')
   })
   expect(curvedLinesRow()).toBeChecked()
   act(() => {
-    view.setDrawCurves(false)
+    view.setInterpolate('linear')
   })
   expect(curvedLinesRow()).not.toBeChecked()
 })

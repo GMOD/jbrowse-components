@@ -7,6 +7,7 @@ import type {
   ComparativeSurface,
   SyntenyColorPaint,
   LodMode,
+  RibbonInterpolation,
   SyntenyOpacitySnapshot,
 } from '@jbrowse/synteny-core'
 
@@ -66,7 +67,7 @@ export interface ParentViewDuck extends FollowAnchorHost {
   fadeThinAlignments: boolean
   drawCIGAR: boolean
   drawCIGARMatchesOnly: boolean
-  drawCurves: boolean
+  interpolate: RibbonInterpolation
   drawLocationMarkers: boolean
   lodMode: LodMode
   // The assembly the chromosome-painting modes key on, so a region keeps its

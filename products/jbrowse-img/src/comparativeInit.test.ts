@@ -47,7 +47,7 @@ describe('syntenyViewKnobs', () => {
       }),
     ).toEqual({
       autoDiagonalize: true,
-      drawCurves: true,
+      mark: { interpolate: 'bump' },
       color: { field: 'query' },
       cigarMode: 'full',
       filter: [{ field: 'length', gte: 10_000 }],
@@ -121,7 +121,7 @@ describe('dotplotInit', () => {
       opacity: 0.4,
       levelHeights: [300],
     })
-    expect(init).not.toHaveProperty('drawCurves')
+    expect(init).not.toHaveProperty('mark')
     expect(init).not.toHaveProperty('cigarMode')
     expect(init).not.toHaveProperty('opacity')
     expect(init).not.toHaveProperty('levelHeights')
@@ -137,7 +137,7 @@ describe('syntenyInit', () => {
     expect(syntenyInit(data, { drawCurves: true })).toEqual({
       views: [{ assembly: 'a' }, { assembly: 'b' }, { assembly: 'c' }],
       tracks: ['a_b', 'b_c'],
-      drawCurves: true,
+      mark: { interpolate: 'bump' },
     })
   })
 })

@@ -124,7 +124,7 @@ const Synteny = observer(function Synteny() {
               },
             ],
             tracks: ['hg38_mm39'],
-            drawCurves: true,
+            mark: { interpolate: 'bump' },
             cigarMode: 'matches',
           },
         ],

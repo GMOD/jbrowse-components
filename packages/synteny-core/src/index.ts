@@ -184,6 +184,11 @@ export type {
   SyntenyColorSnapshot,
 } from './syntenyColorConfigSchema.ts'
 export { SyntenyFilterMixin } from './SyntenyFilterMixin.ts'
+export {
+  RIBBON_INTERPOLATIONS,
+  syntenyMarkConfigSchema,
+} from './syntenyMarkConfigSchema.ts'
+export type { RibbonInterpolation } from './syntenyMarkConfigSchema.ts'
 export { comparativeFilter, comparativeLaneOf } from './filterLanes.ts'
 export type { FilterExtras } from './filterLanes.ts'
 export {

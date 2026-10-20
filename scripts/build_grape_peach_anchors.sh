@@ -196,7 +196,7 @@ cat > session.json <<'JSON'
         }
       ],
       "tracks": [["grape_peach_anchors", "grape_peach_anchors_simple"]],
-      "drawCurves": true
+      "mark": { "interpolate": "bump" }
     }
   ]
 }

@@ -230,7 +230,7 @@ test('a track added in the same tick shows on the level it was added for', async
 // the first of them while the new band drew straight.
 test('a band appended after Curved lines is ticked draws curved', async () => {
   const { session, view } = await openStack(2)
-  view.setDrawCurves(true)
+  view.setInterpolate('bump')
   session.addSessionTrackConf({
     type: 'SyntenyTrack',
     trackId: 'another',

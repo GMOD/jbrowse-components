@@ -666,7 +666,7 @@ export const qcSpecs: ScreenshotSpec[] = [
             // the band is a wash of blended color with no edge to follow. A
             // curve pinches in the middle, so each ribbon has a waist the other
             // two do not share and the crossing reads as a crossing.
-            drawCurves: true,
+            mark: { interpolate: 'bump' },
             // 'matches' is the menu's "Transparent indels": the ribbon is drawn
             // per CIGAR match block with the gaps left open, so the parts of a
             // chain that genuinely align are separated from the parts that only

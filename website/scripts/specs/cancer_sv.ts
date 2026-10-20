@@ -715,7 +715,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             },
           ],
           tracks: [['der3_vs_hg38']],
-          drawCurves: true,
+          mark: { interpolate: 'bump' },
           color: { field: 'reference' },
           levelHeights: [88],
         },
@@ -1023,12 +1023,12 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             },
           ],
           tracks: [['der3_vs_hg38']],
-          // ON (review: "please use showCurves:true"). The name is `drawCurves`
+          // ON (review: "please use showCurves:true"). The setting is `mark.interpolate`
           // and it is a property of the SYNTENY VIEW rather than of a track, so
           // spelled the other way in `tracks` it is one of the inline keys that
           // are dropped in silence -- the figure would have regenerated
           // identical and read as fixed.
-          drawCurves: true,
+          mark: { interpolate: 'bump' },
           // 180 rather than 220: five ribbons crossing need enough band to
           // stay separable and no more, and the 40 px buys most of the row
           // height the reads gained. 140 once the whole frame went compact --

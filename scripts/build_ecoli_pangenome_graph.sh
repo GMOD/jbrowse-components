@@ -804,7 +804,7 @@ cat > session.json <<JSON
       "type": "LinearSyntenyView",
       "views": [$panels],
       "tracks": [$ribbons],
-      "drawCurves": false,
+      "mark": { "interpolate": "linear" },
       "filter": [{ "field": "length", "gte": 10000 }]
     },
     {

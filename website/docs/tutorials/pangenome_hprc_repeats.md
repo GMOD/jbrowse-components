@@ -586,7 +586,7 @@ copy:
         ],
         "tracks": ["amylase_adjacent"],
         "color": { "field": "strand" },
-        "drawCurves": true,
+        "mark": { "interpolate": "bump" },
         "levelHeights": [110, 110, 110, 110]
       }
     ]

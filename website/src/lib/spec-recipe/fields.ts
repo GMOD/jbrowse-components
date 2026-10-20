@@ -2345,12 +2345,15 @@ export const viewFields: Record<string, FieldRecipe> = {
           path: `View menu → Show... → No tracks active button (${value ? 'unchecked' : 'checked'})`,
         }
       : undefined,
-  drawCurves: (value, { viewType }) => {
+  // the linear synteny view's ribbon curve, the Curved lines checkbox
+  mark: (value, { viewType }) => {
     const path = settingsPath(viewType, 'Curved lines')
-    return typeof value === 'boolean' && path
-      ? {
-          path: `${path} (${value ? 'checked' : 'unchecked'})`,
-        }
+    const interpolate =
+      typeof value === 'object' && value !== null
+        ? (value as Record<string, unknown>).interpolate
+        : undefined
+    return typeof interpolate === 'string' && path
+      ? { path: `${path} (${interpolate === 'bump' ? 'checked' : 'unchecked'})` }
       : undefined
   },
   // Only a `true` has a click-path: the rows start each fit to their own width,

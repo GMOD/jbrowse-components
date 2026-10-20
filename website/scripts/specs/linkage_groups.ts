@@ -88,7 +88,7 @@ export const linkageGroupsSpecs: ScreenshotSpec[] = [
           // included, is ordered off a comb jelly"). Anchored here the sweep
           // runs outward both ways from it.
           diagonalizeAnchorRow: 2,
-          drawCurves: true,
+          mark: { interpolate: 'bump' },
           fadeThinAlignmentsMode: 'off',
           opacity: {
             field: 'break_FET',

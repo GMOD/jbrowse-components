@@ -8764,7 +8764,7 @@ export const configManifest: ConfigManifest = {
         "fadeThinAlignmentsMode",
         "type",
         "cigarMode",
-        "drawCurves",
+        "mark",
         "drawLocationMarkers",
         "showOffscreenMates",
         "overdrawPx",

@@ -238,7 +238,7 @@ the `opacity` mapping:
   runs the same sort and asks for that row.
 - `filter` drops the alignments with no `gene_group`, which **Hide unlabelled
   rows** on the palette menu writes.
-- `drawCurves` is **Curved lines** on the sliders button.
+- `mark` is **Curved lines** on the sliders button.
 - `fadeThinAlignmentsMode` turns off the fade a whole-genome view applies to
   sub-pixel ribbons, since their colors are what the figure shows. It has no
   menu item.
@@ -272,7 +272,7 @@ the `opacity` mapping:
         "filter": [{ "field": "gene_group", "valid": true }],
         "autoDiagonalize": true,
         "diagonalizeAnchorRow": 2,
-        "drawCurves": true,
+        "mark": { "interpolate": "bump" },
         "fadeThinAlignmentsMode": "off",
         "opacity": {
           "field": "break_FET",

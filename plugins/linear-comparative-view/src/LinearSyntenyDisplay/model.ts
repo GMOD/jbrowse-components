@@ -923,7 +923,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           offsetPx1: v1.offsetPx,
           bpPerPx0: v0.bpPerPx,
           bpPerPx1: v1.bpPerPx,
-          drawCurves: view.drawCurves,
+          drawCurves: view.interpolate === 'bump',
         }
       },
     }))

@@ -22,7 +22,7 @@ a ribbon:
   type: 'LinearSyntenyView',
   views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
   tracks: ['hg38_vs_mm10.paf'],
-  drawCurves: true,
+  mark: { interpolate: 'bump' },
   color: { field: 'query' },
 }
 ```
@@ -41,7 +41,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
 | <span id="property-type">**type**</span><br><code>type: types.literal('LinearSyntenyView')</code> |  |
 | <span id="property-cigarmode">**cigarMode**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>cigarMode: types.stripDefault( types.enumeration(['off', 'match…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>cigarMode: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.enumeration(['off', 'matches', 'full'] as const),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;'full',&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | How per-base insertions and deletions inside each alignment are shown: 'full' paints indel wedges, 'matches' leaves them see-through, 'off' draws blocks only. |
-| <span id="property-drawcurves">**drawCurves**</span><br><code>drawCurves: types.stripDefault(types.boolean, false)</code> | Draw every band's ribbons as bezier curves rather than straight chords. |
+| <span id="property-mark">**mark**</span><br><code>mark: types.stripDefault(syntenyMarkConfigSchema, {})</code> | How every band's ribbons draw, a [](/docs/config/syntenymark) object: `{ interpolate: 'bump' }` curves their sides. |
 | <span id="property-drawlocationmarkers">**drawLocationMarkers**</span><br><code>drawLocationMarkers: types.stripDefault(types.boolean, false)</code> | Continue the query row's scalebar grid down through every band: a tick at each round query coordinate, joined to the coordinate the alignment pairs it with. |
 | <span id="property-showoffscreenmates">**showOffscreenMates**</span><br><code>showOffscreenMates: types.stripDefault(types.boolean, true)</code> | Mark the alignments the view cannot draw a ribbon for, along both edges of each band. Costs a second query per pair of rows. |
 | <span id="property-overdrawpx">**overdrawPx**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>overdrawPx: types.stripDefault(types.number, DEFAULT_OVERDRAW_P…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>overdrawPx: types.stripDefault(types.number, DEFAULT_OVERDRAW_PX)</code></pre></dialog></span> | pixels beyond the visible viewport edge that synteny lines are still drawn. Effective up to the pan buffer (`syntenyPanBufferPx`: 2000px, or half the viewport when that is wider) — the worker emits CIGAR detail and location markers only that far, so a larger value draws ribbons whose detail stops partway along them. |
@@ -110,6 +110,7 @@ From [BaseViewModel](../baseviewmodel): <span id="volatile-bodymounted">[`bodyMo
 | <span id="getter-stackerror">**stackError**</span><br><code>unknown</code> | The failure that leaves the stack nothing to show: the view's own, or every row's. One failed row reports itself in its place in the stack. |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  |
 | <span id="getter-sharedfit">**sharedFit**</span><br><code>SharedFit</code> | The zoom-out limit every row shares while `sameScale` is on (`sharedFit.ts`). Each row reads it through its `maxBpPerPx`, detecting this view by the presence of this getter. |
+| <span id="getter-interpolate">**interpolate**</span><br><code>"bump" &#124; "linear"</code> | The curve every ribbon side takes, `mark.interpolate`. |
 | <span id="getter-allsyntenydisplays">**allSyntenyDisplays**</span><br><code>LinearSyntenyDisplayModel[]</code> | Every synteny display across every level. |
 | <span id="getter-hiddenfeaturecount">**hiddenFeatureCount**</span><br><code>number</code> |  |
 | <span id="getter-followpairs">**followPairs**</span><br><code>{…}[]</code> | Each connected synteny level resolved into the pair of rows a follow moves it between: which row stays, which moves, which axis the anchor window is read off, and the assembly naming the level's lane of an all-vs-all track.<br><br>Ordered outward from the anchor, so each level's staying row is the anchor or a row a nearer level has already placed, and a stack of three or more settles in one pass. |
@@ -213,7 +214,7 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 | <span id="action-resizealllevelheights">**resizeAllLevelHeights**</span><br><code>(distance: number, levelIdx?: any, from?: number[]) =&gt; number</code> | Resize every synteny band at once by `scaleBandHeights`, choosing the total so the bar under band `levelIdx` moves by `distance`: the bands down to it take exactly that, and the rest keep their proportion to them. `from` is the heights to scale; a drag passes the ones it started with, so whole-pixel rounding does not compound frame by frame. Returns how far that bar can go, which is `distance` unless the floor stopped it. |
 | <span id="action-autoscalelevelheights">**autoScaleLevelHeights**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-appendrow">**appendRow**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ assembly, loc, syntenyTrackId, }: { assembly: string; loc?:…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ assembly, loc, syntenyTrackId, }: { assembly: string; loc?: string &#124; undefined; syntenyTrackId?: string &#124; undefined; }) =&gt; Promise&lt;any&gt; &#124; undefined</code></pre></dialog></span> | Append an assembly to the bottom of the stack, optionally showing a synteny track on the new level. Returns `launchTrack`'s promise rather than awaiting it, so the action stays synchronous. |
-| <span id="action-setdrawcurves">**setDrawCurves**</span><br><code>(arg: boolean) =&gt; void</code> |  |
+| <span id="action-setinterpolate">**setInterpolate**</span><br><code>(interpolate: "bump" &#124; "linear") =&gt; void</code> |  |
 | <span id="action-setcigarmode">**setCigarMode**</span><br><code>(arg: "full" &#124; "matches" &#124; "off") =&gt; void</code> |  |
 | <span id="action-setdrawlocationmarkers">**setDrawLocationMarkers**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowoffscreenmates">**setShowOffscreenMates**</span><br><code>(flag: boolean) =&gt; void</code> |  |

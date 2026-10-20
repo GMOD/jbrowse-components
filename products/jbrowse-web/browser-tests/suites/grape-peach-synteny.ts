@@ -22,7 +22,7 @@ const suite: TestSuite = {
         type: 'LinearSyntenyView',
         tracks: ['peach_grape_minimap2'],
         filter: [{ field: 'length', gte: 2000 }],
-        drawCurves: true,
+        mark: { interpolate: 'bump' },
         autoDiagonalize: true,
         color: { field: 'query' },
         opacity: 0.4,

@@ -61,7 +61,7 @@ export function dotplotViewKnobs(opts: Opts) {
 export function syntenyViewKnobs(opts: Opts) {
   return definedOnly<Partial<LinearSyntenyViewInit>>({
     ...sharedComparativeKnobs(opts),
-    drawCurves: opts.drawCurves ? true : undefined,
+    mark: opts.drawCurves ? { interpolate: 'bump' as const } : undefined,
     cigarMode: opts.cigarMode,
     opacity: opts.opacity === undefined ? undefined : { value: opts.opacity },
     levelHeights: opts.levelHeights,

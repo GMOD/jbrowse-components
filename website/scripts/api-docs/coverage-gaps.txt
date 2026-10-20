@@ -1007,12 +1007,12 @@ LinearSyntenyView.ownViews
 LinearSyntenyView.rubberBandMenuItems
 LinearSyntenyView.setCigarMode
 LinearSyntenyView.setDiagonalizeAnchorRow
-LinearSyntenyView.setDrawCurves
 LinearSyntenyView.setDrawLocationMarkers
 LinearSyntenyView.setError
 LinearSyntenyView.setFollowAnchorIndex
 LinearSyntenyView.setFollowMatchOrientation
 LinearSyntenyView.setFollowSynteny
+LinearSyntenyView.setInterpolate
 LinearSyntenyView.setLaunch
 LinearSyntenyView.setOverdrawPx
 LinearSyntenyView.setSameScale

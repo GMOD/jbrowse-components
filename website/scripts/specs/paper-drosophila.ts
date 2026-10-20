@@ -71,7 +71,7 @@ export const paperDrosophilaSpecs: ScreenshotSpec[] = [
           filter: [{ field: 'muller', valid: true }],
           autoDiagonalize: false,
           collapseEmptyRows: true,
-          drawCurves: true,
+          mark: { interpolate: 'bump' },
           opacity: 0.5,
           showOffscreenMates: false,
           fadeThinAlignmentsMode: 'off',

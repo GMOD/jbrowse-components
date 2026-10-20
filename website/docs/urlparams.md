@@ -792,7 +792,7 @@ strand, with curved ribbons and stronger opacity:
       "type": "LinearSyntenyView",
       "tracks": ["volvox_fake_synteny"],
       "color": { "field": "strand" },
-      "drawCurves": true,
+      "mark": { "interpolate": "bump" },
       "opacity": 0.8,
       "views": [
         { "loc": "ctgA:1-30000", "assembly": "volvox" },
@@ -828,7 +828,6 @@ restores natively:
 | [`color`](/docs/models/trackcolorsmixin#property-color) | The color every track in the view paints with, a [](/docs/config/syntenycolor) object: `{ field: "strand" }`, `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`, a measurement (`identity`, `mapq`, `dnds`) or a column the tracks declare, with `domain` ordering a text column's labels, `range` coloring them and `labels` naming them in the key, `range` or `scheme`, `reverse` and pinned ends reshaping a ramp, and `scale: 'threshold'` binning a number at `domain`'s cuts; a color string paints every alignment. Unset, the view's default paints: `query` on the circular view, the default scheme elsewhere. |
 | [`diagonalizeAnchorRow`](/docs/models/linearsyntenyview#property-diagonalizeanchorrow) | Which genome row "Re-order chromosomes" keeps as it is: the rows below it are ordered against the row above them, and the rows above it against the row below. It matters wherever the top row is not the one whose order means something: `linkage_groups/alg_stack` stacks six genomes whose linkage groups are the jellyfish row's chromosomes, and anchored on the top row every row below is ordered off a comb jelly instead. |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
-| [`drawCurves`](/docs/models/linearsyntenyview#property-drawcurves) | Draw every band's ribbons as bezier curves rather than straight chords. |
 | [`drawLocationMarkers`](/docs/models/linearsyntenyview#property-drawlocationmarkers) | Continue the query row's scalebar grid down through every band: a tick at each round query coordinate, joined to the coordinate the alignment pairs it with. |
 | [`fadeThinAlignmentsMode`](/docs/models/syntenyfademixin#property-fadethinalignmentsmode) | Fade a sub-pixel-thin ribbon's opacity by its on-screen width, so an unfiltered whole-genome view doesn't read as a full-opacity hairball. 'auto' fades once sub-pixel ribbons dominate a display and leaves a sparse comparison at full alpha; 'on'/'off' fix the value. Resolved view-wide by `fadeThinAlignments`. |
 | [`filter`](/docs/models/syntenyfiltermixin#property-filter) | The alignments drawn, a list of [](/docs/config/fieldpredicate) entries an alignment must all pass. A field is any field `color` takes, or `length`, the alignment's bp on its own axis: `[{ field: 'length', gte: 10000 }]` clears a whole-genome hairball. A filter edit recolors and refetches nothing. |
@@ -837,6 +836,7 @@ restores natively:
 | [`followSynteny`](/docs/models/linearsyntenyview#property-followsynteny) | The non-anchor rows follow the anchor row through the alignment, moving to whatever region aligns to its window. |
 | [`levels`](/docs/models/linearsyntenyview#property-levels) | One synteny band per adjacent pair of `views`, each holding one track list. The track-selector and add-track widgets address a band through `trackContainerFor`. |
 | [`lodMode`](/docs/models/syntenyviewmixin#property-lodmode) | Level-of-detail tier selection for PIF adapters. 'auto' uses the adapter's bpPerPx threshold; 'fine' forces the per-row CIGAR tier (t/q); 'coarse' forces the tier whose CIGAR is folded to its large indels (T/Q) when present. One value for the view, so every track draws at the same tier. |
+| [`mark`](/docs/models/linearsyntenyview#property-mark) | How every band's ribbons draw, a [](/docs/config/syntenymark) object: `{ interpolate: 'bump' }` curves their sides. |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 | [`opacity`](/docs/models/syntenycolorsmixin#property-opacity) | The opacity every alignment draws at, a [](/docs/config/syntenyopacity) object: a number for all of them, or a field each alignment has, read into opacities, `{ field: "identity" }` or a column the tracks declare. Unset, the view's default: low on the synteny view for dense whole-genome hairballs, opaque on the dotplot. |
 | [`overdrawPx`](/docs/models/linearsyntenyview#property-overdrawpx) | pixels beyond the visible viewport edge that synteny lines are still drawn. Effective up to the pan buffer (`syntenyPanBufferPx`: 2000px, or half the viewport when that is wider) — the worker emits CIGAR detail and location markers only that far, so a larger value draws ribbons whose detail stops partway along them. |

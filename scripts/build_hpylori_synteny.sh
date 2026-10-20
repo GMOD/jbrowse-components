@@ -130,7 +130,7 @@ cat > session.json <<'JSON'
         { "assembly": "GCF_000982695.1", "tracks": ["GCF_000982695.1-ncbiGff"] }
       ],
       "tracks": [["hpylori_26695_vs_chc155"], ["hpylori_chc155_vs_j99"]],
-      "drawCurves": true,
+      "mark": { "interpolate": "bump" },
       "filter": [{ "field": "length", "gte": 5000 }]
     }
   ]

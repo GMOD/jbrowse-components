@@ -146,7 +146,7 @@ cat > session.json <<'JSON'
         { "assembly": "IAI39" }
       ],
       "tracks": ["ecoli_ava"],
-      "drawCurves": false,
+      "mark": { "interpolate": "linear" },
       "filter": [{ "field": "length", "gte": 10000 }],
       "collapseEmptyRows": true
     }

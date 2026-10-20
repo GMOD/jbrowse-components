@@ -174,7 +174,7 @@ const syntenySession = {
 // equivalence check.
 function curveRibbons(view: unknown) {
   act(() => {
-    ;(view as LinearSyntenyViewModel).setDrawCurves(true)
+    ;(view as LinearSyntenyViewModel).setInterpolate('bump')
   })
 }
 

@@ -8,7 +8,7 @@ const spec: ViewSpec = {
   type: 'LinearSyntenyView',
   views: [{ assembly: 'a' }, { assembly: 'b' }],
   opacity: 0.9,
-  drawCurves: true,
+  mark: { interpolate: 'bump' },
 }
 
 describe('viewSettingsFromSpec', () => {
@@ -16,7 +16,7 @@ describe('viewSettingsFromSpec', () => {
     expect(viewSettingsFromSpec(spec)).toEqual({
       views: [{ assembly: 'a' }, { assembly: 'b' }],
       opacity: 0.9,
-      drawCurves: true,
+      mark: { interpolate: 'bump' },
     })
   })
 
@@ -33,7 +33,7 @@ describe('viewSettingsFromSpec', () => {
       viewSettingsFromSpec(spec, syntenyViewKnobs({ colorBy: 'query' })),
     ).toMatchObject({
       opacity: 0.9,
-      drawCurves: true,
+      mark: { interpolate: 'bump' },
       color: { field: 'query' },
     })
   })
@@ -43,7 +43,7 @@ describe('viewSettingsFromSpec', () => {
     // false — so the knob builder has to drop it before the merge sees it
     expect(
       viewSettingsFromSpec(spec, syntenyViewKnobs({ drawCurves: false })),
-    ).toMatchObject({ drawCurves: true })
+    ).toMatchObject({ mark: { interpolate: 'bump' } })
   })
 
   it('merges only the shared knobs for a dotplot', () => {

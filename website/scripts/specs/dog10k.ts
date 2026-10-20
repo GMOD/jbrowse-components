@@ -439,10 +439,10 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
     views: [
       {
         type: 'LinearSyntenyView',
-        // straight quadrilaterals, not drawCurves: a bezier bows away from its
+        // straight quadrilaterals, not curved ones: a bezier bows away from its
         // own endpoints, and the whole figure is where four block edges sit
         // against two intron boundaries
-        drawCurves: false,
+        mark: { interpolate: 'linear' },
         // 'matches', so each intron is an unpainted gap in the ribbon rather
         // than a colored wedge. NOT a cosmetic choice: 'full' names each indel
         // op, and the perspective-flip swaps D<->I, so the SAME 532 bp gap came

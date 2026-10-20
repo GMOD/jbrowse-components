@@ -146,7 +146,7 @@ test('a repaint that moves nothing keeps the hover', async () => {
   const { view, level, display } = await setup()
 
   hover(level, display)
-  view.setDrawCurves(!view.drawCurves)
+  view.setInterpolate(view.interpolate === 'bump' ? 'linear' : 'bump')
   expect(display.hoveredInstanceIdx).toBe(3)
 }, 20000)
 

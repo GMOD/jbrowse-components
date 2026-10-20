@@ -26544,6 +26544,30 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "SyntenyMark": {
+      "title": "SyntenyMark",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "interpolate": {
+          "description": "the curve of each ribbon side: linear is straight, bump the S-curve that leaves and meets each row square.",
+          "default": "linear",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "linear",
+              "bump"
+            ]
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearSyntenyViewTrackEntry": {
       "title": "LinearSyntenyViewTrackEntry",
       "description": "A track to open in a LinearSyntenyView: a trackId, or an object whose other keys are the display's config slots and state written inline.",
@@ -26653,8 +26677,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "full"
           ]
         },
-        "drawCurves": {
-          "type": "boolean"
+        "mark": {
+          "$ref": "#/$defs/SyntenyMark"
         },
         "drawLocationMarkers": {
           "type": "boolean"
