@@ -91,13 +91,12 @@ const UNGROUPED: GroupId = { key: '', label: '' }
 // One preparation per section of a ref group, in stacking order. Ungrouped is
 // the one-section case, so nothing downstream carries an ungrouped branch.
 function prepareRefSections(
-  regions: [number, LayoutRegionData][],
+  { regions, toDrawnBp }: RefGroup,
   inputs: PackPrepInputs,
   metrics: DisplayModeMetrics,
   sectionOf: ((item: FlatbushItem) => GroupId) | undefined,
 ): RefSections {
   const hiddenIds = new Set<string>()
-  const toDrawnBp = drawnAxis(regions.map(([, data]) => data))
   if (!sectionOf) {
     return {
       toDrawnBp,
@@ -286,10 +285,10 @@ function layoutRefGroups(
   const sectionOf = sectionAssignment(inputs)
   const out = new Map<number, FeatureDataResult>()
   const collapsedIds = new Set<string>()
-  const refs = [...groupRawByRef(rpcDataMap).values()].map(regions => ({
-    regions,
+  const refs = groupRawByRef(rpcDataMap).map(group => ({
+    regions: group.regions,
     ...packRefSections(
-      prepareRefSections(regions, inputs, metrics, sectionOf),
+      prepareRefSections(group, inputs, metrics, sectionOf),
       inputs,
       metrics,
       prevYByFeatureId,
@@ -418,8 +417,8 @@ export function createPackHeightProbe(
       prepared = {
         bodyScale,
         metrics,
-        refs: [...groupRawByRef(rpcDataMap).values()].map(regions =>
-          prepareRefSections(regions, prepInputs, metrics, sectionOf),
+        refs: groupRawByRef(rpcDataMap).map(group =>
+          prepareRefSections(group, prepInputs, metrics, sectionOf),
         ),
       }
     }
@@ -474,11 +473,26 @@ export function createIsoformCountProbe(
     })
 }
 
+interface RefGroup {
+  regions: [number, LayoutRegionData][]
+  toDrawnBp: (bp: number) => number
+}
+
 // Shared by the committed layout and the probe so both pack the same groups
-// from the same objects.
-function groupRawByRef(rpcDataMap: ReadonlyMap<number, LayoutRegionData>) {
+// from the same objects. A region with nothing in it packs nothing but still
+// draws, so its bounds still shape the axis.
+function groupRawByRef(
+  rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
+): RefGroup[] {
+  const bounds = new Map<string, LayoutRegionData[]>()
   const refGroups = new Map<string, [number, LayoutRegionData][]>()
   for (const [n, raw] of rpcDataMap) {
+    let refBounds = bounds.get(raw.regionKey)
+    if (!refBounds) {
+      refBounds = []
+      bounds.set(raw.regionKey, refBounds)
+    }
+    refBounds.push(raw)
     if (raw.flatbushItems.length > 0) {
       let group = refGroups.get(raw.regionKey)
       if (!group) {
@@ -488,7 +502,10 @@ function groupRawByRef(rpcDataMap: ReadonlyMap<number, LayoutRegionData>) {
       group.push([n, raw])
     }
   }
-  return refGroups
+  return [...refGroups].map(([key, regions]) => ({
+    regions,
+    toDrawnBp: drawnAxis(bounds.get(key)!),
+  }))
 }
 
 // Exhaustive by construction: a cache key compared in one place and forgotten

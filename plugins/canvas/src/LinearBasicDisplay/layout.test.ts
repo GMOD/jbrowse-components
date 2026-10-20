@@ -731,6 +731,27 @@ describe('labels and trims across a seam between regions of one ref', () => {
     expect(labels.get('snp')!.nameLabel).toBeDefined()
   })
 
+  it('cuts the stretch beside a region with nothing in it', () => {
+    const empty = makeFeatureData({ features: [], bounds: [0, 100] })
+    const second = {
+      ...labeledFeatureData([
+        { featureId: 'late', startBp: 950, endBp: 1080, height: 10 },
+      ]),
+      regionStart: 1000,
+      regionEnd: 1500,
+    }
+    const out = layout(
+      new Map([
+        [0, empty],
+        [1, second],
+      ]),
+      1,
+    )
+    expect(out.get(1)!.floatingLabelsData.get('late')).toMatchObject({
+      minX: 1000,
+    })
+  })
+
   it('names the sliver again once zooming in draws enough of it', () => {
     const labels = labelsAt(0.5)
     expect(labels.get('sliver')!.nameLabel).toBeDefined()
