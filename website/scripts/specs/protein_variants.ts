@@ -33,6 +33,7 @@ interface ViewJson {
 interface SessionJson {
   views: ViewJson[]
   sessionTracks?: object[]
+  highlights?: object[]
 }
 
 function readSession(file: string): SessionJson {
@@ -47,6 +48,7 @@ interface SessionOptions {
   sessionTracks?: object[]
   msaHeight?: number
   domains?: boolean
+  highlights?: object[]
 }
 
 function linkedSession(
@@ -60,6 +62,7 @@ function linkedSession(
     sessionTracks = [],
     msaHeight = 560,
     domains = false,
+    highlights,
   }: SessionOptions,
 ) {
   const session = structuredClone(base)
@@ -78,6 +81,9 @@ function linkedSession(
     protein.color = { field: 'domain' }
   }
   session.sessionTracks = sessionTracks
+  if (highlights) {
+    session.highlights = highlights
+  }
   return `?config=${encodeURIComponent(config)}&session=encoded-${deflateSync(
     JSON.stringify(session),
   ).toString('base64url')}`
@@ -254,6 +260,171 @@ const AGL11_SESSION = readSession('protein_browser_agl11.session.json')
 const GRAPE_GENES = 'GCF_030704535.1-ncbiRefSeqCurated'
 const AGL11_R197 = 'chr18:32,255,718'
 
+const HG38_GENES = 'hg38-ncbiRefSeqSelect'
+const HG38_GENE_TRACK = { trackId: HG38_GENES, height: 60 }
+const CLINVAR_TRACK = { trackId: 'hg38-clinvarMain', height: 300 }
+const HOTSPOT_FONT_SIZE = 23
+
+interface Hotspot {
+  label: string
+  refName: string
+  start: number
+  end: number
+}
+
+interface HotspotGene {
+  session: SessionJson
+  gene: string
+  hotspots: Hotspot[]
+}
+
+// The protein browser's launch with human as the alignment's reference row,
+// and each hotspot codon as a labelled session highlight.
+function hotspotSession(
+  { session: base, gene, hotspots }: HotspotGene,
+  region: { start: number; end: number },
+  options: Omit<SessionOptions, 'highlights'>,
+) {
+  const session = structuredClone(base)
+  const [, msa, protein] = session.views as [ViewJson, ViewJson, ViewJson]
+  msa.relativeTo = 'human_query'
+  if (options.domains) {
+    msa.showDomainLegend = false
+  }
+  protein.colorScheme = 'mapped-chain'
+  return linkedSession(
+    session,
+    decodeURIComponent(UCSC_HG38_CONFIG),
+    `${gene} orthologs`,
+    { row: 'human_query', ...region },
+    {
+      ...options,
+      highlights: hotspots.map(h => ({ ...h, assemblyName: 'hg38' })),
+    },
+  )
+}
+
+function hoverCodon(loc: string) {
+  return [
+    ...RESET_ZOOM,
+    { type: 'hover' as const, anchor: { trackId: HG38_GENES, loc } },
+    { type: 'delay' as const, ms: 1500 },
+  ]
+}
+
+// The domain track the alignment adds to the genome view, its legend closed
+// and its height grown by `grow` px to show every site's row, then the codon
+// hovered.
+function domainFigure(gene: string, codon: string, grow = 0) {
+  const testid = `trackRenderingContainer-lgv-${gene}-msaview-domains-msa-${gene}`
+  const handle = {
+    selector: `[data-testid="${testid}"]`,
+    alignY: 'bottom' as const,
+    dy: 2,
+  }
+  const resize = {
+    type: 'drag' as const,
+    fromAnchor: handle,
+    toAnchor: { ...handle, dy: handle.dy + grow },
+  }
+  return {
+    ...READY,
+    readySelector: `${READY.readySelector}:has([data-testid="${testid}"])`,
+    viewportWidth: 2300,
+    clicksChange:
+      grow > 0
+        ? "close the domain track's legend and grow the track"
+        : "close the domain track's legend",
+    actions: [
+      {
+        type: 'click' as const,
+        selector: `[data-track-overlay-slot]:has([data-testid="${testid}"]) [aria-label="Hide legend"]`,
+      },
+      ...(grow > 0 ? [resize] : []),
+      { type: 'waitForAppSettled' as const },
+      ...hoverCodon(codon),
+    ],
+  }
+}
+
+function residueCallout(
+  text: string,
+  residue: string,
+  dx: number,
+  dy: number,
+): Annotation {
+  return {
+    type: 'text',
+    text,
+    fontSize: HOTSPOT_FONT_SIZE,
+    leader: true,
+    anchor: { residue },
+    dx,
+    dy,
+  }
+}
+
+// Measured 2026-10-20 from the GenPept records' CDD features and from the
+// alignments the protein browser launches (NCBI orthologs, 100 rows plus the
+// human query):
+//   KRAS NP_004976.2, CDD:133338 H_N_K_Ras_like 3-164. G12 is in the G1 box
+//   (10-17), the GTP/Mg2+ binding site (12-18, 28-30, ...) and the putative
+//   GDI interaction site (11-12, 59-60); G13 in the G1 box and GTP/Mg2+ site;
+//   Q61 in the Switch II region (59-77) and the GEF interaction site. Every
+//   aligned row has G at 12 and 13 and Q at 61 (Gekko japonicus gapped);
+//   columns 1-75 differ from human only at 67 (common cuckoo Q).
+//   TP53 NP_000537.3, CDD:176262 P53 109-288. The DNA binding site is 239, 241,
+//   248, 273, 275-277, 280; R175 is in no site (zinc 176, 179, 238, 242).
+//   Every aligned row has R at 175, 248 and 273 (bald eagle gapped at 273);
+//   columns 259-264, 268-269 and 283 vary in 25-52 rows. 1TUP chain B: R248
+//   CG 3.4 A and R273 NH2 2.5 A from DNA atoms, R175 13.2 A.
+//   BRAF NP_004324.2, CDD:270964 STKc_Raf 463-715. The activation loop site is
+//   593-606, 612-618 and holds V600; the ATP binding site ends at D594. Every
+//   aligned row has V at 600 (sunbittern gapped); 594-607 match human in every
+//   row, 608 and 610 differ in 3-4 rows.
+//   HBB NP_000509.1: the Hb-beta-like domain starts at 8, so residue 7 is
+//   outside every CDD domain and site.
+//   6OIM (KRAS G12C, sotorasib) assembly 1 is chain A, Cys12 modelled. 3OG7's
+//   assembly 1 is chain A, which leaves 597-605 unmodelled, so BRAF uses 4MNF
+//   (V600E, GDC-0879), whose chains A and B both model Glu600.
+
+// KRAS NM_004985.5, minus strand: G12 and G13 open exon 2's coding run, Q61
+// sits in exon 3.
+const KRAS: HotspotGene = {
+  session: readSession('protein_browser_kras.session.json'),
+  gene: 'KRAS',
+  hotspots: [
+    { label: 'G12', refName: 'chr12', start: 25245348, end: 25245351 },
+    { label: 'G13', refName: 'chr12', start: 25245345, end: 25245348 },
+    { label: 'Q61', refName: 'chr12', start: 25227340, end: 25227343 },
+  ],
+}
+const KRAS_G12_WINDOW = 'chr12:25245320-25245380[rev]'
+const KRAS_DOMAIN_WINDOWS =
+  'chr12:25245328-25245372[rev] chr12:25227320-25227364[rev]'
+const KRAS_G12 = 'chr12:25,245,350'
+
+const TP53: HotspotGene = {
+  session: readSession('protein_browser_tp53_1tup.session.json'),
+  gene: 'TP53',
+  hotspots: [
+    { label: 'R248', refName: 'chr17', start: 7674218, end: 7674221 },
+    { label: 'R273', refName: 'chr17', start: 7673800, end: 7673803 },
+  ],
+}
+const TP53_WINDOWS = 'chr17:7674201-7674239[rev] chr17:7673783-7673821[rev]'
+const TP53_R248 = 'chr17:7,674,220'
+
+const BRAF: HotspotGene = {
+  session: readSession('protein_browser_braf.session.json'),
+  gene: 'BRAF',
+  hotspots: [
+    { label: 'V600', refName: 'chr7', start: 140753334, end: 140753337 },
+  ],
+}
+const BRAF_V600_WINDOW = 'chr7:140753306-140753366[rev]'
+const BRAF_V600 = 'chr7:140,753,336'
+
 export const proteinVariantSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
@@ -410,5 +581,105 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         'Leu197 outlined in pink, where the model turns from blue to yellow and orange',
       ),
     ],
+  },
+  {
+    mode: 'url',
+    name: 'protein/kras_codon_hover',
+    url: hotspotSession(
+      KRAS,
+      { start: 1, end: 31 },
+      {
+        loc: KRAS_G12_WINDOW,
+        tracks: [HG38_GENE_TRACK, CLINVAR_TRACK],
+        msaHeight: 420,
+      },
+    ),
+    ...READY,
+    viewportWidth: 2300,
+    viewportHeight: 1150,
+    actions: hoverCodon(KRAS_G12),
+    annotations: [residueCallout('Cys12 beside sotorasib', 'A:12', -80, -300)],
+  },
+  {
+    mode: 'url',
+    name: 'protein/kras_domains_three_views',
+    url: hotspotSession(
+      KRAS,
+      { start: 1, end: 75 },
+      {
+        loc: KRAS_DOMAIN_WINDOWS,
+        tracks: [HG38_GENE_TRACK],
+        msaHeight: 490,
+        domains: true,
+      },
+    ),
+    ...domainFigure('KRAS', KRAS_G12, 110),
+    viewportHeight: 1220,
+  },
+  {
+    mode: 'url',
+    name: 'protein/tp53_codon_hover',
+    url: hotspotSession(
+      TP53,
+      { start: 241, end: 280 },
+      { loc: TP53_WINDOWS, tracks: [HG38_GENE_TRACK], msaHeight: 560 },
+    ),
+    ...READY,
+    viewportWidth: 2300,
+    viewportHeight: 1070,
+    actions: hoverCodon(TP53_R248),
+  },
+  {
+    mode: 'url',
+    name: 'protein/tp53_domains_three_views',
+    url: hotspotSession(
+      TP53,
+      { start: 231, end: 290 },
+      {
+        loc: TP53_WINDOWS,
+        tracks: [HG38_GENE_TRACK],
+        msaHeight: 490,
+        domains: true,
+      },
+    ),
+    ...domainFigure('TP53', TP53_R248),
+    viewportHeight: 1140,
+    annotations: [residueCallout('Arg175', 'B:175', 120, 120)],
+  },
+  {
+    mode: 'url',
+    name: 'protein/braf_codon_hover',
+    url: hotspotSession(
+      BRAF,
+      { start: 585, end: 615 },
+      {
+        loc: BRAF_V600_WINDOW,
+        tracks: [HG38_GENE_TRACK, CLINVAR_TRACK],
+        msaHeight: 420,
+      },
+    ),
+    ...READY,
+    viewportWidth: 2300,
+    viewportHeight: 1150,
+    actions: hoverCodon(BRAF_V600),
+    annotations: [
+      residueCallout('Glu600: 4MNF is the V600E protein', 'A:600', -80, -300),
+    ],
+  },
+  {
+    mode: 'url',
+    name: 'protein/braf_domains_three_views',
+    url: hotspotSession(
+      BRAF,
+      { start: 570, end: 630 },
+      {
+        loc: BRAF_V600_WINDOW,
+        tracks: [HG38_GENE_TRACK],
+        msaHeight: 490,
+        domains: true,
+      },
+    ),
+    ...domainFigure('BRAF', BRAF_V600, 80),
+    viewportHeight: 1190,
   },
 ]

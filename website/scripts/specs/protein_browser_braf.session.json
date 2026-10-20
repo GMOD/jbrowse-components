@@ -1,0 +1,357 @@
+{
+  "name": "Gene explorer: BRAF",
+  "views": [
+    {
+      "id": "lgv-BRAF",
+      "type": "LinearGenomeView",
+      "colorByCDS": true,
+      "hideHeaderOverview": true,
+      "showGridlines": false,
+      "init": {
+        "assembly": "hg38",
+        "loc": "chr7:140924526-140924743[rev] chr7:140850071-140850252[rev] chr7:140834569-140834912[rev] chr7:140808852-140809035[rev] chr7:140807920-140808102[rev] chr7:140801372-140801600[rev] chr7:140800322-140800521[rev] chr7:140794268-140794507[rev] chr7:140787508-140787624[rev] chr7:140782981-140783197[rev] chr7:140781536-140781733[rev] chr7:140777951-140778115[rev] chr7:140776872-140777128[rev] chr7:140754147-140754273[rev] chr7:140753235-140753433[rev] chr7:140749247-140749458[rev] chr7:140739772-140739986[rev] chr7:140734557-140734810[rev]",
+        "tracks": [
+          "hg38-ncbiRefSeqSelect",
+          "hg38-clinvarMain",
+          "hg38-alphaMissense"
+        ]
+      }
+    },
+    {
+      "id": "msa-BRAF",
+      "type": "MsaView",
+      "connectedViewId": "lgv-BRAF",
+      "connectedFeature": {
+        "uniqueId": "NM_004333.6",
+        "type": "mRNA",
+        "refName": "chr7",
+        "start": 140734596,
+        "end": 140924703,
+        "strand": -1,
+        "name": "NM_004333.6",
+        "subfeatures": [
+          {
+            "type": "CDS",
+            "start": 140734596,
+            "end": 140734770,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 140739811,
+            "end": 140739946,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 140749286,
+            "end": 140749418,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 140753274,
+            "end": 140753393,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 140754186,
+            "end": 140754233,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 140776911,
+            "end": 140777088,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 140777990,
+            "end": 140778075,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 140781575,
+            "end": 140781693,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 140783020,
+            "end": 140783157,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 140787547,
+            "end": 140787584,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 140794307,
+            "end": 140794467,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 140800361,
+            "end": 140800481,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 140801411,
+            "end": 140801560,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 140807959,
+            "end": 140808062,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 140808891,
+            "end": 140808995,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 140834608,
+            "end": 140834872,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 140850110,
+            "end": 140850212,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 140924565,
+            "end": 140924703,
+            "strand": -1,
+            "phase": 0
+          }
+        ]
+      },
+      "uniprotId": "P15056",
+      "colorSchemeName": "percent_identity_dynamic",
+      "labelsAlignRight": true,
+      "treeAreaWidth": 200,
+      "allowedGappyness": 50,
+      "orthologParams": {
+        "taxId": 9606,
+        "geneCandidates": ["673"],
+        "source": "ncbi",
+        "msaAlgorithm": "browser",
+        "maxSpecies": 100,
+        "proteinSequence": "MAALSGGGGGGAEPGQALFNGDMEPEAGAGAGAAASSAADPAIPEEVWNIKQMIKLTQEHIEALLDKFGGEHNPPSIYLEAYEEYTSKLDALQQREQQLLESLGNGTDFSVSSSASMDTVTSSSSSSLSVLPSSLSVFQNPTDVARSNPKSPQKPIVRVFLPNKQRTVVPARCGVTVRDSLKKALMMRGLIPECCAVYRIQDGEKKPIGWDTDISWLTGEELHVEVLENVPLTTHNFVRKTFFTLAFCDFCRKLLFQGFRCQTCGYKFHQRCSTEVPLMCVNYDQLDLLFVSKFFEHHPIPQEEASLAETALTSGSSPSAPASDSIGPQILTSPSPSKSIPIPQPFRPADEDHRNQFGQRDRSSSAPNVHINTIEPVNIDDLIRDQGFRGDGGSTTGLSATPPASLPGSLTNVKALQKSPGPQRERKSSSSSEDRNRMKTLGRRDSSDDWEIPDGQITVGQRIGSGSFGTVYKGKWHGDVAVKMLNVTAPTPQQLQAFKNEVGVLRKTRHVNILLFMGYSTKPQLAIVTQWCEGSSLYHHLHIIETKFEMIKLIDIARQTAQGMDYLHAKSIIHRDLKSNNIFLHEDLTVKIGDFGLATVKSRWSGSHQFEQLSGSILWMAPEVIRMQDKNPYSFQSDVYAFGIVLYELMTGQLPYSNINNRDQIIFMVGRGYLSPDLSKVRSNCPKAMKRLMAECLKKKRDERPLFPQILASIELLARSLPKIHRSASEPSLNRAGFQTEDFSLYACASPKTPIQAGGYGAFPVH"
+      }
+    },
+    {
+      "id": "protein-BRAF-4mnf",
+      "type": "ProteinView",
+      "height": 500,
+      "zoomToBaseLevel": false,
+      "structures": [
+        {
+          "pdbId": "4mnf",
+          "feature": {
+            "uniqueId": "NM_004333.6",
+            "type": "mRNA",
+            "refName": "chr7",
+            "start": 140734596,
+            "end": 140924703,
+            "strand": -1,
+            "name": "NM_004333.6",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 140734596,
+                "end": 140734770,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 140739811,
+                "end": 140739946,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 140749286,
+                "end": 140749418,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 140753274,
+                "end": 140753393,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 140754186,
+                "end": 140754233,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 140776911,
+                "end": 140777088,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 140777990,
+                "end": 140778075,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 140781575,
+                "end": 140781693,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 140783020,
+                "end": 140783157,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 140787547,
+                "end": 140787584,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 140794307,
+                "end": 140794467,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 140800361,
+                "end": 140800481,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 140801411,
+                "end": 140801560,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 140807959,
+                "end": 140808062,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 140808891,
+                "end": 140808995,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 140834608,
+                "end": 140834872,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 140850110,
+                "end": 140850212,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 140924565,
+                "end": 140924703,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MAALSGGGGGGAEPGQALFNGDMEPEAGAGAGAAASSAADPAIPEEVWNIKQMIKLTQEHIEALLDKFGGEHNPPSIYLEAYEEYTSKLDALQQREQQLLESLGNGTDFSVSSSASMDTVTSSSSSSLSVLPSSLSVFQNPTDVARSNPKSPQKPIVRVFLPNKQRTVVPARCGVTVRDSLKKALMMRGLIPECCAVYRIQDGEKKPIGWDTDISWLTGEELHVEVLENVPLTTHNFVRKTFFTLAFCDFCRKLLFQGFRCQTCGYKFHQRCSTEVPLMCVNYDQLDLLFVSKFFEHHPIPQEEASLAETALTSGSSPSAPASDSIGPQILTSPSPSKSIPIPQPFRPADEDHRNQFGQRDRSSSAPNVHINTIEPVNIDDLIRDQGFRGDGGSTTGLSATPPASLPGSLTNVKALQKSPGPQRERKSSSSSEDRNRMKTLGRRDSSDDWEIPDGQITVGQRIGSGSFGTVYKGKWHGDVAVKMLNVTAPTPQQLQAFKNEVGVLRKTRHVNILLFMGYSTKPQLAIVTQWCEGSSLYHHLHIIETKFEMIKLIDIARQTAQGMDYLHAKSIIHRDLKSNNIFLHEDLTVKIGDFGLATVKSRWSGSHQFEQLSGSILWMAPEVIRMQDKNPYSFQSDVYAFGIVLYELMTGQLPYSNINNRDQIIFMVGRGYLSPDLSKVRSNCPKAMKRLMAECLKKKRDERPLFPQILASIELLARSLPKIHRSASEPSLNRAGFQTEDFSLYACASPKTPIQAGGYGAFPVH",
+          "connectedViewId": "lgv-BRAF"
+        }
+      ]
+    }
+  ],
+  "useWorkspaces": true,
+  "activePanelId": "panel-left",
+  "layout": {
+    "id": "branch-root",
+    "direction": "row",
+    "size": 1,
+    "children": [
+      {
+        "id": "panel-left",
+        "size": 58,
+        "tabs": [
+          {
+            "id": "tab-left",
+            "viewIds": ["lgv-BRAF", "msa-BRAF"]
+          }
+        ],
+        "activeTabId": "tab-left"
+      },
+      {
+        "id": "panel-right",
+        "size": 42,
+        "tabs": [
+          {
+            "id": "tab-right",
+            "viewIds": ["protein-BRAF-4mnf"]
+          }
+        ],
+        "activeTabId": "tab-right"
+      }
+    ]
+  }
+}

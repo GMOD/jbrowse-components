@@ -341,6 +341,24 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     xband: [0.62, 0.92],
     position: 'center',
   },
+  protein_variants_kras: {
+    src: 'protein/kras_domains_three_views.png',
+    band: [0.4, 0.85],
+    xband: [0.62, 0.98],
+    position: 'center',
+  },
+  protein_variants_tp53: {
+    src: 'protein/tp53_domains_three_views.png',
+    band: [0.35, 0.85],
+    xband: [0.62, 0.98],
+    position: 'center',
+  },
+  protein_variants_braf: {
+    src: 'protein/braf_domains_three_views.png',
+    band: [0.35, 0.85],
+    xband: [0.62, 0.98],
+    position: 'center',
+  },
   synteny_visualization: {
     // gene-level ribbons, not the near-empty dotplot the hand-made thumb used
     src: 'sv_synteny/linear_synteny_genes.png',

@@ -91,6 +91,9 @@ The protein view takes a model of your own as well:
 
 - [](/docs/tutorials/protein_variants_sickle_cell)
 - [](/docs/tutorials/protein_variants_dog_myelopathy)
+- [](/docs/tutorials/protein_variants_kras)
+- [](/docs/tutorials/protein_variants_tp53)
+- [](/docs/tutorials/protein_variants_braf)
 - [](/docs/tutorials/genomes_proteins)
 - [](/docs/tutorials/tp53_structures)
 

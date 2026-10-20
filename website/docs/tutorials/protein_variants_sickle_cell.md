@@ -220,6 +220,9 @@ Each step on this page works on any gene the protein browser opens:
 
 - [](/docs/tutorials/protein_variants_dog_myelopathy)
 - [](/docs/tutorials/protein_variants_seedless_grape)
+- [](/docs/tutorials/protein_variants_kras)
+- [](/docs/tutorials/protein_variants_tp53)
+- [](/docs/tutorials/protein_variants_braf)
 - [](/docs/tutorials/genomes_proteins)
 - [](/docs/tutorials/tp53_structures)
 - [](/docs/tutorials/population_genomics)

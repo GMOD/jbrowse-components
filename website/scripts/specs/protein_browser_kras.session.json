@@ -1,0 +1,167 @@
+{
+  "name": "Gene explorer: KRAS",
+  "views": [
+    {
+      "id": "lgv-KRAS",
+      "type": "LinearGenomeView",
+      "colorByCDS": true,
+      "hideHeaderOverview": true,
+      "showGridlines": false,
+      "init": {
+        "assembly": "hg38",
+        "loc": "chr12:25245234-25245424[rev] chr12:25227194-25227452[rev] chr12:25225574-25225813[rev] chr12:25209755-25209951[rev]",
+        "tracks": [
+          "hg38-ncbiRefSeqSelect",
+          "hg38-clinvarMain",
+          "hg38-alphaMissense"
+        ]
+      }
+    },
+    {
+      "id": "msa-KRAS",
+      "type": "MsaView",
+      "connectedViewId": "lgv-KRAS",
+      "connectedFeature": {
+        "uniqueId": "NM_004985.5",
+        "type": "mRNA",
+        "refName": "chr12",
+        "start": 25209794,
+        "end": 25245384,
+        "strand": -1,
+        "name": "NM_004985.5",
+        "subfeatures": [
+          {
+            "type": "CDS",
+            "start": 25209794,
+            "end": 25209911,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 25225613,
+            "end": 25225773,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 25227233,
+            "end": 25227412,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 25245273,
+            "end": 25245384,
+            "strand": -1,
+            "phase": 0
+          }
+        ]
+      },
+      "uniprotId": "P01116",
+      "colorSchemeName": "percent_identity_dynamic",
+      "labelsAlignRight": true,
+      "treeAreaWidth": 200,
+      "allowedGappyness": 50,
+      "orthologParams": {
+        "taxId": 9606,
+        "geneCandidates": ["3845"],
+        "source": "ncbi",
+        "msaAlgorithm": "browser",
+        "maxSpecies": 100,
+        "proteinSequence": "MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQVVIDGETCLLDILDTAGQEEYSAMRDQYMRTGEGFLCVFAINNTKSFEDIHHYREQIKRVKDSEDVPMVLVGNKCDLPSRTVDTKQAQDLARSYGIPFIETSAKTRQGVDDAFYTLVREIRKHKEKMSKDGKKKKKKSKTKCVIM"
+      }
+    },
+    {
+      "id": "protein-KRAS-6oim",
+      "type": "ProteinView",
+      "height": 500,
+      "zoomToBaseLevel": false,
+      "structures": [
+        {
+          "pdbId": "6oim",
+          "feature": {
+            "uniqueId": "NM_004985.5",
+            "type": "mRNA",
+            "refName": "chr12",
+            "start": 25209794,
+            "end": 25245384,
+            "strand": -1,
+            "name": "NM_004985.5",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 25209794,
+                "end": 25209911,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 25225613,
+                "end": 25225773,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 25227233,
+                "end": 25227412,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 25245273,
+                "end": 25245384,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQVVIDGETCLLDILDTAGQEEYSAMRDQYMRTGEGFLCVFAINNTKSFEDIHHYREQIKRVKDSEDVPMVLVGNKCDLPSRTVDTKQAQDLARSYGIPFIETSAKTRQGVDDAFYTLVREIRKHKEKMSKDGKKKKKKSKTKCVIM",
+          "connectedViewId": "lgv-KRAS",
+          "initialTranscriptResidues": [
+            {
+              "start": 12,
+              "end": 12
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "useWorkspaces": true,
+  "activePanelId": "panel-left",
+  "layout": {
+    "id": "branch-root",
+    "direction": "row",
+    "size": 1,
+    "children": [
+      {
+        "id": "panel-left",
+        "size": 58,
+        "tabs": [
+          {
+            "id": "tab-left",
+            "viewIds": ["lgv-KRAS", "msa-KRAS"]
+          }
+        ],
+        "activeTabId": "tab-left"
+      },
+      {
+        "id": "panel-right",
+        "size": 42,
+        "tabs": [
+          {
+            "id": "tab-right",
+            "viewIds": ["protein-KRAS-6oim"]
+          }
+        ],
+        "activeTabId": "tab-right"
+      }
+    ]
+  }
+}

@@ -1,0 +1,245 @@
+{
+  "name": "Gene explorer: TP53",
+  "views": [
+    {
+      "id": "lgv-TP53",
+      "type": "LinearGenomeView",
+      "colorByCDS": true,
+      "hideHeaderOverview": true,
+      "showGridlines": false,
+      "init": {
+        "assembly": "hg38",
+        "loc": "chr17:7676481-7676634[rev] chr17:7676342-7676443[rev] chr17:7675954-7676312[rev] chr17:7675013-7675276[rev] chr17:7674819-7675011[rev] chr17:7674141-7674330[rev] chr17:7673661-7673877[rev] chr17:7673495-7673648[rev] chr17:7670569-7670755[rev] chr17:7669569-7669730[rev]",
+        "tracks": [
+          "hg38-ncbiRefSeqSelect",
+          "hg38-clinvarMain",
+          "hg38-alphaMissense"
+        ]
+      }
+    },
+    {
+      "id": "msa-TP53",
+      "type": "MsaView",
+      "connectedViewId": "lgv-TP53",
+      "connectedFeature": {
+        "uniqueId": "NM_000546.6",
+        "type": "mRNA",
+        "refName": "chr17",
+        "start": 7669608,
+        "end": 7676594,
+        "strand": -1,
+        "name": "NM_000546.6",
+        "subfeatures": [
+          {
+            "type": "CDS",
+            "start": 7669608,
+            "end": 7669690,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 7670608,
+            "end": 7670715,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 7673534,
+            "end": 7673608,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 7673700,
+            "end": 7673837,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 7674180,
+            "end": 7674290,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 7674858,
+            "end": 7674971,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 7675052,
+            "end": 7675236,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 7675993,
+            "end": 7676272,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 7676381,
+            "end": 7676403,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 7676520,
+            "end": 7676594,
+            "strand": -1,
+            "phase": 0
+          }
+        ]
+      },
+      "uniprotId": "P04637",
+      "colorSchemeName": "percent_identity_dynamic",
+      "labelsAlignRight": true,
+      "treeAreaWidth": 200,
+      "allowedGappyness": 50,
+      "orthologParams": {
+        "taxId": 9606,
+        "geneCandidates": ["7157"],
+        "source": "ncbi",
+        "msaAlgorithm": "browser",
+        "maxSpecies": 100,
+        "proteinSequence": "MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSD"
+      }
+    },
+    {
+      "id": "protein-TP53-1tup",
+      "type": "ProteinView",
+      "height": 500,
+      "zoomToBaseLevel": false,
+      "structures": [
+        {
+          "pdbId": "1tup",
+          "feature": {
+            "uniqueId": "NM_000546.6",
+            "type": "mRNA",
+            "refName": "chr17",
+            "start": 7669608,
+            "end": 7676594,
+            "strand": -1,
+            "name": "NM_000546.6",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 7669608,
+                "end": 7669690,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 7670608,
+                "end": 7670715,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7673534,
+                "end": 7673608,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 7673700,
+                "end": 7673837,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 7674180,
+                "end": 7674290,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7674858,
+                "end": 7674971,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 7675052,
+                "end": 7675236,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7675993,
+                "end": 7676272,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7676381,
+                "end": 7676403,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 7676520,
+                "end": 7676594,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSD",
+          "connectedViewId": "lgv-TP53"
+        }
+      ]
+    }
+  ],
+  "useWorkspaces": true,
+  "activePanelId": "panel-left",
+  "layout": {
+    "id": "branch-root",
+    "direction": "row",
+    "size": 1,
+    "children": [
+      {
+        "id": "panel-left",
+        "size": 58,
+        "tabs": [
+          {
+            "id": "tab-left",
+            "viewIds": ["lgv-TP53", "msa-TP53"]
+          }
+        ],
+        "activeTabId": "tab-left"
+      },
+      {
+        "id": "panel-right",
+        "size": 42,
+        "tabs": [
+          {
+            "id": "tab-right",
+            "viewIds": ["protein-TP53-1tup"]
+          }
+        ],
+        "activeTabId": "tab-right"
+      }
+    ]
+  }
+}
