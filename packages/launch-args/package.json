@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/launch-args",
-  "version": "5.0.0-beta.16",
+  "version": "5.0.0-beta.17",
   "type": "module",
   "description": "The command-line grammar jbrowse-img, jb2capture and JBrowse Desktop share: data files, a genome, a location and tracks, turned into JBrowse config",
   "keywords": [
