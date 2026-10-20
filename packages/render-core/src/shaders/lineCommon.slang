@@ -12,6 +12,7 @@
 // an import.
 //! export-consts: GAP_Y, NO_PREV_X
 //! js-export: lineColorAlongY, lineValueAtColorYPx
+//! oracle-skip: lineValueAtColorYPx — the probe's sub-pixel bands put the color y hundreds of bands outside its own, so symlog's exp lands near float32's max and float32 and float64 part by 1e-5; a fragment stays inside its band, and lineRampAlongY.test.ts referees the twin there
 module lineCommon;
 
 import colorRampLut;

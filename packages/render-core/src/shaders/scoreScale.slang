@@ -10,6 +10,7 @@
 //! js-skip: log1pf — JS has Math.log1p, so a twin of this would be the float32 workaround spelled out where the language already answers it
 //! js-skip: symlogInverse — render-core scoreScale.ts reaches Math.expm1 directly; what both backends agree on is denormalizeScore, exported and swept against scoreScale.ts's
 //! js-skip: symlogTransform — render-core scoreScale.ts reaches Math.log1p directly, one call inside a normalizer it hoists the whole log domain out of, so a per-call twin of this would have no caller. What both backends must agree on is normalizeScore, which is exported and swept by normalizeScoreParity.test.ts
+//! oracle-skip: symlogInverse — the probe feeds it a constant of 0, which resolveSymlogConstant never yields, and exponents past float32's exp range, where C++ answers 0 * inf = NaN; denormalizeScoreParity.test.ts referees the inverse over real domains
 module scoreScale;
 
 // `ScaleTypeCode` in scoreScale.ts is these two and 0, for linear.
