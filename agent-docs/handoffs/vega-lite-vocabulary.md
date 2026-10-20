@@ -31,8 +31,9 @@ spelling, not a new house word. That means no new `min*`, `max*`, `show*` or
 - `data.resolution` on the comparative views and the LGVSynteny and
   multi-way displays, which replaced `lodMode`.
 - The chord displays' `mark.depth`, which replaced `bezierRadiusRatio`.
-- Wiggle's `mark` as Vega-Lite's mark object, `{ type }`, a bare name lifting
-  to the type; the chord displays' `mark` is a plot setting beside it.
+- Wiggle's `mark` as Vega-Lite's mark object, `{ type, interpolate }`, a bare
+  name lifting to the type; the chord displays' `mark` is a plot setting
+  beside it.
 
 ## Next, one concept at a time across the app
 
@@ -76,10 +77,6 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
      as d3's `defined` does. A bridged ribbon also draws at `BRIDGE_ALPHA`.
    - The mark display's `marks.linkShape` (`dome arc line`) has no planned
      spelling yet; see ADR-238's note on `interpolate`.
-   - Wiggle's top-level `interpolate` moves into `mark` (`mark: { type:
-     'line', interpolate: 'linear' }`), as the linear synteny view's has.
-     ggjbrowse writes `interpolate = "linear"` beside `mark = "line"`, so
-     respell it in the same pass.
 
 ## Writers to update after each landing
 
