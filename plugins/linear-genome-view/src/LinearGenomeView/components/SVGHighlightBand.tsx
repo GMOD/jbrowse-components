@@ -1,8 +1,8 @@
 import { getFillProps } from '@jbrowse/core/util'
 
 // One full-height SVG highlight band with an optional label at the top,
-// mirroring the on-screen HighlightBand div. The label is hidden on bands too
-// narrow to fit it.
+// mirroring the on-screen HighlightBand div: a label wider than its band runs
+// past the band's right edge.
 export default function SVGHighlightBand({
   coords,
   height,
@@ -25,7 +25,7 @@ export default function SVGHighlightBand({
         height={height}
         {...getFillProps(color)}
       />
-      {label && coords.width > 3 ? (
+      {label ? (
         <text
           x={coords.left + 3}
           y={2}

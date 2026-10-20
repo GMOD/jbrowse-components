@@ -77,3 +77,11 @@ test('a band too narrow for the chip draws without one', async () => {
   expect(await screen.findByTestId('highlight-band')).toBeTruthy()
   expect(screen.queryByTestId('highlight-chip')).toBeNull()
 })
+
+// A codon at gene zoom is narrower than its label. The band clips what it
+// holds, so the label sits beside it and runs past its right edge.
+test("a band's label sits outside the band, which would clip it", async () => {
+  await setup(NARROW_HIGHLIGHT)
+  const label = await screen.findByText('a region')
+  expect(screen.getByTestId('highlight-band').contains(label)).toBe(false)
+})

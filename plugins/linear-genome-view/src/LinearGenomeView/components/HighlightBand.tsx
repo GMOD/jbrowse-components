@@ -16,10 +16,16 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 1,
     pointerEvents: 'none',
   },
+  // a sibling of the band, so a label wider than a narrow band (a codon at
+  // gene zoom) runs past its right edge instead of clipping to nothing, as
+  // the SVG export's does
   overlay: {
     position: 'absolute',
     top: 0,
     left: 3,
+    zIndex: 1,
+    pointerEvents: 'none',
+    whiteSpace: 'nowrap',
   },
   label: {
     color: theme.palette.text.primary,
@@ -37,9 +43,9 @@ export function gapMask(gaps: { top: number; height: number }[]) {
 }
 
 // OverviewHighlight stays separate (different bpToPx API). A non-interactive
-// colored band with an
-// optional top label; when `children` (the highlight chip) is passed it renders
-// that instead of the plain label. Visibility is toggled from the view menu
+// colored band with an optional top label; when `children` (the highlight
+// chip) is passed it renders that instead of the plain label. Visibility is
+// toggled from the view menu
 const HighlightBand = observer(function HighlightBand({
   coords,
   background,
@@ -62,22 +68,28 @@ const HighlightBand = observer(function HighlightBand({
       </Typography>
     ) : null)
   return (
-    <div
-      data-testid="highlight-band"
-      className={classes.highlight}
-      style={{
-        transform: `translateX(${coords.left}px)`,
-        width: coords.width,
-        background,
-        ...(gaps?.length
-          ? { maskImage: gapMask(gaps), WebkitMaskImage: gapMask(gaps) }
-          : undefined),
-      }}
-    >
-      {coords.width > 3 && content ? (
-        <div className={classes.overlay}>{content}</div>
+    <>
+      <div
+        data-testid="highlight-band"
+        className={classes.highlight}
+        style={{
+          transform: `translateX(${coords.left}px)`,
+          width: coords.width,
+          background,
+          ...(gaps?.length
+            ? { maskImage: gapMask(gaps), WebkitMaskImage: gapMask(gaps) }
+            : undefined),
+        }}
+      />
+      {content ? (
+        <div
+          className={classes.overlay}
+          style={{ transform: `translateX(${coords.left}px)` }}
+        >
+          {content}
+        </div>
       ) : null}
-    </div>
+    </>
   )
 })
 
