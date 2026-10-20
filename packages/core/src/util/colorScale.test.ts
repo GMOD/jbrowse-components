@@ -5,6 +5,21 @@ import {
   withPreset,
 } from './colorScale.ts'
 
+import type { RampScaleName } from './colorScale.ts'
+import type { ColorScaleTable, ContinuousRef } from './markEncodingTypes.ts'
+
+type RampTable = Extract<ColorScaleTable, { kind: 'ramp' }>
+
+// markEncodingTypes.ts spells the ramp scales out to stay a leaf
+// (moduleClosure.test.ts), so both directions are pinned here.
+test('the wire types name every ramp scale and no other', () => {
+  const ramp: RampScaleName[] = []
+  const wire: ContinuousRef['scale'][] = ramp
+  const table: RampTable['scale'][] = ramp
+  const back: RampScaleName[] = [...wire, ...table]
+  expect(back).toEqual([])
+})
+
 test("a field's scale comes from the table's own keys, then its *", () => {
   const presets = {
     source: { scale: 'categorical' },
