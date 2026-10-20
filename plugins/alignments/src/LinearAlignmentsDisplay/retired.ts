@@ -35,13 +35,17 @@ function underEntry(bands: DisplayEntry, entry: DisplayEntry): DisplayEntry {
   return out
 }
 
-// Each v4 display drew one band, and a bare rename to this display would draw
-// all of them: a coverage-only track as coverage + pileup, an arcs track as a
-// pileup.
+// A bare rename would draw every band: a coverage-only track as coverage +
+// pileup, a pileup or arcs track with coverage and a sashimi strip. Only v4's
+// SNP coverage display drew sashimi arcs.
 export const retiredTypes: RetiredDisplayType[] = [
   {
     type: 'LinearPileupDisplay',
-    migrate: entry => underEntry({ coverage: { show: false } }, entry),
+    migrate: entry =>
+      underEntry(
+        { coverage: { show: false }, sashimi: { show: false } },
+        entry,
+      ),
   },
   {
     type: 'LinearSNPCoverageDisplay',
@@ -60,6 +64,7 @@ export const retiredTypes: RetiredDisplayType[] = [
         {
           pileup: { show: false },
           coverage: { show: false },
+          sashimi: { show: false },
           readConnections: { show: true },
         },
         entry,
@@ -72,6 +77,7 @@ export const retiredTypes: RetiredDisplayType[] = [
         {
           pileup: { show: false },
           coverage: { show: false },
+          sashimi: { show: false },
           readConnections: { show: true, mark: 'cloud' },
         },
         entry,
