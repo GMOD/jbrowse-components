@@ -197,3 +197,22 @@ test('a track the view could not open names the display it was asked for', async
     applyDisplayOpts(view, 't', 'alignments', ['display:marks']),
   ).rejects.toThrow('Failed to open track "t" with display "LinearMarkDisplay"')
 })
+
+// The batch report's spec reopens the track as drawn, so the filter the
+// display ended with travels in it.
+test('the returned spec carries the read filter as drawn', async () => {
+  const { view } = fakeView({ flagExclude: 1796 })
+  const spec = await applyDisplayOpts(view, 't', 'alignments', ['split:only'])
+  expect(spec.filter).toMatchObject({ flagExclude: 1796, split: 'only' })
+})
+
+test('a category at all unsets an earlier modifier and the config alike', async () => {
+  const { view, display } = fakeView({ svSignal: 'only' })
+  await applyDisplayOpts(view, 't', 'alignments', [
+    'split:only',
+    'split:all',
+    'svSignal:all',
+  ])
+  expect(display.readFilter.split).toBeUndefined()
+  expect(display.readFilter.svSignal).toBeUndefined()
+})

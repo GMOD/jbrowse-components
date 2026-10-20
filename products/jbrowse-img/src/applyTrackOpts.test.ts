@@ -525,6 +525,15 @@ describe('color routing', () => {
     )
   })
 
+  test("a color field picked over another's object keeps none of its scale", () => {
+    expect(
+      buildDisplaySnapshot('alignments', [
+        '{"color":{"field":"mapq","domain":[0,60]}}',
+        'color:strand',
+      ]).snap.color,
+    ).toEqual({ field: 'strand' })
+  })
+
   test('color names the ramp on a hic track, and refuses what is not a scheme', () => {
     const opts = ['color:viridis', 'color.reverse=true']
     expect(buildDisplaySnapshot('hic', opts).snap).toEqual({})

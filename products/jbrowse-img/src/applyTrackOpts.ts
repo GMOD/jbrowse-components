@@ -3,6 +3,7 @@ import { getEnv, getSession } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { trackDisplayType } from '@jbrowse/core/util/tracks'
+import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
 import {
   getSnapshot,
   getType,
@@ -99,13 +100,14 @@ const BASE_COLORS = [
 ] as const
 const BASE_COLOR_NAMES: ReadonlySet<string> = new Set(BASE_COLORS)
 
-// `color:` names a field on the color object a JSON modifier may already have
-// started, so it merges rather than replaces.
-function mergeColor(r: BuildResult, patch: Partial<ColorObject>) {
-  r.snap.color = {
-    ...(typeof r.snap.color === 'object' ? r.snap.color : {}),
-    ...patch,
-  }
+// `color:` names the field a color object paints by, over one a JSON modifier
+// may already have started, as the Color by menu picks one: its key names and
+// colors stay only while the field is the one they were written for.
+function colorByField(r: BuildResult, field: string) {
+  r.snap.color = colorForField(
+    typeof r.snap.color === 'object' ? r.snap.color : {},
+    field,
+  )
 }
 
 // Display category: the family of display a track opens as, which says which
@@ -524,9 +526,11 @@ function readCategoryModifiers(): Record<string, Modifier> {
         on: ['alignments'],
         apply: (r: BuildResult, v: string) => {
           const choice = parseEnum(key, v, ['all', 'only', 'exclude'] as const)
+          // `all` unsets the category, an earlier modifier's and the
+          // config's alike
           r.snap.filter = {
             ...readFilterSnapOf(r),
-            ...(choice === 'all' ? {} : { [key]: choice }),
+            [key]: choice === 'all' ? undefined : choice,
           }
         },
       } satisfies Modifier,
@@ -736,7 +740,7 @@ const modifiers: Record<string, Modifier> = {
             `a field color paints; reads keep their arcs' colors, and facet=${value} groups them by ${value}`,
           )
         } else if (ALIGNMENTS_COLOR_FIELDS.has(value)) {
-          mergeColor(r, { field: value })
+          colorByField(r, value)
         } else {
           r.snap.color = value
         }
@@ -749,7 +753,7 @@ const modifiers: Record<string, Modifier> = {
         (category === 'feature' || category === 'variant') &&
         value === 'strand'
       ) {
-        mergeColor(r, { field: 'strand' })
+        colorByField(r, 'strand')
       } else {
         r.snap.color = value
       }
@@ -916,15 +920,11 @@ export async function applyDisplayOpts(
     snap.growMaxHeight ??= CARD_GROW_MAX_HEIGHT
   }
 
-  // `filterBy` is the one slot a modifier EDITS rather than states, so it can't
-  // ride in on the snapshot: the slot is `frozen`, and showTrack writes a frozen
-  // slot by replacing the whole object. A track configured with
-  // `filterBy: {flagExclude: 1796}` rendered with `split:only` would come back
-  // with the schema's 1540 and its secondary alignments silently restored —
-  // `flags:` says it keeps an omitted mask, and this is what made that untrue.
-  // Applied after the open, through the display's own action, so each of
-  // `flags:`, `filterTag:` and the four categories composes onto what the config
-  // already said instead of erasing its siblings.
+  // The read filter is one a modifier EDITS rather than states: `filterTag:`
+  // adds a condition to the track's own tags, which a launch snapshot would
+  // replace. Applied after the open, through the display's own actions, so each
+  // of `flags:`, `filterTag:` and the four categories composes onto what the
+  // config already said instead of erasing its siblings.
   const readFilter =
     category === 'alignments' &&
     typeof snap.filter === 'object' &&
@@ -987,12 +987,43 @@ export async function applyDisplayOpts(
       )
     }
   }
-  writeMembers(view, trackId, memberWrites(category, opts))
+  const members = writeMembers(view, trackId, memberWrites(category, opts))
+  // The spec reopens the track as drawn: the read filter the display ended
+  // with, and each member write over the setting it landed in.
+  const drawnFilter = readFilter && readFilterAsDrawn(opened, readFilter)
   return {
     trackId,
     ...displaySnap,
+    ...(drawnFilter ? { filter: drawnFilter } : {}),
+    ...members,
     ...(displayType ? { type: displayType } : {}),
   }
+}
+
+// What the read filter came to after the setters ran: the read members the
+// display holds, beside the junction and connection tests the options named.
+function readFilterAsDrawn(
+  opened: { displays: unknown[] },
+  stated: ReadFilterSnapshot,
+): ReadFilterSnapshot | undefined {
+  const display = opened.displays[0] as
+    | {
+        readFilter?: ReadFilterSnapshot
+        junctionFilter?: Record<string, unknown>
+        connectionFilter?: Record<string, unknown>
+      }
+    | undefined
+  return display?.readFilter
+    ? {
+        ...display.readFilter,
+        ...(stated.junctions
+          ? { junctions: display.junctionFilter ?? stated.junctions }
+          : {}),
+        ...(stated.connections
+          ? { connections: display.connectionFilter ?? stated.connections }
+          : {}),
+      }
+    : undefined
 }
 
 /**
@@ -1021,7 +1052,7 @@ export function writeMembers(
   view: LinearGenomeViewModel,
   trackId: string,
   members: string[],
-) {
+): Record<string, unknown> {
   if (members.length > 0) {
     const track = view.tracks.find(t => t.configuration.trackId === trackId)
     if (!track) {
@@ -1047,10 +1078,9 @@ export function writeMembers(
         return value === undefined ? [] : [[key, value]]
       }),
     )
-    view.showTrack(
-      trackId,
-      {},
-      writes.reduce(applySlotWrite, structuredClone(seed)),
-    )
+    const patch = writes.reduce(applySlotWrite, structuredClone(seed))
+    view.showTrack(trackId, {}, patch)
+    return patch
   }
+  return {}
 }
