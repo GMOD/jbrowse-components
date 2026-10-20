@@ -260,7 +260,7 @@ export function findLaunchTarget(
       }
     }
   }
-  const file = args.find(a => !isFlag(a) && hasLaunchExtension(a))
+  const file = kept.find(a => !isFlag(a) && hasLaunchExtension(a))
   const stray = kept.find(a => !isFlag(a) && !hasLaunchExtension(a))
   return file
     ? { type: 'file', path: path.resolve(cwd, file) }

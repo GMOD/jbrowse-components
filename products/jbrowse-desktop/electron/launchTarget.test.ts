@@ -201,6 +201,11 @@ describe('data files on the command line', () => {
       type: 'plan',
       plan: { config: undefined, unapplied: ['--tracks t.json'] },
     })
+    expect(target('--tracks', 't.json')).toBeUndefined()
+    expect(target('--width', '1400', 'foo.json')).toMatchObject({
+      type: 'file',
+      path: '/home/me/foo.json',
+    })
   })
 
   test('a file Desktop cannot open says so', () => {
