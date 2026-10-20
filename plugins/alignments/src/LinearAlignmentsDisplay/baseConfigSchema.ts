@@ -106,9 +106,9 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
     color: alignmentsColorConfigSchema,
     /**
      * #slot scales
-     * The coverage band's value scale — the one thing on this display drawn
-     * against an axis, the pileup has no value and the arcs use
-     * `arcBandYScale`. `symlogConstant` starts at 1 rather than the wiggle
+     * The coverage band's value scale. The read cloud's insert-size axis is
+     * a fixed log scale (`arcBandYScale`) no setting reaches, and the pileup
+     * has no value. `symlogConstant` starts at 1 rather than the wiggle
      * family's 0, which makes symlog exactly `log(depth+1)`: the knee sits at
      * one read, the smallest depth there is. `domainQuantile` stays at 1, the
      * deepest base in view; the Coverage axis panel's Clip extreme outliers
