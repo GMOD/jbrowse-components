@@ -2,6 +2,7 @@ import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import {
   identityFadeMenuItem,
   lodMenuItems,
+  minIdentityMenuItem,
   minLengthMenuItem,
   opacityMenuItem,
 } from '@jbrowse/synteny-core'
@@ -78,5 +79,6 @@ export function syntenySettingsMenuItems(
     ...lodMenuItems(model),
     opacityMenuItem(model),
     minLengthMenuItem(model),
+    minIdentityMenuItem(model),
   ] satisfies MenuItem[]
 }

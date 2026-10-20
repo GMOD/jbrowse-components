@@ -16,14 +16,22 @@ A view supplies only `colorableTrackConfigs` — the dotplot walks its flat
 that list (palette assignment, mode resolution, legend rows) is identical, so
 it lives here rather than being copied into both models.
 
+Each section ends with the members a composed model contributes, linked to the page that documents them.
+
 ## Properties
 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-color">**color**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>color: types.stripDefault( syntenyColorConfigSchema, defaultCol…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>color: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;syntenyColorConfigSchema,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;defaultColorField ? { field: defaultColorField } : {},&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | The color every track in the view paints with, a [](/docs/config/syntenycolor) object: `{ field: "strand" }`, `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`, a measurement (`identity`, `mapq`, `dnds`) or a column the tracks declare, with `domain` ordering a text column's labels, `range` coloring them and `labels` naming them in the key, `range` or `scheme`, `reverse` and pinned ends reshaping a ramp, and `scale: 'threshold'` binning a number at `domain`'s cuts; a color string paints every alignment. Unset, the view's default paints: `query` on the circular view, the default scheme elsewhere. |
+| <span id="property-color">**color**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>color: types.stripDefault( syntenyColorConfigSchema, defaultCol…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>color: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;syntenyColorConfigSchema,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;defaultColorField ? { field: defaultColorField } : {},&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | The color every track in the view paints with, a [](/docs/config/syntenycolor) object: `{ field: "strand" }`, `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`, a measurement (`identity`, `mapq`, `dnds`) or a column the tracks declare, with `domain` ordering a text column's labels, `range` coloring them and `labels` naming them in the key, `range` or `scheme`, `reverse` and pinned ends reshaping a ramp, and `scale: 'threshold'` binning a number at `domain`'s cuts; a color string paints every alignment. Unset, the view's default paints: `query` on the circular view, the default scheme elsewhere. |
 | <span id="property-trackcolors">**trackColors**</span><br><code>trackColors: types.map(types.string)</code> | trackId -> explicit color under `color: { field: 'track' }`. Absent means the track takes an automatic slot from the palette. |
-| <span id="property-hideunlabelled">**hideUnlabelled**</span><br><code>hideUnlabelled: types.stripDefault(types.boolean, false)</code> | Under a text-column mode, draw only the rows that have a label. |
+
+<details class="inherited-members" data-pagefind-ignore>
+<summary>1 inherited property from one model</summary>
+
+From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="property-filter">[`filter`](../syntenyfiltermixin#property-filter)</span>
+
+</details>
 
 ## Volatiles
 
@@ -47,9 +55,17 @@ it lives here rather than being copied into both models.
 | <span id="getter-colorabletracks">**colorableTracks**</span><br><code>ColorableTrack[]</code> | `colorableTrackConfigs` paired with whatever color the user pinned. This is the single definition of "the tracks that get colors" — the palette, the legend and the palette menu all read it, so they cannot disagree about which tracks are in play. |
 | <span id="getter-trackcolorassignments">**trackColorAssignments**</span><br><code>Map&lt;string, string&gt;</code> | trackId -> the color it draws in under `color: { field: 'track' }`. Assigned across the whole view rather than per display, so an automatic slot can't duplicate a color pinned on a sibling. |
 | <span id="getter-colorfield">**colorField**</span><br><code>string</code> | The field `color` paints by, `''` for the default color. |
+| <span id="getter-hideunlabelled">**hideUnlabelled**</span><br><code>boolean</code> | Whether the filter drops the alignments with no value for the field the view paints by, the "Hide unlabelled rows" box. |
 | <span id="getter-haslegendkey">**hasLegendKey**</span><br><code>boolean</code> | Whether the mode has a key worth a box: a track palette, a ramp, a reader-named column, or strand wherever the shape does not show it (`shapeShowsStrand`), which leaves the color the only strand cue. |
 | <span id="getter-colorlegendchips">**colorLegendChips**</span><br><code>ColorChip[]</code> | Legend rows naming the overlaid tracks — one per track with its palette color, however many levels it is on, and only under `color: { field: 'track' }`, since every other mode has a fixed legend. |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The active mode's key, or none for a mode without one. View-wide rather than per display because the key is one box for the whole view, and the ramp domain it labels is the view's. |
+
+<details class="inherited-members" data-pagefind-ignore>
+<summary>2 inherited getters from one model</summary>
+
+From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="getter-predicates">[`predicates`](../syntenyfiltermixin#getter-predicates)</span>, <span id="getter-minlength">[`minLength`](../syntenyfiltermixin#getter-minlength)</span>
+
+</details>
 
 ## Methods
 
@@ -66,6 +82,13 @@ it lives here rather than being copied into both models.
 | <span id="method-shapeshowsstrand">**shapeShowsStrand**</span><br><code>() =&gt; boolean</code> | Overridable hook: whether an alignment's shape shows its strand, which spares the strand colors a key. A linear ribbon twists against its rows' directions, which their rulers show; a whole-genome dotplot is mostly dots with no slope to read. |
 | <span id="method-trackcolorfor">**trackColorFor**</span><br><code>(trackId: string) =&gt; string</code> |  |
 
+<details class="inherited-members" data-pagefind-ignore>
+<summary>1 inherited method from one model</summary>
+
+From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[`lowerBound`](../syntenyfiltermixin#method-lowerbound)</span>
+
+</details>
+
 ## Actions
 
 <!-- prettier-ignore -->
@@ -78,3 +101,10 @@ it lives here rather than being copied into both models.
 | <span id="action-setcolordomain">**setColorDomain**</span><br><code>(domain: string[]) =&gt; void</code> | Declare the order a text column's labels take. The labels listed lead, the rest follow sorted; an empty list gives back the order the fetches found them in. |
 | <span id="action-settrackcolor">**setTrackColor**</span><br><code>(trackId: string, value: string &#124; undefined) =&gt; void</code> | Pin one track's color under `color: { field: 'track' }`, or release it back to an automatic palette slot. |
 | <span id="action-cleartrackcolors">**clearTrackColors**</span><br><code>() =&gt; void</code> |  |
+
+<details class="inherited-members" data-pagefind-ignore>
+<summary>2 inherited actions from one model</summary>
+
+From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="action-setfilter">[`setFilter`](../syntenyfiltermixin#action-setfilter)</span>, <span id="action-setlowerbound">[`setLowerBound`](../syntenyfiltermixin#action-setlowerbound)</span>
+
+</details>

@@ -50,7 +50,7 @@
         "assembly": ["TAIR10", "Brapa"],
         "height": 780,
         "tracks": ["Brapa_to_TAIR10"],
-        "minAlignmentLength": 1000
+        "filter": [{ "field": "length", "gte": 1000 }]
       }
     ]
   }

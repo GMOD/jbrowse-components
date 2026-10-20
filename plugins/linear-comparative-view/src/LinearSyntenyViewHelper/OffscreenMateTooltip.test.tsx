@@ -31,7 +31,7 @@ function source(
     ],
     parentView: {
       showOffscreenMates: true,
-      minAlignmentLength: 0,
+      minLength: 0,
     },
   } as OffscreenMateSource
 }
@@ -153,7 +153,7 @@ function bothLanes() {
     ],
     parentView: {
       showOffscreenMates: true,
-      minAlignmentLength: 0,
+      minLength: 0,
     },
   } as unknown as OffscreenMateSource
 }

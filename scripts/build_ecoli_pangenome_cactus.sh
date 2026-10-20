@@ -555,7 +555,7 @@ cat > session.json <<'JSON'
         { "assembly": "IAI39" }
       ],
       "tracks": ["ecoli_cactus_ava"],
-      "minAlignmentLength": 10000
+      "filter": [{ "field": "length", "gte": 10000 }]
     },
     {
       "type": "LinearGenomeView",

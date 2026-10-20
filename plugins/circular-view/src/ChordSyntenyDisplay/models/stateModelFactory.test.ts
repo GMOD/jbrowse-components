@@ -206,7 +206,7 @@ test('a ribbon its color paints transparent is not drawn', async () => {
 test("a ribbon shorter than the view's minimum length is not drawn", async () => {
   const { view, display } = await setup(['volvox', 'volvox2'])
   expect(display.ribbonLanes.count).toBe(1)
-  view.setMinAlignmentLength(101)
+  view.setLowerBound('length', 101)
   expect(display.ribbonLanes.count).toBe(0)
 }, 20000)
 

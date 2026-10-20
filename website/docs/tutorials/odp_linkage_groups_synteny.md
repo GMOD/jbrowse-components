@@ -236,7 +236,8 @@ the `opacity` mapping:
   `diagonalizeAnchorRow`. Rows count from 0, so 2 is the jellyfish, where each
   group sits on one chromosome. **Rows → Re-order chromosomes** on the view menu
   runs the same sort and asks for that row.
-- `hideUnlabelled` is **Hide unlabelled rows** on the palette menu.
+- `filter` drops the alignments with no `gene_group`, which **Hide unlabelled
+  rows** on the palette menu writes.
 - `drawCurves` is **Curved lines** on the sliders button.
 - `fadeThinAlignmentsMode` turns off the fade a whole-genome view applies to
   sub-pixel ribbons, since their colors are what the figure shows. It has no
@@ -268,7 +269,7 @@ the `opacity` mapping:
           ["EMU_CLAa"]
         ],
         "color": { "field": "gene_group" },
-        "hideUnlabelled": true,
+        "filter": [{ "field": "gene_group", "valid": true }],
         "autoDiagonalize": true,
         "diagonalizeAnchorRow": 2,
         "drawCurves": true,

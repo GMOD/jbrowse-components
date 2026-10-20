@@ -185,7 +185,13 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
               valueColor: this.view.colorValue,
               namePosition: this.paintedRefNamePosition,
               attributeRanges: this.view.attributeRanges,
-              hideUnlabelled: this.view.hideUnlabelled,
+              filter: {
+                predicates: this.view.predicates,
+                extras: {
+                  trackId: this.trackId,
+                  lengthOf: i => rpcData.alignmentLengths[i]!,
+                },
+              },
               paint: this.view.colorPaint,
               opacity: this.view.opacityFade,
             })

@@ -41,7 +41,7 @@ export default function MultiwaySynteny() {
           views: strains.map(s => ({ assembly: s.name })),
           tracks: ['ecoli_ava'],
           drawCurves: true,
-          minAlignmentLength: 10000,
+          filter: [{ field: 'length', gte: 10000 }],
         },
       ]}
     />

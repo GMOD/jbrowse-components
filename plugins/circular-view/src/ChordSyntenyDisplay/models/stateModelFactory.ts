@@ -55,7 +55,7 @@ import type { Region } from '@jbrowse/core/util/types'
 import type { AttributeRange } from '@jbrowse/synteny-core'
 import type { ThemeOptions } from '@mui/material'
 
-// what a ribbon paints under the view's default mode, at the view's `alpha`
+// what a ribbon paints under the view's default mode, at the view's `opacity`
 const DEFAULT_ABGR = cssColorToABGR('rgb(70,130,180)')
 
 function defaultAbgr(value: string | undefined) {
@@ -243,6 +243,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
         const features = self.features ?? []
         const ends = this.alignmentEnds
         const field = view.colorField
+        const { trackId } = getContainingTrack(self).configuration
         const [first, second = first] = self.trackAssemblyNames
         const genome =
           field === 'query' ? first : field === 'target' ? second : undefined
@@ -264,17 +265,20 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
             },
             this.channelNames,
           ),
-          trackColor: view.trackColorFor(
-            getContainingTrack(self).configuration.trackId,
-          ),
+          trackColor: view.trackColorFor(trackId),
           defaultColor: defaultAbgr(view.colorValue),
           nameColor: assembly
             ? name => assembly.getRefNameColor(name)
             : undefined,
           attributeRanges: view.attributeRanges,
-          hideUnlabelled: view.hideUnlabelled,
           paint: view.colorPaint,
           opacity: view.opacityFade,
+          filter: view.predicates,
+          filterExtras: {
+            trackId,
+            lengthOf: i =>
+              Math.abs(features[i]!.get('end') - features[i]!.get('start')),
+          },
         })
         return Uint32Array.from(features, (_, i) => color(i))
       },
@@ -335,13 +339,13 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        * #getter
        * the alignments the canvas draws, by their place in `features`, the
        * widest first so every narrower ribbon draws over them: both ends on
-       * the circle, at least the view's `minAlignmentLength` long on each
-       * side, and not hidden by the view's color
+       * the circle, at least the view's `filter.minLength` long on each
+       * side, and not hidden by the view's color or its identity cut
        */
       get ribbonPicks(): Uint32Array {
         const feet = this.ribbonFeet
         const colors = this.ribbonColors
-        const min = self.view.minAlignmentLength
+        const min = self.view.minLength
         const features = self.features ?? []
         const picked: number[] = []
         features.forEach((f, i) => {

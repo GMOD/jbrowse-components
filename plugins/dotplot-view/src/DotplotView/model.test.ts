@@ -555,7 +555,7 @@ test('the synteny view a dragged rect opens paints and filters as the plot does'
   model.setColorField('query')
   model.setTrackColor('t1', '#123456')
   model.setHideUnlabelled(true)
-  model.setMinAlignmentLength(500)
+  model.setLowerBound('length', 500)
   model.setLodMode('coarse')
   const session = getSession(model) as unknown as { views: unknown[] }
   model.launchLinearSyntenyView([100, 100], [300, 300])
@@ -564,7 +564,7 @@ test('the synteny view a dragged rect opens paints and filters as the plot does'
   expect(synteny.colorField).toBe('query')
   expect(synteny.trackColors.get('t1')).toBe('#123456')
   expect(synteny.hideUnlabelled).toBe(true)
-  expect(synteny.minAlignmentLength).toBe(500)
+  expect(synteny.minLength).toBe(500)
   expect(synteny.lodMode).toBe('coarse')
 })
 

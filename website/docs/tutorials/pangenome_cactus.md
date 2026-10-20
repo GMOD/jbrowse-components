@@ -218,7 +218,7 @@ in a row per assembly the track lists.
     { "assembly": "IAI39" }
   ],
   "tracks": ["ecoli_cactus_ava"],
-  "minAlignmentLength": 10000,
+  "filter": [{ "field": "length", "gte": 10000 }],
   "levelHeights": [110, 110, 110, 110],
   "color": { "field": "strand" }
 }

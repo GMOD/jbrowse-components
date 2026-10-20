@@ -20,6 +20,7 @@ import {
   strandLevels,
 } from './colorRamps.ts'
 import { colorSchemes } from './colorUtils.ts'
+import { comparativeFilter } from './filterLanes.ts'
 import { createOpacityFunction, fadedColor } from './opacityChannel.ts'
 
 import type {
@@ -30,8 +31,10 @@ import type {
   SyntenyColorPaint,
   ThresholdMode,
 } from './colorRamps.ts'
+import type { FilterExtras } from './filterLanes.ts'
 import type { SyntenyOpacitySnapshot } from './syntenyOpacityConfigSchema.ts'
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 /**
  * The per-feature color function both comparative views build from a fetch
@@ -342,10 +345,16 @@ export interface ColorFunctionInputs {
  * resolves it to query or target first (its `paintedField`).
  *
  * `opacity` fades each color's alpha byte by its share of the opacity level,
- * so every view that paints through here fades alike.
+ * so every view that paints through here fades alike. An alignment `filter`
+ * rejects paints at zero alpha, which every reader of these colors already
+ * skips: the draw, the hit test, the SVG export and the tables.
  */
 export function createComparativeColorFunction(
-  args: ComparativeColorArgs & { opacity?: SyntenyOpacitySnapshot },
+  args: ComparativeColorArgs & {
+    opacity?: SyntenyOpacitySnapshot
+    filter?: readonly FieldPredicate[]
+    filterExtras?: FilterExtras
+  },
 ): (index: number) => number {
   const paint = paintFunction(args)
   const fade = args.opacity
@@ -356,7 +365,11 @@ export function createComparativeColorFunction(
         fetchRanges: args.data.attributeRanges,
       })
     : undefined
-  return fade ? index => fadedColor(paint(index), fade(index)) : paint
+  const faded = fade
+    ? (index: number) => fadedColor(paint(index), fade(index))
+    : paint
+  const passes = comparativeFilter(args.filter, args.data, args.filterExtras)
+  return passes ? index => (passes(index) ? faded(index) : 0) : faded
 }
 
 interface ComparativeColorArgs {

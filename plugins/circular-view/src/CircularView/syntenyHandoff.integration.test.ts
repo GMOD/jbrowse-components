@@ -97,7 +97,7 @@ test('the circle and the linear synteny view open each other with their color', 
     displayedRegionNames: { A: ['a1'] },
     tracks: ['aln', 'genesA'],
     color: { field: 'query' },
-    minAlignmentLength: 50,
+    filter: [{ field: 'length', gte: 50 }],
   })
   view.openInLinearSyntenyView()
   const linear = await viewOfType(session, 'LinearSyntenyView')
@@ -117,7 +117,7 @@ test('the circle and the linear synteny view open each other with their color', 
     linear.levels[0].tracks.map((t: any) => t.configuration.trackId),
   ).toEqual(['aln'])
   expect(linear.colorField).toBe('query')
-  expect(linear.minAlignmentLength).toBe(50)
+  expect(linear.minLength).toBe(50)
 
   linear.setColorField('strand')
   linear.openInCircularSyntenyView()

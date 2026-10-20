@@ -2116,14 +2116,38 @@ export const viewFields: Record<string, FieldRecipe> = {
           path: `View menu → Show... → Intra-view links (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
-  minAlignmentLength: (value, { viewType }) => {
-    const path = syntenyRowPath(viewType, 'Min length')
-    return typeof value === 'number' && path
-      ? {
-          path: `${path} → drag to ${value.toLocaleString('en-US')}bp`,
-          note: 'Hides alignments shorter than this, which is what clears the hairball of short spurious chains at whole-genome zoom.',
-        }
-      : undefined
+  // a synteny view's predicate list: the bounds its sliders write, and the
+  // `valid` test "Hide unlabelled rows" writes
+  filter: (value, { viewType }) => {
+    if (!Array.isArray(value)) {
+      return undefined
+    }
+    const lengthPath = syntenyRowPath(viewType, 'Min length')
+    const identityPath = syntenyRowPath(viewType, 'Min identity')
+    const colorMenu = colorMenuPath(viewType)
+    return (value as Record<string, unknown>[]).flatMap(p => {
+      const { field, gte, valid } = p
+      if (field === 'length' && typeof gte === 'number' && lengthPath) {
+        return [
+          {
+            path: `${lengthPath} → drag to ${gte.toLocaleString('en-US')}bp`,
+            note: 'Hides alignments shorter than this, which is what clears the hairball of short spurious chains at whole-genome zoom.',
+          },
+        ]
+      }
+      if (field === 'identity' && typeof gte === 'number' && identityPath) {
+        return [{ path: `${identityPath} → drag to ${(gte * 100).toFixed(0)}%` }]
+      }
+      if (valid === true && colorMenu) {
+        return [
+          {
+            path: `${colorMenu} → Hide unlabelled rows (checked)`,
+            note: 'Offered while a text column paints the color. Checked, the alignments that column leaves unlabelled are not drawn.',
+          },
+        ]
+      }
+      return []
+    })
   },
   autoDiagonalize: (value, { viewType }) => {
     const menu = viewType ? DIAGONALIZE_MENUS[viewType] : undefined
@@ -2186,15 +2210,6 @@ export const viewFields: Record<string, FieldRecipe> = {
               : mode === 'reference'
                 ? 'The palette button\'s tooltip reads "Color by: ...". Reference is offered only in a stacked view of three or more genomes, where there is a shared reference to trace.'
                 : 'The palette button\'s tooltip reads "Color by: ...".',
-        }
-      : undefined
-  },
-  hideUnlabelled: (value, { viewType }) => {
-    const menu = colorMenuPath(viewType)
-    return typeof value === 'boolean' && menu
-      ? {
-          path: `${menu} → Hide unlabelled rows (${checked(value)})`,
-          note: 'Offered while a text column paints the color. Checked, the alignments that column leaves unlabelled are not drawn.',
         }
       : undefined
   },

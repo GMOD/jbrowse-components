@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
+import { SyntenyFilterMixin } from './SyntenyFilterMixin.ts'
 import { colorByScales } from './colorLegend.ts'
 import {
   colorPaintOf,
@@ -28,8 +29,19 @@ import type { AttributeRange, SyntenyColorPaint } from './colorRamps.ts'
 import type { SyntenyColorSnapshot } from './syntenyColorConfigSchema.ts'
 import type { ColorableTrack } from './trackColors.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 const STRUCTURAL_FIELDS: ReadonlySet<string> = new Set(SYNTENY_VIEW_FIELDS)
+
+// `{ field, valid: true }` and nothing else: the predicate "Hide unlabelled
+// rows" writes for the field the view paints by
+function isValidOnly(p: FieldPredicate, field: string) {
+  return (
+    p.field === field &&
+    p.valid === true &&
+    Object.keys(p).every(k => k === 'field' || k === 'valid')
+  )
+}
 
 function isColumnField(field: string) {
   return field !== '' && !STRUCTURAL_FIELDS.has(field) && !isMeasureField(field)
@@ -151,36 +163,34 @@ export function orderAttributeLabels(
  */
 export function TrackColorsMixin({ defaultColorField = '' } = {}) {
   return types
-    .model({
-      /**
-       * #property
-       * The color every track in the view paints with, a
-       * [](/docs/config/syntenycolor) object: `{ field: "strand" }`,
-       * `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`,
-       * a measurement (`identity`, `mapq`, `dnds`) or a column the
-       * tracks declare, with `domain` ordering a text column's labels,
-       * `range` coloring them and `labels` naming them in the key, `range` or
-       * `scheme`, `reverse` and pinned ends reshaping a ramp, and
-       * `scale: 'threshold'` binning a number at `domain`'s cuts; a color
-       * string paints every alignment. Unset, the view's default
-       * paints: `query` on the circular view, the default scheme elsewhere.
-       */
-      color: types.stripDefault(
-        syntenyColorConfigSchema,
-        defaultColorField ? { field: defaultColorField } : {},
-      ),
-      /**
-       * #property
-       * trackId -> explicit color under `color: { field: 'track' }`. Absent
-       * means the track takes an automatic slot from the palette.
-       */
-      trackColors: types.map(types.string),
-      /**
-       * #property
-       * Under a text-column mode, draw only the rows that have a label.
-       */
-      hideUnlabelled: types.stripDefault(types.boolean, false),
-    })
+    .compose(
+      SyntenyFilterMixin(),
+      types.model({
+        /**
+         * #property
+         * The color every track in the view paints with, a
+         * [](/docs/config/syntenycolor) object: `{ field: "strand" }`,
+         * `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`,
+         * a measurement (`identity`, `mapq`, `dnds`) or a column the
+         * tracks declare, with `domain` ordering a text column's labels,
+         * `range` coloring them and `labels` naming them in the key, `range` or
+         * `scheme`, `reverse` and pinned ends reshaping a ramp, and
+         * `scale: 'threshold'` binning a number at `domain`'s cuts; a color
+         * string paints every alignment. Unset, the view's default
+         * paints: `query` on the circular view, the default scheme elsewhere.
+         */
+        color: types.stripDefault(
+          syntenyColorConfigSchema,
+          defaultColorField ? { field: defaultColorField } : {},
+        ),
+        /**
+         * #property
+         * trackId -> explicit color under `color: { field: 'track' }`. Absent
+         * means the track takes an automatic slot from the palette.
+         */
+        trackColors: types.map(types.string),
+      }),
+    )
     .volatile(() => ({
       /**
        * #volatile
@@ -391,6 +401,15 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       },
       /**
        * #getter
+       * Whether the filter drops the alignments with no value for the field
+       * the view paints by, the "Hide unlabelled rows" box.
+       */
+      get hideUnlabelled(): boolean {
+        const field = this.colorField
+        return self.predicates.some(p => isValidOnly(p, field))
+      },
+      /**
+       * #getter
        * Whether the mode has a key worth a box: a track palette, a ramp, a
        * reader-named column, or strand wherever the shape does not show it
        * (`shapeShowsStrand`), which leaves the color the only strand cue.
@@ -513,7 +532,9 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
          * #action
          */
         setHideUnlabelled(value: boolean) {
-          self.hideUnlabelled = value
+          const field = self.colorField
+          const rest = self.predicates.filter(p => !isValidOnly(p, field))
+          self.setFilter(value ? [...rest, { field, valid: true }] : rest)
         },
         /**
          * #action

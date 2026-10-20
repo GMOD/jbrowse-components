@@ -59,7 +59,7 @@ export default function GeneDensityRing() {
     view: {
       height: 700,
       displayedRegionNames: ['chr1', 'chr2', 'chrX'],
-      minAlignmentLength: 100_000,
+      filter: [{ field: 'length', gte: 100_000 }],
       tracks: ['hg38ToMm39_gene_density', 'hg38ToMm39_liftover'],
     },
   })

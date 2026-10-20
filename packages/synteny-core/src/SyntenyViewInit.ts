@@ -1,4 +1,5 @@
 import type { SyntenyColorSnapshot } from './syntenyColorConfigSchema.ts'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 // The one launch key LinearSyntenyView and DotplotView share: a thing to DO on
 // load, with no property behind it. Each view's own Commands interface extends
@@ -21,7 +22,8 @@ export interface SyntenyViewSharedInit extends SyntenyViewSharedCommands {
   // as `{ field: 'query' }` (chromosome painting) for whole-genome views where
   // the default red is hard to distinguish across many ribbons.
   color?: SyntenyColorSnapshot
-  // Per-feature alignment-length filter applied at the renderer. Hides
-  // chains shorter than this many bp; cuts the genome-scale hairball.
-  minAlignmentLength?: number
+  // The alignments drawn, a list of field predicates:
+  // `[{ field: 'length', gte: 100000 }]` hides chains shorter than 100 kb,
+  // which cuts the genome-scale hairball.
+  filter?: FieldPredicate[]
 }

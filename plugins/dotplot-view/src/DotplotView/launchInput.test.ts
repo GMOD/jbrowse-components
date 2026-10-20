@@ -53,7 +53,7 @@ test('any declared property lands natively, named nowhere in the launch path', a
     lockAspectRatio: false,
     lodMode: 'coarse',
     color: { field: 'query' },
-    minAlignmentLength: 1000,
+    filter: [{ field: 'length', gte: 1000 }],
   })
   expect(view.opacityLevel).toBe(0.55)
   expect(view.drawCigar).toBe(false)
@@ -61,7 +61,7 @@ test('any declared property lands natively, named nowhere in the launch path', a
   expect(view.lockAspectRatio).toBe(false)
   expect(view.lodMode).toBe('coarse')
   expect(view.colorField).toBe('query')
-  expect(view.minAlignmentLength).toBe(1000)
+  expect(view.minLength).toBe(1000)
   expect(view.launch).toEqual({ views: AXES })
 })
 

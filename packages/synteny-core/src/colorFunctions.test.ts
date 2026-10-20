@@ -98,6 +98,40 @@ describe('chromosome painting', () => {
 })
 
 describe('createComparativeColorFunction', () => {
+  test('an alignment the filter rejects paints at zero alpha', () => {
+    const paint = createComparativeColorFunction({
+      field: '',
+      data: inputs({
+        attributes: { identity: Float32Array.from([0.5, 0.9, Number.NaN]) },
+      }),
+      trackColor: '#123456',
+      defaultColor: DEFAULT_RIBBON_COLOR,
+      attributeRanges: {},
+      filter: [{ field: 'identity', gte: 0.9 }],
+    })
+    expect([paint(0), paint(1), paint(2)]).toEqual([0, DEFAULT_RIBBON_COLOR, 0])
+  })
+
+  test('the filter reads the sequence names and the length it is handed', () => {
+    const paint = createComparativeColorFunction({
+      field: '',
+      data: inputs({
+        strands: new Int8Array([1, 1, 1]),
+        refNameDict: ['chr1', 'chr2'],
+        refNameIds: Uint32Array.from([0, 1, 0]),
+      }),
+      trackColor: '#123456',
+      defaultColor: DEFAULT_RIBBON_COLOR,
+      attributeRanges: {},
+      filter: [
+        { field: 'query', oneOf: ['chr1'] },
+        { field: 'length', gte: 1000 },
+      ],
+      filterExtras: { lengthOf: i => [5000, 5000, 10][i]! },
+    })
+    expect([paint(0), paint(1), paint(2)]).toEqual([DEFAULT_RIBBON_COLOR, 0, 0])
+  })
+
   // The one thing the two views legitimately disagree on, and therefore the one
   // thing that is a parameter rather than a constant.
   test('only the unpainted default differs between the two views', () => {

@@ -50,7 +50,7 @@ const spec = encodeURIComponent(
         views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
         autoDiagonalize: true,
         color: { field: 'query' },
-        minAlignmentLength: 1000000,
+        filter: [{ field: 'length', gte: 1000000 }],
       },
     ],
   }),

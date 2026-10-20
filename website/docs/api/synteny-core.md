@@ -109,14 +109,14 @@ rather than an assumed white, so the key matches what is on screen.
 
 What a view holding `SyntenyColorsMixin` hands the view it opens on the same
 alignments: the color it paints by, which a view on its default scheme
-leaves to the new view's default, the pinned track colors, the unlabelled
-filter and the length filter. Opacity keeps each view's default, since a
+leaves to the new view's default, the pinned track colors and the
+`filter`. Opacity keeps each view's default, since a
 linear ribbon, a dotplot point and a circle's ribbon draw at different
 densities.
 
 ```js
 // type signature
-(view: SyntenyColorsModel) => { trackColors: IKeyValueMap<string>; hideUnlabelled: boolean; minAlignmentLength: number; color?: ModelSnapshotType<Record<string, any>> | undefined; }
+(view: SyntenyColorsModel) => { trackColors: IKeyValueMap<string>; filter: ModelSnapshotType<Record<string, any>>[]; color?: ModelSnapshotType<Record<string, any>> | undefined; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyColorsMixin.ts)
@@ -308,8 +308,9 @@ Record<string, readonly string[]>
 
 ## LIFTED_VIEW_KEYS
 
-The view keys `liftSyntenyViewSettings` converts, which the two views name
-as their launch keys' `passThrough` so a validator accepts them.
+The view keys `liftSyntenyViewSettings` converts, which the linear synteny
+and dotplot views name as their launch keys' `passThrough` so a validator
+accepts them.
 
 ```js
 // type signature
@@ -322,7 +323,8 @@ readonly ["colorBy", "alpha"]
 
 A linear synteny or dotplot view snapshot's v4.3.0 settings, lifted onto the
 view: `colorBy` (a mode string), `alpha` and `minAlignmentLength` sat on each
-synteny display, `colorBy` lands as `color` and `alpha` as `opacity`.
+synteny display, and land as `color`, `opacity` and a `filter` predicate
+on `length`.
 Launch links from the genomes portal put the mode string on the
 view itself, which lifts the same way.
 
@@ -333,13 +335,27 @@ view itself, which lifts the same way.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftSyntenyViewSettings.ts)
 
-## minLengthMenuItem
+## minIdentityMenuItem
 
-The Min length row of a view with `SyntenyViewMixin`.
+The Min identity row of a view with `SyntenyFilterMixin`: the `filter`'s
+lower bound on `identity`. A filter on identity drops an alignment that
+reports none, so the row is disabled while no loaded alignment reports one.
 
 ```js
 // type signature
-(model: { minAlignmentLength: number; setMinAlignmentLength: (value: number) => void; }) => MenuItem
+(model: FilterRowModel & { attributeRanges: Record<string, unknown>; }) => MenuItem
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)
+
+## minLengthMenuItem
+
+The Min length row of a view with `SyntenyFilterMixin`: the `filter`'s
+lower bound on `length`.
+
+```js
+// type signature
+(model: FilterRowModel) => MenuItem
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)

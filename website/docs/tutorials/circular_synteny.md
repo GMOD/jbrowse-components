@@ -141,8 +141,7 @@ jbrowse add-track pair.pif.gz -a query,target --load copy
 
 A liftOver chain set holds long chains that cover the genome and many short
 ones, mostly repeats and gene copies. **Min length** in the view's menu drops
-the short ones, and the sessions below set it to 100 kb with
-`minAlignmentLength`.
+the short ones, and the sessions below set it to 100 kb with `filter.minLength`.
 
 ## Opening both genomes on one circle
 
@@ -161,7 +160,7 @@ builds the same circle once you pick the chain track. As a session:
       {
         "type": "CircularView",
         "assembly": ["hg38", "mm39"],
-        "minAlignmentLength": 100000,
+        "filter": [{ "field": "length", "gte": 100000 }],
         "displayedRegionNames": [
           "chr1",
           "chr2",
@@ -336,7 +335,7 @@ before the synteny track:
       {
         "type": "CircularView",
         "assembly": ["hg38", "mm39"],
-        "minAlignmentLength": 100000,
+        "filter": [{ "field": "length", "gte": 100000 }],
         "displayedRegionNames": [
           "chr1",
           "chr2",

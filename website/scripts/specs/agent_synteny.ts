@@ -123,7 +123,7 @@ export const agentSyntenySpecs: ScreenshotSpec[] = [
     url: sessionSpec(FLY_CONFIG, {
       views: [
         flySynteny('chr2R:1-2,400,000', 'chr2R:500,000-3,800,000', {
-          minAlignmentLength: 5000,
+          filter: [{ field: 'length', gte: 5000 }],
         }),
       ],
     }),

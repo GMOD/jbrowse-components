@@ -50,7 +50,7 @@ describe('syntenyViewKnobs', () => {
       drawCurves: true,
       color: { field: 'query' },
       cigarMode: 'full',
-      minAlignmentLength: 10_000,
+      filter: [{ field: 'length', gte: 10_000 }],
       levelHeights: [300, 300],
     })
   })
@@ -60,7 +60,7 @@ describe('syntenyViewKnobs', () => {
     // "unset" — a truthiness filter would drop both
     expect(syntenyViewKnobs({ opacity: 0, minAlignmentLength: 0 })).toEqual({
       opacity: { value: 0 },
-      minAlignmentLength: 0,
+      filter: [{ field: 'length', gte: 0 }],
     })
   })
 })
@@ -108,7 +108,7 @@ describe('dotplotInit', () => {
       views: [{ assembly: 'a' }, { assembly: 'b' }],
       tracks: [],
       color: { field: 'query' },
-      minAlignmentLength: 5000,
+      filter: [{ field: 'length', gte: 5000 }],
       autoDiagonalize: true,
     })
   })

@@ -50,7 +50,7 @@ export function ecoliPageTrack(doc: string, trackId: string) {
 // crossings off the bottom band and the figures stop being attributable to one
 // strain.
 //
-// `minAlignmentLength` drops the short alignments so the shared backbone reads
+// `filter.minLength` drops the short alignments so the shared backbone reads
 // as clean ribbons instead of a dense noise band.
 //
 // `collapseEmptyRows` because none of the five rows carries a track, so every
@@ -82,7 +82,7 @@ export function ecoliAvaStack(trackId: string) {
     // signal on a whole-genome stack. The live ecoli_pangenome demo omits it,
     // so an explicit value does not mark the track edited on every load.
     drawCurves: false,
-    minAlignmentLength: 10000,
+    filter: [{ field: 'length', gte: 10000 }],
     levelHeights: [110, 110, 110, 110],
     collapseEmptyRows: true,
   }

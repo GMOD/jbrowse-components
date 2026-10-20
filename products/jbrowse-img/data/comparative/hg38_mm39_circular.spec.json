@@ -2,7 +2,7 @@
   "type": "CircularView",
   "assembly": ["hg38", "mm39"],
   "autoDiagonalize": true,
-  "minAlignmentLength": 100000,
+  "filter": [{ "field": "length", "gte": 100000 }],
   "displayedRegionNames": ["chr1", "chr2", "chrX"],
   "tracks": [
     {

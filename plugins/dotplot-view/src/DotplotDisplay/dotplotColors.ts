@@ -6,8 +6,10 @@ import {
 
 import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type {
   AttributeRange,
+  FilterExtras,
   SyntenyColorPaint,
   RefNamePosition,
   SyntenyOpacitySnapshot,
@@ -34,7 +36,7 @@ export function createDotplotColorFunction(
   trackColor: string,
   attributeRanges: Record<string, AttributeRange>,
   namePosition?: RefNamePosition,
-  hideUnlabelled?: boolean,
+  filter?: { predicates: readonly FieldPredicate[]; extras?: FilterExtras },
   valueColor?: string,
   paint?: SyntenyColorPaint,
   opacity?: SyntenyOpacitySnapshot,
@@ -45,9 +47,10 @@ export function createDotplotColorFunction(
     trackColor,
     namePosition,
     attributeRanges,
-    hideUnlabelled,
     paint,
     opacity,
+    filter: filter?.predicates,
+    filterExtras: filter?.extras,
     defaultColor:
       valueColor === undefined ? POINT_COLOR : cssColorToABGR(valueColor),
   })
@@ -68,7 +71,7 @@ export function computeDotplotColors({
   valueColor,
   namePosition,
   attributeRanges,
-  hideUnlabelled,
+  filter,
   paint,
   opacity,
 }: {
@@ -86,7 +89,9 @@ export function computeDotplotColors({
   // The domain a ramp scales to — the view's accumulated one, not this
   // fetch's. See `createComparativeColorFunction`.
   attributeRanges: Record<string, AttributeRange>
-  hideUnlabelled?: boolean
+  // the view's `filter`; a segment of an alignment it rejects paints at zero
+  // alpha
+  filter?: { predicates: readonly FieldPredicate[]; extras?: FilterExtras }
   // what the view's `color` declares over a field's own scale
   paint?: SyntenyColorPaint
   // the view's `opacityFade`
@@ -99,7 +104,7 @@ export function computeDotplotColors({
     trackColor,
     attributeRanges,
     namePosition,
-    hideUnlabelled,
+    filter,
     valueColor,
     paint,
     opacity,

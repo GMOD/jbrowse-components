@@ -25,6 +25,7 @@ import { syntenyTrackPalette } from './trackColors.ts'
 import type { AttributeRange, SyntenyColorPaint } from './colorRamps.ts'
 import type { SyntenyOpacitySnapshot } from './syntenyOpacityConfigSchema.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 // What the synteny and dotplot tables share: an axis as a host describes it,
 // the view's color and opacity settings read off their config objects, a
@@ -113,6 +114,7 @@ export function axisNamePosition(axis: ComparativeAxis) {
 
 export type ColorArg = string | Record<string, unknown> | undefined
 export type OpacityArg = number | SyntenyOpacitySnapshot | undefined
+export type FilterArg = readonly FieldPredicate[] | undefined
 
 export interface ViewColorSettings {
   field: string

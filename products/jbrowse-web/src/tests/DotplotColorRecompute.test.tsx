@@ -87,7 +87,7 @@ test('a track shown after a settings change inherits them', async () => {
   // both moved off their defaults BEFORE the second track exists, which is
   // exactly what a fan-out setter cannot reach
   view.setOpacity(0.5)
-  view.setMinAlignmentLength(1e9)
+  view.setMinLength(1e9)
 
   view.showTrack('peach_grape_small')
   await waitFor(
@@ -105,10 +105,10 @@ test('a track shown after a settings change inherits them', async () => {
   )
 
   // the length filter was in force for this display's very first geometry build
-  expect(view.minAlignmentLength).toBe(1e9)
+  expect(view.minLength).toBe(1e9)
   expect(added.geometry.instanceCount).toBe(0)
 
-  view.setMinAlignmentLength(0)
+  view.setMinLength(0)
   expect(added.geometry.instanceCount).toBeGreaterThan(0)
 
   // opacity reaches the newcomer without any per-display state to inherit: one

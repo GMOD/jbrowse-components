@@ -21,7 +21,7 @@ const suite: TestSuite = {
       view: {
         type: 'LinearSyntenyView',
         tracks: ['peach_grape_minimap2'],
-        minAlignmentLength: 2000,
+        filter: [{ field: 'length', gte: 2000 }],
         drawCurves: true,
         autoDiagonalize: true,
         color: { field: 'query' },
@@ -42,7 +42,7 @@ const suite: TestSuite = {
       view: {
         type: 'LinearSyntenyView',
         tracks: ['peach_grape_minimap2'],
-        minAlignmentLength: 2000,
+        filter: [{ field: 'length', gte: 2000 }],
         views: [
           { loc: 'chr18', assembly: 'grape' },
           { loc: 'Pp01', assembly: 'peach' },

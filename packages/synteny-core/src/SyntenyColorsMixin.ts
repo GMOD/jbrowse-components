@@ -4,7 +4,6 @@ import { cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { TrackColorsMixin } from './TrackColorsMixin.ts'
 import { colorableColumns } from './attributeChannels.ts'
-import { DEFAULT_MIN_ALIGNMENT_LENGTH } from './minLengthHelp.ts'
 import {
   DEFAULT_NUMERIC_OPACITY_RANGE,
   opacityFadeOf,
@@ -26,8 +25,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *
  * The color settings every view drawing synteny tracks shares — the linear
  * synteny view, the dotplot and the circular view: `TrackColorsMixin`'s color
- * object and palette, the `opacity` object and the shortest alignment drawn,
- * over the tracks the view draws. A view supplies `syntenyTracks()`,
+ * object and palette, the `opacity` object and the `filter`, over the tracks
+ * the view draws. A view supplies `syntenyTracks()`,
  * its opacity default and, optionally, the field it paints by until told
  * otherwise.
  */
@@ -53,15 +52,6 @@ export function SyntenyColorsMixin({
          * dotplot.
          */
         opacity: types.stripDefault(syntenyOpacityConfigSchema, {}),
-        /**
-         * #property
-         * Hide alignment blocks shorter than this many bp, which cuts
-         * whole-genome hairball noise.
-         */
-        minAlignmentLength: types.stripDefault(
-          types.number,
-          DEFAULT_MIN_ALIGNMENT_LENGTH,
-        ),
       }),
     )
     .views(() => ({
@@ -194,12 +184,6 @@ export function SyntenyColorsMixin({
               : { value: level },
         )
       },
-      /**
-       * #action
-       */
-      setMinAlignmentLength(value: number) {
-        self.minAlignmentLength = value
-      },
     }))
 }
 
@@ -225,18 +209,17 @@ export interface SyntenyColorsModel extends Instance<
  * #api
  * What a view holding `SyntenyColorsMixin` hands the view it opens on the same
  * alignments: the color it paints by, which a view on its default scheme
- * leaves to the new view's default, the pinned track colors, the unlabelled
- * filter and the length filter. Opacity keeps each view's default, since a
+ * leaves to the new view's default, the pinned track colors and the
+ * `filter`. Opacity keeps each view's default, since a
  * linear ribbon, a dotplot point and a circle's ribbon draw at different
  * densities.
  */
 export function carriedSyntenySettings(view: SyntenyColorsModel) {
-  const { trackColors, hideUnlabelled, minAlignmentLength } = getSnapshot(view)
+  const { trackColors, filter } = getSnapshot(view)
   const paintsDefault = view.colorField === '' && view.colorValue === undefined
   return {
     ...(paintsDefault ? {} : { color: getSnapshot(view.color) }),
     trackColors,
-    hideUnlabelled,
-    minAlignmentLength,
+    filter,
   }
 }

@@ -22,7 +22,7 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
   expect(t.hasCigar).toBe(true)
   expect(t.alpha).toBe(0.25)
   expect(t.config).toMatchObject({
-    minAlignmentLength: 0,
+    filter: [],
     cigarMode: 'full',
     drawLocationMarkers: false,
     fadeThinAlignmentsMode: 'auto',
@@ -80,7 +80,7 @@ test('the view settings color by strand, set the opacity and hide short blocks',
     view: {
       color: { field: 'strand' },
       opacity: 0.6,
-      minAlignmentLength: 400,
+      filter: [{ field: 'length', gte: 400 }],
       drawLocationMarkers: true,
     },
   })
@@ -198,7 +198,7 @@ test('the strip names a mate contig in its ribbon color only where the ribbons k
   expect(ordered.offscreen.color).not.toEqual([hashed])
   const short = await engine.synteny({
     ...narrow,
-    view: { minAlignmentLength: 10000 },
+    view: { filter: [{ field: 'length', gte: 10000 }] },
   })
   expect(short.offscreen.drawn).toEqual([false])
 })
@@ -254,8 +254,7 @@ test('a PAF comes back as the dotplot lays out and colors it', async () => {
   expect(new Set(t.segments.color)).toEqual(new Set(['#000000']))
   expect(t.alpha).toBe(1)
   expect(t.config).toMatchObject({
-    minAlignmentLength: 0,
-    minIdentity: 0,
+    filter: [],
     drawCigar: true,
     lineWidth: 2.5,
     opacity: { value: 1 },

@@ -39,6 +39,23 @@ function liftAlpha(snap: Snap) {
   }
 }
 
+// `minAlignmentLength` is a `filter` lower bound on `length`. On the view itself it is
+// the betas' spelling, lifted while the hosted demo configs still carry it.
+function liftMinLength(snap: Snap) {
+  if (!('minAlignmentLength' in snap)) {
+    return snap
+  }
+  const { minAlignmentLength, ...rest } = snap
+  return {
+    ...rest,
+    filter:
+      rest.filter ??
+      (typeof minAlignmentLength === 'number'
+        ? [{ field: 'length', gte: minAlignmentLength }]
+        : undefined),
+  }
+}
+
 // the displays a v4.3.0 session held these settings on: each level's tracks on
 // a linear synteny view, the view's own tracks on a dotplot
 function displaySnapshots(snap: Snap) {
@@ -60,8 +77,9 @@ const DISPLAY_SETTINGS = ['colorBy', 'alpha', 'minAlignmentLength'] as const
 
 /**
  * #api
- * The view keys `liftSyntenyViewSettings` converts, which the two views name
- * as their launch keys' `passThrough` so a validator accepts them.
+ * The view keys `liftSyntenyViewSettings` converts, which the linear synteny
+ * and dotplot views name as their launch keys' `passThrough` so a validator
+ * accepts them.
  */
 export const LIFTED_VIEW_KEYS = ['colorBy', 'alpha'] as const
 
@@ -90,10 +108,13 @@ function liftDisplaySettings(snap: Snap) {
  * #api
  * A linear synteny or dotplot view snapshot's v4.3.0 settings, lifted onto the
  * view: `colorBy` (a mode string), `alpha` and `minAlignmentLength` sat on each
- * synteny display, `colorBy` lands as `color` and `alpha` as `opacity`.
+ * synteny display, and land as `color`, `opacity` and a `filter` predicate
+ * on `length`.
  * Launch links from the genomes portal put the mode string on the
  * view itself, which lifts the same way.
  */
 export function liftSyntenyViewSettings(snap: Snap | undefined) {
-  return snap ? liftAlpha(liftColorBy(liftDisplaySettings(snap))) : snap
+  return snap
+    ? liftMinLength(liftAlpha(liftColorBy(liftDisplaySettings(snap))))
+    : snap
 }

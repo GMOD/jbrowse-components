@@ -43,7 +43,7 @@ export interface OffscreenMateSource {
   })[]
   parentView: {
     showOffscreenMates: boolean
-    minAlignmentLength: number
+    minLength: number
     overdrawPx: number
     width: number
   }
@@ -96,7 +96,7 @@ export function offscreenMateStrips(
   if (!parentView.showOffscreenMates || !rowPair) {
     return []
   }
-  const { minAlignmentLength, overdrawPx, width } = parentView
+  const { minLength, overdrawPx, width } = parentView
   const { v0, v1 } = rowPair
   const sides = [
     { side: 'top' as const, row: v0, mateRow: v1, navRow: level + 1 },
@@ -115,7 +115,7 @@ export function offscreenMateStrips(
             mateBand,
             bpPerPx: row.bpPerPx,
             offsetPx: row.offsetPx,
-            minAlignmentLength,
+            minAlignmentLength: minLength,
             side,
             navRow,
             markColorFor: offscreenMateMarkColorFor(

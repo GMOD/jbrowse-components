@@ -131,7 +131,7 @@ cat > session.json <<'JSON'
       ],
       "tracks": [["hpylori_26695_vs_chc155"], ["hpylori_chc155_vs_j99"]],
       "drawCurves": true,
-      "minAlignmentLength": 5000
+      "filter": [{ "field": "length", "gte": 5000 }]
     }
   ]
 }

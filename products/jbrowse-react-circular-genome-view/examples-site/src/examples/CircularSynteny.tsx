@@ -49,7 +49,7 @@ export default function CircularSynteny() {
     view: {
       height: 700,
       displayedRegionNames: chromosomes,
-      minAlignmentLength: 100_000,
+      filter: [{ field: 'length', gte: 100_000 }],
       tracks: ['hg38ToMm39_liftover'],
     },
   })

@@ -50,7 +50,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1339)
+# model members with no description (1338)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -379,7 +379,6 @@ DotplotView.setHeight
 DotplotView.setLaunch
 DotplotView.setLineWidth
 DotplotView.setLockAspectRatio
-DotplotView.setMinIdentity
 DotplotView.setShowGridlines
 DotplotView.setShowTickLabels
 DotplotView.setWidth
@@ -1294,8 +1293,8 @@ SvInspectorView.spreadsheetView
 SvInspectorView.subviewWidths
 SvInspectorView.variantTrackId
 SyntenyColorsMixin.colorableTrackConfigs
-SyntenyColorsMixin.setMinAlignmentLength
 SyntenyFadeMixin.setFadeThinAlignmentsMode
+SyntenyFilterMixin.setFilter
 SyntenyViewMixin.setLodMode
 ThemeManagerSessionMixin.allThemes
 ThemeManagerSessionMixin.darkReaderDark

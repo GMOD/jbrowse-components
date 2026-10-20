@@ -1,4 +1,5 @@
 import type { FollowAnchorHost } from '../SyntenyFollow/followHost.ts'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
@@ -51,7 +52,10 @@ export interface ParentViewDuck extends FollowAnchorHost {
   showOffscreenMates: boolean
   // the same floor the ribbons are culled by, applied to the marks so filtering
   // a hairball down does not leave a fringe of marks for what it hid
-  minAlignmentLength: number
+  minLength: number
+  // the alignments drawn; the color pass paints one the filter rejects at zero
+  // alpha
+  predicates: FieldPredicate[]
   // The view-wide ribbon settings a display renders and fetches by. View-wide
   // rather than per display on purpose: one opacity slider, one CIGAR mode and
   // one LOD tier govern every level, so a display reads them here rather than

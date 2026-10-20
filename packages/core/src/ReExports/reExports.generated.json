@@ -3025,6 +3025,16 @@
       "names": [],
       "worker": "real"
     },
+    "@jbrowse/core/util/fieldPredicate": {
+      "package": "@jbrowse/core",
+      "names": [
+        "compilePredicates",
+        "lowerBoundOf",
+        "testsSomething",
+        "withLowerBound"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/fieldReader": {
       "package": "@jbrowse/core",
       "names": [
@@ -4402,6 +4412,14 @@
         "default",
         "fetchMixinLifecycle",
         "makeFetchContext"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/fieldPredicateConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "fieldPredicateConfigSchema",
+        "predicatesOf"
       ],
       "worker": "real"
     },

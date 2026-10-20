@@ -44,6 +44,7 @@ import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type {
   AttributeRange,
   CigarOpMask,
+  FilterExtras,
   LodTier,
   RefNamePosition,
   SyntenyFeatureLanes,
@@ -360,7 +361,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           ? culledRibbonMateData(
               instanceData,
               featureData,
-              this.view.hideUnlabelled ||
+              this.view.predicates.length > 0 ||
                 this.view.opacityField !== '' ||
                 self.hiddenFeatureIds.length > 0
                 ? this.computedColors
@@ -609,7 +610,8 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           groundColor: this.groundColor,
           namePosition: this.paintedRefNamePosition,
           attributeRanges: this.view.attributeRanges,
-          hideUnlabelled: this.view.hideUnlabelled,
+          filter: this.view.predicates,
+          filterExtras: this.filterExtras,
           hiddenFeatures: this.hiddenFeatureIdx,
           paint: this.view.colorPaint,
         })
@@ -657,6 +659,20 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        */
       get trackColor(): string {
         return this.view.trackColorFor(this.trackId)
+      },
+      /**
+       * #getter
+       * The fields a `filter` reads beyond the color inputs: each
+       * alignment's length on its own axis, and this track.
+       */
+      get filterExtras(): FilterExtras {
+        const { featureData } = self
+        return {
+          trackId: this.trackId,
+          lengthOf: featureData
+            ? i => Math.abs(featureData.ends[i]! - featureData.starts[i]!)
+            : undefined,
+        }
       },
       /**
        * #getter
@@ -900,7 +916,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           height: this.height,
           alpha: view.opacityLevel,
           fadeThinAlignments: view.fadeThinAlignments,
-          minAlignmentLength: view.minAlignmentLength,
+          minAlignmentLength: view.minLength,
           hoveredFeatureId: this.hoveredFeatureId,
           clickedFeatureId: this.clickedFeatureId,
           offsetPx0: v0.offsetPx,

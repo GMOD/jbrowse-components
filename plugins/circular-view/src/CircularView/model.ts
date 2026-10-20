@@ -57,6 +57,8 @@ import {
   identityFadeMenuItem,
   installAutoFadeLatch,
   isSyntenyTrack,
+  liftSyntenyViewSettings,
+  minIdentityMenuItem,
   minLengthMenuItem,
   opacityMenuItem,
   reorderChromosomesMenuItem,
@@ -1803,6 +1805,7 @@ function stateModelFactory(pluginManager: PluginManager) {
                 opacityMenuItem(self),
                 identityFadeMenuItem(self),
                 minLengthMenuItem(self),
+                minIdentityMenuItem(self),
                 ...(self.assemblyNames.length <= 2 &&
                 pluginManager.viewTypes.has('LinearSyntenyView')
                   ? [
@@ -1839,7 +1842,7 @@ function stateModelFactory(pluginManager: PluginManager) {
   return withLaunchInput(model, circularLaunchKeys, {
     registry: pluginManager,
     materialized: snap => !!snap.displayedRegions?.length,
-  })
+  }).preProcessSnapshot(liftSyntenyViewSettings)
 }
 
 export type CircularViewStateModel = ReturnType<typeof stateModelFactory>

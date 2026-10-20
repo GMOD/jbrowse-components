@@ -192,7 +192,7 @@ config = {
                 {target: regions, query: query_regions} if query_regions else regions
             ),
             'height': 780,
-            'minAlignmentLength': min_length,
+            'filter': [{'field': 'length', 'gte': min_length}],
             'tracks': [
                 {'trackId': f'{pair}_gene_density', 'type': 'LinearWiggleDisplay', 'height': 40},
                 f'{pair}_liftover',

@@ -188,7 +188,7 @@ function rowShapes() {
 
 test('the checkboxes, then the submenus', async () => {
   await openMenu(PIF)
-  expect(rowShapes()).toBe('xxxx>>>>')
+  expect(rowShapes()).toBe('xxxx>>>>>')
 })
 
 test('an adapter with no tiers is offered no level of detail', async () => {
@@ -219,7 +219,7 @@ test('a file with no CIGAR ops is offered no CIGAR row', async () => {
 
   expect(view.hasCigarData).toBe(false)
   expect(screen.queryByText('CIGAR indels')).toBeNull()
-  expect(rowShapes()).toBe('xxxx>>>')
+  expect(rowShapes()).toBe('xxxx>>>>')
 })
 
 test('off-screen mates is one checkbox, on by default', async () => {

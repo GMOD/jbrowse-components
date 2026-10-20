@@ -10,4 +10,3 @@ export const defaultHeight = 600
 // with the property it resets.
 export const DEFAULT_LINE_WIDTH = 2.5
 export const DEFAULT_ALPHA = 1
-export const DEFAULT_MIN_IDENTITY = 0

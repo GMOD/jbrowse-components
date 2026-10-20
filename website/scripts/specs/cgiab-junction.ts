@@ -261,7 +261,7 @@ export const scaffoldOverview = (
         drawCurves: true,
         levelHeights: [200, 200],
         // the last chr13 block before the junction is 155 kb
-        minAlignmentLength: 100000,
+        filter: [{ field: 'length', gte: 100000 }],
         opacity: 0.35,
         showOffscreenMates: false,
         tracks: [PIF],

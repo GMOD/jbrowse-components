@@ -1,8 +1,8 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { lowerBoundOf } from '@jbrowse/core/util/fieldPredicate'
 import { measureText } from '@jbrowse/core/util/measureText'
 import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 import {
-  DEFAULT_MIN_ALIGNMENT_LENGTH,
   FADE_AUTO_MIN_FEATURES,
   attributeColumns,
   axisNamePosition,
@@ -51,6 +51,7 @@ import type {
   AxisArgs,
   ColorArg,
   ComparativeAxis,
+  FilterArg,
   OpacityArg,
   RefNamePosition,
 } from '@jbrowse/synteny-core'
@@ -69,14 +70,14 @@ export interface SyntenyTablesArgs {
    * The view's settings, as a `LinearSyntenyView` snapshot writes them:
    * `color` (a CSS color, or the color object's slots such as
    * `{ field: 'strand' }`), `opacity` (a number, or the opacity object),
-   * `minAlignmentLength`, `cigarMode` (`full`, `matches` or `off`),
+   * `filter` (a list of field predicates), `cigarMode` (`full`, `matches` or `off`),
    * `drawLocationMarkers`, `fadeThinAlignmentsMode` (`auto`, `on`, `off`) and
    * the level's `height` in px, which the thin-ribbon fade measures against.
    */
   view?: {
     color?: ColorArg
     opacity?: OpacityArg
-    minAlignmentLength?: number
+    filter?: FilterArg
     cigarMode?: 'full' | 'matches' | 'off'
     drawLocationMarkers?: boolean
     fadeThinAlignmentsMode?: 'auto' | 'on' | 'off'
@@ -334,7 +335,7 @@ export async function syntenyTables(
   const q = comparativeAxis(query, adapterConfig, 0)
   const t = comparativeAxis(target, adapterConfig, 1)
   const config = {
-    minAlignmentLength: view.minAlignmentLength ?? DEFAULT_MIN_ALIGNMENT_LENGTH,
+    filter: view.filter ?? [],
     cigarMode: view.cigarMode ?? 'full',
     drawLocationMarkers: view.drawLocationMarkers ?? false,
     fadeThinAlignmentsMode: view.fadeThinAlignmentsMode ?? 'auto',
@@ -383,6 +384,11 @@ export async function syntenyTables(
     attributeRanges: settings.attributeRanges,
     paint: settings.paint,
     opacity: settings.fade,
+    filter: config.filter,
+    filterExtras: {
+      lengthOf: (i: number) =>
+        Math.abs(featureData.ends[i]! - featureData.starts[i]!),
+    },
   }
   const colors = computeSyntenyColors({
     instanceData,
@@ -399,7 +405,7 @@ export async function syntenyTables(
   })
 
   const n = featureData.featureIds.length
-  const minLength = config.minAlignmentLength
+  const minLength = lowerBoundOf(config.filter, 'length') ?? 0
   const mode = config.fadeThinAlignmentsMode
   const fadeThin =
     mode === 'auto'

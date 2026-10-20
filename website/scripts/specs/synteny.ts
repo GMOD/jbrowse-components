@@ -985,7 +985,7 @@ export function ecoliOneVsAllUrl(levelHeight: number) {
           // LGVSyntenyDisplay colors its lanes by strand already, so an
           // inversion is blue in the lane AND a blue ribbon in the band.
           color: { field: 'strand' },
-          minAlignmentLength: 10000,
+          filter: [{ field: 'length', gte: 10000 }],
           collapseEmptyRows: true,
           levelHeights: [levelHeight, levelHeight, levelHeight, levelHeight],
         },
@@ -1070,7 +1070,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     //
     // NO MIN-LENGTH FILTER, and that is the fix for "this looks more sparse
     // than expected to me ... i want the full size paf not the small one"
-    // (reviewer). It was already the full PAF; `minAlignmentLength: 2000` was
+    // (reviewer). It was already the full PAF; `filter.minLength: 2000` was
     // throwing 87% of it away. Measured off the file: 16,192 records, median
     // block 675 bp, p90 2,287 bp, longest 11,450 bp — so a 2 kb floor keeps
     // 2,126 blocks and a 1 kb floor keeps 5,983.
@@ -1096,7 +1096,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'DotplotView',
           views: [{ assembly: 'peach' }, { assembly: 'grape' }],
           tracks: ['grape_peach_paf'],
-          minAlignmentLength: 0,
+          filter: [{ field: 'length', gte: 0 }],
         },
       ],
     }),
@@ -3206,7 +3206,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // island bulges into the bare right side of the Sakai row.
   //
   // `genes: 'only'` drops the CDS lanes and the full-width `region` feature that
-  // RefSeq GFFs carry for the whole chromosome. No minAlignmentLength: at this
+  // RefSeq GFFs carry for the whole chromosome. No filter.minLength: at this
   // zoom the short alignments are signal, not noise.
   {
     mode: 'url',
@@ -3911,7 +3911,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         {
           type: 'LinearSyntenyView',
           tracks: ['hs1ToMm39.over.chain.pif'],
-          minAlignmentLength: 500000,
+          filter: [{ field: 'length', gte: 500000 }],
           drawCurves: false,
           autoDiagonalize: true,
           color: { field: 'query' },
@@ -4834,7 +4834,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             { assembly: 'T2T_chrY', loc: CHRY_MSY_LOCUS },
             { assembly: 'T2T_chrY_self', loc: CHRY_MSY_LOCUS },
           ],
-          minAlignmentLength: 25000,
+          filter: [{ field: 'length', gte: 25000 }],
         },
       ],
     }),
@@ -4925,7 +4925,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           // dispersed repeats are back and the four crossings are again
           // something to find; at 100 kb they are what is left, and it is the
           // filter the second part draws with.
-          minAlignmentLength: 100000,
+          filter: [{ field: 'length', gte: 100000 }],
         },
       ],
     }),
@@ -5016,7 +5016,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           color: { field: 'strand' },
           drawCurves: true,
           cigarMode: 'matches',
-          minAlignmentLength: 100000,
+          filter: [{ field: 'length', gte: 100000 }],
           opacity: 0.4,
           levelHeights: [220],
           collapseEmptyRows: true,

@@ -2,7 +2,7 @@ import { Suspense, lazy } from 'react'
 
 import { INLINE_MENU_ROW_WIDTH } from './inlineMenuRowWidth.ts'
 
-import type { MenuItem } from './MenuTypes.ts'
+import type { MenuItem, SubMenuItem } from './MenuTypes.ts'
 import type { SliderScale } from './sliderScale.ts'
 
 // The row's drawn half is `lazy()` because this builder is called from state
@@ -88,7 +88,7 @@ export function makeSizeMenu(
 // of its own would only be a second one for the same setting, a hover away.
 export function makeSizeSubMenu(
   opts: SizeMenuOptions & { isDefault: boolean },
-): MenuItem {
+): SubMenuItem {
   return {
     label: opts.title,
     helpText: opts.help,

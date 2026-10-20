@@ -81,14 +81,19 @@ export function reorderChromosomesMenuItem(open: () => void): MenuItem {
   }
 }
 
+/** What the filter rows read and write: the view's `filter`. */
+interface FilterRowModel {
+  lowerBound: (field: string) => number
+  setLowerBound: (field: string, value: number) => void
+}
+
 /**
  * #api
- * The Min length row of a view with `SyntenyViewMixin`.
+ * The Min length row of a view with `SyntenyFilterMixin`: the `filter`'s
+ * lower bound on `length`.
  */
-export function minLengthMenuItem(model: {
-  minAlignmentLength: number
-  setMinAlignmentLength: (value: number) => void
-}): MenuItem {
+export function minLengthMenuItem(model: FilterRowModel): MenuItem {
+  const bp = model.lowerBound('length')
   return makeSizeSubMenu({
     label: 'min length',
     title: 'Min length',
@@ -99,13 +104,48 @@ export function minLengthMenuItem(model: {
     scale: 'log',
     format: n => `${toLocale(n)}bp`,
     commitOnRelease: true,
-    getValue: () => model.minAlignmentLength,
-    isDefault: model.minAlignmentLength === DEFAULT_MIN_ALIGNMENT_LENGTH,
-    onChange: bp => {
-      model.setMinAlignmentLength(bp)
+    getValue: () => bp,
+    isDefault: bp === DEFAULT_MIN_ALIGNMENT_LENGTH,
+    onChange: value => {
+      model.setLowerBound('length', value)
     },
     onReset: () => {
-      model.setMinAlignmentLength(DEFAULT_MIN_ALIGNMENT_LENGTH)
+      model.setLowerBound('length', DEFAULT_MIN_ALIGNMENT_LENGTH)
     },
   })
+}
+
+/**
+ * #api
+ * The Min identity row of a view with `SyntenyFilterMixin`: the `filter`'s
+ * lower bound on `identity`. A filter on identity drops an alignment that
+ * reports none, so the row is disabled while no loaded alignment reports one.
+ */
+export function minIdentityMenuItem(
+  model: FilterRowModel & { attributeRanges: Record<string, unknown> },
+): MenuItem {
+  const fraction = model.lowerBound('identity')
+  const reported = 'identity' in model.attributeRanges
+  return {
+    ...makeSizeSubMenu({
+      label: 'min identity',
+      title: 'Min identity',
+      help: 'Hide alignments below this sequence identity, and those that report none.',
+      min: 0,
+      max: 1,
+      step: 0.01,
+      format: n => `${(n * 100).toFixed(0)}%`,
+      commitOnRelease: true,
+      getValue: () => fraction,
+      isDefault: fraction === 0,
+      onChange: value => {
+        model.setLowerBound('identity', value)
+      },
+      onReset: () => {
+        model.setLowerBound('identity', 0)
+      },
+    }),
+    disabled: !reported && fraction === 0,
+    disabledHelpText: 'No alignment in these tracks reports an identity.',
+  }
 }

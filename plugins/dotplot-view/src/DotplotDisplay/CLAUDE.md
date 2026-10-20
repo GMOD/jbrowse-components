@@ -19,8 +19,8 @@
 ## Hover and pick
 
 - **The hover stores a segment index**, so both `setRpcData` and
-  `setInstanceData` must drop it: zoom, `drawCigar` and `minAlignmentLength`
-  renumber segments without a refetch.
+  `setInstanceData` must drop it: zoom, `drawCigar` and the length bound in
+  `filter` renumber segments without a refetch.
 - Clearing the hover when the plot moves under a still cursor is one reaction
   over `plotTransform` (`setupClearHoverOnPlotMove`), not per-gesture handlers.
 - The pick answers **nearest**, measured in px, and its tie-break is the order

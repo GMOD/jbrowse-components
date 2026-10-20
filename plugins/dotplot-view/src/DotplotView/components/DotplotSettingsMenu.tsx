@@ -5,22 +5,17 @@ import {
   SETTINGS_SURFACE_LABELS,
   identityFadeMenuItem,
   lodMenuItems,
+  minIdentityMenuItem,
   minLengthMenuItem,
   opacityMenuItem,
 } from '@jbrowse/synteny-core'
 import TuneIcon from '@mui/icons-material/Tune'
 import { observer } from 'mobx-react'
 
-import { DEFAULT_LINE_WIDTH, DEFAULT_MIN_IDENTITY } from '../consts.ts'
+import { DEFAULT_LINE_WIDTH } from '../consts.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-
-// Not in synteny-core beside the Min length row: the synteny view has no
-// identity filter to share it with.
-const MIN_IDENTITY_HELP =
-  'Hide alignments below this sequence identity. One with no identity ' +
-  'reported is kept at every threshold.'
 
 /**
  * Every setting that decides what the plot looks like and how much detail feeds
@@ -95,25 +90,7 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
             },
           }),
           minLengthMenuItem(model),
-          makeSizeSubMenu({
-            label: 'min identity',
-            title: 'Min identity',
-            help: MIN_IDENTITY_HELP,
-            min: DEFAULT_MIN_IDENTITY,
-            max: 1,
-            step: 0.01,
-            format: n => `${(n * 100).toFixed(0)}%`,
-            // enforced in the geometry build, so written once the drag ends
-            commitOnRelease: true,
-            getValue: () => model.minIdentity,
-            isDefault: model.minIdentity === DEFAULT_MIN_IDENTITY,
-            onChange: fraction => {
-              model.setMinIdentity(fraction)
-            },
-            onReset: () => {
-              model.setMinIdentity(DEFAULT_MIN_IDENTITY)
-            },
-          }),
+          minIdentityMenuItem(model),
         ] satisfies MenuItem[]
       }
     >

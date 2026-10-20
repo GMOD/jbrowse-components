@@ -270,7 +270,7 @@
           ]
         },
         "height": 780,
-        "minAlignmentLength": 100000,
+        "filter": [{ "field": "length", "gte": 100000 }],
         "tracks": [
           {
             "trackId": "hg38ToPanTro6_gene_density",

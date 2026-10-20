@@ -25160,6 +25160,94 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "FieldPredicate": {
+      "title": "FieldPredicate",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "field": {
+          "description": "the field tested, as the display names its fields.",
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "equal": {
+          "description": "the value must equal this. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
+          }
+        },
+        "lt": {
+          "description": "the value must be below this.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "lte": {
+          "description": "the value must be at most this.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "gt": {
+          "description": "the value must be above this.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "gte": {
+          "description": "the value must be at least this.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "oneOf": {
+          "description": "the value must be one of these. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
+          }
+        },
+        "valid": {
+          "description": "true admits only records with a value for the field, false only those without.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "SyntenyColor": {
       "title": "SyntenyColor",
       "anyOf": [
@@ -26078,6 +26166,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "minimized": {
           "type": "boolean"
         },
+        "filter": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FieldPredicate"
+          }
+        },
         "color": {
           "$ref": "#/$defs/SyntenyColor"
         },
@@ -26087,14 +26181,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "string"
           }
         },
-        "hideUnlabelled": {
-          "type": "boolean"
-        },
         "opacity": {
           "$ref": "#/$defs/SyntenyOpacity"
-        },
-        "minAlignmentLength": {
-          "type": "number"
         },
         "fadeThinAlignmentsMode": {
           "enum": [
@@ -26281,6 +26369,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "minimized": {
           "type": "boolean"
         },
+        "filter": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FieldPredicate"
+          }
+        },
         "color": {
           "$ref": "#/$defs/SyntenyColor"
         },
@@ -26290,14 +26384,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "string"
           }
         },
-        "hideUnlabelled": {
-          "type": "boolean"
-        },
         "opacity": {
           "$ref": "#/$defs/SyntenyOpacity"
-        },
-        "minAlignmentLength": {
-          "type": "number"
         },
         "lodMode": {
           "enum": [
@@ -26331,9 +26419,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "boolean"
         },
         "lineWidth": {
-          "type": "number"
-        },
-        "minIdentity": {
           "type": "number"
         },
         "hview": {
@@ -26529,6 +26614,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "minimized": {
           "type": "boolean"
         },
+        "filter": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FieldPredicate"
+          }
+        },
         "color": {
           "$ref": "#/$defs/SyntenyColor"
         },
@@ -26538,14 +26629,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "string"
           }
         },
-        "hideUnlabelled": {
-          "type": "boolean"
-        },
         "opacity": {
           "$ref": "#/$defs/SyntenyOpacity"
-        },
-        "minAlignmentLength": {
-          "type": "number"
         },
         "lodMode": {
           "enum": [

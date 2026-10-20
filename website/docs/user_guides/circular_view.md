@@ -110,8 +110,8 @@ color of the first genome's chromosome it leaves. **Color by...** in the view's
 menu offers what the linear synteny view's palette offers: either genome's
 chromosome, strand, identity or another measurement, a column the track
 declares, or one color per track when several overlay. **Opacity**, **Identity
-fade** and **Min length** sit beside it, and as view settings they go in a
-session as `color`, `opacity` and `minAlignmentLength`; the identity fade is
+fade**, **Min length** and **Min identity** sit beside it, and as view settings
+they go in a session as `color`, `opacity` and `filter`; the identity fade is
 `opacity: { field: 'identity' }`.
 
 An alignment narrower than a pixel draws at the share of the pixel it covers, as

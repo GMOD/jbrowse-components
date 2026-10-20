@@ -68,7 +68,7 @@ export const paperDrosophilaSpecs: ScreenshotSpec[] = [
             ],
             title: 'Muller element',
           },
-          hideUnlabelled: true,
+          filter: [{ field: 'muller', valid: true }],
           autoDiagonalize: false,
           collapseEmptyRows: true,
           drawCurves: true,

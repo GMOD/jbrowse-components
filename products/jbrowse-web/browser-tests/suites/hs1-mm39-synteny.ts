@@ -22,7 +22,7 @@ const suite: TestSuite = {
       view: {
         type: 'LinearSyntenyView',
         tracks: ['hs1ToMm39.over.chain.pif'],
-        minAlignmentLength: 500000,
+        filter: [{ field: 'length', gte: 500000 }],
         drawCurves: true,
         autoDiagonalize: true,
         color: { field: 'query' },
@@ -42,7 +42,7 @@ const suite: TestSuite = {
       view: {
         type: 'LinearSyntenyView',
         tracks: ['hs1ToMm39.over.chain.pif'],
-        minAlignmentLength: 100000,
+        filter: [{ field: 'length', gte: 100000 }],
         views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
       },
       waitTestId: 'synteny_canvas',
@@ -56,7 +56,7 @@ const suite: TestSuite = {
       view: {
         type: 'LinearSyntenyView',
         tracks: ['hs1ToMm39.over.chain.pif'],
-        minAlignmentLength: 100000,
+        filter: [{ field: 'length', gte: 100000 }],
         views: [
           { loc: 'chr7', assembly: 'hs1' },
           { loc: 'chr6', assembly: 'mm39' },
@@ -80,7 +80,7 @@ const suite: TestSuite = {
       view: {
         type: 'LinearSyntenyView',
         tracks: ['hs1ToMm39.over.chain.pif'],
-        minAlignmentLength: 100000,
+        filter: [{ field: 'length', gte: 100000 }],
         views: [
           { loc: 'chr1:157,000,000..207,000,000', assembly: 'hs1' },
           { loc: 'chr1:129,000,000..176,000,000', assembly: 'mm39' },

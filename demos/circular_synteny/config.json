@@ -232,7 +232,7 @@
           },
           "hg38ToMm39_liftover"
         ],
-        "minAlignmentLength": 100000
+        "filter": [{ "field": "length", "gte": 100000 }]
       }
     ]
   }

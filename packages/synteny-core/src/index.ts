@@ -149,6 +149,7 @@ export {
 export { SyntenyViewMixin } from './SyntenyViewMixin.ts'
 export {
   identityFadeMenuItem,
+  minIdentityMenuItem,
   minLengthMenuItem,
   opacityMenuItem,
   reorderChromosomesMenuItem,
@@ -182,6 +183,9 @@ export type {
   SyntenyColorScale,
   SyntenyColorSnapshot,
 } from './syntenyColorConfigSchema.ts'
+export { SyntenyFilterMixin } from './SyntenyFilterMixin.ts'
+export { comparativeFilter, comparativeLaneOf } from './filterLanes.ts'
+export type { FilterExtras } from './filterLanes.ts'
 export {
   SYNTENY_OPACITY_SCALES,
   syntenyOpacityConfigSchema,
@@ -414,6 +418,7 @@ export type {
   AxisRegionArgs,
   ColorArg,
   ComparativeAxis,
+  FilterArg,
   OpacityArg,
   ViewColorSettings,
 } from './comparativeTables.ts'

@@ -19,9 +19,11 @@ import {
   KIND_MARKER,
 } from '../LinearSyntenyRPC/syntenyKinds.ts'
 
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type {
   AttributeRange,
   ColorFunctionInputs,
+  FilterExtras,
   SyntenyColorPaint,
   RefNamePosition,
   SyntenyOpacitySnapshot,
@@ -85,6 +87,8 @@ export function computeSyntenyColors({
   namePosition,
   attributeRanges,
   hideUnlabelled,
+  filter,
+  filterExtras,
   hiddenFeatures,
   paint,
 }: {
@@ -112,6 +116,9 @@ export function computeSyntenyColors({
   // one, not this fetch's. See `createComparativeColorFunction`.
   attributeRanges: Record<string, AttributeRange>
   hideUnlabelled?: boolean
+  // the view's `filter`, which paints a ribbon it rejects at zero alpha
+  filter?: readonly FieldPredicate[]
+  filterExtras?: FilterExtras
   hiddenFeatures?: ReadonlySet<number>
   // what the view's `color` declares over a field's own scale
   paint?: SyntenyColorPaint
@@ -126,6 +133,8 @@ export function computeSyntenyColors({
     hideUnlabelled,
     paint,
     opacity,
+    filter,
+    filterExtras,
     defaultColor:
       valueColor === undefined
         ? DEFAULT_RIBBON_COLOR

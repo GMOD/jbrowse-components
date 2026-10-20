@@ -805,7 +805,7 @@ cat > session.json <<JSON
       "views": [$panels],
       "tracks": [$ribbons],
       "drawCurves": false,
-      "minAlignmentLength": 10000
+      "filter": [{ "field": "length", "gte": 10000 }]
     },
     {
       "type": "LinearGenomeView",

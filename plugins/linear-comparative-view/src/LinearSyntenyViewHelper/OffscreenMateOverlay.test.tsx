@@ -36,7 +36,7 @@ function level({ width = 800, height = 100, show = true } = {}) {
     parentView: {
       width,
       showOffscreenMates: show,
-      minAlignmentLength: 0,
+      minLength: 0,
       overdrawPx: 1000,
     },
   }

@@ -97,7 +97,7 @@ try {
         {
           type: 'LinearSyntenyView',
           tracks: ['peach_grape_minimap2'],
-          minAlignmentLength: 2000,
+          filter: [{ field: 'length', gte: 2000 }],
           drawCurves: true,
           color: { field: 'query' },
           levelHeights: [350],

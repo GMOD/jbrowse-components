@@ -45,13 +45,13 @@ const datasets = {
   hs1: {
     config: 'test_data/hs1_vs_mm39/config.json',
     tracks: ['hs1ToMm39.over.chain.pif'],
-    minAlignmentLength: 500000,
+    filter: [{ field: 'length', gte: 500000 }],
     views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
   },
   grape: {
     config: 'test_data/grape_peach_synteny/config.json',
     tracks: ['peach_grape_minimap2'],
-    minAlignmentLength: 2000,
+    filter: [{ field: 'length', gte: 2000 }],
     views: [{ assembly: 'grape' }, { assembly: 'peach' }],
   },
 } as const
@@ -60,8 +60,9 @@ const key = (arg('dataset') ?? 'hs1') as keyof typeof datasets
 const { config, ...rest } = datasets[key]
 const minlenArg = arg('minlen')
 if (minlenArg) {
-  ;(rest as { minAlignmentLength: number }).minAlignmentLength =
-    Number(minlenArg)
+  ;(rest as unknown as { filter: { field: string; gte: number }[] }).filter = [
+    { field: 'length', gte: Number(minlenArg) },
+  ]
 }
 // Two comma-separated loci, one per row, in the order the dataset lists its
 // assemblies. Left unset the rows show their whole assemblies, which is what
@@ -124,7 +125,7 @@ async function capture(drawCurves: boolean, backend: 'canvas2d' | 'webgl') {
 }
 
 console.log(
-  `dataset ${key}, minAlignmentLength ${rest.minAlignmentLength}, ` +
+  `dataset ${key}, filter ${JSON.stringify(rest.filter)}, ` +
     `autoDiagonalize ${!args.includes('--no-diagonalize')}${
       locs ? `, loc ${locs.join(' / ')}` : ', whole genome'
     }`,

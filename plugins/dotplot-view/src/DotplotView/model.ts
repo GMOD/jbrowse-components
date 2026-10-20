@@ -178,12 +178,7 @@ function dragToHighlight(a: PxToBpResult, b: PxToBpResult): HighlightType {
   }
 }
 
-import {
-  DEFAULT_ALPHA,
-  DEFAULT_LINE_WIDTH,
-  DEFAULT_MIN_IDENTITY,
-  defaultHeight,
-} from './consts.ts'
+import { DEFAULT_ALPHA, DEFAULT_LINE_WIDTH, defaultHeight } from './consts.ts'
 
 // Floor for the resize handle. Below this the axis borders (which floor at
 // MIN_BORDER=50 each) would eat the whole box and viewWidth/viewHeight would go
@@ -282,15 +277,6 @@ export default function stateModelFactory(pm: PluginManager) {
            * Line width in CSS pixels of every alignment in the plot
            */
           lineWidth: types.stripDefault(types.number, DEFAULT_LINE_WIDTH),
-          /**
-           * #property
-           * Hide alignments whose sequence identity is below this fraction
-           * (0-1), enforced per feature in buildLineSegments beside
-           * minAlignmentLength. A feature with no identity is kept at every
-           * threshold, because dropping it would blank a plot whose adapter
-           * never reported identity.
-           */
-          minIdentity: types.stripDefault(types.number, DEFAULT_MIN_IDENTITY),
           /**
            * #property
            * the horizontal axis, as a full 1D view state. A spec writes
@@ -986,12 +972,6 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setLineWidth(value: number) {
           self.lineWidth = value
-        },
-        /**
-         * #action
-         */
-        setMinIdentity(value: number) {
-          self.minIdentity = value
         },
         /**
          * #action

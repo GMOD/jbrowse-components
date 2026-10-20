@@ -14,11 +14,23 @@ function stepPaths(
   return step === undefined ? [] : [step].flat().map(s => s.path)
 }
 
-test('the circular view holds the min length row in its view menu', () => {
-  expect(stepPaths('minAlignmentLength', 100000, 'CircularView')).toEqual([
+test('the circular view holds the filter rows in its view menu', () => {
+  expect(
+    stepPaths(
+      'filter',
+      [
+        { field: 'length', gte: 100000 },
+        { field: 'identity', gte: 0.9 },
+      ],
+      'CircularView',
+    ),
+  ).toEqual([
     'View menu → Min length → drag to 100,000bp',
+    'View menu → Min identity → drag to 90%',
   ])
-  expect(stepPaths('minAlignmentLength', 100000, 'LinearSyntenyView')).toEqual([
+  expect(
+    stepPaths('filter', [{ field: 'length', gte: 100000 }], 'LinearSyntenyView'),
+  ).toEqual([
     'Synteny display settings (the sliders button in the view header) → Min length → drag to 100,000bp',
   ])
 })
@@ -33,14 +45,15 @@ test('the color radios sit in the circular view menu and the comparative headers
   ])
 })
 
-test('hiding unlabelled rows is a row of the same color menu', () => {
-  expect(stepPaths('hideUnlabelled', true, 'LinearSyntenyView')).toEqual([
+test('hiding unlabelled rows is a valid predicate the color menu writes', () => {
+  const filter = [{ field: 'gene_group', valid: true }]
+  expect(stepPaths('filter', filter, 'LinearSyntenyView')).toEqual([
     'Synteny view header → palette button → Hide unlabelled rows (checked)',
   ])
-  expect(stepPaths('hideUnlabelled', true, 'CircularView')).toEqual([
+  expect(stepPaths('filter', filter, 'CircularView')).toEqual([
     'View menu → Color by... → Hide unlabelled rows (checked)',
   ])
-  expect(stepPaths('hideUnlabelled', true, 'LinearGenomeView')).toEqual([])
+  expect(stepPaths('filter', filter, 'LinearGenomeView')).toEqual([])
 })
 
 test('the legend toggle of the circular view is in its view menu', () => {

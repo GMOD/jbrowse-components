@@ -80,7 +80,7 @@ export const linkageGroupsSpecs: ScreenshotSpec[] = [
             ['EMU_CLAa'],
           ],
           color: { field: 'gene_group' },
-          hideUnlabelled: true,
+          filter: [{ field: 'gene_group', valid: true }],
           autoDiagonalize: true,
           // The jellyfish row, whose chromosomes ARE the linkage groups this
           // figure is about (review: the reorder "sweeps top-down from

@@ -1,8 +1,8 @@
 import { CIGAR_D, CIGAR_I, CIGAR_N } from '@jbrowse/cigar-utils'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { lowerBoundOf } from '@jbrowse/core/util/fieldPredicate'
 import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 import {
-  DEFAULT_MIN_ALIGNMENT_LENGTH,
   attributeColumns,
   axisNamePosition,
   comparativeAxis,
@@ -17,17 +17,14 @@ import {
 import { computeDotplotColors } from './DotplotDisplay/dotplotColors.ts'
 import { buildLineSegments } from './DotplotDisplay/dotplotGeometry.ts'
 import { executeDotplotFeaturesAndPositions } from './DotplotDisplay/executeDotplotFeaturesAndPositions.ts'
-import {
-  DEFAULT_ALPHA,
-  DEFAULT_LINE_WIDTH,
-  DEFAULT_MIN_IDENTITY,
-} from './DotplotView/consts.ts'
+import { DEFAULT_ALPHA, DEFAULT_LINE_WIDTH } from './DotplotView/consts.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AxisArgs,
   ColorArg,
   ComparativeAxis,
+  FilterArg,
   OpacityArg,
 } from '@jbrowse/synteny-core'
 
@@ -41,14 +38,13 @@ export interface DotplotTablesArgs {
   y: AxisArgs
   /**
    * The view's settings, as a `DotplotView` snapshot writes them: `color`,
-   * `opacity`, `minAlignmentLength`, `minIdentity`, `drawCigar` and
+   * `opacity`, `filter` (a list of field predicates), `drawCigar` and
    * `lineWidth`.
    */
   view?: {
     color?: ColorArg
     opacity?: OpacityArg
-    minAlignmentLength?: number
-    minIdentity?: number
+    filter?: FilterArg
     drawCigar?: boolean
     lineWidth?: number
   }
@@ -79,8 +75,7 @@ export async function dotplotTables(
   { adapterConfig, x, y, view = {} }: DotplotTablesArgs,
 ) {
   const config = {
-    minAlignmentLength: view.minAlignmentLength ?? DEFAULT_MIN_ALIGNMENT_LENGTH,
-    minIdentity: view.minIdentity ?? DEFAULT_MIN_IDENTITY,
+    filter: view.filter ?? [],
     drawCigar: view.drawCigar ?? true,
     lineWidth: view.lineWidth ?? DEFAULT_LINE_WIDTH,
   }
@@ -111,8 +106,7 @@ export async function dotplotTables(
   const instanceData = buildLineSegments(
     rpcData,
     config.drawCigar,
-    config.minAlignmentLength,
-    config.minIdentity,
+    lowerBoundOf(config.filter, 'length') ?? 0,
     h.bpPerPx,
     v.bpPerPx,
     0,
@@ -126,16 +120,20 @@ export async function dotplotTables(
     paint: settings.paint,
     opacity: settings.fade,
   }
+  const filterExtras = { lengthOf: (i: number) => rpcData.alignmentLengths[i]! }
   const colors = computeDotplotColors({
     instanceData,
     rpcData,
     ...colorArgs,
+    filter: { predicates: config.filter, extras: filterExtras },
     valueColor: settings.valueColor,
   })
   const featureColor = createComparativeColorFunction({
     ...colorArgs,
     data: rpcData,
     defaultColor: cssColorToABGR(settings.valueColor ?? '#000'),
+    filter: config.filter,
+    filterExtras,
   })
   const level = settings.level
 

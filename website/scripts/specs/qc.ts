@@ -678,7 +678,7 @@ export const qcSpecs: ScreenshotSpec[] = [
             cigarMode: 'matches',
             // drops the sub-kb chains the segdup throws off, leaving the three
             // that span the block
-            minAlignmentLength: 10000,
+            filter: [{ field: 'length', gte: 10000 }],
             // three ribbons, so the 0.2 default is pure washout here -- there
             // is nothing piling up for it to protect
             opacity: 0.5,

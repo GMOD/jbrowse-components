@@ -166,14 +166,23 @@ test('a slider row captions the value it is set to', async () => {
 
 // The identity filter is a fraction in the model and a percentage in the row,
 // so the caption is the one place that conversion is visible.
-test('the identity row captions the model fraction as a percentage', async () => {
+test('the identity row captions the filter bound as a percentage', async () => {
   const view = await openMenu()
-  fireEvent.click(screen.getByTestId('cascading-submenu-min_identity'))
-  expect(await screen.findByText('Min identity: 0%')).toBeTruthy()
   act(() => {
-    view.setMinIdentity(0.9)
+    view.setLowerBound('identity', 0.9)
   })
-  expect(screen.getByText('Min identity: 90%')).toBeTruthy()
+  fireEvent.click(screen.getByTestId('cascading-submenu-min_identity'))
+  expect(await screen.findByText('Min identity: 90%')).toBeTruthy()
+}, 20000)
+
+// A bound on identity drops an alignment reporting none, so with no loaded
+// identity the row offers nothing a reader could want.
+test('the identity row is disabled while no alignment reports one', async () => {
+  await openMenu()
+  expect(screen.getByTestId('cascading-submenu-min_identity')).toHaveAttribute(
+    'aria-disabled',
+    'true',
+  )
 }, 20000)
 
 function checkboxRow(name: string | RegExp) {

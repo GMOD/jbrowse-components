@@ -43,13 +43,13 @@ const datasets = {
   hs1: {
     config: 'test_data/hs1_vs_mm39/config.json',
     tracks: ['hs1ToMm39.over.chain.pif'],
-    minAlignmentLength: 500000,
+    filter: [{ field: 'length', gte: 500000 }],
     views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
   },
   grape: {
     config: 'test_data/grape_peach_synteny/config.json',
     tracks: ['peach_grape_minimap2'],
-    minAlignmentLength: 2000,
+    filter: [{ field: 'length', gte: 2000 }],
     views: [{ assembly: 'grape' }, { assembly: 'peach' }],
   },
 } as const

@@ -147,7 +147,7 @@ cat > session.json <<'JSON'
       ],
       "tracks": ["ecoli_ava"],
       "drawCurves": false,
-      "minAlignmentLength": 10000,
+      "filter": [{ "field": "length", "gte": 10000 }],
       "collapseEmptyRows": true
     }
   ]

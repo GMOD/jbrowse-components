@@ -166,7 +166,7 @@ view = {
     'tracks': [pair],
 }
 if min_length:
-    view['minAlignmentLength'] = min_length
+    view['filter'] = [{'field': 'length', 'gte': min_length}]
 if color_field:
     view['color'] = {'field': color_field}
 config = {

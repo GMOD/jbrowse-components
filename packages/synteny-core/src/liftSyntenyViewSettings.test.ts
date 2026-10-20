@@ -45,10 +45,11 @@ test('a v4.3.0 display setting lands on the view', () => {
   expect(lifted).toMatchObject({
     color: { field: 'strand' },
     opacity: 0.6,
-    minAlignmentLength: 500,
+    filter: [{ field: 'length', gte: 500 }],
   })
   expect(lifted).not.toHaveProperty('colorBy')
   expect(lifted).not.toHaveProperty('alpha')
+  expect(lifted).not.toHaveProperty('minAlignmentLength')
 })
 
 test("a dotplot's display colorBy lands, and the view's own setting wins", () => {

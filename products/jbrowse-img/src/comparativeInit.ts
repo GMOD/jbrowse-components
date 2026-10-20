@@ -41,7 +41,10 @@ function sharedComparativeKnobs(opts: Opts): SyntenyViewSharedInit {
   return {
     autoDiagonalize: opts.autoDiagonalize ? true : undefined,
     color: opts.colorBy === undefined ? undefined : { field: opts.colorBy },
-    minAlignmentLength: opts.minAlignmentLength,
+    filter:
+      opts.minAlignmentLength === undefined
+        ? undefined
+        : [{ field: 'length', gte: opts.minAlignmentLength }],
   }
 }
 
