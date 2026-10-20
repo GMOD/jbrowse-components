@@ -1,3 +1,4 @@
+import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
@@ -23,13 +24,25 @@ export type GroupByRadioItem<T extends string> =
   | { type: T; label: string; onClick: () => void }
   | { type: T; label: string; disabledHelpText: string }
 
-// A stored dimension this menu doesn't offer ticks "None" rather than leaving
-// the group blank, so no caller filters `current` against what it passed in.
-function checkedType<T extends string>(
+// A stored dimension no radio names, a field only a config wrote, gets a
+// checked, disabled radio of its own, so the menu never ticks "None" over a
+// grouped track. One `offered` drops ticks "None": the display cannot honor it.
+function storedRadio<T extends string>(
   current: T | undefined,
-  offered: readonly { type: T }[],
-) {
-  return offered.some(o => o.type === current) ? current : undefined
+  radios: readonly { type: T }[],
+  offered: (type: T) => boolean,
+): GroupByRadioItem<T>[] {
+  return current === undefined ||
+    !offered(current) ||
+    radios.some(o => o.type === current)
+    ? []
+    : [
+        {
+          type: current,
+          label: current,
+          disabledHelpText: "Set in the track's config",
+        },
+      ]
 }
 
 /**
@@ -58,8 +71,14 @@ export function groupByRadioMenuItem<T extends string, X extends string = T>({
   offered?: (type: T | X) => boolean
 }) {
   const dimensions = options.filter(o => offered(o.type))
-  const extras = extra.filter(e => offered(e.type))
-  const checked = checkedType<T | X>(current, [...dimensions, ...extras])
+  const offeredExtras = extra.filter(e => offered(e.type))
+  const extras: GroupByRadioItem<T | X>[] = [
+    ...offeredExtras,
+    ...storedRadio(current, [...dimensions, ...offeredExtras], offered),
+  ]
+  const checked = [...dimensions, ...extras].some(o => o.type === current)
+    ? current
+    : undefined
   // Direct selects keep the menu open; `extra` radios open a dialog, so they
   // dismiss it, the rule the sort and color menus' tag rows follow.
   const radio = (
@@ -73,7 +92,7 @@ export function groupByRadioMenuItem<T extends string, X extends string = T>({
     keepMenuOpen,
     onClick,
   })
-  const extraRadio = (e: GroupByRadioItem<X>) =>
+  const extraRadio = (e: GroupByRadioItem<T | X>) =>
     'onClick' in e
       ? radio(e, e.onClick, false)
       : {
@@ -199,14 +218,20 @@ export function moveSectionTo(
 }
 
 // The domain pins only what it names, so a move writes the whole drawn order
-// or the unpinned sections re-sort under it.
+// or the unpinned sections re-sort under it. The overflow section holds
+// whichever values fall past the cap in each region, so it names no value to
+// pin and stays last.
 function writeSectionMove(
   model: Pick<SectionOrderModel, 'sections' | 'domain' | 'setDomain'>,
   key: string,
   to: number,
 ) {
-  const keys = model.sections.map(s => s.key)
-  model.setDomain(mergeDomain(model.domain, moveSectionTo(keys, key, to)))
+  if (key !== OVERFLOW_GROUP_KEY) {
+    const keys = model.sections
+      .map(s => s.key)
+      .filter(k => k !== OVERFLOW_GROUP_KEY)
+    model.setDomain(mergeDomain(model.domain, moveSectionTo(keys, key, to)))
+  }
 }
 
 export function moveSectionOnto(

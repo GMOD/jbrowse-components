@@ -1,3 +1,4 @@
+import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
 import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
@@ -125,11 +126,12 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
                   },
                 }
               : undefined,
-          onHide: canHideLane
-            ? () => {
-                model.hideGroup(groupKey)
-              }
-            : undefined,
+          onHide:
+            canHideLane && groupKey !== OVERFLOW_GROUP_KEY
+              ? () => {
+                  model.hideGroup(groupKey)
+                }
+              : undefined,
         }
       })}
     />

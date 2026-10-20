@@ -1,4 +1,7 @@
+import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
+
 import {
+  groupByRadioMenuItem,
   mergeDomain,
   moveSectionOnto,
   moveSectionTo,
@@ -51,6 +54,20 @@ test('a drop pins every drawn section in the order now shown, and a drop on itse
   expect(written).toEqual([['hidden', 'cacao', 'peach', 'grape']])
 })
 
+test('the overflow section neither moves nor lands in the domain', () => {
+  const written: string[][] = []
+  const model = {
+    sections: sections('peach', 'cacao', OVERFLOW_GROUP_KEY),
+    domain: [],
+    setDomain: (domain: string[]) => {
+      written.push(domain)
+    },
+  }
+  moveSectionOnto(model, OVERFLOW_GROUP_KEY, 'peach')
+  moveSectionOnto(model, 'peach', OVERFLOW_GROUP_KEY)
+  expect(written).toEqual([['cacao', 'peach']])
+})
+
 test('the reset row shows only while the order is pinned, and clears it', () => {
   const written: string[][] = []
   const setDomain = (domain: string[]) => {
@@ -62,4 +79,24 @@ test('the reset row shows only while the order is pinned, and clears it', () => 
   expect(labelsOf(rows)).toEqual(['Reset section order'])
   clickOf(rows[0])
   expect(written).toEqual([[]])
+})
+
+test('a stored field no radio offers shows checked and disabled, one not honored ticks None', () => {
+  const ticked = (current: string, offered?: (type: string) => boolean) =>
+    groupByRadioMenuItem({
+      current,
+      options: [{ type: 'population', label: 'Population' }],
+      onSelect: () => {},
+      onNone: () => {},
+      offered,
+    }).subMenu.flatMap(item =>
+      'checked' in item && item.checked
+        ? [[item.label, 'disabled' in item && !!item.disabled]]
+        : [],
+    )
+  expect(ticked('population')).toEqual([['Population', false]])
+  expect(ticked('superpopulation')).toEqual([['superpopulation', true]])
+  expect(ticked('superpopulation', type => type === 'population')).toEqual([
+    ['None', false],
+  ])
 })

@@ -205,18 +205,18 @@ export function queueSortByTagDialog(
 
 // Every offered dimension selects directly; a tag needs its name (+ optional
 // color-by-tag), so it goes last as a dialog-opener — mirroring the sort menu's
-// "Tag...". Its radio is the tag prefix, which no field can equal. A field
-// written in config that no radio names gets a checked, disabled radio of its
-// own, so the menu never ticks "None" over a grouped track.
+// "Tag...". Its radio is the tag prefix, which no field can equal. A hidden
+// dimension belongs to another display's menu (mateAssembly is
+// LGVSyntenyDisplay's), so a stored one ticks None here.
 export function getGroupByMenuItem(model: GroupByMenuModel) {
   const field = model.facet?.field
   const tag = facetTag(field)
-  const other =
-    field !== undefined && tag === undefined && !isReadDimension(field)
-      ? field
-      : undefined
+  const hidden =
+    field !== undefined &&
+    isReadDimension(field) &&
+    FACET_DIMENSIONS[field].hidden
   return groupByRadioMenuItem({
-    current: tag === undefined ? field : TAG_FIELD_PREFIX,
+    current: tag !== undefined ? TAG_FIELD_PREFIX : hidden ? undefined : field,
     options: GROUP_OPTIONS,
     unit: model.unit,
     onSelect: field => {
@@ -236,15 +236,6 @@ export function getGroupByMenuItem(model: GroupByMenuModel) {
           ])
         },
       },
-      ...(other === undefined
-        ? []
-        : [
-            {
-              type: other,
-              label: other,
-              disabledHelpText: "Set in the track's config",
-            },
-          ]),
     ],
   })
 }
