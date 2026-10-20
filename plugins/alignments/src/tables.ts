@@ -149,6 +149,7 @@ import {
   READS_RAMP_ID,
   arcLegendTitle,
   colorRampScales,
+  getAlignmentsColorScales,
   getArcLegendItems,
   getReadDisplayLegendItems,
   sashimiLegendItems,
@@ -187,6 +188,8 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { LegendItem } from '@jbrowse/core/ui'
+import type { RampScale } from '@jbrowse/core/ui/colorScale'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ValueScaleRuleConfig } from '@jbrowse/wiggle-core'
 
@@ -531,18 +534,15 @@ function colorReads(
         ? baseQualitySpanAcrossGroups(byGroup).extent
         : undefined,
   })
-  const readRamp = ramps.some(r => r.id === READS_RAMP_ID)
   return {
     sections,
     palette,
     declared,
     readField: colorFieldOf(colorBy),
     insertSizeBand: band,
-    legend: {
-      label: legend.map(item => item.label),
-      color: legend.map(item => cssColorToHex(item.color!)),
-    },
-    legendTitle: (readRamp ? undefined : colorTitle) ?? 'Read colors',
+    legendItems: legend,
+    rampScales: ramps,
+    colorTitle,
     ramps: ramps.map(r =>
       rampKeyOf(
         r.id === READS_RAMP_ID && colorTitle !== undefined
@@ -958,10 +958,7 @@ function readConnectionTables(
     : []
   return {
     bySection,
-    arcLegend: {
-      label: legend.map(item => item.label),
-      color: legend.map(item => cssColorToHex(item.color!)),
-    },
+    arcLegendItems: legend,
     arcLegendTitle: arcLegendTitle(mode),
     arcSpanMax: result?.maxFlatArcSpanBp ?? 0,
   }
@@ -1521,11 +1518,8 @@ export async function alignmentTables(
       key: order.map(g => g.key),
       label: order.map(g => g.label),
     },
-    legend: colors.legend,
-    legendTitle: colors.legendTitle,
+    ...readAndArcKeys(colors, connections),
     ramps: colors.ramps,
-    arcLegend: connections.arcLegend,
-    arcLegendTitle: connections.arcLegendTitle,
     arcSpanMax: connections.arcSpanMax,
     coverageScale: coverageScale(
       conf,
@@ -1639,6 +1633,53 @@ function layoutWarnings({
     }
   }
   return [...warnings]
+}
+
+/**
+ * The read and arc keys as the display shows them, through its own
+ * `getAlignmentsColorScales`: one section where reads and arcs share a color,
+ * each bucket once and split twins folded, so an export keys what the view
+ * keys. The arc key is empty when it merges into the read key.
+ */
+function readAndArcKeys(
+  colors: {
+    legendItems: LegendItem[]
+    rampScales: RampScale[]
+    colorTitle: string | undefined
+  },
+  connections: { arcLegendItems: LegendItem[]; arcLegendTitle: string },
+) {
+  const scales = getAlignmentsColorScales({
+    ramps: colors.rampScales,
+    colorTitle: colors.colorTitle,
+    legendItems: () => colors.legendItems,
+    arcLegendTitle: connections.arcLegendTitle,
+    arcLegendItems: () => connections.arcLegendItems,
+    connectionLegendItems: () => [],
+    sashimiLegendItems: [],
+  })
+  const section = (id: string) => {
+    const scale = scales.find(s => s.id === id)
+    const entries =
+      scale?.kind === 'categorical'
+        ? scale.entries.filter(e => e.color !== undefined)
+        : []
+    return {
+      title: scale?.title ?? '',
+      key: {
+        label: entries.map(e => e.label),
+        color: entries.map(e => cssColorToHex(e.color!)),
+      },
+    }
+  }
+  const reads = section('reads')
+  const arcs = section('arcs')
+  return {
+    legend: reads.key,
+    legendTitle: reads.title,
+    arcLegend: arcs.key,
+    arcLegendTitle: arcs.title,
+  }
 }
 
 /**
