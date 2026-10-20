@@ -15,6 +15,7 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import TriangleMatrixMixin from '@jbrowse/display-kit/TriangleMatrixMixin'
 import {
+  colorForScheme,
   colorSettingOf,
   matrixColorEncodingOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -23,7 +24,7 @@ import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { triangleAxis } from '@jbrowse/display-kit/triangleTransform'
 import { ldValueComputed } from '@jbrowse/ld-core'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 
@@ -440,12 +441,13 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       setColorScheme(scheme: ColorSchemeName) {
         setConf(
           self,
-          ['color', 'scheme'],
-          scheme === LD_FIELD_PRESETS[self.effectiveLdMetric].scheme
-            ? undefined
-            : scheme,
+          'color',
+          colorForScheme(
+            getSnapshot(self.configuration.color),
+            scheme,
+            LD_FIELD_PRESETS[self.effectiveLdMetric].scheme,
+          ),
         )
-        setConf(self, ['color', 'reverse'], undefined)
       },
       /**
        * #action

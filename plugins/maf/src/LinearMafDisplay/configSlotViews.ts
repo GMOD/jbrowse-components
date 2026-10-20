@@ -2,8 +2,10 @@ import { getConf, setConf } from '@jbrowse/core/configuration'
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import {
   colorEncodingOf,
+  colorForScheme,
   colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { identityLut } from '../LinearMafRenderer/identity.ts'
 import { sourceChromRankColors } from './components/drawSourceChrom.ts'
@@ -218,8 +220,15 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * would win over it.
      */
     setColorScheme(scheme: ColorSchemeName) {
-      setConf(self, ['color', 'scheme'], scheme)
-      setConf(self, ['color', 'range'], [])
+      setConf(
+        self,
+        'color',
+        colorForScheme(
+          getSnapshot(self.configuration.color),
+          scheme,
+          MAF_FIELD_PRESETS.identity.scheme,
+        ),
+      )
     },
     /**
      * #action

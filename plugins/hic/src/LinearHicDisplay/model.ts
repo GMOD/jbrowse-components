@@ -18,6 +18,7 @@ import PointerHoverMixin from '@jbrowse/display-kit/PointerHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import TriangleMatrixMixin from '@jbrowse/display-kit/TriangleMatrixMixin'
 import {
+  colorForScheme,
   colorSettingOf,
   matrixColorEncodingOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -25,7 +26,7 @@ import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFet
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { triangleAxis } from '@jbrowse/display-kit/triangleTransform'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
   SCALE_TYPE_LINEAR,
@@ -35,7 +36,10 @@ import {
 
 import { legendStops } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
-import { HIC_FIELD_PRESETS } from './hicColorConfigSchema.ts'
+import {
+  DEFAULT_HIC_COLOR_SCHEME,
+  HIC_FIELD_PRESETS,
+} from './hicColorConfigSchema.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
 import type {
@@ -586,8 +590,15 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * The scheme, with `reverse` back to unset so it follows the scheme.
        */
       setColorScheme(scheme: ColorSchemeName) {
-        setConf(self, ['color', 'scheme'], scheme)
-        setConf(self, ['color', 'reverse'], undefined)
+        setConf(
+          self,
+          'color',
+          colorForScheme(
+            getSnapshot(self.configuration.color),
+            scheme,
+            DEFAULT_HIC_COLOR_SCHEME,
+          ),
+        )
       },
       /**
        * #action

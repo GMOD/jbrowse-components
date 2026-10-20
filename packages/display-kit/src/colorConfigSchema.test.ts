@@ -11,6 +11,7 @@ import {
   colorDomainSlot,
   colorEncodingOf,
   colorForField,
+  colorForScheme,
   colorForValue,
   colorRampSlots,
   colorRangeSlot,
@@ -226,6 +227,26 @@ describe('colorForField', () => {
 
   test('copies the lists rather than handing the same arrays back', () => {
     expect(colorForField(tag, 'tags.HP').domain).not.toBe(tag.domain)
+  })
+})
+
+describe('colorForScheme', () => {
+  it('names the ramp and drops what would turn or replace it', () => {
+    expect(
+      colorForScheme(
+        { field: 'identity', reverse: true, range: ['red', 'blue'] },
+        'magma',
+        'viridis',
+      ),
+    ).toEqual({ field: 'identity', scheme: 'magma' })
+  })
+
+  it('leaves the default ramp unset', () => {
+    expect(
+      colorForScheme({ scheme: 'magma', scale: 'log' }, 'viridis', 'viridis'),
+    ).toEqual({
+      scale: 'log',
+    })
   })
 })
 

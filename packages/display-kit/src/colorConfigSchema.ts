@@ -650,6 +650,19 @@ export function colorForField(current: ColorSlots, field: string) {
 }
 
 /**
+ * The color object a scheme pick writes over `current`: the ramp named,
+ * unset where it is `defaultScheme`, the one the object paints with anyway, and
+ * `reverse` and `range` dropped, since either would turn or replace the ramp
+ * picked.
+ */
+export function colorForScheme<
+  C extends { scheme?: string; reverse?: boolean; range?: readonly unknown[] },
+>(current: C, scheme: string, defaultScheme?: string) {
+  const { scheme: _scheme, reverse: _reverse, range: _range, ...kept } = current
+  return scheme === defaultScheme ? kept : { ...kept, scheme }
+}
+
+/**
  * The color object a Solid color pick writes over `current`: `value` paints,
  * undefined returning to each feature's own color, and a field stays under
  * `scale: 'none'` for the way back.
