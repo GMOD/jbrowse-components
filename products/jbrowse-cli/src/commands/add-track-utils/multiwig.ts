@@ -2,7 +2,7 @@ import fs from 'node:fs'
 
 import { isURL } from '../../types/common.ts'
 
-import type { Adapter, Location } from './adapter-utils.ts'
+import type { Adapter, Location } from '@jbrowse/launch-args'
 
 // Parse the --multiwig argument into a subadapter list, mirroring @jbrowse/img's
 // --multiwig: either a comma-separated list of BigWig files/URLs, or a `.json`

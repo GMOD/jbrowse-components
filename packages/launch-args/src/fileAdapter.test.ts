@@ -7,7 +7,7 @@ import {
   guessTrackType,
   makeLocationProtocol,
   siblingSidecar,
-} from './adapter-utils.ts'
+} from './fileAdapter.ts'
 
 const mapLocation = makeLocationProtocol('uri')
 

@@ -34,6 +34,7 @@
   "dependencies": {
     "@jbrowse/add-track-core": "workspace:^",
     "@jbrowse/cigar-utils": "workspace:^",
+    "@jbrowse/launch-args": "workspace:^",
     "@jbrowse/text-indexing-core": "workspace:^",
     "ajv": "^8.20.0",
     "cli-progress": "^3.12.0",

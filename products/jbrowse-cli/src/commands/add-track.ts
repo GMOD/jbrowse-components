@@ -1,12 +1,13 @@
 import path from 'node:path'
 import { parseArgs } from 'node:util'
 
-import { printHelp, readConfigFile, resolveConfigPath } from '../utils.ts'
 import {
   guessTrack,
   guessTrackType,
   makeLocationProtocol,
-} from './add-track-utils/adapter-utils.ts'
+} from '@jbrowse/launch-args'
+
+import { printHelp, readConfigFile, resolveConfigPath } from '../utils.ts'
 import { loadFiles } from './add-track-utils/file-operations.ts'
 import { buildMultiWiggle } from './add-track-utils/multiwig.ts'
 import {
@@ -31,7 +32,7 @@ import {
 } from './shared/config-operations.ts'
 
 import type { Config } from '../base.ts'
-import type { Adapter, Location } from './add-track-utils/adapter-utils.ts'
+import type { Adapter, Location } from '@jbrowse/launch-args'
 
 export async function run(args?: string[]) {
   const options = {
