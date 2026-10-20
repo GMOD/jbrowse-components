@@ -186,6 +186,7 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ValueScaleRuleConfig } from '@jbrowse/wiggle-core'
 
 /**
@@ -1822,7 +1823,7 @@ function markColumns<N extends string>(
   ) as Record<N, readonly number[]>
 }
 
-let pileupDefaults: AnyConfigurationModel | undefined
+let pileupDefaults: Instance<typeof pileupConfigSchema> | undefined
 
 /**
  * #api
