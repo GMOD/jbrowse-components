@@ -25,7 +25,7 @@ import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 //   Pinot Noir; A0A217EJJ0 (cv. Sultanina) has Leu. AlphaFold v6 pLDDT 57.6 at
 //   197, mean 94.8 over residues 1-60. UniRef alignment: Arg in 16 of 20 rows.
 
-interface ViewJson {
+export interface ViewJson {
   init?: object
   [key: string]: unknown
 }
@@ -37,20 +37,20 @@ interface LayoutPanel {
   tabs: { id: string; viewIds: string[] }[]
 }
 
-interface SessionJson {
+export interface SessionJson {
   layout?: { children: LayoutPanel[] }
   views: ViewJson[]
   sessionTracks?: object[]
   highlights?: object[]
 }
 
-function readSession(file: string): SessionJson {
+export function readSession(file: string): SessionJson {
   return JSON.parse(
     readFileSync(fileURLToPath(new URL(file, import.meta.url)), 'utf8'),
   )
 }
 
-interface SessionOptions {
+export interface SessionOptions {
   loc: string
   tracks: object[]
   sessionTracks?: object[]
@@ -65,7 +65,7 @@ interface SessionOptions {
   highlights?: object[]
 }
 
-function linkedSession(
+export function linkedSession(
   base: SessionJson,
   config: string,
   msaName: string,
@@ -140,7 +140,7 @@ function linkedSession(
   ).toString('base64url')}`
 }
 
-const READY = {
+export const READY = {
   readySelector:
     'body:has([data-testid="protein-view-ready"]):has([data-testid="msa_canvas"])',
   readyTimeout: 300000,
@@ -150,7 +150,7 @@ const READY = {
   viewportHeight: 1050,
 }
 
-const RESET_ZOOM = [
+export const RESET_ZOOM = [
   { type: 'click' as const, selector: 'button[title="Reset Zoom"]' },
   PARK_CURSOR,
   { type: 'delay' as const, ms: 1500 },
@@ -327,18 +327,18 @@ const GRAPE_GENES = 'GCF_030704535.1-ncbiRefSeqCurated'
 const AGL11_R197 = 'chr18:32,255,718'
 
 const HG38_GENES = 'hg38-ncbiRefSeqSelect'
-const HG38_GENE_TRACK = { trackId: HG38_GENES, height: 60 }
-const CLINVAR_TRACK = { trackId: 'hg38-clinvarMain', height: 300 }
+export const HG38_GENE_TRACK = { trackId: HG38_GENES, height: 60 }
+export const CLINVAR_TRACK = { trackId: 'hg38-clinvarMain', height: 300 }
 const HOTSPOT_FONT_SIZE = 23
 
-interface Hotspot {
+export interface Hotspot {
   label: string
   refName: string
   start: number
   end: number
 }
 
-interface HotspotGene {
+export interface HotspotGene {
   session: SessionJson
   gene: string
   hotspots: Hotspot[]
@@ -346,7 +346,7 @@ interface HotspotGene {
 
 // The protein browser's launch with human as the alignment's reference row,
 // and each hotspot codon as a labelled session highlight.
-function hotspotSession(
+export function hotspotSession(
   { session: base, gene, hotspots }: HotspotGene,
   region: { start: number; end: number },
   options: Omit<SessionOptions, 'highlights'>,
@@ -374,7 +374,7 @@ function hotspotSession(
   )
 }
 
-function hoverCodon(loc: string) {
+export function hoverCodon(loc: string) {
   return [
     ...RESET_ZOOM,
     { type: 'hover' as const, anchor: { trackId: HG38_GENES, loc } },
@@ -385,7 +385,7 @@ function hoverCodon(loc: string) {
 // The domain track the alignment adds to the genome view, its legend closed
 // and its height grown by `grow` px to show every site's row, then the codon
 // hovered.
-function domainFigure(
+export function domainFigure(
   gene: string,
   codon: string,
   grow = 0,
@@ -430,7 +430,7 @@ function domainFigure(
   }
 }
 
-function residueCallout(
+export function residueCallout(
   text: string,
   residue: string,
   dx: number,
