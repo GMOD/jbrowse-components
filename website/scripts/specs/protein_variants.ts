@@ -163,16 +163,18 @@ const HBB_DOMAINS = 'msaview-domains-msa-HBB'
 const HBB_CODON_7 = 'chr11:5226956-5227046[rev]'
 const HBB_EXON_2_START = 'chr11:5226750-5226799[rev]'
 
-function hbbSession(
-  options: Partial<SessionOptions> & Pick<SessionOptions, 'tracks'>,
-) {
+function hbbSession({
+  msaEnd = 31,
+  ...options
+}: Partial<SessionOptions> &
+  Pick<SessionOptions, 'tracks'> & { msaEnd?: number }) {
   const session = structuredClone(HBB_SESSION)
   session.views[2]!.colorScheme = 'mapped-chain'
   return linkedSession(
     session,
     decodeURIComponent(UCSC_HG38_CONFIG),
     'HBB orthologs',
-    { row: 'human_query', start: 1, end: 31 },
+    { row: 'human_query', start: 1, end: msaEnd },
     { loc: HBB_CODON_7, ...options },
   )
 }
@@ -316,6 +318,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       loc: `${HBB_CODON_7} ${HBB_EXON_2_START}`,
       msaHeight: 300,
       domains: true,
+      msaEnd: 75,
     }),
     ...READY,
     readySelector: `${READY.readySelector}:has([data-testid="trackRenderingContainer-lgv-HBB-${HBB_DOMAINS}"])`,
@@ -330,7 +333,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         selector: `[data-track-overlay-slot]:has([data-testid="trackRenderingContainer-lgv-HBB-${HBB_DOMAINS}"]) [aria-label="Hide legend"]`,
       },
       { type: 'waitForAppSettled' },
-      ...hoverAlignment({ dx: 224, dy: 8 }),
+      ...hoverAlignment({ dx: 93, dy: 8 }),
     ],
     annotations: [
       codonCallout(`1  ${SICKLE_CODON}`, HBB_GENES, RS334, HBB_FONT_SIZE),
@@ -352,7 +355,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         anchor: {
           selector: '[data-testid="msa_canvas"]',
           alignX: 'left',
-          dx: 224,
+          dx: 93,
           alignY: 'top',
           dy: 8,
         },
