@@ -1,6 +1,6 @@
 ---
 name: a-tables-export-calls-the-models-decisions
-description: Each display's tables.ts re-derives some of what its model decides (palette order by contig, the synteny fade latch), so an R or CLI export can paint or key a picture the view does not. The fix per site is one pure function both call.
+description: Each display's tables.ts re-derives some of what its model decides (palette order by contig), so an R or CLI export can paint or key a picture the view does not. The fix per site is one pure function both call.
 ---
 
 # A tables export calls the model's decisions
@@ -25,11 +25,6 @@ disagree today.
   read the order from. Fix: an axis `assembly` the tables resolve through
   `assemblyOf`, ordering the palette by its regions and aliases as
   `getRefNamePosition` does, and ggjbrowse passing the assembly it has.
-- **Synteny thin-ribbon fade on `auto`.** `linear-comparative-view/src/tables.ts:403-412`
-  decides from one level with no latch; the view latches
-  (`synteny-core/src/SyntenyFadeMixin.ts:61-66`) and takes the narrowest level
-  (`LinearSyntenyView/model.ts:530-539`).
-
 ## Equivalent today, by hand
 
 - Autoscale glue in wiggle's and alignments coverage's tables, which ignores
@@ -38,6 +33,11 @@ disagree today.
   carry-overs (`canvas/src/tables.ts:377, 402-404, 465-471`).
 
 ## Not a defect
+
+The synteny tables decide the `auto` thin-ribbon fade from one level with no
+latch, where the view latches (`SyntenyFadeMixin.ts`) and takes the narrowest
+level: the latch is hysteresis against flicker while zooming, which a static
+export has no history for.
 
 Canvas label density counted a feature crossing two regions twice; the tables
 count each feature once now, as the display's on-screen ids do. The variants
