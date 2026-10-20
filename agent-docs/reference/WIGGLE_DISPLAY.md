@@ -275,12 +275,16 @@ line width of a cut; per-bin colors blended every color-changing joint to
 magenta. Whiskers adds a `band` layer under the line, split the same way.
 
 **Under a gradient the line reads the ramp at its centre-line y**
-(`lineColorAt`), so a rise runs through the colors a bar of each height would
-take, and the band colors each pixel by its own height. Canvas2D and the SVG
-export stroke the ramp as `RAMP_LINE_BANDS` (32) thin bands through the same
-`BandPen` path (`rampAsBands`), each in the ramp's color at its middle, so the
-two backends agree within half a band; `rampAsBands.test.ts` holds them there
-and checks the emitted shaders sample the ramp.
+(`lineColorAt`), so inside the domain a rise runs through the colors a bar of
+each height would take, and the band colors each pixel by its own height. The
+color y is unclamped, as a threshold's is, so a rise past the domain reaches
+the end color before its clamped geometry reaches the edge. Canvas2D and the
+SVG export stroke the ramp as `RAMP_LINE_BANDS` (32) thin bands through the
+same `BandPen` path (`rampAsBands`), each the LUT entry at its middle and only
+the bands the row's values reach, so a flat stretch costs one pass; a domain
+with no range strokes the GPU's step. `rampAsBands.test.ts` holds each score
+to its band's color, and `wiggleMarks.test.ts` that the line passes bind the
+ramp.
 
 ## The color key follows the scale
 

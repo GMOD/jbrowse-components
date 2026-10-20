@@ -278,30 +278,67 @@ export const RAMP_LINE_BANDS = 32
 /**
  * A line row under a gradient as the threshold the line painters already
  * stroke: `RAMP_LINE_BANDS` bands evenly across the y domain, each in the
- * ramp's color at its middle, the lowest and highest as the source's two
- * colors. Any other row passes through.
+ * ramp's color at its middle, kept to the bands the row's values (and the
+ * origin a step line drops to) reach, so a pass is stroked only where it
+ * draws. A domain with no range is the GPU's step: the start color at the
+ * domain, the end color above it. Any other row passes through.
  */
 export function rampAsBands<R extends RowDraw>(row: R): R {
-  const { rampLut, rampMid, domainY, scaleType, symlogConstant } = row
-  const [min, max] = domainY
-  if (!rampLut || !(max > min)) {
+  const { rampLut, rampMid, domainY, scaleType, symlogConstant, source } = row
+  if (!rampLut) {
     return row
   }
+  const [min, max] = domainY
   const mid = rampMidNorm(min, max, scaleType, rampMid, symlogConstant)
-  const colors = Array.from({ length: RAMP_LINE_BANDS }, (_, k) => {
-    const entry = Math.round(rampMidT((k + 0.5) / RAMP_LINE_BANDS, mid) * 255)
-    const i = Math.min(Math.max(entry, 0), 255) * 4
-    return [
-      rampLut[i]! / 255,
-      rampLut[i + 1]! / 255,
-      rampLut[i + 2]! / 255,
-    ] as [number, number, number]
-  })
+  const lutColor = (t: number): [number, number, number] => {
+    const i = Math.min(Math.max(Math.round(rampMidT(t, mid) * 255), 0), 255) * 4
+    return [rampLut[i]! / 255, rampLut[i + 1]! / 255, rampLut[i + 2]! / 255]
+  }
+  if (!(max > min)) {
+    return {
+      ...row,
+      cuts: [min + Math.abs(min) * 1e-6 + 1e-12],
+      innerColors: [],
+      source: { ...source, negColor: lutColor(0), color: lutColor(1) },
+    }
+  }
+  const bandOf = (score: number) =>
+    Math.min(
+      Math.floor(
+        normalizeScoreUnclamped(score, min, max, scaleType, symlogConstant) *
+          RAMP_LINE_BANDS,
+      ),
+      RAMP_LINE_BANDS - 1,
+    )
+  let lowest = RAMP_LINE_BANDS - 1
+  let highest = 0
+  const reach = (score: number) => {
+    if (Number.isFinite(score)) {
+      const k = Math.max(bandOf(score), 0)
+      lowest = Math.min(lowest, k)
+      highest = Math.max(highest, k)
+    }
+  }
+  for (let i = 0; i < source.numFeatures; i++) {
+    reach(source.featureScores[i]!)
+    if (source.band) {
+      reach(source.band.minScores[i]!)
+    }
+  }
+  if (source.gapScore !== undefined) {
+    reach(source.gapScore)
+  }
+  if (lowest > highest) {
+    return row
+  }
+  const colors = Array.from({ length: highest - lowest + 1 }, (_, i) =>
+    lutColor((lowest + i + 0.5) / RAMP_LINE_BANDS),
+  )
   return {
     ...row,
-    cuts: Array.from({ length: RAMP_LINE_BANDS - 1 }, (_, k) =>
+    cuts: Array.from({ length: highest - lowest }, (_, i) =>
       denormalizeScore(
-        (k + 1) / RAMP_LINE_BANDS,
+        (lowest + i + 1) / RAMP_LINE_BANDS,
         min,
         max,
         scaleType,
@@ -309,7 +346,7 @@ export function rampAsBands<R extends RowDraw>(row: R): R {
       ),
     ),
     innerColors: colors.slice(1, -1),
-    source: { ...row.source, negColor: colors[0]!, color: colors.at(-1)! },
+    source: { ...source, negColor: colors[0]!, color: colors.at(-1)! },
   }
 }
 

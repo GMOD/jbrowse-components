@@ -408,12 +408,12 @@ describe('the wiggle mark list', () => {
   // still cost one uniform write: the failure this pins is a color baked into
   // the instance lane from the domain.
   describe.each([
-    ['density', RENDERING_TYPE_DENSITY],
-    ['xyplot', RENDERING_TYPE_XYPLOT],
-    ['scatter', RENDERING_TYPE_SCATTER],
-  ] as const)('a gradient on %s', (_name, renderingType) => {
-    const pass = renderingType === RENDERING_TYPE_DENSITY ? 'density' : 'fill'
-
+    ['density', RENDERING_TYPE_DENSITY, 'density'],
+    ['xyplot', RENDERING_TYPE_XYPLOT, 'fill'],
+    ['scatter', RENDERING_TYPE_SCATTER, 'fill'],
+    ['line', RENDERING_TYPE_LINE, 'line'],
+    ['linecenter', RENDERING_TYPE_LINE_CENTER, 'lineCenter'],
+  ] as const)('a gradient on %s', (_name, renderingType, pass) => {
     it('is a uniform flag and one LUT texture upload, and a pan re-uploads nothing', () => {
       const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
       const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
@@ -477,19 +477,6 @@ describe('the wiggle mark list', () => {
       expect(texUploads(hal, pass)).toBe(2)
       expect(hal.getLastUniformsI32()![UI.rampLut]).toBe(1)
     })
-  })
-
-  it('a line raises the gradient flag and samples the ramp', () => {
-    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
-    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
-    const source = makeSource({ renderingType: RENDERING_TYPE_LINE })
-    backend.upload(0, [source])
-    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
-      ...DEFAULT_STATE,
-      renderingType: RENDERING_TYPE_LINE,
-      rampLut: rampLutOf({ scheme: 'viridis' }),
-    })
-    expect(hal.getLastUniformsI32()![UI.rampLut]).toBe(1)
   })
 
   it('uses fill pass for XY plot rendering type', () => {

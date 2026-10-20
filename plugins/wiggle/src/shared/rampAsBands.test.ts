@@ -1,8 +1,16 @@
 import { rampLutOf } from '@jbrowse/core/util/colorRamp'
-import { normalizeScore } from '@jbrowse/render-core/shaders/scoreScale'
-import { SCALE_TYPE_LINEAR, SCALE_TYPE_LOG } from '@jbrowse/wiggle-core'
+import { rampMidNorm } from '@jbrowse/render-core/scoreScale'
+import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
+import {
+  normalizeScore,
+  normalizeScoreUnclamped,
+} from '@jbrowse/render-core/shaders/scoreScale'
+import {
+  SCALE_TYPE_LINEAR,
+  SCALE_TYPE_LOG,
+  SCALE_TYPE_SYMLOG,
+} from '@jbrowse/wiggle-core'
 
-import { makeDensityLutFillFn } from './getDensityColor.ts'
 import { GLSL_FRAGMENT as BAND_GLSL } from './shaders/wiggleBand.glsl.generated.ts'
 import { WGSL_SOURCE as BAND_WGSL } from './shaders/wiggleBand.wgsl.generated.ts'
 import { GLSL_FRAGMENT as LINE_GLSL } from './shaders/wiggleLine.glsl.generated.ts'
@@ -16,15 +24,17 @@ import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
 // The GPU colors a line under a gradient by the ramp at each fragment's
-// score; Canvas2D and the SVG export stroke it in RAMP_LINE_BANDS bands. A
-// score's band has to be the ramp's color there, within the step a band
-// spans, or the two backends draw the line in different colors.
+// score; Canvas2D and the SVG export stroke it in RAMP_LINE_BANDS bands. Each
+// score has to land in the band its normalized position names, painted the
+// LUT entry at that band's middle, or the two backends draw the line in
+// different colors.
 
 const lut = rampLutOf({ scheme: 'viridis' })
 
 function row(
   domainY: [number, number],
   scaleType: ScaleTypeCode,
+  scores: number[],
   rampMid?: number,
 ) {
   return {
@@ -35,22 +45,29 @@ function row(
     rampMid,
     cuts: [0],
     innerColors: [],
-    source: { color: [1, 0, 0], negColor: [0, 0, 1] } as SourceRenderData,
+    source: {
+      color: [1, 0, 0],
+      negColor: [0, 0, 1],
+      featureScores: Float32Array.from(scores),
+      numFeatures: scores.length,
+    } as unknown as SourceRenderData,
   } as unknown as RowDraw
 }
 
 function bandColorOf(banded: RowDraw, score: number) {
   const k = banded.cuts.filter(cut => cut <= score).length
-  const colors = [
-    banded.source.negColor!,
-    ...banded.innerColors,
-    banded.source.color,
-  ]
-  return colors[k]!.map(c => Math.round(c * 255))
+  return [banded.source.negColor!, ...banded.innerColors, banded.source.color][
+    k
+  ]!.map(c => Math.round(c * 255))
 }
 
-function parseRgba(s: string) {
-  return /rgba\((\d+),(\d+),(\d+)/.exec(s)!.slice(1, 4).map(Number)
+function sweep([min, max]: [number, number], scaleType: ScaleTypeCode) {
+  return Array.from({ length: 201 }, (_, i) => {
+    const f = i / 200
+    return scaleType === SCALE_TYPE_LOG
+      ? min * (max / min) ** f
+      : min + f * (max - min)
+  })
 }
 
 test.each([
@@ -62,37 +79,57 @@ test.each([
     20,
   ],
   ['log', [1, 1000] as [number, number], SCALE_TYPE_LOG, undefined],
+  ['symlog', [-50, 400] as [number, number], SCALE_TYPE_SYMLOG, 0],
 ])(
-  '%s: each score strokes within a band of the ramp',
+  '%s: each score strokes its own band, in the LUT entry at its middle',
   (_, domainY, scaleType, rampMid) => {
-    const banded = rampAsBands(row(domainY, scaleType, rampMid))
+    const [min, max] = domainY
+    const scores = sweep(domainY, scaleType)
+    const banded = rampAsBands(row(domainY, scaleType, scores, rampMid))
     expect(banded.cuts).toHaveLength(RAMP_LINE_BANDS - 1)
-    const ramp = makeDensityLutFillFn(
-      domainY[0],
-      domainY[1],
-      scaleType,
-      lut,
-      rampMid,
-    )
-    // a score sits at most half a band from its middle, and viridis moves at
-    // most 4 a channel per LUT entry
-    const tolerance = (4 * (256 / RAMP_LINE_BANDS)) / 2 + 1
-    for (let f = 0; f <= 1; f += 0.01) {
-      const score =
-        scaleType === SCALE_TYPE_LOG
-          ? domainY[0] * (domainY[1] / domainY[0]) ** f
-          : domainY[0] + f * (domainY[1] - domainY[0])
-      expect(
-        normalizeScore(score, domainY[0], domainY[1], scaleType, 1),
-      ).toBeCloseTo(f, 6)
-      const want = parseRgba(ramp(score))
-      const got = bandColorOf(banded, score)
-      for (let c = 0; c < 3; c++) {
-        expect(Math.abs(got[c]! - want[c]!)).toBeLessThanOrEqual(tolerance)
+    const mid = rampMidNorm(min, max, scaleType, rampMid, 1)
+    for (const score of scores) {
+      const norm = normalizeScoreUnclamped(score, min, max, scaleType, 1)
+      // a score on a cut, as float arithmetic puts it, may read either side
+      if (
+        Math.abs(norm * RAMP_LINE_BANDS - Math.round(norm * RAMP_LINE_BANDS)) <
+        1e-6
+      ) {
+        continue
       }
+      const k = Math.min(
+        Math.floor(norm * RAMP_LINE_BANDS),
+        RAMP_LINE_BANDS - 1,
+      )
+      const entry = Math.round(rampMidT((k + 0.5) / RAMP_LINE_BANDS, mid) * 255)
+      expect(bandColorOf(banded, score)).toEqual([
+        lut[entry * 4],
+        lut[entry * 4 + 1],
+        lut[entry * 4 + 2],
+      ])
     }
   },
 )
+
+test('only the bands the values reach are stroked', () => {
+  const banded = rampAsBands(row([0, 100], SCALE_TYPE_LINEAR, [40, 60]))
+  // 40 and 60 fall in bands 12 and 19
+  expect(banded.cuts).toHaveLength(7)
+  expect(banded.innerColors).toHaveLength(6)
+})
+
+// The GPU normalizes a score on a domain with no range to a step: 0 at the
+// domain, 1 above it.
+test('a domain with no range strokes the GPU step', () => {
+  const banded = rampAsBands(row([5, 5], SCALE_TYPE_LINEAR, [5, 6]))
+  const end = (t: number) => {
+    const i = Math.round(rampMidT(t, 0.5) * 255) * 4
+    return [lut[i], lut[i + 1], lut[i + 2]]
+  }
+  expect(normalizeScore(5, 5, 5, SCALE_TYPE_LINEAR, 1)).toBe(0)
+  expect(bandColorOf(banded, 5)).toEqual(end(0))
+  expect(bandColorOf(banded, 6)).toEqual(end(1))
+})
 
 test.each([
   ['step line WGSL', LINE_WGSL],
@@ -106,6 +143,6 @@ test.each([
 })
 
 test('a row with no ramp passes through', () => {
-  const plain = { ...row([0, 1], SCALE_TYPE_LINEAR), rampLut: null }
+  const plain = { ...row([0, 1], SCALE_TYPE_LINEAR, [0]), rampLut: null }
   expect(rampAsBands(plain as unknown as RowDraw)).toBe(plain)
 })
