@@ -1,6 +1,6 @@
 ---
 name: a-tables-export-calls-the-models-decisions
-description: Each display's tables.ts re-derives some of what its model decides (palette order by contig, the synteny fade latch, label density, the variants insertion key), so an R or CLI export can paint or key a picture the view does not. The fix per site is one pure function both call.
+description: Each display's tables.ts re-derives some of what its model decides (palette order by contig, the synteny fade latch), so an R or CLI export can paint or key a picture the view does not. The fix per site is one pure function both call.
 ---
 
 # A tables export calls the model's decisions
@@ -19,18 +19,16 @@ disagree today.
   `synteny-core/src/comparativeTables.ts:109-112`). The view deals in the
   assembly's order through `refNamePositionFor`
   (`synteny-core/src/colorFunctions.ts:104-121`). With chr2 shown alone, the
-  view paints it palette slot 1 and the tables slot 0. Fix: one
-  `refNamePositionOf(refNames, aliases)` both call.
+  view paints it palette slot 1 and the tables slot 0. An axis's `refNames`
+  argument already orders the palette, but ggjbrowse never passes it
+  (`axis_args` in `R/synteny.R`), and a comparative axis takes no assembly to
+  read the order from. Fix: an axis `assembly` the tables resolve through
+  `assemblyOf`, ordering the palette by its regions and aliases as
+  `getRefNamePosition` does, and ggjbrowse passing the assembly it has.
 - **Synteny thin-ribbon fade on `auto`.** `linear-comparative-view/src/tables.ts:403-412`
   decides from one level with no latch; the view latches
   (`synteny-core/src/SyntenyFadeMixin.ts:61-66`) and takes the narrowest level
   (`LinearSyntenyView/model.ts:530-539`).
-- **Canvas label density.** `canvas/src/tables.ts:432-436` counts features
-  across concatenated regions; the view counts unique on-screen ids
-  (`LinearBasicDisplay/baseModel.ts:438-475`), so a feature crossing two
-  regions counts twice near `maxLabelFeatureDensity`.
-- **Variants key.** `variants/src/tables.ts:374-388` passes no insertion
-  marker entry where the view's key has one (`model.ts:2279`).
 
 ## Equivalent today, by hand
 
@@ -40,6 +38,11 @@ disagree today.
   carry-overs (`canvas/src/tables.ts:377, 402-404, 465-471`).
 
 ## Not a defect
+
+Canvas label density counted a feature crossing two regions twice; the tables
+count each feature once now, as the display's on-screen ids do. The variants
+key leaves out the insertion entry the display's key carries, and the tables
+emit no insertion markers either, so the two agree.
 
 The alignments tables key reads and arcs apart (`legend`, `arcLegend`) where
 the display's one legend box merges them when they share a color

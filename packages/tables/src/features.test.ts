@@ -439,3 +439,27 @@ test('a read past its row limit is refused, naming the table to read a region of
     engine.variants({ adapterConfig, region, rowLimit: cells.row.length }),
   ).resolves.toBeDefined()
 })
+
+// A feature crossing two regions is one feature on screen, so it counts once
+// toward the label density the display gates labels on.
+test('label density counts a feature crossing two regions once', async () => {
+  const { region: _, ...rest } = GFF3
+  const split = {
+    ...rest,
+    regions: [
+      { refName: 'ctgA', start: 0, end: 25000 },
+      { refName: 'ctgA', start: 25000, end: 50000 },
+    ],
+  }
+  const free = await engine.features({
+    ...split,
+    display: { ...GROW, maxLabelFeatureDensity: 1000 },
+  })
+  const unique = new Set(free.features.id).size
+  expect(free.features.id.length).toBeGreaterThan(unique)
+  const atTheLimit = await engine.features({
+    ...split,
+    display: { ...GROW, maxLabelFeatureDensity: unique / 1000 },
+  })
+  expect(atTheLimit.labels.text).toEqual(free.labels.text)
+})

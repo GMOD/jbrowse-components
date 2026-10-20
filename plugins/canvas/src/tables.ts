@@ -426,12 +426,17 @@ export async function featureTables(
   const items = raws.flatMap(raw => raw.flatbushItems)
   const widthsPx = regions.map(r => (r.end - r.start) / bpPerPx)
   const widthPx = widthsPx.reduce((a, b) => a + b, 0)
+  // each feature once, however many regions it crosses, as the display counts
+  // its on-screen ids (`labelDensityPerPx`)
+  const featureIds = new Set(items.map(item => item.featureId))
   const visibility = labelVisibility({
     mode: readConfObject(conf, 'showLabels'),
     collapsed,
-    density: items.length / widthPx,
+    density: featureIds.size / widthPx,
     geneDensity: () => {
-      const genes = items.filter(item => item.gene).length
+      const genes = new Set(
+        items.filter(item => item.gene).map(item => item.featureId),
+      ).size
       return genes > 0 ? genes / widthPx : undefined
     },
     maxLabelDensity: readConfObject(conf, 'maxLabelFeatureDensity'),
