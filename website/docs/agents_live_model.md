@@ -197,18 +197,18 @@ plot setting. The common ones are `facet`, `color`, `rows`, `rowColor`, `unit`,
 change is a copy edited and handed back: `structuredClone(display.plot)`, edited
 as any object, then `display.plotProblems(draft)`, which throws what a config
 file would be refused for and lists what the display cannot draw, and
-`display.applyPlot(draft)`. The draft patches the plot: a setting left out
-stays, and `null` resets one. An object binding a field (`color`, `rowColor`,
-`baseColor`, `facet`, `rows`, `sort`, a mark's encodings) is replaced whole; any
-other object (`filter`, `scales`, a band) takes the members written, and a
-`null` member resets that member. A string is the one-value form, the facet's
-field or a constant color, and an object spells the rest out:
-`facet: { field, domain }` orders the sections,
-`color: { field, domain, range }` hands the `domain` values the `range` colors
-in order. A field is a feature attribute, a dotted path such as `INFO.SVTYPE`,
-or `strand`; an alignments track's facet field is a read dimension
-(`pairOrientation`, `mapq`, ...) or a tag (`tags.HP`). The `filter` is a list of
-`jexl:` expressions, such as `["jexl:feature.type == 'gene'"]`.
+`track.applyDisplaySettings(draft)`, the one write for every display setting.
+The draft patches the plot: a setting left out stays, and `null` resets one. An
+object binding a field (`color`, `rowColor`, `baseColor`, `facet`, `rows`,
+`sort`, a mark's encodings) is replaced whole; any other object (`filter`,
+`scales`, a band) takes the members written, and a `null` member resets that
+member. A string is the one-value form, the facet's field or a constant color,
+and an object spells the rest out: `facet: { field, domain }` orders the
+sections, `color: { field, domain, range }` hands the `domain` values the
+`range` colors in order. A field is a feature attribute, a dotted path such as
+`INFO.SVTYPE`, or `strand`; an alignments track's facet field is a read
+dimension (`pairOrientation`, `mapq`, ...) or a tag (`tags.HP`). The `filter` is
+a list of `jexl:` expressions, such as `["jexl:feature.type == 'gene'"]`.
 
 "Advanced → Edit plot..." in the track menu shows a display's plot as text.
 
