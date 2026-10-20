@@ -15,6 +15,7 @@ import {
   containingHost,
   foundationCanRender,
   onTrackAssembly,
+  trackCanvasWidthPx,
 } from './foundationView.ts'
 import { installPerRegionFetchAutoruns } from './installPerRegionFetchAutoruns.ts'
 import { isBlockCovered } from './planRegionFetch.ts'
@@ -109,31 +110,11 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * The CSS width of this display's on-screen canvas, in px — and the
-         * `canvasWidth` its `renderState` must hold, since the two have to
-         * agree or the bp→px mapping is scaled against a box it doesn't fill.
-         *
-         * `trackWidthPx`, **not** `view.width`: `TrackRenderingContainer` insets
-         * the rendering component by the 2px track outline under
-         * `contain: strict`, so a `view.width`-wide canvas overhangs the
-         * container and the browser clips the overhang away. It renders almost
-         * identically, which is why MAF used `view.width` unnoticed.
-         *
-         * A getter rather than a note on each display, because the choice was
-         * being made by copying a neighbour out of four plausible view getters —
-         * `width` (the viewport), this one, and `totalWidthPx` /
-         * `totalWidthPxWithoutBorders` (the *content* width, which the global
-         * family's heatmaps legitimately want: a different question, not a
-         * different answer). `no-restricted-syntax` bans the underlying read
-         * everywhere but this line, since a second spelling agrees until it
-         * doesn't.
-         *
-         * SVG export is the one exception: the export shell has no outline, so
-         * `renderSvg` overrides `canvasWidth` with the shell's own width (see
-         * `LgvSvgBodyProps`).
+         * The CSS width of this display's on-screen canvas, in px; see
+         * `trackCanvasWidthPx`.
          */
         get canvasWidthPx(): number {
-          return this.host.trackWidthPx
+          return trackCanvasWidthPx(this.host)
         },
 
         /**

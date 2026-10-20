@@ -2600,16 +2600,26 @@ test('a record running off the viewport aligns its lane on the part it shows', (
     anchorCoordOf: group => anchorAbsX.get(group.key)!.coord,
     pxOfAnchor: coord => lgv.bpToPx(coord)?.offsetPx,
     unitBp: display.visibleBpSpan,
-    width: display.canvasWidth,
+    width: display.canvasWidthPx,
     previous: new Map(),
   }).get('volvox_random')!
   const frame = frameFromDecision(
     decision,
     lgv.bpToPx(decision.pivotAnchor)!.offsetPx,
     display.visibleBpSpan,
-    display.canvasWidth,
+    display.canvasWidthPx,
   )
   expect(frame.min).toBeCloseTo(5000)
+})
+
+// A view-wide canvas overhangs the outlined track box, which clips its right
+// 2px: the scrollbar's edge and the lane header's inset with it.
+test('the canvas fills the track box inside the outline, at the view’s scale', () => {
+  const display = createDisplay()
+  const { lgv } = display
+  expect(lgv.showTrackOutlines).toBe(true)
+  expect(display.canvasWidthPx).toBe(lgv.width - 2)
+  expect(display.visibleBpSpan / display.canvasWidthPx).toBe(lgv.bpPerPx)
 })
 
 // ctgA:300-700 against a region ending at ctgA:500 draws the half over ctgA:300-500

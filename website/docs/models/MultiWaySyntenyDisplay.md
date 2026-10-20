@@ -114,7 +114,6 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-haslodcapableadapter">**hasLodCapableAdapter**</span><br><code>boolean</code> |  |
 | <span id="getter-lodtier">**lodTier**</span><br><code>LodTier</code> | read off the settled zoom, so a passing gesture refetches nothing |
 | <span id="getter-livelodtier">**liveLodTier**</span><br><code>LodTier</code> |  |
-| <span id="getter-canvaswidth">**canvasWidth**</span><br><code>number</code> |  |
 | <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-groups">**groups**</span><br><code>MultiWayGroup[]</code> |  |
 | <span id="getter-laneindels">**laneIndels**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ openings: (assemblyName: string, refName: string) =&gt; readonly…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ openings: (assemblyName: string, refName: string) =&gt; readonly LaneOpening[]; changes: (assemblyName: string, refName: string) =&gt; readonly LaneChange[]; }</code></pre></dialog></span> | each lane's holes and stated changes against the anchor, read off every fetched group rather than the viewport's, so one appears once both its pieces arrive and not as the second scrolls in |
@@ -153,7 +152,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-lanestodescribe">**lanesToDescribe**</span><br><code>string[]</code> |  |
 | <span id="getter-laneassemblyconfs">**laneAssemblyConfs**</span><br><code>Map&lt;string, Record&lt;string, unknown&gt;&gt;</code> |  |
 | <span id="getter-canreanchor">**canReanchor**</span><br><code>boolean</code> |  |
-| <span id="getter-visiblebpspan">**visibleBpSpan**</span><br><code>number</code> |  |
+| <span id="getter-visiblebpspan">**visibleBpSpan**</span><br><code>number</code> | the bp the canvas spans: a lane's bpPerPx is this times its rung over `canvasWidthPx`, so the two read one width or every lane but the anchor is scaled against a box it doesn't fill |
 | <span id="getter-visiblegroupwindows">**visibleGroupWindows**</span><br><code>{ group: MultiWayGroup; start: number; end: number; }[]</code> | each with the hull, in anchor bp, of the settled blocks it meets |
 | <span id="getter-visiblegroups">**visibleGroups**</span><br><code>MultiWayGroup[]</code> | uncut at the viewport edge, cut only at a displayed region's end |
 | <span id="getter-fitgroups">**fitGroups**</span><br><code>MultiWayGroup[]</code> | the visible groups cut to the viewport, which each lane's frame fits |
@@ -231,7 +230,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-hoveredfeature">**hoveredFeature**</span><br><code>Feature &#124; undefined</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>66 inherited getters from 10 models</summary>
+<summary>67 inherited getters from 10 models</summary>
 
 From [LodTierInfoMixin](../lodtierinfomixin): <span id="getter-adapterheader">[`adapterHeader`](../lodtierinfomixin#getter-adapterheader)</span>, <span id="getter-lodtierinfo">[`lodTierInfo`](../lodtierinfomixin#getter-lodtierinfo)</span>
 
@@ -239,7 +238,7 @@ From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`w
 
 From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendtop">[`legendTop`](../legendmixin#getter-legendtop)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span>, <span id="getter-haslegendkey">[`hasLegendKey`](../legendmixin#getter-haslegendkey)</span>
 
-From [GlobalFetchMixin](../globalfetchmixin): <span id="getter-host">[`host`](../globalfetchmixin#getter-host)</span>, <span id="getter-staticblocksignature">[`staticBlockSignature`](../globalfetchmixin#getter-staticblocksignature)</span>, <span id="getter-dynamicblocksignature">[`dynamicBlockSignature`](../globalfetchmixin#getter-dynamicblocksignature)</span>, <span id="getter-viewportempty">[`viewportEmpty`](../globalfetchmixin#getter-viewportempty)</span>, <span id="getter-canrender">[`canRender`](../globalfetchmixin#getter-canrender)</span>, <span id="getter-renderscanvas">[`rendersCanvas`](../globalfetchmixin#getter-renderscanvas)</span>, <span id="getter-paintinert">[`paintInert`](../globalfetchmixin#getter-paintinert)</span>, <span id="getter-svgready">[`svgReady`](../globalfetchmixin#getter-svgready)</span>, <span id="getter-displayphase">[`displayPhase`](../globalfetchmixin#getter-displayphase)</span>
+From [GlobalFetchMixin](../globalfetchmixin): <span id="getter-host">[`host`](../globalfetchmixin#getter-host)</span>, <span id="getter-canvaswidthpx">[`canvasWidthPx`](../globalfetchmixin#getter-canvaswidthpx)</span>, <span id="getter-staticblocksignature">[`staticBlockSignature`](../globalfetchmixin#getter-staticblocksignature)</span>, <span id="getter-dynamicblocksignature">[`dynamicBlockSignature`](../globalfetchmixin#getter-dynamicblocksignature)</span>, <span id="getter-viewportempty">[`viewportEmpty`](../globalfetchmixin#getter-viewportempty)</span>, <span id="getter-canrender">[`canRender`](../globalfetchmixin#getter-canrender)</span>, <span id="getter-renderscanvas">[`rendersCanvas`](../globalfetchmixin#getter-renderscanvas)</span>, <span id="getter-paintinert">[`paintInert`](../globalfetchmixin#getter-paintinert)</span>, <span id="getter-svgready">[`svgReady`](../globalfetchmixin#getter-svgready)</span>, <span id="getter-displayphase">[`displayPhase`](../globalfetchmixin#getter-displayphase)</span>
 
 From [KeyedFetchMixin](../keyedfetchmixin): <span id="getter-currentfetchkey">[`currentFetchKey`](../keyedfetchmixin#getter-currentfetchkey)</span>, <span id="getter-datacurrent">[`dataCurrent`](../keyedfetchmixin#getter-datacurrent)</span>
 

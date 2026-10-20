@@ -677,10 +677,6 @@ export function stateModelFactory(
     }))
     .views(self => ({
       /** #getter */
-      get canvasWidth() {
-        return self.lgv.width
-      },
-      /** #getter */
       get viewSignature() {
         const blocks = self.staticBlockSignature
         return blocks === undefined ? undefined : `${blocks}|${self.lodTier}`
@@ -1149,10 +1145,15 @@ export function stateModelFactory(
             declared.some(lane => self.laneKey(lane.name) === anchor))
         )
       },
-      /** #getter */
+      /**
+       * #getter
+       * the bp the canvas spans: a lane's bpPerPx is this times its rung over
+       * `canvasWidthPx`, so the two read one width or every lane but the
+       * anchor is scaled against a box it doesn't fill
+       */
       get visibleBpSpan() {
         const view = self.lgv
-        return view.initialized ? view.width * view.bpPerPx : 0
+        return view.initialized ? self.canvasWidthPx * view.bpPerPx : 0
       },
     }))
     .actions(self => ({
@@ -1489,7 +1490,7 @@ export function stateModelFactory(
               decision,
               pivot.offsetPx - self.renderOriginPx,
               self.visibleBpSpan,
-              self.canvasWidth,
+              self.canvasWidthPx,
               self.anchorReversed,
               self.laneOpenings(assemblyName, decision.refName),
             )
@@ -1573,7 +1574,7 @@ export function stateModelFactory(
             return px && px.offsetPx - origin
           },
           unitBp: self.visibleBpSpan,
-          width: self.canvasWidth,
+          width: self.canvasWidthPx,
           anchorReversed: self.anchorReversed,
           previous,
           frozen,
@@ -1619,7 +1620,7 @@ export function stateModelFactory(
           const nudged = nudgeDecision(
             base,
             dxPx,
-            (base.rung * self.visibleBpSpan) / self.canvasWidth,
+            (base.rung * self.visibleBpSpan) / self.canvasWidthPx,
             self.anchorReversed,
             self.laneOpenings(assemblyName, base.refName),
           )
@@ -1743,7 +1744,7 @@ export function stateModelFactory(
             allowed: animationAllowed(getSession(self).animationMode),
             frameOf: (decision, assemblyName) =>
               self.laneFrameOf(decision, assemblyName),
-            width: self.canvasWidth,
+            width: self.canvasWidthPx,
           })
           setHalfway(lanesPastHalfway(self.laneTransitions, nowMs))
         },
@@ -1802,7 +1803,7 @@ export function stateModelFactory(
             out.set(assemblyName, {
               regions: [{ assemblyName, ...laneFetchRegion(frame) }],
               templateRegions: template && [{ assemblyName, ...template }],
-              bpPerPx: (frame.max - frame.min) / self.canvasWidth,
+              bpPerPx: (frame.max - frame.min) / self.canvasWidthPx,
             })
           }
         }
@@ -1951,7 +1952,7 @@ export function stateModelFactory(
               assembly && (refName => assembly.getCanonicalRefName2(refName))
             )
           },
-          width: self.canvasWidth,
+          width: self.canvasWidthPx,
           geometry: self.stackGeometry,
           pastHalfway: self.laneMotionHalfway,
           labelOf: assemblyName => self.laneLabel(assemblyName),
@@ -1972,7 +1973,7 @@ export function stateModelFactory(
                     frame.morphFrom,
                     frame,
                     laneMotionEase(motion, nowMs),
-                    self.canvasWidth,
+                    self.canvasWidthPx,
                   )
                 : undefined
             const dx = self.laneDragPx.get(assemblyName) ?? 0
@@ -2082,7 +2083,7 @@ export function stateModelFactory(
           ? buildTickGeometry({
               stack: self.laneStack,
               tickIntervalBp: self.tickIntervalBp,
-              width: self.canvasWidth,
+              width: self.canvasWidthPx,
               color: bandInk().gridline,
             })
           : { cells: new Map(), layers: [] }
@@ -2093,7 +2094,7 @@ export function stateModelFactory(
           kind: 'glyphs',
           data: buildBandCell({
             ...self.stackGeometry,
-            width: self.canvasWidth,
+            width: self.canvasWidthPx,
             paper: bandGroundColor(),
             stripe: bandInk().stripe,
             page,
@@ -2117,7 +2118,7 @@ export function stateModelFactory(
           ? axisTickXs(
               self.lgv,
               step,
-              stackReach(self.canvasWidth),
+              stackReach(self.canvasWidthPx),
               self.renderOriginPx,
             )
           : []
@@ -2178,7 +2179,7 @@ export function stateModelFactory(
               lane,
               genes,
               glyphHeight,
-              width: self.canvasWidth,
+              width: self.canvasWidthPx,
               colors,
               anchorRule: rule,
             })
@@ -2275,7 +2276,7 @@ export function stateModelFactory(
         laneGeneLabels(
           fontFamily: string | undefined,
           pinnedGroups: ReadonlySet<string> = new Set(),
-          width = self.canvasWidth,
+          width = self.canvasWidthPx,
         ): PlacedLaneLabel[] {
           if (!self.showGeneLabels) {
             return []
@@ -2334,7 +2335,7 @@ export function stateModelFactory(
             return cell?.kind === 'glyphs' ? cell.data.hits : []
           }),
         )
-        const onScreen: Span = [0, self.canvasWidth]
+        const onScreen: Span = [0, self.canvasWidthPx]
         const encoding = self.geneColorEncoding
         const { title } = self.geneColorSettings.color
         const field = colorFieldOf(encoding, self.geneColorSlots)
@@ -2443,7 +2444,7 @@ export function stateModelFactory(
           held: self.laneLayerData.held,
           axisSpanOf: (refName, start, end) =>
             axisSpan(view, refName, start, end, self.renderOriginPx),
-          canvasWidth: self.canvasWidth,
+          canvasWidth: self.canvasWidthPx,
         })
       },
     }))
@@ -2716,7 +2717,7 @@ export function stateModelFactory(
       /** #getter */
       get renderState(): MultiWayRenderState {
         return {
-          canvasWidth: self.canvasWidth,
+          canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
           dragOffsetPx: self.dragOffsetPx,
           scrollTopPx: self.scrollTop,
@@ -2749,7 +2750,7 @@ export function stateModelFactory(
           return pick(
             self.ribbonRegions,
             self.ribbonPickState,
-            self.canvasWidth,
+            self.canvasWidthPx,
             x,
             y,
           )

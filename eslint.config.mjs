@@ -111,7 +111,7 @@ const noAnyStateTreeNode = {
 const noTrackWidthPx = {
   selector: "MemberExpression[property.name='trackWidthPx']",
   message:
-    'Read `model.canvasWidthPx`, not `view.trackWidthPx`. Four view getters answer plausibly and MAF drifted onto the wrong one; the two agree today, so a second spelling is silent until one of them moves. See MultiRegionDisplayMixin.canvasWidthPx.',
+    'Read `model.canvasWidthPx`, not `view.trackWidthPx`. Four view getters answer plausibly and MAF drifted onto the wrong one; the two agree today, so a second spelling is silent until one of them moves. See trackCanvasWidthPx in display-kit/foundationView.ts.',
 }
 // This one needs a linter rather than a reviewer: the flag agrees with `strand` on every BAM under
 // test and disagrees only on the flagless PAF/synteny blocks the same pipeline
@@ -922,7 +922,7 @@ export default defineConfig(
   // displays would otherwise each derive — carries an inline disable with the
   // reason rather than an entry here, so the exemption stays one file wide.
   {
-    files: ['packages/display-kit/src/MultiRegionDisplayMixin.ts'],
+    files: ['packages/display-kit/src/foundationView.ts'],
     rules: {
       'no-restricted-syntax': [
         'error',

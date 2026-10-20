@@ -28,7 +28,7 @@ const MultiWayBody = observer(function MultiWayBody({
   canvasRef: (node: HTMLCanvasElement | null) => void
   mouseTracker: MouseTracker
 }) {
-  const { canvasWidth: width, height, hoverTarget, lanesFrozen } = model
+  const { canvasWidthPx: width, height, hoverTarget, lanesFrozen } = model
   const canvasId = useId()
   const [panel, setPanel] = useState<HTMLDivElement | null>(null)
 
@@ -78,7 +78,7 @@ const MultiWaySyntenyReactComponent = observer(
   }: {
     model: MultiWaySyntenyDisplayModel
   }) {
-    const { canvasWidth: width } = model
+    const { canvasWidthPx: width } = model
     // only a press that stayed put opens what it pressed, not a pan's end
     const pressX = useRef<number | undefined>(undefined)
     return (

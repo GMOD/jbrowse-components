@@ -1,6 +1,7 @@
-// The two LGV fetch foundations each declare `host`, `viewportEmpty`,
-// `canRender`, `dataSuperseded`, `paintInert` and `svgReady` over one shared
-// body, and `displayPhase` over one mapping with one argument of their own.
+// The two LGV fetch foundations each declare `host`, `canvasWidthPx`,
+// `viewportEmpty`, `canRender`, `dataSuperseded`, `paintInert` and `svgReady`
+// over one shared body, and `displayPhase` over one mapping with one argument
+// of their own.
 //
 // The duplication is the accepted shape, not an oversight waiting for a fold:
 // a mixin under both foundations is the compose layer ADR-041 measured pushing
@@ -28,6 +29,7 @@ const files = {
 
 const SHARED: [string, keyof typeof files][] = [
   ['host', 'GlobalFetchMixin'],
+  ['canvasWidthPx', 'GlobalFetchMixin'],
   ['viewportEmpty', 'GlobalFetchMixin'],
   ['canRender', 'GlobalFetchMixin'],
   ['dataSuperseded', 'KeyedFetchMixin'],

@@ -43,7 +43,7 @@ const LaneHeaders = observer(function LaneHeaders({
   const palette = usePalette()
   const { lanes } = model.laneStack
   const {
-    canvasWidth: width,
+    canvasWidthPx: width,
     laneHeaderRows: rows,
     frozenDecisions: frozen,
   } = model

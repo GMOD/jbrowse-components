@@ -4423,7 +4423,8 @@
       "names": [
         "containingHost",
         "foundationCanRender",
-        "onTrackAssembly"
+        "onTrackAssembly",
+        "trackCanvasWidthPx"
       ],
       "worker": "real"
     },

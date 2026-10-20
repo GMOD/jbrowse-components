@@ -267,9 +267,12 @@ describe('the baseline', () => {
       })
       const frame = display.rowFrames.get(mate)!
       expect(frame.max).toBeGreaterThan(CONTIG_END)
+      // the track's width, 2px inside the view's outline
+      const width = display.canvasWidthPx
       return {
         display,
-        contigLine: [[-WIDTH, rowFrameX(frame, CONTIG_END, WIDTH)]],
+        contigLine: [[-width, rowFrameX(frame, CONTIG_END, width)]],
+        divider: [[-width, 2 * width]],
       }
     }
 
@@ -308,8 +311,8 @@ describe('the baseline', () => {
     })
 
     test('a genome the session does not hold keeps the divider', async () => {
-      const { display } = await framedDisplay('hg002')
-      expect(display.laneStack.lanes[1]!.baseline).toEqual(DIVIDER)
+      const { display, divider } = await framedDisplay('hg002')
+      expect(display.laneStack.lanes[1]!.baseline).toEqual(divider)
     })
 
     test('a genome the session does not hold is never asked of the assembly manager', async () => {
@@ -544,15 +547,18 @@ describe('the baseline', () => {
           return loaded.get() ? assembly.refNameToIndex : undefined
         },
       }
-      const { display, contigLine } = await framedDisplay('volvox_random', {
-        assemblyOf: name =>
-          name === 'volvox_random' ? loading : testAssembly(),
-      })
+      const { display, contigLine, divider } = await framedDisplay(
+        'volvox_random',
+        {
+          assemblyOf: name =>
+            name === 'volvox_random' ? loading : testAssembly(),
+        },
+      )
       const baselines: Span[][] = []
       const dispose = autorun(() => {
         baselines.push(display.laneStack.lanes[1]!.baseline)
       })
-      expect(baselines.at(-1)).toEqual(DIVIDER)
+      expect(baselines.at(-1)).toEqual(divider)
       runInAction(() => {
         loaded.set(true)
       })

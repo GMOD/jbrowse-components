@@ -118,7 +118,7 @@ function picture(display: MultiWaySyntenyDisplayModel) {
     display.renderBlocks,
     display.renderState,
   )
-  const width = display.canvasWidth
+  const width = display.canvasWidthPx
   const rects = calls
     .filter(c => c.method === 'fillRect')
     .flatMap(({ args }) => {
@@ -232,7 +232,7 @@ describe.each([
       p => drawnPx(map, p - (1 << 20)) + display.dragOffsetPx,
     )
     expect(Math.min(a!, b!)).toBeLessThanOrEqual(0)
-    expect(Math.max(a!, b!)).toBeGreaterThanOrEqual(display.canvasWidth)
+    expect(Math.max(a!, b!)).toBeGreaterThanOrEqual(display.canvasWidthPx)
   })
 })
 
@@ -265,7 +265,7 @@ test('mid-flight the hit test, the hover ink and the selection ink sit on the dr
   const hits = cell.kind === 'glyphs' ? cell.data.hits : []
   const hit = hits.find(h => {
     const x = drawnPx(map, (h.x1 + h.x2) / 2) + display.dragOffsetPx
-    return x > 50 && x < display.canvasWidth - 50
+    return x > 50 && x < display.canvasWidthPx - 50
   })!
   const x = drawnPx(map, (hit.x1 + hit.x2) / 2) + display.dragOffsetPx
   const y = hit.y1 + 2 - display.scrollTop

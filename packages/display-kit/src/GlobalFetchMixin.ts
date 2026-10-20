@@ -6,7 +6,11 @@ import RegionTooLargeMixin from './RegionTooLargeMixin.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationPaintInert } from './foundationPaintInert.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
-import { containingHost, foundationCanRender } from './foundationView.ts'
+import {
+  containingHost,
+  foundationCanRender,
+  trackCanvasWidthPx,
+} from './foundationView.ts'
 import { viewportEmpty } from './viewportEmpty.ts'
 
 import type { RegionHost } from './regionHost.ts'
@@ -66,6 +70,15 @@ export default function GlobalFetchMixin() {
        */
       get host(): RegionHost {
         return containingHost(self)
+      },
+      /**
+       * #getter
+       * The CSS width of this display's on-screen canvas, in px; see
+       * `trackCanvasWidthPx`. A heatmap laid out over the whole content reads
+       * the content width instead (`TriangleMatrixMixin.canvasWidth`).
+       */
+      get canvasWidthPx(): number {
+        return trackCanvasWidthPx(this.host)
       },
       /**
        * #getter

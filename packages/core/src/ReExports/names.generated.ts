@@ -434,7 +434,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/foundationDisplayPhase': ['foundationDisplayPhase'],
   '@jbrowse/display-kit/foundationPaintInert': ['foundationPaintInert'],
   '@jbrowse/display-kit/foundationSvgReady': ['foundationSvgReady'],
-  '@jbrowse/display-kit/foundationView': ['containingHost', 'foundationCanRender', 'onTrackAssembly'],
+  '@jbrowse/display-kit/foundationView': ['containingHost', 'foundationCanRender', 'onTrackAssembly', 'trackCanvasWidthPx'],
   '@jbrowse/display-kit/gateCommit': ['measurementOf', 'measurementOfEach', 'openGateCommit'],
   '@jbrowse/display-kit/GlobalFetchMixin': ['blockKeySignature', 'default'],
   '@jbrowse/display-kit/groupByMenu': ['groupByRadioMenuItem', 'hiddenGroupsItems', 'mergeDomain', 'moveSectionOnto', 'moveSectionTo', 'resetOrderItem', 'resetSectionOrderItems', 'sectionRowMenuItems', 'showHiddenItems'],

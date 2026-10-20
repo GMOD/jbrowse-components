@@ -46,7 +46,7 @@ const LaneGeneLabels = observer(function LaneGeneLabels({
         position: 'absolute',
         left: 0,
         top: 0,
-        width: model.canvasWidth,
+        width: model.canvasWidthPx,
         height: model.height,
         overflow: 'hidden',
         pointerEvents: 'none',
