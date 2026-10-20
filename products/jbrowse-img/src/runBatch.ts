@@ -23,9 +23,9 @@ import { parseVcfJunctions } from './vcfJunctions.ts'
 
 import type { BatchRecord } from './batch.ts'
 import type { BatchFormat } from './options.ts'
-import type { Entry } from './parseArgv.ts'
 import type { ProgressReporter } from './progress.ts'
 import type { Opts } from './types.ts'
+import type { Entry } from '@jbrowse/launch-args'
 
 // Drives `renderRegionReport` once per record, in-process. The module graph loads
 // once for the whole callset rather than once per variant, which is the reason

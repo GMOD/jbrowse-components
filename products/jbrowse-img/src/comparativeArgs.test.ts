@@ -1,6 +1,6 @@
 import { buildComparative, hasComparativeArgs } from './comparativeArgs.ts'
 
-import type { Entry } from './parseArgv.ts'
+import type { Entry } from '@jbrowse/launch-args'
 
 describe('hasComparativeArgs', () => {
   test('a lone fasta is not comparative', () => {

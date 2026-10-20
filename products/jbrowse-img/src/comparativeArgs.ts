@@ -1,15 +1,16 @@
 import path from 'node:path'
 
+import { splitModifier } from '@jbrowse/launch-args'
+
 import {
   makeChromSizesAssembly,
   makeFastaAssembly,
   makeSyntenyTrackConfig,
   syntenyTrackTypes,
 } from './makeConfigs.ts'
-import { splitModifier } from './parseArgv.ts'
 
-import type { Entry } from './parseArgv.ts'
 import type { Assembly, Track } from './types.ts'
+import type { Entry } from '@jbrowse/launch-args'
 
 // Per-assembly options can ride on the assembly flag as `key:value` modifiers,
 // e.g. `--chromSizes hg38.chrom.sizes loc:chr1 aliases:a.txt` — the same

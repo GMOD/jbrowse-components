@@ -5,9 +5,6 @@ import {
   makeSyntenyTrackConfig,
 } from './makeConfigs.ts'
 
-// makeLocation / makeTrackConfig / readData are covered in renderRegion.test.ts;
-// these target the two config builders that file doesn't exercise.
-
 describe('makeSyntenyTrackConfig', () => {
   test.each([
     ['paf', 'PAFAdapter', 'pafLocation'],
@@ -19,7 +16,7 @@ describe('makeSyntenyTrackConfig', () => {
     expect(t.type).toBe('SyntenyTrack')
     expect(t.trackId).toBe(`aln.${type}`)
     expect(t.adapter?.type).toBe(adapterType)
-    expect(t.adapter?.[locSlot]).toEqual({ localPath: `aln.${type}` })
+    expect(t.adapter?.[locSlot]).toMatchObject({ localPath: `aln.${type}` })
   })
 
   // PAF/BLAST list the query first, so the upper (first) assembly is the query.
@@ -42,7 +39,7 @@ describe('makeSyntenyTrackConfig', () => {
 
   test('a remote comparison file uses a uri location', () => {
     const t = makeSyntenyTrackConfig('paf', 'https://e.com/a.paf', 'q', 't')
-    expect(t.adapter?.pafLocation).toEqual({ uri: 'https://e.com/a.paf' })
+    expect(t.adapter?.pafLocation).toMatchObject({ uri: 'https://e.com/a.paf' })
   })
 })
 
@@ -55,8 +52,8 @@ describe('makeFastaAssembly', () => {
       type: 'IndexedFastaAdapter',
       fastaLocation: { localPath: 'genome.fa' },
       faiLocation: { localPath: 'genome.fa.fai' },
-      gziLocation: undefined,
     })
+    expect(a.sequence.adapter).not.toHaveProperty('gziLocation')
   })
 
   test('bgzipped fasta → BgzipFastaAdapter with a gzi location', () => {
@@ -78,10 +75,8 @@ describe('makeFastaAssembly', () => {
 
   test('a name merely ending in the letters gz is not bgzipped', () => {
     const a = makeFastaAssembly('genome.fagz', undefined, undefined, 'rs')
-    expect(a.sequence.adapter).toMatchObject({
-      type: 'IndexedFastaAdapter',
-      gziLocation: undefined,
-    })
+    expect(a.sequence.adapter).toMatchObject({ type: 'IndexedFastaAdapter' })
+    expect(a.sequence.adapter).not.toHaveProperty('gziLocation')
   })
 
   test('aliases attach a RefNameAliasAdapter only when provided', () => {
@@ -132,7 +127,10 @@ describe('makeChromSizesAssembly', () => {
     expect(a.name).toBe('hg38')
     expect(a.sequence.adapter).toEqual({
       type: 'ChromSizesAdapter',
-      chromSizesLocation: { localPath: 'hg38.chrom.sizes' },
+      chromSizesLocation: {
+        localPath: 'hg38.chrom.sizes',
+        locationType: 'LocalPathLocation',
+      },
     })
   })
 
@@ -166,11 +164,17 @@ describe('makeMultiWiggleTrackConfig', () => {
       subadapters: [
         {
           type: 'BigWigAdapter',
-          bigWigLocation: { uri: 'https://e.com/a.bw' },
+          bigWigLocation: {
+            uri: 'https://e.com/a.bw',
+            locationType: 'UriLocation',
+          },
         },
         {
           type: 'BigWigAdapter',
-          bigWigLocation: { uri: 'https://e.com/b.bw' },
+          bigWigLocation: {
+            uri: 'https://e.com/b.bw',
+            locationType: 'UriLocation',
+          },
         },
       ],
     })
@@ -184,7 +188,13 @@ describe('makeMultiWiggleTrackConfig', () => {
     expect(t.adapter).toEqual({
       type: 'MultiWiggleAdapter',
       subadapters: [
-        { type: 'BigWigAdapter', bigWigLocation: { localPath: 'data/a.bw' } },
+        {
+          type: 'BigWigAdapter',
+          bigWigLocation: {
+            localPath: 'data/a.bw',
+            locationType: 'LocalPathLocation',
+          },
+        },
       ],
     })
   })

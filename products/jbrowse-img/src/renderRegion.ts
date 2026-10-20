@@ -43,12 +43,12 @@ import { parseSpec, specMode, viewSettingsFromSpec } from './spec.ts'
 import { trackType } from './trackFields.ts'
 
 import type { ViewMode } from './modes.ts'
-import type { Entry } from './parseArgv.ts'
 import type { ViewSpec } from './spec.ts'
 import type { Config, OpenTrack, Opts, Track } from './types.ts'
 import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { SettleableView } from '@jbrowse/core/util/whenViewSettled'
+import type { Entry } from '@jbrowse/launch-args'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 import type { BreakpointViewModel } from '@jbrowse/plugin-breakpoint-split-view'
 import type {

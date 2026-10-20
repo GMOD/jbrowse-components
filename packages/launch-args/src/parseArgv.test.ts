@@ -95,3 +95,74 @@ test('a single-dash flag names its option', () => {
     ['out', ['out.svg']],
   ])
 })
+
+test('a bare data file is a --file entry, wherever it sits', () => {
+  expect(
+    parseArgv(['reads.bam', '--loc', 'chr1:1-100', 'calls.vcf.gz']),
+  ).toEqual([
+    ['file', ['reads.bam']],
+    ['loc', ['chr1:1-100']],
+    ['file', ['calls.vcf.gz']],
+  ])
+})
+
+test('a data file after a track flag opens its own entry', () => {
+  expect(
+    parseArgv('--bam a.bam height:100 b.bam color:red'.split(' ')),
+  ).toEqual([
+    ['bam', ['a.bam', 'height:100']],
+    ['file', ['b.bam', 'color:red']],
+  ])
+})
+
+test('a modifier naming a data file stays a modifier', () => {
+  expect(parseArgv(['--bam', 'a.bam', 'name:tumor.bam'])).toEqual([
+    ['bam', ['a.bam', 'name:tumor.bam']],
+  ])
+})
+
+test('URLs and Windows paths are files, not modifiers', () => {
+  expect(
+    parseArgv([
+      '--loc',
+      'chr1',
+      'https://x.org/a.bw',
+      String.raw`C:\data\b.bam`,
+    ]),
+  ).toEqual([
+    ['loc', ['chr1']],
+    ['file', ['https://x.org/a.bw']],
+    ['file', [String.raw`C:\data\b.bam`]],
+  ])
+})
+
+test('a boolean flag takes only true or false', () => {
+  const booleans = new Set(['noRasterize'])
+  expect(parseArgv(['--noRasterize', 'reads.bam'], { booleans })).toEqual([
+    ['noRasterize', []],
+    ['file', ['reads.bam']],
+  ])
+  expect(parseArgv(['--noRasterize', 'false'], { booleans })).toEqual([
+    ['noRasterize', ['false']],
+  ])
+  expect(() => parseArgv(['--noRasterize', 'oops'], { booleans })).toThrow(
+    /Unexpected argument "oops"/,
+  )
+})
+
+test('a leading token that is not a data file is an error', () => {
+  expect(() => parseArgv(['notes.txt', '--loc', 'chr1'])).toThrow(
+    /Unexpected argument "notes.txt"/,
+  )
+  expect(() => parseArgv(['height:100'])).toThrow(/Unexpected argument/)
+})
+
+test('standardizeArgv lists --file entries with the track flags', () => {
+  expect(
+    standardizeArgv(parseArgv(['reads.bam', '--bigwig', 'a.bw']), ['bigwig'])
+      .trackList,
+  ).toEqual([
+    ['file', ['reads.bam']],
+    ['bigwig', ['a.bw']],
+  ])
+})

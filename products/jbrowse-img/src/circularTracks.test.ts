@@ -16,7 +16,7 @@ import { enableStaticRendering } from 'mobx-react'
 
 import { renderRegion } from './renderRegion.ts'
 
-import type { Entry } from './parseArgv.ts'
+import type { Entry } from '@jbrowse/launch-args'
 
 enableStaticRendering(true)
 

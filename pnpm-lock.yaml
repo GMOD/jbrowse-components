@@ -2573,6 +2573,9 @@ importers:
       '@jbrowse/display-kit':
         specifier: workspace:^
         version: link:../../packages/display-kit
+      '@jbrowse/launch-args':
+        specifier: workspace:^
+        version: link:../../packages/launch-args
       '@jbrowse/mobx-state-tree':
         specifier: ^6.9.0
         version: 6.9.0(mobx@7.0.6)
@@ -3250,6 +3253,9 @@ importers:
       '@jbrowse/display-test-utils':
         specifier: workspace:^
         version: link:../../packages/display-test-utils
+      '@jbrowse/launch-args':
+        specifier: workspace:*
+        version: link:../../packages/launch-args
       generic-filehandle2:
         specifier: ^2.5.1
         version: 2.5.1

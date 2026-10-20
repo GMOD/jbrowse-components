@@ -3,12 +3,12 @@ import {
   formats,
   matchFormat,
 } from '@jbrowse/add-track-core'
+import PluginManager from '@jbrowse/core/PluginManager'
 import {
   guessTrack,
   guessTrackType as cliGuessTrackType,
   makeLocationProtocol,
-} from '@jbrowse/cli/src/commands/add-track-utils/adapter-utils.ts'
-import PluginManager from '@jbrowse/core/PluginManager'
+} from '@jbrowse/launch-args'
 
 import corePlugins from './corePlugins.ts'
 

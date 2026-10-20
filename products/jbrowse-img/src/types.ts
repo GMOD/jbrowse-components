@@ -1,10 +1,10 @@
 import type { ViewMode } from './modes.ts'
 import type { themeModes, themeNames } from './options.ts'
-import type { Entry } from './parseArgv.ts'
 import type {
   VariantAllele,
   VariantSortColumn,
 } from '@jbrowse/alignments-core/variantSortColumn'
+import type { Assembly, Entry, Track } from '@jbrowse/launch-args'
 import type { CigarMode } from '@jbrowse/plugin-linear-comparative-view'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
@@ -103,22 +103,7 @@ export interface Opts {
   showTracks?: Entry[]
 }
 
-export interface Assembly {
-  name: string
-  sequence: Record<string, unknown>
-  refNameAliases?: Record<string, unknown>
-  cytobands?: Record<string, unknown>
-}
-
-export interface Track {
-  trackId: string
-  displays?: unknown[]
-  adapter?: Record<string, unknown>
-  // SyntenyTracks carry their compared assemblies in [query, target] order;
-  // used to place the track at the right level in a multi-assembly synteny view.
-  assemblyNames?: string[]
-  [key: string]: unknown
-}
+export type { Assembly, Track }
 
 export interface TextSearchAdapter {
   type: string

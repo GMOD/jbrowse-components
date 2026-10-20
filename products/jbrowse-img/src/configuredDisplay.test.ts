@@ -12,9 +12,9 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
+import { parseArgv } from '@jbrowse/launch-args'
 import { enableStaticRendering } from 'mobx-react'
 
-import { parseArgv } from './parseArgv.ts'
 import { renderRegion } from './renderRegion.ts'
 
 enableStaticRendering(true)

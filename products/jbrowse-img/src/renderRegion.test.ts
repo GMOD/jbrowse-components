@@ -2,23 +2,14 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-import { makeLocation, makeTrackConfig } from './makeConfigs.ts'
-import { standardizeArgv } from './parseArgv.ts'
+import { standardizeArgv } from '@jbrowse/launch-args'
+
 import { readData } from './readData.ts'
 import { renderRegion, resolveMode } from './renderRegion.ts'
 
 const dataDir = path.join(__dirname, '..', 'data')
 const configFile = path.join(dataDir, 'config.json')
 const assemblyFile = path.join(dataDir, 'assembly.json')
-
-const fakeAssembly = {
-  name: 'testAsm',
-  sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'refseq',
-    adapter: { type: 'IndexedFastaAdapter' },
-  },
-}
 
 describe('standardizeArgv', () => {
   const trackTypes = [
@@ -60,304 +51,6 @@ describe('standardizeArgv', () => {
   })
 })
 
-describe('makeLocation', () => {
-  test('http/https/ftp/s3 schemes become uri locations', () => {
-    expect(makeLocation('https://example.com/a.bw')).toEqual({
-      uri: 'https://example.com/a.bw',
-    })
-    expect(makeLocation('https://example.com/a.bw')).toEqual({
-      uri: 'https://example.com/a.bw',
-    })
-    expect(makeLocation('ftp://example.com/a.bw')).toEqual({
-      uri: 'ftp://example.com/a.bw',
-    })
-    expect(makeLocation('s3://bucket/a.bw')).toEqual({
-      uri: 's3://bucket/a.bw',
-    })
-  })
-
-  test('local paths become localPath locations', () => {
-    expect(makeLocation('/data/a.bw')).toEqual({ localPath: '/data/a.bw' })
-    expect(makeLocation('./a.bw')).toEqual({ localPath: './a.bw' })
-    expect(makeLocation(String.raw`C:\data\a.bw`)).toEqual({
-      localPath: String.raw`C:\data\a.bw`,
-    })
-  })
-})
-
-describe('makeTrackConfig', () => {
-  test('bam track', () => {
-    const config = makeTrackConfig('bam', 'reads.bam', undefined, fakeAssembly)
-    expect(config).toMatchObject({
-      type: 'AlignmentsTrack',
-      trackId: 'reads.bam',
-      name: 'reads.bam',
-      assemblyNames: ['testAsm'],
-      adapter: {
-        type: 'BamAdapter',
-        bamLocation: { localPath: 'reads.bam' },
-        index: { location: { localPath: 'reads.bam.bai' }, indexType: 'BAI' },
-      },
-    })
-  })
-
-  // `name:` used to be honored only by --multiwig, so `--bam reads.bam
-  // name:"My reads"` silently kept the filename as the track label.
-  test('an explicit name overrides the filename label', () => {
-    const config = makeTrackConfig(
-      'bam',
-      'reads.bam',
-      undefined,
-      fakeAssembly,
-      'My reads',
-    )
-    expect(config).toMatchObject({ trackId: 'reads.bam', name: 'My reads' })
-  })
-
-  test('bam track with explicit CSI index', () => {
-    const config = makeTrackConfig(
-      'bam',
-      'reads.bam',
-      'reads.bam.csi',
-      fakeAssembly,
-    )
-    expect(config?.adapter).toMatchObject({
-      index: { indexType: 'CSI' },
-    })
-  })
-
-  test('cram track', () => {
-    const config = makeTrackConfig(
-      'cram',
-      'reads.cram',
-      undefined,
-      fakeAssembly,
-    )
-    expect(config).toMatchObject({
-      type: 'AlignmentsTrack',
-      adapter: {
-        type: 'CramAdapter',
-        craiLocation: { localPath: 'reads.cram.crai' },
-      },
-    })
-  })
-
-  test('bigwig track', () => {
-    const config = makeTrackConfig(
-      'bigwig',
-      'signal.bw',
-      undefined,
-      fakeAssembly,
-    )
-    expect(config).toMatchObject({
-      type: 'QuantitativeTrack',
-      adapter: {
-        type: 'BigWigAdapter',
-        bigWigLocation: { localPath: 'signal.bw' },
-      },
-    })
-  })
-
-  test('vcfgz track with default tbi index', () => {
-    const config = makeTrackConfig(
-      'vcfgz',
-      'variants.vcf.gz',
-      undefined,
-      fakeAssembly,
-    )
-    expect(config).toMatchObject({
-      type: 'VariantTrack',
-      adapter: {
-        type: 'VcfTabixAdapter',
-        index: {
-          indexType: 'TBI',
-          location: { localPath: 'variants.vcf.gz.tbi' },
-        },
-      },
-    })
-  })
-
-  test('vcfgz track with explicit CSI index', () => {
-    const config = makeTrackConfig(
-      'vcfgz',
-      'variants.vcf.gz',
-      'variants.vcf.gz.csi',
-      fakeAssembly,
-    )
-    expect(config?.adapter).toMatchObject({ index: { indexType: 'CSI' } })
-  })
-
-  describe('a local file indexed only with .csi', () => {
-    // htslib writes .csi rather than .tbi/.bai for a reference over 512 Mb, and
-    // on request at any size. Those files used to need an explicit `index:` and
-    // otherwise failed on a sibling they never had.
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb2export-csi-'))
-    const vcf = path.join(dir, 'variants.vcf.gz')
-    const bam = path.join(dir, 'reads.bam')
-    beforeAll(() => {
-      fs.writeFileSync(vcf, '')
-      fs.writeFileSync(`${vcf}.csi`, '')
-      fs.writeFileSync(bam, '')
-      fs.writeFileSync(`${bam}.csi`, '')
-    })
-    afterAll(() => {
-      fs.rmSync(dir, { recursive: true, force: true })
-    })
-
-    test('a tabix track finds it, and opens it as CSI', () => {
-      expect(
-        makeTrackConfig('vcfgz', vcf, undefined, fakeAssembly)?.adapter,
-      ).toMatchObject({
-        index: { indexType: 'CSI', location: { localPath: `${vcf}.csi` } },
-      })
-    })
-
-    test('a bam track finds it too', () => {
-      expect(
-        makeTrackConfig('bam', bam, undefined, fakeAssembly)?.adapter,
-      ).toMatchObject({
-        index: { indexType: 'CSI', location: { localPath: `${bam}.csi` } },
-      })
-    })
-
-    test('the conventional sibling still wins when it is there', () => {
-      fs.writeFileSync(`${vcf}.tbi`, '')
-      try {
-        expect(
-          makeTrackConfig('vcfgz', vcf, undefined, fakeAssembly)?.adapter,
-        ).toMatchObject({ index: { indexType: 'TBI' } })
-      } finally {
-        fs.rmSync(`${vcf}.tbi`)
-      }
-    })
-  })
-
-  test('a bam finds the Picard/GATK "reads.bai" spelling', () => {
-    // samtools writes reads.bam.bai; Picard and GATK write reads.bai
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb2export-bai-'))
-    const bam = path.join(dir, 'reads.bam')
-    fs.writeFileSync(bam, '')
-    fs.writeFileSync(path.join(dir, 'reads.bai'), '')
-    try {
-      expect(
-        makeTrackConfig('bam', bam, undefined, fakeAssembly)?.adapter,
-      ).toMatchObject({
-        index: {
-          indexType: 'BAI',
-          location: { localPath: path.join(dir, 'reads.bai') },
-        },
-      })
-    } finally {
-      fs.rmSync(dir, { recursive: true, force: true })
-    }
-  })
-
-  test('a non-bam is never opened as its own index', () => {
-    // the stripped-extension guess is guarded on the extension matching; without
-    // that, `file.replace(/\.bam$/, '.bai')` returns the data file itself, which
-    // exists, and would be handed over as the index
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb2export-self-'))
-    const data = path.join(dir, 'reads.sam')
-    fs.writeFileSync(data, '')
-    try {
-      expect(
-        makeTrackConfig('bam', data, undefined, fakeAssembly)?.adapter,
-      ).toMatchObject({
-        index: { location: { localPath: `${data}.bai` } },
-      })
-    } finally {
-      fs.rmSync(dir, { recursive: true, force: true })
-    }
-  })
-
-  test('a remote file keeps the conventional sibling, unprobed', () => {
-    // A URL cannot be checked without a request, and this builder is
-    // synchronous, so a remote .csi still wants an explicit `index:`.
-    expect(
-      makeTrackConfig(
-        'vcfgz',
-        'https://example.com/variants.vcf.gz',
-        undefined,
-        fakeAssembly,
-      )?.adapter,
-    ).toMatchObject({
-      index: {
-        indexType: 'TBI',
-        location: { uri: 'https://example.com/variants.vcf.gz.tbi' },
-      },
-    })
-  })
-
-  test('gffgz track', () => {
-    const config = makeTrackConfig(
-      'gffgz',
-      'genes.gff.gz',
-      undefined,
-      fakeAssembly,
-    )
-    expect(config).toMatchObject({
-      type: 'FeatureTrack',
-      adapter: { type: 'Gff3TabixAdapter' },
-    })
-  })
-
-  test('hic track', () => {
-    const config = makeTrackConfig('hic', 'matrix.hic', undefined, fakeAssembly)
-    expect(config).toMatchObject({
-      type: 'HicTrack',
-      adapter: { type: 'HicAdapter' },
-    })
-  })
-
-  test('bigbed track', () => {
-    const config = makeTrackConfig(
-      'bigbed',
-      'features.bb',
-      undefined,
-      fakeAssembly,
-    )
-    expect(config).toMatchObject({
-      type: 'FeatureTrack',
-      adapter: { type: 'BigBedAdapter' },
-    })
-  })
-
-  test('bedgz track', () => {
-    const config = makeTrackConfig(
-      'bedgz',
-      'regions.bed.gz',
-      undefined,
-      fakeAssembly,
-    )
-    expect(config).toMatchObject({
-      type: 'FeatureTrack',
-      adapter: { type: 'BedTabixAdapter' },
-    })
-  })
-
-  test('unknown track type returns undefined', () => {
-    const config = makeTrackConfig(
-      'unknown',
-      'file.txt',
-      undefined,
-      fakeAssembly,
-    )
-    expect(config).toBeUndefined()
-  })
-
-  test('http URI tracks use uri location', () => {
-    const config = makeTrackConfig(
-      'bigwig',
-      'https://example.com/signal.bw',
-      undefined,
-      fakeAssembly,
-    )
-    expect(config?.adapter).toMatchObject({
-      bigWigLocation: { uri: 'https://example.com/signal.bw' },
-    })
-  })
-})
-
 describe('readData', () => {
   test('throws with no assembly', () => {
     expect(() => readData({})).toThrow(/no assembly specified/)
@@ -385,6 +78,38 @@ describe('readData', () => {
     })
     expect(result.tracks).toHaveLength(1)
     expect(result.tracks[0]).toMatchObject({ type: 'AlignmentsTrack' })
+  })
+
+  test('bare files: a genome file is the assembly, the rest are tracks', () => {
+    const result = readData({
+      trackList: [
+        ['file', ['reads.bam', 'name:Reads']],
+        ['file', ['/path/to/ref.fa', 'aliases:aliases.txt']],
+        ['file', ['calls.vcf.gz']],
+      ],
+    })
+    expect(result.assembly).toMatchObject({
+      name: 'ref.fa',
+      sequence: { adapter: { type: 'IndexedFastaAdapter' } },
+      refNameAliases: { adapter: { type: 'RefNameAliasAdapter' } },
+    })
+    expect(result.tracks.map(t => [t.type, t.name])).toEqual([
+      ['AlignmentsTrack', 'Reads'],
+      ['VariantTrack', 'calls.vcf.gz'],
+    ])
+    expect(result.openTracks).toEqual([
+      { trackId: 'reads.bam', opts: ['name:Reads'] },
+      { trackId: 'calls.vcf.gz', opts: [] },
+    ])
+  })
+
+  test('a bare genome file beside --fasta is a second genome, refused', () => {
+    expect(() =>
+      readData({
+        fasta: '/path/to/ref.fa',
+        trackList: [['file', ['other.fa']]],
+      }),
+    ).toThrow(/other\.fa is a genome/)
   })
 
   test('multiple tracks accumulate', () => {

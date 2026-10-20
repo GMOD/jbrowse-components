@@ -3,15 +3,21 @@ import { pathToFileURL } from 'node:url'
 
 import { expandAssemblySequence } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
+import {
+  FILE_FLAG,
+  fileAdapter,
+  fileTrack,
+  isSequenceAdapter,
+  modifierValue,
+  sequenceAssembly,
+} from '@jbrowse/launch-args'
 
 import { buildComparative, hasComparativeArgs } from './comparativeArgs.ts'
 import {
   makeFastaAssembly,
   makeMultiWiggleTrackConfig,
-  makeTrackConfig,
   syntenyTrackTypes,
 } from './makeConfigs.ts'
-import { modifierValue } from './parseArgv.ts'
 import { STDIN_ARG, isFile, readTextInput } from './util.ts'
 
 import type { Assembly, Config, OpenTrack, Opts, Track } from './types.ts'
@@ -137,6 +143,11 @@ export function readData(
   configObject?: Config,
 ) {
   let assemblyData: Assembly | undefined
+  const genome = trackList.find(
+    ([key, [file]]) =>
+      key === FILE_FLAG && !!file && isSequenceAdapter(fileAdapter(file)),
+  )
+  let genomeUsed = false
   // `-` reads the assembly JSON from stdin; any other non-existent value is an
   // assembly NAME to look up in the config below
   if (asm && (asm === STDIN_ARG || isFile(asm))) {
@@ -236,11 +247,18 @@ export function readData(
     syntenyTracks = comparative.syntenyTracks
   } else if (fasta) {
     configData.assembly = makeFastaAssembly(fasta, aliases, cytobands, 'refseq')
+  } else if (genome) {
+    const [file = '', ...mods] = genome[1]
+    configData.assembly = sequenceAssembly(fileAdapter(file), file, {
+      aliases: aliases ?? modifierValue(mods, 'aliases'),
+      cytobands: cytobands ?? modifierValue(mods, 'cytobands'),
+    })
+    genomeUsed = true
   }
 
   if (!configData.assembly) {
     throw new Error(
-      'no assembly specified, use --fasta to supply an indexed FASTA file (generated with samtools faidx yourfile.fa). see README for alternatives with --assembly and --config',
+      'no assembly specified: pass a genome file (an indexed FASTA from samtools faidx, a 2bit, or a .chrom.sizes), --fasta, --hub, or --config with --assembly',
     )
   }
 
@@ -268,27 +286,26 @@ export function readData(
   // what was built instead of recomputing the id from the filename.
   const openTracks: OpenTrack[] = []
   for (const [type, opts] of trackList) {
-    if (!syntenyTrackTypes.includes(type)) {
-      const [file, ...rest] = opts
+    const [file, ...rest] = opts
+    if (
+      !syntenyTrackTypes.includes(type) &&
+      !(genomeUsed && genome?.[1] === opts)
+    ) {
       if (!file) {
         throw new Error(`--${type} requires a file argument`)
       }
-      const index = modifierValue(rest, 'index')
-      const name = modifierValue(rest, 'name')
       const trackConfig =
         type === 'multiwig'
           ? makeMultiWiggleTrackConfig(
               readMultiWiggleSources(file),
               file,
               configData.assembly,
-              name,
+              modifierValue(rest, 'name'),
             )
-          : makeTrackConfig(type, file, index, configData.assembly, name)
-      if (trackConfig) {
-        trackConfig.trackId = uniqueTrackId(usedTrackIds, trackConfig.trackId)
-        configData.tracks.push(trackConfig)
-        openTracks.push({ trackId: trackConfig.trackId, opts: rest })
-      }
+          : fileTrack(type, opts, configData.assembly)
+      trackConfig.trackId = uniqueTrackId(usedTrackIds, trackConfig.trackId)
+      configData.tracks.push(trackConfig)
+      openTracks.push({ trackId: trackConfig.trackId, opts: rest })
     }
   }
   configData.openTracks = openTracks

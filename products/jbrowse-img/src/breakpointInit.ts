@@ -1,9 +1,9 @@
 import { buildDisplaySnapshot } from './applyTrackOpts.ts'
 
 import type { Category } from './applyTrackOpts.ts'
-import type { Entry } from './parseArgv.ts'
 import type { Config, OpenTrack, Opts } from './types.ts'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
+import type { Entry } from '@jbrowse/launch-args'
 import type { BreakpointSplitViewInitView } from '@jbrowse/plugin-breakpoint-split-view'
 
 type CategoryOf = (trackId: string, opts: string[]) => Category

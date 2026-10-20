@@ -5,8 +5,8 @@ import {
   breakpointTracks,
 } from './breakpointInit.ts'
 
-import type { Entry } from './parseArgv.ts'
 import type { Config, Opts } from './types.ts'
+import type { Entry } from '@jbrowse/launch-args'
 
 function config(openTracks?: { trackId: string; opts: string[] }[]): Config {
   return {

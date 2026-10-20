@@ -1,3 +1,5 @@
+import { parseArgv, standardizeArgv } from '@jbrowse/launch-args'
+
 import { syntenyTrackTypes, trackTypes } from './makeConfigs.ts'
 import {
   buildBatchHelp,
@@ -18,7 +20,6 @@ import {
   ignoredComparativeOptions,
   knownOptions,
 } from './options.ts'
-import { parseArgv, standardizeArgv } from './parseArgv.ts'
 
 function parse(args: string) {
   const { trackList, ...rest } = standardizeArgv(

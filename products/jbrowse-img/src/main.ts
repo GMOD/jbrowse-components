@@ -1,5 +1,7 @@
 import fs from 'node:fs'
 
+import { isDataFile, parseArgv, standardizeArgv } from '@jbrowse/launch-args'
+
 import { runList } from './list.ts'
 import { syntenyTrackTypes, trackTypes } from './makeConfigs.ts'
 import { modeDescriptors, subcommandMode, subcommandTokens } from './modes.ts'
@@ -7,6 +9,7 @@ import {
   DEFAULT_WIDTH,
   batchDroppedOptions,
   batchOptionNames,
+  booleanOptions,
   buildBatchHelp,
   buildHelp,
   comparativeOptionNames,
@@ -25,7 +28,6 @@ import {
   ignoredComparativeOptions,
   knownOptions,
 } from './options.ts'
-import { parseArgv, standardizeArgv } from './parseArgv.ts'
 import { writeRendered } from './util.ts'
 
 // Everything that draws is imported where it is first needed. Loading it is
@@ -37,10 +39,11 @@ const scriptName = 'jb2export'
 
 async function main() {
   const argv = process.argv.slice(2)
-  // A leading positional token (not a --flag) selects a subcommand, e.g.
+  // A leading word (not a --flag or a data file) selects a subcommand, e.g.
   // `jb2export dotplot --fasta a.fa --fasta2 b.fa ...`
   const first = argv[0]
-  const isSubcommand = first !== undefined && !first.startsWith('-')
+  const isSubcommand =
+    first !== undefined && !first.startsWith('-') && !isDataFile(first)
   const mode = isSubcommand ? subcommandMode(first) : undefined
   const args = isSubcommand ? argv.slice(1) : argv
 
@@ -71,7 +74,7 @@ async function main() {
     ) as { version: string }
     console.log(version)
   } else {
-    const parsed = parseArgv(args)
+    const parsed = parseArgv(args, { booleans: booleanOptions })
     const { trackList, ...rest } = standardizeArgv(parsed, [
       ...trackTypes,
       ...syntenyTrackTypes,
