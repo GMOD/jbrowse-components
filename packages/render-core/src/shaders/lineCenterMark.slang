@@ -53,6 +53,7 @@ struct VsOut {
   nointerpolation float4 cutYsLo : TEXCOORD3;
   nointerpolation float4 cutYsHi : TEXCOORD4;
   nointerpolation float colorAlongY : TEXCOORD5;
+  nointerpolation float bandTop : TEXCOORD6;
 };
 
 [shader("vertex")]
@@ -68,6 +69,7 @@ VsOut vs_main(LineCenterInstance inst, uint vid : SV_VertexID) {
     o.cutYsLo = float4(0.0);
     o.cutYsHi = float4(0.0);
     o.colorAlongY = 0.0;
+    o.bandTop = 0.0;
     return o;
   }
   float sx1 = lineBpToClipX(inst.x, u);
@@ -105,6 +107,7 @@ VsOut vs_main(LineCenterInstance inst, uint vid : SV_VertexID) {
   o.cutYsHi = lineCutYsPx(4, bandTop, u);
   o.colorAlongY =
     lineColorAlongY(u.rampMode, u.colorFromY, place.overridden) ? 1.0 : 0.0;
+  o.bandTop = bandTop;
   return o;
 }
 
@@ -117,7 +120,7 @@ float4 fs_main(VsOut v) : SV_Target {
   }
   float along = clamp(v.localPos.x, 0.0, v.localPos.x + v.localPos.y);
   float4 color = lineFragmentColor(
-    v.colorLine.x + v.colorLine.y * along, v.cutYsLo, v.cutYsHi, v.color, v.colorAlongY, u);
+    v.colorLine.x + v.colorLine.y * along, v.cutYsLo, v.cutYsHi, v.color, v.colorAlongY, v.bandTop, u, colorRamp);
   // premultiplied, so same-color overlaps union under the max blend
   return float4(color.rgb * alpha, color.a * alpha);
 }

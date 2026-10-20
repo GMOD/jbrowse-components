@@ -74,3 +74,42 @@ export function normalizeScoreUnclamped(score: number, domainMin: number, domain
 export function normalizeScore(score: number, domainMin: number, domainMax: number, scaleType: number, symlogConstant: number): number {
   return _clamp(normalizeScoreUnclamped(score, domainMin, domainMax, scaleType, symlogConstant), 0.0, 1.0)
 }
+
+function symlogInverse(y: number, c: number): number {
+  return (((((Math.sign(y)) | 0)) * c) * (Math.exp(Math.abs(y)) - 1.0))
+}
+
+export function denormalizeScore(t_1: number, domainMin_2: number, domainMax_2: number, scaleType_2: number, symlogConstant_2: number): number {
+  let y_1: number
+  if ((scaleType_2 == 2)) {
+    let tMin_1 = symlogTransform(domainMin_2, symlogConstant_2)
+    let tMax_1 = symlogTransform(domainMax_2, symlogConstant_2)
+    if ((tMax_1 > tMin_1)) {
+      y_1 = (tMin_1 + (t_1 * (tMax_1 - tMin_1)))
+    } else {
+      y_1 = tMin_1
+    }
+    return symlogInverse(y_1, symlogConstant_2)
+  }
+  if ((scaleType_2 == 1)) {
+    if ((domainMin_2 > 0.0)) {
+      y_1 = domainMin_2
+    } else {
+      y_1 = 1.0
+    }
+    let tMin_2 = Math.log2(y_1)
+    let tMax_2 = Math.log2(_max(domainMax_2, y_1))
+    if ((tMax_2 > tMin_2)) {
+      y_1 = (tMin_2 + (t_1 * (tMax_2 - tMin_2)))
+    } else {
+      y_1 = tMin_2
+    }
+    return Math.pow(2.0, y_1)
+  }
+  if ((domainMax_2 > domainMin_2)) {
+    y_1 = (domainMin_2 + (t_1 * (domainMax_2 - domainMin_2)))
+  } else {
+    y_1 = domainMin_2
+  }
+  return y_1
+}

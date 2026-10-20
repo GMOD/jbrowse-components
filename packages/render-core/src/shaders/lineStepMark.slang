@@ -55,6 +55,7 @@ struct VsOut {
   nointerpolation float4 cutYsHi : TEXCOORD2;
   float yPx : TEXCOORD3;
   nointerpolation float colorAlongY : TEXCOORD4;
+  nointerpolation float bandTop : TEXCOORD5;
 };
 
 // A neighbour's y: its value's, or the origin's where it is a gap.
@@ -75,6 +76,7 @@ VsOut vs_main(LineStepInstance inst, uint vid : SV_VertexID) {
     o.cutYsHi = float4(0.0);
     o.colorAlongY = 0.0;
     o.yPx = 0.0;
+    o.bandTop = 0.0;
     return o;
   }
   float sx1 = lineBpToClipX(inst.x, u);
@@ -113,6 +115,7 @@ VsOut vs_main(LineStepInstance inst, uint vid : SV_VertexID) {
   o.colorAlongY =
     lineColorAlongY(u.rampMode, u.colorFromY, place.overridden) ? 1.0 : 0.0;
   o.yPx = sy;
+  o.bandTop = bandTop;
   return o;
 }
 
@@ -125,5 +128,5 @@ VsOut vs_main(LineStepInstance inst, uint vid : SV_VertexID) {
 [shader("fragment")]
 float4 fs_main(VsOut v) : SV_Target {
   return lineFragmentColor(
-    clamp(v.yPx, v.colorLine.x, v.colorLine.y), v.cutYsLo, v.cutYsHi, v.color, v.colorAlongY, u);
+    clamp(v.yPx, v.colorLine.x, v.colorLine.y), v.cutYsLo, v.cutYsHi, v.color, v.colorAlongY, v.bandTop, u, colorRamp);
 }

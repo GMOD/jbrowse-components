@@ -14,6 +14,7 @@
 //! js-export: lineColorAlongY
 module lineCommon;
 
+import colorRampLut;
 import hpmath;
 import markColor;
 import scoreScale;
@@ -96,17 +97,27 @@ public float4 lineCutYsPx(int from, float bandTop, Uniforms u) {
   return ys;
 }
 
-// Whether a line reads its color along y: under a threshold over the plotted
-// value, on a row the table does not recolor. The painter asks it too.
+// Whether a line reads its color along y: under a threshold or a ramp over the
+// plotted value, on a row the table does not recolor. The painter asks it too.
 public bool lineColorAlongY(int rampMode, int colorFromY, bool overridden) {
-  return rampMode == RAMP_THRESHOLD && colorFromY != 0 && !overridden;
+  return rampMode != RAMP_NONE && colorFromY != 0 && !overridden;
 }
 
 // A line fragment's color: along y, the interval the color y it is read at
-// falls in; otherwise the color its vertex resolved.
-public float4 lineFragmentColor(float colorYPx, float4 cutYsLo, float4 cutYsHi, float4 own, float alongY, Uniforms u) {
+// falls in, or under a ramp the ramp at the value that y stands for, read
+// back through the y scale; otherwise the color its vertex resolved.
+public float4 lineFragmentColor(float colorYPx, float4 cutYsLo, float4 cutYsHi, float4 own, float alongY, float bandTop, Uniforms u, Sampler2D<float4> ramp) {
   if (alongY < 0.5) {
     return own;
   }
-  return u.colorBands[thresholdBandAtYPx(colorYPx, u.colorCutCount, cutYsLo, cutYsHi)];
+  if (u.rampMode == RAMP_THRESHOLD) {
+    return u.colorBands[thresholdBandAtYPx(colorYPx, u.colorCutCount, cutYsLo, cutYsHi)];
+  }
+  float value = denormalizeScore(
+    1.0 - (colorYPx - bandTop) / u.rowBandPx,
+    u.domainMin, u.domainMax, u.valueScaleType, u.valueSymlogConstant);
+  int rampScale = u.rampMode == RAMP_LOG ? SCALE_TYPE_LOG : 0;
+  return rampColor(
+    ramp,
+    rampMidT(normalizeScore(value, u.rampMin, u.rampMax, rampScale, 1.0), u.rampMidNorm));
 }

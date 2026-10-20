@@ -271,6 +271,36 @@ test('under a threshold a step is stroked once per band, a rise across the cut c
   ])
 })
 
+// A gray ramp, so a color names its position: entry i is gray level i.
+const GRAY = Uint8Array.from({ length: 256 * 4 }, (_, i) =>
+  i % 4 === 3 ? 255 : Math.floor(i / 4),
+)
+
+test('under a ramp a rise is stroked through the ramp, a band at a time, as the shader reads it', () => {
+  const c = channels([
+    { x: 10, x2: 20, y: 1 },
+    { x: 20, x2: 30, y: 9 },
+  ])
+  c.colorValue = c.y
+  const { ctx, calls } = mockCtx()
+  lineStepMark.paintBlock(ctx, c, block, frame, {
+    ...params,
+    colorScale: { domain: [0, 10], scale: 'linear', lut: GRAY },
+    colorFromY: true,
+  })
+  const grays = calls.map(r => {
+    const m = /rgba\((\d+),\d+,\d+/.exec(r.fillStyle as string)!
+    return { level: Number(m[1]), top: r.y }
+  })
+  // many colors, darker low and lighter high, as the GPU's per-fragment read
+  expect(new Set(grays.map(g => g.level)).size).toBeGreaterThan(10)
+  const high = grays.filter(g => g.top < 20)
+  const low = grays.filter(g => g.top > 80)
+  expect(Math.min(...high.map(g => g.level))).toBeGreaterThan(
+    Math.max(...low.map(g => g.level)),
+  )
+})
+
 test('a line on a cut takes the color above it, the cut compared in float32 as the shader does', () => {
   const c = channels([
     { x: 10, x2: 20, y: 0.7 },

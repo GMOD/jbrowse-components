@@ -10,7 +10,11 @@ summary: "Moving LinearWiggleDisplay's bars, points, lines and density off its o
 Rejected (2026-10-12), Colin's call after two reviews of the parked idea
 `wiggle-onto-bar-and-point`: a re-size at 8.5-12.5 days and an independent
 review that judged that figure low. The idea doc is retired into this record.
-It can be reconsidered; the conditions are below.
+It can be reconsidered; the conditions are below. Amended 2026-10-20: the
+density fade to each row's own color went (a heatmap reads its color scale,
+WIGGLE_DISPLAY.md), so of the color reasons below only the line's row color
+above the cut stands; and render-core's line reads a ramp along y as wiggle's
+does, so the two lines now color alike.
 
 ## Context
 

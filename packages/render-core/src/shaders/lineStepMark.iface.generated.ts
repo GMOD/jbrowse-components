@@ -5,8 +5,8 @@ import type { VertexAttributeLayout, ShaderBinding, TextureBinding } from '@jbro
 
 export const BINDINGS: readonly ShaderBinding[] = [
   { index: 1, kind: 'uniform', name: 'u', stages: ['vertex', 'fragment'] },
-  { index: 2, kind: 'texture', name: 'colorRamp', stages: ['vertex'] },
-  { index: 3, kind: 'sampler', name: 'colorRamp', stages: ['vertex'] },
+  { index: 2, kind: 'texture', name: 'colorRamp', stages: ['vertex', 'fragment'] },
+  { index: 3, kind: 'sampler', name: 'colorRamp', stages: ['vertex', 'fragment'] },
   { index: 4, kind: 'texture', name: 'rowTable', stages: ['vertex'] },
   { index: 5, kind: 'sampler', name: 'rowTable', stages: ['vertex'] },
 ]

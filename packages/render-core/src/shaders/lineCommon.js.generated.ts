@@ -6,7 +6,7 @@
 
 export function lineColorAlongY(rampMode: number, colorFromY: number, overridden: boolean): boolean {
   let _t0: boolean
-  if ((rampMode == 3)) {
+  if ((rampMode != 0)) {
     _t0 = (colorFromY != 0)
   } else {
     _t0 = false

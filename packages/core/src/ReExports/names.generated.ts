@@ -561,7 +561,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/render-core/shaders/pointMarkIface': ['BINDINGS', 'INSTANCE_OFFSET_F32', 'INSTANCE_OFFSET_U32', 'INSTANCE_STRIDE_BYTES', 'INSTANCE_STRIDE_WORDS', 'TEXTURES', 'UNIFORMS_SIZE_BYTES', 'UNIFORM_OFFSET_F32', 'UNIFORM_OFFSET_I32', 'UNIFORM_SLOT_ARRAYS', 'VERTEX_ATTRIBUTES', 'VERTS_PER_INSTANCE', 'getInstanceColor', 'getInstanceGlyph', 'getInstanceRow', 'getInstanceX', 'getInstanceX2', 'getInstanceY', 'packInstances', 'setInstanceColor', 'setInstanceGlyph', 'setInstanceRow', 'setInstanceX', 'setInstanceX2', 'setInstanceY', 'setUniformColorBands', 'setUniformColorCuts', 'writeUniforms'],
   '@jbrowse/render-core/shaders/rowRect': ['drawnRowHeightPx', 'rowBandOffsetPx'],
   '@jbrowse/render-core/shaders/rowRectConsts': ['MIN_DRAWN_ROW_PX', 'MULTI_ROW_MIN_CELL_PX'],
-  '@jbrowse/render-core/shaders/scoreScale': ['normalizeScore', 'normalizeScoreUnclamped'],
+  '@jbrowse/render-core/shaders/scoreScale': ['denormalizeScore', 'normalizeScore', 'normalizeScoreUnclamped'],
   '@jbrowse/render-core/shaders/spanMarkIface': ['BINDINGS', 'INSTANCE_OFFSET_U32', 'INSTANCE_STRIDE_BYTES', 'INSTANCE_STRIDE_WORDS', 'InstanceWriter', 'TEXTURES', 'UNIFORMS_SIZE_BYTES', 'UNIFORM_OFFSET_F32', 'UNIFORM_OFFSET_I32', 'UNIFORM_SLOT_ARRAYS', 'VERTEX_ATTRIBUTES', 'VERTS_PER_INSTANCE', 'getInstanceColor', 'getInstanceRow', 'getInstanceX', 'getInstanceX2', 'packInstances', 'setInstanceColor', 'setInstanceRow', 'setInstanceX', 'setInstanceX2', 'setUniformColorBands', 'setUniformColorCuts', 'writeUniforms'],
   '@jbrowse/render-core/sharedBackendKey': ['sharedBackendKey'],
   '@jbrowse/render-core/slangPass': ['slangPass'],

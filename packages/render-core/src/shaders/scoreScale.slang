@@ -6,8 +6,9 @@
 // A domain with no range is a step: a score above its min maps to 1 and any
 // other to 0, so a score above a pinned domain sits off the top everywhere.
 //! export-consts: SCALE_TYPE_LOG, SCALE_TYPE_SYMLOG
-//! js-export: normalizeScore, normalizeScoreUnclamped
+//! js-export: normalizeScore, normalizeScoreUnclamped, denormalizeScore
 //! js-skip: log1pf — JS has Math.log1p, so a twin of this would be the float32 workaround spelled out where the language already answers it
+//! js-skip: symlogInverse — render-core scoreScale.ts reaches Math.expm1 directly; what both backends agree on is denormalizeScore, exported and swept against scoreScale.ts's
 //! js-skip: symlogTransform — render-core scoreScale.ts reaches Math.log1p directly, one call inside a normalizer it hoists the whole log domain out of, so a per-call twin of this would have no caller. What both backends must agree on is normalizeScore, which is exported and swept by normalizeScoreParity.test.ts
 module scoreScale;
 
@@ -59,4 +60,26 @@ public float normalizeScoreUnclamped(float score, float domainMin, float domainM
 
 public float normalizeScore(float score, float domainMin, float domainMax, int scaleType, float symlogConstant) {
   return clamp(normalizeScoreUnclamped(score, domainMin, domainMax, scaleType, symlogConstant), 0.0, 1.0);
+}
+
+public float symlogInverse(float y, float c) {
+  return sign(y) * c * (exp(abs(y)) - 1.0);
+}
+
+// `normalizeScoreUnclamped`'s inverse, the score at fraction `t`. A domain
+// with no range answers its min, floored for log, where the forward step sits.
+public float denormalizeScore(float t, float domainMin, float domainMax, int scaleType, float symlogConstant) {
+  if (scaleType == SCALE_TYPE_SYMLOG) {
+    float tMin = symlogTransform(domainMin, symlogConstant);
+    float tMax = symlogTransform(domainMax, symlogConstant);
+    float y = tMax > tMin ? tMin + t * (tMax - tMin) : tMin;
+    return symlogInverse(y, symlogConstant);
+  }
+  if (scaleType == SCALE_TYPE_LOG) {
+    float floorV = domainMin > 0.0 ? domainMin : 1.0;
+    float tMin = log2(floorV);
+    float tMax = log2(max(domainMax, floorV));
+    return pow(2.0, tMax > tMin ? tMin + t * (tMax - tMin) : tMin);
+  }
+  return domainMax > domainMin ? domainMin + t * (domainMax - domainMin) : domainMin;
 }

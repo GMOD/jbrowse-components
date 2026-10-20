@@ -13,6 +13,7 @@ import {
   colorBits,
   isThreshold,
   paintColors,
+  rampAsThreshold,
   rampUniforms,
 } from './markRamp.ts'
 import {
@@ -457,6 +458,27 @@ function traceCenter(
 
 type Trace = (pen: LinePen, indices: Iterable<number>) => void
 
+// The lowest and highest value a line along y draws through: its values, and
+// the origin a step drops to across a gap.
+function valuesReached(
+  c: LineChannels,
+  bySlot: Map<number, number[]>,
+  origin: number,
+): [number, number] {
+  let low = origin
+  let high = origin
+  for (const indices of bySlot.values()) {
+    for (const i of indices) {
+      const v = c.y[i]!
+      if (Number.isFinite(v)) {
+        low = Math.min(low, v)
+        high = Math.max(high, v)
+      }
+    }
+  }
+  return [low, high]
+}
+
 // Along y, the line is stroked once per band per row, each pass keeping the
 // parts of the polyline inside its band; otherwise once, in each instance's
 // own color. A row the table recolors takes its override either way.
@@ -490,8 +512,10 @@ function paintLine(
       own.push(i)
     }
   }
-  if (scale && isThreshold(scale)) {
-    const { cuts, colors } = scale
+  if (scale && bySlot.size > 0) {
+    const { cuts, colors } = isThreshold(scale)
+      ? scale
+      : rampAsThreshold(scale, ...valuesReached(c, bySlot, params.origin))
     for (const [slot, indices] of bySlot) {
       const cutYs = cuts.map(cut => colorYPx(g, Math.fround(cut), slot))
       for (let k = 0; k <= cuts.length; k++) {
