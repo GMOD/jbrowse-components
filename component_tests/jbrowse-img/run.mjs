@@ -348,10 +348,10 @@ await test('renderRegion with noRasterize', async () => {
   }
 })
 
-await test('renderRegion configtracks with local files', async () => {
+await test('renderRegion a config track by id', async () => {
   const result = await renderRegion({
     config: fp('config.json'),
-    trackList: [['configtracks', ['volvox_sv']]],
+    showTracks: [['track', ['volvox_sv']]],
     assembly: 'volvox',
     loc: 'ctgA:1-50,000',
   })
