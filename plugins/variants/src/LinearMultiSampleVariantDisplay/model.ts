@@ -889,18 +889,6 @@ export function stateModelFactory(
           },
           /**
            * #action
-           */
-          setUnit(unit: VariantUnit) {
-            const renamesRows = self.unit !== unit
-            setConf(self, 'unit', unit)
-            if (renamesRows) {
-              // the unit decides what a row is called, so everything naming
-              // rows goes stale together
-              self.resetRowArrangement()
-            }
-          },
-          /**
-           * #action
            * Enable fit-to-display-height mode: `rowHeight = 0` makes
            * `effectiveRowHeight` divide `availableHeight` across the rows.
            */
@@ -1491,6 +1479,54 @@ export function stateModelFactory(
           }
         },
       }))
+      .actions(self => {
+        const superApplyPlot = self.applyPlot
+        const superApplyDisplaySettings = self.applyDisplaySettings
+        // The unit decides what a row is called, so everything naming rows
+        // goes stale together, whichever write moved it: the menu, Edit plot,
+        // a share link or an agent. Not a reaction, which an undo's
+        // applySnapshot would fire mid-restore.
+        function resettingRowsOnUnitChange<T>(write: () => T) {
+          const before = self.unit
+          const result = write()
+          if (self.unit !== before) {
+            self.resetRowArrangement()
+          }
+          return result
+        }
+        return {
+          /**
+           * #action
+           */
+          setUnit(unit: VariantUnit) {
+            resettingRowsOnUnitChange(() => {
+              setConf(self, 'unit', unit)
+            })
+          },
+          /**
+           * #action
+           * `BaseDisplay`'s, resetting the row arrangement when it moves
+           * `unit`.
+           */
+          applyPlot(...args: Parameters<typeof superApplyPlot>) {
+            resettingRowsOnUnitChange(() => {
+              superApplyPlot(...args)
+            })
+          },
+          /**
+           * #action
+           * `BaseDisplay`'s, resetting the row arrangement when it moves
+           * `unit`.
+           */
+          applyDisplaySettings(
+            ...args: Parameters<typeof superApplyDisplaySettings>
+          ) {
+            return resettingRowsOnUnitChange(() =>
+              superApplyDisplaySettings(...args),
+            )
+          },
+        }
+      })
       .views(self => {
         const { trackMenuItems: superTrackMenuItems } = self
         return {

@@ -327,6 +327,30 @@ describe('a rendering-mode switch renames the rows', () => {
     expect(rowNames(display)).toEqual(['S0', 'S1', 'S2'])
   })
 
+  it.each([
+    [
+      'Edit plot',
+      (d: ReturnType<typeof clusteredDisplay>) => {
+        d.applyPlot({ unit: 'haplotype' })
+      },
+    ],
+    [
+      'a settings bag',
+      (d: ReturnType<typeof clusteredDisplay>) => {
+        d.applyDisplaySettings({ unit: 'haplotype' })
+      },
+    ],
+  ])('clears them the same way when %s moves the unit', (_, write) => {
+    const display = clusteredDisplay()
+    display.setRowFocus(['S2', 'S0'])
+
+    write(display)
+
+    expect(display.unit).toBe('haplotype')
+    expect(display.rowFocus).toBeUndefined()
+    expect(display.rowTree).toBeUndefined()
+  })
+
   // The coloring is resolved on the read, so the renamed rows arrive already
   // tinted.
   it('keeps the configured coloring on the renamed rows', () => {
