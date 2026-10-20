@@ -63,6 +63,30 @@ test('a line asks for its series, split by a categorical color, and a stated gap
   expect(bar.lanes).not.toContain('series')
 })
 
+test('a window groupby averages per group but splits the line only through a categorical color', () => {
+  const window = {
+    type: 'window',
+    groupby: ['source'],
+    ops: [{ op: 'mean', field: 'score', as: 'meth' }],
+  }
+  const grouped = markLayerRequest(
+    markOf({ mark: 'line', transform: [window], encoding: { y: 'meth' } }),
+    {},
+    1,
+  )
+  expect(grouped.path).toEqual({})
+  const colored = markLayerRequest(
+    markOf({
+      mark: 'line',
+      transform: [window],
+      encoding: { y: 'meth', color: { field: 'source' } },
+    }),
+    {},
+    1,
+  )
+  expect(colored.path).toEqual({ by: 'source' })
+})
+
 test("a window's frame reaches the worker as written, or its default where the rule list refuses it", () => {
   const frameOf = (frame: unknown) => {
     const [step] = stepsOf(

@@ -44,18 +44,23 @@ transform: [
 ]
 ```
 
-A moving average of each file's `score` over 101 sites, one series per
-file of a multi-file track, each weighted by its read depth:
+A moving average of each file's `score` over 101 sites, weighted by read
+depth. `groupby` keeps each file's average to its own sites; the `color`
+field splits the line into one series per file:
 
 ```js
-transform: [
-  {
-    type: 'window',
-    groupby: ['source'],
-    frame: [-50, 50],
-    ops: [{ op: 'mean', field: 'score', weight: 'n_valid_cov', as: 'meth' }],
-  },
-]
+{
+  mark: 'line',
+  transform: [
+    {
+      type: 'window',
+      groupby: ['source'],
+      frame: [-50, 50],
+      ops: [{ op: 'mean', field: 'score', weight: 'n_valid_cov', as: 'meth' }],
+    },
+  ],
+  encoding: { y: 'meth', color: { field: 'source' } },
+}
 ```
 
 The fraction of aligned bases matching the reference per bin, no reference
