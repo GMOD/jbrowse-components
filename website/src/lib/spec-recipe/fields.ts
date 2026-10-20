@@ -1073,20 +1073,18 @@ const BIN_SUMMARIES: Record<string, string> = {
 }
 
 // The 'Plot type' menu radios come straight from the exported wiggle table, so
-// the wording can't drift from the menu. A `mark` names the radio alone, the
-// step line for a `line`; `interpolate: 'linear'` names the interpolated one.
+// the wording can't drift from the menu.
 function plotTypeStep(rendering: string): FieldStep | undefined {
   const radio = WIGGLE_RENDERINGS.find(([v]) => v === rendering)
   return radio ? { path: `${TRACK_MENU} → Plot type → ${radio[1]}` } : undefined
 }
 
-const markStep: FieldRecipe = value =>
-  typeof value === 'string'
-    ? plotTypeStep(renderingOf(value, 'step'))
+const markStep: FieldRecipe = value => {
+  const mark = typeof value === 'string' ? { type: value } : asRecord(value)
+  return typeof mark?.type === 'string'
+    ? plotTypeStep(renderingOf(mark.type, String(mark.interpolate ?? 'step')))
     : undefined
-
-const interpolateStep: FieldRecipe = value =>
-  value === 'linear' ? plotTypeStep('linecenter') : undefined
+}
 
 function resolutionLabel(n: number) {
   return n >= 1 ? `${n}×` : `1/${Math.round(1 / n)}×`
@@ -1907,7 +1905,6 @@ export const trackFields: Record<string, FieldRecipe> = {
     note: 'Hides variants whose fraction of no-call genotypes is above this; 1 keeps every variant.',
   })),
   mark: markStep,
-  interpolate: interpolateStep,
   extent: value =>
     typeof value === 'string'
       ? {

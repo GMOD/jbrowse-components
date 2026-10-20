@@ -76,12 +76,7 @@ import { sourceWarnings, sourcesFromRegionData } from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
-import type {
-  LineInterpolation,
-  Source,
-  WiggleHoveredFeature,
-  WiggleMark,
-} from '../util.ts'
+import type { Source, WiggleHoveredFeature, WiggleMarkObject } from '../util.ts'
 import type { WiggleContextInfo } from './components/findHit.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
@@ -701,7 +696,7 @@ export default function stateModelFactory(
               colorSettingOf(conf.color),
               renderingOf(
                 readConfObject(own, ['mark', 'type']),
-                readConfObject(own, 'interpolate'),
+                readConfObject(own, ['mark', 'interpolate']),
               ),
             ),
           ]
@@ -735,14 +730,12 @@ export default function stateModelFactory(
        */
       setPlot({
         mark,
-        interpolate,
         rowLayout,
       }: {
-        mark: WiggleMark
-        interpolate?: LineInterpolation
+        mark: WiggleMarkObject
         rowLayout: boolean
       }) {
-        self.setMark(mark, interpolate)
+        self.setMark(mark.type, mark.interpolate)
         setConf(self, ['rows', 'field'], rowLayout ? 'source' : '')
       },
 

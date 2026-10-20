@@ -11726,6 +11726,16 @@
               "else": {
                 "enum": ["bar", "point", "line", "span"]
               }
+            },
+            "interpolate": {
+              "description": "step or linear, for a line.",
+              "default": "step",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": ["step", "linear"]
+              }
             }
           },
           "patternProperties": {
@@ -12146,16 +12156,6 @@
           },
           "else": {
             "$ref": "#/$defs/WiggleMark"
-          }
-        },
-        "interpolate": {
-          "description": "step or linear, for a line.",
-          "default": "step",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": ["step", "linear"]
           }
         },
         "rows": {
@@ -14651,9 +14651,6 @@
             "mark": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
             },
-            "interpolate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/interpolate"
-            },
             "y": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/y"
             },
@@ -16307,9 +16304,6 @@
             "mark": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
             },
-            "interpolate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/interpolate"
-            },
             "rows": {
               "anyOf": [
                 {
@@ -16710,9 +16704,6 @@
             "mark": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
             },
-            "interpolate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/interpolate"
-            },
             "rows": {
               "anyOf": [
                 {
@@ -17112,9 +17103,6 @@
           "properties": {
             "mark": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
-            },
-            "interpolate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/interpolate"
             },
             "rows": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rows"

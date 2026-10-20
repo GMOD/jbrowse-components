@@ -17,6 +17,7 @@ export {
 export type {
   LineInterpolation,
   WiggleMark,
+  WiggleMarkObject,
   WiggleRendering,
 } from './renderingTypes.ts'
 

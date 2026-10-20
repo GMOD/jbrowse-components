@@ -40,7 +40,7 @@ display:
 | Multi-way synteny display (`MultiWaySyntenyDisplay`)                  | `color`, `rows`, `ribbonColor`, `text`, `laneLayers`                                                                                   |
 | Synteny alignments display (`LGVSyntenyDisplay`)                      | `unit`, `filter`, `facet`, `sort`, `color`, `scales`, `coverage`, `pileup`, `readConnections`                                          |
 | Variant display (`LinearVariantDisplay`)                              | `filter`, `color`, `facet`, `labels`                                                                                                   |
-| Wiggle display (`LinearWiggleDisplay`)                                | `mark`, `interpolate`, `rows`, `rowColor`, `color`, `y`, `origin`, `size`, `scales`, `extent`                                          |
+| Wiggle display (`LinearWiggleDisplay`)                                | `mark`, `rows`, `rowColor`, `color`, `y`, `origin`, `size`, `scales`, `extent`                                                         |
 
 <!-- END GENERATED PLOT_SETTINGS -->
 

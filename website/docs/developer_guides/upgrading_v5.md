@@ -360,16 +360,16 @@ setting still opens as a stack of rows.
 
 `defaultRendering` is now `mark`, in the mark display's words: `xyplot` loads as
 `bar`, `scatter` as `point`, `density` as `span`, `line` as `line`, and
-`linecenter` as a `line` with `interpolate: 'linear'`. `summaryScoreMode` is now
-two settings: `y`, which of a bin's stored summaries is plotted (`score`, the
-mean and v4's `avg`; `minScore`; or `maxScore`), and `extent`, whether the bin's
-min-to-max span is drawn around it (`'min-max'` or `'none'`). v4's `whiskers` is
-`y: 'score'` with `extent: 'min-max'`, and any other mode loads with
-`extent: 'none'`, as v4 drew it. A config or session naming `summaryScoreMode`,
-on the display or in its `renderers` block, loads that way. A config or a
-session naming `MultiLinearWiggleDisplay` loads as `LinearWiggleDisplay`, its
-rendering read as the plot and the layout it drew: `multirowxy` is a `bar` on
-rows, and `xyplot` a `bar` with `rows: ""`.
+`linecenter` as `mark: { type: 'line', interpolate: 'linear' }`.
+`summaryScoreMode` is now two settings: `y`, which of a bin's stored summaries
+is plotted (`score`, the mean and v4's `avg`; `minScore`; or `maxScore`), and
+`extent`, whether the bin's min-to-max span is drawn around it (`'min-max'` or
+`'none'`). v4's `whiskers` is `y: 'score'` with `extent: 'min-max'`, and any
+other mode loads with `extent: 'none'`, as v4 drew it. A config or session
+naming `summaryScoreMode`, on the display or in its `renderers` block, loads
+that way. A config or a session naming `MultiLinearWiggleDisplay` loads as
+`LinearWiggleDisplay`, its rendering read as the plot and the layout it drew:
+`multirowxy` is a `bar` on rows, and `xyplot` a `bar` with `rows: ""`.
 
 `rows` also holds a reader's arrangement of the rows, which
 `MultiLinearWiggleDisplay` kept as display props. The arrangement is therefore

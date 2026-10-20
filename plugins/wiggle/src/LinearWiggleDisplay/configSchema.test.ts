@@ -64,7 +64,7 @@ test("v4's rendering names load as the mark they draw, and an unknown one is ref
     const conf = create({ defaultRendering })
     return [
       readConfObject(conf, ['mark', 'type']),
-      readConfObject(conf, 'interpolate'),
+      readConfObject(conf, ['mark', 'interpolate']),
     ]
   }
   expect(read('xyplot')).toEqual(['bar', 'step'])

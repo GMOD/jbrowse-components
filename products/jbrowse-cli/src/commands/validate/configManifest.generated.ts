@@ -6376,6 +6376,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "type",
               "type": "WiggleMarkType"
+            },
+            {
+              "name": "interpolate",
+              "type": "LineInterpolation"
             }
           ],
           "schema": "WiggleMark",
@@ -6383,10 +6387,6 @@ export const configManifest: ConfigManifest = {
           "shorthand": {
             "string": "type"
           }
-        },
-        {
-          "name": "interpolate",
-          "type": "LineInterpolation"
         },
         {
           "name": "rows",

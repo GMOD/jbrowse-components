@@ -12148,6 +12148,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "span"
                 ]
               }
+            },
+            "interpolate": {
+              "description": "step or linear, for a line.",
+              "default": "step",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "step",
+                  "linear"
+                ]
+              }
             }
           },
           "patternProperties": {
@@ -12582,19 +12595,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/WiggleMark"
-          }
-        },
-        "interpolate": {
-          "description": "step or linear, for a line.",
-          "default": "step",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "step",
-              "linear"
-            ]
           }
         },
         "rows": {
@@ -15144,9 +15144,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "mark": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
             },
-            "interpolate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/interpolate"
-            },
             "y": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/y"
             },
@@ -16841,9 +16838,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "mark": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
             },
-            "interpolate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/interpolate"
-            },
             "rows": {
               "anyOf": [
                 {
@@ -17252,9 +17246,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "mark": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
             },
-            "interpolate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/interpolate"
-            },
             "rows": {
               "anyOf": [
                 {
@@ -17662,9 +17653,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "mark": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
-            },
-            "interpolate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/interpolate"
             },
             "rows": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rows"

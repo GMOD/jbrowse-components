@@ -162,7 +162,6 @@ test("each display's plot settings", () => {
     LinearWiggleDisplay: [
       'color',
       'extent',
-      'interpolate',
       'mark',
       'origin',
       'rowColor',

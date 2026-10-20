@@ -1,7 +1,7 @@
 // Import-free, so the docs' spec-recipe field map can read the menu labels
 // without loading the wiggle-core barrel. [value, menu label]: the Plot type
 // radios derive from it, each value one of the five renderings the shaders
-// draw, which a config spells as a `mark` and a line's `interpolate`.
+// draw, which a config spells as a `mark` object.
 export const WIGGLE_RENDERINGS = [
   ['xyplot', 'XY plot'],
   ['density', 'Density'],
@@ -24,7 +24,7 @@ export type WiggleMark = (typeof WIGGLE_MARK_NAMES)[number]
 export const LINE_INTERPOLATIONS = ['step', 'linear'] as const
 export type LineInterpolation = (typeof LINE_INTERPOLATIONS)[number]
 
-/** The rendering a `mark` and its line's `interpolate` draw with. */
+/** The rendering a mark's `type` and a line's `interpolate` draw with. */
 export function renderingOf(
   mark: string,
   interpolate: string,
@@ -45,25 +45,29 @@ export function renderingOf(
   }
 }
 
-/** The `mark`, and for a line its `interpolate`, a rendering is written as. */
-export function markOf(
-  rendering: string,
-): { mark: WiggleMark; interpolate?: LineInterpolation } | undefined {
+/** A wiggle display's `mark` object. */
+export interface WiggleMarkObject {
+  type: WiggleMark
+  interpolate?: LineInterpolation
+}
+
+/** The `mark` a rendering is written as. */
+export function markOf(rendering: string): WiggleMarkObject | undefined {
   switch (rendering) {
     case 'xyplot': {
-      return { mark: 'bar' }
+      return { type: 'bar' }
     }
     case 'scatter': {
-      return { mark: 'point' }
+      return { type: 'point' }
     }
     case 'density': {
-      return { mark: 'span' }
+      return { type: 'span' }
     }
     case 'line': {
-      return { mark: 'line', interpolate: 'step' }
+      return { type: 'line', interpolate: 'step' }
     }
     case 'linecenter': {
-      return { mark: 'line', interpolate: 'linear' }
+      return { type: 'line', interpolate: 'linear' }
     }
     default: {
       return undefined

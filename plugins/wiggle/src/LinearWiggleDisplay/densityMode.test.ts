@@ -80,13 +80,17 @@ it("writes the plot type as the mark and the line's interpolation it draws", () 
   const display = makeDisplay()
   display.setMark('line', 'linear')
   expect(readConfObject(display.configuration, ['mark', 'type'])).toBe('line')
-  expect(display.configuration.interpolate).toBe('linear')
+  expect(readConfObject(display.configuration, ['mark', 'interpolate'])).toBe(
+    'linear',
+  )
   expect(display.renderingType).toBe('linecenter')
   display.setMark('span')
   expect(readConfObject(display.configuration, ['mark', 'type'])).toBe('span')
   expect(display.renderingType).toBe('density')
   display.setMark('line')
-  expect(display.configuration.interpolate).toBe('step')
+  expect(readConfObject(display.configuration, ['mark', 'interpolate'])).toBe(
+    'step',
+  )
   expect(display.renderingType).toBe('line')
 })
 
@@ -94,7 +98,7 @@ it('a mark other than a line leaves no interpolate written, which only a line re
   const display = makeDisplay()
   display.setMark('line', 'linear')
   display.setMark('bar')
-  expect(getSnapshot(display.configuration)).not.toHaveProperty('interpolate')
+  expect(getSnapshot(display.configuration).mark?.interpolate).toBeUndefined()
 })
 
 it('titles the density key with the scale title, the axis it replaces', () => {

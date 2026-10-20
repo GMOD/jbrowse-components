@@ -91,8 +91,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'wiggle_mode_linecenter',
-              mark: 'line',
-              interpolate: 'linear',
+              mark: { type: 'line', interpolate: 'linear' },
               height: 90,
             },
             {

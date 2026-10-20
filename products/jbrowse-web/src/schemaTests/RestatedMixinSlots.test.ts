@@ -4,16 +4,13 @@ import {
   isSlotDefinitionEntry,
 } from '@jbrowse/core/configuration'
 import { legendMixinSlots } from '@jbrowse/display-kit/LegendMixin'
-import { wiggleCommonExtraSlots } from '@jbrowse/plugin-wiggle'
 
 import corePlugins from '../corePlugins.ts'
 
-// `LegendMixin` and `WiggleCommonMixin` each reach a
-// slot no shared field table can hold, because the composing schemas disagree
-// about the part that is genuinely per display — `showLegend`'s default,
-// `interpolate`'s enum. They agree about the
-// TYPE, which is all the mixin's host cast needs, so each mixin restates that
-// much beside itself. This is the comparison that keeps the restatement
+// `LegendMixin` reaches a slot no shared field table can hold, because the
+// composing schemas disagree about the part that is genuinely per display —
+// `showLegend`'s default. They agree about the TYPE, which is all the mixin's
+// host cast needs, so the mixin restates that much beside itself. This is the comparison that keeps the restatement
 // honest; it lives in jbrowse-web for the same reason as
 // `ConfigSlotDefaults.test.ts` next door — the only place the whole plugin set
 // is assembled.
@@ -59,10 +56,6 @@ function declarationsOf(slotName: string) {
 
 describe.each([
   ['legendMixinSlots', legendMixinSlots as Record<string, { type: string }>],
-  [
-    'wiggleCommonExtraSlots',
-    wiggleCommonExtraSlots as Record<string, { type: string }>,
-  ],
 ])('%s matches every real declaration', (_table, restated) => {
   for (const [slotName, shape] of Object.entries(restated)) {
     const declarations = declarationsOf(slotName)

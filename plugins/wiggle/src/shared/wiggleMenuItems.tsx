@@ -20,7 +20,11 @@ import {
 } from './WiggleCommonMixin.ts'
 import { isLineMode, isScatterMode } from './wiggleComponentUtils.ts'
 
-import type { LineInterpolation, WiggleMark } from '../renderingTypes.ts'
+import type {
+  LineInterpolation,
+  WiggleMark,
+  WiggleMarkObject,
+} from '../renderingTypes.ts'
 import type { Extent } from './extentConfigSchemaFields.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -53,11 +57,7 @@ export function makeRenderingTypeSubMenu(
     renderingType: string
     setMark: (mark: WiggleMark, interpolate?: LineInterpolation) => void
     isRowLayout: boolean
-    setPlot: (plot: {
-      mark: WiggleMark
-      interpolate?: LineInterpolation
-      rowLayout: boolean
-    }) => void
+    setPlot: (plot: { mark: WiggleMarkObject; rowLayout: boolean }) => void
     discoveredRows: readonly unknown[]
   },
   renderings: readonly (readonly [string, string])[],
@@ -73,8 +73,8 @@ export function makeRenderingTypeSubMenu(
       icon: ShowChartIcon,
       value: self.renderingType,
       onChange: t => {
-        const { mark, interpolate } = markOf(t)!
-        self.setMark(mark, interpolate)
+        const { type, interpolate } = markOf(t)!
+        self.setMark(type, interpolate)
       },
       options: renderings,
     })
@@ -93,7 +93,7 @@ export function makeRenderingTypeSubMenu(
         onChange: key => {
           const cut = key.indexOf(':')
           self.setPlot({
-            ...markOf(key.slice(cut + 1))!,
+            mark: markOf(key.slice(cut + 1))!,
             rowLayout: key.slice(0, cut) === 'rows',
           })
         },

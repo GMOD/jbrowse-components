@@ -33,20 +33,11 @@ import type { RegionStoreSelf } from '@jbrowse/display-kit/MultiRegionDisplayMix
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
-/**
- * The slot this mixin reads that no shared table can hold: each wiggle
- * display gives `interpolate` its own enum and default. A runtime value so
- * `RestatedMixinSlots.test.ts` can check the restated type; `defaultValue` is
- * a placeholder.
- */
-export const wiggleCommonExtraSlots = {
-  interpolate: { type: 'stringEnum', defaultValue: '' },
-} as const
-
 type WiggleCommonConfigModel = ConfigModelForFields<
   typeof wiggleConfigSchemaFields &
-    ReturnType<typeof extentConfigSchemaFields> &
-    typeof wiggleCommonExtraSlots & { mark: typeof wiggleMarkConfigSchema }
+    ReturnType<typeof extentConfigSchemaFields> & {
+      mark: typeof wiggleMarkConfigSchema
+    }
 >
 
 /** The whole of what `WiggleCommonMixin` needs a composing display to be. */
@@ -152,7 +143,7 @@ export function WiggleCommonMixin() {
       get renderingType(): WiggleRendering {
         return renderingOf(
           getConf(confNode(self), ['mark', 'type']),
-          getConf(confNode(self), 'interpolate'),
+          getConf(confNode(self), ['mark', 'interpolate']),
         )
       },
       /**
@@ -312,14 +303,14 @@ export function WiggleCommonMixin() {
       },
       /**
        * #action
-       * The plot's `mark`, and a line's `interpolate`; any other mark resets
-       * `interpolate`, which only a line reads.
+       * The plot's `mark.type`, and a line's `mark.interpolate`; any other
+       * type resets `interpolate`, which only a line reads.
        */
       setMark(mark: WiggleMark, interpolate?: LineInterpolation) {
         setConf(confNode(self), ['mark', 'type'], mark)
         setConf(
           confNode(self),
-          'interpolate',
+          ['mark', 'interpolate'],
           mark === 'line' ? interpolate : undefined,
         )
       },

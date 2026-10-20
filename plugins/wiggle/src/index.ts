@@ -56,7 +56,6 @@ export { bedGraphFormatOptions } from './saveTrackFormats/bedGraph.ts'
 // The one slot every score-summarizing display declares with a different
 // default, so gccontent states its default without restating the enumeration.
 export { extentConfigSchemaFields } from './shared/extentConfigSchemaFields.ts'
-export { wiggleCommonExtraSlots } from './shared/WiggleCommonMixin.ts'
 // Score-plot pieces that moved to `@jbrowse/wiggle-core`, re-exported under the
 // names this plugin published them as.
 export { WiggleScoreConfigMixin } from '@jbrowse/wiggle-core'

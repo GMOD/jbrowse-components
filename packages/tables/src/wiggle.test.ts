@@ -257,8 +257,7 @@ test('an interpolated line breaks into runs where the display breaks it', async 
       ...COVERAGE_BIGWIG,
       bpPerPx: 5,
       display: {
-        mark: 'line',
-        interpolate: 'linear',
+        mark: { type: 'line', interpolate: 'linear' },
         extent: 'none',
         maxGapMultiple,
       },

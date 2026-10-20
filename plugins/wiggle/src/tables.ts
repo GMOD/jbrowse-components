@@ -73,9 +73,8 @@ export interface WiggleTablesArgs {
   regions?: TablesRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
-   * `LinearWiggleDisplay`: `mark`, `interpolate`, `y`, `extent`,
-   * `origin`, `color`, `scales`, `rows`, `resolution` and the rest of its
-   * slots. Unset reads the default display.
+   * `LinearWiggleDisplay`: `mark`, `y`, `extent`, `origin`, `color`,
+   * `scales`, `rows`, `resolution` and the rest of its slots. Unset reads the default display.
    */
   display?: Record<string, unknown>
   /**
@@ -145,7 +144,7 @@ export async function wiggleTables(
 
   const renderingType = renderingOf(
     readConfObject(conf, ['mark', 'type']),
-    readConfObject(conf, 'interpolate'),
+    readConfObject(conf, ['mark', 'interpolate']),
   )
   const density = renderingType === 'density'
   const summaryField = summaryFieldOf(readConfObject(conf, 'y'))

@@ -103,7 +103,7 @@ function makePlotSelf(sourceCount: number, isRowLayout: boolean) {
       writes.push({ mark, interpolate })
     },
     isRowLayout,
-    setPlot: (plot: { mark: string; rowLayout: boolean }) => {
+    setPlot: (plot: { mark: { type: string }; rowLayout: boolean }) => {
       writes.push(plot)
     },
     discoveredRows: Array.from({ length: sourceCount }, (_, i) => i),
@@ -160,5 +160,5 @@ test('one leaf writes both axes in one action', () => {
     throw new Error('no Density row under Multi-row')
   }
   density.onClick()
-  expect(self.writes).toEqual([{ mark: 'span', rowLayout: true }])
+  expect(self.writes).toEqual([{ mark: { type: 'span' }, rowLayout: true }])
 })

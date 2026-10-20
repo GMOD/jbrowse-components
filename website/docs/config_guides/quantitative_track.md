@@ -38,8 +38,8 @@ all three go through `displayDefaults`.
 `line` or `span`, what a signal is drawn as; `rows` sets how many rows there
 are, so the two can be set independently.
 
-A line's [`interpolate`](/docs/config/linearwiggledisplay/#slot-interpolate) is
-`step` or `linear`.
+A line's [`mark.interpolate`](/docs/config/wigglemark/#slot-interpolate) is
+`step` or `linear`: `"mark": { "type": "line", "interpolate": "linear" }`.
 
 Reference lines belong to the axis object too.
 [`scales.y.rules`](/docs/config/valuescale/#slot-scalesyrules) draws a dashed
