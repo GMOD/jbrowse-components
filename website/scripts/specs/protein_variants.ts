@@ -30,7 +30,12 @@ interface ViewJson {
   [key: string]: unknown
 }
 
+interface Panel {
+  tabs: { viewIds: string[] }[]
+}
+
 interface SessionJson {
+  layout?: { children: Panel[] }
   views: ViewJson[]
   sessionTracks?: object[]
   highlights?: object[]
@@ -51,6 +56,8 @@ interface SessionOptions {
   legend?: boolean
   turnedOff?: string[]
   proteinColor?: object
+  highlightColor?: string
+  wideView?: { loc: string; tracks: object[] }
   highlights?: object[]
 }
 
@@ -67,6 +74,7 @@ function linkedSession(
     domains = false,
     turnedOff = [],
     proteinColor,
+    wideView,
     highlights,
   }: SessionOptions,
 ) {
@@ -91,6 +99,16 @@ function linkedSession(
     msa.domainsOnGenome = true
     delete protein.colorScheme
     protein.color = { field: 'domain' }
+  }
+  if (wideView) {
+    const id = `${lgv.id as string}-wide`
+    session.views.unshift({
+      id,
+      type: 'LinearGenomeView',
+      hideHeaderOverview: true,
+      init: { assembly: 'hg38', ...wideView },
+    })
+    session.layout!.children[0]!.tabs[0]!.viewIds.unshift(id)
   }
   session.sessionTracks = sessionTracks
   if (highlights) {
@@ -194,11 +212,14 @@ const E6V = {
 function hbbSession({
   msaEnd = 31,
   assembly,
+  highlightColor,
   ...options
 }: Partial<SessionOptions> &
   Pick<SessionOptions, 'tracks'> & { msaEnd?: number; assembly?: string }) {
   const session = structuredClone(HBB_SESSION)
-  session.highlights = [E6V]
+  session.highlights = [
+    highlightColor ? { ...E6V, color: highlightColor } : E6V,
+  ]
   session.views[1]!.relativeTo = 'human_query'
   const protein = session.views[2]!
   protein.colorScheme = 'mapped-chain'
@@ -217,6 +238,7 @@ function hbbSession({
   )
 }
 
+const HERO_COLOR = '#e0218a'
 const HBB_FONT_SIZE = 23
 const SICKLE_CODON = 'The sickle-cell change: GAG to GTG'
 const SICKLE_CARRIERS =
@@ -324,6 +346,7 @@ function hotspotSession(
       highlights: [...hotspots, ...extraHotspots].map(h => ({
         ...h,
         assemblyName: 'hg38',
+        ...(options.highlightColor ? { color: options.highlightColor } : {}),
       })),
     },
   )
@@ -437,6 +460,10 @@ const KRAS: HotspotGene = {
     { label: 'Q61', refName: 'chr12', start: 25227340, end: 25227343 },
   ],
 }
+const KRAS_G12C: HotspotGene = {
+  ...KRAS,
+  hotspots: [{ ...KRAS.hotspots[0]!, label: 'G12C' }],
+}
 const KRAS_G12_WINDOW = 'chr12:25245320-25245380[rev]'
 const KRAS_DOMAIN_WINDOWS =
   'chr12:25245328-25245372[rev] chr12:25227320-25227364[rev]'
@@ -452,6 +479,7 @@ const KRAS_UNSHOWN_SITES = [
   'GEF interaction site',
   'effector interaction site',
   'Switch I region',
+  'GTP/Mg2+ binding site',
 ].map(name => `${KRAS_CDD}:${name}`)
 
 const TP53: HotspotGene = {
@@ -479,6 +507,10 @@ const BRAF: HotspotGene = {
     { label: 'V600', refName: 'chr7', start: 140753334, end: 140753337 },
   ],
 }
+const BRAF_V600E: HotspotGene = {
+  ...BRAF,
+  hotspots: [{ ...BRAF.hotspots[0]!, label: 'V600E' }],
+}
 const BRAF_V600_WINDOW = 'chr7:140753306-140753366[rev]'
 const BRAF_V600 = 'chr7:140,753,336'
 const BRAF_UNSHOWN = [
@@ -497,10 +529,10 @@ const CFTR: HotspotGene = {
   session: readSession('protein_browser_cftr.session.json'),
   gene: 'CFTR',
   hotspots: [
-    { label: 'F508', refName: 'chr7', start: 117559592, end: 117559595 },
+    { label: 'F508del', refName: 'chr7', start: 117559592, end: 117559595 },
   ],
 }
-const CFTR_F508_WINDOW = 'chr7:117559562-117559622'
+const CFTR_F508_WINDOW = 'chr7:117559577-117559607'
 const CFTR_F508 = 'chr7:117,559,593'
 
 const APOE: HotspotGene = {
@@ -511,13 +543,26 @@ const APOE: HotspotGene = {
     { label: 'R158C', refName: 'chr19', start: 44908821, end: 44908824 },
   ],
 }
-const APOE_WINDOWS = 'chr19:44908653-44908716 chr19:44908791-44908854'
+const APOE_WINDOWS = 'chr19:44908609-44908759 chr19:44908747-44908897'
 const APOE_C112R = 'chr19:44,908,684'
+const APOE_WIDE = 'chr19:44400000-45400000'
+const FINNGEN_AD = 'finngen_r12_ad_apoe'
+const FINNGEN_AD_TRACK = {
+  type: 'GWASTrack',
+  trackId: FINNGEN_AD,
+  name: "FinnGen R12 Alzheimer's disease",
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'GWASAdapter',
+    uri: 'https://jbrowse.org/demos/apoe/finngen_r12_ad_apoe.bed.gz',
+  },
+  displayDefaults: { height: 200 },
+}
 const APOE_GWAS_SUBSET = 'gwasCatalog_apoe_traits'
 const APOE_GWAS_SUBSET_TRACK = {
   type: 'FeatureTrack',
   trackId: APOE_GWAS_SUBSET,
-  name: 'GWAS Catalog at rs429358, one record per trait',
+  name: 'GWAS Catalog at rs429358 and rs7412, one record per trait',
   assemblyNames: ['hg38'],
   adapter: {
     type: 'BedTabixAdapter',
@@ -529,16 +574,12 @@ const APOE_GWAS_SUBSET_TRACK = {
   },
   displayDefaults: {
     filter: [
-      "jexl:feature.name == 'rs429358'",
-      "jexl:feature.trait in ['Alzheimer\\'s disease', 'LDL cholesterol levels', 'Longevity (age >90th survival percentile)']",
-      "jexl:feature.pValue in ['1E-320', '4E-413', '1E-61']",
+      "jexl:feature.name in ['rs429358', 'rs7412']",
+      "jexl:feature.trait in ['Alzheimer\\'s disease', 'LDL cholesterol levels']",
+      "jexl:feature.pValue in ['1E-320', '4E-106', '4E-413', '3E-1201']",
     ],
-    labels: {
-      name: 'trait',
-      description:
-        "jexl:'p=' + feature.pValue + ', ' + substring(feature.pubDate, 0, 4) + ', ' + feature.author",
-    },
-    showLabels: 'nameAndDescription',
+    labels: { name: 'trait' },
+    showLabels: 'name',
   },
 }
 
@@ -562,12 +603,8 @@ const HBB_GWAS_STORY_TRACK = {
       "jexl:feature.trait in ['Malaria', 'Hereditary hemolytic anemias (PheCode 282)']",
       "jexl:feature.pValue in ['4E-69', '1E-323']",
     ],
-    labels: {
-      name: 'trait',
-      description:
-        "jexl:'p=' + feature.pValue + ', ' + substring(feature.pubDate, 0, 4) + ', ' + feature.author",
-    },
-    showLabels: 'nameAndDescription',
+    labels: { name: 'trait' },
+    showLabels: 'name',
   },
 }
 
@@ -710,6 +747,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       tracks: [HBB_GENE_TRACK, { trackId: HBB_GWAS_STORY, height: 170 }],
       sessionTracks: [HBB_GWAS_STORY_TRACK],
       msaHeight: 420,
+      highlightColor: HERO_COLOR,
       proteinColor: { field: 'hydrophobicity' },
     }),
     ...READY,
@@ -814,7 +852,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'protein/kras_g12c',
     url: hotspotSession(
-      KRAS,
+      KRAS_G12C,
       { start: 1, end: 75 },
       {
         loc: KRAS_DOMAIN_WINDOWS,
@@ -822,11 +860,12 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         msaHeight: 490,
         domains: true,
         turnedOff: KRAS_UNSHOWN_SITES,
+        highlightColor: HERO_COLOR,
       },
     ),
     ...domainFigure('KRAS', KRAS_G12, 0, true),
     viewportHeight: 1100,
-    annotations: [residueCallout('Sotorasib', 'A:12', 160, 260)],
+    annotations: [residueCallout('Sotorasib', 'A:303', 160, 260)],
   },
   {
     mode: 'url',
@@ -898,7 +937,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'protein/braf_v600e',
     url: hotspotSession(
-      BRAF,
+      BRAF_V600E,
       { start: 570, end: 630 },
       {
         loc: BRAF_V600_WINDOW,
@@ -906,6 +945,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         msaHeight: 490,
         domains: true,
         turnedOff: BRAF_UNSHOWN,
+        highlightColor: HERO_COLOR,
       },
     ),
     ...domainFigure('BRAF', BRAF_V600, 0, true),
@@ -919,9 +959,10 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       { start: 488, end: 528 },
       {
         loc: CFTR_F508_WINDOW,
-        tracks: [HG38_GENE_TRACK, CLINVAR_TRACK],
+        tracks: [HG38_GENE_TRACK, { ...CLINVAR_TRACK, height: 200 }],
         msaHeight: 420,
         proteinColor: { field: 'clinvarPathogenicCount' },
+        highlightColor: HERO_COLOR,
       },
     ),
     ...READY,
@@ -938,13 +979,18 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       {
         loc: APOE_WINDOWS,
         tracks: [HG38_GENE_TRACK, { trackId: APOE_GWAS_SUBSET, height: 170 }],
-        sessionTracks: [APOE_GWAS_SUBSET_TRACK],
+        wideView: {
+          loc: APOE_WIDE,
+          tracks: [{ trackId: FINNGEN_AD, height: 200 }, HG38_GENE_TRACK],
+        },
+        sessionTracks: [APOE_GWAS_SUBSET_TRACK, FINNGEN_AD_TRACK],
         msaHeight: 420,
+        highlightColor: HERO_COLOR,
       },
     ),
     ...READY,
     viewportWidth: 2300,
-    viewportHeight: 1150,
+    viewportHeight: 1430,
     actions: hoverCodon(APOE_C112R),
   },
   {
