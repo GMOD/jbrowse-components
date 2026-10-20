@@ -23,6 +23,7 @@ import { markProblems } from '../markProblems.ts'
 import { MARK_TYPES } from '../markVocabulary.ts'
 import { stepFields, stepsOfMark, withSteps } from '../plotEdit.ts'
 import { withJoinedFields } from '../scanPlotFields.ts'
+import DraftNumberField from './DraftNumberField.tsx'
 import MarkFieldPicker from './MarkFieldPicker.tsx'
 import MarkList from './MarkList.tsx'
 import { MarkProblemList } from './MarkProblems.tsx'
@@ -35,8 +36,12 @@ import type { MarkPlot, MarkPlotSettings } from '../markPlot.ts'
 import type { StepSnapshot } from '../markProblems.ts'
 import type { MarkType } from '../markVocabulary.ts'
 import type { JoinedPlotFields, PlotFields } from '../scanPlotFields.ts'
+import type { PlotWriteOptions } from '@jbrowse/core/configuration'
 
 const NO_FIELDS: PlotFields = { numeric: [], categorical: [] }
+
+// The form holds the whole plot, so a setting it cleared resets.
+const WHOLE: PlotWriteOptions = { whole: true }
 
 export interface MarkPlotDialogModel {
   plot: MarkPlot
@@ -44,8 +49,8 @@ export interface MarkPlotDialogModel {
   joinedPlotFields: JoinedPlotFields
   plotScanLocus: string | undefined
   liftMarkPlot: (plot: MarkPlot) => MarkPlotSettings
-  applyPlot: (draft: MarkPlot) => void
-  openPlotDialog: (seed?: MarkPlot) => void
+  applyPlot: (draft: MarkPlot, options?: PlotWriteOptions) => void
+  openPlotDialog: (seed?: MarkPlot, seedOptions?: PlotWriteOptions) => void
 }
 
 /**
@@ -68,13 +73,11 @@ function zoomField(
   onChange: (value: number | undefined) => void,
 ) {
   return (
-    <TextField
-      type="number"
+    <DraftNumberField
       label={label}
-      value={value ?? ''}
-      onChange={event => {
-        const { value } = event.target
-        onChange(value === '' ? undefined : Number(value))
+      value={value === undefined ? '' : String(value)}
+      onCommit={text => {
+        onChange(text === '' ? undefined : Number(text))
       }}
       slotProps={{ htmlInput: { 'data-testid': label } }}
     />
@@ -103,10 +106,7 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
   seed?: MarkPlot
   handleClose: () => void
 }) {
-  const [plot, setPlot] = useState<MarkPlot>(() => ({
-    ...model.plot,
-    ...seed,
-  }))
+  const [plot, setPlot] = useState<MarkPlot>(() => seed ?? model.plot)
   const marks = draftMarks(plot)
   const [selected, setSelected] = useState(0)
   const editing = useRef<{ at: number; channel: EditChannel; base: unknown }>(
@@ -147,13 +147,13 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
       submitDisabled={error !== undefined}
       onCancel={handleClose}
       onSubmit={() => {
-        model.applyPlot(plot)
+        model.applyPlot(plot, WHOLE)
         handleClose()
       }}
       actions={
         <Button
           onClick={() => {
-            model.openPlotDialog(plot)
+            model.openPlotDialog(plot, WHOLE)
             handleClose()
           }}
         >

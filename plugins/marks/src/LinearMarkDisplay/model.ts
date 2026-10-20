@@ -163,7 +163,10 @@ import type { MarkProblem } from './markProblems.ts'
 import type { JoinedPlotFields, PlotFields } from './scanPlotFields.ts'
 import type { StepChannels } from './stepChannels.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationModel,
+  PlotWriteOptions,
+} from '@jbrowse/core/configuration'
 import type {
   ListedRowSource,
   RowSourceListing,
@@ -1383,7 +1386,7 @@ export function stateModelFactory(
          * for. It changes no state on this display.
          */
         liftMarkPlot(plot: MarkPlot): MarkPlotSettings {
-          return markPlotSettingsOf(self.liftPlot(plot))
+          return markPlotSettingsOf(self.liftPlot(plot, { whole: true }))
         },
         /**
          * #getter
@@ -1824,8 +1827,8 @@ export function stateModelFactory(
          * `seed` overlays a setting the caller has in hand but has not
          * applied.
          */
-        openPlotDialog(seed?: MarkPlot) {
-          queuePlotDialog(self, seed)
+        openPlotDialog(seed?: MarkPlot, seedOptions?: PlotWriteOptions) {
+          queuePlotDialog(self, seed, seedOptions)
         },
         /**
          * #action

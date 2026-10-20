@@ -27,7 +27,7 @@ export interface PlotDialogHost {
   plotKeys: string[]
   plot: Plot
   /** A draft as the config would hold it; throws a refusal. */
-  liftPlot: (draft: Plot) => AnyConfigurationModel
+  liftPlot: (draft: Plot, options?: PlotWriteOptions) => AnyConfigurationModel
   /** Throws what a config file would be refused for. */
   plotProblems: (draft: Plot, options?: PlotWriteOptions) => string[]
   /** What applying would write, by setting, `null` for a reset. */
@@ -65,16 +65,21 @@ const useStyles = makeStyles()(theme => ({
 const WHOLE: PlotWriteOptions = { whole: true }
 
 // A draft laid over the plot as a settings bag lands, so the text shows
-// everything applying it leaves in place, a filter's other tests included.
+// everything applying it leaves in place, a filter's other tests included;
+// a `whole` draft, a form's whole plot, is the text as it stands.
 // A draft the schema refuses lands key by key instead, so the box shows it and
 // says why under it.
-function plotText(host: PlotDialogHost, draft?: Plot) {
+function plotText(
+  host: PlotDialogHost,
+  draft?: Plot,
+  options?: PlotWriteOptions,
+) {
   let plot = host.plot
   if (draft) {
     try {
-      plot = plotOf(host.liftPlot(draft))
+      plot = plotOf(host.liftPlot(draft, options))
     } catch {
-      plot = { ...host.plot, ...draft }
+      plot = options?.whole ? draft : { ...host.plot, ...draft }
     }
   }
   return JSON.stringify(plot, null, 2)
@@ -103,14 +108,16 @@ function readDraft(host: PlotDialogHost, text: string) {
 const PlotDialog = observer(function PlotDialog({
   model,
   seed,
+  seedOptions,
   handleClose,
 }: {
   model: PlotDialogHost
   seed?: Plot
+  seedOptions?: PlotWriteOptions
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const [text, setText] = useState(() => plotText(model, seed))
+  const [text, setText] = useState(() => plotText(model, seed, seedOptions))
   const [showHelp, setShowHelp] = useState(false)
   const { plot, problems, summary, error } = readDraft(model, text)
   const { openPlotForm } = model

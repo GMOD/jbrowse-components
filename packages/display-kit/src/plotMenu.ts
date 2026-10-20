@@ -6,7 +6,7 @@ import DataObjectIcon from '@mui/icons-material/DataObject'
 import TuneIcon from '@mui/icons-material/Tune'
 
 import type { PlotDialogHost } from './PlotDialog.tsx'
-import type { Plot } from '@jbrowse/core/configuration'
+import type { Plot, PlotWriteOptions } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -14,11 +14,18 @@ const PlotDialog = lazy(() => import('./PlotDialog.tsx'))
 
 export type PlotDisplay = PlotDialogHost & IStateTreeNode
 
-/** Open the plot as text, seeded with a draft a dialog has not applied. */
-export function openPlotDialog(display: PlotDisplay, seed?: Plot) {
+/**
+ * Open the plot as text, seeded with a draft a dialog has not applied; a
+ * `whole` seed is the whole plot, so a setting it leaves out stays out.
+ */
+export function openPlotDialog(
+  display: PlotDisplay,
+  seed?: Plot,
+  seedOptions?: PlotWriteOptions,
+) {
   getDialogHost(display).queueDialog(handleClose => [
     PlotDialog,
-    { model: display, seed, handleClose },
+    { model: display, seed, seedOptions, handleClose },
   ])
 }
 

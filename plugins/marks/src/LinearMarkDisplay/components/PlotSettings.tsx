@@ -12,6 +12,7 @@ import {
   withSplitField,
   withSplitOrder,
 } from '../plotEdit.ts'
+import DraftNumberField from './DraftNumberField.tsx'
 import { MarkSlotProblems } from './MarkProblems.tsx'
 
 import type { MarkPlot } from '../markPlot.ts'
@@ -92,24 +93,31 @@ const AxisField = observer(function AxisField({
   plot,
   member,
   label,
-  type = 'text',
   onChange,
 }: {
   plot: MarkPlot
   member: AxisMember
   label: string
-  type?: 'text' | 'number'
   onChange: (plot: MarkPlot) => void
 }) {
-  return (
+  const props = {
+    label,
+    value: axisMember(plot, member),
+    slotProps: { htmlInput: { 'data-testid': `axis-${member}` } },
+  }
+  return member === 'domainMin' || member === 'domainMax' ? (
+    <DraftNumberField
+      {...props}
+      onCommit={text => {
+        onChange(withAxisMember(plot, member, text))
+      }}
+    />
+  ) : (
     <TextField
-      type={type}
-      label={label}
-      value={axisMember(plot, member)}
+      {...props}
       onChange={event => {
         onChange(withAxisMember(plot, member, event.target.value))
       }}
-      slotProps={{ htmlInput: { 'data-testid': `axis-${member}` } }}
     />
   )
 })
@@ -184,14 +192,12 @@ const PlotSettings = observer(function PlotSettings({
           plot={plot}
           member="domainMin"
           label="min"
-          type="number"
           onChange={onChange}
         />
         <AxisField
           plot={plot}
           member="domainMax"
           label="max"
-          type="number"
           onChange={onChange}
         />
         <LabeledCheckbox

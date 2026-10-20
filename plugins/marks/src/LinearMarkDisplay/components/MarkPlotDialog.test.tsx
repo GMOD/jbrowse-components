@@ -26,9 +26,10 @@ function setup(plot: MarkPlot = {}) {
     plotFields: { numeric: ['score'], categorical: ['strand'] },
     joinedPlotFields: { numeric: [], categorical: [] },
     plotScanLocus: 'ctgA:1..20,000',
-    liftMarkPlot: draft => markPlotSettingsOf(liftPlot(conf, draft)),
-    applyPlot: draft => {
-      written(plotWrites(conf, draft))
+    liftMarkPlot: draft =>
+      markPlotSettingsOf(liftPlot(conf, draft, { whole: true })),
+    applyPlot: (draft, options) => {
+      written(plotWrites(conf, draft, options))
     },
     openPlotDialog,
   }
@@ -127,7 +128,7 @@ it('takes a fractional zoom bound', () => {
   fireEvent.change(screen.getByTestId('minBpPerPx'), {
     target: { value: '0' },
   })
-  expect(screen.getByTestId('minBpPerPx')).toHaveValue(0)
+  expect(screen.getByTestId('minBpPerPx')).toHaveValue('0')
   fireEvent.change(screen.getByTestId('minBpPerPx'), {
     target: { value: '0.5' },
   })
@@ -172,9 +173,10 @@ it('hands the draft to the text box unapplied', () => {
   const { channel, openPlotDialog, written } = setup(BAR)
   fireEvent.change(channel('row'), { target: { value: 'hp' } })
   fireEvent.click(screen.getByText('Edit as text...'))
-  expect(openPlotDialog).toHaveBeenCalledWith({
-    marks: [{ mark: 'bar', encoding: { y: 'score', row: 'hp' } }],
-  })
+  expect(openPlotDialog).toHaveBeenCalledWith(
+    { marks: [{ mark: 'bar', encoding: { y: 'score', row: 'hp' } }] },
+    { whole: true },
+  )
   expect(written).not.toHaveBeenCalled()
 })
 
@@ -446,6 +448,34 @@ describe('the plot as a whole', () => {
     )
   })
 
+  it('clears an axis end, which autoscales again', () => {
+    const { apply, written } = setup({
+      ...BAR,
+      scales: { y: { title: 'Score', domainMin: 0, grid: true } },
+    })
+    fireEvent.change(screen.getByTestId('axis-domainMin'), {
+      target: { value: '' },
+    })
+    fireEvent.click(apply())
+    expect(written).toHaveBeenCalledWith({
+      scales: { y: { title: 'Score', grid: true } },
+    })
+  })
+
+  it('holds a partly typed number without writing it', () => {
+    const { apply, written } = setup(BAR)
+    const min = screen.getByTestId('axis-domainMin')
+    fireEvent.change(min, { target: { value: '-' } })
+    expect(min).toHaveValue('-')
+    fireEvent.change(min, { target: { value: '-0.' } })
+    expect(min).toHaveValue('-0.')
+    fireEvent.change(min, { target: { value: '-0.5' } })
+    fireEvent.click(apply())
+    expect(written).toHaveBeenCalledWith({
+      scales: { y: { domainMin: -0.5 } },
+    })
+  })
+
   it('clears a facet when its field is emptied', () => {
     const { apply, written, writes } = setup({ ...BAR, facet: 'strand' })
     fireEvent.change(screen.getByTestId('facet-field'), {
@@ -535,6 +565,24 @@ describe("a mark's steps", () => {
     expect(written).toHaveBeenCalledWith(
       writes({
         marks: [{ mark: 'bar', transform: [{ type: 'coverage' }] }],
+      }),
+    )
+  })
+
+  it('takes a bin width typed back to auto a letter at a time', () => {
+    const { apply, written, writes } = setup({
+      marks: [{ mark: 'bar', transform: [{ type: 'bin', step: 5000 }] }],
+    })
+    const width = screen.getByTestId('step-bin-step')
+    for (const text of ['', 'a', 'au', 'aut']) {
+      fireEvent.change(width, { target: { value: text } })
+      expect(width).toHaveValue(text)
+    }
+    fireEvent.change(width, { target: { value: 'auto' } })
+    fireEvent.click(apply())
+    expect(written).toHaveBeenCalledWith(
+      writes({
+        marks: [{ mark: 'bar', transform: [{ type: 'bin', step: 'auto' }] }],
       }),
     )
   })

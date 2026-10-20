@@ -4,6 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import { IconButton, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { AUTO_BIN } from '../autoBin.ts'
 import {
   AGGREGATE_OPS,
   STEP_PRESETS,
@@ -13,6 +14,7 @@ import {
   withStepSlot,
   withWindowFrame,
 } from '../plotEdit.ts'
+import DraftNumberField from './DraftNumberField.tsx'
 import { MarkSlotProblems } from './MarkProblems.tsx'
 
 import type { MarkProblemIndex } from '../markProblemIndex.ts'
@@ -30,6 +32,8 @@ const STEP_SLOTS: Partial<Record<StepSnapshot['type'], readonly string[]>> = {
   pileup: ['padding'],
   flatten: ['field'],
 }
+
+const NUMBER_SLOTS = new Set(['step', 'padding'])
 
 function slotText(step: StepSnapshot, slot: string) {
   const held = (step as Record<string, unknown>)[slot]
@@ -66,20 +70,34 @@ const StepRow = observer(function StepRow({
             />
           ))
         : null}
-      {(STEP_SLOTS[step.type] ?? []).map(slot => (
-        <TextField
-          key={slot}
-          size="small"
-          label={slot === 'step' ? 'bin width (bp or auto)' : slot}
-          value={slotText(step, slot)}
-          onChange={event => {
-            onChange(withStepSlot(step, slot, event.target.value))
-          }}
-          slotProps={{
+      {(STEP_SLOTS[step.type] ?? []).map(slot => {
+        const props = {
+          size: 'small' as const,
+          label: slot === 'step' ? 'bin width (bp or auto)' : slot,
+          value: slotText(step, slot),
+          slotProps: {
             htmlInput: { 'data-testid': `step-${step.type}-${slot}` },
-          }}
-        />
-      ))}
+          },
+        }
+        return NUMBER_SLOTS.has(slot) ? (
+          <DraftNumberField
+            key={slot}
+            {...props}
+            words={slot === 'step' ? [AUTO_BIN] : []}
+            onCommit={text => {
+              onChange(withStepSlot(step, slot, text))
+            }}
+          />
+        ) : (
+          <TextField
+            key={slot}
+            {...props}
+            onChange={event => {
+              onChange(withStepSlot(step, slot, event.target.value))
+            }}
+          />
+        )
+      })}
       {op ? (
         <>
           <TextField
