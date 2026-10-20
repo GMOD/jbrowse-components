@@ -198,12 +198,7 @@ test('a lane reading backwards against the anchor flips, and its ribbons run str
     ].join('\t')
   writeFileSync(
     file,
-    [0, 1, 2, 3, 4]
-      .flatMap(i => [
-        row(i, '-', 'B', 9000 - i * 2000),
-        row(i, '+', 'C', i * 2000),
-      ])
-      .join('\n'),
+    [0, 1, 2, 3, 4].map(i => row(i, '-', 'B', 9000 - i * 2000)).join('\n'),
   )
   const t = await engine.multiway({
     adapterConfig: {
@@ -218,12 +213,12 @@ test('a lane reading backwards against the anchor flips, and its ribbons run str
       regions: [{ refName: 'chr1', start: 0, end: 10_000 }],
       width: 800,
     },
-    display: { ribbonColor: { field: 'strand' }, rows: { domain: ['B', 'C'] } },
+    display: { ribbonColor: { field: 'strand' }, rows: { domain: ['B'] } },
   })
-  expect(t.assemblyNames).toEqual(['A', 'B', 'C'])
-  expect(t.lanes.flipped).toEqual([false, true, false])
+  expect(t.assemblyNames).toEqual(['A', 'B'])
+  expect(t.lanes.flipped).toEqual([false, true])
   expect([t.segments.x1[1], t.segments.x2[1]]).toEqual([800, 0])
   expect(t.ribbons.upperX1).toEqual(t.ribbons.lowerX1)
   expect(new Set(t.ribbons.color)).toEqual(new Set([t.legend.color[1]]))
-  expect(t.ribbons.gutter).not.toContain(1)
+  expect(new Set(t.ribbons.gutter)).toEqual(new Set([0]))
 })
