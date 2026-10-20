@@ -234,7 +234,7 @@ export async function wiggleTables(
   const rowColors = resolveRowColors(
     sources,
     rowColor.field,
-    dealtValueColors(rowColor, () => sources, paletteDeals),
+    dealtValueColors(rowColor, () => data.sources, paletteDeals),
     undefined,
   )
   const markSources = wiggleMarkSources(

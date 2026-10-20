@@ -24,7 +24,7 @@ const NONE: ReadonlyMap<string, string> = new Map()
 
 /**
  * The color `setting` gives each value of its field over `rowsOf()`, the
- * rows in the base arrangement: its pairs, and the row palette dealt over the
+ * rows in source order: its pairs, and the row palette dealt over the
  * rest by `dealRowColors`. An attribute's values deal always, first seen
  * first, except the empty value, which takes a color only from a pair: a row
  * with no value is missing, not a category, as ggplot's `na.value`. A row name
@@ -160,7 +160,7 @@ export function rowColorKeyValue(row: RowSource, key: RowColorKeyInputs) {
 }
 
 /**
- * The row color key over `rows`, the rows in the base arrangement: an entry
+ * The row color key over `rows`, the rows in source order: an entry
  * per value some row carries with a color, in deal order, at most
  * `MAX_LEGEND_ITEMS` and then a "+N more" note, then "(no value)" in the
  * color of the first colored row with no value, and a trailing "Other" in

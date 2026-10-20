@@ -219,6 +219,16 @@ describe('sources sharing one panel take the colors the display deals them', () 
     expect(painted).toEqual(tableau.map(c => [c]))
   })
 
+  it('deals in the sources’ own order, so a reorder recolors nothing', async () => {
+    const plain = await colorsOf({})
+    const colorOf = new Map(
+      plain.painted.map((c, i) => [`posneg_rw${i + 1}`, c]),
+    )
+    const domain = ['posneg_rw3', 'posneg_rw1', 'posneg_rw2']
+    const reordered = await colorsOf({ rows: { field: '', domain } })
+    expect(reordered.painted).toEqual(domain.map(name => colorOf.get(name)))
+  })
+
   it("greys the sources rowColor's pairs leave out under its unknown", async () => {
     const { declared } = await colorsOf({
       rowColor: {

@@ -133,6 +133,14 @@ test('each row takes the display’s rowColor from the samples file, under the a
   t.rows.name.forEach((name, i) => {
     expect(t.rows.color[i]).toBe(keyed.get(groupOf.get(name)!))
   })
+  const reordered = await engine.variants({
+    ...DOG_SV,
+    display: {
+      rowColor: { field: 'group' },
+      rows: { domain: [...t.rows.name].reverse() },
+    },
+  })
+  expect(reordered.rows.color).toEqual([...t.rows.color].reverse())
   const plain = await engine.variants(DOG_SV)
   expect(new Set(plain.rows.color)).toEqual(new Set(['']))
   expect(plain.rowLegend.label).toEqual([])

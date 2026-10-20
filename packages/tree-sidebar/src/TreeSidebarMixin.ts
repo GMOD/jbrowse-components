@@ -6,7 +6,7 @@ import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowArrangementConf
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
-import { arrangeRows, bandRows, orderRowsByDomain } from './arrangeRows.ts'
+import { arrangeRows, bandRows } from './arrangeRows.ts'
 import {
   treeOfLeaves,
   buildTree,
@@ -336,8 +336,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The `rows.domain` this display's base declares: the base arrangement
-       * a row palette deals over, so no reorder recolors a row.
+       * The `rows.domain` this display's base declares: the order a display
+       * whose rows are values found on features lists them in.
        */
       get baseRowDomain(): readonly string[] {
         const base = (baseDisplayConfig(self).rows ?? {}) as {
@@ -586,15 +586,12 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The rows the palette deals over: `expandedRows` in the base
-       * arrangement, so no reorder, focus or relabel recolors a row.
+       * The rows the palette deals over: `expandedRows`, in the order their
+       * source lists them, so no `rows.domain` (the config's or a reorder's),
+       * focus or relabel recolors a row, and a tables export deals the same.
        */
       get rowColorDealRows(): readonly S[] {
-        return orderRowsByDomain(
-          self.expandedRows,
-          self.baseRowDomain,
-          self.rowAlias,
-        )
+        return self.expandedRows
       },
     }))
     .views(self => ({

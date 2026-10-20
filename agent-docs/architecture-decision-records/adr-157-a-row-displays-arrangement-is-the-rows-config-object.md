@@ -187,7 +187,7 @@ holds what `sampleColorMap` and the dialog's per-row `color` held: one map, so
 the dialog shows the config's colors and writes its own beside them. An entry
 paints the row's blocks; a row without one takes the palette where no `color`
 slot and no `itemRgb` paint, dealt over the rows in the config.json's declared
-order, so no arrangement recolors a row. The dialog stores a label only where
+order, so no arrangement recolors a row. ADR-239 deals in source order instead. The dialog stores a label only where
 it differs from the derived `(no <field>)` label. That dialog never had an Edit as JSON box.
 
 **MAF moves fourth.** Its rows are the species, so `rows` is the field-less

@@ -15,11 +15,7 @@ import {
   pairedColorsOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
-import {
-  arrangeRows,
-  bandRows,
-  orderRowsByDomain,
-} from '@jbrowse/tree-sidebar/arrangeRows'
+import { arrangeRows, bandRows } from '@jbrowse/tree-sidebar/arrangeRows'
 import { keptRows } from '@jbrowse/tree-sidebar/clusterUtils'
 import { liftRowColor } from '@jbrowse/tree-sidebar/rowColorChoice'
 import {
@@ -279,12 +275,7 @@ export async function variantTables(
     ? bandRows(arranged, row => rowFieldValue(row, facet.field), facet)
     : { rows: arranged, bands: [] }
   const drawn = banded.rows
-  const rowColor = rowColorsOf(
-    conf,
-    orderRowsByDomain(expanded, arrangement.domain, rowAlias),
-    drawn,
-    rowAlias,
-  )
+  const rowColor = rowColorsOf(conf, expanded, drawn, rowAlias)
   const rows = {
     name: drawn.map(row => row.name),
     label: drawn.map(row => row.label ?? row.name),
@@ -720,7 +711,7 @@ function cellDosage(
 /**
  * Each row's label-bar color as the display resolves it: the `rowColor`
  * field's value for the row's sample in the samples file, dealt the row
- * palette over `dealRows`, the rows in the config's order, else the sample's
+ * palette over `dealRows`, the rows in their source's order, else the sample's
  * own `color`, else `''`; and the key the display shows for an attribute.
  */
 function rowColorsOf(

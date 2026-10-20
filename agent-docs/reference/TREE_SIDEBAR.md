@@ -177,8 +177,9 @@ species a focus applies as given, as the worker's does.
 else the palette's by name where `rowPaletteDeals` — `sharesPanel &&
 rowColorPaintsMarks`. `dealtRowColors` is the value-to-color map behind it and
 `dealtRowColorsFor` the dialog's preview of another setting. `dealRowColors` deals
-d3's ordinal way over the base arrangement, so no reorder, focus or relabel
-recolors a row: listed values take their `range` color, the rest first seen
+d3's ordinal way over the rows in source order (`rowColorDealRows`), so no
+`rows.domain`, focus or relabel recolors a row and a tables export deals the
+same: listed values take their `range` color, the rest first seen
 first from tableau10 less its grey and then re-lit laps of it (`rowPaletteColorAt`),
 and a set `unknown` stands in for the palette. A name deal skips a row carrying
 its own color; an attribute deal skips the empty value, so a row with none
@@ -195,7 +196,7 @@ or none where it would have no entries. It keys wherever the labels cannot name
 the colors: by an attribute on any display at any row height, and by `name`
 only in a shared panel. By `name` on stacked rows the labels are the key. `rowColorKeyEntries` lists
 one entry per value some row carries with a color, in deal order (pairs first,
-then first seen over the base arrangement, so a focus never re-ranks or drops
+then first seen over the rows in source order, so a focus never re-ranks or drops
 one); the empty value has none, even under a `''` pair. Past
 `MAX_LEGEND_ITEMS` it stops and adds one colorless "+N more", which
 `FloatingLegend` leaves inert. A set `unknown` adds one trailing "Other" in that

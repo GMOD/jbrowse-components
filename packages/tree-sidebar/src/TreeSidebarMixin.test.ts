@@ -510,13 +510,13 @@ describe('resolvedRowColors', () => {
   })
 })
 
-// The palette deals the rowColor field's values over the base arrangement,
+// The palette deals the rowColor field's values over the rows in source order,
 // the listed values taking their range color.
 describe('the row palette', () => {
   const makePalette = (configuration: Record<string, unknown> = {}) =>
     makeRowDisplay(configuration, { shared: true })
 
-  it('deals the unlisted rows tableau10 in the base arrangement', () => {
+  it('deals the unlisted rows tableau10 in source order', () => {
     const display = makePalette({
       rowColor: { domain: ['b'], range: ['#00f'] },
     })

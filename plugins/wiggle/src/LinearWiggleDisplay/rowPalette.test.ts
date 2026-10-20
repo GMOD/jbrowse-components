@@ -45,6 +45,15 @@ describe('an overlay of several subtracks deals tableau10 by name', () => {
     expect(display.rowColorChoice).toBe('name')
   })
 
+  it('deals in the subtracks’ own order, whatever order the config declares', () => {
+    const display = makeDisplay({
+      rows: false,
+      displayConfig: { rows: { domain: ['c', 'a', 'b'] } },
+    })
+    expect(display.markSources.map(s => s.name)).toEqual(['c', 'a', 'b'])
+    expect(rowColors(display)).toEqual([TABLEAU[2], TABLEAU[0], TABLEAU[1]])
+  })
+
   it('deals nothing under None, every subtrack in the plot color', () => {
     const display = makeDisplay({
       rows: false,

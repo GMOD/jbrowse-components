@@ -211,7 +211,7 @@ is the row's own `color`, which `resolvedRowColors` falls back to.
 
 **An attribute in `rowColor.field` beats a `samplesTsv` `color` column**: a
 channel bound to a variable beats a per-row constant. `TreeSidebarMixin` deals
-the attribute's values first seen first over the base arrangement, so a focus
+the attribute's values first seen first over the rows in source order, so a focus
 or the phased expansion recolors nothing, and `rowColorPaintsMarks` is false,
 since the cells paint by genotype. `setRowColorField` is the mixin's
 `setRowColorChoice`: a pick starts from the colors the current object or the
