@@ -66,6 +66,9 @@ on _HBB_ residue 7 with structure 2HBS:
   minus-strand gene reading left to right, the way it opened
 - click **Reset Zoom**, the circular arrow at the top right of the structure, to
   fit both haemoglobin tetramers in the asymmetric unit
+- pick **Use as reference row** on the `human_query` tip of the alignment's
+  tree: the human sequence pins above the alignment, and a residue matching it
+  draws as a dot
 - hover column 7 of the `human_query` row in the alignment
 
 Residue 7 counts the initiator methionine, which the mature protein loses, so

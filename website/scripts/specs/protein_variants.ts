@@ -169,6 +169,7 @@ function hbbSession({
 }: Partial<SessionOptions> &
   Pick<SessionOptions, 'tracks'> & { msaEnd?: number }) {
   const session = structuredClone(HBB_SESSION)
+  session.views[1]!.relativeTo = 'human_query'
   session.views[2]!.colorScheme = 'mapped-chain'
   return linkedSession(
     session,
