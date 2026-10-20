@@ -229,7 +229,7 @@ describe('the canvas2d rung', () => {
 })
 
 describe('the gpu rung', () => {
-  const cellDisplay = { shapeAlpha: 0.4, bezierRadiusRatio: 0.1 }
+  const cellDisplay = { shapeAlpha: 0.4, curveDepth: 0.9 }
   const cells = new Map<number, ChordCell>([
     [
       0,
@@ -244,7 +244,7 @@ describe('the gpu rung', () => {
       {
         kind: 'chord',
         lanes: chordLanes([[0, 3000, OPAQUE_BLUE]]),
-        display: { shapeAlpha: 1, bezierRadiusRatio: 0.2 },
+        display: { shapeAlpha: 1, curveDepth: 0.8 },
       },
     ],
   ])

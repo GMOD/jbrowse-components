@@ -124,8 +124,9 @@ channels.
   - `link` joins `x..x2` to its mate: a curve between points, a ribbon between
     intervals. One mark covers the synteny ribbons, the dotplot segments and
     the chords.
-  - `interpolate` (`linear step monotone bump arc`) is the one curve word, and
-    `tension` replaces `bezierRadiusRatio`.
+  - `interpolate` (`linear step monotone bump arc`) is the one curve word.
+  - The chord displays' `mark.depth` replaces `bezierRadiusRatio`, flipped so
+    a larger value curves more: 1 runs an antipodal chord through the center.
 - **Axis:** `axis: { grid, labels, title, tickCount, format, extent, tree }`.
   It replaces the gridline, location-marker, tick-label and minimal-tick
   flags and the tree sidebar's toggles.
@@ -209,6 +210,7 @@ predicate in the layer's own `filter`:
 | Separate `fetch` and `layout` bags | Vega-Lite puts these on `data` and the top level |
 | `showOffscreenMates` as a clamped end | A clamped end cannot carry the click that navigates to the mate; it is the synteny view's `offscreen` part |
 | `bridgeSkippedLanes`, `showIntraviewLinks`, implied UTRs as flags | One behaviour each |
+| `tension` for the chord curve | Vega-Lite's `tension` (d3's bundle `beta`) runs from a straight line to the full pull; the chord curve straightens no chord but an antipodal one, bows past straight toward the rim, and scales with each chord's length, as circlize's `h.ratio` does |
 
 ## Consequences
 

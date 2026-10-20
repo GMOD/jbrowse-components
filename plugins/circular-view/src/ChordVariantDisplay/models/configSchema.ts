@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import { chordConfigSchemaFields } from '../../chords/chordConfigSchemaFields.ts'
+import { chordMarkConfigSchema } from '../../chords/chordMarkConfigSchema.ts'
 import { chordColorConfigSchema } from './chordColorConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -78,7 +78,12 @@ function configSchemaF(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'ChordVariantDisplay',
     {
-      ...chordConfigSchemaFields,
+      /**
+       * #slot
+       * How far each chord curves toward the center, a
+       * [](/docs/config/chordmark) object
+       */
+      mark: chordMarkConfigSchema,
       /**
        * #slot
        */

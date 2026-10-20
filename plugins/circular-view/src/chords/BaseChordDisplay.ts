@@ -18,7 +18,7 @@ import { computeDisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import { sliceKey } from './chordStage.ts'
 
 import type { CircularViewModel } from '../CircularView/model.ts'
-import type { ChordConfigModel } from './chordConfigSchemaFields.ts'
+import type { ChordConfigModel } from './chordMarkConfigSchema.ts'
 import type { AxisSlice, ChordStage } from './chordStage.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
@@ -147,18 +147,18 @@ export function BaseChordDisplay() {
       },
       /**
        * #getter
-       * a chord's distance from the center at its closest, as a fraction of
-       * the radius; a shorter chord bows less, in proportion to its
-       * span
+       * `mark.depth`, how deeply a chord curves toward the center, 0 to 1
        */
-      get bezierRadiusRatio(): number {
-        return getConf(confNode(self), 'bezierRadiusRatio')
+      get curveDepth(): number {
+        return getConf(confNode(self), ['mark', 'depth'])
       },
       /**
        * #getter
+       * the radius of a chord's Bezier control point when its ends are
+       * opposite each other
        */
       get bezierRadius() {
-        return this.radiusPx * this.bezierRadiusRatio
+        return this.radiusPx * (1 - this.curveDepth)
       },
       /**
        * #getter

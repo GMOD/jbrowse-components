@@ -50,7 +50,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1338)
+# model members with no description (1337)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -159,7 +159,6 @@ Base1DView.width
 Base1DView.zoomIn
 Base1DView.zoomOut
 Base1DView.zoomTo
-BaseChordDisplay.bezierRadius
 BaseChordDisplay.displayPhase
 BaseChordDisplay.features
 BaseChordDisplay.loaded

@@ -4290,8 +4290,16 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "bezierRadiusRatio",
-          "type": "number"
+          "name": "mark",
+          "type": "ChordMarkConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "depth",
+              "type": "number"
+            }
+          ],
+          "schema": "ChordMark",
+          "writes": "members"
         },
         {
           "name": "onChordClick",
@@ -4383,8 +4391,16 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "bezierRadiusRatio",
-          "type": "number"
+          "name": "mark",
+          "type": "ChordMarkConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "depth",
+              "type": "number"
+            }
+          ],
+          "schema": "ChordMark",
+          "writes": "members"
         },
         {
           "name": "colorSelected",

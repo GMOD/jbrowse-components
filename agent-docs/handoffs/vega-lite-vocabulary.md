@@ -30,6 +30,7 @@ spelling, not a new house word. That means no new `min*`, `max*`, `show*` or
   `fadeThinAlignmentsMode`.
 - `data.resolution` on the comparative views and the LGVSynteny and
   multi-way displays, which replaced `lodMode`.
+- The chord displays' `mark.depth`, which replaced `bezierRadiusRatio`.
 
 ## Next, one concept at a time across the app
 
@@ -60,7 +61,6 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    - The `indels` part takes over `cigarMode` and `drawCigar`, after step 1.
    - The multi-way display's ribbons part takes over `ribbonColor`,
      `drawCurves` and `bridgeSkippedLanes`.
-   - The chord displays' `mark.tension` takes over `bezierRadiusRatio`.
 
 ## Writers to update after each landing
 

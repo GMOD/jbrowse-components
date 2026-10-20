@@ -63,6 +63,6 @@ Display slots go on a display entry: `"displays": [{ "type": "ChordSyntenyDispla
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
+| <span id="slot-mark">**mark**</span><br>[ChordMark](../chordmark) | How far each chord curves toward the center, a [](/docs/config/chordmark) object |
 | <span id="slot-colorselected">**colorSelected**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(0,0,0,0.6)'</code> | the fill color of a ribbon that has been selected<br>_callback args:_ `feature` |
 | <span id="slot-colorhover">**colorHover**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(85,85,85,0.6)'</code> | the fill color of a ribbon that is being hovered over with the mouse<br>_callback args:_ `feature` |
-| <span id="slot-bezierradiusratio">**bezierRadiusRatio**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.1</code> | a chord's distance from the center at its closest, as a fraction of the circle's radius: 0 draws it straight through the center, and a larger value keeps every chord nearer the rim. A shorter chord bows less, in proportion to its span |

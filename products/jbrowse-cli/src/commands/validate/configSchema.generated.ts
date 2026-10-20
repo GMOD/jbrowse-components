@@ -7437,6 +7437,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "ChordMark": {
+      "title": "ChordMark",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "depth": {
+          "description": "how deeply each chord curves toward the center, from 0 to 1: 1 runs a chord between opposite points straight through the center, and 0 bows every chord out toward the rim. A shorter chord curves less, in proportion to its length.",
+          "default": 0.9,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "ChordColor": {
       "title": "ChordColor",
       "anyOf": [
@@ -7571,14 +7592,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ChordVariantDisplaySlots": {
       "type": "object",
       "properties": {
-        "bezierRadiusRatio": {
-          "description": "a chord's distance from the center at its closest, as a fraction of the circle's radius: 0 draws it straight through the center, and a larger value keeps every chord nearer the rim. A shorter chord bows less, in proportion to its span.",
-          "default": 0.1,
+        "mark": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "number"
+            "$ref": "#/$defs/ChordMark"
           }
         },
         "onChordClick": {
@@ -7675,14 +7694,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ChordSyntenyDisplaySlots": {
       "type": "object",
       "properties": {
-        "bezierRadiusRatio": {
-          "description": "a chord's distance from the center at its closest, as a fraction of the circle's radius: 0 draws it straight through the center, and a larger value keeps every chord nearer the rim. A shorter chord bows less, in proportion to its span.",
-          "default": 0.1,
+        "mark": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "number"
+            "$ref": "#/$defs/ChordMark"
           }
         },
         "colorSelected": {
@@ -15980,8 +15997,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
-            "bezierRadiusRatio": {
-              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/bezierRadiusRatio"
+            "mark": {
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/mark"
             },
             "onChordClick": {
               "$ref": "#/$defs/ChordVariantDisplaySlots/properties/onChordClick"
@@ -18491,8 +18508,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
-            "bezierRadiusRatio": {
-              "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/bezierRadiusRatio"
+            "mark": {
+              "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/mark"
             },
             "colorSelected": {
               "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorSelected"
