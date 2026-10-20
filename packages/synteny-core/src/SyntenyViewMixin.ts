@@ -1,8 +1,10 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
-import { types } from '@jbrowse/mobx-state-tree'
+import { cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { SyntenyColorsMixin } from './SyntenyColorsMixin.ts'
 import { trackHasLodTiers } from './lodTier.ts'
+import { syntenyDataConfigSchema } from './syntenyDataConfigSchema.ts'
 
 import type { LodMode } from './lodTier.ts'
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
@@ -26,16 +28,11 @@ export function SyntenyViewMixin({
       types.model({
         /**
          * #property
-         * Level-of-detail tier selection for PIF adapters. 'auto' uses the
-         * adapter's bpPerPx threshold; 'fine' forces the per-row CIGAR tier
-         * (t/q); 'coarse' forces the tier whose CIGAR is folded to its large
-         * indels (T/Q) when present. One value for the view, so every track
-         * draws at the same tier.
+         * What the fetch reads, a [](/docs/config/syntenydata) object:
+         * `resolution` picks a tiered file's stored tier. One value for the
+         * view, so every track draws at the same tier.
          */
-        lodMode: types.stripDefault(
-          types.enumeration<LodMode>('LodMode', ['auto', 'fine', 'coarse']),
-          'auto',
-        ),
+        data: types.stripDefault(syntenyDataConfigSchema, {}),
       }),
     )
     .volatile(() => ({
@@ -55,6 +52,13 @@ export function SyntenyViewMixin({
        */
       get hasLodCapableAdapter() {
         return self.syntenyTracks().some(trackHasLodTiers)
+      },
+      /**
+       * #getter
+       * `data.resolution`: the stored tier every track fetches.
+       */
+      get resolution(): LodMode {
+        return readConfObject(self.data, 'resolution')
       },
       /**
        * #getter
@@ -79,8 +83,8 @@ export function SyntenyViewMixin({
       /**
        * #action
        */
-      setLodMode(value: LodMode) {
-        self.lodMode = value
+      setResolution(resolution: LodMode) {
+        self.data = cast({ ...getSnapshot(self.data), resolution })
       },
       /**
        * #action

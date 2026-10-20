@@ -1172,7 +1172,7 @@ describe('the level-of-detail tier', () => {
     const before = display.currentFetchKey
     expect(before?.view).toMatch(/\|fine$/)
 
-    display.setLodMode('coarse')
+    display.setResolution('coarse')
     expect(display.lodTier).toBe('coarse')
     expect(display.currentFetchKey).not.toEqual(before)
     expect(display.currentFetchKey?.view).toMatch(/\|coarse$/)
@@ -1183,7 +1183,7 @@ describe('the level-of-detail tier', () => {
     const { display } = createDisplayWithSession({
       syntenyAdapter: { type: 'PairwiseIndexedPAFAdapter' },
     })
-    display.setLodMode('coarse')
+    display.setResolution('coarse')
     display.setAdapterHeader({
       adapterConfig: display.adapterConfig,
       value: { hasCoarseTier: false },
@@ -1196,7 +1196,7 @@ describe('the level-of-detail tier', () => {
     expect(display.hasLodCapableAdapter).toBe(false)
     expect(menuLabels(display)).not.toContain('Level of detail')
     const before = display.currentFetchKey
-    display.setLodMode('coarse')
+    display.setResolution('coarse')
     expect(display.lodTier).toBe('fine')
     expect(display.currentFetchKey).toEqual(before)
   })
@@ -1212,7 +1212,7 @@ describe('the level-of-detail tier', () => {
           : []
       },
     })
-    display.setLodMode('coarse')
+    display.setResolution('coarse')
     // the anchor's own gene fetch carries no opts at all
     const opts = (call: { args: Record<string, unknown> }) =>
       (call.args.opts ?? {}) as {

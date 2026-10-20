@@ -60,7 +60,7 @@ Each section ends with the members a composed model contributes, linked to the p
 
 From [SyntenyFadeMixin](../syntenyfademixin): <span id="property-render">[`render`](../syntenyfademixin#property-render)</span>
 
-From [SyntenyViewMixin](../syntenyviewmixin): <span id="property-lodmode">[`lodMode`](../syntenyviewmixin#property-lodmode)</span>
+From [SyntenyViewMixin](../syntenyviewmixin): <span id="property-data">[`data`](../syntenyviewmixin#property-data)</span>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="property-opacity">[`opacity`](../syntenycolorsmixin#property-opacity)</span>
 
@@ -138,11 +138,11 @@ From [BaseViewModel](../baseviewmodel): <span id="volatile-bodymounted">[`bodyMo
 | <span id="getter-status">**status**</span><br><code>ViewStatus</code> | The view's lifecycle as one value — ready, error, loading or noRegions — for a host that draws its own chrome. Same shape and precedence as the linear view's. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>28 inherited getters from 6 models</summary>
+<summary>29 inherited getters from 6 models</summary>
 
 From [SyntenyFadeMixin](../syntenyfademixin): <span id="getter-antialias">[`antialias`](../syntenyfademixin#getter-antialias)</span>, <span id="getter-fadethinalignments">[`fadeThinAlignments`](../syntenyfademixin#getter-fadethinalignments)</span>
 
-From [SyntenyViewMixin](../syntenyviewmixin): <span id="getter-haslodcapableadapter">[`hasLodCapableAdapter`](../syntenyviewmixin#getter-haslodcapableadapter)</span>, <span id="getter-showlegend">[`showLegend`](../syntenyviewmixin#getter-showlegend)</span>, <span id="getter-legendspec">[`legendSpec`](../syntenyviewmixin#getter-legendspec)</span>
+From [SyntenyViewMixin](../syntenyviewmixin): <span id="getter-haslodcapableadapter">[`hasLodCapableAdapter`](../syntenyviewmixin#getter-haslodcapableadapter)</span>, <span id="getter-resolution">[`resolution`](../syntenyviewmixin#getter-resolution)</span>, <span id="getter-showlegend">[`showLegend`](../syntenyviewmixin#getter-showlegend)</span>, <span id="getter-legendspec">[`legendSpec`](../syntenyviewmixin#getter-legendspec)</span>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="getter-defaultopacity">[`defaultOpacity`](../syntenycolorsmixin#getter-defaultopacity)</span>, <span id="getter-opacitysetting">[`opacitySetting`](../syntenycolorsmixin#getter-opacitysetting)</span>, <span id="getter-opacityfade">[`opacityFade`](../syntenycolorsmixin#getter-opacityfade)</span>, <span id="getter-opacitylevel">[`opacityLevel`](../syntenycolorsmixin#getter-opacitylevel)</span>, <span id="getter-opacityfield">[`opacityField`](../syntenycolorsmixin#getter-opacityfield)</span>
 
@@ -232,7 +232,7 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 
 From [SyntenyFadeMixin](../syntenyfademixin): <span id="action-setantialias">[`setAntialias`](../syntenyfademixin#action-setantialias)</span>, <span id="action-setfadethinlatch">[`setFadeThinLatch`](../syntenyfademixin#action-setfadethinlatch)</span>
 
-From [SyntenyViewMixin](../syntenyviewmixin): <span id="action-setlodmode">[`setLodMode`](../syntenyviewmixin#action-setlodmode)</span>, <span id="action-setshowlegend">[`setShowLegend`](../syntenyviewmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../syntenyviewmixin#action-dismisslegendsection)</span>
+From [SyntenyViewMixin](../syntenyviewmixin): <span id="action-setresolution">[`setResolution`](../syntenyviewmixin#action-setresolution)</span>, <span id="action-setshowlegend">[`setShowLegend`](../syntenyviewmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../syntenyviewmixin#action-dismisslegendsection)</span>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="action-setopacity">[`setOpacity`](../syntenycolorsmixin#action-setopacity)</span>, <span id="action-setopacityfield">[`setOpacityField`](../syntenycolorsmixin#action-setopacityfield)</span>
 

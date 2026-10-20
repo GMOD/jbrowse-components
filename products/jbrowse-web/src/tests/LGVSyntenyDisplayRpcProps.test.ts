@@ -99,7 +99,7 @@ async function syntenyDisplay(adapter: Record<string, unknown>) {
     rpcProps: () => Record<string, unknown>
     lodTier: 'fine' | 'coarse'
     hasLodCapableAdapter: boolean
-    setLodMode: (arg: 'auto' | 'fine' | 'coarse') => void
+    setResolution: (arg: 'auto' | 'fine' | 'coarse') => void
     trackMenuItems: () => { label?: string }[]
   }
   return { view, display }
@@ -187,6 +187,6 @@ test('a tiered adapter offers the level-of-detail menu', async () => {
 test('pinning a tier overrides the zoom-based answer', async () => {
   const { display } = await syntenyDisplay(tiered(0.5))
   expect(display.lodTier).toBe('coarse')
-  display.setLodMode('fine')
+  display.setResolution('fine')
   expect(display.lodTier).toBe('fine')
 })

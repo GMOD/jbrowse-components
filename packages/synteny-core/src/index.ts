@@ -49,7 +49,6 @@ export {
   effectiveCoarseThreshold,
   getCoarseBpPerPxThreshold,
   lodMenuItems,
-  lodModeSlot,
   lodTierAt,
   readLodTierInfo,
   resolveLodTier,
@@ -166,6 +165,7 @@ export {
 export { SyntenyFadeMixin, installAutoFadeLatch } from './SyntenyFadeMixin.ts'
 export type { SyntenyFadeModel } from './SyntenyFadeMixin.ts'
 export { syntenyRenderConfigSchema } from './syntenyRenderConfigSchema.ts'
+export { syntenyDataConfigSchema } from './syntenyDataConfigSchema.ts'
 export type { ColorableTrack, PalettableTrack } from './trackColors.ts'
 export { colorByMenuItems } from './colorByMenuItems.tsx'
 export { colorByMenuTargetFor } from './colorByMenuTarget.ts'

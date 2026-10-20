@@ -2,7 +2,7 @@ import { ConfigurationSchema, plotList } from '@jbrowse/core/configuration'
 import { utrDefaultColor } from '@jbrowse/core/ui/palette'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
-import { lodModeSlot } from '@jbrowse/synteny-core'
+import { syntenyDataConfigSchema } from '@jbrowse/synteny-core'
 
 import { geneColorConfigSchema } from './geneColorConfigSchema.ts'
 import { laneLayerConfigSchema } from './laneLayerConfigSchema.ts'
@@ -99,7 +99,12 @@ export function configSchemaFactory() {
         defaultValue: utrDefaultColor,
         contextVariable: ['feature'],
       },
-      ...lodModeSlot,
+      /**
+       * #slot data
+       * What the fetch reads, a [](/docs/config/syntenydata) object:
+       * `resolution` picks a tiered file's stored tier.
+       */
+      data: syntenyDataConfigSchema,
       /**
        * #slot rows
        * The lane order and the lanes drawn, which the Lanes menu, a header

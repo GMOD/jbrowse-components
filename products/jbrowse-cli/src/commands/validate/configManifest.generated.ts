@@ -4941,8 +4941,16 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "lodMode",
-          "type": "LodMode"
+          "name": "data",
+          "type": "SyntenyDataConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "resolution",
+              "type": "SyntenyResolution"
+            }
+          ],
+          "schema": "SyntenyData",
+          "writes": "members"
         },
         {
           "name": "hideSelfAlignments",
@@ -5081,8 +5089,16 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | CssColor)"
         },
         {
-          "name": "lodMode",
-          "type": "LodMode"
+          "name": "data",
+          "type": "SyntenyDataConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "resolution",
+              "type": "SyntenyResolution"
+            }
+          ],
+          "schema": "SyntenyData",
+          "writes": "members"
         },
         {
           "name": "rows",
@@ -8725,7 +8741,7 @@ export const configManifest: ConfigManifest = {
         "color",
         "trackColors",
         "opacity",
-        "lodMode",
+        "data",
         "type",
         "height",
         "trackSelectorType",
@@ -8759,7 +8775,7 @@ export const configManifest: ConfigManifest = {
         "color",
         "trackColors",
         "opacity",
-        "lodMode",
+        "data",
         "render",
         "type",
         "cigarMode",

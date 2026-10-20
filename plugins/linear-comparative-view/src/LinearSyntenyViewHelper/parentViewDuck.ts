@@ -69,7 +69,7 @@ export interface ParentViewDuck extends FollowAnchorHost {
   drawCIGARMatchesOnly: boolean
   interpolate: RibbonInterpolation
   axisGrid: boolean
-  lodMode: LodMode
+  resolution: LodMode
   // The assembly the chromosome-painting modes key on, so a region keeps its
   // color as it is traced across levels. Undefined until a row knows its own.
   anchorAssemblyName: string | undefined

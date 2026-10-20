@@ -55,7 +55,7 @@ everything else untracked:
 // eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the axes, currentFetchKey is the decision
 return untracked(() => ({
   // the resolved tier, which is what `currentFetchKey` carries —
-  // `view.lodMode` stays 'auto' while the tier flips under it
+  // `view.resolution` stays 'auto' while the tier flips under it
   lodTier: self.lodTier,
   hViewSnap: makeViewSnap(view.hview),
   vViewSnap: makeViewSnap(view.vview),

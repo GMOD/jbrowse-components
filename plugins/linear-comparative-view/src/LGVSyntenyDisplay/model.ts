@@ -94,8 +94,8 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          * the level-of-detail tier the reader pinned, or 'auto' for the
          * adapter's own bpPerPx threshold. `lodTier` is what resolves it
          */
-        get lodMode(): LodMode {
-          return getConf(self, 'lodMode')
+        get resolution(): LodMode {
+          return getConf(self, ['data', 'resolution'])
         },
         /**
          * #getter
@@ -197,14 +197,14 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          * to the file's `--coarse` bound.
          */
         get lodTier() {
-          return lodTierAt(self, self.host.coarseBpPerPx, self.lodMode)
+          return lodTierAt(self, self.host.coarseBpPerPx, self.resolution)
         },
         /**
          * #getter
          * The same tier off the live zoom, for the base's `dataSuperseded`.
          */
         get liveLodTier() {
-          return lodTierAt(self, self.host.bpPerPx, self.lodMode)
+          return lodTierAt(self, self.host.bpPerPx, self.resolution)
         },
       }))
       .actions(self => {
@@ -250,8 +250,8 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
         /**
          * #action
          */
-        setLodMode(arg: LodMode) {
-          setConf(self, 'lodMode', arg)
+        setResolution(arg: LodMode) {
+          setConf(self, ['data', 'resolution'], arg)
         },
       }))
       .views(self => ({

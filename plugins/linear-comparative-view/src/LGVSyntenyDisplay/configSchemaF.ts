@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { baseLinearAlignmentsDisplayConfigSchema } from '@jbrowse/plugin-alignments'
-import { lodModeSlot } from '@jbrowse/synteny-core'
+import { syntenyDataConfigSchema } from '@jbrowse/synteny-core'
 
 import { lgvSyntenyColorConfigSchema } from './lgvSyntenyColorConfigSchema.ts'
 import { lgvSyntenyCoverageConfigSchema } from './lgvSyntenyCoverageConfigSchema.ts'
@@ -43,7 +43,12 @@ export default function configSchemaF() {
   return ConfigurationSchema(
     'LGVSyntenyDisplay',
     {
-      ...lodModeSlot,
+      /**
+       * #slot data
+       * What the fetch reads, a [](/docs/config/syntenydata) object:
+       * `resolution` picks a tiered file's stored tier.
+       */
+      data: syntenyDataConfigSchema,
       /**
        * #slot color
        * The alignments displays' `color` object with `field` defaulting to

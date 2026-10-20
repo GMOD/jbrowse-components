@@ -28,6 +28,8 @@ spelling, not a new house word. That means no new `min*`, `max*`, `show*` or
   replaced their `showGridlines`, `showTickLabels` and `drawLocationMarkers`.
 - The synteny and circular views' `render.antialias`, which replaced
   `fadeThinAlignmentsMode`.
+- `data.resolution` on the comparative views and the LGVSynteny and
+  multi-way displays, which replaced `lodMode`.
 
 ## Next, one concept at a time across the app
 
@@ -40,13 +42,13 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
 2. **The other filter families as predicate lists**: alignments, canvas,
    variant, MAF and junction/connection rows. First bench the flag fusion
    against today's `flagInclude`/`flagExclude`/`minMapq` path.
-3. **Guides**:
-   - `legend.show` takes over every `showLegend`.
-5. **`data.resolution`** takes over `lodMode`, wiggle's `resolution` and Hi-C's
-   `resolutionBias`.
-6. **Layout**: `height`, `autosize` and `maxHeight` take over `heightMode`,
+3. **Legends, with step 1**: Vega-Lite gives each channel its own `legend`,
+   so `legend.show` on the channel takes over every display's `showLegend`.
+4. **Wiggle's `resolution` and Hi-C's `resolutionBias`** under `data`, each
+   in its own units (ADR-238's amendment); the comparative `lodMode` is done.
+5. **Layout**: `height`, `autosize` and `maxHeight` take over `heightMode`,
    `growMaxHeight`, `rowHeight`, `featureHeight` and `pileup.readHeight`.
-7. **Comparative leftovers**:
+6. **Comparative leftovers**:
    - The `indels` part takes over `cigarMode` and `drawCigar`, after step 1.
    - The multi-way display's ribbons part takes over `ribbonColor`,
      `drawCurves` and `bridgeSkippedLanes`.

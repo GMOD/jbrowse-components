@@ -552,7 +552,7 @@ LDTrackDisplay.trackMenuItems
 LDTrackDisplay.variantLayout
 LDTrackDisplay.view
 LGVSyntenyDisplay.contextMenuItems
-LGVSyntenyDisplay.setLodMode
+LGVSyntenyDisplay.setResolution
 LGVSyntenyDisplay.trackMenuItems
 LinearAlignmentsDisplay.TooltipComponent
 LinearAlignmentsDisplay.clearMouseoverState
@@ -1139,7 +1139,6 @@ MultiWaySyntenyDisplay.layerPx
 MultiWaySyntenyDisplay.legendRight
 MultiWaySyntenyDisplay.lgv
 MultiWaySyntenyDisplay.liveLodTier
-MultiWaySyntenyDisplay.lodMode
 MultiWaySyntenyDisplay.namedCells
 MultiWaySyntenyDisplay.openInNewView
 MultiWaySyntenyDisplay.openLaneSelection
@@ -1153,6 +1152,7 @@ MultiWaySyntenyDisplay.releasedLanes
 MultiWaySyntenyDisplay.renderBlocks
 MultiWaySyntenyDisplay.renderState
 MultiWaySyntenyDisplay.renderSvg
+MultiWaySyntenyDisplay.resolution
 MultiWaySyntenyDisplay.ribbonAttributeRanges
 MultiWaySyntenyDisplay.ribbonColor
 MultiWaySyntenyDisplay.ribbonColorAttributes
@@ -1180,8 +1180,8 @@ MultiWaySyntenyDisplay.setLaneGroups
 MultiWaySyntenyDisplay.setLaneLayerData
 MultiWaySyntenyDisplay.setLaneLinks
 MultiWaySyntenyDisplay.setLanesFrozen
-MultiWaySyntenyDisplay.setLodMode
 MultiWaySyntenyDisplay.setPointer
+MultiWaySyntenyDisplay.setResolution
 MultiWaySyntenyDisplay.setRibbonColorDomain
 MultiWaySyntenyDisplay.setRibbonColorField
 MultiWaySyntenyDisplay.setShowGeneLabels
@@ -1295,7 +1295,7 @@ SvInspectorView.variantTrackId
 SyntenyColorsMixin.colorableTrackConfigs
 SyntenyFadeMixin.setAntialias
 SyntenyFilterMixin.setFilter
-SyntenyViewMixin.setLodMode
+SyntenyViewMixin.setResolution
 ThemeManagerSessionMixin.allThemes
 ThemeManagerSessionMixin.darkReaderDark
 ThemeManagerSessionMixin.noteDarkReader

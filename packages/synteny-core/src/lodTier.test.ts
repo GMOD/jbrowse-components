@@ -224,8 +224,8 @@ describe('lodMenuItems', () => {
     lodMenuItems({
       hasLodCapableAdapter,
       lodTierInfo,
-      lodMode: 'auto',
-      setLodMode: () => {},
+      resolution: 'auto',
+      setResolution: () => {},
     }).map(item => ('label' in item ? item.label : undefined))
 
   test('offered on a tiered adapter before its header lands, and once the header confirms the tier', () => {

@@ -88,7 +88,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-lodmode">**lodMode**</span><br><code>LodMode</code> | the level-of-detail tier the reader pinned, or 'auto' for the adapter's own bpPerPx threshold. `lodTier` is what resolves it |
+| <span id="getter-resolution">**resolution**</span><br><code>LodMode</code> | the level-of-detail tier the reader pinned, or 'auto' for the adapter's own bpPerPx threshold. `lodTier` is what resolves it |
 | <span id="getter-featurewidgettype">**featureWidgetType**</span><br><code>{ type: string; id: string; }</code> | synteny features open the SyntenyFeatureWidget; the inherited `selectFeature` action reads this getter, so no override is needed. |
 | <span id="getter-featurenoun">**featureNoun**</span><br><code>string</code> | A row here is a PAF block, not a read — the group-label chips say "Show all features". The ONE place that word is chosen: the two menu builders below that take a `noun` read it from here rather than spelling it again, so the chips and the menus cannot end up naming the same row two different things. |
 | <span id="getter-hideselfalignments">**hideSelfAlignments**</span><br><code>boolean</code> | Whether the view's own assembly lane is hidden — see the slot. |
@@ -163,7 +163,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | --- | --- |
 | <span id="action-fetchneeded">**fetchNeeded**</span><br><code>(needed: IndexedRegion[]) =&gt; void</code> | The inherited fetch, with each region's assembly respelled the way the track declares it. The view names its assembly canonically and the adapter answers a region by comparing that text against its configured `assemblyNames` in a worker with no assembly manager, so a track declaring an alias would fetch nothing. The comparative views do the same through `renameRegionsForAdapter`. |
 | <span id="action-sethideselfalignments">**setHideSelfAlignments**</span><br><code>(flag: boolean) =&gt; void</code> | Show/hide the view's own assembly lane of an all-vs-all track. |
-| <span id="action-setlodmode">**setLodMode**</span><br><code>(arg: LodMode) =&gt; void</code> |  |
+| <span id="action-setresolution">**setResolution**</span><br><code>(arg: LodMode) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>107 inherited actions from 14 models</summary>

@@ -8272,6 +8272,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "SyntenyData": {
+      "title": "SyntenyData",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "resolution": {
+          "description": "the stored tier to fetch: 'auto' switches at the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, 'coarse' the tier whose CIGAR is folded to its large indels.",
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "auto",
+              "fine",
+              "coarse"
+            ]
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LGVSyntenyDisplaySlots": {
       "type": "object",
       "properties": {
@@ -8426,18 +8451,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/ReadConnections"
           }
         },
-        "lodMode": {
-          "description": "stored tier of a tiered file to fetch: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels.",
-          "default": "auto",
+        "data": {
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "auto",
-              "fine",
-              "coarse"
-            ]
+            "$ref": "#/$defs/SyntenyData"
           }
         },
         "hideSelfAlignments": {
@@ -10510,18 +10529,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/CssColorOrJexl"
           }
         },
-        "lodMode": {
-          "description": "stored tier of a tiered file to fetch: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels.",
-          "default": "auto",
+        "data": {
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "auto",
-              "fine",
-              "coarse"
-            ]
+            "$ref": "#/$defs/SyntenyData"
           }
         },
         "rows": {
@@ -18616,13 +18629,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "readConnections": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnections"
             },
-            "lodMode": {
+            "data": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/lodMode"
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/data"
                 },
                 {
-                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/lodMode"
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/data"
                 }
               ]
             },
@@ -26475,12 +26488,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "opacity": {
           "$ref": "#/$defs/SyntenyOpacity"
         },
-        "lodMode": {
-          "enum": [
-            "auto",
-            "fine",
-            "coarse"
-          ]
+        "data": {
+          "$ref": "#/$defs/SyntenyData"
         },
         "height": {
           "type": "number"
@@ -26783,12 +26792,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "opacity": {
           "$ref": "#/$defs/SyntenyOpacity"
         },
-        "lodMode": {
-          "enum": [
-            "auto",
-            "fine",
-            "coarse"
-          ]
+        "data": {
+          "$ref": "#/$defs/SyntenyData"
         },
         "render": {
           "$ref": "#/$defs/SyntenyRender"

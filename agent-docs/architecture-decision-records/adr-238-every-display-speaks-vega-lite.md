@@ -134,8 +134,11 @@ channels.
 - **Coordinates:** `coord: 'cartesian' | 'parallel' | 'polar'` names the
   dotplot, the linear synteny view and the circle, and `ratio: 1` replaces
   `sameScale` and `lockAspectRatio`.
-- **Data:** `data.resolution` replaces `lodMode`, wiggle's `resolution` and
-  Hi-C's `resolutionBias`.
+- **Data:** `data.resolution` replaces the comparative `lodMode`, the stored
+  tier a tiered file is read at. Amended 2026-10-20: wiggle's `resolution`
+  (points per pixel) and Hi-C's `resolutionBias` (steps from the zoom-chosen
+  bin) measure other things, so each family's stage settles its own spelling
+  rather than giving one number three meanings.
 - **Render:** `render.antialias`, `true`, `false` or unset to follow the data, replaces
   `fadeThinAlignmentsMode`. Amended 2026-10-20: `pileup.fadeLowFrequency`
   stays apart, since it fades a sub-pixel mark by the share of reads carrying

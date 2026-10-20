@@ -24,8 +24,8 @@ export interface ConfigSlotSelf extends IStateTreeNode {
 export function configSlotViews(self: ConfigSlotSelf) {
   return {
     /** #getter */
-    get lodMode(): LodMode {
-      return getConf(self, 'lodMode')
+    get resolution(): LodMode {
+      return getConf(self, ['data', 'resolution'])
     },
     /** #getter */
     get ribbonColor(): string {
@@ -177,8 +177,8 @@ export function configSlotActions(self: ConfigSlotSelf) {
       setConf(self, 'text', field)
     },
     /** #action */
-    setLodMode(mode: LodMode) {
-      setConf(self, 'lodMode', mode)
+    setResolution(mode: LodMode) {
+      setConf(self, ['data', 'resolution'], mode)
     },
   }
 }

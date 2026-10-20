@@ -31,7 +31,7 @@ test('a header with no coarse tier withdraws the menu and keeps the slot as the 
   expect(menuLabels(display)).not.toContain('Level of detail')
   expect(display.hasLodCapableAdapter).toBe(true)
 
-  display.setLodMode('coarse')
+  display.setResolution('coarse')
   expect(display.lodTier).toBe('fine')
 })
 
@@ -41,5 +41,5 @@ test('the untiered default mode is untouched by the gate', () => {
     adapterConfig: display.adapterConfig,
     value: { hasCoarseTier: false },
   })
-  expect(display.lodMode).toBe('auto')
+  expect(display.resolution).toBe('auto')
 })

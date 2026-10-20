@@ -10,7 +10,7 @@ import type { DotplotViewCommands } from './types.ts'
 // entries land on the session's list.
 //
 // Everything else a spec can write is a declared property: `color`, `alpha`,
-// `minAlignmentLength`, `lodMode`, … . MST restores those natively, so none of
+// `filter`, `data`, … . MST restores those natively, so none of
 // them is a launch key. The older spellings the view's own preProcessSnapshot
 // converts pass through.
 export const dotplotLaunchKeys = defineLaunchKeys<DotplotViewCommands>()(

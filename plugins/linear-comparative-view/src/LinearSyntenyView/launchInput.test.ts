@@ -46,13 +46,13 @@ test('any declared property lands natively, named nowhere in the launch path', a
   const view = await open({
     views: ROWS,
     axis: { grid: true },
-    lodMode: 'coarse',
+    data: { resolution: 'coarse' },
     overdrawPx: 42,
     cigarMode: 'matches',
     opacity: { field: 'identity' },
   })
   expect(view.axisGrid).toBe(true)
-  expect(view.lodMode).toBe('coarse')
+  expect(view.resolution).toBe('coarse')
   expect(view.overdrawPx).toBe(42)
   expect(view.cigarMode).toBe('matches')
   expect(view.opacityField).toBe('identity')

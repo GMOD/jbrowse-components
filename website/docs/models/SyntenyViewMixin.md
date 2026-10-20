@@ -18,7 +18,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-lodmode">**lodMode**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>lodMode: types.stripDefault( types.enumeration&lt;LodMode&gt;('LodMod…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>lodMode: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.enumeration&lt;LodMode&gt;('LodMode', ['auto', 'fine', 'coarse']),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;'auto',&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | Level-of-detail tier selection for PIF adapters. 'auto' uses the adapter's bpPerPx threshold; 'fine' forces the per-row CIGAR tier (t/q); 'coarse' forces the tier whose CIGAR is folded to its large indels (T/Q) when present. One value for the view, so every track draws at the same tier. |
+| <span id="property-data">**data**</span><br><code>data: types.stripDefault(syntenyDataConfigSchema, {})</code> | What the fetch reads, a [](/docs/config/syntenydata) object: `resolution` picks a tiered file's stored tier. One value for the view, so every track draws at the same tier. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>4 inherited properties from 3 models</summary>
@@ -51,6 +51,7 @@ From [TrackColorsMixin](../trackcolorsmixin): <span id="volatile-seenattributera
 | Member | Description |
 | --- | --- |
 | <span id="getter-haslodcapableadapter">**hasLodCapableAdapter**</span><br><code>boolean</code> | Whether any track's adapter has tiers to switch between, which gates the "Level of detail" setting. |
+| <span id="getter-resolution">**resolution**</span><br><code>LodMode</code> | `data.resolution`: the stored tier every track fetches. |
 | <span id="getter-showlegend">**showLegend**</span><br><code>boolean</code> | The legend-host half of `LegendMixin` a view needs: whether the key draws, which is the mode having one and the reader not having closed it in this mode. `ChromeLegend` and `SvgLegend` read it. |
 | <span id="getter-legendspec">**legendSpec**</span><br><code>LegendSpec</code> | The key `ChromeLegend` draws on screen and `SvgLegend` in the export. |
 
@@ -83,7 +84,7 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setlodmode">**setLodMode**</span><br><code>(value: LodMode) =&gt; void</code> |  |
+| <span id="action-setresolution">**setResolution**</span><br><code>(resolution: LodMode) =&gt; void</code> |  |
 | <span id="action-setshowlegend">**setShowLegend**</span><br><code>(show: boolean) =&gt; void</code> | The legend host's setter: closing the key hides it for this mode only, so picking another mode brings its key up. |
 | <span id="action-dismisslegendsection">**dismissLegendSection**</span><br><code>() =&gt; void</code> | One section is the whole key here. |
 

@@ -1,5 +1,4 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -11,17 +10,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
  * 'coarse' the tier whose CIGAR is folded to its large indels.
  */
 export type LodMode = 'auto' | 'fine' | 'coarse'
-
-/** The display config slot a `LodMode` is written to. */
-export const lodModeSlot = {
-  lodMode: {
-    type: 'stringEnum',
-    model: types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
-    defaultValue: 'auto',
-    description:
-      "stored tier of a tiered file to fetch: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels",
-  },
-} as const
 
 /**
  * The tier a fetch asks the adapter for — deliberately a narrower type than
@@ -291,8 +279,8 @@ const LOD_MODES: { label: string; value: LodMode; helpText: string }[] = [
 export function lodMenuItems(model: {
   hasLodCapableAdapter: boolean
   lodTierInfo?: LodTierInfo
-  lodMode: LodMode
-  setLodMode: (arg: LodMode) => void
+  resolution: LodMode
+  setResolution: (arg: LodMode) => void
 }): MenuItem[] {
   return model.hasLodCapableAdapter &&
     model.lodTierInfo?.hasCoarseTier !== false
@@ -309,9 +297,9 @@ export function lodMenuItems(model: {
             helpText,
             label,
             type: 'radio' as const,
-            checked: model.lodMode === value,
+            checked: model.resolution === value,
             onClick: () => {
-              model.setLodMode(value)
+              model.setResolution(value)
             },
           })),
         },

@@ -1265,7 +1265,6 @@ export default function stateModelFactory(pm: PluginManager) {
         launchLinearSyntenyView(mousedown: Coord, mouseup: Coord) {
           const result = self.getCoords(mousedown, mouseup)
           if (result) {
-            const { lodMode } = self
             const { x1, x2, y1, y2 } = result
             const row = (
               axis: Dotplot1DViewModel,
@@ -1308,7 +1307,7 @@ export default function stateModelFactory(pm: PluginManager) {
             })
             void getSession(self).launchView('LinearSyntenyView', {
               ...carriedSyntenySettings(self),
-              lodMode,
+              data: { resolution: self.resolution },
               views: [row(self.hview, x1, x2), row(self.vview, y2, y1)],
               // the level between the two rows, which is where a synteny track
               // lives. `tracks` on the view means trackIds to open, so a built

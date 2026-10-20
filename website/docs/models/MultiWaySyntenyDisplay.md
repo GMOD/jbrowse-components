@@ -90,7 +90,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-featureops">**featureOps**</span><br><code>AlignmentOpsById</code> |  |
 | <span id="getter-windowdeletions">**windowDeletions**</span><br><code>readonly WindowDeletion[]</code> | the deletions a record states across the whole fetched window, for a lane the window shows none of |
 | <span id="getter-hoveredgroupkey">**hoveredGroupKey**</span><br><code>string &#124; undefined</code> |  |
-| <span id="getter-lodmode">**lodMode**</span><br><code>LodMode</code> |  |
+| <span id="getter-resolution">**resolution**</span><br><code>LodMode</code> |  |
 | <span id="getter-ribboncolor">**ribbonColor**</span><br><code>string</code> |  |
 | <span id="getter-lanechoice">**laneChoice**</span><br><code>readonly string[] &#124; undefined</code> | `rows.kept` as a choice: undefined while it names no lane |
 | <span id="getter-ribboncolorfield">**ribbonColorField**</span><br><code>string</code> |  |
@@ -312,7 +312,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setinlinelanenames">**setInlineLaneNames**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setshowgenelabels">**setShowGeneLabels**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setgenetextfield">**setGeneTextField**</span><br><code>(field: string) =&gt; void</code> |  |
-| <span id="action-setlodmode">**setLodMode**</span><br><code>(mode: LodMode) =&gt; void</code> |  |
+| <span id="action-setresolution">**setResolution**</span><br><code>(mode: LodMode) =&gt; void</code> |  |
 | <span id="action-holdlaneorder">**holdLaneOrder**</span><br><code>(regions: FetchRegion[]) =&gt; void</code> | runs when the anchor fetch for `regions` completes. Haplotype lanes read off a graph stack by structure while no order is pinned, worked out again only once a fetch leaves the window it was worked out on or the lane selection changes, so panning never reshuffles the stack |
 | <span id="action-chooselanes">**chooseLanes**</span><br><code>(names: string[]) =&gt; void</code> |  |
 | <span id="action-hidelane">**hideLane**</span><br><code>(assemblyName: string) =&gt; void</code> |  |

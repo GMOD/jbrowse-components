@@ -442,7 +442,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
         return lodTierAt(
           self,
           Math.min(view.hview.bpPerPx, view.vview.bpPerPx),
-          view.lodMode,
+          view.resolution,
         )
       },
       /**

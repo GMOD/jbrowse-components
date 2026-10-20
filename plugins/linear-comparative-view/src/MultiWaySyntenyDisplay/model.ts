@@ -667,11 +667,11 @@ export function stateModelFactory(
        * read off the settled zoom, so a passing gesture refetches nothing
        */
       get lodTier() {
-        return lodTierAt(self, self.host.coarseBpPerPx, self.lodMode)
+        return lodTierAt(self, self.host.coarseBpPerPx, self.resolution)
       },
       /** #getter */
       get liveLodTier() {
-        return lodTierAt(self, self.lgv.bpPerPx, self.lodMode)
+        return lodTierAt(self, self.lgv.bpPerPx, self.resolution)
       },
     }))
     .views(self => ({

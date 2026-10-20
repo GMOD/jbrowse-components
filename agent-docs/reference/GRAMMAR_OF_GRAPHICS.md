@@ -212,7 +212,7 @@ the result, since it is what a later audit need not redo:
 - `displayDefaults` expand into the display config, so `plot` and "Reset track
   settings" see them.
 - Alignments `sort` is not a second spelling of
-  `rows.domain`, since pileup rows have no keys; `displayMode`, `lodMode`
+  `rows.domain`, since pileup rows have no keys; `displayMode`, `data.resolution`
   and `heightMode` are layout or fetch modes, not marks, and MAF's
   `conservation.unit` is what one bar stands for.
 

@@ -521,7 +521,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           view.drawCIGAR,
           view.drawCIGARMatchesOnly,
           view.offscreenDrawn,
-          // the resolved tier, not view.lodMode: in 'auto' the mode is constant
+          // the resolved tier, not view.resolution: in 'auto' the mode is constant
           // while the tier flips, and the tier is what the fetch differs by
           this.lodTier,
         ].join('|')
@@ -794,7 +794,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           ? lodTierAt(
               self,
               Math.min(connected.v0.bpPerPx, connected.v1.bpPerPx),
-              this.view.lodMode,
+              this.view.resolution,
             )
           : 'fine'
       },

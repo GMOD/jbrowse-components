@@ -52,7 +52,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <details class="inherited-members" data-pagefind-ignore>
 <summary>7 inherited properties from 5 models</summary>
 
-From [SyntenyViewMixin](../syntenyviewmixin): <span id="property-lodmode">[`lodMode`](../syntenyviewmixin#property-lodmode)</span>
+From [SyntenyViewMixin](../syntenyviewmixin): <span id="property-data">[`data`](../syntenyviewmixin#property-data)</span>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="property-opacity">[`opacity`](../syntenycolorsmixin#property-opacity)</span>
 
@@ -138,9 +138,9 @@ From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../b
 | <span id="getter-paintinert">**paintInert**</span><br><code>boolean</code> | Overrides `RenderLifecycleMixin`'s hook: a measured plot with no tracks on it paints nothing this tick and nothing is coming, so it has finished rather than being pending. The backend answers "did content reach the canvas" off the blocks it drew, which is the right answer for a track still fetching and the wrong one for a canvas with nothing to draw on it.<br><br>`initialized` is the other half and is not redundant with `canRender`: an import form has no tracks either, and it is *not* finished — `AppReadyMarkerComparative` pins that its `settled` stays false, and the marker asks its displays rather than this. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>30 inherited getters from 6 models</summary>
+<summary>31 inherited getters from 6 models</summary>
 
-From [SyntenyViewMixin](../syntenyviewmixin): <span id="getter-haslodcapableadapter">[`hasLodCapableAdapter`](../syntenyviewmixin#getter-haslodcapableadapter)</span>, <span id="getter-showlegend">[`showLegend`](../syntenyviewmixin#getter-showlegend)</span>, <span id="getter-legendspec">[`legendSpec`](../syntenyviewmixin#getter-legendspec)</span>
+From [SyntenyViewMixin](../syntenyviewmixin): <span id="getter-haslodcapableadapter">[`hasLodCapableAdapter`](../syntenyviewmixin#getter-haslodcapableadapter)</span>, <span id="getter-resolution">[`resolution`](../syntenyviewmixin#getter-resolution)</span>, <span id="getter-showlegend">[`showLegend`](../syntenyviewmixin#getter-showlegend)</span>, <span id="getter-legendspec">[`legendSpec`](../syntenyviewmixin#getter-legendspec)</span>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="getter-defaultopacity">[`defaultOpacity`](../syntenycolorsmixin#getter-defaultopacity)</span>, <span id="getter-opacitysetting">[`opacitySetting`](../syntenycolorsmixin#getter-opacitysetting)</span>, <span id="getter-opacityfade">[`opacityFade`](../syntenycolorsmixin#getter-opacityfade)</span>, <span id="getter-opacitylevel">[`opacityLevel`](../syntenycolorsmixin#getter-opacitylevel)</span>, <span id="getter-opacityfield">[`opacityField`](../syntenycolorsmixin#getter-opacityfield)</span>
 
@@ -222,7 +222,7 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 <details class="inherited-members" data-pagefind-ignore>
 <summary>32 inherited actions from 8 models</summary>
 
-From [SyntenyViewMixin](../syntenyviewmixin): <span id="action-setlodmode">[`setLodMode`](../syntenyviewmixin#action-setlodmode)</span>, <span id="action-setshowlegend">[`setShowLegend`](../syntenyviewmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../syntenyviewmixin#action-dismisslegendsection)</span>
+From [SyntenyViewMixin](../syntenyviewmixin): <span id="action-setresolution">[`setResolution`](../syntenyviewmixin#action-setresolution)</span>, <span id="action-setshowlegend">[`setShowLegend`](../syntenyviewmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../syntenyviewmixin#action-dismisslegendsection)</span>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="action-setopacity">[`setOpacity`](../syntenycolorsmixin#action-setopacity)</span>, <span id="action-setopacityfield">[`setOpacityField`](../syntenycolorsmixin#action-setopacityfield)</span>
 

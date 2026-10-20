@@ -556,7 +556,7 @@ test('the synteny view a dragged rect opens paints and filters as the plot does'
   model.setTrackColor('t1', '#123456')
   model.setHideUnlabelled(true)
   model.setLowerBound('length', 500)
-  model.setLodMode('coarse')
+  model.setResolution('coarse')
   const session = getSession(model) as unknown as { views: unknown[] }
   model.launchLinearSyntenyView([100, 100], [300, 300])
   await when(() => session.views.length === 2)
@@ -565,7 +565,7 @@ test('the synteny view a dragged rect opens paints and filters as the plot does'
   expect(synteny.trackColors.get('t1')).toBe('#123456')
   expect(synteny.hideUnlabelled).toBe(true)
   expect(synteny.minLength).toBe(500)
-  expect(synteny.lodMode).toBe('coarse')
+  expect(synteny.resolution).toBe('coarse')
 })
 
 test('hiding tick labels gives their margin back to the plot', async () => {
