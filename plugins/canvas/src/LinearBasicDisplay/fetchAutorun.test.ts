@@ -1562,18 +1562,23 @@ describe('region identity is stored with the data it describes', () => {
     const regionB = {
       assemblyName: 'volvox',
       refName: 'ctgB',
-      start: 0,
-      end: 100,
+      start: 200,
+      end: 300,
       reversed: true,
     }
     display.setRpcData(0, makeFeatureData(), regionA)
     display.setRpcData(1, makeFeatureData(), regionB)
 
     expect(
-      [...display.rpcDataMap.entries()].map(([idx, d]) => [idx, d.regionKey]),
+      [...display.rpcDataMap.entries()].map(([idx, d]) => [
+        idx,
+        d.regionKey,
+        d.regionStart,
+        d.regionEnd,
+      ]),
     ).toEqual([
-      [0, 'volvox:ctgA'],
-      [1, 'volvox:ctgB'],
+      [0, 'volvox:ctgA', 0, 100],
+      [1, 'volvox:ctgB', 200, 300],
     ])
     expect([...display.reversedRegions]).toEqual([1])
   })

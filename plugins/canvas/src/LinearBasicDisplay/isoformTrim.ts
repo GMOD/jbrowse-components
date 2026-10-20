@@ -98,6 +98,7 @@ export function planIsoformTrims(
   maxIsoforms: number | undefined,
   expandedGeneIds: ReadonlySet<string> | undefined,
   bpPerPx: number,
+  toDrawnBp = (bp: number) => bp,
 ): IsoformTrimPlan {
   const trims = new Map<string, IsoformTrim>()
   const badges = new Map<string, IsoformBadge>()
@@ -119,7 +120,7 @@ export function planIsoformTrims(
     const drawn = expanded
       ? trimIsoformStack(stack, Number.POSITIVE_INFINITY)
       : trim
-    const extentBp = drawn.endBp - drawn.startBp
+    const extentBp = toDrawnBp(drawn.endBp) - toDrawnBp(drawn.startBp)
     if (trim.hidden > 0 && extentBp / bpPerPx >= MIN_ISOFORM_BADGE_GENE_PX) {
       badges.set(featureId, { hidden: trim.hidden, expanded })
     }

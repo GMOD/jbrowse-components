@@ -6,6 +6,7 @@ import {
   labelsMap,
   makeFeatureData as makeBaseFeatureData,
   makeFlatbushItem,
+  packStackedGenes,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { scaleLaidOutData } from './applyLayout.ts'
 import { featureGroupSections } from './facet.ts'
@@ -645,6 +646,129 @@ describe('features meeting at a seam between regions of one ref', () => {
   it('share a row when the screen leaves room between them', () => {
     const [left, right] = rowsOf([20, 60], [1040, 1080])
     expect(left).toBe(right)
+  })
+})
+
+// ctgA:0-100 then ctgA:1000-1500: whatever is reserved from a feature or label
+// in the second region has to be measured from where it draws, past the seam.
+describe('labels and trims across a seam between regions of one ref', () => {
+  const pad = makeFeatureData({
+    features: [{ featureId: 'pad', startBp: 10, endBp: 20, height: 10 }],
+    bounds: [0, 100],
+  })
+  const topOf = (data: FeatureDataResult, id: string) =>
+    data.flatbushItems.find(item => item.featureId === id)!.topPx
+
+  it('spans a label from the seam when its feature starts in the hidden stretch', () => {
+    const out = layout(
+      new Map([
+        [
+          0,
+          {
+            ...labeledFeatureData([
+              { featureId: 'span', startBp: 50, endBp: 1050, height: 10 },
+            ]),
+            regionStart: 0,
+            regionEnd: 100,
+          },
+        ],
+        [
+          1,
+          {
+            ...labeledFeatureData([
+              { featureId: 'span', startBp: 50, endBp: 1050, height: 10 },
+              { featureId: 'late', startBp: 950, endBp: 1080, height: 10 },
+            ]),
+            regionStart: 1000,
+            regionEnd: 1500,
+          },
+        ],
+      ]),
+      1,
+    )
+    const labels = out.get(1)!.floatingLabelsData
+    expect(labels.get('late')).toMatchObject({ minX: 1000, maxX: 1080 })
+    // Each region's copy spans the feature as drawn, in that region's frame:
+    // 50bp before the seam and 50bp after it.
+    expect(labels.get('span')).toMatchObject({ minX: 950, maxX: 1050 })
+    expect(out.get(0)!.floatingLabelsData.get('span')).toMatchObject({
+      minX: 50,
+      maxX: 150,
+    })
+  })
+
+  it("reserves a part's label from where the part draws", () => {
+    const base = makeFeatureData({
+      features: [
+        { featureId: 'gene', startBp: 1010, endBp: 1090, height: 10 },
+        { featureId: 'far', startBp: 1200, endBp: 1300, height: 10 },
+      ],
+      bounds: [1000, 1500],
+    })
+    const second = {
+      ...base,
+      floatingLabelsData: labelsMap({
+        'gene-late': {
+          featureId: 'gene-late',
+          minX: 1060,
+          maxX: 1090,
+          topY: 0,
+          featureHeight: 10,
+          parentFeatureId: 'gene',
+          subfeatureLabel: {
+            text: 'gene-late',
+            relativeY: 0,
+            textWidth: 20,
+            isOverlay: false,
+          },
+        },
+      }),
+    }
+    const out = layout(
+      new Map([
+        [0, pad],
+        [1, second],
+      ]),
+      1,
+    ).get(1)!
+    expect(topOf(out, 'gene')).toBe(topOf(out, 'far'))
+  })
+
+  it('packs a trimmed gene by the isoforms it keeps, where they draw', () => {
+    const second: LayoutRegionData = {
+      regionKey: 'v:ctgA',
+      regionStart: 1000,
+      regionEnd: 2000,
+      ...packStackedGenes([
+        {
+          featureId: 'gene',
+          startBp: 1010,
+          endBp: 1100,
+          isoforms: 2,
+          spans: [
+            [1010, 1050],
+            [1010, 1100],
+          ],
+        },
+        { featureId: 'far', startBp: 1910, endBp: 1950, isoforms: 1 },
+      ]),
+    }
+    const out = computeLaidOutData(
+      new Map([
+        [0, pad],
+        [1, second],
+      ]),
+      {
+        bpPerPx: 1,
+        showLabels: false,
+        showDescriptions: false,
+        reversedRegions: new Set<number>(),
+        displayMode: 'normal',
+        pinnedFeatureIds: new Set<string>(),
+        maxIsoformsPerGene: 1,
+      },
+    ).get(1)!
+    expect(topOf(out, 'gene')).toBe(topOf(out, 'far'))
   })
 })
 
@@ -2029,11 +2153,21 @@ test('a flattened band plans no density collapse', () => {
     displayMode: 'normal' as const,
     pinnedFeatureIds: new Set<string>(),
   }
-  const stacked = prepareRefPack(regions, inputs, displayModeMetrics(inputs))
+  const stacked = prepareRefPack(
+    regions,
+    inputs,
+    displayModeMetrics(inputs),
+    bp => bp,
+  )
   expect(stacked.collapsedFeatureIds.size).toBeGreaterThan(0)
 
   const flat = { ...inputs, flattenRows: true }
-  const flattened = prepareRefPack(regions, flat, displayModeMetrics(flat))
+  const flattened = prepareRefPack(
+    regions,
+    flat,
+    displayModeMetrics(flat),
+    bp => bp,
+  )
   expect(flattened.collapsedFeatureIds.size).toBe(0)
   expect(flattened.collapsedSpansPx).toEqual([])
 })

@@ -190,6 +190,22 @@ export function cloneMutableFields(raw: FeatureDataResult) {
   }
 }
 
+// Moves each label's span into this region's frame along the drawn axis, so a
+// feature starting in a hidden stretch labels from the seam, where it draws and
+// where the packer reserved its label, rather than over the previous region.
+// Mutates the clone `cloneMutableFields` made, in place.
+export function applyDrawnLabelSpans(
+  data: FeatureDataResult,
+  regionStart: number,
+  toDrawnBp: (bp: number) => number,
+) {
+  const shift = regionStart - toDrawnBp(regionStart)
+  for (const labelData of data.floatingLabelsData.values()) {
+    labelData.minX = toDrawnBp(labelData.minX) + shift
+    labelData.maxX = toDrawnBp(labelData.maxX) + shift
+  }
+}
+
 // Mutates the clone `cloneMutableFields` made, in place.
 export function applyLayoutToRegion(
   data: FeatureDataResult,

@@ -2,11 +2,13 @@ import { compareGroupKeys } from '@jbrowse/core/util/groupKeys'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
 import {
+  applyDrawnLabelSpans,
   applyHeightScale,
   applyLayoutToRegion,
   cloneMutableFields,
 } from './applyLayout.ts'
 import { pileupFadeIds } from './densityCollapse.ts'
+import { drawnAxis } from './drawnAxis.ts'
 import { facetField, sectionIdsOf } from './facet.ts'
 import { applyIsoformGapFloor, planIsoformGapFloor } from './isoformGapFloor.ts'
 import { applyIsoformTrim } from './isoformTrim.ts'
@@ -78,6 +80,7 @@ interface SectionPrep {
 }
 
 interface RefSections {
+  toDrawnBp: (bp: number) => number
   sections: SectionPrep[]
   // The features of hidden sections, which leave the pack.
   hiddenIds: Set<string>
@@ -94,12 +97,14 @@ function prepareRefSections(
   sectionOf: ((item: FlatbushItem) => GroupId) | undefined,
 ): RefSections {
   const hiddenIds = new Set<string>()
+  const toDrawnBp = drawnAxis(regions.map(([, data]) => data))
   if (!sectionOf) {
     return {
+      toDrawnBp,
       sections: [
         {
           id: UNGROUPED,
-          prep: prepareRefPack(regions, inputs, metrics),
+          prep: prepareRefPack(regions, inputs, metrics, toDrawnBp),
         },
       ],
       hiddenIds,
@@ -123,11 +128,12 @@ function prepareRefSections(
   }
   const compare = sectionOrder(inputs)
   return {
+    toDrawnBp,
     sections: [...members.values()]
       .sort((a, b) => compare(a.id.key, b.id.key))
       .map(({ id, ids }) => ({
         id,
-        prep: prepareRefPack(regions, inputs, metrics, ids),
+        prep: prepareRefPack(regions, inputs, metrics, toDrawnBp, ids),
       })),
     hiddenIds,
   }
@@ -244,12 +250,13 @@ function mergeSections(
 }
 
 function packRefSections(
-  { sections, hiddenIds }: RefSections,
+  { toDrawnBp, sections, hiddenIds }: RefSections,
   packInputs: LayoutInputs,
   metrics: DisplayModeMetrics,
   prevYByFeatureId?: ReadonlyMap<string, number>,
 ) {
   return {
+    toDrawnBp,
     hiddenIds,
     sections: sections.map(section => {
       const trims = trimPreparedRef(section.prep, packInputs, metrics)
@@ -309,6 +316,7 @@ function layoutRefGroups(
       // Before the height scale, so the trim's px and its whole label rows
       // are each spent in the unit the worker counted them in.
       applyIsoformTrim(cloned, merged.trimPlan)
+      applyDrawnLabelSpans(cloned, raw.regionStart, ref.toDrawnBp)
       applyHeightScale(cloned, metrics.heightMultiplier, metrics.labelFontPx)
       // After the scale, because the pixel it promises is a drawn one; the
       // packer reserved the same spread through `isoformGapSpreadPx`.

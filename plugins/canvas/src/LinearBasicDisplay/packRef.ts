@@ -12,7 +12,6 @@ import {
   planDensityCollapse,
   renderedSpanPx,
 } from './densityCollapse.ts'
-import { drawnAxis } from './drawnAxis.ts'
 import { isoformGapSpreadPx } from './isoformGapFloor.ts'
 import { planIsoformTrims } from './isoformTrim.ts'
 import {
@@ -39,7 +38,6 @@ import type {
   DisplayModeMetrics,
   LabelRoomFactorFreeInputs,
   LayoutInputs,
-  LayoutRegionData,
   PackPrepInputs,
 } from './layoutInputs.ts'
 
@@ -205,9 +203,10 @@ function gatherFeatureGeometry(
 // `featureIds` narrows the pack to one group's section; the density collapse
 // and the label overhang are then decided among that section's own features.
 export function prepareRefPack(
-  regions: [number, LayoutRegionData][],
+  regions: [number, FeatureDataResult][],
   inputs: PackPrepInputs,
   metrics: DisplayModeMetrics,
+  toDrawnBp: (bp: number) => number,
   featureIds?: ReadonlySet<string>,
 ): PackPrep {
   const {
@@ -218,7 +217,6 @@ export function prepareRefPack(
     labelDecimation = 'all',
   } = inputs
 
-  const toDrawnBp = drawnAxis(regions.map(([, data]) => data))
   const labelInfoByFeatureId = gatherLabelInfo(
     regions,
     showLabels,
@@ -302,6 +300,7 @@ export function trimPreparedRef(
     inputs.maxIsoformsPerGene,
     inputs.expandedGeneIds,
     bpPerPx,
+    prep.toDrawnBp,
   )
   const bodies = new Map<string, TrimmedBody>()
   for (const [id, stack] of prep.stacks) {

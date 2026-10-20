@@ -2,7 +2,12 @@ import {
   makeFlatbushItem,
   packStackedGenes,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { maxIsoformCount, trimIsoformStack } from './isoformTrim.ts'
+import { drawnAxis } from './drawnAxis.ts'
+import {
+  maxIsoformCount,
+  planIsoformTrims,
+  trimIsoformStack,
+} from './isoformTrim.ts'
 import { computeLaidOutData } from './layout.ts'
 import { WHOLE_REF } from './layoutTestUtils.ts'
 
@@ -26,6 +31,24 @@ const STACK: IsoformStack = {
     endBp: 200 + c.ordinal * 10,
   })),
 }
+
+describe('the more-isoforms badge', () => {
+  // The kept isoforms span 110-220, 110px at 1bp/px.
+  const badgeOf = (toDrawnBp?: (bp: number) => number) =>
+    planIsoformTrims([['gene', STACK]], 1, undefined, 1, toDrawnBp).badges
+
+  it('shows on a gene drawn wide enough', () => {
+    expect(badgeOf().has('gene')).toBe(true)
+  })
+
+  it('measures the gene as drawn, without the bp a collapsed intron hides', () => {
+    const toDrawnBp = drawnAxis([
+      { regionStart: 0, regionEnd: 150 },
+      { regionStart: 200, regionEnd: 300 },
+    ])
+    expect(badgeOf(toDrawnBp).has('gene')).toBe(false)
+  })
+})
 
 describe('trimIsoformStack', () => {
   it('keeps the best by rank, not the first by drawn order', () => {
