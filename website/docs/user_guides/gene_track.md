@@ -227,7 +227,7 @@ color, hoverable and clickable.
 - The track names each row by its `product` attribute, which NCBI writes in
   place of a Name, and falls back to the track's `labels.name`.
 - **Subfeature labels** in the Show menu sets the placement
-  ([`subfeatureLabels`](/docs/config/LinearBasicDisplay/#slot-subfeaturelabels)).
+  ([`subfeatureLabels`](/docs/config/linearbasicdisplay#slot-subfeaturelabels)).
   `Auto` names cleavage products only; `Off`, `Below` and `Overlay` apply to
   every part, transcripts included.
 
