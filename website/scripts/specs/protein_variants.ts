@@ -323,7 +323,12 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     // columns widen with it, so column 7 sits further right.
     viewportWidth: 2300,
     viewportHeight: 1360,
+    clicksChange: "close the domain track's legend",
     actions: [
+      {
+        type: 'click',
+        selector: `[data-track-overlay-slot]:has([data-testid="trackRenderingContainer-lgv-HBB-${HBB_DOMAINS}"]) [aria-label="Hide legend"]`,
+      },
       { type: 'waitForAppSettled' },
       ...hoverAlignment({ dx: 224, dy: 8 }),
     ],
