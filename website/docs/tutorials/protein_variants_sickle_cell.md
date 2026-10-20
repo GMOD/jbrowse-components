@@ -199,6 +199,8 @@ one color in every view:
 - type `chr11:5226956-5227046[rev] chr11:5226750-5226799[rev]` into the location
   box, which adds the start of exon 2 beside codon 7
 - in the protein view's palette menu, pick **Domains from the alignment**
+- in the protein view's menu, pick **Assembly → Deposited model (every chain)**,
+  which draws both tetramers the crystal holds, then click **Reset Zoom**
 
 In the protein view's header, the **From the alignment** rows list the same
 domains and sites.
@@ -216,14 +218,10 @@ a time:
 3. the alignment and the domain track mark no heme-binding or tetramer-interface
    site at residue 6, so the change breaks none of the sites NCBI
    records[^domain]
-4. on the structure, valine 6 trades glutamate's charged side chain for a
-   hydrophobic one on the β chain's surface
-5. in the 2HBS crystal, valine 6 of the second tetramer fills a pocket of Phe85
-   and Leu88 on this tetramer's chain B. Deoxygenated haemoglobin S stacks into
-   fibres through that contact, and the fibres bend red cells into sickles
-
-The protein view draws the crystal's first tetramer, and both the valine and the
-pocket it docks into sit on it.
+4. on the structure, the hydrophobic valine 6 of the second tetramer's chain H
+   fills a pocket of Phe85 and Leu88 on the first tetramer's chain B.
+   Deoxygenated haemoglobin S stacks into fibres through this contact, and the
+   fibres bend red cells into sickles
 
 [^domain]:
     The Hb-beta-like domain, NCBI's cd08925, starts at the transcript's residue

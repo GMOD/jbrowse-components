@@ -181,13 +181,21 @@ const E6V = {
 
 function hbbSession({
   msaEnd = 31,
+  assembly,
   ...options
 }: Partial<SessionOptions> &
-  Pick<SessionOptions, 'tracks'> & { msaEnd?: number }) {
+  Pick<SessionOptions, 'tracks'> & { msaEnd?: number; assembly?: string }) {
   const session = structuredClone(HBB_SESSION)
   session.highlights = [E6V]
   session.views[1]!.relativeTo = 'human_query'
-  session.views[2]!.colorScheme = 'mapped-chain'
+  const protein = session.views[2]!
+  protein.colorScheme = 'mapped-chain'
+  if (assembly) {
+    protein.structures = (protein.structures as object[]).map(s => ({
+      ...s,
+      assembly,
+    }))
+  }
   return linkedSession(
     session,
     decodeURIComponent(UCSC_HG38_CONFIG),
@@ -503,6 +511,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       msaHeight: 490,
       domains: true,
       msaEnd: 75,
+      assembly: 'deposited',
     }),
     ...READY,
     readySelector: `${READY.readySelector}:has([data-testid="trackRenderingContainer-lgv-HBB-${HBB_DOMAINS}"])`,
@@ -558,23 +567,13 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: '4  Valine 6 puts a sticky patch on the β chain surface',
-        fontSize: HBB_FONT_SIZE,
-        maxWidth: 340,
-        leader: true,
-        anchor: { residue: 'B:6' },
-        dx: -150,
-        dy: 250,
-      },
-      {
-        type: 'text',
-        text: "5  The pocket where the next tetramer's valine 6 docks, stringing haemoglobin S into fibres",
+        text: '4  Valine 6 of one tetramer docks into a pocket on the other, the contact that strings haemoglobin S into fibres',
         fontSize: HBB_FONT_SIZE,
         maxWidth: 420,
         leader: true,
-        anchor: { residue: 'B:85' },
-        dx: -100,
-        dy: -150,
+        anchor: { residue: 'H:6' },
+        dx: 20,
+        dy: 470,
       },
     ],
   },
