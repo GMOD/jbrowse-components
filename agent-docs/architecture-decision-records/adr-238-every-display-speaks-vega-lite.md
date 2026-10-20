@@ -136,8 +136,10 @@ channels.
   `sameScale` and `lockAspectRatio`.
 - **Data:** `data.resolution` replaces `lodMode`, wiggle's `resolution` and
   Hi-C's `resolutionBias`.
-- **Render:** `render.antialias: 'auto' | true | false` replaces
-  `fadeThinAlignmentsMode` and `pileup.fadeLowFrequency`.
+- **Render:** `render.antialias`, `true`, `false` or unset to follow the data, replaces
+  `fadeThinAlignmentsMode`. Amended 2026-10-20: `pileup.fadeLowFrequency`
+  stays apart, since it fades a sub-pixel mark by the share of reads carrying
+  it, a fact about the data rather than the pixel it covers.
 - **Rows:**
   - A split with its own inner scale is `facet`.
   - One position per category is `encoding.y` on a `band` scale, with the

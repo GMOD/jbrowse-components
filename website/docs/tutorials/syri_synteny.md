@@ -194,7 +194,7 @@ Open the first 6 Mb of chromosome 4 in both accessions and pick **syri** under
         },
         "mark": { "interpolate": "bump" },
         "opacity": 0.9,
-        "fadeThinAlignmentsMode": "off",
+        "render": { "antialias": false },
         "collapseEmptyRows": true,
         "levelHeights": [260]
       }
@@ -237,7 +237,7 @@ between the two genomes it joins:
         },
         "mark": { "interpolate": "bump" },
         "opacity": 0.9,
-        "fadeThinAlignmentsMode": "off",
+        "render": { "antialias": false },
         "collapseEmptyRows": true,
         "levelHeights": [150, 150, 150, 150, 150]
       }

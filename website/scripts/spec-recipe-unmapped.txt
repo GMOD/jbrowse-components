@@ -8,7 +8,6 @@
 color
 colorScheme
 connectedView
-fadeThinAlignmentsMode
 geneTrackId
 height
 layers
@@ -17,6 +16,7 @@ loadedTrackId
 maxRegionBp
 opacity
 paneHeight
+render
 repeatKey
 repeatTrackId
 rows

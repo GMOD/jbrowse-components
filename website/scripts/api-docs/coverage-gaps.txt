@@ -1293,7 +1293,7 @@ SvInspectorView.spreadsheetView
 SvInspectorView.subviewWidths
 SvInspectorView.variantTrackId
 SyntenyColorsMixin.colorableTrackConfigs
-SyntenyFadeMixin.setFadeThinAlignmentsMode
+SyntenyFadeMixin.setAntialias
 SyntenyFilterMixin.setFilter
 SyntenyViewMixin.setLodMode
 ThemeManagerSessionMixin.allThemes

@@ -18,7 +18,7 @@ circular view both compose it; a view supplies `autoFadeWidthPx`.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-fadethinalignmentsmode">**fadeThinAlignmentsMode**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>fadeThinAlignmentsMode: types.stripDefault( types.enumeration('…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>fadeThinAlignmentsMode: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.enumeration('FadeThinMode', ['auto', 'on', 'off']),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;'auto',&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | Fade a sub-pixel-thin ribbon's opacity by its on-screen width, so an unfiltered whole-genome view doesn't read as a full-opacity hairball. 'auto' fades once sub-pixel ribbons dominate a display and leaves a sparse comparison at full alpha; 'on'/'off' fix the value. Resolved view-wide by `fadeThinAlignments`. |
+| <span id="property-render">**render**</span><br><code>render: types.stripDefault(syntenyRenderConfigSchema, {})</code> | How the ribbons rasterize, a [](/docs/config/syntenyrender) object: `antialias` fades a sub-pixel ribbon by its on-screen width, so an unfiltered whole-genome view doesn't read as a full-opacity hairball. Unset, it fades once sub-pixel ribbons dominate a display and leaves a sparse comparison at full alpha; `true` and `false` fix it. Resolved view-wide by `fadeThinAlignments`. |
 
 ## Volatiles
 
@@ -33,6 +33,7 @@ circular view both compose it; a view supplies `autoFadeWidthPx`.
 | Member | Description |
 | --- | --- |
 | <span id="getter-autofadewidthpx">**autoFadeWidthPx**</span><br><code>number</code> | Overridable hook: the width 'auto' compares against its thresholds, the narrowest capped mean block width of any display with enough blocks to judge, or `Infinity` with none. |
+| <span id="getter-antialias">**antialias**</span><br><code>boolean &#124; undefined</code> | `render.antialias`, undefined while it follows the data. |
 | <span id="getter-fadethinalignments">**fadeThinAlignments**</span><br><code>boolean</code> | The resolved fade-thin flag every display renders by. 'auto' fades once sub-pixel ribbons dominate any loaded display, latched with a deadband (`fadesThinAt`, ADR-083) so a view near the threshold does not flip while panning. View-wide, so every display fades together. |
 
 ## Actions
@@ -40,5 +41,5 @@ circular view both compose it; a view supplies `autoFadeWidthPx`.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setfadethinalignmentsmode">**setFadeThinAlignmentsMode**</span><br><code>(arg: FadeThinMode) =&gt; void</code> |  |
+| <span id="action-setantialias">**setAntialias**</span><br><code>(antialias: boolean &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setfadethinlatch">**setFadeThinLatch**</span><br><code>(arg: boolean) =&gt; void</code> | Move the latched 'auto' thin-fade decision — `installAutoFadeLatch` is the only caller. |

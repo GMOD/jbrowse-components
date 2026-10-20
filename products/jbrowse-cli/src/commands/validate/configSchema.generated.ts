@@ -25577,6 +25577,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "SyntenyRender": {
+      "title": "SyntenyRender",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "antialias": {
+          "description": "fade a sub-pixel ribbon by the share of the pixel it covers; unset fades once sub-pixel ribbons dominate a display.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "CircularViewTrackEntry": {
       "title": "CircularViewTrackEntry",
       "description": "A track to open in a CircularView: a trackId, or an object whose other keys are the display's config slots and state written inline.",
@@ -26205,12 +26225,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "opacity": {
           "$ref": "#/$defs/SyntenyOpacity"
         },
-        "fadeThinAlignmentsMode": {
-          "enum": [
-            "auto",
-            "on",
-            "off"
-          ]
+        "render": {
+          "$ref": "#/$defs/SyntenyRender"
         },
         "offsetRadians": {
           "type": "number"
@@ -26774,12 +26790,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "coarse"
           ]
         },
-        "fadeThinAlignmentsMode": {
-          "enum": [
-            "auto",
-            "on",
-            "off"
-          ]
+        "render": {
+          "$ref": "#/$defs/SyntenyRender"
         },
         "cigarMode": {
           "enum": [

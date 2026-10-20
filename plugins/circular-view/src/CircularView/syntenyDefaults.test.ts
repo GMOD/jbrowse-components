@@ -139,7 +139,7 @@ describe('the thin fade', () => {
 
   test('stays off when the session pins it off', async () => {
     const { circle } = await launch(
-      { fadeThinAlignmentsMode: 'off' },
+      { render: { antialias: false } },
       alignments(12, 10),
     )
     expect(circle.chordThinFadeFloor).toBe(1)

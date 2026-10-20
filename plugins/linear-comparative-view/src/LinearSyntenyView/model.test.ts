@@ -68,12 +68,12 @@ describe('LinearSyntenyViewInit type', () => {
     expect(init.tracks?.[0]?.length).toBe(2)
   })
 
-  test('init type accepts fadeThinAlignmentsMode', () => {
+  test('init type accepts render', () => {
     const init: LinearSyntenyViewInit = {
       views: [{ assembly: 'hg38' }, { assembly: 'mm39' }],
-      fadeThinAlignmentsMode: 'auto',
+      render: { antialias: false },
     }
-    expect(init.fadeThinAlignmentsMode).toBe('auto')
+    expect(init.render).toEqual({ antialias: false })
   })
 
   // The settings half of the type is derived from the state model, so a

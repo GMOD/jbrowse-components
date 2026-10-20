@@ -89,7 +89,7 @@ export const linkageGroupsSpecs: ScreenshotSpec[] = [
           // runs outward both ways from it.
           diagonalizeAnchorRow: 2,
           mark: { interpolate: 'bump' },
-          fadeThinAlignmentsMode: 'off',
+          render: { antialias: false },
           opacity: {
             field: 'break_FET',
             scale: 'threshold',

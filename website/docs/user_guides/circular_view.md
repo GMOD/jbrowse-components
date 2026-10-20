@@ -116,8 +116,8 @@ they go in a session as `color`, `opacity` and `filter`; the identity fade is
 
 An alignment narrower than a pixel draws at the share of the pixel it covers, as
 in the linear synteny view, so a circle of tens of thousands of short alignments
-shows where they pile up. `fadeThinAlignmentsMode: 'off'` on the view draws
-every ribbon at full opacity.
+shows where they pile up. `render: { antialias: false }` on the view draws every
+ribbon at full opacity.
 
 <Figure src="/img/circular_synteny/color_by_strand.png" caption="Color by... → Strand on the human and mouse circle." />
 

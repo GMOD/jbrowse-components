@@ -74,7 +74,7 @@ export const paperDrosophilaSpecs: ScreenshotSpec[] = [
           mark: { interpolate: 'bump' },
           opacity: 0.5,
           offscreen: { show: false },
-          fadeThinAlignmentsMode: 'off',
+          render: { antialias: false },
           levelHeights: ROWS.slice(1).map(() => 100),
         },
       ],

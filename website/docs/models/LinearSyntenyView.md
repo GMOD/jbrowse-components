@@ -58,7 +58,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <details class="inherited-members" data-pagefind-ignore>
 <summary>8 inherited properties from 6 models</summary>
 
-From [SyntenyFadeMixin](../syntenyfademixin): <span id="property-fadethinalignmentsmode">[`fadeThinAlignmentsMode`](../syntenyfademixin#property-fadethinalignmentsmode)</span>
+From [SyntenyFadeMixin](../syntenyfademixin): <span id="property-render">[`render`](../syntenyfademixin#property-render)</span>
 
 From [SyntenyViewMixin](../syntenyviewmixin): <span id="property-lodmode">[`lodMode`](../syntenyviewmixin#property-lodmode)</span>
 
@@ -138,9 +138,9 @@ From [BaseViewModel](../baseviewmodel): <span id="volatile-bodymounted">[`bodyMo
 | <span id="getter-status">**status**</span><br><code>ViewStatus</code> | The view's lifecycle as one value — ready, error, loading or noRegions — for a host that draws its own chrome. Same shape and precedence as the linear view's. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>27 inherited getters from 6 models</summary>
+<summary>28 inherited getters from 6 models</summary>
 
-From [SyntenyFadeMixin](../syntenyfademixin): <span id="getter-fadethinalignments">[`fadeThinAlignments`](../syntenyfademixin#getter-fadethinalignments)</span>
+From [SyntenyFadeMixin](../syntenyfademixin): <span id="getter-antialias">[`antialias`](../syntenyfademixin#getter-antialias)</span>, <span id="getter-fadethinalignments">[`fadeThinAlignments`](../syntenyfademixin#getter-fadethinalignments)</span>
 
 From [SyntenyViewMixin](../syntenyviewmixin): <span id="getter-haslodcapableadapter">[`hasLodCapableAdapter`](../syntenyviewmixin#getter-haslodcapableadapter)</span>, <span id="getter-showlegend">[`showLegend`](../syntenyviewmixin#getter-showlegend)</span>, <span id="getter-legendspec">[`legendSpec`](../syntenyviewmixin#getter-legendspec)</span>
 
@@ -230,7 +230,7 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 <details class="inherited-members" data-pagefind-ignore>
 <summary>27 inherited actions from 8 models</summary>
 
-From [SyntenyFadeMixin](../syntenyfademixin): <span id="action-setfadethinalignmentsmode">[`setFadeThinAlignmentsMode`](../syntenyfademixin#action-setfadethinalignmentsmode)</span>, <span id="action-setfadethinlatch">[`setFadeThinLatch`](../syntenyfademixin#action-setfadethinlatch)</span>
+From [SyntenyFadeMixin](../syntenyfademixin): <span id="action-setantialias">[`setAntialias`](../syntenyfademixin#action-setantialias)</span>, <span id="action-setfadethinlatch">[`setFadeThinLatch`](../syntenyfademixin#action-setfadethinlatch)</span>
 
 From [SyntenyViewMixin](../syntenyviewmixin): <span id="action-setlodmode">[`setLodMode`](../syntenyviewmixin#action-setlodmode)</span>, <span id="action-setshowlegend">[`setShowLegend`](../syntenyviewmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../syntenyviewmixin#action-dismisslegendsection)</span>
 

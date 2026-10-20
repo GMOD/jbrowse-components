@@ -71,7 +71,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <details class="inherited-members" data-pagefind-ignore>
 <summary>8 inherited properties from 5 models</summary>
 
-From [SyntenyFadeMixin](../syntenyfademixin): <span id="property-fadethinalignmentsmode">[`fadeThinAlignmentsMode`](../syntenyfademixin#property-fadethinalignmentsmode)</span>
+From [SyntenyFadeMixin](../syntenyfademixin): <span id="property-render">[`render`](../syntenyfademixin#property-render)</span>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="property-opacity">[`opacity`](../syntenycolorsmixin#property-opacity)</span>
 
@@ -176,9 +176,9 @@ From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../b
 | <span id="getter-legendspec">**legendSpec**</span><br><code>LegendSpec</code> | one row per track: its name beside the color or ramp it paints with |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>25 inherited getters from 5 models</summary>
+<summary>26 inherited getters from 5 models</summary>
 
-From [SyntenyFadeMixin](../syntenyfademixin): <span id="getter-fadethinalignments">[`fadeThinAlignments`](../syntenyfademixin#getter-fadethinalignments)</span>
+From [SyntenyFadeMixin](../syntenyfademixin): <span id="getter-antialias">[`antialias`](../syntenyfademixin#getter-antialias)</span>, <span id="getter-fadethinalignments">[`fadeThinAlignments`](../syntenyfademixin#getter-fadethinalignments)</span>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="getter-defaultopacity">[`defaultOpacity`](../syntenycolorsmixin#getter-defaultopacity)</span>, <span id="getter-opacitysetting">[`opacitySetting`](../syntenycolorsmixin#getter-opacitysetting)</span>, <span id="getter-opacityfade">[`opacityFade`](../syntenycolorsmixin#getter-opacityfade)</span>, <span id="getter-opacitylevel">[`opacityLevel`](../syntenycolorsmixin#getter-opacitylevel)</span>, <span id="getter-opacityfield">[`opacityField`](../syntenycolorsmixin#getter-opacityfield)</span>
 
@@ -260,7 +260,7 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 <details class="inherited-members" data-pagefind-ignore>
 <summary>24 inherited actions from 7 models</summary>
 
-From [SyntenyFadeMixin](../syntenyfademixin): <span id="action-setfadethinalignmentsmode">[`setFadeThinAlignmentsMode`](../syntenyfademixin#action-setfadethinalignmentsmode)</span>, <span id="action-setfadethinlatch">[`setFadeThinLatch`](../syntenyfademixin#action-setfadethinlatch)</span>
+From [SyntenyFadeMixin](../syntenyfademixin): <span id="action-setantialias">[`setAntialias`](../syntenyfademixin#action-setantialias)</span>, <span id="action-setfadethinlatch">[`setFadeThinLatch`](../syntenyfademixin#action-setfadethinlatch)</span>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="action-setopacity">[`setOpacity`](../syntenycolorsmixin#action-setopacity)</span>, <span id="action-setopacityfield">[`setOpacityField`](../syntenycolorsmixin#action-setopacityfield)</span>
 

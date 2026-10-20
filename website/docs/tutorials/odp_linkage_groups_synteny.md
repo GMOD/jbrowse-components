@@ -229,8 +229,8 @@ column). Like the paper's figure, the stack draws orthologs on a chromosome pair
 under 0.05 at opacity 0.8 and the rest at 0.15. That is an `opacity` scale,
 which maps the `break_FET` field, cut at 0.05, to a `range` of two opacities.
 
-Each setting in the session has a menu route except `fadeThinAlignmentsMode` and
-the `opacity` mapping:
+Each setting in the session has a menu route except `render` and the `opacity`
+mapping:
 
 - `autoDiagonalize` sorts each row against its neighbour, working outward from
   `diagonalizeAnchorRow`. Rows count from 0, so 2 is the jellyfish, where each
@@ -239,9 +239,8 @@ the `opacity` mapping:
 - `filter` drops the alignments with no `gene_group`, which **Hide unlabelled
   rows** on the palette menu writes.
 - `mark` is **Curved lines** on the sliders button.
-- `fadeThinAlignmentsMode` turns off the fade a whole-genome view applies to
-  sub-pixel ribbons, since their colors are what the figure shows. It has no
-  menu item.
+- `render.antialias` turns off the fade a whole-genome view applies to sub-pixel
+  ribbons, since their colors are what the figure shows. It has no menu item.
 - `opacity` is the scale above. **Opacity** on the sliders button scales both
   opacities together; the mapping itself has no menu item.
 
@@ -273,7 +272,7 @@ the `opacity` mapping:
         "autoDiagonalize": true,
         "diagonalizeAnchorRow": 2,
         "mark": { "interpolate": "bump" },
-        "fadeThinAlignmentsMode": "off",
+        "render": { "antialias": false },
         "opacity": {
           "field": "break_FET",
           "scale": "threshold",

@@ -1,11 +1,11 @@
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { addDisposer, cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
 import { fadesThinAt } from './fadeThin.ts'
+import { syntenyRenderConfigSchema } from './syntenyRenderConfigSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
-
-export type FadeThinMode = 'auto' | 'on' | 'off'
 
 /**
  * #stateModel SyntenyFadeMixin
@@ -21,16 +21,14 @@ export function SyntenyFadeMixin() {
     .model('SyntenyFadeMixin', {
       /**
        * #property
-       * Fade a sub-pixel-thin ribbon's opacity by its on-screen width, so an
+       * How the ribbons rasterize, a [](/docs/config/syntenyrender) object:
+       * `antialias` fades a sub-pixel ribbon by its on-screen width, so an
        * unfiltered whole-genome view doesn't read as a full-opacity hairball.
-       * 'auto' fades once sub-pixel ribbons dominate a display and
-       * leaves a sparse comparison at full alpha; 'on'/'off' fix the value. Resolved
+       * Unset, it fades once sub-pixel ribbons dominate a display and leaves
+       * a sparse comparison at full alpha; `true` and `false` fix it. Resolved
        * view-wide by `fadeThinAlignments`.
        */
-      fadeThinAlignmentsMode: types.stripDefault(
-        types.enumeration('FadeThinMode', ['auto', 'on', 'off']),
-        'auto',
-      ),
+      render: types.stripDefault(syntenyRenderConfigSchema, {}),
     })
     .volatile(() => ({
       /**
@@ -53,24 +51,31 @@ export function SyntenyFadeMixin() {
     .views(self => ({
       /**
        * #getter
+       * `render.antialias`, undefined while it follows the data.
+       */
+      get antialias(): boolean | undefined {
+        return readConfObject(self.render, 'antialias')
+      },
+      /**
+       * #getter
        * The resolved fade-thin flag every display renders by. 'auto' fades once
        * sub-pixel ribbons dominate any loaded display, latched with a
        * deadband (`fadesThinAt`, ADR-083) so a view near the threshold does not
        * flip while panning. View-wide, so every display fades together.
        */
       get fadeThinAlignments(): boolean {
-        const { fadeThinAlignmentsMode, fadeThinLatch } = self
-        return fadeThinAlignmentsMode === 'auto'
-          ? fadesThinAt(self.autoFadeWidthPx, fadeThinLatch)
-          : fadeThinAlignmentsMode === 'on'
+        const { antialias } = this
+        return (
+          antialias ?? fadesThinAt(self.autoFadeWidthPx, self.fadeThinLatch)
+        )
       },
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setFadeThinAlignmentsMode(arg: FadeThinMode) {
-        self.fadeThinAlignmentsMode = arg
+      setAntialias(antialias: boolean | undefined) {
+        self.render = cast({ ...getSnapshot(self.render), antialias })
       },
       /**
        * #action
@@ -100,7 +105,7 @@ export function installAutoFadeLatch(self: SyntenyFadeModel) {
     self,
     autorun(
       () => {
-        if (self.fadeThinAlignmentsMode !== 'auto') {
+        if (self.antialias !== undefined) {
           return
         }
         const widthPx = self.autoFadeWidthPx

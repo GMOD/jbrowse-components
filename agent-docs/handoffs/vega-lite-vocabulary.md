@@ -26,6 +26,8 @@ spelling, not a new house word. That means no new `min*`, `max*`, `show*` or
   member, which ADR-238's amendment puts in the place of `null`.
 - `axis` on the linear genome, dotplot and linear synteny views, which
   replaced their `showGridlines`, `showTickLabels` and `drawLocationMarkers`.
+- The synteny and circular views' `render.antialias`, which replaced
+  `fadeThinAlignmentsMode`.
 
 ## Next, one concept at a time across the app
 
@@ -40,8 +42,6 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    against today's `flagInclude`/`flagExclude`/`minMapq` path.
 3. **Guides**:
    - `legend.show` takes over every `showLegend`.
-4. **`render.antialias`** takes over `fadeThinAlignmentsMode` and
-   `pileup.fadeLowFrequency`.
 5. **`data.resolution`** takes over `lodMode`, wiggle's `resolution` and Hi-C's
    `resolutionBias`.
 6. **Layout**: `height`, `autosize` and `maxHeight` take over `heightMode`,

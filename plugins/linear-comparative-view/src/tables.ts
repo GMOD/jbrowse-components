@@ -71,7 +71,7 @@ export interface SyntenyTablesArgs {
    * `color` (a CSS color, or the color object's slots such as
    * `{ field: 'strand' }`), `opacity` (a number, or the opacity object),
    * `filter` (a list of field predicates), `cigarMode` (`full`, `matches` or `off`),
-   * `axis` (`grid` draws the location markers), `fadeThinAlignmentsMode` (`auto`, `on`, `off`) and
+   * `axis` (`grid` draws the location markers), `render` (`antialias`: `true`, `false`, or unset to follow the data) and
    * the level's `height` in px, which the thin-ribbon fade measures against.
    */
   view?: {
@@ -80,7 +80,7 @@ export interface SyntenyTablesArgs {
     filter?: FilterArg
     cigarMode?: 'full' | 'matches' | 'off'
     axis?: { grid?: boolean }
-    fadeThinAlignmentsMode?: 'auto' | 'on' | 'off'
+    render?: { antialias?: boolean }
     height?: number
   }
 }
@@ -338,7 +338,7 @@ export async function syntenyTables(
     filter: view.filter ?? [],
     cigarMode: view.cigarMode ?? 'full',
     axis: { grid: view.axis?.grid ?? false },
-    fadeThinAlignmentsMode: view.fadeThinAlignmentsMode ?? 'auto',
+    render: { antialias: view.render?.antialias },
     height: view.height ?? DEFAULT_LEVEL_HEIGHT,
   }
   const { cigarMode, height } = config
@@ -406,16 +406,16 @@ export async function syntenyTables(
 
   const n = featureData.featureIds.length
   const minLength = lowerBoundOf(config.filter, 'length') ?? 0
-  const mode = config.fadeThinAlignmentsMode
+  const mode = config.render.antialias
   const fadeThin =
-    mode === 'auto'
+    mode === undefined
       ? fadesThinAt(
           n >= FADE_AUTO_MIN_FEATURES
             ? cappedMeanWidthPx(featureData.starts, featureData.ends, q.bpPerPx)
             : Infinity,
           false,
         )
-      : mode === 'on'
+      : mode
   const level = settings.level
 
   const named = (dict: readonly string[], ids: ArrayLike<number>) =>

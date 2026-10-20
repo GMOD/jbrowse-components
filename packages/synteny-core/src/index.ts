@@ -164,7 +164,8 @@ export {
   fadesThinAt,
 } from './fadeThin.ts'
 export { SyntenyFadeMixin, installAutoFadeLatch } from './SyntenyFadeMixin.ts'
-export type { FadeThinMode, SyntenyFadeModel } from './SyntenyFadeMixin.ts'
+export type { SyntenyFadeModel } from './SyntenyFadeMixin.ts'
+export { syntenyRenderConfigSchema } from './syntenyRenderConfigSchema.ts'
 export type { ColorableTrack, PalettableTrack } from './trackColors.ts'
 export { colorByMenuItems } from './colorByMenuItems.tsx'
 export { colorByMenuTargetFor } from './colorByMenuTarget.ts'

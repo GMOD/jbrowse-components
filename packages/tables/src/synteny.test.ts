@@ -25,7 +25,7 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
     filter: [],
     cigarMode: 'full',
     axis: { grid: false },
-    fadeThinAlignmentsMode: 'auto',
+    render: {},
     height: 100,
     color: { field: '' },
     opacity: { value: 0.25, field: '' },
