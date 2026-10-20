@@ -150,10 +150,9 @@ function buildInventory() {
         }
       }
       knownNames.add(name!.toLowerCase())
-      // WiggleMark's bare `type` row is a nested key like a dotted one: a
-      // bare `type` elsewhere is a track's or an adapter's
+      // A sub-schema's bare row naming a structural key, WiggleMark's `type`,
+      // is never checked: a bare `type` elsewhere is a track's or an adapter's
       if (STRUCTURAL_KEYS.includes(name!)) {
-        leafDecls.push([name!, decl])
         continue
       }
       const list = declsBySlot.get(name!) ?? []

@@ -50,7 +50,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1337)
+# model members with no description (1338)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -286,6 +286,7 @@ CanvasFeatureGateMixin.setDensityStats
 ChordSyntenyDisplay.featureNoun
 ChordSyntenyDisplay.renderSvg
 ChordSyntenyDisplay.shapeLabel
+ChordSyntenyDisplay.trackMenuItems
 ChordVariantDisplay.highlightedFeatureIdSet
 ChordVariantDisplay.legendSpec
 ChordVariantDisplay.renderSvg

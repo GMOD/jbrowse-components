@@ -13,6 +13,7 @@ import {
   cssColorToABGR,
   withAbgrAlpha,
 } from '@jbrowse/core/util/colorBits'
+import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   PRESET_ATTRIBUTES,
@@ -49,6 +50,7 @@ import type { PaintRun } from '../../chords/ideogramPaint.ts'
 import type { PartnerSpan } from '../../chords/partnerShares.ts'
 import type { RibbonShape } from '../../chords/shapes.ts'
 import type { ChordSyntenyDisplayConfigModel } from './configSchema.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { AlignmentData } from '@jbrowse/core/util/diagonalizeRegions'
 import type { Region } from '@jbrowse/core/util/types'
@@ -728,6 +730,14 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
             return dedupeRibbons(fetched.flat())
           },
         })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       */
+      trackMenuItems(): MenuItem[] {
+        return editPlotMenuItems(self)
       },
     }))
 }

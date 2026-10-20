@@ -47,9 +47,10 @@ display:
 Two of them split a track by a field: `facet` stacks labelled sections, one per
 value, and `rows` draws one row per value, which a tree can order.
 
-The circular view's chord variant display has a plot too, `color`; its Edit plot
-row is under the view menu's Tracks entry, since a track on the circle has no
-label to hang a menu off.
+The circular view's chord displays have a plot too: `mark`, how deeply each
+chord curves, and on the variant display `color`. Their Edit plot row is under
+the view menu's Tracks entry, since a track on the circle has no label to hang a
+menu off.
 
 The Config reference link opens the display's page in the
 [config reference](/docs/config_guide), which spells out each setting's members.
