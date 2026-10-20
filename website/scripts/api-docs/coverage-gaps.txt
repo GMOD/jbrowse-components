@@ -50,7 +50,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1340)
+# model members with no description (1339)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -708,7 +708,6 @@ LinearCanvasBaseDisplay.onScreenWidthPx
 LinearCanvasBaseDisplay.openColorByAttributeDialog
 LinearCanvasBaseDisplay.openFilterDialog
 LinearCanvasBaseDisplay.openGroupByDialog
-LinearCanvasBaseDisplay.openSetColorDialog
 LinearCanvasBaseDisplay.packHeightsDecimated
 LinearCanvasBaseDisplay.packHeightsIsoforms
 LinearCanvasBaseDisplay.packHeightsThinned
