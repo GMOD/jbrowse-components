@@ -205,6 +205,8 @@ session, so none of them is a pixel measured off an earlier capture:
 - `graphNode` names a GFA segment in a graph view or graph track.
 - `hLoc` and `vLoc` name a dotplot's cell, as a whole chromosome (`chr4`) or a
   span (`chr4:1-5,000,000`).
+- `residue` names a residue of a protein view's 3D structure as chain and number
+  (`B:6`); the callout lands on its side chain wherever the camera drew it.
 - `selector` and `text` name an element of the page, such as a menu item.
 
 `dx` and `dy` nudge a callout off its anchor, and `fromAnchor` anchors an

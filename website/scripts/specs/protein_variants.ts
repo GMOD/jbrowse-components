@@ -180,10 +180,16 @@ function hbbSession({
 }
 
 const HBB_FONT_SIZE = 23
-const HBB_STRUCTURE = structureCallout(
-  'Sickle valine, in magenta',
-  HBB_FONT_SIZE,
-)
+// Val6 of 2HBS's first β chain, named as the structure file numbers it
+const HBB_STRUCTURE: Annotation = {
+  type: 'text',
+  text: 'Sickle valine',
+  fontSize: HBB_FONT_SIZE,
+  leader: true,
+  anchor: { residue: 'B:6' },
+  dx: -60,
+  dy: -330,
+}
 const SICKLE_CODON = 'The sickle-cell change: GAG to GTG'
 const SICKLE_CARRIERS =
   'Sickle allele, carried mostly by African-ancestry genomes'

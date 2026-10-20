@@ -6,6 +6,7 @@ import {
 import { assertValidAnnotations } from './annotationSpec.ts'
 import { dotplotAnchorRect } from './dotplotAnchor.ts'
 import { graphNodeRect } from './graphAnchor.ts'
+import { residueRect } from './structureAnchor.ts'
 
 import type {
   Annotation,
@@ -16,12 +17,12 @@ import type {
 import type { Page } from 'puppeteer'
 
 // Attach the parsed region so page context never parses strings, plus the
-// viewport rect of the two anchor kinds that resolve out here rather than in
-// the overlay: a graph node, and a dotplot's pair of axes. Both draw into a
-// single canvas, so there is no element in the page for the overlay to measure
+// viewport rect of the anchor kinds that resolve out here rather than in the
+// overlay: a graph node, a dotplot's pair of axes and a structure's residue.
+// Each draws into a single canvas, so there is no element in the page for the overlay to measure
 // and the view's own layout is the only thing that knows where they went.
 //
-// `wantBounds` is the same question for both kinds of anchor: does this callout
+// `wantBounds` is the same question for every kind of anchor: does this callout
 // WRAP the thing it names, or point at it? A force-directed graph node bends, so
 // the centre of its bounding box can sit off the node and everything but a box
 // wants a point ON it (a dotplot block's cell is a rectangle either way). A
@@ -46,7 +47,9 @@ async function withRegion(
       ? await graphNodeRect(page, anchor, wantBounds)
       : isDotplot
         ? await dotplotAnchorRect(page, anchor)
-        : undefined,
+        : anchor.residue
+          ? await residueRect(page, anchor, wantBounds)
+          : undefined,
   }
 }
 

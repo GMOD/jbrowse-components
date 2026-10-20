@@ -9,6 +9,7 @@ const ANCHOR_KEYS = new Set(
     graphNode: 0,
     hLoc: 0,
     vLoc: 0,
+    residue: 0,
     view: 0,
     trackId: 0,
     loc: 0,

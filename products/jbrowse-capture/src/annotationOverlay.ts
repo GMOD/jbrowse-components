@@ -26,6 +26,7 @@
 //   `scale`/`translateX`/`translateY`, so a node is named by its GFA segment id
 //   and the layout can change underneath it.
 // - `hLoc`/`vLoc`: a dotplot's cell, read off the two axes' own layout.
+// - `residue`: a protein view's residue, projected through the Mol* camera.
 // - `selector`: the first matching element.
 // - `text`: the smallest-area element whose visible text matches — for menu
 //   items and buttons with no testid. Scans the whole document, so prefer
@@ -50,6 +51,10 @@ export interface AnnotationAnchor {
   // nothing here to measure.
   hLoc?: string
   vLoc?: string
+  // a residue of a protein view's structure, as `<auth_asym_id>:<auth_seq_id>`
+  // (`B:6`). The resolved rect is where the camera drew its atoms. Resolved by
+  // the caller (`structureAnchor.ts`): the structure is one WebGL canvas.
+  residue?: string
   // which view to resolve against: an index into `session.views` (default 0
   // for a model anchor; a `selector`/`text` anchor without one searches the
   // whole document). An array descends through nested `.views` — `[0, 1]` is
@@ -443,13 +448,15 @@ export function drawAnnotationOverlay(
     if (!anchor) {
       return undefined
     }
-    // a graph-node or dotplot anchor arrives already resolved by the caller —
-    // both are one canvas with nothing per feature to measure in here — and an
-    // unresolved one carries no rect, so it falls through to the miss below
+    // a graph-node, dotplot or residue anchor arrives already resolved by the
+    // caller — each is one canvas with nothing per feature to measure in here
+    // — and an unresolved one carries no rect, so it falls through to the
+    // miss below
     const preResolved =
       anchor.graphNode !== undefined ||
       anchor.hLoc !== undefined ||
-      anchor.vLoc !== undefined
+      anchor.vLoc !== undefined ||
+      anchor.residue !== undefined
     const rect = preResolved
       ? anchor.rect
       : isModel(anchor)
