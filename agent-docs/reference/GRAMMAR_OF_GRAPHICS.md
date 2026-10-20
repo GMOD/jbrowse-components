@@ -87,8 +87,12 @@ rows a source lists keep its order (`orderRowsByDomain`), since a phylogeny's
 leaf order and a file's sample order mean something; where a tree describes
 the rows, the domain rotates it (`rotateNewickByDomain`).
 
-Declined: filter shorthands such as `{ field, oneOf }`; jexl is the filter
-language, and reading structure back out of jexl is the fragile half.
+A filter is a list of Vega-Lite field predicates (`{ field, gte | oneOf |
+valid ... }`), each compiled to a typed read and a compare before the loop;
+jexl stays the slow path, a computed `field` or the mark display's `filter`
+step
+([ADR-238](../architecture-decision-records/adr-238-every-display-speaks-vega-lite.md),
+which reverses the decline of `{ field, oneOf }` this paragraph held).
 
 Declined on 2026-09-30: track- or view-level facets, and a free y per section.
 
