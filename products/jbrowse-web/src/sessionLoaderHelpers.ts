@@ -148,15 +148,16 @@ export async function writeSessionToIDB(snap: Snap, configPath: string) {
 }
 
 export async function fetchRemoteConfig(configPath: string) {
-  const text =
+  const config =
     (await takePrefetchedConfig(configPath)) ??
-    (await openLocation({
-      uri:
-        configPath +
-        (window.__jbrowseCacheBuster ? `?rand=${Math.random()}` : ''),
-      locationType: 'UriLocation',
-    }).readFile('utf8'))
-  const config = JSON.parse(text)
+    JSON.parse(
+      await openLocation({
+        uri:
+          configPath +
+          (window.__jbrowseCacheBuster ? `?rand=${Math.random()}` : ''),
+        locationType: 'UriLocation',
+      }).readFile('utf8'),
+    )
   const configUri = configBaseUri(configPath)
   addRelativeUris(config, configUri)
   return { config, configUri }

@@ -28,13 +28,24 @@ const COMPILE_HINT = '//# allFunctionsCalledOnLoad\n'
 export class BootChunksPlugin {
   origins: ChunkOrigin[]
 
-  constructor(origins: ChunkOrigin[]) {
+  listed: Record<string, ChunkOrigin[]>
+
+  /**
+   * `listed` names chunk groups only some loads run: the HTML lists each
+   * group's script files in a JSON `<script>` under its id, for the page to
+   * preload once it knows it needs them
+   */
+  constructor(
+    origins: ChunkOrigin[],
+    listed: Record<string, ChunkOrigin[]> = {},
+  ) {
     this.origins = origins
+    this.listed = listed
   }
 
-  originFiles(compilation: webpack.Compilation) {
+  originFiles(compilation: webpack.Compilation, origins = this.origins) {
     const files = new Set<string>()
-    for (const { issuer, request } of this.origins) {
+    for (const { issuer, request } of origins) {
       const groups = compilation.chunkGroups.filter(group =>
         group.origins.some(
           origin =>
@@ -102,6 +113,18 @@ export class BootChunksPlugin {
               }),
             )
           }
+        }
+        for (const [id, origins] of Object.entries(this.listed)) {
+          const scripts = [...this.originFiles(compilation, origins)]
+            .filter(file => file.endsWith('.js') && !loaded.has(file))
+            .map(file => data.publicPath + file)
+          data.headTags.push(
+            HtmlWebpackPlugin.createHtmlTagObject(
+              'script',
+              { type: 'application/json', id },
+              JSON.stringify(scripts),
+            ),
+          )
         }
         return data
       })

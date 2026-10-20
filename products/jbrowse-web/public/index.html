@@ -157,6 +157,46 @@
         } catch (e) {}
       })()
     </script>
+    <!-- requests the config as the HTML parses, a round trip before main.js
+         could, and preloads the plugin re-export registry's chunks once it
+         names plugins (BootChunksPlugin lists them in #plugin-registry-chunks);
+         src/prefetchConfig.ts adopts the config, and its test pins this -->
+    <script id="early-config">
+      ;(function () {
+        try {
+          var hash = location.hash
+          var params = new URLSearchParams(
+            hash.indexOf('=') >= 0 ? hash.slice(1) : location.search,
+          )
+          var configPath =
+            params.get('config') || window.__jbrowseConfigPath || 'config.json'
+          if (configPath === 'none' || window.__jbrowseCacheBuster) {
+            return
+          }
+          var config = fetch(configPath)
+            .then(function (r) {
+              return r.ok ? r.json() : undefined
+            })
+            .catch(function () {})
+          window.__jbrowseEarlyConfig = {
+            configPath: configPath,
+            config: config,
+          }
+          config.then(function (c) {
+            var list = document.getElementById('plugin-registry-chunks')
+            if (c && c.plugins && c.plugins.length && list) {
+              JSON.parse(list.textContent).forEach(function (href) {
+                var link = document.createElement('link')
+                link.rel = 'preload'
+                link.as = 'script'
+                link.href = href
+                document.head.append(link)
+              })
+            }
+          })
+        } catch (e) {}
+      })()
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

@@ -17,3 +17,8 @@ and React's first render of the track.
 assembly and region resolve, without waiting for the display to mount. Measure
 with `probe-coldload-phases.ts` over the same window; at 80 ms RTT the gain is
 bounded by the 117 ms, and it shows only where the second chain binds.
+
+With the config fetched from the HTML (2026-10-20), the `.2bit` read no longer
+binds: starting it ~290 ms earlier moved ready not at all. One BAM track's render
+request leaves on the display's mount (~730 ms of a 0.89 s load at 80 ms RTT),
+so the mount is the thing to move.

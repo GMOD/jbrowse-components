@@ -11,6 +11,8 @@ interface Window {
   // Read by fetchRemoteConfig: appends a ?rand= cache-buster to the config URL
   // (see docs/config_guides/avoiding_stale_config)
   __jbrowseCacheBuster?: boolean
+  // set by public/index.html's early-config script, taken by prefetchConfig
+  __jbrowseEarlyConfig?: { configPath: string; config: Promise<unknown> }
   // Debug globals for the devtools console; also how browser-tests reach into
   // the live models (see browser-tests/suites). Nothing in the repo imports the
   // MST pair, so a grep reads them as dead — they are used by hand against a

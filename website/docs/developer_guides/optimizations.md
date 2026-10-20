@@ -565,6 +565,13 @@ its worker bundle as base64, so a static import pins the blob into the initial
 bundle of every entry point that can reach the helper: 23.4 KB gzipped, against
 141 bytes plus a chunk fetched once a bgzip-backed track is opened.
 
+Round trips cost a cold load more than bytes do. jbrowse-web's `index.html`
+requests the config from an inline script, so the config downloads beside
+`main.js` instead of after it has run, and preloads the plugin re-export
+registry as soon as the config names a plugin.
+[COLD_LOAD_PROFILE.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/COLD_LOAD_PROFILE.md)
+has the measurements and what was tried beside them.
+
 ## What the data provider controls
 
 Some of the largest wins are decisions about the files.

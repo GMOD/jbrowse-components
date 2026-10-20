@@ -96,20 +96,67 @@ in an injected-link experiment, so three levers remain:
 
 - **The assembly's sequence adapter chunks.** Preloading the TwoBit, Cytoband
   and FromConfig adapters moved the page's first data read from 755 ms to 627 ms
-  and ready by 36 ms (62 ms at 200 ms RTT). The adapter depends on the config,
-  so the real fix is starting the assembly load when the config arrives, not a
-  static link.
-- **The re-export registry.** Its 37 chunks are requested ~90 ms after a local
-  config arrives, once the Loader group has evaluated. Declined: starting the
+  and ready by 36 ms (62 ms at 200 ms RTT). Declined: starting the assembly's
+  `.2bit` read when the config arrives. A warm read of its first block from a
+  lazy chunk moved that read from ~570 ms to ~280 ms and ready not at all (eight
+  interleaved rounds, 80 ms RTT); importing `openLocation` from `main.js`
+  instead grew it from 129 KB to 189 KB gzipped and lost ~80 ms.
+- **The re-export registry.** Its 37 chunks are requested once the Loader group
+  has evaluated, ~100 ms after a config fetched from the HTML arrives. The
+  config's `plugins` list now preloads them (below). Declined: starting the
   registry, the store manifest, the bundle preloads and the worker hint from
   `earlyStart.ts` when the prefetched config is parsed. On the hg38 hub it
   drew at 1228 ms against 1193 ms (six interleaved rounds, 80 ms RTT, 4
-  cores): a remote config arrives after the Loader has evaluated, so the
-  store manifest already went out ~30 ms after it.
+  cores): a config `main.js` requests arrives after the Loader has evaluated,
+  so the store manifest already went out ~30 ms after it.
 - **The plugin store manifest.** On a hub, config, `plugin-store/v2/plugins.json`,
   each plugin's entry and its chunks are four serial rounds. The manifest was
   `no-cache` and cost an edge-to-S3 round trip (115-170 ms to first byte); it
   has been edge-cached since 2026-10-14 (jbrowse-plugin-list ADR 0010).
+
+## The config from the HTML
+
+`main.js` once requested the config only after it had downloaded and run, a
+round trip after the HTML arrived. Two changes take that round trip and the
+registry's off the chain:
+
+- **`index.html`'s `early-config` script requests the config** as the page
+  parses, and `prefetchConfig` adopts the parsed JSON when it resolved the same
+  path (`prefetchConfig.test.ts` runs the script and pins the two).
+- **The same script preloads the re-export registry's chunks** once the config
+  names a plugin. `BootChunksPlugin` lists them in a JSON
+  `<script id="plugin-registry-chunks">`.
+
+Measured 2026-10-20 on ada against main `6df9b52fa8`, Chrome pinned to 4 cores,
+interleaved cold loads, medians:
+
+| scenario | RTT | main | branch | rounds |
+| --- | --- | --- | --- | --- |
+| one BAM track | 80 ms | 1.00 s | 0.89 s | 8 |
+| one BAM track | 200 ms | 1.82 s | 1.62 s | 6 |
+| 11 tracks | 80 ms | 1.34 s | 1.28 s | 6 |
+| hg38 hub | 80 ms + real | 1.25 s | 1.19 s | 6 |
+| one BAM track, repeat visit | 80 ms | 0.47 s | 0.47 s | 6 |
+
+With the config fetch alone, one BAM track drew at 0.90 s against 0.95 s. At
+20 ms RTT and with no latency the two builds were level.
+
+Declined, each against the change above at 80 ms RTT:
+
+- **Preloading the plugin bundle from the HTML as well.** It measured level, and
+  for a cross-origin plugin it would request the file before the trust prompt.
+- **Preloading the view and display chunks of a BAM load** with the registry.
+  0.86-0.90 s against 0.84-0.86 s.
+- **Preloading the worker's own registry chunks** (`workerReExports.generated.ts`
+  stubs a module, so seven chunks differ from the page's). Level on one BAM
+  track and on four tracks.
+
+After it, one BAM track's main thread runs boot, plugin, session and the first
+render back to back until the display mounts (~730 ms), and the render request
+goes out on the mount. CPU over that window is diffuse, as above.
+`probe-coldload-phases.ts capture --latency=80` takes the trace under the same
+round trips as `measure-load-latency.ts`, whose `--page=<name>` A/Bs an HTML-only
+change as a variant page beside `build/index.html`.
 
 ## Repeat visits
 
