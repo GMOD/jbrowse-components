@@ -338,10 +338,10 @@ export function variantTrackMenuItems(
               label: capitalizeFirst(attr),
             })),
             onSelect: attr => {
-              self.setFacet(attr)
+              self.facetByField(attr)
             },
             onNone: () => {
-              self.setFacet('')
+              self.facetByField('')
             },
           }),
         ]

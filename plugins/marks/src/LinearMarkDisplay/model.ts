@@ -31,6 +31,7 @@ import { withHitIndex } from '@jbrowse/core/util/markEncoding'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
+import FacetWritesMixin from '@jbrowse/display-kit/FacetWritesMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
@@ -277,6 +278,7 @@ export function stateModelFactory(
         ContextMenuMixin<MarkDisplayContextMenuInfo>(),
         StoredHoverMixin<MarkHitInfo>(sameMarkHit),
         HiddenGroupsMixin(),
+        FacetWritesMixin(),
         // #region configRef
         types.model({
           type: types.literal('LinearMarkDisplay'),
@@ -1673,27 +1675,6 @@ export function stateModelFactory(
             ...storedRegionData(data),
             request: { ...request, region },
           })
-        },
-        /**
-         * #action
-         * A chip drag's reorder writes to the declaration.
-         */
-        setFacetDomain(domain: string[]) {
-          if (self.facet) {
-            setConf(self.conf, ['facet', 'domain'], domain)
-          }
-        },
-        /**
-         * #action
-         * A field's own bands, in their sorted order: the outgoing field's
-         * domain and hidden sections go with it, and the facet's steps stay.
-         */
-        setFacetField(field: string) {
-          if (self.facet?.field !== field) {
-            setConf(self.conf, ['facet', 'field'], field)
-            setConf(self.conf, ['facet', 'domain'], [])
-            setConf(self.conf, ['facet', 'hidden'], [])
-          }
         },
         /**
          * #action

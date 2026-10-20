@@ -71,9 +71,9 @@ const Channels = observer(function Channels({
         label="Group rows by"
         value={display.facet?.field}
         onChange={field => {
-          display.setFacet(
-            field ? { field, domain: domains[field] } : undefined,
-          )
+          display.applyPlot({
+            facet: field ? { field, domain: domains[field] } : null,
+          })
         }}
       />
       <Legend view={view} trackId="genes" />

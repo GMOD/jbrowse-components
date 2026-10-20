@@ -27,7 +27,7 @@ test('a configured colorBy writes no order and is not a custom row order', () =>
 
 test('a configured facet writes no order and is not a custom row order', () => {
   const { display } = createTestEnvironment().createDisplay()
-  display.setFacet('population')
+  display.facetByField('population')
   display.setSources(SOURCES)
 
   expect(display.rowDomain).toEqual([])

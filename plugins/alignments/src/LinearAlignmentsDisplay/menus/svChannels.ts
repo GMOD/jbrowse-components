@@ -1,4 +1,5 @@
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
+import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
 
 import {
   SV_CHANNELS_LABEL,
@@ -9,6 +10,8 @@ import {
 
 import type { Facet } from '../../shared/types.ts'
 import type { ReadConnectionsMark } from '../constants.ts'
+import type { Plot } from '@jbrowse/core/configuration'
+import type { WrittenFacet } from '@jbrowse/display-kit/FacetWritesMixin'
 
 export interface SvChannelsModel {
   showPileup: boolean
@@ -16,8 +19,8 @@ export interface SvChannelsModel {
   showReadConnections: boolean
   readConnectionsMark: ReadConnectionsMark
   showOrdinaryPairs: boolean
-  setFacet: (facet?: Facet) => void
-  applyDisplaySettings: (settings: Record<string, unknown>) => unknown
+  writtenFacet: WrittenFacet
+  applyPlot: (draft: Plot) => void
 }
 
 export function svChannelsActive(model: SvChannelsModel) {
@@ -37,11 +40,12 @@ export function getSvChannelsMenuItem(model: SvChannelsModel) {
     SV_CHANNELS_LABEL,
     svChannelsActive(model),
     on => {
-      // the facet through its own setter, which also resets the scroll and
-      // carries a section order across a regrouping on the same field
+      // a regrouping on the field already grouping keeps its section order
       const { facet, ...bands } = on ? SV_CHANNELS_ON : SV_CHANNELS_OFF
-      model.setFacet(facet ? { ...facet } : undefined)
-      model.applyDisplaySettings(bands)
+      model.applyPlot({
+        ...bands,
+        facet: facet ? facetForField(model.writtenFacet, facet.field) : null,
+      })
     },
     {
       helpText:

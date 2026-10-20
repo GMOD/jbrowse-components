@@ -11,7 +11,7 @@ export interface GroupLabelsModel {
   height: number
   hiddenGroups: { size: number }
   facet: FeatureFacet | undefined
-  setFacet: (facet?: FeatureFacet) => void
+  setFacetDomain: (domain: readonly string[]) => void
   hideGroup: (key: string) => void
   showAllGroups: () => void
 }
@@ -45,7 +45,7 @@ const GroupLabelsLayer = observer(function GroupLabelsLayer({
                   sections: groupSections,
                   domain: facet.domain,
                   setDomain: domain => {
-                    model.setFacet({ field: facet.field, domain })
+                    model.setFacetDomain(domain)
                   },
                 },
                 key,

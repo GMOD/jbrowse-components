@@ -18,7 +18,6 @@ import {
 } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
-import { carryGroupDomain } from '@jbrowse/core/util/groupKeys'
 import {
   baseJexlFilters,
   configuredJexlFilters,
@@ -27,6 +26,9 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
+import FacetWritesMixin, {
+  facetForField,
+} from '@jbrowse/display-kit/FacetWritesMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
@@ -229,6 +231,7 @@ export default function baseStateModelFactory(
       MultiRegionDisplayMixin(),
       LegendMixin(),
       ColorWritesMixin(),
+      FacetWritesMixin(),
       CanvasFeatureGateMixin(),
       ContextMenuMixin<FeatureContextMenuInfo>(),
       HiddenGroupsMixin(),
@@ -1342,19 +1345,9 @@ export default function baseStateModelFactory(
 
       /**
        * #action
-       * Writes the `facet` object; undefined is ungrouped. Naming the field
-       * already grouping, with no domain, keeps its section order and hidden
-       * sections. The stack starts over from the top.
+       * The stack starts over from the top when its sections change.
        */
-      setFacet(facet?: { field: string; domain?: readonly string[] }) {
-        const next = carryGroupDomain(
-          facet && {
-            field: facet.field,
-            ...(facet.domain ? { domain: [...facet.domain] } : {}),
-          },
-          facetOf(self.facet, getConf(self, ['facet', 'hidden'])) ?? undefined,
-        )
-        setConf(self, 'facet', next ?? {})
+      dropGroupState() {
         self.setScrollTop(0)
       },
 
@@ -1608,11 +1601,7 @@ export default function baseStateModelFactory(
           groupColor !== '' &&
           (groupColor === current?.field || groupColor === field)
         return {
-          facet:
-            carryGroupDomain(
-              field ? { field } : undefined,
-              current ?? undefined,
-            ) ?? null,
+          facet: field ? facetForField(self.writtenFacet, field) : null,
           ...(colorByGroup && field
             ? field === painted
               ? {}
@@ -1671,11 +1660,10 @@ export default function baseStateModelFactory(
       /**
        * #action
        * What the Group by dialog applies: `groupByPlot`, the draft its Edit
-       * plot button shows. The stack starts over from the top.
+       * plot button shows.
        */
       applyGroupBy(field: string | undefined, colorByGroup: boolean) {
         self.applyPlot(self.groupByPlot(field, colorByGroup))
-        self.setScrollTop(0)
       },
       /**
        * #action

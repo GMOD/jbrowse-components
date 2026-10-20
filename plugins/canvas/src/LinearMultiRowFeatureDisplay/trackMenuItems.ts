@@ -58,7 +58,7 @@ interface MultiRowMenuSelf
   setRowsField: (field: string) => void
   facet?: FacetSetting
   rowColorFields: readonly string[]
-  setFacet: (facet?: { field: string }) => void
+  facetByField: (field: string) => void
   showBranchLength: boolean
   treeHasBranchLengths: boolean
   rowFocus?: readonly string[]
@@ -200,10 +200,10 @@ function groupByMenuItems(self: MultiRowMenuSelf): MenuItem[] {
           current,
           options: fields.map(field => ({ type: field, label: field })),
           onSelect: field => {
-            self.setFacet({ field })
+            self.facetByField(field)
           },
           onNone: () => {
-            self.setFacet(undefined)
+            self.facetByField('')
           },
         }),
       ]

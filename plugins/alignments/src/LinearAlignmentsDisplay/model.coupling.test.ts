@@ -307,10 +307,10 @@ describe('keySectionOrder', () => {
     display.colorByField('tags.HP')
     expect(display.keySectionOrder).toBeUndefined()
 
-    display.setFacet({ field: 'tags.HP', domain: ['2'] })
+    display.applyPlot({ facet: { field: 'tags.HP', domain: ['2'] } })
     expect(['1', '2'].sort(display.keySectionOrder)).toEqual(['2', '1'])
 
-    display.setFacet({ field: 'tags.RG', domain: [] })
+    display.applyPlot({ facet: { field: 'tags.RG', domain: [] } })
     expect(display.keySectionOrder).toBeUndefined()
   })
 
@@ -688,14 +688,14 @@ describe('ordering controls in chain mode', () => {
   // changing it dropped every fetched region to re-read byte-identical data.
   test('a per-read grouping leaves the fetch key when chain mode drops it', () => {
     const display = createDisplay()
-    display.setFacet({ field: 'strand' })
+    display.facetByField('strand')
     expect(display.rpcProps().facet).toEqual({ field: 'strand' })
 
     display.setUnit('chain')
     expect(display.rpcProps().facet).toBeUndefined()
 
     // a chain-groupable dimension still reaches the worker, keeping chains whole
-    display.setFacet({ field: 'tags.HP' })
+    display.facetByField('tags.HP')
     expect(display.rpcProps().facet).toEqual({
       field: 'tags.HP',
       unit: 'chain',
@@ -710,7 +710,7 @@ describe('ordering controls in chain mode', () => {
   // whatever the slot says and the label chip words its height button off this.
   test('the collapse stops being in effect when chain mode starts', () => {
     const display = createDisplay()
-    display.setFacet({ field: 'tags.HP' })
+    display.facetByField('tags.HP')
     display.setCollapseSections(true)
     expect(display.collapseSections).toBe(true)
     expect(display.canCollapseSections).toBe(true)
@@ -813,7 +813,7 @@ describe('chain mode is a main-thread tier', () => {
 
   test('a facet in effect sends the chain as the unit it keeps whole', () => {
     const display = matesDisplay()
-    display.setFacet({ field: 'tags.HP' })
+    display.facetByField('tags.HP')
     const fetchKey = JSON.stringify(display.rpcProps())
 
     display.setUnit('chain')
@@ -1823,7 +1823,7 @@ describe('per-lane state belongs to one grouping key space', () => {
   // then carries into a different grouping.
   function collapsedUntaggedLane() {
     const display = createDisplay({ withRegions: true })
-    display.setFacet({ field: 'tags.HP' })
+    display.facetByField('tags.HP')
     seedGroups(display, [
       { key: '1', label: 'HP: 1' },
       { key: '', label: 'HP: none' },
@@ -1865,14 +1865,14 @@ describe('per-lane state belongs to one grouping key space', () => {
   // name MAPQ's sections and wait unread rather than hide it.
   test("a chain leaves the facet's hidden sections unread, and a re-pick keeps them", () => {
     const display = createDisplay({ withRegions: true })
-    display.setFacet({ field: 'mapq' })
+    display.facetByField('mapq')
     display.hideGroup('0')
     expect([...display.hiddenGroupKeys]).toEqual(['0'])
     display.setUnit('chain')
     expect(display.groupKeySpace).toBe('')
     expect(display.hiddenGroupKeys.size).toBe(0)
     display.setUnit('read')
-    display.setFacet({ field: 'mapq' })
+    display.facetByField('mapq')
     expect([...display.hiddenGroupKeys]).toEqual(['0'])
   })
 
@@ -1895,31 +1895,31 @@ describe('per-lane state belongs to one grouping key space', () => {
     const display = createDisplay({ withRegions: true })
     seedGroups(display, [{ key: '', label: '' }])
     display.toggleGroupCollapsed('')
-    display.setFacet({ field: 'tags.HP' })
+    display.facetByField('tags.HP')
     expect(display.collapsedGroups.has('')).toBe(false)
   })
 
   test('re-picking the grouping keeps its domain, and a reorder keeps the lane state', () => {
     const display = createDisplay({ withRegions: true })
-    display.setFacet({ field: 'tags.HP', domain: ['2'] })
+    display.applyPlot({ facet: { field: 'tags.HP', domain: ['2'] } })
     seedGroups(display, [
       { key: '1', label: 'HP: 1' },
       { key: '2', label: 'HP: 2' },
     ])
     display.toggleGroupCollapsed('1')
-    display.setFacet({ field: 'tags.HP' })
+    display.facetByField('tags.HP')
     expect(display.facet).toEqual({ field: 'tags.HP', domain: ['2'] })
     expect(display.groupOrder.map(g => g.key)).toEqual(['2', '1'])
-    display.setFacet({ field: 'tags.HP', domain: ['1'] })
+    display.applyPlot({ facet: { field: 'tags.HP', domain: ['1'] } })
     expect(display.groupOrder.map(g => g.key)).toEqual(['1', '2'])
     expect(display.collapsedGroups.has('1')).toBe(true)
-    display.setFacet({ field: 'tags.RG' })
+    display.facetByField('tags.RG')
     expect(display.facet).toEqual({ field: 'tags.RG', domain: [] })
   })
 
   test('a lane drop writes the drawn order as the domain without a refetch, and Show... offers the reset', () => {
     const display = createDisplay({ withRegions: true })
-    display.setFacet({ field: 'tags.HP' })
+    display.facetByField('tags.HP')
     seedGroups(display, [
       { key: '1', label: 'HP: 1' },
       { key: '2', label: 'HP: 2' },
@@ -1944,7 +1944,7 @@ describe('per-lane state belongs to one grouping key space', () => {
   // menu still reads "Group by MAPQ".
   test('entering chain mode drops the state of a grouping it degrades', () => {
     const display = createDisplay({ withRegions: true })
-    display.setFacet({ field: 'mapq' })
+    display.facetByField('mapq')
     seedGroups(display, [{ key: '0', label: 'MAPQ 30+ (high confidence)' }])
     display.toggleGroupCollapsed('0')
     display.setUnit('chain')
@@ -1957,10 +1957,10 @@ describe('per-lane state belongs to one grouping key space', () => {
   // an unrelated lane. Recoverable (both lanes draw a chip) and still wrong.
   test('two digit-keyed dimensions do not inherit one another state', () => {
     const display = createDisplay({ withRegions: true })
-    display.setFacet({ field: 'mapq' })
+    display.facetByField('mapq')
     seedGroups(display, [{ key: '0', label: 'MAPQ 30+ (high confidence)' }])
     display.toggleGroupCollapsed('0')
-    display.setFacet({ field: 'pairOrientation' })
+    display.facetByField('pairOrientation')
     expect(display.collapsedGroups.has('0')).toBe(false)
   })
 
@@ -1968,7 +1968,7 @@ describe('per-lane state belongs to one grouping key space', () => {
   // dropped: the reaction fires on the key SPACE moving, not on the write.
   test('re-setting the same grouping keeps the state', () => {
     const display = collapsedUntaggedLane()
-    display.setFacet({ field: 'tags.HP' })
+    display.facetByField('tags.HP')
     expect(display.collapsedGroups.has('')).toBe(true)
   })
 })

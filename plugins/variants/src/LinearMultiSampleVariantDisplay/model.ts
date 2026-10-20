@@ -20,7 +20,6 @@ import {
 } from '@jbrowse/core/util/colorScale'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { carryGroupDomain } from '@jbrowse/core/util/groupKeys'
 import { readFor } from '@jbrowse/core/util/installPrerequisiteFetch'
 import {
   baseJexlFilters,
@@ -29,6 +28,7 @@ import {
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
+import FacetWritesMixin from '@jbrowse/display-kit/FacetWritesMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
@@ -363,7 +363,7 @@ export function stateModelFactory(
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
         LegendMixin(),
-        ColorWritesMixin(),
+        types.compose(ColorWritesMixin(), FacetWritesMixin()),
         RowHeightMixin(),
         StoredHoverMixin<VariantHoverFields>(),
         TreeSidebarMixin<ProcessedSource>(),
@@ -873,26 +873,6 @@ export function stateModelFactory(
            */
           setRowColorField(field: string) {
             self.setRowColorChoice(field)
-            warnUnknownArrangementAttributes(self, self.adapterSamples ?? [])
-          },
-          /**
-           * #action
-           * Band the sample rows so each value of a metadata attribute (e.g.
-           * 'population') is contiguous, or pass '' to clear the facet. Writes
-           * the `facet` object, keeping a declared band order while the field
-           * is the one already banding, which is the whole of it: the banding
-           * is applied on every read of `bandedSources`, over the arranged
-           * order.
-           */
-          setFacet(field: string) {
-            setConf(
-              self,
-              'facet',
-              carryGroupDomain<{ field: string; domain?: readonly string[] }>(
-                field ? { field } : undefined,
-                self.facet,
-              ) ?? {},
-            )
             warnUnknownArrangementAttributes(self, self.adapterSamples ?? [])
           },
           /**

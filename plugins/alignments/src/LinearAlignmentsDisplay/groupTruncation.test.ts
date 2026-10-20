@@ -78,7 +78,7 @@ function seed(
 ) {
   const display = createEnv()
   if (opts.grouped || opts.collapseRows) {
-    display.setFacet({ field: 'strand' })
+    display.facetByField('strand')
   }
   if (opts.collapseRows) {
     display.setCollapseSections(true)

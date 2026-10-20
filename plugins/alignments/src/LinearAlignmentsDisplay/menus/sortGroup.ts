@@ -220,10 +220,10 @@ export function getGroupByMenuItem(model: GroupByMenuModel) {
     options: GROUP_OPTIONS,
     unit: model.unit,
     onSelect: field => {
-      model.setFacet({ field })
+      model.facetByField(field)
     },
     onNone: () => {
-      model.setFacet(undefined)
+      model.facetByField('')
     },
     extra: [
       {

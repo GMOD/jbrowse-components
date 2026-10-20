@@ -201,7 +201,7 @@ describe('allele count', () => {
     landCells(display)
     await cluster(display, [2, 0, 3, 1], '((S2,S0),(S3,S1));')
     expect(derived(display)).toMatchSnapshot()
-    display.setFacet('population')
+    display.facetByField('population')
     expect(derived(display)).toMatchSnapshot()
     expect(display.treelessBandCount).toBe(0)
   })
@@ -305,7 +305,7 @@ describe('phased', () => {
     test('the tree describes the haplotype rows', async () => {
       const display = await clustered()
       expect(derived(display)).toMatchSnapshot()
-      display.setFacet('population')
+      display.facetByField('population')
       expect(derived(display)).toMatchSnapshot()
       expect(display.treelessBandCount).toBe(0)
     })

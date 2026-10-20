@@ -84,7 +84,7 @@ test('a lane drop writes the drawn order as the domain, and Show... offers the r
   const display = createDisplay({
     trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_two'],
   })
-  display.setFacet({ field: 'mateAssembly' })
+  display.facetByField('mateAssembly')
   seedSections(display, ['volvox_random', 'volvox_two'])
   const items = () => display.trackMenuItems() as MenuItem[]
   expect(labelsOf(items())).not.toContain('Sections')

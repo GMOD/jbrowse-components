@@ -6,13 +6,13 @@ import type { AlignmentsUnit } from '../constants.ts'
 import type { GroupByMenuModel } from './sortGroup.ts'
 
 function makeModel(opts?: { field?: string; unit?: AlignmentsUnit }) {
-  const setFacet = jest.fn()
+  const facetByField = jest.fn()
   const model = {
     unit: opts?.unit ?? 'read',
     facet: opts?.field ? { field: opts.field, domain: [] } : undefined,
-    setFacet,
+    facetByField,
   }
-  return { model: model as unknown as GroupByMenuModel, setFacet }
+  return { model: model as unknown as GroupByMenuModel, facetByField }
 }
 
 // Dimensions only — the submenu is radios end to end (the collapse toggle moved
@@ -66,16 +66,16 @@ test('the active dimension is the only one checked', () => {
 })
 
 test('picking a per-read dimension sets it; picking None ungroups', () => {
-  const { model, setFacet } = makeModel({ field: 'strand' })
+  const { model, facetByField } = makeModel({ field: 'strand' })
   radios(model)
     .find(i => i.label === 'Split read (SA tag)')!
     .onClick()
-  expect(setFacet).toHaveBeenCalledWith({ field: 'split' })
+  expect(facetByField).toHaveBeenCalledWith('split')
 
   radios(model)
     .find(i => i.label === 'None')!
     .onClick()
-  expect(setFacet).toHaveBeenCalledWith(undefined)
+  expect(facetByField).toHaveBeenCalledWith('')
 })
 
 // A stored per-read grouping that chain mode no longer offers degrades to

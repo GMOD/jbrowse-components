@@ -771,7 +771,7 @@ describe('FetchVisibleRegions autorun', () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
-    display.setFacet({ field: 'tags.HP' })
+    display.facetByField('tags.HP')
 
     jest.advanceTimersByTime(400)
     await waitFor(() => {

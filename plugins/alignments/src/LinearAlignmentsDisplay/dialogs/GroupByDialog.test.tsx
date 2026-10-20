@@ -28,7 +28,7 @@ function renderDialog(state: {
   baseLayer?: BaseLayer
   facet?: Facet
 }) {
-  const setFacet = jest.fn()
+  const facetByField = jest.fn()
   const colorByField = jest.fn()
   const model = {
     id: 'display1',
@@ -37,7 +37,7 @@ function renderDialog(state: {
     facet: state.facet,
     readFilter: {},
     resolvedByteLimit: () => undefined,
-    setFacet,
+    facetByField,
     colorByField,
   } as unknown as GroupByDialogModel
   render(
@@ -45,7 +45,7 @@ function renderDialog(state: {
       <GroupByDialog model={model} handleClose={() => {}} />
     </ThemeProvider>,
   )
-  return { setFacet, colorByField }
+  return { facetByField, colorByField }
 }
 
 const checkbox = () => screen.getByRole('checkbox') as HTMLInputElement
@@ -77,7 +77,7 @@ function submit() {
 // (there was no facet to compare against), and unticked means "don't color by
 // this tag", so submitting reset the HP coloring the user could see.
 test('typing the tag the reads are already colored by keeps that coloring', async () => {
-  const { setFacet, colorByField } = renderDialog({
+  const { facetByField, colorByField } = renderDialog({
     colorBy: { type: 'tag', tag: 'HP' },
   })
   expect(checkbox().checked).toBe(false)
@@ -85,7 +85,7 @@ test('typing the tag the reads are already colored by keeps that coloring', asyn
   expect(checkbox().checked).toBe(true)
   await settleScan()
   submit()
-  expect(setFacet).toHaveBeenCalledWith({ field: 'tags.HP' })
+  expect(facetByField).toHaveBeenCalledWith('tags.HP')
   expect(colorByField).toHaveBeenCalledWith('tags.HP')
 })
 

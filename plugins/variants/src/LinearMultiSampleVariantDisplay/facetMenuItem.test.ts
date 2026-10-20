@@ -61,7 +61,7 @@ test('picking an attribute bands the rows and ticks itself', () => {
 
 test('None turns the facet off', () => {
   const d = display(SOURCES)
-  d.setFacet('population')
+  d.facetByField('population')
   const none = facetSubMenu(d)[0]!
   if ('onClick' in none) {
     none.onClick()
@@ -72,7 +72,7 @@ test('None turns the facet off', () => {
 test('each radio writes its own facet, a re-pick keeping the band order', () => {
   const writes = facetSubMenu(display(SOURCES)).map((_, i) => {
     const d = display(SOURCES)
-    d.setFacet('population')
+    d.facetByField('population')
     setConf(d, ['facet', 'domain'], ['EUR'])
     const item = facetSubMenu(d)[i]!
     if ('onClick' in item) {
@@ -90,7 +90,7 @@ test('each radio writes its own facet, a re-pick keeping the band order', () => 
 
 test('ticks the attribute banding now, and only that one', () => {
   const d = display(SOURCES)
-  d.setFacet('sex')
+  d.facetByField('sex')
   expect(
     facetSubMenu(d).map(i => 'checked' in i && i.checked && i.label),
   ).toEqual([false, false, 'Sex'])

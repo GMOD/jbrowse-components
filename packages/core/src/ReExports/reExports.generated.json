@@ -3671,6 +3671,7 @@
     "@jbrowse/core/util/stepOutputs": {
       "package": "@jbrowse/core",
       "names": [
+        "AGGREGATE_OPS",
         "BIN_OVERLAP_FIELD",
         "CELLS_FIELDS",
         "DEFAULT_AGGREGATE_OP",
@@ -4352,6 +4353,14 @@
       "names": [
         "facetConfigSchema",
         "facetSettingOf"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/FacetWritesMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default",
+        "facetForField"
       ],
       "worker": "real"
     },

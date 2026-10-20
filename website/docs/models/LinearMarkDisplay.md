@@ -157,7 +157,9 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-plotscanlocus">**plotScanLocus**</span><br><code>string &#124; undefined</code> | The window the held field scan read, for the dialog to name. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>152 inherited getters from 13 models</summary>
+<summary>153 inherited getters from 14 models</summary>
+
+From [FacetWritesMixin](../facetwritesmixin): <span id="getter-writtenfacet">[`writtenFacet`](../facetwritesmixin#getter-writtenfacet)</span>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-displayhiddengroupkeys">[`displayHiddenGroupKeys`](../hiddengroupsmixin#getter-displayhiddengroupkeys)</span>, <span id="getter-owngroupstate">[`ownGroupState`](../hiddengroupsmixin#getter-owngroupstate)</span>, <span id="getter-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#getter-hiddengroups)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span>
 
@@ -226,8 +228,6 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setfittoheight">**setFitToHeight**</span><br><code>() =&gt; void</code> | Fit the rows to the plot. The `height` getter is the slot itself, so nothing needs seeding on the way in. |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(hit: MarkHitInfo) =&gt; void</code> | Open the feature widget on the read, the bin or the run a hit drew, inside its facet section, through `selectEncodedFeature`. |
 | <span id="action-setrpcdata">**setRpcData**</span><br><code>(idx: number, data: EncodedLayersResult, region: Region) =&gt; void</code> | Stage a region as fetched, with this display's payload layout. |
-| <span id="action-setfacetdomain">**setFacetDomain**</span><br><code>(domain: string[]) =&gt; void</code> | A chip drag's reorder writes to the declaration. |
-| <span id="action-setfacetfield">**setFacetField**</span><br><code>(field: string) =&gt; void</code> | A field's own bands, in their sorted order: the outgoing field's domain and hidden sections go with it, and the facet's steps stay. |
 | <span id="action-splitbyplotrows">**splitByPlotRows**</span><br><code>(fields: PlotFields) =&gt; void</code> | A row per source where the adapter lists several and nothing splits the features yet: one value per row is the row axis, and a facet is for bands holding more than one row. |
 | <span id="action-sortrowsbyvalueat">**sortRowsByValueAt**</span><br><code>(refName: string, pos: number) =&gt; boolean</code> | Order the rows by the value each stands at over (refName, pos), highest first, off the loaded regions with no refetch; false where no loaded region covers the column. |
 | <span id="action-setfilter">**setFilter**</span><br><code>(filters?: string[] &#124; undefined) =&gt; void</code> | Write `filter.expressions`; undefined returns them to what the track's config declares. |
@@ -245,7 +245,9 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactEl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactElement&lt;unknown, string &#124; JSXElementConstructor&lt;any&gt;&gt; &#124; Iterable&lt;ReactNode&gt; &#124; AwaitedReactNode&gt;</code></pre></dialog></span> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>74 inherited actions from 13 models</summary>
+<summary>76 inherited actions from 14 models</summary>
+
+From [FacetWritesMixin](../facetwritesmixin): <span id="action-facetbyfield">[`facetByField`](../facetwritesmixin#action-facetbyfield)</span>, <span id="action-setfacetdomain">[`setFacetDomain`](../facetwritesmixin#action-setfacetdomain)</span>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-hidegroup">[`hideGroup`](../hiddengroupsmixin#action-hidegroup)</span>, <span id="action-showallgroups">[`showAllGroups`](../hiddengroupsmixin#action-showallgroups)</span>, <span id="action-dropgroupstate">[`dropGroupState`](../hiddengroupsmixin#action-dropgroupstate)</span>
 

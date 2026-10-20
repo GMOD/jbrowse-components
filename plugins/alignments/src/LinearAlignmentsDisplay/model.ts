@@ -30,12 +30,13 @@ import {
   boundBandHeight,
   clampBandHeight,
 } from '@jbrowse/core/util/bandHeight'
-import { carryGroupDomain, groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
+import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import ColorWritesMixin, {
   writtenColorOf,
 } from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
+import FacetWritesMixin from '@jbrowse/display-kit/FacetWritesMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
@@ -216,7 +217,6 @@ import type { ReadSlot } from '../shared/readSlot.ts'
 import type {
   ArcColorField,
   BaseLayer,
-  Facet,
   ColumnSortType,
   SortColumn,
   SortSetting,
@@ -377,6 +377,7 @@ export default function stateModelFactory(
         ScoreScaleMixin(),
         LegendMixin(),
         ColorWritesMixin(),
+        FacetWritesMixin(),
         ContextMenuMixin<AlignmentsContextMenuInfo>(),
         HiddenGroupsMixin(),
         types.model({
@@ -2998,6 +2999,7 @@ export default function stateModelFactory(
         dropGroupState() {
           self.collapsedGroups.clear()
           self.groupMaxHeightOverrides.clear()
+          self.scrollTop = 0
         },
       }))
       .actions(self => {
@@ -3130,24 +3132,6 @@ export default function stateModelFactory(
            * The one writer of `sort`: a whole-window order, or a column sort.
            */
           setSort: writeSort,
-
-          /**
-           * #action
-           * Writes the `facet` object; undefined is ungrouped. A tier-1 refetch
-           * setting (in `rpcProps`). Resets the Y scroll since the stacked
-           * content height changes. `HiddenGroupsMixin`'s key-space reset drops
-           * the per-lane state. A grouping named without a domain keeps the
-           * current one while the key space holds, so a re-pick is not a
-           * reorder.
-           */
-          setFacet(facet?: Facet) {
-            const current = self.facet && {
-              ...self.facet,
-              hidden: getConf(self, ['facet', 'hidden']),
-            }
-            setConf(self, 'facet', carryGroupDomain(facet, current) ?? {})
-            self.scrollTop = 0
-          },
 
           /**
            * #action

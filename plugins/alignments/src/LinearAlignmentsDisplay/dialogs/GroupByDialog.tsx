@@ -46,7 +46,7 @@ export interface GroupByDialogModel extends IStateTreeNode {
   colorBy: ReadColorBy
   baseLayer: BaseLayer | undefined
   facet?: Facet
-  setFacet: (facet?: Facet) => void
+  facetByField: (field: string) => void
   colorByField: (field: string) => void
 }
 
@@ -151,7 +151,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   )
 
   const handleSubmit = () => {
-    model.setFacet({ field: `${TAG_FIELD_PREFIX}${groupByTag}` })
+    model.facetByField(`${TAG_FIELD_PREFIX}${groupByTag}`)
     const scheme = nextColorScheme(model.colorBy, groupByTag, colorByTag)
     if (scheme) {
       model.colorByField(colorFieldOf(scheme))

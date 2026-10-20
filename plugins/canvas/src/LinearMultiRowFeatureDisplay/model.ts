@@ -9,9 +9,9 @@ import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { carryGroupDomain } from '@jbrowse/core/util/groupKeys'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
+import FacetWritesMixin from '@jbrowse/display-kit/FacetWritesMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import PointerHoverMixin from '@jbrowse/display-kit/PointerHoverMixin'
@@ -133,6 +133,7 @@ export default function stateModelFactory(
       MultiRegionDisplayMixin(),
       LegendMixin(),
       ColorWritesMixin(),
+      FacetWritesMixin(),
       TreeSidebarMixin(),
       ContextMenuMixin<MultiRowContextMenuInfo>(),
       PointerHoverMixin<MultiRowHit>(
@@ -891,14 +892,6 @@ export default function stateModelFactory(
          */
         setClusterField(field: string) {
           setConf(self, 'clusterField', field)
-        },
-        /**
-         * #action
-         * Writes the `facet` object; undefined draws no bands. Naming the
-         * field already banding, with no domain, keeps its band order.
-         */
-        setFacet(facet?: { field: string; domain?: readonly string[] }) {
-          setConf(self, 'facet', carryGroupDomain(facet, self.facet) ?? {})
         },
         /**
          * #action

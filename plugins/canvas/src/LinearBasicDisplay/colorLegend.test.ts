@@ -194,15 +194,17 @@ describe('derived color key', () => {
 
   it("lists the key in the sections' order where the facet reads the same field", () => {
     const display = coloredDisplay({ field: 'biotype', domain: ['lncRNA'] })
-    display.setFacet({ field: 'biotype', domain: ['snoRNA', 'protein_coding'] })
+    display.applyPlot({
+      facet: { field: 'biotype', domain: ['snoRNA', 'protein_coding'] },
+    })
     expect(keyValues(display)).toEqual(['snoRNA', 'protein_coding', 'lncRNA'])
-    display.setFacet({ field: 'source', domain: ['snoRNA'] })
+    display.applyPlot({ facet: { field: 'source', domain: ['snoRNA'] } })
     expect(keyValues(display)).toEqual(['lncRNA', 'protein_coding', 'snoRNA'])
   })
 
   it('leaves out a value only a hidden section painted', () => {
     const display = coloredDisplay({ field: 'biotype' })
-    display.setFacet({ field: 'biotype' })
+    display.facetByField('biotype')
     display.hideGroup('lncRNA')
     expect(keyValues(display)).toEqual(['protein_coding', 'snoRNA'])
   })
@@ -357,7 +359,7 @@ describe('derived color key', () => {
       range: ['#ff0000'],
       unknown: '#cccccc',
     })
-    display.setFacet({ field: 'biotype', domain: ['snoRNA'] })
+    display.applyPlot({ facet: { field: 'biotype', domain: ['snoRNA'] } })
     expect(display.legendSpec.sections[0]?.items.map(i => i.label)).toEqual([
       'Other',
       'lncRNA',

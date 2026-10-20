@@ -45,7 +45,7 @@ test('grouping by strand stacks two labelled sections', () => {
   expect(display.groupSections).toEqual([])
   expect(display.showsGroupLabels).toBe(false)
 
-  display.setFacet({ field: 'strand' })
+  display.facetByField('strand')
   expect(display.facet).toEqual({ field: 'strand', domain: [] })
   expect(display.groupSections.map(s => [s.key, s.label, s.top])).toEqual([
     ['1', 'Forward strand', 0],
@@ -54,7 +54,7 @@ test('grouping by strand stacks two labelled sections', () => {
   expect(display.groupSections[1]!.top).toBeGreaterThan(GROUP_LABEL_HEIGHT)
   expect(display.showsGroupLabels).toBe(true)
 
-  display.setFacet(undefined)
+  display.facetByField('')
   expect(display.groupSections).toEqual([])
 })
 
@@ -62,7 +62,7 @@ test('a strand domain reorders the strands', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
-  display.setFacet({ field: 'strand', domain: ['-1'] })
+  display.applyPlot({ facet: { field: 'strand', domain: ['-1'] } })
   expect(display.groupSections.map(s => s.key)).toEqual(['-1', '1'])
 })
 
@@ -70,11 +70,11 @@ test('re-picking the field already grouping keeps its section order', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
-  display.setFacet({ field: 'strand', domain: ['-1'] })
-  display.setFacet({ field: 'strand' })
+  display.applyPlot({ facet: { field: 'strand', domain: ['-1'] } })
+  display.facetByField('strand')
   expect(display.groupSections.map(s => s.key)).toEqual(['-1', '1'])
-  display.setFacet({ field: 'biotype' })
-  display.setFacet({ field: 'strand' })
+  display.facetByField('biotype')
+  display.facetByField('strand')
   expect(display.groupSections.map(s => s.key)).toEqual(['1', '-1'])
 })
 
@@ -82,7 +82,7 @@ test('an attribute grouping names its sections by value', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
-  display.setFacet({ field: 'biotype' })
+  display.facetByField('biotype')
   expect(display.groupSections.map(s => s.label)).toEqual([
     'biotype: lncRNA',
     'biotype: protein_coding',
@@ -95,7 +95,7 @@ test('a jexl: facet field reaches the worker as written', () => {
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
   const field = "jexl:get(feature,'type')"
-  display.setFacet({ field })
+  display.facetByField(field)
   expect(display.facet).toEqual({ field, domain: [] })
   expect(display.groupKeySpace).toBe(field)
   expect(display.rpcProps().displayConfig.facetField).toBe(field)
@@ -105,7 +105,7 @@ test('hiding a section is per key and drops with the grouping', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
-  display.setFacet({ field: 'strand' })
+  display.facetByField('strand')
 
   display.hideGroup('1')
   expect(display.groupSections.map(s => s.key)).toEqual(['-1'])
@@ -119,7 +119,7 @@ test('hiding a section is per key and drops with the grouping', () => {
     ),
   ).toContain('Show 1 hidden group')
 
-  display.setFacet({ field: 'biotype' })
+  display.facetByField('biotype')
   expect(display.hiddenGroups.size).toBe(0)
   expect(display.groupSections).toHaveLength(2)
 })
@@ -128,7 +128,7 @@ test('a grouped track offsets its track label before any data lands', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   expect(display.prefersOffset).toBe(false)
-  display.setFacet({ field: 'strand' })
+  display.facetByField('strand')
   expect(display.groupSections).toEqual([])
   expect(display.prefersOffset).toBe(true)
 })
@@ -178,9 +178,9 @@ test('reordering the sections keeps the hidden ones hidden', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
-  display.setFacet({ field: 'biotype' })
+  display.facetByField('biotype')
   display.hideGroup('lncRNA')
-  display.setFacet({ field: 'biotype', domain: ['protein_coding'] })
+  display.setFacetDomain(['protein_coding'])
   expect(display.hiddenGroups.size).toBe(1)
   expect(display.groupSections.map(s => s.key)).toEqual(['protein_coding'])
 })
@@ -202,7 +202,7 @@ test('Group by is a radio submenu: strand picks directly, attribute names its fi
   ;(rows()[1] as { onClick: () => void }).onClick()
   expect(display.facet?.field).toBe('strand')
   expect(display.colorByMode).toBe('strand')
-  display.setFacet({ field: 'biotype' })
+  display.facetByField('biotype')
   expect(rows().map(i => ('checked' in i ? i.checked : undefined))).toEqual([
     false,
     false,
@@ -217,11 +217,13 @@ test('no Sections row; the reset sits in Show... once the order is pinned', () =
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
-  display.setFacet({ field: 'biotype' })
+  display.facetByField('biotype')
   expect(labelsOf(display.trackMenuItems())).not.toContain('Sections')
   const show = () => menuRows(display.trackMenuItems(), 'Show...')
   expect(labelsOf(show())).not.toContain('Reset section order')
-  display.setFacet({ field: 'biotype', domain: ['protein_coding', 'lncRNA'] })
+  display.applyPlot({
+    facet: { field: 'biotype', domain: ['protein_coding', 'lncRNA'] },
+  })
   expect(display.groupSections.map(s => s.key)).toEqual([
     'protein_coding',
     'lncRNA',
@@ -252,7 +254,7 @@ test('a hidden section is written to the facet and costs no fetch', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
-  display.setFacet({ field: 'biotype' })
+  display.facetByField('biotype')
   const before = display.rpcProps()
   display.hideGroup('lncRNA')
   expect(display.plot.facet).toEqual({ field: 'biotype', hidden: ['lncRNA'] })

@@ -53,11 +53,11 @@ function makeModel() {
     // outside it are on the mock as well.
     showPileup: true,
     facet: undefined as Facet | undefined,
-    setFacet(v?: Facet) {
-      this.facet = v
+    get writtenFacet() {
+      return this.facet ?? {}
     },
-    applyDisplaySettings(settings: Record<string, unknown>) {
-      return settings
+    applyPlot({ facet }: { facet?: unknown }) {
+      this.facet = (facet ?? undefined) as Facet | undefined
     },
   }
 }

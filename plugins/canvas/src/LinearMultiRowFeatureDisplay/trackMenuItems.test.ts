@@ -41,7 +41,7 @@ function makeSelf(
     clusterCandidates: [] as string[],
     rowCountsByField: new Map<string, RowCountByField>(),
     setRowsField: () => {},
-    setFacet: () => {},
+    facetByField: () => {},
     showBranchLength: true,
     treeHasBranchLengths: false,
     rowDomain: [],

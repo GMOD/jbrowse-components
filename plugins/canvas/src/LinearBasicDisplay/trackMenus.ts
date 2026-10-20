@@ -73,7 +73,7 @@ interface FeatureHeightSelf extends HeightModeMenuModel {
 
 interface FacetSelf {
   facet: FeatureFacet | undefined
-  setFacet: (facet?: FeatureFacet) => void
+  setFacetDomain: (domain: readonly string[]) => void
 }
 
 interface GroupByMenuSelf {
@@ -143,7 +143,7 @@ export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
       facet && {
         domain: facet.domain,
         setDomain: domain => {
-          self.setFacet({ field: facet.field, domain })
+          self.setFacetDomain(domain)
         },
       },
     ),

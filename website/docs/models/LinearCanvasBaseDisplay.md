@@ -213,11 +213,13 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | `LegendMixin`'s hook: the key the color channel's scale derives. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>89 inherited getters from 11 models</summary>
+<summary>90 inherited getters from 12 models</summary>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-displayhiddengroupkeys">[`displayHiddenGroupKeys`](../hiddengroupsmixin#getter-displayhiddengroupkeys)</span>, <span id="getter-owngroupstate">[`ownGroupState`](../hiddengroupsmixin#getter-owngroupstate)</span>, <span id="getter-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#getter-hiddengroups)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span>
 
 From [CanvasFeatureGateMixin](../canvasfeaturegatemixin): <span id="getter-gateenabled">[`gateEnabled`](../canvasfeaturegatemixin#getter-gateenabled)</span>, <span id="getter-visiblefeaturedensityperpx">[`visibleFeatureDensityPerPx`](../canvasfeaturegatemixin#getter-visiblefeaturedensityperpx)</span>, <span id="getter-maxfeaturedensity">[`maxFeatureDensity`](../canvasfeaturegatemixin#getter-maxfeaturedensity)</span>, <span id="getter-densitytoolarge">[`densityTooLarge`](../canvasfeaturegatemixin#getter-densitytoolarge)</span>
+
+From [FacetWritesMixin](../facetwritesmixin): <span id="getter-writtenfacet">[`writtenFacet`](../facetwritesmixin#getter-writtenfacet)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span>
 
@@ -326,26 +328,28 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setsequencehoverposition">**setSequenceHoverPosition**</span><br><code>(pos: SequenceHoverPosition &#124; undefined) =&gt; void</code> |  |
 | <span id="action-openfilterdialog">**openFilterDialog**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setdisplaymode">**setDisplayMode**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(value: "collapsed" &#124; "compact" &#124; "normal" &#124; "superCompact") =&gt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(value: "collapsed" &#124; "compact" &#124; "normal" &#124; "superCompact") =&gt; void</code></pre></dialog></span> |  |
-| <span id="action-setfacet">**setFacet**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(facet?: { field: string; domain?: readonly string[] &#124; undefine…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(facet?: { field: string; domain?: readonly string[] &#124; undefined; } &#124; undefined) =&gt; void</code></pre></dialog></span> | Writes the `facet` object; undefined is ungrouped. Naming the field already grouping, with no domain, keeps its section order and hidden sections. The stack starts over from the top. |
+| <span id="action-dropgroupstate">**dropGroupState**</span><br><code>() =&gt; void</code> | The stack starts over from the top when its sections change. |
 | <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | the picker Color by's Solid color... opens |
 | <span id="action-fetchfullfeature">**fetchFullFeature**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(featureId: string, displayedRegionIndex: number, opts?: { sign…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(featureId: string, displayedRegionIndex: number, opts?: { signal?: AbortSignal &#124; undefined; statusCallback?: StatusCallback &#124; undefined; }) =&gt; Promise&lt;SimpleFeature &#124; undefined&gt;</code></pre></dialog></span> |  |
 | <span id="action-selectfeaturebyid">**selectFeatureById**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(featureId: string, subfeatureInfo: SubfeatureInfo &#124; undefined,…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(featureId: string, subfeatureInfo: SubfeatureInfo &#124; undefined, displayedRegionIndex: number) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> | Clears the loaded regions and fetches straight away, rather than waiting out `FetchVisibleRegions`' 600ms debounce as the rest of the family does — Retry and Force load are both clicks, and this is the display the user is most often clicking on. |
 | <span id="action-fetchneeded">**fetchNeeded**</span><br><code>(needed: IndexedRegion[]) =&gt; void</code> |  |
 | <span id="action-openplotdialog">**openPlotDialog**</span><br><code>(seed?: Plot &#124; undefined) =&gt; void</code> | "Edit plot...", seeded with a draft a dialog has not applied. |
-| <span id="action-applygroupby">**applyGroupBy**</span><br><code>(field: string &#124; undefined, colorByGroup: boolean) =&gt; void</code> | What the Group by dialog applies: `groupByPlot`, the draft its Edit plot button shows. The stack starts over from the top. |
+| <span id="action-applygroupby">**applyGroupBy**</span><br><code>(field: string &#124; undefined, colorByGroup: boolean) =&gt; void</code> | What the Group by dialog applies: `groupByPlot`, the draft its Edit plot button shows. |
 | <span id="action-opencolorbyattributedialog">**openColorByAttributeDialog**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-clearhoveredfeature">**clearHoveredFeature**</span><br><code>() =&gt; void</code> | Fills `BaseDisplay`'s hover-clear hook, which the fetch foundation's reaction calls on every viewport change. |
 | <span id="action-opengroupbydialog">**openGroupByDialog**</span><br><code>() =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>51 inherited actions from 12 models</summary>
+<summary>52 inherited actions from 13 models</summary>
 
-From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-hidegroup">[`hideGroup`](../hiddengroupsmixin#action-hidegroup)</span>, <span id="action-showallgroups">[`showAllGroups`](../hiddengroupsmixin#action-showallgroups)</span>, <span id="action-dropgroupstate">[`dropGroupState`](../hiddengroupsmixin#action-dropgroupstate)</span>
+From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-hidegroup">[`hideGroup`](../hiddengroupsmixin#action-hidegroup)</span>, <span id="action-showallgroups">[`showAllGroups`](../hiddengroupsmixin#action-showallgroups)</span>
 
 From [ContextMenuMixin](../contextmenumixin): <span id="action-closecontextmenu">[`closeContextMenu`](../contextmenumixin#action-closecontextmenu)</span>
 
 From [CanvasFeatureGateMixin](../canvasfeaturegatemixin): <span id="action-setdensitystats">[`setDensityStats`](../canvasfeaturegatemixin#action-setdensitystats)</span>, <span id="action-cleargatemeasurements">[`clearGateMeasurements`](../canvasfeaturegatemixin#action-cleargatemeasurements)</span>, <span id="action-commitgatemeasurements">[`commitGateMeasurements`](../canvasfeaturegatemixin#action-commitgatemeasurements)</span>
+
+From [FacetWritesMixin](../facetwritesmixin): <span id="action-facetbyfield">[`facetByField`](../facetwritesmixin#action-facetbyfield)</span>, <span id="action-setfacetdomain">[`setFacetDomain`](../facetwritesmixin#action-setfacetdomain)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
 

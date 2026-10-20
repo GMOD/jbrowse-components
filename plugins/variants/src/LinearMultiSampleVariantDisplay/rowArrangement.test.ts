@@ -77,7 +77,7 @@ describe('the facet bands over the arranged order', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(SOURCES)
     display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
-    display.setFacet('population')
+    display.facetByField('population')
 
     // AFR (S0, S2) leads; within the band the dragged order survives
     expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
@@ -88,7 +88,7 @@ describe('the facet bands over the arranged order', () => {
   it('snaps a cross-band drag back', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(SOURCES)
-    display.setFacet('population')
+    display.facetByField('population')
     expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
 
     // drag the EUR sample to the top, across the AFR band
@@ -107,7 +107,7 @@ describe('the facet bands over the arranged order', () => {
       tree: '((S0,S1),S2);',
     })
 
-    display.setFacet('population')
+    display.facetByField('population')
 
     expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
     expect(display.rowTree).toBe('((S0,S1),S2);')
@@ -121,7 +121,7 @@ describe('the facet bands over the arranged order', () => {
     display.setRowOrder([{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }], {
       tree: '((S0,S1),S2);',
     })
-    display.setFacet('population')
+    display.facetByField('population')
 
     display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
 
@@ -145,7 +145,7 @@ describe('the facet bands over the arranged order', () => {
       ]),
     )
 
-    display.setFacet('population')
+    display.facetByField('population')
 
     expect(rowNames(display)).toEqual([
       'S0 HP0',
@@ -169,7 +169,7 @@ describe('a tree per band', () => {
   async function bandedRun() {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(COHORT)
-    display.setFacet('population')
+    display.facetByField('population')
     const partitions: unknown[] = []
     await runGenotypeClustering({
       model: display,
@@ -253,7 +253,7 @@ describe('the config `domain` seeds the sample order', () => {
   // S2) before EUR (S1), and S2 leads its band because the domain put it there.
   it('bands a facet within it', () => {
     const display = domainDisplay(['S2'])
-    display.setFacet('population')
+    display.facetByField('population')
 
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
   })
@@ -304,7 +304,7 @@ describe('the config `domain` seeds the sample order', () => {
   it('bands a facet within a dragged order rather than the seed', () => {
     const display = domainDisplay(['S2'])
     display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
-    display.setFacet('population')
+    display.facetByField('population')
 
     expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
   })

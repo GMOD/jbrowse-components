@@ -12,7 +12,7 @@ function makeModel(
 ) {
   return {
     facet: field ? { field } : undefined,
-    setFacet: jest.fn(),
+    facetByField: jest.fn(),
     unit,
     hideSelfAlignments,
     setHideSelfAlignments: jest.fn(),
@@ -79,12 +79,12 @@ test('picking a dimension sets it; picking None ungroups', () => {
   items(model)
     .find(i => i.label === 'Strand')!
     .onClick()
-  expect(model.setFacet).toHaveBeenCalledWith({ field: 'strand' })
+  expect(model.facetByField).toHaveBeenCalledWith('strand')
 
   items(model)
     .find(i => i.label === 'None')!
     .onClick()
-  expect(model.setFacet).toHaveBeenCalledWith(undefined)
+  expect(model.facetByField).toHaveBeenCalledWith('')
 })
 
 // `hiddenGroupKeys` only hides a lane under mate-assembly grouping, so under any
@@ -138,7 +138,7 @@ function makeShowModel(showCoverage: boolean) {
     showAllGroups: jest.fn(),
     effectiveFacet: undefined,
     groupOrder: [],
-    setFacet: jest.fn(),
+    setFacetDomain: jest.fn(),
   }
 }
 

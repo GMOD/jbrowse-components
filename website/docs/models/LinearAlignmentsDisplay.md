@@ -321,9 +321,11 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-gateenabled">**gateEnabled**</span><br><code>boolean</code> | Opt into RegionTooLargeMixin's byte gate: `fetchNeeded` passes `resolvedByteLimit()` to `RenderAlignmentData`, whose first await is the index estimate, so an over-budget region is refused before a read downloads. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>99 inherited getters from 12 models</summary>
+<summary>100 inherited getters from 13 models</summary>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-displayhiddengroupkeys">[`displayHiddenGroupKeys`](../hiddengroupsmixin#getter-displayhiddengroupkeys)</span>, <span id="getter-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#getter-hiddengroups)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span>
+
+From [FacetWritesMixin](../facetwritesmixin): <span id="getter-writtenfacet">[`writtenFacet`](../facetwritesmixin#getter-writtenfacet)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span>
 
@@ -429,7 +431,6 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setbaselayer">**setBaseLayer**</span><br><code>(layer?: BaseLayer &#124; undefined) =&gt; void</code> | Draw a per-base layer over the reads, or none. The read fill is `colorByField`'s and stays as it is. |
 | <span id="action-sortatcenterline">**sortAtCenterLine**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(type: "basePair" &#124; "hardclip" &#124; "insertion" &#124; "mapq" &#124; "pairOr…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(type: "basePair" &#124; "hardclip" &#124; "insertion" &#124; "mapq" &#124; "pairOrientation" &#124; "softclip" &#124; "strand" &#124; "tag", tag?: string &#124; undefined) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-setsort">**setSort**</span><br><code>(sort: SortSetting) =&gt; void</code> | The one writer of `sort`: a whole-window order, or a column sort. |
-| <span id="action-setfacet">**setFacet**</span><br><code>(facet?: Facet &#124; undefined) =&gt; void</code> | Writes the `facet` object; undefined is ungrouped. A tier-1 refetch setting (in `rpcProps`). Resets the Y scroll since the stacked content height changes. `HiddenGroupsMixin`'s key-space reset drops the per-lane state. A grouping named without a domain keeps the current one while the key space holds, so a re-pick is not a reorder. |
 | <span id="action-setcollapsesections">**setCollapseSections**</span><br><code>(flag: boolean) =&gt; void</code> | Draw each group as one row, overlap depth shown as tint. Clears the per-group height overrides: an override opts a lane out of the collapse, which means nothing once every lane is a stack again. |
 | <span id="action-togglegroupexpanded">**toggleGroupExpanded**</span><br><code>(key: string) =&gt; void</code> | Expand a fit-to-viewport group to the full `pileup.maxLayoutHeight` cap, or, if it already has an override, drop it to return the group to the fit budget. Expanding overflows the viewport, which engages the pileup scroll. Pairs with `groupHeightOverrides`. |
 | <span id="action-resizegroupheight">**resizeGroupHeight**</span><br><code>(key: string, dy: number) =&gt; void</code> | Drag a stacked group's pileup band taller/shorter by `dy` px. The override caps the group's rows and pads the band where the rows fall short, so the drag runs in both directions. The accumulation policy is in the pure `nextGroupHeightOverride`. |
@@ -454,9 +455,11 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-clearhoveredfeature">**clearHoveredFeature**</span><br><code>() =&gt; void</code> | Fills `BaseDisplay`'s hover-clear hook, which the fetch foundation's reaction calls on every viewport change. A pan, zoom or internal scroll under a stationary cursor fires no mousemove or mouseleave, so the highlight and tooltip would keep naming the read that was there. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>54 inherited actions from 11 models</summary>
+<summary>56 inherited actions from 12 models</summary>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-hidegroup">[`hideGroup`](../hiddengroupsmixin#action-hidegroup)</span>, <span id="action-showallgroups">[`showAllGroups`](../hiddengroupsmixin#action-showallgroups)</span>
+
+From [FacetWritesMixin](../facetwritesmixin): <span id="action-facetbyfield">[`facetByField`](../facetwritesmixin#action-facetbyfield)</span>, <span id="action-setfacetdomain">[`setFacetDomain`](../facetwritesmixin#action-setfacetdomain)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
 

@@ -44,7 +44,7 @@ function makeModel(
     showAllGroups: jest.fn(),
     effectiveFacet: undefined,
     groupOrder: [],
-    setFacet: jest.fn(),
+    setFacetDomain: jest.fn(),
     ...overrides,
   }
 }

@@ -20,7 +20,7 @@ import type {
 
 interface GroupByModel {
   facet?: Facet
-  setFacet: (facet?: Facet) => void
+  facetByField: (field: string) => void
   // A synteny track carries the inherited `unit` slot, so chain layout is
   // reachable here from a config or session even though this menu offers no way
   // in. `groupByRadioMenuItem` needs it to drop the per-read dimensions the
@@ -44,10 +44,10 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
     options: GROUP_OPTIONS,
     unit: model.unit,
     onSelect: field => {
-      model.setFacet({ field })
+      model.facetByField(field)
     },
     onNone: () => {
-      model.setFacet(undefined)
+      model.facetByField('')
     },
   })
   // Appended after the shared builder's dimension radios, behind a divider so a

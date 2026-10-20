@@ -1457,7 +1457,7 @@ describe('showLabels auto density gate', () => {
       start: 0,
       end: 50_000,
     })
-    display.setFacet({ field: 'strand' })
+    display.facetByField('strand')
     zoomAndSettle(view, 62.5)
     expect(display.showLabels).toBe(false)
 
@@ -1600,9 +1600,9 @@ test('the worker payload is exactly the slots DisplayConfig declares', () => {
   ])
   // Only a facet other than strand asks the worker for a stamp; a strand
   // facet stays out of the payload and so out of the cache key.
-  display.setFacet({ field: 'strand' })
+  display.facetByField('strand')
   expect(display.rpcProps().displayConfig).not.toHaveProperty('facetField')
-  display.setFacet({ field: 'biotype' })
+  display.facetByField('biotype')
   expect(display.rpcProps().displayConfig.facetField).toBe('biotype')
 })
 

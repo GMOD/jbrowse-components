@@ -1333,7 +1333,7 @@ test("the facet's steps ride the request per section, hand their bin to the mark
     (display.rpcProps().layers[0]!.transform![0] as { groupby: string[] })
       .groupby,
   ).toEqual(['lo', 'hi'])
-  display.setFacetField('name')
+  display.facetByField('name')
   expect(display.rpcProps().facet).toMatchObject({
     field: 'name',
     transform: [{ type: 'bin' }],
@@ -2687,7 +2687,7 @@ test('moving the facet field drops what was hidden, the keys having meant that f
   const before = display.groupKeySpace
   display.hideGroup('a')
   expect(display.hiddenGroups.size).toBe(1)
-  display.setFacetField('type')
+  display.facetByField('type')
   expect(display.groupKeySpace).not.toBe(before)
   expect(display.hiddenGroups.size).toBe(0)
 })

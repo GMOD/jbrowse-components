@@ -66,7 +66,7 @@ export function collapseSectionsItems(model: CollapseSectionsModel) {
 export interface SectionOrderMenuModel {
   effectiveFacet: Facet | undefined
   groupOrder: readonly { key: string; label: string }[]
-  setFacet: (facet?: Facet) => void
+  setFacetDomain: (domain: readonly string[]) => void
 }
 
 // The worker is sent no domain, so a reorder refetches nothing. Undefined
@@ -78,7 +78,7 @@ export function sectionOrderOf(model: SectionOrderMenuModel) {
       sections: model.groupOrder,
       domain: facet.domain ?? [],
       setDomain: (domain: string[]) => {
-        model.setFacet({ ...facet, domain })
+        model.setFacetDomain(domain)
       },
     }
   )

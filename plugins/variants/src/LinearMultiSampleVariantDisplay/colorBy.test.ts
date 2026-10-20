@@ -46,7 +46,7 @@ describe('multi-sample variant colorBy', () => {
     const model = makeModel()
     model.setSources(sources)
     // band by population: with no domain the bands sort, AFR ahead of EUR
-    model.setFacet('population')
+    model.facetByField('population')
     expect(model.sources.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
 
     // both channels resolve on the same read, so one cannot displace the other
@@ -59,7 +59,7 @@ describe('multi-sample variant colorBy', () => {
   it('strips the palette when set to empty, keeping the order', () => {
     const model = makeModel()
     model.setSources(sources)
-    model.setFacet('population')
+    model.facetByField('population')
     model.setRowColorField('population')
     model.setRowColorField('')
 

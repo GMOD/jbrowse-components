@@ -216,7 +216,7 @@ describe('the Group by dialog applies a plot', () => {
     const viaDialog = display()
     const viaText = display()
     for (const d of [viaDialog, viaText]) {
-      d.setFacet({ field: 'biotype', domain: ['b'] })
+      d.applyPlot({ facet: { field: 'biotype', domain: ['b'] } })
     }
     viaDialog.applyGroupBy('biotype', true)
     viaText.applyPlot({ color: { field: 'biotype' } })

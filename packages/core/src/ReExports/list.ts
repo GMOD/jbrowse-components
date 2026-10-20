@@ -426,6 +426,7 @@ export default [
   '@jbrowse/display-kit/DisplayLoadingOverlay',
   '@jbrowse/display-kit/DisplayRenderErrorOverlay',
   '@jbrowse/display-kit/facetConfigSchema',
+  '@jbrowse/display-kit/FacetWritesMixin',
   '@jbrowse/display-kit/featureFilterConfigSchema',
   '@jbrowse/display-kit/fetchEachRegion',
   '@jbrowse/display-kit/fetchInputs',
