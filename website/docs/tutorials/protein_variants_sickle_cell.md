@@ -65,7 +65,7 @@ on _HBB_ residue 7 with structure 2HBS:
 - type `chr11:5226956-5227046[rev]` into the location box. `[rev]` keeps the
   minus-strand gene reading left to right, the way it opened
 - click **Reset Zoom**, the circular arrow at the top right of the structure, to
-  fit both haemoglobin tetramers in the asymmetric unit
+  fit the haemoglobin tetramer
 - pick **Use as reference row** on the `human_query` tip of the alignment's
   tree: the human sequence pins above the alignment, and a residue matching it
   draws as a dot
@@ -204,6 +204,32 @@ In the protein view's header, the **From the alignment** rows list the same
 domains and sites.
 
 <Figure src="/img/protein/hbb_domains_three_views.png" caption="HBB in three linked views: the genome's GWAS, 1000 Genomes and domain tracks, the alignment's rows and the 2HBS cartoon, colored by the alignment's domains. On the structure a cartoon color marks a domain and side-chain sticks mark a site." />
+
+The numbered callouts follow rs334 from a statistic to a mechanism, one view at
+a time:
+
+1. the GWAS records tie the allele to malaria and to haemolytic anaemia and
+   kidney disease: one copy protects against severe malaria, and two copies
+   cause sickle cell disease
+2. the 1000 Genomes carriers sit in the African-ancestry block of rows, nearly
+   all with one copy, since malaria favoured carriers there
+3. the alignment and the domain track mark no heme-binding or tetramer-interface
+   site at residue 6, so the change breaks none of the sites NCBI
+   records[^domain]
+4. on the structure, valine 6 trades glutamate's charged side chain for a
+   hydrophobic one on the β chain's surface
+5. in the 2HBS crystal, valine 6 of the second tetramer fills a pocket of Phe85
+   and Leu88 on this tetramer's chain B. Deoxygenated haemoglobin S stacks into
+   fibres through that contact, and the fibres bend red cells into sickles
+
+The protein view draws the crystal's first tetramer, and both the valine and the
+pocket it docks into sit on it.
+
+[^domain]:
+    The Hb-beta-like domain, NCBI's cd08925, starts at the transcript's residue
+    8, one past the sickle residue. In 2HBS, helix A runs from Thr4, so Glu6
+    sits inside the globin fold; the bar's start marks where cd08925's model
+    begins.
 
 ## Your own gene
 
