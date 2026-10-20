@@ -79,7 +79,7 @@ export function doAfterAttach(
               offsetPx: v1.offsetPx,
               displayedRegions: v1.displayedRegions,
               windowRegions: self.targetWindowRegions,
-              queried: view.showOffscreenMates,
+              queried: view.offscreenDrawn,
             },
           }
         })

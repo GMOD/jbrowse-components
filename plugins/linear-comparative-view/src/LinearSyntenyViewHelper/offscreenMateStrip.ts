@@ -42,7 +42,7 @@ export interface OffscreenMateSource {
     culledRibbonMates?: CulledRibbonMates
   })[]
   parentView: {
-    showOffscreenMates: boolean
+    offscreenDrawn: boolean
     minLength: number
     overdrawPx: number
     width: number
@@ -93,7 +93,7 @@ export function offscreenMateStrips(
   model: OffscreenMateSource,
 ): OffscreenMateStrip[] {
   const { parentView, height, rowPair, level } = model
-  if (!parentView.showOffscreenMates || !rowPair) {
+  if (!parentView.offscreenDrawn || !rowPair) {
     return []
   }
   const { minLength, overdrawPx, width } = parentView

@@ -50,7 +50,7 @@ export interface ParentViewDuck extends FollowAnchorHost {
   // is nested inside; a view below the fold has no canvas, so it will never
   // paint (see ComparativeSurface.hostMounted)
   effectiveBodyMounted: boolean
-  showOffscreenMates: boolean
+  offscreenDrawn: boolean
   // the same floor the ribbons are culled by, applied to the marks so filtering
   // a hairball down does not leave a fringe of marks for what it hid
   minLength: number

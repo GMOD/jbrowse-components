@@ -224,9 +224,9 @@ test('a file with no CIGAR ops is offered no CIGAR row', async () => {
 
 test('off-screen mates is one checkbox, on by default', async () => {
   const view = await openMenu()
-  expect(view.showOffscreenMates).toBe(true)
+  expect(view.offscreenDrawn).toBe(true)
   fireEvent.click(screen.getByText('Off-screen mates'))
-  expect(view.showOffscreenMates).toBe(false)
+  expect(view.offscreenDrawn).toBe(false)
 })
 
 test('the CIGAR row sets the mode it names', async () => {

@@ -256,7 +256,7 @@ const offscreenMateSession = {
   views: [
     {
       ...syntenySession.views[0],
-      showOffscreenMates: true,
+      offscreen: { show: true },
       levels: [
         {
           tracks: [
@@ -324,7 +324,7 @@ const offscreenMateSession = {
   ],
 }
 
-// `showOffscreenMates` is a menu setting, so a figure
+// `offscreen` is a menu setting, so a figure
 // taken with it on has to carry it — otherwise the export of a view reporting
 // what it cannot draw is the export that does not draw it.
 test('export svg of synteny bakes in the off-screen mate stubs', async () => {

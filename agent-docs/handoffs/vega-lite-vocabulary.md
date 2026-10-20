@@ -19,6 +19,11 @@ spelling, not a new house word. That means no new `min*`, `max*`, `show*` or
   that replaced `minAlignmentLength`, `minIdentity` and `hideUnlabelled`
   (`SyntenyFilterMixin`, `filterLanes.ts`).
 - The linear synteny view's `mark.interpolate`, which replaced `drawCurves`.
+- The two comparative views' `coord.ratio`, which replaced `sameScale` and
+  `lockAspectRatio`.
+- The linear synteny view's `offscreen.show`, which replaced
+  `showOffscreenMates`. It is the first part built on ADR-231's `show`
+  member, which ADR-238's amendment puts in the place of `null`.
 
 ## Next, one concept at a time across the app
 
@@ -35,7 +40,7 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    - `axis` takes over LinearGenomeView's `showGridlines`, the dotplot's
      `showGridlines` and `showTickLabels`, and the synteny view's
      `drawLocationMarkers`.
-   - `legend: null` takes over every `showLegend`.
+   - `legend.show` takes over every `showLegend`.
 4. **`render.antialias`** takes over `fadeThinAlignmentsMode` and
    `pileup.fadeLowFrequency`.
 5. **`data.resolution`** takes over `lodMode`, wiggle's `resolution` and Hi-C's
@@ -43,8 +48,6 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
 6. **Layout**: `height`, `autosize` and `maxHeight` take over `heightMode`,
    `growMaxHeight`, `rowHeight`, `featureHeight` and `pileup.readHeight`.
 7. **Comparative leftovers**:
-   - `coord.ratio` takes over `sameScale` and `lockAspectRatio`.
-   - The `offscreen` part takes over `showOffscreenMates`.
    - The `indels` part takes over `cigarMode` and `drawCigar`, after step 1.
    - The multi-way display's ribbons part takes over `ribbonColor`,
      `drawCurves` and `bridgeSkippedLanes`.

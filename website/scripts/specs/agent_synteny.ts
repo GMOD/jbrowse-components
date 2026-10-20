@@ -53,7 +53,7 @@ function flySynteny(
     // Each row shows one arm, so every alignment to an unplaced scaffold draws
     // a mate mark labelled with its chrUn_NW_ contig, and a few hundred of them
     // cover the band these figures are about.
-    showOffscreenMates: false,
+    offscreen: { show: false },
     ...extra,
   }
 }

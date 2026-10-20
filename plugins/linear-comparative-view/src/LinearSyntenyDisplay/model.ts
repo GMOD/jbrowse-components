@@ -520,7 +520,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           // RPC.
           view.drawCIGAR,
           view.drawCIGARMatchesOnly,
-          view.showOffscreenMates,
+          view.offscreenDrawn,
           // the resolved tier, not view.lodMode: in 'auto' the mode is constant
           // while the tier flips, and the tier is what the fetch differs by
           this.lodTier,

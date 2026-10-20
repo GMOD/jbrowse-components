@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every display's settings take Vega-Lite's words and shapes, and each display keeps its hand-written pipeline: one predicate list (`{ field, gte | oneOf | valid | ... }`) replaces every filter family and every min/max/only/exclude/threshold setting; one channel object (`{ value | datum | field, scale: { type, domain, range, ... }, legend | axis }`) under `encoding` replaces the color-object variants, `scales.y`, `opacity` and the size settings; `link` with `interpolate` draws curves, ribbons and segments; `axis`, `legend: null`, `coord.ratio`, `data.resolution` and `render.antialias` replace the guide, scale-lock, level-of-detail and fade flags; a part is removed with `null`. Composition (`layer`, `transform`) is written only where a display already composes: the mark display and the multi-way lanes. Reverses GRAMMAR_OF_GRAPHICS.md's decline of field predicates; keeps ADR-110 (no `condition`) and ADR-118 (no `dodge` or band chains on typed-row-less displays)"
+summary: "Every display's settings take Vega-Lite's words and shapes, and each display keeps its hand-written pipeline: one predicate list (`{ field, gte | oneOf | valid | ... }`) replaces every filter family and every min/max/only/exclude/threshold setting; one channel object (`{ value | datum | field, scale: { type, domain, range, ... }, legend | axis }`) under `encoding` replaces the color-object variants, `scales.y`, `opacity` and the size settings; `link` with `interpolate` draws curves, ribbons and segments; `axis`, `legend`, `coord.ratio`, `data.resolution` and `render.antialias` replace the guide, scale-lock, level-of-detail and fade flags; a part or guide turns off through ADR-231's `show` member, every top-level `show*` and `hide*` going. Amended 2026-10-20: not with `null`, which resets a slot to its default. Composition (`layer`, `transform`) is written only where a display already composes: the mark display and the multi-way lanes. Reverses GRAMMAR_OF_GRAPHICS.md's decline of field predicates; keeps ADR-110 (no `condition`) and ADR-118 (no `dodge` or band chains on typed-row-less displays)"
 ---
 
 # ADR-238: Every display speaks Vega-Lite
@@ -8,7 +8,9 @@ summary: "Every display's settings take Vega-Lite's words and shapes, and each d
 ## Status
 
 Accepted (2026-10-20), to build in stages before the 5.0.0 tag freezes config
-slot paths (ADR-120).
+slot paths (ADR-120). Amended the same day: a part turns off through its
+`show` member, not `null`, once building the synteny view's `offscreen` part
+showed the config system reading `null` as "reset to the default".
 
 Colin's steer, on a review of the linear synteny view's settings: aim for
 ideal grammar-of-graphics terms rather than house ones ("things like
@@ -61,8 +63,10 @@ vocabulary.
 
 - Channels sit under `encoding`, inside a named part too:
   `coverage: { encoding: { y: { scale: { type: 'log' } } } }`.
-- A part or sub-layer is removed with `null` and drawn with `{}` or its
-  settings, as `legend: null` is. Every `show*` and `hide*` goes.
+- A part, sub-layer or guide turns off through its `show` member, ADR-231's
+  band contract, so it keeps its other settings while off:
+  `coverage: { show: false }`, `legend: { show: false }`. Every top-level
+  `show*` and `hide*` goes into the part it toggles.
 
 ### Predicate
 
@@ -125,7 +129,7 @@ channels.
 - **Axis:** `axis: { grid, labels, title, tickCount, format, extent, tree }`.
   It replaces the gridline, location-marker, tick-label and minimal-tick
   flags and the tree sidebar's toggles.
-- **Legend:** `legend: null | { title, format, values }` replaces
+- **Legend:** `legend: { show, title, format, values }` replaces
   `showLegend`, `labels`, `title` and `breaks`.
 - **Coordinates:** `coord: 'cartesian' | 'parallel' | 'polar'` names the
   dotplot, the linear synteny view and the circle, and `ratio: 1` replaces
@@ -146,7 +150,7 @@ The indels are a part of the alignment mark:
 
 | Setting | Draws |
 |---|---|
-| `indels: null` | one block per record, today's `cigarMode: 'off'` and `drawCigar: false` |
+| `indels: { show: false }` | one block per record, today's `cigarMode: 'off'` and `drawCigar: false` |
 | `indels: {}` | indels drawn in their op colors, `full` |
 | `indels: { encoding: { opacity: { value: 0 } } }` | indels left as gaps, `matches` |
 
@@ -156,6 +160,7 @@ The indels are a part of the alignment mark:
 |---|---|
 | Bands as `vconcat`, the pileup as `dodge`, coverage as `bin` + `aggregate` chains | A user could not edit the chain and get what was written without a generic engine; ADR-118's 4.23x stands until it is re-measured on typed BAM rows |
 | `condition` for hover and selection | ADR-110's measurement: a hover in render state repaints the whole pileup per mousemove on Canvas2D. The synteny shade is also a function of the base alpha, which a constant cannot express. Hover and selection stay guides, and `colorHover`/`colorSelected` become `theme.highlight` |
+| A part removed with `null` (Vega-Lite's `legend: null`) | `null` already means "reset to the default" in every config write (`setSlot(name, null)`, JSON having no `undefined`), and a part turned off by `null` loses its settings, where ADR-231's `show` keeps them for the way back |
 | A field-keyed filter map (`{ mapq: { gte: 20 } }`) | A record list names its parts and grows operators; the same call kept `filter.tags` as records |
 | Missing values passing comparisons | `gte: 0.9` would not mean at least 0.9. The UI hints when no track carries the field instead |
 | Per-distinct-value evaluation of jexl | It needs structure read back out of jexl, which GRAMMAR_OF_GRAPHICS.md already declined |

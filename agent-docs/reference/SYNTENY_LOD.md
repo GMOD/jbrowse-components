@@ -124,7 +124,7 @@ Under 7% of rows carry a fold.
 ## Off-screen synteny mates, drawn as something other than a ribbon
 
 A synteny band draws a ribbon only when both ends land on a displayed region.
-The "Off-screen mates" checkbox (`showOffscreenMates`, on by default) draws the
+The "Off-screen mates" checkbox (`offscreen.show`, on by default) draws the
 other alignments as marks in a strip at the band edge, labelled with the contig
 they point at. `OffscreenMateOverlay` is a second 2D canvas over the level's,
 because the ribbon shader spans the full gap between the axes and a part-height

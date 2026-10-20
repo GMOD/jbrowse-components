@@ -1014,10 +1014,10 @@ LinearSyntenyView.setFollowMatchOrientation
 LinearSyntenyView.setFollowSynteny
 LinearSyntenyView.setInterpolate
 LinearSyntenyView.setLaunch
+LinearSyntenyView.setOffscreenDrawn
 LinearSyntenyView.setOverdrawPx
 LinearSyntenyView.setRatio
 LinearSyntenyView.setScrollZoom
-LinearSyntenyView.setShowOffscreenMates
 LinearSyntenyView.setViews
 LinearSyntenyView.setWidth
 LinearSyntenyView.takeOutRows

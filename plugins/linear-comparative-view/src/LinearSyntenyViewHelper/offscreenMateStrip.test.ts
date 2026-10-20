@@ -37,7 +37,7 @@ function source(over: Record<string, unknown> = {}): OffscreenMateSource {
     height: 100,
     linearSyntenyDisplays: [{ mateMarks: { offscreenMates: mates(3) } }],
     parentView: {
-      showOffscreenMates: true,
+      offscreenDrawn: true,
       minLength: 0,
       overdrawPx: 1000,
       width: 800,
@@ -64,7 +64,7 @@ function bothSides(over: Record<string, unknown> = {}): OffscreenMateSource {
       },
     ],
     parentView: {
-      showOffscreenMates: true,
+      offscreenDrawn: true,
       minLength: 0,
       overdrawPx: 1000,
       width: 800,
@@ -97,7 +97,7 @@ test('the toggle off draws nothing', () => {
   expect(
     offscreenMateStrips(
       source({
-        parentView: { showOffscreenMates: false, minLength: 0 },
+        parentView: { offscreenDrawn: false, minLength: 0 },
       }),
     ),
   ).toEqual([])
@@ -183,7 +183,7 @@ test('below the strip answers nothing, leaving the ribbons to the pick engine', 
 
 test('with the toggle off nothing is hittable, since nothing is drawn', () => {
   const s = source({
-    parentView: { showOffscreenMates: false, minLength: 0 },
+    parentView: { offscreenDrawn: false, minLength: 0 },
   })
   expect(hit(s, 1, 1)).toBeUndefined()
 })

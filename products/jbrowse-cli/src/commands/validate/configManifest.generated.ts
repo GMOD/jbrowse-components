@@ -8766,7 +8766,7 @@ export const configManifest: ConfigManifest = {
         "cigarMode",
         "mark",
         "drawLocationMarkers",
-        "showOffscreenMates",
+        "offscreen",
         "overdrawPx",
         "launch",
         "trackSelectorType",

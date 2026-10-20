@@ -174,7 +174,7 @@ export const junctionScaffold = (
         mark: { interpolate: 'bump' },
         levelHeights: [150],
         opacity: 0.35,
-        showOffscreenMates: false,
+        offscreen: { show: false },
         tracks: [[PIF]],
         views: [
           {
@@ -263,7 +263,7 @@ export const scaffoldOverview = (
         // the last chr13 block before the junction is 155 kb
         filter: [{ field: 'length', gte: 100000 }],
         opacity: 0.35,
-        showOffscreenMates: false,
+        offscreen: { show: false },
         tracks: [PIF],
         views: [
           {

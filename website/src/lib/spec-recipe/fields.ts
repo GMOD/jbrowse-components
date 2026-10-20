@@ -2164,11 +2164,13 @@ export const viewFields: Record<string, FieldRecipe> = {
           note: 'Re-order chromosomes is the opt-in, and this figure leaves it alone on purpose: the order along the axis is part of what the figure is showing.',
         }
   },
-  showOffscreenMates: (value, { viewType }) => {
+  // the synteny view's `offscreen` part, toggled by its `show`
+  offscreen: (value, { viewType }) => {
     const path = settingsPath(viewType, 'Off-screen mates')
-    return typeof value === 'boolean' && path && viewType === 'LinearSyntenyView'
+    const show = asRecord(value)?.show
+    return typeof show === 'boolean' && path && viewType === 'LinearSyntenyView'
       ? {
-          path: `${path} (${value ? 'checked' : 'unchecked'})`,
+          path: `${path} (${show ? 'checked' : 'unchecked'})`,
           note: 'On by default: a locus syntenic to a contig the facing panel is not showing draws no ribbon, so without the marks it looks exactly like a locus syntenic to nothing.',
         }
       : undefined

@@ -48,9 +48,9 @@ export function syntenySettingsMenuItems(
     ),
     toggleItem(
       'Off-screen mates',
-      model.showOffscreenMates,
+      model.offscreenDrawn,
       v => {
-        model.setShowOffscreenMates(v)
+        model.setOffscreenDrawn(v)
       },
       {
         helpText:

@@ -48,7 +48,7 @@ so a tracked read turns one failure into an unbounded retry loop against the
 server that just failed.
 
 `syntenyFetchRegions` scopes both fetches (visible blocks widened by a pan buffer
-and snapped to a grid). Synteny's `showOffscreenMates` adds a second query on the
+and snapped to a grid). Synteny's `offscreen` part adds a second query on the
 target axis (SYNTENY_LOD.md § The second synteny fetch, on the target axis).
 
 ## The canvas belongs to the container, not the display

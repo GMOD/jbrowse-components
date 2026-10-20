@@ -24,9 +24,9 @@ interface SyntenyView {
   initialized: boolean
   views: LinearGenomeViewModel[]
   levels: { linearSyntenyDisplays: { featureData?: unknown }[] }[]
-  showOffscreenMates: boolean
+  offscreenDrawn: boolean
   setWidth: (n: number) => void
-  setShowOffscreenMates: (flag: boolean) => void
+  setOffscreenDrawn: (flag: boolean) => void
 }
 
 // The two surfaces the band itself reads — what gets a strip, and what a mark's
@@ -66,7 +66,7 @@ async function openSyntenyView() {
 // changes the views that WERE hiding something.
 test('both rows showing every contig hides nothing', async () => {
   const view = await openSyntenyView()
-  expect(view.showOffscreenMates).toBe(true)
+  expect(view.offscreenDrawn).toBe(true)
   expect(strips(view)).toEqual([])
 })
 
@@ -99,7 +99,7 @@ test('and marks them by default', async () => {
     expect(strips(view).length).toBe(1)
   }, timeout)
 
-  expect(view.showOffscreenMates).toBe(true)
+  expect(view.offscreenDrawn).toBe(true)
 })
 
 // THE OTHER HALF, and the one stacked whole assemblies are made of. Both rows

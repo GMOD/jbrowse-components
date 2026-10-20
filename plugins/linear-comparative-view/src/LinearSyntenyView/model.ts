@@ -75,6 +75,7 @@ import {
   rowViewMenuItems,
   syntenyTracksMenuItems,
 } from './menus.ts'
+import { syntenyOffscreenConfigSchema } from './offscreenConfigSchema.ts'
 import { sharedFit } from './sharedFit.ts'
 import { liftLegacySyntenyView } from './util/liftViewLevelTracks.ts'
 
@@ -184,10 +185,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawLocationMarkers: types.stripDefault(types.boolean, false),
         /**
          * #property
-         * Mark the alignments the view cannot draw a ribbon for, along both
-         * edges of each band. Costs a second query per pair of rows.
+         * The marks along both edges of each band for the alignments the view
+         * cannot draw a ribbon for, a [](/docs/config/syntenyoffscreen) part:
+         * `{ show: false }` removes them and the second query per pair of rows
+         * they cost.
          */
-        showOffscreenMates: types.stripDefault(types.boolean, true),
+        offscreen: types.stripDefault(syntenyOffscreenConfigSchema, {}),
         /**
          * #property
          * pixels beyond the visible viewport edge that synteny lines are still
@@ -357,6 +360,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return [...new Set(self.views.flatMap(v => v.assemblyNames))]
       },
 
+      /**
+       * #getter
+       * Whether the `offscreen` part draws.
+       */
+      get offscreenDrawn(): boolean {
+        return readConfObject(self.offscreen, 'show')
+      },
       /**
        * #getter
        * The zoom-out limit every row shares while `coord.ratio` is 1
@@ -1147,8 +1157,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setShowOffscreenMates(flag: boolean) {
-        self.showOffscreenMates = flag
+      setOffscreenDrawn(drawn: boolean) {
+        self.offscreen = cast({ ...getSnapshot(self.offscreen), show: drawn })
       },
       /**
        * #action

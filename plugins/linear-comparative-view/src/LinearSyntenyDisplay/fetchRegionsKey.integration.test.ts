@@ -72,7 +72,7 @@ async function openSynteny() {
 
 test('a pan of the lower row past its buffer moves the key with the bidirectional fetch off', async () => {
   const { view, display } = await openSynteny()
-  view.setShowOffscreenMates(false)
+  view.setOffscreenDrawn(false)
   const lower = view.views[1]!
   lower.navTo({ refName: 'ctgA', start: 8000, end: 8800 })
   const before = display.fetchRegionsKey

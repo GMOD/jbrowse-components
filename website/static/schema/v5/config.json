@@ -25533,6 +25533,27 @@
       },
       "additionalProperties": false
     },
+    "SyntenyOffscreen": {
+      "title": "SyntenyOffscreen",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the marks; off also skips the second query per pair of rows they cost.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearSyntenyViewTrackEntry": {
       "title": "LinearSyntenyViewTrackEntry",
       "description": "A track to open in a LinearSyntenyView: a trackId, or an object whose other keys are the display's config slots and state written inline.",
@@ -25634,8 +25655,8 @@
         "drawLocationMarkers": {
           "type": "boolean"
         },
-        "showOffscreenMates": {
-          "type": "boolean"
+        "offscreen": {
+          "$ref": "#/$defs/SyntenyOffscreen"
         },
         "overdrawPx": {
           "type": "number"
