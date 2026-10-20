@@ -81,7 +81,7 @@ test('an agent reads a plot as JSON, checks a draft, and applies it to two track
     items: {
       type: 'Mark',
       slots: {
-        mark: { type: 'stringEnum' },
+        mark: { type: 'MarkDef' },
         encoding: { type: 'MarkEncoding', slots: { y: {} } },
       },
     },

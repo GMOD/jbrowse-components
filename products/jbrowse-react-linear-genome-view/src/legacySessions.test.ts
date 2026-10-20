@@ -140,9 +140,14 @@ test('a config.json track spelling the retired type carries the current name', (
     ],
   })
 
-  // `rows`' shorthand lifts the fold's bare field into its object form
+  // `rows`' and `mark`'s shorthands lift the fold's bare values into their
+  // object forms
   expect(state.config.tracks[0]!.displays).toEqual([
-    { type: 'LinearWiggleDisplay', mark: 'bar', rows: { field: 'source' } },
+    {
+      type: 'LinearWiggleDisplay',
+      mark: { type: 'bar' },
+      rows: { field: 'source' },
+    },
   ])
 })
 

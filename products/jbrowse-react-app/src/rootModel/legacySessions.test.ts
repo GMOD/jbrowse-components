@@ -515,7 +515,7 @@ test('a v4 arc display opens as links', async () => {
   )
   expect(notifications).toEqual([])
   expect(display.type).toBe('LinearMarkDisplay')
-  expect(getConf(display, 'marks')).toEqual([{ mark: 'link' }])
+  expect(getConf(display, 'marks')).toEqual([{ mark: { type: 'link' } }])
 })
 
 test('a v4 paired arc display opens as links to each mate', async () => {
@@ -529,7 +529,7 @@ test('a v4 paired arc display opens as links to each mate', async () => {
   expect(display.type).toBe('LinearMarkDisplay')
   expect(getConf(display, 'marks')).toEqual([
     {
-      mark: 'link',
+      mark: { type: 'link' },
       transform: [{ type: 'mate' }],
       encoding: { x2: { chrom: 'mate.refName', pos: 'mate.start' } },
     },
@@ -578,7 +578,7 @@ test('a v4 arc display on a session track opens as links', async () => {
     ],
   })
   expect(display.type).toBe('LinearMarkDisplay')
-  expect(getConf(display, 'marks')).toEqual([{ mark: 'link' }])
+  expect(getConf(display, 'marks')).toEqual([{ mark: { type: 'link' } }])
 })
 
 // The usual v4 share link: the config names no arc display, and the reader
@@ -594,7 +594,7 @@ test('a v4 paired arc display picked from the menu opens as links', async () => 
   expect(display.type).toBe('LinearMarkDisplay')
   expect(getConf(display, 'marks')).toEqual([
     {
-      mark: 'link',
+      mark: { type: 'link' },
       transform: [{ type: 'mate' }],
       encoding: { x2: { chrom: 'mate.refName', pos: 'mate.start' } },
     },
