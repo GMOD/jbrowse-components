@@ -217,6 +217,7 @@ function keptLayer(
     x2Ref: layer.x2Ref && gather(layer.x2Ref, kept),
     feet: layer.feet && gather(layer.feet, kept),
     x2Region: layer.x2Region && gather(layer.x2Region, kept),
+    series: layer.series && gather(layer.series, kept),
     flatbush:
       layer.flatbush && kept.length > 0 ? hitIndexOf(x, x2, y) : undefined,
     flatbushData: undefined,

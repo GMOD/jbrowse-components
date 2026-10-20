@@ -55,6 +55,15 @@ test('a hidden section leaves every lane, size and x2Ref included', () => {
   expect([...out.x2Ref!]).toEqual([1, 1])
 })
 
+test('a hidden section leaves the series lane of a line, in step with x', () => {
+  const out = hideFirstSection({
+    ...linkLayer(),
+    series: Uint32Array.from([5, 6, 7, 8]),
+  })
+  expect([...out.x]).toEqual([30, 40])
+  expect([...out.series!]).toEqual([7, 8])
+})
+
 test('a hidden section keeps a constant color as one number', () => {
   const out = hideFirstSection({ ...linkLayer(), color: 0xff0000ff })
   expect(out.count).toBe(2)
