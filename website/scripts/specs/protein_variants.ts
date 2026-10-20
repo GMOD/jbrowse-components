@@ -285,6 +285,7 @@ function hotspotSession(
   { session: base, gene, hotspots }: HotspotGene,
   region: { start: number; end: number },
   options: Omit<SessionOptions, 'highlights'>,
+  extraHotspots: Hotspot[] = [],
 ) {
   const session = structuredClone(base)
   const [, msa, protein] = session.views as [ViewJson, ViewJson, ViewJson]
@@ -300,7 +301,10 @@ function hotspotSession(
     { row: 'human_query', ...region },
     {
       ...options,
-      highlights: hotspots.map(h => ({ ...h, assemblyName: 'hg38' })),
+      highlights: [...hotspots, ...extraHotspots].map(h => ({
+        ...h,
+        assemblyName: 'hg38',
+      })),
     },
   )
 }
@@ -414,6 +418,13 @@ const TP53: HotspotGene = {
   ],
 }
 const TP53_WINDOWS = 'chr17:7674201-7674239[rev] chr17:7673783-7673821[rev]'
+const TP53_R175: Hotspot = {
+  label: 'R175',
+  refName: 'chr17',
+  start: 7675086,
+  end: 7675089,
+}
+const TP53_DOMAIN_WINDOWS = `chr17:7675069-7675107[rev] ${TP53_WINDOWS}`
 const TP53_R248 = 'chr17:7,674,220'
 
 const BRAF: HotspotGene = {
@@ -633,15 +644,15 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       TP53,
       { start: 231, end: 290 },
       {
-        loc: TP53_WINDOWS,
+        loc: TP53_DOMAIN_WINDOWS,
         tracks: [HG38_GENE_TRACK],
         msaHeight: 490,
         domains: true,
       },
+      [TP53_R175],
     ),
     ...domainFigure('TP53', TP53_R248),
     viewportHeight: 1140,
-    annotations: [residueCallout('Arg175', 'B:175', 120, 120)],
   },
   {
     mode: 'url',

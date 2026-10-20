@@ -59,8 +59,8 @@ browser's linked session. Open it on _TP53_ with structure 1TUP:
 - pick **Use as reference row** on the `human_query` tip of the alignment's
   tree, so a residue matching human draws as a dot
 - drag across the scale bar over codon 248 and pick **Highlight region**, then
-  over codon 273. In **Tools → Highlights**, type `R248` and `R273` into the
-  Label cells
+  over codon 273. Click the link chip at the top of each band, pick **Edit
+  label...** and type `R248` or `R273`
 
 The link names no residue. With `residue=248` in it, the protein browser opens
 the seed alignment of p53's Pfam family, a few dozen distant relatives, in place
@@ -84,6 +84,10 @@ the genome view and the structure read them from the alignment:
   a domain track to the genome view
 - in the genome view's menu, untick **Show... → CDS reading frame colors**
 - in the protein view's palette menu, pick **Domains from the alignment**
+- type
+  `chr17:7675069-7675107[rev] chr17:7674201-7674239[rev] chr17:7673783-7673821[rev]`
+  into the location box, which puts codon 175 before codons 248 and 273, and
+  highlight it as `R175`
 
 <Figure src="/img/protein/tp53_domains_three_views.png" caption="TP53 in three linked views, colored by the alignment's domains and sites: the genome's domain track, the alignment's rows and the 1TUP cartoon, with each site's side chains as sticks." />
 

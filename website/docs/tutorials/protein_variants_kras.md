@@ -63,8 +63,8 @@ browser's linked session. Open it on _KRAS_ residue 12 with structure 6OIM:
   tree, so a residue matching human draws as a dot
 
 To label the hotspots, drag across the scale bar over codon 12 and pick
-**Highlight region**, then do the same for codon 13. **Tools → Highlights**
-lists both; click each Label cell and type `G12` or `G13`.
+**Highlight region**, then do the same for codon 13. Click the link chip at the
+top of each band, pick **Edit label...** and type `G12` or `G13`.
 
 Hover codon 12 on the gene. The hover lights the codon, the alignment column and
 the residue on the structure, and the protein view's header compares the two

@@ -59,8 +59,9 @@ browser's linked session. Open it on _BRAF_ with structure 4MNF:
 - click **Reset Zoom**, the circular arrow at the top right of the structure
 - pick **Use as reference row** on the `human_query` tip of the alignment's
   tree, so a residue matching human draws as a dot
-- drag across the scale bar over codon 600 and pick **Highlight region**. In
-  **Tools → Highlights**, type `V600` into its Label cell
+- drag across the scale bar over codon 600 and pick **Highlight region**, then
+  click the link chip at the top of the band, pick **Edit label...** and type
+  `V600`
 
 The link names no residue. With `residue=600` in it, the protein browser opens
 the seed alignment of the kinase domain's Pfam family, kinases of many genes and
