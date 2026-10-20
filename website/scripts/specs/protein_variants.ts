@@ -668,7 +668,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     viewportWidth: 2300,
     viewportHeight: 1150,
     actions: hoverCodon(KRAS_G12),
-    annotations: [residueCallout('Cys12 beside sotorasib', 'A:12', -80, -300)],
+    annotations: [residueCallout('Cys12 beside sotorasib', 'A:12', 160, 260)],
   },
   {
     mode: 'url',
