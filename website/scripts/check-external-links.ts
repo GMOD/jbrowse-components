@@ -78,7 +78,7 @@ const PREFIXES: [string, string][] = [
   ],
   // a walk-file stem, which walksUri extends with .walks.bed.gz
   [
-    'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-f3.GRCh38',
+    'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-f4.GRCh38',
     '.walks.bed.gz',
   ],
   [

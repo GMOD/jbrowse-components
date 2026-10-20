@@ -27,8 +27,9 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
 - htslib (`bgzip`, `tabix`) and `bcftools`
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 1.1.0 or later, for the
-  graph's files and the walk index
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 1.2.0 or later, for the
+  graph's files and the walk index (walk format 4, the only one the plugin
+  reads)
 - [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
 - [`minigraph`](https://github.com/lh3/minigraph), for each assembly's path
   through the graph
@@ -350,16 +351,16 @@ tabix -H hprc-v2.1-mc-grch38.CHM13.walks.bed.gz | head -4
 ```
 
 ```text
-#walks	format:i:3	chunk:i:65536	maxnode:i:1024
+#walks	format:i:4	chunk:i:65536	maxnode:i:1024	stay:i:311
 #reference	CHM13
 #haplotype	GRCh38#0
 #haplotype	HG00097#1
 ```
 
-The first line gives the file's format, the chunk size, and the longest node in
-bp, which sets how far before a window the browser starts reading. The file then
-lists its reference sample and every other haplotype with rows in it, the other
-reference included, once each.
+The first line gives the file's format, the chunk size, the longest node in bp,
+which sets how far before a window the browser starts reading, and the `--stay`
+the tool ran with. The file then lists its reference sample and every other
+haplotype with rows in it, the other reference included, once each.
 
 A track's `walksUri` names one reference's set by its prefix,
 `<prefix>.<sample>`. The track below draws the graph and, as a second display,
@@ -508,5 +509,5 @@ The walk files come from the command under
   example here.
 
 [^walks-cost]:
-    On a 24-core machine `gfa-to-tabix` took 29 minutes and 13 GB of memory, and
-    wrote 2.9 GB for the two references.
+    On a 24-core machine `gfa-to-tabix` took 39 minutes and 13 GB of memory, and
+    wrote 2.5 GB for the two references.

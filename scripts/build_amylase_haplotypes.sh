@@ -35,12 +35,12 @@ cd "$OUT"
 
 HPRC=https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC
 HOSTED=https://jbrowse.org/pangenome/hprc-grch38
-WALKS=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-f3.GRCh38.walks.bed.gz
+WALKS=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-f4.GRCh38.walks.bed.gz
 
 echo "== every haplotype's span across the locus, from the walk file"
 [ -s walk_spans.mjs ] || curl -fsSLO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/walk_spans.mjs
 [ -d node_modules/@jbrowse/graph-walks ] ||
-  npm install --no-save --silent @jbrowse/graph-walks@2.1.0 @gmod/tabix@3 generic-filehandle2@2
+  npm install --no-save --silent @jbrowse/graph-walks@3.0.0 @gmod/tabix@3 generic-filehandle2@2
 # One window inside RNPC3 and one past AMY1C, both single-copy, so each
 # haplotype crosses each exactly once
 for side in left:103540000:103541000 right:103800000:103801000; do

@@ -204,12 +204,12 @@ count", not a measurement.
 Haplotype walks
 ---------------
 
-  hprc-v2.1-mc-grch38-f3.GRCh38.walks.bed.gz       1,224,902,709 bytes
-  hprc-v2.1-mc-grch38-f3.GRCh38.walks.bed.gz.tbi       667,904
-  hprc-v2.1-mc-grch38-f3.CHM13.walks.bed.gz        1,629,760,078
-  hprc-v2.1-mc-grch38-f3.CHM13.walks.bed.gz.tbi        625,326
+  hprc-v2.1-mc-grch38-f4.GRCh38.walks.bed.gz       1,224,904,576 bytes
+  hprc-v2.1-mc-grch38-f4.GRCh38.walks.bed.gz.tbi       667,942
+  hprc-v2.1-mc-grch38-f4.CHM13.walks.bed.gz        1,244,459,337
+  hprc-v2.1-mc-grch38-f4.CHM13.walks.bed.gz.tbi        625,194
 
-  Every haplotype's path through the base-level v2.1 graph, in walk format 3
+  Every haplotype's path through the base-level v2.1 graph, in walk format 4
   (gfa-to-tabix docs/walks-format.md): one file per reference, filed under
   64 kb chunks of it. A chunk holds the reference's path through it once, each
   distinct route a haplotype takes off that path once, the lengths of the
@@ -224,34 +224,35 @@ Haplotype walks
   it aligns each haplotype's walk to the reference's, and each lane to the
   next, on the nodes both visit, with no base compared. It reads no gbz.db
   and no haplotype index. Its walksUri names the file by its prefix,
-  hprc-v2.1-mc-grch38-f3.GRCh38, and defaultHaplotypes names the lanes it
+  hprc-v2.1-mc-grch38-f4.GRCh38, and defaultHaplotypes names the lanes it
   draws unless the haplotype menu says otherwise.
 
-  Each file's first header line gives format:i:3; chunk:i:65536, the chunk
-  size; and maxnode:i:1024, the longest node, which sets how far before a
-  window a reader queries. The file then names its reference on one
-  #reference line and the 463 other haplotypes, the other reference included,
-  on #haplotype lines.
+  Each file's first header line gives format:i:4; chunk:i:65536, the chunk
+  size; maxnode:i:1024, the longest node, which sets how far before a window
+  a reader queries; and stay:i:311, the --stay it was written with. The file
+  then names its reference on one #reference line and the 463 other
+  haplotypes, the other reference included, on #haplotype lines.
 
   GRCh38: 49,333,469 route rows and 19,886,162 walk rows from 19,933,602
   pieces; 1,698 paths visit no GRCh38 node and have no row.
-  CHM13: 49,089,579 route rows and 56,686,843 walk rows from 56,730,334
+  CHM13: 49,134,471 route rows and 23,653,408 walk rows from 23,696,899
   pieces; 3,736 paths have no row.
 
-  Built 2026-10-16 on ada with gfa-to-tabix 1.1.0, from HPRC's
+  Built 2026-10-19 on ada with gfa-to-tabix 1.2.0, from HPRC's
   hprc-v2.1-mc-grch38.gbz (5,492,627,216 bytes, the release directory above),
   so node ids match the GBZ and the gbz.db:
 
     vg convert -f hprc-v2.1-mc-grch38.gbz | pigz > hprc-v2.1-mc-grch38.W.gfa.gz
                                                        # vg 1.76.1, 17 min, 90 GB
     gfa-to-tabix hprc-v2.1-mc-grch38.W.gfa.gz --walks --refs GRCh38,CHM13 \
-      -o hprc-v2.1-mc-grch38-f3                      # 29:14, 12.9 GB RSS
+      -o hprc-v2.1-mc-grch38-f4                      # 39:10, 13.1 GB RSS
 
-  The default --chunk 65536 applies.
+  The defaults --chunk 65536 and --stay 311 apply.
 
-  The format 1 and format 2 sets that came before (gfa-to-tabix 0.4.0 to 1.0.0)
-  were removed on 2026-10-16, since @jbrowse/graph-walks 2 reads format 3 only.
-  The jb2bench traces that measured them keep their numbers.
+  @jbrowse/graph-walks 3 reads format 4 only, so the -f3 set (gfa-to-tabix
+  1.1.0) is due for removal. The format 1 and format 2 sets (gfa-to-tabix
+  0.4.0 to 1.0.0) were removed on 2026-10-16. The jb2bench traces that
+  measured them keep their numbers.
 
 
 repeat_density/ - per-class RepeatMasker density
