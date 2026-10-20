@@ -881,7 +881,6 @@ exports[`every registered schema slot default 1`] = `
     "showOutline": "boolean = false",
   },
   "display: LinearWiggleDisplay": {
-    "aggregate": "stringEnum = "mean" of ["mean","min","max"]",
     "color.domain": "stringArray = []",
     "color.domainMid": "maybeNumber = undefined",
     "color.field": "maybeStringEnum = undefined of ["score"]",
