@@ -314,6 +314,22 @@ import { launchOrReplaceView } from '@jbrowse/core/util'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
+## persistTrackConfigNow
+
+Write the containing track's config to the session now, not after its
+400 ms wait, so an edit is one undo step the moment it lands: every writer
+of a row arrangement, a lane choice or an axis setting calls it (ADR-157).
+Does nothing for a node outside a track.
+
+```js
+import { persistTrackConfigNow } from '@jbrowse/core/util'
+
+// type signature
+(node: IAnyStateTreeNode) => void
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
+
 ## reservedPx
 
 The pixels a band takes from the plot below it: 0 when off, the (optionally

@@ -2459,6 +2459,7 @@
         "parseLocStringOneBased",
         "parseMotifList",
         "parseRegionNames",
+        "persistTrackConfigNow",
         "pluralize",
         "polarToCartesian",
         "progressLabel",
@@ -3256,9 +3257,11 @@
     "@jbrowse/core/util/jexlFilters": {
       "package": "@jbrowse/core",
       "names": [
+        "baseFilterOf",
         "baseJexlFilters",
         "configuredJexlFilters",
         "filterExpressionsOf",
+        "filterMembersNarrowing",
         "jexlFilterNarrowing",
         "retiredFilterState"
       ],
@@ -3423,7 +3426,8 @@
         "getSession",
         "hashCode",
         "launchOrReplaceView",
-        "objectHash"
+        "objectHash",
+        "persistTrackConfigNow"
       ],
       "worker": "real"
     },
@@ -4197,6 +4201,7 @@
         "colorEncodingOf",
         "colorFieldOf",
         "colorForField",
+        "colorForScheme",
         "colorForValue",
         "colorLabelsSlot",
         "colorRampSlots",

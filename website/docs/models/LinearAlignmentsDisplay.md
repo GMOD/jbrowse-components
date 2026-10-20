@@ -356,6 +356,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="method-filternarrowing">**filterNarrowing**</span><br><code>() =&gt; Reversible</code> | How `filter` differs from what the track's config declares, its read members and its junction and connection tests together: the "Filter by..." count and what "Clear all filters" writes back. |
 | <span id="method-nonreferenceat">**nonReferenceAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(column: VariantSortColumn, allele?: VariantAllele &#124; undefined)…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(column: VariantSortColumn, allele?: VariantAllele &#124; undefined) =&gt; { count: number; depth: number; } &#124; undefined</code></pre></dialog></span> | The loaded reads differing from the reference at a variant's sort column, or with `allele` only those with it, over the reads spanning it. Undefined until a fetch reaching the column completes. |
 | <span id="method-colorpalettein">**colorPaletteIn**</span><br><code>(theme: JBrowsePalette) =&gt; ColorPalette</code> | The read palette over `theme`, with the category colors `color` sets. SVG export passes the theme it renders with. |
 | <span id="method-legenditems">**legendItems**</span><br><code>(palette: ColorPalette) =&gt; LegendItem[]</code> |  |

@@ -140,7 +140,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-featurenarrowings">**featureNarrowings**</span><br><code>() =&gt; { genes: { count: number; clear: () =&gt; void; }; }</code> |  |
+| <span id="method-featurenarrowings">**featureNarrowings**</span><br><code>() =&gt; { genes: Reversible; }</code> |  |
 | <span id="method-filtersubmenuitems">**filterSubMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-showsubmenucheckboxitems">**showSubmenuCheckboxItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-showsubmenuradiogroups">**showSubmenuRadioGroups**</span><br><code>() =&gt; MenuItem[]</code> |  |

@@ -313,7 +313,6 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setrowcolorfield">**setRowColorField**</span><br><code>(field: string) =&gt; void</code> | Recolor sample rows by a metadata attribute (e.g. 'population'), or pass '' for None, through the mixin's `setRowColorChoice`. The tint is resolved on every read of `sources`, so a recolor moves no rows and drops no cluster tree. |
 | <span id="action-setminminorallelefrequency">**setMinMinorAlleleFrequency**</span><br><code>(arg: number) =&gt; void</code> |  |
 | <span id="action-setmaxmissingness">**setMaxMissingness**</span><br><code>(arg: number) =&gt; void</code> |  |
-| <span id="action-setunit">**setUnit**</span><br><code>(unit: "haplotype" &#124; "sample") =&gt; void</code> |  |
 | <span id="action-setfittoheight">**setFitToHeight**</span><br><code>() =&gt; void</code> | Enable fit-to-display-height mode: `rowHeight = 0` makes `effectiveRowHeight` divide `availableHeight` across the rows. |
 | <span id="action-setreferencedrawingmode">**setReferenceDrawingMode**</span><br><code>(arg: string) =&gt; void</code> |  |
 | <span id="action-setshowrowseparators">**setShowRowSeparators**</span><br><code>(arg: boolean) =&gt; void</code> |  |
@@ -328,13 +327,16 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setbackenddrawscolumns">**setBackendDrawsColumns**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-sortbygenotype">**sortByGenotype**</span><br><code>(featureId: string) =&gt; boolean</code> | Order the rows by their genotype at one variant, then at the other records spanning its reference interval (a site split one record per ALT), then by how far each row agrees with its neighbours to either side. Sorts `editableSources`, so the order written names every row. |
 | <span id="action-sortrowsbygenotypeat">**sortRowsByGenotypeAt**</span><br><code>(refName: string, pos: number) =&gt; boolean</code> | `sortByGenotype` at a genomic column, the declarative `sortRowsBy` entry point. Returns whether it sorted, so `sortRowsBy` stays set for the fetch that brings a record to the column. `refName` arrives canonical; a record's is whatever the file spelled. |
+| <span id="action-setunit">**setUnit**</span><br><code>(unit: "haplotype" &#124; "sample") =&gt; void</code> |  |
+| <span id="action-applyplot">**applyPlot**</span><br><code>(draft: Plot, options?: PlotWriteOptions &#124; undefined) =&gt; void</code> | `BaseDisplay`'s, resetting the row arrangement when it moves `unit`. |
+| <span id="action-applydisplaysettings">**applyDisplaySettings**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(settings: Record&lt;string, unknown&gt;, options?: { allowSetters?:…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(settings: Record&lt;string, unknown&gt;, options?: { allowSetters?: boolean &#124; undefined; } &#124; undefined) =&gt; { applied: string[]; unapplied: UnappliedSetting[]; failed: { key: string; error: string; }[]; }</code></pre></dialog></span> | `BaseDisplay`'s, resetting the row arrangement when it moves `unit`. |
 | <span id="action-cleardisplayspecificdata">**clearDisplaySpecificData**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-clearsettingsbakeddata">**clearSettingsBakedData**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-fetchneeded">**fetchNeeded**</span><br><code>(_needed: IndexedRegion[]) =&gt; Promise&lt;void&gt;</code> |  |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: VariantLayoutBackend) =&gt; void</code> | The layout's chrome hands over its backend; a layout switch mounts the other chrome, whose backend replaces this one. The upload lifecycle is installed once, so its cells and its render follow the backend attached rather than the setting: until the other chrome's backend arrives, the old one is sent nothing it cannot draw. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>66 inherited actions from 13 models</summary>
+<summary>64 inherited actions from 12 models</summary>
 
 From [ContextMenuMixin](../contextmenumixin): <span id="action-opencontextmenu">[`openContextMenu`](../contextmenumixin#action-opencontextmenu)</span>, <span id="action-closecontextmenu">[`closeContextMenu`](../contextmenumixin#action-closecontextmenu)</span>
 
@@ -359,7 +361,5 @@ From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="action-markcanva
 From [RegionTooLargeMixin](../regiontoolargemixin): <span id="action-clearbyteestimate">[`clearByteEstimate`](../regiontoolargemixin#action-clearbyteestimate)</span>, <span id="action-cleargatemeasurements">[`clearGateMeasurements`](../regiontoolargemixin#action-cleargatemeasurements)</span>, <span id="action-setforceloadtrack">[`setForceLoadTrack`](../regiontoolargemixin#action-setforceloadtrack)</span>, <span id="action-commitfetchbytes">[`commitFetchBytes`](../regiontoolargemixin#action-commitfetchbytes)</span>, <span id="action-forceload">[`forceLoad`](../regiontoolargemixin#action-forceload)</span>
 
 From [TrackHeightMixin](../trackheightmixin): <span id="action-setscrolltop">[`setScrollTop`](../trackheightmixin#action-setscrolltop)</span>, <span id="action-sethostheight">[`setHostHeight`](../trackheightmixin#action-sethostheight)</span>, <span id="action-setheight">[`setHeight`](../trackheightmixin#action-setheight)</span>, <span id="action-resizeheight">[`resizeHeight`](../trackheightmixin#action-resizeheight)</span>, <span id="action-expandtocontentheight">[`expandToContentHeight`](../trackheightmixin#action-expandtocontentheight)</span>
-
-From [BaseDisplay](../basedisplay): <span id="action-applydisplaysettings">[`applyDisplaySettings`](../basedisplay#action-applydisplaysettings)</span>, <span id="action-applyplot">[`applyPlot`](../basedisplay#action-applyplot)</span>
 
 </details>
