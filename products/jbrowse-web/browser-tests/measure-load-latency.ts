@@ -7,7 +7,7 @@
 //
 //   node browser-tests/measure-load-latency.ts [--latency=100] [--runs=3]
 //     [--only=hub] [--base=https://jbrowse.org/code/jb2/main/] [--waterfall]
-//     [--http1] [--nothrottle] [--warm]
+//     [--http1] [--nothrottle] [--warm] [--page=p1]
 //
 // Run after a build. The server speaks HTTP/2 and sends the deploy's
 // Cache-Control for static/; --http1 serves HTTP/1.1, whose six connections a
@@ -40,6 +40,8 @@ const http1 = process.argv.includes('--http1')
 // collapses React 19's 300ms Suspense reveal throttle; see probe-coldload-phases.ts
 const noThrottle = process.argv.includes('--nothrottle')
 const warm = process.argv.includes('--warm')
+// a variant page beside index.html in build/, to A/B an HTML-only change
+const pagePath = flag('page') ?? ''
 
 const scenarios = {
   'volvox, 4 tracks':
@@ -127,7 +129,7 @@ async function measure(root: string, query: string, chromeArgs: string[]) {
   try {
     if (warm) {
       const prime = await browser.newPage()
-      await prime.goto(`${root}?${query}`)
+      await prime.goto(`${root}${pagePath}?${query}`)
       await prime.waitForSelector('[data-app-phase="ready"]', {
         timeout: 120_000,
       })
@@ -164,7 +166,7 @@ async function measure(root: string, query: string, chromeArgs: string[]) {
         attributeFilter: ['data-app-phase'],
       })
     })
-    await page.goto(`${root}?${query}`)
+    await page.goto(`${root}${pagePath}?${query}`)
     await page.waitForFunction(
       () => (window as { readyAt?: number }).readyAt !== undefined,
       { timeout: 120_000 },

@@ -6,6 +6,7 @@
 //   node browser-tests/probe-coldload-phases.ts capture [--runs=5]
 //     [--renderer=canvas2d|webgl] [--arms=base,nothrottle,suspense]
 //     [--set=light|heavy] [--only=bam,cram] [--phases=cold,warm] [--out=dir]
+//     [--latency=80]
 //   node browser-tests/probe-coldload-phases.ts analyze <trace.json>...
 //   node browser-tests/probe-coldload-phases.ts inclusive <trace.json> <fromMs>
 //     <toMs> main|worker [topN]
@@ -27,8 +28,13 @@ import {
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
+import { collectTimedRequests } from './cdpNetwork.ts'
 import { createFrameResolver } from './frameResolver.ts'
-import { startServer } from './server.ts'
+import {
+  localhostCert,
+  startSecureServerOnFreePort,
+  startServer,
+} from './server.ts'
 
 import type { Frame } from './frameResolver.ts'
 
@@ -218,12 +224,22 @@ async function capture() {
   const renderer = flag('renderer') ?? 'canvas2d'
   const only = flag('only')?.split(',')
   const scenarios = SETS[flag('set') ?? 'light']!
+  // a latency run serves HTTP/2, as measure-load-latency.ts does, since
+  // HTTP/1.1's six connections would queue the chunk rounds
+  const latency =
+    flag('latency') === undefined ? undefined : Number(flag('latency'))
   fs.mkdirSync(out, { recursive: true })
-  const server = await startServer(PORT)
+  const tls = latency === undefined ? undefined : localhostCert()
+  const secure = tls ? await startSecureServerOnFreePort(PORT, tls) : undefined
+  const server = secure?.server ?? (await startServer(PORT))
+  const origin = secure
+    ? `https://localhost:${secure.port}`
+    : `http://localhost:${PORT}`
   const browser = await launch({
     headless: true,
     args: [
       ...BASE_CHROME_ARGS,
+      ...(tls ? [`--ignore-certificate-errors-spki-list=${tls.spki}`] : []),
       '--use-gl=swiftshader',
       '--enable-unsafe-swiftshader',
     ],
@@ -239,13 +255,16 @@ async function capture() {
         const page = await ctx.newPage()
         await page.setViewport({ width: 1500, height: 900 })
         await page.evaluateOnNewDocument(installMarkers)
+        if (latency !== undefined) {
+          await collectTimedRequests(page, latency)
+        }
         if (arm === 'nothrottle') {
           await page.evaluateOnNewDocument(collapseSuspenseThrottle)
         }
         if (arm === 'suspense') {
           await page.evaluateOnNewDocument(logSuspenseBoundaries)
         }
-        const url = `http://localhost:${PORT}/?config=${s.config}&renderer=${renderer}&sessionName=P&session=${encodeSessionSpec(s.spec)}`
+        const url = `${origin}/?config=${s.config}&renderer=${renderer}&sessionName=P&session=${encodeSessionSpec(s.spec)}`
         for (const phase of list('phases', 'cold,warm')) {
           await page.tracing.start({
             path: path.join(
