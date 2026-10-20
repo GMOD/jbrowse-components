@@ -16,15 +16,13 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 1,
     pointerEvents: 'none',
   },
-  // a sibling of the band, so a label wider than a narrow band (a codon at
-  // gene zoom) runs past its right edge instead of clipping to nothing, as
-  // the SVG export's does
-  // no `top`: like the band it takes its static position, the band's own top
-  // edge, which sits below whatever precedes the bands in the container
+  // a sibling of the band, so a label wider than a narrow band runs past its
+  // right edge. No `top`: its static position is the band's top edge, where
+  // the first track's TrackLabel (zIndex 200) would otherwise cover it
   overlay: {
     position: 'absolute',
     left: 3,
-    zIndex: 1,
+    zIndex: 201,
     pointerEvents: 'none',
     whiteSpace: 'nowrap',
   },
