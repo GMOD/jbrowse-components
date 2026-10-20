@@ -736,10 +736,10 @@ const modifiers: Record<string, Modifier> = {
           r.snap.color = value
         }
       } else if (category === 'hic') {
+        // `memberWrites` writes it as `color.scheme`, over the track's own color
         if (!(COLOR_SCHEMES as readonly string[]).includes(value)) {
           invalid('color', value, `a color scheme: ${COLOR_SCHEMES.join(', ')}`)
         }
-        mergeColor(r, { scheme: value })
       } else if (
         (category === 'feature' || category === 'variant') &&
         value === 'strand'
@@ -983,7 +983,7 @@ export async function applyDisplayOpts(
       )
     }
   }
-  writeMembers(view, trackId, opts)
+  writeMembers(view, trackId, memberWrites(category, opts))
   return {
     trackId,
     ...displaySnap,
@@ -992,18 +992,32 @@ export async function applyDisplayOpts(
 }
 
 /**
- * Write a track's `color.field=…` modifiers onto what its display in `view`
- * already has, after every other modifier, so a member write keeps the rest
- * of the setting whatever order the command line gives them in. A display
- * replaces a color or facet object whole, the way a session spec writes one,
- * which is why these cannot ride in on the launch snapshot.
+ * A track's member writes: each `color.field=…` modifier, and a hic track's
+ * `color:<scheme>`, which names one member of the color object the track
+ * already configures.
+ */
+export function memberWrites(category: Category, opts: string[]) {
+  return opts.flatMap(opt =>
+    isMemberWrite(opt)
+      ? [opt]
+      : category === 'hic' && opt.startsWith('color:')
+        ? [`color.scheme=${opt.slice('color:'.length)}`]
+        : [],
+  )
+}
+
+/**
+ * Write a track's `memberWrites` onto what its display in `view` already has,
+ * after every other modifier, so a member write keeps the rest of the setting
+ * whatever order the command line gives them in. A display replaces a color
+ * or facet object whole, the way a session spec writes one, which is why
+ * these cannot ride in on the launch snapshot.
  */
 export function writeMembers(
   view: LinearGenomeViewModel,
   trackId: string,
-  opts: string[],
+  members: string[],
 ) {
-  const members = opts.filter(isMemberWrite)
   if (members.length > 0) {
     const track = view.tracks.find(t => t.configuration.trackId === trackId)
     if (!track) {

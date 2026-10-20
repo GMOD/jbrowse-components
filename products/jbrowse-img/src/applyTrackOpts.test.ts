@@ -1,4 +1,4 @@
-import { buildDisplaySnapshot } from './applyTrackOpts.ts'
+import { buildDisplaySnapshot, memberWrites } from './applyTrackOpts.ts'
 
 // buildDisplaySnapshot turns a track's modifier list into a declarative display
 // snapshot (passed to showTrack), instead of a sequence of setter actions.
@@ -520,8 +520,13 @@ describe('color routing', () => {
   })
 
   test('color names the ramp on a hic track, and refuses what is not a scheme', () => {
-    const { snap } = buildDisplaySnapshot('hic', ['color:viridis'])
-    expect(snap.color).toEqual({ scheme: 'viridis' })
+    const opts = ['color:viridis', 'color.reverse=true']
+    expect(buildDisplaySnapshot('hic', opts).snap).toEqual({})
+    expect(memberWrites('hic', opts)).toEqual([
+      'color.scheme=viridis',
+      'color.reverse=true',
+    ])
+    expect(memberWrites('alignments', ['color:strand'])).toEqual([])
     expect(() => buildDisplaySnapshot('hic', ['color:red'])).toThrow(
       /Invalid color value "red"\. Expected a color scheme: viridis, /,
     )

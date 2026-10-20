@@ -23,6 +23,7 @@ import {
   applyDisplayOpts,
   trackCategory,
   resolveTrackId,
+  memberWrites,
   writeMembers,
 } from './applyTrackOpts.ts'
 import { breakpointInit, breakpointPanelsFromSpec } from './breakpointInit.ts'
@@ -784,7 +785,14 @@ const renderBreakpoint: ModeRenderer = async ctx => {
   for (const panel of view.views) {
     await whenViewReady(panel, model.session)
     for (const { trackId, opts: modifiers } of flagTracks) {
-      writeMembers(panel, trackId, modifiers)
+      writeMembers(
+        panel,
+        trackId,
+        memberWrites(
+          trackCategory(model.session, trackId, modifiers),
+          modifiers,
+        ),
+      )
     }
   }
   const svg = await renderBreakpointToSvg(view, {
