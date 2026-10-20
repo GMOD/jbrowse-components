@@ -4,35 +4,37 @@ import type { RawFeatureArrays } from '../util.ts'
 import type { ArrayFeatureView } from '@gmod/bbi'
 import type { Column, NumberLane } from '@jbrowse/core/util/featureTable'
 
-function lane(values: NumberLane, nanIsAbsent = false): Column {
-  return { kind: 'number', values, at: undefined, nanIsAbsent }
+interface SummarizedRows extends RawFeatureArrays {
+  minScores: Float32Array
+  maxScores: Float32Array
+}
+
+function lane(values: NumberLane): Column {
+  return { kind: 'number', values, at: undefined, nanIsAbsent: false }
 }
 
 /**
- * Scored rows as a table whose ids and hover JSON are `BigWigFeature`'s. A
- * `NaN` min or max is a row with no summary, which `get` answers as
- * `undefined`, as a `BigWigFeature` over raw records does.
+ * Scored rows as a table whose ids and hover JSON are `BigWigFeature`'s. A raw
+ * record's min and max lanes hold its score, as a `BigWigFeature`'s do.
  */
 export function wiggleRowsTable(
-  rows: RawFeatureArrays,
+  rows: SummarizedRows,
   refName: string,
   source: Column,
   summary: Column,
 ) {
-  const { starts, ends, minScores, maxScores } = rows
+  const { starts, ends, scores, minScores, maxScores } = rows
   const sourceOf = readerOf(source)
   const columns = new Map<string, Column>([
     ['start', lane(starts)],
     ['end', lane(ends)],
-    ['score', lane(rows.scores)],
+    ['score', lane(scores)],
     ['refName', { kind: 'value', read: () => refName }],
     ['source', source],
     ['summary', summary],
+    ['minScore', lane(minScores)],
+    ['maxScore', lane(maxScores)],
   ])
-  if (minScores && maxScores) {
-    columns.set('minScore', lane(minScores, true))
-    columns.set('maxScore', lane(maxScores, true))
-  }
   return new ColumnTable(
     rows.count,
     columns,

@@ -14,7 +14,7 @@ function codeLane(labels: number, length: number): CodeLane {
 /**
  * Each member's rows one after another, in the order given, its name a
  * `source` category. A member read below its file's first zoom level holds no
- * min or max, so where another member does, its rows hold `NaN` there.
+ * min or max, so its rows answer their score there.
  */
 export function multiWiggleFeatureTable(
   members: readonly { source: string; raw: RawFeatureArrays }[],
@@ -27,12 +27,11 @@ export function multiWiggleFeatureTable(
   const summarized = members.map(
     ({ raw }) => raw.minScores !== undefined && raw.maxScores !== undefined,
   )
-  const anySummary = summarized.includes(true)
   const starts = new Uint32Array(count)
   const ends = new Uint32Array(count)
   const scores = new Float32Array(count)
-  const minScores = anySummary ? new Float32Array(count) : undefined
-  const maxScores = anySummary ? new Float32Array(count) : undefined
+  const minScores = new Float32Array(count)
+  const maxScores = new Float32Array(count)
   const codes = codeLane(members.length, count)
   let offset = 0
   for (const [code, { raw }] of members.entries()) {
@@ -40,15 +39,8 @@ export function multiWiggleFeatureTable(
     starts.set(raw.starts.subarray(0, n), offset)
     ends.set(raw.ends.subarray(0, n), offset)
     scores.set(raw.scores.subarray(0, n), offset)
-    if (minScores && maxScores) {
-      if (raw.minScores && raw.maxScores) {
-        minScores.set(raw.minScores.subarray(0, n), offset)
-        maxScores.set(raw.maxScores.subarray(0, n), offset)
-      } else {
-        minScores.fill(Number.NaN, offset, offset + n)
-        maxScores.fill(Number.NaN, offset, offset + n)
-      }
-    }
+    minScores.set((raw.minScores ?? raw.scores).subarray(0, n), offset)
+    maxScores.set((raw.maxScores ?? raw.scores).subarray(0, n), offset)
     codes.fill(code, offset, offset + n)
     offset += n
   }

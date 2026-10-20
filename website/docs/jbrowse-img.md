@@ -851,7 +851,8 @@ MultiWiggle track, which is everything but `--hic`, so the tracks differ in
 which fields they provide. A read's `score` is its MAPQ; a variant has its
 quality as `QUAL` and no `score` at all, so a mark over a VCF names the field it
 wants; a BigWig past its raw section provides a zoom level's mean as `score`,
-with `minScore` and `maxScore` beside it.
+with `minScore` and `maxScore` beside it, and a raw record answers its score for
+all three.
 
 A whole plot is a list of objects, so state it as one JSON modifier, which has
 the structure the track's config or a session spec holds. Here one BigWig draws

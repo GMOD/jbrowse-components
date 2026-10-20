@@ -72,9 +72,17 @@ describe('MultiWiggleAdapter.getFeatureTable over BigWigs', () => {
         const row = table.row(i)
         expect(row.id()).toBe(f.id())
         expect(row.toJSON()).toEqual(f.toJSON())
-        for (const field of ['start', 'end', 'score', 'minScore', 'summary']) {
+        for (const field of [
+          'start',
+          'end',
+          'score',
+          'minScore',
+          'maxScore',
+          'summary',
+        ]) {
           expect(row.get(field)).toBe(f.get(field))
         }
+        expect(row.get('maxScore')).toEqual(expect.any(Number))
       })
     },
   )
@@ -165,7 +173,7 @@ describe('MultiWiggleAdapter.getFeatureTable over arrays', () => {
     ])
   })
 
-  it('leaves min and max unset on the rows of a subtrack read raw', async () => {
+  it('answers a raw subtrack row its score as min and max', async () => {
     const adapter = adapterOver({
       raw: { getFeatureArrays: async () => raw([0], [1]) },
       binned: {
@@ -175,8 +183,8 @@ describe('MultiWiggleAdapter.getFeatureTable over arrays', () => {
     const table = await adapter.getFeatureTable(chr1)
     const [plain, summary] = [table.row(0), table.row(1)]
     expect(plain.get('summary')).toBe(false)
-    expect(plain.get('minScore')).toBeUndefined()
-    expect(plain.get('maxScore')).toBeUndefined()
+    expect(plain.get('minScore')).toBe(1)
+    expect(plain.get('maxScore')).toBe(1)
     expect(summary.get('summary')).toBe(true)
     expect(summary.get('minScore')).toBe(2)
     expect(summary.get('maxScore')).toBe(9)

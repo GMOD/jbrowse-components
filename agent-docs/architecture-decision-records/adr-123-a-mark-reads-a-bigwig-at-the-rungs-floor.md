@@ -18,6 +18,12 @@ the adapter declares the zoom range its answer serves, `zoomFetchArgs()` left
 the display, and the fetch sends the view's `bpPerPx` to every adapter. What
 stands from this ADR is the value sent and what a tier's fields mean.
 
+Amended 2026-10-20: a raw record answers its score as `minScore` and
+`maxScore`, so `y: 'maxScore'` draws at the raw section. @gmod/bbi 12's
+`ArrayFeatureView` holds `scores` there, and the BigWig and MultiWiggle tables
+declare both fields on every row, as the wiggle display's `y` already reads
+them.
+
 ## Context
 
 `CoreGetEncodedLayers` fetched with `{ statusCallback, signal }` and nothing
@@ -74,9 +80,9 @@ the per-step refetch for both displays at once.
 **A tier's fields are the adapter's, and a config names what it reads.** No
 summary mode. `score` off a tier is the mean, the reading every wiggle track
 gives in its default mode; `minScore` and `maxScore` are the tier's extremes
-and a mark that wants them declares them. At the raw section those two answer
-`undefined` and the encoder skips the row, which is the adapter's contract
-today and not one this ADR widens. An aggregate over a tier aggregates tier
+and a mark that wants them declares them. At the raw section those two
+answered `undefined` and the encoder skipped the row, until the 2026-10-20
+amendment. An aggregate over a tier aggregates tier
 rows: `mean` is a mean of means, `min` and `max` of `score` are extremes of
 means and a config wanting true extremes aggregates `minScore` or `maxScore`,
 and `sum` and `count` count rows. A mark that must see every raw row declares
