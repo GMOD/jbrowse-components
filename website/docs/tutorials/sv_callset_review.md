@@ -8,9 +8,9 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-The COLO829 somatic structural-variant callset lists many junctions, the points
-where two distant loci are joined, and each one is worth checking against the
-reads. We:
+A somatic structural-variant caller reports junctions, points where two distant
+loci are joined, and we'll check each one in the COLO829 callset against the
+tumor and normal reads. We:
 
 - render every junction as an image with `jb2export batch`
 - render the matched normal the same way, as the control
@@ -36,8 +36,8 @@ npm install -g @jbrowse/img
 The COLO829 somatic SV callset comes from the ONT open-data release's
 `wf-somatic-variation` run
 ([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)),
-rehosted alongside the [cancer SV demo](/docs/tutorials/cancer_sv). The commands
-below stream the reads by URL.
+rehosted alongside the [cancer SV demo](/docs/tutorials/cancer_sv). The first
+command downloads the VCF, and every command streams the reads by URL.
 
 | What it is                                | File                                                                                       |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------ |
@@ -111,9 +111,9 @@ Each `manifest.tsv` row describes one image:
 - **`links`** counts the split reads with pieces in more than one window. Sort
   `tumor/manifest.tsv` on it to put the unsupported calls first; re-render one
   with a wider `--flank` before calling it false.
-- **`alt`** counts the reads carrying the ALT over the reads covering it
-  (`17/41`), for an SNV, indel, `<DEL>` or `<INS>`. A deletion that one
-  alignment holds has its reads here and a `links` of zero.
+- **`alt`** holds, for an SNV, indel, `<DEL>` or `<INS>`, the reads carrying the
+  ALT over the reads covering it (`17/41`). A deletion that one alignment holds
+  has its reads here and a `links` of zero.
 - **`spec`** is the view as a [session spec](/docs/urlparams#session-spec) that
   opens the same windows in JBrowse.
 - **`line`** is the record's line in the VCF, to join a row back to the callset.
@@ -159,13 +159,12 @@ breakends or symbolic SVs (such as `<DEL>`) to a VCF:
   directly.
 - LINX writes clusters and chained links as TSVs. Convert the junction columns
   to the six BEDPE columns with `awk` and pass the file as `--bedpe`.
-- PURPLE writes copy-number segments. Convert them to a bedGraph, run
-  `bedGraphToBigWig`, and add it as a `--bigwig` to draw copy number under the
-  reads.
+- To draw PURPLE's copy-number segments under the reads, convert them to a
+  bedGraph, run `bedGraphToBigWig`, and pass the result as `--bigwig`.
 
 A caller that groups one rearrangement's junctions under VCF 4.4's `EVENT` key,
 as DRAGEN and the C-GIAB benchmark do, gets the der(3) image from `batch`
-itself: each event visiting more than two loci renders once more as
+itself, which renders each event visiting more than two loci once more as
 `event_<n>_<label>`. Severus writes the grouping as `CLUSTERID`, which the
 [SV inspector guide](/docs/user_guides/sv_inspector_view#rearrangement-events)
 renames to `EVENT`.
