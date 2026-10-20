@@ -7,6 +7,10 @@ toplevel: true
 The `@jbrowse/cli` package provides the `jbrowse` command line tools. For the
 @jbrowse/img static export tool, see https://www.npmjs.com/package/@jbrowse/img
 
+The commands write a `config.json` that JBrowse Web serves and JBrowse Desktop
+opens straight from disk:
+[JBrowse CLI with Desktop](https://jbrowse.org/jb2/docs/tutorials/cli_desktop/).
+
 Note: the @jbrowse/cli may not do all types of operations, some use cases may
 best be handled by creating your own tools to manipulate a config.json by hand
 or by using a script file.

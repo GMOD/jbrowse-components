@@ -166,34 +166,47 @@ the **Quickstart list** on the left panel.
 A session (`.jbrowse`) or config (`config.json`) passed as an argument opens
 straight away, skipping the start screen. Relative paths inside a `config.json`
 resolve against that file's folder, so a config the
-[CLI builds](/docs/tutorials/cli_desktop) opens with no extra setup.
+[CLI builds](/docs/tutorials/cli_desktop) opens with no extra setup. If Desktop
+is already running, the file opens in its window.
+
+No installer puts JBrowse Desktop on the `PATH`, so run it by its full path:
 
 ```sh
-# Linux AppImage
+# Linux: the AppImage you downloaded
 ./jbrowse-desktop-*-linux.AppImage myproject/config.json
-
-# Linux (installed) / Windows
-jbrowse-desktop mysession.jbrowse
 
 # macOS
 open -a "JBrowse 2" myproject/config.json
+
+# Windows (PowerShell)
+& "$env:LOCALAPPDATA\Programs\JBrowse 2\jbrowse-desktop.exe" mysession.jbrowse
 
 # a jbrowse:// link, quoted so the shell leaves the & alone
 ./jbrowse-desktop-*-linux.AppImage 'jbrowse://open?url=https%3A%2F%2Fjbrowse.org%2F...'
 ```
 
-Other flags:
+Desktop opens no data file, such as a FASTA or BAM, from the command line. It
+says so and shows the start screen. Load one there with **Open new genome**, or
+with **File → Open track...** once a genome is open.
+
+Flags go after the binary. On macOS, `open -a` passes them after `--args`, and
+`--version` and `--help` print only when you run the binary directly:
 
 ```sh
-jbrowse-desktop --renderer webgl   # force WebGL instead of auto-detecting WebGPU
-jbrowse-desktop --renderer canvas  # force the Canvas2D fallback
-jbrowse-desktop --version          # print the version and exit
-jbrowse-desktop --help             # print usage and exit
+./jbrowse-desktop-*-linux.AppImage --renderer webgl  # force WebGL instead of auto-detecting WebGPU
+./jbrowse-desktop-*-linux.AppImage --renderer canvas # force the Canvas2D fallback
+./jbrowse-desktop-*-linux.AppImage --version         # print the version and exit
+./jbrowse-desktop-*-linux.AppImage --help            # print usage and exit
+
+open -a "JBrowse 2" --args --renderer webgl
+"/Applications/JBrowse 2.app/Contents/MacOS/JBrowse 2" --version
 ```
 
 `--renderer` is for a machine where WebGPU is unavailable or misbehaving, such
 as X11 forwarding or a remote desktop. Try `webgl` first and `canvas` only if
-WebGL is also unavailable.
+WebGL is also unavailable. The flag takes effect only when Desktop is not
+already running. `--mcp` runs the server an AI agent uses to drive Desktop:
+[](/docs/agents).
 
 ## See also
 

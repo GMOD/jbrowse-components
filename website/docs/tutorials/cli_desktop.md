@@ -135,19 +135,22 @@ Desktop (or use the **Open file or link** button on the start screen) and pick
 `myproject/config.json`. Desktop resolves each relative path against the
 config's folder and loads the copied files from local disk, with no web server.
 
-You can also hand the config straight to Desktop:
+You can also hand the config straight to Desktop. No installer puts it on the
+`PATH`, so call the binary by its path
+([per platform](/docs/quickstart_desktop#launching-from-the-command-line)):
 
 ```sh
-jbrowse-desktop myproject/config.json
+./jbrowse-desktop-*-linux.AppImage myproject/config.json  # Linux
+open -a "JBrowse 2" myproject/config.json                 # macOS
 ```
-
-(On macOS: `open -a "JBrowse 2" myproject/config.json`. See
-[launching from the command line](/docs/quickstart_desktop#launching-from-the-command-line).)
 
 <Figure src="/img/desktop-cli-config.png" caption="A CLI-built folder opened in JBrowse Desktop by path. The session name and track labels come from the commands above."/>
 
-Desktop autosaves your work to a separate session file, and a `.jbrowse` file,
-which Desktop itself writes, saves in place.
+Desktop reads `config.json` and never writes back to it. Desktop autosaves your
+work to a separate session in **Recently opened sessions**, with its own copy of
+the config. So after another `add-track`, reopen `config.json` itself to see the
+new track; the autosave still holds the old track list. **Save session as...**
+writes a `.jbrowse` file, which Desktop saves in place from then on.
 
 ## Serve the config folder on the web
 

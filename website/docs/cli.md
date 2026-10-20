@@ -6,8 +6,12 @@ description: Install JBrowse Web and build its config.json from the shell with @
 <!-- DO NOT EDIT: generated from products/jbrowse-cli/README.md;
 edit the CLI (or its preamble.md), regenerate the README, then run `pnpm autogen` -->
 
-This document covers the CLI tools. Note: for @jbrowse/img static export tool,
-see [@jbrowse/img](/docs/jbrowse-img)
+The `@jbrowse/cli` package provides the `jbrowse` command line tools. For the
+@jbrowse/img static export tool, see [@jbrowse/img](/docs/jbrowse-img)
+
+The commands write a `config.json` that JBrowse Web serves and JBrowse Desktop
+opens straight from disk:
+[JBrowse CLI with Desktop](https://jbrowse.org/jb2/docs/tutorials/cli_desktop/).
 
 Note: the @jbrowse/cli may not do all types of operations, some use cases may
 best be handled by creating your own tools to manipulate a config.json by hand
@@ -36,14 +40,13 @@ your installation with
 $ jbrowse --version
 ```
 
-It is also possible to do one-off executions using npx, e.g.
+To run a command once without installing, use npx:
 
 ```bash
 npx @jbrowse/cli create myfolder
 ```
 
-It is likely preferable in most cases to install the tools globally with
-`npm install @jbrowse/cli -g` however
+In most cases, install the tools globally with `npm install @jbrowse/cli -g`.
 
 ```text
 
@@ -389,10 +392,10 @@ Options:
 
 Notes:
 
-A display refuses a key it does not declare and fails to load; a track, an
-adapter or a session snapshot drops one in silence, so a misspelled slot there
-leaves the track loading normally with the setting doing nothing. This command
-reports both offline, before anyone opens the config.
+A config key JBrowse does not recognize does nothing: a track, an adapter or a
+display names it on the browser console and loads without it, and a session
+snapshot drops it in silence. This command reports each one offline, before
+anyone opens the config.
 
 Two levels are reported:
 
