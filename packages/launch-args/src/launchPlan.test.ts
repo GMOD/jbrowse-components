@@ -52,15 +52,26 @@ test('--genome names a hosted config; tracks wait for its assembly name', () => 
   expect(p.show).toEqual(['tumor.bam', 'hg38-ncbiRefSeq'])
 })
 
+test('a value a single-value flag cannot use is reported, not dropped', () => {
+  expect(plan('--genome hg38 --loc chr1:1-100 chr2:5-9').unapplied).toEqual([
+    '--loc chr2:5-9',
+  ])
+  expect(plan('--genome hg38 typo.bamm').unapplied).toEqual([
+    '--genome typo.bamm',
+  ])
+})
+
 test('--assembly picks a config genome', () => {
   expect(plan('--config c.json --assembly volvox').assemblyName).toBe('volvox')
   expect(plan('--config c.json').config).toBe('/work/c.json')
 })
 
 test('--fasta keeps its aliases: and cytobands: modifiers', () => {
-  expect(plan('--fasta ref.fa aliases:al.txt').assembly).toMatchObject({
+  const p = plan('--fasta ref.fa aliases:al.txt')
+  expect(p.assembly).toMatchObject({
     refNameAliases: { adapter: { location: { localPath: '/work/al.txt' } } },
   })
+  expect(p.unapplied).toEqual([])
 })
 
 test('two files with one basename both open', () => {

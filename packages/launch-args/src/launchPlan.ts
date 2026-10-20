@@ -166,7 +166,15 @@ export function launchPlan(entries: Entry[], cwd: string): LaunchPlan {
   const unapplied: string[] = []
   for (const entry of resolved) {
     const [key, [first, ...mods]] = entry
-    if (key === 'track') {
+    if (!isTrackFlag(key) && key !== 'track') {
+      unapplied.push(
+        ...mods
+          .filter(
+            mod => key !== 'fasta' || !BUILD_MODIFIERS.has(modifierName(mod)),
+          )
+          .map(extra => `--${key} ${extra}`),
+      )
+    } else if (key === 'track') {
       if (!first) {
         throw new Error('--track requires a trackId')
       }
