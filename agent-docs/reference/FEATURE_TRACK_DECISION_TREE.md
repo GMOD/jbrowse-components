@@ -1,6 +1,6 @@
 ---
 name: feature-track-decision-tree
-description: What an annotation track decides — a feature's glyph, how much of it survives the vertical budget (the fit ladder), and a box's color — as three decision graphs. Read before adding a glyph, touching the fit ladder or the label modes.
+description: What an annotation track decides — a feature's glyph, how much survives the vertical budget (the fit ladder), a box's color, and its row across collapsed introns. Read before adding a glyph or touching the fit ladder, label modes or packer.
 audience: internal
 kind: spec
 ---
@@ -72,6 +72,36 @@ those name a meaning rather than a shape.
 `showLabels` is a single flat enum — `auto` plus four pinned choices — that the
 model resolves into concrete booleans. Layout, the RPC, the SVG export and
 hit-testing read those, so the enum never crosses the worker boundary.
+
+## Where a box packs when regions sit side by side
+
+Regions of one `assembly:refName` pack together, so a feature spanning several
+of them keeps one row. A collapsed-intron view draws those regions side by
+side, however much intron lies between them, so the packer measures on the
+**drawn axis** (`drawnAxis.ts`): genomic bp with the stretches between the
+group's regions cut out.
+
+- **Every bp in the pack is a drawn bp.** `prepareRefPack` maps feature spans,
+  part-label reach and isoform trims through it, and `applyDrawnLabelSpans`
+  rewrites each region's label span into that region's frame, so the label
+  positioner, hit boxes and highlights read where the feature draws.
+- **The axis comes from every region of the ref**, those with no features
+  included, and from the fetched window stapled on the payload
+  (`regionStart`/`regionEnd`). At a seam on screen the window always reaches
+  the seam.
+- **A position inside a hidden stretch lands on its seam.** Two features
+  meeting there touch, and the layout stacks touching boxes, so features on
+  either side of a seam never share a row and read as one.
+- **A name's rows never reach back past a seam.** The seam bar is the clearance
+  `LABEL_LEAD_PX` would otherwise keep, and reaching it collides with whatever
+  runs into the seam from the other side, which costs a row and, in a fitted
+  track, every non-gene name.
+- **A feature the cut leaves under 5 px goes unnamed** unless pinned: its name
+  would label a sliver at the seam. It comes back as zooming in draws more of
+  it. A feature wholly inside a region keeps its name however small.
+- Each region is still read in genomic order, so a forward region beside a
+  flipped one, or a view crossing a circular origin, can still join features
+  at that seam. Collapse introns flips every region or none.
 
 ## What color a box takes
 

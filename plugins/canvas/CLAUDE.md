@@ -4,11 +4,17 @@
 
 A feature spanning several displayed regions on one refName gets one Y in all of
 them, so regions sharing assemblyName + refName share a layout and others don't.
-The key is `LayoutRegionData.regionKey`, stapled onto the region at fetch time —
-**keep it on the region, not in a parallel map**: a region missing from a map
-falls into one group with every other missing region and mis-stacks. Don't
-derive it from `loadedRegions` either; that map is empty during the refetch
-window canvas paints through.
+The key and the region's bounds (`regionKey`, `regionStart`, `regionEnd`) are
+stapled onto `LayoutRegionData` at fetch time — **keep them on the region, not
+in a parallel map**: a region missing from a map falls into one group with every
+other missing region and mis-stacks. Don't derive them from `loadedRegions`
+either; that map is empty during the refetch window canvas paints through.
+
+**Every bp in the pack is on the drawn axis.** The packer cuts the stretches
+hidden between a group's regions (`drawnAxis.ts`), so map anything new it reads
+through the group's axis, or two features meeting at a collapsed-intron seam
+share a row again and read as one. Rationale:
+`agent-docs/reference/FEATURE_TRACK_DECISION_TREE.md`.
 
 ## Label space and label ink are one decision
 
