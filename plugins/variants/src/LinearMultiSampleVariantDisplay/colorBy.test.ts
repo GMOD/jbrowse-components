@@ -42,6 +42,21 @@ describe('multi-sample variant colorBy', () => {
     expect(byName.HG001).not.toBe(byName.HG002)
   })
 
+  // ADR-239: the deal reads the samples as the VCF lists them, as
+  // `variantTables` does, so the config's order moves no color.
+  it('deals the attribute in sample order, whatever rows.domain declares', () => {
+    const colorsUnder = (displayConfig?: Record<string, unknown>) => {
+      const model = createTestEnvironment({ displayConfig }).createDisplay()
+        .display
+      model.setSources(sources)
+      model.setRowColorField('sex')
+      return Object.fromEntries(model.resolvedRowColors)
+    }
+    expect(
+      colorsUnder({ rows: { domain: ['HG002', 'HG001', 'HG003'] } }),
+    ).toEqual(colorsUnder())
+  })
+
   it('preserves an active facet ordering when recoloring', () => {
     const model = makeModel()
     model.setSources(sources)
