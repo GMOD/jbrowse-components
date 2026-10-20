@@ -28,7 +28,7 @@ const Display = types
     },
   }))
 
-// `writeThrough` reaches the track that holds the display, as the real one
+// The axis setters reach the track that holds the display, as the real one
 // does, so the persists are counted here.
 let persists = 0
 const Track = types
@@ -78,6 +78,13 @@ test('each control writes the scale at once and saves it to the session', () => 
   fireEvent.click(box('Grid lines'))
   expect(display.grid).toBe(true)
   expect(persists).toBe(5)
+})
+
+test('a setter called off the panel, as a menu or an agent does, saves too', () => {
+  const { display } = open()
+  display.setMinScore(3)
+  display.setAutoscaleGroup('g1')
+  expect(persists).toBe(2)
 })
 
 test('shows the values in view the axis is drawn from', () => {

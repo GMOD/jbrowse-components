@@ -1,9 +1,8 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
+import { persistTrackConfigNow } from '@jbrowse/core/util/mstUtils'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import { writeThrough } from './writeThrough.ts'
 
 import type { ScoreAxisDisplay } from './types.ts'
 
@@ -12,9 +11,8 @@ import type { ScoreAxisDisplay } from './types.ts'
 // leaves unset take their defaults.
 export function resetAxis(display: ScoreAxisDisplay) {
   const base = baseDisplayConfig(display).scales as { y?: unknown } | undefined
-  writeThrough(display, () => {
-    setConf(display.configuration, ['scales', 'y'], base?.y ?? {})
-  })
+  setConf(display.configuration, ['scales', 'y'], base?.y ?? {})
+  persistTrackConfigNow(display)
 }
 
 const ResetAxisButton = observer(function ResetAxisButton({

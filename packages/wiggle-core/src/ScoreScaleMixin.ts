@@ -4,6 +4,7 @@ import {
   readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
+import { persistTrackConfigNow } from '@jbrowse/core/util/mstUtils'
 import { clipQuantileOf } from '@jbrowse/core/util/quantileExtent'
 import { rulesABand } from '@jbrowse/display-ui/axisPlacement'
 
@@ -13,7 +14,11 @@ import type {
   ValueScaleRuleConfig,
   scalesSchema,
 } from './valueScaleConfigSchema.ts'
-import type { ConfigModelForFields } from '@jbrowse/core/configuration'
+import type {
+  ConfigModelForFields,
+  ConfigurationSchemaForModel,
+  ConfigurationSlotPath,
+} from '@jbrowse/core/configuration'
 import type { ValueScaleRule } from '@jbrowse/display-ui'
 
 /**
@@ -33,6 +38,20 @@ export interface ScoreScaleHost {
 // factory's schema rather than `AnyConfigurationModel`, which is what keeps the
 // member names below checked.
 const confNode = (self: object) => self as ScoreScaleHost
+
+// writeAxis saves the track to the session at once, so each axis edit is its
+// own undo step whichever caller makes it (ADR-157).
+type AxisPath = Extract<
+  ConfigurationSlotPath<
+    ConfigurationSchemaForModel<ScoreScaleHost['configuration']>
+  >,
+  readonly ['scales', 'y', string]
+>
+
+function writeAxis(self: object, slot: AxisPath[2], value: unknown) {
+  setConf(confNode(self), ['scales', 'y', slot] as AxisPath, value)
+  persistTrackConfigNow(self)
+}
 
 /**
  * #stateModel ScoreScaleMixin
@@ -183,13 +202,13 @@ export function ScoreScaleMixin() {
        * #action
        */
       setScaleType(scaleType: string) {
-        setConf(confNode(self), ['scales', 'y', 'type'], scaleType)
+        writeAxis(self, 'type', scaleType)
       },
       /**
        * #action
        */
       setScaleZero(zero: boolean) {
-        setConf(confNode(self), ['scales', 'y', 'zero'], zero)
+        writeAxis(self, 'zero', zero)
       },
       /**
        * #action
@@ -198,31 +217,31 @@ export function ScoreScaleMixin() {
         if (!(quantile < 1) && self.domainQuantile < 1) {
           self.unclippedQuantile = self.domainQuantile
         }
-        setConf(confNode(self), ['scales', 'y', 'domainQuantile'], quantile)
+        writeAxis(self, 'domainQuantile', quantile)
       },
       /**
        * #action
        */
       setMinScore(val?: number) {
-        setConf(confNode(self), ['scales', 'y', 'domainMin'], val)
+        writeAxis(self, 'domainMin', val)
       },
       /**
        * #action
        */
       setMaxScore(val?: number) {
-        setConf(confNode(self), ['scales', 'y', 'domainMax'], val)
+        writeAxis(self, 'domainMax', val)
       },
       /**
        * #action
        */
       setAutoscaleGroup(group?: string) {
-        setConf(confNode(self), ['scales', 'y', 'autoscaleGroup'], group)
+        writeAxis(self, 'autoscaleGroup', group)
       },
       /**
        * #action
        */
       setGrid(grid: boolean) {
-        setConf(confNode(self), ['scales', 'y', 'grid'], grid)
+        writeAxis(self, 'grid', grid)
       },
       /**
        * #action
@@ -230,7 +249,7 @@ export function ScoreScaleMixin() {
        * takes: a number, or `{ value, color, label }`.
        */
       setScoreRules(rules: (number | ValueScaleRule)[]) {
-        setConf(confNode(self), ['scales', 'y', 'rules'], rules)
+        writeAxis(self, 'rules', rules)
       },
     }))
 }

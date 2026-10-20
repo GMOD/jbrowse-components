@@ -6,7 +6,6 @@ import { FormHelperText, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { toP } from '../formatNumber.ts'
-import { writeThrough } from './writeThrough.ts'
 
 import type { ScoreAxisDisplay } from './types.ts'
 
@@ -65,10 +64,12 @@ export default observer(function RangeFields({
       problem(min, max, display.scaleType) === undefined &&
       (min !== display.manualMinScore || max !== display.manualMaxScore)
     ) {
-      writeThrough(display, () => {
+      if (min !== display.manualMinScore) {
         display.setMinScore(min)
+      }
+      if (max !== display.manualMaxScore) {
         display.setMaxScore(max)
-      })
+      }
     }
   }
   useFinalUnmount(flush)

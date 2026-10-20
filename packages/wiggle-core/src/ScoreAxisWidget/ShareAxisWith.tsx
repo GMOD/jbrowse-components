@@ -1,5 +1,4 @@
 import { LabeledCheckbox } from '@jbrowse/core/ui'
-import { persistTrackConfigNow } from '@jbrowse/core/util/mstUtils'
 import { observer } from 'mobx-react'
 
 import { autoscalePeers, autoscaleWith } from '../autoscaleGroup.ts'
@@ -50,9 +49,6 @@ export default observer(function ShareAxisWith({
               peers.map(p => p.display),
               chosen,
             )
-            for (const d of [display, ...peers.map(p => p.display)]) {
-              persistTrackConfigNow(d)
-            }
           }}
         />
       ))}

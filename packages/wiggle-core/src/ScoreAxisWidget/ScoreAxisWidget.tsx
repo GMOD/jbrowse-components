@@ -17,7 +17,6 @@ import ReferenceLines from './ReferenceLines.tsx'
 import ResetAxisButton from './ResetAxisButton.tsx'
 import Section from './Section.tsx'
 import ShareAxisWith from './ShareAxisWith.tsx'
-import { writeThrough } from './writeThrough.ts'
 
 import type { ScoreAxisWidgetModel } from './stateModel.ts'
 import type { ScoreAxisDisplay } from './types.ts'
@@ -66,9 +65,7 @@ const AxisEditor = observer(function AxisEditor({
           row
           value={scaleType}
           onChange={event => {
-            writeThrough(display, () => {
-              display.setScaleType(event.target.value)
-            })
+            display.setScaleType(event.target.value)
           }}
         >
           {VALUE_SCALE_TYPES.map(type => (
@@ -89,9 +86,7 @@ const AxisEditor = observer(function AxisEditor({
             checked={display.scaleZero}
             disabled={zeroBlocker !== undefined}
             onChange={zero => {
-              writeThrough(display, () => {
-                display.setScaleZero(zero)
-              })
+              display.setScaleZero(zero)
             }}
           />
         ) : null}
@@ -100,9 +95,7 @@ const AxisEditor = observer(function AxisEditor({
           checked={domainQuantile < 1}
           disabled={bothPinned}
           onChange={on => {
-            writeThrough(display, () => {
-              display.setDomainQuantile(on ? display.clipQuantile : 1)
-            })
+            display.setDomainQuantile(on ? display.clipQuantile : 1)
           }}
         />
         <FormHelperText>
@@ -118,9 +111,7 @@ const AxisEditor = observer(function AxisEditor({
           label="Grid lines"
           checked={display.grid}
           onChange={grid => {
-            writeThrough(display, () => {
-              display.setGrid(grid)
-            })
+            display.setGrid(grid)
           }}
         />
         {rulesABand(display) ? <ReferenceLines display={display} /> : null}

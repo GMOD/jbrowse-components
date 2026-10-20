@@ -5,8 +5,6 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import { Button, IconButton, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { writeThrough } from './writeThrough.ts'
-
 import type { ScoreAxisDisplay } from './types.ts'
 import type { ValueScaleRule } from '@jbrowse/display-ui'
 
@@ -50,9 +48,7 @@ export default observer(function ReferenceLines({
   const commit = (next: Row[]) => {
     setRows(next)
     if (next.every(row => valueOk(row) && colorOk(row))) {
-      writeThrough(display, () => {
-        display.setScoreRules?.(next.map(ruleOf))
-      })
+      display.setScoreRules?.(next.map(ruleOf))
     }
   }
   const setRow = (index: number, patch: Partial<Row>) => {
