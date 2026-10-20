@@ -1,5 +1,6 @@
+import { trackMatches, trackName, trackType } from '@jbrowse/launch-args'
+
 import { FETCH_TIMEOUT_MS, resolveConfigObject } from './resolveHub.ts'
-import { trackMatches, trackName, trackType } from './trackFields.ts'
 
 import type { Track } from './types.ts'
 

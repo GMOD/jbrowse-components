@@ -10,6 +10,7 @@ import {
   readSessionFromDynamo,
   shareEndpoint,
 } from '@jbrowse/core/util'
+import { resolveTrackId } from '@jbrowse/launch-args/trackIds'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { decodeSessionFromUrl } from '@jbrowse/product-core'
 
@@ -191,6 +192,11 @@ export async function launchFromPlan(
   if (!assembly) {
     throw new Error(`${plan.config} has no assemblies`)
   }
+  // a file's trackId is exact; a --track token gets jb2export's leniency
+  const fileIds = new Set(plan.tracks.map(t => t.trackId))
+  const show = plan.show.map(id =>
+    fileIds.has(id) ? id : resolveTrackId(config?.tracks ?? [], id, assembly),
+  )
   const pluginManager = await createPluginManager(config)
   await loadSessionSpec(
     {
@@ -203,7 +209,7 @@ export async function launchFromPlan(
           type: 'LinearGenomeView',
           assembly,
           ...(plan.loc ? { loc: plan.loc } : {}),
-          tracks: plan.show,
+          tracks: show,
         },
       ],
     },

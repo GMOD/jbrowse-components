@@ -135,8 +135,8 @@ Desktop (or use the **Open file or link** button on the start screen) and pick
 `myproject/config.json`. Desktop resolves each relative path against the
 config's folder and loads the copied files from local disk, with no web server.
 
-You can also hand the config straight to Desktop. No installer puts it on the
-`PATH`, so call the binary by its path
+You can also hand the config straight to Desktop.[^files] No installer puts it
+on the `PATH`, so call the binary by its path
 ([per platform](/docs/quickstart_desktop#launching-from-the-command-line)):
 
 ```sh
@@ -187,3 +187,8 @@ jbrowse text-index --out myproject
 - [](/docs/quickstart_desktop)
 - [](/docs/quickstart_web)
 - [](/docs/config_guides/assemblies)
+
+[^files]:
+    Desktop also opens the data files with no config, for a first look:
+    `jbrowse-desktop GRCh38.fa.gz sample.bam --loc chr1:1-100000`, the arguments
+    `jb2export` takes ([](/docs/quickstart_desktop#opening-data-files)).

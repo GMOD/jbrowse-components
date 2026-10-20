@@ -20,6 +20,12 @@ export {
   trackFlags,
 } from './fileInput.ts'
 export { genomeConfigUrl } from './genome.ts'
+export {
+  resolveTrackId,
+  trackMatches,
+  trackName,
+  trackType,
+} from './trackIds.ts'
 export { type LaunchPlan, launchFlags, launchPlan } from './launchPlan.ts'
 export {
   type Entry,

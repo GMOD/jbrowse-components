@@ -6,6 +6,7 @@ import {
   viewDisplayNames,
 } from '@jbrowse/core/util/tracks'
 import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
+import { resolveTrackId, trackType } from '@jbrowse/launch-args'
 import { addDisposer, destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg as renderBreakpointToSvg } from '@jbrowse/plugin-breakpoint-split-view'
 import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
@@ -22,7 +23,6 @@ import { autorun } from 'mobx'
 import {
   applyDisplayOpts,
   trackCategory,
-  resolveTrackId,
   memberWrites,
   writeMembers,
 } from './applyTrackOpts.ts'
@@ -40,7 +40,6 @@ import { DEFAULT_FONT_FAMILY, DEFAULT_WIDTH } from './options.ts'
 import { readData } from './readData.ts'
 import { resolveConfigObject } from './resolveHub.ts'
 import { parseSpec, specMode, viewSettingsFromSpec } from './spec.ts'
-import { trackType } from './trackFields.ts'
 
 import type { ViewMode } from './modes.ts'
 import type { ViewSpec } from './spec.ts'

@@ -451,12 +451,17 @@ describe('a command-line plan', () => {
   })
 
   test('on a hosted genome, fetches it and puts the files on its assembly', async () => {
-    const d = deps()
+    const hosted = {
+      ...config,
+      tracks: [{ trackId: 'volvox-genes', name: 'Genes' }],
+    }
+    const d = { ...deps(), fetchConfig: jest.fn().mockResolvedValue(hosted) }
     await launchFromPlan(
       {
         config: 'https://jbrowse.org/ucsc/hg38/config.json',
         tracks: [bam],
-        show: ['reads.bam', 'hg38-genes'],
+        // jb2export's --track shorthand: the assembly prefix left off
+        show: ['reads.bam', 'genes'],
         unapplied: [],
       },
       d,
@@ -464,7 +469,7 @@ describe('a command-line plan', () => {
     expect(d.fetchConfig).toHaveBeenCalledWith(
       'https://jbrowse.org/ucsc/hg38/config.json',
     )
-    expect(d.createPluginManager).toHaveBeenCalledWith(config)
+    expect(d.createPluginManager).toHaveBeenCalledWith(hosted)
     expect(mockLoadSessionSpec).toHaveBeenCalledWith(
       expect.objectContaining({
         sessionTracks: [{ ...bam, assemblyNames: ['volvox'] }],
@@ -472,12 +477,26 @@ describe('a command-line plan', () => {
           {
             type: 'LinearGenomeView',
             assembly: 'volvox',
-            tracks: ['reads.bam', 'hg38-genes'],
+            tracks: ['reads.bam', 'volvox-genes'],
           },
         ],
       }),
       pluginManager,
     )
+  })
+
+  test('a --track the config lacks fails with near matches', async () => {
+    await expect(
+      launchFromPlan(
+        {
+          config: '/proj/config.json',
+          tracks: [],
+          show: ['nope'],
+          unapplied: [],
+        },
+        deps(),
+      ),
+    ).rejects.toThrow('--track "nope" not found in the config')
   })
 
   test('reads a local config from disk, not over the network', async () => {

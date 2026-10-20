@@ -71,11 +71,14 @@ samtools faidx yourfile.fa
 samtools index yourfile.bam
 
 
-## simple rendering of a your local files
-jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.svg
+## render them: the FASTA is the genome, the BAM a track
+jb2export yourfile.fa yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.svg
 ```
 
-If `--out` is not specified it writes SVG to stdout
+- A FASTA, 2bit or `.chrom.sizes` is the genome, and any other file is a track,
+  typed by its name. A typed flag such as `--fasta`, `--bam` or `--bigwig` sets
+  the type whatever the name says; `jb2export --help` lists them.
+- With no `--out`, the SVG goes to stdout.
 
 ### Remote files
 
@@ -170,6 +173,22 @@ jb2export list hg19 refseq
 `--config` also accepts a URL, so you can point at any hosted JBrowse
 `config.json` the same way; relative data URIs inside it resolve against the
 config's location, exactly as they do in JBrowse web.
+
+## Opening the same view in JBrowse Desktop
+
+[JBrowse Desktop](https://jbrowse.org/jb2/docs/quickstart_desktop/) takes these
+arguments too. Without `--out`, the command opens the view in a window to
+explore:
+
+```bash
+jbrowse-desktop yourfile.fa yourfile.bam --loc chr1:1,000,000-1,001,000
+jbrowse-desktop --genome hg19 --track ncbiRefSeqCurated --loc BRCA1
+```
+
+- `jbrowse-desktop` stands for the binary's full path, which
+  [differs per platform](https://jbrowse.org/jb2/docs/quickstart_desktop/#launching-from-the-command-line).
+- Desktop does not apply display modifiers such as `height:` or `color:` yet,
+  and names the ones it skipped.
 
 ## Output formats
 

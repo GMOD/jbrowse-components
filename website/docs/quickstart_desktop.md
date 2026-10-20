@@ -163,43 +163,62 @@ the **Quickstart list** on the left panel.
 
 ## Launching from the command line
 
-A session (`.jbrowse`) or config (`config.json`) passed as an argument opens
-straight away, skipping the start screen. Relative paths inside a `config.json`
-resolve against that file's folder, so a config the
-[CLI builds](/docs/tutorials/cli_desktop) opens with no extra setup. If Desktop
-is already running, the file opens in its window.
+No installer puts JBrowse Desktop on the `PATH`, so the commands below write
+`jbrowse-desktop` for the binary's full path:
 
-No installer puts JBrowse Desktop on the `PATH`, so run it by its full path:
+- **Linux:** the AppImage you downloaded, `./jbrowse-desktop-*-linux.AppImage`
+- **macOS:** `"/Applications/JBrowse 2.app/Contents/MacOS/JBrowse 2"`.
+  `open -a "JBrowse 2" <file>` also opens a session, a config or a genome file,
+  but drops flags
+- **Windows (PowerShell):**
+  `& "$env:LOCALAPPDATA\Programs\JBrowse 2\jbrowse-desktop.exe"`
+
+If Desktop is already running, what the command names opens in its window.
+
+### Opening data files
+
+A genome and data files open as a new session, at a location if `--loc` names
+one. Desktop takes the arguments [jb2export](/docs/jbrowse-img) takes, so a
+command that renders a figure opens the same view once `--out` comes off:
 
 ```sh
-# Linux: the AppImage you downloaded
-./jbrowse-desktop-*-linux.AppImage myproject/config.json
-
-# macOS
-open -a "JBrowse 2" myproject/config.json
-
-# Windows (PowerShell)
-& "$env:LOCALAPPDATA\Programs\JBrowse 2\jbrowse-desktop.exe" mysession.jbrowse
-
-# a jbrowse:// link, quoted so the shell leaves the & alone
-./jbrowse-desktop-*-linux.AppImage 'jbrowse://open?url=https%3A%2F%2Fjbrowse.org%2F...'
+jbrowse-desktop genome.fa reads.bam calls.vcf.gz --loc chr1:1-100,000
+jbrowse-desktop --genome hg38 tumor.bam --track hg38-ncbiRefSeqCurated --loc EGFR
+jbrowse-desktop myproject/config.json extra.bw --loc chr1:1-100,000
 ```
 
-Desktop opens no data file, such as a FASTA or BAM, from the command line. It
-says so and shows the start screen. Load one there with **Open new genome**, or
-with **File → Open track...** once a genome is open.
+- A FASTA, 2bit or `.chrom.sizes` is the genome, and any other file opens as a
+  track, typed by its name. `name:<label>` and `index:<file>` can follow a file.
+- A typed flag such as `--bam` or `--bigwig` sets a file's type whatever its
+  name says; `jbrowse-desktop --help` lists them.
+- `--genome` opens a genome from
+  [genomes.jbrowse.org](https://genomes.jbrowse.org), and `--track` adds one of
+  its tracks by trackId (`jb2export list hg38` prints them).
+- Paths resolve against the directory the command runs in.
+- Display settings such as `height:200` are not applied yet; Desktop names the
+  ones it skipped once the session opens.
 
-Flags go after the binary. On macOS, `open -a` passes them after `--args`, and
-`--version` and `--help` print only when you run the binary directly:
+### Opening a session, config or link
+
+A session (`.jbrowse`) or config (`config.json`) alone opens as itself. Relative
+paths inside a `config.json` resolve against that file's folder, so a config the
+[CLI builds](/docs/tutorials/cli_desktop) opens with no extra setup. A
+`jbrowse://` link opens the JBrowse Web view it wraps:
 
 ```sh
-./jbrowse-desktop-*-linux.AppImage --renderer webgl  # force WebGL instead of auto-detecting WebGPU
-./jbrowse-desktop-*-linux.AppImage --renderer canvas # force the Canvas2D fallback
-./jbrowse-desktop-*-linux.AppImage --version         # print the version and exit
-./jbrowse-desktop-*-linux.AppImage --help            # print usage and exit
+jbrowse-desktop myproject/config.json
+jbrowse-desktop mysession.jbrowse
+# quoted so the shell leaves the & alone
+jbrowse-desktop 'jbrowse://open?url=https%3A%2F%2Fjbrowse.org%2F...'
+```
 
-open -a "JBrowse 2" --args --renderer webgl
-"/Applications/JBrowse 2.app/Contents/MacOS/JBrowse 2" --version
+### Rendering and other flags
+
+```sh
+jbrowse-desktop --renderer webgl   # force WebGL instead of auto-detecting WebGPU
+jbrowse-desktop --renderer canvas  # force the Canvas2D fallback
+jbrowse-desktop --version          # print the version and exit
+jbrowse-desktop --help             # print usage and exit
 ```
 
 `--renderer` is for a machine where WebGPU is unavailable or misbehaving, such

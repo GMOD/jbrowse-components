@@ -1,6 +1,6 @@
-import { resolveTrackId } from './applyTrackOpts.ts'
+import { resolveTrackId } from './trackIds.ts'
 
-import type { Track } from './types.ts'
+import type { Track } from './fileInput.ts'
 
 const tracks: Track[] = [
   { trackId: 'hg19-ncbiRefSeqCurated', name: 'NCBI RefSeq Curated' },
