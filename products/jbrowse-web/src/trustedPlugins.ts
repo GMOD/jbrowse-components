@@ -67,6 +67,29 @@ export async function arePluginsTrusted(defs: PluginDefinition[]) {
   return arePluginsRemembered(defs) || checkPlugins(defs)
 }
 
+const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]'])
+
+function isLoopback(url: { hostname: string }) {
+  return LOOPBACK_HOSTS.has(url.hostname) || url.hostname.endsWith('.localhost')
+}
+
+/**
+ * Whether a config's plugins load without the cross-origin prompt: the
+ * config comes from this origin, or both this app and the config run on the
+ * developer's own machine, such as a dev build on one port reading a plugin
+ * build served on another. A link from anywhere else still prompts, since its
+ * config is not on loopback.
+ */
+export function configNeedsNoPrompt(
+  configUrl: { origin: string; hostname: string },
+  appUrl: { origin: string; hostname: string },
+) {
+  return (
+    configUrl.origin === appUrl.origin ||
+    (isLoopback(configUrl) && isLoopback(appUrl))
+  )
+}
+
 // Revokes every remembered plugin approval on this origin. No UI reaches this —
 // the set is only ever read by the gate above — so it is the tests' reset.
 export function forgetTrustedPlugins() {

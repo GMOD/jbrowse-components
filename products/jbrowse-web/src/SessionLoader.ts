@@ -29,7 +29,7 @@ import {
   writeSessionToIDB,
 } from './sessionLoaderHelpers.ts'
 import { RELOAD_LOCK_WAIT_MS, claimSessionId } from './sessionLock.ts'
-import { arePluginsTrusted } from './trustedPlugins.ts'
+import { arePluginsTrusted, configNeedsNoPrompt } from './trustedPlugins.ts'
 import {
   fromUrlSafeB64,
   readConf,
@@ -606,8 +606,10 @@ const SessionLoader = types
         // trust prompt either — otherwise every remote config that still lists
         // one (jbrowse.org demos do) needs a needless "trust this plugin" click.
         const configPlugins = dropVendoredPlugins(config.plugins ?? [])
-        const isCrossOrigin = configUri.origin !== window.location.origin
-        if (isCrossOrigin && !(await arePluginsTrusted(configPlugins))) {
+        if (
+          !configNeedsNoPrompt(configUri, window.location) &&
+          !(await arePluginsTrusted(configPlugins))
+        ) {
           self.setSessionTriaged({
             snap: config,
             origin: 'config',

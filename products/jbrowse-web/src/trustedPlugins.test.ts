@@ -1,5 +1,6 @@
 import {
   arePluginsRemembered,
+  configNeedsNoPrompt,
   forgetTrustedPlugins,
   rememberPlugins,
 } from './trustedPlugins.ts'
@@ -69,4 +70,29 @@ test('approving a definition that names no loader trusts nothing', () => {
 test('a definition that names no loader is never remembered alongside real ones', () => {
   rememberPlugins([apollo])
   expect(arePluginsRemembered([apollo, {} as PluginDefinition])).toBe(false)
+})
+
+test('a dev build reads a config from another loopback port without a prompt', () => {
+  const app = new URL('http://localhost:3000/')
+  expect(
+    configNeedsNoPrompt(new URL('http://localhost:9000/c.json'), app),
+  ).toBe(true)
+  expect(
+    configNeedsNoPrompt(new URL('http://127.0.0.1:9000/c.json'), app),
+  ).toBe(true)
+})
+
+test('a config from elsewhere still prompts, on a dev build or a deployed one', () => {
+  expect(
+    configNeedsNoPrompt(
+      new URL('https://example.org/c.json'),
+      new URL('http://localhost:3000/'),
+    ),
+  ).toBe(false)
+  expect(
+    configNeedsNoPrompt(
+      new URL('http://localhost:9000/c.json'),
+      new URL('https://jbrowse.org/code/jb2/main/'),
+    ),
+  ).toBe(false)
 })
