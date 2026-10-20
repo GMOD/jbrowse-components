@@ -25,4 +25,4 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-ratio">**ratio**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | 1 holds every position axis at one bp per pixel; unset lets each zoom on its own |
+| <span id="slot-ratio">**ratio**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | 1 gives every position axis the same bp per pixel, and the slot accepts no other number; unset lets each zoom on its own |

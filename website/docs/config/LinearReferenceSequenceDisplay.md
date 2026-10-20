@@ -57,7 +57,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearReferenceSeq
 | <span id="slot-showforward">**showForward**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | show the forward-strand sequence row |
 | <span id="slot-showreverse">**showReverse**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | show the reverse-complement sequence row (DNA only) |
 | <span id="slot-showtranslation">**showTranslation**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | show the translation frame rows (DNA only) |
-| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1000000</code> | maximum data to attempt to download for a given track, used if adapter doesn't specify one<br>_advanced_ |
+| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1000000</code> | bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this<br>_advanced_ |
 | <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ |
 
 ## Retired keys

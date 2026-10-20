@@ -41,7 +41,7 @@ export const regionTooLargeConfigSchemaFields = {
     type: 'number',
     defaultValue: 1_000_000,
     description:
-      "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
+      'bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this',
     advanced: true,
   },
   /**

@@ -67,8 +67,8 @@ export function FormatDetailsConfigSchemaFactory() {
     /**
      * #slot formatDetails.depth
      * The number of subfeature levels the `subfeatures` callback runs on,
-     * defaulting to 2, which stops at a gene's transcripts rather than
-     * descending into their exons and CDSs. A track's value wins over the
+     * defaulting to 2, which reaches a gene's transcripts and their exons and
+     * CDSs; 1 stops at the transcripts. A track's value wins over the
      * session's
      */
     depth: {

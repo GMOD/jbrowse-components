@@ -435,8 +435,8 @@ function stateModelFactory(pluginManager: PluginManager) {
         displayedRegions: types.stripDefault(types.frozen<Region[]>(), []),
         /**
          * #property
-         * how far in the circle may be zoomed, as a floor on the radius; it is
-         * what caps bpPerPx
+         * how far out the circle may zoom, as the smallest radius it shrinks
+         * to; it is what caps bpPerPx
          */
         minimumRadiusPx: types.stripDefault(
           types.number,

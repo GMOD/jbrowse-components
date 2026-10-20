@@ -25,4 +25,4 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-antialias">**antialias**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | fade a sub-pixel ribbon by the share of the pixel it covers; unset fades once sub-pixel ribbons dominate a display |
+| <span id="slot-antialias">**antialias**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | fade a sub-pixel ribbon by the share of the pixel it covers, down to 0.15 of its alpha; ribbon edges stay antialiased either way. Unset fades once sub-pixel ribbons dominate a display |

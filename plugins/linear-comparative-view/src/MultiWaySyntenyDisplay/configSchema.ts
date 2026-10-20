@@ -133,7 +133,7 @@ export function configSchemaFactory() {
       drawCurves: {
         type: 'boolean',
         description:
-          "draw the ribbons as bezier curves rather than straight chords. A plain per-track slot: this display does not share the linear synteny view's view-level `drawCurves` override. Straight is the default in both places: a chord's slant reads directly as the offset between two lanes drawn in different coordinate frames, which is exactly what a curve hides",
+          "draw each ribbon side as the S-curve that leaves and meets each lane square, the linear synteny view's `mark.interpolate: 'bump'`; off draws it straight, the default, since a straight side's slant reads as the offset between two lanes",
         defaultValue: false,
       },
       /**

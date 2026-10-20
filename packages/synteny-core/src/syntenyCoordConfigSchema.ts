@@ -24,7 +24,7 @@ export const syntenyCoordConfigSchema = ConfigurationSchema(
       type: 'maybeNumber',
       model: types.maybe(types.literal(1)),
       description:
-        '1 holds every position axis at one bp per pixel; unset lets each zoom on its own',
+        '1 gives every position axis the same bp per pixel, and the slot accepts no other number; unset lets each zoom on its own',
     },
   },
   { closed: true },

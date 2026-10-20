@@ -55,12 +55,25 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    so `legend.show` on the channel takes over every display's `showLegend`.
 4. **Wiggle's `resolution` and Hi-C's `resolutionBias`** under `data`, each
    in its own units (ADR-238's amendment); the comparative `lodMode` is done.
+   Settle one direction in the same pass: wiggle's `resolution` grows finer,
+   while Hi-C's `resolutionBias` (+1 is one bin coarser) and BigWigAdapter's
+   `resolutionMultiplier` (scales bpPerPx) grow coarser.
 5. **Layout**: `height`, `autosize` and `maxHeight` take over `heightMode`,
    `growMaxHeight`, `rowHeight`, `featureHeight` and `pileup.readHeight`.
+   The canvas `displayMode` belongs here too: compact and superCompact scale
+   `featureHeight` by 0.6 and 0.3 (`HEIGHT_MULTIPLIERS`), and its "Feature
+   height" menu writes the mode, where alignments' presets write
+   `pileup.readHeight`.
 6. **Comparative leftovers**:
    - The `indels` part takes over `cigarMode` and `drawCigar`, after step 1.
    - The multi-way display's ribbons part takes over `ribbonColor`,
-     `drawCurves` and `bridgeSkippedLanes`.
+     `drawCurves` and `bridgeSkippedLanes`. `drawCurves` draws the linear
+     synteny view's bump, so it becomes `mark.interpolate: 'bump'`.
+     `bridgeSkippedLanes` is Vega-Lite's `mark.invalid: 'filter'`, which
+     joins a path across a missing value, and `false` breaks the path there
+     as d3's `defined` does. A bridged ribbon also draws at `BRIDGE_ALPHA`.
+   - The mark display's `marks.linkShape` (`dome arc line`) has no planned
+     spelling yet; see ADR-238's note on `interpolate`.
 
 ## Writers to update after each landing
 

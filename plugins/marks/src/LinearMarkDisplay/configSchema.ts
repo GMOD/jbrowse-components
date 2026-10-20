@@ -323,7 +323,7 @@ const markSchema = ConfigurationSchema(
      * The shape of a link mark: `dome` is a half-ellipse whose apex is the pair's
      * half-width clamped to the band, `arc` a true semicircle that may leave
      * it, and `line` a straight segment between the feet, on the baseline or
-     * at the `y` value. Past three block widths a dome or arc becomes a
+     * at the `y` value. A dome or arc wider than three view widths becomes a
      * circle whose legs rise from each foot.
      */
     linkShape: {

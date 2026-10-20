@@ -105,14 +105,20 @@ channels.
 - A domain end of `null` autoscales by the display's own method, so wiggle
   keeps its outlier fence. `{ quantile: q }` means the q-quantile of the
   channel's values.
+- Amended 2026-10-20: the fence is not a quantile. `scales.y.domainQuantile`
+  stops an extreme at twice the span its quantile draws (ADR-208), where a
+  color ramp's stops at the quantile itself, so `{ quantile: 0.99 }` on the
+  axis would clip what today draws whole. The fence's q, which "Clip extreme
+  outliers" writes, needs a member of its own beside `domain`.
 - `reverse` defaults per preset.
 - `scale.name` shares a domain across tracks as the union of member domains,
   as `autoscaleGroup` does.
 - A threshold takes at most eight cuts, which is the shader's cap.
 - `scale: 'none'` goes. A constant is `value`.
 - Presets are partial specs:
-  - MAPQ is a threshold over `[1, 20, 30, 255]`, so 255 is a real value with
-    its own bin and passes `gte: 20` as it passes `samtools -q`.
+  - MAPQ is a threshold over `[1, 10, 30, 255]`, the cuts of today's
+    `MAPQ_BINS`, so 255 is a real value with its own bin and passes `gte: 30`
+    as it passes `samtools view -q 30`.
   - Insert size colors the worker-derived `pairClass` field.
 - A constant compiles to a uniform. A field-mapped color or opacity bakes into
   the packed color lane the display already uploads. A mapped size needs a
@@ -125,6 +131,11 @@ channels.
     intervals. One mark covers the synteny ribbons, the dotplot segments and
     the chords.
   - `interpolate` (`linear step monotone bump arc`) is the one curve word.
+    `linear`, `step` and `monotone` are Vega-Lite's. `bump` is d3's
+    `curveBump`, the cubic with both control points at mid height that the
+    synteny ribbons draw. `arc`, and the mark display's default `dome`, are
+    ours, for its `linkShape`. Vega's `linkpath` transform calls the same
+    family `shape` (`line arc curve diagonal orthogonal`).
   - The chord displays' `mark.depth` replaces `bezierRadiusRatio`, flipped so
     a larger value curves more: 1 runs an antipodal chord through the center.
 - **Axis:** `axis: { grid, labels, title, tickCount, format, extent, tree }`.
@@ -176,7 +187,7 @@ predicate in the layer's own `filter`:
 | `INDICATOR_THRESHOLD` and the minimum depth in `interbaseCoverage.ts` | the default `coverage.interbase.filter`, which an author can see and edit |
 | `pileup.showMismatches` | `pileup.mismatches.show` |
 | `sashimi.showCounts` | `sashimi.labels.show`, a text layer |
-| `modifications.threshold`, `cytosineContext`, `shownModifications` | predicates on the modification layer: `probability`, `context`, `code` |
+| `modifications.threshold`, `cytosineContext`, `shownModifications` | predicates on the modification layer: `probability`, `context`, `code`. The threshold is a percent and `probability` a 0–1 fraction, and today only the by-type view applies it |
 | `variants`' `minMinorAlleleFrequency`, `maxMissingness` | `{ field: 'maf', gte }`, `{ field: 'missingness', lte }` |
 
 - **`minAlleleFraction` is a filter, not a color rule.** ADR-232 called it

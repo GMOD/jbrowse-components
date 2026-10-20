@@ -124,8 +124,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         linkViews: types.stripDefault(types.boolean, false),
         /**
          * #property
-         * make the alignment squiggles drawn between the panels clickable,
-         * rather than a static overlay
+         * let the connection and junction curves drawn between the panels
+         * respond to hover and click; off, they are a static overlay
          */
         interactiveOverlay: types.stripDefault(types.boolean, true),
         /**

@@ -5052,7 +5052,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
           "default": 5000000,
           "if": {
             "type": "null"
@@ -5219,7 +5219,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "featureHeight": {
-          "description": "height in pixels of the main body of each feature.",
+          "description": "height in pixels of the main body of each feature in the normal display mode; compact draws it at 0.6 of this and superCompact at 0.3.",
           "default": 10,
           "if": {
             "type": "null"
@@ -5756,7 +5756,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
           "default": 5000000,
           "if": {
             "type": "null"
@@ -7110,7 +7110,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -8318,7 +8318,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -10499,7 +10499,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -10581,7 +10581,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "drawCurves": {
-          "description": "draw the ribbons as bezier curves rather than straight chords. A plain per-track slot: this display does not share the linear synteny view's view-level \`drawCurves\` override. Straight is the default in both places: a chord's slant reads directly as the offset between two lanes drawn in different coordinate frames, which is exactly what a curve hides.",
+          "description": "draw each ribbon side as the S-curve that leaves and meets each lane square, the linear synteny view's \`mark.interpolate: 'bump'\`; off draws it straight, the default, since a straight side's slant reads as the offset between two lanes.",
           "default": false,
           "if": {
             "type": "null"
@@ -10769,7 +10769,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -10858,7 +10858,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -11025,7 +11025,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "featureHeight": {
-          "description": "height in pixels of the main body of each feature.",
+          "description": "height in pixels of the main body of each feature in the normal display mode; compact draws it at 0.6 of this and superCompact at 0.3.",
           "default": 10,
           "if": {
             "type": "null"
@@ -11489,7 +11489,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -13119,7 +13119,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
           "default": 5000000,
           "if": {
             "type": "null"
@@ -13821,7 +13821,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -14039,7 +14039,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit overrides this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -25613,7 +25613,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "antialias": {
-          "description": "fade a sub-pixel ribbon by the share of the pixel it covers; unset fades once sub-pixel ribbons dominate a display.",
+          "description": "fade a sub-pixel ribbon by the share of the pixel it covers, down to 0.15 of its alpha; ribbon edges stay antialiased either way. Unset fades once sub-pixel ribbons dominate a display.",
           "if": {
             "type": "null"
           },
@@ -26403,7 +26403,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "ratio": {
-          "description": "1 holds every position axis at one bp per pixel; unset lets each zoom on its own.",
+          "description": "1 gives every position axis the same bp per pixel, and the slot accepts no other number; unset lets each zoom on its own.",
           "if": {
             "type": "null"
           },

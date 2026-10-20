@@ -137,7 +137,8 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        */
       featureHeight: {
         type: 'number',
-        description: 'height in pixels of the main body of each feature',
+        description:
+          'height in pixels of the main body of each feature in the normal display mode; compact draws it at 0.6 of this and superCompact at 0.3',
         defaultValue: 10,
         contextVariable: ['feature'],
       },

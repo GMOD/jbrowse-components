@@ -641,7 +641,7 @@ restores natively:
 | [`hideTrackSelectorButton`](/docs/models/circularview#property-hidetrackselectorbutton) | chrome switch, for an embed that drives the view itself |
 | [`hideVerticalResizeHandle`](/docs/models/circularview#property-hideverticalresizehandle) | chrome switch, for an embed that drives the view itself |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
-| [`minimumRadiusPx`](/docs/models/circularview#property-minimumradiuspx) | how far in the circle may be zoomed, as a floor on the radius; it is what caps bpPerPx |
+| [`minimumRadiusPx`](/docs/models/circularview#property-minimumradiuspx) | how far out the circle may zoom, as the smallest radius it shrinks to; it is what caps bpPerPx |
 | [`minVisibleWidth`](/docs/models/circularview#property-minvisiblewidth) | arcs thinner than this many pixels are elided instead of drawn, so a few thousand unplaced contigs do not become a ring of hairlines |
 | [`offsetRadians`](/docs/models/circularview#property-offsetradians) | the angular offset of the view in radians, the counterpart of offsetPx in the linear genome view |
 | [`opacity`](/docs/models/syntenycolorsmixin#property-opacity) | The opacity every alignment draws at, a [](/docs/config/syntenyopacity) object: a number for all of them, or a field each alignment has, read into opacities, `{ field: "identity" }` or a column the tracks declare. Unset, the view's default: low on the synteny view for dense whole-genome hairballs, opaque on the dotplot. |
@@ -911,7 +911,7 @@ every setting the view's menu offers:
 | --- | --- |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
 | [`height`](/docs/models/breakpointsplitview#property-height) | the height of the whole view in pixels, panels and overlay together |
-| [`interactiveOverlay`](/docs/models/breakpointsplitview#property-interactiveoverlay) | make the alignment squiggles drawn between the panels clickable, rather than a static overlay |
+| [`interactiveOverlay`](/docs/models/breakpointsplitview#property-interactiveoverlay) | let the connection and junction curves drawn between the panels respond to hover and click; off, they are a static overlay |
 | [`linkViews`](/docs/models/breakpointsplitview#property-linkviews) | sync scroll and zoom across the panels, so panning one pans them all |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 | [`showHeader`](/docs/models/breakpointsplitview#property-showheader) | show the view's own header bar, above the panels' own |

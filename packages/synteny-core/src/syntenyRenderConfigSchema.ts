@@ -22,7 +22,7 @@ export const syntenyRenderConfigSchema = ConfigurationSchema(
     antialias: {
       type: 'maybeBoolean',
       description:
-        'fade a sub-pixel ribbon by the share of the pixel it covers; unset fades once sub-pixel ribbons dominate a display',
+        'fade a sub-pixel ribbon by the share of the pixel it covers, down to 0.15 of its alpha; ribbon edges stay antialiased either way. Unset fades once sub-pixel ribbons dominate a display',
     },
   },
   { closed: true },
