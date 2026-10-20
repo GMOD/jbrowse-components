@@ -330,8 +330,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setlaneframes">**setLaneFrames**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(originPx: number, decisions: Map&lt;string, LaneDecision &#124; undefi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(originPx: number, decisions: Map&lt;string, LaneDecision &#124; undefined&gt;) =&gt; void</code></pre></dialog></span> | `originPx` is the view offset the decisions' px space is anchored at |
 | <span id="action-advanceanimation">**advanceAnimation**</span><br><code>(nowMs: number) =&gt; void</code> |  |
 | <span id="action-endanimation">**endAnimation**</span><br><code>() =&gt; void</code> |  |
-| <span id="action-pickdefaultgenecolor">**pickDefaultGeneColor**</span><br><code>() =&gt; void</code> | Color by's Default: no field and no constant, so the config's own color paints, a `jexl:` expression included |
-| <span id="action-pickgenesolidcolor">**pickGeneSolidColor**</span><br><code>() =&gt; void</code> | Color by's Solid color...: paints the constant kept beside a field, where there is one, and opens the picker |
+| <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | the picker the gene Color by's Solid color... opens |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> |  |
 | <span id="action-openinnewview">**openInNewView**</span><br><code>(assemblyName: string, loc: string) =&gt; void</code> |  |
 | <span id="action-reanchor">**reanchor**</span><br><code>(assemblyName: string, loc: string) =&gt; void</code> |  |
@@ -343,11 +342,11 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactNo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactNode&gt;</code></pre></dialog></span> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>36 inherited actions from 9 models</summary>
+<summary>38 inherited actions from 9 models</summary>
 
 From [LodTierInfoMixin](../lodtierinfomixin): <span id="action-setadapterheader">[`setAdapterHeader`](../lodtierinfomixin#action-setadapterheader)</span>
 
-From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>
+From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
 
 From [LegendMixin](../legendmixin): <span id="action-setshowlegend">[`setShowLegend`](../legendmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../legendmixin#action-dismisslegendsection)</span>
 

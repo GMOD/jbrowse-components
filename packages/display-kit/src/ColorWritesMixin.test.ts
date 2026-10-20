@@ -140,3 +140,38 @@ test('a defaulted field parks on the way back and keeps its range on a re-pick',
   d.colorByField('strand')
   expect(d.writtenColor).toEqual({ field: 'strand', range: ['red', 'blue'] })
 })
+
+test('Default clears the constant first, then the field', () => {
+  const parked = display({ value: 'red', field: 'type', scale: 'none' })
+  parked.pickDefaultColor()
+  expect(colorOf(parked)).toEqual({ field: 'type', scale: 'none' })
+  const painting = display({ field: 'type' })
+  painting.pickDefaultColor()
+  expect(colorOf(painting)).toEqual({ field: 'type', scale: 'none' })
+})
+
+test('Solid color paints the constant kept beside a painting field, and opens the picker', () => {
+  const opened: string[] = []
+  const WithPicker = Display.actions(() => ({
+    openSolidColorDialog() {
+      opened.push('picker')
+    },
+  }))
+  const kept = WithPicker.create(
+    { configuration: { color: { value: 'red', field: 'type' } } },
+    { pluginManager },
+  )
+  kept.pickSolidColor()
+  expect(getSnapshot(kept.configuration.color)).toEqual({
+    value: 'red',
+    field: 'type',
+    scale: 'none',
+  })
+  const none = WithPicker.create(
+    { configuration: { color: { field: 'type' } } },
+    { pluginManager },
+  )
+  none.pickSolidColor()
+  expect(getSnapshot(none.configuration.color)).toEqual({ field: 'type' })
+  expect(opened).toEqual(['picker', 'picker'])
+})

@@ -318,6 +318,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setshowrowseparators">**setShowRowSeparators**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowtooltips">**setShowTooltips**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshadebydosage">**setShadeByDosage**</span><br><code>(arg: boolean) =&gt; void</code> | Turn dosage shading on or off; the main thread repaints the loaded cells. |
+| <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | the picker Color by's Solid color... opens |
 | <span id="action-setshowvariantlane">**setShowVariantLane**</span><br><code>(arg: boolean) =&gt; void</code> | Switch the variant lane on or off; it takes its space from the rows. |
 | <span id="action-setvariantlaneheight">**setVariantLaneHeight**</span><br><code>(arg: number) =&gt; void</code> | Resize the variant lane, clamped here because a drag can deliver any number and a band dragged shut has to stay grabbable. |
 | <span id="action-setvariantlanelabels">**setVariantLaneLabels**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(arg: "auto" &#124; "description" &#124; "name" &#124; "nameAndDescription" &#124;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(arg: "auto" &#124; "description" &#124; "name" &#124; "nameAndDescription" &#124; "none") =&gt; void</code></pre></dialog></span> |  |
@@ -332,7 +333,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: VariantLayoutBackend) =&gt; void</code> | The layout's chrome hands over its backend; a layout switch mounts the other chrome, whose backend replaces this one. The upload lifecycle is installed once, so its cells and its render follow the backend attached rather than the setting: until the other chrome's backend arrives, the old one is sent nothing it cannot draw. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>62 inherited actions from 12 models</summary>
+<summary>64 inherited actions from 12 models</summary>
 
 From [ContextMenuMixin](../contextmenumixin): <span id="action-opencontextmenu">[`openContextMenu`](../contextmenumixin#action-opencontextmenu)</span>, <span id="action-closecontextmenu">[`closeContextMenu`](../contextmenumixin#action-closecontextmenu)</span>
 
@@ -342,7 +343,7 @@ From [StoredHoverMixin](../storedhovermixin): <span id="action-sethoveredfeature
 
 From [RowHeightMixin](../rowheightmixin): <span id="action-setrowheight">[`setRowHeight`](../rowheightmixin#action-setrowheight)</span>
 
-From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>
+From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
 
 From [LegendMixin](../legendmixin): <span id="action-setshowlegend">[`setShowLegend`](../legendmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../legendmixin#action-dismisslegendsection)</span>
 

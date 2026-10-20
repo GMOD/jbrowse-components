@@ -23,3 +23,5 @@ The writes a display's `color` object takes from a menu row or a picker: the fie
 | --- | --- |
 | <span id="action-colorbyfield">**colorByField**</span><br><code>(field: string) =&gt; void</code> | Paint by `field`, keeping its domain, range and key names while it is the field already painting; `''` paints `value` and keeps the field under `scale: 'none'` for the way back. |
 | <span id="action-setcolorvalue">**setColorValue**</span><br><code>(value: string &#124; undefined) =&gt; void</code> | Paint every feature `value`, a CSS color or a `jexl:` callback, keeping a field under `scale: 'none'` for the way back; undefined lets each feature's own color paint. |
+| <span id="action-pickdefaultcolor">**pickDefaultColor**</span><br><code>() =&gt; void</code> | Color by's Default: no field and no constant, so the track's own color paints, a `jexl:` expression included. |
+| <span id="action-picksolidcolor">**pickSolidColor**</span><br><code>() =&gt; void</code> | Color by's Solid color...: paints the constant kept beside a painting field, where there is one, and opens the display's picker. |

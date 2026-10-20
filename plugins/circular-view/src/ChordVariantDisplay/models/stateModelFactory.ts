@@ -534,25 +534,9 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
     .actions(self => ({
       /**
        * #action
-       * Color by's Default: no field and no constant, so the config's own
-       * color paints, a `jexl:` expression included
+       * the picker Color by's Solid color... opens
        */
-      pickDefaultColor() {
-        if (self.solidColor === undefined) {
-          self.colorByField('')
-        } else {
-          self.setColorValue(undefined)
-        }
-      },
-      /**
-       * #action
-       * Color by's Solid color...: paints the constant kept beside a field,
-       * where there is one, and opens the picker
-       */
-      pickSolidColor() {
-        if (self.paintedColorField && self.solidColor !== undefined) {
-          self.colorByField('')
-        }
+      openSolidColorDialog() {
         getSession(self).queueDialog(handleClose => [
           SolidColorDialog,
           {

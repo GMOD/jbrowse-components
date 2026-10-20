@@ -582,7 +582,7 @@ test('Solid color... paints the kept constant and opens the picker; Default drop
   const { display, session } = createDisplayWithSession()
   setConf(display, 'color', { value: 'red', field: 'name' })
   expect(display.geneSolidColor).toBe('red')
-  display.pickGeneSolidColor()
+  display.pickSolidColor()
   expect(display.geneColorField).toBe('')
   expect(display.geneColorSettings.color).toMatchObject({
     value: 'red',
@@ -592,7 +592,7 @@ test('Solid color... paints the kept constant and opens the picker; Default drop
   expect(session.queuedDialogs).toHaveLength(1)
   display.setColorValue('teal')
   expect(display.geneSolidColor).toBe('teal')
-  display.pickDefaultGeneColor()
+  display.pickDefaultColor()
   expect(display.geneSolidColor).toBeUndefined()
   expect(display.geneColorField).toBe('')
   expect(display.geneColorSettings.color).toMatchObject({ field: 'name' })
@@ -601,7 +601,7 @@ test('Solid color... paints the kept constant and opens the picker; Default drop
 test('Solid color... over a painting field paints the pick', () => {
   const { display } = createDisplayWithSession()
   setConf(display, 'color', { field: 'strand' })
-  display.pickGeneSolidColor()
+  display.pickSolidColor()
   display.setColorValue('teal')
   expect(display.geneColorField).toBe('')
   expect(display.geneColorSettings.color).toMatchObject({

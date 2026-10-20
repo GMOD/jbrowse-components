@@ -88,8 +88,8 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   geneColorField: string
   colorByField: (field: string) => void
   geneSolidColor: string | undefined
-  pickDefaultGeneColor: () => void
-  pickGeneSolidColor: () => void
+  pickDefaultColor: () => void
+  pickSolidColor: () => void
   setLanesFrozen: (flag: boolean) => void
 }
 
@@ -305,14 +305,14 @@ export function geneColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
       helpText:
         "The gene color the track's config sets, goldenrod where it sets none.",
       onClick: () => {
-        model.pickDefaultGeneColor()
+        model.pickDefaultColor()
       },
     },
     ...radioItems(fields, field, value => {
       model.colorByField(value)
     }),
     solidColorItem(field === '' && model.geneSolidColor !== undefined, () => {
-      model.pickGeneSolidColor()
+      model.pickSolidColor()
     }),
   ]
 }

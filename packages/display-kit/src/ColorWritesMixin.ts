@@ -1,4 +1,5 @@
 import { readConfObject, setConf } from '@jbrowse/core/configuration'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
@@ -10,6 +11,8 @@ import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 /** The whole of what `ColorWritesMixin` needs a composing display to be. */
 export interface ColorWritesHost {
   configuration: AnyConfigurationModel & { color: AnyConfigurationModel }
+  /** The display's picker for a constant, which Solid color... opens. */
+  openSolidColorDialog?: () => void
 }
 
 // The mixin's own `self` is the model it declares, so it cannot see the
@@ -27,6 +30,12 @@ export function writtenColorOf(color: AnyConfigurationModel): ColorSlots {
   const field: string | undefined =
     'field' in color ? readConfObject(color, 'field') : undefined
   return field && written.field === undefined ? { ...written, field } : written
+}
+
+// The constant `value` holds, painting or kept beside a field; undefined for
+// none or a `jexl:` expression.
+function solidColorOf({ value }: ColorSlots): string | undefined {
+  return typeof value === 'string' && !isJexl(value) ? value : undefined
 }
 
 /**
@@ -71,6 +80,34 @@ export default function ColorWritesMixin() {
          */
         setColorValue(value: string | undefined) {
           write(colorForValue(self.writtenColor, value))
+        },
+        /**
+         * #action
+         * Color by's Default: no field and no constant, so the track's own
+         * color paints, a `jexl:` expression included.
+         */
+        pickDefaultColor() {
+          if (solidColorOf(self.writtenColor) === undefined) {
+            this.colorByField('')
+          } else {
+            this.setColorValue(undefined)
+          }
+        },
+        /**
+         * #action
+         * Color by's Solid color...: paints the constant kept beside a
+         * painting field, where there is one, and opens the display's picker.
+         */
+        pickSolidColor() {
+          const written = self.writtenColor
+          if (
+            written.field &&
+            written.scale !== 'none' &&
+            solidColorOf(written) !== undefined
+          ) {
+            this.colorByField('')
+          }
+          host(self).openSolidColorDialog?.()
         },
       }
     })

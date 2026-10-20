@@ -7,6 +7,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import {
   canonicalizeViewRefName,
+  getDialogHost,
   getNotificationSink,
   openFeatureWidget,
   SimpleFeature,
@@ -89,6 +90,7 @@ import {
   resolveSampleName,
   rowAliasOf,
 } from '../shared/getSources.ts'
+import { CellSolidColorDialog } from '../shared/lazyDialogs.ts'
 import {
   sitesBySpan,
   sortSourcesAroundVariant,
@@ -950,6 +952,16 @@ export function stateModelFactory(
            */
           setShadeByDosage(arg: boolean) {
             setConf(self, 'shadeByDosage', arg)
+          },
+          /**
+           * #action
+           * the picker Color by's Solid color... opens
+           */
+          openSolidColorDialog() {
+            getDialogHost(self).queueDialog(handleClose => [
+              CellSolidColorDialog,
+              { model: self, handleClose },
+            ])
           },
           /**
            * #action

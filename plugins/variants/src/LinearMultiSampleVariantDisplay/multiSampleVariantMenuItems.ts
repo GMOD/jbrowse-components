@@ -36,7 +36,6 @@ import { PHASE_SET_FIELD } from '../shared/getPhasedColor.ts'
 // every host's first paint — see ./lazyDialogs.ts
 import {
   CellColorFieldDialog,
-  CellSolidColorDialog,
   MultiSampleVariantClusterDialog as ClusterDialog,
   JexlFilterDialog,
 } from '../shared/lazyDialogs.ts'
@@ -57,19 +56,6 @@ function needs(label: string, what: string, present: boolean, loaded: boolean) {
         label: `${label} (${loaded ? `no ${what} in view` : `checking for ${what}...`})`,
         disabled: true,
       }
-}
-
-// Paints the constant kept beside a field, where there is one, and opens the
-// picker.
-function pickCellSolidColor(self: LinearMultiSampleVariantDisplayModel) {
-  const { value } = self.colorSetting
-  if (self.colorField && value !== undefined && !isJexl(value)) {
-    self.colorByField('')
-  }
-  getDialogHost(self).queueDialog(handleClose => [
-    CellSolidColorDialog,
-    { model: self, handleClose },
-  ])
 }
 
 // The rows' color, as the arrangement dialog offers it: None and the
@@ -310,7 +296,7 @@ export function variantTrackMenuItems(
               typeof self.colorEncoding === 'string' &&
                 !isJexl(self.colorEncoding),
               () => {
-                pickCellSolidColor(self)
+                self.pickSolidColor()
               },
             ),
           ],

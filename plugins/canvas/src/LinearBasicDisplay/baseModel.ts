@@ -1360,8 +1360,9 @@ export default function baseStateModelFactory(
 
       /**
        * #action
+       * the picker Color by's Solid color... opens
        */
-      openSetColorDialog() {
+      openSolidColorDialog() {
         getDialogHost(self).queueDialog(handleClose => [
           SetColorDialog,
           { model: self, handleClose },
@@ -1776,32 +1777,6 @@ export default function baseStateModelFactory(
           ...self.showSubmenuRadioGroups(),
           ...showSubmenuLegendItems(self),
         ]
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       * Color by's Default: no field and no solid color, so the track's own
-       * color paints, a `jexl:` expression included.
-       */
-      pickDefaultColor() {
-        if (self.solidColor === undefined) {
-          self.colorByField('')
-        } else {
-          self.setColorValue(undefined)
-        }
-      },
-
-      /**
-       * #action
-       * Color by's Solid color...: paints the constant kept beside a field,
-       * where there is one, and opens the picker.
-       */
-      pickSolidColor() {
-        if (self.colorField !== undefined && self.solidColor !== undefined) {
-          self.colorByField('')
-        }
-        self.openSetColorDialog()
       },
     }))
     .views(self => ({

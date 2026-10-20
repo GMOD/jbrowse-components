@@ -190,10 +190,10 @@ function trackModel({
       calls.push(`gene color ${field}`)
     },
     geneSolidColor,
-    pickDefaultGeneColor: () => {
+    pickDefaultColor: () => {
       calls.push('gene default')
     },
-    pickGeneSolidColor: () => {
+    pickSolidColor: () => {
       calls.push('gene solid')
     },
     setLanesFrozen: (flag: boolean) => {

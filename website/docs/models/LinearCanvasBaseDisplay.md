@@ -327,7 +327,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-openfilterdialog">**openFilterDialog**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setdisplaymode">**setDisplayMode**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(value: "collapsed" &#124; "compact" &#124; "normal" &#124; "superCompact") =&gt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(value: "collapsed" &#124; "compact" &#124; "normal" &#124; "superCompact") =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-setfacet">**setFacet**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(facet?: { field: string; domain?: readonly string[] &#124; undefine…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(facet?: { field: string; domain?: readonly string[] &#124; undefined; } &#124; undefined) =&gt; void</code></pre></dialog></span> | Writes the `facet` object; undefined is ungrouped. Naming the field already grouping, with no domain, keeps its section order and hidden sections. The stack starts over from the top. |
-| <span id="action-opensetcolordialog">**openSetColorDialog**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | the picker Color by's Solid color... opens |
 | <span id="action-fetchfullfeature">**fetchFullFeature**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(featureId: string, displayedRegionIndex: number, opts?: { sign…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(featureId: string, displayedRegionIndex: number, opts?: { signal?: AbortSignal &#124; undefined; statusCallback?: StatusCallback &#124; undefined; }) =&gt; Promise&lt;SimpleFeature &#124; undefined&gt;</code></pre></dialog></span> |  |
 | <span id="action-selectfeaturebyid">**selectFeatureById**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(featureId: string, subfeatureInfo: SubfeatureInfo &#124; undefined,…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(featureId: string, subfeatureInfo: SubfeatureInfo &#124; undefined, displayedRegionIndex: number) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> | Clears the loaded regions and fetches straight away, rather than waiting out `FetchVisibleRegions`' 600ms debounce as the rest of the family does — Retry and Force load are both clicks, and this is the display the user is most often clicking on. |
@@ -337,11 +337,9 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-opencolorbyattributedialog">**openColorByAttributeDialog**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-clearhoveredfeature">**clearHoveredFeature**</span><br><code>() =&gt; void</code> | Fills `BaseDisplay`'s hover-clear hook, which the fetch foundation's reaction calls on every viewport change. |
 | <span id="action-opengroupbydialog">**openGroupByDialog**</span><br><code>() =&gt; void</code> |  |
-| <span id="action-pickdefaultcolor">**pickDefaultColor**</span><br><code>() =&gt; void</code> | Color by's Default: no field and no solid color, so the track's own color paints, a `jexl:` expression included. |
-| <span id="action-picksolidcolor">**pickSolidColor**</span><br><code>() =&gt; void</code> | Color by's Solid color...: paints the constant kept beside a field, where there is one, and opens the picker. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>49 inherited actions from 12 models</summary>
+<summary>51 inherited actions from 12 models</summary>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-hidegroup">[`hideGroup`](../hiddengroupsmixin#action-hidegroup)</span>, <span id="action-showallgroups">[`showAllGroups`](../hiddengroupsmixin#action-showallgroups)</span>, <span id="action-dropgroupstate">[`dropGroupState`](../hiddengroupsmixin#action-dropgroupstate)</span>
 
@@ -349,7 +347,7 @@ From [ContextMenuMixin](../contextmenumixin): <span id="action-closecontextmenu"
 
 From [CanvasFeatureGateMixin](../canvasfeaturegatemixin): <span id="action-setdensitystats">[`setDensityStats`](../canvasfeaturegatemixin#action-setdensitystats)</span>, <span id="action-cleargatemeasurements">[`clearGateMeasurements`](../canvasfeaturegatemixin#action-cleargatemeasurements)</span>, <span id="action-commitgatemeasurements">[`commitGateMeasurements`](../canvasfeaturegatemixin#action-commitgatemeasurements)</span>
 
-From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>
+From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
 
 From [LegendMixin](../legendmixin): <span id="action-setshowlegend">[`setShowLegend`](../legendmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../legendmixin#action-dismisslegendsection)</span>
 

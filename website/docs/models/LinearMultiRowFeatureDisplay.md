@@ -188,8 +188,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-pickdefaultcolor">**pickDefaultColor**</span><br><code>() =&gt; void</code> | Color by's Default: no field and no constant, so the config's own color paints |
-| <span id="action-picksolidcolor">**pickSolidColor**</span><br><code>() =&gt; void</code> | Color by's Solid color...: paints the constant kept beside a field, where there is one, and opens the picker |
+| <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | the picker Color by's Solid color... opens |
 | <span id="action-setshowrowseparators">**setShowRowSeparators**</span><br><code>(f: boolean) =&gt; void</code> |  |
 | <span id="action-togglecategory">**toggleCategory**</span><br><code>(values: readonly string[]) =&gt; void</code> | Show or hide a key row's names together, at render time with no refetch: a row any of whose names is hidden shows again. |
 | <span id="action-sethiddencategories">**setHiddenCategories**</span><br><code>(labels: string[]) =&gt; void</code> |  |
@@ -206,7 +205,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-rendersvg">**renderSvg**</span><br><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>62 inherited actions from 11 models</summary>
+<summary>64 inherited actions from 11 models</summary>
 
 From [PointerHoverMixin](../pointerhovermixin): <span id="action-setpointer">[`setPointer`](../pointerhovermixin#action-setpointer)</span>
 
@@ -214,7 +213,7 @@ From [ContextMenuMixin](../contextmenumixin): <span id="action-opencontextmenu">
 
 From [TreeSidebarMixin](../treesidebarmixin): <span id="action-setshowtree">[`setShowTree`](../treesidebarmixin#action-setshowtree)</span>, <span id="action-setshowbranchlength">[`setShowBranchLength`](../treesidebarmixin#action-setshowbranchlength)</span>, <span id="action-setshowrowlabels">[`setShowRowLabels`](../treesidebarmixin#action-setshowrowlabels)</span>, <span id="action-settreeareawidth">[`setTreeAreaWidth`](../treesidebarmixin#action-settreeareawidth)</span>, <span id="action-setrunclustering">[`setRunClustering`](../treesidebarmixin#action-setrunclustering)</span>, <span id="action-setclusterregion">[`setClusterRegion`](../treesidebarmixin#action-setclusterregion)</span>, <span id="action-setsortrowsby">[`setSortRowsBy`](../treesidebarmixin#action-setsortrowsby)</span>, <span id="action-sethoveredtreenode">[`setHoveredTreeNode`](../treesidebarmixin#action-sethoveredtreenode)</span>, <span id="action-settreecanvasref">[`setTreeCanvasRef`](../treesidebarmixin#action-settreecanvasref)</span>, <span id="action-setmouseovercanvasref">[`setMouseoverCanvasRef`](../treesidebarmixin#action-setmouseovercanvasref)</span>, <span id="action-setroworder">[`setRowOrder`](../treesidebarmixin#action-setroworder)</span>, <span id="action-setrowlabels">[`setRowLabels`](../treesidebarmixin#action-setrowlabels)</span>, <span id="action-setrowfocus">[`setRowFocus`](../treesidebarmixin#action-setrowfocus)</span>, <span id="action-applyrowedits">[`applyRowEdits`](../treesidebarmixin#action-applyrowedits)</span>, <span id="action-resetrowarrangement">[`resetRowArrangement`](../treesidebarmixin#action-resetrowarrangement)</span>, <span id="action-setrowcolorchoice">[`setRowColorChoice`](../treesidebarmixin#action-setrowcolorchoice)</span>, <span id="action-focuslegendentry">[`focusLegendEntry`](../treesidebarmixin#action-focuslegendentry)</span>
 
-From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>
+From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
 
 From [LegendMixin](../legendmixin): <span id="action-setshowlegend">[`setShowLegend`](../legendmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../legendmixin#action-dismisslegendsection)</span>
 

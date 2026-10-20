@@ -2364,25 +2364,9 @@ export function stateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * Color by's Default: no field and no constant, so the config's own
-       * color paints, a `jexl:` expression included
+       * the picker the gene Color by's Solid color... opens
        */
-      pickDefaultGeneColor() {
-        if (self.geneSolidColor === undefined) {
-          self.colorByField('')
-        } else {
-          self.setColorValue(undefined)
-        }
-      },
-      /**
-       * #action
-       * Color by's Solid color...: paints the constant kept beside a field,
-       * where there is one, and opens the picker
-       */
-      pickGeneSolidColor() {
-        if (self.geneColorField !== '' && self.geneSolidColor !== undefined) {
-          self.colorByField('')
-        }
+      openSolidColorDialog() {
         getSession(self).queueDialog(handleClose => [
           SolidColorDialog,
           {
