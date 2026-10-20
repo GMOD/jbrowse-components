@@ -70,7 +70,7 @@ test('a coverage ring draws its bars', async () => {
 
 // The skip filter asks the pluginManager which displays a track type declares —
 // and `getTrackType` THROWS for a type this bundle doesn't register, which a
-// --hub/--config config can easily carry (a track type from a plugin jb2export
+// --genome/--config config can easily carry (a track type from a plugin jb2export
 // doesn't bundle). That threw out of the very filter meant to keep an
 // un-renderable track from aborting the render.
 test('a track of an unregistered type is skipped, not fatal', async () => {

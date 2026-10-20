@@ -3,7 +3,7 @@
  *
  * Which tracks a circular render opens. `--track` used to be parsed, warned
  * about as having no effect, and dropped: the view took every track in the
- * config, which over a `--hub` is hundreds of them, and the only way to pick
+ * config, which over a `--genome` is hundreds of them, and the only way to pick
  * was to hand-write a `--spec`.
  *
  * jsdom and the fetch shim for the reasons renderSessionInit.test.ts gives.

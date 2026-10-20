@@ -499,7 +499,7 @@ jobs:
       # source against the workspace's BUILT esm — which the pack step above
       # has just produced — and because this job already installs the cairo/
       # pango/rsvg headers node-canvas needs. Fully offline: every fixture is
-      # local, including the --hub config.
+      # local, including the --genome config.
       - name: Test @jbrowse/img end-to-end renders
         run: pnpm --filter @jbrowse/img test:integration
       - name: Test build

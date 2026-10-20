@@ -41,7 +41,7 @@ function readSession(url: string) {
 }
 
 test('the spec survives the round trip', () => {
-  expect(readSession(jbrowseUrl({ hub: 'hg38', spec }))).toEqual(spec)
+  expect(readSession(jbrowseUrl({ genome: 'hg38', spec }))).toEqual(spec)
 })
 
 // "Export session..." writes `{ session: {...} }`, which is what `json-` reads;
@@ -50,7 +50,7 @@ test.each([
   ['the exported document', { session: { name: 'saved', views: [] } }],
   ['the snapshot inside it', { name: 'saved', views: [] }],
 ])('a saved session opens as json-, from %s', (_name, session) => {
-  const value = params(jbrowseUrl({ hub: 'hg38', session })).get('session')!
+  const value = params(jbrowseUrl({ genome: 'hg38', session })).get('session')!
   expect(JSON.parse(value.replace(/^json-/, ''))).toEqual({
     session: { name: 'saved', views: [] },
   })
@@ -58,12 +58,12 @@ test.each([
 
 test('a spec and a saved session together are refused', () => {
   expect(() =>
-    jbrowseUrl({ hub: 'hg38', spec, session: { views: [] } }),
+    jbrowseUrl({ genome: 'hg38', spec, session: { views: [] } }),
   ).toThrow('pass a session spec or a saved session, not both')
 })
 
-test('a hub becomes its genomes.jbrowse.org config URL and names the assembly', () => {
-  const url = jbrowseUrl({ hub: 'hg38', loc: 'BRCA1' })
+test('a genome becomes its genomes.jbrowse.org config URL and names the assembly', () => {
+  const url = jbrowseUrl({ genome: 'hg38', loc: 'BRCA1' })
   expect(params(url).get('config')).toBe(
     'https://jbrowse.org/ucsc/hg38/config.json',
   )
@@ -72,17 +72,17 @@ test('a hub becomes its genomes.jbrowse.org config URL and names the assembly', 
 })
 
 test('tracks join into one comma-separated parameter', () => {
-  const url = jbrowseUrl({ hub: 'hg38', tracks: ['a', 'b'] })
+  const url = jbrowseUrl({ genome: 'hg38', tracks: ['a', 'b'] })
   expect(params(url).get('tracks')).toBe('a,b')
 })
 
 test('a spec carries the config and nothing the spec already says', () => {
-  expect(Object.fromEntries(params(jbrowseUrl({ hub: 'hg38', spec })))).toEqual(
-    {
-      config: 'https://jbrowse.org/ucsc/hg38/config.json',
-      session: expect.stringMatching(/^spec-\{/),
-    },
-  )
+  expect(
+    Object.fromEntries(params(jbrowseUrl({ genome: 'hg38', spec }))),
+  ).toEqual({
+    config: 'https://jbrowse.org/ucsc/hg38/config.json',
+    session: expect.stringMatching(/^spec-\{/),
+  })
 })
 
 // the URL carries one of them, so the gate would wait on the dropped one
@@ -91,19 +91,19 @@ test.each([
   ['loc', { loc: 'BRCA1' }],
   ['tracks', { tracks: ['a'] }],
 ])('a spec refuses %s beside it', (_name, extra) => {
-  expect(() => jbrowseUrl({ hub: 'hg38', spec, ...extra })).toThrow(
+  expect(() => jbrowseUrl({ genome: 'hg38', spec, ...extra })).toThrow(
     'cannot be combined with assembly, loc or tracks',
   )
 })
 
-test('a hub and a config are two sources for one config, so both is refused', () => {
+test('a genome and a config are two sources for one config, so both is refused', () => {
   expect(() =>
-    jbrowseUrl({ hub: 'hg38', config: 'https://x.test/config.json' }),
-  ).toThrow('pass a hosted hub or a config URL, not both')
+    jbrowseUrl({ genome: 'hg38', config: 'https://x.test/config.json' }),
+  ).toThrow('pass a hosted genome or a config URL, not both')
 })
 
 test('instance selects the deployment', () => {
-  const url = jbrowseUrl({ instance: 'http://localhost:3000/', hub: 'hg38' })
+  const url = jbrowseUrl({ instance: 'http://localhost:3000/', genome: 'hg38' })
   expect(url.startsWith('http://localhost:3000/#')).toBe(true)
 })
 

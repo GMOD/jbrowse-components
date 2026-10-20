@@ -121,7 +121,7 @@ function uniqueTrackId(used: Set<string>, base: string) {
   return id
 }
 
-// `configObject` is a config already fetched off the network (from --hub or a
+// `configObject` is a config already fetched off the network (from --genome or a
 // URL --config, see resolveHub.ts); when present it stands in for the local
 // --config file read. Its adapters use remote `uri`s, so no localPath rewriting
 // applies. A --config file is the other way about: a `uri` in it relative to
@@ -217,13 +217,13 @@ export function readData(
     ]
     configData.assembly = assemblyData
   } else if (configData.assemblies?.length) {
-    // --config/--hub and the CLI assembly flags are alternatives, not additive:
+    // --config/--genome and the CLI assembly flags are alternatives, not additive:
     // the config's assemblies win outright, so a --fasta given alongside one is
     // dropped — and in a comparative run so is every --paf/--chain that binds to
     // it, since those are built in the branch below that never runs.
     if (fasta || hasComparativeArgs(argv)) {
       console.warn(
-        'Warning: the assembly comes from the config (--config/--hub), so --fasta/--chromSizes and any comparison files passed with it are ignored. Use --assembly <name> to choose among the config assemblies.',
+        'Warning: the assembly comes from the config (--config/--genome), so --fasta/--chromSizes and any comparison files passed with it are ignored. Use --assembly <name> to choose among the config assemblies.',
       )
     }
     if (asm) {
@@ -258,7 +258,7 @@ export function readData(
 
   if (!configData.assembly) {
     throw new Error(
-      'no assembly specified: pass a genome file (an indexed FASTA from samtools faidx, a 2bit, or a .chrom.sizes), --fasta, --hub, or --config with --assembly',
+      'no assembly specified: pass a genome file (an indexed FASTA from samtools faidx, a 2bit, or a .chrom.sizes), --fasta, --genome, or --config with --assembly',
     )
   }
 

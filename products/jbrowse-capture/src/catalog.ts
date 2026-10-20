@@ -1,7 +1,7 @@
-import { fetchJson, hubUrl, trackName, tracksMatching } from './hub.ts'
+import { fetchJson, hubUrl, trackName, tracksMatching } from './genome.ts'
 import { instanceUrl } from './url.ts'
 
-import type { Track } from './hub.ts'
+import type { Track } from './genome.ts'
 import type { JBrowseUrlOptions } from './url.ts'
 
 interface CatalogAssembly {
@@ -90,19 +90,19 @@ export function resolveTrackId(
 }
 
 async function fetchCatalog({
-  hub,
+  genome,
   config,
   instance,
 }: JBrowseUrlOptions): Promise<Catalog | undefined> {
   const url = config
     ? new URL(config, instanceUrl(instance)).href
-    : hub
-      ? hubUrl(hub)
+    : genome
+      ? hubUrl(genome)
       : undefined
   if (!url) {
     return undefined
   }
-  const fetched = fetchJson(url, config ? 'config' : `hub "${hub}"`)
+  const fetched = fetchJson(url, config ? 'config' : `genome "${genome}"`)
   return (await (config ? fetched.catch(() => undefined) : fetched)) as
     | Catalog
     | undefined
@@ -113,14 +113,14 @@ async function fetchCatalog({
  * spelled the way it spells them, so a typo fails before a browser launches.
  * A `--config` this cannot fetch passes through for the app to judge, and so
  * does a spec or saved session, which may declare tracks no config lists. A
- * hosted `hub` that fails to fetch throws, since genomes.jbrowse.org either has
+ * hosted `genome` that fails to fetch throws, since genomes.jbrowse.org either has
  * the assembly or the name is wrong.
  */
 export async function resolveAgainstConfig(
   options: JBrowseUrlOptions,
 ): Promise<JBrowseUrlOptions> {
-  const { hub, assembly, tracks, spec, session } = options
-  const wanted = assembly ?? hub
+  const { genome, assembly, tracks, spec, session } = options
+  const wanted = assembly ?? genome
   if (spec || session || (!wanted && !tracks?.length)) {
     return options
   }

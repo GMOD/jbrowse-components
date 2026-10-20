@@ -135,13 +135,13 @@ describe('against a served config', () => {
     ).resolves.toBe('GRCh38')
   })
 
-  test('a hosted hub that does not exist fails before any browser launches', async () => {
+  test('a hosted genome that does not exist fails before any browser launches', async () => {
     jest
       .spyOn(globalThis, 'fetch')
       .mockResolvedValue(new Response('', { status: 404 }))
     await expect(
-      resolveAgainstConfig({ hub: 'hg39zz', loc: 'x' }),
-    ).rejects.toThrow('hub "hg39zz" not found (HTTP 404')
+      resolveAgainstConfig({ genome: 'hg39zz', loc: 'x' }),
+    ).rejects.toThrow('genome "hg39zz" not found (HTTP 404')
   })
 
   test('a spec passes through unread', async () => {

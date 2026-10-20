@@ -1,4 +1,4 @@
-import { hubUrl } from './hub.ts'
+import { hubUrl } from './genome.ts'
 import { savedSessionParam, sessionSpecParam } from './session.ts'
 import { version } from './version.ts'
 
@@ -23,10 +23,10 @@ export function instanceUrl(instance = PUBLIC_INSTANCE) {
 
 export interface JBrowseUrlOptions {
   /** A genomes.jbrowse.org assembly: a UCSC db name (`hg38`) or GenArk accession. */
-  hub?: string
-  /** A config.json URL, for data that is not on genomes.jbrowse.org. Not combined with `hub`. */
+  genome?: string
+  /** A config.json URL, for data that is not on genomes.jbrowse.org. Not combined with `genome`. */
   config?: string
-  /** Assembly to open. Defaults to `hub`, whose config names its assembly after it. */
+  /** Assembly to open. Defaults to `genome`, whose config names its assembly after it. */
   assembly?: string
   /**
    * Where to open: a locstring (`chr1:1,000-2,000`, several space-separated
@@ -50,12 +50,12 @@ export interface JBrowseUrlOptions {
 }
 
 /**
- * One source for the config, never a hub and a config URL. A spec or a saved
+ * One source for the config, never a genome and a config URL. A spec or a saved
  * session says which assembly, locations and tracks to open, so the URL carries
  * one of the three ways of saying so, never two.
  */
 export function assertCoherentOptions({
-  hub,
+  genome,
   config,
   spec,
   session,
@@ -63,9 +63,9 @@ export function assertCoherentOptions({
   loc,
   tracks,
 }: JBrowseUrlOptions) {
-  if (hub && config) {
+  if (genome && config) {
     throw new Error(
-      'pass a hosted hub or a config URL, not both (--hub, --config); name the assembly with --assembly',
+      'pass a hosted genome or a config URL, not both (--genome, --config); name the assembly with --assembly',
     )
   }
   if (spec && session) {
@@ -92,7 +92,7 @@ export function assertCoherentOptions({
  * takes a locstring only. `session` opens a saved session as exported.
  */
 export function jbrowseUrl({
-  hub,
+  genome,
   config,
   assembly,
   loc,
@@ -103,7 +103,7 @@ export function jbrowseUrl({
   instance,
 }: JBrowseUrlOptions) {
   assertCoherentOptions({
-    hub,
+    genome,
     config,
     spec,
     session,
@@ -117,13 +117,13 @@ export function jbrowseUrl({
       params.set(key, value)
     }
   }
-  set('config', config ?? (hub ? hubUrl(hub) : undefined))
+  set('config', config ?? (genome ? hubUrl(genome) : undefined))
   if (spec) {
     set('session', sessionSpecParam(spec))
   } else if (session) {
     set('session', savedSessionParam(session))
   } else {
-    set('assembly', assembly ?? hub)
+    set('assembly', assembly ?? genome)
     set('loc', loc)
     set('tracks', tracks?.join(','))
   }

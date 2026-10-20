@@ -86,12 +86,12 @@ describe('runBatch', () => {
   })
 
   it('resolves a fetched config once for the whole run, and copies it per record', async () => {
-    // Per record it was one network round trip for the same file — for a --hub
+    // Per record it was one network round trip for the same file — for a --genome
     // that is also one chromAlias fetch from UCSC per junction. readData mutates
     // what it is handed, so each record has to get its own copy.
     const config = { assemblies: [], tracks: [] }
     mockResolveConfigObject.mockResolvedValue(config)
-    await runBatch(opts({ hub: 'hg38', progress: steps().progress }))
+    await runBatch(opts({ genome: 'hg38', progress: steps().progress }))
     expect(mockResolveConfigObject).toHaveBeenCalledTimes(1)
     const handed = mockRenderRegion.mock.calls.map(c => c[1] as unknown)
     expect(handed).toHaveLength(2)

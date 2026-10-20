@@ -12,16 +12,17 @@ Drive a live JBrowse 2 instance with Puppeteer and screenshot it **once it has
 actually finished rendering**.
 
 ```bash
-npx @jbrowse/capture --hub hg38 --loc BRCA1 \
+npx @jbrowse/capture --genome hg38 --loc BRCA1 \
   --track hg38-ncbiRefSeqCurated --track hg38-phyloP100way -o brca1.png
 ```
 
-`--hub` names an assembly on [genomes.jbrowse.org](https://genomes.jbrowse.org),
-which hosts a ready-made JBrowse config per UCSC and GenArk genome, and `--loc`
-takes a gene name because those configs ship a text index. `--track` takes a
-trackId, the id without its assembly prefix (`clinvarMain`) or the track's
-display name; capture checks each one and the assembly against the config before
-launching a browser, and a miss fails at once with suggestions.
+`--genome` names an assembly on
+[genomes.jbrowse.org](https://genomes.jbrowse.org), which hosts a ready-made
+JBrowse config per UCSC and GenArk genome, and `--loc` takes a gene name because
+those configs ship a text index. `--track` takes a trackId, the id without its
+assembly prefix (`clinvarMain`) or the track's display name; capture checks each
+one and the assembly against the config before launching a browser, and a miss
+fails at once with suggestions.
 
 ## Knowing when JBrowse has finished rendering
 
@@ -86,14 +87,14 @@ import {
 
 // one call: launch, wait, shoot, close
 const { pending, unsettled } = await captureJBrowse({
-  hub: 'hg38',
+  genome: 'hg38',
   loc: 'BRCA1',
   tracks: ['hg38-ncbiRefSeqCurated'],
   out: 'brca1.png',
 })
 
 // or keep the page, to click things, read state back, or shoot one element
-const { browser, page } = await openJBrowse({ hub: 'mm39', loc: 'Sox2' })
+const { browser, page } = await openJBrowse({ genome: 'mm39', loc: 'Sox2' })
 const tracks = await page.evaluate(
   () => window.JBrowseSession.views[0].tracks.length,
 )
@@ -192,7 +193,7 @@ cat > callouts.json <<'JSON'
   }
 ]
 JSON
-npx @jbrowse/capture --hub hg38 --loc BRCA1 --track hg38-ncbiRefSeqCurated \
+npx @jbrowse/capture --genome hg38 --loc BRCA1 --track hg38-ncbiRefSeqCurated \
   --annotations callouts.json -o brca1.png
 ```
 
@@ -225,7 +226,7 @@ all from one browser. Each image gets a window of its own, closed after its
 screenshot, so no session state passes from one image to the next.
 
 ```bash
-jb2capture batch captures.json --hub hg38 --track hg38-ncbiRefSeqCurated
+jb2capture batch captures.json --genome hg38 --track hg38-ncbiRefSeqCurated
 ```
 
 ```json
@@ -235,7 +236,7 @@ jb2capture batch captures.json --hub hg38 --track hg38-ncbiRefSeqCurated
 ]
 ```
 
-An object names its `out` and may set `hub`, `config`, `assembly`, `loc`,
+An object names its `out` and may set `genome`, `config`, `assembly`, `loc`,
 `tracks`, `spec`, `session`, `width`, `height`, `dpr`, `fullPage` and
 `annotations`. The command-line flags are the defaults for what an object leaves
 out. `--concurrency` sets how many windows are open at once (default 4).
@@ -255,7 +256,7 @@ In a script, `captureBatch(captures, { concurrency })` takes an array of
 
 ```bash
 jb2capture list hg38 conservation   # trackIds matching a filter
-jb2capture url --hub hg38 --loc BRCA1   # just print the link, no browser
+jb2capture url --genome hg38 --loc BRCA1   # just print the link, no browser
 ```
 
 ## See also

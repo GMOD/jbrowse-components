@@ -1,6 +1,6 @@
 import { hubUrl as coreHubUrl } from '@jbrowse/core/util/fetchHub'
 
-import { hubUrl, listHubTracks } from './hub.ts'
+import { hubUrl, listHubTracks } from './genome.ts'
 
 // The mapping is copied rather than imported, and this is the
 // guard that makes the copy safe: if core's URL scheme ever moves, one of these
@@ -15,8 +15,8 @@ const HUBS = [
   'GCA_000001405.15',
 ]
 
-test.each(HUBS)('%s resolves the same as core hubUrl', hub => {
-  expect(hubUrl(hub)).toBe(coreHubUrl(hub))
+test.each(HUBS)('%s resolves the same as core hubUrl', genome => {
+  expect(hubUrl(genome)).toBe(coreHubUrl(genome))
 })
 
 test('a UCSC db name maps to /ucsc/<db>/config.json', () => {
@@ -29,12 +29,12 @@ test('a GenArk accession fans its digits into a directory tree', () => {
   )
 })
 
-test('a timed-out fetch names the hub, the URL and the budget', async () => {
+test('a timed-out fetch names the genome, the URL and the budget', async () => {
   const timedOut = new Error('The operation was aborted due to timeout')
   timedOut.name = 'TimeoutError'
   const fetchSpy = jest.spyOn(globalThis, 'fetch').mockRejectedValue(timedOut)
   await expect(listHubTracks('hg38')).rejects.toThrow(
-    'hub "hg38" could not be fetched from https://jbrowse.org/ucsc/hg38/config.json (The operation was aborted due to timeout, after 30000ms)',
+    'genome "hg38" could not be fetched from https://jbrowse.org/ucsc/hg38/config.json (The operation was aborted due to timeout, after 30000ms)',
   )
   fetchSpy.mockRestore()
 })
@@ -46,7 +46,7 @@ test('a fetch that failed for another reason does not blame the budget', async (
     .spyOn(globalThis, 'fetch')
     .mockRejectedValue(new Error('getaddrinfo ENOTFOUND jbrowse.org'))
   await expect(listHubTracks('hg38')).rejects.toThrow(
-    'hub "hg38" could not be fetched from https://jbrowse.org/ucsc/hg38/config.json (getaddrinfo ENOTFOUND jbrowse.org).',
+    'genome "hg38" could not be fetched from https://jbrowse.org/ucsc/hg38/config.json (getaddrinfo ENOTFOUND jbrowse.org).',
   )
   fetchSpy.mockRestore()
 })

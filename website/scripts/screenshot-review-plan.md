@@ -417,9 +417,10 @@ tolerance ball for "did this figure move".
   alternative. Size each part to its own content: `+append` pads the shorter
   one, so a shared height only adds dead space to the part that did not need it.
 
-- **jbrowse-img (CliSpec) gene tracks: use `--hub <genome> --track <trackId>`,
-  not a raw `--gffgz <url>`.** `--hub hg38` supplies the assembly (built-in
-  refName aliases, no `--fasta`/`--aliases` needed) plus a bonus ideogram, and
+- **jbrowse-img (CliSpec) gene tracks: use
+  `--genome <genome> --track <trackId>`, not a raw `--gffgz <url>`.**
+  `--genome hg38` supplies the assembly (built-in refName aliases, no
+  `--fasta`/`--aliases` needed) plus a bonus ideogram, and
   `--track hg38-ncbiRefSeqCurated` adds a pre-configured hosted NCBI RefSeq
   track. A raw UCSC `hg38.gff.gz` also carries RefSeqGene `match`/`region`
   features with no `Name` → they render as bare-UUID full-width bars. Find

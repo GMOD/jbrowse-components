@@ -27,18 +27,18 @@ script there are two tools:
 
 ```bash
 ## a static render
-npx @jbrowse/img --hub hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 --out brca1.png
+npx @jbrowse/img --genome hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 --out brca1.png
 
 ## the real app
-npx @jbrowse/capture --hub hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 -o brca1.png
+npx @jbrowse/capture --genome hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 -o brca1.png
 
 ## your own config, or a whole session spec
 npx @jbrowse/capture --config https://example.org/config.json --assembly mygenome \
   --loc "chr3:25,325,000-25,361,000" --track my_track -o out.png
-npx @jbrowse/capture --hub hg38 --spec spec.json -o out.png
+npx @jbrowse/capture --genome hg38 --spec spec.json -o out.png
 ```
 
-- `--hub` names a [hosted assembly](/docs/agents_hosted_data), `--config` any
+- `--genome` names a [hosted assembly](/docs/agents_hosted_data), `--config` any
   config URL, and `--loc` takes a gene name on a config with a text index.
 - `@jbrowse/capture` drives the public JBrowse Web build, so a config and its
   data have to be URLs that page may fetch.

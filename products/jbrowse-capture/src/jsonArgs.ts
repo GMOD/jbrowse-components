@@ -45,7 +45,7 @@ export function readSpec(value: string): object {
 
 export interface BatchEntry {
   out: string
-  hub?: string
+  genome?: string
   config?: string
   assembly?: string
   loc?: string

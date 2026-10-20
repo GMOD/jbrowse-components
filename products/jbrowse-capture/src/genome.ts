@@ -5,12 +5,12 @@ const BROWSE_HINT =
   'See https://genomes.jbrowse.org for the available assemblies.'
 
 // A copy of hubUrl in packages/core/src/util/fetchHub.ts, so an npx install
-// stays puppeteer-only; hub.test.ts holds the two together.
-export function hubUrl(hub: string) {
-  const genark = /^(GC[AF])_(\d{3})(\d{3})(\d{3})/.exec(hub)
+// stays puppeteer-only; genome.test.ts holds the two together.
+export function hubUrl(genome: string) {
+  const genark = /^(GC[AF])_(\d{3})(\d{3})(\d{3})/.exec(genome)
   return genark
-    ? `${HUB_HOST}/hubs/genark/${genark[1]}/${genark[2]}/${genark[3]}/${genark[4]}/${hub}/config.json`
-    : `${HUB_HOST}/ucsc/${hub}/config.json`
+    ? `${HUB_HOST}/hubs/genark/${genark[1]}/${genark[2]}/${genark[3]}/${genark[4]}/${genome}/config.json`
+    : `${HUB_HOST}/ucsc/${genome}/config.json`
 }
 
 export interface Track {
@@ -76,8 +76,11 @@ export async function listHubAssemblies(): Promise<HostedAssembly[]> {
 }
 
 /** The tracks a hosted assembly publishes, optionally narrowed by `filter`. */
-export async function listHubTracks(hub: string, filter?: string) {
-  const { tracks = [] } = (await fetchJson(hubUrl(hub), `hub "${hub}"`)) as {
+export async function listHubTracks(genome: string, filter?: string) {
+  const { tracks = [] } = (await fetchJson(
+    hubUrl(genome),
+    `genome "${genome}"`,
+  )) as {
     tracks?: Track[]
   }
   return filter ? tracksMatching(tracks, filter) : tracks

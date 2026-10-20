@@ -52,7 +52,7 @@ function fakeBrowser({ dieOn }: { dieOn?: string } = {}) {
 const launch = launchBrowser as unknown as jest.Mock
 
 const captures = ['chr1:1-100', 'chr2:1-100', 'chr3:1-100'].map(loc => ({
-  hub: 'hg38',
+  genome: 'hg38',
   loc,
 }))
 

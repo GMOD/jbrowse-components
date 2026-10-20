@@ -62,13 +62,13 @@ async function prepareOpen(options: OpenOptions) {
     ...urlOptions,
     sessionName: urlOptions.sessionName ?? 'Screenshot',
   })
-  const { spec, session, assembly, hub, tracks } = urlOptions
+  const { spec, session, assembly, genome, tracks } = urlOptions
   const opens = spec ?? (session && savedSnapshot(session))
   const sessionAssembly = opens && assemblyFromSession(opens)
   const expectedAssembly = opens
     ? sessionAssembly &&
       (await canonicalSessionAssembly(urlOptions, sessionAssembly))
-    : (assembly ?? hub)
+    : (assembly ?? genome)
   return {
     url,
     viewport: { width, height, deviceScaleFactor: dpr },

@@ -4,7 +4,7 @@ import type { ParseArgsOptionsConfig } from 'node:util'
 
 export interface ParsedArgs {
   command: 'capture' | 'batch' | 'url' | 'list'
-  hub?: string
+  genome?: string
   config?: string
   assembly?: string
   loc?: string
@@ -25,14 +25,14 @@ export interface ParsedArgs {
   help: boolean
   version: boolean
   allowUnsettled: boolean
-  /** `list`'s hub and filter, or `batch`'s manifest. Empty for the other commands. */
+  /** `list`'s genome and filter, or `batch`'s manifest. Empty for the other commands. */
   positionals: string[]
 }
 
 // flags spelled as the library's option names, so a script and a command line
 // say the same thing
 const OPTIONS = {
-  hub: { type: 'string' },
+  genome: { type: 'string' },
   config: { type: 'string' },
   assembly: { type: 'string' },
   loc: { type: 'string' },
@@ -65,7 +65,7 @@ const SUBCOMMAND_FLAGS: Record<ParsedArgs['command'], Set<string>> = {
   ),
   batch: new Set((Object.keys(OPTIONS) as Flag[]).filter(f => f !== 'out')),
   url: new Set<Flag>([
-    'hub',
+    'genome',
     'config',
     'assembly',
     'loc',

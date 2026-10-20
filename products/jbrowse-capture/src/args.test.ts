@@ -2,7 +2,7 @@ import { parseArgs } from './args.ts'
 
 test('a typical invocation', () => {
   const args = parseArgs([
-    '--hub',
+    '--genome',
     'hg38',
     '--loc',
     'BRCA1',
@@ -13,7 +13,7 @@ test('a typical invocation', () => {
     '-o',
     'out.png',
   ])
-  expect(args.hub).toBe('hg38')
+  expect(args.genome).toBe('hg38')
   expect(args.loc).toBe('BRCA1')
   expect(args.tracks).toEqual(['hg38-ncbiRefSeqCurated', 'hg38-clinvarMain'])
   expect(args.out).toBe('out.png')
@@ -58,8 +58,8 @@ test('an unknown flag is an error, not a silent no-op', () => {
 })
 
 test('a missing value is an error', () => {
-  expect(() => parseArgs(['--hub'])).toThrow(
-    "Option '--hub <value>' argument missing",
+  expect(() => parseArgs(['--genome'])).toThrow(
+    "Option '--genome <value>' argument missing",
   )
 })
 
@@ -107,7 +107,7 @@ test('a bare positional is an error', () => {
   expect(() => parseArgs(['hg38'])).toThrow("Unexpected argument 'hg38'")
 })
 
-test('list takes its hub and filter as positionals, and still rejects flags', () => {
+test('list takes its genome and filter as positionals, and still rejects flags', () => {
   const args = parseArgs(['list', 'hg38', 'conservation'])
   expect(args.command).toBe('list')
   expect(args.positionals).toEqual(['hg38', 'conservation'])
@@ -117,12 +117,12 @@ test('list takes its hub and filter as positionals, and still rejects flags', ()
 })
 
 test('a subcommand refuses a flag it does not use', () => {
-  expect(parseArgs(['url', '--hub', 'hg38']).hub).toBe('hg38')
-  expect(() => parseArgs(['url', '--hub', 'hg38', '-o', 'x.png'])).toThrow(
+  expect(parseArgs(['url', '--genome', 'hg38']).genome).toBe('hg38')
+  expect(() => parseArgs(['url', '--genome', 'hg38', '-o', 'x.png'])).toThrow(
     '-o does not apply to `jb2capture url`',
   )
-  expect(() => parseArgs(['list', '--hub', 'hg38'])).toThrow(
-    '--hub does not apply to `jb2capture list`',
+  expect(() => parseArgs(['list', '--genome', 'hg38'])).toThrow(
+    '--genome does not apply to `jb2capture list`',
   )
   expect(parseArgs(['url', '--help']).help).toBe(true)
 })
@@ -133,12 +133,12 @@ test('--annotations is a capture flag', () => {
     'callouts.json',
   )
   expect(() =>
-    parseArgs(['url', '--hub', 'hg38', '--annotations', 'callouts.json']),
+    parseArgs(['url', '--genome', 'hg38', '--annotations', 'callouts.json']),
   ).toThrow('--annotations does not apply to `jb2capture url`')
 })
 
 test('anything else is a capture', () => {
-  expect(parseArgs(['--hub', 'hg38', '-o', 'x.png']).command).toBe('capture')
+  expect(parseArgs(['--genome', 'hg38', '-o', 'x.png']).command).toBe('capture')
 })
 
 test.each(['--constructor', '--toString'])(
@@ -157,10 +157,10 @@ test('tracks is a fresh array each time', () => {
 })
 
 test('batch takes its manifest as a positional and the capture flags as defaults', () => {
-  const args = parseArgs(['batch', 'captures.json', '--hub', 'hg38'])
+  const args = parseArgs(['batch', 'captures.json', '--genome', 'hg38'])
   expect(args.command).toBe('batch')
   expect(args.positionals).toEqual(['captures.json'])
-  expect(args.hub).toBe('hg38')
+  expect(args.genome).toBe('hg38')
   expect(parseArgs(['batch', '-', '--concurrency', '8']).concurrency).toBe(8)
 })
 

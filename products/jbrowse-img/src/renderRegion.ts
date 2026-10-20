@@ -67,7 +67,7 @@ async function createModel(data: Config) {
     config: {
       assemblies: data.assemblies,
       tracks: data.tracks,
-      // carried through so --loc can navigate by gene name via the hub's Trix
+      // carried through so --loc can navigate by gene name via the genome's Trix
       // index (see navToLocStringOrSearch)
       aggregateTextSearchAdapters: data.aggregateTextSearchAdapters,
       defaultSession: data.defaultSession as { name: string } | undefined,
@@ -106,7 +106,7 @@ async function createModel(data: Config) {
 type Model = Awaited<ReturnType<typeof createModel>>
 
 // Navigate the view to --loc. A locstring (chr1:1-100) or bare refname navigates
-// directly. When the config carries a text-search index (e.g. from --hub), a
+// directly. When the config carries a text-search index (e.g. from --genome), a
 // gene name is resolved through it and the view jumps to the top hit's location.
 // We search first (rather than lean on navToLocString's own search) because on
 // multiple hits navToLocString queues an interactive picker dialog — invisible,
@@ -441,7 +441,7 @@ function resolvedShowTracks(
       // a bare `--track` used to be skipped in silence, so the track the user
       // meant to show just wasn't there
       throw new Error(
-        '--track requires a trackId (list them with "jb2export list <hub>")',
+        '--track requires a trackId (list them with "jb2export list <genome>")',
       )
     }
     return {
@@ -571,7 +571,7 @@ const renderLinear: ModeRenderer = async ctx => {
     session.addHighlight({ ...highlight, assemblyName: data.assembly.name })
   }
 
-  // Hosted trackIds from --track (present in a --hub/--config config) go first,
+  // Hosted trackIds from --track (present in a --genome/--config config) go first,
   // so they land above the file-type (--bam/--gffgz/--hic/...) tracks readData
   // built — argv order top-to-bottom, same convention as every other stacked
   // view in this CLI (synteny levels, multi-way assemblies). Both then take the
@@ -677,7 +677,7 @@ function circularDrawable(
     const track = tracks.find(t => t.trackId === trackId) ?? { trackId }
     const type = trackType(track)
     // includes the type this bundle doesn't register at all, which a
-    // --hub/--config config can easily carry (a track type from a plugin
+    // --genome/--config config can easily carry (a track type from a plugin
     // jb2export doesn't bundle) and which used to throw from inside the very
     // filter meant to skip untenable tracks
     const ok = viewCanDisplayTrack(pluginManager, supported, {
@@ -699,7 +699,7 @@ function circularDrawable(
 // `--track` and the file flags name them, the way they do for a linear or a
 // breakpoint view; every track in the config is the fallback for neither
 // naming any, which is what a `--fasta ref.fa --vcfgz sv.vcf.gz` run means.
-// Naming them is the only usable form over a --hub, whose config carries
+// Naming them is the only usable form over a --genome, whose config carries
 // hundreds of tracks and would otherwise open every one of them whole-genome —
 // and until it was read here, `--track` was parsed, warned about, and dropped.
 //
@@ -894,9 +894,9 @@ const modeRenderers: Record<ViewMode, ModeRenderer> = {
 
 /**
  * `configObject` is an already-fetched config standing in for this call's own
- * `resolveConfigObject`. Only a batch passes it: `--hub`/a URL `--config` is one
+ * `resolveConfigObject`. Only a batch passes it: `--genome`/a URL `--config` is one
  * fetch per call otherwise, so a 400-junction run made 400 requests for the same
- * file — and for a `--hub` that includes 400 chromAlias fetches from UCSC, which
+ * file — and for a `--genome` that includes 400 chromAlias fetches from UCSC, which
  * is 400 chances to hit the transient failure `navToLocOrGene` describes rather
  * than one.
  *

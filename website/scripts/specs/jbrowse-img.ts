@@ -305,7 +305,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
   ]),
 
   // Gene/feature track over the reference sequence: hosted hg38 NCBI RefSeq
-  // (--hub, --track) with --refseq adding the DNA-base + six-frame-translation
+  // (--genome, --track) with --refseq adding the DNA-base + six-frame-translation
   // sequence track below it. Zoomed to a TP53 intron/CDS boundary (not mid-exon)
   // at base level, so the gene track shows readable structure — the intron thins
   // to a line, the CDS exon begins as a solid block, and that block edge lines up
@@ -316,7 +316,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // of a stack of near-identical rows. Supersedes the old standalone `sequence`
   // refseq spec.
   cliSpec('gene_track', [
-    '--hub',
+    '--genome',
     'hg38',
     '--track',
     'hg38-ncbiRefSeqCurated',
@@ -332,7 +332,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // Hi-C contact matrix: the public hg19 demo .hic streamed from S3. The
   // triangular heatmap shows TAD structure along chr1.
   cliSpec('hic', [
-    '--hub',
+    '--genome',
     'hg19',
     '--track',
     'hg19-ncbiRefSeqCurated',
@@ -345,11 +345,11 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // Dark theme, human demo (reviewer ask): hg38 PTEN locus via --hub — a clean
+  // Dark theme, human demo (reviewer ask): hg38 PTEN locus via --genome — a clean
   // single-canonical-transcript gene (unlike TP53's isoform thicket) — a tall
   // NCBI RefSeq gene track over phyloP conservation, stock palette drawn dark.
   cliSpec('dark_theme', [
-    '--hub',
+    '--genome',
     'hg38',
     '--track',
     'hg38-ncbiRefSeqCurated',
@@ -386,7 +386,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // pivot outside the deletion doesn't group the deletion reads). The legacy
   // `alignments_readgroup` filename is kept for the doc image URL.
   cliSpec('alignments_readgroup', [
-    '--hub',
+    '--genome',
     'hg38',
     '--track',
     'hg38-ncbiRefSeqCurated',
@@ -474,7 +474,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // LinearMultiSampleVariantDisplay. Each column is a variant, each row a
   // sample; alt genotypes paint over the reference background. This draws the
   // real 1000 Genomes phase-3 chr11 callset (2,504 samples) over the HBB
-  // β-globin locus, with the hosted NCBI RefSeq gene track (via --hub/--track)
+  // β-globin locus, with the hosted NCBI RefSeq gene track (via --genome/--track)
   // for context — common variants read as solid vertical bands, rarer ones as
   // sparse speckle. Matches the README command exactly.
   //
@@ -483,7 +483,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // verified by rendering both display:multivariant and display:multivariantmatrix
   // against the phase-3 chr11 VCF.)
   cliSpec('multisample_variants', [
-    '--hub',
+    '--genome',
     'hg19',
     '--track',
     'hg19-ncbiRefSeqCurated',
@@ -500,14 +500,14 @@ export const jbrowseImgSpecs: CliSpec[] = [
 
   // Sashimi: sashimi:auto overlays splice-junction arcs on the coverage band,
   // sized by junction read depth. Public strand-specific paired-end RNA-seq
-  // (hg19) over B2M via --hub — the long first intron reads as one big arc, the
+  // (hg19) over B2M via --genome — the long first intron reads as one big arc, the
   // downstream exon junctions as smaller arcs. coverageHeight makes the
   // coverage/sashimi band tall enough for the arcs to be legible;
   // featureHeight:super-compact packs the supporting reads into a thin band
   // below so the exon-by-exon read coverage that feeds the junctions is visible
   // without the pileup dominating the frame.
   cliSpec('sashimi_junctions', [
-    '--hub',
+    '--genome',
     'hg19',
     '--track',
     'hg19-ncbiRefSeqCurated',
@@ -537,7 +537,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // the two breakpoints show as clipped-read columns with the connecting arcs
   // between them.
   cliSpec('sv_read_arcs', [
-    '--hub',
+    '--genome',
     'hg38',
     '--bam',
     HG00151_ONT_1000G_BAM,
@@ -570,12 +570,12 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // quantitative track. The sources JSON (data/scatac_catlas.json, 16 curated
   // subadapters carrying per-row name/color/group) is the CATlas single-cell
   // ATAC accessibility-by-cell-type data (Zhang et al 2021), rendered over GCG
-  // (glucagon) via --hub hg38 + the RefSeq gene track. Alpha (glucagon) cells —
+  // (glucagon) via --genome hg38 + the RefSeq gene track. Alpha (glucagon) cells —
   // the pancreatic cell type that expresses GCG — show strong accessibility
   // across the locus while the other 15 cell types stay quiet on the shared
   // autoscale: cell-type-specific chromatin accessibility at a marker gene.
   cliSpec('scatac_multiwiggle', [
-    '--hub',
+    '--genome',
     'hg38',
     '--track',
     'hg38-ncbiRefSeqCurated',
@@ -617,7 +617,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // `--hub` + repeated `--track`: the whole assembly and its hosted trackIds
+  // `--genome` + repeated `--track`: the whole assembly and its hosted trackIds
   // come from genomes.jbrowse.org, so the command names only what to show.
   // 20 kb rather than the 100 kb the README used to print: ClinVar's variant
   // density puts a 100 kb window over the track's own render limit, so half the
@@ -625,7 +625,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // gate and was tried — it draws, but at 100 kb the variants are bare ticks,
   // where 20 kb labels each one with its base change. Narrowing says more.
   cliSpec('hub_tracks', [
-    '--hub',
+    '--genome',
     'hg19',
     '--track',
     'hg19-ncbiRefSeqCurated',
@@ -640,7 +640,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // A gene name rather than a locstring: resolved through the hub's Trix index
   // (navToLocStringOrSearch), which is the only reason `--loc BRCA1` works.
   cliSpec('gene_name_search', [
-    '--hub',
+    '--genome',
     'hg19',
     '--track',
     'ncbiRefSeqCurated',

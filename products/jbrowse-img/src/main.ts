@@ -58,7 +58,7 @@ async function main() {
     args.includes('-h')
   ) {
     // ahead of `list`, so `jb2export list --help` prints help rather than going
-    // to the network for a hub literally named "--help"
+    // to the network for a genome literally named "--help"
     console.log(
       first === 'batch'
         ? buildBatchHelp(scriptName)
@@ -66,7 +66,7 @@ async function main() {
     )
   } else if (first === 'list') {
     // a text-only discovery command (no rendering): `list` prints the hosted
-    // assemblies, `list <hub> [filter]` prints that hub's tracks
+    // assemblies, `list <genome> [filter]` prints that genome's tracks
     console.log(await runList(argv.slice(1)))
   } else if (args.includes('--version') || args.includes('-v')) {
     const { version } = JSON.parse(
@@ -134,7 +134,7 @@ async function main() {
       fasta: getString(rest, 'fasta'),
       aliases: getString(rest, 'aliases'),
       assembly: getString(rest, 'assembly'),
-      hub: getString(rest, 'hub'),
+      genome: getString(rest, 'genome'),
       config: getString(rest, 'config'),
       session: getString(rest, 'session'),
       showTracks,

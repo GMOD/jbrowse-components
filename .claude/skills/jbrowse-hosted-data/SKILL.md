@@ -39,7 +39,7 @@ GenArk accession  https://jbrowse.org/hubs/genark/<GCA|GCF>/<3>/<3>/<3>/<accessi
 
 GenArk fans the first nine digits into three directories: `GCA_964188535.1` ->
 `.../genark/GCA/964/188/535/GCA_964188535.1/config.json`. Both are wrapped by
-the `--hub` flag below, so usually you name the assembly and never build the
+the `--genome` flag below, so usually you name the assembly and never build the
 URL.
 
 `https://jbrowse.org/ucsc/all.json` is every UCSC assembly in one config, with
@@ -66,10 +66,11 @@ curl -s https://genomes.jbrowse.org/searchIndex.json |
 # GCF_040938575.1   axolotl (Mex_15411 2024 refseq)  UKY_AmexF1_1
 ```
 
-The accession is the `--hub` name; the config URL follows from the scheme above.
-7.5 MB, so filter it with `jq` — do not read it into context. `source == "ucsc"`
-means a UCSC db exists for that row; prefer the db name, its track set is
-richer. `ncbiStatusBits & 1` marks NCBI's designated reference for the species.
+The accession is the `--genome` name; the config URL follows from the scheme
+above. 7.5 MB, so filter it with `jq` — do not read it into context.
+`source == "ucsc"` means a UCSC db exists for that row; prefer the db name, its
+track set is richer. `ncbiStatusBits & 1` marks NCBI's designated reference for
+the species.
 
 ## Find the track
 
@@ -93,13 +94,13 @@ one** — a trackId that does not exist opens nothing and reports nothing.
 
 ```bash
 ## a static image, no browser
-npx @jbrowse/img --hub hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 --width 1200 --out out.png
+npx @jbrowse/img --genome hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 --width 1200 --out out.png
 
 ## a link
-npx @jbrowse/capture url --hub hg38 --loc BRCA1 --track hg38-ncbiRefSeqCurated
+npx @jbrowse/capture url --genome hg38 --loc BRCA1 --track hg38-ncbiRefSeqCurated
 
 ## the real app, screenshotted once it has drawn
-npx @jbrowse/capture --hub hg38 --loc BRCA1 --track hg38-ncbiRefSeqCurated -o out.png
+npx @jbrowse/capture --genome hg38 --loc BRCA1 --track hg38-ncbiRefSeqCurated -o out.png
 ```
 
 The link is a plain
@@ -145,7 +146,7 @@ data as a session track, nothing written to disk.
 ```
 
 ```bash
-npx @jbrowse/capture --hub hg38 --spec spec.json -o mine.png
+npx @jbrowse/capture --genome hg38 --spec spec.json -o mine.png
 ```
 
 `assemblyNames` names the hub's assembly; the view's `tracks` mixes a hosted id

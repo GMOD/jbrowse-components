@@ -5,7 +5,7 @@ import type { Config } from './types.ts'
 
 // genomes.jbrowse.org hosts a self-contained config.json per assembly: the
 // assembly (remote 2bit sequence, refNameAliases, cytobands, geneticCodes) plus
-// its full track set, all as remote URIs. `--hub` pulls one of these so a user
+// its full track set, all as remote URIs. `--genome` pulls one of these so a user
 // gets cytobands/aliasing/hosted trackIds without hand-wiring --fasta/--aliases.
 // The fetch is core's fetchHub (shared with the embedded mounts), which also
 // stamps each relative URI with the config URL as baseUri.
@@ -36,26 +36,26 @@ async function fetchConfig(url: string) {
   return config
 }
 
-// Fetch the config object when it must come off the network: a --hub token
+// Fetch the config object when it must come off the network: a --genome token
 // (resolved to its jbrowse.org URL) or a --config that is itself a URL.
 // Returns undefined when neither applies, so readData falls back to its local
 // --config file read.
 export async function resolveConfigObject({
-  hub,
+  genome,
   config,
 }: {
-  hub?: string
+  genome?: string
   config?: string
 }) {
-  if (hub && config) {
+  if (genome && config) {
     throw new Error(
-      'pass --hub or --config, not both (a --hub is a complete config)',
+      'pass --genome or --config, not both (a --genome is a complete config)',
     )
   }
-  if (hub) {
+  if (genome) {
     // the same open-record force the --config read applies: `assembly` is
     // filled in by readData, which is the only consumer
-    return (await fetchHub(hub, {
+    return (await fetchHub(genome, {
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     })) as unknown as Config
   }

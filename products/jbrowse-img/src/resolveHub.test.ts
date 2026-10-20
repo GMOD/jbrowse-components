@@ -16,9 +16,9 @@ test('GenArk accession splits into triplets under /hubs/genark', () => {
   )
 })
 
-test('--hub and --config together is an error, not a silent hub win', async () => {
+test('--genome and --config together is an error, not a silent genome win', async () => {
   await expect(
-    resolveConfigObject({ hub: 'hg19', config: 'jbrowse.json' }),
+    resolveConfigObject({ genome: 'hg19', config: 'jbrowse.json' }),
   ).rejects.toThrow(/not both/)
 })
 

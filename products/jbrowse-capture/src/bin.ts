@@ -2,7 +2,7 @@
 import { parseArgs } from './args.ts'
 import { captureBatch, captureJBrowse } from './capture.ts'
 import { resolveAgainstConfig } from './catalog.ts'
-import { listHubAssemblies, listHubTracks, trackName } from './hub.ts'
+import { listHubAssemblies, listHubTracks, trackName } from './genome.ts'
 import { readAnnotations, readBatch, readJson, readSpec } from './jsonArgs.ts'
 import { PUBLIC_INSTANCE, jbrowseUrl } from './url.ts'
 import { version } from './version.ts'
@@ -15,13 +15,13 @@ USAGE
   jb2capture [flags] --out <file.png>    open a view, wait for it, screenshot it
   jb2capture batch <json|path|-> [flags] screenshot many views from one browser
   jb2capture url [flags]                 print the URL instead of launching a browser
-  jb2capture list [hub] [filter]         list hosted assemblies, or one's trackIds
+  jb2capture list [genome] [filter]      list hosted genomes, or one genome's trackIds
 
 WHAT TO SHOW
-  --hub <name>          a genomes.jbrowse.org assembly: a UCSC db name (hg38, mm39)
+  --genome <name>       a genomes.jbrowse.org genome: a UCSC db name (hg38, mm39)
                         or a GenArk accession (GCA_.../GCF_...)
   --config <url>        a config.json URL, for data that is not hosted there
-  --assembly <name>     assembly to open (defaults to --hub)
+  --assembly <name>     assembly to open (defaults to --genome)
   --loc <locstring>     chr1:1,000-2,000, several space-separated, or a gene name
                         where the config has a text index (hosted ones do)
   --track <trackId>     a track to open, by trackId or name; repeat for several
@@ -52,7 +52,7 @@ WAITING
 
 BATCH
   The manifest is a JSON array with one object per image. Each names its "out"
-  and may set hub, config, assembly, loc, tracks, spec, session, width, height,
+  and may set genome, config, assembly, loc, tracks, spec, session, width, height,
   dpr, fullPage and annotations; the flags above are the defaults for what an
   object leaves out. Every image gets a page of its own in one shared browser.
   A failed image is reported and the rest carry on; the exit code is 1 if any
@@ -69,7 +69,7 @@ OTHER
 
 EXAMPLES
   ## RefSeq genes and ClinVar at a gene, from hosted data, no setup
-  jb2capture --hub hg38 --loc BRCA1 \\
+  jb2capture --genome hg38 --loc BRCA1 \\
     --track hg38-ncbiRefSeqCurated --track hg38-clinvarMain -o brca1.png
 
   ## find the trackIds first
@@ -77,7 +77,7 @@ EXAMPLES
 
   ## one image per locus, from one browser
   jb2capture batch '[{"loc":"BRCA1","out":"brca1.png"},{"loc":"TP53","out":"tp53.png"}]' \\
-    --hub hg38 --track hg38-ncbiRefSeqCurated
+    --genome hg38 --track hg38-ncbiRefSeqCurated
 
   ## your own config, two loci side by side
   jb2capture --config https://example.org/config.json --assembly mydata \\
@@ -86,7 +86,7 @@ EXAMPLES
 
 function urlOptions(args: ParsedArgs) {
   return {
-    hub: args.hub,
+    genome: args.genome,
     config: args.config,
     assembly: args.assembly,
     loc: args.loc,
@@ -169,8 +169,8 @@ async function runBatch(args: ParsedArgs) {
 }
 
 async function runList(positionals: string[]) {
-  const [hub, filter] = positionals
-  if (!hub) {
+  const [genome, filter] = positionals
+  if (!genome) {
     const assemblies = await listHubAssemblies()
     const pad = Math.max(...assemblies.map(a => a.name.length))
     for (const a of assemblies) {
@@ -178,18 +178,18 @@ async function runList(positionals: string[]) {
       console.log(`  ${a.name.padEnd(pad)}  ${about}`)
     }
     console.log(
-      '\nGenArk accessions (GCA_…/GCF_…) work as --hub too; browse them at ' +
+      '\nGenArk accessions (GCA_…/GCF_…) work as --genome too; browse them at ' +
         "https://genomes.jbrowse.org. List one assembly's tracks with " +
         '`jb2capture list <name> [filter]`.',
     )
     return
   }
-  const tracks = await listHubTracks(hub, filter)
+  const tracks = await listHubTracks(genome, filter)
   if (!tracks.length) {
     throw new Error(
       filter
-        ? `no track in ${hub} matches "${filter}"`
-        : `${hub} publishes no tracks`,
+        ? `no track in ${genome} matches "${filter}"`
+        : `${genome} publishes no tracks`,
     )
   }
   const pad = Math.min(60, Math.max(...tracks.map(t => t.trackId.length)))

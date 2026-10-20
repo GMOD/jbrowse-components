@@ -61,7 +61,7 @@ export interface Opts {
   // (hg19, mm10) or a GenArk accession (GCA_/GCF_...). Supplies the assembly
   // (sequence, cytobands, refNameAliases, geneticCodes) plus hosted trackIds
   // referenceable via --track. See resolveHub.ts.
-  hub?: string
+  genome?: string
   fasta?: string
   aliases?: string
   cytobands?: string
@@ -97,7 +97,7 @@ export interface Opts {
   // sub-views and level-indexed tracks directly. Assemblies and synteny-track
   // configs it references by name come from --config. See urlparams.md.
   spec?: string
-  // Hosted trackIds (from --hub/--config) to show in a linear view, each with
+  // Hosted trackIds (from --genome/--config) to show in a linear view, each with
   // optional display modifiers — same [key, [trackId, ...opts]] shape as a
   // track-type flag. See renderRegion/applyDisplayOpts.
   showTracks?: Entry[]
@@ -127,7 +127,7 @@ export interface Config {
   // Tracks to open in a linear view, in argv order. Undefined for a config that
   // readData didn't build from track flags.
   openTracks?: OpenTrack[]
-  // Trix (or other) text-search adapters, e.g. from a --hub config, that let
+  // Trix (or other) text-search adapters, e.g. from a --genome config, that let
   // --loc navigate by gene name. Passed through to createViewState.
   aggregateTextSearchAdapters?: TextSearchAdapter[]
   // Per-assembly location strings (aligned with `assemblies`) for comparative

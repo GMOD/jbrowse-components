@@ -3,12 +3,12 @@ import path from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-// Offline coverage of the --hub/--track wiring: a local config fixture exercises
+// Offline coverage of the --genome/--track wiring: a local config fixture exercises
 // the same readData -> renderLinear -> resolveTrackId/configTrackCategory path
-// that a fetched --hub config drives, without touching the network. (The Trix
+// that a fetched --genome config drives, without touching the network. (The Trix
 // gene-name search path needs a hosted index, so it's verified manually.)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const config = path.join(__dirname, '../data/volvox-hub.config.json')
+const config = path.join(__dirname, '../data/volvox-genome.config.json')
 
 const { setupEnv, renderRegion } = await import('../src/index.ts')
 setupEnv()

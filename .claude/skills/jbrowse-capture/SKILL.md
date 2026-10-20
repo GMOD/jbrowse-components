@@ -44,15 +44,15 @@ doc. `@jbrowse/img` saves machinery and timing; reading what actually rendered
 is a manual step both tools share equally.
 
 ```bash
-npx @jbrowse/img --hub hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 --out out.png
-npx @jbrowse/capture --hub hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 -o out.png
+npx @jbrowse/img --genome hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 --out out.png
+npx @jbrowse/capture --genome hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 -o out.png
 ```
 
-Both take `--hub` (a hosted assembly), `--config <url>`, `--loc` (locstring, or
-a gene name where the config has a text index), and repeatable `--track`. Both
-take a session spec as `--spec <file.json>`, and `--session <file.json>` opens a
-session saved with File → Export session. `npx @jbrowse/capture --help` for the
-rest.
+Both take `--genome` (a hosted assembly), `--config <url>`, `--loc` (locstring,
+or a gene name where the config has a text index), and repeatable `--track`.
+Both take a session spec as `--spec <file.json>`, and `--session <file.json>`
+opens a session saved with File → Export session. `npx @jbrowse/capture --help`
+for the rest.
 
 ## Where the app comes from
 
@@ -146,14 +146,14 @@ import {
 
 // launch, wait, shoot, close
 const { unsettled, tooLarge } = await captureJBrowse({
-  hub: 'hg38',
+  genome: 'hg38',
   loc: 'BRCA1',
   tracks: ['hg38-ncbiRefSeqCurated'],
   out: 'brca1.png',
 })
 
 // or keep the page to interact with it
-const { browser, page } = await openJBrowse({ hub: 'mm39', loc: 'Sox2' })
+const { browser, page } = await openJBrowse({ genome: 'mm39', loc: 'Sox2' })
 await page.click('[data-testid="track_menu_icon"]')
 await page.screenshot({ path: 'menu.png' })
 await browser.close()

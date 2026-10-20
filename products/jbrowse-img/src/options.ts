@@ -121,14 +121,14 @@ const optionDefs: OptionDef[] = [
     description: 'Path to assembly JSON (or "-" for stdin) or name in config',
   },
   {
-    name: 'hub',
+    name: 'genome',
     description:
       'Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)',
   },
   {
     name: 'track',
     description:
-      'Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)',
+      'Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)',
   },
   {
     name: 'config',
@@ -138,7 +138,7 @@ const optionDefs: OptionDef[] = [
   {
     name: 'loc',
     description:
-      'Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)',
+      'Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome)',
   },
   {
     name: 'out',
@@ -283,7 +283,7 @@ const examples: [string, string][] = [
     'Custom track height and strand coloring',
   ],
   [
-    '--hub hg19 --track hg19-ncbiRefSeqCurated --loc chr1:1-100000 --out out.svg',
+    '--genome hg19 --track hg19-ncbiRefSeqCurated --loc chr1:1-100000 --out out.svg',
     'Pull the hg19 config from genomes.jbrowse.org and show a hosted track',
   ],
   [
@@ -332,7 +332,7 @@ const breakpointExamples: [string, string][] = [
     'Both sides of one breakend, with the reads that cross it drawn between',
   ],
   [
-    'breakpoint --hub hg38 --bam tumor.bam --loc chr3:25,358,000-25,361,000 --loc chr10:58,716,500-58,718,500 --loc chr12:72,272,000-72,275,000 --out chain.png',
+    'breakpoint --genome hg38 --bam tumor.bam --loc chr3:25,358,000-25,361,000 --loc chr10:58,716,500-58,718,500 --loc chr12:72,272,000-72,275,000 --out chain.png',
     'A multi-hop chain: one panel per locus, in the order the reads cross them',
   ],
   [
@@ -643,15 +643,15 @@ export function buildBatchHelp(scriptName: string) {
         'A contact sheet of every junction in a callset',
       ],
       [
-        'batch --vcf calls.vcf.gz --hub hg38 --bam tumor.bam --limit 20',
+        'batch --vcf calls.vcf.gz --genome hg38 --bam tumor.bam --limit 20',
         'The first 20, to check the framing before committing to the whole run',
       ],
       [
-        'batch --vcf snvs.vcf.gz --hub hg38 --bam tumor.bam --passOnly',
+        'batch --vcf snvs.vcf.gz --genome hg38 --bam tumor.bam --passOnly',
         'Small variants at base resolution, reads with each variant sorted to the top',
       ],
       [
-        'batch --bedpe linx_links.bedpe --hub hg38 --bam tumor.bam',
+        'batch --bedpe linx_links.bedpe --genome hg38 --bam tumor.bam',
         'The same from a BEDPE, for a caller whose output is not a VCF',
       ],
     ]),
@@ -745,7 +745,7 @@ export function buildHelp(
     `Usage: ${scriptName} [options]`,
     `       ${scriptName} <${subcommandNames.join('|')}> [options]`,
     `       ${scriptName} batch --vcf <file> [options]`,
-    `       ${scriptName} list [hub] [filter]`,
+    `       ${scriptName} list [genome] [filter]`,
     '',
     'Options:',
     ...formatOpts(optionDefs, pad),
@@ -761,7 +761,7 @@ export function buildHelp(
     '',
     `Whole callsets: "${scriptName} batch --vcf calls.vcf.gz" writes one image per record (run "${scriptName} batch --help")`,
     '',
-    `Discovery: "${scriptName} list" lists genomes.jbrowse.org assemblies; "${scriptName} list <hub> [filter]" lists a hub's tracks`,
+    `Discovery: "${scriptName} list" lists genomes.jbrowse.org assemblies; "${scriptName} list <genome> [filter]" lists a genome's tracks`,
   ].join('\n')
 }
 

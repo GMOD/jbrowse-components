@@ -368,7 +368,7 @@ async function renderRows(
 ) {
   const { outDir, flank } = opts
   // Fetched ONCE for the whole run, where it used to be once per record: a
-  // --hub or a URL --config is a network round trip, and re-resolving it per
+  // --genome or a URL --config is a network round trip, and re-resolving it per
   // junction is the cost this subcommand exists to avoid. Copied per record
   // because readData mutates what it is handed.
   const configObject = await resolveConfigObject(opts)

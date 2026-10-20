@@ -45,8 +45,8 @@ GenArk accession https://jbrowse.org/hubs/genark/<GCA|GCF>/<3>/<3>/<3>/<accessio
 
 - The GenArk path fans the first nine digits of the accession into three
   directories.
-- The `--hub` flag on `@jbrowse/img` and `@jbrowse/capture` wraps the scheme, so
-  there you name the assembly and never see the URL.
+- The `--genome` flag on `@jbrowse/img` and `@jbrowse/capture` wraps the scheme,
+  so there you name the assembly and never see the URL.
 - `https://jbrowse.org/ucsc/all.json` is the union of the per-database configs,
   with **both** directions of every pairwise liftOver (`hg38_to_mm39_liftOver`
   and `mm39_to_hg38_liftOver`, each naming both assemblies). Use it for a
@@ -80,8 +80,8 @@ GCF_040938575.1   axolotl (Mex_15411 2024 refseq)  UKY_AmexF1_1
 GCA_040938575.1   axolotl (Mex_15411 2024 genbank) UKY_AmexF1_1
 ```
 
-- The accession is the `--hub` name, and the config URL follows from it by the
-  scheme above.
+- The accession is the `--genome` name, and the config URL follows from it by
+  the scheme above.
 - It is one large file, so filter it with a tool rather than reading it into
   context.
 - Two fields distinguish near-duplicates: `source` is `ucsc` for a row that also
@@ -129,7 +129,7 @@ curl -s https://jbrowse.org/ucsc/hg38/config.json |
   view with nothing authored. `&tracks=` adds to the hub's own default session
   rather than replacing it, so the view opens with the tracks you named plus
   whichever the config already shows; a session spec gives exact control.
-- `npx @jbrowse/capture url --hub hg38 --loc BRCA1 --track hg38-ncbiRefSeqCurated`
+- `npx @jbrowse/capture url --genome hg38 --loc BRCA1 --track hg38-ncbiRefSeqCurated`
   builds that link, correctly encoded, without launching anything.
 
 ```text
@@ -139,7 +139,7 @@ https://jbrowse.org/code/jb2/latest/?config=https://jbrowse.org/ucsc/hg38/config
 As an image, with no browser at all:
 
 ```bash
-npx @jbrowse/img --hub hg38 --track hg38-ncbiRefSeqCurated --track hg38-phyloP100way \
+npx @jbrowse/img --genome hg38 --track hg38-ncbiRefSeqCurated --track hg38-phyloP100way \
   --loc BRCA1 --width 1200 --out brca1.png
 ```
 
@@ -177,8 +177,9 @@ builds no assembly.
 - The view's `tracks` list mixes a hosted `trackId` with the one just defined.
 - In the app the same object goes to `jb.loadSessionSpec`, and for one file with
   no spec `jb.addTrack({ location })` infers the track type from the extension.
-- From a script, `npx @jbrowse/capture --hub hg38 --spec spec.json -o mine.png`
-  opens it, or `@jbrowse/capture url` prints it as a link.
+- From a script,
+  `npx @jbrowse/capture --genome hg38 --spec spec.json -o mine.png` opens it, or
+  `@jbrowse/capture url` prints it as a link.
 - Your file must be reachable by the browser: a public URL with CORS enabled, or
   a local server.
 - Its refNames must match the assembly or one of the hub's aliases, so a VCF

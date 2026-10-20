@@ -4,8 +4,8 @@ import { trackMatches, trackName, trackType } from './trackFields.ts'
 import type { Track } from './types.ts'
 
 // `jb2export list` discovery: print the assemblies hosted on
-// genomes.jbrowse.org, or the tracks inside one hub's config, so a user can find
-// the --hub name and --track ids without leaving the terminal. The formatting is
+// genomes.jbrowse.org, or the tracks inside one genome's config, so a user can find
+// the --genome name and --track ids without leaving the terminal. The formatting is
 // split from the fetch so it's unit-testable without the network.
 
 // UCSC genome-list metadata (jbrowse.org/ucsc/list.json), keyed by db name.
@@ -29,12 +29,12 @@ export function formatAssemblies(genomes: Record<string, UcscGenome>) {
     `Assemblies on genomes.jbrowse.org (${names.length}):`,
     ...lines,
     '',
-    'Render one:      jb2export --hub <name> --loc <region> --out out.svg',
+    'Render one:      jb2export --genome <name> --loc <region> --out out.svg',
     'List its tracks: jb2export list <name> [filter]',
   ].join('\n')
 }
 
-export function formatTracks(hub: string, tracks: Track[], filter?: string) {
+export function formatTracks(genome: string, tracks: Track[], filter?: string) {
   const needle = filter?.toLowerCase()
   const matched = needle ? tracks.filter(t => trackMatches(t, needle)) : tracks
   const pad = Math.min(60, Math.max(0, ...matched.map(t => t.trackId.length)))
@@ -46,10 +46,10 @@ export function formatTracks(hub: string, tracks: Track[], filter?: string) {
     ? `${matched.length} of ${tracks.length} matching "${filter}"`
     : `${matched.length}`
   return [
-    `Tracks in ${hub} (${count}):`,
+    `Tracks in ${genome} (${count}):`,
     ...lines,
     '',
-    `Show one: jb2export --hub ${hub} --track <trackId> --loc <region> --out out.svg`,
+    `Show one: jb2export --genome ${genome} --track <trackId> --loc <region> --out out.svg`,
   ].join('\n')
 }
 
@@ -63,13 +63,13 @@ async function fetchJson(url: string, context: string) {
   return res.json() as Promise<unknown>
 }
 
-// `jb2export list` -> assemblies; `jb2export list <hub> [filter]` -> that hub's
+// `jb2export list` -> assemblies; `jb2export list <genome> [filter]` -> that genome's
 // tracks. Returns the text to print.
 export async function runList(args: string[]) {
-  const [hub, filter] = args
-  if (hub) {
-    const config = await resolveConfigObject({ hub })
-    return formatTracks(hub, config?.tracks ?? [], filter)
+  const [genome, filter] = args
+  if (genome) {
+    const config = await resolveConfigObject({ genome })
+    return formatTracks(genome, config?.tracks ?? [], filter)
   }
   const data = (await fetchJson(LIST_URL, 'Failed to fetch assembly list')) as {
     ucscGenomes?: Record<string, UcscGenome>

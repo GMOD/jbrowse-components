@@ -15,7 +15,7 @@ export function trackType(track: Track) {
 
 // Substring match on a track's id or display name, case-insensitively. The one
 // definition of "does this track match what the user typed", shared by the
-// `list <hub> <filter>` search and the near-match suggestions resolveTrackId
+// `list <genome> <filter>` search and the near-match suggestions resolveTrackId
 // offers when a --track token misses, so both answer the same question.
 export function trackMatches(track: Track, lowercaseNeedle: string) {
   return (

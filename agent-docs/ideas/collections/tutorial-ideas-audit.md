@@ -29,7 +29,7 @@ upload.
 **On hg38, reach for the hub before hosting anything.**
 `tutorials/mappability_qc.md` is the worked example: what looked like an
 hg19-only story off `config_demo.json` is a richer hg38 one off
-`jbrowse.org/ucsc/hg38/config.json`. `jb2export --hub hg38 --track hg38-<id>`
+`jbrowse.org/ucsc/hg38/config.json`. `jb2export --genome hg38 --track hg38-<id>`
 is the same catalog from the CLI, and `specs/ld.ts`, `specs/popgen.ts` and
 `specs/qc.ts` show the spec form. A `demos/<name>/config.json` earns its keep
 only for a set the hub does not assemble: `uniprot_hg38` (34 tracks in one

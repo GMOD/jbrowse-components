@@ -98,7 +98,7 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 
 ### Hosted assemblies (genomes.jbrowse.org)
 
-`--hub <name>` pulls a whole assembly config from
+`--genome <name>` pulls a whole assembly config from
 [genomes.jbrowse.org](https://genomes.jbrowse.org), supplying the sequence,
 cytobands (shown in the overview ideogram), and refName aliasing in place of
 `--fasta`/`--aliases`/`--cytobands`. `<name>` is either a UCSC database name
@@ -106,10 +106,10 @@ cytobands (shown in the overview ideogram), and refName aliasing in place of
 
 ```bash
 ## refName aliasing comes from the hosted config: "1" resolves to chr1
-jb2export --hub hg19 --loc 1:1,000,000-1,100,000 --out out.svg
+jb2export --genome hg19 --loc 1:1,000,000-1,100,000 --out out.svg
 
 ## a GenArk accession
-jb2export --hub GCA_964188535.1 --loc <contig>:1-100000 --out out.svg
+jb2export --genome GCA_964188535.1 --loc <contig>:1-100000 --out out.svg
 ```
 
 Every track in the hosted config can be shown by its trackId with `--track`,
@@ -119,8 +119,9 @@ flags (see [Track modifiers](#track-modifiers)):
 <!-- jb2export: hub_tracks -->
 
 ```bash
-jb2export --hub hg19 --track hg19-ncbiRefSeqCurated --track hg19-clinvarMain \
-  --loc chr1:1,020,000-1,040,000 --width 1200 --out hub_tracks.png
+jb2export --genome hg19 --track hg19-ncbiRefSeqCurated \
+  --track hg19-clinvarMain --loc chr1:1,020,000-1,040,000 --width 1200 \
+  --out hub_tracks.png
 ```
 
 <Figure src="/img/jbrowse-img/hub_tracks.png" caption="NCBI RefSeq genes and ClinVar variants at the start of hg19 chromosome 1, both named by trackId from the hosted hg19 hub" />
@@ -132,7 +133,7 @@ track's display name, and a token that doesn't match anything errors with the
 closest trackIds:
 
 ```console
-$ jb2export --hub hg19 --track clinvar ...
+$ jb2export --genome hg19 --track clinvar ...
 Error: --track "clinvar" not found in the config. Did you mean: hg19-clinvarMain,
 hg19-clinvarCnv, hg19-dbSnp155ClinVar, ...?
 ```
@@ -143,7 +144,7 @@ Hosted configs also include a gene text-search index, so `--loc` accepts a
 <!-- jb2export: gene_name_search -->
 
 ```bash
-jb2export --hub hg19 --track ncbiRefSeqCurated --loc BRCA1 --width 1200 \
+jb2export --genome hg19 --track ncbiRefSeqCurated --loc BRCA1 --width 1200 \
   --out gene_name_search.png
 ```
 
@@ -153,13 +154,13 @@ jb2export --hub hg19 --track ncbiRefSeqCurated --loc BRCA1 --width 1200 \
 `1:1,000,000-1,100,000`, or `all`); a name that isn't a locstring is looked up
 in the index and the view jumps to the top hit.
 
-The `list` subcommand prints hub names and trackIds:
+The `list` subcommand prints genome names and trackIds:
 
 ```bash
 ## every assembly on genomes.jbrowse.org (name — organism — description)
 jb2export list
 
-## every track in a hub (trackId, type, name)
+## every track in a genome (trackId, type, name)
 jb2export list hg19
 
 ## just the tracks whose id or name matches a filter
@@ -244,7 +245,7 @@ dip) is visible in the pileup:
 <!-- jb2export: alignments_readgroup -->
 
 ```bash
-jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:55 \
+jb2export --genome hg38 --track hg38-ncbiRefSeqCurated height:55 \
   --bam https://jbrowse.org/demos/cgiab/HG008-T_chr10_CUZD1_deletion.bam sort:base height:420 \
   --loc chr10:122,831,700-122,840,800 --width 1200 \
   --out alignments_readgroup.png
@@ -300,7 +301,7 @@ closely-spaced downstream exons as smaller arcs, with the spliced read pairs
 <!-- jb2export: sashimi_junctions -->
 
 ```bash
-jb2export --hub hg19 --track hg19-ncbiRefSeqCurated height:90 \
+jb2export --genome hg19 --track hg19-ncbiRefSeqCurated height:90 \
   --bam https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam sashimi:auto coverage.height=170 scales.y.type=log featureHeight:super-compact height:420 \
   --loc B2M --width 1400 --out sashimi_junctions.png
 ```
@@ -323,7 +324,7 @@ HG00151 (long reads streamed from the 1000G-ONT S3):
 <!-- jb2export: sv_read_arcs -->
 
 ```bash
-jb2export --hub hg38 \
+jb2export --genome hg38 \
   --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:down unit=chain color.field=pairOrientation facet=split coverage.height=80 height:560 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
@@ -483,10 +484,10 @@ each row):
 
 ```bash
 ## quick shorthand: a comma-separated file list, one row per file
-jb2export --hub hg38 --multiwig a.bw,b.bw,c.bw height:300 --loc GAPDH --out multi.png
+jb2export --genome hg38 --multiwig a.bw,b.bw,c.bw height:300 --loc GAPDH --out multi.png
 
 ## curated rows: a JSON sources file (name/color/group per subtrack)
-jb2export --hub hg38 --multiwig sources.json height:520 --loc GCG --out multi.png
+jb2export --genome hg38 --multiwig sources.json height:520 --loc GCG --out multi.png
 ```
 
 The example below renders the CATlas single-cell ATAC accessibility-by-cell-type
@@ -500,7 +501,7 @@ the other 15 cell types show little signal on the shared scale:
 <!-- jb2export: scatac_multiwiggle -->
 
 ```bash
-jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:60 \
+jb2export --genome hg38 --track hg38-ncbiRefSeqCurated height:60 \
   --multiwig data/scatac_catlas.json 'name:CATlas single-cell ATAC (accessibility by cell type)' height:440 \
   --loc chr2:162,000,000-162,300,000 --width 1400 --out scatac_multiwiggle.png
 ```
@@ -529,14 +530,14 @@ alt genotype painted over the reference background) with the
 `display:multivariant` modifier (the `LinearMultiSampleVariantDisplay`);
 `display:multivariantmatrix` draws the same display in equal-width columns. This
 example draws the 1000 Genomes phase 3 chr11 callset (2,504 samples) over the
-HBB β-globin locus, with the NCBI RefSeq gene track (via `--hub`/`--track`) for
-context. Common variants read as solid vertical bands, rarer ones as sparse
+HBB β-globin locus, with the NCBI RefSeq gene track (via `--genome`/`--track`)
+for context. Common variants read as solid vertical bands, rarer ones as sparse
 speckle:
 
 <!-- jb2export: multisample_variants -->
 
 ```bash
-jb2export --hub hg19 --track hg19-ncbiRefSeqCurated \
+jb2export --genome hg19 --track hg19-ncbiRefSeqCurated \
   --vcfgz https://jbrowse.org/genomes/hg19/1000genomes/ALL.chr11.phase3_v5b.HBB_5.2-5.3Mb.vcf.gz display:multivariant height:450 force:true \
   --loc chr11:5,246,000-5,251,000 --width 1200 --out multisample_variants.png
 ```
@@ -547,12 +548,12 @@ jb2export --hub hg19 --track hg19-ncbiRefSeqCurated \
 
 A `--hic` track draws the contact matrix as a triangular heatmap. This example
 streams the public hg19 demo `.hic` and shows the TAD structure along chr1, with
-the NCBI RefSeq gene track (via `--hub`/`--track`) on top for context:
+the NCBI RefSeq gene track (via `--genome`/`--track`) on top for context:
 
 <!-- jb2export: hic -->
 
 ```bash
-jb2export --hub hg19 --track hg19-ncbiRefSeqCurated \
+jb2export --genome hg19 --track hg19-ncbiRefSeqCurated \
   --hic https://jbrowse.org/genomes/hg19/intra_nofrag_30.hic height:400 \
   --loc 1:2,500,000-12,500,000 --width 1200 --out hic.png
 ```
@@ -577,7 +578,7 @@ RefSeq track to its gene features:
 <!-- jb2export: gene_track -->
 
 ```bash
-jb2export --hub hg38 \
+jb2export --genome hg38 \
   --track hg38-ncbiRefSeqCurated height:60 '{"filter":{"genes":"only"},"geneGlyphMode":"longestCoding"}' \
   --refseq --loc chr17:7,675,018-7,675,098 --width 1500 --out gene_track.png
 ```
@@ -593,7 +594,7 @@ jb2export --hub hg38 \
 <!-- jb2export: dark_theme -->
 
 ```bash
-jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:100 \
+jb2export --genome hg38 --track hg38-ncbiRefSeqCurated height:100 \
   --track hg38-phyloP100way height:140 --loc chr10:87,860,000-87,975,000 \
   --themeName stock --themeMode dark --width 1200 --out dark_theme.png
 ```
@@ -1151,8 +1152,8 @@ breakends of each rearrangement. It is single-assembly and shows the whole
 genome (no `--loc`); the tool picks each track's chord display automatically.
 
 The command draws the tracks that the track flags and `--track` name. Name
-tracks when you use a `--hub` or a large `--config`, because their hundreds of
-tracks would otherwise all be opened, as happens in a run that names none.
+tracks when you use a `--genome` or a large `--config`, because their hundreds
+of tracks would otherwise all be opened, as happens in a run that names none.
 
 Display modifiers do not apply to the circular view, and a run that passes one
 reports that. The modifiers name slots on the linear displays, and the circular
@@ -1347,9 +1348,9 @@ equals sign (`--width=1200`).
 - `--aliases` — tab-separated refname aliases; column 1 matches the FASTA, other
   columns are aliases (e.g. maps `1` → `chr1`)
 - `--cytobands` — path or URL to a cytoband BED file for the assembly
-- `--hub` — a genomes.jbrowse.org assembly to pull the whole config from: a UCSC
-  db name (`hg19`, `mm10`) or GenArk accession (`GCA_...`/`GCF_...`); supplies
-  sequence, cytobands, and refName aliasing (see
+- `--genome` — a genomes.jbrowse.org assembly to pull the whole config from: a
+  UCSC db name (`hg19`, `mm10`) or GenArk accession (`GCA_...`/`GCF_...`);
+  supplies sequence, cytobands, and refName aliasing (see
   [Hosted assemblies](#hosted-assemblies-genomesjbrowseorg))
 
 ### Track params
@@ -1377,7 +1378,7 @@ of the same type, e.g. `--bam file1.bam --bam file2.bam`
   session
 - `--config` — path or URL to a full JBrowse 2 config.json (e.g.
   [data/config.json](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-img/data/config.json))
-- `--track` — show a trackId already in the config (from `--hub`/`--config`),
+- `--track` — show a trackId already in the config (from `--genome`/`--config`),
   e.g. `--track hg19-ncbiRefSeqCurated`; repeatable, and accepts the same
   display modifiers as the track-type flags
 - `--defaultSession` — use the `defaultSession` embedded in `--config`
@@ -1385,7 +1386,7 @@ of the same type, e.g. `--bam file1.bam --bam file2.bam`
 ### Output params
 
 - `--loc` — location string to render, e.g. `chr1:1-10000` or `all`; also a gene
-  name when the config has a text-search index (e.g. from `--hub`)
+  name when the config has a text-search index (e.g. from `--genome`)
 - `--out` — output file path; `.svg`, `.png`, or `.pdf`
 - `--width` — view width in pixels (default: 1500)
 - `--noRasterize` — render everything as SVG vectors instead of rasterizing
@@ -1410,18 +1411,18 @@ subcommand's options. The complete output:
 Usage: jb2export [options]
        jb2export <dotplot|synteny|circular|breakpoint> [options]
        jb2export batch --vcf <file> [options]
-       jb2export list [hub] [filter]
+       jb2export list [genome] [filter]
 
 Options:
   --fasta           Path to indexed FASTA file
   --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
   --aliases         Path to reference name aliases file
   --assembly        Path to assembly JSON (or "-" for stdin) or name in config
-  --hub             Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
-  --track           Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
+  --genome          Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
+  --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
-  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
+  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome)
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
@@ -1445,20 +1446,20 @@ Examples:
       Render VCF variants to PNG
   jb2export --fasta ref.fa --bam reads.bam height:80 color:strand --loc chr1:1-10000 --out out.svg
       Custom track height and strand coloring
-  jb2export --hub hg19 --track hg19-ncbiRefSeqCurated --loc chr1:1-100000 --out out.svg
+  jb2export --genome hg19 --track hg19-ncbiRefSeqCurated --loc chr1:1-100000 --out out.svg
       Pull the hg19 config from genomes.jbrowse.org and show a hosted track
   jb2export --config jbrowse.json --assembly hg38 --tracks tracks.json --loc chr1:1-100000 --out out.svg
       Render from config with a JSON tracks file
   jb2export --fasta ref.fa.gz --cytobands cytobands.bed --bigwig signal.bw --loc chr1 --out out.svg
       Render BigWig with cytobands
 
-Track options: --bam, --cram, --bigwig, --multiwig, --vcfgz, --gffgz, --hic, --bigbed, --bedgz
+Track options: --bam, --cram, --bigwig, --vcfgz, --gffgz, --hic, --bigbed, --bedgz, --multiwig
 
 Comparative subcommands (run "jb2export dotplot --help"): dotplot, synteny, circular, breakpoint
 
 Whole callsets: "jb2export batch --vcf calls.vcf.gz" writes one image per record (run "jb2export batch --help")
 
-Discovery: "jb2export list" lists genomes.jbrowse.org assemblies; "jb2export list <hub> [filter]" lists a hub's tracks
+Discovery: "jb2export list" lists genomes.jbrowse.org assemblies; "jb2export list <genome> [filter]" lists a genome's tracks
 
 Usage: jb2export dotplot [options]
 
@@ -1467,11 +1468,11 @@ Options:
   --chromSizes          Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
   --aliases             Path to reference name aliases file
   --assembly            Path to assembly JSON (or "-" for stdin) or name in config
-  --hub                 Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
-  --track               Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
+  --genome              Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
+  --track               Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config              Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session             Path to session JSON (or "-" for stdin)
-  --loc                 Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
+  --loc                 Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome)
   --out                 Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width               Width of output in pixels [default: 1500]
   --noRasterize         Disable rasterization of pileup/coverage [default: false]
@@ -1511,11 +1512,11 @@ Options:
   --chromSizes          Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
   --aliases             Path to reference name aliases file
   --assembly            Path to assembly JSON (or "-" for stdin) or name in config
-  --hub                 Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
-  --track               Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
+  --genome              Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
+  --track               Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config              Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session             Path to session JSON (or "-" for stdin)
-  --loc                 Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
+  --loc                 Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome)
   --out                 Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width               Width of output in pixels [default: 1500]
   --noRasterize         Disable rasterization of pileup/coverage [default: false]
@@ -1559,11 +1560,11 @@ Options:
   --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
   --aliases         Path to reference name aliases file
   --assembly        Path to assembly JSON (or "-" for stdin) or name in config
-  --hub             Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
-  --track           Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
+  --genome          Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
+  --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
-  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
+  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome)
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
@@ -1589,11 +1590,11 @@ Options:
   --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
   --aliases         Path to reference name aliases file
   --assembly        Path to assembly JSON (or "-" for stdin) or name in config
-  --hub             Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
-  --track           Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
+  --genome          Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
+  --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
-  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
+  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome)
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
@@ -1611,7 +1612,7 @@ Options:
 Examples:
   jb2export breakpoint --fasta ref.fa --bam tumor.bam --loc chr1:1,000,000-1,001,000 --loc chr5:2,000,000-2,001,000 --out sv.png
       Both sides of one breakend, with the reads that cross it drawn between
-  jb2export breakpoint --hub hg38 --bam tumor.bam --loc chr3:25,358,000-25,361,000 --loc chr10:58,716,500-58,718,500 --loc chr12:72,272,000-72,275,000 --out chain.png
+  jb2export breakpoint --genome hg38 --bam tumor.bam --loc chr3:25,358,000-25,361,000 --loc chr10:58,716,500-58,718,500 --loc chr12:72,272,000-72,275,000 --out chain.png
       A multi-hop chain: one panel per locus, in the order the reads cross them
   jb2export breakpoint --fasta ref.fa --bam tumor.bam --loc "chr9:28,030,000-28,032,000 chr9:28,058,000-28,060,000" --loc chr9:28,059,000-28,061,000 --out fb.png
       Quote one --loc to put several windows in a single panel
@@ -1651,8 +1652,8 @@ Options:
   --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
   --aliases         Path to reference name aliases file
   --assembly        Path to assembly JSON (or "-" for stdin) or name in config
-  --hub             Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
-  --track           Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
+  --genome          Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
+  --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
@@ -1680,11 +1681,11 @@ Options:
 Examples:
   jb2export batch --vcf calls.vcf.gz --fasta ref.fa --bam tumor.bam --outDir figs --flank 1000
       A contact sheet of every junction in a callset
-  jb2export batch --vcf calls.vcf.gz --hub hg38 --bam tumor.bam --limit 20
+  jb2export batch --vcf calls.vcf.gz --genome hg38 --bam tumor.bam --limit 20
       The first 20, to check the framing before committing to the whole run
-  jb2export batch --vcf snvs.vcf.gz --hub hg38 --bam tumor.bam --passOnly
+  jb2export batch --vcf snvs.vcf.gz --genome hg38 --bam tumor.bam --passOnly
       Small variants at base resolution, reads with each variant sorted to the top
-  jb2export batch --bedpe linx_links.bedpe --hub hg38 --bam tumor.bam
+  jb2export batch --bedpe linx_links.bedpe --genome hg38 --bam tumor.bam
       The same from a BEDPE, for a caller whose output is not a VCF
 
 The ALT grammar is parsed by @gmod/vcf, so inserted sequence at the

@@ -89,7 +89,7 @@ test('the assembly comes from the first view that names one', () => {
 
 test('a nested view supplies the assembly when the outer one does not', () => {
   // a synteny spec names assemblies on its child LGVs, not on itself, so the
-  // hub name would otherwise be expected and a correct capture would fail
+  // genome name would otherwise be expected and a correct capture would fail
   expect(
     assemblyFromSession({
       views: [
