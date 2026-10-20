@@ -227,10 +227,13 @@ export default function stateModelFactory(
       /**
        * #getter
        * Regex-to-group entries: a row takes the `group` of the first entry
-       * its name matches.
+       * its name matches. The read leaves a defaulted slot out, so this fills
+       * it in.
        */
       get rowGroups(): RowGroup[] {
-        return readConfObject(self.conf, 'rowGroups')
+        return (
+          readConfObject(self.conf, 'rowGroups') as Partial<RowGroup>[]
+        ).map(({ match = '', group = '' }) => ({ match, group }))
       },
       /**
        * #getter

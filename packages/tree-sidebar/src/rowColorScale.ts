@@ -54,12 +54,9 @@ export function dealtValueColors(
   const rows = rowsOf()
   return rows.some(row => Object.hasOwn(row, field))
     ? dealRowColors(
-        [
-          ...declared,
-          ...rows
-            .map(row => rowFieldValue(row, field))
-            .filter(value => value !== ''),
-        ],
+        [...declared, ...rows.map(row => rowFieldValue(row, field))].filter(
+          value => value !== '',
+        ),
         setting,
       )
     : NONE

@@ -211,6 +211,20 @@ test('rowColor by group deals in rowGroups order, whichever rows have loaded', (
   ])
 })
 
+test('a rowGroups entry with an empty group deals the ungrouped rows nothing', () => {
+  const display = loaded({
+    rowColor: 'group',
+    rowGroups: [
+      { match: '^c$', group: '' },
+      { match: '^[ab]$', group: 'AB' },
+    ],
+  })
+  expect(Object.fromEntries(display.dealtRowColors)).toEqual({
+    AB: rowPaletteColorAt(0),
+  })
+  expect(display.sources.find(s => s.name === 'c')?.rowColor).toBeUndefined()
+})
+
 test('rowGroups that tag no row offer no group field', () => {
   const display = loaded({ rowGroups: [{ match: '^z$', group: 'Z' }] })
   expect(display.rowColorFields).toEqual([])
