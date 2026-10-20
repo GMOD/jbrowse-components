@@ -4,6 +4,7 @@ import {
   rowsUnderPointer,
 } from '@jbrowse/core/util/rowStackGeometry'
 import { SIDEBAR_HINT_LINE_PX } from '@jbrowse/tree-sidebar'
+import { autorun } from 'mobx'
 
 import { collectLegendCandidates } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 import { MULTI_ROW_MARK } from './rendering/multiRowMarks.ts'
@@ -398,23 +399,24 @@ describe('featureAt', () => {
     })
   })
 
-  // A reorder renumbers the rows with no pointer event to re-run the hit test,
-  // so the hit carries the row's name and both consumers resolve it live.
-  it('a hover survives a row reorder on the row it was taken on', () => {
+  // A reorder renumbers the rows with no pointer event, and the hover names
+  // what the reorder put under the pointer rather than the row it moved away.
+  it('a row reorder re-resolves the hover under a stationary pointer', () => {
     const { display } = twoRowDisplay(
       region([
-        { row: 'a', start: 100, end: 200, id: 'top' },
+        { row: 'a', start: 300, end: 400, id: 'top' },
         { row: 'b', start: 300, end: 400, id: 'bottom' },
       ]),
     )
-    display.setHoveredFeature(display.featureAt(350, 75))
+    display.setPointer({ x: 350, y: 75 })
     expect(display.hoveredRow?.name).toBe('b')
     const [before] = display.hoverInk
 
     display.setRowOrder([{ name: 'b' }, { name: 'a' }])
 
-    expect(display.hoveredRow?.name).toBe('b')
-    expect(display.hoverInk[0]!.top).toBeLessThan(before!.top)
+    expect(display.hoveredFeature?.id).toBe('top')
+    expect(display.hoveredRow?.name).toBe('a')
+    expect(display.hoverInk[0]!.top).toBe(before!.top)
   })
 
   // The bound is the sidebar's interactive edge, not where labels are drawn
@@ -433,6 +435,58 @@ describe('featureAt', () => {
 
     expect(display.featureAt(edge - 1, 10)).toBeUndefined()
     expect(display.featureAt(edge, 10)?.id).toBe('wide')
+  })
+})
+
+// The painting is a sticky canvas: when the content moves and the pointer does
+// not, the browser fires no `mousemove`, so the hover is resolved from where
+// the pointer is rather than stored from the last event.
+describe('the hover', () => {
+  const twoBlocks = () =>
+    region([
+      { row: 'a', start: 100, end: 200, id: 'left' },
+      { row: 'a', start: 600, end: 700, id: 'right' },
+    ])
+
+  it('is what is under the pointer, until the pointer leaves', () => {
+    const { display } = twoRowDisplay(twoBlocks())
+    display.setPointer({ x: 120, y: 10 })
+    expect(display.hoveredFeature?.id).toBe('left')
+    display.setPointer(undefined)
+    expect(display.hoveredFeature).toBeUndefined()
+  })
+
+  it('follows a zoom under a stationary pointer', () => {
+    const { display, view } = twoRowDisplay(twoBlocks())
+    display.setPointer({ x: 120, y: 10 })
+    const before = display.hoveredFeature
+    view.zoomTo(view.bpPerPx / 4)
+    expect(display.hoveredFeature).toEqual(display.featureAt(120, 10))
+    expect(display.hoveredFeature).not.toEqual(before)
+  })
+
+  it('names a feature a fetch lands under a stationary pointer', () => {
+    const { display } = twoRowDisplay(region([]))
+    display.setPointer({ x: 120, y: 10 })
+    expect(display.hoveredFeature).toBeUndefined()
+    display.setRpcData(0, twoBlocks(), ctgA)
+    expect(display.hoveredFeature?.id).toBe('left')
+  })
+
+  it('moving inside one feature tells no reader', () => {
+    const { display } = twoRowDisplay(twoBlocks())
+    const seen: unknown[] = []
+    const dispose = autorun(() => {
+      seen.push(display.hoveredFeature)
+    })
+    display.setPointer({ x: 120, y: 10 })
+    display.setPointer({ x: 121, y: 12 })
+    display.setPointer({ x: 122, y: 14 })
+    dispose()
+    expect(seen.map(hit => (hit as { id?: string } | undefined)?.id)).toEqual([
+      undefined,
+      'left',
+    ])
   })
 })
 
@@ -455,7 +509,7 @@ describe('while rows.kept narrows the rows', () => {
     expect(display.rowsTopOffset).toBe(SIDEBAR_HINT_LINE_PX)
     expect(display.featureAt(150, SIDEBAR_HINT_LINE_PX - 1)).toBeUndefined()
     expect(display.featureAt(150, SIDEBAR_HINT_LINE_PX)?.id).toBe('top')
-    display.setHoveredFeature(display.featureAt(150, SIDEBAR_HINT_LINE_PX))
+    display.setPointer({ x: 150, y: SIDEBAR_HINT_LINE_PX })
     expect(display.hoverInk[0]!.top).toBe(SIDEBAR_HINT_LINE_PX)
   })
 

@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 import { observer } from 'mobx-react'
 
 import Menu from './CascadingMenu.tsx'
@@ -47,9 +49,9 @@ const DEFAULT_OFFSET = { x: 12, y: 0 }
  * callback, so an item's `onClick` must not read state that closing clears
  * (capture it when the items are built).
  *
- * Being the single close path is also why the display's tracked pointer is
- * dropped here rather than by each display: this menu is portalled, so the
- * display under it is never sent the `mouseleave` its overlays clear on. See
+ * The display's tracked pointer is dropped here, on open and on close, rather
+ * than by each display: this menu is portalled, so the display under it is
+ * never sent the `mouseleave` its hover and overlays clear on. See
  * `useClearTrackedPointer`.
  */
 const ContextMenu = observer(function ContextMenu({
@@ -64,6 +66,12 @@ const ContextMenu = observer(function ContextMenu({
   offset?: { x: number; y: number }
 }) {
   const clearTrackedPointer = useClearTrackedPointer()
+  const open = anchor !== undefined
+  useEffect(() => {
+    if (open) {
+      clearTrackedPointer()
+    }
+  }, [open, clearTrackedPointer])
   if (!anchor) {
     return null
   }

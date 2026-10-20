@@ -135,9 +135,7 @@ const LinearMultiRowFeatureDisplayComponent = observer(
         factory={createMultiRowBackend}
         testid="multirow-display"
         onPointerPosition={state => {
-          model.setHoveredFeature(
-            state ? model.featureAt(state.x, state.y) : undefined,
-          )
+          model.setPointer(state)
         }}
         onClick={e => {
           onClick(e)

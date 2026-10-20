@@ -61,7 +61,7 @@ function createMouseStore(): MouseStore {
  * A menu portalled to the body opens under the cursor with no move, and
  * closing it detaches the hover chain, so the display it covered never gets a
  * `mouseleave` and its overlays keep drawing where the menu opened.
- * `ContextMenu` calls this on close; the default is a no-op for a menu raised
+ * `ContextMenu` calls this on open and on close; the default is a no-op for a menu raised
  * outside a display's chrome.
  */
 const ClearTrackedPointerContext = createContext<() => void>(() => {})
@@ -107,7 +107,8 @@ export function useMouseTracking(onMove?: (state?: MouseState) => void) {
    *
    * Bound as the container's `onMouseLeave`, and called directly for the three
    * cases `mouseleave` cannot report: the container being removed, a portalled
-   * menu closing over it, and the pointer moving onto a portalled overlay.
+   * menu opening or closing over it, and the pointer moving onto a portalled
+   * overlay.
    * `DisplayChromeBase` makes all three calls. Identity-stable.
    */
   const handleMouseLeave = useCallback(() => {

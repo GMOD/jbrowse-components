@@ -7,19 +7,17 @@ function fakeModel(items: MenuItem[]) {
     openContextMenu: jest.fn(),
     closeContextMenu: jest.fn(),
     contextMenuItems: () => items,
-    clearHoveredFeature: jest.fn(),
   }
 }
 const anchor = { clientX: 10, clientY: 20 }
 const item: MenuItem = { label: 'x', onClick: () => {} }
 
-test('a hit with items opens, suppresses the browser menu, clears the hover', () => {
+test('a hit with items opens and suppresses the browser menu', () => {
   const model = fakeModel([item])
   const event = { preventDefault: jest.fn() }
   openContextMenuFromEvent(model, event, anchor)
   expect(model.openContextMenu).toHaveBeenCalledWith(anchor)
   expect(event.preventDefault).toHaveBeenCalled()
-  expect(model.clearHoveredFeature).toHaveBeenCalled()
   expect(model.closeContextMenu).not.toHaveBeenCalled()
 })
 
@@ -30,7 +28,6 @@ test('a hit whose menu is empty closes again and lets the browser menu through',
   expect(model.openContextMenu).toHaveBeenCalledWith(anchor)
   expect(model.closeContextMenu).toHaveBeenCalled()
   expect(event.preventDefault).not.toHaveBeenCalled()
-  expect(model.clearHoveredFeature).not.toHaveBeenCalled()
 })
 
 test('no hit touches nothing', () => {

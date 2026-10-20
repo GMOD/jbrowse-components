@@ -34,7 +34,6 @@ export interface ScorePlotContextMenuHost<ContextHit> {
   contextMenuItems: () => MenuItem[]
   closeContextMenu: () => void
   openContextMenu: (info: ContextMenuAnchor & { hit: ContextHit }) => void
-  clearHoveredFeature: () => void
 }
 
 function isScorePlotMenuHost<ContextHit>(

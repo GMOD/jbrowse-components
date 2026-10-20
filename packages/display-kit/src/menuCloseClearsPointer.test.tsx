@@ -25,7 +25,7 @@ import type { ContextMenuAnchor, MouseTracker } from '@jbrowse/core/ui'
 //
 // The clear rides `ContextMenu` rather than each display, because that is the
 // one menu every display raises: the chrome publishes its clear and the menu
-// calls it on close.
+// calls it on open and on close.
 
 // jsdom's rAF is a timer, so the measurement frame is driven explicitly.
 let frames: (() => void)[] = []
@@ -141,6 +141,17 @@ test('picking an item drops the pointer the menu opened over', () => {
 
   openMenu()
   fireEvent.click(screen.getByText('View subsequences'))
+  expect(pointer()).toBe('no pointer')
+})
+
+// A menu opens under a stationary cursor, so the display is sent no move to
+// end its hover on, and a hover derived from the pointer would light the
+// feature under the menu and keep its tooltip up.
+test('opening the menu drops the pointer it opened over', () => {
+  const { pointer, move, openMenu } = setup()
+  move(40, 12)
+  openMenu()
+  expect(screen.getByText('View subsequences')).toBeTruthy()
   expect(pointer()).toBe('no pointer')
 })
 

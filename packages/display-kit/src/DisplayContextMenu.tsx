@@ -29,15 +29,14 @@ export function isContextMenuHost(model: object): model is ContextMenuHost {
  * `info` is the resolved anchor, or `undefined` for a right-click that hit
  * nothing. The menu is opened before its items are asked for, because a display
  * builds them from the anchor; an empty answer closes it again with the default
- * intact. The hover is cleared last, and only for a menu that stayed open, so
- * the tooltip and crosshair don't sit behind it.
+ * intact. The menu, once open, drops the chrome's pointer and the hover with
+ * it (`ContextMenu`), so the tooltip and crosshair don't sit behind it.
  */
 export function openContextMenuFromEvent<Info extends ContextMenuAnchor>(
   model: {
     openContextMenu: (info: Info) => void
     closeContextMenu: () => void
     contextMenuItems: () => MenuItem[]
-    clearHoveredFeature: () => void
   },
   event: { preventDefault: () => void },
   info: Info | undefined,
@@ -48,7 +47,6 @@ export function openContextMenuFromEvent<Info extends ContextMenuAnchor>(
       model.closeContextMenu()
     } else {
       event.preventDefault()
-      model.clearHoveredFeature()
     }
   }
 }

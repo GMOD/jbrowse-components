@@ -14,8 +14,8 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import PointerHoverMixin from '@jbrowse/display-kit/PointerHoverMixin'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
-import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
@@ -135,7 +135,7 @@ export default function stateModelFactory(
       ColorWritesMixin(),
       TreeSidebarMixin(),
       ContextMenuMixin<MultiRowContextMenuInfo>(),
-      StoredHoverMixin<MultiRowHit>(
+      PointerHoverMixin<MultiRowHit>(
         (a, b) => a.id === b.id && a.regionIndex === b.regionIndex,
       ),
       types.model({
@@ -789,6 +789,12 @@ export default function stateModelFactory(
        */
       featureAt(mouseX: number, mouseY: number): MultiRowHit | undefined {
         return featureAtPixel(self, mouseX, mouseY - self.rowsTopOffset)
+      },
+      /**
+       * #method
+       */
+      hoverHitAt(mouseX: number, mouseY: number) {
+        return this.featureAt(mouseX, mouseY)
       },
       /**
        * #method

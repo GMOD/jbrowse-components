@@ -40,7 +40,6 @@ function makeModel() {
     openContextMenu: jest.fn<undefined, [ContextMenuAnchor & { hit: Hit }]>(),
     closeContextMenu: jest.fn(),
     contextMenuItems: () => [{ label: 'probe', onClick: () => {} }],
-    clearHoveredFeature: jest.fn(),
   } satisfies ScorePlotChromeModel<Hit, unknown, FrameDimensions> &
     ScorePlotContextMenuHost<Hit>
   return model
