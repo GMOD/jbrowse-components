@@ -339,7 +339,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        * #getter
        * the alignments the canvas draws, by their place in `features`, the
        * widest first so every narrower ribbon draws over them: both ends on
-       * the circle, at least the view's `filter.minLength` long on each
+       * the circle, at least the view's `filter` bound on `length` long on each
        * side, and not hidden by the view's color or its identity cut
        */
       get ribbonPicks(): Uint32Array {

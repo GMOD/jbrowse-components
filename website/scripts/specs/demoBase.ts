@@ -50,7 +50,7 @@ export function ecoliPageTrack(doc: string, trackId: string) {
 // crossings off the bottom band and the figures stop being attributable to one
 // strain.
 //
-// `filter.minLength` drops the short alignments so the shared backbone reads
+// The `length` predicate drops the short alignments so the shared backbone reads
 // as clean ribbons instead of a dense noise band.
 //
 // `collapseEmptyRows` because none of the five rows carries a track, so every

@@ -234,7 +234,7 @@ A `defaultSession` holding a `LinearSyntenyView` opens the stack on load:
 Row order is a free choice with an all-vs-all PAF, since the file aligns every
 pair.
 
-<Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF, short alignments hidden with filter.minLength." src="/img/multiway_synteny/ecoli_pangenome.png" />
+<Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF, short alignments filtered out by length." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
 ## Adding gene tracks to see what a gap holds
 

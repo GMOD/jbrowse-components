@@ -773,7 +773,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // liftOver chain between them as a session track and it paints a single flat
   // block across the whole band, because a liftOver chain is one
   // chromosome-scale feature whose base ribbon is one trapezoid: the band ends
-  // up asserting the two windows correspond end to end. A filter.minLength of 20000
+  // up asserting the two windows correspond end to end. A length filter of 20000
   // does not change it, and a synteny view's sub-panels carry no displayName, so
   // it also costs the two titles that said the panes were different intervals.
 

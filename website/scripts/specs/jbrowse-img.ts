@@ -262,7 +262,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // `synteny --config` would place every one of them on every band, so the
   // figure would be four overlaid pipelines rather than one.
   //
-  // filter.minLength hides minimap2's short alignments, which otherwise bury
+  // The length filter hides minimap2's short alignments, which otherwise bury
   // the shared backbone in a noise band; levelHeights is what makes the bottom
   // band tall enough to read IAI39's inversions as crossings.
   cliSpec('ecoli_ava_synteny', [

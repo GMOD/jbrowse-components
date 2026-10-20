@@ -1070,7 +1070,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     //
     // NO MIN-LENGTH FILTER, and that is the fix for "this looks more sparse
     // than expected to me ... i want the full size paf not the small one"
-    // (reviewer). It was already the full PAF; `filter.minLength: 2000` was
+    // (reviewer). It was already the full PAF; a length filter of 2000 was
     // throwing 87% of it away. Measured off the file: 16,192 records, median
     // block 675 bp, p90 2,287 bp, longest 11,450 bp — so a 2 kb floor keeps
     // 2,126 blocks and a 1 kb floor keeps 5,983.
@@ -3206,7 +3206,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // island bulges into the bare right side of the Sakai row.
   //
   // `genes: 'only'` drops the CDS lanes and the full-width `region` feature that
-  // RefSeq GFFs carry for the whole chromosome. No filter.minLength: at this
+  // RefSeq GFFs carry for the whole chromosome. No length filter: at this
   // zoom the short alignments are signal, not noise.
   {
     mode: 'url',

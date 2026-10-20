@@ -1113,8 +1113,8 @@ names one of them:
 ```
 
 Five rows means four bands, so `tracks` has four entries and every one of them
-is the same trackId. `filter.minLength` drops minimap2's short alignments, which
-otherwise bury the shared backbone under a noise band.
+is the same trackId. The `length` predicate in `filter` drops minimap2's short
+alignments, which otherwise bury the shared backbone under a noise band.
 
 <!-- jb2export: ecoli_ava_synteny -->
 
