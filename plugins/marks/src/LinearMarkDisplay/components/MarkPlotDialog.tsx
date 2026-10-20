@@ -9,10 +9,10 @@ import {
   channelScales,
   draftMarks,
   editChannels,
-  markTypeOf,
   unreadChannels,
   withChannel,
   withChannelScale,
+  withInterpolate,
   withListMember,
   withMarkType,
   withScaleMember,
@@ -20,7 +20,7 @@ import {
 } from '../markEdit.ts'
 import { markProblemIndex } from '../markProblemIndex.ts'
 import { markProblems } from '../markProblems.ts'
-import { MARK_TYPES } from '../markVocabulary.ts'
+import { MARK_TYPES, markTypeOf } from '../markVocabulary.ts'
 import { stepFields, stepsOfMark, withSteps } from '../plotEdit.ts'
 import { withJoinedFields } from '../scanPlotFields.ts'
 import DraftNumberField from './DraftNumberField.tsx'
@@ -214,7 +214,7 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
                 const next = withSteps(mark, steps)
                 write(
                   lineInterpolate && markTypeOf(mark) === 'line'
-                    ? { ...next, interpolate: lineInterpolate }
+                    ? withInterpolate(next, lineInterpolate)
                     : next,
                 )
               }}

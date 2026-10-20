@@ -81,24 +81,35 @@ export function plotKeysOf(conf: AnyConfigurationModel): string[] {
 }
 
 // A one-member object a shorthand would write as a bare value prints as that
-// value, as a config file writes it: `color: "red"`, `facet: "strand"`.
-function folded(member: unknown, value: unknown) {
-  if (
-    !isStateTreeNode(member) ||
-    typeof value !== 'object' ||
-    value === null ||
-    Array.isArray(value)
-  ) {
+// value, as a config file writes it, at any depth: `color: "red"`,
+// `facet: "strand"`, a list entry's `mark: "line"`.
+function folded(member: unknown, value: unknown): unknown {
+  if (!isStateTreeNode(member) || typeof value !== 'object' || value === null) {
     return value
   }
+  if (Array.isArray(value)) {
+    return isArrayType(getType(member))
+      ? value.map((entry, i) => folded((member as unknown[])[i], entry))
+      : value
+  }
   const meta = getConfigurationSchemaMetadata(member as AnyConfigurationModel)
-  const entries = Object.entries(value)
-  if (!meta || meta.options.shorthandWith || entries.length !== 1) {
+  if (!meta) {
     return value
+  }
+  const node = member as unknown as Record<string, unknown>
+  const members = Object.fromEntries(
+    Object.entries(value).map(([key, child]) => [
+      key,
+      folded(node[key], child),
+    ]),
+  )
+  const entries = Object.entries(members)
+  if (meta.options.shorthandWith || entries.length !== 1) {
+    return members
   }
   const [slot, bare] = entries[0]!
   const form = bareFormOf(bare)
-  return form && shorthandTargets(meta)[form] === slot ? bare : value
+  return form && shorthandTargets(meta)[form] === slot ? bare : members
 }
 
 /**

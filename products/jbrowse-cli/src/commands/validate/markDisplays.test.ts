@@ -144,8 +144,8 @@ describe('a marks list in a config file', () => {
     expect(found([{ mark: 'span', linkShape: 'arc' }])).toEqual([
       `warning unread-link-shape ${DISPLAY}.marks[0].linkShape`,
     ])
-    expect(found([{ mark: 'span', interpolate: 'linear' }])).toEqual([
-      `warning unread-interpolate ${DISPLAY}.marks[0].interpolate`,
+    expect(found([{ mark: { type: 'span', interpolate: 'linear' } }])).toEqual([
+      `warning unread-interpolate ${DISPLAY}.marks[0].mark.interpolate`,
     ])
     expect(found([{ mark: 'span', gapBp: 5000 }])).toEqual([
       `warning unread-gap ${DISPLAY}.marks[0].gapBp`,
@@ -173,7 +173,10 @@ describe('a marks list in a config file', () => {
     expect(found([{ mark: 'span', rowProportion: 0.8 }])).toEqual([])
     expect(
       found([
-        { mark: 'line', interpolate: 'linear', encoding: { y: 'score' } },
+        {
+          mark: { type: 'line', interpolate: 'linear' },
+          encoding: { y: 'score' },
+        },
       ]),
     ).toEqual([])
     expect(

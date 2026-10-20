@@ -50,7 +50,7 @@ export function encodingOf(
   const { x, shape, text, size } = mark.encoding
   const y = mark.encoding.y || filled.y
   const row = mark.encoding.row || filled.row
-  const spec: MarkSpec = MARK_SPECS[mark.mark]
+  const spec: MarkSpec = MARK_SPECS[mark.mark.type]
   const channels = spec.channels as readonly string[]
   // The request carries only what the mark's type reads, so editing a slot it
   // draws nothing from refetches no region.
@@ -268,7 +268,7 @@ export function stepsOf(
  * the axis and stands at its value.
  */
 export function marksValue(mark: MarkConfig, channels: StepChannels) {
-  return plotsValue(mark.mark) && (mark.encoding.y !== '' || !!channels.y)
+  return plotsValue(mark.mark.type) && (mark.encoding.y !== '' || !!channels.y)
 }
 
 /** A mark's type, zoom range and whether it stands at a value, what the mark list is built from. */
@@ -278,13 +278,13 @@ export function markEntryOf(
 ): MarkEntry {
   const valued = marksValue(mark, channels)
   return {
-    type: mark.mark,
+    type: mark.mark.type,
     minBpPerPx: mark.minBpPerPx,
     maxBpPerPx: mark.maxBpPerPx,
-    placed: !readsValue(mark.mark) || valued,
+    placed: !readsValue(mark.mark.type) || valued,
     valued,
     linkShape: mark.linkShape,
-    interpolate: mark.interpolate,
+    interpolate: mark.mark.interpolate,
   }
 }
 
@@ -306,7 +306,7 @@ export function markLayerRequest(
     binEdges,
   )
   const color = markColorOf(mark, channels)
-  const lanes = markLanes(mark.mark, colorLanesOf(color)).filter(
+  const lanes = markLanes(mark.mark.type, colorLanesOf(color)).filter(
     lane =>
       (lane !== 'y' || marksValue(mark, channels)) &&
       (lane !== 'size' || mark.encoding.size.field !== ''),
@@ -320,7 +320,7 @@ export function markLayerRequest(
 }
 
 function specOfMark(mark: MarkConfig): MarkSpec {
-  return MARK_SPECS[mark.mark]
+  return MARK_SPECS[mark.mark.type]
 }
 
 // A path's series split by its categorical color's field, as a Vega-Lite line

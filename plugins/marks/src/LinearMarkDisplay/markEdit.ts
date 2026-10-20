@@ -9,14 +9,15 @@ import { SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
 
 import { MARK_SPECS } from './markSpecs.ts'
 import {
-  DEFAULT_MARK_TYPE,
   MARK_COLOR_SCALES,
   SIZE_SCALES,
+  markInterpolateOf,
+  markTypeOf,
 } from './markVocabulary.ts'
 
 import type { MarkSnapshot } from './markProblems.ts'
 import type { MarkChannel, MarkSpec } from './markSpecs.ts'
-import type { MarkType } from './markVocabulary.ts'
+import type { LineInterpolation, MarkType } from './markVocabulary.ts'
 import type { PlotFields } from './scanPlotFields.ts'
 
 /** A channel a control edits: the two positional ones, and the type's own. */
@@ -42,10 +43,6 @@ export function editChannels(type: MarkType): EditChannel[] {
     ...(spec.size === 'constant' ? (['size'] as const) : []),
     ...POSITIONAL,
   ]
-}
-
-export function markTypeOf(mark: DraftMark): MarkType {
-  return mark.mark ?? DEFAULT_MARK_TYPE
 }
 
 /** What a control shows for one channel, and whether it may write it back. */
@@ -438,7 +435,16 @@ export function withoutChannel(
 
 /** A mark's type changed, keeping every channel so nothing is lost silently. */
 export function withMarkType(mark: DraftMark, type: MarkType): DraftMark {
-  return { ...mark, mark: type }
+  const interpolate = markInterpolateOf(mark)
+  return { ...mark, mark: interpolate ? { type, interpolate } : type }
+}
+
+/** A line's `interpolate` written into its mark object. */
+export function withInterpolate(
+  mark: DraftMark,
+  interpolate: LineInterpolation,
+): DraftMark {
+  return { ...mark, mark: { type: markTypeOf(mark), interpolate } }
 }
 
 /**

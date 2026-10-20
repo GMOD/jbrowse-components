@@ -292,8 +292,7 @@ _SNRPN_, each in a row with its raw values under a moving average:
           }
         },
         {
-          "mark": "line",
-          "interpolate": "linear",
+          "mark": { "type": "line", "interpolate": "linear" },
           "transform": [
             {
               "type": "window",

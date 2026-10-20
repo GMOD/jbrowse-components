@@ -107,7 +107,7 @@ export function markColorOf(
   return {
     kind: 'numbers',
     encoding,
-    fromY: plotsValue(mark.mark) && !!y && encoding.field === y,
+    fromY: plotsValue(mark.mark.type) && !!y && encoding.field === y,
   }
 }
 

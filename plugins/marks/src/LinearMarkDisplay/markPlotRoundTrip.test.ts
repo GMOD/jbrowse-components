@@ -27,12 +27,13 @@ function displayOn(config: Record<string, unknown> = {}) {
 // absent from the snapshot, so a `bar` mark does not name itself and the
 // box opens on what the author wrote rather than on forty default slots — an
 // aggregate's default op strips to `{}`, while `step: "auto"` is not a default
-// and stays. A one-member facet prints as the shorthand a config file writes.
+// and stays. A one-member facet or color prints as the shorthand a config file
+// writes.
 it('opens on what a config declared, with the defaults left off', () => {
   const display = displayOn(PLOT)
   expect(display.plot).toEqual({
     marks: [
-      { encoding: { y: 'score', color: { field: 'strand' } } },
+      { encoding: { y: 'score', color: 'strand' } },
       {
         encoding: { y: 'count' },
         transform: [
@@ -44,6 +45,26 @@ it('opens on what a config declared, with the defaults left off', () => {
     ],
     facet: 'strand',
   })
+})
+
+it("prints a mark as its type alone unless it writes a line's interpolate", () => {
+  const display = displayOn({
+    marks: [
+      { mark: { type: 'point' }, encoding: { y: 'score' } },
+      {
+        mark: { type: 'line', interpolate: 'linear' },
+        encoding: { y: 'score' },
+      },
+    ],
+  })
+  expect(display.plot.marks).toEqual([
+    { mark: 'point', encoding: { y: 'score' } },
+    { mark: { type: 'line', interpolate: 'linear' }, encoding: { y: 'score' } },
+  ])
+  expect(display.markEntries.map(m => m.interpolate)).toEqual([
+    'step',
+    'linear',
+  ])
 })
 
 // The property the box exists for: applying what it shows is a round trip, so

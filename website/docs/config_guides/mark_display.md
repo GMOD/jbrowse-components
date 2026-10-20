@@ -67,7 +67,7 @@ one.
 | a bar from a baseline to a value | `geom_col()` | `"mark": "bar"` | `"mark": "bar"`, the display's `origin` as the baseline |
 | a point at a value | `geom_point(size)` | `"mark": "point"`, `"size"` on the mark | `"mark": "point"`, `encoding.size` a number, at the middle of `x` to `x2` |
 | a line across an interval at a value | `geom_segment(aes(xend = end, yend = score))` | `"mark": "rule"` over `x`, `x2` and `y` | `"mark": "rule"`, `encoding.size` a number as its thickness |
-| a line through the values | `geom_step()`, `geom_line()` | `"mark": "line"`, `"interpolate": "step-after"` or `"linear"` | `"mark": "line"`, `interpolate` `step` or `linear`, `encoding.size` its width |
+| a line through the values | `geom_step()`, `geom_line()` | `"mark": { "type": "line", "interpolate": "step-after" }` or `"linear"` | `"mark": { "type": "line", "interpolate": "step" }` or `"linear"`, `encoding.size` its width |
 | a band across the plot, with no value | `geom_rect()` with no y | `"mark": "rect"` over `x` and `x2` alone | `"mark": "span"` |
 | a heatmap strip, its color the value | `geom_tile(aes(fill = score))` | `"mark": "rect"` with a quantitative `color` | `"mark": "span"` with a color scale over the field |
 | a band thinner than its row | `geom_tile(height = 0.8)` | `"mark": {"type": "rect", "height": {"band": 0.8}}` | `"mark": "span"`, `"rowProportion": 0.8` |
@@ -403,19 +403,18 @@ value that belongs to an interval — a window's Fst, a segment's copy number:
 { "mark": "rule", "encoding": { "y": "score", "size": 3 } }
 ```
 
-A `line` strokes through consecutive values on a row. `interpolate: "step"`, the
-default, holds each value across its span and steps to the next where two spans
-abut, dropping to `origin` across a gap, so a bedGraph or a BigWig tier draws
-the values as stored; `"linear"` runs from one span's centre to the next, which
-is smoother where the spans are few. `encoding.size` is the width in px, 1
-unset. A color scale over the field `y` plots colors the stroke by the value
-under each pixel, so a threshold at 0 with two colors paints a rise across zero
-in both, changing at the axis.
+A `line` strokes through consecutive values on a row. Its mark object's
+`interpolate: "step"`, the default, holds each value across its span and steps
+to the next where two spans abut, dropping to `origin` across a gap, so a
+bedGraph or a BigWig tier draws the values as stored; `"linear"` runs from one
+span's centre to the next, which is smoother where the spans are few.
+`encoding.size` is the width in px, 1 unset. A color scale over the field `y`
+plots colors the stroke by the value under each pixel, so a threshold at 0 with
+two colors paints a rise across zero in both, changing at the axis.
 
 ```json
 {
-  "mark": "line",
-  "interpolate": "linear",
+  "mark": { "type": "line", "interpolate": "linear" },
   "encoding": { "y": "score", "size": 2 }
 }
 ```

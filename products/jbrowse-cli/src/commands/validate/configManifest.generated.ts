@@ -5334,11 +5334,22 @@ export const configManifest: ConfigManifest = {
               "subSlots": [
                 {
                   "name": "mark",
-                  "type": "MarkType"
-                },
-                {
-                  "name": "interpolate",
-                  "type": "LineInterpolation"
+                  "type": "MarkDefConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "MarkType"
+                    },
+                    {
+                      "name": "interpolate",
+                      "type": "LineInterpolation"
+                    }
+                  ],
+                  "schema": "MarkDef",
+                  "writes": "members",
+                  "shorthand": {
+                    "string": "type"
+                  }
                 },
                 {
                   "name": "gapBp",
@@ -7243,11 +7254,22 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "mark",
-              "type": "MarkType"
-            },
-            {
-              "name": "interpolate",
-              "type": "LineInterpolation"
+              "type": "MarkDefConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "type",
+                  "type": "MarkType"
+                },
+                {
+                  "name": "interpolate",
+                  "type": "LineInterpolation"
+                }
+              ],
+              "schema": "MarkDef",
+              "writes": "members",
+              "shorthand": {
+                "string": "type"
+              }
             },
             {
               "name": "gapBp",
@@ -7778,11 +7800,22 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "mark",
-              "type": "MarkType"
-            },
-            {
-              "name": "interpolate",
-              "type": "LineInterpolation"
+              "type": "MarkDefConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "type",
+                  "type": "MarkType"
+                },
+                {
+                  "name": "interpolate",
+                  "type": "LineInterpolation"
+                }
+              ],
+              "schema": "MarkDef",
+              "writes": "members",
+              "shorthand": {
+                "string": "type"
+              }
             },
             {
               "name": "gapBp",

@@ -10,6 +10,7 @@ import {
 import { configSchemaFactory, markListSchema } from './configSchema.ts'
 import { markPlotSettingsOf } from './markPlot.ts'
 import { markProblems } from './markProblems.ts'
+import { markTypeOf } from './markVocabulary.ts'
 
 import type { MarkPlot } from './markPlot.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -123,7 +124,7 @@ describe('liftPlot over a mark display', () => {
       lift(
         { marks: null },
         withDefaultPlot.create({ displayId: 'd', marks }),
-      ).marks.map(m => m.mark),
+      ).marks.map(m => markTypeOf(m)),
     ).toEqual(['point'])
   })
 })

@@ -524,9 +524,8 @@ describe("a mark's steps", () => {
       writes({
         marks: [
           {
-            mark: 'line',
+            mark: { type: 'line', interpolate: 'linear' },
             encoding: { y: 'score' },
-            interpolate: 'linear',
             transform: [
               {
                 type: 'window',

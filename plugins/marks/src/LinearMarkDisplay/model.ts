@@ -236,9 +236,9 @@ export function markSizeOf({
 }: Pick<MarkConfig, 'mark' | 'encoding'>) {
   return (
     encoding.size.value ??
-    (mark === 'link'
+    (mark.type === 'link'
       ? DEFAULT_LINK_STROKE_PX
-      : mark === 'line'
+      : mark.type === 'line'
         ? DEFAULT_LINE_WIDTH_PX
         : DEFAULT_POINT_DIAMETER_PX)
   )
@@ -356,7 +356,7 @@ export function stateModelFactory(
          * The declared marks' types, in draw order.
          */
         get markTypes(): MarkType[] {
-          return self.conf.marks.map(m => m.mark)
+          return self.conf.marks.map(m => m.mark.type)
         },
         /**
          * #getter
@@ -431,7 +431,8 @@ export function stateModelFactory(
          * undefined where no mark is a span, so the dialog asks for none.
          */
         get rowProportion(): number | undefined {
-          return self.conf.marks.find(m => m.mark === 'span')?.rowProportion
+          return self.conf.marks.find(m => m.mark.type === 'span')
+            ?.rowProportion
         },
         /**
          * #getter
@@ -439,7 +440,7 @@ export function stateModelFactory(
          * regions rather than the block's own range.
          */
         get hasLinkMark(): boolean {
-          return self.conf.marks.some(m => m.mark === 'link')
+          return self.conf.marks.some(m => m.mark.type === 'link')
         },
         /**
          * #getter
@@ -447,7 +448,7 @@ export function stateModelFactory(
          * default where no mark is a point.
          */
         get pointSize(): number {
-          const first = self.conf.marks.find(m => m.mark === 'point')
+          const first = self.conf.marks.find(m => m.mark.type === 'point')
           return first ? markSizeOf(first) : DEFAULT_POINT_DIAMETER_PX
         },
         /**
@@ -1563,7 +1564,7 @@ export function stateModelFactory(
          */
         setRowProportion(n: number) {
           for (const mark of self.conf.marks) {
-            if (mark.mark === 'span') {
+            if (mark.mark.type === 'span') {
               setConf(mark, 'rowProportion', n)
             }
           }
@@ -1818,7 +1819,7 @@ export function stateModelFactory(
          */
         setPointSize(val?: number) {
           for (const mark of self.conf.marks) {
-            if (mark.mark === 'point') {
+            if (mark.mark.type === 'point') {
               setConf(mark, ['encoding', 'size', 'value'], val)
             }
           }

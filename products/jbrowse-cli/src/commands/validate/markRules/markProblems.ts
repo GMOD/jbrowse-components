@@ -21,13 +21,14 @@ import {
   DEFAULT_LINE_INTERPOLATE,
   DEFAULT_ROW_PROPORTION,
   DEFAULT_LINK_SHAPE,
-  DEFAULT_MARK_TYPE,
   DEFAULT_PILEUP_FIELDS,
   DEFAULT_TEXT_FIELD,
   DEFAULT_WINDOW_FRAME,
   DEFAULT_X2,
   isWindowFrame,
   MAX_THRESHOLD_CUTS,
+  markInterpolateOf,
+  markTypeOf,
 } from './markVocabulary.ts'
 import { stepChannels } from './stepChannels.ts'
 
@@ -35,9 +36,8 @@ import type { ColorSlots, ScaleEnds } from './markRuleFacts.ts'
 import type { MarkChannel, MarkSpec } from './markSpecs.ts'
 import type {
   AggregateOpName,
-  LineInterpolation,
   LinkShape,
-  MarkType,
+  MarkDefSnapshot,
 } from './markVocabulary.ts'
 
 /**
@@ -210,9 +210,8 @@ export interface ScalesSnapshot {
  * off. A type alias, which a `Record<string, unknown>` reader takes.
  */
 export type MarkSnapshot = {
-  mark?: MarkType
+  mark?: MarkDefSnapshot
   linkShape?: LinkShape
-  interpolate?: LineInterpolation
   gapBp?: number
   rowProportion?: number
   minBpPerPx?: number
@@ -232,10 +231,6 @@ export type MarkSnapshot = {
 
 function found(rule: MarkRuleId, slot: string, message: string): OwnProblem {
   return { rule, level: MARK_RULES[rule], slot, message }
-}
-
-function markTypeOf(mark: MarkSnapshot) {
-  return mark.mark ?? DEFAULT_MARK_TYPE
 }
 
 // Whether a slot holds nothing a reader could act on: unset, empty text, an
@@ -700,15 +695,16 @@ function ownProblems(
       ),
     )
   }
+  const interpolate = markInterpolateOf(mark)
   if (
-    mark.interpolate !== undefined &&
-    mark.interpolate !== DEFAULT_LINE_INTERPOLATE &&
+    interpolate !== undefined &&
+    interpolate !== DEFAULT_LINE_INTERPOLATE &&
     type !== 'line'
   ) {
     problems.push(
       found(
         'unread-interpolate',
-        'interpolate',
+        'mark.interpolate',
         `a ${type} draws no line, so it reads no interpolate`,
       ),
     )

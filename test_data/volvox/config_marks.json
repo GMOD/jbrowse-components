@@ -115,8 +115,7 @@
               }
             },
             {
-              "mark": "line",
-              "interpolate": "linear",
+              "mark": { "type": "line", "interpolate": "linear" },
               "encoding": {
                 "y": "score",
                 "color": {
@@ -180,8 +179,7 @@
           "displayId": "marks_line_posneg_linear-LinearMarkDisplay",
           "marks": [
             {
-              "mark": "line",
-              "interpolate": "linear",
+              "mark": { "type": "line", "interpolate": "linear" },
               "encoding": {
                 "y": "score",
                 "size": 2,

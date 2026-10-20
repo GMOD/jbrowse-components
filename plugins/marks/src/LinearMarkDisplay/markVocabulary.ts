@@ -31,6 +31,25 @@ export const DEFAULT_MARK_TYPE: MarkType = 'bar'
 export const LINE_INTERPOLATIONS = ['step', 'linear'] as const
 export type LineInterpolation = (typeof LINE_INTERPOLATIONS)[number]
 export const DEFAULT_LINE_INTERPOLATE: LineInterpolation = 'step'
+
+/** A `marks` entry's `mark` as a snapshot holds it: the object, or its type alone. */
+export type MarkDefSnapshot =
+  | MarkType
+  | { type?: MarkType; interpolate?: LineInterpolation }
+
+/** The type a `marks` entry draws, whichever way its `mark` is written. */
+export function markTypeOf(entry: { mark?: MarkDefSnapshot }): MarkType {
+  const { mark } = entry
+  return (typeof mark === 'string' ? mark : mark?.type) ?? DEFAULT_MARK_TYPE
+}
+
+/** How a `marks` entry's line joins its values, unset where the config leaves it. */
+export function markInterpolateOf(entry: {
+  mark?: MarkDefSnapshot
+}): LineInterpolation | undefined {
+  const { mark } = entry
+  return typeof mark === 'string' ? undefined : mark?.interpolate
+}
 /** The width a line strokes at where its `size` is left unwritten. */
 export const DEFAULT_LINE_WIDTH_PX = 1
 

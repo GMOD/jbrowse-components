@@ -969,6 +969,11 @@ test('a mark type the display does not draw is named as the problem, not the cha
       { mark: 'area', encoding: { y: 'score' } },
     ]).createDisplay(),
   ).toThrow(/marks.0.mark is "area", and a mark is one of bar, point, rule/)
+  expect(() =>
+    createTestEnvironment([
+      { mark: { type: 'area' }, encoding: { y: 'score' } },
+    ]).createDisplay(),
+  ).toThrow(/marks.0.mark is "area"/)
 })
 
 test('a mistyped key on a mark, a step or an op is named as the config loads', () => {

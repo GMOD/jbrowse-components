@@ -64,7 +64,9 @@ const HIT = {
 
 test('an unwritten plot is a point per feature at its score, which a snapshot leaves out', () => {
   const { display } = createTestEnvironment().createDisplay()
-  expect(getSnapshot(display.conf.marks)).toEqual([MANHATTAN_MARK])
+  expect(getSnapshot(display.conf.marks)).toEqual([
+    { ...MANHATTAN_MARK, mark: { type: 'point' } },
+  ])
   expect(getSnapshot(display.conf)).not.toHaveProperty('marks')
   expect(display.plot.marks).toEqual([MANHATTAN_MARK])
   expect(display.layerRequests[0]?.encoding).toMatchObject({ y: 'score' })
@@ -294,18 +296,18 @@ test('LD coloring leaves every other mark and member where it was', () => {
   expect(index).toMatchObject({
     encoding: { color: { value: LD_INDEX_COLOR }, size: { value: 6 } },
   })
-  expect(labels).toMatchObject({ mark: 'text' })
+  expect(labels).toMatchObject({ mark: { type: 'text' } })
   expect(display.encodings[0]?.color).toMatchObject({ field: 'r2' })
 
   display.setPointSize(9)
   display.setLdColoring(false)
   expect(marksOf(display)).toEqual([
     {
-      mark: 'point',
+      mark: { type: 'point' },
       encoding: { y: 'score', color: { value: 'green' }, size: { value: 9 } },
     },
     {
-      mark: 'text',
+      mark: { type: 'text' },
       transform: [{ type: 'filter', expr: 'jexl:feature.score > 8' }],
     },
   ])
@@ -382,7 +384,7 @@ test('unticking a hand-edited LD plot leaves no mark reading LD', () => {
   display.setLdColoring(false)
   expect(display.joinsLd).toBe(false)
   expect(marksOf(display)).toEqual([
-    { mark: 'point', encoding: { y: 'score' } },
+    { mark: { type: 'point' }, encoding: { y: 'score' } },
   ])
 })
 

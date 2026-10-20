@@ -9059,6 +9059,67 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "MarkDef": {
+      "title": "MarkDef",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"type\\": ... }\`.",
+          "default": "bar",
+          "enum": [
+            "bar",
+            "point",
+            "rule",
+            "line",
+            "span",
+            "text",
+            "link"
+          ],
+          "type": "string"
+        },
+        {
+          "title": "MarkDef",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "type": {
+              "description": "bar, point, rule, line, span, text or link.",
+              "default": "bar",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "bar",
+                  "point",
+                  "rule",
+                  "line",
+                  "span",
+                  "text",
+                  "link"
+                ]
+              }
+            },
+            "interpolate": {
+              "description": "step or linear, for a line.",
+              "default": "step",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "step",
+                  "linear"
+                ]
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "MarkLocus": {
       "title": "MarkLocus",
       "anyOf": [
@@ -10322,34 +10383,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "mark": {
-          "description": "bar, point, rule, line, span, text or link.",
-          "default": "bar",
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "bar",
-              "point",
-              "rule",
-              "line",
-              "span",
-              "text",
-              "link"
-            ]
-          }
-        },
-        "interpolate": {
-          "description": "step or linear, for a line.",
-          "default": "step",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "step",
-              "linear"
-            ]
+            "$ref": "#/$defs/MarkDef"
           }
         },
         "gapBp": {

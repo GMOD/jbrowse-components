@@ -142,7 +142,7 @@ export function colorsByLd(
   mark: MarkConfig,
   sharedSteps: readonly MarkTransformStepConfig[],
 ) {
-  return mark.mark === 'point' && placesEachSnp(mark, sharedSteps)
+  return mark.mark.type === 'point' && placesEachSnp(mark, sharedSteps)
 }
 
 function partnersOf(mark: MarkSnapshot): MarkSnapshot {

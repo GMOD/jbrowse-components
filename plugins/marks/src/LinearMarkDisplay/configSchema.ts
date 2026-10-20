@@ -16,21 +16,21 @@ import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebar
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { markColorSchema } from './markColorConfigSchema.ts'
+import { markDefSchema } from './markDefConfigSchema.ts'
 import { markFacetSchema } from './markFacetConfigSchema.ts'
 import { markLocusSchema } from './markLocusConfigSchema.ts'
 import { markSizeSchema } from './markSizeConfigSchema.ts'
 import { markTransformStep } from './markTransformConfigSchema.ts'
 import {
-  DEFAULT_LINE_INTERPOLATE,
   DEFAULT_LINK_SHAPE,
-  DEFAULT_MARK_TYPE,
   DEFAULT_ROW_PROPORTION,
   DEFAULT_TEXT_FIELD,
-  LINE_INTERPOLATIONS,
   LINK_SHAPES,
   MARK_TYPES,
+  markTypeOf,
 } from './markVocabulary.ts'
 
+import type { MarkDefSnapshot } from './markVocabulary.ts'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 export { MARK_TYPES } from './markVocabulary.ts'
@@ -256,11 +256,13 @@ function checkMarks(snap: Record<string, unknown>) {
   if (!Array.isArray(marks)) {
     return snap
   }
-  const unknownMarks = (marks as { mark?: string }[]).flatMap((mark, i) =>
-    mark.mark === undefined ||
-    (MARK_TYPES as readonly string[]).includes(mark.mark)
-      ? []
-      : [`marks.${i}.mark is "${mark.mark}"`],
+  const unknownMarks = (marks as { mark?: MarkDefSnapshot }[]).flatMap(
+    (mark, i) => {
+      const type: string = markTypeOf(mark)
+      return (MARK_TYPES as readonly string[]).includes(type)
+        ? []
+        : [`marks.${i}.mark is "${type}"`]
+    },
   )
   if (unknownMarks.length > 0) {
     throw new Error(
@@ -275,37 +277,10 @@ const markSchema = ConfigurationSchema(
   {
     /**
      * #slot marks.mark
-     * `bar` spans from `origin` to `y`; `point` is a shape at `y` over
-     * the middle of `x` to `x2`; `rule` is a line across `x` to `x2` at `y`,
-     * `encoding.size` px thick; `line` is a stroke through consecutive
-     * values, held across each span or run centre to centre as `interpolate`
-     * says, dropping to `origin` across a gap; `span` is a band across the whole plot from `x` to
-     * `x2`; `text` prints a field
-     * over the middle of `x` to `x2`, just above `y` where it names one, at
-     * the apex of a link drawn between the same two ends, and in the middle of
-     * its band otherwise, and the display omits a label that would overlap one
-     * already placed to its left; `link` is a curve from `x` up
-     * and over to `x2`, which may lie on another sequence, its apex at `y`
-     * where it names one.
+     * What the mark draws, a [](/docs/config/markdef) object or its `type`
+     * alone: `bar`, `point`, `rule`, `line`, `span`, `text` or `link`.
      */
-    mark: {
-      type: 'stringEnum',
-      model: types.enumeration('MarkType', [...MARK_TYPES]),
-      defaultValue: DEFAULT_MARK_TYPE,
-      description: 'bar, point, rule, line, span, text or link',
-    },
-    /**
-     * #slot marks.interpolate
-     * The path a `line` takes between values: `step` holds each across its
-     * span, as the data says; `linear` runs from one span's centre to the next,
-     * smoother where the spans are few. Read by a line alone.
-     */
-    interpolate: {
-      type: 'stringEnum',
-      model: types.enumeration('LineInterpolation', [...LINE_INTERPOLATIONS]),
-      defaultValue: DEFAULT_LINE_INTERPOLATE,
-      description: 'step or linear, for a line',
-    },
+    mark: markDefSchema,
     /**
      * #slot marks.gapBp
      * The stretch in bp a `linear` line breaks across rather than bridge:
