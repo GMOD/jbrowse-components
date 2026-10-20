@@ -697,6 +697,50 @@ describe('labels and trims across a seam between regions of one ref', () => {
     })
   })
 
+  // `sliver` shows 3bp of 43 past the seam; `snp` is whole and 2bp wide.
+  const sliverRegions = () => {
+    const second = labeledFeatureData([
+      { featureId: 'sliver', startBp: 960, endBp: 1003, height: 10 },
+      { featureId: 'snp', startBp: 1100, endBp: 1102, height: 10 },
+    ])
+    const sliverLabel = second.floatingLabelsData.get('sliver')!
+    sliverLabel.descriptionLabel = {
+      text: 'a repeat',
+      relativeY: 0,
+      textWidth: 40,
+    }
+    return new Map([
+      [0, pad],
+      [1, { ...second, regionStart: 1000, regionEnd: 1500 }],
+    ])
+  }
+  const labelsAt = (bpPerPx: number, pinned: string[] = []) =>
+    computeLaidOutData(sliverRegions(), {
+      bpPerPx,
+      showLabels: true,
+      showDescriptions: true,
+      reversedRegions: new Set<number>(),
+      displayMode: 'normal',
+      pinnedFeatureIds: new Set(pinned),
+    }).get(1)!.floatingLabelsData
+
+  it('names no sliver a seam cuts, and names a whole feature however small', () => {
+    const labels = labelsAt(1)
+    expect(labels.get('sliver')!.nameLabel).toBeUndefined()
+    expect(labels.get('sliver')!.descriptionLabel).toBeUndefined()
+    expect(labels.get('snp')!.nameLabel).toBeDefined()
+  })
+
+  it('names the sliver again once zooming in draws enough of it', () => {
+    const labels = labelsAt(0.5)
+    expect(labels.get('sliver')!.nameLabel).toBeDefined()
+    expect(labels.get('sliver')!.descriptionLabel).toBeDefined()
+  })
+
+  it('names a pinned sliver', () => {
+    expect(labelsAt(1, ['sliver']).get('sliver')!.nameLabel).toBeDefined()
+  })
+
   it("reserves a part's label from where the part draws", () => {
     const base = makeFeatureData({
       features: [

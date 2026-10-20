@@ -54,6 +54,8 @@ interface FeatureGeometry {
   readonly strand: number
   readonly densityFade: boolean
   readonly gene: boolean
+  // A hidden stretch between regions cuts it, so less of it draws than it spans.
+  readonly cut: boolean
   hasReversed: boolean
   hasNonReversed: boolean
 }
@@ -176,9 +178,12 @@ function gatherFeatureGeometry(
           existing.hasNonReversed = true
         }
       } else {
+        const startBp = toDrawnBp(item.startBp)
+        const endBp = toDrawnBp(item.endBp)
         features.set(item.featureId, {
-          startBp: toDrawnBp(item.startBp),
-          endBp: toDrawnBp(item.endBp),
+          startBp,
+          endBp,
+          cut: endBp - startBp < item.endBp - item.startBp,
           bodyHeightPx: bodyHeightPx(
             item.featureHeightPx,
             item.labelRows,
@@ -363,6 +368,10 @@ function overhangWidenedSpan(
   }
 }
 
+// A feature a hidden stretch cuts is named only once this much of it draws;
+// below it the name would label a sliver at a seam. Zooming in brings it back.
+const MIN_CUT_FEATURE_LABEL_PX = 5
+
 // Pure in `prep` and `trims`, returning fresh per-factor extents so a second
 // probe cannot see the first one's decisions.
 function decideLabelReservations(
@@ -385,6 +394,7 @@ function decideLabelReservations(
   const { labelInfoByFeatureId, features, overhangRoom } = prep
   const packed = new Map<string, PackedExtent>()
   const droppedNameIds = new Set<string>()
+  const droppedDescriptionIds = new Set<string>()
 
   for (const [id, geom] of features) {
     const labelInfo = labelInfoByFeatureId.get(id)
@@ -398,8 +408,13 @@ function decideLabelReservations(
     // Measured against the name's own width: a long description says nothing
     // about whether the name fits.
     const nameWidthPx = (labelInfo?.widths.name ?? 0) + badgeWidthPx
+    const sliver =
+      geom.cut &&
+      !pinnedFeatureIds.has(id) &&
+      (endBp - startBp) / bpPerPx < MIN_CUT_FEATURE_LABEL_PX
     const keepName =
       hasDrawableName &&
+      !sliver &&
       (geom.gene || !geneNamesOnly || pinnedFeatureIds.has(id)) &&
       keepFeatureLabel(
         labelDecimation,
@@ -412,8 +427,13 @@ function decideLabelReservations(
       droppedNameIds.add(id)
     }
     // A dropped name removes only the name, so a description still needs its
-    // row.
-    const keepDescription = showDescriptions && !!labelInfo?.hasDescription
+    // row; a sliver loses both.
+    const hasDrawableDescription =
+      showDescriptions && !!labelInfo?.hasDescription
+    const keepDescription = hasDrawableDescription && !sliver
+    if (hasDrawableDescription && !keepDescription) {
+      droppedDescriptionIds.add(id)
+    }
 
     const labelLines = (keepName ? 1 : 0) + (keepDescription ? 1 : 0)
 
@@ -444,7 +464,7 @@ function decideLabelReservations(
       labelTopPx: labelLines * labelFontPx > 0 ? bodyHeightPx : undefined,
     })
   }
-  return { packed, droppedNameIds }
+  return { packed, droppedNameIds, droppedDescriptionIds }
 }
 
 // Sorts after every real row, so a new feature fills gaps rather than
@@ -551,11 +571,11 @@ function packSingleRow(
   inputs: LayoutInputs,
   rowPadding: number,
   droppedNameIds: Set<string>,
+  droppedDescriptionIds: Set<string>,
 ) {
   const { bpPerPx, pinnedFeatureIds } = inputs
   const layoutMap = new Map<string, number>()
   const layoutHeights = new Map<string, number>()
-  const droppedDescriptionIds = new Set<string>()
   const kept: [number, number][] = []
   // Collapsed mode reserves no labels, so it skips the sort.
   const ordered = [...packed.values()].some(e => e.labelTopPx !== undefined)
@@ -593,12 +613,8 @@ export function packPreparedRef(
   const { features, collapsedFeatureIds, collapsedSpansPx, originPartners } =
     prep
   const { trimPlan } = trims
-  const { packed, droppedNameIds } = decideLabelReservations(
-    prep,
-    trims,
-    inputs,
-    metrics,
-  )
+  const { packed, droppedNameIds, droppedDescriptionIds } =
+    decideLabelReservations(prep, trims, inputs, metrics)
 
   if (singleRow) {
     return {
@@ -608,6 +624,7 @@ export function packPreparedRef(
         inputs,
         metrics.rowPadding,
         droppedNameIds,
+        droppedDescriptionIds,
       ),
       droppedNameIds,
       trimPlan,
@@ -672,7 +689,7 @@ export function packPreparedRef(
     layoutMap,
     layoutHeights,
     droppedNameIds,
-    droppedDescriptionIds: new Set<string>(),
+    droppedDescriptionIds,
     trimPlan,
   }
 }
