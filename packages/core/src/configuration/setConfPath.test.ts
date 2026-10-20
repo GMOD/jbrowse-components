@@ -7,6 +7,7 @@ import {
   mergeConfSettings,
   readConfObject,
   setConf,
+  writesWholeAt,
 } from './index.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
@@ -340,4 +341,13 @@ describe('the declared write mode', () => {
       ),
     ).toEqual({ range: { end: 4 } })
   })
+})
+
+test('a channel is written whole, a namespace and a slot are not', () => {
+  expect(writesWholeAt(display, ['facet'])).toBe(true)
+  expect(writesWholeAt(display, ['scales'])).toBe(false)
+  expect(writesWholeAt(display, ['scales', 'y'])).toBe(false)
+  expect(writesWholeAt(display, ['height'])).toBe(false)
+  expect(writesWholeAt(display, ['nobody'])).toBe(false)
+  expect(writesWholeAt(display, [])).toBe(false)
 })

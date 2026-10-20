@@ -15,6 +15,7 @@ import { asArray, isRecord } from './snapshotUtils.ts'
 
 import type { HydratedForms } from './Session/hydratedForms.ts'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
+import type { WholeAt } from '@jbrowse/core/util'
 import type {
   IAnyStateTreeNode,
   IAnyType,
@@ -531,13 +532,14 @@ function splitTracksAgainstBase(
   tracks: TrackSnapshot[],
   baseTracks: TrackSnapshot[],
   form: HydratedForms['track'],
+  wholeAt: WholeAt,
 ) {
   const baseById = new Map(baseTracks.map(t => [t.trackId, t]))
   const addedTracks = tracks.filter(t => !baseById.has(t.trackId))
   const editDeltas = Object.fromEntries(
     tracks.flatMap((track): [string, Record<string, unknown>][] => {
       const base = baseById.get(track.trackId)
-      const delta = base && editedDelta(base, track, form)
+      const delta = base && editedDelta(base, track, form, wholeAt)
       return delta ? [[track.trackId, delta]] : []
     }),
   )
@@ -551,10 +553,11 @@ function editedDelta<T extends Record<string, unknown>>(
   base: T,
   edited: T,
   form: (conf: T) => T,
+  wholeAt?: WholeAt,
 ) {
   const hydratedBase = form(base)
-  const delta = diffTrackConfig(hydratedBase, form(edited))
-  return flattenTrackConfigDelta(hydratedBase, delta).length > 0
+  const delta = diffTrackConfig(hydratedBase, form(edited), wholeAt)
+  return flattenTrackConfigDelta(hydratedBase, delta, wholeAt).length > 0
     ? delta
     : undefined
 }
@@ -744,7 +747,12 @@ export function planWebExport(
   // defined exactly when the hostedConfigBase strategy applies, so it doubles as
   // the strategy flag for the shared tail below
   const hosted = coveredByBase
-    ? splitTracksAgainstBase(tracks, base.config.tracks ?? [], base.forms.track)
+    ? splitTracksAgainstBase(
+        tracks,
+        base.config.tracks ?? [],
+        base.forms.track,
+        base.forms.wholeAt,
+      )
     : undefined
 
   const session = withCarriedConfigs(

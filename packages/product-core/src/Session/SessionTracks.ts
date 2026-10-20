@@ -17,7 +17,7 @@ import {
 import { compareStructural, computed } from 'mobx'
 
 import { TracksManagerSessionMixin } from './Tracks.ts'
-import { hydratedTrackForm } from './hydratedForms.ts'
+import { displayWholeAt, hydratedTrackForm } from './hydratedForms.ts'
 import { assertNotReaddedDifferently } from './readdedTrackConf.ts'
 import { assertTrackConfOutlivesItsAssemblies } from './temporaryAssemblyTracks.ts'
 
@@ -28,6 +28,7 @@ import type {
   AnyTrackConfig,
   TrackConfigEntry,
 } from '@jbrowse/core/configuration'
+import type { WholeAt } from '@jbrowse/core/util'
 import type {
   IAnyStateTreeNode,
   IAnyType,
@@ -67,8 +68,9 @@ function sessionEntries(self: { sessionTracks: IAnyStateTreeNode }) {
 function deltaHasChanges(
   base: PlainTrackConfig,
   delta: PlainTrackConfig,
+  wholeAt: WholeAt,
 ): boolean {
-  return flattenTrackConfigDelta(base, delta).length > 0
+  return flattenTrackConfigDelta(base, delta, wholeAt).length > 0
 }
 
 // The assemblies a track config names that the config.json does not carry.
@@ -134,6 +136,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
   // both sides go through the same schema first; a base is memoized per
   // frozen-base identity, which is stable until a jbrowse.tracks write.
   const hydrate = hydratedTrackForm(pluginManager)
+  const wholeAt = displayWholeAt(pluginManager)
   const canonicalBaseCache = new WeakMap<object, TrackConfigEntry>()
   function toPlainConfig(base: TrackConfigEntry): TrackConfigEntry {
     const cached = canonicalBaseCache.get(base)
@@ -227,7 +230,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         if (cached?.delta === delta) {
           return cached.merged
         }
-        const merged = mergeTrackConfig(toPlainConfig(base), delta)
+        const merged = mergeTrackConfig(toPlainConfig(base), delta, wholeAt)
         mergeCache.set(base, { delta, merged })
         return merged
       }
@@ -366,7 +369,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           // edited one has a delta, so an unedited row subscribes to no base.
           const delta = deltaFor(trackId)
           const base = delta ? baseFor(trackId) : undefined
-          return delta && base ? flattenTrackConfigDelta(base, delta) : []
+          return delta && base
+            ? flattenTrackConfigDelta(base, delta, wholeAt)
+            : []
         },
       }
     })
@@ -409,10 +414,11 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
             const delta = diffTrackConfig(
               plainBase,
               getSnapshot(track),
+              wholeAt,
             ) as PlainTrackConfig
             // a legacy override identical to its base contributes no changed
             // slots: drop it rather than migrate a content-free delta
-            if (deltaHasChanges(plainBase, delta)) {
+            if (deltaHasChanges(plainBase, delta, wholeAt)) {
               deltas[track.trackId] = delta
             }
           }
@@ -633,9 +639,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
             const delta = diffTrackConfig(
               plainBase,
               inTrackForm(trackConf),
+              wholeAt,
             ) as PlainTrackConfig
             // an edit that nets back to the base clears any prior override
-            if (deltaHasChanges(plainBase, delta)) {
+            if (deltaHasChanges(plainBase, delta, wholeAt)) {
               // Two views showing the same track each run BaseTrackModel's
               // persist reaction against the shared config node, so a single edit
               // calls this twice with an identical delta (and the config editor
@@ -686,6 +693,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
               mergeTrackConfig(
                 toPlainConfig(base),
                 self.trackConfigDeltas[id]!,
+                wholeAt,
               ),
             )
             writeDelta(id, undefined)

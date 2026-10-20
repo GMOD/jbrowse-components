@@ -26,8 +26,13 @@
  * to a literal `null`; null and absent are one state.
  *
  * `displays` is merged by `displayId` so an edit to one display doesn't pin the
- * others, and by `type` where the base has no display of that id. Nested config objects (e.g. `adapter`) recurse. Any other array (value
- * arrays like `filter`, `assemblyNames`) is replaced wholesale when changed.
+ * others, and by `type` where the base has no display of that id. Nested config
+ * objects (e.g. `adapter`) recurse, except an object the display's schema
+ * writes whole (`wholeAt`, a channel such as `color` or `rows`): its members
+ * are alternatives, so a user's pick stores the whole object and replaces the
+ * base's, and an admin's later member there no longer reaches that user. Any
+ * other array (value arrays like `filter`, `assemblyNames`) is replaced
+ * wholesale when changed.
  *
  * Subtlety worth not "optimizing": when the base has NO `displays` array but the
  * edited snapshot does (common — a track config that omits displays gets a stub
@@ -66,14 +71,41 @@ function isDisplayArray(v: Json): v is JsonObject[] {
   )
 }
 
+/**
+ * Whether a display of `displayType` writes the object at `path` inside it
+ * whole, its schema declaring `writes: 'whole'`.
+ */
+export type WholeAt = (displayType: string, path: readonly string[]) => boolean
+
+// Where a walk stands: inside a display of `type`, at `path` within it.
+interface At {
+  wholeAt?: WholeAt
+  type?: string
+  path: string[]
+}
+
+const childAt = (at: At, key: string): At => ({
+  ...at,
+  path: [...at.path, key],
+})
+
+const displayAt = (at: At, ...displays: (JsonObject | undefined)[]): At => ({
+  ...at,
+  type: displays.map(d => d?.type).find(t => typeof t === 'string'),
+  path: [],
+})
+
+const isWhole = (at: At) =>
+  at.type !== undefined && !!at.wholeAt?.(at.type, at.path)
+
 const UNCHANGED = Symbol('unchanged')
 
-function diffValue(base: Json, edited: Json): Json | typeof UNCHANGED {
+function diffValue(base: Json, edited: Json, at: At): Json | typeof UNCHANGED {
   if (edited == null) {
     if (base == null) {
       return UNCHANGED
     }
-    return isPlainObject(base) ? diffValue(base, {}) : null
+    return isPlainObject(base) && !isWhole(at) ? diffValue(base, {}, at) : null
   }
   if (deepEqual(base, edited)) {
     return UNCHANGED
@@ -85,7 +117,11 @@ function diffValue(base: Json, edited: Json): Json | typeof UNCHANGED {
       const id = editedDisplay.displayId as string
       const baseDisplay = baseById.get(id)
       if (baseDisplay) {
-        const d = diffValue(baseDisplay, editedDisplay)
+        const d = diffValue(
+          baseDisplay,
+          editedDisplay,
+          displayAt(at, editedDisplay, baseDisplay),
+        )
         if (d !== UNCHANGED) {
           out.push({ ...(d as JsonObject), displayId: id })
         }
@@ -95,10 +131,10 @@ function diffValue(base: Json, edited: Json): Json | typeof UNCHANGED {
     }
     return out.length > 0 ? out : UNCHANGED
   }
-  if (isPlainObject(edited) && isPlainObject(base)) {
+  if (isPlainObject(edited) && isPlainObject(base) && !isWhole(at)) {
     const out: JsonObject = {}
     for (const k of new Set([...Object.keys(base), ...Object.keys(edited)])) {
-      const d = diffValue(base[k], edited[k])
+      const d = diffValue(base[k], edited[k], childAt(at, k))
       if (d !== UNCHANGED) {
         out[k] = d
       }
@@ -116,8 +152,12 @@ function diffValue(base: Json, edited: Json): Json | typeof UNCHANGED {
 export function diffTrackConfig(
   base: Record<string, unknown>,
   edited: Record<string, unknown>,
+  wholeAt?: WholeAt,
 ): Record<string, unknown> {
-  const d = diffValue(base as JsonObject, edited as JsonObject)
+  const d = diffValue(base as JsonObject, edited as JsonObject, {
+    wholeAt,
+    path: [],
+  })
   const delta = d === UNCHANGED ? {} : (d as JsonObject)
   const trackId = (edited.trackId ?? base.trackId) as Json
   return { ...delta, trackId }
@@ -126,7 +166,7 @@ export function diffTrackConfig(
 // A delta display naming an id the base lacks lands on the base display of its
 // type, keeping the base's id: a track holds one display per type, and a
 // migrated session addresses the display by the id its old type minted.
-function mergeValue(base: Json, delta: Json): Json {
+function mergeValue(base: Json, delta: Json, at: At): Json {
   if (isDisplayArray(delta)) {
     const baseDisplays = isDisplayArray(base) ? base : []
     const baseIds = new Set(baseDisplays.map(d => d.displayId as string))
@@ -142,7 +182,17 @@ function mergeValue(base: Json, delta: Json): Json {
         const earlier = deltaByBaseId.get(id)
         deltaByBaseId.set(
           id,
-          earlier ? (mergeValue(earlier, onId) as JsonObject) : onId,
+          earlier
+            ? (mergeValue(
+                earlier,
+                onId,
+                displayAt(
+                  at,
+                  onId,
+                  baseDisplays.find(b => b.displayId === id),
+                ),
+              ) as JsonObject)
+            : onId,
         )
       } else {
         added.push(d)
@@ -150,25 +200,38 @@ function mergeValue(base: Json, delta: Json): Json {
     }
     const merged = baseDisplays.map(baseDisplay => {
       const d = deltaByBaseId.get(baseDisplay.displayId as string)
-      return d ? (mergeValue(baseDisplay, d) as JsonObject) : baseDisplay
+      return d
+        ? (mergeValue(
+            baseDisplay,
+            d,
+            displayAt(at, d, baseDisplay),
+          ) as JsonObject)
+        : baseDisplay
     })
     for (const d of added) {
-      merged.push(mergeValue(undefined, d) as JsonObject)
+      merged.push(mergeValue(undefined, d, displayAt(at, d)) as JsonObject)
     }
     return merged
   }
-  if (isPlainObject(delta)) {
+  if (isPlainObject(delta) && !isWhole(at)) {
     const out: JsonObject = isPlainObject(base) ? { ...base } : {}
     for (const [k, v] of Object.entries(delta)) {
       if (v === null) {
         delete out[k]
       } else {
-        out[k] = mergeValue(out[k], v)
+        out[k] = mergeValue(out[k], v, childAt(at, k))
       }
     }
     return out
   }
-  return delta
+  return isPlainObject(delta) ? withoutNulls(delta) : delta
+}
+
+// A whole object replaces the base's, so a `null` in it names nothing to
+// reset; one written member by member before a schema declared the object
+// whole drops it rather than handing the config a null.
+function withoutNulls(o: JsonObject) {
+  return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== null))
 }
 
 /**
@@ -180,8 +243,12 @@ function mergeValue(base: Json, delta: Json): Json {
 export function mergeTrackConfig<BASE extends Record<string, unknown>>(
   base: BASE,
   delta: Record<string, unknown>,
+  wholeAt?: WholeAt,
 ): BASE {
-  return mergeValue(base as JsonObject, delta as JsonObject) as BASE
+  return mergeValue(base as JsonObject, delta as JsonObject, {
+    wholeAt,
+    path: [],
+  }) as BASE
 }
 
 /**
@@ -225,6 +292,7 @@ function walkDelta(
   delta: Json,
   path: string[],
   out: TrackConfigChange[],
+  at: At,
   identityKeys: Set<string> = IDENTITY_KEYS,
 ): void {
   if (isDisplayArray(delta)) {
@@ -243,13 +311,21 @@ function walkDelta(
         editedDisplay,
         [...path, label],
         out,
+        displayAt(at, editedDisplay, baseDisplay),
         DISPLAY_IDENTITY_KEYS,
       )
+    }
+  } else if (isPlainObject(delta) && isPlainObject(base) && isWhole(at)) {
+    // the whole object replaces the base's, so a member it left out is reset
+    for (const k of new Set([...Object.keys(base), ...Object.keys(delta)])) {
+      if (!deepEqual(base[k], delta[k])) {
+        out.push({ path: [...path, k], from: base[k], to: delta[k] })
+      }
     }
   } else if (isPlainObject(delta) && isPlainObject(base)) {
     for (const [k, v] of Object.entries(delta)) {
       if (!identityKeys.has(k)) {
-        walkDelta(base[k], v, [...path, k], out)
+        walkDelta(base[k], v, [...path, k], out, childAt(at, k))
       }
     }
   } else {
@@ -266,8 +342,12 @@ function walkDelta(
 export function flattenTrackConfigDelta(
   base: Record<string, unknown>,
   delta: Record<string, unknown>,
+  wholeAt?: WholeAt,
 ): TrackConfigChange[] {
   const out: TrackConfigChange[] = []
-  walkDelta(base as JsonObject, delta as JsonObject, [], out)
+  walkDelta(base as JsonObject, delta as JsonObject, [], out, {
+    wholeAt,
+    path: [],
+  })
   return out
 }

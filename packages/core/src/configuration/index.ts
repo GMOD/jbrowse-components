@@ -74,6 +74,7 @@ export {
   getConf,
   mergeConfSettings,
   setConf,
+  writesWholeAt,
 } from './getConf.ts'
 export type { ConfSettingsReport } from './getConf.ts'
 export { fillLocations } from './fillLocations.ts'

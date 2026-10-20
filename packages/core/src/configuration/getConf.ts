@@ -157,6 +157,30 @@ function namespaceMetadata(member: unknown) {
 
 /**
  * #api core/configuration
+ * Whether `schema` writes the object at `path` whole: a channel, which
+ * declares `writes: 'whole'`, where a namespace merges member by member.
+ * False for a path the schema does not declare.
+ */
+export function writesWholeAt(schema: unknown, path: readonly string[]) {
+  let member = schema
+  for (const key of path) {
+    const definition = isType(member)
+      ? getConfigurationSchemaMetadata(member)?.definition
+      : undefined
+    if (!definition || !Object.hasOwn(definition, key)) {
+      return false
+    }
+    member = definition[key]
+  }
+  return (
+    path.length > 0 &&
+    isType(member) &&
+    getConfigurationSchemaMetadata(member)?.options.writes === 'whole'
+  )
+}
+
+/**
+ * #api core/configuration
  * Two settings bags for one schema as one, `over` written after `under` the
  * way `applyConfSettings` writes a bag: a namespace's object merges member by
  * member at any depth, a bare value its shorthand lifts included, and a slot

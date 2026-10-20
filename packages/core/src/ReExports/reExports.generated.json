@@ -937,7 +937,8 @@
         "tabixIndexSchema",
         "tabixIndexSnapshot",
         "toCallbackValue",
-        "toFixedValue"
+        "toFixedValue",
+        "writesWholeAt"
       ],
       "worker": "real"
     },
@@ -3681,6 +3682,7 @@
         "POSITION_FIELDS",
         "STEP_OUTPUTS",
         "aggregateFieldName",
+        "isFieldPair",
         "isRowwise",
         "stepWrites",
         "stepsOutput"

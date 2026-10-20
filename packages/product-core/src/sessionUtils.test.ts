@@ -18,7 +18,11 @@ import type { HydratedForms } from './Session/hydratedForms.ts'
 import type { HostedBaseConfig } from './sessionUtils.ts'
 
 // the configs below are written the way a schema writes them back already
-const asWritten: HydratedForms = { track: t => t, assembly: a => a }
+const asWritten: HydratedForms = {
+  track: t => t,
+  assembly: a => a,
+  wholeAt: () => false,
+}
 
 function hub(config: HostedBaseConfig) {
   return { config, forms: asWritten }
@@ -32,6 +36,7 @@ const stripsDefaults: HydratedForms = {
     Array.isArray(aliases) && aliases.length === 0
       ? rest
       : { ...rest, aliases },
+  wholeAt: () => false,
 }
 
 const Item = types.model('Item', {

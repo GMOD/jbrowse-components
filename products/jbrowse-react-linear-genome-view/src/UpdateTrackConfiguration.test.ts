@@ -115,6 +115,36 @@ test('an edit handed in as its config is written records only the edit', () => {
   })
 })
 
+// A color object's members are alternatives, so a pick replaces the base's
+// whole rather than leaving its domain under the new field.
+test('a color pick stores the whole object and resolves without the base members', () => {
+  const colored = {
+    ...track,
+    displays: [
+      {
+        ...track.displays[0],
+        color: { field: 'type', domain: ['gene', 'mRNA'] },
+      },
+    ],
+  }
+  const state = createViewState({ assembly, tracks: [colored] })
+  const session = state.session as unknown as DeltaSession
+  session.updateTrackConfiguration({
+    ...colored,
+    displays: [{ ...colored.displays[0], color: { field: 'strand' } }],
+  })
+  expect(session.trackConfigDeltas[TRACK_ID]!.displays).toEqual([
+    { displayId: DISPLAY_ID, color: { field: 'strand' } },
+  ])
+  const resolved = session.tracks.find(t => t.trackId === TRACK_ID)!
+  const { displays } = hydratedSnapshot(state, resolved) as {
+    displays: { displayId: string; color?: unknown }[]
+  }
+  expect(displays.find(d => d.displayId === DISPLAY_ID)!.color).toEqual({
+    field: 'strand',
+  })
+})
+
 test('re-persisting a hydrated config with only injected display stubs stores no delta', () => {
   // a track config that omits `displays`; hydration injects {type, displayId}
   // stubs. Persisting that hydrated snapshot back (no real user edit) must not

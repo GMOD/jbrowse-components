@@ -6,7 +6,11 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { HydratedForms, WebExportInput } from '@jbrowse/product-core'
 
 // the configs below are written the way a schema writes them back already
-const asWritten: HydratedForms = { track: t => t, assembly: a => a }
+const asWritten: HydratedForms = {
+  track: t => t,
+  assembly: a => a,
+  wholeAt: () => false,
+}
 
 // stands in for the live session, for copyTextWithSession's notification
 const session = { notify: () => {} } as unknown as AbstractSessionModel

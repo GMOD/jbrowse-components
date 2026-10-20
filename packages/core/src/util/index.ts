@@ -573,7 +573,7 @@ export {
   flattenTrackConfigDelta,
   mergeTrackConfig,
 } from './trackConfigDelta.ts'
-export type { TrackConfigChange } from './trackConfigDelta.ts'
+export type { TrackConfigChange, WholeAt } from './trackConfigDelta.ts'
 export {
   BEZIER_CONNECTOR_MAX_REACH_PX,
   CUBIC_APEX_RATIO,

@@ -462,3 +462,75 @@ test('flatten reports a renderer type swap inside a display', () => {
     },
   ])
 })
+
+describe('an object the display writes whole', () => {
+  const wholeAt = (type: string, path: readonly string[]) =>
+    type === 'LinearVariantDisplay' && path.join('.') === 'color'
+  const withColor = (color: Record<string, unknown>) => {
+    const conf = clone(base)
+    conf.displays[1]!.color = color
+    return conf
+  }
+  const typeColors = withColor({ field: 'type', domain: ['SNV', 'INDEL'] })
+  const strandPick = withColor({ field: 'strand' })
+
+  test('a pick stores the object whole, and replaces the base', () => {
+    const delta = diffTrackConfig(typeColors, strandPick, wholeAt)
+    expect(asCfg(delta).displays).toEqual([
+      { displayId: 'vcf-Linear', color: { field: 'strand' } },
+    ])
+    expect(mergeTrackConfig(typeColors, delta, wholeAt)).toEqual(strandPick)
+  })
+
+  test("an admin's later member stays out of the user's pick", () => {
+    const delta = diffTrackConfig(typeColors, strandPick, wholeAt)
+    const adminAddsRange = withColor({
+      field: 'type',
+      domain: ['SNV', 'INDEL'],
+      range: ['red', 'blue'],
+    })
+    expect(
+      asCfg(mergeTrackConfig(adminAddsRange, delta, wholeAt)).displays[1]!
+        .color,
+    ).toEqual({ field: 'strand' })
+  })
+
+  test('a reset is one null, and the change list names each member it moved', () => {
+    const reset = clone(typeColors)
+    delete reset.displays[1]!.color
+    const delta = diffTrackConfig(typeColors, reset, wholeAt)
+    expect(asCfg(delta).displays).toEqual([
+      { displayId: 'vcf-Linear', color: null },
+    ])
+    expect(
+      flattenTrackConfigDelta(
+        typeColors,
+        diffTrackConfig(typeColors, strandPick, wholeAt),
+        wholeAt,
+      ).map(c => [c.path.join('.'), c.to]),
+    ).toEqual([
+      ['displays.LinearVariantDisplay.color.field', 'strand'],
+      ['displays.LinearVariantDisplay.color.domain', undefined],
+    ])
+  })
+
+  test('a member delta written before the object was whole drops its nulls', () => {
+    expect(
+      asCfg(
+        mergeTrackConfig(
+          typeColors,
+          {
+            trackId: 'vcf',
+            displays: [
+              {
+                displayId: 'vcf-Linear',
+                color: { field: 'strand', domain: null },
+              },
+            ],
+          },
+          wholeAt,
+        ),
+      ).displays[1]!.color,
+    ).toEqual({ field: 'strand' })
+  })
+})

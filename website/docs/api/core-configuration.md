@@ -357,3 +357,18 @@ import { setConf } from '@jbrowse/core/configuration'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
+
+## writesWholeAt
+
+Whether `schema` writes the object at `path` whole: a channel, which
+declares `writes: 'whole'`, where a namespace merges member by member.
+False for a path the schema does not declare.
+
+```js
+import { writesWholeAt } from '@jbrowse/core/configuration'
+
+// type signature
+(schema: unknown, path: readonly string[]) => boolean
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
