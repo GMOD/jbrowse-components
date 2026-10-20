@@ -100,10 +100,14 @@ export type { ScoreScaleHost } from './ScoreScaleMixin.ts'
 export { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'
 export type { WiggleScoreConfigHost } from './WiggleScoreConfigMixin.ts'
 export { YFieldConfigMixin } from './YFieldConfigMixin.ts'
+export { yFieldConfigSchemaFields } from './yFieldConfigSchemaFields.ts'
 export {
   DEFAULT_SCORE_FIELD,
-  yFieldConfigSchemaFields,
-} from './yFieldConfigSchemaFields.ts'
+  SUMMARY_FIELDS,
+  isSummaryField,
+  summaryFieldOf,
+} from './summaryFields.ts'
+export type { SummaryField } from './summaryFields.ts'
 
 export {
   MAX_WIGGLE_CUTS,

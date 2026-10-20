@@ -1,5 +1,5 @@
 // Turning one source's score arrays into the render layers a backend draws:
-// which bands an aggregate shows, how each is tinted, and whether a band
+// which bands a summary field shows, how each is tinted, and whether a band
 // splits into solid-color layers or stays whole with per-instance colors.
 // Consumed by buildSourceRenderData, which places the layers in rows.
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
@@ -88,8 +88,8 @@ interface ScoreBand {
   negTint: Tint
 }
 
-// The bands an aggregate and its extent draw, ordered outermost-first (max,
-// the aggregate, min).
+// The bands a summary field and its extent draw, ordered outermost-first (max,
+// the plotted summary, min).
 //
 // The tint is mirrored across the pivot so lightness always tracks magnitude,
 // not signed value: on the positive side the max band lightens and the min band
@@ -97,18 +97,18 @@ interface ScoreBand {
 // most-negative min band lightens and the least-negative max band darkens (most
 // negative = lightest red, not a dark brown).
 //
-// The aggregate alone draws one band, untinted: with no sibling band beside it
+// The plotted summary alone draws one band, untinted: with no sibling band beside it
 // there is no magnitude relationship for a tint to carry. A min-max extent
 // collapses to that band too when the data has no summary variation, since
 // processFeaturesFromArrays aliases min/max onto featureScores there and the
 // other two bands would paint the same values twice more.
 function summaryBands(
   data: FeatureArrays,
-  aggregate: string,
+  summaryField: string,
   extent: string,
 ): ScoreBand[] {
   const value = {
-    scores: getEffectiveScores(data, aggregate),
+    scores: getEffectiveScores(data, summaryField),
     posTint: noTint,
     negTint: noTint,
   }
@@ -207,7 +207,7 @@ function stackSides(
 }
 
 // The render layers one source contributes under a summary presentation
-// (the aggregate alone, or inside its min and max), colored by each value's sign vs
+// (the plotted summary alone, or inside its min and max), colored by each value's sign vs
 // the pivot so signed data (e.g. phyloP) reads as pos/neg. Line plots take
 // `lineLayers` instead. `summaryBands` decides which bands there are and this
 // decides how each becomes layers. Under a gradient both backends color bars
@@ -215,7 +215,7 @@ function stackSides(
 // all: filled bands still split at the origin for their painting order.
 export function makeSummaryLayers({
   data,
-  aggregate,
+  summaryField,
   extent,
   posColor,
   negColor,
@@ -227,7 +227,7 @@ export function makeSummaryLayers({
   gradient,
 }: {
   data: FeatureArrays
-  aggregate: string
+  summaryField: string
   extent: string
   posColor: [number, number, number]
   negColor: [number, number, number]
@@ -242,7 +242,7 @@ export function makeSummaryLayers({
   const { featurePositions, numFeatures } = data
   const isDensityMode = renderingType === RENDERING_TYPE_DENSITY
   const isFilled = renderingType === RENDERING_TYPE_XYPLOT
-  const bands = summaryBands(data, aggregate, extent)
+  const bands = summaryBands(data, summaryField, extent)
 
   // Split each band into solid-color pos/neg layers, or keep it whole and color
   // per instance? Two things force the split:
@@ -347,7 +347,7 @@ export function makeSummaryLayers({
 // which chorded the positive line across every negative stretch.
 export function lineLayers(
   data: FeatureArrays,
-  aggregate: string,
+  summaryField: string,
   extent: string,
   posColor: [number, number, number],
   negColor: [number, number, number],
@@ -355,7 +355,7 @@ export function lineLayers(
   const { featurePositions, numFeatures } = data
   const line = {
     featurePositions,
-    featureScores: getEffectiveScores(data, aggregate),
+    featureScores: getEffectiveScores(data, summaryField),
     numFeatures,
     color: posColor,
     negColor,

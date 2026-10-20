@@ -27,6 +27,7 @@
     "./constants": "./src/constants.ts",
     "./normalize": "./src/normalize.ts",
     "./renderingBackendTypes": "./src/renderingBackendTypes.ts",
+    "./summaryFields": "./src/summaryFields.ts",
     "./scoreAxisWidget": "./src/ScoreAxisWidget/index.ts"
   },
   "files": [
@@ -67,6 +68,7 @@
       "./constants": "./esm/constants.js",
       "./normalize": "./esm/normalize.js",
       "./renderingBackendTypes": "./esm/renderingBackendTypes.js",
+      "./summaryFields": "./esm/summaryFields.js",
       "./scoreAxisWidget": "./esm/ScoreAxisWidget/index.js"
     }
   },

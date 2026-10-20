@@ -8,6 +8,7 @@ import {
   makeMarkSizeSubMenu,
   makeResolutionSubMenuItem,
 } from '@jbrowse/wiggle-core/chrome'
+import { isSummaryField } from '@jbrowse/wiggle-core/summaryFields'
 import LineWeightIcon from '@mui/icons-material/LineWeight'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 
@@ -20,10 +21,11 @@ import {
 import { isLineMode, isScatterMode } from './wiggleComponentUtils.ts'
 
 import type { LineInterpolation, WiggleMark } from '../renderingTypes.ts'
-import type { Aggregate, Extent } from './aggregateConfigSchemaFields.ts'
+import type { Extent } from './extentConfigSchemaFields.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { RadioOption } from '@jbrowse/core/ui/menuItems'
+import type { SummaryField } from '@jbrowse/wiggle-core/summaryFields'
 
 const LAYOUTS = [
   ['rows', 'Multi-row'],
@@ -145,11 +147,11 @@ function formatResolution(n: number) {
 interface WithResolution {
   hasResolution: boolean
   resolution: number
-  aggregate: Aggregate
+  yField: string
   extent: Extent
   isDensityMode: boolean
   setResolution: (n: number) => void
-  setAggregate: (v: Aggregate) => void
+  setY: (field: string) => void
   setExtent: (v: Extent) => void
 }
 
@@ -178,27 +180,31 @@ export function makeResolutionSubMenu(self: WithResolution): MenuItem[] {
           onReset: () => {
             self.setResolution(1)
           },
-          trailingItems: [makeAggregateItem(self)],
+          trailingItems: isSummaryField(self.yField)
+            ? [makeSummaryItem(self)]
+            : [],
         }),
       ]
     : []
 }
 
-const AGGREGATE_OPTIONS: RadioOption<Aggregate>[] = [
-  { value: 'min', label: 'Minimum' },
-  { value: 'max', label: 'Maximum' },
-  { value: 'mean', label: 'Average' },
+const SUMMARY_OPTIONS: RadioOption<SummaryField>[] = [
+  { value: 'minScore', label: 'Minimum' },
+  { value: 'maxScore', label: 'Maximum' },
+  { value: 'score', label: 'Mean' },
 ]
 
 // In the Resolution submenu: both say how the fetched bins are read, and both
-// exist only where the adapter serves bins. Density maps score to color and
-// draws no min and max, so it offers no extent.
-function makeAggregateItem(self: WithResolution): MenuItem {
+// exist only where the adapter serves bins. The radio writes `y`, so it shows
+// only while `y` names a stored summary, and a click never replaces a field
+// the config chose. Density maps score to color and draws no min and max, so
+// it offers no extent.
+function makeSummaryItem(self: WithResolution): MenuItem {
   return {
     label: 'Bin summary',
     subMenu: [
-      ...radioItems(AGGREGATE_OPTIONS, self.aggregate, v => {
-        self.setAggregate(v)
+      ...radioItems(SUMMARY_OPTIONS, self.yField, v => {
+        self.setY(v)
       }),
       ...(self.isDensityMode
         ? []

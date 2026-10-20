@@ -40,14 +40,14 @@ test('an entry with no rendering is left alone', () => {
 })
 
 test.each([
-  ['avg', 'mean', 'none'],
-  ['max', 'max', 'none'],
-  ['whiskers', 'mean', 'min-max'],
+  ['avg', 'score', 'none'],
+  ['max', 'maxScore', 'none'],
+  ['whiskers', 'score', 'min-max'],
 ])(
-  'a v4 session’s summaryScoreMode %s is aggregate %s, extent %s',
-  (mode, aggregate, extent) => {
+  'a v4 session’s summaryScoreMode %s is y %s, extent %s',
+  (mode, y, extent) => {
     expect(retiredState.lift({ summaryScoreMode: mode })).toMatchObject({
-      aggregate,
+      y,
       extent,
     })
     expect(retiredState.keys).toContain('summaryScoreMode')

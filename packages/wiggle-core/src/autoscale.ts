@@ -57,13 +57,13 @@ export interface ScoreSpan {
   drawnKeys?: Uint8Array
 }
 
-/** The wiggle packer's arrays as a span, under an aggregate and an extent. */
+/** The wiggle packer's arrays as a span, under a summary field and an extent. */
 export function datasetSpan(
   { data, visStart, visEnd }: Dataset,
-  aggregate: string,
+  field: string,
   extent: string,
 ): ScoreSpan {
-  const { low, high } = boundArrays(aggregate, extent)
+  const { low, high } = boundArrays(field, extent)
   return {
     count: data.numFeatures,
     starts: data.featurePositions,
@@ -80,8 +80,8 @@ export function datasetSpan(
 
 /**
  * #api
- * Per-feature scalar score array for an aggregate: the min/max summary array
- * for `'min'`/`'max'`, otherwise the average score.
+ * The per-feature array a summary field names: `minScore` and `maxScore` the
+ * bins' stored extremes, anything else `score`, the bins' mean.
  */
 export function getEffectiveScores(
   data: {
@@ -89,11 +89,11 @@ export function getEffectiveScores(
     featureMinScores: Float32Array
     featureMaxScores: Float32Array
   },
-  aggregate: string,
+  field: string,
 ) {
-  return aggregate === 'min'
+  return field === 'minScore'
     ? data.featureMinScores
-    : aggregate === 'max'
+    : field === 'maxScore'
       ? data.featureMaxScores
       : data.featureScores
 }
@@ -110,15 +110,15 @@ function overlaps(
 
 // Which per-feature array each end of the domain comes from. A min-max extent
 // spreads the two ends across the min/max summary arrays; without one both come
-// from the aggregate's single array. One table because the data's span and the
+// from the plotted field's single array. One table because the data's span and the
 // clipped bound have to read the same arrays, or a domain clips its own data.
-function boundArrays(aggregate: string, extent: string) {
+function boundArrays(field: string, extent: string) {
   const minMax = extent === 'min-max'
   return {
     low: (data: FeatureArrays) =>
-      minMax ? data.featureMinScores : getEffectiveScores(data, aggregate),
+      minMax ? data.featureMinScores : getEffectiveScores(data, field),
     high: (data: FeatureArrays) =>
-      minMax ? data.featureMaxScores : getEffectiveScores(data, aggregate),
+      minMax ? data.featureMaxScores : getEffectiveScores(data, field),
   }
 }
 
@@ -209,11 +209,11 @@ export function computeSpanStats(spans: ScoreSpan[]): ScoreStats | undefined {
 
 /** `computeSpanStats` over the wiggle packer's datasets. */
 export function computeScoreStats(
-  aggregate: string,
+  field: string,
   datasets: Dataset[],
   extent: string,
 ): ScoreStats | undefined {
-  return computeSpanStats(datasets.map(d => datasetSpan(d, aggregate, extent)))
+  return computeSpanStats(datasets.map(d => datasetSpan(d, field, extent)))
 }
 
 /**
@@ -267,14 +267,14 @@ export function autoscaleDomainFromStats({
   stats,
   quantile,
   zero,
-  aggregate,
+  field,
   extent,
   visibleEntries,
 }: {
   stats: ScoreStats
   quantile: number
   zero: boolean
-  aggregate: string
+  field: string
   extent: string
   visibleEntries: Dataset[]
 }): [number, number] {
@@ -282,7 +282,7 @@ export function autoscaleDomainFromStats({
     stats,
     quantile,
     zero,
-    spans: visibleEntries.map(d => datasetSpan(d, aggregate, extent)),
+    spans: visibleEntries.map(d => datasetSpan(d, field, extent)),
   })
 }
 
@@ -294,7 +294,7 @@ export function autoscaleDomainFromStats({
  */
 export function computeAutoscaleDomain(
   quantile: number,
-  aggregate: string,
+  field: string,
   visibleEntries: {
     data: FeatureArrays
     visStart: number
@@ -303,7 +303,7 @@ export function computeAutoscaleDomain(
   zero: boolean,
   extent = 'none',
 ): [number, number] | undefined {
-  const spans = visibleEntries.map(d => datasetSpan(d, aggregate, extent))
+  const spans = visibleEntries.map(d => datasetSpan(d, field, extent))
   const stats = computeSpanStats(spans)
   return stats
     ? autoscaleDomainFromSpans({ stats, quantile, zero, spans })

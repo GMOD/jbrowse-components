@@ -171,7 +171,7 @@ function props(renderingType: string, extent: string): WiggleGpuProps {
       rampLut: null,
       rampMid: undefined,
     },
-    aggregate: 'mean',
+    summaryField: 'score',
     effectiveExtent: extent,
     renderingType,
     maxGapMultiple: 0,

@@ -41,9 +41,9 @@ function order(
   sources: { name: string }[],
   d: WiggleDataResult,
   bp: number,
-  aggregate = 'mean',
+  summaryField = 'score',
 ) {
-  return sortSourcesByScoreAt(sources, d, bp, aggregate).map(s => s.name)
+  return sortSourcesByScoreAt(sources, d, bp, summaryField).map(s => s.name)
 }
 
 test('ranks the rows at the clicked base, highest score first', () => {
@@ -63,7 +63,7 @@ test('returns the rows it was handed, not just their names', () => {
   const a = { name: 'a', color: 'red' }
   const b = { name: 'b', color: 'blue' }
 
-  expect(sortSourcesByScoreAt([a, b], d, 50, 'mean')).toEqual([b, a])
+  expect(sortSourcesByScoreAt([a, b], d, 50, 'score')).toEqual([b, a])
 })
 
 test('reads the feature covering the base, not the whole source', () => {
@@ -135,7 +135,7 @@ test('ranks by the summary band the plot is painting', () => {
     ],
   }
 
-  expect(order(rows('a', 'b', 'c'), d, 50, 'mean')).toEqual(['a', 'b', 'c'])
-  expect(order(rows('a', 'b', 'c'), d, 50, 'min')).toEqual(['b', 'c', 'a'])
-  expect(order(rows('a', 'b', 'c'), d, 50, 'max')).toEqual(['a', 'c', 'b'])
+  expect(order(rows('a', 'b', 'c'), d, 50, 'score')).toEqual(['a', 'b', 'c'])
+  expect(order(rows('a', 'b', 'c'), d, 50, 'minScore')).toEqual(['b', 'c', 'a'])
+  expect(order(rows('a', 'b', 'c'), d, 50, 'maxScore')).toEqual(['a', 'c', 'b'])
 })

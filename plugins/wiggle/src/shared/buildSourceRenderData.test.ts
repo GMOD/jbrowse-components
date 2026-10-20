@@ -51,17 +51,17 @@ const baseGpuProps: WiggleGpuProps = {
   perSource: false,
   wiggleColor: baseColor,
   origin: 0,
-  aggregate: 'mean',
+  summaryField: 'score',
   effectiveExtent: 'none',
   renderingType: 'xyplot',
   maxGapMultiple: DEFAULT_GAP_BREAK_MULTIPLE,
 }
 
-describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
+describe('buildSourceRenderData summaryField (bicolor, no solid color)', () => {
   test('mean mode is one layer colored by sign per instance', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      aggregate: 'mean',
+      summaryField: 'score',
       effectiveExtent: 'none',
     })
     expect(out).toHaveLength(1)
@@ -79,7 +79,7 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
   test('a min-max extent splits each band by sign for stacking (xyplot)', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      aggregate: 'mean',
+      summaryField: 'score',
       effectiveExtent: 'min-max',
     })
     expect(out.map(s => [...s.featureScores])).toEqual([
@@ -99,7 +99,7 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
     renderingType => {
       const out = buildSourceRenderData(makeData(), {
         ...baseGpuProps,
-        aggregate: 'mean',
+        summaryField: 'score',
         effectiveExtent: 'min-max',
         renderingType,
       })
@@ -126,7 +126,7 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
         ...baseGpuProps,
         sources: [{ name: 'default' }, { name: 'b' }],
         rowLayout: false,
-        aggregate: 'mean',
+        summaryField: 'score',
         effectiveExtent: 'min-max',
         renderingType: 'linecenter',
       },
@@ -153,7 +153,7 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
         ],
         rowLayout: false,
         perSource: true,
-        aggregate: 'mean',
+        summaryField: 'score',
         effectiveExtent: 'min-max',
         renderingType: 'linecenter',
       },
@@ -167,16 +167,16 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
   // band needs no split — its pos and neg bars grow away from the pivot in
   // opposite directions and never overlap — so the sign rides on the instance
   // colors and the layer count stays at one.
-  test.each(['min', 'max'] as const)(
+  test.each(['minScore', 'maxScore'] as const)(
     '%s mode colors its band by sign (xyplot)',
     mode => {
       const out = buildSourceRenderData(makeData(), {
         ...baseGpuProps,
-        aggregate: mode,
+        summaryField: mode,
       })
       expect(out).toHaveLength(1)
       expect([...out[0]!.featureScores]).toEqual(
-        mode === 'min' ? [2, -8] : [9, -1],
+        mode === 'minScore' ? [2, -8] : [9, -1],
       )
       const colors = out[0]!.colorsAbgr!
       expect(colors[0]).not.toEqual(colors[1])
@@ -187,15 +187,15 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
   // colored by pivot side when drawn: the worker's mean split would leave the
   // positive line chording across every negative stretch.
   test.each([
-    ['mean', [5, -5]],
-    ['min', [2, -8]],
-    ['max', [9, -1]],
+    ['score', [5, -5]],
+    ['minScore', [2, -8]],
+    ['maxScore', [9, -1]],
   ] as const)(
     '%s mode on a line plot is one line over every bin',
     (mode, scores) => {
       const out = buildSourceRenderData(makeData(), {
         ...baseGpuProps,
-        aggregate: mode,
+        summaryField: mode,
         renderingType: 'linecenter',
       })
       expect(out.map(s => [...s.featureScores])).toEqual([scores])
@@ -209,7 +209,7 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
   test('min mode splits the band into pos/neg layers in density', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      aggregate: 'min',
+      summaryField: 'minScore',
       effectiveExtent: 'none',
       renderingType: 'density',
     })
@@ -222,7 +222,7 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
   test('min mode in density emits one layer when the band stays above the pivot', () => {
     const out = buildSourceRenderData(makePositiveData(), {
       ...baseGpuProps,
-      aggregate: 'min',
+      summaryField: 'minScore',
       effectiveExtent: 'none',
       renderingType: 'density',
     })
@@ -237,7 +237,7 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
   test('density + mean splits into solid pos/neg layers', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      aggregate: 'mean',
+      summaryField: 'score',
       effectiveExtent: 'none',
       renderingType: 'density',
     })
@@ -251,7 +251,7 @@ describe('buildSourceRenderData pos/neg coloring', () => {
   test('faceted: the two sides of the pivot pack distinct colors', () => {
     const [layer] = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      aggregate: 'mean',
+      summaryField: 'score',
       effectiveExtent: 'none',
     })
     const [above, below] = layer!.colorsAbgr!
@@ -270,7 +270,7 @@ describe('buildSourceRenderData pos/neg coloring', () => {
       },
       {
         ...baseGpuProps,
-        aggregate: 'mean',
+        summaryField: 'score',
         effectiveExtent: 'none',
         sources: [
           { name: 'default', color: '#00ff00' },
@@ -289,7 +289,7 @@ describe('buildSourceRenderData pos/neg coloring', () => {
   test('a lone source keeps both pivot colors unfaceted', () => {
     const [layer] = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      aggregate: 'mean',
+      summaryField: 'score',
       effectiveExtent: 'none',
       rowLayout: false,
     })
@@ -317,7 +317,7 @@ describe('buildSourceRenderData source list', () => {
   test('a source missing from the payload keeps its row index', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      aggregate: 'mean',
+      summaryField: 'score',
       effectiveExtent: 'none',
       sources: [{ name: 'absent' }, { name: 'default' }],
     })

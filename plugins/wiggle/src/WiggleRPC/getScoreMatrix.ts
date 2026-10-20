@@ -5,20 +5,21 @@ import {
   columnMeans,
   columnSegments,
 } from '@jbrowse/tree-sidebar/binColumns'
+import { summaryFieldOf } from '@jbrowse/wiggle-core/summaryFields'
 
 import { fetchSourceRaws } from '../fetchRegionRaws.ts'
 
-import type { Aggregate } from '../shared/aggregateConfigSchemaFields.ts'
 import type { RawFeatureArrays } from '../util.ts'
 import type { GetScoreMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
 import type { ColumnSegment } from '@jbrowse/tree-sidebar/binColumns'
+import type { SummaryField } from '@jbrowse/wiggle-core/summaryFields'
 
-function aggregateScores(raw: RawFeatureArrays, aggregate: Aggregate) {
-  return aggregate === 'min'
+function summaryScores(raw: RawFeatureArrays, field: SummaryField) {
+  return field === 'minScore'
     ? (raw.minScores ?? raw.scores)
-    : aggregate === 'max'
+    : field === 'maxScore'
       ? (raw.maxScores ?? raw.scores)
       : raw.scores
 }
@@ -29,10 +30,10 @@ function addValues(
   seg: ColumnSegment,
   invBpPerPx: number,
   raw: RawFeatureArrays,
-  aggregate: Aggregate,
+  field: SummaryField,
 ) {
   const { starts, ends, count } = raw
-  const scores = aggregateScores(raw, aggregate)
+  const scores = summaryScores(raw, field)
   for (let i = 0; i < count; i++) {
     const score = scores[i]!
     if (!Number.isNaN(score)) {
@@ -52,7 +53,8 @@ export async function getScoreMatrix({
   args: GetScoreMatrixArgs & RpcCallContext
   pluginManager: PluginManager
 }) {
-  const { sources, regions, bpPerPx, aggregate, signal } = args
+  const { sources, regions, bpPerPx, yField = 'score', signal } = args
+  const field = summaryFieldOf(yField)
   const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
   const { segments, width, invBpPerPx } = columnSegments(regions, bpPerPx)
@@ -103,7 +105,7 @@ export async function getScoreMatrix({
     for (const [i, seg] of segments.entries()) {
       const values = perRegion?.[i]
       if (values) {
-        addValues(sums, counts, seg, invBpPerPx, values, aggregate)
+        addValues(sums, counts, seg, invBpPerPx, values, field)
       }
     }
     columnMeans(sums, counts, 0, row)

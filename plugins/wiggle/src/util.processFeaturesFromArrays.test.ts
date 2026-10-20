@@ -201,6 +201,29 @@ describe('processFeaturesFromArrays', () => {
     ])
   })
 
+  // A raw record is its own bin, so `maxScore` on one is its score; reading
+  // the feature's own `maxScore` plotted every raw record at 0.
+  test('featuresToRaw reads a stored summary y as score with its min and max', () => {
+    const features = [
+      feature({ start: 0, end: 10, score: 5 }, 0),
+      feature(
+        {
+          start: 10,
+          end: 20,
+          score: 7,
+          summary: true,
+          minScore: 3,
+          maxScore: 9,
+        },
+        1,
+      ),
+    ]
+    const raw = featuresToRaw(features, 'maxScore')
+    expect(Array.from(raw.scores)).toEqual([5, 7])
+    expect(Array.from(raw.maxScores!)).toEqual([5, 9])
+    expect(Array.from(raw.minScores!)).toEqual([5, 3])
+  })
+
   // The display's `yField` slot names which field a fallback adapter's
   // features plot; `score` stays the default so every existing config reads
   // as before, and a feature with nothing in the named field plots at 0.

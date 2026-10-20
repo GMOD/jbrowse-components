@@ -10,22 +10,48 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 // minimal stand-in for the display: resolution + the clamping setter, the only
 // bits the stepper reads/writes
-function makeSelf(resolution: number) {
+function makeSelf(resolution: number, yField = 'score') {
   const calls: number[] = []
+  const ys: string[] = []
   return {
     calls,
+    ys,
     hasResolution: true,
     resolution,
-    aggregate: 'mean' as const,
+    yField,
     extent: 'none' as const,
     isDensityMode: false,
     setResolution: (n: number) => {
       calls.push(n)
     },
-    setAggregate: () => {},
+    setY: (field: string) => {
+      ys.push(field)
+    },
     setExtent: () => {},
   }
 }
+
+function binSummaryOf(self: ReturnType<typeof makeSelf>) {
+  const item = makeResolutionSubMenu(self)[0]!
+  const rows = 'subMenu' in item ? resolveSubMenu(item) : []
+  return rows.find(r => 'label' in r && r.label === 'Bin summary')
+}
+
+test('the bin summary radio writes y', () => {
+  const self = makeSelf(1)
+  const summary = binSummaryOf(self)!
+  const max = resolveSubMenu(summary).find(
+    r => 'label' in r && r.label === 'Maximum',
+  )!
+  if ('onClick' in max) {
+    max.onClick()
+  }
+  expect(self.ys).toEqual(['maxScore'])
+})
+
+test('a y outside the stored summaries hides the bin summary radio', () => {
+  expect(binSummaryOf(makeSelf(1, 'jexl:get(feature,"depth")'))).toBe(undefined)
+})
 
 function renderStepper(resolution: number) {
   const self = makeSelf(resolution)

@@ -22,10 +22,9 @@ import type {
 } from '../renderingTypes.ts'
 import type { WiggleHoveredFeature } from '../util.ts'
 import type {
-  Aggregate,
   Extent,
-  aggregateConfigSchemaFields,
-} from './aggregateConfigSchemaFields.ts'
+  extentConfigSchemaFields,
+} from './extentConfigSchemaFields.ts'
 import type { wiggleConfigSchemaFields } from './wiggleConfigSchemaFields.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -46,7 +45,7 @@ export const wiggleCommonExtraSlots = {
 
 type WiggleCommonConfigModel = ConfigModelForFields<
   typeof wiggleConfigSchemaFields &
-    ReturnType<typeof aggregateConfigSchemaFields> &
+    ReturnType<typeof extentConfigSchemaFields> &
     typeof wiggleCommonExtraSlots
 >
 
@@ -77,7 +76,7 @@ export const RESOLUTION_STEP = 2
  *
  * Extends `YFieldConfigMixin` with the narrowed rpcDataMap, the autoscale
  * domain and the wiggle-specific config: the origin, rendering type,
- * aggregate, resolution and the line/gap settings. Extended on this chain
+ * resolution and the line/gap settings. Extended on this chain
  * with `.props()`/`.views()` rather than a mixin composed in, so no
  * `types.compose` layer is added (ADR-041).
  *
@@ -144,12 +143,6 @@ export function WiggleCommonMixin() {
       /**
        * #getter
        */
-      get aggregate(): Aggregate {
-        return getConf(confNode(self), 'aggregate')
-      },
-      /**
-       * #getter
-       */
       get extent(): Extent {
         return getConf(confNode(self), 'extent')
       },
@@ -182,7 +175,7 @@ export function WiggleCommonMixin() {
        * The extent actually drawn. Density maps score to color and has no
        * min-max presentation, so the autoscale domain reads this rather than
        * the raw slot; otherwise the color ramp spans the min and max while
-       * the plot paints the aggregate, and the score legend reports a range
+       * the plot paints one summary, and the score legend reports a range
        * nothing on screen reaches. Single-wiggle defaults to min-max, so plain
        * "plot type → Density" hit this.
        */
@@ -195,7 +188,9 @@ export function WiggleCommonMixin() {
        * drawn, or where the bar is one of them rather than the mean.
        */
       get tooltipShowsMinMax() {
-        return this.effectiveExtent === 'min-max' || this.aggregate !== 'mean'
+        return (
+          this.effectiveExtent === 'min-max' || self.summaryField !== 'score'
+        )
       },
     }))
     .views(() => ({
@@ -241,14 +236,14 @@ export function WiggleCommonMixin() {
               source => names === undefined || names.has(source.name),
             ),
           accumulate: entries =>
-            computeScoreStats(self.aggregate, entries, self.effectiveExtent),
+            computeScoreStats(self.summaryField, entries, self.effectiveExtent),
           range: (stats, entries) =>
             widenRangeToRules(
               autoscaleDomainFromStats({
                 stats,
                 quantile: self.domainQuantile,
                 zero: self.axisReachesZero,
-                aggregate: self.aggregate,
+                field: self.summaryField,
                 extent: self.effectiveExtent,
                 visibleEntries: entries,
               }),
@@ -330,9 +325,11 @@ export function WiggleCommonMixin() {
       },
       /**
        * #action
+       * The field plotted on the value axis: a stored summary (`score`,
+       * `minScore`, `maxScore`) or any feature field.
        */
-      setAggregate(val: Aggregate) {
-        setConf(confNode(self), 'aggregate', val)
+      setY(field: string) {
+        setConf(confNode(self), 'y', field)
       },
       /**
        * #action

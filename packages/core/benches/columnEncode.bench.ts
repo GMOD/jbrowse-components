@@ -449,7 +449,7 @@ function runEncodeScenario(fixture: SourceColumns[]) {
       rampLut: null,
       rampMid: undefined,
     },
-    aggregate: 'mean',
+    summaryField: 'score',
     effectiveExtent: 'none',
     renderingType: 'xyplot',
     maxGapMultiple: 0,
@@ -823,7 +823,7 @@ function runTransformScenario() {
   }
   const BIN: TransformStep[] = [
     { type: 'bin', step: 10_000 },
-    { type: 'aggregate', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
+    { type: 'summaryField', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
   ]
   const COVERAGE: TransformStep[] = [{ type: 'coverage' }]
   console.log(`${n.toLocaleString()} features, the transform-step fixture`)

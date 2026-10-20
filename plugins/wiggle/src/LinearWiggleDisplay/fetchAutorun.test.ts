@@ -152,9 +152,10 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
-  // One fetch ships mean, min and max together, and the aggregate and the
-  // extent pick among them on the main thread. See the model's `rpcProps`.
-  it('does NOT refetch when aggregate or extent changes', async () => {
+  // One fetch ships mean, min and max together, and the extent picks among
+  // them on the main thread. `y` is a fetch key as written, so a summary pick
+  // refetches. See the model's `rpcProps`.
+  it('does NOT refetch when the extent changes', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
     const { display } = createDisplay()
@@ -165,12 +166,30 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setAggregate('max')
     display.setExtent('none')
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
     expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+  })
+
+  it('refetches when y picks another stored summary', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.setY('maxScore')
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    expect(display.summaryField).toBe('maxScore')
   })
 
   // posColor is a pure gpuProps field (only used in the per-instance buffer).
@@ -322,16 +341,16 @@ describe('LinearWiggleDisplay solid color', () => {
     c[0] === c[2] && c[1] > c[0]
 
   test.each([
-    ['mean', 'min-max'],
-    ['mean', 'none'],
-    ['min', 'none'],
-    ['max', 'none'],
+    ['score', 'min-max'],
+    ['score', 'none'],
+    ['minScore', 'none'],
+    ['maxScore', 'none'],
   ] as const)(
     'every layer keeps the single hue under %s with extent %s',
-    (aggregate, extent) => {
+    (summaryField, extent) => {
       const display = loadedWithSignedData()
       display.applyPlot({ color: 'green' })
-      display.setAggregate(aggregate)
+      display.setY(summaryField)
       display.setExtent(extent)
 
       const layers = buildSourceRenderData(
@@ -354,13 +373,13 @@ describe('LinearWiggleDisplay solid color', () => {
   // from white towards the one color, so the claim here is only that one
   // color comes out, not which. The split around the origin is where a second
   // color got in.
-  test.each(['mean', 'min', 'max'] as const)(
+  test.each(['score', 'minScore', 'maxScore'] as const)(
     'density under a constant color stays one color in %s mode',
     mode => {
       const display = loadedWithSignedData()
       display.applyPlot({ color: 'green' })
       display.setMark('span')
-      display.setAggregate(mode)
+      display.setY(mode)
 
       const layers = buildSourceRenderData(
         makeSignedWiggleData(),

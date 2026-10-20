@@ -566,9 +566,9 @@ export default function stateModelFactory(
       },
       /**
        * #method
-       * Neither `aggregate` nor `extent` is a fetch key: both pick among
-       * arrays the fetch already ships, so a change re-encodes and refetches
-       * nothing (WIGGLE_DISPLAY.md, "`aggregate`, `extent`").
+       * `y` is a fetch key as written, so picking another stored summary
+       * refetches arrays the worker already shipped; `extent` is not
+       * (WIGGLE_DISPLAY.md, "`y`, `extent`").
        */
       rpcProps() {
         return self.sharedRpcProps()
@@ -777,7 +777,7 @@ export default function stateModelFactory(
           pos,
           index => self.rpcDataMap.get(index),
           (sources, data) =>
-            sortSourcesByScoreAt(sources, data, pos, self.aggregate),
+            sortSourcesByScoreAt(sources, data, pos, self.summaryField),
         )
       },
     }))

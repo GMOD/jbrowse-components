@@ -17,12 +17,12 @@ import type {
   WiggleSourceData,
 } from '@jbrowse/wiggle-core'
 
-// The render layers one source contributes, chosen by aggregate and extent but
+// The render layers one source contributes, chosen by summary field and extent but
 // independent of where the source sits on screen. buildSourceRenderData stamps
 // each with a rowIndex afterward, keeping row-placement in one place.
 function sourceLayers({
   source,
-  aggregate,
+  summaryField,
   extent,
   renderingType,
   posColor,
@@ -34,7 +34,7 @@ function sourceLayers({
   gradient,
 }: {
   source: WiggleSourceData
-  aggregate: string
+  summaryField: string
   extent: string
   renderingType: WiggleRenderingType
   posColor: [number, number, number]
@@ -49,10 +49,10 @@ function sourceLayers({
     renderingType === RENDERING_TYPE_LINE ||
     renderingType === RENDERING_TYPE_LINE_CENTER
   ) {
-    return lineLayers(source, aggregate, extent, posColor, negColor)
+    return lineLayers(source, summaryField, extent, posColor, negColor)
   }
-  // A min-max extent draws min, the aggregate and max; without one the
-  // aggregate draws its one band. Every value is colored by its own sign
+  // A min-max extent draws min, the plotted summary and max; without one the
+  // summary draws its one band. Every value is colored by its own sign
   // against the pivot, so signed data reads as pos/neg on the main thread.
   //
   // Density drops the extent without the user asking, and the model resolves
@@ -62,7 +62,7 @@ function sourceLayers({
   // drift from them.
   return makeSummaryLayers({
     data: source,
-    aggregate,
+    summaryField,
     extent,
     posColor,
     negColor,
@@ -94,7 +94,7 @@ export interface WiggleGpuProps {
   wiggleColor: ResolvedWiggleColor
   // The score filled bars grow from, which orders a band's layers.
   origin: number
-  aggregate: string
+  summaryField: string
   // The extent actually drawn, never the raw config slot, since density has
   // no min-max presentation and resolves to 'none'. Named for the model getter
   // that produces it so a new caller cannot skip the resolution.
@@ -153,7 +153,7 @@ export function buildSourceRenderData(
     perSource,
     wiggleColor,
     origin,
-    aggregate,
+    summaryField,
     effectiveExtent: extent,
     renderingType,
     maxGapMultiple,
@@ -195,7 +195,7 @@ export function buildSourceRenderData(
       // plot. Do NOT "fix" this to paint the whole row in the source's color.
       const layers = sourceLayers({
         source,
-        aggregate,
+        summaryField,
         extent,
         renderingType: renderingTypeInt,
         posColor,

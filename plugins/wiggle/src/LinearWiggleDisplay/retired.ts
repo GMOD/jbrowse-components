@@ -95,14 +95,18 @@ function colorOf({ color, posColor, negColor }: DisplayEntry) {
 
 const SAME_NAME = ['displayCrossHatches', 'resolution']
 
-// v4's `summaryScoreMode`, which named the mean `avg` and drew `whiskers` as
-// the mean inside its min and max
-function aggregateOf(mode: unknown) {
+// v4's `summaryScoreMode`, which named the mean `avg`, the bin's extremes
+// `min` and `max`, and drew `whiskers` as the mean inside its min and max
+function summaryOf(mode: unknown) {
   return typeof mode !== 'string'
     ? {}
     : mode === 'whiskers'
-      ? { aggregate: 'mean', extent: 'min-max' }
-      : { aggregate: mode === 'avg' ? 'mean' : mode, extent: 'none' }
+      ? { y: 'score', extent: 'min-max' }
+      : {
+          y:
+            mode === 'min' ? 'minScore' : mode === 'max' ? 'maxScore' : 'score',
+          extent: 'none',
+        }
 }
 
 // What a v4 menu wrote on the display instance, and a beta's arrangement.
@@ -110,7 +114,7 @@ const V4_RENDERERS = ['XYPlotRenderer', 'LinePlotRenderer', 'DensityRenderer']
 
 /**
  * v4's `renderers` block, as the display's `retired` reads it: its colors
- * become `color` and its `summaryScoreMode` `aggregate` and `extent`, and
+ * become `color` and its `summaryScoreMode` `y` and `extent`, and
  * everything else in it is let go. The scale slots beside it are `retiredScaleSpellings`.
  */
 export const retiredConfigSpellings = {
@@ -118,13 +122,11 @@ export const retiredConfigSpellings = {
     const block = isRecord(renderers) ? renderers : {}
     const named = V4_RENDERERS.map(name => block[name]).filter(isRecord)
     return {
-      ...named
-        .map(r => aggregateOf(r.summaryScoreMode))
-        .find(a => 'aggregate' in a),
+      ...named.map(r => summaryOf(r.summaryScoreMode)).find(a => 'y' in a),
       ...named.map(colorOf).find(lifted => 'color' in lifted),
     }
   },
-  summaryScoreMode: aggregateOf,
+  summaryScoreMode: summaryOf,
 }
 
 // `rendererTypeNameState` is the plot a reader picked, which on a multi
@@ -148,7 +150,7 @@ export const retiredState: RetiredDisplayState = {
       : {}),
     ...valueScaleOf(instance),
     ...colorOf(instance),
-    ...aggregateOf(instance.summaryScoreMode),
+    ...summaryOf(instance.summaryScoreMode),
     ...Object.fromEntries(
       SAME_NAME.filter(k => instance[k] !== undefined).map(k => [
         k,

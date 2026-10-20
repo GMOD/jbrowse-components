@@ -25,7 +25,7 @@ export function useClusterSamplingOptions() {
 // Score-matrix RPC args for both the session-triggered run and the dialog.
 // The density comes from the run's own span, not the view's zoom: the columns
 // are pixel bins, so clustering a 140 kb locus while the view shows 10 Mb would
-// otherwise bin it into a handful of columns. The aggregate is the plot's, so
+// otherwise bin it into a handful of columns. The field is the plot's `y`, so
 // rows cluster on the numbers on screen, as `sortSourcesByScoreAt` sorts them.
 export function clusterScoreMatrixArgs(
   model: ReducedModel,
@@ -41,7 +41,6 @@ export function clusterScoreMatrixArgs(
     sources: model.clusterableSources,
     adapterConfig: model.adapterConfig,
     yField: model.yField,
-    aggregate: model.aggregate,
     bpPerPx: span / width / density,
   }
 }

@@ -42,7 +42,7 @@ describe('makeSummaryLayers', () => {
     cuts: [0],
     innerColors: [],
     origin: 0,
-    aggregate: 'mean',
+    summaryField: 'score',
     extent: 'min-max',
     gradient: false,
   }
@@ -50,7 +50,7 @@ describe('makeSummaryLayers', () => {
   test('a min-max line is a band under the mean line', () => {
     const [band, mean, ...rest] = lineLayers(
       summaryData,
-      'mean',
+      'score',
       'min-max',
       posColor,
       negColor,
@@ -70,7 +70,7 @@ describe('makeSummaryLayers', () => {
   test('a min-max line with no summary spread draws the mean alone', () => {
     const result = lineLayers(
       noSummaryData,
-      'mean',
+      'score',
       'min-max',
       posColor,
       negColor,
@@ -80,9 +80,9 @@ describe('makeSummaryLayers', () => {
   })
 
   test.each([
-    ['mean', scores],
-    ['min', minScores],
-    ['max', maxScores],
+    ['score', scores],
+    ['minScore', minScores],
+    ['maxScore', maxScores],
   ] as const)('a %s line is one layer over every bin', (mode, expected) => {
     const [line, ...rest] = lineLayers(
       summaryData,
@@ -99,7 +99,7 @@ describe('makeSummaryLayers', () => {
   test('a max line keeps its min-max band, the line on its upper edge', () => {
     const [band, line] = lineLayers(
       summaryData,
-      'max',
+      'maxScore',
       'min-max',
       posColor,
       negColor,
@@ -226,7 +226,7 @@ describe('makeSummaryLayers', () => {
     const result = makeSummaryLayers({
       data: summaryData,
       ...base,
-      aggregate: 'min',
+      summaryField: 'minScore',
       extent: 'none',
       pivot: 3,
       cuts: [3],
@@ -249,11 +249,11 @@ describe('makeSummaryLayers', () => {
 
   // min/max are the one-band case of the same machinery: the band the user
   // picked, colored by its own sign.
-  const bandOnly = (aggregate: string) =>
+  const bandOnly = (summaryField: string) =>
     makeSummaryLayers({
       data: summaryData,
       ...base,
-      aggregate,
+      summaryField,
       extent: 'none',
       pivot: 6,
       cuts: [6],
@@ -263,8 +263,8 @@ describe('makeSummaryLayers', () => {
     })
 
   test.each([
-    ['min', minScores],
-    ['max', maxScores],
+    ['minScore', minScores],
+    ['maxScore', maxScores],
   ] as const)('%s mode draws that band alone', (mode, expected) => {
     const layers = bandOnly(mode)
     expect(layers).toHaveLength(1)
@@ -288,8 +288,8 @@ describe('makeSummaryLayers', () => {
     })[0]!.colorsAbgr!
     const [below, above] = [mean[0]!, mean[1]!]
     // min [2, 4] is entirely below the pivot, max [9, 12] entirely above
-    expect([...bandOnly('min')[0]!.colorsAbgr!]).toEqual([below, below])
-    expect([...bandOnly('max')[0]!.colorsAbgr!]).toEqual([above, above])
+    expect([...bandOnly('minScore')[0]!.colorsAbgr!]).toEqual([below, below])
+    expect([...bandOnly('maxScore')[0]!.colorsAbgr!]).toEqual([above, above])
   })
 
   test('colors each band per feature by sign vs pivot', () => {

@@ -1,6 +1,7 @@
 import { fieldReader, isPlainFieldRef } from '@jbrowse/core/util/fieldReader'
 import { encodeFeatures, featureIndexAt } from '@jbrowse/core/util/markEncoding'
 import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core/renderingBackendTypes'
+import { isSummaryField } from '@jbrowse/wiggle-core/summaryFields'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -191,16 +192,16 @@ export function processFeaturesFromArrays(
 
 // Undefined when no feature is a summary, so `processFeaturesFromArrays`
 // aliases min/max onto the scores rather than shipping two copies. Undefined
-// too when the plot reads another field: a summary's minScore and maxScore
-// summarize `score`, and drawn around another y they would bound nothing it
-// plots.
+// too when the plot reads a field outside the summary: a summary's minScore
+// and maxScore summarize `score`, and drawn around another y they would bound
+// nothing it plots.
 function summaryChannels(
   features: readonly Feature[],
   encoded: { featureIndex?: Uint32Array; y: Float32Array },
-  yField: string,
+  field: string,
 ) {
   const scores = encoded.y
-  if (yField !== 'score' || !features.some(f => f.get('summary'))) {
+  if (field !== 'score' || !features.some(f => f.get('summary'))) {
     return { minScores: undefined, maxScores: undefined }
   }
   const n = scores.length
@@ -222,17 +223,19 @@ function summaryChannels(
 
 // The score lane and nothing else: wiggle draws from arrays and never hovers
 // through the encoder, so the hit index — most of the encoder's cost after
-// the walk — is declined.
+// the walk — is declined. A `y` naming a stored summary reads `score` and its
+// min and max, the arrays a BigWig ships, and the main thread picks one.
 export function featuresToRaw(
   features: readonly Feature[],
   yField = 'score',
   jexl?: JexlInstance,
 ): RawFeatureArrays {
+  const field = isSummaryField(yField) ? 'score' : yField
   // a plain name keeps the direct call; a path or an expression pays for
   // its reader
-  const read = isPlainFieldRef(yField)
-    ? (f: Feature) => f.get(yField)
-    : fieldReader(yField, jexl)
+  const read = isPlainFieldRef(field)
+    ? (f: Feature) => f.get(field)
+    : fieldReader(field, jexl)
   const encoded = encodeFeatures(features, { y: f => Number(read(f) ?? 0) }, [
     'y',
   ])
@@ -241,7 +244,7 @@ export function featuresToRaw(
     starts: x,
     ends: x2,
     scores: y,
-    ...summaryChannels(features, encoded, yField),
+    ...summaryChannels(features, encoded, field),
     count,
   }
 }

@@ -1,4 +1,3 @@
-import type { Aggregate } from '../shared/aggregateConfigSchemaFields.ts'
 import type { Source } from '../util.ts'
 import type { Region } from '@jbrowse/core/util'
 
@@ -7,6 +6,5 @@ export interface GetScoreMatrixArgs {
   regions: Region[]
   bpPerPx: number
   sources: Source[]
-  aggregate: Aggregate
   yField?: string
 }

@@ -12,7 +12,7 @@ import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 // candidate CNV puts the carriers together at the top, and a density matrix
 // sorted at a peak resolves the samples that have it.
 //
-// `getEffectiveScores` under the display's aggregate, which is the
+// `getEffectiveScores` under the display's summary field, which is the
 // array the plot paints its main mark from — sorting the average while the rows
 // show min or max would order them by a number that isn't on screen.
 //
@@ -30,13 +30,13 @@ export function sortSourcesByScoreAt<T extends { name: string }>(
   sources: T[],
   data: WiggleDataResult,
   bp: number,
-  aggregate: string,
+  summaryField: string,
 ): T[] {
   const scoreByName = new Map<string, number>()
   for (const s of data.sources) {
     const i = findFeatureAtBp(s.featurePositions, s.numFeatures, bp)
     if (i !== -1) {
-      const score = getEffectiveScores(s, aggregate)[i]!
+      const score = getEffectiveScores(s, summaryField)[i]!
       if (!Number.isNaN(score)) {
         scoreByName.set(s.name, score)
       }

@@ -3,7 +3,7 @@ import { createBaseTrackConfig } from '@jbrowse/core/pluggableElementTypes/model
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   linearWiggleDisplayConfigSchema,
-  aggregateConfigSchemaFields,
+  extentConfigSchemaFields,
 } from '@jbrowse/plugin-wiggle'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -11,7 +11,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 const gcWiggleConfigSchema = ConfigurationSchema(
   'LinearWiggleDisplay',
   {
-    ...aggregateConfigSchemaFields({
+    ...extentConfigSchemaFields({
       extent: 'none',
       extentDescription:
         "a GC window has one score and no min or max to draw, so 'none'",

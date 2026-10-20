@@ -57,7 +57,7 @@ it("lists a bin's min and max in the tooltip only where the plot shows them", ()
   expect(display.tooltipShowsMinMax).toBe(true)
   display.setMark('span')
   expect(display.tooltipShowsMinMax).toBe(false)
-  display.setAggregate('max')
+  display.setY('maxScore')
   expect(display.tooltipShowsMinMax).toBe(true)
 })
 

@@ -1297,7 +1297,7 @@ describe('a cut outside the domain parts nothing', () => {
         numFeatures: scores.length,
         hasSummaryScores: false,
       },
-      aggregate: 'mean',
+      summaryField: 'score',
       extent: 'none',
       posColor,
       negColor,

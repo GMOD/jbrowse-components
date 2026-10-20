@@ -18,6 +18,7 @@ import {
 } from '@jbrowse/tree-sidebar/rowColorScale'
 import {
   computeAutoscaleDomain,
+  summaryFieldOf,
   getNiceDomain,
   resolveRenderState,
   resolveSymlogConstant,
@@ -80,7 +81,7 @@ export interface WiggleTablesArgs {
   regions?: TablesRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
-   * `LinearWiggleDisplay`: `mark`, `interpolate`, `aggregate`, `extent`,
+   * `LinearWiggleDisplay`: `mark`, `interpolate`, `y`, `extent`,
    * `origin`, `color`, `scales`, `rows`, `resolution` and the rest of its
    * slots. Unset reads the default display.
    */
@@ -104,7 +105,7 @@ export interface WiggleTablesArgs {
  * colors it, as tables: `bins`, each source's scores as the worker ships them
  * at this zoom (the bin's score, and its min and max where the file
  * summarizes); `marks`, the layers the display's encoder builds from them in
- * paint order (the aggregate, and under a min-max extent the tinted max and
+ * paint order (the plotted summary, and under a min-max extent the tinted max and
  * min bands, or a line's min-to-max `band`), each mark in the color it paints
  * and reaching down to `low`, the band's min or the origin bars grow from; `domain`, the score axis the
  * display autoscales to under `scales.y`; `rules`, the reference lines it
@@ -155,7 +156,7 @@ export async function wiggleTables(
     readConfObject(conf, 'interpolate'),
   )
   const density = renderingType === 'density'
-  const aggregate: string = readConfObject(conf, 'aggregate')
+  const summaryField = summaryFieldOf(readConfObject(conf, 'y'))
   const extent: string = density ? 'none' : readConfObject(conf, 'extent')
   const origin: number = readConfObject(conf, 'origin')
   const setting = colorSettingOf(conf.color)
@@ -181,7 +182,7 @@ export async function wiggleTables(
   }))
   const range = computeAutoscaleDomain(
     readConfObject(scale, 'domainQuantile'),
-    aggregate,
+    summaryField,
     results.flatMap((result, i) =>
       result.sources.map(source => ({
         data: source,
@@ -267,7 +268,7 @@ export async function wiggleTables(
       perSource: paletteDeals,
       wiggleColor,
       origin,
-      aggregate,
+      summaryField,
       effectiveExtent: extent,
       renderingType,
       maxGapMultiple,

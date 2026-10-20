@@ -1,4 +1,3 @@
-import type { Aggregate } from '../shared/aggregateConfigSchemaFields.ts'
 import type { Source } from '../util.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ClusterRunModel } from '@jbrowse/tree-sidebar'
@@ -9,5 +8,4 @@ export interface ReducedModel extends IStateTreeNode, ClusterRunModel<Source> {
   clusterableSources: Source[]
   adapterConfig: Record<string, unknown>
   yField: string
-  aggregate: Aggregate
 }

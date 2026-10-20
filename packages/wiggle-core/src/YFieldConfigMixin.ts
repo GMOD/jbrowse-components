@@ -1,7 +1,9 @@
 import { getConf } from '@jbrowse/core/configuration'
 
 import { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'
+import { summaryFieldOf } from './summaryFields.ts'
 
+import type { SummaryField } from './summaryFields.ts'
 import type { YFieldConfigModel } from './yFieldConfigSchemaFields.ts'
 
 export interface YFieldConfigHost {
@@ -29,6 +31,15 @@ export function YFieldConfigMixin() {
      */
     get yField(): string {
       return getConf(confNode(self), 'y')
+    },
+    /**
+     * #getter
+     * The stored summary the plot reads: `y` where it names one, else
+     * `score`, which a field outside the three holds after the worker reads
+     * it.
+     */
+    get summaryField(): SummaryField {
+      return summaryFieldOf(this.yField)
     },
   }))
 }

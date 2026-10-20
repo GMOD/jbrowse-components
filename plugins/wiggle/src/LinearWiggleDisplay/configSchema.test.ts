@@ -126,17 +126,17 @@ describe('the slots v4 declared on the display', () => {
 })
 
 test.each([
-  [{ summaryScoreMode: 'avg' }, 'mean', 'none'],
-  [{ summaryScoreMode: 'min' }, 'min', 'none'],
-  [{ summaryScoreMode: 'whiskers' }, 'mean', 'min-max'],
+  [{ summaryScoreMode: 'avg' }, 'score', 'none'],
+  [{ summaryScoreMode: 'min' }, 'minScore', 'none'],
+  [{ summaryScoreMode: 'whiskers' }, 'score', 'min-max'],
   [
     { renderers: { XYPlotRenderer: { summaryScoreMode: 'max' } } },
-    'max',
+    'maxScore',
     'none',
   ],
-])('v4’s %j is aggregate %s, extent %s', (v4, aggregate, extent) => {
+])('v4’s %j is y %s, extent %s', (v4, y, extent) => {
   const conf = create(v4)
-  expect(readConfObject(conf, 'aggregate')).toBe(aggregate)
+  expect(readConfObject(conf, 'y')).toBe(y)
   expect(readConfObject(conf, 'extent')).toBe(extent)
 })
 
@@ -144,6 +144,6 @@ test('a v4 renderers block keeps its color beside its summary mode', () => {
   const conf = create({
     renderers: { XYPlotRenderer: { summaryScoreMode: 'avg', color: 'red' } },
   })
-  expect(readConfObject(conf, 'aggregate')).toBe('mean')
+  expect(readConfObject(conf, 'y')).toBe('score')
   expect(readConfObject(conf, ['color', 'value'])).toBe('red')
 })
