@@ -12,19 +12,22 @@ disagree today.
 
 ## Can disagree now
 
-- **Contig palette order.** `linear-comparative-view/src/tables.ts:373-378`,
-  its offscreen strip (507-516), `dotplot-view/src/tables.ts:105-110` and
-  `alignments/src/tables.ts:388, 1408` deal `query`/`target`/`mateRefName`
-  colors in the order of the contigs passed in (`axisNamePosition`,
-  `synteny-core/src/comparativeTables.ts:109-112`). The view deals in the
-  assembly's order through `refNamePositionFor`
-  (`synteny-core/src/colorFunctions.ts:104-121`). With chr2 shown alone, the
-  view paints it palette slot 1 and the tables slot 0. An axis's `refNames`
-  argument already orders the palette, but ggjbrowse never passes it
-  (`axis_args` in `R/synteny.R`), and a comparative axis takes no assembly to
-  read the order from. Fix: an axis `assembly` the tables resolve through
-  `assemblyOf`, ordering the palette by its regions and aliases as
-  `getRefNamePosition` does, and ggjbrowse passing the assembly it has.
+- **Contig palette order off an assembly the export never sees.** The view
+  deals `query`/`target`/`mateRefName` colors in the assembly's order
+  (`refNamePositionFor`, `synteny-core/src/colorFunctions.ts`). The tables
+  deal them in an axis's `refNames` (`axisNamePosition`,
+  `synteny-core/src/comparativeTables.ts`), else the regions' order, and
+  `alignments/src/tables.ts` in its `refNames`, else the BAM header's.
+  - Since ggjbrowse 688c92b, R sends each comparative axis's contigs in the
+    natural order its whole-genome axis lays them, so a contig shown alone
+    keeps its slot. That matches the view where the assembly lists its
+    contigs in natural order, the usual FASTA.
+  - Left: an assembly in another order, and contig aliases. The fix is an
+    axis `assembly` the tables resolve through `assemblyOf`, ordering the
+    palette by its regions and aliases as `getRefNamePosition` does. Build it
+    together with R laying a whole-genome axis in the assembly's order, which
+    needs `jbrowse_synteny` to take assembly configs where it now takes names.
+
 ## Equivalent today, by hand
 
 - Autoscale glue in wiggle's and alignments coverage's tables, which ignores
