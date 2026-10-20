@@ -41,6 +41,13 @@ disagree today.
 
 ## Not a defect
 
+The alignments tables key reads and arcs apart (`legend`, `arcLegend`) where
+the display's one legend box merges them when they share a color
+(`getAlignmentsColorScales`). Merging in the export was built and reverted on
+2026-10-20: ggjbrowse draws reads and arcs as separate layers, each with its
+own guide, so an arcs-only plot lost its key. Merging is the legend box's
+presentation, which a host composing its own guides does for itself.
+
 Variants categorical slots start empty in the tables, where the view holds
 them session-wide (`display-kit/src/heldColorSlots.ts`): a stateless export
 has no session to hold them.

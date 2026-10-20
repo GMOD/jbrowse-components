@@ -886,13 +886,11 @@ test('read connections come back as the display’s band draws them', async () =
   arcs.arcs.start.forEach((start, i) => {
     const radius = Math.abs(arcs.arcs.end[i]! - start) / 2
     expect(Math.abs(arcs.arcs.y[i]! - radius)).toBeLessThanOrEqual(1)
-    expect(arcs.legend.color).toContain(arcs.arcs.color[i])
+    expect(arcs.arcLegend.color).toContain(arcs.arcs.color[i])
   })
-  // Reads and arcs share the pair colors, so the export keys them as the
-  // display's key does: one section, each bucket once, and no arc key.
-  expect(arcs.arcLegend.label).toEqual([])
-  expect(arcs.legendTitle).toBe('Read and arc colors')
-  expect(new Set(arcs.legend.label).size).toBe(arcs.legend.label.length)
+  expect(new Set(arcs.arcs.color)).toEqual(new Set(arcs.arcLegend.color))
+  expect(arcs.arcLegend.label).toHaveLength(4)
+  expect(arcs.arcLegendTitle).toBe('Arc colors')
   expect(new Set(arcs.arcs.width)).toEqual(new Set([1]))
 
   const abnormal = await engine.alignments({
