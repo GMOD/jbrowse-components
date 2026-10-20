@@ -192,14 +192,11 @@ const RS713040_CONTROL = 'A harmless nearby variant, common in every population'
 // Both pills sit in the gap right of the codon column, clear of the legend.
 // `controlDx` carries rs713040's leader across the column, whose distance in px
 // follows the figure's zoom.
-function kgCallouts(
-  prefix: (n: number) => string,
-  controlDx: number,
-): Annotation[] {
+function kgCallouts(controlDx: number): Annotation[] {
   return [
     {
       type: 'text',
-      text: `${prefix(3)}${SICKLE_CARRIERS}`,
+      text: SICKLE_CARRIERS,
       fontSize: HBB_FONT_SIZE,
       maxWidth: 340,
       leader: true,
@@ -209,7 +206,7 @@ function kgCallouts(
     },
     {
       type: 'text',
-      text: `${prefix(4)}${RS713040_CONTROL}`,
+      text: RS713040_CONTROL,
       fontSize: HBB_FONT_SIZE,
       maxWidth: 340,
       leader: true,
@@ -303,29 +300,24 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     ...READY,
     viewportHeight: 1210,
     actions: hoverAlignment({ dx: 193, dy: 8 }),
-    annotations: [...kgCallouts(() => '', 190), HBB_STRUCTURE],
+    annotations: [...kgCallouts(190), HBB_STRUCTURE],
   },
   {
     mode: 'url',
     name: 'protein/hbb_domains_three_views',
     url: hbbSession({
-      tracks: [
-        HBB_GENE_TRACK,
-        { trackId: GWAS_SUBSET, height: 170 },
-        { trackId: KG, type: 'LinearMultiSampleVariantDisplay', height: 330 },
-      ],
-      sessionTracks: [GWAS_SUBSET_TRACK, KG_TRACK],
+      tracks: [HBB_GENE_TRACK],
       loc: `${HBB_CODON_7} ${HBB_EXON_2_START}`,
-      msaHeight: 300,
+      msaHeight: 490,
       domains: true,
       msaEnd: 75,
     }),
     ...READY,
     readySelector: `${READY.readySelector}:has([data-testid="trackRenderingContainer-lgv-HBB-${HBB_DOMAINS}"])`,
-    // Wide enough for the GWAS labels to end inside the view. The alignment's
-    // columns widen with it, so column 7 sits further right.
+    // The alignment's columns widen with the viewport, so the hover's dx
+    // follows it to column 7.
     viewportWidth: 2300,
-    viewportHeight: 1360,
+    viewportHeight: 1110,
     clicksChange: "close the domain track's legend",
     actions: [
       {
@@ -335,35 +327,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       { type: 'waitForAppSettled' },
       ...hoverAlignment({ dx: 93, dy: 8 }),
     ],
-    annotations: [
-      codonCallout(`1  ${SICKLE_CODON}`, HBB_GENES, RS334, HBB_FONT_SIZE),
-      {
-        type: 'text',
-        text: '2  GWAS hits at rs334',
-        fontSize: HBB_FONT_SIZE,
-        leader: true,
-        anchor: { trackId: GWAS_SUBSET, loc: RS334, fracY: 0.5 },
-        dx: -60,
-        dy: 0,
-      },
-      ...kgCallouts(n => `${n}  `, 140),
-      {
-        type: 'text',
-        text: '5  Most other mammals have glutamate here too',
-        fontSize: HBB_FONT_SIZE,
-        leader: true,
-        anchor: {
-          selector: '[data-testid="msa_canvas"]',
-          alignX: 'left',
-          dx: 93,
-          alignY: 'top',
-          dy: 8,
-        },
-        dx: 150,
-        dy: -70,
-      },
-      structureCallout('6  Sickle valine, in magenta', HBB_FONT_SIZE),
-    ],
+    annotations: [HBB_STRUCTURE],
   },
   {
     mode: 'url',
