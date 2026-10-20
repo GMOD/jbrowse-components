@@ -61,8 +61,8 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
 ## Writers to update after each landing
 
 - **ggjbrowse:** respell its R lists and re-pin its engine (memory
-  `a-config-rename-reaches-ggjbrowse`). The synteny `filter` and `mark` are
-  not yet respelled there.
+  `a-config-rename-reaches-ggjbrowse`). Its synteny and dotplot lists are
+  respelled up to `data.resolution`.
 - **jbrowse-img:** its flags (`--minAlignmentLength`, `--drawCurves`) still
   carry the old names and write the new settings.
 - **The figure specs, tutorials and `demos/` configs:** `pnpm verify --full`
