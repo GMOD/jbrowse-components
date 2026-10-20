@@ -55,6 +55,7 @@ export const basicRetired: Record<
     outlineColor ? { showOutline: true, outlineColor } : {},
   // a second grow ceiling, dead at its default; `growMaxHeight` is the one
   maxHeight: () => ({}),
+  hideSourceFeatures: () => ({}),
   renderer: liftRenderer,
 }
 

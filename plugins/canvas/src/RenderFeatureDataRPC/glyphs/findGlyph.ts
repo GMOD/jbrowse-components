@@ -62,11 +62,10 @@ export function findGlyph(
       return layoutRepeatRegion
     }
 
-    // The three container shapes are chosen structurally, not by type, so a
-    // custom transcript type works without configuration. `containerTypes` is
-    // the one explicit override, and `featureAdmission` lowercases the same
-    // slot — a case-sensitive test here would let `showOnlyGenes` admit a
-    // feature the dispatch then refuses to stack.
+    // Container shapes are chosen structurally; `containerTypes` is the one
+    // explicit override. `featureAdmission` lowercases the same slot, so a
+    // case-sensitive test here would let `filter.genes` admit a feature the
+    // dispatch then refuses to stack.
     if (
       isTopLevel &&
       (containerTypes.some(t => t.toLowerCase() === type.toLowerCase()) ||

@@ -173,8 +173,8 @@ describe.each(['auto', 'all', 'longestCoding'] as const)(
     })
 
     // `featureAdmission` lowercases the same slot into the gene-like set
-    // `showOnlyGenes` admits by. The fixture's children are leaves, so
-    // `hasContainerChildren` cannot rescue it and the slot alone decides.
+    // `filter.genes` tests by. The fixture's children are leaves, so the slot
+    // alone decides.
     it('matches containerTypes case-insensitively too', () => {
       const orf = (type: string) =>
         mockFeature({
