@@ -114,5 +114,6 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `color3` | moved into a current slot |
 | `outline` | moved into a current slot |
 | `maxHeight` | ignored |
+| `hideSourceFeatures` | ignored |
 | `renderer` | moved into a current slot |
 | `showDescriptions` | moved into a current slot |

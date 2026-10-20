@@ -5270,6 +5270,10 @@
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "hideSourceFeatures": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "renderer": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -10681,6 +10685,10 @@
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "hideSourceFeatures": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "renderer": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -14447,6 +14455,9 @@
             "maxHeight": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxHeight"
             },
+            "hideSourceFeatures": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/hideSourceFeatures"
+            },
             "renderer": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
             },
@@ -15656,6 +15667,9 @@
             },
             "maxHeight": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxHeight"
+            },
+            "hideSourceFeatures": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/hideSourceFeatures"
             },
             "showDescriptions": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showDescriptions"

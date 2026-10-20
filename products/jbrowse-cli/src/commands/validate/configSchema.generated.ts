@@ -5433,6 +5433,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "hideSourceFeatures": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "renderer": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -11060,6 +11064,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "hideSourceFeatures": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "renderer": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -14942,6 +14950,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "maxHeight": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxHeight"
             },
+            "hideSourceFeatures": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/hideSourceFeatures"
+            },
             "renderer": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
             },
@@ -16176,6 +16187,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxHeight": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxHeight"
+            },
+            "hideSourceFeatures": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/hideSourceFeatures"
             },
             "showDescriptions": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showDescriptions"

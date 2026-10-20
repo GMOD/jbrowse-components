@@ -3354,6 +3354,7 @@ export const configManifest: ConfigManifest = {
         "color3",
         "outline",
         "maxHeight",
+        "hideSourceFeatures",
         "renderer",
         "showDescriptions"
       ],
@@ -3362,7 +3363,8 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
         "mouseover",
-        "maxHeight"
+        "maxHeight",
+        "hideSourceFeatures"
       ],
       "legacyValues": {
         "showLabels": [
@@ -5858,6 +5860,7 @@ export const configManifest: ConfigManifest = {
         "color3",
         "outline",
         "maxHeight",
+        "hideSourceFeatures",
         "renderer",
         "showDescriptions"
       ],
@@ -5866,7 +5869,8 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
         "mouseover",
-        "maxHeight"
+        "maxHeight",
+        "hideSourceFeatures"
       ],
       "legacyValues": {
         "showLabels": [
