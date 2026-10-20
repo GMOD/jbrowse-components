@@ -370,10 +370,7 @@ describe('filterChainFeatures minMapq', () => {
     expect(names(filterChainFeatures(features, filt()))).toHaveLength(4)
   })
 
-  // BAM leaves `score` unset for MAPQ 255, which `getMappingQuality` reads as
-  // unavailable; a synteny block spells it `mappingQual`, with no adapter
-  // filter of its own, so this is where its threshold applies.
-  test('an unavailable mapping quality fails any minimum, and a synteny block is read by mappingQual', () => {
+  test('an unavailable mapping quality passes any minimum, and a synteny block is read by mappingQual', () => {
     const features = [
       read('unavailable', {}),
       read('block', { mappingQual: 40 }),
@@ -381,10 +378,11 @@ describe('filterChainFeatures minMapq', () => {
     ]
     expect(names(filterChainFeatures(features, filt({ minMapq: 1 })))).toEqual([
       'block',
+      'unavailable',
       'weakBlock',
     ])
     expect(names(filterChainFeatures(features, filt({ minMapq: 10 })))).toEqual(
-      ['block'],
+      ['block', 'unavailable'],
     )
   })
 })

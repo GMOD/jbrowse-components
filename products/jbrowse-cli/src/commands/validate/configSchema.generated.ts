@@ -6084,7 +6084,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "minMapq": {
-          "description": "a read passes only with a mapping quality of at least this; a read whose mapping quality is unavailable (255) fails it. Unset passes every read.",
+          "description": "a read passes only with a mapping quality of at least this; a read with MAPQ 255 (none reported) passes. Unset passes every read.",
           "if": {
             "type": "null"
           },
@@ -7826,7 +7826,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "minMapq": {
-          "description": "a read passes only with a mapping quality of at least this; a read whose mapping quality is unavailable (255) fails it. Unset passes every read.",
+          "description": "a read passes only with a mapping quality of at least this; a read with MAPQ 255 (none reported) passes. Unset passes every read.",
           "if": {
             "type": "null"
           },

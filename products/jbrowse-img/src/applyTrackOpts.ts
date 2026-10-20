@@ -667,7 +667,7 @@ const modifiers: Record<string, Modifier> = {
     },
   },
   // samtools' `-q`: a read passes with a mapping quality of at least this, and
-  // one whose mapping quality is unavailable (255) fails.
+  // MAPQ 255 passes.
   mapq: {
     on: ['alignments'],
     apply: (r, v) => {

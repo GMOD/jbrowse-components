@@ -85,15 +85,14 @@ function isAloneChain(mateCounts: Map<string, number>) {
     chain.length === 1 && mateCounts.get(mateKey(chain[0]!)) === 1
 }
 
-// The records `minMapq` keeps, applied here rather than in the adapters so a
-// synteny block, whose adapter takes no filter, answers it too; one record at
-// a time, so a pair's low-quality mate goes and the other stays.
+// Applied here, not in the adapters, so a synteny block answers `minMapq` too.
+// MAPQ 255 means none reported, and passes as in `samtools view -q`.
 function passingMapq(features: Feature[], minMapq: number | undefined) {
   return minMapq === undefined
     ? features
     : features.filter(f => {
         const mapq = getMappingQuality(f)
-        return mapq !== MAPQ_UNAVAILABLE && mapq >= minMapq
+        return mapq === MAPQ_UNAVAILABLE || mapq >= minMapq
       })
 }
 

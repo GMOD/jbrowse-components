@@ -177,8 +177,7 @@ export interface ConnectionFilter {
 export interface ReadFilter {
   flagExclude: number
   flagInclude: number
-  // A read passes with a mapping quality of at least this, through
-  // `getMappingQuality`, so MAPQ 255 (unavailable) fails it.
+  // A read passes with a mapping quality of at least this; MAPQ 255 passes.
   minMapq?: number
   readName?: string
   // Multiple tag filters are AND-ed (a read must pass every one). Kept plural so

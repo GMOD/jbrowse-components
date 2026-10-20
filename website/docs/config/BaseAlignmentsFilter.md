@@ -43,7 +43,7 @@ A setting written to it names members one by one: a member left out stays as it 
 | --- | --- |
 | <span id="slot-flaginclude">**flagInclude**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | a read passes only with every one of these SAM flag bits set, samtools -f |
 | <span id="slot-flagexclude">**flagExclude**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1540</code> | a read passes only with none of these SAM flag bits set, samtools -F; 1540 drops unmapped, QC-failed and duplicate reads |
-| <span id="slot-minmapq">**minMapq**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | a read passes only with a mapping quality of at least this; a read whose mapping quality is unavailable (255) fails it. Unset passes every read |
+| <span id="slot-minmapq">**minMapq**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | a read passes only with a mapping quality of at least this; a read with MAPQ 255 (none reported) passes. Unset passes every read |
 | <span id="slot-readname">**readName**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | the one read name shown; unset shows every read |
 | <span id="slot-tags">**tags**</span><br>[TagFilter](../tagfilter) | The tags a read must have, every one of them: a `{ tag, value }` each, and an unset value matches any read with the tag. |
 | <span id="slot-spliced">**spliced**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (only, exclude) | `only`, `exclude`, or unset for unfiltered: reads whose CIGAR has a reference skip. |

@@ -45,7 +45,7 @@ mapping-quality filter.
   answers.
 - **`filter.minMapq`** keeps a read at or over the minimum, through
   `getMappingQuality`, in `filterChainFeatures`, so a synteny source answers
-  it too.
+  it too. MAPQ 255 passes, as in samtools.
 - **Column sorts by `mapq` and `pairOrientation`** read arrays the worker
   already ships.
 

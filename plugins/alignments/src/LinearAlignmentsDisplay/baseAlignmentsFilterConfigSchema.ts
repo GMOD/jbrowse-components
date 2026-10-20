@@ -65,7 +65,7 @@ export const baseAlignmentsFilterConfigSchema = ConfigurationSchema(
     minMapq: {
       type: 'maybeNumber',
       description:
-        'a read passes only with a mapping quality of at least this; a read whose mapping quality is unavailable (255) fails it. Unset passes every read',
+        'a read passes only with a mapping quality of at least this; a read with MAPQ 255 (none reported) passes. Unset passes every read',
     },
     /**
      * #slot

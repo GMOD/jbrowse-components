@@ -69,9 +69,8 @@ function readCategoryItem(
   )
 }
 
-// The thresholds are the mapping-quality facet's bin edges, so "MAPQ 10+"
-// keeps exactly the sections a facet over `mapq` draws above it. A value the
-// dialog wrote that is none of them gets a radio of its own.
+// The thresholds are the mapping-quality facet's bin edges. A value the dialog
+// wrote that is none of them gets a radio of its own.
 const MAPQ_THRESHOLDS: number[] = MAPQ_BINS.map(b => b.min)
   .filter(min => min > 0)
   .toReversed()
@@ -88,7 +87,7 @@ function minMapqItem(model: FiltersModel): MenuItem {
       current === undefined ? undefined : `${current}+`,
     ),
     helpText:
-      'Hide reads mapped with low confidence. A read whose mapping quality is unavailable (255) is hidden under any threshold.',
+      'Hide reads mapped with low confidence. A read with MAPQ 255 (none reported) stays under any threshold.',
     value: current === undefined ? 'all' : `${current}`,
     options: [
       ['all', 'All reads'],
