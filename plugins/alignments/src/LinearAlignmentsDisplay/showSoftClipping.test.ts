@@ -374,7 +374,7 @@ describe('alignments colorBy', () => {
     const { display } = createDisplay({ baseColor: 'modifications' })
     display.colorByField('strand')
     expect(display.baseLayer?.type).toBe('modifications')
-    display.setBaseLayer({ type: 'perBaseQuality' })
+    display.setBaseLayer({ type: 'baseQuality' })
     expect(display.colorBy).toEqual({ type: 'strand' })
     expect(display.showPerBaseQuality).toBe(true)
     display.setBaseLayer()

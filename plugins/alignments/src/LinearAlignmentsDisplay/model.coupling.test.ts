@@ -2010,8 +2010,8 @@ describe('chain-strand framing: the gate, the bake and the key agree', () => {
   ]
   const layers: (BaseLayer | undefined)[] = [
     undefined,
-    { type: 'perBaseQuality' },
-    { type: 'perBaseLetter' },
+    { type: 'baseQuality' },
+    { type: 'base' },
     { type: 'modifications' },
   ]
   const splitSegment = makePileupDataResult({

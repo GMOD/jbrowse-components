@@ -77,7 +77,6 @@ import { mergeJunctions } from '../features/sashimi/junctions.ts'
 import { junctionSupportingReadSlots } from '../features/sashimi/supportingReads.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
 import {
-  BASE_COLOR_FIELDS,
   writtenReadCategoryColors,
   declaredReadLabels,
   isBakedScheme,
@@ -877,7 +876,7 @@ export default function stateModelFactory(
             if (!self.showLegend || !isBakedScheme(self.colorBy)) {
               return undefined
             }
-            return self.colorBy.type === 'mappingQuality'
+            return self.colorBy.type === 'mapq'
               ? presentMapqs(this.laidOutByGroup)
               : collectAcrossGroups(this.laidOutByGroup, d => d.readTagValues)
           },
@@ -1414,7 +1413,7 @@ export default function stateModelFactory(
            * none. O(bases), so gated on showLegend like the category scan.
            */
           get baseQualitySpan(): QualitySpan {
-            return self.showLegend && self.baseLayer?.type === 'perBaseQuality'
+            return self.showLegend && self.baseLayer?.type === 'baseQuality'
               ? baseQualitySpanAcrossGroups(this.laidOutByGroupFramed)
               : NO_QUALITY_SPAN
           },
@@ -1770,14 +1769,14 @@ export default function stateModelFactory(
          * #getter
          */
         get showPerBaseQuality() {
-          return self.baseLayer?.type === 'perBaseQuality'
+          return self.baseLayer?.type === 'baseQuality'
         },
 
         /**
          * #getter
          */
         get showPerBaseLetter() {
-          return self.baseLayer?.type === 'perBaseLetter'
+          return self.baseLayer?.type === 'base'
         },
 
         /**
@@ -3089,7 +3088,7 @@ export default function stateModelFactory(
                 'baseColor',
                 colorForField(
                   writtenColorOf(conf.baseColor),
-                  layer ? BASE_COLOR_FIELDS[layer.type] : '',
+                  layer?.type ?? '',
                 ),
               )
               if (layer?.modifications) {

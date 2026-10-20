@@ -65,21 +65,21 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     bodyScheme: 'strand',
     menu: { kind: 'radio', label: FACET_LABELS.strand, group: 'basic' },
   },
-  mappingQuality: {
-    type: 'mappingQuality',
-    bodyScheme: 'mappingQuality',
+  mapq: {
+    type: 'mapq',
+    bodyScheme: 'mapq',
     menu: { kind: 'radio', label: FACET_LABELS.mapq, group: 'basic' },
   },
-  perBaseQuality: {
-    type: 'perBaseQuality',
+  baseQuality: {
+    type: 'baseQuality',
     // per-base overlay paints colored rects on top of a neutral 'normal' body
     bodyScheme: 'normal',
     menu: { kind: 'radio', label: 'Per-base quality', group: 'basic' },
     perBase: true,
     workerExtracts: true,
   },
-  perBaseLetter: {
-    type: 'perBaseLetter',
+  base: {
+    type: 'base',
     // like perBaseQuality: nucleotide quads paint over the 'normal' body
     bodyScheme: 'normal',
     menu: { kind: 'radio', label: 'Per-base lettering', group: 'basic' },

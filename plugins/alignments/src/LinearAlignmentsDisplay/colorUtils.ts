@@ -248,7 +248,7 @@ function schemeCategory(
     // `getMappingQuality` returns for a feature carrying no mapping quality at
     // all (PAF/MashMap blocks without one). Split out so it takes the neutral
     // grey rather than the ramp's top.
-    case 'mappingQuality':
+    case 'mapq':
       return data.readMapqs[i] === MAPQ_UNAVAILABLE ? 'mapqUnavailable' : 'mapq'
 
     // Fragment strand inferred from the first mate, through the shared rule

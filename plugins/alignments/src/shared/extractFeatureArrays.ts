@@ -97,9 +97,9 @@ export function extractFeatureArrays<T extends FeatureData>(
   // denominator. Stays empty in every other color mode.
   const bisulfiteCallCounts = new Map<number, number>()
   const perBaseQualities = new PerBaseColumns()
-  const isPerBaseQualityMode = baseLayer?.type === 'perBaseQuality'
+  const isPerBaseQualityMode = baseLayer?.type === 'baseQuality'
   const perBaseLetters = new PerBaseColumns()
-  const isPerBaseLetterMode = baseLayer?.type === 'perBaseLetter'
+  const isPerBaseLetterMode = baseLayer?.type === 'base'
   const tagColorValues: string[] = []
   const nextPositions: number[] = []
   // Walked whatever the settings, and shipped only when some read actually had

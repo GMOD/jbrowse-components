@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments displays' `colorBy: { type, tag, modifications }` mode slot is `color`, the display-kit color object `\"steelblue\" | { value, field, scale, domain, palette, ramp }`, with `scale` drawn from `none | categorical | linear | threshold`. A read dimension is a field under the facet's own name (`strand`, `firstOfPairStrand`, `pairOrientation`, `mapq`) beside the color-only presets (`insertSize`, `insertSizeAndOrientation`, `mateRefName`), `tags.XX` reads a SAM tag and any other name a feature attribute, and a per-base variable is ADR-149's `baseColor`. A declared scale evaluates in the per-read bake, so it recolors with no refetch and no relayout, and the GPU path is unchanged. The modification settings are their own `modifications` slot. The scheme name stays the runtime form. Supersedes ADR-131's \"alignments' `colorBy` selects a scheme and is outside this decision\". ADR-151 spells `palette` and `ramp` as `range` and `scheme`, pins a ramp with `domainMin`/`domainMax`, and drops the `linear` read off a written ramp"
+summary: "The alignments displays' `colorBy: { type, tag, modifications }` mode slot is `color`, the display-kit color object `\"steelblue\" | { value, field, scale, domain, palette, ramp }`, with `scale` drawn from `none | categorical | linear | threshold`. A read dimension is a field under the facet's own name (`strand`, `firstOfPairStrand`, `pairOrientation`, `mapq`) beside the color-only presets (`insertSize`, `insertSizeAndOrientation`, `mateRefName`), `tags.XX` reads a SAM tag and any other name a feature attribute, and a per-base variable is ADR-149's `baseColor`. A declared scale evaluates in the per-read bake, so it recolors with no refetch and no relayout, and the GPU path is unchanged. The modification settings are their own `modifications` slot. The scheme name stays the runtime form (amended 2026-10-20: each scheme a field paints takes the field's name, `mapq`, `baseQuality` and `base`). Supersedes ADR-131's \"alignments' `colorBy` selects a scheme and is outside this decision\". ADR-151 spells `palette` and `ramp` as `range` and `scheme`, pins a ramp with `domainMin`/`domainMax`, and drops the `linear` read off a written ramp"
 ---
 
 # ADR-148: The alignments read fill is the color object
@@ -152,6 +152,19 @@ retired `methylation` and `stranded` names now resolve.
   `Feature[]` a step would read at 4.23x the hand path.
 - **An insert-size gradient under `scale: 'linear'`.** Retired once as
   `insertSizeGradient`; `pinnedInsertSizeBand` holds the reason.
-- **Renaming the runtime scheme names to the field names.** The shader takes
+- ~~**Renaming the runtime scheme names to the field names.** The shader takes
   the scheme as an integer, so no hot path gains, and `ReadColorBy`'s parsed
-  tag form is worth keeping.
+  tag form is worth keeping.~~ Done 2026-10-20; see the amendment.
+
+## Amendment (2026-10-20): a scheme is named by its field
+
+The three schemes whose names differed from their fields take the field's
+name: `mappingQuality` is `mapq`, `perBaseQuality` is `baseQuality` and
+`perBaseLetter` is `base`. `COLOR_FIELDS` and `BASE_COLOR_FIELDS` become the
+field lists the scheme types derive from, where they were maps translating one
+vocabulary into the other, so a scheme and its field cannot drift apart. The
+gain is one vocabulary, not speed. `ColorBy` keeps its parsed tag form
+(`{ type: 'tag', tag }`) and its `normal` plain fill, the two schemes no single
+field names. The mark folders (`features/perBaseQuality`) name a mark, not a
+field, and keep their names; a v4 session's `colorBy` still lifts from the old
+names.

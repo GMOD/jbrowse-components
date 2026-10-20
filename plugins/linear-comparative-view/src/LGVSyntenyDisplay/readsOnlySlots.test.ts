@@ -37,6 +37,6 @@ test('a write to one of the four throws rather than landing nowhere', () => {
     display.setJunctionFilter({ minReads: 5 })
   }).toThrow('LGVSyntenyDisplay has no sashimi')
   expect(() => {
-    display.setBaseLayer({ type: 'perBaseQuality' })
+    display.setBaseLayer({ type: 'baseQuality' })
   }).toThrow('LGVSyntenyDisplay has no sashimi')
 })

@@ -59,7 +59,7 @@ export function isModificationTypeVisible(
 export type BodyScheme =
   | 'normal'
   | 'strand'
-  | 'mappingQuality'
+  | 'mapq'
   | 'insertSize'
   | 'firstOfPairStrand'
   | 'pairOrientation'
@@ -67,33 +67,45 @@ export type BodyScheme =
   | 'modifications'
   | 'tag'
 
-// Every color-by scheme. `COLOR_SCHEMES` (shared/colorSchemes.ts) is typed
-// `Record<ColorSchemeType, ColorSchemeDef>`, so adding a member here is a
-// compile error until it is classified there with both a shader path and a menu
-// placement. Typing this (vs a bare string) catches scheme-name typos at every
-// construction site.
+/**
+ * The read fields with a vocabulary or ramp of their own, each its scheme's
+ * name. A field that is also a facet dimension takes the facet's name, so
+ * `facet` and `color` over it are one word; the insert-size fields are not
+ * facet dimensions, since their band is sampled per region. There is no
+ * `chainStrand`: a long read's inversion reads under View as pairs.
+ */
+export const COLOR_FIELDS = [
+  'strand',
+  'mapq',
+  'insertSize',
+  'firstOfPairStrand',
+  'pairOrientation',
+  'insertSizeAndOrientation',
+  'mateRefName',
+] as const
+
+/**
+ * The per-base variables `baseColor` paints a cell per base from, which the
+ * display draws as a layer of its own beside whatever fills the read.
+ */
+export const BASE_COLOR_FIELDS = [
+  'baseQuality',
+  'base',
+  'modifications',
+  'bisulfite',
+] as const
+export type BaseLayerType = (typeof BASE_COLOR_FIELDS)[number]
+
+// Every color-by scheme, named by the field it paints but for the plain fill
+// and a tag or attribute. `COLOR_SCHEMES` (shared/colorSchemes.ts) is typed
+// `Record<ColorSchemeType, ColorSchemeDef>`, so adding a field above is a
+// compile error until it is classified there with both a shader path and a
+// menu placement.
 export type ColorSchemeType =
   | 'normal'
-  | 'strand'
-  | 'mappingQuality'
-  | 'insertSize'
-  | 'firstOfPairStrand'
-  | 'pairOrientation'
-  | 'insertSizeAndOrientation'
-  | 'perBaseQuality'
-  | 'perBaseLetter'
   | 'tag'
-  | 'mateRefName'
-  | 'modifications'
-  | 'bisulfite'
-
-// The schemes that paint a cell per base over the read, which the display
-// draws as a layer of its own beside whatever fills the read.
-export type BaseLayerType =
-  | 'perBaseQuality'
-  | 'perBaseLetter'
-  | 'modifications'
-  | 'bisulfite'
+  | (typeof COLOR_FIELDS)[number]
+  | BaseLayerType
 
 export type ReadColorSchemeType = Exclude<ColorSchemeType, BaseLayerType>
 

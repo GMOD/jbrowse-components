@@ -484,7 +484,7 @@ function colorReads(
   const declared = declaredReadLabels(encoding, labels ?? [])
   const presentTagValues = !isBakedScheme(colorBy)
     ? undefined
-    : colorBy.type === 'mappingQuality'
+    : colorBy.type === 'mapq'
       ? presentMapqs(colored)
       : collectAcrossGroups(colored, d => d.readTagValues)
   const detectedModifications = new Map(
@@ -527,7 +527,7 @@ function colorReads(
     bakedScale,
     tagValueExtent: linearFieldExtent(encoding, colorBy, byGroup),
     baseQualityExtent:
-      baseLayer?.type === 'perBaseQuality'
+      baseLayer?.type === 'baseQuality'
         ? baseQualitySpanAcrossGroups(byGroup).extent
         : undefined,
   })

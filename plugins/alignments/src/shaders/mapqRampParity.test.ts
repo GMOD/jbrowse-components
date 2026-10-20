@@ -34,7 +34,7 @@ function mapqRegion(written: { domain?: string[] } = {}) {
     segmentReadIndices: Uint32Array.from({ length: n }, (_, i) => i),
     segmentEdgeFlags: new Uint8Array(n),
   }
-  const colorBy = { type: 'mappingQuality' } as const
+  const colorBy = { type: 'mapq' } as const
   const scale = bakedColorScale(
     colorBy,
     alignmentsColorEncoding({
@@ -62,7 +62,7 @@ function mapqRegion(written: { domain?: string[] } = {}) {
   return {
     ...colored,
     readPositions: new Uint32Array(n * 2),
-    readColorCategories: buildReadColorCategories(colored, 'mappingQuality'),
+    readColorCategories: buildReadColorCategories(colored, 'mapq'),
   }
 }
 

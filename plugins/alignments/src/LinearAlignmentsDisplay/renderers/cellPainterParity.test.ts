@@ -90,7 +90,7 @@ const MARKS: {
     },
   },
   {
-    name: 'perBaseQuality',
+    name: 'baseQuality',
     mark: PER_BASE_QUALITY_MARK,
     contiguous: true,
     region: {
@@ -100,7 +100,7 @@ const MARKS: {
     },
   },
   {
-    name: 'perBaseLetter',
+    name: 'base',
     mark: PER_BASE_LETTER_MARK,
     contiguous: true,
     region: {

@@ -486,13 +486,10 @@ const MARKS: [
   ['skip', (scale, block, state) => sweep(gaps(GAP_SKIP, scale), block, state)],
   ['mismatch', (scale, block, state) => sweep(mismatches(scale), block, state)],
   [
-    'perBaseQuality',
+    'baseQuality',
     (scale, block, state) => sweep(perBaseQuality(scale), block, state),
   ],
-  [
-    'perBaseLetter',
-    (scale, block, state) => sweep(perBaseLetter(scale), block, state),
-  ],
+  ['base', (scale, block, state) => sweep(perBaseLetter(scale), block, state)],
   [
     'softclipBases',
     (scale, block, state) => sweep(softclipBases(scale), block, state),

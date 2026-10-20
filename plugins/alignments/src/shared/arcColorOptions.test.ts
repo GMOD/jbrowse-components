@@ -10,7 +10,7 @@ const INHERITED: [ReadColorBy, string][] = [
   [{ type: 'normal' }, 'insertSizeAndOrientation'],
   [{ type: 'strand' }, 'insertSizeAndOrientation'],
   [{ type: 'firstOfPairStrand' }, 'insertSizeAndOrientation'],
-  [{ type: 'mappingQuality' }, 'insertSizeAndOrientation'],
+  [{ type: 'mapq' }, 'insertSizeAndOrientation'],
   [{ type: 'mateRefName' }, 'insertSizeAndOrientation'],
   [{ type: 'tag', tag: 'HP' }, 'insertSizeAndOrientation'],
   [{ type: 'tag', attribute: 'name' }, 'insertSizeAndOrientation'],

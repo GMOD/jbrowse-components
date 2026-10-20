@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { BASE_COLOR_FIELDS } from '../shared/alignmentsColor.ts'
+import { BASE_COLOR_FIELDS } from '../shared/types.ts'
 
 /**
  * #config AlignmentsBaseColor
@@ -37,7 +37,7 @@ export const alignmentsBaseColorConfigSchema = ConfigurationSchema(
       type: 'stringEnum',
       model: types.enumeration('AlignmentsBaseColorField', [
         '',
-        ...Object.values(BASE_COLOR_FIELDS),
+        ...BASE_COLOR_FIELDS,
       ]),
       defaultValue: '',
       description:

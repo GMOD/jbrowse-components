@@ -268,8 +268,8 @@ export interface WorkerPileupData {
   perBaseQualScores: Uint8Array // raw 0-255 quality score
   perBaseQualReadIndices: Uint32Array // maps to parent read index
 
-  // Per-base lettering overlay data — only populated under the perBaseLetter
-  // base layer. One entry per ref-aligned base; every
+  // Per-base lettering overlay data — only populated under the `base` layer.
+  // One entry per ref-aligned base; every
   // base is drawn in its nucleotide color via the shared mismatch pass.
   perBaseLetterPositions: Uint32Array // absolute genomic uint32
   perBaseLetterBases: Uint8Array // uppercase ASCII base code

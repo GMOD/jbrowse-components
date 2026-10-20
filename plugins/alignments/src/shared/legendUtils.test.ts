@@ -160,7 +160,7 @@ describe('getReadDisplayLegendItems', () => {
   // beside their "Read" row keys colors the marks cover. Classified for real
   // rather than from a hand-written set, since the classifier is the half that
   // used to produce them.
-  test.each(['perBaseQuality', 'perBaseLetter'] as const)(
+  test.each(['baseQuality', 'base'] as const)(
     'an unpaired split read in chain mode keys no segment swatch under %s',
     type => {
       const splitRead = {
@@ -188,17 +188,10 @@ describe('getReadDisplayLegendItems', () => {
   // row, so without an explicit row the grey most of the frame shows had no
   // name — the gap the modification scheme closed with modFwd/modRev.
   test('per-base schemes name the read body under their marks', () => {
-    expect(labels('perBaseQuality', ['plain'])).toEqual(['Read'])
-    expect(labels('perBaseLetter', ['plain'])).toEqual([
-      'A',
-      'C',
-      'G',
-      'T',
-      'N',
-      'Read',
-    ])
+    expect(labels('baseQuality', ['plain'])).toEqual(['Read'])
+    expect(labels('base', ['plain'])).toEqual(['A', 'C', 'G', 'T', 'N', 'Read'])
     const plainFill = legendFor({ type: 'normal' }, ['plain'])[0]!.color
-    for (const type of ['perBaseQuality', 'perBaseLetter'] as const) {
+    for (const type of ['baseQuality', 'base'] as const) {
       const body = legendFor({ type }, ['plain']).find(i => i.label === 'Read')
       expect(body?.color).toBe(plainFill)
     }
@@ -592,14 +585,14 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   test('mapping quality lists no rows of its own beside its color bar', () => {
-    expect(labels('mappingQuality', [])).toEqual([])
+    expect(labels('mapq', [])).toEqual([])
   })
 
   // 255 is the spec's "unavailable" sentinel; it classifies out of the ramp
   // (readColorCategory) into its own flat-swatch bucket, so it is keyed like
   // every other cross-cutting bucket — present-gated, and named.
   test('MAPQ unavailable is keyed only when reads carry it', () => {
-    expect(labels('mappingQuality', ['mapqUnavailable'])).toEqual([
+    expect(labels('mapq', ['mapqUnavailable'])).toEqual([
       'MAPQ unavailable (255)',
     ])
   })
@@ -607,7 +600,7 @@ describe('getReadDisplayLegendItems', () => {
   test('base quality unavailable is keyed only when a drawn base carries it', () => {
     const rows = (baseQualityUnavailable: boolean) =>
       legendFor({ type: 'normal' }, ['plain'], {
-        baseLayer: { type: 'perBaseQuality' },
+        baseLayer: { type: 'baseQuality' },
         baseQualityUnavailable,
       })
     expect(rows(false).map(i => i.label)).toEqual(['Read'])
@@ -886,7 +879,7 @@ describe('colorRampScales', () => {
     baseQualityExtent: undefined,
   }
   const mapqRamp = bakedColorScale(
-    { type: 'mappingQuality' },
+    { type: 'mapq' },
     {
       field: 'mapq',
       scale: 'linear',
@@ -907,7 +900,7 @@ describe('colorRampScales', () => {
   test('a linear MAPQ keys a color bar from the scale the reads bake through', () => {
     const [mapq, ...rest] = colorRampScales({
       ...noExtents,
-      colorBy: { type: 'mappingQuality' },
+      colorBy: { type: 'mapq' },
       baseLayer: undefined,
       bakedScale: mapqRamp,
       tagValueExtent: [0, 70],
@@ -928,7 +921,7 @@ describe('colorRampScales', () => {
     expect(
       colorRampScales({
         ...noExtents,
-        colorBy: { type: 'mappingQuality' },
+        colorBy: { type: 'mapq' },
         baseLayer: undefined,
       }),
     ).toEqual([])
@@ -937,8 +930,8 @@ describe('colorRampScales', () => {
   test('base quality keys a color bar from the table the cells paint, ahead of the read fill', () => {
     const [baseQuality, mapq] = colorRampScales({
       ...noExtents,
-      colorBy: { type: 'mappingQuality' },
-      baseLayer: { type: 'perBaseQuality' },
+      colorBy: { type: 'mapq' },
+      baseLayer: { type: 'baseQuality' },
       bakedScale: mapqRamp,
       baseQualityExtent: [2, 38],
     })
@@ -964,7 +957,7 @@ describe('colorRampScales', () => {
       colorRampScales({
         ...noExtents,
         colorBy: { type: 'normal' },
-        baseLayer: { type: 'perBaseLetter' },
+        baseLayer: { type: 'base' },
       }),
     ).toEqual([])
   })

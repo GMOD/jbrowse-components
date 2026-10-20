@@ -234,7 +234,7 @@ function namesAlignmentsColor(value: unknown) {
   const field = asString(asRecord(value)?.field) ?? ''
   return (
     facetTag(field) !== undefined ||
-    (field !== 'strand' && Object.values(COLOR_FIELDS).includes(field))
+    (field !== 'strand' && (COLOR_FIELDS as readonly string[]).includes(field))
   )
 }
 

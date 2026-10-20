@@ -647,7 +647,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setBaseLayer({ type: 'perBaseQuality' })
+    display.setBaseLayer({ type: 'baseQuality' })
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
 
@@ -667,7 +667,7 @@ describe('FetchVisibleRegions autorun', () => {
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display, view } = createDisplay()
 
-    display.setBaseLayer({ type: 'perBaseLetter' })
+    display.setBaseLayer({ type: 'base' })
     view.zoomTo(8)
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()

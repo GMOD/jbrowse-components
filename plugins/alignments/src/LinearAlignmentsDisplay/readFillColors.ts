@@ -138,7 +138,7 @@ function applyMapqTable(data: WorkerPileupData, table: Uint32Array) {
 }
 
 function bakerFor(colorBy: ColorBy, scale: BakedColorScale) {
-  if (colorBy.type === 'mappingQuality') {
+  if (colorBy.type === 'mapq') {
     const table = mapqColorTable(scale)
     return (data: WorkerPileupData) => applyMapqTable(data, table)
   }

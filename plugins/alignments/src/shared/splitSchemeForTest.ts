@@ -1,4 +1,4 @@
-import { BASE_COLOR_FIELDS } from './alignmentsColor.ts'
+import { baseLayerOfField } from './alignmentsColor.ts'
 
 import type { BaseLayer, ColorBy, ReadColorBy } from './types.ts'
 
@@ -10,7 +10,7 @@ export function splitSchemeForTest(colorBy: ColorBy | undefined): {
   colorBy: ReadColorBy | undefined
   baseLayer: BaseLayer | undefined
 } {
-  return colorBy && Object.hasOwn(BASE_COLOR_FIELDS, colorBy.type)
+  return colorBy && baseLayerOfField(colorBy.type)
     ? { colorBy: { type: 'normal' }, baseLayer: colorBy as BaseLayer }
     : { colorBy: colorBy as ReadColorBy | undefined, baseLayer: undefined }
 }

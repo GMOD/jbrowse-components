@@ -12,7 +12,7 @@ import type { ColorBy, Facet } from './types.ts'
 export function keySectionOrder(facet: Facet | undefined, colorBy: ColorBy) {
   return facet &&
     facet.field === colorFieldOf(colorBy) &&
-    colorBy.type !== 'mappingQuality'
+    colorBy.type !== 'mapq'
     ? sectionOrder(facet.field, facet.domain)
     : undefined
 }

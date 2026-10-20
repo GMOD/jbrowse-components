@@ -77,9 +77,9 @@ const baseline = JSON.stringify(extracted(undefined))
 const sample: Record<ColorSchemeType, ColorBy> = {
   normal: { type: 'normal' },
   strand: { type: 'strand' },
-  mappingQuality: { type: 'mappingQuality' },
-  perBaseQuality: { type: 'perBaseQuality' },
-  perBaseLetter: { type: 'perBaseLetter' },
+  mapq: { type: 'mapq' },
+  baseQuality: { type: 'baseQuality' },
+  base: { type: 'base' },
   insertSize: { type: 'insertSize' },
   firstOfPairStrand: { type: 'firstOfPairStrand' },
   pairOrientation: { type: 'pairOrientation' },
@@ -106,7 +106,7 @@ describe('workerColorBy', () => {
 
   test('shader-only schemes collapse to one value, so switching them refetches nothing', () => {
     expect(workerColorBy({ type: 'strand' })).toBeUndefined()
-    expect(workerColorBy({ type: 'mappingQuality' })).toBeUndefined()
+    expect(workerColorBy({ type: 'mapq' })).toBeUndefined()
     expect(workerColorBy({ type: 'insertSizeAndOrientation' })).toBeUndefined()
   })
 

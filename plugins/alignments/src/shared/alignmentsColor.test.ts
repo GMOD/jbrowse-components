@@ -32,10 +32,10 @@ function readFill(field: string, scale?: AlignmentsColorSetting['scale']) {
 }
 
 describe('colorByOf', () => {
-  test('every preset field selects its scheme and names it back', () => {
-    for (const [scheme, field] of Object.entries(COLOR_FIELDS)) {
+  test('every preset field selects the scheme of its name and names it back', () => {
+    for (const field of COLOR_FIELDS) {
       const colorBy = readFill(field)
-      expect(colorBy.type).toBe(scheme)
+      expect(colorBy.type).toBe(field)
       expect(colorFieldOf(colorBy)).toBe(field)
     }
   })
@@ -44,7 +44,7 @@ describe('colorByOf', () => {
     const shared = ['strand', 'firstOfPairStrand', 'pairOrientation', 'mapq']
     for (const field of shared) {
       expect(Object.hasOwn(FACET_LABELS, field)).toBe(true)
-      expect(Object.values(COLOR_FIELDS)).toContain(field)
+      expect(COLOR_FIELDS).toContain(field)
     }
   })
 
@@ -65,16 +65,16 @@ describe('colorByOf', () => {
   })
 
   test('a per-base field is no read fill, and costs no attribute lookup', () => {
-    for (const field of Object.values(BASE_COLOR_FIELDS)) {
+    for (const field of BASE_COLOR_FIELDS) {
       expect(readFill(field)).toEqual({ type: 'normal' })
     }
   })
 })
 
 describe('baseLayerOf', () => {
-  test('every per-base field selects its layer', () => {
-    for (const [layer, field] of Object.entries(BASE_COLOR_FIELDS)) {
-      expect(baseLayerOf({ field, scale: undefined })?.type).toBe(layer)
+  test('every per-base field selects the layer of its name', () => {
+    for (const field of BASE_COLOR_FIELDS) {
+      expect(baseLayerOf({ field, scale: undefined })?.type).toBe(field)
     }
   })
 
@@ -85,7 +85,7 @@ describe('baseLayerOf', () => {
     ).toEqual({ type: 'modifications', modifications: settings })
     expect(
       baseLayerOf({ field: 'baseQuality', scale: undefined }, settings),
-    ).toEqual({ type: 'perBaseQuality' })
+    ).toEqual({ type: 'baseQuality' })
   })
 
   test('no field, a read field, or a field under none draws no layer', () => {
@@ -100,9 +100,7 @@ describe('bodyColorScheme', () => {
     const mods = { type: 'modifications' } as const
     expect(bodyColorScheme({ type: 'normal' }, mods)).toBe('modifications')
     expect(bodyColorScheme({ type: 'tag', tag: 'HP' }, mods)).toBe('tag')
-    expect(bodyColorScheme({ type: 'normal' }, { type: 'perBaseLetter' })).toBe(
-      'normal',
-    )
+    expect(bodyColorScheme({ type: 'normal' }, { type: 'base' })).toBe('normal')
     expect(bodyColorScheme({ type: 'strand' }, undefined)).toBe('strand')
   })
 })

@@ -158,7 +158,7 @@ export function bakedColorScale(
   extent: NumericExtent | undefined,
 ): BakedColorScale {
   const scaled = typeof encoding === 'object' ? encoding : undefined
-  const numeric = colorBy.type === 'tag' || colorBy.type === 'mappingQuality'
+  const numeric = colorBy.type === 'tag' || colorBy.type === 'mapq'
   if (numeric && scaled?.scale === 'linear') {
     return linearScale(
       scaled,
@@ -252,7 +252,7 @@ export function linearFieldExtent(
 ): NumericExtent | undefined {
   return typeof encoding !== 'object' || encoding.scale !== 'linear'
     ? undefined
-    : colorBy.type === 'mappingQuality'
+    : colorBy.type === 'mapq'
       ? mapqExtentAcrossGroups(byGroup)
       : colorBy.type === 'tag'
         ? numericExtentAcrossGroups(byGroup, d => d.readTagValues)
@@ -283,7 +283,7 @@ export function bakedColorExtent(
       ? quantileExtentAcrossGroups(byGroup, d => d.readTagValues, quantile)
       : numericExtentAcrossGroups(byGroup, d => d.readTagValues)
   }
-  if (colorBy.type === 'mappingQuality') {
+  if (colorBy.type === 'mapq') {
     return quantile < 1
       ? mapqQuantileExtentAcrossGroups(byGroup, quantile)
       : mapqExtentAcrossGroups(byGroup)

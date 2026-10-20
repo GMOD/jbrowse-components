@@ -909,7 +909,7 @@ export function colorRampScales({
   const readRamp =
     colorBy && bakedRampScale(colorBy, bakedScale, tagValueExtent)
   return [
-    ...(baseLayer?.type === 'perBaseQuality'
+    ...(baseLayer?.type === 'baseQuality'
       ? [
           qualityRampScale(
             'base-quality-ramp',
@@ -1001,7 +1001,7 @@ function baseLayerLegend({
   presentModifications,
   baseQualityUnavailable,
 }: SchemeLegendArgs): LegendItem[] {
-  if (baseLayer?.type === 'perBaseQuality') {
+  if (baseLayer?.type === 'baseQuality') {
     return baseQualityUnavailable
       ? [
           {
@@ -1011,7 +1011,7 @@ function baseLayerLegend({
         ]
       : []
   }
-  if (baseLayer?.type === 'perBaseLetter') {
+  if (baseLayer?.type === 'base') {
     return BASE_LEGEND.map(({ key, label }) => ({
       color: rgb255(palette[key]),
       label,
@@ -1070,7 +1070,7 @@ function schemeLegend({
   if (
     colorType === 'tag' ||
     colorType === 'mateRefName' ||
-    colorType === 'mappingQuality'
+    colorType === 'mapq'
   ) {
     return bakedValueLegend(
       colorBy,

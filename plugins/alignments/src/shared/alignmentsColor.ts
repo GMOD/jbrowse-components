@@ -17,7 +17,11 @@ import {
   MAPQ_UNAVAILABLE_LEVEL,
   PAIR_ORIENTATION_LEVELS,
 } from './readFieldLevels.ts'
-import { FACET_ONLY_DIMENSIONS } from './types.ts'
+import {
+  BASE_COLOR_FIELDS,
+  COLOR_FIELDS,
+  FACET_ONLY_DIMENSIONS,
+} from './types.ts'
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { RGBColor } from '../shaders/colors.ts'
@@ -53,50 +57,19 @@ export interface AlignmentsColorSetting extends ColorSetting {
   domainMid: number | undefined
 }
 
-type PresetScheme = Exclude<ReadColorSchemeType, 'normal' | 'tag'>
+export { BASE_COLOR_FIELDS, COLOR_FIELDS }
 
-/**
- * The read fields with a vocabulary or ramp of their own. A field that is also
- * a facet dimension takes the facet's name, so `facet` and `color` over it are
- * one word; the insert-size fields are not facet dimensions, since their band
- * is sampled per region. There is no `chainStrand`: a long read's inversion
- * reads under View as pairs.
- */
-export const COLOR_FIELDS: Record<PresetScheme, string> = {
-  strand: 'strand',
-  mappingQuality: 'mapq',
-  insertSize: 'insertSize',
-  firstOfPairStrand: 'firstOfPairStrand',
-  pairOrientation: 'pairOrientation',
-  insertSizeAndOrientation: 'insertSizeAndOrientation',
-  mateRefName: 'mateRefName',
+type PresetScheme = (typeof COLOR_FIELDS)[number]
+
+function isPresetField(field: string): field is PresetScheme {
+  const fields: readonly string[] = COLOR_FIELDS
+  return fields.includes(field)
 }
-
-/** The per-base variables `baseColor` paints a cell per base from. */
-export const BASE_COLOR_FIELDS: Record<BaseLayerType, string> = {
-  perBaseQuality: 'baseQuality',
-  perBaseLetter: 'base',
-  modifications: 'modifications',
-  bisulfite: 'bisulfite',
-}
-
-const SCHEME_OF_FIELD = new Map(
-  Object.entries(COLOR_FIELDS).map(([scheme, field]) => [
-    field,
-    scheme as PresetScheme,
-  ]),
-)
-
-const LAYER_OF_FIELD = new Map(
-  Object.entries(BASE_COLOR_FIELDS).map(([layer, field]) => [
-    field,
-    layer as BaseLayerType,
-  ]),
-)
 
 /** The per-base layer `field` draws, if it names one. */
 export function baseLayerOfField(field: string) {
-  return LAYER_OF_FIELD.get(field)
+  const fields: readonly string[] = BASE_COLOR_FIELDS
+  return fields.includes(field) ? (field as BaseLayerType) : undefined
 }
 
 const FACET_ONLY_FIELDS = new Set<string>(FACET_ONLY_DIMENSIONS)
@@ -106,9 +79,9 @@ const READS_MODIFICATION_SETTINGS = new Set<BaseLayerType>([
   'bisulfite',
 ])
 
-const INSERT_SIZE_FIELDS = new Set([
-  COLOR_FIELDS.insertSize,
-  COLOR_FIELDS.insertSizeAndOrientation,
+const INSERT_SIZE_FIELDS = new Set<string>([
+  'insertSize',
+  'insertSizeAndOrientation',
 ])
 
 /**
@@ -131,7 +104,7 @@ export function alignmentsColorProblems(setting: AlignmentsColorSetting) {
     return []
   }
   const { field } = encoding
-  return LAYER_OF_FIELD.has(field)
+  return baseLayerOfField(field)
     ? [
         `color.field: ${field} is drawn a cell per base, which baseColor paints over the reads`,
       ]
@@ -150,8 +123,9 @@ export function colorFieldOf(colorBy: ColorBy) {
     ? colorBy.tag
       ? `${TAG_FIELD_PREFIX}${colorBy.tag}`
       : (colorBy.attribute ?? '')
-    : (Object.entries(COLOR_FIELDS).find(([k]) => k === colorBy.type)?.[1] ??
-        '')
+    : colorBy.type === 'normal'
+      ? ''
+      : colorBy.type
 }
 
 /**
@@ -163,15 +137,14 @@ export function colorFieldOf(colorBy: ColorBy) {
 export function colorByOf(encoding: AlignmentsColorEncoding): ReadColorBy {
   if (
     typeof encoding !== 'object' ||
-    LAYER_OF_FIELD.has(encoding.field) ||
+    baseLayerOfField(encoding.field) ||
     FACET_ONLY_FIELDS.has(encoding.field)
   ) {
     return { type: 'normal' }
   }
   const { field } = encoding
-  const scheme = SCHEME_OF_FIELD.get(field)
-  if (scheme) {
-    return { type: scheme }
+  if (isPresetField(field)) {
+    return { type: field }
   }
   const tag = facetTag(field)
   return tag ? { type: 'tag', tag } : { type: 'tag', attribute: field }
@@ -200,9 +173,7 @@ export function baseLayerOf(
     range: [],
   })
   const type =
-    typeof encoding === 'object'
-      ? LAYER_OF_FIELD.get(encoding.field)
-      : undefined
+    typeof encoding === 'object' ? baseLayerOfField(encoding.field) : undefined
   return type === undefined
     ? undefined
     : READS_MODIFICATION_SETTINGS.has(type) && modifications
@@ -231,7 +202,7 @@ export function bodyColorScheme(
  */
 export function isBakedScheme(colorBy: ColorBy) {
   return (
-    colorBy.type === 'mappingQuality' ||
+    colorBy.type === 'mapq' ||
     colorBy.type === 'mateRefName' ||
     (colorBy.type === 'tag' && !!(colorBy.tag ?? colorBy.attribute))
   )
@@ -295,7 +266,7 @@ const READ_COLOR_LEVELS: Record<
     ...INSERT_SIZE_COLOR_LEVELS,
     ...PAIR_COLOR_LEVELS.filter(([dir]) => dir !== 'LR'),
   ],
-  mappingQuality: [[MAPQ_UNAVAILABLE_LEVEL, 'mapqUnavailable']],
+  mapq: [[MAPQ_UNAVAILABLE_LEVEL, 'mapqUnavailable']],
   mateRefName: [NO_VALUE_LEVEL],
   tag: [NO_VALUE_LEVEL],
 }
@@ -339,17 +310,15 @@ export function levelKeysOf(type: ColorSchemeType) {
  */
 export const ALIGNMENTS_FIELD_PRESETS = {
   ...Object.fromEntries(
-    Object.entries(COLOR_FIELDS).map(([scheme, field]) => [
+    COLOR_FIELDS.map(field => [
       field,
       INSERT_SIZE_FIELDS.has(field)
         ? { scale: 'threshold' }
-        : isBakedScheme({ type: scheme as PresetScheme })
+        : isBakedScheme({ type: field })
           ? { scale: 'categorical' }
           : {
               scale: 'categorical',
-              domain: paintedLevels(scheme as PresetScheme).map(
-                ([value]) => value,
-              ),
+              domain: paintedLevels(field).map(([value]) => value),
             },
     ]),
   ),

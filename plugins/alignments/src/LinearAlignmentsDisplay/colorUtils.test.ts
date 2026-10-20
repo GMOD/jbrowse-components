@@ -395,8 +395,8 @@ describe('getReadColor maps each category to its palette color', () => {
   // would read as a genuine high score.
   test('mapq 255 leaves the ramp for the neutral unavailable swatch', () => {
     const data = makeData({ mapq: 255 })
-    expect(readColorCategory(0, data, 'mappingQuality')).toBe('mapqUnavailable')
-    expect(getReadColor(0, data, 'mappingQuality', palette)).toBe(
+    expect(readColorCategory(0, data, 'mapq')).toBe('mapqUnavailable')
+    expect(getReadColor(0, data, 'mapq', palette)).toBe(
       rgb255(palette.colorPairLR),
     )
   })
@@ -455,10 +455,10 @@ describe('framesUnpairedChainStrand', () => {
     ['insertSize', true, false],
     ['strand', true, false],
     ['normal', true, false],
-    ['mappingQuality', true, false],
+    ['mapq', true, false],
     ['tag', true, false],
     ['modifications', true, false],
-    ['perBaseQuality', true, false],
+    ['baseQuality', true, false],
   ]
   test.each(cases)(
     '%s in chain mode %s frames: %s',
