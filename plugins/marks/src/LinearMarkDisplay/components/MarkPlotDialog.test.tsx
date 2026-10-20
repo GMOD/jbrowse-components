@@ -462,6 +462,18 @@ describe('the plot as a whole', () => {
     })
   })
 
+  it('reads a lone space as an emptied axis end, not as 0', () => {
+    const { apply, written } = setup({
+      ...BAR,
+      scales: { y: { title: 'Score', domainMin: -3 } },
+    })
+    fireEvent.change(screen.getByTestId('axis-domainMin'), {
+      target: { value: ' ' },
+    })
+    fireEvent.click(apply())
+    expect(written).toHaveBeenCalledWith({ scales: { y: { title: 'Score' } } })
+  })
+
   it('holds a partly typed number without writing it', () => {
     const { apply, written } = setup(BAR)
     const min = screen.getByTestId('axis-domainMin')

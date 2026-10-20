@@ -6,8 +6,9 @@ import { observer } from 'mobx-react'
 import type { TextFieldProps } from '@mui/material'
 
 function valueOf(text: string) {
-  const n = Number(text)
-  return text === '' ? undefined : Number.isFinite(n) ? n : text
+  const trimmed = text.trim()
+  const n = Number(trimmed)
+  return trimmed === '' ? undefined : Number.isFinite(n) ? n : trimmed
 }
 
 /**
@@ -45,7 +46,7 @@ const DraftNumberField = observer(function DraftNumberField({
         const next = event.target.value
         setText(next)
         if (accepted(next)) {
-          onCommit(next)
+          onCommit(next.trim())
         }
       }}
     />
