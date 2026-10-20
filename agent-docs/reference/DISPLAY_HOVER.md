@@ -49,6 +49,11 @@ re-resolves it, so no reaction clears it on the viewport's axes and
   a banner replaces the container, or a `ContextMenu` opens or closes.
 - **Put a gate in `hoverHitAt`.** A global display answers no hit while
   `isLoadingOrCanceled`, and its override says so.
+- **Multi-way synteny stays stored for now.** Its ribbon pick runs
+  `isPointInPath` on a canvas jsdom lacks, so its hover suites inject a
+  `HoverTarget` instead of a pointer, and `hoverRelayout.test.ts` pins a hover
+  that a lane-links commit drops. Converting it means a pick double for those
+  suites and a decision on that rule.
 
 MAF's tooltip stores no hit either: its body re-runs `mafHitTest` from the live
 pointer on every render. The row under the pointer is stored through
