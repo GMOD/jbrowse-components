@@ -1,0 +1,153 @@
+{
+  "name": "Gene explorer: APOE",
+  "views": [
+    {
+      "id": "lgv-APOE",
+      "type": "LinearGenomeView",
+      "colorByCDS": true,
+      "hideHeaderOverview": true,
+      "showGridlines": false,
+      "init": {
+        "assembly": "hg38",
+        "loc": "chr19:44906585-44906707 chr19:44907720-44907992 chr19:44908493-44909290",
+        "tracks": [
+          "hg38-ncbiRefSeqSelect",
+          "hg38-clinvarMain",
+          "hg38-alphaMissense"
+        ]
+      }
+    },
+    {
+      "id": "msa-APOE",
+      "type": "MsaView",
+      "connectedViewId": "lgv-APOE",
+      "connectedFeature": {
+        "uniqueId": "NM_000041.4",
+        "type": "mRNA",
+        "refName": "chr19",
+        "start": 44906624,
+        "end": 44909250,
+        "strand": 1,
+        "name": "NM_000041.4",
+        "subfeatures": [
+          {
+            "type": "CDS",
+            "start": 44906624,
+            "end": 44906667,
+            "strand": 1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 44907759,
+            "end": 44907952,
+            "strand": 1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 44908532,
+            "end": 44909250,
+            "strand": 1,
+            "phase": 1
+          }
+        ]
+      },
+      "uniprotId": "P02649",
+      "colorSchemeName": "percent_identity_dynamic",
+      "labelsAlignRight": true,
+      "treeAreaWidth": 200,
+      "allowedGappyness": 50,
+      "orthologParams": {
+        "taxId": 9606,
+        "geneCandidates": ["348"],
+        "source": "ncbi",
+        "msaAlgorithm": "browser",
+        "maxSpecies": 100,
+        "proteinSequence": "MKVLWAALLVTFLAGCQAKVEQAVETEPEPELRQQTEWQSGQRWELALGRFWDYLRWVQTLSEQVQEELLSSQVTQELRALMDETMKELKAYKSELEEQLTPVAEETRARLSKELQAAQARLGADMEDVCGRLVQYRGEVQAMLGQSTEELRVRLASHLRKLRKRLLRDADDLQKRLAVYQAGAREGAERGLSAIRERLGPLVEQGRVRAATVGSLAGQPLQERAQAWGERLRARMEEMGSRTRDRLDEVKEQVAEVRAKLEEQAQQIRLQAEAFQARLKSWFEPLVEDMQRQWAGLVEKVQAAVGTSAAPVPSDNH"
+      }
+    },
+    {
+      "id": "protein-APOE-1b68",
+      "type": "ProteinView",
+      "height": 500,
+      "zoomToBaseLevel": false,
+      "structures": [
+        {
+          "pdbId": "1b68",
+          "feature": {
+            "uniqueId": "NM_000041.4",
+            "type": "mRNA",
+            "refName": "chr19",
+            "start": 44906624,
+            "end": 44909250,
+            "strand": 1,
+            "name": "NM_000041.4",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 44906624,
+                "end": 44906667,
+                "strand": 1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 44907759,
+                "end": 44907952,
+                "strand": 1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 44908532,
+                "end": 44909250,
+                "strand": 1,
+                "phase": 1
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MKVLWAALLVTFLAGCQAKVEQAVETEPEPELRQQTEWQSGQRWELALGRFWDYLRWVQTLSEQVQEELLSSQVTQELRALMDETMKELKAYKSELEEQLTPVAEETRARLSKELQAAQARLGADMEDVCGRLVQYRGEVQAMLGQSTEELRVRLASHLRKLRKRLLRDADDLQKRLAVYQAGAREGAERGLSAIRERLGPLVEQGRVRAATVGSLAGQPLQERAQAWGERLRARMEEMGSRTRDRLDEVKEQVAEVRAKLEEQAQQIRLQAEAFQARLKSWFEPLVEDMQRQWAGLVEKVQAAVGTSAAPVPSDNH",
+          "connectedViewId": "lgv-APOE",
+          "initialTranscriptResidues": [
+            {
+              "start": 130,
+              "end": 130
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "useWorkspaces": true,
+  "activePanelId": "panel-left",
+  "layout": {
+    "id": "branch-root",
+    "direction": "row",
+    "size": 1,
+    "children": [
+      {
+        "id": "panel-left",
+        "size": 58,
+        "tabs": [
+          {
+            "id": "tab-left",
+            "viewIds": ["lgv-APOE", "msa-APOE"]
+          }
+        ],
+        "activeTabId": "tab-left"
+      },
+      {
+        "id": "panel-right",
+        "size": 42,
+        "tabs": [
+          {
+            "id": "tab-right",
+            "viewIds": ["protein-APOE-1b68"]
+          }
+        ],
+        "activeTabId": "tab-right"
+      }
+    ]
+  }
+}

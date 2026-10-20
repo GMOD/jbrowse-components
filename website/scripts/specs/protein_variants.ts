@@ -48,6 +48,9 @@ interface SessionOptions {
   sessionTracks?: object[]
   msaHeight?: number
   domains?: boolean
+  legend?: boolean
+  turnedOff?: string[]
+  proteinColor?: object
   highlights?: object[]
 }
 
@@ -62,6 +65,8 @@ function linkedSession(
     sessionTracks = [],
     msaHeight = 560,
     domains = false,
+    turnedOff = [],
+    proteinColor,
     highlights,
   }: SessionOptions,
 ) {
@@ -73,7 +78,14 @@ function linkedSession(
   msa.displayName = msaName
   msa.showDomains = domains
   msa.region = region
+  if (turnedOff.length > 0) {
+    msa.turnedOffFeatures = Object.fromEntries(turnedOff.map(a => [a, true]))
+  }
   protein.height = 780
+  if (proteinColor) {
+    delete protein.colorScheme
+    protein.color = proteinColor
+  }
   if (domains) {
     lgv.colorByFrame = false
     msa.domainsOnGenome = true
@@ -298,7 +310,7 @@ function hotspotSession(
   const session = structuredClone(base)
   const [, msa, protein] = session.views as [ViewJson, ViewJson, ViewJson]
   msa.relativeTo = 'human_query'
-  if (options.domains) {
+  if (options.domains && !options.legend) {
     msa.showDomainLegend = false
   }
   protein.colorScheme = 'mapped-chain'
@@ -328,7 +340,12 @@ function hoverCodon(loc: string) {
 // The domain track the alignment adds to the genome view, its legend closed
 // and its height grown by `grow` px to show every site's row, then the codon
 // hovered.
-function domainFigure(gene: string, codon: string, grow = 0) {
+function domainFigure(
+  gene: string,
+  codon: string,
+  grow = 0,
+  keepLegend = false,
+) {
   const testid = `trackRenderingContainer-lgv-${gene}-msaview-domains-msa-${gene}`
   const handle = {
     selector: `[data-testid="${testid}"]`,
@@ -344,15 +361,23 @@ function domainFigure(gene: string, codon: string, grow = 0) {
     ...READY,
     readySelector: `${READY.readySelector}:has([data-testid="${testid}"])`,
     viewportWidth: 2300,
-    clicksChange:
-      grow > 0
-        ? "close the domain track's legend and grow the track"
-        : "close the domain track's legend",
+    ...(keepLegend
+      ? {}
+      : {
+          clicksChange:
+            grow > 0
+              ? "close the domain track's legend and grow the track"
+              : "close the domain track's legend",
+        }),
     actions: [
-      {
-        type: 'click' as const,
-        selector: `[data-track-overlay-slot]:has([data-testid="${testid}"]) [aria-label="Hide legend"]`,
-      },
+      ...(keepLegend
+        ? []
+        : [
+            {
+              type: 'click' as const,
+              selector: `[data-track-overlay-slot]:has([data-testid="${testid}"]) [aria-label="Hide legend"]`,
+            },
+          ]),
       ...(grow > 0 ? [resize] : []),
       { type: 'waitForAppSettled' as const },
       ...hoverCodon(codon),
@@ -416,6 +441,18 @@ const KRAS_G12_WINDOW = 'chr12:25245320-25245380[rev]'
 const KRAS_DOMAIN_WINDOWS =
   'chr12:25245328-25245372[rev] chr12:25227320-25227364[rev]'
 const KRAS_G12 = 'chr12:25,245,350'
+const KRAS_CDD = '133338'
+const KRAS_UNSHOWN_SITES = [
+  'G1 box',
+  'G2 box',
+  'G3 box',
+  'G4 box',
+  'G5 box',
+  'putative GDI interaction site',
+  'GEF interaction site',
+  'effector interaction site',
+  'Switch I region',
+].map(name => `${KRAS_CDD}:${name}`)
 
 const TP53: HotspotGene = {
   session: readSession('protein_browser_tp53_1tup.session.json'),
@@ -444,6 +481,95 @@ const BRAF: HotspotGene = {
 }
 const BRAF_V600_WINDOW = 'chr7:140753306-140753366[rev]'
 const BRAF_V600 = 'chr7:140,753,336'
+const BRAF_UNSHOWN = [
+  '340654',
+  '410421',
+  '340654:putative RBD_Raf-Ras interaction site',
+  '340654:putative RBD_Raf-KRas interaction site',
+  '340654:homodimer interface',
+  '340654:putative Ca binding site',
+  '270964:active',
+  '270964:polypeptide substrate binding site',
+  '270964:dimer interface',
+]
+
+const CFTR: HotspotGene = {
+  session: readSession('protein_browser_cftr.session.json'),
+  gene: 'CFTR',
+  hotspots: [
+    { label: 'F508', refName: 'chr7', start: 117559592, end: 117559595 },
+  ],
+}
+const CFTR_F508_WINDOW = 'chr7:117559562-117559622'
+const CFTR_F508 = 'chr7:117,559,593'
+
+const APOE: HotspotGene = {
+  session: readSession('protein_browser_apoe.session.json'),
+  gene: 'APOE',
+  hotspots: [
+    { label: 'C112R', refName: 'chr19', start: 44908683, end: 44908686 },
+    { label: 'R158C', refName: 'chr19', start: 44908821, end: 44908824 },
+  ],
+}
+const APOE_WINDOWS = 'chr19:44908653-44908716 chr19:44908791-44908854'
+const APOE_C112R = 'chr19:44,908,684'
+const APOE_GWAS_SUBSET = 'gwasCatalog_apoe_traits'
+const APOE_GWAS_SUBSET_TRACK = {
+  type: 'FeatureTrack',
+  trackId: APOE_GWAS_SUBSET,
+  name: 'GWAS Catalog at rs429358, one record per trait',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedTabixAdapter',
+    bedGzLocation: { uri: 'https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz' },
+    index: {
+      indexType: 'CSI',
+      location: { uri: 'https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz.csi' },
+    },
+  },
+  displayDefaults: {
+    filter: [
+      "jexl:feature.name == 'rs429358'",
+      "jexl:feature.trait in ['Alzheimer\\'s disease', 'LDL cholesterol levels', 'Longevity (age >90th survival percentile)']",
+      "jexl:feature.pValue in ['1E-320', '4E-413', '1E-61']",
+    ],
+    labels: {
+      name: 'trait',
+      description:
+        "jexl:'p=' + feature.pValue + ', ' + substring(feature.pubDate, 0, 4) + ', ' + feature.author",
+    },
+    showLabels: 'nameAndDescription',
+  },
+}
+
+const HBB_GWAS_STORY = 'gwasCatalog_hbb_story'
+const HBB_GWAS_STORY_TRACK = {
+  type: 'FeatureTrack',
+  trackId: HBB_GWAS_STORY,
+  name: 'GWAS Catalog at rs334, one record per trait',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedTabixAdapter',
+    bedGzLocation: { uri: 'https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz' },
+    index: {
+      indexType: 'CSI',
+      location: { uri: 'https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz.csi' },
+    },
+  },
+  displayDefaults: {
+    filter: [
+      "jexl:feature.name == 'rs334'",
+      "jexl:feature.trait in ['Malaria', 'Hereditary hemolytic anemias (PheCode 282)']",
+      "jexl:feature.pValue in ['4E-69', '1E-323']",
+    ],
+    labels: {
+      name: 'trait',
+      description:
+        "jexl:'p=' + feature.pValue + ', ' + substring(feature.pubDate, 0, 4) + ', ' + feature.author",
+    },
+    showLabels: 'nameAndDescription',
+  },
+}
 
 export const proteinVariantSpecs: ScreenshotSpec[] = [
   {
@@ -579,6 +705,20 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
   },
   {
     mode: 'url',
+    name: 'protein/hbb_e6v',
+    url: hbbSession({
+      tracks: [HBB_GENE_TRACK, { trackId: HBB_GWAS_STORY, height: 170 }],
+      sessionTracks: [HBB_GWAS_STORY_TRACK],
+      msaHeight: 420,
+      proteinColor: { field: 'hydrophobicity' },
+    }),
+    ...READY,
+    viewportWidth: 2300,
+    viewportHeight: 1150,
+    actions: RESET_ZOOM,
+  },
+  {
+    mode: 'url',
     name: 'protein/sod1_codon_hover',
     url: sod1Session({ loc: SOD1_CODON, tracks: [SOD1_GENE_TRACK] }),
     ...READY,
@@ -672,6 +812,24 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
   },
   {
     mode: 'url',
+    name: 'protein/kras_g12c',
+    url: hotspotSession(
+      KRAS,
+      { start: 1, end: 75 },
+      {
+        loc: KRAS_DOMAIN_WINDOWS,
+        tracks: [HG38_GENE_TRACK],
+        msaHeight: 490,
+        domains: true,
+        turnedOff: KRAS_UNSHOWN_SITES,
+      },
+    ),
+    ...domainFigure('KRAS', KRAS_G12, 0, true),
+    viewportHeight: 1100,
+    annotations: [residueCallout('Sotorasib', 'A:12', 160, 260)],
+  },
+  {
+    mode: 'url',
     name: 'protein/kras_domains_three_views',
     url: hotspotSession(
       KRAS,
@@ -735,6 +893,59 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     annotations: [
       residueCallout('Glu600: 4MNF is the V600E protein', 'A:600', -80, -300),
     ],
+  },
+  {
+    mode: 'url',
+    name: 'protein/braf_v600e',
+    url: hotspotSession(
+      BRAF,
+      { start: 570, end: 630 },
+      {
+        loc: BRAF_V600_WINDOW,
+        tracks: [HG38_GENE_TRACK],
+        msaHeight: 490,
+        domains: true,
+        turnedOff: BRAF_UNSHOWN,
+      },
+    ),
+    ...domainFigure('BRAF', BRAF_V600, 0, true),
+    viewportHeight: 1100,
+  },
+  {
+    mode: 'url',
+    name: 'protein/cftr_f508',
+    url: hotspotSession(
+      CFTR,
+      { start: 488, end: 528 },
+      {
+        loc: CFTR_F508_WINDOW,
+        tracks: [HG38_GENE_TRACK, CLINVAR_TRACK],
+        msaHeight: 420,
+        proteinColor: { field: 'clinvarPathogenicCount' },
+      },
+    ),
+    ...READY,
+    viewportWidth: 2300,
+    viewportHeight: 1150,
+    actions: hoverCodon(CFTR_F508),
+  },
+  {
+    mode: 'url',
+    name: 'protein/apoe_e4',
+    url: hotspotSession(
+      APOE,
+      { start: 120, end: 185 },
+      {
+        loc: APOE_WINDOWS,
+        tracks: [HG38_GENE_TRACK, { trackId: APOE_GWAS_SUBSET, height: 170 }],
+        sessionTracks: [APOE_GWAS_SUBSET_TRACK],
+        msaHeight: 420,
+      },
+    ),
+    ...READY,
+    viewportWidth: 2300,
+    viewportHeight: 1150,
+    actions: hoverCodon(APOE_C112R),
   },
   {
     mode: 'url',
