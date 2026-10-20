@@ -16,6 +16,7 @@ import {
 
 import type { Plot } from '@jbrowse/core/configuration'
 import type { JexlFilterField } from '@jbrowse/core/ui/JexlFilterDialog'
+import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 
 interface FieldChoice {
   ref: string
@@ -48,6 +49,7 @@ const CellColorFieldDialog = observer(function CellColorFieldDialog({
     id: string
     colorField: string
     colorSetting: { scale: string | undefined; domain: readonly string[] }
+    writtenColor: ColorSlots
     fetchAdapterMetadata: () => Promise<unknown>
     applyPlot: (draft: Plot) => void
   }
@@ -78,7 +80,9 @@ const CellColorFieldDialog = observer(function CellColorFieldDialog({
         handleClose()
       }}
       onSubmit={() => {
-        model.applyPlot({ color: cellColorOfField(trimmed, parsed ?? []) })
+        model.applyPlot({
+          color: cellColorOfField(model.writtenColor, trimmed, parsed ?? []),
+        })
         handleClose()
       }}
     >

@@ -1,4 +1,7 @@
+import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
+
 import type { JexlFilterField } from '@jbrowse/core/ui/JexlFilterDialog'
+import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 
 /** The field ref a picker entry colors by: a path, or a variant function. */
 export function fieldRefOf(field: JexlFilterField) {
@@ -17,9 +20,29 @@ export function parseCuts(text: string): number[] | undefined {
   return cuts.every(Number.isFinite) ? cuts.sort((a, b) => a - b) : undefined
 }
 
-/** The `color` object a field pick writes: a threshold where it has cuts. */
-export function cellColorOfField(field: string, cuts: readonly number[]) {
+/**
+ * The `color` object a field pick writes over `current`: a threshold where it
+ * has cuts. Re-picking the field already painting keeps its key names and
+ * colors, its range only while the number of cuts holds.
+ */
+export function cellColorOfField(
+  current: ColorSlots,
+  field: string,
+  cuts: readonly number[],
+): ColorSlots {
+  const next = colorForField(current, field)
+  if (next.scale !== 'threshold' && !cuts.length) {
+    return next
+  }
+  const { scale, domain: _cuts, range, ...kept } = next
   return cuts.length
-    ? { field, scale: 'threshold', domain: cuts.map(String) }
-    : { field }
+    ? {
+        ...kept,
+        scale: 'threshold',
+        domain: cuts.map(String),
+        ...(scale === 'threshold' && range?.length === cuts.length + 1
+          ? { range }
+          : {}),
+      }
+    : kept
 }

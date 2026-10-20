@@ -153,6 +153,27 @@ describe('a categorical column', () => {
     expect(view.attributeRanges).toBe(view.seenAttributeRanges)
   })
 
+  // A pick rewrites the object as written, so a member it does not change,
+  // such as `descending`, survives it.
+  it('keeps what a field pick or a reorder does not change', () => {
+    const view = TrackColorsMixin().create({
+      color: {
+        field: 'identity',
+        scale: 'threshold',
+        domain: ['0.9'],
+        descending: true,
+      },
+    })
+    view.setColorField('identity')
+    view.setColorDomain(['0.95'])
+    expect(getSnapshot(view.color)).toEqual({
+      field: 'identity',
+      scale: 'threshold',
+      domain: ['0.95'],
+      descending: true,
+    })
+  })
+
   it('lists the key in that order too, and only for a column mode', () => {
     const view = viewWith([])
     view.setColorField('group')

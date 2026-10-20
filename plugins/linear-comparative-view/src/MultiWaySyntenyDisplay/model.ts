@@ -38,7 +38,9 @@ import {
   isSameAssemblyName,
   openAssemblyInLinearView,
 } from '@jbrowse/core/util/tracks'
-import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
+import ColorWritesMixin, {
+  writtenColorOf,
+} from '@jbrowse/display-kit/ColorWritesMixin'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
@@ -46,7 +48,6 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   colorFieldOf,
   colorForField,
-  colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
@@ -270,11 +271,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ColorSource } from '@jbrowse/plugin-marks'
 import type { MarkColorScale } from '@jbrowse/render-core/marks'
-import type {
-  AttributeRange,
-  DeclaredLane,
-  SyntenyColorSnapshot,
-} from '@jbrowse/synteny-core'
+import type { AttributeRange, DeclaredLane } from '@jbrowse/synteny-core'
 import type React from 'react'
 
 export interface HoverTarget extends RibbonRef {
@@ -464,9 +461,6 @@ export function stateModelFactory(
       laneDragPx: new Map(),
     }))
     .actions(self => {
-      function ribbonColorSetting(): SyntenyColorSnapshot {
-        return colorSnapshotOf(self.configuration.ribbonColor)
-      }
       function observeRibbonFeatures(features: readonly Feature[]) {
         self.seenAttributeRanges = widenAttributeRanges(
           self.seenAttributeRanges,
@@ -595,7 +589,10 @@ export function stateModelFactory(
             self,
             'ribbonColor',
             colorForField(
-              withImpliedField(ribbonColorSetting(), RIBBON_IMPLIED_FIELD),
+              withImpliedField(
+                writtenColorOf(self.configuration.ribbonColor),
+                RIBBON_IMPLIED_FIELD,
+              ),
               field,
             ),
           )

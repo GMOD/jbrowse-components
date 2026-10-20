@@ -1,7 +1,11 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { coarseStripHTML } from '@jbrowse/core/util'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
-import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
+import { writtenColorOf } from '@jbrowse/display-kit/ColorWritesMixin'
+import {
+  colorForField,
+  colorSnapshotOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { colorByScales } from './colorLegend.ts'
@@ -11,7 +15,7 @@ import {
   isMeasureField,
   resolveCategoricalMode,
 } from './colorRamps.ts'
-import { paintedField, syntenyColorFor } from './syntenyColorBy.ts'
+import { paintedField } from './syntenyColorBy.ts'
 import {
   SYNTENY_VIEW_FIELDS,
   syntenyColorConfigSchema,
@@ -518,7 +522,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
          * back from a domain one outlying window widened.
          */
         setColorField(field: string) {
-          self.color = cast(syntenyColorFor(field, self.colorSetting))
+          self.color = cast(colorForField(writtenColorOf(self.color), field))
           forgetSeenRanges()
         },
         /**
@@ -528,7 +532,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
          * fetches found them in.
          */
         setColorDomain(domain: string[]) {
-          self.color = cast({ ...self.colorSetting, domain })
+          self.color = cast({ ...writtenColorOf(self.color), domain })
         },
         /**
          * #action

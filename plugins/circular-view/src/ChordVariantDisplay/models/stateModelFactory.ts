@@ -32,6 +32,7 @@ import {
   colorFieldOf,
   colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -202,7 +203,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * the field the chords paint by, undefined for a constant or callback
        */
       get paintedColorField() {
-        return colorFieldOf(colorEncodingOf(this.colorSetting))
+        const encoding = colorEncodingOf(this.colorSetting)
+        return colorFieldOf(encoding, heldColorSlots(self, encoding))
       },
       /**
        * #getter
