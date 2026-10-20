@@ -6371,7 +6371,18 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "mark",
-          "type": "WiggleMark"
+          "type": "WiggleMarkConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "type",
+              "type": "WiggleMarkType"
+            }
+          ],
+          "schema": "WiggleMark",
+          "writes": "members",
+          "shorthand": {
+            "string": "type"
+          }
         },
         {
           "name": "interpolate",

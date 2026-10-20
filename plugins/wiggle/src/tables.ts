@@ -144,7 +144,7 @@ export async function wiggleTables(
   const data = results[0]!
 
   const renderingType = renderingOf(
-    readConfObject(conf, 'mark'),
+    readConfObject(conf, ['mark', 'type']),
     readConfObject(conf, 'interpolate'),
   )
   const density = renderingType === 'density'

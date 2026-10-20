@@ -27,7 +27,8 @@ display:
 | Display                                                               | Settings                                                                                                                               |
 | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Alignments display (`LinearAlignmentsDisplay`)                        | `unit`, `filter`, `facet`, `sort`, `color`, `scales`, `coverage`, `pileup`, `readConnections`, `baseColor`, `modifications`, `sashimi` |
-| Chord variant display (`ChordVariantDisplay`)                         | `color`                                                                                                                                |
+| Chord synteny display (`ChordSyntenyDisplay`)                         | `mark`                                                                                                                                 |
+| Chord variant display (`ChordVariantDisplay`)                         | `mark`, `color`                                                                                                                        |
 | Feature display (`LinearBasicDisplay`)                                | `filter`, `color`, `facet`, `labels`                                                                                                   |
 | Hi-C contact matrix display (`LinearHicDisplay`)                      | `color`                                                                                                                                |
 | LD heatmap display (`LDTrackDisplay`)                                 | `color`                                                                                                                                |

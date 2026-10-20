@@ -19,7 +19,8 @@ import {
   wiggleConfigSchemaFields,
   wiggleValueScale,
 } from '../shared/wiggleConfigSchemaFields.ts'
-import { LINE_INTERPOLATIONS, WIGGLE_MARK_NAMES, markOf } from '../util.ts'
+import { wiggleMarkConfigSchema } from '../shared/wiggleMarkConfigSchema.ts'
+import { LINE_INTERPOLATIONS, markOf } from '../util.ts'
 import { retiredConfigSpellings } from './retired.ts'
 
 /**
@@ -100,6 +101,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * track menu's Plot type writes it. v4's `defaultRendering` loads as its
      * `mark`: `xyplot` a bar, `scatter` a point, `density` a span, and
      * `line` and `linecenter` a line.
+     * A [](/docs/config/wigglemark) object, or its `type` alone.
      * #example
      * ```json
      * {
@@ -108,13 +110,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * }
      * ```
      */
-    mark: {
-      type: 'stringEnum',
-      model: types.enumeration('WiggleMark', [...WIGGLE_MARK_NAMES]),
-      defaultValue: 'bar',
-      description: 'bar, point, line or span',
-      plot: true,
-    },
+    mark: wiggleMarkConfigSchema,
     /**
      * #slot interpolate
      * The path a `line` takes between scores: `step` holds each across its

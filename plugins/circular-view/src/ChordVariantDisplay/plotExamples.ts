@@ -10,4 +10,9 @@ export const CHORD_PLOT_EXAMPLES: PlotExample[] = [
     plot: '{ "color": "#1f77b4" }',
     description: 'one color for every chord',
   },
+  {
+    plot: '{ "mark": { "depth": 0.5 } }',
+    description:
+      'chords that curve halfway to the center, keeping the middle clear',
+  },
 ]

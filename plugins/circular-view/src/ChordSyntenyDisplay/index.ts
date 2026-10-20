@@ -2,6 +2,7 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaF from './models/configSchema.ts'
+import { CHORD_SYNTENY_PLOT_EXAMPLES } from './plotExamples.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -22,6 +23,7 @@ export default function ChordSyntenyDisplayF(pluginManager: PluginManager) {
         ),
       trackType: 'SyntenyTrack',
       viewType: 'CircularView',
+      plotExamples: CHORD_SYNTENY_PLOT_EXAMPLES,
       ReactComponent: lazyWithPreload(
         () => import('./components/ChordSyntenyDisplay.tsx'),
       ),

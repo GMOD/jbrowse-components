@@ -27,7 +27,7 @@ export const chordMarkConfigSchema = ConfigurationSchema(
         'how deeply each chord curves toward the center, from 0 to 1: 1 runs a chord between opposite points straight through the center, and 0 bows every chord out toward the rim. A shorter chord curves less, in proportion to its length',
     },
   },
-  { closed: true },
+  { plot: true, closed: true },
 )
 
 /** The config `BaseChordDisplay` reads off the display that composes it. */

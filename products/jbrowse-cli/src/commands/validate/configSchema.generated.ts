@@ -12115,6 +12115,48 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "WiggleMark": {
+      "title": "WiggleMark",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"type\\": ... }\`.",
+          "default": "bar",
+          "enum": [
+            "bar",
+            "point",
+            "line",
+            "span"
+          ],
+          "type": "string"
+        },
+        {
+          "title": "WiggleMark",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "type": {
+              "description": "bar, point, line or span.",
+              "default": "bar",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "bar",
+                  "point",
+                  "line",
+                  "span"
+                ]
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "QuantitativeRows": {
       "title": "QuantitativeRows",
       "anyOf": [
@@ -12535,18 +12577,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "mark": {
-          "description": "bar, point, line or span.",
-          "default": "bar",
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "bar",
-              "point",
-              "line",
-              "span"
-            ]
+            "$ref": "#/$defs/WiggleMark"
           }
         },
         "interpolate": {

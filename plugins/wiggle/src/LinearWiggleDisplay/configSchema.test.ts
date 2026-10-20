@@ -62,7 +62,10 @@ test('a scale the display does not paint is refused', () => {
 test("v4's rendering names load as the mark they draw, and an unknown one is refused", () => {
   const read = (defaultRendering: string) => {
     const conf = create({ defaultRendering })
-    return [readConfObject(conf, 'mark'), readConfObject(conf, 'interpolate')]
+    return [
+      readConfObject(conf, ['mark', 'type']),
+      readConfObject(conf, 'interpolate'),
+    ]
   }
   expect(read('xyplot')).toEqual(['bar', 'step'])
   expect(read('scatter')).toEqual(['point', 'step'])
@@ -70,7 +73,12 @@ test("v4's rendering names load as the mark they draw, and an unknown one is ref
   expect(read('line')).toEqual(['line', 'step'])
   expect(read('linecenter')).toEqual(['line', 'linear'])
   expect(() => create({ defaultRendering: 'multirowarea' })).toThrow()
-  expect(readConfObject(create({ mark: 'point' }), 'mark')).toBe('point')
+  expect(readConfObject(create({ mark: 'point' }), ['mark', 'type'])).toBe(
+    'point',
+  )
+  expect(
+    readConfObject(create({ mark: { type: 'point' } }), ['mark', 'type']),
+  ).toBe('point')
 })
 
 test('the old cross hatch and tick flags land on the scale, beside a scale the config writes', () => {

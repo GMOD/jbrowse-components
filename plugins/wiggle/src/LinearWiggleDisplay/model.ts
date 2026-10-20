@@ -700,7 +700,7 @@ export default function stateModelFactory(
             ...wiggleColorProblems(
               colorSettingOf(conf.color),
               renderingOf(
-                readConfObject(own, 'mark'),
+                readConfObject(own, ['mark', 'type']),
                 readConfObject(own, 'interpolate'),
               ),
             ),

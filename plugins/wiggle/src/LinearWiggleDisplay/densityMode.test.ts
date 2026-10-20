@@ -1,4 +1,4 @@
-import { setConf } from '@jbrowse/core/configuration'
+import { readConfObject, setConf } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { createTestEnvironment, makeSource } from './testEnv.ts'
@@ -79,11 +79,11 @@ it('stops drawing cross hatches in density mode', () => {
 it("writes the plot type as the mark and the line's interpolation it draws", () => {
   const display = makeDisplay()
   display.setMark('line', 'linear')
-  expect(display.configuration.mark).toBe('line')
+  expect(readConfObject(display.configuration, ['mark', 'type'])).toBe('line')
   expect(display.configuration.interpolate).toBe('linear')
   expect(display.renderingType).toBe('linecenter')
   display.setMark('span')
-  expect(display.configuration.mark).toBe('span')
+  expect(readConfObject(display.configuration, ['mark', 'type'])).toBe('span')
   expect(display.renderingType).toBe('density')
   display.setMark('line')
   expect(display.configuration.interpolate).toBe('step')

@@ -150,6 +150,12 @@ function buildInventory() {
         }
       }
       knownNames.add(name!.toLowerCase())
+      // WiggleMark's bare `type` row is a nested key like a dotted one: a
+      // bare `type` elsewhere is a track's or an adapter's
+      if (STRUCTURAL_KEYS.includes(name!)) {
+        leafDecls.push([name!, decl])
+        continue
+      }
       const list = declsBySlot.get(name!) ?? []
       list.push(decl)
       declsBySlot.set(name!, list)
