@@ -1,6 +1,6 @@
 import { colorForValue } from '@jbrowse/display-kit/colorConfigSchema'
 
-import { WIGGLE_SPAN_MIDDLE } from '../shared/wiggleColor.ts'
+import { wigglePairOf } from '../shared/wiggleColor.ts'
 
 import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
@@ -28,27 +28,10 @@ export interface PlotColorLine {
   reason?: string
 }
 
-/**
- * Whether a color is a heatmap's two-sided ramp, white in the middle, which
- * two swatches say whole: its two ends.
- */
-export function isWhiteMiddleRamp(color: {
-  scale?: string
-  range: readonly string[]
-  scheme?: string
-}) {
-  return (
-    color.scale === 'linear' &&
-    !color.scheme &&
-    color.range.length === 3 &&
-    color.range[1]!.toLowerCase() === WIGGLE_SPAN_MIDDLE
-  )
-}
-
 export function plotColorLine(
   resolved: ResolvedWiggleColor,
   perSource: boolean,
-  heatmapRamp = false,
+  heatmapPair = false,
 ): PlotColorLine {
   const line = {
     above: resolved.posColor,
@@ -58,7 +41,7 @@ export function plotColorLine(
   if (perSource) {
     return { ...line, mode: 'hide' }
   }
-  if (heatmapRamp) {
+  if (heatmapPair) {
     return { ...line, mode: 'edit' }
   }
   if (resolved.rampLut !== null) {
@@ -77,39 +60,36 @@ export function plotColorLine(
 }
 
 /**
- * What a swatch writes. On a heatmap it is the ramp through white at the cut,
- * one color on both sides fading from white to it, and the cut written as
- * `domainMid`. Elsewhere one color on both sides is a flat plot: the string
- * form, or over a written field that field parked under `scale: 'none'`, so
- * its cut, labels and title come back when the sides part again.
+ * What a swatch writes: the pair about the `origin` (`wigglePairOf`). A
+ * written threshold, or one a single color parked under `none`, stays a
+ * threshold, and an unset scale stays the pair every mark draws in its own
+ * idiom. On bars, one
+ * color on both sides is a flat plot: the string form, or over a written
+ * field that field parked under `scale: 'none'`, so its cut, labels and title
+ * come back when the sides part again. On a heatmap the pair stays a pair,
+ * fading from white to the one color.
  *
  * A channel replaces its setting whole, and the members this drops are the
- * ones a threshold writing its `range` does not read: `scheme`, `reverse` and
- * `domainMid`, and a ramp is where the line is not editable. A declared
- * cut survives, and an undeclared one stays undeclared — writing `domain`
- * here would pin at the `origin` every config that had been following it.
+ * ones a pair does not read: `scheme` and `reverse`, and a ramp is where the
+ * line is not editable. A declared cut and `domainMid` survive, and an
+ * undeclared one stays undeclared — writing either here would pin at the
+ * `origin` every config that had been following it.
  */
 export function plotColorEdit(
   color: ColorSetting,
   { above, below }: { above: string; below: string },
-  heatmap?: { cut: number },
+  heatmapPair = false,
 ): string | Partial<ColorSetting> {
-  if (heatmap) {
-    return {
-      field: 'score',
-      scale: 'linear',
-      range: [below, WIGGLE_SPAN_MIDDLE, above],
-      domainMid: color.domainMid ?? heatmap.cut,
-      ...(color.title === undefined ? {} : { title: color.title }),
-    }
-  }
-  if (above === below) {
+  if (above === below && !heatmapPair) {
     return color.field ? colorForValue(color, above) : above
   }
   return {
     field: 'score',
-    scale: 'threshold',
+    ...(color.scale === 'threshold' || color.scale === 'none'
+      ? { scale: 'threshold' }
+      : {}),
     ...(color.domain.length ? { domain: [...color.domain] } : {}),
+    ...(color.domainMid === undefined ? {} : { domainMid: color.domainMid }),
     range: [below, above],
     ...(color.labels?.length ? { labels: [...color.labels] } : {}),
     ...(color.title === undefined ? {} : { title: color.title }),
@@ -125,18 +105,18 @@ export function plotColorOf(model: {
   wiggleColor: ResolvedWiggleColor
   rowPaletteDeals: boolean
   isDensityMode: boolean
-  effectiveColor: ColorSetting
   colorSetting: ColorSetting
 }) {
-  const heatmap = model.isDensityMode && isWhiteMiddleRamp(model.effectiveColor)
-  const line = plotColorLine(model.wiggleColor, model.rowPaletteDeals, heatmap)
+  const heatmapPair =
+    model.isDensityMode && wigglePairOf(model.colorSetting) !== undefined
+  const line = plotColorLine(
+    model.wiggleColor,
+    model.rowPaletteDeals,
+    heatmapPair,
+  )
   return {
     line,
     edit: (next: { above: string; below: string }) =>
-      plotColorEdit(
-        model.colorSetting,
-        next,
-        heatmap ? { cut: line.cut } : undefined,
-      ),
+      plotColorEdit(model.colorSetting, next, heatmapPair),
   }
 }

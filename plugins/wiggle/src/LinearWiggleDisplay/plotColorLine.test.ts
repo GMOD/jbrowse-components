@@ -111,9 +111,10 @@ describe('what the line reads out', () => {
       color: plotColorOf(display).edit({ above: '#b2182b', below: '#2166ac' }),
     })
     expect(display.colorSetting).toMatchObject({
-      scale: 'linear',
-      range: ['#2166ac', '#ffffff', '#b2182b'],
-      domainMid: 0,
+      field: 'score',
+      scale: undefined,
+      range: ['#2166ac', '#b2182b'],
+      domainMid: undefined,
     })
     expect(lineOf(display)).toMatchObject({ above: '#b2182b', mode: 'edit' })
   })
@@ -192,7 +193,6 @@ describe('what a swatch writes', () => {
       }),
     ).toEqual({
       field: 'score',
-      scale: 'threshold',
       range: ['#123456', '#C8B414'],
     })
   })

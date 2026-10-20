@@ -115,33 +115,51 @@ export function wiggleColorEncoding(color: ColorSetting) {
   return colorEncodingOf(color, WIGGLE_FIELD_PRESETS)
 }
 
-/** The middle stop of a heatmap's unset ramp, where a score at the `origin` lands. */
+/** The white a heatmap fades from at the `origin`. */
 export const WIGGLE_SPAN_MIDDLE = '#ffffff'
 
 /**
- * The `color` object as it paints. Naming neither `value` nor `field`, a
- * heatmap (`span`) is a ramp through white at the `origin`, the negative
- * color below it and the positive color above; every other mark is `score`
- * through a threshold at its cuts or the `origin`, unless it writes another
- * scale.
+ * The two colors a `score` color with no `scale` names, below and above the
+ * `origin`: its two-color `range`, else the defaults. Undefined where it names
+ * a `scheme` or more stops, which only a ramp can paint.
+ */
+export function wigglePairOf(color: ColorSetting) {
+  return color.value !== undefined || color.scale || color.scheme
+    ? undefined
+    : color.range.length === 2
+      ? { below: color.range[0]!, above: color.range[1]! }
+      : color.range.length === 0
+        ? { below: WIGGLE_NEG_COLOR_DEFAULT, above: WIGGLE_POS_COLOR_DEFAULT }
+        : undefined
+}
+
+/**
+ * The `color` object as it paints. A `score` color with no `scale` is the
+ * pair about the `origin` (`wigglePairOf`), which every mark draws in its own
+ * idiom: bars, points and lines paint it solid either side of the cut, a
+ * threshold, and a heatmap (`span`) fades to it from white at the origin, a
+ * `linear` ramp with its middle stop there (`domainMid` moves it). A written
+ * `threshold` paints solid bands and a written `linear` a ramp on every mark.
  */
 export function paintedWiggleColor<C extends ColorSetting>(
   color: C,
   { span, origin }: { span: boolean; origin: number },
 ): C {
-  return span && color.value === undefined && !color.field
-    ? {
-        ...color,
-        field: WIGGLE_IMPLIED_FIELD,
-        scale: 'linear',
-        range: [
-          WIGGLE_NEG_COLOR_DEFAULT,
-          WIGGLE_SPAN_MIDDLE,
-          WIGGLE_POS_COLOR_DEFAULT,
-        ],
-        domainMid: origin,
-      }
-    : withImpliedField(color, WIGGLE_IMPLIED_FIELD)
+  const implied = withImpliedField(color, WIGGLE_IMPLIED_FIELD)
+  if (!span || color.value !== undefined || color.scale) {
+    return implied
+  }
+  const pair = wigglePairOf(color)
+  return {
+    ...implied,
+    scale: 'linear',
+    ...(pair
+      ? {
+          range: [pair.below, WIGGLE_SPAN_MIDDLE, pair.above],
+          domainMid: color.domainMid ?? origin,
+        }
+      : {}),
+  }
 }
 
 /**
@@ -163,6 +181,11 @@ export function wiggleColorProblems(color: ColorSetting, rendering: string) {
     ...(isLineMode(rendering) && resolveWiggleColor(encoding, 0).rampLut
       ? [
           'color.scale: a gradient colors bars, points and density; a line paints its two end colors',
+        ]
+      : []),
+    ...(rendering === 'density' && typeof encoding !== 'object'
+      ? [
+          'color: one color paints a heatmap flat; a two-color range fades to it from white at the origin',
         ]
       : []),
   ]

@@ -71,6 +71,8 @@ export const retiredTypes: RetiredDisplayType[] = [
   { type: 'LinearGCContentTrackDisplay' },
 ]
 
+// v4's two colors are the pair about the origin, which bars draw solid either
+// side of it and a density plot fades to from white, as v4's renderers did.
 function colorOf({ color, posColor, negColor }: DisplayEntry) {
   return typeof color === 'string'
     ? { color }
@@ -78,7 +80,6 @@ function colorOf({ color, posColor, negColor }: DisplayEntry) {
       ? {
           color: {
             field: 'score',
-            scale: 'threshold',
             domain: [],
             range: [
               typeof negColor === 'string'
@@ -133,9 +134,17 @@ export const retiredConfigSpellings = {
   renderers: (renderers: unknown) => {
     const block = isRecord(renderers) ? renderers : {}
     const named = V4_RENDERERS.map(name => block[name]).filter(isRecord)
+    const density = block.DensityRenderer
     return {
       ...named.map(r => summaryOf(r.summaryScoreMode)).find(a => 'y' in a),
-      ...named.map(colorOf).find(lifted => 'color' in lifted),
+      ...named
+        .map(r =>
+          // a DensityRenderer's one color is what its cells faded to
+          r === density && typeof r.color === 'string'
+            ? colorOf({ posColor: r.color, negColor: r.color })
+            : colorOf(r),
+        )
+        .find(lifted => 'color' in lifted),
     }
   },
   summaryScoreMode: summaryOf,

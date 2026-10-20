@@ -420,9 +420,9 @@ layer encoder (`buildSourceRenderData`):
 - Each mark's `color` is the display's. A bar takes its value's color; a line
   takes the color of the band between the cuts its score is in
   (`thresholdBandOf`); a min-max band comes back in pieces split at the cuts, each in its band's
-  color, as the display fills it. Under density and a gradient the color is
-  the shared ramp's (`makeDensityRgbStringFn`, `makeDensityLutFillFn`) over
-  the resolved domain.
+  color, as the display fills it. Under a gradient, a heatmap's unset pair
+  included, the color is the shared ramp's (`makeDensityLutFillFn`) over the
+  resolved domain.
 - `run` numbers an interpolated line's stretches, starting a new one where
   the display breaks the line (`centerLinksToPrevious` over the encoder's
   `gapLimitBp`).

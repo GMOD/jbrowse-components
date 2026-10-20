@@ -14,7 +14,7 @@ digraph wiggle_color {
 
   shared [label="several sources in one box:\nfield: source, so each takes a\npalette entry and paints both\nsides of the origin in it"]
   row    [label="a row per source, or one plot:\nfield: score through threshold,\nthe pos/neg pair about the origin"]
-  heat   [label="a heatmap: score through linear,\nnegative, white, positive,\nwhite at the origin"]
+  heat   [label="a heatmap: the same pair,\nas a linear ramp through\nwhite at the origin"]
 
   encoding [label="colorEncodingOf:\nthe one resolver every\ndisplay's color goes through"]
   shared -> encoding  row -> encoding  heat -> encoding

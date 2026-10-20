@@ -20,7 +20,11 @@ const WIGGLE_COLOR_SCALES = ['none', 'linear', 'threshold'] as const
 /** The field a color naming neither a field nor a constant maps: the bicolor pair is `score` cut at the origin. */
 export const WIGGLE_IMPLIED_FIELD = 'score'
 
-/** `score` is the bicolor cut while `scale` is unset. */
+/**
+ * `score` is the pair about the origin while `scale` is unset, which bars,
+ * points and lines draw as this threshold; a heatmap draws it as a fade
+ * (`paintedWiggleColor`).
+ */
 export const WIGGLE_FIELD_PRESETS = {
   '*': { scale: 'threshold' },
 } as const satisfies FieldPresets
@@ -28,16 +32,17 @@ export const WIGGLE_FIELD_PRESETS = {
 /**
  * #config WiggleColor
  * #category display
- * The quantitative display's `color`: one CSS color for every bar, or `score`
- * through a scale. Through a `threshold` scale it is the bicolor plot — a
- * color each side of one cut, the `origin` where the domain names none, and a
- * color per band where it names more, on every mark — and through `linear` a
- * gradient across the y domain, through the y scale's own type, which colors
- * each bar, point and density cell by its score. A line still parts in the
- * gradient's two end colors. Unset, a density plot (`mark: 'span'`) is a
- * `linear` ramp from the negative color through white at the `origin` to the
- * positive color, and every other mark the pos/neg pair about the `origin`.
- * A subtrack's own color is `rowColor`'s. A wiggle colors per
+ * The quantitative display's `color`: one CSS color for every mark, or `score`
+ * through a scale. Through `threshold` it paints a solid color each side of
+ * one cut, the `origin` where the domain names none, and a color per band
+ * where it names more, on every mark; through `linear` a gradient across the
+ * y domain, through the y scale's own type, which colors each bar, point and
+ * density cell by its score. A line still parts in the gradient's two end
+ * colors. With no `scale`, a two-color `range` (red and blue unset) is the
+ * pair about the `origin`, which each mark draws in its own idiom: bars,
+ * points and lines solid either side of it, as a threshold, and a heatmap
+ * (`mark: 'span'`) fading to each from white at it, as a ramp whose middle
+ * stop `domainMid` moves. A subtrack's own color is `rowColor`'s. A wiggle colors per
  * signal rather than per feature, so a `jexl:` callback over a feature has
  * nothing to read here.
  *
@@ -58,18 +63,13 @@ export const WIGGLE_FIELD_PRESETS = {
  *   color: { field: 'score', scale: 'linear', scheme: 'viridis' },
  * }
  * ```
- * A copy-number heatmap, white at two copies:
+ * A copy-number heatmap, white at two copies, blue losses and red gains:
  * ```js
  * {
  *   type: 'LinearWiggleDisplay',
  *   mark: 'span',
  *   origin: 2,
- *   color: {
- *     field: 'score',
- *     scale: 'linear',
- *     range: ['#2166ac', '#ffffff', '#b2182b'],
- *     domainMid: 2,
- *   },
+ *   color: { field: 'score', range: ['#2166ac', '#b2182b'] },
  * }
  * ```
  */
@@ -78,10 +78,10 @@ export const wiggleColorSchema = ConfigurationSchema(
   {
     /**
      * #slot value
-     * One CSS color for every mark, a density cell included. Writing
-     * `color: "darkgreen"` lands here. Unset, the display paints the pos/neg
-     * pair about the `origin`, a density plot the ramp through white there,
-     * and several sources sharing one plot box each paint their row color.
+     * One CSS color for every mark, a density cell included, so a heatmap
+     * under one is a flat strip. Writing `color: "darkgreen"` lands here.
+     * Unset, the display paints the pair about the `origin`, and several
+     * sources sharing one plot box each paint their row color.
      */
     value: {
       type: 'maybeColor',
@@ -111,13 +111,15 @@ export const wiggleColorSchema = ConfigurationSchema(
      * stop, coloring each bar, point and density cell by its score; a one-color
      * `range` paints flat, so one color is `value`. A line still parts
      * in the two end colors. `none` paints `value`, keeping the field for a
-     * switch back. Unset beside the field, it is `threshold`.
+     * switch back. Unset, `range` is the pair about the `origin`: a
+     * threshold on bars, points and lines, and on a heatmap a ramp through
+     * white at the origin.
      */
     scale: {
       type: 'maybeStringEnum',
       model: types.enumeration('WiggleColorScale', [...WIGGLE_COLOR_SCALES]),
       description:
-        'threshold bands score at the domain cuts, solid on every mark, linear ramps it across the y domain, none paints value; unset beside a field is threshold',
+        'threshold bands score at the domain cuts, solid on every mark, linear ramps it across the y domain, none paints value; unset, range is the pair about the origin, solid on bars, points and lines and fading from white there on a heatmap',
     },
     ...colorDomainSlot({
       domain:

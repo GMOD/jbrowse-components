@@ -48,9 +48,7 @@
         "scales": { "y": { "domainMin": -2, "domainMax": 2 } },
         "color": {
           "field": "score",
-          "scale": "linear",
-          "range": ["#2166ac", "#ffffff", "#b2182b"],
-          "domainMid": 0
+          "range": ["#2166ac", "#b2182b"]
         },
         "height": 760
       }

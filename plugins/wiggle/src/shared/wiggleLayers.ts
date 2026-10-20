@@ -205,13 +205,14 @@ function stackSides(
   ].filter(l => l !== undefined)
 }
 
-// The render layers one source contributes under a summary presentation
-// (the plotted summary alone, or inside its min and max), colored by each value's sign vs
-// the pivot so signed data (e.g. phyloP) reads as pos/neg. Line plots take
-// `lineLayers` instead. `summaryBands` decides which bands there are and this
-// decides how each becomes layers. Under a gradient both backends color bars
-// and points from the ramp, so outside density the layers carry no color at
-// all: filled bands still split at the origin for their painting order.
+// The render layers one source contributes under a summary presentation (the
+// plotted summary alone, or inside its min and max), each value colored by the
+// band between two cuts it is in, so signed data (e.g. phyloP) reads as
+// pos/neg. Line plots take `lineLayers` instead. `summaryBands` decides which
+// bands there are and this decides how each becomes layers. Under a gradient
+// both backends color bars, points and density cells from the ramp, so the
+// layers carry no color at all: filled bands still split at the origin for
+// their painting order.
 export function makeSummaryLayers({
   data,
   summaryField,

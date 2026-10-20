@@ -317,3 +317,65 @@ test("the corner notice reads scales.y's ends by the color ramp's rule", () => {
     'scales.y.domainQuantile: domainQuantile is a fraction from 0.5 to 1, not a percent: 1 follows the extremes and 0.99 clips the outermost 1% at each end; above 1 reads as 1 and below 0.5 as 0.5',
   ])
 })
+
+// With no scale, the pair about the origin is one setting each mark draws its
+// own way: bars as a threshold, a heatmap as a ramp through white at the
+// origin. A written scale keeps its meaning on a heatmap too.
+describe('a heatmap reads the pair as a fade and a written scale as written', () => {
+  const heatmap = (color?: string | Record<string, unknown>) => {
+    const display = makeDisplay(['a'], true)
+    display.setMark('span')
+    if (color !== undefined) {
+      display.applyPlot({ color })
+    }
+    return display
+  }
+
+  test.each([
+    ['unset', undefined],
+    ['the field alone', { field: 'score' }],
+  ])('%s fades from white at the origin to the defaults', (_, color) => {
+    expect(heatmap(color).colorEncoding).toMatchObject({
+      scale: 'linear',
+      range: [WIGGLE_NEG_COLOR_DEFAULT, '#ffffff', WIGGLE_POS_COLOR_DEFAULT],
+      domainMid: 0,
+    })
+  })
+
+  test('a two-color range fades to its colors, white following the origin', () => {
+    const display = heatmap({ range: ['#2166ac', '#b2182b'] })
+    display.setOrigin(2)
+    expect(display.colorEncoding).toMatchObject({
+      scale: 'linear',
+      range: ['#2166ac', '#ffffff', '#b2182b'],
+      domainMid: 2,
+    })
+    display.setMark('bar')
+    expect(display.colorEncoding).toMatchObject({ scale: 'threshold' })
+  })
+
+  test('a written threshold paints solid bands, without the field', () => {
+    const display = heatmap({
+      scale: 'threshold',
+      domain: ['1', '3'],
+      range: ['#000', '#888', '#fff'],
+    })
+    expect(display.colorEncoding).toMatchObject({ scale: 'threshold' })
+    expect(display.wiggleColor.rampLut).toBeNull()
+  })
+
+  test('a scheme without a scale is that ramp, not the pair', () => {
+    expect(heatmap({ scheme: 'viridis' }).colorEncoding).toMatchObject({
+      scale: 'linear',
+      scheme: 'viridis',
+    })
+  })
+
+  test('one color paints the heatmap flat and says so', () => {
+    const display = heatmap('green')
+    expect(display.wiggleColor.rampLut).toBeNull()
+    expect(display.configProblemsOf(display.configuration).join('\n')).toMatch(
+      /paints a heatmap flat/,
+    )
+  })
+})

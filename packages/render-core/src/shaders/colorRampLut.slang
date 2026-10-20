@@ -2,8 +2,8 @@
 // HiC's contact map and both LD heatmap variants reached independently, down to
 // the binding slot, and wiggle density's third spelling. The module owns ONLY
 // the sampling: each consumer keeps its own scale (`normalizeScore` for all
-// three, LD adding its `ldValueComputed` sentinel gate and wiggle its
-// `densityGradientT`) and declares its own `[[vk::binding(2, 0)]]
+// three, LD adding its `ldValueComputed` sentinel gate) and declares its own
+// `[[vk::binding(2, 0)]]
 // Sampler2D<float4> colorRamp;` — a module can take a sampler as a parameter
 // but not declare the binding for its importer, and inherits the `linear`
 // filter the remap below is written against. The TS half of the mechanism is

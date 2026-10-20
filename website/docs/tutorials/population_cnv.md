@@ -115,9 +115,7 @@ copy of a duplicated sequence. The config lists two of the panel's 104 PUR
     "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
     "color": {
       "field": "score",
-      "scale": "linear",
-      "range": ["#2166ac", "#ffffff", "#b2182b"],
-      "domainMid": 2,
+      "range": ["#2166ac", "#b2182b"],
       "title": "Copy number"
     }
   }
@@ -133,8 +131,8 @@ copy-number heatmap:
 - [`mark`](/docs/config/linearwiggledisplay/#slot-mark) `span` gives each sample
   one strip of color.
 - [`origin`](/docs/config/linearwiggledisplay/#slot-origin) `2` puts white at
-  the diploid baseline, and [`color`](/docs/config/wigglecolor/) cuts there,
-  painting gains in the `range`'s second color and losses in its first.
+  the diploid baseline, and [`color`](/docs/config/wigglecolor/)'s `range` names
+  the two colors it fades to: losses toward the first, gains toward the second.
 - [`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin) and
   [`scales.y.domainMax`](/docs/config/valuescale/#slot-scalesydomainmax) pin the
   scale, so two copies are the same color in every window. Keep the bounds
@@ -303,9 +301,7 @@ With the plugin loaded, the adapter's `uri` names the store:
     "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
     "color": {
       "field": "score",
-      "scale": "linear",
-      "range": ["#2166ac", "#ffffff", "#b2182b"],
-      "domainMid": 2,
+      "range": ["#2166ac", "#b2182b"],
       "title": "Copy number"
     }
   }

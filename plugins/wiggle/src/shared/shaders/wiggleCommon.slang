@@ -108,7 +108,7 @@ public struct Uniforms {
   // 256×1 colorRamp LUT texture, 0 = the instance color. The LUT cannot
   // encode multiwiggle's PER-ROW track colors, so a gradient paints them all.
   public int    rampLut;
-  // How many of `cuts` are in use, at least 1: the pivot.
+  // How many of `cuts` are in use, at least 1.
   public int    numCuts;
   // The scores the color changes at, ascending, four to a vector.
   public float4 cuts[MAX_WIGGLE_CUTS / 4];

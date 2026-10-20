@@ -117,6 +117,22 @@ describe('the slots v4 declared on the display', () => {
     warn.mockRestore()
   })
 
+  // v4 drew its two colors solid on bars and as a white fade on density, so
+  // the lift is the pair with no scale, which each mark draws as v4 did.
+  test('v4 posColor and negColor lift to the pair, with no scale', () => {
+    const conf = create({
+      renderers: { DensityRenderer: { posColor: 'red', negColor: 'blue' } },
+    })
+    expect(readConfObject(conf, ['color', 'scale'])).toBeUndefined()
+    expect(readConfObject(conf, ['color', 'range'])).toEqual(['blue', 'red'])
+  })
+
+  test("a v4 DensityRenderer's one color is the pair it faded to", () => {
+    const conf = create({ renderers: { DensityRenderer: { color: 'green' } } })
+    expect(readConfObject(conf, ['color', 'value'])).toBeUndefined()
+    expect(readConfObject(conf, ['color', 'range'])).toEqual(['green', 'green'])
+  })
+
   test("a renderers block gives the display its renderer's color", () => {
     const conf = create({
       renderers: { XYPlotRenderer: { color: 'purple', filled: false } },

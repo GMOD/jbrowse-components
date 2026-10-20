@@ -91,7 +91,7 @@ test('a zoomed-out min-max extent draws the max and min bands around the mean', 
   ).toEqual(new Set([1]))
 })
 
-test('density fades each bin from white at the pivot to the side it is on', async () => {
+test('density fades each bin from white at the origin to the side it is on', async () => {
   const t = await engine.wiggle({ ...SIGNED_BIGWIG, display: { mark: 'span' } })
   expect(t.rendering).toBe('density')
   const lightness = (hex: string) =>

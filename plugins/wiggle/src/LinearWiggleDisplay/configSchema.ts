@@ -166,11 +166,10 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     ...trackHeightConfigSchemaFields(),
     /**
      * #slot color
-     * One CSS color, or `score` through a scale — `threshold` for the
-     * bicolor plot, `linear` for a gradient. Unset, it is the pos/neg pair
-     * about the `origin`, a density plot's ramp through white at the
-     * `origin`, and several sources in one plot box each paint their row
-     * color.
+     * One CSS color, or `score` through a scale — `threshold` for solid
+     * bands, `linear` for a gradient. Unset, it is the pos/neg pair about the
+     * `origin`, which a heatmap fades to from white there, and several
+     * sources in one plot box each paint their row color.
      * #example
      * ```json
      * {

@@ -17,7 +17,6 @@ export default observer(function WiggleSetColorDialog({
     wiggleColor: ResolvedWiggleColor
     rowPaletteDeals: boolean
     colorSetting: ColorSetting
-    effectiveColor: ColorSetting
     isDensityMode: boolean
     discoveredRows: readonly unknown[]
     applyPlot: (draft: Plot) => void

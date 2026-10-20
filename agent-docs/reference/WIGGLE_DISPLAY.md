@@ -85,13 +85,16 @@ box and the export's clip translate. Wiggle-core's `ScorePlotChrome` and
 is what the Manhattan and mark displays (no such getter) draw in.
 
 **`color` maps `score` alone; a subtrack's color is `rowColor`'s.** Unset,
-`effectiveColor` is the threshold pair a quantitative track has always drawn,
-and on a density plot a `linear` ramp from the negative color through white at
-the `origin` to the positive color (`paintedWiggleColor`). That ramp through
-`rampMidT` is the white fade the density shader used to compute, so the default
-heatmap kept its pixels when the fade went; `densityColorParity.test.ts` holds
-the retired fade's arithmetic as the oracle. One scale word means one thing on
-every mark: `threshold` paints solid bands on a heatmap as on bars.
+`effectiveColor` is the pair about the `origin` a quantitative track has always
+drawn: `score` with no `scale`, its `range` the color below and the color above
+(`wigglePairOf`). Each mark draws the pair in its own idiom — bars, points and
+lines as a threshold, a heatmap as a `linear` ramp through white at the origin
+(`paintedWiggleColor`). That ramp through `rampMidT` is the white fade the
+density shader used to compute, within one LUT step (the white itself lands
+between entries 127 and 128, a channel off), and `densityColorParity.test.ts`
+holds the retired fade's arithmetic as the oracle. A written scale means one
+thing on every mark: `threshold` paints solid bands on a heatmap as on bars,
+and `linear` a ramp.
 Several sources sharing one plot box (`sharesPanel`) are told apart by the row
 palette instead, which deals each one a tableau10 color by name while
 `rowColorPaintsMarks`, and `perSource` then paints each on both sides of the
@@ -312,8 +315,9 @@ because a channel replaces its setting. Three rules it turns on:
 - **Two swatches only edit where they can say the whole picture.** A ramp or a
   threshold past one cut reads out beside the reason; a color per subtrack
   hides the line, since the grid below is already that control. A heatmap's
-  ramp through white is its two ends (`isWhiteMiddleRamp`), so it edits, and
-  writes the ramp back with its middle at the cut (`plotColorOf`).
+  pair is its two ends, so it edits too, and writes the pair back with no
+  `scale`, so the white keeps following the `origin` and the same edit draws
+  bicolor bars (`plotColorOf`).
   `plotColorLine.test.ts` round-trips every shape a shipped config holds.
 - **`Edit plot...` in the dialog is the escape**, on the display's `plot` — a
   ramp, several cut points, hand-written stops, a typed row order. ADR-204.

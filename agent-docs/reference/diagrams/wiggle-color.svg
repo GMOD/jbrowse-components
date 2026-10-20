@@ -80,16 +80,16 @@
 <!-- heat -->
 <g id="node6" class="node">
 <title>heat</title>
-<polygon fill="none" stroke="black" points="1046,-104.38 838,-104.38 838,-58.12 1046,-58.12 1046,-104.38"/>
-<text xml:space="preserve" text-anchor="middle" x="942" y="-90.88" font-family="monospace" font-size="10.00">a heatmap: score through linear,</text>
-<text xml:space="preserve" text-anchor="middle" x="942" y="-78.12" font-family="monospace" font-size="10.00">negative, white, positive,</text>
+<polygon fill="none" stroke="black" points="1025,-104.38 859,-104.38 859,-58.12 1025,-58.12 1025,-104.38"/>
+<text xml:space="preserve" text-anchor="middle" x="942" y="-90.88" font-family="monospace" font-size="10.00">a heatmap: the same pair,</text>
+<text xml:space="preserve" text-anchor="middle" x="942" y="-78.12" font-family="monospace" font-size="10.00">as a linear ramp through</text>
 <text xml:space="preserve" text-anchor="middle" x="942" y="-65.38" font-family="monospace" font-size="10.00">white at the origin</text>
 </g>
 <!-- layout&#45;&gt;heat -->
 <g id="edge5" class="edge">
 <title>layout&#45;&gt;heat</title>
-<path fill="none" stroke="black" d="M620.54,-99.47C684.61,-95.83 763.19,-91.36 826.51,-87.76"/>
-<polygon fill="black" stroke="black" points="826.45,-91.27 836.23,-87.21 826.05,-84.28 826.45,-91.27"/>
+<path fill="none" stroke="black" d="M620.54,-99.47C691.83,-95.42 781.11,-90.34 847.31,-86.58"/>
+<polygon fill="black" stroke="black" points="847.26,-90.08 857.05,-86.02 846.86,-83.1 847.26,-90.08"/>
 <text xml:space="preserve" text-anchor="middle" x="741.62" y="-100.67" font-family="Times,serif" font-size="14.00"> span</text>
 </g>
 <!-- resolved -->
@@ -135,8 +135,8 @@
 <!-- heat&#45;&gt;encoding -->
 <g id="edge8" class="edge">
 <title>heat&#45;&gt;encoding</title>
-<path fill="none" stroke="black" d="M1046.44,-90.8C1060.67,-92.12 1075.28,-93.47 1089.5,-94.78"/>
-<polygon fill="black" stroke="black" points="1089.01,-98.25 1099.29,-95.69 1089.66,-91.28 1089.01,-98.25"/>
+<path fill="none" stroke="black" d="M1025.22,-88.84C1045.76,-90.74 1068.03,-92.8 1089.41,-94.77"/>
+<polygon fill="black" stroke="black" points="1089.05,-98.26 1099.33,-95.69 1089.7,-91.29 1089.05,-98.26"/>
 </g>
 <!-- density -->
 <g id="node8" class="node">
@@ -174,5 +174,5 @@
 <polygon fill="black" stroke="black" points="1792.11,-128.85 1801.3,-123.59 1790.83,-121.97 1792.11,-128.85"/>
 </g>
 </g>
-<!-- diagram-source-sha256 ccd6dc396b80a71afdadb331fc2030a7c423030054fe59aac8ab333e4bae7ce5 -->
+<!-- diagram-source-sha256 c412879e2451b6ba91ce3d04b4b514321231d419588e0d2868f18c7f4b090ef0 -->
 </svg>

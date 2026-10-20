@@ -76,7 +76,7 @@ scheme }` over `score` — and a subtrack's color is `rowColor`'s:
 | --- | --- | --- | --- |
 | shared: several sources in one box | the threshold pair, each source painting its row color on both sides | `rowColor` | by name |
 | row: a row per source, or a lone plot | the threshold pair about the `origin` | `rowColor` | by an attribute only |
-| density, either of the above | the **score ramp**, through white at the `origin` | the ramp | by an attribute only |
+| density, either of the above | the pair, as a **ramp** through white at the `origin` | the ramp | by an attribute only |
 
 A written `color`, a constant or a scale, paints every mark in any layout;
 the table is what an unset one leaves to the rows. A row's `rowColor` draws
