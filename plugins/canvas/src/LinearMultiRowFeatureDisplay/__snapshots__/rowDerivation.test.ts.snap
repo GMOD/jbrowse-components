@@ -343,13 +343,13 @@ exports[`a focus hides rows without recoloring the kept ones 1`] = `
     "entries": [
       {
         "color": "#4e79a7",
-        "label": "Parents",
-        "value": "Parents",
+        "label": "Kids",
+        "value": "Kids",
       },
       {
         "color": "#f28e2c",
-        "label": "Kids",
-        "value": "Kids",
+        "label": "Parents",
+        "value": "Parents",
       },
     ],
     "focusesRows": true,
@@ -358,8 +358,8 @@ exports[`a focus hides rows without recoloring the kept ones 1`] = `
     "title": "Group",
   },
   "rowColors": [
-    "rgba(78,121,167,1)",
     "rgba(242,142,44,1)",
+    "rgba(78,121,167,1)",
   ],
   "rowTree": undefined,
   "sources": [
@@ -367,13 +367,13 @@ exports[`a focus hides rows without recoloring the kept ones 1`] = `
       "group": "Parents",
       "label": undefined,
       "name": "mom",
-      "rowColor": "#4e79a7",
+      "rowColor": "#f28e2c",
     },
     {
       "group": "Kids",
       "label": undefined,
       "name": "s10",
-      "rowColor": "#f28e2c",
+      "rowColor": "#4e79a7",
     },
   ],
   "treeDrawn": false,

@@ -179,8 +179,9 @@ rowColorPaintsMarks`. `dealtRowColors` is the value-to-color map behind it and
 `dealtRowColorsFor` the dialog's preview of another setting. `dealRowColors` deals
 d3's ordinal way over the rows in source order (`rowColorDealRows`), so no
 reorder, focus or relabel recolors a row and a tables export deals the same
-(ADR-239; the multi-row display's source order is the config's `rows.domain`,
-then the rest sorted): listed values take their `range` color, the rest first seen
+(ADR-239). Values the config declares for the field (`rowColorDeclaredValues`,
+the multi-row display's `rowGroups` groups) take their turns first, loaded or
+not, so a later region moves no color. Listed values take their `range` color, the rest first seen
 first from tableau10 less its grey and then re-lit laps of it (`rowPaletteColorAt`),
 and a set `unknown` stands in for the palette. A name deal skips a row carrying
 its own color; an attribute deal skips the empty value, so a row with none

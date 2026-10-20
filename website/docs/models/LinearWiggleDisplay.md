@@ -206,9 +206,9 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Right-click menu, built from the column under the click. The position is captured here rather than read inside the onClick, because `closeContextMenu` runs first when an item is clicked. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>16 inherited methods from 5 models</summary>
+<summary>17 inherited methods from 5 models</summary>
 
-From [TreeSidebarMixin](../treesidebarmixin): <span id="method-expandrows">[`expandRows`](../treesidebarmixin#method-expandrows)</span>, <span id="method-svgsidebarwidth">[`svgSidebarWidth`](../treesidebarmixin#method-svgsidebarwidth)</span>, <span id="method-rowband">[`rowBand`](../treesidebarmixin#method-rowband)</span>, <span id="method-dealtrowcolorsfor">[`dealtRowColorsFor`](../treesidebarmixin#method-dealtrowcolorsfor)</span>, <span id="method-rowcolorfor">[`rowColorFor`](../treesidebarmixin#method-rowcolorfor)</span>, <span id="method-roworderwilldroptree">[`rowOrderWillDropTree`](../treesidebarmixin#method-roworderwilldroptree)</span>
+From [TreeSidebarMixin](../treesidebarmixin): <span id="method-expandrows">[`expandRows`](../treesidebarmixin#method-expandrows)</span>, <span id="method-svgsidebarwidth">[`svgSidebarWidth`](../treesidebarmixin#method-svgsidebarwidth)</span>, <span id="method-rowband">[`rowBand`](../treesidebarmixin#method-rowband)</span>, <span id="method-rowcolordeclaredvalues">[`rowColorDeclaredValues`](../treesidebarmixin#method-rowcolordeclaredvalues)</span>, <span id="method-dealtrowcolorsfor">[`dealtRowColorsFor`](../treesidebarmixin#method-dealtrowcolorsfor)</span>, <span id="method-rowcolorfor">[`rowColorFor`](../treesidebarmixin#method-rowcolorfor)</span>, <span id="method-roworderwilldroptree">[`rowOrderWillDropTree`](../treesidebarmixin#method-roworderwilldroptree)</span>
 
 From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScalesIn`](../legendmixin#method-colorscalesin)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 

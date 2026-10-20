@@ -162,6 +162,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | --- | --- |
 | <span id="method-rampcolorscales">**rampColorScales**</span><br><code>(id: string) =&gt; ColorScale[]</code> | The key a ramp paints, under the caller's scale `id`: the bar over its domain, and a row apiece for the values the ramp has no color for. Both displays composing this built it from the same three getters, so the derivation is here rather than twice over. |
 | <span id="method-expandrows">**expandRows**</span><br><code>(rows: RowSource[]) =&gt; RowSource[]</code> | `TreeSidebarMixin`'s hook: each row tagged with the group of the first `rowGroups` entry its name matches. |
+| <span id="method-rowcolordeclaredvalues">**rowColorDeclaredValues**</span><br><code>(field: string) =&gt; readonly string[]</code> | `TreeSidebarMixin`'s hook: under `group`, the `rowGroups` groups in the order they are declared, so a group's color holds whichever rows have loaded. |
 | <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { rowsField: string; colorConfig: WorkerColor; }</code> | Fetch-input cache keys; color is resolved in the worker, so the raw color slot is one. |
 | <span id="method-featureat">**featureAt**</span><br><code>(mouseX: number, mouseY: number) =&gt; MultiRowHit &#124; undefined</code> | The feature under a display-relative pixel. |
 | <span id="method-hoverhitat">**hoverHitAt**</span><br><code>(mouseX: number, mouseY: number) =&gt; MultiRowHit &#124; undefined</code> |  |

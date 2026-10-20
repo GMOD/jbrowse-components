@@ -183,6 +183,34 @@ test('rowColor by group deals a color per group, and offers the field', () => {
   expect(loaded({}).rowColorFields).toEqual([])
 })
 
+// The groups deal in the order `rowGroups` declares them, loaded or not, so a
+// row arriving in a later region moves no group's color (ADR-239).
+test('rowColor by group deals in rowGroups order, whichever rows have loaded', () => {
+  const config = {
+    rows: 'sample',
+    rowColor: 'group',
+    rowGroups: [
+      { match: '^c$', group: 'C' },
+      { match: '^[ab]$', group: 'AB' },
+    ],
+  }
+  const { display } = createTestEnvironment({
+    displayConfig: config,
+  }).createDisplay()
+  display.setRpcData(0, rows(['a', 'b']), ctgA)
+  const AB = rowPaletteColorAt(1)
+  expect(Object.fromEntries(display.dealtRowColors)).toEqual({
+    C: rowPaletteColorAt(0),
+    AB,
+  })
+  display.setRpcData(1, rows(['c']), ctgA)
+  expect(display.dealtRowColors.get('AB')).toBe(AB)
+  expect(display.rowColorScales[0]?.entries.map(e => e.label)).toEqual([
+    'C',
+    'AB',
+  ])
+})
+
 test('rowGroups that tag no row offer no group field', () => {
   const display = loaded({ rowGroups: [{ match: '^z$', group: 'Z' }] })
   expect(display.rowColorFields).toEqual([])

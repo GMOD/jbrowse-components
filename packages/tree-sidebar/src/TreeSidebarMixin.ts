@@ -593,6 +593,16 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       get rowColorDealRows(): readonly S[] {
         return self.expandedRows
       },
+      /**
+       * #method
+       * Overridable hook: the values of row attribute `field` the config
+       * declares, which the palette deals first, in this order, whether or
+       * not a loaded row carries them, so a row arriving later moves no
+       * color. None by default.
+       */
+      rowColorDeclaredValues(_field: string): readonly string[] {
+        return []
+      },
     }))
     .views(self => ({
       /**
@@ -603,10 +613,12 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       dealtRowColorsFor(
         setting: RowColorSnapshot,
       ): ReadonlyMap<string, string> {
+        const lifted = liftRowColor(setting)
         return dealtValueColors(
-          liftRowColor(setting),
+          lifted,
           () => self.rowColorDealRows,
           self.rowPaletteDeals,
+          self.rowColorDeclaredValues(lifted.field),
         )
       },
     }))

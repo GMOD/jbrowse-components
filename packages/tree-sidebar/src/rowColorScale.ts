@@ -31,12 +31,14 @@ const NONE: ReadonlyMap<string, string> = new Map()
  * deals only while `namesDeal` or an `unknown` stands in for the palette, and
  * a row with its own color takes no turn. None for an attribute no row
  * carries. Reads no row where only the pairs paint, so a reorder deals nothing
- * again.
+ * again. `declared` lists values of an attribute the config states, which
+ * take their turns first, loaded or not.
  */
 export function dealtValueColors(
   setting: RowColorSetting,
   rowsOf: () => readonly RowSource[],
   namesDeal: boolean,
+  declared: readonly string[] = [],
 ): ReadonlyMap<string, string> {
   const { field, unknown } = setting
   if (field === 'name') {
@@ -52,9 +54,12 @@ export function dealtValueColors(
   const rows = rowsOf()
   return rows.some(row => Object.hasOwn(row, field))
     ? dealRowColors(
-        rows
-          .map(row => rowFieldValue(row, field))
-          .filter(value => value !== ''),
+        [
+          ...declared,
+          ...rows
+            .map(row => rowFieldValue(row, field))
+            .filter(value => value !== ''),
+        ],
         setting,
       )
     : NONE

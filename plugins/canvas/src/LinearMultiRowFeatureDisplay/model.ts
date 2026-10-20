@@ -408,6 +408,17 @@ export default function stateModelFactory(
           return tagRowGroups(rows, self.rowGroupMatchers)
         },
         /**
+         * #method
+         * `TreeSidebarMixin`'s hook: under `group`, the `rowGroups` groups
+         * in the order they are declared, so a group's color holds whichever
+         * rows have loaded.
+         */
+        rowColorDeclaredValues(field: string): readonly string[] {
+          return field === 'group'
+            ? self.rowGroups.map(({ group }) => group)
+            : []
+        },
+        /**
          * #getter
          * `rowBandingNotices`.
          */
