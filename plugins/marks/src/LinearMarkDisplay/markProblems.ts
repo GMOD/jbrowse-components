@@ -3,6 +3,7 @@ import {
   FEATURE_FIELD_PRESETS,
   colorProblems,
   fieldScaleOf,
+  isFieldPair,
   isJexl,
   SHAPE_NAMES,
   isNamedColor,
@@ -536,12 +537,12 @@ function stepProblems(steps: Steps, list = 'transform') {
       )
     }
     for (const pair of pairSlots(step)) {
-      if (pair.names && pair.names.length !== 2) {
+      if (pair.names && !isFieldPair(pair.names)) {
         problems.push(
           found(
             'step-pair',
             `${at}.${pair.slot}`,
-            `a ${type} reads two field names from ${pair.slot} and this names ${pair.names.length}, so it reads ${pair.reads}`,
+            `a ${type} reads two field names from ${pair.slot} and this names ${pair.names.filter(Boolean).length}, so it reads ${pair.reads}`,
           ),
         )
       }

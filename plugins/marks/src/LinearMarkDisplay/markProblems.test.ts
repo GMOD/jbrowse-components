@@ -425,12 +425,14 @@ test('a pair slot naming another number of fields says it reads the default', ()
         transform: [
           { type: 'bin', step: 10, as: ['lo'] },
           { type: 'pileup', fields: ['s', 'e', 'x'] },
+          { type: 'pileup', fields: ['s', ''] },
         ],
       },
     ]).map(p => `${p.rule} ${p.slot}: ${p.message}`),
   ).toEqual([
     'step-pair transform.0.as: a bin reads two field names from as and this names 1, so it reads start and end',
     'step-pair transform.1.fields: a pileup reads two field names from fields and this names 3, so it reads start and end',
+    'step-pair transform.2.fields: a pileup reads two field names from fields and this names 1, so it reads start and end',
   ])
 })
 

@@ -238,6 +238,22 @@ test('flatten fans out plain records and index names the position', () => {
   expect(out.map(f => f.id())).toEqual(['0-100#0', '0-100#1'])
 })
 
+// A mark's form writes every slot out, so an unnamed index or key arrives
+// as an empty string.
+test('flatten writes no field for an empty index or key', () => {
+  const fields = (data: Record<string, unknown>, field: string) =>
+    runTransforms(
+      [feature(0, 100, data)],
+      [{ type: 'flatten', field, index: '', key: '' }],
+    ).map(f => Object.keys(f.toJSON()))
+  expect(fields({ blocks: [{ start: 5, end: 9 }] }, 'blocks')).toEqual([
+    ['uniqueId', 'refName', 'start', 'end'],
+  ])
+  expect(fields({ genotypes: { HG001: { gt: '0/1' } } }, 'genotypes')).toEqual([
+    expect.not.arrayContaining(['']),
+  ])
+})
+
 test('flatten fans out a record keyed by name, and key names each entry', () => {
   const block = feature(100, 160, {
     seq: 'ACGT',

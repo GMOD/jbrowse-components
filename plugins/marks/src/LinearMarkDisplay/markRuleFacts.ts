@@ -12,6 +12,7 @@ export {
   DEFAULT_FORMULA_AS,
   DEFAULT_PILEUP_AS,
   aggregateFieldName,
+  isFieldPair,
   stepsOutput,
 } from '@jbrowse/core/util/stepOutputs'
 export type { StepOutline } from '@jbrowse/core/util/stepOutputs'

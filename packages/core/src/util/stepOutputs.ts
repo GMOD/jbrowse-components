@@ -82,9 +82,15 @@ function named(as: StepOutline['as'], fallback: string) {
   return typeof as === 'string' && as !== '' ? as : fallback
 }
 
+/** Two non-empty field names: what a `bin`'s `as` and `fields` and a `pileup`'s `fields` read as a pair. */
+export function isFieldPair(
+  names: readonly string[] | string | undefined,
+): names is readonly [string, string] {
+  return Array.isArray(names) && names.length === 2 && !!names[0] && !!names[1]
+}
+
 function binEdges(step: StepOutline): readonly string[] {
-  const { as } = step
-  return Array.isArray(as) && as.length === 2 ? as : DEFAULT_BIN_AS
+  return isFieldPair(step.as) ? step.as : DEFAULT_BIN_AS
 }
 
 // A single op names the `y` its mark reads; two leave the mark to choose.
@@ -113,7 +119,7 @@ export const STEP_OUTPUTS = {
     replacesRows: false,
     writes: step => [
       ...binEdges(step).map(field => ({ field, kind: 'numeric' as const })),
-      ...(step.fields?.length === 2
+      ...(isFieldPair(step.fields)
         ? [{ field: BIN_OVERLAP_FIELD, kind: 'numeric' as const }]
         : []),
     ],

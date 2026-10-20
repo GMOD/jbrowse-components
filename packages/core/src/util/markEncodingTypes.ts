@@ -590,9 +590,9 @@ export interface CoverageStep {
 export interface FlattenStep {
   type: 'flatten'
   field?: FieldRef
-  /** Written with the element's position in its parent's array. */
+  /** Written with the element's position in its parent's array; empty writes none. */
   index?: string
-  /** Written with the entry's key, where the field is a record. */
+  /** Written with the entry's key, where the field is a record; empty writes none. */
   key?: string
   keepEmpty?: boolean
 }

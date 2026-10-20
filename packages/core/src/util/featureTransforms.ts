@@ -178,8 +178,8 @@ class FlatTable extends FannedTable {
     this.items = items
     this.at = at
     this.position = position
-    this.indexField = step.index
-    this.keyField = step.key
+    this.indexField = step.index || undefined
+    this.keyField = step.key || undefined
   }
 
   isKept(i: number) {
@@ -332,8 +332,8 @@ class ListFlatTable extends FannedTable {
     this.entryRow = entryRow
     this.position = position
     this.kept = kept
-    this.indexField = step.index
-    this.keyField = step.key
+    this.indexField = step.index || undefined
+    this.keyField = step.key || undefined
   }
 
   isKept(i: number) {

@@ -7,6 +7,7 @@ export {
   DEFAULT_FORMULA_AS,
   DEFAULT_PILEUP_AS,
   aggregateFieldName,
+  isFieldPair,
   stepsOutput,
 } from './stepOutputs.ts'
 export type { StepOutline } from './stepOutputs.ts'

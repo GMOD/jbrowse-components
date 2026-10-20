@@ -4,6 +4,7 @@
  * a slot left at its default and one written at it are one fetch.
  */
 import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
+import { isFieldPair } from '@jbrowse/core/util/stepOutputs'
 
 import { binStepWidth } from './autoBin.ts'
 import { markShapeScale } from './configSchema.ts'
@@ -116,10 +117,7 @@ function pairOf(
   values: readonly string[],
   fallback: readonly [string, string],
 ): [string, string] {
-  const [a, b] = values
-  return values.length === 2 && a !== undefined && b !== undefined
-    ? [a, b]
-    : [...fallback]
+  return isFieldPair(values) ? [values[0], values[1]] : [...fallback]
 }
 
 /**
@@ -165,8 +163,7 @@ function binEdgesOf(step: { as: readonly string[] }) {
 function intervalFields(step: {
   fields: readonly string[]
 }): [string, string] | undefined {
-  const [start, end] = step.fields
-  return step.fields.length === 2 && start && end ? [start, end] : undefined
+  return isFieldPair(step.fields) ? [step.fields[0], step.fields[1]] : undefined
 }
 
 /**
