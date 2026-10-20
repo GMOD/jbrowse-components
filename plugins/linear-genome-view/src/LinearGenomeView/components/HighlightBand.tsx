@@ -19,9 +19,10 @@ const useStyles = makeStyles()(theme => ({
   // a sibling of the band, so a label wider than a narrow band (a codon at
   // gene zoom) runs past its right edge instead of clipping to nothing, as
   // the SVG export's does
+  // no `top`: like the band it takes its static position, the band's own top
+  // edge, which sits below whatever precedes the bands in the container
   overlay: {
     position: 'absolute',
-    top: 0,
     left: 3,
     zIndex: 1,
     pointerEvents: 'none',
