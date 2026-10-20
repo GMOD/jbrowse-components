@@ -188,7 +188,7 @@ the dialog shows the config's colors and writes its own beside them. An entry
 paints the row's blocks; a row without one takes the palette where no `color`
 slot and no `itemRgb` paint, dealt over the rows in the config.json's declared
 order, so no arrangement recolors a row. The dialog stores a label only where
-it differs from the derived `(no <field>)` label. It has no Edit as JSON box, so no `setRowsSpec`.
+it differs from the derived `(no <field>)` label. That dialog never had an Edit as JSON box.
 
 **MAF moves fourth.** Its rows are the species, so `rows` is the field-less
 `RowArrangement` the variant displays declare. The adapter's guide tree is
@@ -245,13 +245,15 @@ Colin's answer to call 10 of the row-model handoff: that default had been
 multi-BigWig pack nothing, so each such section held exactly one row, which is
 the row axis; a facet is for bands holding more than one row.
 
-**Edit as JSON speaks `rows`.** `ChannelSpec` takes
+**Edit as JSON speaks `rows`.** Superseded by ADR-204: "Edit plot..." shows
+and writes `rows` whole through `applyPlot`, and `ChannelSpec` and
+`setRowsSpec` are gone. As first built, `ChannelSpec` took
 `rows: field | { field, domain }` beside `facet`, `color` and `filter`, and
-`ChannelSpecDialog` refuses `facet` on a display with no facet and `rows` on
-one with no rows. The box writes only the channels it changed, and `rows`
+`ChannelSpecDialog` refused `facet` on a display with no facet and `rows` on
+one with no rows. The box wrote only the channels it changed, and `rows`
 through the display's `setRowsSpec` — the field, then the order as a reorder
 writes it — so the labels, the focus and a tree the order still describes
-survive an edit to the color beside them.
+survived an edit to the color beside them.
 
 **A session spec writes the arrangement as config.** A quantitative track
 entry's `rows` is a config slot, so it lands on the display config, and like any
