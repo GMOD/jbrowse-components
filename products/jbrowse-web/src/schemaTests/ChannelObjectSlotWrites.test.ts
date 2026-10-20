@@ -53,9 +53,11 @@ function samples(def: Parameters<typeof slotChoices>[0]): unknown[] {
     case 'color':
     case 'maybeColor':
       return [...maybe, 'red']
+    // a string slot with a model of its own narrows the strings it takes
+    // (`sort.field`), so its default is the one sample sure to load
     case 'string':
     case 'featureField':
-      return ['', 'x']
+      return def.model ? [def.defaultValue] : ['', 'x']
     default:
       return [...maybe, def.defaultValue]
   }
