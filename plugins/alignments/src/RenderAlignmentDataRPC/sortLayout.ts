@@ -10,6 +10,7 @@ import { emptyConnectingLinesUploadData } from '../features/connectingLines/type
 import { emptyLinkedReadLinesUploadData } from '../features/linkedReads/types.ts'
 import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
 import { GAP_DELETION } from '../shaders/slang/gap.consts.generated.ts'
+import { facetTag } from '../shared/facetLabels.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -29,11 +30,11 @@ import type { ReadKey, ReadKeys } from '@jbrowse/alignments-core'
 
 const DELETION_CHAR = 42 // '*'
 
-// Sort types that rank reads by the longest interbase event at the sort
+// Sort fields that rank reads by the longest interbase event at the sort
 // position, mapped to the interbase kind each one measures. A lookup miss is
-// what identifies the comparator-based types (position/strand/tag), so this
-// table is the whole "is this an interbase sort" test.
-const INTERBASE_SORT_TYPES: Partial<Record<SortColumn['type'], number>> = {
+// what identifies the comparator-based fields (strand/tag), so this table is
+// the whole "is this an interbase sort" test.
+const INTERBASE_SORT_FIELDS: Partial<Record<string, number>> = {
   insertion: INTERBASE_INSERTION,
   softclip: INTERBASE_SOFTCLIP,
   hardclip: INTERBASE_HARDCLIP,
@@ -183,18 +184,18 @@ function remapYs(readIndices: Uint32Array, readYs: Uint16Array) {
   return out
 }
 
-// Build the per-read sort key for the two data-driven sort types: the base
-// call at `sortPos` (basePair) or the longest interbase length within `within`
+// Build the per-read sort key for the two data-driven sort fields: the base
+// call at `sortPos` (base) or the longest interbase length within `within`
 // bases of `sortPos` (insertion/softclip/hardclip). `desc` is true for
 // interbases (longest first) and false for base calls. Returns undefined for
-// the comparator-based types (strand/tag), which don't go through a key map.
+// the comparator-based fields (strand/tag), which don't go through a key map.
 function buildSortKeyMap(
   data: WorkerPileupData,
-  { type, pos: sortPos, within = 0 }: SortColumn,
+  { field, pos: sortPos, within = 0 }: SortColumn,
 ): { map: Map<number, number>; desc: boolean } | undefined {
   let result: { map: Map<number, number>; desc: boolean } | undefined
-  const targetType = INTERBASE_SORT_TYPES[type]
-  if (type === 'basePair') {
+  const targetType = INTERBASE_SORT_FIELDS[field]
+  if (field === 'base') {
     const { mismatchReadIndices, mismatchPositions, mismatchBases } = data
     const { gapReadIndices, gapPositions, gapTypes } = data
     const baseAtPos = new Map<number, number>()
@@ -248,32 +249,32 @@ function sortOverlappingByIndex(
   sortColumn: SortColumn,
   keyMap: { map: Map<number, number>; desc: boolean } | undefined,
 ) {
-  const { type } = sortColumn
+  const { field } = sortColumn
   const { readPositions, readKeys, sortTagValues } = data
   const canonical = (a: number, b: number) =>
     compareReadsCanonically(readPositions, readKeys, a, b)
   if (keyMap) {
     sortByMapWithUnknownsLast(overlapping, keyMap.map, keyMap.desc, data)
-  } else if (type === 'strand') {
+  } else if (field === 'strand') {
     const { readStrands } = data
     overlapping.sort(
       (a, b) => readStrands[b]! - readStrands[a]! || canonical(a, b),
     )
-  } else if (type === 'mapq') {
+  } else if (field === 'mapq') {
     const { readMapqs } = data
     const valueOf = (i: number) => {
       const mapq = readMapqs[i]!
       return mapq === MAPQ_UNAVAILABLE ? -1 : mapq
     }
     overlapping.sort((a, b) => valueOf(b) - valueOf(a) || canonical(a, b))
-  } else if (type === 'pairOrientation') {
+  } else if (field === 'pairOrientation') {
     const { readPairOrientations } = data
     overlapping.sort(
       (a, b) =>
         PAIR_ORIENTATION_RANK[readPairOrientations[a]!]! -
           PAIR_ORIENTATION_RANK[readPairOrientations[b]!]! || canonical(a, b),
     )
-  } else if (type === 'tag' && sortTagValues) {
+  } else if (facetTag(field) !== undefined && sortTagValues) {
     // Numeric sort only when every present value parses as a number. A single
     // numeric-looking first value must not decide the mode for a column of
     // string tags — that garbled string tags into NaN comparisons. A missing

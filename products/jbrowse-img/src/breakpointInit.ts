@@ -89,7 +89,7 @@ export function breakpointTracks(
       // locus, so "the position under the centre" is a different answer per
       // panel. Say so rather than sorting one panel and not the others.
       console.warn(
-        `Warning: sort:${sort.type} on "${trackId}" ignored — a breakpoint view has one panel per --loc and no single center position`,
+        `Warning: sort:${sort.field} on "${trackId}" ignored — a breakpoint view has one panel per --loc and no single center position`,
       )
     }
     return {

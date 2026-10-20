@@ -38,14 +38,14 @@ function viewWithReads() {
 test('sorts every pileup at the variant, under the view’s refName', () => {
   const { view, sorts } = viewWithReads()
   expect(sortReadsAtVariant(view, variant(100, 'ACGT', ['A']), 1)).toBe(true)
-  const sort = { type: 'basePair', pos: 101, refName: 'ctgA' }
+  const sort = { field: 'base', pos: 101, refName: 'ctgA' }
   expect(sorts).toEqual([sort, sort])
 })
 
 test('an insertion sorts on the insertion column', () => {
   const { view, sorts } = viewWithReads()
   sortReadsAtVariant(view, variant(100, 'A', ['ACC']), 1)
-  expect(sorts[0]).toEqual({ type: 'insertion', pos: 101, refName: 'ctgA' })
+  expect(sorts[0]).toEqual({ field: 'insertion', pos: 101, refName: 'ctgA' })
 })
 
 test('a symbolic allele sorts nothing and says so', () => {

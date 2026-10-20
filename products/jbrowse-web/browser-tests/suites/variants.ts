@@ -500,7 +500,7 @@ const suite: TestSuite = {
                     tracks: {
                       displays: {
                         sortColumn?: {
-                          type: string
+                          field: string
                           pos: number
                           refName: string
                         }
@@ -512,7 +512,7 @@ const suite: TestSuite = {
             ).JBrowseSession
             const sort = views[0]!.tracks[1]!.displays[0]!.sortColumn
             return (
-              sort?.type === 'basePair' &&
+              sort?.field === 'base' &&
               sort.pos === 276 &&
               sort.refName === 'ctgA'
             )

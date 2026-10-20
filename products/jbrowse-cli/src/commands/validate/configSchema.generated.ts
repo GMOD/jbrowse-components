@@ -4950,7 +4950,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "feature field (or jexl expression) to group by, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
+              "description": "feature field (or jexl expression) to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
               "default": "",
               "if": {
                 "type": "null"
@@ -5707,7 +5707,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "feature field (or jexl expression) to group by, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
+              "description": "feature field (or jexl expression) to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
               "default": "",
               "if": {
                 "type": "null"
@@ -6186,23 +6186,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "AlignmentsSort",
       "anyOf": [
         {
-          "description": "Shorthand for \`{ \\"type\\": ... }\`.",
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "position",
-          "enum": [
-            "position",
-            "length",
-            "spliced",
-            "split",
-            "svSignal",
-            "strand",
-            "basePair",
-            "tag",
-            "mapq",
-            "pairOrientation",
-            "insertion",
-            "softclip",
-            "hardclip"
-          ],
+          "$ref": "#/$defs/PlainString",
           "type": "string"
         },
         {
@@ -6210,28 +6196,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
-            "type": {
-              "description": "position, length, spliced, split or svSignal order the whole window; strand, basePair, mapq, pairOrientation, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
+            "field": {
+              "description": "position, length, spliced, split or svSignal order the whole window; strand, base, mapq, pairOrientation, a tags.XX tag, insertion, softclip or hardclip rank the reads over the column at pos.",
               "default": "position",
               "if": {
                 "type": "null"
               },
               "else": {
-                "enum": [
-                  "position",
-                  "length",
-                  "spliced",
-                  "split",
-                  "svSignal",
-                  "strand",
-                  "basePair",
-                  "tag",
-                  "mapq",
-                  "pairOrientation",
-                  "insertion",
-                  "softclip",
-                  "hardclip"
-                ]
+                "$ref": "#/$defs/PlainString"
               }
             },
             "pos": {
@@ -6245,15 +6217,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "refName": {
               "description": "a column sort's reference sequence.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "tag": {
-              "description": "the SAM tag a tag sort ranks by.",
               "if": {
                 "type": "null"
               },
@@ -7920,23 +7883,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "LGVSyntenySort",
       "anyOf": [
         {
-          "description": "Shorthand for \`{ \\"type\\": ... }\`.",
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "length",
-          "enum": [
-            "position",
-            "length",
-            "spliced",
-            "split",
-            "svSignal",
-            "strand",
-            "basePair",
-            "tag",
-            "mapq",
-            "pairOrientation",
-            "insertion",
-            "softclip",
-            "hardclip"
-          ],
+          "$ref": "#/$defs/PlainString",
           "type": "string"
         },
         {
@@ -7944,28 +7893,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
-            "type": {
-              "description": "position, length, spliced, split or svSignal order the whole window; strand, basePair, mapq, pairOrientation, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
+            "field": {
+              "description": "position, length, spliced, split or svSignal order the whole window; strand, base, mapq, pairOrientation, a tags.XX tag, insertion, softclip or hardclip rank the reads over the column at pos.",
               "default": "length",
               "if": {
                 "type": "null"
               },
               "else": {
-                "enum": [
-                  "position",
-                  "length",
-                  "spliced",
-                  "split",
-                  "svSignal",
-                  "strand",
-                  "basePair",
-                  "tag",
-                  "mapq",
-                  "pairOrientation",
-                  "insertion",
-                  "softclip",
-                  "hardclip"
-                ]
+                "$ref": "#/$defs/PlainString"
               }
             },
             "pos": {
@@ -7979,15 +7914,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "refName": {
               "description": "a column sort's reference sequence.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "tag": {
-              "description": "the SAM tag a tag sort ranks by.",
               "if": {
                 "type": "null"
               },
@@ -13551,7 +13477,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "feature field (or jexl expression) to group by, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
+              "description": "feature field (or jexl expression) to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
               "default": "",
               "if": {
                 "type": "null"

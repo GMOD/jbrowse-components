@@ -163,21 +163,21 @@ describe('parseVcfJunctions', () => {
         loci: [{ refName: 'chr3', start: 999, end: 1000 }],
         line: 5,
         name: 'snv',
-        sort: { type: 'basePair', pos: 999 },
+        sort: { field: 'base', pos: 999 },
         alleleLength: 1,
         carried: { base: 'G' },
       },
       {
         loci: [{ refName: 'chr3', start: 1999, end: 2003 }],
         line: 6,
-        sort: { type: 'basePair', pos: 2000 },
+        sort: { field: 'base', pos: 2000 },
         alleleLength: 4,
         carried: { base: '*' },
       },
       {
         loci: [{ refName: 'chr3', start: 2999, end: 3000 }],
         line: 7,
-        sort: { type: 'insertion', pos: 3000 },
+        sort: { field: 'insertion', pos: 3000 },
         alleleLength: 3,
         carried: { minInsertion: 1, anywhere: false },
       },
@@ -197,11 +197,11 @@ describe('parseVcfJunctions', () => {
     expect(records.map(r => [r.sort, r.carried])).toEqual([
       // a deletion of SV size is a gap of half its length or more
       [
-        { type: 'basePair', pos: 1000 },
+        { field: 'base', pos: 1000 },
         { base: '*', minDeletion: 36 },
       ],
       [
-        { type: 'insertion', pos: 3000 },
+        { field: 'insertion', pos: 3000 },
         { minInsertion: 174, anywhere: true },
       ],
       [undefined, undefined],
@@ -213,12 +213,12 @@ describe('parseVcfJunctions', () => {
     ])
     // an SV-sized insertion is counted and sorted across its window
     expect(records.map(r => recordSortColumn(r))).toEqual([
-      { type: 'basePair', pos: 1000 },
-      { type: 'insertion', pos: 3000, within: 500 },
+      { field: 'base', pos: 1000 },
+      { field: 'insertion', pos: 3000, within: 500 },
       undefined,
     ])
     expect(recordSortColumn(records[1]!, 600)).toEqual({
-      type: 'insertion',
+      field: 'insertion',
       pos: 3000,
       within: 600,
     })
@@ -247,7 +247,7 @@ describe('parseVcfJunctions', () => {
         { refName: 'chr3', start: 999, end: 1000 },
         { refName: 'chr3', start: 1899, end: 1900 },
       ],
-      sort: { type: 'basePair', pos: 1000 },
+      sort: { field: 'base', pos: 1000 },
       alleleLength: 901,
     })
   })

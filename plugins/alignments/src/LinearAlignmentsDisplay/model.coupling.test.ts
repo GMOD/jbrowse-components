@@ -574,7 +574,7 @@ describe('sort refName normalization', () => {
     const display = createDisplay({ withRegions: true })
     // 'chrA' is the test assembly's alias for the canonical 'ctgA'
     display.setSort({
-      type: 'basePair',
+      field: 'base',
       pos: 100,
       refName: 'chrA',
     })
@@ -582,7 +582,7 @@ describe('sort refName normalization', () => {
     expect(display.sortColumn?.refName).toBe('ctgA')
     // everything else on the slot rides through untouched
     expect(display.sortColumn?.pos).toBe(100)
-    expect(display.sortColumn?.type).toBe('basePair')
+    expect(display.sortColumn?.field).toBe('base')
   })
 
   // A config or session spec can write half a column sort. A column is a refName AND a position, so either half missing is no sort — and
@@ -590,8 +590,8 @@ describe('sort refName normalization', () => {
   // threw a TypeError out of a getter the fetch autorun and the render both
   // read, replacing the whole track with an error over a typo in a spec.
   test.each([
-    ['refName', { type: 'basePair', pos: 100 }],
-    ['pos', { type: 'basePair', refName: 'ctgA' }],
+    ['refName', { field: 'base', pos: 100 }],
+    ['pos', { field: 'base', refName: 'ctgA' }],
   ])('a slot naming no %s is no sort, not a throw', (_half, slot) => {
     const display = createDisplay({ withRegions: true })
     // Cast because this is the one writer the action's signature can't
@@ -607,7 +607,7 @@ describe('sort refName normalization', () => {
     expect(display.sortColumn).toBeUndefined()
 
     display.setSort({
-      type: 'basePair',
+      field: 'base',
       pos: 100,
       refName: 'ctgA',
     })
@@ -656,10 +656,9 @@ describe('ordering controls in chain mode', () => {
   test('the sort tag leaves the fetch key when chain mode drops it', () => {
     const display = createDisplay()
     display.setSort({
-      type: 'tag',
+      field: 'tags.HP',
       pos: 50,
       refName: 'ctgA',
-      tag: 'HP',
     })
     expect(display.rpcProps().sortTag).toBe('HP')
 
@@ -670,15 +669,15 @@ describe('ordering controls in chain mode', () => {
   test('a sort the fetched arrays answer leaves the fetch key alone', () => {
     const display = createDisplay()
     const fetchKey = JSON.stringify(display.rpcProps())
-    for (const type of ['basePair', 'mapq', 'insertion'] as const) {
-      display.setSort({ type, pos: 50, refName: 'ctgA', within: 10 })
+    for (const field of ['base', 'mapq', 'insertion'] as const) {
+      display.setSort({ field, pos: 50, refName: 'ctgA', within: 10 })
       expect(JSON.stringify(display.rpcProps())).toBe(fetchKey)
     }
     display.setSort('svSignal')
     expect(JSON.stringify(display.rpcProps())).toBe(fetchKey)
-    display.setSort({ type: 'tag', pos: 50, refName: 'ctgA', tag: 'HP' })
+    display.setSort({ field: 'tags.HP', pos: 50, refName: 'ctgA' })
     const tagKey = JSON.stringify(display.rpcProps())
-    display.setSort({ type: 'tag', pos: 900, refName: 'ctgA', tag: 'HP' })
+    display.setSort({ field: 'tags.HP', pos: 900, refName: 'ctgA' })
     expect(JSON.stringify(display.rpcProps())).toBe(tagKey)
   })
 

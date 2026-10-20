@@ -865,18 +865,18 @@ const ARC_COLORS: Record<string, string> = Object.fromEntries([
 // The alignments 'Sort by...' radios (menus/sortGroup.ts). The strand row is
 // titled from the track's noun, as the height submenus are.
 // Spelled as menus/sortGroup.ts builds each radio, noun included.
-function sortByLabel(type: string, noun: string) {
-  return type === 'length'
+function sortByLabel(field: string, noun: string) {
+  return field === 'length'
     ? `Longest ${noun}s first`
-    : type === 'spliced'
+    : field === 'spliced'
       ? `Spliced ${noun}s first`
-      : type === 'split'
+      : field === 'split'
         ? `Split ${noun}s first`
-        : type === 'basePair'
+        : field === 'base'
           ? 'Base pair'
-          : type === 'strand'
+          : field === 'strand'
             ? `${capitalizeFirst(noun)} strand`
-            : type === 'tag'
+            : field.startsWith('tags.')
               ? 'Tag...'
               : undefined
 }
@@ -888,9 +888,8 @@ const SORT_NOTES: Record<string, string> = {
     'Gives every read whose CIGAR carries a skip the lowest rows, so the junction-spanning reads sit together at the top of a deep pileup.',
   split:
     'Gives the reads aligned in pieces the lowest rows, so the reads crossing a breakpoint sit together at the top of a deep pileup.',
-  basePair: CENTRE_LINE_NOTE,
+  base: CENTRE_LINE_NOTE,
   strand: CENTRE_LINE_NOTE,
-  tag: CENTRE_LINE_NOTE,
 }
 
 // 'Legend' and 'Coverage' are spelled identically in the alignments
@@ -1611,13 +1610,15 @@ export const trackFields: Record<string, FieldRecipe> = {
       : undefined
   },
   sort: (value, { displayType, noun }) => {
-    const type =
-      typeof value === 'string' ? value : asString(asRecord(value)?.type)
-    const label = type ? sortByLabel(type, noun) : undefined
+    const field =
+      typeof value === 'string' ? value : asString(asRecord(value)?.field)
+    const label = field ? sortByLabel(field, noun) : undefined
     return label && isAlignmentsOnlyField(displayType)
       ? {
           path: `${TRACK_MENU} → Sort by... → ${label}`,
-          note: SORT_NOTES[type!],
+          note: field!.startsWith('tags.')
+            ? CENTRE_LINE_NOTE
+            : SORT_NOTES[field!],
         }
       : undefined
   },

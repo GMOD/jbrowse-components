@@ -87,6 +87,7 @@ import {
   paintsModifications,
   workerColorBy,
 } from '../shared/colorSchemes.ts'
+import { facetTag } from '../shared/facetLabels.ts'
 import {
   facetForUnit,
   facetValueNotices,
@@ -217,7 +218,7 @@ import type { ReadSlot } from '../shared/readSlot.ts'
 import type {
   ArcColorField,
   BaseLayer,
-  ColumnSortType,
+  ColumnSortField,
   SortColumn,
   SortSetting,
 } from '../shared/types'
@@ -2514,12 +2515,10 @@ export default function stateModelFactory(
         /**
          * #getter
          * The worker receives the tag name alone, so `rpcProps` re-notifies when
-         * the tag changes, not when the sort position or a non-tag type flips.
+         * the tag changes, not when the sort position or a non-tag field flips.
          */
         get sortTag() {
-          return self.sortColumn?.type === 'tag'
-            ? self.sortColumn.tag
-            : undefined
+          return facetTag(self.sortColumn?.field)
         },
 
         /**
@@ -3021,7 +3020,7 @@ export default function stateModelFactory(
           setConf(
             self,
             'sort',
-            typeof sort === 'string' ? { type: sort } : sort,
+            typeof sort === 'string' ? { field: sort } : sort,
           )
         }
         return {
@@ -3102,7 +3101,7 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          sortAtCenterLine(type: ColumnSortType, tag?: string) {
+          sortAtCenterLine(field: ColumnSortField) {
             const view = self.view
             const { centerLineInfo } = view
             // Every column sort ranks by membership at `pos`
@@ -3110,14 +3109,13 @@ export default function stateModelFactory(
             view.setShowCenterLine(true)
             if (centerLineInfo && !centerLineInfo.oob) {
               writeSort({
-                type,
+                field,
                 // `offset` counts bp INTO the region, the worker compares
                 // absolute `readPositions`, and a reversed region mirrors the
                 // base drawn here: go through `basePaintedAt`, as the
                 // context-menu sort does.
                 pos: basePaintedAt(centerLineInfo, centerLineInfo.offset),
                 refName: centerLineInfo.refName,
-                tag,
               })
             } else {
               getNotificationSink(self).notify(

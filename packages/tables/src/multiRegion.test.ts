@@ -130,14 +130,14 @@ test('regions on two contigs lay out on their own, and a base sort across them w
   })
   expect(new Set(both.reads.key).size).toBe(both.reads.key.length)
 
-  const sort = { type: 'basePair', pos: 1500, refName: 'ctgA' }
+  const sort = { field: 'base', pos: 1500, refName: 'ctgA' }
   const sorted = await engine.alignments({
     ...without(WGSIM),
     regions,
     display: { sort },
   })
   expect(sorted.warnings).toEqual([
-    'the sort by basePair at ctgA:1500 is dropped: the regions with reads span several contigs (ctgA, ctgB), so the reads lay out by position',
+    'the sort by base at ctgA:1500 is dropped: the regions with reads span several contigs (ctgA, ctgB), so the reads lay out by position',
   ])
   expect(sorted.reads.row).toEqual(both.reads.row)
   const one = await engine.alignments({
@@ -155,10 +155,10 @@ test('a sort no region with reads holds warns', async () => {
       { refName: 'ctgA', start: 1000, end: 2000 },
       { refName: 'ctgA', start: 3000, end: 4000 },
     ],
-    display: { sort: { type: 'basePair', pos: 2500 } },
+    display: { sort: { field: 'base', pos: 2500 } },
   })
   expect(t.warnings).toEqual([
-    'the sort by basePair at ctgA:2500 is dropped: no region with reads holds position 2500, so the reads lay out by position',
+    'the sort by base at ctgA:2500 is dropped: no region with reads holds position 2500, so the reads lay out by position',
   ])
 })
 
@@ -232,7 +232,7 @@ test('a chain across two regions keeps one row, and a sort under it warns', asyn
       { refName: 'ctgA', start: 18000, end: 25000 },
       { refName: 'ctgA', start: 25000, end: 32000 },
     ],
-    display: { unit: 'chain', sort: { type: 'length' } },
+    display: { unit: 'chain', sort: { field: 'length' } },
   })
   const rows = new Map<string, Set<number>>()
   t.reads.name.forEach((name, i) => {

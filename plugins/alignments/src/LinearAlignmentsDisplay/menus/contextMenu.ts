@@ -14,6 +14,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
+import { TAG_FIELD_PREFIX, facetTag } from '../../shared/facetLabels.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
 import {
   buildPairedEndMateFeature,
@@ -40,7 +41,7 @@ import { queueSortByTagDialog } from './sortGroup.ts'
 
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type {
-  ColumnSortType,
+  ColumnSortField,
   ReadFilter,
   SortColumn,
 } from '../../shared/types.ts'
@@ -121,7 +122,7 @@ function sortAndDetailsSubMenu({
   block,
   label,
   sortLabel,
-  sortType,
+  sortField,
   position,
   detailsLabel,
   openDetails,
@@ -131,7 +132,7 @@ function sortAndDetailsSubMenu({
   block: ResolvedBlock
   label: string
   sortLabel: string
-  sortType: ColumnSortType
+  sortField: ColumnSortField
   position: number
   detailsLabel: string
   openDetails: () => void
@@ -154,7 +155,7 @@ function sortAndDetailsSubMenu({
             icon: SwapVertIcon,
             onClick: () => {
               self.setSort({
-                type: sortType,
+                field: sortField,
                 pos: position,
                 refName: block.refName,
               })
@@ -295,7 +296,7 @@ export function getHitMenuItems(
           sortLabel: isInterbase
             ? `Sort by ${typeLabel.toLowerCase()} at position`
             : 'Sort by base at position',
-          sortType: isInterbaseType(cigarHit.type) ? cigarHit.type : 'basePair',
+          sortField: isInterbaseType(cigarHit.type) ? cigarHit.type : 'base',
           // An interbase mark IS its position, so the sort anchors on the mark.
           // A base-pair sort anchors on the clicked COLUMN instead: a deletion
           // or skip reports `position` as the op's start, which for a 5kb
@@ -344,7 +345,7 @@ export function getHitMenuItems(
           block,
           label: `Coverage ${typeLabel}`,
           sortLabel: `Sort by ${typeLabel.toLowerCase()} at position`,
-          sortType: indicatorHit.indicatorType,
+          sortField: indicatorHit.indicatorType,
           position: indicatorHit.position,
           detailsLabel: `Open ${typeLabel.toLowerCase()} details`,
           openDetails: () => {
@@ -379,7 +380,7 @@ export function getHitMenuItems(
           block,
           label: 'Coverage',
           sortLabel: 'Sort by base at position',
-          sortType: 'basePair',
+          sortField: 'base',
           position: coverageHit.position,
           detailsLabel: 'Open coverage details',
           openDetails: () => {
@@ -478,13 +479,13 @@ export function getContextMenuItems(
           {
             label: 'Read strand',
             onClick: () => {
-              self.setSort({ type: 'strand', pos, refName })
+              self.setSort({ field: 'strand', pos, refName })
             },
           },
           {
             label: 'Base pair',
             onClick: () => {
-              self.setSort({ type: 'basePair', pos, refName })
+              self.setSort({ field: 'base', pos, refName })
             },
           },
           {
@@ -492,11 +493,13 @@ export function getContextMenuItems(
             onClick: () => {
               queueSortByTagDialog(
                 self,
-                self.sortColumn?.type === 'tag'
-                  ? self.sortColumn.tag
-                  : undefined,
+                facetTag(self.sortColumn?.field),
                 tag => {
-                  self.setSort({ type: 'tag', pos, refName, tag })
+                  self.setSort({
+                    field: `${TAG_FIELD_PREFIX}${tag}`,
+                    pos,
+                    refName,
+                  })
                 },
               )
             },

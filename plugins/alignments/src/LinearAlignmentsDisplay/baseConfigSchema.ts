@@ -97,7 +97,9 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot sort
-     * The pileup's row order: a whole-window order (`position`, `length`, `spliced`, `split`) or a column sort at one base (`{ type: "strand", pos, refName }`).
+     * The pileup's row order by one `field`: a whole-window order
+     * (`position`, `length`, `spliced`, `split`, `svSignal`) or a column sort
+     * at one base (`{ field: "strand", pos, refName }`).
      */
     sort: alignmentsSortConfigSchema,
     /**

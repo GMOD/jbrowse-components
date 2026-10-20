@@ -66,7 +66,7 @@ async function reshapeToTwoRegions(page: Page, sort: boolean) {
     display.colorByField('strand')
     if (doSort) {
       display.setSort({
-        type: 'strand',
+        field: 'strand',
         pos: 34600,
         refName: 'ctgA',
       })

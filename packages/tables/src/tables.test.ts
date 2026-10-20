@@ -575,7 +575,7 @@ test('the display\u2019s sort object orders the rows', async () => {
   const site = plain.mismatches.position[0]!
   const sorted = await engine.alignments({
     ...BAM,
-    display: { sort: { type: 'basePair', pos: site } },
+    display: { sort: { field: 'base', pos: site } },
   })
   const rowOf = (t: typeof sorted, i: number) => t.reads.row[i]!
   const bases = new Map<number, string>()
@@ -599,7 +599,7 @@ test('the display\u2019s sort object orders the rows', async () => {
   // the length order lays the longest reads out first, by their clipped extent
   const byLength = await engine.alignments({
     ...BAM,
-    display: { sort: { type: 'length' } },
+    display: { sort: { field: 'length' } },
   })
   const lengths = byLength.reads.start.map((s, i) => byLength.reads.end[i]! - s)
   const top = [...lengths].sort((a, b) => b - a)[

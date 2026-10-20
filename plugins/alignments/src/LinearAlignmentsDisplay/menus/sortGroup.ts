@@ -12,7 +12,7 @@ import {
 import { groupByRadioMenuItem } from './groupByMenu.ts'
 
 import type {
-  ColumnSortType,
+  ColumnSortField,
   LayoutOrder,
   SortColumn,
   SortSetting,
@@ -28,7 +28,7 @@ interface SortMenuModel {
   sortColumn?: SortColumn
   layoutOrder: LayoutOrder
   setSort: (sort: SortSetting) => void
-  sortAtCenterLine: (type: ColumnSortType, tag?: string) => void
+  sortAtCenterLine: (field: ColumnSortField) => void
 }
 
 // One `sort` slot, so a single radio group. "Start location" is the unsorted
@@ -49,7 +49,7 @@ interface SortMenuModel {
 export type SortMode =
   | LayoutOrder
   | 'strand'
-  | 'basePair'
+  | 'base'
   | 'mapq'
   | 'pairOrientation'
   | 'tag'
@@ -61,22 +61,21 @@ const ALL_SORT_MODES: SortMode[] = [
   'split',
   'svSignal',
   'strand',
-  'basePair',
+  'base',
   'mapq',
   'pairOrientation',
   'tag',
 ]
 
 function getSortMode(model: SortMenuModel): SortMode {
-  const type = model.sortColumn?.type
-  return type === undefined
+  const field = model.sortColumn?.field
+  return field === undefined
     ? model.layoutOrder
-    : type === 'strand' ||
-        type === 'tag' ||
-        type === 'mapq' ||
-        type === 'pairOrientation'
-      ? type
-      : 'basePair'
+    : facetTag(field) !== undefined
+      ? 'tag'
+      : field === 'strand' || field === 'mapq' || field === 'pairOrientation'
+        ? field
+        : 'base'
 }
 
 export function getSortMenuItem(
@@ -102,8 +101,7 @@ export function getSortMenuItem(
   // Name the tag once one is picked ("Tag (HP)..."), like the color menu's tag
   // radio: tag is the only mode whose choice has a parameter, and it was
   // otherwise invisible without reopening the dialog.
-  const sortTag =
-    model.sortColumn?.type === 'tag' ? model.sortColumn.tag : undefined
+  const sortTag = facetTag(model.sortColumn?.field)
   // Rows that only write an ordering keep the menu open by their radio type;
   // `tag` opens a dialog, so it passes false — the one asymmetry in the group,
   // and the only thing spelled out per row.
@@ -138,8 +136,8 @@ export function getSortMenuItem(
     strand: radio('strand', `${capitalizeFirst(noun)} strand`, () => {
       model.sortAtCenterLine('strand')
     }),
-    basePair: radio('basePair', 'Base pair', () => {
-      model.sortAtCenterLine('basePair')
+    base: radio('base', 'Base pair', () => {
+      model.sortAtCenterLine('base')
     }),
     mapq: radio('mapq', 'Mapping quality', () => {
       model.sortAtCenterLine('mapq')
@@ -152,7 +150,7 @@ export function getSortMenuItem(
       sortTag ? `Tag (${sortTag})...` : 'Tag...',
       () => {
         queueSortByTagDialog(model, sortTag, tag => {
-          model.sortAtCenterLine('tag', tag)
+          model.sortAtCenterLine(`${TAG_FIELD_PREFIX}${tag}`)
         })
       },
       false,

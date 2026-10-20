@@ -120,9 +120,9 @@ function symbolicCall(
   inserted = 1,
 ): VariantCall | undefined {
   return alt === '<DEL>'
-    ? { column: { type: 'basePair', pos }, carried: { base: '*' } }
+    ? { column: { field: 'base', pos }, carried: { base: '*' } }
     : alt === '<INS>'
-      ? { column: { type: 'insertion', pos }, carried: { inserted } }
+      ? { column: { field: 'insertion', pos }, carried: { inserted } }
       : undefined
 }
 

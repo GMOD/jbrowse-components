@@ -121,7 +121,7 @@ describe("batch's one-row junction", () => {
 })
 
 describe("batch's per-record sort", () => {
-  const sortAt = { type: 'insertion', pos: 3000 } as const
+  const sortAt = { field: 'insertion', pos: 3000 } as const
   const center = { refName: 'chr3', assemblyName: 'hg38', offset: 2960 }
 
   function sortableView() {
@@ -163,7 +163,7 @@ describe("batch's per-record sort", () => {
     const { view, calls } = sortableView()
     await applyDisplayOpts(view, 't', 'alignments', ['sort:strand'], sortAt)
     expect(calls[0]).toMatchObject({
-      sort: { type: 'strand' },
+      sort: { field: 'strand' },
       heightMode: 'grow',
       growMaxHeight: 250,
     })

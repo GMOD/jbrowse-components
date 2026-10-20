@@ -1560,7 +1560,7 @@ export const svSpecs: ScreenshotSpec[] = [
               pileup: { readHeight: 3 },
               // sort reads by the base at the screen-center column
               sort: {
-                type: 'basePair',
+                field: 'base',
                 pos: 122836434,
                 refName: 'chr10',
               },
@@ -1646,7 +1646,7 @@ export const svSpecs: ScreenshotSpec[] = [
               pileup: { readHeight: 5 },
               forceLoad: true,
               sort: {
-                type: 'basePair',
+                field: 'base',
                 pos: 165755150,
                 refName: 'chr5',
               },
@@ -1661,7 +1661,7 @@ export const svSpecs: ScreenshotSpec[] = [
               pileup: { readHeight: 5 },
               forceLoad: true,
               sort: {
-                type: 'basePair',
+                field: 'base',
                 pos: 165755150,
                 refName: 'chr5',
               },

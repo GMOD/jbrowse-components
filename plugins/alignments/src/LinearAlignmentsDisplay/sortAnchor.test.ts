@@ -58,7 +58,7 @@ function createDisplay({
 test('the sort anchors at an absolute genomic coordinate', () => {
   const { display, view } = createDisplay({ start: 1000, end: 2000 })
 
-  display.sortAtCenterLine('basePair')
+  display.sortAtCenterLine('base')
 
   expect(view.centerLineInfo!.offset).toBeCloseTo(400)
   expect(display.sortColumn?.pos).toBe(1400)
@@ -74,7 +74,7 @@ test('a reversed region anchors on the base drawn under the center line', () => 
     reversed: true,
   })
 
-  display.sortAtCenterLine('basePair')
+  display.sortAtCenterLine('base')
 
   expect(display.sortColumn?.pos).toBe(1599)
 })
@@ -82,7 +82,7 @@ test('a reversed region anchors on the base drawn under the center line', () => 
 test('a region starting at zero is unaffected', () => {
   const { display } = createDisplay({ start: 0, end: 50_000 })
 
-  display.sortAtCenterLine('basePair')
+  display.sortAtCenterLine('base')
 
   expect(display.sortColumn?.pos).toBe(400)
 })
@@ -112,7 +112,7 @@ test.each(['position', 'length', 'spliced'] as const)(
   'setSort(%s) writes the order and drops the column sort',
   order => {
     const { display } = createDisplay({ start: 0, end: 50_000 })
-    display.sortAtCenterLine('basePair')
+    display.sortAtCenterLine('base')
 
     display.setSort(order)
 
@@ -121,10 +121,10 @@ test.each(['position', 'length', 'spliced'] as const)(
   },
 )
 
-test('a string sort is the type, and reads as the layout order', () => {
-  // the shorthand lifts on the way in, so the snapshot type does not name it
+test('a string sort is the field, and reads as the layout order', () => {
+  // the shorthand lifts on the way in, so the snapshot field does not name it
   const node = alignmentsSortConfigSchema.create('spliced' as never)
-  expect(readConfObject(node, 'type')).toBe('spliced')
+  expect(readConfObject(node, 'field')).toBe('spliced')
   expect(readConfObject(node, 'pos')).toBeUndefined()
 
   const { display } = createDisplay({ start: 0, end: 50_000 })

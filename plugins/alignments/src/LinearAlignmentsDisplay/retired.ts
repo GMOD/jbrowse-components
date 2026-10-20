@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { retiredScaleSpellings } from '@jbrowse/wiggle-core'
 
+import { TAG_FIELD_PREFIX } from '../shared/facetLabels.ts'
 import {
   baseAlignmentsFilterConfigSchema,
   readFilterMembers,
@@ -220,9 +221,9 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
 
 // v4 named a sort by its menu label and counted the position from 1; a
 // `Start location` sort was the default order and names nothing here.
-const V4_SORT_TYPES: Record<string, string> = {
+const V4_SORT_FIELDS: Record<string, string> = {
   'Read strand': 'strand',
-  'Base pair': 'basePair',
+  'Base pair': 'base',
   tag: 'tag',
 }
 
@@ -231,9 +232,15 @@ function sortSlot(value: unknown): DisplayEntry {
     return {}
   }
   const { type, pos, refName, tag } = value
-  const sortType = V4_SORT_TYPES[String(type)]
-  return sortType && typeof pos === 'number' && typeof refName === 'string'
-    ? { sort: { type: sortType, pos: pos - 1, refName, tag } }
+  const v5 = V4_SORT_FIELDS[String(type)]
+  const field =
+    v5 !== 'tag'
+      ? v5
+      : typeof tag === 'string'
+        ? `${TAG_FIELD_PREFIX}${tag}`
+        : undefined
+  return field && typeof pos === 'number' && typeof refName === 'string'
+    ? { sort: { field, pos: pos - 1, refName } }
     : {}
 }
 

@@ -147,8 +147,12 @@ export type {
 } from './RenderAlignmentDataRPC/types.ts'
 export type { ChainedByGroup } from './LinearAlignmentsDisplay/chainFields.ts'
 export type { HoverCoverageBand } from './LinearAlignmentsDisplay/model.ts'
-export { SORT_TYPES } from './shared/types.ts'
-export type { LayoutOrder, SortSetting } from './shared/types.ts'
+export { SORT_FIELDS } from './shared/types.ts'
+export type {
+  ColumnSortField,
+  LayoutOrder,
+  SortSetting,
+} from './shared/types.ts'
 export type {
   BakedColorScale,
   NumericExtent,

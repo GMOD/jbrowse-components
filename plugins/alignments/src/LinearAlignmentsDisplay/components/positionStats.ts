@@ -289,7 +289,7 @@ function insertionReadsNear(
  * `data` does not reach the column.
  */
 export function nonReferenceAt(
-  { type, pos, within = 0 }: VariantSortColumn,
+  { field, pos, within = 0 }: VariantSortColumn,
   data: WorkerPileupData,
   allele?: VariantAllele,
 ) {
@@ -298,7 +298,7 @@ export function nonReferenceAt(
   if (idx < 0 || idx >= coverageDepths.length) {
     return undefined
   }
-  if (type === 'insertion') {
+  if (field === 'insertion') {
     const minInsertion =
       allele && 'minInsertion' in allele ? allele.minInsertion : undefined
     return {

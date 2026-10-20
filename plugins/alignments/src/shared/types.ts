@@ -207,6 +207,9 @@ export interface ReadFilter {
   split?: CategoryFilter
 }
 
+// `pairing` sections reads but filters none: it has several levels, and a
+// filter over one would be the `{ field, oneOf }` shorthand GRAMMAR_OF_GRAPHICS
+// declines.
 export const READ_CATEGORY_KEYS = [
   'svSignal',
   'alone',
@@ -218,7 +221,9 @@ export type ReadCategoryKey = (typeof READ_CATEGORY_KEYS)[number]
 
 // The read dimensions a facet names, each with its own partitioner
 // (shared/groupFeatures.ts). Any other `field` is a tag (`tags.HP`) or a
-// feature field.
+// feature field. `alone` filters but sections nothing: each window judges it
+// on its own, so a read can be alone in two windows and its section would move
+// as regions load.
 export const READ_DIMENSIONS = [
   'strand',
   'firstOfPairStrand',
@@ -277,28 +282,37 @@ export const LAYOUT_ORDERS = [
 ] as const
 export type LayoutOrder = (typeof LAYOUT_ORDERS)[number]
 
-// The orders that rank the reads over one column, `pos` on `refName`: by
-// strand, by the base there, by a tag's value, by mapping quality, by pair
-// orientation, or by the interbase mark there.
-export const COLUMN_SORT_TYPES = [
+// The fields that rank the reads over one column, `pos` on `refName`: strand,
+// the base there, mapping quality, pair orientation, the interbase mark there,
+// or a SAM tag (`tags.HP`), spelt as `color` and `facet` spell a tag.
+export const COLUMN_SORT_FIELDS = [
   'strand',
-  'basePair',
-  'tag',
+  'base',
   'mapq',
   'pairOrientation',
   ...INTERBASE_TYPE_NAMES,
 ] as const
-export type ColumnSortType = (typeof COLUMN_SORT_TYPES)[number]
+export type ColumnSortField =
+  | (typeof COLUMN_SORT_FIELDS)[number]
+  | `tags.${string}`
 
-// Every value of the `sort` slot's `type`, one radio group in the menu.
-export const SORT_TYPES = [...LAYOUT_ORDERS, ...COLUMN_SORT_TYPES] as const
-export type SortType = (typeof SORT_TYPES)[number]
+// Every named value of the `sort` slot's `field`; a `tags.XX` field joins them.
+export const SORT_FIELDS = [...LAYOUT_ORDERS, ...COLUMN_SORT_FIELDS] as const
+export type SortField = LayoutOrder | ColumnSortField
+
+export function isColumnSortField(field: string): field is ColumnSortField {
+  const named: readonly string[] = COLUMN_SORT_FIELDS
+  return named.includes(field) || /^tags\.[A-Za-z][A-Za-z0-9]$/.test(field)
+}
+
+export function isSortField(field: string): field is SortField {
+  return isLayoutOrder(field) || isColumnSortField(field)
+}
 
 export interface SortColumn {
-  type: ColumnSortType
+  field: ColumnSortField
   pos: number
   refName: string
-  tag?: string
   within?: number
 }
 

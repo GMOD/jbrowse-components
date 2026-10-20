@@ -113,8 +113,8 @@ function makeModel(
       filterCalls.push(filterBy)
       model.readFilter = filterBy
     },
-    setSort(arg: { type: string; pos: number; refName: string }) {
-      sortCalls.push([arg.type, arg.pos, arg.refName])
+    setSort(arg: { field: string; pos: number; refName: string }) {
+      sortCalls.push([arg.field, arg.pos, arg.refName])
     },
     selectFeature(feature: Feature) {
       selected.push(feature)
@@ -180,7 +180,7 @@ test('a base-pair cigar hit sorts by base at that position', () => {
     },
   })
   firstSubMenuItem(run(model)[0]).onClick()
-  expect(model.sortCalls).toEqual([['basePair', 42, 'ctgA']])
+  expect(model.sortCalls).toEqual([['base', 42, 'ctgA']])
 })
 
 // The menu closes (closeContextMenu) before the clicked item's callback runs,
@@ -198,7 +198,7 @@ test('sort still fires when the hit is cleared before the click', () => {
   const item = firstSubMenuItem(run(model)[0])
   model.contextMenuHit = undefined
   item.onClick()
-  expect(model.sortCalls).toEqual([['basePair', 42, 'ctgA']])
+  expect(model.sortCalls).toEqual([['base', 42, 'ctgA']])
 })
 
 // A deletion/skip reports `position` as the op's START, which for a 5kb
@@ -217,7 +217,7 @@ describe('a gap cigar hit sorts at the clicked column, not the gap start', () =>
       genomicPos: 30000,
     })
     firstSubMenuItem(run(model)[0]).onClick()
-    expect(model.sortCalls).toEqual([['basePair', 30000, 'ctgA']])
+    expect(model.sortCalls).toEqual([['base', 30000, 'ctgA']])
   })
 
   test('skip', () => {
@@ -231,7 +231,7 @@ describe('a gap cigar hit sorts at the clicked column, not the gap start', () =>
       genomicPos: 550,
     })
     firstSubMenuItem(run(model)[0]).onClick()
-    expect(model.sortCalls).toEqual([['basePair', 550, 'ctgA']])
+    expect(model.sortCalls).toEqual([['base', 550, 'ctgA']])
   })
 
   // The two "sort by base pair" rows a gap right-click puts in one menu — the
@@ -253,8 +253,8 @@ describe('a gap cigar hit sorts at the clicked column, not the gap start', () =>
       .find(i => i.label === 'Base pair')!
       .onClick()
     expect(model.sortCalls).toEqual([
-      ['basePair', 30000, 'ctgA'],
-      ['basePair', 30000, 'ctgA'],
+      ['base', 30000, 'ctgA'],
+      ['base', 30000, 'ctgA'],
     ])
   })
 })
@@ -272,7 +272,7 @@ test('a mismatch still sorts at its own base', () => {
     genomicPos: 42,
   })
   firstSubMenuItem(run(model)[0]).onClick()
-  expect(model.sortCalls).toEqual([['basePair', 42, 'ctgA']])
+  expect(model.sortCalls).toEqual([['base', 42, 'ctgA']])
 })
 
 test('an interbase (insertion) cigar hit sorts by the interbase type', () => {
@@ -331,7 +331,7 @@ describe('a coverage hit', () => {
       'Open coverage details',
     ])
     sub[0]!.onClick()
-    expect(model.sortCalls).toEqual([['basePair', 500, 'ctgA']])
+    expect(model.sortCalls).toEqual([['base', 500, 'ctgA']])
   })
 
   // Zoomed out, hitTestCoverage snaps to a significant SNP inside the bin — the
@@ -340,7 +340,7 @@ describe('a coverage hit', () => {
   test('anchors on the snapped bin position, not the raw column', () => {
     const model = makeModel({ coverageHit, genomicPos: 512 })
     firstSubMenuItem(run(model)[0]).onClick()
-    expect(model.sortCalls).toEqual([['basePair', 500, 'ctgA']])
+    expect(model.sortCalls).toEqual([['base', 500, 'ctgA']])
   })
 
   test('sort: false leaves the details reachable on its own', () => {
@@ -397,7 +397,7 @@ test('a read hit offers a "Sort by" submenu anchored at the clicked column', () 
   sortBy.find(i => i.label === 'Base pair')!.onClick()
   expect(model.sortCalls).toEqual([
     ['strand', 150, 'ctgA'],
-    ['basePair', 150, 'ctgA'],
+    ['base', 150, 'ctgA'],
   ])
 })
 

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments displays' pileup row order is one `sort` slot, `AlignmentsSort`: a string names a whole-window order (`position`, `length`, `spliced`, `split`, `svSignal`) and an object a column sort (`{ type, pos, refName, tag }`, with `type` one of `strand`, `basePair`, `tag`, `insertion`, `softclip`, `hardclip`). It replaces `sortedBy` and `layoutOrder`, whose setters cleared each other because the menu is one radio group. `setSort` is the one writer and `sortAtCenterLine` the track menu's; `setSortedBy`, `setSortedByAtPosition` and `setLayoutOrder` go, and the `sortedBy` getter is `sortColumn`. `type` is a closed enum where `sortedBy.type` was a bare string. A v4 session's instance `sortedBy` lifts into `sort`; the v5-beta config keys are not migrated"
+summary: "The alignments displays' pileup row order is one `sort` slot, `AlignmentsSort`: a string names a whole-window order (`position`, `length`, `spliced`, `split`, `svSignal`) and an object a column sort (`{ type, pos, refName, tag }`, with `type` one of `strand`, `basePair`, `tag`, `insertion`, `softclip`, `hardclip`). It replaces `sortedBy` and `layoutOrder`, whose setters cleared each other because the menu is one radio group. `setSort` is the one writer and `sortAtCenterLine` the track menu's; `setSortedBy`, `setSortedByAtPosition` and `setLayoutOrder` go, and the `sortedBy` getter is `sortColumn`. `type` is a closed enum where `sortedBy.type` was a bare string. A v4 session's instance `sortedBy` lifts into `sort`; the v5-beta config keys are not migrated. Amended 2026-10-20: the member is `field`, spelt as `color` and `facet` spell one, so a tag sort is `tags.HP` and `basePair` is `base`"
 ---
 
 # ADR-224: The alignments row order is one `sort` slot
@@ -54,3 +54,25 @@ order beside `facet` and `color`, and a plot example can stack split reads
 first. Before, the plot refused `{ "sort": "split" }` as a key outside it,
 though the row order is as much a grammar setting as the facet beside it.
 LGVSyntenyDisplay's `sort` joins its plot the same way.
+
+## Amendment (2026-10-20): `sort` names a `field`
+
+`sort.type` becomes `sort.field`, spelling the fields `color` and `facet`
+spell: a tag sort is `{ field: "tags.HP", pos, refName }` where it was
+`{ type: "tag", tag: "HP", ... }`, and the base at a column is `base`, the
+`baseColor` word, where it was `basePair`. The string shorthand names the field
+(`sort: "split"`). `field` is an open string, so the schema refuses a value
+that is neither a listed field nor a `tags.XX` tag (`refuseUnknownSortField`).
+The fields each order admits do not change: a whole-window order is still one
+of `position`, `length`, `spliced`, `split` and `svSignal`, and a column sort
+one of the rest.
+
+- **No `order` or `domain` member.** Each field ranks in its own order (`mapq`
+  highest first, the abnormal pair orientations over LR), and nothing asks to
+  reverse one. Vega-Lite's `order` is the word if one does; the color
+  object's `descending` orders a threshold legend, and is not it.
+- **No whole-window sort by `strand` or `mapq`.** Packed first-fit, a field
+  near 50/50 barely reads as sorted, and `facet` sections it with labels.
+- **v5-beta `sort.type` is not lifted**; a v4 session's `sortedBy` lifts into
+  the new shape, and `jb2export` keeps `sort:basePair` as an alias of
+  `sort:base`.

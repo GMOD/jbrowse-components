@@ -1,5 +1,5 @@
 export interface VariantSortColumn {
-  type: 'basePair' | 'insertion'
+  field: 'base' | 'insertion'
   /** 0-based */
   pos: number
   /**
@@ -11,7 +11,7 @@ export interface VariantSortColumn {
 }
 
 /**
- * What a read carrying a variant's ALT has at its sort column. At a `basePair`
+ * What a read carrying a variant's ALT has at its sort column. At a `base`
  * column, that base, or `*` where the ALT deletes it, in a gap of at least
  * `minDeletion` bases: a read with a few bases missing at the first base of a
  * 30 kb deletion does not carry it. At an `insertion` column, an insertion of
@@ -23,7 +23,7 @@ export type VariantAllele =
 
 /**
  * A VCF record's sort column, and what the ALT it was taken from has there: its
- * base at a `basePair` column (`*` where it deletes that base), the number of
+ * base at a `base` column (`*` where it deletes that base), the number of
  * bases it inserts at an `insertion` one.
  */
 export interface VariantCall {
@@ -56,11 +56,11 @@ function alleleCall(
   }
   return shared === refEnd
     ? {
-        column: { type: 'insertion', pos: start + shared },
+        column: { field: 'insertion', pos: start + shared },
         carried: { inserted: altEnd - shared },
       }
     : {
-        column: { type: 'basePair', pos: start + shared },
+        column: { field: 'base', pos: start + shared },
         carried: { base: shared < altEnd ? alt[shared]! : '*' },
       }
 }

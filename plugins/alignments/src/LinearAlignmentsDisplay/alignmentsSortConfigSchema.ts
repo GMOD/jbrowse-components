@@ -2,29 +2,44 @@ import {
   ConfigurationSchema,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
 
-import { SORT_TYPES, isLayoutOrder } from '../shared/types.ts'
+import {
+  SORT_FIELDS,
+  isColumnSortField,
+  isLayoutOrder,
+  isSortField,
+} from '../shared/types.ts'
 
-import type { LayoutOrder, SortColumn, SortType } from '../shared/types.ts'
+import type { LayoutOrder, SortColumn } from '../shared/types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+function refuseUnknownSortField<S>(snap: S) {
+  const field: unknown = (snap as { field?: unknown } | undefined)?.field
+  if (typeof field === 'string' && !isSortField(field)) {
+    throw new Error(
+      `sort.field "${field}" is none of ${SORT_FIELDS.join(', ')} or a tags.XX tag`,
+    )
+  }
+  return snap
+}
 
 /**
  * #config AlignmentsSort
  * #category display
- * The alignments displays' `sort` setting: the pileup's row order. A
- * whole-window order is a string — `"position"` (by start, the default),
- * `"length"` (widest first), `"spliced"` (reads whose CIGAR has a skip
- * first), `"split"` (reads aligned in pieces first) or `"svSignal"` (the
- * structural-variant evidence first, in tiers: split reads, then reads with
- * an insertion or deletion of 50 bp or more, then paired reads the aligner did
- * not call concordant, each with both ends placed above MAPQ 0, as the
- * `svSignal` filter counts it). A column sort ranks the reads over one base,
- * `pos` (0-based) on `refName`, by `strand`, `basePair`, `mapq` (highest first),
- * `pairOrientation` (the abnormal orientations over LR), `tag` (naming `tag`),
- * or the `insertion`, `softclip` or `hardclip` there, or up to `within` bases
- * either side; the reads not over it lay out by position. On another
- * chromosome a column sort orders by position.
+ * The alignments displays' `sort` setting: the pileup's row order, by the
+ * `field` it ranks the reads on. A whole-window order is a string —
+ * `"position"` (by start, the default), `"length"` (widest first), `"spliced"`
+ * (reads whose CIGAR has a skip first), `"split"` (reads aligned in pieces
+ * first) or `"svSignal"` (the structural-variant evidence first, in tiers:
+ * split reads, then reads with an insertion or deletion of 50 bp or more, then
+ * paired reads the aligner did not call concordant, each with both ends placed
+ * above MAPQ 0, as the `svSignal` filter counts it). A column sort ranks the
+ * reads over one base, `pos` (0-based) on `refName`, by `strand`, `base`,
+ * `mapq` (highest first), `pairOrientation` (the abnormal orientations over
+ * LR), a SAM tag (`tags.HP`, spelt as `color` and `facet` spell one), or the
+ * `insertion`, `softclip` or `hardclip` there, or up to `within` bases either
+ * side; the reads not over it lay out by position. On another chromosome a
+ * column sort orders by position.
  *
  * #example
  * ```js
@@ -33,7 +48,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   sort: { type: 'tag', tag: 'HP', pos: 1999, refName: 'ctgA' },
+ *   sort: { field: 'tags.HP', pos: 1999, refName: 'ctgA' },
  * }
  * ```
  */
@@ -41,14 +56,13 @@ export const alignmentsSortConfigSchema = ConfigurationSchema(
   'AlignmentsSort',
   {
     /**
-     * #slot type
+     * #slot field
      */
-    type: {
-      type: 'stringEnum',
-      model: types.enumeration('AlignmentsSortType', [...SORT_TYPES]),
+    field: {
+      type: 'string',
       defaultValue: 'position',
       description:
-        'position, length, spliced, split or svSignal order the whole window; strand, basePair, mapq, pairOrientation, tag, insertion, softclip or hardclip rank the reads over the column at pos',
+        'position, length, spliced, split or svSignal order the whole window; strand, base, mapq, pairOrientation, a tags.XX tag, insertion, softclip or hardclip rank the reads over the column at pos',
     },
     /**
      * #slot pos
@@ -65,13 +79,6 @@ export const alignmentsSortConfigSchema = ConfigurationSchema(
       description: "a column sort's reference sequence",
     },
     /**
-     * #slot tag
-     */
-    tag: {
-      type: 'maybeString',
-      description: 'the SAM tag a tag sort ranks by',
-    },
-    /**
      * #slot within
      */
     within: {
@@ -80,7 +87,13 @@ export const alignmentsSortConfigSchema = ConfigurationSchema(
         'how many bases either side of pos an insertion, softclip or hardclip sort still ranks a mark',
     },
   },
-  { shorthand: 'type', writes: 'whole', closed: true, plot: true },
+  {
+    shorthand: 'field',
+    writes: 'whole',
+    closed: true,
+    plot: true,
+    preProcessSnapshot: refuseUnknownSortField,
+  },
 )
 
 /**
@@ -94,22 +107,23 @@ export function sortOf(
   canonical: (refName: string) => string,
   fallbackRefName?: string,
 ): { layoutOrder: LayoutOrder; sortColumn: SortColumn | undefined } {
-  const type: SortType = readConfObject(sort, 'type')
+  const field: string = readConfObject(sort, 'field')
   const pos: number | undefined = readConfObject(sort, 'pos')
   const refName: string | undefined =
     readConfObject(sort, 'refName') ?? fallbackRefName
-  return isLayoutOrder(type)
-    ? { layoutOrder: type, sortColumn: undefined }
+  return isLayoutOrder(field)
+    ? { layoutOrder: field, sortColumn: undefined }
     : {
         layoutOrder: 'position',
         sortColumn:
-          pos === undefined || refName === undefined
+          pos === undefined ||
+          refName === undefined ||
+          !isColumnSortField(field)
             ? undefined
             : {
-                type,
+                field,
                 pos,
                 refName: canonical(refName),
-                tag: readConfObject(sort, 'tag'),
                 within: readConfObject(sort, 'within'),
               },
       }

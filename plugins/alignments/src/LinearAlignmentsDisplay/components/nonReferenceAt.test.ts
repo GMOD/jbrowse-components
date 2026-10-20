@@ -27,18 +27,18 @@ test('counts the mismatches at a base over its depth', () => {
     mismatchPositions: Uint32Array.from([95, 95, 95, 96]),
     mismatchBases: Uint8Array.from([67, 67, 84, 71]),
   })
-  expect(nonReferenceAt({ type: 'basePair', pos: 95 }, data)).toEqual({
+  expect(nonReferenceAt({ field: 'base', pos: 95 }, data)).toEqual({
     count: 3,
     depth: 10,
   })
-  expect(nonReferenceAt({ type: 'basePair', pos: 97 }, data)).toEqual({
+  expect(nonReferenceAt({ field: 'base', pos: 97 }, data)).toEqual({
     count: 0,
     depth: 10,
   })
 })
 
 test('counts a deleted read as differing and as spanning', () => {
-  expect(nonReferenceAt({ type: 'basePair', pos: 101 }, pileup())).toEqual({
+  expect(nonReferenceAt({ field: 'base', pos: 101 }, pileup())).toEqual({
     count: 2,
     depth: 10,
   })
@@ -53,23 +53,19 @@ test('counts the insertions ahead of a base', () => {
     interbaseFrequencies: new Uint8Array(2),
     numInsertions: 2,
   })
-  expect(nonReferenceAt({ type: 'insertion', pos: 95 }, data)).toEqual({
+  expect(nonReferenceAt({ field: 'insertion', pos: 95 }, data)).toEqual({
     count: 2,
     depth: 10,
   })
-  expect(nonReferenceAt({ type: 'insertion', pos: 96 }, data)).toEqual({
+  expect(nonReferenceAt({ field: 'insertion', pos: 96 }, data)).toEqual({
     count: 0,
     depth: 10,
   })
 })
 
 test('answers nothing for a column the data does not reach', () => {
-  expect(
-    nonReferenceAt({ type: 'basePair', pos: 110 }, pileup()),
-  ).toBeUndefined()
-  expect(
-    nonReferenceAt({ type: 'basePair', pos: 89 }, pileup()),
-  ).toBeUndefined()
+  expect(nonReferenceAt({ field: 'base', pos: 110 }, pileup())).toBeUndefined()
+  expect(nonReferenceAt({ field: 'base', pos: 89 }, pileup())).toBeUndefined()
 })
 
 test('given the allele, counts the reads with that base and no other', () => {
@@ -78,7 +74,7 @@ test('given the allele, counts the reads with that base and no other', () => {
     mismatchBases: Uint8Array.from([67, 67, 84, 71]),
   })
   const at = (base: string, pos = 95) =>
-    nonReferenceAt({ type: 'basePair', pos }, data, { base })
+    nonReferenceAt({ field: 'base', pos }, data, { base })
   expect(at('C')).toEqual({ count: 2, depth: 10 })
   expect(at('T')).toEqual({ count: 1, depth: 10 })
   expect(at('G')).toEqual({ count: 0, depth: 10 })
@@ -94,7 +90,7 @@ test("given a deletion's least length, counts the gaps that long and keeps every
     gapPositions: Uint32Array.from([101, 104, 101, 2101]),
   })
   const at = (minDeletion?: number) =>
-    nonReferenceAt({ type: 'basePair', pos: 101 }, data, {
+    nonReferenceAt({ field: 'base', pos: 101 }, data, {
       base: '*',
       minDeletion,
     })
@@ -115,7 +111,7 @@ test('given an insertion allele, counts each read with one long enough, near eno
     numInsertions: 4,
   })
   const at = (minInsertion: number, within: number) =>
-    nonReferenceAt({ type: 'insertion', pos: 95, within }, data, {
+    nonReferenceAt({ field: 'insertion', pos: 95, within }, data, {
       minInsertion,
     })
   expect(at(150, 0)).toEqual({ count: 0, depth: 10 })

@@ -9,30 +9,30 @@ import type { SortColumn } from '../shared/types.ts'
 import type { WorkerPileupData } from './types.ts'
 
 test.each([
-  ['SNV', 'G', ['A'], { type: 'basePair', pos: 100 }],
-  ['MNV past a shared prefix', 'ACG', ['ACT'], { type: 'basePair', pos: 102 }],
-  ['anchored deletion', 'ACGT', ['A'], { type: 'basePair', pos: 101 }],
-  ['unanchored deletion', 'ACGT', ['T'], { type: 'basePair', pos: 100 }],
-  ['anchored insertion', 'A', ['ACCC'], { type: 'insertion', pos: 101 }],
+  ['SNV', 'G', ['A'], { field: 'base', pos: 100 }],
+  ['MNV past a shared prefix', 'ACG', ['ACT'], { field: 'base', pos: 102 }],
+  ['anchored deletion', 'ACGT', ['A'], { field: 'base', pos: 101 }],
+  ['unanchored deletion', 'ACGT', ['T'], { field: 'base', pos: 100 }],
+  ['anchored insertion', 'A', ['ACCC'], { field: 'insertion', pos: 101 }],
   [
     'insertion padded to a longer REF',
     'AC',
     ['ATC'],
-    { type: 'insertion', pos: 101 },
+    { field: 'insertion', pos: 101 },
   ],
   [
     'deletion padded to a longer REF',
     'ACGT',
     ['AT'],
-    { type: 'basePair', pos: 101 },
+    { field: 'base', pos: 101 },
   ],
-  ['delins', 'ACG', ['AT'], { type: 'basePair', pos: 101 }],
-  ['lower-case alleles', 'ctt', ['ct'], { type: 'basePair', pos: 101 }],
+  ['delins', 'ACG', ['AT'], { field: 'base', pos: 101 }],
+  ['lower-case alleles', 'ctt', ['ct'], { field: 'base', pos: 101 }],
   [
     'leftmost of several ALTs',
     'AC',
     ['ACT', 'GC'],
-    { type: 'basePair', pos: 100 },
+    { field: 'base', pos: 100 },
   ],
 ])('%s', (_name, ref, alts, expected) => {
   expect(variantSortColumn(100, ref, alts)).toEqual(expected)
@@ -99,7 +99,7 @@ test('an anchored deletion sorts its carriers first, and its anchor does not', (
   const data = withDeletion(101, 104)
   expect(topRows(data, sortColumnFor('ACGT', 'A'))).toEqual(CARRIERS)
   expect(
-    topRows(data, { type: 'basePair', pos: 100, refName: 'ctgA' }),
+    topRows(data, { field: 'base', pos: 100, refName: 'ctgA' }),
   ).not.toEqual(CARRIERS)
 })
 
@@ -113,7 +113,7 @@ test('an insertion sorts its carriers first, and its anchor does not', () => {
   const data = withInsertion(101)
   expect(topRows(data, sortColumnFor('A', 'ACCC'))).toEqual(CARRIERS)
   expect(
-    topRows(data, { type: 'insertion', pos: 100, refName: 'ctgA' }),
+    topRows(data, { field: 'insertion', pos: 100, refName: 'ctgA' }),
   ).not.toEqual(CARRIERS)
 })
 

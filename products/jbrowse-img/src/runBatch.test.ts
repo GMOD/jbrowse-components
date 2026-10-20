@@ -297,7 +297,7 @@ describe('runBatch', () => {
     expect(mockRenderRegion.mock.calls[0]![0]).toMatchObject({
       mode: 'linear',
       loc: 'chr1:4950-5053',
-      sortAt: { type: 'basePair', pos: 5000 },
+      sortAt: { field: 'base', pos: 5000 },
       // a read with this deletion has a gap at the column, and is what is counted
       sortAllele: { base: '*' },
       highlight: { refName: 'chr1', start: 5000, end: 5003 },

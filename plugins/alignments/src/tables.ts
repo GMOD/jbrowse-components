@@ -141,6 +141,7 @@ import {
 } from './shared/alignmentsColor.ts'
 import { arcColorFieldOf } from './shared/arcColorOptions.ts'
 import { paintsModifications } from './shared/colorSchemes.ts'
+import { facetTag } from './shared/facetLabels.ts'
 import { sectionOrder, workerFacet } from './shared/groupFeatures.ts'
 import { joinSections } from './shared/joinSections.ts'
 import { keySectionOrder } from './shared/keySectionOrder.ts'
@@ -1290,7 +1291,7 @@ export async function alignmentTables(
       regions.find(r => r.originalRefName === refName)?.refName ?? refName,
     regions[0]!.refName,
   )
-  const sortTag = sortColumn?.type === 'tag' ? sortColumn.tag : undefined
+  const sortTag = facetTag(sortColumn?.field)
   const chain = readConfObject(conf, 'unit') === 'chain'
   const featureHeight: number = readConfObject(conf, ['pileup', 'readHeight'])
   const softClippingAsked: boolean = readConfObject(conf, [
@@ -1556,7 +1557,7 @@ export async function alignmentTables(
     },
     config: fullConfSnapshot(conf),
     warnings: layoutWarnings({
-      sortType: readConfObject(conf.sort, 'type'),
+      sortField: readConfObject(conf.sort, 'field'),
       sortColumn,
       layoutOrder,
       chain,
@@ -1580,7 +1581,7 @@ export async function alignmentTables(
  * as stacks.
  */
 function layoutWarnings({
-  sortType,
+  sortField,
   sortColumn,
   layoutOrder,
   chain,
@@ -1589,7 +1590,7 @@ function layoutWarnings({
   sections,
   regions,
 }: {
-  sortType: string
+  sortField: string
   sortColumn: SortColumn | undefined
   layoutOrder: LayoutOrder
   chain: boolean
@@ -1604,13 +1605,13 @@ function layoutWarnings({
       'the tables lay each facet section out as a stack of rows, so collapseSections is dropped, with the overlap tint it draws',
     )
   }
-  if (!isLayoutOrder(sortType) && !sortColumn) {
-    warnings.add(`the sort by ${sortType} names no pos, so it is dropped`)
+  if (!isLayoutOrder(sortField) && !sortColumn) {
+    warnings.add(`the sort by ${sortField} names no pos, so it is dropped`)
   }
   if (chain) {
     if (sortColumn || layoutOrder !== 'position') {
       warnings.add(
-        `under unit 'chain' the reads lay out by chain, so the sort by ${sortType} is dropped`,
+        `under unit 'chain' the reads lay out by chain, so the sort by ${sortField} is dropped`,
       )
     }
     if (softClippingAsked) {
@@ -1633,7 +1634,7 @@ function layoutWarnings({
             ? `no region with reads is on ${sortColumn.refName}`
             : `no region with reads holds position ${sortColumn.pos}`
       warnings.add(
-        `the sort by ${sortColumn.type} at ${sortColumn.refName}:${sortColumn.pos} is dropped: ${why}, so the reads lay out by position`,
+        `the sort by ${sortColumn.field} at ${sortColumn.refName}:${sortColumn.pos} is dropped: ${why}, so the reads lay out by position`,
       )
     }
   }

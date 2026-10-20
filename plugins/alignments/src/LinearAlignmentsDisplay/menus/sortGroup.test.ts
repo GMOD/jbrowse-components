@@ -1,7 +1,7 @@
 import { getSortMenuItem } from './sortGroup.ts'
 
 import type {
-  ColumnSortType,
+  ColumnSortField,
   LayoutOrder,
   SortColumn,
 } from '../../shared/types.ts'
@@ -32,8 +32,8 @@ function radio(model: ReturnType<typeof makeModel>, label: string) {
   return item
 }
 
-function sorted(type: ColumnSortType): SortColumn {
-  return { type, pos: 100, refName: 'chr1' }
+function sorted(field: ColumnSortField): SortColumn {
+  return { field, pos: 100, refName: 'chr1' }
 }
 
 const LABELS = [
@@ -72,10 +72,10 @@ describe('sort menu radio selection', () => {
 
   test.each([
     ['strand', 'Read strand'],
-    ['basePair', 'Base pair'],
+    ['base', 'Base pair'],
     ['mapq', 'Mapping quality'],
     ['pairOrientation', 'Pair orientation'],
-    ['tag', 'Tag...'],
+    ['tags.HP', 'Tag (HP)...'],
   ] as const)('a %s sort selects "%s"', (type, label) => {
     expect(checkedLabel(makeModel({ sortColumn: sorted(type) }))).toEqual([
       label,
@@ -94,7 +94,7 @@ describe('sort menu radio selection', () => {
   // Like the color menu's tag radio: the tag in use is otherwise invisible
   // without reopening the dialog.
   test('the tag radio names the tag being sorted on', () => {
-    const model = makeModel({ sortColumn: { ...sorted('tag'), tag: 'HP' } })
+    const model = makeModel({ sortColumn: sorted('tags.HP') })
     expect(checkedLabel(model)).toEqual(['Tag (HP)...'])
   })
 
@@ -105,8 +105,8 @@ describe('sort menu radio selection', () => {
       makeModel({ layoutOrder: 'spliced' }),
       makeModel({ layoutOrder: 'split' }),
       makeModel({ sortColumn: sorted('strand') }),
-      makeModel({ sortColumn: sorted('basePair') }),
-      makeModel({ sortColumn: sorted('tag') }),
+      makeModel({ sortColumn: sorted('base') }),
+      makeModel({ sortColumn: sorted('tags.HP') }),
     ]) {
       expect(checkedLabel(model)).toHaveLength(1)
     }
@@ -133,7 +133,7 @@ describe('curated modes', () => {
 
   // Mirrors the group-by radios, which tick "None" for a stored dimension they
   // don't offer: a blank radio group reads as a broken menu.
-  test.each(['basePair', 'tag'] as const)(
+  test.each(['base', 'tags.HP'] as const)(
     'a stored %s sort this menu does not offer falls back to Start location',
     type => {
       const item = getSortMenuItem(makeModel({ sortColumn: sorted(type) }), {
@@ -176,7 +176,7 @@ describe('sort menu writes', () => {
   // when the sort never lands (no valid center line).
   test.each([
     ['Read strand', 'strand'],
-    ['Base pair', 'basePair'],
+    ['Base pair', 'base'],
   ])('%s sorts at the center line without writing the slot', (label, type) => {
     const model = makeModel({ layoutOrder: 'length' })
     radio(model, label).onClick()

@@ -659,7 +659,7 @@ Reads & coloring:
 | ------------------------------ | ---------------------------- | ------------------------------------------------------------------------------------------ |
 | `color:field`                  | `color:strand`               | Color reads by a field (see fields below), or paint them all one CSS color                 |
 | `baseColor:field`              | `baseColor:methylation`      | Draw a per-base layer over the reads, whatever `color:` fills them with (see fields below) |
-| `sort:type` or `sort:type:tag` | `sort:strand`, `sort:tag:RG` | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`)                              |
+| `sort:field` or `sort:tag:TAG` | `sort:strand`, `sort:tag:RG` | Sort reads (`position`, `strand`, `base`, or `tag:<TAG>`)                                  |
 
 The modifiers below choose which reads are drawn. They filter before the
 coverage pipeline as well as before layout, so a filter that removes reads

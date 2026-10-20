@@ -59,15 +59,21 @@ describe('alignments modifiers', () => {
 
   test('sort is returned as an intent (resolved against the view)', () => {
     const { sort, snap } = buildDisplaySnapshot('alignments', ['sort:base'])
-    // `base` normalizes to the layout's `basePair` key so the sort isn't a
-    // silent no-op (the layout only recognizes `basePair`)
-    expect(sort).toEqual({ type: 'basePair', tag: undefined })
+    expect(sort).toEqual({ field: 'base' })
     expect(snap.sort).toBeUndefined()
   })
 
-  test('sort:basePair passes through unchanged', () => {
-    const { sort } = buildDisplaySnapshot('alignments', ['sort:strand'])
-    expect(sort).toEqual({ type: 'strand', tag: undefined })
+  test('sort:basePair is the base field, its name before v5', () => {
+    const { sort } = buildDisplaySnapshot('alignments', ['sort:basePair'])
+    expect(sort).toEqual({ field: 'base' })
+  })
+
+  test('sort:tag:HP is the tags.HP field, and a tag sort names its tag', () => {
+    const { sort } = buildDisplaySnapshot('alignments', ['sort:tag:HP'])
+    expect(sort).toEqual({ field: 'tags.HP' })
+    expect(() => buildDisplaySnapshot('alignments', ['sort:tag'])).toThrow(
+      /tag:<TAG>/,
+    )
   })
 
   test('force sets the declarative forceLoad config slot', () => {
@@ -619,7 +625,7 @@ test('an Object.prototype key is an unknown modifier, not a crash', () => {
     buildDisplaySnapshot('variant', ['display:constructor']).displayType,
   ).toBe('constructor')
   expect(buildDisplaySnapshot('alignments', ['sort:constructor']).sort).toEqual(
-    { type: 'constructor', tag: undefined },
+    { field: 'constructor' },
   )
   warn.mockRestore()
 })

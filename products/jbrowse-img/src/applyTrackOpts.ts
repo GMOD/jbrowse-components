@@ -299,10 +299,10 @@ interface DisplaySnapshot {
   sort?:
     | string
     | {
-        type: string
+        field: string
         pos: number
         refName: string
-        tag?: string
+        within?: number
       }
   pileup?: { readHeight?: number }
   readConnections?: {
@@ -348,7 +348,7 @@ export type AssertSnapshotKeysExist = AssertNever<UnknownSnapshotKeys>
 // intent and resolved against the view before the snapshot is built.
 interface BuildResult {
   snap: DisplaySnapshot
-  sort?: { type: string; tag?: string }
+  sort?: { field: string }
   // An explicit display type picks a non-default display for the track (e.g. the
   // multi-sample variant matrix), passed to showTrack as the snapshot `type`.
   displayType?: string
@@ -372,12 +372,9 @@ const displayTypeAliases: Record<
   },
 }
 
-// The pileup sort types the layout recognizes (`sortLayout.ts`). `base` is the
-// intuitive spelling the docs example uses, but the layout keys on `basePair` —
-// an unrecognized type sorts nothing silently (it just falls through), so
-// normalize the alias here rather than let `sort:base` become a no-op.
-const sortTypeAliases: Record<string, string> = {
-  base: 'basePair',
+// `sort:basePair` is the spelling before the slot named the field `base`.
+const sortFieldAliases: Record<string, string> = {
+  basePair: 'base',
 }
 
 // Look a user-typed key up in a lookup table. `Object.hasOwn` rather than a bare
@@ -612,8 +609,16 @@ const modifiers: Record<string, Modifier> = {
   sort: {
     on: ['alignments'],
     apply: (r, v, tag) => {
-      const type = parseStr('sort', v, 'sort type')
-      r.sort = { type: lookup(sortTypeAliases, type) ?? type, tag }
+      const field = parseStr('sort', v, 'sort field')
+      if (field === 'tag' && !tag) {
+        invalid('sort', v, 'tag:<TAG>')
+      }
+      r.sort = {
+        field:
+          field === 'tag'
+            ? `tags.${tag}`
+            : (lookup(sortFieldAliases, field) ?? field),
+      }
     },
   },
   arcs: {
@@ -883,14 +888,13 @@ export async function applyDisplayOpts(
     const center = view.centerLineInfo
     if (center && !center.oob) {
       snap.sort = {
-        type: sort.type,
+        field: sort.field,
         pos: basePaintedAt(center, center.offset),
         refName: center.refName,
-        tag: sort.tag,
       }
     } else {
       console.warn(
-        `Warning: sort:${sort.type} on "${trackId}" ignored — the view has no center position to sort at (pass --loc)`,
+        `Warning: sort:${sort.field} on "${trackId}" ignored — the view has no center position to sort at (pass --loc)`,
       )
     }
   } else if (sortAt && category === 'alignments') {

@@ -801,7 +801,7 @@ describe('FetchVisibleRegions autorun', () => {
     const callsBefore = mockRpcCall.mock.calls.length
     // Non-tag sort types relayout in place from existing data.
     display.setSort({
-      type: 'strand',
+      field: 'strand',
       pos: 5000,
       refName: 'ctgA',
     })
@@ -823,10 +823,9 @@ describe('FetchVisibleRegions autorun', () => {
 
     const callsBefore = mockRpcCall.mock.calls.length
     display.setSort({
-      type: 'tag',
+      field: 'tags.HP',
       pos: 5000,
       refName: 'ctgA',
-      tag: 'HP',
     })
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
@@ -842,10 +841,9 @@ describe('FetchVisibleRegions autorun', () => {
     const { display } = createDisplay()
 
     display.setSort({
-      type: 'tag',
+      field: 'tags.HP',
       pos: 5000,
       refName: 'ctgA',
-      tag: 'HP',
     })
     jest.advanceTimersByTime(400)
     await waitFor(() => {
@@ -857,10 +855,9 @@ describe('FetchVisibleRegions autorun', () => {
     // thread layout via laidOutPileupMap; the worker data (per-read tag
     // values) is unchanged.
     display.setSort({
-      type: 'tag',
+      field: 'tags.HP',
       pos: 6000,
       refName: 'ctgA',
-      tag: 'HP',
     })
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()

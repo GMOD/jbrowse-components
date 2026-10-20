@@ -3804,8 +3804,8 @@ export const configManifest: ConfigManifest = {
           "type": "AlignmentsSortConfigurationSchema",
           "subSlots": [
             {
-              "name": "type",
-              "type": "AlignmentsSortType"
+              "name": "field",
+              "type": "string"
             },
             {
               "name": "pos",
@@ -3816,10 +3816,6 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             },
             {
-              "name": "tag",
-              "type": "(string | undefined)"
-            },
-            {
               "name": "within",
               "type": "(number | undefined)"
             }
@@ -3827,7 +3823,7 @@ export const configManifest: ConfigManifest = {
           "schema": "AlignmentsSort",
           "writes": "whole",
           "shorthand": {
-            "string": "type"
+            "string": "field"
           }
         },
         {
@@ -4597,8 +4593,8 @@ export const configManifest: ConfigManifest = {
           "type": "LGVSyntenySortConfigurationSchema",
           "subSlots": [
             {
-              "name": "type",
-              "type": "LGVSyntenySortType"
+              "name": "field",
+              "type": "string"
             },
             {
               "name": "pos",
@@ -4609,10 +4605,6 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             },
             {
-              "name": "tag",
-              "type": "(string | undefined)"
-            },
-            {
               "name": "within",
               "type": "(number | undefined)"
             }
@@ -4620,7 +4612,7 @@ export const configManifest: ConfigManifest = {
           "schema": "LGVSyntenySort",
           "writes": "whole",
           "shorthand": {
-            "string": "type"
+            "string": "field"
           }
         },
         {

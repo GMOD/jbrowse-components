@@ -1,15 +1,11 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
-import {
-  SORT_TYPES,
-  alignmentsSortConfigSchema,
-} from '@jbrowse/plugin-alignments'
+import { alignmentsSortConfigSchema } from '@jbrowse/plugin-alignments'
 
 /**
  * #config LGVSyntenySort
  * #category display
  * The LGVSyntenyDisplay's `sort` setting: the
- * [AlignmentsSort](../alignmentssort) object with `type` defaulting to
+ * [AlignmentsSort](../alignmentssort) object with `field` defaulting to
  * `length`, so big syntenic blocks cluster at the top instead of interleaving
  * with small ones.
  *
@@ -22,11 +18,10 @@ export const lgvSyntenySortConfigSchema = ConfigurationSchema(
   'LGVSyntenySort',
   {
     /**
-     * #slot type
+     * #slot field
      */
-    type: {
-      type: 'stringEnum',
-      model: types.enumeration('LGVSyntenySortType', [...SORT_TYPES]),
+    field: {
+      type: 'string',
       defaultValue: 'length',
     },
   },
@@ -35,7 +30,7 @@ export const lgvSyntenySortConfigSchema = ConfigurationSchema(
      * #baseConfiguration
      */
     baseConfiguration: alignmentsSortConfigSchema,
-    shorthand: 'type',
+    shorthand: 'field',
     writes: 'whole',
     closed: true,
   },
