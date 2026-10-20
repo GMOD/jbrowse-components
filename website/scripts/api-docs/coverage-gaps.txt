@@ -50,7 +50,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1342)
+# model members with no description (1340)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -1361,12 +1361,10 @@ WebSessionManagementMixin.deleteSavedSessions
 WebSessionManagementMixin.renameSavedSession
 WebSessionManagementMixin.savedSessionMetadata
 WebSessionManagementMixin.setSavedSessionFavorite
-WiggleCommonMixin.aggregate
 WiggleCommonMixin.domain
 WiggleCommonMixin.extent
 WiggleCommonMixin.renderingType
 WiggleCommonMixin.selectFeature
-WiggleCommonMixin.setAggregate
 WiggleCommonMixin.setExtent
 WiggleCommonMixin.setOrigin
 WiggleCommonMixin.setResolution

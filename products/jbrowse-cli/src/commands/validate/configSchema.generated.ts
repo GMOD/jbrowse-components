@@ -12556,7 +12556,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "y": {
-          "description": "the feature field plotted on the value axis, as a mark's encoding.y names one: a name, a dotted path or a \`jexl:\` expression. The default \`score\` is the field every adapter serves, including the value a BED adapter's \`scoreColumn\` rewrote it to; an explicit name reaches a raw column the adapter left alone (a BED extra column, a GFF attribute). A feature with no finite value in the field plots at 0.",
+          "description": "the feature field plotted on the value axis, as a mark's encoding.y names one. \`score\`, \`minScore\` and \`maxScore\` are a zoom bin's stored mean, minimum and maximum, which every quantitative source serves, a raw record answering its score for all three. Any other name, a dotted path or a \`jexl:\` expression reads a raw column the adapter left alone (a BED extra column, a GFF attribute) and draws no min-max extent. A feature with no finite value in the field plots at 0.",
           "default": "score",
           "if": {
             "type": "null"
@@ -12622,22 +12622,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "aggregate": {
-          "description": "the stored zoom-bin summary drawn: mean, min or max. A BigWig's zoom levels, and the bins JBrowse makes over its raw section, store all three; where the source serves raw values the three are one number, so the setting has no effect.",
-          "default": "mean",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "mean",
-              "min",
-              "max"
-            ]
-          }
-        },
         "extent": {
-          "description": "the span drawn around each bin's aggregate: 'min-max' draws the bin's stored min and max with it, as a lighter band.",
+          "description": "the span drawn around each bin's plotted value: 'min-max' draws the bin's stored min and max with it, as a lighter band, while \`y\` names a stored summary.",
           "default": "min-max",
           "if": {
             "type": "null"
@@ -12756,6 +12742,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "summaryScoreMode": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "aggregate": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -15118,9 +15108,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "aggregate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
-            },
             "extent": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
@@ -15153,6 +15140,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            },
+            "aggregate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -16852,9 +16842,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "aggregate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
-            },
             "extent": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
@@ -16980,6 +16967,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            },
+            "aggregate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -17263,9 +17253,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "aggregate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
-            },
             "extent": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
@@ -17391,6 +17378,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            },
+            "aggregate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -17632,9 +17622,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showLegend": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showLegend"
             },
-            "aggregate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
-            },
             "extent": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
@@ -17697,6 +17684,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            },
+            "aggregate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"

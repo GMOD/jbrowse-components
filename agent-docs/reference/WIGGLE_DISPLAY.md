@@ -1,6 +1,6 @@
 ---
 name: wiggle-display
-description: How the wiggle display lays out rows, sizes bars, handles gaps, aggregates, bands and color. Read before touching plugins/wiggle.
+description: How the wiggle display lays out rows, sizes bars, handles gaps, stored summaries, bands and color. Read before touching plugins/wiggle.
 kind: spec
 ---
 
@@ -212,25 +212,30 @@ floored at 1 or the shader seeds the row transform with Infinity.
 - **`DEFAULT_GAP_BREAK_MULTIPLE` is 0 (off)** after shipping at 20;
   `gapBreak.ts`.
 
-## `aggregate`, `extent`, and the effective extent
+## `y`, `extent`, and the effective extent
 
-`aggregate` picks one of the three summaries a zoom bin already stores; it
-computes nothing. A BigWig tier and a synthetic tier both carry mean, min and
-max, and `processFeaturesFromArrays` aliases a raw feature's min and max onto
-its score, so over a source with no tiers, a bedGraph, the setting has nothing
-to choose between.
-The mark display reads the same tiers through `y: 'maxScore'` (ADR-123), and
-its `aggregate` transform step is the one that computes. `extent: 'min-max'`
-draws the bin's min and max around the aggregate, Vega-Lite's boxplot
-`extent`; it was the `whiskers` aggregate until it was split out, since it
-names a span and no operation.
+`score`, `minScore` and `maxScore` are the three values a zoom bin stores
+(`@jbrowse/wiggle-core/summaryFields`). A `y` naming one picks its array on
+the main thread (`summaryField`, `getEffectiveScores`); nothing computes. A
+BigWig tier and a synthetic tier both carry all three, and a raw record is its
+own bin: `processFeaturesFromArrays` aliases its min and max onto its score,
+and `featuresToRaw` reads `score` for any of the three, so a bedGraph plots
+its score under each. The mark display spells the same pick `y: 'maxScore'`
+(ADR-123), and its `aggregate` transform step is the one that computes; the
+wiggle `aggregate` slot that picked a stored summary was that word's second
+meaning and is gone. A `y` naming another field reads it in the worker,
+ships no min or max, and hides the Bin summary radio, since a click there
+would overwrite it.
 
-`effectiveExtent` resolves to `none` under density, and the autoscale domain,
-the menu, the tooltip and `gpuProps` all read it. **Neither setting is a fetch
-key**: one fetch ships mean, min and max together and no adapter reads either,
-so a switch re-encodes and refetches nothing. `aggregate` was one, held for an
-adapter that might skip the min and max under `mean`; the min-max band at
-`mean` is the single-source default, so that skip would have emptied it.
+`extent: 'min-max'` draws the bin's min and max around the plotted summary,
+Vega-Lite's boxplot `extent`. `effectiveExtent` resolves to `none` under
+density, and the autoscale domain, the menu, the tooltip and `gpuProps` all
+read it. **`extent` is not a fetch key**: one fetch ships mean, min and max
+together, so a switch re-encodes and refetches nothing. **`y` is one, as
+written**, since a feature adapter reads it in the worker; picking another
+stored summary refetches arrays the worker already shipped. A key folding the
+three summaries into one would be a derived value in the fetch key, and waits
+on a measurement of that refetch.
 
 **No color setting is a fetch key.** `color` and `origin` are `gpuProps` alone:
 the worker ships one set of score arrays and the main thread colors each
@@ -255,7 +260,7 @@ solid-color track is.
 
 ## A line plot is one line, colored by the band between two cuts it is in
 
-Every aggregate on a `line` draws one layer through all the bins
+Every summary on a `line` draws one layer through all the bins
 (`lineLayers`), with no per-instance color lane. **Color comes from the band
 the line is in, not the bin**: the shader tests each fragment's centre-line y
 against the cut heights its vertex placed (`bandColorAt`), and Canvas2D strokes

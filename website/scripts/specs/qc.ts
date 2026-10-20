@@ -84,7 +84,7 @@ const SMN_HIGHLIGHT = [
 // absent scales to whatever few values survive and the collapse reads as an
 // ordinary wiggle.
 //
-// `aggregate: 'min'`: a bigWig zoom bin carries min/avg/max, and `avg`
+// `y: 'minScore'`: a bigWig zoom bin carries min/mean/max, and the mean
 // over a bin that is mostly absent averages the few present positions, so the
 // lane comes out a solid wall near 1 across a region where almost nothing maps.
 // `min` is the worst position in the bin. In the read view (WIDE_LOC,
@@ -97,7 +97,7 @@ const mappabilityTrack = {
   trackId: 'hg38-umap100Quantitative',
   type: 'LinearWiggleDisplay',
   scales: { y: { domainMin: 0, domainMax: 1 } },
-  aggregate: 'min' as const,
+  y: 'minScore',
   extent: 'none' as const,
   height: 70,
 }

@@ -40,9 +40,8 @@ function binSummaryOf(self: ReturnType<typeof makeSelf>) {
 test('the bin summary radio writes y', () => {
   const self = makeSelf(1)
   const summary = binSummaryOf(self)!
-  const max = resolveSubMenu(summary).find(
-    r => 'label' in r && r.label === 'Maximum',
-  )!
+  const rows = 'subMenu' in summary ? resolveSubMenu(summary) : []
+  const max = rows.find(r => 'label' in r && r.label === 'Maximum')!
   if ('onClick' in max) {
     max.onClick()
   }

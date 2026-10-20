@@ -823,7 +823,7 @@ function runTransformScenario() {
   }
   const BIN: TransformStep[] = [
     { type: 'bin', step: 10_000 },
-    { type: 'summaryField', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
+    { type: 'aggregate', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
   ]
   const COVERAGE: TransformStep[] = [{ type: 'coverage' }]
   console.log(`${n.toLocaleString()} features, the transform-step fixture`)

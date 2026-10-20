@@ -1,7 +1,7 @@
 ---
 id: wigglecommonmixin
 title: WiggleCommonMixin
-description: "Extends YFieldConfigMixin with the narrowed rpcDataMap, the autoscale domain and the wiggle-specific config: the origin, rendering type, aggregate, resolution and the line/gap settings."
+description: "Extends YFieldConfigMixin with the narrowed rpcDataMap, the autoscale domain and the wiggle-specific config: the origin, rendering type, resolution and the line/gap settings."
 sidebar_label: Mixin -> WiggleCommonMixin
 ---
 
@@ -9,7 +9,7 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 
 Extends `YFieldConfigMixin` with the narrowed rpcDataMap, the autoscale
 domain and the wiggle-specific config: the origin, rendering type,
-aggregate, resolution and the line/gap settings. Extended on this chain
+resolution and the line/gap settings. Extended on this chain
 with `.props()`/`.views()` rather than a mixin composed in, so no
 `types.compose` layer is added (ADR-041).
 
@@ -37,11 +37,10 @@ From [ScoreScaleMixin](../scorescalemixin): <span id="volatile-unclippedquantile
 | <span id="getter-linewidth">**lineWidth**</span><br><code>number</code> | A line's width, the `size` slot or 1 px while unset. |
 | <span id="getter-size">**size**</span><br><code>number</code> | A point's diameter, the `size` slot or 2 px while unset. |
 | <span id="getter-maxgapmultiple">**maxGapMultiple**</span><br><code>number</code> | Interpolated-line gap threshold, as a multiple of the track's own mean point spacing (see gapBreakLimit). 0 keeps one connected line. |
-| <span id="getter-aggregate">**aggregate**</span><br><code>"max" &#124; "mean" &#124; "min"</code> |  |
 | <span id="getter-extent">**extent**</span><br><code>"min-max" &#124; "none"</code> |  |
 | <span id="getter-renderingtype">**renderingType**</span><br><code>"density" &#124; "line" &#124; "linecenter" &#124; "scatter" &#124; "xyplot"</code> |  |
 | <span id="getter-hasresolution">**hasResolution**</span><br><code>boolean</code> | Asked of the display's OWN adapter, which for the GC display is the synthesized GCContentAdapter rather than the track's raw sequence adapter — the two diverged when the adapter config moved onto the shared model. It answers the same today, since only BigWigAdapter and MultiWiggleAdapter declare the capability, and the display's adapter is the honest subject: the resolution slot it gates is passed to whatever this display fetches from. |
-| <span id="getter-effectiveextent">**effectiveExtent**</span><br><code>"min-max" &#124; "none"</code> | The extent actually drawn. Density maps score to color and has no min-max presentation, so the autoscale domain reads this rather than the raw slot; otherwise the color ramp spans the min and max while the plot paints the aggregate, and the score legend reports a range nothing on screen reaches. Single-wiggle defaults to min-max, so plain "plot type → Density" hit this. |
+| <span id="getter-effectiveextent">**effectiveExtent**</span><br><code>"min-max" &#124; "none"</code> | The extent actually drawn. Density maps score to color and has no min-max presentation, so the autoscale domain reads this rather than the raw slot; otherwise the color ramp spans the min and max while the plot paints one summary, and the score legend reports a range nothing on screen reaches. Single-wiggle defaults to min-max, so plain "plot type → Density" hit this. |
 | <span id="getter-tooltipshowsminmax">**tooltipShowsMinMax**</span><br><code>boolean</code> | Whether a summary bin's tooltip lists its min and max: where they are drawn, or where the bar is one of them rather than the mean. |
 | <span id="getter-autoscalesourcenames">**autoscaleSourceNames**</span><br><code>Set&lt;string&gt; &#124; undefined</code> | Source names to include when computing the autoscale domain; `undefined` means every fetched source. The wiggle display always fetches all sources and filters client-side, so it overrides this to the visible subset — otherwise a subtree filter that hides sources would leave the Y-axis scaled to the hidden ones. |
 | <span id="getter-scorerulevalues">**scoreRuleValues**</span><br><code>number[]</code> | Scores the axis must reach whatever the data does, so a rule drawn at one stays on it. `[]` here and overridden by the display that draws `scales.y.rules`. |
@@ -50,9 +49,9 @@ From [ScoreScaleMixin](../scorescalemixin): <span id="volatile-unclippedquantile
 | <span id="getter-defaultscoredomain">**defaultScoreDomain**</span><br><code>[number &#124; undefined, number &#124; undefined]</code> | The bounds the adapter declares its values lie in, where it declares any (`getValueDomain`): a GC content track's [0, 1], so its axis reads alike at every locus. Config bounds still win. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>22 inherited getters from 4 models</summary>
+<summary>23 inherited getters from 4 models</summary>
 
-From [YFieldConfigMixin](../yfieldconfigmixin): <span id="getter-yfield">[`yField`](../yfieldconfigmixin#getter-yfield)</span>
+From [YFieldConfigMixin](../yfieldconfigmixin): <span id="getter-yfield">[`yField`](../yfieldconfigmixin#getter-yfield)</span>, <span id="getter-summaryfield">[`summaryField`](../yfieldconfigmixin#getter-summaryfield)</span>
 
 From [WiggleScoreConfigMixin](../wigglescoreconfigmixin): <span id="getter-isdensitymode">[`isDensityMode`](../wigglescoreconfigmixin#getter-isdensitymode)</span>, <span id="getter-axisreacheszero">[`axisReachesZero`](../wigglescoreconfigmixin#getter-axisreacheszero)</span>
 
@@ -72,7 +71,7 @@ From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-valuescales">[`valueS
 | <span id="action-setresolution">**setResolution**</span><br><code>(res: number) =&gt; void</code> |  |
 | <span id="action-setorigin">**setOrigin**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setmark">**setMark**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(mark: "bar" &#124; "line" &#124; "point" &#124; "span", interpolate?: "linear…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(mark: "bar" &#124; "line" &#124; "point" &#124; "span", interpolate?: "linear" &#124; "step" &#124; undefined) =&gt; void</code></pre></dialog></span> | The plot's `mark`, and a line's `interpolate`; any other mark resets `interpolate`, which only a line reads. |
-| <span id="action-setaggregate">**setAggregate**</span><br><code>(val: "max" &#124; "mean" &#124; "min") =&gt; void</code> |  |
+| <span id="action-sety">**setY**</span><br><code>(field: string) =&gt; void</code> | The field plotted on the value axis: a stored summary (`score`, `minScore`, `maxScore`) or any feature field. |
 | <span id="action-setextent">**setExtent**</span><br><code>(val: "min-max" &#124; "none") =&gt; void</code> |  |
 | <span id="action-setsize">**setSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
 

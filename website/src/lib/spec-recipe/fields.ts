@@ -1067,10 +1067,10 @@ const SNP_FREQUENCY_ROWS: Record<string, string> = {
   '0.2': 'Above 20%',
 }
 
-const AGGREGATES: Record<string, string> = {
-  min: 'Minimum',
-  max: 'Maximum',
-  mean: 'Average',
+const BIN_SUMMARIES: Record<string, string> = {
+  minScore: 'Minimum',
+  maxScore: 'Maximum',
+  score: 'Mean',
 }
 
 // The 'Plot type' menu radios come straight from the exported wiggle table, so
@@ -1673,10 +1673,14 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined,
   scales: scalesStep,
-  y: (value, { displayType }) =>
-    value === 'identity' && displayType === 'LinearMafDisplay'
-      ? { path: `${TRACK_MENU} → Plot type → Identity X-Y plot` }
-      : undefined,
+  y: (value, context) =>
+    context.displayType === 'LinearMafDisplay'
+      ? value === 'identity'
+        ? { path: `${TRACK_MENU} → Plot type → Identity X-Y plot` }
+        : undefined
+      : context.displayType === 'LinearWiggleDisplay'
+        ? fromTable('Resolution → Bin summary', BIN_SUMMARIES)(value, context)
+        : undefined,
   rowIdentityAutoZoom: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearMafDisplay'
       ? {
@@ -1903,7 +1907,6 @@ export const trackFields: Record<string, FieldRecipe> = {
   })),
   mark: markStep,
   interpolate: interpolateStep,
-  aggregate: fromTable('Resolution → Bin summary', AGGREGATES),
   extent: value =>
     typeof value === 'string'
       ? {

@@ -254,7 +254,7 @@ describe('validateConfig', () => {
     expect(warningsOf(config)[0]?.message).toContain('legacy value')
   })
 
-  it("warns on v4's summaryScoreMode, which the schema lifts to aggregate", () => {
+  it("warns on v4's summaryScoreMode, which the schema lifts to y", () => {
     const config = baseConfig()
     config.tracks[0] = {
       ...config.tracks[0]!,

@@ -6584,10 +6584,6 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "aggregate",
-          "type": "Aggregate"
-        },
-        {
           "name": "extent",
           "type": "Extent"
         },
@@ -6628,6 +6624,7 @@ export const configManifest: ConfigManifest = {
         "inverted",
         "renderers",
         "summaryScoreMode",
+        "aggregate",
         "defaultRendering",
         "lineWidth"
       ],

@@ -33,7 +33,7 @@ under `zero`.
 
 ```js
 // type signature
-(quantile: number, aggregate: string, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[], zero: boolean, extent?: string) => [number, number] | undefined
+(quantile: number, field: string, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[], zero: boolean, extent?: string) => [number, number] | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
@@ -101,12 +101,12 @@ against, so there is nothing to call a hole.
 
 ### getEffectiveScores
 
-Per-feature scalar score array for an aggregate: the min/max summary array for
-`'min'`/`'max'`, otherwise the average score.
+The per-feature array a summary field names: `minScore` and `maxScore` the bins'
+stored extremes, anything else `score`, the bins' mean.
 
 ```js
 // type signature
-(data: { featureScores: Float32Array<ArrayBufferLike>; featureMinScores: Float32Array<ArrayBufferLike>; featureMaxScores: Float32Array<ArrayBufferLike>; }, aggregate: string) => Float32Array<ArrayBufferLike>
+(data: { featureScores: Float32Array<ArrayBufferLike>; featureMinScores: Float32Array<ArrayBufferLike>; featureMaxScores: Float32Array<ArrayBufferLike>; }, field: string) => Float32Array<ArrayBufferLike>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)

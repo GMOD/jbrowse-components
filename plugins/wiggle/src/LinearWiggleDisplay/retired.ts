@@ -109,6 +109,18 @@ function summaryOf(mode: unknown) {
         }
 }
 
+// The beta `aggregate`, kept while hosted hub configs carry it (jb2hubs wrote
+// it, `whiskers` included); it goes once they re-sync.
+function aggregateOf(aggregate: unknown) {
+  return aggregate === 'whiskers'
+    ? { y: 'score', extent: 'min-max' }
+    : aggregate === 'min'
+      ? { y: 'minScore' }
+      : aggregate === 'max'
+        ? { y: 'maxScore' }
+        : {}
+}
+
 // What a v4 menu wrote on the display instance, and a beta's arrangement.
 const V4_RENDERERS = ['XYPlotRenderer', 'LinePlotRenderer', 'DensityRenderer']
 
@@ -127,6 +139,7 @@ export const retiredConfigSpellings = {
     }
   },
   summaryScoreMode: summaryOf,
+  aggregate: aggregateOf,
 }
 
 // `rendererTypeNameState` is the plot a reader picked, which on a multi

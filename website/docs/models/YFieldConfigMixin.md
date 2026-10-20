@@ -29,6 +29,7 @@ From [ScoreScaleMixin](../scorescalemixin): <span id="volatile-unclippedquantile
 | Member | Description |
 | --- | --- |
 | <span id="getter-yfield">**yField**</span><br><code>string</code> | The feature field the worker plots on the value axis, the `y` slot, `score` by default. A fetch input: every composing display includes it in its `rpcProps()`, since the field is read where the features are. |
+| <span id="getter-summaryfield">**summaryField**</span><br><code>"maxScore" &#124; "minScore" &#124; "score"</code> | The stored summary the plot reads: `y` where it names one, else `score`, which a field outside the three holds after the worker reads it. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>23 inherited getters from 3 models</summary>

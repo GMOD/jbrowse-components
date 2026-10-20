@@ -310,7 +310,6 @@ color is the average over each pixel's bins. `mark` is the shape drawn, and
   "assemblyNames": ["hg38", "mm39"],
   "displayDefaults": {
     "mark": "span",
-    "aggregate": "mean",
     "color": {
       "field": "score",
       "scale": "threshold",
@@ -367,7 +366,6 @@ before the synteny track:
             "trackId": "hg38ToMm39_gene_density",
             "type": "LinearWiggleDisplay",
             "mark": "span",
-            "aggregate": "mean",
             "color": {
               "field": "score",
               "scale": "threshold",

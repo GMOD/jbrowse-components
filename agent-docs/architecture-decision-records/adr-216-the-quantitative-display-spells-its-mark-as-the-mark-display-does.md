@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The quantitative display's one mark is spelt as the mark display spells one: `mark` is `bar`, `point`, `line` or `span` (`heatmap` was a span under its own name), `y` names the field plotted (`scoreField`), one `size` is a point's diameter or a line's width (`lineWidth` folded in, unset drawing each mark's own default), and `summaryScoreMode`'s `avg` is `mean`, the aggregate's word, while its `whiskers` is `extent: 'min-max'`, the span drawn around the aggregate. `mark`, `interpolate`, `size` and `origin` join the plot vocabulary, so Edit plot and the agent API can change a quantitative plot's type. v4 `lineWidth` and `avg` lift; `scoreField` and `heatmap` were beta spellings and get none"
+summary: "The quantitative display's one mark is spelt as the mark display spells one: `mark` is `bar`, `point`, `line` or `span` (`heatmap` was a span under its own name), `y` names the field plotted (`scoreField`), one `size` is a point's diameter or a line's width (`lineWidth` folded in, unset drawing each mark's own default), and `summaryScoreMode`'s `avg` is `mean`, the aggregate's word, while its `whiskers` is `extent: 'min-max'`, the span drawn around the aggregate. `mark`, `interpolate`, `size` and `origin` join the plot vocabulary, so Edit plot and the agent API can change a quantitative plot's type. v4 `lineWidth` and `avg` lift; `scoreField` and `heatmap` were beta spellings and get none. Amended 2026-10-20: the `aggregate` slot goes, and `y` picks the stored summary, `score`, `minScore` or `maxScore`, as the mark display's does"
 ---
 
 # ADR-216: The quantitative display spells its mark as the mark display does
@@ -27,7 +27,15 @@ its other modes to `none`. The menu's row is "Bin summary", the three
 operations as a radio and "Show min and max" as a checkbox. Neither is a fetch
 key: one fetch ships all three summaries, and `aggregate`'s place in
 `rpcProps`, held for an adapter that might skip the min and max under `mean`,
-would have emptied the default min-max band.
+would have emptied the default min-max band. Amended 2026-10-20: the
+`aggregate` slot goes, and `y` picks the stored summary as the mark display's
+does: `score`, `minScore` or `maxScore`. One word meant "compute" on the mark
+display and "pick a stored column" here, and wiggle's own `y` was ignored over
+a BigWig, so `y: 'maxScore'` plotted the mean. A feature adapter reads `score`
+for any of the three, a raw record answering its score for each. `y` stays a
+fetch key as written, so a summary pick refetches. v4's `summaryScoreMode`
+lifts onto `y`; the beta `aggregate` gets no lift. The Bin summary radio reads
+Mean, Minimum and Maximum, writes `y`, and hides while `y` names another field.
 
 ## Context
 

@@ -132,7 +132,6 @@
           "type": "LinearWiggleDisplay",
           "displayId": "hg38ToPanTro6_gene_density-LinearWiggleDisplay",
           "mark": "span",
-          "aggregate": "mean",
           "color": {
             "field": "score",
             "scale": "threshold",

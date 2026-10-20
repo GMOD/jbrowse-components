@@ -140,6 +140,18 @@ test.each([
   expect(readConfObject(conf, 'extent')).toBe(extent)
 })
 
+// The beta `aggregate` that hosted hub configs still carry
+test.each([
+  ['mean', 'score', 'min-max'],
+  ['min', 'minScore', 'min-max'],
+  ['max', 'maxScore', 'min-max'],
+  ['whiskers', 'score', 'min-max'],
+])('a hub’s aggregate %s is y %s, extent %s', (aggregate, y, extent) => {
+  const conf = create({ aggregate, extent: 'min-max' })
+  expect(readConfObject(conf, 'y')).toBe(y)
+  expect(readConfObject(conf, 'extent')).toBe(extent)
+})
+
 test('a v4 renderers block keeps its color beside its summary mode', () => {
   const conf = create({
     renderers: { XYPlotRenderer: { summaryScoreMode: 'avg', color: 'red' } },

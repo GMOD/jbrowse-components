@@ -469,7 +469,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               mark: 'point',
               color: '#0068d1',
               size: 2,
-              aggregate: 'max',
+              y: 'maxScore',
               extent: 'none',
               scales: { y: { domainMin: 0.1, domainMax: 0.5 } },
               height: 140,
@@ -602,7 +602,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             // was coarse was the READ. 40 Mb across the capture's ~1,490 CSS px
             // of data area is ~27 kb a pixel, which lands on the file's
             // coarsest useful zoom level, 40,960 bp -- so the lane drew 1,078
-            // points, each of them `aggregate: 'max'` over about 950
+            // points, each of them `y: 'maxScore'` over about 950
             // sites. Outside the block that bin max has a median of 0.160 and a
             // 99th percentile of 0.333, where the per-site values it summarizes
             // are 0.0002 and 0.118. More than half the old scatter therefore
@@ -660,7 +660,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               mark: 'point',
               color: '#0068d1',
               size: 2,
-              aggregate: 'max',
+              y: 'maxScore',
               extent: 'none',
               // The lane below's floor and ceiling, so the two are one axis
               // read at two scales and the peak is the same height in both.
