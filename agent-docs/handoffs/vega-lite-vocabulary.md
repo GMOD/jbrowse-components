@@ -34,6 +34,8 @@ spelling, not a new house word. That means no new `min*`, `max*`, `show*` or
 - Wiggle's `mark` as Vega-Lite's mark object, `{ type, interpolate }`, a bare
   name lifting to the type; the chord displays' `mark` is a plot setting
   beside it.
+- The mark display's `marks[].mark` as the same object (`MarkDef`), so the
+  two displays spell a mark alike (ADR-216).
 
 ## Next, one concept at a time across the app
 
@@ -76,7 +78,9 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
      joins a path across a missing value, and `false` breaks the path there
      as d3's `defined` does. A bridged ribbon also draws at `BRIDGE_ALPHA`.
    - The mark display's `marks.linkShape` (`dome arc line`) has no planned
-     spelling yet; see ADR-238's note on `interpolate`.
+     spelling yet; see ADR-238's note on `interpolate`. It, `gapBp` and
+     `rowProportion` are still entry members beside `mark`, where
+     Vega-Lite would put them in the mark object.
 
 ## Writers to update after each landing
 
