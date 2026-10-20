@@ -463,3 +463,24 @@ test('label density counts a feature crossing two regions once', async () => {
   })
   expect(atTheLimit.labels.text).toEqual(free.labels.text)
 })
+
+// The display skips a hidden section's features when it counts on-screen ids
+// (`labelDensityPerPx`), so the export does too.
+test('label density leaves out the features of a hidden section', async () => {
+  const { sections } = await engine.features({
+    ...GFF3,
+    display: { ...GROW, facet: { field: 'strand' } },
+  })
+  const facet = { field: 'strand', hidden: [sections.key[0]!] }
+  const free = await engine.features({
+    ...GFF3,
+    display: { ...GROW, facet, maxLabelFeatureDensity: 1000 },
+  })
+  const shown = new Set(free.features.id).size
+  const atTheLimit = await engine.features({
+    ...GFF3,
+    display: { ...GROW, facet, maxLabelFeatureDensity: shown / 1000 },
+  })
+  expect(free.labels.text.length).toBeGreaterThan(0)
+  expect(atTheLimit.labels.text).toEqual(free.labels.text)
+})

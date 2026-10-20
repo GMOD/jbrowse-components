@@ -424,18 +424,19 @@ export async function featureTables(
     }),
   )
   const items = raws.flatMap(raw => raw.flatbushItems)
+  const shown = items.filter(item => !isHidden(item))
   const widthsPx = regions.map(r => (r.end - r.start) / bpPerPx)
   const widthPx = widthsPx.reduce((a, b) => a + b, 0)
-  // each feature once, however many regions it crosses, as the display counts
-  // its on-screen ids (`labelDensityPerPx`)
-  const featureIds = new Set(items.map(item => item.featureId))
+  // each shown feature once, however many regions it crosses, as the display
+  // counts its on-screen ids (`labelDensityPerPx`)
+  const featureIds = new Set(shown.map(item => item.featureId))
   const visibility = labelVisibility({
     mode: readConfObject(conf, 'showLabels'),
     collapsed,
     density: featureIds.size / widthPx,
     geneDensity: () => {
       const genes = new Set(
-        items.filter(item => item.gene).map(item => item.featureId),
+        shown.filter(item => item.gene).map(item => item.featureId),
       ).size
       return genes > 0 ? genes / widthPx : undefined
     },
