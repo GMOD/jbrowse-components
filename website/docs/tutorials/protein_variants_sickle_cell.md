@@ -203,7 +203,7 @@ one color in every view:
 In the protein view's header, the **From the alignment** rows list the same
 domains and sites.
 
-<Figure src="/img/protein/hbb_domains_three_views.png" caption="HBB in three linked views, colored by the alignment's domains: the genome's domain track, the alignment's rows and the 2HBS cartoon. On the structure a cartoon color marks a domain and side-chain sticks mark a site." />
+<Figure src="/img/protein/hbb_domains_three_views.png" caption="HBB in three linked views: the genome's GWAS, 1000 Genomes and domain tracks, the alignment's rows and the 2HBS cartoon, colored by the alignment's domains. On the structure a cartoon color marks a domain and side-chain sticks mark a site." />
 
 ## Your own gene
 

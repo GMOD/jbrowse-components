@@ -493,7 +493,12 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'protein/hbb_domains_three_views',
     url: hbbSession({
-      tracks: [HBB_GENE_TRACK],
+      tracks: [
+        HBB_GENE_TRACK,
+        { trackId: GWAS_SUBSET, height: 170 },
+        { trackId: KG, type: 'LinearMultiSampleVariantDisplay', height: 330 },
+      ],
+      sessionTracks: [GWAS_SUBSET_TRACK, KG_TRACK],
       loc: `${HBB_CODON_7} ${HBB_EXON_2_START}`,
       msaHeight: 490,
       domains: true,
@@ -504,7 +509,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     // The alignment's columns widen with the viewport, so the hover's dx
     // follows it to column 7.
     viewportWidth: 2300,
-    viewportHeight: 1110,
+    viewportHeight: 1550,
     clicksChange: "close the domain track's legend",
     actions: [
       {
