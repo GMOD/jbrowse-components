@@ -145,6 +145,43 @@ test('a color pick stores the whole object and resolves without the base members
   })
 })
 
+// The write paths share one merge rule: a plot draft, a settings bag and the
+// session delta each replace a channel whole, so one draft lands the same way
+// through each.
+test.each(['applyPlot', 'applyDisplaySettings'] as const)(
+  'a color draft through %s lands whole on the display and in the delta',
+  async write => {
+    const colored = {
+      ...track,
+      displays: [
+        {
+          ...track.displays[0],
+          color: { field: 'type', domain: ['gene', 'mRNA'] },
+        },
+      ],
+    }
+    const state = createViewState({ assembly, tracks: [colored] })
+    const session = state.session as unknown as DeltaSession
+    const { view } = state.session
+    view.showTrack(TRACK_ID)
+    await waitFor(() => {
+      expect(view.getTrack(TRACK_ID)).toBeTruthy()
+    })
+    const display = view.getTrack(TRACK_ID)!.displays[0] as unknown as {
+      configuration: AnyConfigurationModel
+    } & Record<typeof write, (draft: Record<string, unknown>) => unknown>
+    display[write]({ color: { field: 'strand' } })
+    expect(getSnapshot(display.configuration.color)).toEqual({
+      field: 'strand',
+    })
+    await waitFor(() => {
+      expect(session.trackConfigDeltas[TRACK_ID]?.displays).toEqual([
+        { displayId: DISPLAY_ID, color: { field: 'strand' } },
+      ])
+    })
+  },
+)
+
 test('re-persisting a hydrated config with only injected display stubs stores no delta', () => {
   // a track config that omits `displays`; hydration injects {type, displayId}
   // stubs. Persisting that hydrated snapshot back (no real user edit) must not

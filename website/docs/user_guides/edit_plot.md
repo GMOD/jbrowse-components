@@ -18,21 +18,33 @@ there but not yet applied.
 ## What the box shows
 
 The text holds the current values of this display's settings. A setting at its
-default is left out, as it would be in a config file. Show help lists the
-settings, each with a line saying what it holds. Which settings appear depends
-on the display:
+default is left out, as it would be in a config file. Show help links each
+setting to its row in the config reference. Which settings appear depends on the
+display:
 
-| Display                              | Settings                                                                                                      |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| Feature, single-sample variant       | `facet`, `color`, `filter`                                                                                    |
-| Multi-row feature                    | `facet`, `rows`, `rowColor`, `color`                                                                          |
-| Multi-sample variant                 | `unit`, `facet`, `rows`, `rowColor`, `color`, `filter`                                                        |
-| Alignments, synteny in a genome view | `unit`, `facet`, `color`, `baseColor`, `scales`, `filter`, `coverage`, `pileup`, `sashimi`, `readConnections` |
-| Quantitative                         | `mark`, `interpolate`, `rows`, `rowColor`, `color`, `scales`, `y`, `size`, `origin`                           |
-| Multiple alignment (MAF)             | `rows`, `rowColor`, `color`, `y`, `coverage`, `conservation`                                                  |
-| Hi-C, linkage disequilibrium (LD)    | `color`                                                                                                       |
-| Multi-way synteny                    | `rows`, `color`, `ribbonColor`, `laneLayers`                                                                  |
-| Mark plot, Manhattan                 | `marks`, `transform`, `facet`, `rows`, `rowColor`, `scales`, `origin`, `filter`                               |
+<!-- BEGIN GENERATED PLOT_SETTINGS -->
+
+| Display                                                               | Settings                                                                                                                               |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Alignments display (`LinearAlignmentsDisplay`)                        | `unit`, `filter`, `facet`, `sort`, `color`, `scales`, `coverage`, `pileup`, `readConnections`, `baseColor`, `modifications`, `sashimi` |
+| Chord variant display (`ChordVariantDisplay`)                         | `color`                                                                                                                                |
+| Feature display (`LinearBasicDisplay`)                                | `filter`, `color`, `facet`, `labels`                                                                                                   |
+| Hi-C contact matrix display (`LinearHicDisplay`)                      | `color`                                                                                                                                |
+| LD heatmap display (`LDTrackDisplay`)                                 | `color`                                                                                                                                |
+| MAF display (`LinearMafDisplay`)                                      | `color`, `y`, `rows`, `rowColor`, `coverage`, `alignments`, `scales`, `conservation`                                                   |
+| Manhattan plot display (`LinearManhattanDisplay`)                     | `marks`, `transform`, `facet`, `rows`, `rowColor`, `scales`, `origin`, `filter`                                                        |
+| Marks (`LinearMarkDisplay`)                                           | `marks`, `transform`, `facet`, `rows`, `rowColor`, `scales`, `origin`, `filter`                                                        |
+| Multi-row feature display (painting) (`LinearMultiRowFeatureDisplay`) | `rows`, `color`, `rowColor`, `facet`                                                                                                   |
+| Multi-sample variant display (`LinearMultiSampleVariantDisplay`)      | `filter`, `rows`, `unit`, `color`, `rowColor`, `facet`, `variants`                                                                     |
+| Multi-way synteny display (`MultiWaySyntenyDisplay`)                  | `color`, `rows`, `ribbonColor`, `text`, `laneLayers`                                                                                   |
+| Synteny alignments display (`LGVSyntenyDisplay`)                      | `unit`, `filter`, `facet`, `sort`, `color`, `scales`, `coverage`, `pileup`, `readConnections`                                          |
+| Variant display (`LinearVariantDisplay`)                              | `filter`, `color`, `facet`, `labels`                                                                                                   |
+| Wiggle display (`LinearWiggleDisplay`)                                | `mark`, `interpolate`, `rows`, `rowColor`, `color`, `y`, `origin`, `size`, `scales`, `aggregate`, `extent`                             |
+
+<!-- END GENERATED PLOT_SETTINGS -->
+
+Two of them split a track by a field: `facet` stacks labelled sections, one per
+value, and `rows` draws one row per value, which a tree can order.
 
 The circular view's chord variant display has a plot too, `color`; its Edit plot
 row is under the view menu's Tracks entry, since a track on the circle has no
@@ -72,5 +84,6 @@ the session and **Reset track settings** returns them to the track's config.
 
 A display exposes the same settings as `plot`: read `display.plot`, edit a copy,
 check it with `display.plotProblems(draft)`, and write it with
-`display.applyPlot(draft)`. See
-[Agents and the live model](/docs/agents_live_model).
+`track.applyDisplaySettings(draft)`. A script's draft patches the plot, where
+this box states it whole: a setting the draft leaves out stays, and `null`
+resets one. See [Agents and the live model](/docs/agents_live_model).

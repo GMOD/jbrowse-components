@@ -8,6 +8,7 @@
 
 import type { ZoomRange } from '../data_adapters/BaseAdapter/zoomRange.ts'
 import type { ColorSchemeName } from './colorSchemes.ts'
+import type { AggregateOpName } from './stepOutputs.ts'
 
 /**
  * #api
@@ -527,7 +528,7 @@ export type BinStep = {
  * weight moves no minimum or maximum, so `min` and `max` read none.
  */
 export interface AggregateOp {
-  op: 'count' | 'sum' | 'mean' | 'min' | 'max'
+  op: AggregateOpName
   field?: FieldRef
   weight?: FieldRef
   as?: string

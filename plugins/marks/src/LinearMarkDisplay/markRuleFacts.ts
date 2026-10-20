@@ -5,6 +5,7 @@
  * module named here imports nothing.
  */
 export {
+  AGGREGATE_OPS,
   BIN_OVERLAP_FIELD,
   DEFAULT_AGGREGATE_OP,
   DEFAULT_BIN_AS,
@@ -15,7 +16,10 @@ export {
   isFieldPair,
   stepsOutput,
 } from '@jbrowse/core/util/stepOutputs'
-export type { StepOutline } from '@jbrowse/core/util/stepOutputs'
+export type {
+  AggregateOpName,
+  StepOutline,
+} from '@jbrowse/core/util/stepOutputs'
 export { isNamedColor } from '@jbrowse/core/util/color/cssColorsLevel4'
 export { isJexl } from '@jbrowse/core/util/jexlStrings'
 export {

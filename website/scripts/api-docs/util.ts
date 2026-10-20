@@ -2717,11 +2717,15 @@ export function generatedBlocksInDocs() {
 // What can: the generator spells the block's name as a string. A block whose
 // name no script under website/scripts spells keeps whatever was committed,
 // which is what renaming or deleting its generator leaves behind.
+const GENERATOR_DIRS = ['website/scripts', 'scripts']
+
 function generatedBlocksNobodyWrites() {
-  const scripts = fs
-    .readdirSync('website/scripts')
-    .filter(isTsSource)
-    .map(name => fs.readFileSync(`website/scripts/${name}`, 'utf8'))
+  const scripts = GENERATOR_DIRS.flatMap(dir =>
+    fs
+      .readdirSync(dir)
+      .filter(isTsSource)
+      .map(name => fs.readFileSync(`${dir}/${name}`, 'utf8')),
+  )
   return [...generatedBlocksInDocs()]
     .filter(
       ([marker]) =>
@@ -2731,7 +2735,7 @@ function generatedBlocksNobodyWrites() {
     )
     .map(
       ([marker, docs]) =>
-        `  ${marker} — ${[...docs].join(', ')} carries a \`<!-- BEGIN GENERATED ${marker} -->\` pair, but no script in website/scripts names it. The block keeps whatever was committed.`,
+        `  ${marker} — ${[...docs].join(', ')} carries a \`<!-- BEGIN GENERATED ${marker} -->\` pair, but no script in website/scripts or scripts names it. The block keeps whatever was committed.`,
     )
 }
 

@@ -31,6 +31,9 @@ export const DEFAULT_FORMULA_AS = 'value'
 export const DEFAULT_COVERAGE_AS = 'coverage'
 export const DEFAULT_PILEUP_AS = 'row'
 export const DEFAULT_AGGREGATE_OP = 'count'
+/** The summaries an `aggregate` or a `window` op computes. */
+export const AGGREGATE_OPS = ['count', 'sum', 'mean', 'min', 'max'] as const
+export type AggregateOpName = (typeof AGGREGATE_OPS)[number]
 export const DEFAULT_BIN_AS: readonly [string, string] = ['start', 'end']
 /** What a `bin` over `fields` writes on each piece: the bases of its interval inside its bin. */
 export const BIN_OVERLAP_FIELD = 'overlap'
