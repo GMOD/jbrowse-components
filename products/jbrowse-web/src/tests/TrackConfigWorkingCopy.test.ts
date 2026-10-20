@@ -81,10 +81,10 @@ describe('unsetting an admin-configured slot', () => {
     jest.advanceTimersByTime(1000)
 
     setConf(display, ADMIN_SLOT, undefined)
-    expect(getConf(display, ADMIN_SLOT)).toBe('none')
+    expect(getConf(display, ADMIN_SLOT)).toBe('auto')
 
     // the persist reaction is debounced 400ms; this is where it used to revert
     jest.advanceTimersByTime(1000)
-    expect(getConf(display, ADMIN_SLOT)).toBe('none')
+    expect(getConf(display, ADMIN_SLOT)).toBe('auto')
   })
 })

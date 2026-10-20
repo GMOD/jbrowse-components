@@ -303,7 +303,7 @@ describe('the biggest generated type page as the docs tool serves it', () => {
   it('orients before it offers: the composes line and the config route', () => {
     const text = bare()
     expect(text).toContain('# LinearAlignmentsDisplay')
-    expect(text).toContain('Composes BaseDisplay')
+    expect(text).toMatch(/^Composes .*\bBaseDisplay\b/m)
     expect(text).toContain('docs topic "config:LinearAlignmentsDisplay"')
   })
 

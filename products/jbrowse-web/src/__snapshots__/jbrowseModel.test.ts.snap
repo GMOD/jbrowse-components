@@ -659,6 +659,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           },
           "displayId": "volvox_cram_pileup_pileup",
           "height": 400,
+          "sashimi": {
+            "show": false,
+          },
           "type": "LinearAlignmentsDisplay",
         },
       ],
@@ -755,6 +758,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "show": false,
           },
           "displayId": "volvox_cram_pileup_ctga_pileup",
+          "sashimi": {
+            "show": false,
+          },
           "type": "LinearAlignmentsDisplay",
         },
       ],
@@ -914,6 +920,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "show": false,
           },
           "displayId": "volvox_bam_pileup_pileup",
+          "sashimi": {
+            "show": false,
+          },
           "type": "LinearAlignmentsDisplay",
         },
       ],
