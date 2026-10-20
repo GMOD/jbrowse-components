@@ -40,8 +40,12 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    whoever is reshaping the alignments, wiggle, Hi-C, LD and MAF color objects,
    so agree on the order with that thread first.
 2. **The other filter families as predicate lists**: alignments, canvas,
-   variant, MAF and junction/connection rows. First bench the flag fusion
-   against today's `flagInclude`/`flagExclude`/`minMapq` path.
+   variant, MAF and junction/connection rows. The compiler fuses flag bits
+   (`bits` lanes) and measures 1.5x the hand-written flag and MAPQ test alone,
+   about 2 ns a read against 359 ns of BAM decode (measurement
+   `field-predicate-read-filter`). Before the alignments filter moves onto
+   it, A/B the whole fetch on `1000x.shortread.bam` on ada; a loss in
+   seconds there keeps the hand-written path behind the same config.
    The same pass moves each band's layer toggles and thresholds into its
    layers' `show` and `filter` (ADR-238 "Layers inside a part"):
    `coverage.interbase`, `coverage.alleles`, `pileup.mismatches`,
