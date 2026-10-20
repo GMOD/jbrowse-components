@@ -4,6 +4,7 @@ import { scheduleDetachedDestroy } from '@jbrowse/product-core'
 
 import { LazyJBrowse } from '../LazyJBrowse.ts'
 
+import type { LaunchPlanJson } from '../../../electron/ipc/channelTypes.ts'
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
 import type { StartScreenPluginManager } from './pluginManagers.tsx'
 import type { JBrowseConfigInput } from './types.ts'
@@ -14,7 +15,7 @@ export { fetchConfig } from './fetchConfig.ts'
 export type { StartScreenPluginManager } from './pluginManagers.tsx'
 
 /**
- * The three ways a plugin manager gets built, each behind a dynamic import.
+ * The ways a plugin manager gets built, each behind a dynamic import.
  *
  * pluginManagers.tsx reaches corePlugins, and through it every plugin's models,
  * adapters and config schemas — the renderer's entire plugin graph, plus the
@@ -23,7 +24,7 @@ export type { StartScreenPluginManager } from './pluginManagers.tsx'
  * evaluating the whole thing before the start screen could draw a single pixel,
  * even though the start screen has no session and uses none of it.
  *
- * All three entry points were already async and awaited at every call site, so
+ * Every entry point was already async and awaited at every call site, so
  * deferring them costs a chunk load on a path that was going to wait on IPC and
  * plugin fetches anyway. Nothing here may import pluginManagers.tsx statically —
  * one such import puts the graph back in the first paint, and nothing about the
@@ -47,6 +48,12 @@ export async function launchSnapshot(snap: JBrowseConfigInput) {
   preloadComponent(LazyJBrowse)
   const { launchSnapshot } = await import('./pluginManagers.tsx')
   return launchSnapshot(snap)
+}
+
+export async function openLaunchPlan(plan: LaunchPlanJson) {
+  preloadComponent(LazyJBrowse)
+  const { openLaunchPlan } = await import('./pluginManagers.tsx')
+  return openLaunchPlan(plan)
 }
 
 export async function openSpecLink(link: string) {

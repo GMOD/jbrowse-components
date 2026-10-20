@@ -25,9 +25,10 @@ import {
   globalPluginsGeneration,
   markGlobalPluginLoadFinished,
 } from './globalPlugins.ts'
-import { launchFromLink } from './launchFromLink.ts'
+import { launchFromLink, launchFromPlan } from './launchFromLink.ts'
 import { resolveSessionName } from './sessionName.ts'
 
+import type { LaunchPlanJson } from '../../../electron/ipc/channelTypes.ts'
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
 import type { JBrowseConfigInput } from './types.ts'
 import type {
@@ -248,6 +249,19 @@ export async function openSpecLink(link: string) {
     // builds with the one the spec describes, and names it from the link
     createPluginManager: launchSnapshot,
     trustPlugins,
+  })
+}
+
+/**
+ * Open what a command line named: data files, a genome and a location, built
+ * into a plan by the main process. A config.json it names is read the way
+ * opening that file reads it, and is not written back to.
+ */
+export async function openLaunchPlan(plan: LaunchPlanJson) {
+  return launchFromPlan(plan, {
+    fetchConfig,
+    createPluginManager: launchSnapshot,
+    readConfigFile: async path => (await invokeIpc('loadSession', path)).snap,
   })
 }
 

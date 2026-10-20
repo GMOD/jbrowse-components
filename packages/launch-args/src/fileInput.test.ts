@@ -10,15 +10,6 @@ import {
   sequenceAssembly,
 } from './fileInput.ts'
 
-const fakeAssembly = {
-  name: 'testAsm',
-  sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'refseq',
-    adapter: { type: 'IndexedFastaAdapter' },
-  },
-}
-
 describe('makeLocation', () => {
   test('a URL scheme makes a uri location', () => {
     for (const uri of [
@@ -45,8 +36,8 @@ describe('makeLocation', () => {
 })
 
 describe('fileTrack', () => {
-  test('a bam track carries the sequence adapter and its index', () => {
-    expect(fileTrack('bam', ['reads.bam'], fakeAssembly)).toMatchObject({
+  test('a bam track finds its index', () => {
+    expect(fileTrack('bam', ['reads.bam'], 'testAsm')).toMatchObject({
       type: 'AlignmentsTrack',
       trackId: 'reads.bam',
       name: 'reads.bam',
@@ -55,23 +46,22 @@ describe('fileTrack', () => {
         type: 'BamAdapter',
         bamLocation: { localPath: 'reads.bam' },
         index: { location: { localPath: 'reads.bam.bai' }, indexType: 'BAI' },
-        sequenceAdapter: { type: 'IndexedFastaAdapter' },
       },
     })
   })
 
   test('a bare file is typed by its name, the same as its flag', () => {
-    expect(fileTrack('file', ['reads.bam'], fakeAssembly)).toEqual(
-      fileTrack('bam', ['reads.bam'], fakeAssembly),
+    expect(fileTrack('file', ['reads.bam'], 'testAsm')).toEqual(
+      fileTrack('bam', ['reads.bam'], 'testAsm'),
     )
-    expect(fileTrack('file', ['calls.vcf.gz'], fakeAssembly)).toMatchObject({
+    expect(fileTrack('file', ['calls.vcf.gz'], 'testAsm')).toMatchObject({
       type: 'VariantTrack',
       adapter: { type: 'VcfTabixAdapter' },
     })
   })
 
   test('a typed flag wins over the name', () => {
-    expect(fileTrack('bigwig', ['signal.data'], fakeAssembly)).toMatchObject({
+    expect(fileTrack('bigwig', ['signal.data'], 'testAsm')).toMatchObject({
       type: 'QuantitativeTrack',
       adapter: {
         type: 'BigWigAdapter',
@@ -85,7 +75,7 @@ describe('fileTrack', () => {
       fileTrack(
         'bam',
         ['reads.bam', 'name:My reads', 'index:reads.bam.csi'],
-        fakeAssembly,
+        'testAsm',
       ),
     ).toMatchObject({
       trackId: 'reads.bam',
@@ -103,21 +93,21 @@ describe('fileTrack', () => {
     ['bigbed', 'features.bb', 'FeatureTrack', 'BigBedAdapter'],
     ['bedgz', 'regions.bed.gz', 'FeatureTrack', 'BedTabixAdapter'],
   ])('--%s %s', (flag, file, type, adapterType) => {
-    expect(fileTrack(flag, [file], fakeAssembly)).toMatchObject({
+    expect(fileTrack(flag, [file], 'testAsm')).toMatchObject({
       type,
       adapter: { type: adapterType },
     })
   })
 
   test('a cram finds its crai', () => {
-    expect(
-      fileTrack('cram', ['reads.cram'], fakeAssembly).adapter,
-    ).toMatchObject({ craiLocation: { localPath: 'reads.cram.crai' } })
+    expect(fileTrack('cram', ['reads.cram'], 'testAsm').adapter).toMatchObject({
+      craiLocation: { localPath: 'reads.cram.crai' },
+    })
   })
 
   test('a vcfgz defaults to a tbi index', () => {
     expect(
-      fileTrack('vcfgz', ['variants.vcf.gz'], fakeAssembly).adapter,
+      fileTrack('vcfgz', ['variants.vcf.gz'], 'testAsm').adapter,
     ).toMatchObject({
       index: {
         indexType: 'TBI',
@@ -142,13 +132,13 @@ describe('fileTrack', () => {
     })
 
     test('a tabix track finds it, and opens it as CSI', () => {
-      expect(fileTrack('vcfgz', [vcf], fakeAssembly).adapter).toMatchObject({
+      expect(fileTrack('vcfgz', [vcf], 'testAsm').adapter).toMatchObject({
         index: { indexType: 'CSI', location: { localPath: `${vcf}.csi` } },
       })
     })
 
     test('a bam track finds it too', () => {
-      expect(fileTrack('bam', [bam], fakeAssembly).adapter).toMatchObject({
+      expect(fileTrack('bam', [bam], 'testAsm').adapter).toMatchObject({
         index: { indexType: 'CSI', location: { localPath: `${bam}.csi` } },
       })
     })
@@ -156,7 +146,7 @@ describe('fileTrack', () => {
     test('the conventional sibling still wins when it is there', () => {
       fs.writeFileSync(`${vcf}.tbi`, '')
       try {
-        expect(fileTrack('vcfgz', [vcf], fakeAssembly).adapter).toMatchObject({
+        expect(fileTrack('vcfgz', [vcf], 'testAsm').adapter).toMatchObject({
           index: { indexType: 'TBI' },
         })
       } finally {
@@ -171,7 +161,7 @@ describe('fileTrack', () => {
     fs.writeFileSync(bam, '')
     fs.writeFileSync(path.join(dir, 'reads.bai'), '')
     try {
-      expect(fileTrack('bam', [bam], fakeAssembly).adapter).toMatchObject({
+      expect(fileTrack('bam', [bam], 'testAsm').adapter).toMatchObject({
         index: {
           indexType: 'BAI',
           location: { localPath: path.join(dir, 'reads.bai') },
@@ -187,7 +177,7 @@ describe('fileTrack', () => {
     const data = path.join(dir, 'reads.sam')
     fs.writeFileSync(data, '')
     try {
-      expect(fileTrack('bam', [data], fakeAssembly).adapter).toMatchObject({
+      expect(fileTrack('bam', [data], 'testAsm').adapter).toMatchObject({
         index: { location: { localPath: `${data}.bai` } },
       })
     } finally {
@@ -197,7 +187,7 @@ describe('fileTrack', () => {
 
   test('a remote file keeps the conventional sibling, unprobed', () => {
     expect(
-      fileTrack('vcfgz', ['https://example.com/variants.vcf.gz'], fakeAssembly)
+      fileTrack('vcfgz', ['https://example.com/variants.vcf.gz'], 'testAsm')
         .adapter,
     ).toMatchObject({
       index: {
@@ -208,14 +198,14 @@ describe('fileTrack', () => {
   })
 
   test('a file nothing can type names the flags that would', () => {
-    expect(() => fileTrack('file', ['notes.txt'], fakeAssembly)).toThrow(
+    expect(() => fileTrack('file', ['notes.txt'], 'testAsm')).toThrow(
       /cannot tell what kind of file notes\.txt is.*--bam/,
     )
   })
 
   test('a genome file is not a track', () => {
-    expect(() => fileTrack('file', ['other.fa'], fakeAssembly)).toThrow(
-      /other\.fa is a genome/,
+    expect(() => fileTrack('file', ['other.fa'], 'testAsm')).toThrow(
+      /other\.fa is a genome, and this view already has one/,
     )
   })
 })

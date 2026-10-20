@@ -19,6 +19,8 @@ export {
   trackFlagAdapters,
   trackFlags,
 } from './fileInput.ts'
+export { genomeConfigUrl } from './genome.ts'
+export { type LaunchPlan, launchFlags, launchPlan } from './launchPlan.ts'
 export {
   type Entry,
   FILE_FLAG,

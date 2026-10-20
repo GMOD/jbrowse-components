@@ -13,7 +13,8 @@ import {
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { decodeSessionFromUrl } from '@jbrowse/product-core'
 
-import type { JBrowseConfig } from './types.ts'
+import type { LaunchPlanJson } from '../../../electron/ipc/channelTypes.ts'
+import type { JBrowseConfig, JBrowseConfigInput } from './types.ts'
 import type { ParsedSessionSnapshotUrl } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
@@ -162,4 +163,57 @@ export async function launchFromLink(
     // as opening that config from a file
     return createPluginManager(await fetchConfig(link))
   }
+}
+
+export interface LaunchFromPlanDeps {
+  fetchConfig: LaunchFromLinkDeps['fetchConfig']
+  createPluginManager: (config?: JBrowseConfigInput) => Promise<PluginManager>
+  // a config.json on disk, its relative paths resolved against its folder
+  readConfigFile: (path: string) => Promise<JBrowseConfigInput>
+}
+
+/**
+ * Turns a command line's plan into a session: the config it names, fetched
+ * through the same plugin-trust gate a linked one passes, then one linear view
+ * of the plan's genome, files and tracks. A hosted config's genome is only
+ * known once it is fetched, so its name is filled in here.
+ */
+export async function launchFromPlan(
+  plan: LaunchPlanJson,
+  { fetchConfig, createPluginManager, readConfigFile }: LaunchFromPlanDeps,
+) {
+  const config = plan.config
+    ? /^https?:\/\//i.test(plan.config)
+      ? await fetchConfig(plan.config)
+      : await readConfigFile(plan.config)
+    : undefined
+  const assembly = plan.assemblyName ?? config?.assemblies?.[0]?.name
+  if (!assembly) {
+    throw new Error(`${plan.config} has no assemblies`)
+  }
+  const pluginManager = await createPluginManager(config)
+  await loadSessionSpec(
+    {
+      sessionAssemblies: plan.assembly ? [plan.assembly] : [],
+      sessionTracks: plan.tracks.map(track =>
+        track.assemblyNames ? track : { ...track, assemblyNames: [assembly] },
+      ),
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly,
+          ...(plan.loc ? { loc: plan.loc } : {}),
+          tracks: plan.show,
+        },
+      ],
+    },
+    pluginManager,
+  )
+  if (plan.unapplied.length) {
+    pluginManager.rootModel?.session?.notify(
+      `JBrowse Desktop does not apply these track settings from the command line yet: ${plan.unapplied.join(', ')}`,
+      'warning',
+    )
+  }
+  return pluginManager
 }

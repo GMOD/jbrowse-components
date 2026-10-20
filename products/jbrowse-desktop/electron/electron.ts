@@ -1,4 +1,3 @@
-import fs from 'node:fs'
 import path from 'node:path'
 
 import { autoUpdater as nativeAutoUpdater, app, dialog } from 'electron'
@@ -22,7 +21,7 @@ import { resolveLaunchMode } from './launchMode.ts'
 import {
   JBROWSE_PROTOCOL,
   findLaunchTarget,
-  findUnopenableFile,
+  openFileTarget,
   parseProtocolUrl,
 } from './launchTarget.ts'
 import { describeLaunchLink } from './linkPrompt.ts'
@@ -39,7 +38,7 @@ import {
 } from './window.ts'
 
 import type { CloseGuard } from './closeGuard.ts'
-import type { LaunchTarget } from './launchTarget.ts'
+import type { ArgvTarget, LaunchTarget } from './launchTarget.ts'
 import type { BrowserWindow } from 'electron'
 
 const { autoUpdater } = pkg
@@ -92,11 +91,11 @@ function showFatalError(title: string, error: unknown) {
 // diagnostic. Resolving is what has to happen once, and a promise already does
 // that; the listener staying is free. It also keeps `preventDefault` on every
 // delivery rather than only the first.
-function getInitialTarget(): Promise<LaunchTarget | undefined> {
+function getInitialTarget(): Promise<ArgvTarget | undefined> {
   return new Promise(resolve => {
     const onOpenFile = (event: Electron.Event, filePath: string) => {
       event.preventDefault()
-      resolve({ type: 'file', path: filePath })
+      resolve(openFileTarget(filePath))
     }
     const onOpenUrl = (event: Electron.Event, url: string) => {
       event.preventDefault()
@@ -110,7 +109,7 @@ function getInitialTarget(): Promise<LaunchTarget | undefined> {
     void app.whenReady().then(() => {
       app.off('open-file', onOpenFile)
       app.off('open-url', onOpenUrl)
-      resolve(findLaunchTarget(process.argv, process.cwd()))
+      resolve(findLaunchTarget(appArgv(process.argv), process.cwd()))
     })
   })
 }
@@ -161,26 +160,40 @@ async function confirmOpenLink(url: string, parent: BrowserWindow | null) {
   return response === 0
 }
 
-function isFile(filePath: string) {
-  return !!fs.statSync(filePath, { throwIfNoEntry: false })?.isFile()
+// What a second launch sends the running one about itself. Chromium hands the
+// 'second-instance' event an argv with its switches moved ahead of everything
+// else, so `--loc chr1:1-100` arrived as `--loc <app path> … chr1:1-100`; the
+// launch's own argv, sent as the lock's data, keeps its order.
+function forwardedLaunch(data: unknown) {
+  const { argv, cwd } = (data ?? {}) as { argv?: unknown; cwd?: unknown }
+  return Array.isArray(argv) &&
+    argv.every(a => typeof a === 'string') &&
+    typeof cwd === 'string'
+    ? { argv, cwd }
+    : undefined
 }
 
-async function explainUnopenableFile(
-  argv: readonly string[],
-  cwd: string,
+// A dev run is the bare Electron binary with the app's path as its first
+// argument, which is not one of the user's.
+function appArgv(argv: readonly string[]) {
+  return process.defaultApp ? argv.slice(1) : argv
+}
+
+// The command line named something to open and it could not be built, so the
+// start screen is up with nothing on it; say why.
+async function reportInvalidLaunch(
+  message: string,
   parent: BrowserWindow | null,
 ) {
-  const file = findUnopenableFile(argv, cwd, isFile)
-  if (file) {
-    const message = `JBrowse Desktop cannot open ${path.basename(file)} from the command line`
-    const detail =
-      'A command-line argument can be a session (.jbrowse) or a config.json, such as one @jbrowse/cli builds. Open a genome with "Open new genome" on the start screen, and add a data file with File → Open track...'
-    console.error(`${message}. ${detail}`)
-    const options = { type: 'info' as const, message, detail }
-    await (parent
-      ? dialog.showMessageBox(parent, options)
-      : dialog.showMessageBox(options))
+  console.error(`jbrowse-desktop: ${message}`)
+  const options = {
+    type: 'error' as const,
+    message: 'JBrowse Desktop could not open what the command line named',
+    detail: message,
   }
+  await (parent
+    ? dialog.showMessageBox(parent, options)
+    : dialog.showMessageBox(options))
 }
 
 // Tracks the single main window. Concurrent ensureWindow calls during creation
@@ -296,8 +309,10 @@ function runApp() {
   // open-url, Windows/Linux second-instance). A declined link still yields a
   // window — the start screen if none exists yet — rather than opening the
   // linked session.
-  async function openTarget(target: LaunchTarget | undefined) {
-    if (
+  async function openTarget(target: ArgvTarget | undefined) {
+    if (target?.type === 'invalid') {
+      await reportInvalidLaunch(target.message, await wm.ensureWindow())
+    } else if (
       target?.type === 'link' &&
       !(await confirmOpenLink(target.url, wm.current))
     ) {
@@ -368,21 +383,23 @@ function runApp() {
       // Register app-level event handlers before any await so a second-instance
       // launch or macOS open-file/open-url that fires during filesystem init is
       // not dropped for lack of a listener
-      app.on('second-instance', (_event, argv, workingDirectory) => {
-        // Windows/Linux hand a jbrowse:// link to the running instance here, as
-        // an argv entry — the same path a file argument takes
-        const target = findLaunchTarget(argv, workingDirectory)
-        openTarget(target)
-          .then(() =>
-            target
-              ? undefined
-              : explainUnopenableFile(argv, workingDirectory, wm.current),
+      app.on(
+        'second-instance',
+        (_event, argv, workingDirectory, additionalData) => {
+          // Windows/Linux hand a jbrowse:// link to the running instance here,
+          // as an argv entry — the same path a file argument takes
+          const launch = forwardedLaunch(additionalData) ?? {
+            argv,
+            cwd: workingDirectory,
+          }
+          openTarget(findLaunchTarget(appArgv(launch.argv), launch.cwd)).catch(
+            logError,
           )
-          .catch(logError)
-      })
+        },
+      )
       app.on('open-file', (event, filePath) => {
         event.preventDefault()
-        openTarget({ type: 'file', path: filePath }).catch(logError)
+        openTarget(openFileTarget(filePath)).catch(logError)
       })
       // macOS delivers a jbrowse:// link this way, whether or not the app is
       // already running
@@ -420,13 +437,7 @@ function runApp() {
       }
 
       await initializeFileSystem(paths)
-      const target = await initialTarget
-      await openTarget(target)
-      if (!target) {
-        explainUnopenableFile(process.argv, process.cwd(), wm.current).catch(
-          logError,
-        )
-      }
+      await openTarget(await initialTarget)
     } catch (error) {
       showFatalError('Failed to initialize application', error)
     }
@@ -434,7 +445,7 @@ function runApp() {
 }
 
 const launchMode = resolveLaunchMode(process.argv, app.getVersion(), () =>
-  app.requestSingleInstanceLock(),
+  app.requestSingleInstanceLock({ argv: process.argv, cwd: process.cwd() }),
 )
 if (launchMode.type === 'info') {
   console.log(launchMode.output)

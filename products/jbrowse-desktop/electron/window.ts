@@ -39,6 +39,9 @@ export function buildAppUrl(
   if (target?.type === 'link') {
     url.searchParams.set('specLink', target.url)
   }
+  if (target?.type === 'plan') {
+    url.searchParams.set('launchPlan', JSON.stringify(target.plan))
+  }
   if (renderer) {
     url.searchParams.set('renderer', renderer)
   }

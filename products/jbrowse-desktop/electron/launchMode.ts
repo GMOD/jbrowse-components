@@ -7,9 +7,24 @@
 export const HELP_TEXT = `JBrowse 2 desktop
 
 Usage: jbrowse-desktop [options] [file | jbrowse://open?url=<JBrowse Web link>]
+       jbrowse-desktop <genome file> [data files...] [--loc <location>]
+       jbrowse-desktop --genome <name> [data files...] [--track <id>...]
 
   file          Path to a session (.jbrowse) or configuration (config.json)
                 file to open on launch
+
+Opening data (the same arguments jb2export takes):
+  <data file>        A FASTA, 2bit or .chrom.sizes is the genome; any other
+                     file (BAM, CRAM, VCF, BigWig, GFF, BED, ...) opens as a
+                     track, typed by its name. name:<label> and index:<file>
+                     may follow it
+  --genome <name>    A genomes.jbrowse.org genome (hg38, GCA_...) to open on
+  --config <path>    A config.json to open on, with --assembly to pick one of
+                     its genomes
+  --loc <location>   Where to open: chr1:1-1000, or a gene name
+  --track <id>       A track from the genome's or config's own list
+  --bam, --cram, --vcfgz, --gffgz, --bigwig, --bigbed, --bedgz, --hic <file>
+                     A file of that type, whatever its name says
 
 Options:
   --renderer <mode>  Force a rendering backend: "webgl" or "canvas" instead of

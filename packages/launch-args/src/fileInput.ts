@@ -126,14 +126,14 @@ export function sequenceAssembly(
 }
 
 /**
- * A track for one file argument on `assembly`, labelled by `name:` or the
- * file's basename. BAM and CRAM carry the assembly's sequence adapter, which
- * CRAM decodes against.
+ * A track for one file argument, labelled by `name:` or the file's basename.
+ * Without `assemblyName` it names no assembly, for a caller that learns the
+ * assembly later, from a config it has yet to fetch.
  */
 export function fileTrack(
   flag: string,
   [file, ...mods]: string[],
-  assembly: Assembly,
+  assemblyName?: string,
 ): Track {
   if (!file) {
     throw new Error(`--${flag} requires a file argument`)
@@ -147,18 +147,14 @@ export function fileTrack(
   })
   if (isSequenceAdapter(adapter)) {
     throw new Error(
-      `${file} is a genome, and ${assembly.name} is already the genome; open one genome per view`,
+      `${file} is a genome, and this view already has one; open one genome per view`,
     )
   }
-  const name = modifierValue(mods, 'name') ?? path.basename(file)
   return {
     type: guessTrackType(adapter.type, file),
     trackId: path.basename(file),
-    name,
-    assemblyNames: [assembly.name],
-    adapter:
-      adapter.type === 'BamAdapter' || adapter.type === 'CramAdapter'
-        ? { ...adapter, sequenceAdapter: assembly.sequence.adapter }
-        : adapter,
+    name: modifierValue(mods, 'name') ?? path.basename(file),
+    ...(assemblyName ? { assemblyNames: [assemblyName] } : {}),
+    adapter,
   }
 }

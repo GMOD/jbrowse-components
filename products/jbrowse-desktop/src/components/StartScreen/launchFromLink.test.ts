@@ -1,7 +1,7 @@
 import { aesEncrypt, toUrlSafeB64 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { launchFromLink } from './launchFromLink.ts'
+import { launchFromLink, launchFromPlan } from './launchFromLink.ts'
 
 import type { JBrowseConfig } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -402,5 +402,115 @@ describe('a share- link', () => {
 
     expect(fetchMock).not.toHaveBeenCalled()
     expect(createPluginManager).not.toHaveBeenCalled()
+  })
+})
+
+describe('a command-line plan', () => {
+  const bam = {
+    trackId: 'reads.bam',
+    type: 'AlignmentsTrack',
+    adapter: { type: 'BamAdapter' },
+  }
+  const deps = () => ({
+    fetchConfig: jest.fn().mockResolvedValue(config),
+    readConfigFile: jest.fn().mockResolvedValue(config),
+    createPluginManager: jest.fn().mockResolvedValue(pluginManager),
+  })
+
+  test('with its own genome needs no config', async () => {
+    const d = deps()
+    const assembly = { name: 'ref.fa', sequence: {} }
+    await launchFromPlan(
+      {
+        assembly,
+        assemblyName: 'ref.fa',
+        loc: 'ctgA:1-100',
+        tracks: [{ ...bam, assemblyNames: ['ref.fa'] }],
+        show: ['reads.bam'],
+        unapplied: [],
+      },
+      d,
+    )
+    expect(d.fetchConfig).not.toHaveBeenCalled()
+    expect(d.createPluginManager).toHaveBeenCalledWith(undefined)
+    expect(mockLoadSessionSpec).toHaveBeenCalledWith(
+      {
+        sessionAssemblies: [assembly],
+        sessionTracks: [{ ...bam, assemblyNames: ['ref.fa'] }],
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'ref.fa',
+            loc: 'ctgA:1-100',
+            tracks: ['reads.bam'],
+          },
+        ],
+      },
+      pluginManager,
+    )
+  })
+
+  test('on a hosted genome, fetches it and puts the files on its assembly', async () => {
+    const d = deps()
+    await launchFromPlan(
+      {
+        config: 'https://jbrowse.org/ucsc/hg38/config.json',
+        tracks: [bam],
+        show: ['reads.bam', 'hg38-genes'],
+        unapplied: [],
+      },
+      d,
+    )
+    expect(d.fetchConfig).toHaveBeenCalledWith(
+      'https://jbrowse.org/ucsc/hg38/config.json',
+    )
+    expect(d.createPluginManager).toHaveBeenCalledWith(config)
+    expect(mockLoadSessionSpec).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionTracks: [{ ...bam, assemblyNames: ['volvox'] }],
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'volvox',
+            tracks: ['reads.bam', 'hg38-genes'],
+          },
+        ],
+      }),
+      pluginManager,
+    )
+  })
+
+  test('reads a local config from disk, not over the network', async () => {
+    const d = deps()
+    await launchFromPlan(
+      { config: '/proj/config.json', tracks: [], show: [], unapplied: [] },
+      d,
+    )
+    expect(d.readConfigFile).toHaveBeenCalledWith('/proj/config.json')
+    expect(d.fetchConfig).not.toHaveBeenCalled()
+  })
+
+  test('names the settings it did not apply', async () => {
+    const notify = jest.fn()
+    const d = {
+      ...deps(),
+      createPluginManager: jest
+        .fn()
+        .mockResolvedValue({ rootModel: { session: { notify } } }),
+    }
+    await launchFromPlan(
+      {
+        assembly: { name: 'ref.fa', sequence: {} },
+        assemblyName: 'ref.fa',
+        tracks: [],
+        show: [],
+        unapplied: ['reads.bam height:200'],
+      },
+      d,
+    )
+    expect(notify).toHaveBeenCalledWith(
+      expect.stringContaining('reads.bam height:200'),
+      'warning',
+    )
   })
 })

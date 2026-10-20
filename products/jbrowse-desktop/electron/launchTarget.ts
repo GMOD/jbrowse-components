@@ -1,8 +1,16 @@
 import path from 'node:path'
 
+import {
+  isDataFile,
+  launchFlags,
+  launchPlan,
+  parseArgv,
+} from '@jbrowse/launch-args'
+
 import { isWebUrl } from './navigationGuard.ts'
 
-import type { LaunchTarget } from './ipc/channelTypes.ts'
+import type { LaunchPlanJson, LaunchTarget } from './ipc/channelTypes.ts'
+import type { LaunchPlan } from '@jbrowse/launch-args'
 
 // Parses what a launch (argv, an OS open-file, or a jbrowse:// link) asks the
 // app to open. Kept free of `electron` imports so the parsing below is
@@ -126,14 +134,69 @@ function isProtocolUrl(arg: string) {
 }
 
 /**
- * What the command line asks to open. On Windows and Linux a jbrowse:// link
- * is delivered as an argv entry (at first launch, or via second-instance when
- * one is already running); macOS delivers it as an 'open-url' event instead.
+ * What a file macOS hands over in an 'open-file' event opens as: a session or
+ * config as itself, and a data file as `jbrowse-desktop <file>` would.
+ */
+export function openFileTarget(filePath: string): ArgvTarget | undefined {
+  return hasLaunchExtension(filePath)
+    ? { type: 'file', path: filePath }
+    : findLaunchTarget(['', filePath], path.dirname(filePath))
+}
+
+/**
+ * A launch target, or the reason a command line names none it can open. Only
+ * the main process sees the reason; it reports it rather than sending it on.
+ */
+export type ArgvTarget = LaunchTarget | { type: 'invalid'; message: string }
+
+const flagName = (arg: string) => arg.replace(/^-+/, '').split('=')[0] ?? ''
+
+/**
+ * The arguments that belong to the shared launch grammar. The rest are
+ * Desktop's own (`--renderer webgl`, `--mcp`) or switches Chromium and
+ * Electron put in argv, a second launch's included, which carry any value
+ * after an `=`. Left in, a switch would take the file after it as its value.
+ *
+ * A bare config.json beside data files is the config they open on, so
+ * `jbrowse-desktop project/config.json reads.bam` reads as `--config`.
+ */
+function launchArgs(args: readonly string[]) {
+  const kept: string[] = []
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]!
+    if (arg.startsWith('-') && arg !== '-' && !launchFlags.has(flagName(arg))) {
+      if (arg === '--renderer') {
+        i++
+      }
+    } else if (!arg.startsWith('-') && arg.toLowerCase().endsWith('.json')) {
+      kept.push('--config', arg)
+    } else {
+      kept.push(arg)
+    }
+  }
+  return kept
+}
+
+// A command line that names what to open with the launch grammar: a data
+// file, or one of its flags.
+function usesLaunchGrammar(args: readonly string[]) {
+  return args.some(
+    a => isDataFile(a) || (a.startsWith('--') && launchFlags.has(flagName(a))),
+  )
+}
+
+const asPlanJson = (plan: LaunchPlan): LaunchPlanJson => plan
+
+/**
+ * What the command line asks to open, or why it cannot be opened. On Windows
+ * and Linux a jbrowse:// link is delivered as an argv entry (at first launch,
+ * or via second-instance when one is already running); macOS delivers it as
+ * an 'open-url' event instead.
  */
 export function findLaunchTarget(
   argv: readonly string[],
   cwd: string,
-): LaunchTarget | undefined {
+): ArgvTarget | undefined {
   const args = argv.slice(1)
   // Any jbrowse:// argument is claimed here, whether or not it parses: an
   // unusable one (a rejected inner protocol, a missing url) must fail as a bad
@@ -144,24 +207,17 @@ export function findLaunchTarget(
     const url = protocolArgs.map(parseProtocolUrl).find(Boolean)
     return url ? { type: 'link', url } : undefined
   }
+  if (usesLaunchGrammar(args)) {
+    try {
+      const plan = launchPlan(parseArgv(launchArgs(args)), cwd)
+      return { type: 'plan', plan: asPlanJson(plan) }
+    } catch (e) {
+      return {
+        type: 'invalid',
+        message: e instanceof Error ? e.message : String(e),
+      }
+    }
+  }
   const file = args.find(a => hasLaunchExtension(a))
   return file ? { type: 'file', path: path.resolve(cwd, file) } : undefined
-}
-
-/**
- * A command-line file argument that {@link findLaunchTarget} will not open,
- * such as a FASTA or BAM, so the launch can say why the start screen came up
- * empty. Only an existing regular file counts, so a flag's value
- * (`--renderer webgl`) or a dev run's app directory never does.
- */
-export function findUnopenableFile(
-  argv: readonly string[],
-  cwd: string,
-  isFile: (filePath: string) => boolean,
-) {
-  return argv
-    .slice(1)
-    .filter(a => !a.startsWith('-') && !isProtocolUrl(a))
-    .map(a => path.resolve(cwd, a))
-    .find(p => !hasLaunchExtension(p) && isFile(p))
 }

@@ -23,6 +23,7 @@ import StartScreen from './StartScreen/StartScreen.tsx'
 import {
   destroyPluginManager,
   loadPluginManager,
+  openLaunchPlan,
   openSpecLink,
 } from './StartScreen/util.tsx'
 import { useLaunchTarget } from './useLaunchTarget.ts'
@@ -30,6 +31,7 @@ import { usePluginManagerLoad } from './usePluginManagerLoad.ts'
 import { useSessionSwap } from './useSessionSwap.ts'
 
 import type {
+  LaunchPlanJson,
   LaunchTarget,
   McpReadyState,
 } from '../../electron/ipc/channelTypes.ts'
@@ -39,11 +41,19 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 setGpuOverride(new URLSearchParams(window.location.search).get('renderer'))
 prewarmGraphics()
 
-// Both launch params are one-shot: once the session they name is built (or has
+// The launch params are one-shot: once the session they name is built (or has
 // failed to build) they have to leave the address bar, or the next read reopens
 // it. Cleared together because at most one was ever set.
 function clearTarget() {
-  deleteQueryParams(['config', 'specLink'])
+  deleteQueryParams(['config', 'specLink', 'launchPlan'])
+}
+
+function loadLaunchTarget(target: LaunchTarget) {
+  return target.type === 'file'
+    ? loadPluginManager(target.path)
+    : target.type === 'link'
+      ? openSpecLink(target.url)
+      : openLaunchPlan(target.plan)
 }
 
 // PluginManager types `rootModel` as the generic state-tree node it is for every
@@ -70,6 +80,8 @@ const LoaderContents = observer(function LoaderContents() {
   const [config] = useQueryParam('config')
   // a jbrowse:// link the main process resolved to a JBrowse Web url
   const [specLink] = useQueryParam('specLink')
+  // files, a genome and a location named on the command line
+  const [launchPlan] = useQueryParam('launchPlan')
   const notifyError = useNotifyError()
 
   // The installed manager, readable synchronously. Replacing one is a side
@@ -169,11 +181,7 @@ const LoaderContents = observer(function LoaderContents() {
   // return a rejection to, so it reports its own.
   useLaunchTarget({
     swap,
-    load: useEventCallback((target: LaunchTarget) =>
-      target.type === 'file'
-        ? loadPluginManager(target.path)
-        : openSpecLink(target.url),
-    ),
+    load: useEventCallback(loadLaunchTarget),
     onError: useEventCallback((e: unknown, target: LaunchTarget) => {
       // The session this failed to replace is still open and still on screen —
       // nothing was torn down — so this notifies rather than falling back to
@@ -193,9 +201,8 @@ const LoaderContents = observer(function LoaderContents() {
   })
 
   // What the main process asked this window to open, if anything. buildAppUrl
-  // writes one param or the other, never both, so one load covers both routes
-  // and `config` decides which of the two it is.
-  const target = config ?? specLink
+  // writes at most one of the params, so one load covers every route.
+  const target = config ?? specLink ?? launchPlan
 
   useMcpRequests(
     () => installedRef.current,
@@ -209,7 +216,13 @@ const LoaderContents = observer(function LoaderContents() {
   )
 
   const loadTarget = useEventCallback((source: string) =>
-    config ? loadPluginManager(source) : openSpecLink(source),
+    loadLaunchTarget(
+      config
+        ? { type: 'file', path: source }
+        : specLink
+          ? { type: 'link', url: source }
+          : { type: 'plan', plan: JSON.parse(source) as LaunchPlanJson },
+    ),
   )
 
   const handleTargetError = useEventCallback((e: unknown) => {

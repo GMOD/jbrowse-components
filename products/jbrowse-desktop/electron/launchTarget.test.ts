@@ -1,6 +1,6 @@
 import {
   findLaunchTarget,
-  findUnopenableFile,
+  openFileTarget,
   parseProtocolUrl,
   toProtocolUrl,
 } from './launchTarget.ts'
@@ -128,19 +128,83 @@ test('matches a launch file extension case-insensitively', () => {
   ).toEqual({ type: 'file', path: '/tmp/Config.JSON' })
 })
 
-test('names a data file the launch cannot open', () => {
-  const files = new Set(['/home/me/reads.bam', '/home/me/my.jbrowse'])
-  const isFile = (p: string) => files.has(p)
-  expect(
-    findUnopenableFile(['jbrowse-desktop', 'reads.bam'], '/home/me', isFile),
-  ).toBe('/home/me/reads.bam')
-  expect(
-    findUnopenableFile(
-      ['jbrowse-desktop', '--renderer', 'webgl', 'my.jbrowse', 'missing.fa'],
-      '/home/me',
-      isFile,
-    ),
-  ).toBeUndefined()
+describe('data files on the command line', () => {
+  const target = (...args: string[]) =>
+    findLaunchTarget(['jbrowse-desktop', ...args], '/home/me')
+
+  test('a genome and data files become a plan, paths resolved', () => {
+    const t = target('ref.fa', 'reads.bam', '--loc', 'chr1:1-100')
+    expect(t).toMatchObject({
+      type: 'plan',
+      plan: {
+        assemblyName: 'ref.fa',
+        loc: 'chr1:1-100',
+        show: ['reads.bam'],
+        tracks: [
+          { adapter: { bamLocation: { localPath: '/home/me/reads.bam' } } },
+        ],
+      },
+    })
+  })
+
+  test('a config.json beside data files is the config they open on', () => {
+    expect(target('proj/config.json', 'reads.bam')).toMatchObject({
+      type: 'plan',
+      plan: { config: '/home/me/proj/config.json', show: ['reads.bam'] },
+    })
+    // alone, it opens as it always has
+    expect(target('proj/config.json')).toEqual({
+      type: 'file',
+      path: '/home/me/proj/config.json',
+    })
+  })
+
+  test('flags that are not the launch grammar are left alone', () => {
+    expect(
+      target('--renderer', 'webgl', '--genome', 'hg38', '--no-sandbox'),
+    ).toMatchObject({
+      type: 'plan',
+      plan: { config: 'https://jbrowse.org/ucsc/hg38/config.json' },
+    })
+    // a switch never takes the file after it as its value
+    expect(
+      target('--no-sandbox', 'ref.fa', '--enable-logging', 'reads.bam'),
+    ).toMatchObject({
+      type: 'plan',
+      plan: { assemblyName: 'ref.fa', show: ['reads.bam'] },
+    })
+    expect(target('--renderer', 'webgl')).toBeUndefined()
+  })
+
+  test('a plan that cannot be built says why', () => {
+    expect(target('reads.bam')).toEqual({
+      type: 'invalid',
+      message: expect.stringMatching(/Name a genome/) as string,
+    })
+    expect(target('notes.txt', 'ref.fa')).toEqual({
+      type: 'invalid',
+      message: expect.stringMatching(
+        /Unexpected argument "notes.txt"/,
+      ) as string,
+    })
+  })
+
+  test('a link never becomes a plan, so it never names a local file', () => {
+    expect(
+      target(toProtocolUrl(webUrl), '/etc/ref.fa', '/etc/secret.bam'),
+    ).toEqual({ type: 'link', url: webUrl })
+  })
+
+  test('a macOS open-file of a data file opens as that file on the command line', () => {
+    expect(openFileTarget('/data/ref.fa')).toMatchObject({
+      type: 'plan',
+      plan: { assemblyName: 'ref.fa' },
+    })
+    expect(openFileTarget('/data/s.jbrowse')).toEqual({
+      type: 'file',
+      path: '/data/s.jbrowse',
+    })
+  })
 })
 
 test('ignores flags and the argv[0] binary path', () => {

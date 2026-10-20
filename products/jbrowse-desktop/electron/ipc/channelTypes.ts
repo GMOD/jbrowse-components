@@ -80,6 +80,28 @@ export type LaunchTarget =
   | { type: 'file'; path: string }
   // a JBrowse Web https link, unwrapped from a jbrowse:// url
   | { type: 'link'; url: string }
+  // data files, a genome and a location named on the command line
+  | { type: 'plan'; plan: LaunchPlanJson }
+
+/**
+ * `@jbrowse/launch-args`'s `LaunchPlan`, restated so this file stays
+ * import-free; launchTarget.ts assigns one to the other, which fails the build
+ * if they drift.
+ */
+export interface LaunchPlanJson {
+  config?: string
+  assembly?: {
+    name: string
+    sequence: Record<string, unknown>
+    refNameAliases?: Record<string, unknown>
+    cytobands?: Record<string, unknown>
+  }
+  assemblyName?: string
+  loc?: string
+  tracks: ({ trackId: string } & Record<string, unknown>)[]
+  show: string[]
+  unapplied: string[]
+}
 
 /**
  * Pushes from the main process to the renderer — the one direction the invoke

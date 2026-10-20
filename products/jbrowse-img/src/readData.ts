@@ -302,7 +302,7 @@ export function readData(
               configData.assembly,
               modifierValue(rest, 'name'),
             )
-          : fileTrack(type, opts, configData.assembly)
+          : fileTrack(type, opts, configData.assembly.name)
       trackConfig.trackId = uniqueTrackId(usedTrackIds, trackConfig.trackId)
       configData.tracks.push(trackConfig)
       openTracks.push({ trackId: trackConfig.trackId, opts: rest })

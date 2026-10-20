@@ -605,6 +605,10 @@ importers:
       '@jbrowse/add-track-core':
         specifier: workspace:^
         version: link:../add-track-core
+    devDependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../core
 
   packages/ld-core: {}
 
@@ -2383,6 +2387,9 @@ importers:
       '@jbrowse/display-ui':
         specifier: workspace:^
         version: link:../../packages/display-ui
+      '@jbrowse/launch-args':
+        specifier: workspace:^
+        version: link:../../packages/launch-args
       '@jbrowse/mobx-state-tree':
         specifier: ^6.9.0
         version: 6.9.0(mobx@7.0.6)

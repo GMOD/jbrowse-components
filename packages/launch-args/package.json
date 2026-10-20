@@ -36,6 +36,9 @@
   "dependencies": {
     "@jbrowse/add-track-core": "workspace:^"
   },
+  "devDependencies": {
+    "@jbrowse/core": "workspace:^"
+  },
   "publishConfig": {
     "access": "public",
     "main": "esm/index.js",
