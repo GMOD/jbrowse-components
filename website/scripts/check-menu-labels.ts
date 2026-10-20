@@ -113,6 +113,7 @@ const EXTERNAL_PLUGIN_PAGES = new Map([
       LIBRARY_SRC('react-msaview', 'packages', 'lib', 'src'),
     ],
   ],
+  ['tutorials/protein_variants_sickle_cell.md', pluginSourceDirs('protein3d')],
 ])
 
 // Prose names for an affordance rather than labels the app renders: the docs
