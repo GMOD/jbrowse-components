@@ -5,7 +5,11 @@ import type { ReadFilter } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 function mapqRow(readFilter: ReadFilter) {
-  const model = { readFilter, setReadFilter: jest.fn() }
+  const model = {
+    readFilter,
+    setReadFilter: jest.fn(),
+    filterNarrowing: () => ({ count: 0, clear: () => {} }),
+  }
   const items = getFiltersMenuItems(model)
   const group = items.find(i => 'subMenu' in i) as {
     subMenu: (MenuItem & { label: string; subMenu?: MenuItem[] })[]

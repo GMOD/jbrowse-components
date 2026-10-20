@@ -5,7 +5,10 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { copyText } from '@jbrowse/core/util/copyText'
-import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
+import {
+  filterMembersNarrowing,
+  jexlFilterNarrowing,
+} from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
@@ -351,23 +354,15 @@ export function variantTrackMenuItems(
       // "Clear all filters" clears come from the same list — they were two,
       // and a filter added to one and not the other is one the clear leaves on.
       //
-      // Each counted by whether it is DOING anything, not by whether it was
-      // edited: MAF is off at 0 and missingness at 1 (keep every variant).
-      // Neither slider names its own undo row; each has its own reset inline
-      // below, and the group clear is what resets the whole set.
+      // Each counted by whether it differs from what the track's config
+      // declares (ADR-204), so an admin's cutoff is no narrowing of the
+      // user's. Neither slider names its own undo row; each has its own reset
+      // inline below, and the group clear is what resets the whole set.
       narrowings: {
-        maf: {
-          count: self.minMinorAlleleFrequency > 0 ? 1 : 0,
-          clear: () => {
-            self.setMinMinorAlleleFrequency(0)
-          },
-        },
-        missingness: {
-          count: self.maxMissingness < 1 ? 1 : 0,
-          clear: () => {
-            self.setMaxMissingness(1)
-          },
-        },
+        thresholds: filterMembersNarrowing(self, [
+          'minMinorAlleleFrequency',
+          'maxMissingness',
+        ]),
         filter: jexlFilterNarrowing(self),
       },
       onEdit: () => {

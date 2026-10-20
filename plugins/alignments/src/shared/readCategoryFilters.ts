@@ -1,4 +1,4 @@
-import type { CategoryFilter, ReadFilter, ReadCategoryKey } from './types.ts'
+import type { CategoryFilter, ReadCategoryKey } from './types.ts'
 
 export type { ReadCategoryKey }
 
@@ -85,8 +85,3 @@ export const READ_CATEGORIES = [
       'rather than over the whole chain a read belongs to.',
   },
 ] as const satisfies readonly ReadCategorySpec[]
-
-/** How many categories are filtering. One each, like every other filter. */
-export function activeReadCategoryCount(filterBy: ReadFilter) {
-  return READ_CATEGORIES.filter(c => filterBy[c.key] !== undefined).length
-}

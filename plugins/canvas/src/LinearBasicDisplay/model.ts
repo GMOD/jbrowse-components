@@ -6,6 +6,7 @@ import {
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { isGeneLikeType, pluralize } from '@jbrowse/core/util'
+import { filterMembersNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { categoryFilterItem } from '@jbrowse/display-kit/categoryFilter'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -266,12 +267,7 @@ export default function stateModelFactory(
         featureNarrowings() {
           return {
             ...superFeatureNarrowings(),
-            genes: {
-              count: self.genesFilter ? 1 : 0,
-              clear: () => {
-                self.setGenesFilter(undefined)
-              },
-            },
+            genes: filterMembersNarrowing(self, ['genes']),
           }
         },
 

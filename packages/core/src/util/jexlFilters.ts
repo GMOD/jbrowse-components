@@ -1,10 +1,14 @@
 // own module, not the configuration barrel: that barrel re-exports modules
 // which import this one, and a value import back into it is the cycle shape
 // `openFeatureWidget` documents
-import { getConf } from '../configuration/getConf.ts'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+
+import { getConf, setConf } from '../configuration/getConf.ts'
 import { baseDisplayConfig } from './baseDisplayConfig.ts'
+import { deepEqual } from './deepEqual.ts'
 import { ensureJexlPrefix } from './jexlStrings.ts'
 
+import type { AnyConfigurationModel } from '../configuration/types.ts'
 import type { RetiredDisplayState } from '../pluggableElementTypes/DisplayType.ts'
 import type { Reversible } from '../ui/filterMenuItems.ts'
 
@@ -60,6 +64,46 @@ export function filterExpressionsOf(filter: unknown): string[] {
  */
 export function baseJexlFilters(self: object): string[] {
   return filterExpressionsOf(baseDisplayConfig(self).filter)
+}
+
+/**
+ * What the track's config declares for this display's `filter`, as a snapshot
+ * writes it, a default left out: `{}` where it declares none.
+ */
+export function baseFilterOf(self: object): Record<string, unknown> {
+  const { filter } = baseDisplayConfig(self)
+  return Array.isArray(filter)
+    ? { expressions: filter }
+    : typeof filter === 'object' && filter !== null
+      ? (filter as Record<string, unknown>)
+      : {}
+}
+
+/**
+ * The `Reversible` for members of a display's `filter` (ADR-204): the count is
+ * how many differ from what the track's config declares, and the clear writes
+ * the declared values back, so a filter an admin declared is never one the
+ * user narrowed. Both sides compare as snapshots, a default left out of each.
+ */
+export function filterMembersNarrowing(
+  self: { configuration: AnyConfigurationModel },
+  members: readonly string[],
+): Reversible {
+  const base = baseFilterOf(self)
+  const written = getSnapshot<Record<string, unknown> | undefined>(
+    self.configuration.filter,
+  )
+  const moved = members.filter(
+    member => !deepEqual(written?.[member], base[member]),
+  )
+  return {
+    count: moved.length,
+    clear: () => {
+      for (const member of moved) {
+        setConf(self, ['filter', member], base[member] ?? null)
+      }
+    },
+  }
 }
 
 /**

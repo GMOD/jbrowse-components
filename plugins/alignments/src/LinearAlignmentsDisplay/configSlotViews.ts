@@ -1,5 +1,6 @@
 import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
 import { withPreset } from '@jbrowse/core/util/colorScale'
+import { filterMembersNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
@@ -431,6 +432,19 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get readFilter(): ReadFilter {
       return readFilterOf(self.configuration.filter)
+    },
+    /**
+     * #method
+     * How `filter` differs from what the track's config declares, its read
+     * members and its junction and connection tests together: the "Filter
+     * by..." count and what "Clear all filters" writes back.
+     */
+    filterNarrowing() {
+      return filterMembersNarrowing(self, [
+        ...readFilterMembers,
+        'junctions',
+        'connections',
+      ])
     },
     /**
      * #getter

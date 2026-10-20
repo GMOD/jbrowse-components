@@ -6,54 +6,27 @@ import { getDialogHost } from '@jbrowse/core/util'
 import { MAPQ_BINS } from '@jbrowse/core/util/colorScale'
 import { categoryFilterItem } from '@jbrowse/display-kit/categoryFilter'
 
-import {
-  READ_CATEGORIES,
-  activeReadCategoryCount,
-} from '../../shared/readCategoryFilters.ts'
-import { defaultFilterFlags } from '../../shared/util.ts'
+import { READ_CATEGORIES } from '../../shared/readCategoryFilters.ts'
 
 import type { ReadCategorySpec } from '../../shared/readCategoryFilters.ts'
 import type { ReadFilter } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
+import type { Reversible, Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 
 const FilterByTagDialog = lazy(() => import('../dialogs/FilterByTagDialog.tsx'))
 
 interface FiltersModel {
   readFilter: ReadFilter
   setReadFilter: (arg: ReadFilter) => void
-}
-
-// How many independent filters `filterBy` applies. The flag masks are one filter
-// between them (they're edited together and their no-op value is the non-zero
-// default, hence the compare against it rather than against 0), plus one per tag
-// filter, one for a read name and one per read category in effect.
-function activeFilterCount(filterBy: ReadFilter) {
-  const { flagInclude, flagExclude, minMapq, readName, tags } = filterBy
-  return (
-    (flagInclude === defaultFilterFlags.flagInclude &&
-    flagExclude === defaultFilterFlags.flagExclude
-      ? 0
-      : 1) +
-    (minMapq === undefined ? 0 : 1) +
-    (readName === undefined || readName === '' ? 0 : 1) +
-    (tags?.length ?? 0) +
-    activeReadCategoryCount(filterBy)
-  )
+  /** How `filter` differs from what the track's config declares. */
+  filterNarrowing: () => Reversible
 }
 
 // The whole of `filterBy` as one entry rather than one per field: the dialog's
 // own Reset is the per-field recovery, and each category row below undoes
 // itself, so naming an undo row here would offer a second, coarser one.
 function filterNarrowings(model: FiltersModel): Reversibles {
-  return {
-    filterBy: {
-      count: activeFilterCount(model.readFilter),
-      clear: () => {
-        model.setReadFilter(defaultFilterFlags)
-      },
-    },
-  }
+  return { filterBy: model.filterNarrowing() }
 }
 
 function readCategoryItem(
