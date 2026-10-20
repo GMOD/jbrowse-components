@@ -1,0 +1,461 @@
+{
+  "name": "Gene explorer: F5",
+  "views": [
+    {
+      "id": "lgv-F5",
+      "type": "LinearGenomeView",
+      "colorByCDS": true,
+      "hideHeaderOverview": true,
+      "showGridlines": false,
+      "init": {
+        "assembly": "hg38",
+        "loc": "chr1:169586189-169586426[rev] chr1:169582391-169582562[rev] chr1:169572181-169572383[rev] chr1:169560514-169560806[rev] chr1:169559113-169559336[rev] chr1:169556606-169556907[rev] chr1:169555142-169555387[rev] chr1:169552517-169552774[rev] chr1:169550600-169550779[rev] chr1:169549761-169550055[rev] chr1:169546402-169546632[rev] chr1:169544256-169544548[rev] chr1:169540254-169543154[rev] chr1:169536466-169536720[rev] chr1:169530746-169531062[rev] chr1:169529568-169529858[rev] chr1:169527875-169528134[rev] chr1:169525861-169526057[rev] chr1:169524797-169524948[rev] chr1:169523761-169523944[rev] chr1:169523157-169523392[rev] chr1:169520480-169520704[rev] chr1:169518372-169518603[rev] chr1:169515404-169515666[rev] chr1:169514273-169514499[rev]",
+        "tracks": [
+          "hg38-ncbiRefSeqSelect",
+          "hg38-clinvarMain",
+          "hg38-alphaMissense"
+        ]
+      }
+    },
+    {
+      "id": "msa-F5",
+      "type": "MsaView",
+      "connectedViewId": "lgv-F5",
+      "connectedFeature": {
+        "uniqueId": "NM_000130.5",
+        "type": "mRNA",
+        "refName": "chr1",
+        "start": 169514312,
+        "end": 169586386,
+        "strand": -1,
+        "name": "NM_000130.5",
+        "subfeatures": [
+          {
+            "type": "CDS",
+            "start": 169514312,
+            "end": 169514459,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 169515443,
+            "end": 169515626,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 169518411,
+            "end": 169518563,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 169520519,
+            "end": 169520664,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 169523196,
+            "end": 169523352,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 169523800,
+            "end": 169523904,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 169524836,
+            "end": 169524908,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 169525900,
+            "end": 169526017,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 169527914,
+            "end": 169528094,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 169529607,
+            "end": 169529818,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 169530785,
+            "end": 169531022,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 169536505,
+            "end": 169536680,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 169540293,
+            "end": 169543114,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 169544295,
+            "end": 169544508,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 169546441,
+            "end": 169546592,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 169549800,
+            "end": 169550015,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 169550639,
+            "end": 169550739,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 169552556,
+            "end": 169552734,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 169555181,
+            "end": 169555347,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 169556645,
+            "end": 169556867,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 169559152,
+            "end": 169559296,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 169560553,
+            "end": 169560766,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 169572220,
+            "end": 169572343,
+            "strand": -1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 169582430,
+            "end": 169582522,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 169586228,
+            "end": 169586386,
+            "strand": -1,
+            "phase": 0
+          }
+        ]
+      },
+      "uniprotId": "P12259",
+      "colorSchemeName": "percent_identity_dynamic",
+      "labelsAlignRight": true,
+      "treeAreaWidth": 200,
+      "allowedGappyness": 50,
+      "orthologParams": {
+        "taxId": 9606,
+        "geneCandidates": ["2153"],
+        "source": "ncbi",
+        "msaAlgorithm": "browser",
+        "maxSpecies": 100,
+        "proteinSequence": "MFPGCPRLWVLVVLGTSWVGWGSQGTEAAQLRQFYVAAQGISWSYRPEPTNSSLNLSVTSFKKIVYREYEPYFKKEKPQSTISGLLGPTLYAEVGDIIKVHFKNKADKPLSIHPQGIRYSKLSEGASYLDHTFPAEKMDDAVAPGREYTYEWSISEDSGPTHDDPPCLTHIYYSHENLIEDFNSGLIGPLLICKKGTLTEGGTQKTFDKQIVLLFAVFDESKSWSQSSSLMYTVNGYVNGTMPDITVCAHDHISWHLLGMSSGPELFSIHFNGQVLEQNHHKVSAITLVSATSTTANMTVGPEGKWIISSLTPKHLQAGMQAYIDIKNCPKKTRNLKKITREQRRHMKRWEYFIAAEEVIWDYAPVIPANMDKKYRSQHLDNFSNQIGKHYKKVMYTQYEDESFTKHTVNPNMKEDGILGPIIRAQVRDTLKIVFKNMASRPYSIYPHGVTFSPYEDEVNSSFTSGRNNTMIRAVQPGETYTYKWNILEFDEPTENDAQCLTRPYYSDVDIMRDIASGLIGLLLICKSRSLDRRGIQRAADIEQQAVFAVFDENKSWYLEDNINKFCENPDEVKRDDPKFYESNIMSTINGYVPESITTLGFCFDDTVQWHFCSVGTQNEILTIHFTGHSFIYGKRHEDTLTLFPMRGESVTVTMDNVGTWMLTSMNSSPRSKKLRLKFRDVKCIPDDDEDSYEIFEPPESTVMATRKMHDRLEPEDEESDADYDYQNRLAAALGIRSFRNSSLNQEEEEFNLTALALENGTEFVSSNTDIIVGSNYSSPSNISKFTVNNLAEPQKAPSHQQATTAGSPLRHLIGKNSVLNSSTAEHSSPYSEDPIEDPLQPDVTGIRLLSLGAGEFKSQEHAKHKGPKVERDQAAKHRFSWMKLLAHKVGRHLSQDTGSPSGMRPWEDLPSQDTGSPSRMRPWKDPPSDLLLLKQSNSSKILVGRWHLASEKGSYEIIQDTDEDTAVNNWLISPQNASRAWGESTPLANKPGKQSGHPKFPRVRHKSLQVRQDGGKSRLKKSQFLIKTRKKKKEKHTHHAPLSPRTFHPLRSEAYNTFSERRLKHSLVLHKSNETSLPTDLNQTLPSMDFGWIASLPDHNQNSSNDTGQASCPPGLYQTVPPEEHYQTFPIQDPDQMHSTSDPSHRSSSPELSEMLEYDRSHKSFPTDISQMSPSSEHEVWQTVISPDLSQVTLSPELSQTNLSPDLSHTTLSPELIQRNLSPALGQMPISPDLSHTTLSPDLSHTTLSLDLSQTNLSPELSQTNLSPALGQMPLSPDLSHTTLSLDFSQTNLSPELSHMTLSPELSQTNLSPALGQMPISPDLSHTTLSLDFSQTNLSPELSQTNLSPALGQMPLSPDPSHTTLSLDLSQTNLSPELSQTNLSPDLSEMPLFADLSQIPLTPDLDQMTLSPDLGETDLSPNFGQMSLSPDLSQVTLSPDISDTTLLPDLSQISPPPDLDQIFYPSESSQSLLLQEFNESFPYPDLGQMPSPSSPTLNDTFLSKEFNPLVIVGLSKDGTDYIEIIPKEEVQSSEDDYAEIDYVPYDDPYKTDVRTNINSSRDPDNIAAWYLRSNNGNRRNYYIAAEEISWDYSEFVQRETDIEDSDDIPEDTTYKKVVFRKYLDSTFTKRDPRGEYEEHLGILGPIIRAEVDDVIQVRFKNLASRPYSLHAHGLSYEKSSEGKTYEDDSPEWFKEDNAVQPNSSYTYVWHATERSGPESPGSACRAWAYYSAVNPEKDIHSGLIGPLLICQKGILHKDSNMPMDMREFVLLFMTFDEKKSWYYEKKSRSSWRLTSSEMKKSHEFHAINGMIYSLPGLKMYEQEWVRLHLLNIGGSQDIHVVHFHGQTLLENGNKQHQLGVWPLLPGSFKTLEMKASKPGWWLLNTEVGENQRAGMQTPFLIMDRDCRMPMGLSTGIISDSQIKASEFLGYWEPRLARLNNGGSYNAWSVEKLAAEFASKPWIQVDMQKEVIITGIQTQGAKHYLKSCYTTEFYVAYSSNQINWQIFKGNSTRNVMYFNGNSDASTIKENQFDPPIVARYIRISPTRAYNRPTLRLELQGCEVNGCSTPLGMENGKIENKQITASSFKKSWWGDYWEPFRARLNAQGRVNAWQAKANNNKQWLEIDLLKIKKITAIITQGCKSLSSEMYVKSYTIHYSEQGVEWKPYRLKSSMVDKIFEGNTNTKGHVKNFFNPPIISRFIRVIPKTWNQSIALRLELFGCDIY"
+      }
+    },
+    {
+      "id": "protein-F5-9mot",
+      "type": "ProteinView",
+      "height": 500,
+      "zoomToBaseLevel": false,
+      "structures": [
+        {
+          "pdbId": "9mot",
+          "feature": {
+            "uniqueId": "NM_000130.5",
+            "type": "mRNA",
+            "refName": "chr1",
+            "start": 169514312,
+            "end": 169586386,
+            "strand": -1,
+            "name": "NM_000130.5",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 169514312,
+                "end": 169514459,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 169515443,
+                "end": 169515626,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 169518411,
+                "end": 169518563,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 169520519,
+                "end": 169520664,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 169523196,
+                "end": 169523352,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 169523800,
+                "end": 169523904,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 169524836,
+                "end": 169524908,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 169525900,
+                "end": 169526017,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 169527914,
+                "end": 169528094,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 169529607,
+                "end": 169529818,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 169530785,
+                "end": 169531022,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 169536505,
+                "end": 169536680,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 169540293,
+                "end": 169543114,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 169544295,
+                "end": 169544508,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 169546441,
+                "end": 169546592,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 169549800,
+                "end": 169550015,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 169550639,
+                "end": 169550739,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 169552556,
+                "end": 169552734,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 169555181,
+                "end": 169555347,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 169556645,
+                "end": 169556867,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 169559152,
+                "end": 169559296,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 169560553,
+                "end": 169560766,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 169572220,
+                "end": 169572343,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 169582430,
+                "end": 169582522,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 169586228,
+                "end": 169586386,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MFPGCPRLWVLVVLGTSWVGWGSQGTEAAQLRQFYVAAQGISWSYRPEPTNSSLNLSVTSFKKIVYREYEPYFKKEKPQSTISGLLGPTLYAEVGDIIKVHFKNKADKPLSIHPQGIRYSKLSEGASYLDHTFPAEKMDDAVAPGREYTYEWSISEDSGPTHDDPPCLTHIYYSHENLIEDFNSGLIGPLLICKKGTLTEGGTQKTFDKQIVLLFAVFDESKSWSQSSSLMYTVNGYVNGTMPDITVCAHDHISWHLLGMSSGPELFSIHFNGQVLEQNHHKVSAITLVSATSTTANMTVGPEGKWIISSLTPKHLQAGMQAYIDIKNCPKKTRNLKKITREQRRHMKRWEYFIAAEEVIWDYAPVIPANMDKKYRSQHLDNFSNQIGKHYKKVMYTQYEDESFTKHTVNPNMKEDGILGPIIRAQVRDTLKIVFKNMASRPYSIYPHGVTFSPYEDEVNSSFTSGRNNTMIRAVQPGETYTYKWNILEFDEPTENDAQCLTRPYYSDVDIMRDIASGLIGLLLICKSRSLDRRGIQRAADIEQQAVFAVFDENKSWYLEDNINKFCENPDEVKRDDPKFYESNIMSTINGYVPESITTLGFCFDDTVQWHFCSVGTQNEILTIHFTGHSFIYGKRHEDTLTLFPMRGESVTVTMDNVGTWMLTSMNSSPRSKKLRLKFRDVKCIPDDDEDSYEIFEPPESTVMATRKMHDRLEPEDEESDADYDYQNRLAAALGIRSFRNSSLNQEEEEFNLTALALENGTEFVSSNTDIIVGSNYSSPSNISKFTVNNLAEPQKAPSHQQATTAGSPLRHLIGKNSVLNSSTAEHSSPYSEDPIEDPLQPDVTGIRLLSLGAGEFKSQEHAKHKGPKVERDQAAKHRFSWMKLLAHKVGRHLSQDTGSPSGMRPWEDLPSQDTGSPSRMRPWKDPPSDLLLLKQSNSSKILVGRWHLASEKGSYEIIQDTDEDTAVNNWLISPQNASRAWGESTPLANKPGKQSGHPKFPRVRHKSLQVRQDGGKSRLKKSQFLIKTRKKKKEKHTHHAPLSPRTFHPLRSEAYNTFSERRLKHSLVLHKSNETSLPTDLNQTLPSMDFGWIASLPDHNQNSSNDTGQASCPPGLYQTVPPEEHYQTFPIQDPDQMHSTSDPSHRSSSPELSEMLEYDRSHKSFPTDISQMSPSSEHEVWQTVISPDLSQVTLSPELSQTNLSPDLSHTTLSPELIQRNLSPALGQMPISPDLSHTTLSPDLSHTTLSLDLSQTNLSPELSQTNLSPALGQMPLSPDLSHTTLSLDFSQTNLSPELSHMTLSPELSQTNLSPALGQMPISPDLSHTTLSLDFSQTNLSPELSQTNLSPALGQMPLSPDPSHTTLSLDLSQTNLSPELSQTNLSPDLSEMPLFADLSQIPLTPDLDQMTLSPDLGETDLSPNFGQMSLSPDLSQVTLSPDISDTTLLPDLSQISPPPDLDQIFYPSESSQSLLLQEFNESFPYPDLGQMPSPSSPTLNDTFLSKEFNPLVIVGLSKDGTDYIEIIPKEEVQSSEDDYAEIDYVPYDDPYKTDVRTNINSSRDPDNIAAWYLRSNNGNRRNYYIAAEEISWDYSEFVQRETDIEDSDDIPEDTTYKKVVFRKYLDSTFTKRDPRGEYEEHLGILGPIIRAEVDDVIQVRFKNLASRPYSLHAHGLSYEKSSEGKTYEDDSPEWFKEDNAVQPNSSYTYVWHATERSGPESPGSACRAWAYYSAVNPEKDIHSGLIGPLLICQKGILHKDSNMPMDMREFVLLFMTFDEKKSWYYEKKSRSSWRLTSSEMKKSHEFHAINGMIYSLPGLKMYEQEWVRLHLLNIGGSQDIHVVHFHGQTLLENGNKQHQLGVWPLLPGSFKTLEMKASKPGWWLLNTEVGENQRAGMQTPFLIMDRDCRMPMGLSTGIISDSQIKASEFLGYWEPRLARLNNGGSYNAWSVEKLAAEFASKPWIQVDMQKEVIITGIQTQGAKHYLKSCYTTEFYVAYSSNQINWQIFKGNSTRNVMYFNGNSDASTIKENQFDPPIVARYIRISPTRAYNRPTLRLELQGCEVNGCSTPLGMENGKIENKQITASSFKKSWWGDYWEPFRARLNAQGRVNAWQAKANNNKQWLEIDLLKIKKITAIITQGCKSLSSEMYVKSYTIHYSEQGVEWKPYRLKSSMVDKIFEGNTNTKGHVKNFFNPPIISRFIRVIPKTWNQSIALRLELFGCDIY",
+          "connectedViewId": "lgv-F5",
+          "initialTranscriptResidues": [
+            {
+              "start": 534,
+              "end": 534
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "useWorkspaces": true,
+  "activePanelId": "panel-left",
+  "layout": {
+    "id": "branch-root",
+    "direction": "row",
+    "size": 1,
+    "children": [
+      {
+        "id": "panel-left",
+        "size": 58,
+        "tabs": [
+          {
+            "id": "tab-left",
+            "viewIds": ["lgv-F5", "msa-F5"]
+          }
+        ],
+        "activeTabId": "tab-left"
+      },
+      {
+        "id": "panel-right",
+        "size": 42,
+        "tabs": [
+          {
+            "id": "tab-right",
+            "viewIds": ["protein-F5-9mot"]
+          }
+        ],
+        "activeTabId": "tab-right"
+      }
+    ]
+  }
+}

@@ -30,7 +30,15 @@ interface ViewJson {
   [key: string]: unknown
 }
 
+interface LayoutPanel {
+  id: string
+  size: number
+  activeTabId: string
+  tabs: { id: string; viewIds: string[] }[]
+}
+
 interface SessionJson {
+  layout?: { children: LayoutPanel[] }
   views: ViewJson[]
   sessionTracks?: object[]
   highlights?: object[]
@@ -52,6 +60,8 @@ interface SessionOptions {
   turnedOff?: string[]
   proteinColor?: object
   hideTracks?: string[]
+  pairStructure?: object
+  pairColor?: object
   highlights?: object[]
 }
 
@@ -69,6 +79,8 @@ function linkedSession(
     turnedOff = [],
     proteinColor,
     hideTracks = [],
+    pairStructure,
+    pairColor,
     highlights,
   }: SessionOptions,
 ) {
@@ -96,6 +108,28 @@ function linkedSession(
   }
   if (hideTracks.length > 0) {
     msa.turnedOffTracks = Object.fromEntries(hideTracks.map(t => [t, true]))
+  }
+  if (pairStructure) {
+    const pair = structuredClone(protein)
+    pair.id = `${protein.id as string}-pair`
+    pair.structures = (protein.structures as object[]).map(st => ({
+      ...st,
+      ...pairStructure,
+    }))
+    if (pairColor) {
+      delete pair.colorScheme
+      pair.color = pairColor
+    }
+    session.views.push(pair)
+    const [left, right] = session.layout!.children as [LayoutPanel, LayoutPanel]
+    left.size = 34
+    right.size = 33
+    session.layout!.children.push({
+      id: 'panel-right-pair',
+      size: 33,
+      activeTabId: 'tab-right-pair',
+      tabs: [{ id: 'tab-right-pair', viewIds: [pair.id as string] }],
+    })
   }
   session.sessionTracks = sessionTracks
   if (highlights) {
@@ -199,18 +233,24 @@ const E6V = {
 function hbbSession({
   msaEnd = 31,
   assembly,
+  pdbId,
   ...options
 }: Partial<SessionOptions> &
-  Pick<SessionOptions, 'tracks'> & { msaEnd?: number; assembly?: string }) {
+  Pick<SessionOptions, 'tracks'> & {
+    msaEnd?: number
+    assembly?: string
+    pdbId?: string
+  }) {
   const session = structuredClone(HBB_SESSION)
   session.highlights = [E6V]
   session.views[1]!.relativeTo = 'human_query'
   const protein = session.views[2]!
   protein.colorScheme = 'mapped-chain'
-  if (assembly) {
+  if (assembly || pdbId) {
     protein.structures = (protein.structures as object[]).map(s => ({
       ...s,
-      assembly,
+      ...(assembly ? { assembly } : {}),
+      ...(pdbId ? { pdbId } : {}),
     }))
   }
   return linkedSession(
@@ -564,6 +604,27 @@ const HBB_GWAS_STORY_TRACK = {
   },
 }
 
+const F5: HotspotGene = {
+  session: readSession('protein_browser_f5.session.json'),
+  gene: 'F5',
+  hotspots: [
+    { label: 'R506Q', refName: 'chr1', start: 169549809, end: 169549812 },
+  ],
+}
+const F5_WIDE = 'chr1:169049811-170049811'
+const FINNGEN_VTE = 'finngen_r12_vte_f5'
+const FINNGEN_VTE_TRACK = {
+  type: 'GWASTrack',
+  trackId: FINNGEN_VTE,
+  name: 'FinnGen R12 venous thromboembolism',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'GWASAdapter',
+    uri: 'https://jbrowse.org/demos/factor_v/finngen_r12_vte_f5.bed.gz',
+  },
+  displayDefaults: { height: 200 },
+}
+
 export const proteinVariantSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
@@ -703,12 +764,28 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       tracks: [HBB_GENE_TRACK, { trackId: HBB_GWAS_STORY, height: 170 }],
       sessionTracks: [HBB_GWAS_STORY_TRACK],
       msaHeight: 420,
+      pdbId: '2hhb',
+      pairStructure: { pdbId: '2hbs' },
       proteinColor: { field: 'hydrophobicity' },
     }),
     ...READY,
-    viewportWidth: 2300,
+    viewportWidth: 2600,
     viewportHeight: 1150,
-    actions: RESET_ZOOM,
+    actions: [
+      { type: 'waitForAppSettled' },
+      {
+        type: 'click',
+        selector:
+          '[data-testid="view-container-protein-HBB-2hbs"] button[title="Reset Zoom"]',
+      },
+      {
+        type: 'click',
+        selector:
+          '[data-testid="view-container-protein-HBB-2hbs-pair"] button[title="Reset Zoom"]',
+      },
+      PARK_CURSOR,
+      { type: 'delay', ms: 1500 },
+    ],
   },
   {
     mode: 'url',
@@ -823,6 +900,51 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
   },
   {
     mode: 'url',
+    name: 'protein/kras_two_drugs',
+    url: hotspotSession(
+      { ...KRAS, hotspots: [{ ...KRAS.hotspots[0]!, label: 'G12' }] },
+      { start: 1, end: 75 },
+      {
+        loc: KRAS_DOMAIN_WINDOWS,
+        tracks: [HG38_GENE_TRACK],
+        msaHeight: 490,
+        domains: true,
+        turnedOff: KRAS_UNSHOWN_SITES,
+        hideTracks: ['conservation', 'property-conservation'],
+        pairStructure: { pdbId: '7rpz' },
+      },
+    ),
+    ...domainFigure('KRAS', KRAS_G12, 0, true),
+    viewportWidth: 2600,
+    viewportHeight: 1100,
+    actions: [
+      { type: 'waitForAppSettled' },
+      {
+        type: 'click',
+        selector:
+          '[data-testid="view-container-protein-KRAS-6oim"] button[title="Reset Zoom"]',
+      },
+      {
+        type: 'click',
+        selector:
+          '[data-testid="view-container-protein-KRAS-6oim-pair"] button[title="Reset Zoom"]',
+      },
+      PARK_CURSOR,
+      { type: 'delay', ms: 1500 },
+    ],
+    annotations: [
+      {
+        ...residueCallout('G12C: sotorasib', 'A:303', 80, -170),
+        anchor: { residue: 'A:303', view: 2 },
+      },
+      {
+        ...residueCallout('G12D: MRTX1133', 'A:202', 80, -170),
+        anchor: { residue: 'A:202', view: 3 },
+      },
+    ],
+  },
+  {
+    mode: 'url',
     name: 'protein/kras_domains_three_views',
     url: hotspotSession(
       KRAS,
@@ -934,12 +1056,48 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         sessionTracks: [FINNGEN_AD_TRACK],
         msaHeight: 420,
         hideTracks: ['property-conservation'],
+        pairStructure: { pdbId: undefined, uniprotId: 'P02649' },
+        pairColor: { field: 'plddt' },
+      },
+    ),
+    ...READY,
+    viewportWidth: 2600,
+    viewportHeight: 1150,
+    actions: [
+      { type: 'waitForAppSettled' },
+      {
+        type: 'click',
+        selector:
+          '[data-testid="view-container-protein-APOE-1b68"] button[title="Reset Zoom"]',
+      },
+      {
+        type: 'click',
+        selector:
+          '[data-testid="view-container-protein-APOE-1b68-pair"] button[title="Reset Zoom"]',
+      },
+      PARK_CURSOR,
+      { type: 'delay', ms: 1500 },
+    ],
+  },
+  {
+    mode: 'url',
+    name: 'protein/f5_leiden',
+    url: hotspotSession(
+      F5,
+      { start: 515, end: 555 },
+      {
+        loc: F5_WIDE,
+        tracks: [{ trackId: FINNGEN_VTE, height: 220 }, HG38_GENE_TRACK],
+        sessionTracks: [FINNGEN_VTE_TRACK],
+        msaHeight: 420,
+        hideTracks: ['property-conservation'],
       },
     ),
     ...READY,
     viewportWidth: 2300,
     viewportHeight: 1150,
     actions: RESET_ZOOM,
+    annotations: [residueCallout('APC cuts here', 'A:506', 120, 200)],
   },
   {
     mode: 'url',
