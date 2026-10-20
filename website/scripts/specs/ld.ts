@@ -3,6 +3,7 @@ import { displayPainted, encodeSessionSpec } from '@jbrowse/browser-test-utils'
 import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type { PageTrackConfig } from './pageTrack.ts'
 
 // The LD heatmap display's home-run result: the lactase-persistence sweep at
 // LCT/MCM6, from PLINK r² tables over phased 1000 Genomes genotypes, read
@@ -160,7 +161,10 @@ const ANOGAM3_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/anoG
 type AgPopulation = 'CMgam' | 'GAgam'
 // The page loads its own AgamP4 assembly; the figure opens the anoGam3 hub
 // (above), so a page track is moved onto it.
-function agPageTrack(cameroonTrackId: string, pop: AgPopulation) {
+function agPageTrack(
+  cameroonTrackId: string,
+  pop: AgPopulation,
+): PageTrackConfig {
   const cameroon = pageTrack('tutorials/ld_mosquitoes.md', cameroonTrackId)
   const track = JSON.parse(
     JSON.stringify(cameroon)

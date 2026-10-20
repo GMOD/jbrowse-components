@@ -257,11 +257,10 @@ const AMY2B_ROWS = arrangedSamples(
 const AMY2B_CALLOUT_FRAC_Y = 0.23
 
 const CEA_ROWS = arrangedSamples(
-  CEA_GROUPS.flatMap(({ label, color, ids }) =>
+  CEA_GROUPS.flatMap(({ label, ids }) =>
     ids.map((name, i) => ({
       name,
       label: ids.length > 1 ? `${label} ${i + 1}` : label,
-      color,
     })),
   ),
 )
