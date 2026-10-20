@@ -611,6 +611,16 @@ const F5: HotspotGene = {
     { label: 'R506Q', refName: 'chr1', start: 169549809, end: 169549812 },
   ],
 }
+function withPdb(base: SessionJson, pdbId: string): SessionJson {
+  const session = structuredClone(base)
+  const protein = session.views[2]!
+  protein.structures = (protein.structures as object[]).map(st => ({
+    ...st,
+    pdbId,
+  }))
+  return session
+}
+
 const F5_WIDE = 'chr1:169049811-170049811'
 const FINNGEN_VTE = 'finngen_r12_vte_f5'
 const FINNGEN_VTE_TRACK = {
@@ -1083,7 +1093,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'protein/f5_leiden',
     url: hotspotSession(
-      F5,
+      { ...F5, session: withPdb(F5.session, '7kxy') },
       { start: 515, end: 555 },
       {
         loc: F5_WIDE,
@@ -1091,13 +1101,33 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         sessionTracks: [FINNGEN_VTE_TRACK],
         msaHeight: 420,
         hideTracks: ['property-conservation'],
+        pairStructure: { pdbId: '9mov' },
       },
     ),
     ...READY,
-    viewportWidth: 2300,
+    viewportWidth: 2600,
     viewportHeight: 1150,
-    actions: RESET_ZOOM,
-    annotations: [residueCallout('APC cuts here', 'A:506', 120, 200)],
+    actions: [
+      { type: 'waitForAppSettled' },
+      {
+        type: 'click',
+        selector:
+          '[data-testid="view-container-protein-F5-9mot"] button[title="Reset Zoom"]',
+      },
+      {
+        type: 'click',
+        selector:
+          '[data-testid="view-container-protein-F5-9mot-pair"] button[title="Reset Zoom"]',
+      },
+      PARK_CURSOR,
+      { type: 'delay', ms: 1500 },
+    ],
+    annotations: [
+      {
+        ...residueCallout('APC cuts here', 'A:506', 120, 200),
+        anchor: { residue: 'A:506', view: 3 },
+      },
+    ],
   },
   {
     mode: 'url',
