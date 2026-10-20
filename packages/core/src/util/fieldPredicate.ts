@@ -29,15 +29,22 @@ export interface FieldPredicate {
  *   value (a dictionary-coded string lane)
  * - `get`: a reader over record objects, `undefined` or `null` for a missing
  *   value
+ * - `bits`: a boolean that is one bit of a word, such as a SAM flag. Every
+ *   `equal` test on bits of one `word` reader fuses into one mask compare,
+ *   so a flag filter costs one read and two ANDs however many flags it names
  */
-export type PredicateLane =
+export type PredicateLane<T = number> =
   | { kind: 'number'; values: ArrayLike<number> }
   | { kind: 'labels'; ids: ArrayLike<number>; labels: readonly string[] }
-  | { kind: 'get'; get: (index: number) => unknown }
+  | { kind: 'get'; get: (item: T) => unknown }
+  | { kind: 'bits'; word: (item: T) => number; mask: number }
 
-type Test = (index: number) => boolean
+// What a compiled list tests: a record index for the typed lanes, or the
+// record itself where the caller holds one (a BAM read), which spares each
+// lane a lookup by index
+type Test<T = number> = (item: T) => boolean
 
-const NEVER: Test = () => false
+const NEVER = () => false
 
 // Bounds as one interval, so a predicate with both ends tests both in one
 // closure. A Float32 lane rounds them to its precision: 0.9 reads back from
@@ -123,12 +130,36 @@ function labelsTest(
   }
 }
 
-function getTest(p: FieldPredicate, get: (index: number) => unknown): Test {
+function getTest<T>(p: FieldPredicate, get: (item: T) => unknown): Test<T> {
   const listed = equalsOf(p)
   const like = listed?.[0] ?? p.gte ?? p.gt ?? p.lte ?? p.lt
   const inBounds = boundsOf(p, n => n)
   const members = listed && new Set(listed.map(v => coerce(v, like)))
   const { valid } = p
+  // the common case, a bound on a number field, skips the coercion and the
+  // set: a number reads straight into the bounds
+  if (inBounds && !members && valid === undefined) {
+    const { gte } = p
+    if (
+      gte !== undefined &&
+      p.gt === undefined &&
+      p.lt === undefined &&
+      p.lte === undefined
+    ) {
+      return index => {
+        const raw = get(index)
+        return typeof raw === 'number'
+          ? raw >= gte
+          : raw !== undefined && raw !== null && Number(raw) >= gte
+      }
+    }
+    return index => {
+      const raw = get(index)
+      return typeof raw === 'number'
+        ? inBounds(raw)
+        : raw !== undefined && raw !== null && inBounds(Number(raw))
+    }
+  }
   return index => {
     const raw = get(index)
     const missing = raw === undefined || raw === null
@@ -145,7 +176,65 @@ function getTest(p: FieldPredicate, get: (index: number) => unknown): Test {
   }
 }
 
-function compileOne(p: FieldPredicate, lane: PredicateLane | undefined): Test {
+// The value a bit lane holds for a predicate that is not a plain `equal`
+function bitGet<T>(word: (item: T) => number, mask: number) {
+  return (item: T) => (word(item) & mask) !== 0
+}
+
+// A predicate on a bit lane that only asks for the bit set or clear, the
+// shape the fused mask compare takes
+function bitWanted(p: FieldPredicate) {
+  const listed = equalsOf(p)
+  return listed?.length === 1 &&
+    typeof listed[0] === 'boolean' &&
+    p.gt === undefined &&
+    p.gte === undefined &&
+    p.lt === undefined &&
+    p.lte === undefined &&
+    p.valid === undefined
+    ? listed[0]
+    : undefined
+}
+
+// Every bit test on one word reader as one compare: the bits that must be
+// set, and the bits that must be clear
+function fusedBits<T>(
+  word: (item: T) => number,
+  mustSet: number,
+  mustClear: number,
+): Test<T> {
+  return item => {
+    const w = word(item)
+    return (w & mustSet) === mustSet && (w & mustClear) === 0
+  }
+}
+
+function allOf<T>(tests: Test<T>[]): Test<T> {
+  const [a, b, c, d] = tests as [Test<T>, Test<T>, Test<T>, Test<T>]
+  switch (tests.length) {
+    case 1:
+      return a
+    case 2:
+      return item => a(item) && b(item)
+    case 3:
+      return item => a(item) && b(item) && c(item)
+    case 4:
+      return item => a(item) && b(item) && c(item) && d(item)
+  }
+  return item => {
+    for (const t of tests) {
+      if (!t(item)) {
+        return false
+      }
+    }
+    return true
+  }
+}
+
+function compileOne<T>(
+  p: FieldPredicate,
+  lane: PredicateLane<T> | undefined,
+): Test<T> {
   if (!lane) {
     // a field no record carries: every value is missing
     return p.valid === false && p.equal === undefined && !p.oneOf
@@ -154,11 +243,14 @@ function compileOne(p: FieldPredicate, lane: PredicateLane | undefined): Test {
         : () => true
       : NEVER
   }
+  // a typed lane is read by index, so its item is the record index
   return lane.kind === 'number'
-    ? numberTest(p, lane.values)
+    ? (numberTest(p, lane.values) as Test<unknown>)
     : lane.kind === 'labels'
-      ? labelsTest(p, lane.ids, lane.labels)
-      : getTest(p, lane.get)
+      ? (labelsTest(p, lane.ids, lane.labels) as Test<unknown>)
+      : lane.kind === 'bits'
+        ? getTest(p, bitGet(lane.word, lane.mask))
+        : getTest(p, lane.get)
 }
 
 /**
@@ -166,20 +258,40 @@ function compileOne(p: FieldPredicate, lane: PredicateLane | undefined): Test {
  * undefined when the list tests nothing, so a caller skips the loop. A
  * predicate naming no test admits every record.
  */
-export function compilePredicates(
+export function compilePredicates<T = number>(
   predicates: readonly FieldPredicate[],
-  laneOf: (field: string) => PredicateLane | undefined,
-): Test | undefined {
-  const tests = predicates
-    .filter(p => testsSomething(p))
-    .map(p => compileOne(p, laneOf(p.field)))
-  if (tests.length === 0) {
-    return undefined
+  laneOf: (field: string) => PredicateLane<T> | undefined,
+): Test<T> | undefined {
+  const words = new Map<
+    (item: T) => number,
+    { mustSet: number; mustClear: number }
+  >()
+  const tests: Test<T>[] = []
+  for (const p of predicates) {
+    if (!testsSomething(p)) {
+      continue
+    }
+    const lane = laneOf(p.field)
+    const wanted = lane?.kind === 'bits' ? bitWanted(p) : undefined
+    if (lane?.kind === 'bits' && wanted !== undefined) {
+      const masks = words.get(lane.word) ?? { mustSet: 0, mustClear: 0 }
+      if (wanted) {
+        masks.mustSet |= lane.mask
+      } else {
+        masks.mustClear |= lane.mask
+      }
+      words.set(lane.word, masks)
+    } else {
+      tests.push(compileOne(p, lane))
+    }
   }
-  if (tests.length === 1) {
-    return tests[0]
-  }
-  return index => tests.every(t => t(index))
+  // the fused flag compares go first: they are the cheapest and, on reads,
+  // the ones that drop the most
+  const fused = [...words].map(([word, { mustSet, mustClear }]) =>
+    fusedBits(word, mustSet, mustClear),
+  )
+  const all = [...fused, ...tests]
+  return all.length === 0 ? undefined : allOf(all)
 }
 
 /** Whether a predicate states any test, which an empty `{ field }` does not. */

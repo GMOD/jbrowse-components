@@ -117,6 +117,31 @@ test('a boolean field takes equal: false', () => {
   ).toEqual([1])
 })
 
+test('equal tests on the bits of one word fuse into one mask compare', () => {
+  const flags = [0, 4, 1024, 16, 1028]
+  const word = (i: number) => flags[i]!
+  const lanes: Record<string, PredicateLane> = {
+    unmapped: { kind: 'bits', word, mask: 4 },
+    duplicate: { kind: 'bits', word, mask: 1024 },
+    reverse: { kind: 'bits', word, mask: 16 },
+  }
+  expect(
+    admitted(
+      [
+        { field: 'unmapped', equal: false },
+        { field: 'duplicate', equal: false },
+      ],
+      lanes,
+      5,
+    ),
+  ).toEqual([0, 3])
+  expect(admitted([{ field: 'reverse', equal: true }], lanes, 5)).toEqual([3])
+  // oneOf both values is not a fusable equal, and passes every record
+  expect(
+    admitted([{ field: 'reverse', oneOf: [true, false] }], lanes, 5),
+  ).toEqual([0, 1, 2, 3, 4])
+})
+
 describe('the slider helpers', () => {
   const list: FieldPredicate[] = [
     { field: 'length', gte: 1000, lte: 5000 },
