@@ -1,3 +1,6 @@
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
+
 import { createTablesEngine } from './index.ts'
 import {
   BAM,
@@ -50,4 +53,31 @@ test('an alignments table reports the settings its bands are composed from', asy
     sashimi: { height: 50, showCounts: false },
     readConnections: { show: false, mark: 'arc' },
   })
+})
+
+test('a contig of the sequence holding no records of a tabix file is empty, not missing', async () => {
+  const uri = (file: string) => ({
+    uri: pathToFileURL(path.resolve('test_data/volvox', file)).href,
+    locationType: 'UriLocation',
+  })
+  const onlyCtgA = {
+    ...GFF3,
+    adapterConfig: {
+      type: 'Gff3TabixAdapter',
+      gffGzLocation: uri('volvox.canonical_tags.gff3.gz'),
+      index: {
+        location: uri('volvox.canonical_tags.gff3.gz.tbi'),
+        indexType: 'TBI',
+      },
+    },
+  }
+  const emptyContig = await engine.features({
+    ...onlyCtgA,
+    region: { refName: 'ctgB', start: 0, end: 6000 },
+  })
+  expect(emptyContig.features.start).toHaveLength(0)
+  expect(emptyContig.missingContig).toBe('')
+  expect((await engine.features(elsewhere(onlyCtgA))).missingContig).toMatch(
+    /^chrNope is not a contig of this file/,
+  )
 })

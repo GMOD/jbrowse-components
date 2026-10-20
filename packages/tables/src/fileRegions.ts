@@ -1,3 +1,4 @@
+import { isRegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 
 import type { ResolvedAssembly } from './assembly.ts'
@@ -53,6 +54,33 @@ async function contigsOf(
       : []
   const listed = NAMES_FROM_RECORDS.has(String(adapterConfig.type))
   return refNames.map(refName => ({ refName, hasData: listed ? true : null }))
+}
+
+/**
+ * The contig names a file has. An adapter listing only contigs with records
+ * adds the sequence's, since a sequence contig the file holds no record on is
+ * empty there, not missing.
+ */
+export async function contigNamesOf(
+  pluginManager: PluginManager,
+  adapterConfig: Record<string, unknown>,
+  sequenceAdapter: Record<string, unknown> | undefined,
+) {
+  const names = (
+    await contigsOf(pluginManager, adapterConfig, sequenceAdapter)
+  ).map(c => c.refName)
+  if (!sequenceAdapter || !NAMES_FROM_RECORDS.has(String(adapterConfig.type))) {
+    return names
+  }
+  const sequence = await tablesAdapter(
+    pluginManager,
+    sequenceAdapter,
+    undefined,
+  )
+  const regions = isRegionsAdapter(sequence)
+    ? await sequence.getRegions({})
+    : []
+  return [...new Set([...names, ...regions.map(r => r.refName)])]
 }
 
 /**

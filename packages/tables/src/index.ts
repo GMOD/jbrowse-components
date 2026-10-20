@@ -1,6 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
   alignmentMarkAlpha,
   alignmentTables,
@@ -37,7 +36,7 @@ import {
 
 import { assemblyResolver, renameRegions } from './assembly.ts'
 import { engineCache } from './cache.ts'
-import { fileRegions } from './fileRegions.ts'
+import { contigNamesOf, fileRegions } from './fileRegions.ts'
 
 import type { AssemblyConfig, TablesRegion } from './assembly.ts'
 import type { AlignmentTablesArgs } from '@jbrowse/plugin-alignments/tables'
@@ -153,24 +152,20 @@ async function missingContigs(
     regions = region ? [region] : [],
   }: RegionArgs,
 ) {
-  const dataAdapter = await tablesAdapter(
+  const names = await contigNamesOf(
     pluginManager,
     adapterConfig,
     sequenceAdapter,
   )
-  const names: string[] =
-    'getRefNames' in dataAdapter
-      ? await (
-          dataAdapter as { getRefNames: () => Promise<string[]> }
-        ).getRefNames()
-      : []
   const listed = names.slice(0, LISTED_CONTIGS).join(', ')
   const more =
     names.length > LISTED_CONTIGS
       ? `, and ${names.length - LISTED_CONTIGS} more`
       : ''
-  return regions.map(({ refName }) =>
-    names.length === 0 || names.includes(refName)
+  return regions.map(({ refName, originalRefName = refName }) =>
+    names.length === 0 ||
+    names.includes(refName) ||
+    names.includes(originalRefName)
       ? ''
       : `${refName} is not a contig of this file, whose contigs are ${listed}${more}`,
   )
