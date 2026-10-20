@@ -290,9 +290,10 @@ export const RAMP_LINE_BANDS = 32
 
 /**
  * A ramp as the threshold a line painter strokes band by band, where the GPU
- * reads the ramp per fragment: `RAMP_LINE_BANDS` bands evenly across the
- * ramp's domain, each in the ramp's color at its middle, kept to the bands
- * `low` to `high` reach. A domain with no range is the normalizer's step.
+ * reads the ramp per fragment: `RAMP_LINE_BANDS` bands evenly across the part
+ * of the ramp `low` to `high` reach, each in the ramp's color at its middle,
+ * so a line spanning a sliver of the ramp still steps through it finely. A
+ * domain with no range, after a log scale's floor, is the normalizer's step.
  */
 export function rampAsThreshold(
   ramp: MarkRamp,
@@ -301,23 +302,27 @@ export function rampAsThreshold(
 ): MarkThreshold {
   const [min, max] = ramp.domain
   const colorOf = rampColorOf(ramp)
-  if (!(max > min)) {
+  const type = ramp.scale === 'log' ? SCALE_TYPE_LOG : 0
+  const at = (t: number) => denormalizeScore(t, min, max, type, 1)
+  if (!(at(1) > at(0))) {
+    const floor = at(0)
     return {
-      cuts: [min + Math.abs(min) * 1e-6 + 1e-12],
+      cuts: [floor + Math.abs(floor) * 1e-6 + 1e-12],
       colors: Uint32Array.of(colorOf(min), colorOf(Number.POSITIVE_INFINITY)),
     }
   }
-  const type = ramp.scale === 'log' ? SCALE_TYPE_LOG : 0
+  const norm = (value: number, fallback: number) =>
+    Number.isFinite(value) ? normalizeScore(value, min, max, type, 1) : fallback
+  const lo = norm(low, 0)
+  const hi = Math.max(norm(high, 1), lo)
   const n = RAMP_LINE_BANDS
-  const bandOf = (value: number) =>
-    Math.min(Math.floor(normalizeScore(value, min, max, type, 1) * n), n - 1)
-  const lo = Number.isFinite(low) ? bandOf(low) : 0
-  const hi = Number.isFinite(high) ? Math.max(bandOf(high), lo) : n - 1
-  const at = (t: number) => denormalizeScore(t, min, max, type, 1)
-  return {
-    cuts: Array.from({ length: hi - lo }, (_, i) => at((lo + i + 1) / n)),
-    colors: Uint32Array.from({ length: hi - lo + 1 }, (_, i) =>
-      colorOf(at((lo + i + 0.5) / n)),
-    ),
-  }
+  const tOf = (k: number) => lo + ((hi - lo) * k) / n
+  return hi > lo
+    ? {
+        cuts: Array.from({ length: n - 1 }, (_, k) => at(tOf(k + 1))),
+        colors: Uint32Array.from({ length: n }, (_, k) =>
+          colorOf(at(tOf(k + 0.5))),
+        ),
+      }
+    : { cuts: [], colors: Uint32Array.of(colorOf(at(lo))) }
 }

@@ -39,11 +39,13 @@ test.each(RAMPS)(
   },
 )
 
-test('only the bands the values reach are kept', () => {
+test('the bands span only the part of the ramp the values reach', () => {
   const t = rampAsThreshold({ domain: [0, 100], scale: 'linear', lut }, 40, 60)
-  // 40 and 60 fall in bands 12 and 19
-  expect(t.colors).toHaveLength(8)
-  expect(t.cuts).toHaveLength(7)
+  expect(t.colors).toHaveLength(RAMP_LINE_BANDS)
+  for (const cut of t.cuts) {
+    expect(cut).toBeGreaterThan(40)
+    expect(cut).toBeLessThan(60)
+  }
 })
 
 test('a domain with no range is the step the normalizer takes', () => {

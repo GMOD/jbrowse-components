@@ -280,9 +280,10 @@ each height would take, and the band colors each pixel by its own height. The
 color y is unclamped, as a threshold's is, so a rise past the domain reaches
 the end color before its clamped geometry reaches the edge. Canvas2D and the
 SVG export stroke the ramp as `RAMP_LINE_BANDS` (32) thin bands through the
-same `BandPen` path (`rampAsBands`), each the LUT entry at its middle and only
-the bands the row's values reach, so a flat stretch costs one pass; a domain
-with no range strokes the GPU's step. `rampAsBands.test.ts` holds each score
+same `BandPen` path (`rampAsBands`), spread over the part of the domain the
+row's values reach, each the LUT entry at its middle, so a line over a sliver
+of the ramp still steps through it finely; a domain with no range strokes the
+GPU's step. render-core's line does the same (`rampAsThreshold`). `rampAsBands.test.ts` holds each score
 to its band's color, and `wiggleMarks.test.ts` that the line passes bind the
 ramp.
 

@@ -6,7 +6,10 @@ import { lineColorAlongY } from '../shaders/lineCommon.js.generated.ts'
 import * as stepShader from '../shaders/lineStepMark.generated.ts'
 import { valueToYPxScaled } from '../shaders/pointMark.js.generated.ts'
 import { rowBandTopPx } from '../shaders/rowTable.js.generated.ts'
-import { normalizeScoreUnclamped } from '../shaders/scoreScale.js.generated.ts'
+import {
+  denormalizeScore,
+  normalizeScoreUnclamped,
+} from '../shaders/scoreScale.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import {
@@ -459,14 +462,14 @@ function traceCenter(
 type Trace = (pen: LinePen, indices: Iterable<number>) => void
 
 // The lowest and highest value a line along y draws through: its values, and
-// the origin a step drops to across a gap.
+// for a step the origin it drops to across a gap.
 function valuesReached(
   c: LineChannels,
   bySlot: Map<number, number[]>,
-  origin: number,
+  origin: number | undefined,
 ): [number, number] {
-  let low = origin
-  let high = origin
+  let low = origin ?? Number.POSITIVE_INFINITY
+  let high = origin ?? Number.NEGATIVE_INFINITY
   for (const indices of bySlot.values()) {
     for (const i of indices) {
       const v = c.y[i]!
@@ -488,13 +491,27 @@ function paintLine(
   g: LineFrame,
   params: LineParams,
   trace: Trace,
+  dropsTo?: number,
 ) {
   const { row, count } = c
   const scale = params.colorScale
   const bySlot = new Map<number, number[]>()
   const own: number[] = []
   const { rampMode } = rampUniforms(scale)
-  const colorFromY = params.colorFromY ? 1 : 0
+  // a ramp along y reads values back through the y scale, which a domain
+  // with no range cannot give, so the instances keep their own colors there,
+  // as the shader's `lineFragmentColor` does
+  const yHasRange =
+    denormalizeScore(
+      1,
+      g.domainMin,
+      g.domainMax,
+      g.scaleType,
+      g.symlogConstant,
+    ) >
+    denormalizeScore(0, g.domainMin, g.domainMax, g.scaleType, g.symlogConstant)
+  const colorFromY =
+    params.colorFromY && (yHasRange || (scale && isThreshold(scale))) ? 1 : 0
   for (let i = 0; i < count; i++) {
     const slot = rowSlot(row, i, g.table)
     if (slot === undefined) {
@@ -515,7 +532,7 @@ function paintLine(
   if (scale && bySlot.size > 0) {
     const { cuts, colors } = isThreshold(scale)
       ? scale
-      : rampAsThreshold(scale, ...valuesReached(c, bySlot, params.origin))
+      : rampAsThreshold(scale, ...valuesReached(c, bySlot, dropsTo))
     for (const [slot, indices] of bySlot) {
       const cutYs = cuts.map(cut => colorYPx(g, Math.fround(cut), slot))
       for (let k = 0; k <= cuts.length; k++) {
@@ -551,9 +568,16 @@ function paintStep(
   const g = lineFrame(block, frame, params)
   const rows = rowLane(c.row, c.count)
   ctx.lineWidth = params.lineWidth
-  paintLine(ctx, c, g, params, (pen, indices) => {
-    traceStep(pen, c, g, rows, indices, params.origin)
-  })
+  paintLine(
+    ctx,
+    c,
+    g,
+    params,
+    (pen, indices) => {
+      traceStep(pen, c, g, rows, indices, params.origin)
+    },
+    params.origin,
+  )
 }
 
 function paintCenter(

@@ -112,8 +112,13 @@ VsOut vs_main(LineStepInstance inst, uint vid : SV_VertexID) {
   o.colorLine = colorLine;
   o.cutYsLo = lineCutYsPx(0, bandTop, u);
   o.cutYsHi = lineCutYsPx(4, bandTop, u);
+  // a level run under a ramp is its own value's color, which the vertex
+  // resolved exactly; read back off its y it would lose float32 precision
+  bool levelRamp = seg == 1u && u.rampMode != RAMP_THRESHOLD;
   o.colorAlongY =
-    lineColorAlongY(u.rampMode, u.colorFromY, place.overridden) ? 1.0 : 0.0;
+    lineColorAlongY(u.rampMode, u.colorFromY, place.overridden) && !levelRamp
+      ? 1.0
+      : 0.0;
   o.yPx = sy;
   o.bandTop = bandTop;
   return o;

@@ -111,11 +111,13 @@ test.each([
   },
 )
 
-test('only the bands the values reach are stroked', () => {
+test('the bands span only the part of the domain the values reach', () => {
   const banded = rampAsBands(row([0, 100], SCALE_TYPE_LINEAR, [40, 60]))
-  // 40 and 60 fall in bands 12 and 19
-  expect(banded.cuts).toHaveLength(7)
-  expect(banded.innerColors).toHaveLength(6)
+  expect(banded.cuts).toHaveLength(RAMP_LINE_BANDS - 1)
+  for (const cut of banded.cuts) {
+    expect(cut).toBeGreaterThan(40)
+    expect(cut).toBeLessThan(60)
+  }
 })
 
 // The GPU normalizes a score on a domain with no range to a step: 0 at the

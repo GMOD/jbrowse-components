@@ -4,6 +4,10 @@
 // Scalar twins of lineCommon.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _max(a: number, b: number) {
+  return b > a || Number.isNaN(a) ? b : a
+}
+
 export function lineColorAlongY(rampMode: number, colorFromY: number, overridden: boolean): boolean {
   let _t0: boolean
   if ((rampMode != 0)) {
@@ -17,4 +21,62 @@ export function lineColorAlongY(rampMode: number, colorFromY: number, overridden
     _t0 = false
   }
   return _t0
+}
+
+function log1pf(x: number): number {
+  let u = (1.0 + x)
+  let _t0: number
+  if ((u == 1.0)) {
+    _t0 = x
+  } else {
+    _t0 = (Math.log(u) * (x / (u - 1.0)))
+  }
+  return _t0
+}
+
+function symlogTransform(x: number, c: number): number {
+  return ((((Math.sign(x)) | 0)) * log1pf(Math.abs((x / c))))
+}
+
+function symlogInverse(y: number, c: number): number {
+  return (((((Math.sign(y)) | 0)) * c) * (Math.exp(Math.abs(y)) - 1.0))
+}
+
+function denormalizeScore(t_0: number, domainMin_0: number, domainMax_0: number, scaleType_0: number, symlogConstant_0: number): number {
+  let y_1: number
+  if ((scaleType_0 == 2)) {
+    let tMin_0 = symlogTransform(domainMin_0, symlogConstant_0)
+    let tMax_0 = symlogTransform(domainMax_0, symlogConstant_0)
+    if ((tMax_0 > tMin_0)) {
+      y_1 = (tMin_0 + (t_0 * (tMax_0 - tMin_0)))
+    } else {
+      y_1 = tMin_0
+    }
+    return symlogInverse(y_1, symlogConstant_0)
+  }
+  if ((scaleType_0 == 1)) {
+    if ((domainMin_0 > 0.0)) {
+      y_1 = domainMin_0
+    } else {
+      y_1 = 1.0
+    }
+    let tMin_1 = Math.log2(y_1)
+    let tMax_1 = Math.log2(_max(domainMax_0, y_1))
+    if ((tMax_1 > tMin_1)) {
+      y_1 = (tMin_1 + (t_0 * (tMax_1 - tMin_1)))
+    } else {
+      y_1 = tMin_1
+    }
+    return Math.pow(2.0, y_1)
+  }
+  if ((domainMax_0 > domainMin_0)) {
+    y_1 = (domainMin_0 + (t_0 * (domainMax_0 - domainMin_0)))
+  } else {
+    y_1 = domainMin_0
+  }
+  return y_1
+}
+
+export function lineValueAtColorYPx(colorYPx: number, bandTop: number, rowBandPx: number, domainMin: number, domainMax: number, scaleType: number, symlogConstant: number): number {
+  return denormalizeScore((1.0 - ((colorYPx - bandTop) / rowBandPx)), domainMin, domainMax, scaleType, symlogConstant)
 }

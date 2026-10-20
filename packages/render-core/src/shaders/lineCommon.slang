@@ -11,7 +11,7 @@
 // `markColor` and `rowTable` for itself, since Slang does not re-export through
 // an import.
 //! export-consts: GAP_Y, NO_PREV_X
-//! js-export: lineColorAlongY
+//! js-export: lineColorAlongY, lineValueAtColorYPx
 module lineCommon;
 
 import colorRampLut;
@@ -103,9 +103,19 @@ public bool lineColorAlongY(int rampMode, int colorFromY, bool overridden) {
   return rampMode != RAMP_NONE && colorFromY != 0 && !overridden;
 }
 
+// The value a color y in the band starting at `bandTop` stands for:
+// `lineColorYPx` undone through the y scale.
+public float lineValueAtColorYPx(float colorYPx, float bandTop, float rowBandPx, float domainMin, float domainMax, int scaleType, float symlogConstant) {
+  return denormalizeScore(
+    1.0 - (colorYPx - bandTop) / rowBandPx,
+    domainMin, domainMax, scaleType, symlogConstant);
+}
+
 // A line fragment's color: along y, the interval the color y it is read at
 // falls in, or under a ramp the ramp at the value that y stands for, read
-// back through the y scale; otherwise the color its vertex resolved.
+// back through the y scale; otherwise the color its vertex resolved. A y
+// domain with no range, after a log floor, says no value, so the vertex's
+// color stands.
 public float4 lineFragmentColor(float colorYPx, float4 cutYsLo, float4 cutYsHi, float4 own, float alongY, float bandTop, Uniforms u, Sampler2D<float4> ramp) {
   if (alongY < 0.5) {
     return own;
@@ -113,8 +123,13 @@ public float4 lineFragmentColor(float colorYPx, float4 cutYsLo, float4 cutYsHi, 
   if (u.rampMode == RAMP_THRESHOLD) {
     return u.colorBands[thresholdBandAtYPx(colorYPx, u.colorCutCount, cutYsLo, cutYsHi)];
   }
-  float value = denormalizeScore(
-    1.0 - (colorYPx - bandTop) / u.rowBandPx,
+  float bottom = denormalizeScore(0.0, u.domainMin, u.domainMax, u.valueScaleType, u.valueSymlogConstant);
+  float top = denormalizeScore(1.0, u.domainMin, u.domainMax, u.valueScaleType, u.valueSymlogConstant);
+  if (!(top > bottom)) {
+    return own;
+  }
+  float value = lineValueAtColorYPx(
+    colorYPx, bandTop, u.rowBandPx,
     u.domainMin, u.domainMax, u.valueScaleType, u.valueSymlogConstant);
   int rampScale = u.rampMode == RAMP_LOG ? SCALE_TYPE_LOG : 0;
   return rampColor(
