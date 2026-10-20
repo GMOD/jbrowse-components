@@ -29,8 +29,9 @@ Capture races and callout anchoring: `agent-docs/reference/FIGURE_CAPTURE.md`.
   label (`{ chord: 'SV_20' }`) or ideogram band, never by a measured pixel. A
   chord's feature id is parse order and drifts; its label does not. A pointing
   label is `leader: true` on the text, never a pill plus an `arrow`.
-- A band under 24 CSS px clips its `label` to nothing; at whole-chromosome scale
-  the caption does the naming.
+- Prefer a session `highlights` entry to a callout: its `label` lands in every
+  linked view, on the genome band, the alignment's column and the structure's
+  residue, and the figure's live link carries it.
 - **A spec edit stales `galleryLinks.generated.ts` and
   `liveLinks.generated.ts`**, and no figure check says so. Run `pnpm autogen`.
 - A click that changes state belongs in the session spec, since the figure's
