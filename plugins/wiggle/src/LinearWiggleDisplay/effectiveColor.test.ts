@@ -298,15 +298,14 @@ test('a gradient keys its ramp over rows with their own colors, which keep their
   expect(display.sources.map(s => s.rowColor)).toEqual(['#ff0000', '#0000ff'])
 })
 
-test('a gradient on a line keys nothing and says why', () => {
+// A line reads the ramp along itself, so it keys the ramp as bars do.
+test('a gradient on a line keys its ramp and raises no notice', () => {
   const display = scoredDisplay([{ name: 'a' }])
   display.setMark('line')
   display.applyPlot({ color: viridis })
-  expect(scoreKey(display)).toBeUndefined()
-  expect(display.scoreGradientPaints).toBe(false)
-  expect(display.notices).toEqual([
-    'color.scale: a gradient colors bars, points and density; a line paints its two end colors',
-  ])
+  expect(scoreKey(display)?.kind).toBe('ramp')
+  expect(display.scoreGradientPaints).toBe(true)
+  expect(display.notices).toEqual([])
 })
 
 test("the corner notice reads scales.y's ends by the color ramp's rule", () => {

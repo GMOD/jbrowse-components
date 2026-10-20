@@ -13,7 +13,6 @@ import {
   WIGGLE_FIELD_PRESETS,
   WIGGLE_IMPLIED_FIELD,
 } from './wiggleColorConfigSchema.ts'
-import { isLineMode } from './wiggleComponentUtils.ts'
 
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
@@ -44,15 +43,9 @@ export interface ResolvedWiggleColor {
   rampMid: number | undefined
 }
 
-/**
- * Whether color is spent on the score: a gradient, on bars, points and
- * density. A line parts in two colors even then.
- */
-export function scoreGradientPaints(
-  wiggleColor: ResolvedWiggleColor,
-  renderingType: string,
-) {
-  return wiggleColor.rampLut !== null && !isLineMode(renderingType)
+/** Whether color is spent on the score: a gradient, on every mark. */
+export function scoreGradientPaints(wiggleColor: ResolvedWiggleColor) {
+  return wiggleColor.rampLut !== null
 }
 
 /**
@@ -63,13 +56,11 @@ export function scoreGradientPaints(
 export function wiggleMarkColoring({
   colorSetting,
   wiggleColor,
-  renderingType,
 }: {
   colorSetting: { value?: unknown; field?: string }
   wiggleColor: ResolvedWiggleColor
-  renderingType: string
 }) {
-  const gradientPaints = scoreGradientPaints(wiggleColor, renderingType)
+  const gradientPaints = scoreGradientPaints(wiggleColor)
   const written = colorSetting.value !== undefined || !!colorSetting.field
   return { gradientPaints, rowColorPaintsMarks: !written && !gradientPaints }
 }
@@ -164,8 +155,8 @@ export function paintedWiggleColor<C extends ColorSetting>(
 
 /**
  * What the `color` object says beside the schema's rules that the plot cannot
- * paint as written: threshold cuts past the ones the shader reads, and a
- * gradient on a line, which parts in its two end colors.
+ * paint as written: threshold cuts past the ones the shader reads, and one
+ * color on a heatmap, which paints it flat.
  */
 export function wiggleColorProblems(color: ColorSetting, rendering: string) {
   const encoding = wiggleColorEncoding(
@@ -176,11 +167,6 @@ export function wiggleColorProblems(color: ColorSetting, rendering: string) {
     ...(cuts > MAX_WIGGLE_CUTS
       ? [
           `color.domain: a wiggle threshold reads at most ${MAX_WIGGLE_CUTS} cuts, and the ${cuts - MAX_WIGGLE_CUTS} past them draw no band`,
-        ]
-      : []),
-    ...(isLineMode(rendering) && resolveWiggleColor(encoding, 0).rampLut
-      ? [
-          'color.scale: a gradient colors bars, points and density; a line paints its two end colors',
         ]
       : []),
     ...(rendering === 'density' && typeof encoding !== 'object'

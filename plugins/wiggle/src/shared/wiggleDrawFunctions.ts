@@ -12,11 +12,13 @@ import {
   withClip,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { BandPen, thresholdBandOf } from '@jbrowse/render-core/marks'
+import { denormalizeScore, rampMidNorm } from '@jbrowse/render-core/scoreScale'
 import { clipSide } from '@jbrowse/render-core/shaders/clipStrip'
 import {
   CLIP_STRIP_COLOR,
   CLIP_STRIP_PX,
 } from '@jbrowse/render-core/shaders/clipStripConsts'
+import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 import {
   drawnRowHeightPx,
   rowBandOffsetPx,
@@ -265,6 +267,49 @@ function strokeByBands(
     const pen = new BandPen(ctx, top, bottom)
     trace(pen)
     pen.end()
+  }
+}
+
+// How many bands a gradient's line and min-max band are stroked in on Canvas2D
+// and in the SVG export, where the GPU reads the ramp per fragment: neighbours
+// this narrow differ by a LUT step or two.
+export const RAMP_LINE_BANDS = 32
+
+/**
+ * A line row under a gradient as the threshold the line painters already
+ * stroke: `RAMP_LINE_BANDS` bands evenly across the y domain, each in the
+ * ramp's color at its middle, the lowest and highest as the source's two
+ * colors. Any other row passes through.
+ */
+export function rampAsBands<R extends RowDraw>(row: R): R {
+  const { rampLut, rampMid, domainY, scaleType, symlogConstant } = row
+  const [min, max] = domainY
+  if (!rampLut || !(max > min)) {
+    return row
+  }
+  const mid = rampMidNorm(min, max, scaleType, rampMid, symlogConstant)
+  const colors = Array.from({ length: RAMP_LINE_BANDS }, (_, k) => {
+    const entry = Math.round(rampMidT((k + 0.5) / RAMP_LINE_BANDS, mid) * 255)
+    const i = Math.min(Math.max(entry, 0), 255) * 4
+    return [
+      rampLut[i]! / 255,
+      rampLut[i + 1]! / 255,
+      rampLut[i + 2]! / 255,
+    ] as [number, number, number]
+  })
+  return {
+    ...row,
+    cuts: Array.from({ length: RAMP_LINE_BANDS - 1 }, (_, k) =>
+      denormalizeScore(
+        (k + 1) / RAMP_LINE_BANDS,
+        min,
+        max,
+        scaleType,
+        symlogConstant,
+      ),
+    ),
+    innerColors: colors.slice(1, -1),
+    source: { ...row.source, negColor: colors[0]!, color: colors.at(-1)! },
   }
 }
 

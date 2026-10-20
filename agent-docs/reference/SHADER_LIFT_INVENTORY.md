@@ -14,7 +14,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 48 shaders with entry points. 145 functions
+Scanned 48 shaders with entry points. 146 functions
 are inside the emitter's subset, of which **113 are exported**.
 
 ## Candidates
@@ -27,6 +27,7 @@ anyone deciding which.
 | Function | Signature | Shaders |
 | --- | --- | --- |
 | `bitSet` | `(u32, u32) -> f32` | connectorMark |
+| `rowYPxToNorm` | `(f32, f32, f32) -> f32` | wiggleBand, wiggleLine, wiggleLineCenter |
 
 ## Declined
 
@@ -81,7 +82,7 @@ noticing in a diff.
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 26 | `buttSegmentCorner`, `capsuleCorner`, `capsuleFrame`, `covFlippedQuad`, `covSegQuad`, `crispSquareCornerClip`, … |
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 21 | `bandCoverage`, `barAaPx`, `bpToClipX`, `capVertex`, `cutScore`, `drawsBar`, … |
-| type 'vec4' is outside the supported scalar subset | 18 | `bandColorAt`, `colorCutAt`, `cutYsPx`, `edgeSpan`, `fillEdges`, `isCulled`, … |
+| type 'vec4' is outside the supported scalar subset | 19 | `bandColorAt`, `colorCutAt`, `cutYsPx`, `edgeSpan`, `fillEdges`, `isCulled`, … |
 | type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'Cubic' is outside the supported scalar subset | 6 | `armCorner`, `armEnd`, `cubicAt`, `cubicDirection`, `curveVertex`, `lengthTo` |
 | type 'vec3' is outside the supported scalar subset | 6 | `baseColor`, `bpRange`, `buttSegmentCoverage`, `capsuleDist`, `categoryPaletteColor`, `linkedReadColorByIndex` |

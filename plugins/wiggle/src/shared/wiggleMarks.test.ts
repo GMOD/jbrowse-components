@@ -479,7 +479,7 @@ describe('the wiggle mark list', () => {
     })
   })
 
-  it('a line leaves the gradient flag off: its color still parts in two', () => {
+  it('a line raises the gradient flag and samples the ramp', () => {
     const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
     const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const source = makeSource({ renderingType: RENDERING_TYPE_LINE })
@@ -489,7 +489,7 @@ describe('the wiggle mark list', () => {
       renderingType: RENDERING_TYPE_LINE,
       rampLut: rampLutOf({ scheme: 'viridis' }),
     })
-    expect(hal.getLastUniformsI32()![UI.rampLut]).toBe(0)
+    expect(hal.getLastUniformsI32()![UI.rampLut]).toBe(1)
   })
 
   it('uses fill pass for XY plot rendering type', () => {

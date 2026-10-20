@@ -33,6 +33,7 @@ struct WiggleLineCenterInstance {
 };
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(2, 0)]] Sampler2D<float4> colorRamp;
 
 struct VsOut {
   float4 position : SV_Position;
@@ -46,6 +47,7 @@ struct VsOut {
   nointerpolation float4 cutYsHi : TEXCOORD4;
   // capsule.slang's (along from start, along back from end, across)
   float3 localPos : TEXCOORD0;
+  nointerpolation float rowTop : TEXCOORD5;
 };
 
 // Adjacent capsules share a round cap centred on the joint vertex, so the max
@@ -100,6 +102,7 @@ VsOut vs_main(WiggleLineCenterInstance inst, uint vid : SV_VertexID) {
     len > CAPSULE_MIN_LEN_PX ? (currColorYpx - prevColorYpx) / len : 0.0);
   o.cutYsLo = cutYsPx(0, rowTop, rowHeight, u);
   o.cutYsHi = cutYsPx(4, rowTop, rowHeight, u);
+  o.rowTop = rowTop;
   return o;
 }
 
@@ -112,13 +115,16 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   }
   float along = clamp(
     fragIn.localPos.x, 0.0, fragIn.localPos.x + fragIn.localPos.y);
-  float4 color = bandColorAt(
+  float4 color = lineColorAt(
     fragIn.startLine.x + fragIn.startLine.y * along,
+    fragIn.rowTop,
+    u.canvasHeight / u.numRows,
     fragIn.cutYsLo,
     fragIn.cutYsHi,
     u,
     fragIn.color,
-    fragIn.negColor);
+    fragIn.negColor,
+    colorRamp);
   // PREMULTIPLIED, so same-color overlaps union (max) rather than accumulate
   return float4(color.rgb * alpha, alpha);
 }

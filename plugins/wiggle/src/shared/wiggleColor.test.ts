@@ -34,12 +34,11 @@ test('a threshold past the cuts the shader reads is a problem', () => {
   expect(problems(domain.slice(1))).toEqual([])
 })
 
-test('a gradient on a line is a problem, and on bars none', () => {
+test('a gradient is no problem on any mark', () => {
   const ramp = color({ field: 'score', scale: 'linear', scheme: 'viridis' })
-  expect(wiggleColorProblems(ramp, 'line')).toEqual([
-    'color.scale: a gradient colors bars, points and density; a line paints its two end colors',
-  ])
-  expect(wiggleColorProblems(ramp, 'xyplot')).toEqual([])
+  for (const rendering of ['line', 'linecenter', 'xyplot', 'density']) {
+    expect(wiggleColorProblems(ramp, rendering)).toEqual([])
+  }
 })
 
 test('a bare value paints both sides', () => {
@@ -147,7 +146,7 @@ test('reverse turns a ramp and its ends round', () => {
   ])
 })
 
-test("a line under a scheme parts in the scheme's own end colors", () => {
+test("a scheme's two colors are its table's ends", () => {
   const out = resolved(
     color({ field: 'score', scale: 'linear', scheme: 'viridis' }),
     0,

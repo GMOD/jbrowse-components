@@ -24,6 +24,7 @@ import {
   drawScatter,
   drawMinMaxBand,
   drawXYPlot,
+  rampAsBands,
 } from './wiggleDrawFunctions.ts'
 import {
   packBandInstances,
@@ -67,10 +68,10 @@ interface WiggleParams {
   cuts: number[]
   innerColors: [number, number, number][]
   rampMid: number | undefined
-  // A gradient's table, which bars, points and density color through: the GPU
-  // samples these bytes as the pass's texture and Canvas2D indexes the same
-  // cached array. Never the instance buffer — the score→color mapping moving
-  // must not re-upload a byte. Null for lines, which still part in two.
+  // A gradient's table, which every rendering colors through: the GPU samples
+  // these bytes as the pass's texture and Canvas2D indexes the same cached
+  // array. Never the instance buffer — the score→color mapping moving must not
+  // re-upload a byte.
   rampLut: Uint8Array | null
 }
 
@@ -94,7 +95,7 @@ function wiggleParams(
     cuts: state.cuts,
     innerColors: state.innerColors,
     rampMid: state.rampMid,
-    rampLut: isLineFamily(renderingType) ? null : (state.rampLut ?? null),
+    rampLut: state.rampLut ?? null,
   }
 }
 
@@ -276,10 +277,11 @@ const lineShape = wiggleShape(
   },
   type => type === RENDERING_TYPE_LINE,
   row => {
-    if (row.source.band) {
-      drawMinMaxBand({ ...row, interpolated: false })
+    const banded = rampAsBands(row)
+    if (banded.source.band) {
+      drawMinMaxBand({ ...banded, interpolated: false })
     } else {
-      drawLine({ ...row, ...lineColors(row.source) })
+      drawLine({ ...banded, ...lineColors(banded.source) })
     }
   },
 )
@@ -291,10 +293,11 @@ const lineCenterShape = wiggleShape(
   },
   type => type === RENDERING_TYPE_LINE_CENTER,
   row => {
-    if (row.source.band) {
-      drawMinMaxBand({ ...row, interpolated: true })
+    const banded = rampAsBands(row)
+    if (banded.source.band) {
+      drawMinMaxBand({ ...banded, interpolated: true })
     } else {
-      drawLineCenter({ ...row, ...lineColors(row.source) })
+      drawLineCenter({ ...banded, ...lineColors(banded.source) })
     }
   },
 )
@@ -339,15 +342,18 @@ export const WIGGLE_MARKS = [
     shape: lineShape,
     channels,
     params: wiggleParams,
+    textures: rampTextures,
   }),
   defineMark({
     shape: lineCenterShape,
     channels,
     params: wiggleParams,
+    textures: rampTextures,
   }),
   defineMark({
     shape: bandShape,
     channels: sources => (sources.some(s => s.band) ? sources : undefined),
     params: wiggleParams,
+    textures: rampTextures,
   }),
 ]

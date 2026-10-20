@@ -30,6 +30,7 @@ struct WiggleLineInstance {
 };
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(2, 0)]] Sampler2D<float4> colorRamp;
 
 struct VsOut {
   float4 position : SV_Position;
@@ -42,6 +43,7 @@ struct VsOut {
   nointerpolation float4 cutYsLo : TEXCOORD1;
   nointerpolation float4 cutYsHi : TEXCOORD2;
   float yPx : TEXCOORD3;
+  nointerpolation float rowTop : TEXCOORD4;
 };
 
 float rowScoreToClipY(float score, float rowTop, float rowHeight, float pxToClip) {
@@ -103,6 +105,7 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
   o.cutYsLo = cutYsPx(0, rowTop, rowHeight, u);
   o.cutYsHi = cutYsPx(4, rowTop, rowHeight, u);
   o.yPx = (1.0 - sy) / pxToClip;
+  o.rowTop = rowTop;
   return o;
 }
 
@@ -115,11 +118,14 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
 // capsules union under max blend precisely so that overlap is free.
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  return bandColorAt(
+  return lineColorAt(
     clamp(fragIn.yPx, fragIn.centerLine.x, fragIn.centerLine.y),
+    fragIn.rowTop,
+    u.canvasHeight / u.numRows,
     fragIn.cutYsLo,
     fragIn.cutYsHi,
     u,
     fragIn.color,
-    fragIn.negColor);
+    fragIn.negColor,
+    colorRamp);
 }

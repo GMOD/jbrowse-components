@@ -330,15 +330,13 @@ export default function stateModelFactory(
         return wiggleMarkColoring({
           colorSetting: self.colorSetting,
           wiggleColor: this.wiggleColor,
-          renderingType: self.renderingType,
         })
       },
 
       /**
        * #getter
-       * Whether a gradient spends color on the score: bars, points and
-       * density under a `linear` color, which is a heatmap's unset one.
-       * Lines part in two colors even then.
+       * Whether a gradient spends color on the score: any mark under a
+       * `linear` color, which a heatmap draws its unset pair as.
        */
       get scoreGradientPaints() {
         return this.markColoring.gradientPaints

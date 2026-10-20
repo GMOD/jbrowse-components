@@ -37,8 +37,7 @@ export const WIGGLE_FIELD_PRESETS = {
  * one cut, the `origin` where the domain names none, and a color per band
  * where it names more, on every mark; through `linear` a gradient across the
  * y domain, through the y scale's own type, which colors each bar, point and
- * density cell by its score. A line still parts in the gradient's two end
- * colors. With no `scale`, a two-color `range` (red and blue unset) is the
+ * density cell by its score, and a line by the score along it. With no `scale`, a two-color `range` (red and blue unset) is the
  * pair about the `origin`, which each mark draws in its own idiom: bars,
  * points and lines solid either side of it, as a threshold, and a heatmap
  * (`mark: 'span'`) fading to each from white at it, as a ramp whose middle
@@ -109,8 +108,8 @@ export const wiggleColorSchema = ConfigurationSchema(
      * `linear` runs `range`, else `scheme`, else viridis across
      * the y domain through `scales.y.type`, with `domainMid` at the middle
      * stop, coloring each bar, point and density cell by its score; a one-color
-     * `range` paints flat, so one color is `value`. A line still parts
-     * in the two end colors. `none` paints `value`, keeping the field for a
+     * `range` paints flat, so one color is `value`. `none` paints `value`,
+     * keeping the field for a
      * switch back. Unset, `range` is the pair about the `origin`: a
      * threshold on bars, points and lines, and on a heatmap a ramp through
      * white at the origin.

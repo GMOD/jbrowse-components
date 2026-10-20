@@ -40,12 +40,9 @@ test.each([
     /^color\.domain: a wiggle threshold reads at most 8 cuts/,
   ],
   [
-    'a gradient on a line',
-    {
-      mark: 'line',
-      color: { field: 'score', scale: 'linear', scheme: 'viridis' },
-    },
-    /^color\.scale: a gradient colors bars, points and density/,
+    'one color on a heatmap',
+    { mark: 'span', color: 'green' },
+    /^color: one color paints a heatmap flat/,
   ],
 ])(
   "%s: a draft's problems are the notice it shows once applied",

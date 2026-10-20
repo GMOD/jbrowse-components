@@ -30,6 +30,7 @@ struct WiggleBandInstance {
 };
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(2, 0)]] Sampler2D<float4> colorRamp;
 
 struct VsOut {
   float4 position : SV_Position;
@@ -41,6 +42,7 @@ struct VsOut {
   // each cut's y in the row
   nointerpolation float4 cutYsLo : TEXCOORD2;
   nointerpolation float4 cutYsHi : TEXCOORD3;
+  nointerpolation float rowTop : TEXCOORD4;
 };
 
 // Floored only in a column narrower than an output pixel, where the edge's rise
@@ -96,6 +98,7 @@ VsOut vs_main(WiggleBandInstance inst, uint vid : SV_VertexID) {
   o.yPx = y;
   o.cutYsLo = cutYsPx(0, rowTop, rowHeight, u);
   o.cutYsHi = cutYsPx(4, rowTop, rowHeight, u);
+  o.rowTop = rowTop;
   return o;
 }
 
@@ -111,6 +114,19 @@ float bandCoverage(float insideTopPx, float insideBottomPx) {
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float y = fragIn.yPx;
+  // under a gradient each pixel takes the ramp at its own height, as a bar of
+  // that height would
+  if (u.rampLut == 1) {
+    float c = bandCoverage(fragIn.inkPx.x, fragIn.inkPx.y);
+    if (c <= 0.0) {
+      discard;
+    }
+    float3 ramp = lineColorAt(
+      y, fragIn.rowTop, u.canvasHeight / u.numRows, fragIn.cutYsLo,
+      fragIn.cutYsHi, u, fragIn.posColor, fragIn.negColor, colorRamp).rgb;
+    float rampAlpha = WHISKER_BAND_OPACITY * c;
+    return float4(ramp * rampAlpha, rampAlpha);
+  }
   float coverage = 0.0;
   float3 rgb = float3(0.0);
   // the cut below the band being summed; +inf for the lowest band

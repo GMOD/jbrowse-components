@@ -27,6 +27,7 @@
 //! consts-out: packages/wiggle-core/src/wiggleRenderModes.generated.ts
 module wiggleCommon;
 
+import colorRampLut;
 import hpmath;
 import markColor;
 import scoreScale;
@@ -104,9 +105,9 @@ public struct Uniforms {
   // without differentiating it (antialias.slang §"Analytic"). The xyplot bar's
   // horizontal cuts and the center line's capsule both read it.
   public float  devicePixelRatio;
-  // 1 = a gradient: density, xyplot and scatter color through the bound
-  // 256×1 colorRamp LUT texture, 0 = the instance color. The LUT cannot
-  // encode multiwiggle's PER-ROW track colors, so a gradient paints them all.
+  // 1 = a gradient: every rendering colors through the bound 256×1
+  // colorRamp LUT texture, 0 = the instance color. The LUT cannot encode
+  // multiwiggle's PER-ROW track colors, so a gradient paints them all.
   public int    rampLut;
   // How many of `cuts` are in use, at least 1.
   public int    numCuts;
@@ -164,4 +165,25 @@ public float4 bandColorAt(float centerLineYPx, float4 cutYsLo, float4 cutYsHi, U
   return band == 0 ? negColor
     : band == u.numCuts ? posColor
     : u.innerColor[band - 1];
+}
+
+// The score a y in its row stands for, normalized: the inverse of
+// `rowColorYPx`, clamped onto the domain as the ramp reads it.
+public float rowYPxToNorm(float yPx, float rowTop, float rowHeight) {
+  return clamp(1.0 - (yPx - rowTop) / rowHeight, 0.0, 1.0);
+}
+
+// A line's color at its centre line's y: the band between two cuts it is in,
+// or under a gradient the ramp at that y's score, so a rise runs through the
+// ramp's colors as a bar of each height would show them. The binding is each
+// importer's own; the ramp comes in as a parameter.
+public float4 lineColorAt(
+    float centerLineYPx, float rowTop, float rowHeight, float4 cutYsLo,
+    float4 cutYsHi, Uniforms u, float4 posColor, float4 negColor,
+    Sampler2D<float4> ramp) {
+  if (u.rampLut == 1) {
+    return rampColor(
+      ramp, rampMidT(rowYPxToNorm(centerLineYPx, rowTop, rowHeight), u.rampMidNorm));
+  }
+  return bandColorAt(centerLineYPx, cutYsLo, cutYsHi, u, posColor, negColor);
 }

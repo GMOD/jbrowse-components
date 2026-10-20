@@ -107,9 +107,8 @@ never where bars grow from: bars read `origin`, and the layers part their
 colors at `pivot` and the cuts. A gradient (`rampLut`, from
 `linear`, through the y scale's type) colors each bar, point and density cell
 by its score's position, `rampMid`, the config's `domainMid`, on its middle
-stop, and never reads `origin`. The lines alone still part under a gradient, at
-`domainMid ?? origin` in its two end colors, with a corner notice saying so.
-The gradient follows the y domain and y scale, so the color declares no
+stop, and a line and its min-max band by the score at each fragment's height,
+and never reads `origin`. The gradient follows the y domain and y scale, so the color declares no
 `domainMin`/`domainMax` and no `log`. `score` is the one field the schema
 admits, and `threshold`, `linear` and `none` its scales, since a two-sided plot
 has nothing to paint a cut over subtrack names with; `resolveWiggleColor`'s
@@ -264,7 +263,7 @@ whole and carries `colorsAbgr`, one packed color per instance — or none at all
 where both sides of the pivot come out the same color, which is what a
 solid-color track is.
 
-## A line plot is one line, colored by the band between two cuts it is in
+## A line plot is one line, colored along itself
 
 Every summary on a `line` draws one layer through all the bins
 (`lineLayers`), with no per-instance color lane. **Color comes from the band
@@ -274,6 +273,14 @@ once per band through `BandPen`. Centre line rather than pixel, so capsules
 overlapping at a joint agree under max blend unless the joint lies within half a
 line width of a cut; per-bin colors blended every color-changing joint to
 magenta. Whiskers adds a `band` layer under the line, split the same way.
+
+**Under a gradient the line reads the ramp at its centre-line y**
+(`lineColorAt`), so a rise runs through the colors a bar of each height would
+take, and the band colors each pixel by its own height. Canvas2D and the SVG
+export stroke the ramp as `RAMP_LINE_BANDS` (32) thin bands through the same
+`BandPen` path (`rampAsBands`), each in the ramp's color at its middle, so the
+two backends agree within half a band; `rampAsBands.test.ts` holds them there
+and checks the emitted shaders sample the ramp.
 
 ## The color key follows the scale
 
