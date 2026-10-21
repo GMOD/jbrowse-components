@@ -301,8 +301,8 @@ for (let start = 0; start + WINDOW_BP <= ANCHOR_BP; start += STEP_BP) {
   const visible = inWindow(groups, start, start + WINDOW_BP)
   steps++
   // WINDOW_BP is `visibleBpSpan`, which is what the ladder rounds against and
-  // what `keepNearMedian`'s reach is scaled by — so these are the calls the
-  // display makes, not approximations of them
+  // what `blocksOf` measures gaps by — so these are the calls the display
+  // makes, not approximations of them
   const drawn = decideLaneFrames({
     groups: visible,
     openingsOf,

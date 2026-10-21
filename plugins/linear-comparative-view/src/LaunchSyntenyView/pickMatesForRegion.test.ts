@@ -109,8 +109,7 @@ test('the mate contig covering most of the region wins, and only it', () => {
 // A gene-anchor table over a region holds one row per ortholog hit, and one of
 // them can be a paralog tens of megabases along the same contig. Framed on the
 // union that hit stretched the panel across the chromosome; the launch now keeps
-// what sits within reach of the length-weighted median, the multi-way lane's
-// rule, so the panel is the block and the stray is dropped.
+// the heaviest block, the multi-way lane's rule, so the stray is dropped.
 test('a same-contig hit far from the rest does not stretch the panel', () => {
   const picked = pickMatesForRegion({
     features: [
@@ -154,6 +153,35 @@ test('a same-contig hit far from the rest does not stretch the panel', () => {
     mateStart: 5000,
     mateEnd: 6000,
   })
+})
+
+// A mate expanded fivefold against the anchor spreads one region's hits over
+// five regions. Keeping hits whose centre sat within reach of the median opened
+// the panel on the middle of them.
+test('a mate stretch wider than the region opens whole', () => {
+  const picked = pickMatesForRegion({
+    features: Array.from(
+      { length: 10 },
+      (_, i) =>
+        new SimpleFeature({
+          uniqueId: `hit${i}`,
+          refName: 'chr',
+          start: 1000 + i * 100,
+          end: 1100 + i * 100,
+          strand: 1,
+          mate: {
+            assemblyName: 'Sakai',
+            refName: 'chr',
+            start: 5000 + i * 500,
+            end: 5400 + i * 500,
+          },
+        }),
+    ),
+    region,
+    trackAssemblyNames: TRACK_ASSEMBLIES,
+    anchorAssembly: 'K12',
+  })
+  expect(picked.mates[0]).toMatchObject({ mateStart: 5000, mateEnd: 9900 })
 })
 
 test('the self lane is dropped', () => {

@@ -1,4 +1,9 @@
-import { weightedMedian } from '../keepNearMedian.ts'
+import {
+  blocksOf,
+  extentOf,
+  pickBlock,
+  rungCovers,
+} from '../alignmentBlocks.ts'
 import { NEARLY_ALL, preferIncumbent } from '../syntenyHysteresis.ts'
 import {
   frameOpenings,
@@ -11,6 +16,7 @@ import {
   rowFrameX,
 } from './layoutMultiWay.ts'
 
+import type { Weighed } from '../alignmentBlocks.ts'
 import type {
   FetchRegion,
   LaneBlock,
@@ -107,27 +113,10 @@ const ALSO_ON_SHARE = 0.2
 const ALSO_ON_MAX = 3
 // relative, since a lane aligned on its median can overhang its frame
 const HOLD_COVERAGE = 0.9
-// a lane gap wider than this share of the window starts a new cluster
-const CLUSTER_GAP = 0.25
-// a cluster holding less of the lane's evidence is a stray: it links no two
-// blocks, and outside the block it would sit in it draws nothing
-const STRAY_SHARE = 0.05
-// a lane gap wider than this many windows parts one block from the next,
-// unless the two together still fit this rung, where showing both costs little
-const BLOCK_GAP = 1
-const JOINED_RUNG = 1.5
-// the share of the stray floor a cluster already drawn needs to stay solid
-const HELD_STRAY_RATIO = 0.5
 
 function mid(p: MultiWayPlacement) {
   return (p.start + p.end) / 2
 }
-
-// a mammal liftOver over a human window runs up to 7.5% wider (TNNT3)
-const RUNG_TOLERANCE = 0.1
-
-const rungCovers = (rung: number, need: number) =>
-  rung * (1 + RUNG_TOLERANCE) >= need
 
 export function pickRung(need: number, incumbent?: number) {
   const up = SCALE_LADDER.find(r => rungCovers(r, need)) ?? Math.ceil(need)
@@ -193,115 +182,7 @@ function pickContig(
   )
 }
 
-interface WeighedPlacement {
-  placement: MultiWayPlacement
-  // the group's vote evidence: anchor bp for an alignment, 1 for a gene
-  weight: number
-}
-
-function clustersOf(placements: WeighedPlacement[], gapBp: number) {
-  const clusters: WeighedPlacement[][] = []
-  let reach = Number.NEGATIVE_INFINITY
-  for (const p of [...placements].sort(
-    (a, b) => a.placement.start - b.placement.start,
-  )) {
-    if (!clusters.length || p.placement.start - reach > gapBp) {
-      clusters.push([])
-    }
-    clusters.at(-1)!.push(p)
-    reach = Math.max(reach, p.placement.end)
-  }
-  return clusters
-}
-
-const weightOf = (placements: WeighedPlacement[]) =>
-  placements.reduce((sum, p) => sum + p.weight, 0)
-
-function extentOf(placements: WeighedPlacement[]) {
-  let min = Number.POSITIVE_INFINITY
-  let max = Number.NEGATIVE_INFINITY
-  for (const { placement } of placements) {
-    min = Math.min(min, placement.start)
-    max = Math.max(max, placement.end)
-  }
-  // no margin: rounding up to a rung is the margin
-  return { lo: Math.max(0, min), hi: Math.max(max, min + 1) }
-}
-
-interface Block {
-  lo: number
-  hi: number
-  /** the block's evidence, named for `preferIncumbent` */
-  overlap: number
-}
-
-/**
- * A contig's placements as blocks: clusters a quarter window apart, the strays
- * set aside, and the rest linked across lane gaps of up to a window. A stray
- * inside a block's span counts toward it; one outside every block counts
- * toward none, so a scatter of small hits can neither chain two blocks nor
- * widen one. Where every cluster is a stray, each is its own block. A cluster
- * the lane already draws (`held`) stays solid at a lower share, since each
- * step re-clips the pieces at the window's edges and moves their weight.
- */
-function blocksOf(
-  placements: WeighedPlacement[],
-  unitBp: number,
-  held?: { lo: number; hi: number },
-) {
-  const clusters = clustersOf(placements, unitBp * CLUSTER_GAP)
-  const floor = STRAY_SHARE * weightOf(placements)
-  const solid = clusters.filter(cluster => {
-    const { lo, hi } = extentOf(cluster)
-    const drawn = held !== undefined && lo < held.hi && hi > held.lo
-    return weightOf(cluster) >= (drawn ? floor * HELD_STRAY_RATIO : floor)
-  })
-  const blocks: Block[] = []
-  for (const cluster of solid.length ? solid : clusters) {
-    const { lo, hi } = extentOf(cluster)
-    const last = blocks.at(-1)
-    if (
-      solid.length &&
-      last &&
-      (lo - last.hi <= unitBp * BLOCK_GAP ||
-        rungCovers(JOINED_RUNG, (hi - last.lo) / unitBp))
-    ) {
-      last.hi = Math.max(last.hi, hi)
-    } else {
-      blocks.push({ lo, hi, overlap: 0 })
-    }
-  }
-  for (const p of placements) {
-    const block = blocks.find(
-      b => p.placement.start < b.hi && p.placement.end > b.lo,
-    )
-    if (block) {
-      block.overlap += p.weight
-    }
-  }
-  return blocks
-}
-
-const distanceTo = (block: Block, bp: number) =>
-  Math.max(0, block.lo - bp, bp - block.hi)
-
-function pickBlock(
-  blocks: Block[],
-  pinnedAt: number | undefined,
-  incumbentCenter: number | undefined,
-) {
-  if (pinnedAt !== undefined) {
-    return blocks.reduce((a, b) =>
-      distanceTo(b, pinnedAt) < distanceTo(a, pinnedAt) ? b : a,
-    )
-  }
-  const best = blocks.reduce((a, b) => (b.overlap > a.overlap ? b : a))
-  const held =
-    incumbentCenter === undefined
-      ? undefined
-      : blocks.find(b => distanceTo(b, incumbentCenter) === 0)
-  return preferIncumbent(best, held)!
-}
+type WeighedPlacement = Weighed<MultiWayPlacement>
 
 /**
  * The block the lane draws, and the others holding a comparable share of its
@@ -551,6 +432,23 @@ function decideOrientation(
   }
   const share = vote.backwards ? vote.share : 1 - vote.share
   return share >= NEARLY_ALL ? vote.backwards : incumbent
+}
+
+/**
+ * The value at the halfway point of the summed weights — the median an item's
+ * length gets a vote in, rather than one where every item counts once.
+ */
+export function weightedMedian(samples: { value: number; weight: number }[]) {
+  const sorted = [...samples].sort((a, b) => a.value - b.value)
+  const total = sorted.reduce((sum, s) => sum + s.weight, 0)
+  let acc = 0
+  for (const sample of sorted) {
+    acc += sample.weight
+    if (acc >= total / 2) {
+      return sample.value
+    }
+  }
+  return 0
 }
 
 // Unclamped, so part of the fit can fall off an edge and homologs line up.

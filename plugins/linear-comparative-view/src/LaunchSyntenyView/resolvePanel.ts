@@ -1,4 +1,4 @@
-import { OUTLIER_REACH, keepNearMedian } from '../keepNearMedian.ts'
+import { blocksOf, pickBlock } from '../alignmentBlocks.ts'
 import { mateBpAt } from '../mateBpAt.ts'
 import { voteEvidence } from '../syntenyHysteresis.ts'
 import { getAlignmentOps, getMate, isNamedRecord } from '../syntenyMate.ts'
@@ -123,6 +123,21 @@ function resolveSpans({
   }
 }
 
+// inclusive, so a zero-length hit at a block's edge stays in it
+function heaviestBlock<T>(
+  weighed: {
+    entry: T
+    placement: { start: number; end: number }
+    weight: number
+  }[],
+  unitBp: number,
+) {
+  const { lo, hi } = pickBlock(blocksOf(weighed, unitBp))
+  return weighed
+    .filter(({ placement }) => placement.start <= hi && placement.end >= lo)
+    .map(({ entry }) => entry)
+}
+
 /**
  * Where one panel will open, before window padding — the resolution the launch
  * itself runs on, so the region dialog's panel list previews the view it is
@@ -140,13 +155,13 @@ function resolveSpans({
  * sequence": the mate CONTIG covering most of the anchor axis wins and the rest
  * are dropped, rather than unioning into a span covering neither; and the panel
  * is reversed only when the minus strand carries most of the alignment. The
- * third is the multi-way lane's outlier rule, `keepNearMedian`: on the winning
- * contig, a hit whose mate sits further from the length-weighted median than
- * `OUTLIER_REACH` regions of interest away is repeat noise, not the panel. One
- * stray same-contig orthogroup hit otherwise stretched a launched panel to tens
- * of megabases — brachypodium `1:5,237,628..54,451,482` for a 185 kb rice
- * window whose lane frame was 185 kb. Without a region there is no unit to
- * scale the reach by, so the whole-block launch keeps every hit.
+ * third is the multi-way lane's block rule (`blocksOf`), with the region as its
+ * window: on the winning contig the panel opens on the heaviest block, and a
+ * hit a block apart is repeat noise, not the panel. One stray same-contig
+ * orthogroup hit otherwise stretched a launched panel to tens of megabases —
+ * brachypodium `1:5,237,628..54,451,482` for a 185 kb rice window whose lane
+ * frame was 185 kb. Without a region there is no window to measure gaps by, so
+ * the whole-block launch keeps every hit.
  *
  * `undefined` when nothing in `features` has a mate, which is not a panel.
  */
@@ -175,11 +190,18 @@ export function resolvePanel(
     start: Math.min(spans.mateStart, spans.mateEnd),
     end: Math.max(spans.mateStart, spans.mateEnd),
   })
-  const kept = keepNearMedian(
-    resolved.filter(({ mate }) => mate.refName === refName),
-    region ? (region.end - region.start) * OUTLIER_REACH : Infinity,
-    mateSpan,
-  )
+  const onContig = resolved.filter(({ mate }) => mate.refName === refName)
+  const kept =
+    region && onContig.length > 1
+      ? heaviestBlock(
+          onContig.map(entry => ({
+            entry,
+            placement: mateSpan(entry),
+            weight: evidenceOf(entry),
+          })),
+          region.end - region.start,
+        )
+      : onContig
   // ONE LOOP, AND NO SPREAD INTO Math.min. `Math.min(...blocks)` throws
   // `RangeError: Maximum call stack size exceeded` past ~125k arguments, and the
   // mate ends alone are two per block — so ~62k blocks on the winning contig

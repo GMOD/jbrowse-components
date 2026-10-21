@@ -1,7 +1,7 @@
 // The two thresholds every re-decision a pan can flip shares, in one place
-// because three subsystems re-choose on them: the synteny follow (its block,
-// its envelope's contig, its refused spread), the multi-way lane (its contig,
-// its mirror) and the launch's panel resolution (its median block).
+// because two subsystems re-choose on them: the synteny follow (its block, its
+// envelope's contig, its refused spread) and the multi-way lane (its contig,
+// its block, its mirror).
 
 // Without a margin, two candidates covering the same window within a few bp
 // (a segmental duplication, a fragmented assembly, two rows of an all-vs-all
