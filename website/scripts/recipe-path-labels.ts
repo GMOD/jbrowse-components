@@ -111,6 +111,8 @@ export const PATH_PROSE = new Set([
   'untick the rows you do not want',
   // the arrangement dialog's one-line plot color, above the rows
   'the plot color swatches',
+  // a right-click on the data, before the context menu's row
+  'Right-click the track at the column to sort on',
 ])
 
 /**

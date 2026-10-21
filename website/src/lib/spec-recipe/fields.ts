@@ -1974,9 +1974,9 @@ export const trackFields: Record<string, FieldRecipe> = {
       : undefined
   },
 
-  // Two displays carry this property and each names its own menu item and its
-  // own value, so the note is written per display rather than for whichever one
-  // came first — the reason FieldContext carries `displayType` at all.
+  // Each display carrying this property names its own menu item and its own
+  // value, so the note is written per display — the reason FieldContext carries
+  // `displayType` at all. `pos` is 0-based; the reader sees the 1-based column.
   sortRowsBy: (value, { displayType }) => {
     const at = asRecord(value)
     const refName = asString(at?.refName)
@@ -1984,16 +1984,21 @@ export const trackFields: Record<string, FieldRecipe> = {
     if (!refName || typeof pos !== 'number') {
       return undefined
     }
-    const where = `${refName}:${pos.toLocaleString('en-US')}`
+    const where = `${refName}:${(pos + 1).toLocaleString('en-US')}`
     return displayType === 'LinearWiggleDisplay'
       ? {
-          path: 'Right-click the track at the column to sort on → Sort rows by score here',
+          path: `Right-click the track at the column to sort on → Sort rows by score here`,
           note: `Ranks the subtracks by the score each one carries at a single base (${where} in this figure), highest at the top, which is how a cohort is read at a candidate locus. "Reset row order" in the same menu undoes it.`,
         }
-      : {
-          path: 'Right-click the track at the column to sort on → Sort rows by … here',
-          note: `Reorders the rows by the value each one carries at a single position (${where} in this figure), of the attribute clustering compares rows on, which is how a painting is lined up under a peak. "Reset row order" in the same menu undoes it.`,
-        }
+      : displayType === 'LinearMultiSampleVariantDisplay'
+        ? {
+            path: `Right-click the track at the column to sort on → Sort rows by genotype here`,
+            note: `Groups the samples by their genotype at the record under ${where}, the shortest one there when records overlap. "Reset row order" in the same menu undoes it.`,
+          }
+        : {
+            path: `Right-click the track at the column to sort on → Sort rows by … here`,
+            note: `Reorders the rows by the value each one carries at a single position (${where} in this figure), of the attribute clustering compares rows on, which is how a painting is lined up under a peak. "Reset row order" in the same menu undoes it.`,
+          }
   },
 }
 
@@ -2321,6 +2326,8 @@ export const viewFields: Record<string, FieldRecipe> = {
           path: `View menu → Show... → Center line (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
+  tracklist: value =>
+    value === true ? { path: 'View menu → Open track selector' } : undefined,
   trackLabels: value => {
     const option = typeof value === 'string' ? TRACK_LABELS[value] : undefined
     return option
