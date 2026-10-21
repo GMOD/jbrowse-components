@@ -348,6 +348,26 @@ awk -F'\t' '$11=="INV" {print $3-$2+1, $1, $2, $3}' Col-0_Ler.syri.out | sort -n
 The largest inversion is on `Chr4`, from 1,612,606 to 2,782,621, the interval
 the crossed ribbon spans and the orange block on the Ler row.
 
+## Structural forms on the Arabidopsis pangenome page
+
+The
+[Arabidopsis pangenome page](https://genomes.jbrowse.org/pangenomes/arabidopsis/)
+has SyRI regions for 26 1001 Genomes Plus accessions on TAIR10. Type a gene or
+region there, and the page draws a map of that window with one row per
+structural form, a group of accessions with the same alleles at every
+structural-variant site in the window, beside its share of the accessions. The
+forms come from calling each accession against the pangenome graph with
+`minigraph --call`.
+
+Two links on the page open the SyRI rows in JBrowse:
+
+- **Open in JBrowse**, under the map, opens the window as the graph with a row
+  of SyRI regions per accession beneath it, the display that
+  [Every accession in Columbia coordinates](#every-accession-in-columbia-coordinates)
+  sets up
+- **Every accession as SyRI lanes**, under the page title, opens the same rows
+  over the chromosome 4 inversion
+
 ## Reproduce it end to end
 
 The script needs the tools under [Prerequisites](#prerequisites) and works in
