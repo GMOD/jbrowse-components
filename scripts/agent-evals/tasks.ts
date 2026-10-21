@@ -596,6 +596,35 @@ export const TASKS: EvalTask[] = [
       const phase = t?.activeDisplay?.displayPhase
       return { pass: !!t && (phase === undefined || phase === 'ready'), detail: { shown: !!t, phase } }`,
   },
+  {
+    name: 'ho-multi-step-eden',
+    heldOut: true,
+    prompt:
+      'Show the gene EDEN with the gene track and the volvox filtered vcf track, and color the genes by strand.',
+    solution: `
+      await jb.view().navToLocString('EDEN')
+      await jb.addTrack({ trackId: 'volvox_filtered_vcf' })
+      await jb.trackModel('gff3tabix_genes').applyDisplaySettings({ color: { field: 'strand' } })
+      return jb.waitReady(30000)`,
+    grade: `
+      const ids = ['gff3tabix_genes', 'volvox_filtered_vcf']
+      const v = session.views.find(v => v.type === 'LinearGenomeView' && ids.every(id => v.tracks.some(t => t.configuration.trackId === id)))
+      const [r] = v ? await jb.visibleRegions(v.id) : []
+      const genes = v?.tracks.find(t => t.configuration.trackId === 'gff3tabix_genes')
+      const color = genes && jb.readConfObject(genes.activeDisplay.configuration, 'color')
+      const atGene = !!r && r.refName === 'ctgA' && r.start < 9000 && r.end > 1050 && r.end - r.start < 15000
+      return { pass: atGene && color?.field === 'strand', detail: { r, color } }`,
+  },
+  {
+    name: 'ho-which-fusion-track',
+    heldOut: true,
+    prompt:
+      'Which track in the catalog has the gene fusion calls? Reply with its track ID only.',
+    solution: `return 'volvox_star_fusion'`,
+    grade: `
+      const said = answer.includes('volvox_star_fusion')
+      return { pass: said, detail: { answer } }`,
+  },
   // Tutorial tasks: hosted data, so a run needs the network and takes longer.
   // Each names its tutorial the way a reader would, and the grader checks the
   // state the tutorial's figure shows, by whatever route the agent took.
