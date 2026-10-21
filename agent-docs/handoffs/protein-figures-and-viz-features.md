@@ -80,13 +80,13 @@ blinded ideator given only a capability sheet, a landscape survey):
 
 ## Next
 
-1. **Colin's pick among the cause figures.** He liked the three-panel Y220C
-   and asked for more options. Three prototypes, unlanded, on the same recipe
+1. **Colin's pick among the cause figures.** He liked the three-panel Y220C,
+   asked for more options, then left the choice to us. KRAS G12C landed as
+   `protein/kras_g12c` (4OBE Gly12, 4LDJ Cys12, 6OIM sotorasib bonded to Cys12,
+   one camera with switch I and II left out of the fit) and retired
+   `kras_two_drugs`. Two prototypes remain, unlanded, on the same recipe
    (sessions and PNGs in `/var/tmp/hero2/shots/`, contact sheet
    `/var/tmp/hero2/candidates.png`):
-   - **KRAS G12C** (`kr_d`, `build_three.py kras.json`): 4OBE Gly12, 4LDJ
-     Cys12, 6OIM with sotorasib bonded to Cys12 in a pocket closed in the
-     other two; a track of the six codon-12 single-base changes.
    - **HBB E6V** (`hb_j`, `build_hbb.py`): 2HHB Glu6 with nothing beside it;
      2HBS Val6 of one tetramer in the Phe85/Leu88 pocket of the next, as
      cartoon with sphere marks (opaque surfaces hide the contact).

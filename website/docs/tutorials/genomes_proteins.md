@@ -269,7 +269,7 @@ each protein view then lights the residue it codes for.
 
 <Figure src="/img/protein/tp53_r273h.png" caption="TP53 with a saturation genome editing score track, the alignment's domains and two protein views: 5MG7 and 7B49, both bound to DNA. R273H is labelled in every view." />
 
-<Figure src="/img/protein/kras_two_drugs.png" caption="KRAS with two protein views side by side, 6OIM with sotorasib and 7RPZ with MRTX1133. The genome view, the alignment and both structures mark codon 12." />
+<Figure src="/img/protein/kras_g12c.png" caption="KRAS at codon 12 with its six single-base missense changes, above the KRAS surface at residue 12 in wild type (4OBE), G12C (4LDJ) and G12C bound to sotorasib (6OIM), all three from one camera." />
 
 <Figure src="/img/protein/apoe_e4.png" caption="APOE under a Manhattan plot of FinnGen Alzheimer's disease statistics, above the ortholog alignment and two protein views: the 1B68 crystal structure and its AlphaFold model colored by pLDDT." />
 

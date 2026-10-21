@@ -455,27 +455,10 @@ const KRAS: HotspotGene = {
     { label: 'Q61', refName: 'chr12', start: 25227340, end: 25227343 },
   ],
 }
-const KRAS_G12C: HotspotGene = {
-  ...KRAS,
-  hotspots: [{ ...KRAS.hotspots[0]!, label: 'G12C' }],
-}
 const KRAS_G12_WINDOW = 'chr12:25245320-25245380[rev]'
 const KRAS_DOMAIN_WINDOWS =
   'chr12:25245328-25245372[rev] chr12:25227320-25227364[rev]'
 const KRAS_G12 = 'chr12:25,245,350'
-const KRAS_CDD = '133338'
-const KRAS_UNSHOWN_SITES = [
-  'G1 box',
-  'G2 box',
-  'G3 box',
-  'G4 box',
-  'G5 box',
-  'putative GDI interaction site',
-  'GEF interaction site',
-  'effector interaction site',
-  'Switch I region',
-  'GTP/Mg2+ binding site',
-].map(name => `${KRAS_CDD}:${name}`)
 
 const TP53: HotspotGene = {
   session: readSession('protein_browser_tp53_1tup.session.json'),
@@ -893,69 +876,6 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     viewportHeight: 1150,
     actions: hoverCodon(KRAS_G12),
     annotations: [residueCallout('Cys12 beside sotorasib', 'A:12', 160, 260)],
-  },
-  {
-    mode: 'url',
-    name: 'protein/kras_g12c',
-    url: hotspotSession(
-      KRAS_G12C,
-      { start: 1, end: 75 },
-      {
-        loc: KRAS_DOMAIN_WINDOWS,
-        tracks: [HG38_GENE_TRACK],
-        msaHeight: 490,
-        domains: true,
-        turnedOff: KRAS_UNSHOWN_SITES,
-      },
-    ),
-    ...domainFigure('KRAS', KRAS_G12, 0, true),
-    viewportHeight: 1100,
-    annotations: [residueCallout('Sotorasib', 'A:303', 160, 260)],
-  },
-  {
-    mode: 'url',
-    name: 'protein/kras_two_drugs',
-    url: hotspotSession(
-      { ...KRAS, hotspots: [{ ...KRAS.hotspots[0]!, label: 'G12' }] },
-      { start: 1, end: 75 },
-      {
-        loc: KRAS_DOMAIN_WINDOWS,
-        tracks: [HG38_GENE_TRACK],
-        msaHeight: 490,
-        domains: true,
-        turnedOff: KRAS_UNSHOWN_SITES,
-        hideTracks: ['conservation', 'property-conservation'],
-        pairStructure: { pdbId: '7rpz' },
-      },
-    ),
-    ...domainFigure('KRAS', KRAS_G12, 0, true),
-    viewportWidth: 2600,
-    viewportHeight: 1100,
-    actions: [
-      { type: 'waitForAppSettled' },
-      {
-        type: 'click',
-        selector:
-          '[data-testid="view-container-protein-KRAS-6oim"] button[title="Reset Zoom"]',
-      },
-      {
-        type: 'click',
-        selector:
-          '[data-testid="view-container-protein-KRAS-6oim-pair"] button[title="Reset Zoom"]',
-      },
-      PARK_CURSOR,
-      { type: 'delay', ms: 1500 },
-    ],
-    annotations: [
-      {
-        ...residueCallout('G12C: sotorasib', 'A:303', 80, -170),
-        anchor: { residue: 'A:303', view: 2 },
-      },
-      {
-        ...residueCallout('G12D: MRTX1133', 'A:202', 80, -170),
-        anchor: { residue: 'A:202', view: 3 },
-      },
-    ],
   },
   {
     mode: 'url',
