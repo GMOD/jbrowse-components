@@ -815,11 +815,12 @@ TASKS.push(
 )
 
 // The synteny task needs the mouse assembly, which only the union hub holds
-for (const task of TASKS.filter(t => t.name.startsWith('hs-'))) {
-  task.config =
-    task.name === 'hs-synteny-mouse-brca1'
-      ? 'https://jbrowse.org/ucsc/all.json'
-      : 'https://jbrowse.org/ucsc/hg38/config.json'
+for (const task of TASKS.filter(t => /^(hs|tut)-/.test(t.name))) {
+  task.config = ['hs-synteny-mouse-brca1', 'tut-synteny-tnnt3'].includes(
+    task.name,
+  )
+    ? 'https://jbrowse.org/ucsc/all.json'
+    : 'https://jbrowse.org/ucsc/hg38/config.json'
 }
 
 // Reach tasks: ambitious human requests that may exceed what the tools do
