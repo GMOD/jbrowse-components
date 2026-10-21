@@ -3,7 +3,8 @@
 // Where every haplotype's walk crosses a reference window, read from a
 // gfa-to-tabix --walks file by range request: one line per walk, its PanSN
 // name, the first and last base it covers in its own contig's coordinates, and
-// the strand of its first step.
+// the strand of its first step. The cut reads each walk the file abridged
+// (walk format 5) in full from its detail records.
 //
 //   npm install @jbrowse/graph-walks @gmod/tabix generic-filehandle2
 //   node walk_spans.mjs <prefix>.<sample>.walks.bed.gz GRCh38#0#chr1 103540000 103541000
@@ -29,7 +30,7 @@ const reader = new WalkReader(
 const { fragments } = await reader.cut(
   refName,
   { start: Number(start), end: Number(end) },
-  { context: 0, links: false },
+  { context: 0, links: false, expand: () => true },
 )
 for (const { name, hapStart, hapEnd, rev } of fragments) {
   console.log([name, hapStart, hapEnd, rev[0] ? '-' : '+'].join('\t'))
