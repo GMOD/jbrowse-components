@@ -541,6 +541,36 @@ export const TASKS: EvalTask[] = [
         detail: views,
       }`,
   },
+  {
+    name: 'ho-set-scale-range',
+    heldOut: true,
+    prompt:
+      'Narrow the scale of the microarray signal track so it runs from 0 to 200.',
+    setup: `return jb.addTrack({ trackId: 'volvox_microarray' })`,
+    solution: `return jb.trackModel('volvox_microarray').applyDisplaySettings({ scales: { y: { domainMin: 0, domainMax: 200 } } })`,
+    grade: `
+      const t = ${shownTrack('volvox_microarray')}
+      const conf = t?.activeDisplay.configuration
+      const min = conf && jb.readConfObject(conf, ['scales', 'y', 'domainMin'])
+      const max = conf && jb.readConfObject(conf, ['scales', 'y', 'domainMax'])
+      return { pass: min === 0 && max === 200, detail: { min, max } }`,
+  },
+  {
+    name: 'ho-show-translations',
+    heldOut: true,
+    prompt:
+      'Show the forward and reverse translations of the region on screen.',
+    setup: `
+      await jb.addTrack({ trackId: 'volvox_refseq' })
+      await jb.trackModel('volvox_refseq').applyDisplaySettings({ showReverse: false, showTranslation: false })
+      await jb.view().navToLocString('ctgA:1,000-1,300')
+      return jb.waitReady(30000)`,
+    solution: `return jb.trackModel('volvox_refseq').applyDisplaySettings({ showForward: true, showReverse: true, showTranslation: true })`,
+    grade: `
+      const d = ${shownTrack('volvox_refseq')}?.activeDisplay
+      const rows = { forward: d?.showForward, reverse: d?.showReverse, translation: d?.showTranslation }
+      return { pass: rows.forward === true && rows.reverse === true && rows.translation === true, detail: rows }`,
+  },
   // Tutorial tasks: hosted data, so a run needs the network and takes longer.
   // Each names its tutorial the way a reader would, and the grader checks the
   // state the tutorial's figure shows, by whatever route the agent took.
