@@ -10,19 +10,13 @@ import type {
   ScreenshotSpec,
 } from '../screenshot-spec-types.ts'
 
-// ── Trio crossover callouts (analyze_trio.md) ──────────────────────────────
-// The two tracks every callout below resolves against. Named once because a
-// trackId that doesn't match is an anchor that resolves to nothing, which fails
-// the spec rather than misplacing a box — but only if the two figures and the
-// helper are spelling it the same way.
+// Trio crossover callouts (analyze_trio.md). A trackId that does not match
+// fails the spec, so the figures and the helper share these.
 export const TRIO_PAINT_TRACK = 'HG02024_VN049_KHVTrio.chr1.hapibd'
 export const TRIO_VCF_TRACK = 'HG02024_VN049_KHVTrio.chr1.vcf'
 
-// The six VCF haplotype rows, top→bottom, sharing the hap-ibd painting's
-// Father/Mother hapN names so the sidebar and the painting read consistently.
-// The row keeps its canonical "HG020xx HPn" name; `label` is the friendly
-// sidebar text. trioRowFrac(label) is that row's top as a fraction of the
-// display's height.
+// The six VCF haplotype rows, top to bottom, labelled with the hap-ibd
+// painting's own names.
 export const TRIO_HAPLOTYPES = [
   { sample: 'HG02024', hp: 0, label: 'Child hap1' },
   { sample: 'HG02024', hp: 1, label: 'Child hap2' },
@@ -37,35 +31,21 @@ export const trioVcfRows = {
     TRIO_HAPLOTYPES.map(h => [`${h.sample} HP${h.hp}`, h.label]),
   ),
 }
-// the VCF display auto-fits its `TRIO_VCF_DISPLAY_H` px body across the 6
-// haplotype rows (LinearMultiSampleVariantDisplay has no line zone), so the true
-// per-row pitch is height/rows ≈ 43.33 — NOT a round 44, which drifts the frames
-// ~3px low by the bottom row (boxes don't exactly match the rows).
+// The display auto-fits its body across the 6 rows, so the pitch is 43.33; a
+// round 44 drifts the bottom-row frames ~3px low.
 export const TRIO_VCF_DISPLAY_H = 260
 export const TRIO_VCF_ROW_PITCH = TRIO_VCF_DISPLAY_H / TRIO_HAPLOTYPES.length
-// That same pitch as a fraction of the display's own height, which is what an
-// anchor takes. The arithmetic is unchanged; what goes is its ORIGIN — the
-// callouts used to be measured down from the top of the page, so the painting
-// track's height (and everything else above the variant display) was silently
-// part of every one of them.
 export const trioRowFrac = (label: string) =>
   TRIO_HAPLOTYPES.findIndex(h => h.label === label) / TRIO_HAPLOTYPES.length
 
-export const TRIO_HL_FILL = 0.16 // translucent wash inside each highlight frame
-// distinct palettes so the two figures aren't mistaken for each other
-export const TRIO_MATERNAL_COLORS = { left: '#15a01a', right: '#ff6f00' } // green/orange
-export const TRIO_PATERNAL_COLORS = { left: '#caa200', right: '#8e44ad' } // yellow/purple
+export const TRIO_HL_FILL = 0.16
+export const TRIO_MATERNAL_COLORS = { left: '#15a01a', right: '#ff6f00' }
+export const TRIO_PATERNAL_COLORS = { left: '#caa200', right: '#8e44ad' }
 
-// hap-ibd painting: the display is filtered to one parent's 2 haplotype rows,
-// which render at the auto-fit 20px row height. A depth from the track's top
-// edge rather than a fraction of it, because this display's height is auto — a
-// fraction would need the height nobody wrote down.
+// The painting's auto-fit row height. Its track height is auto, so callouts
+// take a depth from the top edge, not a fraction.
 export const TRIO_PAINT_ROW_H = 20
 
-// The window either side of a crossover, as two loci. The frames' widths were
-// `TRIO_XOVER_X - 3` and `1495 - TRIO_XOVER_X`, which is the crossover's pixel
-// twice over; as loci they are just the two halves of the window the spec
-// already declares, and no width is written down at all.
 function crossoverHalves(loc: string, crossover: string) {
   const win = /^(.+):([\d,]+)-([\d,]+)$/.exec(loc)
   const cut = /^(.+):([\d,]+)$/.exec(crossover)
@@ -81,19 +61,11 @@ function crossoverHalves(loc: string, crossover: string) {
   }
 }
 
-// Color-code the two sides of a crossover: the left-color frame wraps the
-// parental copy matched left of the breakpoint plus the matching left half of
-// the child row; the right-color frame wraps the copy matched right of it plus
-// the child's right half; each lightly tinted. A neutral box marks the painting
-// step and an arrow drops from it to the crossover point on the child row.
-//
-// Every one of the sixteen callouts resolves against the two tracks at capture
-// time: the x is the crossover (or a half-window either side of it) and the y is
-// a haplotype row of the display it is drawn on. The one thing that has to be
-// said in pixels is a box's HEIGHT, since a `fracY` anchor is a line through the
-// track rather than a band, and a box given no height falls back to 2*pad.
+// Frames each side of a crossover in the color of the parental copy matched
+// there, on both the parent's row and the child's. A box needs an explicit
+// height: a `fracY` anchor is a line, and a box with no height falls back to
+// 2*pad.
 export interface TrioCrossover {
-  // the spec's own window, and the breakpoint at the middle of it
   loc: string
   crossover: string
   child: string
@@ -110,8 +82,6 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
   const half = crossoverHalves(opts.loc, crossover)
   const stepTop = opts.paintingTopRow * TRIO_PAINT_ROW_H
   const stepHeight = TRIO_PAINT_ROW_H * 2
-  // the two painting rows the block steps between, boxed around the step: a
-  // fixed 56px window on the crossover, since what it frames is the step itself
   const step = {
     type: 'box',
     color: '#333',
@@ -121,8 +91,8 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
       fracY: 0,
       dy: stepTop,
     },
-    // `pad: 0` throughout: an anchored box is inset by `pad` on every side, and
-    // these frames have to meet the rows and each other exactly
+    // An anchored box is inset by `pad`; these frames must meet the rows
+    // exactly.
     pad: 0,
     dx: -28,
     width: 56,
@@ -141,8 +111,6 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
       pad: 0,
       height: TRIO_VCF_ROW_PITCH,
     }) satisfies Annotation
-  // both captions sit below the variant track, on the bottom of the display
-  // rather than 70px under a row whose y was itself measured from the page top
   const caption = (color: string, anchor: AnnotationAnchor, text: string) =>
     ({
       type: 'text',
@@ -155,10 +123,7 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
     step,
     {
       type: 'arrow',
-      // thinner line -> smaller arrowhead (head was too big)
       strokeWidth: 2,
-      // straight down the crossover, from the bottom of the painting step to the
-      // top of the child's row in the display below
       fromAnchor: {
         trackId: TRIO_PAINT_TRACK,
         loc: crossover,
@@ -175,52 +140,33 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
     frame(palette.left, half.left, child),
     frame(palette.right, half.right, rightSource),
     frame(palette.right, half.right, child),
-    // left caption from the track's left edge, right caption from the crossover
-    // — each starts where the half it describes does
     caption(palette.left, { alignX: 'left', dx: 60 }, opts.leftText),
     caption(palette.right, { loc: crossover, dx: 50 }, opts.rightText),
   ]
 }
 
-// Genes above the matrix for scale (reviewer). The matrix spaces one column per
-// variant, so its own x axis carries no genomic distance. The connector zone
-// under this track is what ties a column back to a position, and the gene lane
-// is what that position then means. Genes only, no descriptions: over 2.9 Mb the
-// second RefSeq text line is a wall of prose, and the point here is landmarks,
-// not annotation detail.
-//
-// Shared with the tour in videos/variants.ts, which films the two menu picks
-// that get from the default display to the phased matrix — a tour whose gene
-// lane differed from the figures' would be a route through a different page.
+// Genes above the matrix for scale: the matrix spaces one column per variant,
+// so its x axis carries no distance. Shared with the tour in
+// videos/variants.ts.
 const TRIO_GENE_LANE = {
   trackId: 'ncbi_refseq_109_hg38_latest',
   displayMode: 'compact',
   filter: { genes: 'only' },
-  // was `showDescriptions: false`, meaning "names suffice here". That has no
-  // home on the unified labels enum, so migrateBasicConfigSnapshot resolves it
-  // to 'auto' — descriptions do come back at low density. Written as what it
-  // actually resolved to; pinning 'name' would honor the original intent but
-  // change the figure, so that is a call for whoever regenerates it.
+  // Was `showDescriptions: false`, which migrates to 'auto'. Pinning 'name'
+  // would change the figure; leave that to whoever regenerates it.
   showLabels: 'auto',
   height: 80,
 }
 
-// The window the matrix figures are taken over: 2.9 Mb is enough variants for
-// the six phased rows to read as blocks rather than as individual columns.
 const TRIO_MATRIX_LOC = 'chr1:62,174,000-65,097,304'
 
-// Where the tour opens instead: the matrix window's centre, 1/128th as wide, so
-// seven zoom-outs land on the figures' window. The default display gates at one
-// feature per pixel and this VCF carries every 1000 Genomes site, so over 2.9
-// Mb it draws "Too many features"; 23 kb is a few hundred variants, which draws.
+// The tour opens 1/128th as wide, so seven zoom-outs land on the matrix window.
+// Over 2.9 Mb the default display gates at "Too many features".
 const TRIO_DENSE_LOC = 'chr1:63,624,200-63,647,100'
 
 export const trioVideoFixtures = {
   vcfTrackId: TRIO_VCF_TRACK,
   zoomOutsToMatrix: 7,
-  // The tour's opening state: the gene lane the figures carry, with the VCF in
-  // the display it loads with, since the route being filmed is what gets from
-  // that to the phased matrix.
   defaultDisplay: lgvSession(DEMO_CONFIG, {
     assembly: 'hg38',
     loc: TRIO_DENSE_LOC,
@@ -229,15 +175,9 @@ export const trioVideoFixtures = {
 }
 
 export const trioSpecs: ScreenshotSpec[] = [
-  // ────────────────────────────────────────────────────────────────────────
-  // Phased trio analysis tutorial screenshots
-  // ────────────────────────────────────────────────────────────────────────
-
-  // Initial VCF load with default (LinearVariantDisplay) display.
   {
     mode: 'url',
     name: 'trio-basic',
-    // sized to the content: the rest of the viewport was page background
     viewportHeight: 347,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
@@ -248,8 +188,6 @@ export const trioSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
   },
 
-  // The multi-sample variant display as a genotype matrix, with the track menu
-  // open on the Show... checkbox that chooses it.
   {
     mode: 'url',
     name: 'trio-matrix',
@@ -280,7 +218,6 @@ export const trioSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Phased matrix with the "Rows" menu visible.
   {
     mode: 'url',
     name: 'trio-matrix-phased',
@@ -306,11 +243,9 @@ export const trioSpecs: ScreenshotSpec[] = [
     annotations: [{ type: 'box', anchor: { text: 'Per haplotype' } }],
   },
 
-  // Phased matrix clean (no menu overlay).
   {
     mode: 'url',
     name: 'trio-matrix-phased-clean',
-    // sized to the content: the rest of the viewport was page background
     viewportHeight: 597,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
@@ -330,17 +265,10 @@ export const trioSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
   },
 
-  // hap-ibd haplotype blocks painted with LinearMultiRowFeatureDisplay: a row
-  // per parental haplotype (father copy 1/2, mother copy 1/2). The child's
-  // inherited chromosome is tiled across the paired rows, so each crossover is
-  // the crisp boundary where the painted block steps between the two rows.
   {
     mode: 'url',
     name: 'trio-hapibd-painting',
-    // sized to the content: the rest of the viewport was page background. The
-    // track carries no color legend (the four row labels already are the key,
-    // so the display sets showLegend: false), which is why this is shorter than
-    // the legend-bearing paintings and why the gate below is the canvas.
+    // No legend (the row labels are the key), so the gate is the canvas.
     viewportHeight: 337,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
@@ -353,70 +281,30 @@ export const trioSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'chr1',
-    // this painting has no legend to gate on, so wait for the canvas the
-    // painting is drawn into
     readySelector: '[data-testid="multirow_canvas"]',
     readyTimeout: 60000,
   },
 
-  // The hap-ibd painting stacked above the same trio VCF in the phased
-  // multi-sample variant display, zoomed to a single ~400 kb window around one
-  // genotype-corroborated crossover so the painting block-step is crisp and the
-  // genotype columns below resolve into individual variants. We feature two real
-  // crossovers — one paternal, one maternal — verified against the raw genotype
-  // transmission (most painting boundaries are hap-ibd smoothing artifacts that
-  // the genotypes don't actually switch across; these two do).
-  //
-  // Paternal crossover at chr1:29,697,418 — the child's paternal chromosome
-  // steps from Father hap2 (light blue) to Father hap1 (dark blue); the mother's
-  // row is solid red across the window (no maternal event here). Compare child
-  // HG02024 HP0 against father HG02026's two rows.
-  //
-  // Maternal crossover at chr1:55,753,613 — the child's maternal chromosome
-  // steps from Mother hap2 (pink) to Mother hap1 (red). Of every maternal hap-ibd
-  // boundary on chr1 this is the only one the raw genotypes actually corroborate:
-  // left of it the child's maternally-transmitted allele tracks mom copy 2 at
-  // ~95% of mom-heterozygous sites and right of it mom copy 1 at ~98%, a sharp
-  // switch in the direction the painting block steps. The other maternal
-  // boundaries are hap-ibd smoothing artifacts the genotypes contradict (the
-  // child stays on one copy straight across them), so this stays the featured
-  // maternal example. Compare child HG02024 HP1 against mother HG02025's two rows.
-  //
-  // Both crossovers sit at the horizontal center of their 400 kb window, and
-  // every callout below is placed from that coordinate rather than from the
-  // pixel it lands on. The multi-sample VCF rows are relabeled through the
-  // display's `rows` (trioVcfRows — a friendly label per haplotype row, keyed by
-  // its stable name) so the sidebar reads Child/Mother/Father hapN, matching the
-  // hap-ibd painting's own row names.
-  //
-  // The callouts make the crossover concrete by color-coding the two segments
-  // with a translucent frame each (maternal greens/oranges, paternal
-  // yellows/purples). Left of the breakpoint the child's inherited haplotype
-  // matches one parental copy: the left-color frame wraps both that parental
-  // row's left half and the matching left half of the child row. Right of the
-  // breakpoint it matches the other parental copy, wrapped in the right-color
-  // frame. The child row therefore carries the two tinted blocks abutting exactly
-  // at the crossover, each color linking the child segment to the specific
-  // parental haplotype it was copied from.
+  // Two crossovers the raw genotype transmission corroborates; most hap-ibd
+  // boundaries are smoothing artifacts the genotypes cross without switching.
+  // The maternal one is the only corroborated maternal boundary on chr1. Each
+  // sits at its window's centre.
   ...(
     [
       {
         name: 'trio-crossover-paternal',
         loc: 'chr1:29,497,418-29,897,418',
         crossover: 'chr1:29,697,418',
-        // only paint the father's two haplotypes: the mother's rows
-        // are solid across this window and just add noise. With the painting
-        // filtered to the Father pair they sit at painting rows 0-1.
+        // Painting rows 0-1 once filtered to the father's pair.
         paintingFilter: ['Father hap1', 'Father hap2'],
-        // Child hap1 (paternal) matches Father hap2 left, Father hap1 right
         highlights: {
           child: 'Child hap1',
           leftSource: 'Father hap2',
           rightSource: 'Father hap1',
           palette: TRIO_PATERNAL_COLORS,
           paintingTopRow: 0,
-          // name the frame color, not the painting color: the painting's
-          // blue clashed with the blue variant track (reviewer)
+          // Name the frame color: the painting's blue clashes with the variant
+          // track.
           leftText: 'Child hap1 = Father hap2',
           rightText: 'Child hap1 = Father hap1',
         },
@@ -425,18 +313,13 @@ export const trioSpecs: ScreenshotSpec[] = [
         name: 'trio-crossover-maternal',
         loc: 'chr1:55,553,613-55,953,613',
         crossover: 'chr1:55,753,613',
-        // only paint the mother's two haplotypes; filtered to the
-        // Mother pair they sit at painting rows 0-1.
         paintingFilter: ['Mother hap1', 'Mother hap2'],
-        // Child hap2 (maternal) matches Mother hap2 left, Mother hap1 right
         highlights: {
           child: 'Child hap2',
           leftSource: 'Mother hap2',
           rightSource: 'Mother hap1',
           palette: TRIO_MATERNAL_COLORS,
           paintingTopRow: 0,
-          // name the frame color, not the painting color: the painting's
-          // red/pink clashed with the blue variant track (reviewer)
           leftText: 'Child hap2 = Mother hap2',
           rightText: 'Child hap2 = Mother hap1',
         },
@@ -448,38 +331,29 @@ export const trioSpecs: ScreenshotSpec[] = [
       paintingFilter: string[]
       highlights: Omit<TrioCrossover, 'loc' | 'crossover'>
     }[]
-  )
-    // the window and the crossover reach the callouts from the same place the
-    // view gets them, so a figure cannot be framed on one locus and annotated
-    // against another
-    .map(({ name, loc, crossover, paintingFilter, highlights }) => ({
-      mode: 'url' as const,
-      name,
-      url: lgvSession(DEMO_CONFIG, {
-        assembly: 'hg38',
-        loc,
-        tracks: [
-          {
-            trackId: TRIO_PAINT_TRACK,
-            // show only this parent's haplotype rows
-            rows: { field: 'parenthap', kept: paintingFilter },
-          },
-          {
-            trackId: TRIO_VCF_TRACK,
-            type: 'LinearMultiSampleVariantDisplay',
-            unit: 'haplotype',
-            height: TRIO_VCF_DISPLAY_H,
-            // relabel sidebar rows Child/Mother/Father hapN, keyed by the
-            // canonical HG020xx HPn names
-            rows: trioVcfRows,
-          },
-        ],
-      }),
-      annotations: crossoverHighlights({ loc, crossover, ...highlights }),
-      readyText: 'chr1',
-      readyTimeout: 60000,
-      // sized to the content: the painting carries no color legend, so the
-      // default 800 left ~200 px of page background under the variant track
-      viewportHeight: 650,
-    })),
+  ).map(({ name, loc, crossover, paintingFilter, highlights }) => ({
+    mode: 'url' as const,
+    name,
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc,
+      tracks: [
+        {
+          trackId: TRIO_PAINT_TRACK,
+          rows: { field: 'parenthap', kept: paintingFilter },
+        },
+        {
+          trackId: TRIO_VCF_TRACK,
+          type: 'LinearMultiSampleVariantDisplay',
+          unit: 'haplotype',
+          height: TRIO_VCF_DISPLAY_H,
+          rows: trioVcfRows,
+        },
+      ],
+    }),
+    annotations: crossoverHighlights({ loc, crossover, ...highlights }),
+    readyText: 'chr1',
+    readyTimeout: 60000,
+    viewportHeight: 650,
+  })),
 ]

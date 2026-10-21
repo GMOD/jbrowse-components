@@ -9,66 +9,28 @@ import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// QuicK-mer2 1kb copy number for the 104 PUR individuals of the 1000 Genomes
-// panel (Kidd lab), already wired into config_demo as `pur_copynumber_1000g`.
-// The locus was picked by measurement, not reputation: over 104 samples the
-// CCL3L1/CCL4L1 window carries every integer copy-number level from 0 to 10,
-// the widest spread of the dozen textbook multiallelic loci probed (AMY1 0-4,
-// LPA 2-8, HP 2-7, UGT2B17 0-2). Do not re-pick it by reputation.
+// QuicK-mer2 1kb copy number for 104 PUR individuals. CCL3L1/CCL4L1 was picked
+// by measurement: it spans every copy number from 0 to 10, the widest of the
+// textbook multiallelic loci probed. Do not re-pick it by reputation.
 const CCL3L1_WINDOW = 'chr17:36,080,000-36,270,000'
 
-// The same locus with room around it, for the whole-cohort figure (review:
-// "consider zooming out farther to show bigger window, that this is an abnormal
-// thing essentially", then "zoom in a bit more"). At the ladder's 190 kb every
-// column of the 2504-row heatmap carries a gain or a loss, so the frame has
-// nothing in it that is ordinary and the block reads as the background rather
-// than as the finding. 1.5 Mb overshot the other way: the block was a fifth of
-// the frame with four times its own width of white on either side.
-//
-// 700 kb is measured off the frame rather than picked -- the colored columns
-// run chr17:36,193,000-36,457,000, so the block is a bit over a third of this
-// window and the flat diploid flanks are the rest. Centred on the block, which
-// the 1.5 Mb window was not.
-//
-// Bounded by the store rather than by taste: build_signal_zarr.ts was run with
-// `--region chr17:35000000-37500000`, so a window past that renders empty
-// flanks that look like ordinary two-copy sequence and are actually no data.
+// The colored columns run chr17:36,193,000-36,457,000, so the block is about a
+// third of this window. build_signal_zarr.ts covered chr17:35000000-37500000;
+// past that the flanks render empty and read as two-copy sequence.
 const CCL3L1_CONTEXT_WINDOW = 'chr17:35,975,000-36,675,000'
 
-// The 1000 Genomes phase 3 integrated SV map, lifted to GRCh38, already in
-// config_demo. It is the comparison the tutorial is built on, not a second data
-// source: over this window it holds one multiallelic CNV record with three
-// symbolic alleles, and nothing at all where the depth ladder is.
 const SV_MAP_TRACK =
   'ALL.wgs.integrated_sv_map_v2_GRCh38.20130502.svs.genotypes.vcf'
 const GENE_TRACK = 'ncbi_refseq_109_hg38_latest'
 
-// Six PUR individuals spanning the CCL3L1 ladder, measured over
-// chr17:36,193,000-36,198,000 at roughly 9, 7, 5, 4, 2 and 0 copies, listed
-// high to low so the stacked plots read as a descending staircase. Six and not
-// the ten the ladder has room for: on a shared 0-10 axis, ten rows leave each
-// plot too short for the diploid baseline to be visibly below the plateau.
-//
-// Step lines, the page's `mark`, rather than the xyplot this track type opens
-// with: a filled area over a flat integer plateau paints each row as a solid
-// bar whose only readable feature is its top edge.
+// Six PUR individuals from ~9 to 0 copies, high to low. Ten rows on a shared
+// 0-10 axis leave the diploid baseline indistinguishable from a plateau.
 const LADDER_TRACK = pageTrack('tutorials/population_cnv.md', 'pur_cnv_ladder')
 
-// Copy number is an absolute quantity, so its scale is pinned rather than
-// autoscaled: nearly every bin of nearly every sample sits at the diploid
-// baseline, so a domainQuantile clip pins the top just above 2 and clamps the
-// amplifications the figure is about, and autoscaling re-scales on every navigation
-// so a block means a different number in each window. Pinned, the color means a
-// copy number: white is two copies, red a gain, blue a loss, the same in every
-// window. No reference line at two copies: the key and the diverging scale
-// already name the diploid level (declined 2026-09-27).
-//
-// 0..4 and not 0..6, which looks like it would show more: the density ramp
-// divides both sides by the LONGER one, so with the origin at 2 a 0..6 domain
-// caps a homozygous deletion at half saturation, exactly the intensity of a
-// single extra copy pair. Symmetric around the origin is the only way a
-// diverging scale reads as diverging. The cost is that gains past 4 clamp,
-// which the legend's own bar shows.
+// Pinned: a domainQuantile clip pins the top just above 2 and clamps the
+// amplifications, and autoscaling changes what a color means per window. 0..4,
+// not 0..6: the ramp divides both sides by the longer one, so a 0..6 domain
+// caps a homozygous deletion at half saturation.
 export const CN_HEATMAP_SETTINGS = {
   mark: 'span',
   origin: 2,
@@ -85,45 +47,20 @@ const CN_HEATMAP = {
   trackId: 'pur_copynumber_1000g',
 }
 
-// A clustered multi-wiggle display publishes `data-clustered` on the same
-// element as its first-paint testid, so this waits on the post-clustering frame
-// even though `showTree: false` removes the dendrogram (which is the only other
-// DOM evidence clustering ran).
+// `data-clustered` sits on the first-paint element, so this waits for the
+// clustered frame even with `showTree: false`.
 export const CLUSTERED_READY = `${displayPainted('wiggle-display')}[data-clustered="true"]`
 
-// The tutorial's own config: hg38, the 2504-sample Zarr store in test_data,
-// RefSeq genes and the SV map. It loads jbrowse-plugin-zarr from its published
-// beta bundle at jbrowse.org/demos/zarr/, the same arrangement as
-// graphgenomeviewer, so the figures below need network for the plugin itself.
+// Loads jbrowse-plugin-zarr from its published beta bundle, so these figures
+// need network for the plugin.
 export const CNV_CONFIG = 'test_data/1000g_cnv/config.json'
 
-// Kept although nothing uses it now (the whole-chromosome figures went with
-// cnv1000g/genome_summary_bins), because both halves cost a session to learn:
-//
-// A whole-genome view of this store renders fine in a real browser, on WebGL
-// and on WebGPU, and only this harness cannot capture it -- the capture runs
-// headless on swiftshader, and 2504 rows x ~3100 bins is ~7.8M quads into a
-// 1400x420 box, which a software rasterizer will not finish (34 minutes, then
-// puppeteer's protocolTimeout). Check `--use-angle=gl`
-// before believing any "too much data to draw" story told by a capture.
-//
-// And `displayedRegionNames` here is UNPREFIXED, which this config's filename
-// argues against: its assembly is hg38.prefix.fa.gz, whose index reads `1`,
-// `10`, `11`. The store's own refNames ARE chr-prefixed and refNameAliases
-// reconcile them per query, but displayedRegionNames resolves against the
-// assembly's regions before any adapter is asked. Spelled wrong, the view
-// launches with no regions and the capture is blank rather than an error
-// naming the contig.
+// No whole-genome figure: swiftshader cannot rasterize 2504 rows x ~3100 bins
+// before puppeteer's protocolTimeout, though a real browser renders it.
+// `displayedRegionNames` on this config are unprefixed (`1`, `10`), matching
+// the assembly's index; a chr-prefixed name launches a blank view.
 
 export const cnv1000gSpecs: ScreenshotSpec[] = [
-  // The window as individual profiles. The plateaus are flat and quantized, so
-  // a reader can count copies off the y axis rather than trust a color.
-  //
-  // This used to be the companion to cnv1000g/ccl3l1_depth, a 104-sample PUR
-  // heatmap of the same window that opened the page. That one is deleted:
-  // cnv1000g/zarr_cohort draws the same locus the same way for all 2504
-  // individuals, which is what the Zarr store bought, and the PUR cut only
-  // existed because 2504 bigwigs were too slow to plot.
   {
     mode: 'url',
     name: 'cnv1000g/ccl3l1_ladder',
@@ -149,11 +86,6 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     viewportHeight: 830,
   },
 
-  // The control. UGT2B17 is a biallelic deletion, and there the two
-  // representations agree: depth is flat at 0, 1 or 2 copies with the same
-  // breakpoints in every carrier, and the SV map calls it as a <CN0> deletion
-  // at 47% allele frequency. A tutorial that only showed the disagreement would
-  // read as an argument against callsets.
   {
     mode: 'url',
     name: 'cnv1000g/ugt2b17_biallelic',
@@ -164,18 +96,8 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
         {
           trackId: GENE_TRACK,
           displayMode: 'compact',
-          // The lane is here to name the locus the deletion sits in, and the
-          // 80px it gets holds one row. RefSeq packs two more under it here, a
-          // UBX pseudogene and an uncharacterized LOC, so the track really did
-          // hide rows and drew the scroll shadow saying so. Dropping the
-          // non-genes leaves the named ones on one row with nothing below —
-          // shorter than raising the height, in a figure whose subject is the
-          // 2504-row heatmap underneath.
-          //
-          // NOT `genes: 'only'`, which was rendered and compared: its gene-like
-          // set admits 'pseudogene' by name (featureAdmission.ts), so both extra
-          // rows survive it and the frame is pixel-identical — with a "One
-          // isoform" chip added.
+          // Gene records only: `genes: 'only'` admits pseudogenes and leaves
+          // the extra rows that overflow 80px.
           filter: ["jexl:feature.type=='gene'"],
           height: 80,
         },
@@ -193,11 +115,6 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     viewportHeight: 875,
   },
 
-  // The whole panel, not one population: all 2504 individuals over the same
-  // window, from one Zarr store instead of 2504 BigWigs. The picture is the
-  // argument for the format — the 104-sample figure above already takes minutes
-  // of latency-bound fetching, and 2504 files would be 24 times that, while the
-  // store answers the same view in three requests.
   {
     mode: 'url',
     name: 'cnv1000g/zarr_cohort',
@@ -214,32 +131,12 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
           ...CN_HEATMAP_SETTINGS,
           trackId: 'cnv_1000g_zarr',
           type: 'LinearWiggleDisplay',
-          // 2504 rows, so every individual is a sub-pixel line and the pattern
-          // lives in the stack rather than in any one row (as in the TCGA
-          // cohort figure).
-          //
-          // 880 -> 640 (review: "please reduce height of the
-          // multiwiggledisplay"). Nothing is lost by it: at 880 a row was 0.35
-          // px and at 640 it is 0.26, so both are the same reading -- a density
-          // map whose unit is the stack. What a taller lane WOULD buy is a
-          // legible individual row, and that needs ~2 px a row, which is 5,000
-          // px of track. This figure is not the one where a row is read; the
-          // ladder above it is.
+          // 2504 rows: each is sub-pixel, so the stack is the unit.
           height: 640,
           runClustering: true,
           showTree: false,
-          // NO ROW-LABEL COLUMN (review: "the row labels are just a 'mishmash'
-          // of colors. unclear if it is helpful to show them ... might consider
-          // removing color sidebar"). At 0.35 px a row the labels carry no text
-          // and `SvgRowLabels` falls back to a column of swatches; the store's
-          // per-sample color is the individual's population, and clustering
-          // reorders the rows by copy-number profile, so the column is 26 hues
-          // interleaved at random -- a grouping the picture is not sorted by.
-          //
-          // It would be worth keeping if the rows were ORDERED by that trait,
-          // which is the figure the review was reaching for. They are not, and
-          // ordering them that way costs the clustering that makes the block
-          // legible, so the column comes off instead.
+          // No row labels: at sub-pixel rows they fall back to population
+          // swatches, interleaved at random by the clustering.
           showRowLabels: false,
         },
       ],
@@ -247,39 +144,11 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     readySelector: CLUSTERED_READY,
     readyTimeout: 300000,
     viewportHeight: 972,
-    // 2504 rows floored to 1px: sub-pixel row-boundary jitter between runs
+    // Sub-pixel row-boundary jitter between runs.
     diffThreshold: 0.02,
-    // WHAT THE BLOCK IS (review: "add red text annotation box about what this
-    // 'locus' is called or why it matters"). The gene lane above names CCL3L1
-    // and CCL4L1 among two dozen others at 6 px of label, and nothing in the
-    // frame says that the block under them is a textbook multiallelic CNV
-    // rather than an artefact of this callset -- which is the reading the whole
-    // figure rests on.
-    //
-    // Neither line is checkable against the picture and both are the reason it
-    // is worth drawing, which is exactly what a callout is for. No copy-number
-    // range in it: the ladder figure above shows the range, and the color bar
-    // in this frame's own top right carries the scale.
-    //
-    // In the RIGHT FLANK, anchored to a LOCUS just past the block's right edge
-    // rather than to the track's corner, so it stays in the flank if the window
-    // moves. The flanks are the flat diploid white the block is read against and
-    // so the only part of the heatmap a pill costs nothing to cover; the right
-    // one is the wider of the two, ~200 kb of the 700 kb window. `dy` clears the
-    // score ramp, which pins to that same corner.
-    //
-    // Two placements were tried and both failed for the same reason -- the pill
-    // is wider than either flank unless it is short. From the LEFT edge it
-    // covered about a sixth of the cohort's rows in the block's reddest columns.
-    // Right-ALIGNED against the track's right edge fits, but `textAlign: 'end'`
-    // right-aligns every line inside the pill too, which turns a list into a
-    // ragged-left block. So the text is hard-wrapped to lines that fit and is
-    // prose rather than bullets.
-    //
-    // Neither line is checkable against the picture and both are the reason it
-    // is worth drawing, which is what a callout is for. No copy-number range in
-    // it: the ladder figure above shows the range, and this frame's own color
-    // bar carries the scale.
+    // Anchored to a locus in the right flank, the wider diploid strip the block
+    // is read against; `dy` clears the score ramp in the same corner.
+    // `textAlign: 'end'` would right-align every line inside the pill.
     annotations: [
       {
         type: 'text',
@@ -298,12 +167,4 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-
-  // cnv1000g/genome_summary_bins and its two halves (genome_avg, genome_max)
-  // were here and are DELETED (review: "this figure is kind of unclear, i dont
-  // think users will understand the different between these. probably just
-  // delete or something"). It was the whole-genome store drawn twice at one
-  // slot's difference, mean over max, and the difference is a speckle of narrow
-  // stripes in the lower half that a reader has to be told to look for. The
-  // prose above the embed already says what aggregate does.
 ]
