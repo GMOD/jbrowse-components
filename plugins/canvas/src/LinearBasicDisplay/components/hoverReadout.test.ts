@@ -126,6 +126,38 @@ test('hoverTooltipRows adds no gene row without an isoform under the cursor', ()
   ).toEqual(['gene mouseover'])
 })
 
+test('hoverTooltipRows puts the description under the feature name', () => {
+  expect(
+    hoverTooltipRows(
+      makeHit({
+        feature: {
+          ...makeItem('gene1', 0, 100, 0, 20),
+          tooltip: 'TP53',
+          name: 'TP53',
+          description: 'tumor protein p53',
+        },
+      }),
+    ),
+  ).toEqual(['TP53', 'tumor protein p53'])
+})
+
+test('hoverTooltipRows puts the gene description between gene and isoform', () => {
+  const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
+  expect(
+    hoverTooltipRows(
+      makeHit({
+        feature: {
+          ...makeItem('gene1', 0, 100, 0, 20),
+          tooltip: 'x',
+          name: 'TP53',
+          description: 'tumor protein p53',
+        },
+        subfeature: { ...sub, displayLabel: 'NM_000546.6' },
+      }),
+    ),
+  ).toEqual(['TP53', 'tumor protein p53', 'NM_000546.6'])
+})
+
 test('hoverTooltipRows puts the residue on its own line under the isoform', () => {
   const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
   expect(

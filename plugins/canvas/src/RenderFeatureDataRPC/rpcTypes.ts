@@ -270,6 +270,9 @@ export interface FlatbushItem extends HitItemBase {
   featureHeightPx: number
   tooltip: string
   name?: string
+  // The description label's full text, for the tooltip; absent when the
+  // `mouseover` slot is overridden, since that text replaces the default.
+  description?: string
   strand?: number
   // The feature's value of `facetField`, '' when it carries none; absent
   // unless a facet other than strand asked for it.

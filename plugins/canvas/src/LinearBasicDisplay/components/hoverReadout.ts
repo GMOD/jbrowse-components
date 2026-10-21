@@ -63,14 +63,14 @@ export function hoverTooltipRows(result: HitFeatureResult) {
   const { peptide } = result
   const { exon, hgvs } = transcriptReadouts(result)
   const title = isoform ?? result.feature.tooltip
-  const { name } = result.feature
+  const { name, description } = result.feature
   const gene = isoform && name !== isoform ? name : undefined
   const residue = peptide
     ? `${residueLabel(peptide)}${peptide.isTranslExcept ? ' (transl_except)' : ''}`
     : undefined
+  const featureRows = gene ? [gene, description, title] : [title, description]
   return [
-    tooltipRow(gene),
-    tooltipRow(title),
+    ...featureRows.map(row => tooltipRow(row)),
     tooltipRow(exon, hgvs, residue),
   ].filter(Boolean)
 }

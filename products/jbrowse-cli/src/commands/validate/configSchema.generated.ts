@@ -5114,7 +5114,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "mouseover": {
-          "description": "text to display when the cursor hovers over a feature.",
+          "description": "text to display when the cursor hovers over a feature; left at the default, the tooltip adds the description line (\`labels.description\`) as a second row.",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
           "if": {
             "type": "null"
@@ -10958,7 +10958,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "mouseover": {
-          "description": "text to display when the cursor hovers over a feature.",
+          "description": "text to display when the cursor hovers over a feature; left at the default, the tooltip adds the description line (\`labels.description\`) as a second row.",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
           "if": {
             "type": "null"

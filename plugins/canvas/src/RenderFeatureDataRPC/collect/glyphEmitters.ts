@@ -1,6 +1,7 @@
 import { valueText } from '@jbrowse/core/util/groupKeys'
 
 import { LITERAL } from '../colorClasses.ts'
+import { DEFAULT_MOUSEOVER } from '../featureMouseover.ts'
 import { createFeatureFloatingLabels } from '../floatingLabels.ts'
 import { PAM_LABEL, findPamSubfeature } from '../glyphs/crisprGuide.ts'
 import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
@@ -725,6 +726,8 @@ export function processFeatureRecord(
     featureHeightPx: layout.height,
     tooltip: featureTooltip(feature, ctx),
     name,
+    description:
+      ctx.config.mouseover === DEFAULT_MOUSEOVER ? description : undefined,
     strand: strand !== 0 ? strand : undefined,
     groupKey,
     // A standalone transcript registers no SubfeatureInfo, so its exon bounds

@@ -6,6 +6,7 @@ import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { collectRenderData } from './collectRenderData.ts'
+import { DEFAULT_MOUSEOVER } from './featureMouseover.ts'
 import { FEATURE_NAME_FIELD } from './featureNameField.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
 import { layoutRepeatRegion } from './glyphs/repeatRegion.ts'
@@ -421,6 +422,23 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
     const feature = mockFeature({ type: 'gene', id: 'g1', start: 0, end: 50 })
     const result = collect(boxLayout(feature))
     expect(result.flatbushItems[0]!.tooltip).toBe('g1')
+  })
+
+  it('ships the description label for the tooltip only under the default slot', () => {
+    const feature = mockFeature({
+      type: 'gene',
+      id: 'g1',
+      start: 0,
+      end: 50,
+      attributes: { description: 'tumor protein p53' },
+    })
+    const labels = { name: 'name', description: 'description' }
+    const description = (mouseover: string) =>
+      collect(boxLayout(feature), {
+        config: mockDisplayConfig({ mouseover, labels }),
+      }).flatbushItems[0]!.description
+    expect(description(DEFAULT_MOUSEOVER)).toBe('tumor protein p53')
+    expect(description(`jexl:get(feature,'id')`)).toBeUndefined()
   })
 
   it('top-level feature tooltip is the single hover source (subfeatures carry no tooltip)', () => {
