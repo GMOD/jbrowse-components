@@ -613,6 +613,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         coarseBpPerPx: 1,
         /**
          * #volatile
+         * the scroll offset the coarse blocks were laid out at, in px at
+         * `coarseBpPerPx`: the settled viewport's left edge, which the first
+         * coarse block is not while the view is scrolled before the first region
+         */
+        coarseOffsetPx: 0,
+        /**
+         * #volatile
          */
         leftOffset: undefined as undefined | BpOffset,
         /**
@@ -1425,6 +1432,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           // The debounced coarse autorun is 500ms out; a restored snapshot's
           // consumers would lay out and fetch at 1 bp/px until then.
           self.coarseBpPerPx = self.bpPerPx
+          self.coarseOffsetPx = self.offsetPx
         }
       },
       /**
@@ -2562,6 +2570,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self.coarseTotalBp = blocks.totalBp
           self.coarseBpPerPx = bpPerPx
         }
+        // on every call, since a scroll through the padding before the first
+        // region moves the viewport and leaves the blocks the same
+        self.coarseOffsetPx = self.offsetPx
       },
     }))
     .actions(self => ({

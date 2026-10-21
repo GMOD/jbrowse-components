@@ -23,7 +23,7 @@ import {
   openFeatureWidget,
   persistTrackConfigNow,
 } from '@jbrowse/core/util'
-import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
+import { bpToPx, clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
 import { withImpliedField } from '@jbrowse/core/util/colorScale'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
@@ -105,6 +105,7 @@ import {
   decideLaneFrames,
   frameFromDecision,
   nudgeDecision,
+  sameDecisions,
 } from './laneDecision.ts'
 import {
   landLaneFetch,
@@ -1450,10 +1451,11 @@ export function stateModelFactory(
         return out
       },
       /**
-       * #getter
-       * each group's viewport-cut centre, in view px before the scroll offset
+       * #method
+       * each group's viewport-cut centre, in view px at `bpPerPx` before the
+       * scroll offset
        */
-      get anchorAbsX(): Map<string, { coord: AnchorCoord; x: number }> {
+      anchorAbsXAt(bpPerPx: number) {
         const view = self.lgv
         const assembly = self.anchorAssembly
         const out = new Map<string, { coord: AnchorCoord; x: number }>()
@@ -1466,6 +1468,7 @@ export function stateModelFactory(
             assembly.getCanonicalRefName2(group.anchor.refName),
             group.anchor.start,
             group.anchor.end,
+            bpPerPx,
           )
           if (placement) {
             out.set(group.key, {
@@ -1552,28 +1555,35 @@ export function stateModelFactory(
       },
       /**
        * #method
-       * in the px space anchored at `origin`; a lane in `frozen` keeps its frozen
-       * decision
+       * for the viewport at `originPx` and `bpPerPx`: which group is the
+       * pivot and what the hold test counts are judged in it. A lane in
+       * `frozen` keeps its frozen decision
        */
-      laneDecisionsAt(
-        origin: number,
-        previous: ReadonlyMap<string, LaneDecision | undefined>,
-        frozen: ReadonlyMap<string, LaneDecision>,
-      ) {
-        const view = self.lgv
-        const { anchorAbsX } = self
+      laneDecisionsAt({
+        originPx,
+        bpPerPx,
+        previous,
+        frozen,
+      }: {
+        originPx: number
+        bpPerPx: number
+        previous: ReadonlyMap<string, LaneDecision | undefined>
+        frozen: ReadonlyMap<string, LaneDecision>
+      }) {
+        const layout = { displayedRegions: self.lgv.displayedRegions, bpPerPx }
+        const anchorAbsX = self.anchorAbsXAt(bpPerPx)
         return decideLaneFrames({
           groups: self.fitGroups,
           assemblyNames: self.rowAssemblies,
           anchorX: new Map(
-            [...anchorAbsX].map(([key, { x }]) => [key, x - origin]),
+            [...anchorAbsX].map(([key, { x }]) => [key, x - originPx]),
           ),
           anchorCoordOf: group => anchorAbsX.get(group.key)!.coord,
           pxOfAnchor: coord => {
-            const px = view.bpToPx(coord)
-            return px && px.offsetPx - origin
+            const px = bpToPx({ ...coord, self: layout })
+            return px && px.offsetPx - originPx
           },
-          unitBp: self.visibleBpSpan,
+          unitBp: self.canvasWidthPx * bpPerPx,
           width: self.canvasWidthPx,
           anchorReversed: self.anchorReversed,
           previous,
@@ -1640,7 +1650,12 @@ export function stateModelFactory(
           setFrozenDecision(
             assemblyName,
             self
-              .laneDecisionsAt(self.lgv.offsetPx, previous, frozen)
+              .laneDecisionsAt({
+                originPx: self.lgv.offsetPx,
+                bpPerPx: self.lgv.bpPerPx,
+                previous,
+                frozen,
+              })
               .get(assemblyName),
           )
         }
@@ -1725,13 +1740,20 @@ export function stateModelFactory(
       return {
         /**
          * #action
-         * `originPx` is the view offset the decisions' px space is anchored at
+         * `originPx` is the view offset the lanes are laid out against; the
+         * same origin and decisions write nothing
          */
         setLaneFrames(
           originPx: number,
           decisions: Map<string, LaneDecision | undefined>,
         ) {
           const previous = self.laneDecisions
+          if (
+            originPx === self.renderOriginPx &&
+            sameDecisions(previous, decisions)
+          ) {
+            return
+          }
           self.renderOriginPx = originPx
           self.laneDecisions = decisions
           const nowMs = morphClockMs()
@@ -1747,6 +1769,14 @@ export function stateModelFactory(
             width: self.canvasWidthPx,
           })
           setHalfway(lanesPastHalfway(self.laneTransitions, nowMs))
+        },
+        /**
+         * #action
+         * lays the lanes out against where the view is now; a lane's position
+         * does not depend on the origin, only what the stack clips to does
+         */
+        restampOrigin() {
+          self.renderOriginPx = self.lgv.offsetPx
         },
         /** #action */
         advanceAnimation(nowMs: number) {

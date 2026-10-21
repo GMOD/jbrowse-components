@@ -151,6 +151,15 @@ cost is linear in lanes.
   `hiddenLaneNames` is, so a share link opens on them. The decision is stored
   as data and the drawn frame derives from it against the live view on every pan
   (`frameFromDecision`, `rowFrames`).
+- **Lanes decide at the settled view, and draw at the live one.** The decision
+  reads the coarse blocks and the zoom and offset they were laid out at
+  (`coarseBpPerPx`, `coarseOffsetPx`), so a zoom animation re-decides nothing:
+  tracking the live zoom cost a whole `decideLaneFrames` per frame, 18 ms at 32
+  lanes by 200 groups and 104 ms at 1000 groups (jest, 2026-10-21). The offset
+  picks the viewport the pivot and the hold test are judged in. The stack is
+  laid out against `renderOriginPx` and clips to a screen either side of it
+  (`stackReach`), so a reaction lays it out again once the view has moved more
+  than a screen away between settles, and decides nothing.
 
 ## Where things live
 

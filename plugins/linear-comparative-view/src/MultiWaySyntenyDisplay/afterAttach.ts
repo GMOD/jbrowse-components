@@ -16,12 +16,11 @@ import {
   installClearHoverOnSurfaceMove,
   installLodTierInfoFetch,
 } from '@jbrowse/synteny-core'
-import { autorun, untracked } from 'mobx'
+import { autorun, reaction, untracked } from 'mobx'
 
 import { getMate } from '../syntenyMate.ts'
 import { lanePairKey } from './alignmentOps.ts'
 import { laneGeneFeatures } from './geneGlyph.ts'
-import { sameDecisions } from './laneDecision.ts'
 import { staleLaneSpecs } from './laneFetch.ts'
 import { holdLaneAssembly, releaseLaneAssemblies } from './laneHolders.ts'
 import { laneMotionEnd } from './laneMotion.ts'
@@ -257,6 +256,8 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
   })
 }
 
+// Decides at the settled view, which each frame draws at the live zoom
+// (`frameFromDecision`), so a zoom animation re-decides nothing.
 function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
   addDisposer(
     self,
@@ -266,25 +267,38 @@ function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
         if (!view.initialized) {
           return
         }
-        // eslint-disable-next-line no-restricted-syntax -- SELF-WRITE for the decisions this body writes back; EFFECT INPUT for the offset, which every px below is relative to and which cancels out of the decision — it only stamps the space the frames are laid out against, and tracking it would re-decide on every pan
-        const { origin, previous } = untracked(() => ({
-          origin: view.offsetPx,
-          previous: self.laneDecisions,
-        }))
-        const next = self.laneDecisionsAt(
-          origin,
-          previous,
-          self.frozenDecisions,
+        // eslint-disable-next-line no-restricted-syntax -- SELF-WRITE: setLaneFrames writes it, and it is the hysteresis's incumbent
+        const previous = untracked(() => self.laneDecisions)
+        self.setLaneFrames(
+          view.coarseOffsetPx,
+          self.laneDecisionsAt({
+            originPx: view.coarseOffsetPx,
+            bpPerPx: view.coarseBpPerPx,
+            previous,
+            frozen: self.frozenDecisions,
+          }),
         )
-        if (
-          // eslint-disable-next-line no-restricted-syntax -- SELF-WRITE: setLaneFrames writes it
-          origin !== untracked(() => self.renderOriginPx) ||
-          !sameDecisions(previous, next)
-        ) {
-          self.setLaneFrames(origin, next)
-        }
       },
       { name: 'MultiWayLaneFrames' },
+    ),
+  )
+}
+
+// The stack clips to a screen either side of its origin (`stackReach`), so a
+// view more than a screen from it would draw blank.
+function installOriginRestamp(self: MultiWaySyntenyDisplayModel) {
+  addDisposer(
+    self,
+    reaction(
+      () =>
+        self.lgv.initialized &&
+        Math.abs(self.dragOffsetPx) > self.canvasWidthPx,
+      stale => {
+        if (stale) {
+          self.restampOrigin()
+        }
+      },
+      { fireImmediately: true, name: 'MultiWayOriginRestamp' },
     ),
   )
 }
@@ -382,6 +396,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     name: 'MultiWayClearHoverOnLaneRelayout',
   })
   installLaneFrameDecision(self)
+  installOriginRestamp(self)
   installFreezeExpiry(self)
   installAnimationDeadline(
     self,

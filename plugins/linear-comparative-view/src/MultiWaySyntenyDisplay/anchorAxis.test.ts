@@ -47,7 +47,10 @@ test('a group straddling the region edge keeps its anchor span and its seed', ()
 
   expect(display.groups.map(g => g.key)).toEqual(['g-100', 'g-700'])
   expect([...display.anchorSpans.keys()]).toEqual(['g-100', 'g-700'])
-  expect([...display.anchorAbsX.keys()]).toEqual(['g-100', 'g-700'])
+  expect([...display.anchorAbsXAt(display.lgv.bpPerPx).keys()]).toEqual([
+    'g-100',
+    'g-700',
+  ])
 })
 
 test('each displayed region spans what axisSpan maps the whole region to', () => {

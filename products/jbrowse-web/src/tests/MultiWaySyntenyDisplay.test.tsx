@@ -214,10 +214,9 @@ test('MultiWaySyntenyDisplay seeds the lane chain where the anchor lane draws', 
       x1 < x2 ? [x1, x2] : [x2, x1],
     )
     // ...and the seed is its center, which is what every lane lines up on.
-    expect(display.anchorAbsX.get(group.key)!.x - view.offsetPx).toBeCloseTo(
-      (x1 + x2) / 2,
-      9,
-    )
+    expect(
+      display.anchorAbsXAt(view.bpPerPx).get(group.key)!.x - view.offsetPx,
+    ).toBeCloseTo((x1 + x2) / 2, 9)
   }
 
   // And the seed is NOT the widest block spread across the full canvas, which
@@ -226,10 +225,9 @@ test('MultiWaySyntenyDisplay seeds the lane chain where the anchor lane draws', 
   const framed = (bp: number) =>
     ((bp - widest.start) / (widest.end - widest.start)) * view.width
   const first = display.visibleGroups[0]!
-  expect(display.anchorAbsX.get(first.key)!.x - view.offsetPx).not.toBeCloseTo(
-    framed((first.anchor.start + first.anchor.end) / 2),
-    0,
-  )
+  expect(
+    display.anchorAbsXAt(view.bpPerPx).get(first.key)!.x - view.offsetPx,
+  ).not.toBeCloseTo(framed((first.anchor.start + first.anchor.end) / 2), 0)
 }, 40000)
 
 // Lane order was densest-first with no way in but hand-authoring `domain`,

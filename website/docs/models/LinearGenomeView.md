@@ -95,6 +95,7 @@ From [BaseViewModel](../baseviewmodel): <span id="property-displayname">[`displa
 | <span id="volatile-coarsedynamicblocks">**coarseDynamicBlocks**</span><br><code>ContentBlock[]</code> |  |
 | <span id="volatile-coarsetotalbp">**coarseTotalBp**</span><br><code>number</code> |  |
 | <span id="volatile-coarsebpperpx">**coarseBpPerPx**</span><br><code>number</code> |  |
+| <span id="volatile-coarseoffsetpx">**coarseOffsetPx**</span><br><code>number</code> | the scroll offset the coarse blocks were laid out at, in px at `coarseBpPerPx`: the settled viewport's left edge, which the first coarse block is not while the view is scrolled before the first region |
 | <span id="volatile-leftoffset">**leftOffset**</span><br><code>BpOffset &#124; undefined</code> |  |
 | <span id="volatile-rightoffset">**rightOffset**</span><br><code>BpOffset &#124; undefined</code> |  |
 | <span id="volatile-isscalebarrefnamemenuopen">**isScalebarRefNameMenuOpen**</span><br><code>boolean</code> |  |

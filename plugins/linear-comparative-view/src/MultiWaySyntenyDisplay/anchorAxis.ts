@@ -14,19 +14,27 @@ export interface AxisPlacement {
   centre: AnchorCoord
 }
 
-/** Clips to the displayed regions, since `bpToPx` answers only inside one. */
+/**
+ * Clips to the displayed regions, since `bpToPx` answers only inside one.
+ * `bpPerPx` places at a scale other than the view's live one.
+ */
 export function axisPlacement(
   view: LinearGenomeViewModel,
   refName: string,
   start: number,
   end: number,
+  bpPerPx?: number,
 ): AxisPlacement | undefined {
   const clipped = clipToDisplayedRegions(view, { refName, start, end })
   if (!clipped) {
     return undefined
   }
-  const a = view.bpToPx({ refName, coord: clipped.start })
-  const b = view.bpToPx({ refName, coord: clipped.end })
+  const layout = {
+    displayedRegions: view.displayedRegions,
+    bpPerPx: bpPerPx ?? view.bpPerPx,
+  }
+  const a = bpToPx({ refName, coord: clipped.start, self: layout })
+  const b = bpToPx({ refName, coord: clipped.end, self: layout })
   return a === undefined || b === undefined
     ? undefined
     : {

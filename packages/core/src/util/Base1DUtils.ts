@@ -268,7 +268,7 @@ export function bpToPx({
   refName: string
   coord: number
   displayedRegionIndex?: number
-  self: ViewLayout
+  self: Pick<ViewLayout, 'bpPerPx' | 'displayedRegions'>
 }) {
   const { bpPerPx, displayedRegions } = self
   let bpSoFar = 0

@@ -2590,7 +2590,8 @@ test('a record running off the viewport aligns its lane on the part it shows', (
       },
     }),
   ])
-  const { anchorAbsX, lgv } = display
+  const { lgv } = display
+  const anchorAbsX = display.anchorAbsXAt(lgv.bpPerPx)
   expect(anchorAbsX.get('r1')?.x).toBe(400)
   const decision = decideLaneFrames({
     groups: display.fitGroups,
