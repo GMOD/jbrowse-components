@@ -64,15 +64,19 @@ export function hoverTooltipRows(result: HitFeatureResult) {
   const { exon, hgvs } = transcriptReadouts(result)
   const title = isoform ?? result.feature.tooltip
   const { name, description } = result.feature
-  const gene = isoform && name !== isoform ? name : undefined
   const residue = peptide
     ? `${residueLabel(peptide)}${peptide.isTranslExcept ? ' (transl_except)' : ''}`
     : undefined
-  const featureRows = gene ? [gene, description, title] : [title, description]
-  return [
+  const featureRows = isoform
+    ? [name, description, title]
+    : [title, description]
+  // A single-transcript gene names its isoform after itself, and a nameless
+  // feature's mouseover and description both fall back to `function`.
+  const rows = [
     ...featureRows.map(row => tooltipRow(row)),
     tooltipRow(exon, hgvs, residue),
   ].filter(Boolean)
+  return [...new Set(rows)]
 }
 
 // Text that merely contains angle brackets comes back whole, on the same

@@ -141,6 +141,21 @@ test('hoverTooltipRows puts the description under the feature name', () => {
   ).toEqual(['TP53', 'tumor protein p53'])
 })
 
+// The default mouseover and description label both fall back to `function`.
+test('hoverTooltipRows shows a nameless feature its function once', () => {
+  expect(
+    hoverTooltipRows(
+      makeHit({
+        feature: {
+          ...makeItem('stem_loop1', 0, 100, 0, 20),
+          tooltip: 'frameshift element',
+          description: 'frameshift element',
+        },
+      }),
+    ),
+  ).toEqual(['frameshift element'])
+})
+
 test('hoverTooltipRows puts the gene description between gene and isoform', () => {
   const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
   expect(
