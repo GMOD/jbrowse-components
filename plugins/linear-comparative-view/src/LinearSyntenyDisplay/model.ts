@@ -84,10 +84,15 @@ export interface SyntenyFeatureData extends SyntenyFeatureLanes {
   // strip be drawn: from one fetch the lower row's culled lane holds only what
   // fell inside the upper row's pan buffer
   targetQueried: boolean
+  // the tier these ids were fetched at: a lookup by id at another tier misses,
+  // or on a v2 PIF, whose tiers share ids, finds the other tier's CIGAR
+  lodTier: LodTier
 }
 
 export interface FeatPos {
   id: string
+  // its payload's `lodTier`, which every lookup of `id` has to name
+  lodTier: LodTier
   strand: number
   name: string
   refName: string
@@ -132,6 +137,7 @@ export function getFeatureAtIndex(
 ): FeatPos {
   return {
     id: data.featureIds[i]!,
+    lodTier: data.lodTier,
     strand: data.strands[i]!,
     name: data.nameDict[data.nameIds[i]!]!,
     refName: data.refNameDict[data.refNameIds[i]!]!,

@@ -15,6 +15,7 @@ const FEAT = {
   refName: 'chr1',
   assemblyName: 'one',
   id: 'x',
+  lodTier: 'fine' as const,
   name: '',
   attributes: {},
 }

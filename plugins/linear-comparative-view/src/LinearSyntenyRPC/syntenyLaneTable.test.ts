@@ -132,6 +132,7 @@ it('getFeatureAtIndex reads a packed record back whole', () => {
   const i = data.featureIds.indexOf('named')
   expect(getFeatureAtIndex(data, i)).toEqual({
     id: 'named',
+    lodTier: 'fine',
     strand: -1,
     name: 'genA',
     refName: 'q1',

@@ -147,8 +147,10 @@ export function packSyntenyFeatureData(
     // the mirror, which only a bidirectional fetch ever fills
     targetOffscreenMates = emptyOffscreenMates(),
     targetQueried = false,
+    lodTier = 'fine',
   }: {
     hasCigar?: boolean
+    lodTier?: SyntenyFeatureData['lodTier']
     offscreenMates?: SyntenyFeatureData['offscreenMates']
     targetOffscreenMates?: SyntenyFeatureData['offscreenMates']
     targetQueried?: boolean
@@ -180,5 +182,6 @@ export function packSyntenyFeatureData(
     targetOffscreenMates,
     targetQueried,
     hasCigar,
+    lodTier,
   }
 }

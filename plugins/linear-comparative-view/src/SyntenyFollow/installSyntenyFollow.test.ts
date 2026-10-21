@@ -501,6 +501,46 @@ describe('a window wider than the block it is placed by', () => {
     })
   })
 
+  test("a block refetched at the other tier asks for that tier's map", async () => {
+    // a v2 PIF gives one alignment's coarse and fine rows one id, and the
+    // coarse row's CIGAR is a fold of the fine one
+    const answerNow = () => Promise.resolve({ map: 'any' }) as never
+    jest
+      .mocked(requestCigarMap)
+      .mockClear()
+      .mockImplementationOnce(answerNow)
+      .mockImplementationOnce(answerNow)
+    const blocks = [
+      {
+        id: 'same-id',
+        refName: 'chr1',
+        start: 300_000,
+        end: 700_000,
+        mateRefName: 'chr1',
+        mateStart: 300_000,
+        mateEnd: 700_000,
+      },
+    ]
+    const track = Display.create()
+    track.setFeatureData(
+      packSyntenyFeatureData(blocks, { hasCigar: true, lodTier: 'coarse' }),
+    )
+    const { rows, host } = twoRows([
+      track as unknown as LinearSyntenyDisplayModel,
+    ])
+    const tick = () => new Promise(resolve => setTimeout(resolve, 0))
+    place(rows[0]!, 0, CONTIG)
+    installSyntenyFollow(host)
+    await tick()
+    track.setFeatureData(
+      packSyntenyFeatureData(blocks, { hasCigar: true, lodTier: 'fine' }),
+    )
+    await tick()
+    expect(
+      jest.mocked(requestCigarMap).mock.calls.map(([{ feat }]) => feat.lodTier),
+    ).toEqual(['coarse', 'fine'])
+  })
+
   test('a slow map for a block the pick has left does not replace the one it is on', async () => {
     const answers: ((value: unknown) => void)[] = []
     const answerLater = () =>

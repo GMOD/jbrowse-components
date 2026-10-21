@@ -13,7 +13,11 @@ import {
 import { logFollowSpread, logFollowStep } from './followDebug.ts'
 import { followFrameSpan } from './followFrameSpan.ts'
 import { EMPTY_FOLLOW_REPORT } from './followHost.ts'
-import { createFollowLevelStates, namesBlock } from './followLevelStates.ts'
+import {
+  blockOf,
+  createFollowLevelStates,
+  sameBlock,
+} from './followLevelStates.ts'
 import { followRung } from './followRung.ts'
 import { followSpreadSpans } from './followSpreadSpans.ts'
 import { followTransform } from './followTransform.ts'
@@ -412,21 +416,20 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   // Fetch the pick's CIGAR map once, not awaited: a map that never arrives costs
   // the frame pass precision, not a placement, so a failure reports nothing.
   function ensureCigarMap(state: FollowLevelState, step: FollowStep) {
-    const { display } = step
-    const featureId = step.feat.id
+    const { display, feat } = step
+    const block = blockOf(display, feat)
     if (
       !step.hasCigar ||
-      namesBlock(state.map, display, featureId) ||
-      namesBlock(state.mapPending, display, featureId)
+      sameBlock(state.map, block) ||
+      sameBlock(state.mapPending, block)
     ) {
       return
     }
-    const pending = { display, featureId }
-    state.mapPending = pending
+    state.mapPending = block
     const generation = levelStates.generation
     requestCigarMap({
       model: display,
-      feat: step.feat,
+      feat,
       signal: levelStates.signal,
     })
       .then(value => {
@@ -434,17 +437,17 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         // this, but the pick, or a slow map replaces the one it moved on to
         if (
           generation === levelStates.generation &&
-          state.pick?.display === display &&
-          state.pick.feat.id === featureId
+          state.pick &&
+          sameBlock(blockOf(state.pick.display, state.pick.feat), block)
         ) {
-          state.map = { display, featureId, value }
+          state.map = { ...block, value }
         }
       })
       .catch(() => {
         // asked again next settle
       })
       .finally(() => {
-        if (state.mapPending === pending) {
+        if (state.mapPending === block) {
           state.mapPending = undefined
         }
       })
@@ -668,8 +671,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           partial: plans.find(p => p.partial)?.partial,
         })
         // untracked: `execute` runs synchronously up to its first `await`, and
-        // the resolve reads `lodTier`, which the frame pass moves every frame
-        // eslint-disable-next-line no-restricted-syntax -- effect input: execute consumes the display's adapterConfig and lodTier, the plans are the decision
+        // the resolve reads the display's rows down that path; `executeSpread`
+        // reads the row it places and, under coord.ratio, the anchor's bpPerPx
+        // eslint-disable-next-line no-restricted-syntax -- effect input and self-write: the placements consume the display's adapterConfig and rows, and write the moving rows; the plans are the decision
         untracked(() => {
           for (const { placement } of plans) {
             if (placement?.kind === 'spread') {
@@ -781,7 +785,11 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             toMate,
             mateAssembly,
             transform: pick.transform,
-            map: namesBlock(state.map, pick.display, pick.feat.id)
+            // at the tier drawn now, which a refetch since the settle moves
+            map: sameBlock(state.map, {
+              ...blockOf(pick.display, pick.feat),
+              lodTier: data.lodTier,
+            })
               ? state.map?.value
               : undefined,
             incumbentTarget: pick.target,

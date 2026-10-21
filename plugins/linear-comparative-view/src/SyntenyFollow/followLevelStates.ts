@@ -8,6 +8,7 @@ import type { SyntenyCigarMapResult } from '../LinearSyntenyRPC/SyntenyGetCigarM
 import type { FollowAnswerCache } from './followAnswerCache.ts'
 import type { FollowTransform } from './followTransform.ts'
 import type { SpreadDecision } from './spreadDecision.ts'
+import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 // What one settle decided, as one object: a transform left behind by a
 // previous `feat` maps the window through the wrong block.
@@ -20,18 +21,27 @@ export interface LevelPick {
   transform?: FollowTransform
 }
 
-// a block by its track and id, since ids are unique only within one track
+// a block by its track, id and tier: ids are unique only within one track,
+// and a v2 PIF's coarse and fine rows of one alignment share one
 export interface BlockRef {
   display: LinearSyntenyDisplayModel
   featureId: string
+  lodTier: LodTier
 }
 
-export function namesBlock(
-  ref: BlockRef | undefined,
+export function blockOf(
   display: LinearSyntenyDisplayModel,
-  featureId: string,
-) {
-  return ref?.display === display && ref.featureId === featureId
+  feat: FeatPos,
+): BlockRef {
+  return { display, featureId: feat.id, lodTier: feat.lodTier }
+}
+
+export function sameBlock(a: BlockRef | undefined, b: BlockRef) {
+  return (
+    a?.display === b.display &&
+    a.featureId === b.featureId &&
+    a.lodTier === b.lodTier
+  )
 }
 
 // Kept across settles, and a miss is recorded too, or a block with no CIGAR is

@@ -11,6 +11,7 @@ const WINDOW: FollowWindow = {
 
 const feat: FeatPos = {
   id: 'f0',
+  lodTier: 'fine',
   name: 'f0',
   strand: 1,
   refName: 'chr1',

@@ -56,7 +56,7 @@ function coarseRow(id: string, coarseCigar?: string): Feature {
   })
 }
 
-async function run(features: Feature[]) {
+async function run(features: Feature[], lodMode?: 'fine' | 'coarse') {
   jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
     getFeaturesInMultipleRegionsArray: jest.fn(async () => features),
   } as never)
@@ -66,6 +66,7 @@ async function run(features: Feature[]) {
     adapterConfig: { type: 'PairwiseIndexedPAFAdapter' },
     queryView,
     targetView,
+    lodMode,
   })
   return value
 }
@@ -103,4 +104,9 @@ test('the coarse fold counts as an alignment string for the walks', async () => 
 test('a coarse row without the fold leaves nothing to walk', async () => {
   const value = await run([coarseRow('plain')])
   expect(value.hasCigar).toBe(false)
+})
+
+test('the payload names the tier its ids were fetched at', async () => {
+  expect((await run([coarseRow('plain')], 'coarse')).lodTier).toBe('coarse')
+  expect((await run([coarseRow('plain')])).lodTier).toBe('fine')
 })

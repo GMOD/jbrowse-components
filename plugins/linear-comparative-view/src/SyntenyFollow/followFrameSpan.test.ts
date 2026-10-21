@@ -9,6 +9,7 @@ import type { FollowWindow } from './followAnchorWindow.ts'
 // alignment with unaligned sequence either side of it.
 const feat: FeatPos = {
   id: 'f0',
+  lodTier: 'fine',
   name: 'f0',
   strand: 1,
   refName: 'chr1',

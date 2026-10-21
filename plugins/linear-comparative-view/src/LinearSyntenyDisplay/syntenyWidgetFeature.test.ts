@@ -5,6 +5,7 @@ import type { FeatPos } from './model.ts'
 function feat(attributes: Record<string, number>): FeatPos {
   return {
     id: 'f1',
+    lodTier: 'fine',
     strand: -1,
     name: 'gene1',
     refName: 'chr1',

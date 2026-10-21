@@ -12,6 +12,7 @@ function feat({
 }): FeatPos {
   return {
     id: 'f1',
+    lodTier: 'fine',
     name: 'f1',
     strand,
     refName: 'chr1',

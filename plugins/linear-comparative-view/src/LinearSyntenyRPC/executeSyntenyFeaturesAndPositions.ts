@@ -706,6 +706,7 @@ export async function executeSyntenyFeaturesAndPositions({
     offscreenMates: offscreenMates.finish(),
     targetOffscreenMates: targetOffscreenMates.finish(),
     targetQueried: targetAxisFeatures !== undefined,
+    lodTier: lodMode ?? 'fine',
   }
 
   // colorBy lives on the main thread; the worker emits geometry +

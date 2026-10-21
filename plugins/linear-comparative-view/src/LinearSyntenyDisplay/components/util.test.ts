@@ -65,6 +65,7 @@ test('getCigarOpAtInstance returns undefined for the base block', () => {
 test('getTooltipLines appends the CIGAR operator line only when given one', () => {
   const feat: FeatPos = {
     id: 'f1',
+    lodTier: 'fine',
     strand: 1,
     name: '',
     refName: 'chr1',
@@ -86,6 +87,7 @@ test('getTooltipLines appends the CIGAR operator line only when given one', () =
 test('getTooltipLines emits no markup, and drops the lines it has no value for', () => {
   const feat: FeatPos = {
     id: 'f1',
+    lodTier: 'fine',
     strand: -1,
     name: '',
     refName: '<img src=x onerror=alert(1)>',
@@ -111,6 +113,7 @@ test('getTooltipLines emits no markup, and drops the lines it has no value for',
 test('getTooltipLines lists every numeric channel the feature carries', () => {
   const feat: FeatPos = {
     id: 'f1',
+    lodTier: 'fine',
     strand: 1,
     name: 'gene1',
     refName: 'chr1',

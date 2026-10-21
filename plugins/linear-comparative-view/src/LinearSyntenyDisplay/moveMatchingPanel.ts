@@ -243,7 +243,7 @@ export async function resolveMatchingSpan({
       featureId: feat.id,
       window,
       toMate,
-      lodMode: model.lodTier,
+      lodMode: feat.lodTier,
     },
   )
   if (!span) {

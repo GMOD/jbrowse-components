@@ -7,10 +7,9 @@ import type {
 } from '../LinearSyntenyDisplay/model.ts'
 
 /**
- * The CIGAR map for one picked block, asked for once and then read every frame.
- * `lodTier` goes with it because feature ids are comparable only within one
- * tier. The region's refName is canonical, and the RPC renames it on the way
- * out; the result is offsets.
+ * The CIGAR map for one picked block, asked for once and then read every frame,
+ * at the tier the block was fetched at. The region's refName is canonical, and
+ * the RPC renames it on the way out; the result is offsets.
  */
 export async function requestCigarMap({
   model,
@@ -39,7 +38,7 @@ export async function requestCigarMap({
         },
       ],
       featureId: feat.id,
-      lodMode: model.lodTier,
+      lodMode: feat.lodTier,
     },
   )
 }

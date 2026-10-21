@@ -54,10 +54,14 @@ _this_ window; the map answers every window inside the block, at the price of
 walking the whole CIGAR. `LevelCigarMap` therefore outlives the pick, and a MISS
 is recorded too, or a CIGAR-less block is asked about every settle forever.
 
-**A map is refused unless it names this block**, by feature id where the frame
-pass reads it and by the block's own coordinates in `cigarMapSpan`. Both: ids
-are only comparable within one LOD tier, and an all-vs-all file has several rows
-over one extent.
+**A map is refused unless it names this block**: by track, feature id and tier
+where the frame pass reads it, and by the block's own coordinates in
+`cigarMapSpan`. Two PAF tracks for one pair mint the same row-index ids, a v2
+PIF gives an alignment's coarse and fine rows one id (the coarse row's CIGAR a
+fold of the fine one), and an all-vs-all file has several rows over one extent.
+The tier is the payload's own `lodTier`, the one its ids were fetched at, which
+every lookup by id sends; the display's live `lodTier` moves with the zoom
+ahead of the refetch.
 
 **A map request carries the store's own abort signal**, so dropping the store
 stops the work and not merely the answer; each request re-reads the whole region
@@ -245,11 +249,15 @@ The mechanism, stated without the genomics:
 from it can only be read untracked, producing a follow that works once and never
 re-fires.
 
-The resolves are kicked off inside `untracked` for the converse reason.
-`execute` runs synchronously up to its own first `await`, and down that path
-`resolveMatchingSpan` reads the display's `lodTier`, derived from both views'
-**raw `bpPerPx`**, which the frame pass writes every frame; tracked, the moving
-row's zoom becomes a dependency of the debounced pass.
+The placements run inside `untracked` for the converse reason. `execute` runs
+synchronously up to its own first `await`, and down that path
+`resolveMatchingSpan` reads the display's `connectedViews` and the moving axis's
+`assemblyNames`; `executeSpread` reads the row it writes and, under
+`coord.ratio`, the anchor's **raw `bpPerPx`** (`spreadFloor`), which the frame
+pass writes every frame. Tracked, the moving row's zoom and regions become
+dependencies of the debounced pass. The lookups' tier comes off the picked
+block, not the display's `lodTier`, which derives from both rows' raw
+`bpPerPx` too.
 
 `FollowLevelState` is a plain object, not MST or a MobX box, since the exact
 pass writes it every pass. The `FollowReport` (`unaligned`, `approximate`,

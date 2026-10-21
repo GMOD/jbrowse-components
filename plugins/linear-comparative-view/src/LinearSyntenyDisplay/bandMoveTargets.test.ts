@@ -17,6 +17,7 @@ function panel(
 
 const feat: FeatPos = {
   id: 'f1',
+  lodTier: 'fine',
   name: 'f1',
   strand: 1,
   refName: 'chr8_MATERNAL',
