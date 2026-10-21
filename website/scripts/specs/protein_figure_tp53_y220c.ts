@@ -13,13 +13,28 @@ function tp53Session() {
   ).toString('base64url')}`
 }
 
+// session.views indexes, which residue anchors name. The three cameras are one
+// camera carried through a CA superposition of 2J1X and 9S9O onto 2XWR, so a
+// replaced structure needs its camera recomputed. 2J1X and 9S9O share four
+// stabilizing mutations away from the pocket.
+const PANELS = [
+  { id: 'protein-TP53-2xwr', view: 1, pill: 'WILD TYPE' },
+  { id: 'protein-TP53-2j1x', view: 2, pill: 'Y220C' },
+  { id: 'protein-TP53-9s9o', view: 3, pill: 'Y220C + REZATAPOPT' },
+] as const
+
+const molstar = (id: string) =>
+  `[data-testid="view-container-${id}"] [data-testid="protein-view-molstar"]`
+
 export const proteinTp53Y220cSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'protein/tp53_y220c',
     url: tp53Session(),
-    readySelector:
-      'body:has([data-testid="view-container-protein-TP53-2xwr"] [data-testid="protein-view-ready"]):has([data-testid="view-container-protein-TP53-9s9o"] [data-testid="protein-view-ready"])',
+    readySelector: `body${PANELS.map(
+      p =>
+        `:has([data-testid="view-container-${p.id}"] [data-testid="protein-view-ready"])`,
+    ).join('')}`,
     readyTimeout: 300000,
     hideSelectors: [
       '.msp-viewport-controls',
@@ -29,119 +44,70 @@ export const proteinTp53Y220cSpecs: ScreenshotSpec[] = [
       '[data-testid="header-alignment-quality"]',
     ],
     hideTooltip: true,
-    viewportWidth: 1600,
-    viewportHeight: 1300,
+    viewportWidth: 1800,
+    viewportHeight: 1190,
     actions: [
       { type: 'waitForAppSettled' },
       PARK_CURSOR,
       { type: 'delay', ms: 800 },
     ],
     annotations: [
-      {
-        type: 'text',
-        text: 'WILD TYPE',
-        fontSize: 34,
-        maxWidth: 700,
+      ...PANELS.map(p => ({
+        type: 'text' as const,
+        text: p.pill,
+        fontSize: 30,
+        maxWidth: 560,
         anchor: {
-          selector:
-            '[data-testid="view-container-protein-TP53-2xwr"] [data-testid="protein-view-molstar"]',
-          alignX: 'left',
-          alignY: 'top',
+          selector: molstar(p.id),
+          alignX: 'left' as const,
+          alignY: 'top' as const,
         },
-        dx: 16,
-        dy: 52,
-      },
-      {
-        type: 'text',
-        text: 'MUTANT: Y220C + drug',
-        fontSize: 34,
-        maxWidth: 700,
-        anchor: {
-          selector:
-            '[data-testid="view-container-protein-TP53-9s9o"] [data-testid="protein-view-molstar"]',
-          alignX: 'left',
-          alignY: 'top',
-        },
-        dx: 16,
-        dy: 52,
-      },
-      {
-        type: 'circle',
-        text: 'A',
+        dx: 14,
+        dy: 46,
+      })),
+      ...(
+        [
+          ['A', 'lgv-TP53'],
+          ['B', PANELS[0].id],
+          ['C', PANELS[1].id],
+          ['D', PANELS[2].id],
+        ] as const
+      ).map(([text, id]) => ({
+        type: 'circle' as const,
+        text,
         radius: 16,
-        fontSize: 20,
         anchor: {
-          selector: '[data-testid="view-container-lgv-TP53"]',
-          alignX: 'left',
-          alignY: 'top',
-          dx: 56,
-          dy: 18,
+          selector: `[data-testid="view-container-${id}"]`,
+          alignX: 'left' as const,
+          alignY: 'top' as const,
         },
-      },
-      {
-        type: 'circle',
-        text: 'B',
-        radius: 16,
-        fontSize: 20,
-        anchor: {
-          selector: '[data-testid="view-container-protein-TP53-2xwr"]',
-          alignX: 'left',
-          alignY: 'top',
-          dx: 56,
-          dy: 18,
-        },
-      },
-      {
-        type: 'circle',
-        text: 'C',
-        radius: 16,
-        fontSize: 20,
-        anchor: {
-          selector: '[data-testid="view-container-protein-TP53-9s9o"]',
-          alignX: 'left',
-          alignY: 'top',
-          dx: 56,
-          dy: 18,
-        },
-      },
-      {
-        type: 'text',
-        text: "Y220C empties Tyr220's spot in p53; the drug rezatapopt fills it",
-        fontSize: 28,
-        color: '#ffffff',
-        maxWidth: 1500,
-        anchor: {
-          selector: '[data-testid="view-container-protein-TP53-9s9o"]',
-          alignX: 'left',
-          alignY: 'top',
-          dy: -22,
-        },
-        dx: -440,
-      },
+        dx: 18,
+        dy: 16,
+      })),
       {
         type: 'legend',
         fontSize: 18,
         entries: [
-          { label: 'p53 broken (score > 0)', color: '#c51b1b' },
-          { label: 'p53 works (score ≤ 0)', color: '#4f8fc6' },
+          { label: 'p53 broken', color: '#c51b1b' },
+          { label: 'p53 works', color: '#4f8fc6' },
         ],
-        anchor: { trackId: 'tp53-sge', loc: 'chr17:7674935', fracY: 0.12 },
+        anchor: { trackId: 'tp53-sge', loc: 'chr17:7674935', fracY: 0.14 },
       },
       {
         type: 'text',
-        text: 'Y220F (Phe keeps the ring): works',
+        text: 'Y220F keeps the ring: works',
         fontSize: 20,
         color: '#2f6fae',
         textColor: '#2f6fae',
         maxWidth: 600,
         leader: true,
-        anchor: { trackId: 'tp53-sge', loc: 'chr17:7674872', fracY: 0.7 },
+        anchor: { trackId: 'tp53-sge', loc: 'chr17:7674872', fracY: 0.72 },
         dx: -40,
-        dy: 30,
+        dy: 34,
       },
       {
         type: 'text',
-        text: 'Y220C, S, N, D, H: broken',
+        text: 'Y220C: broken',
         fontSize: 20,
         color: '#c51b1b',
         textColor: '#c51b1b',
@@ -149,27 +115,17 @@ export const proteinTp53Y220cSpecs: ScreenshotSpec[] = [
         leader: true,
         anchor: { trackId: 'tp53-sge', loc: 'chr17:7674873', fracY: 0.42 },
         dx: -60,
-        dy: -30,
+        dy: -34,
       },
       {
         type: 'text',
-        text: "Tyr220's ring fills this spot",
-        fontSize: 22,
+        text: 'Empty pocket',
+        fontSize: 24,
         maxWidth: 300,
         leader: true,
-        anchor: { residue: 'A:220', view: 1 },
-        dx: -40,
-        dy: -170,
-      },
-      {
-        type: 'text',
-        text: 'Spot left empty; drug (orange) fills it',
-        fontSize: 22,
-        maxWidth: 340,
-        leader: true,
-        anchor: { residue: 'A:402', view: 2 },
-        dx: -40,
-        dy: 190,
+        anchor: { residue: 'A:220', view: 2, dx: 85, dy: -30 },
+        dx: 40,
+        dy: 170,
       },
     ],
   },

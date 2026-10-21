@@ -180,13 +180,13 @@
         "scale": "threshold",
         "domain": [1.5, 2.5],
         "range": ["#9aa7b8", "#d1007a", "#009696"],
-        "labels": ["\u03b1-synuclein", "Glu46", "Lys80"],
+        "labels": ["α-synuclein", "Glu46", "Lys80"],
         "title": "Color"
       },
       "camera": {
-        "position": [7.78, -21.94, -56.45],
-        "target": [3.27, -22.31, 10.3],
-        "up": [0.7177, 0.6944, 0.0524],
+        "position": [-3.181, -20.07, 78.158],
+        "target": [2.051, -19.619, 11.364],
+        "up": [0.88, -0.4703, 0.0658],
         "mode": "orthographic"
       },
       "silhouettes": true,
@@ -402,13 +402,13 @@
         "scale": "threshold",
         "domain": [1.5, 2.5],
         "range": ["#9aa7b8", "#d1007a", "#009696"],
-        "labels": ["\u03b1-synuclein", "Lys46", "Lys80"],
+        "labels": ["α-synuclein", "Lys46", "Lys80"],
         "title": "Color"
       },
       "camera": {
-        "position": [-18.47, -13.68, 93.97],
-        "target": [-13.74, -16.91, 27.31],
-        "up": [0.8745, 0.4834, 0.0387],
+        "position": [-19.815, -15.449, -36.865],
+        "target": [-15.177, -18.884, 29.886],
+        "up": [-0.8901, 0.4478, 0.0849],
         "mode": "orthographic"
       },
       "silhouettes": true,

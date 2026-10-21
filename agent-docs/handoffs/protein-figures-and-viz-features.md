@@ -1,11 +1,11 @@
 ---
 name: protein-figures-and-viz-features
-description: "Hero figures for the protein browser (genome view linked to one or two Mol* structures). Five figures on protein3d 1.24.0, none yet the hero: Colin read the scan-vs-AlphaMissense pair as 'CRISPR matches prediction', not a story. Open: a figure whose variant has a consequence the reader can see, built on the three variant pairs and the reviewer's upgrades."
+description: "Hero figures for the protein browser (genome view linked to one or two Mol* structures). Colin read the scan-vs-AlphaMissense pair as 'CRISPR matches prediction', not a story. The three-panel TP53 Y220C (wild type, empty pocket, drug filling it, one camera) is now the hero candidate awaiting his read; SNCA E46K is turned so Lys80 matches across panels."
 ---
 
 # Protein figures and 3D visualization features: what is left
 
-Revised 2026-10-21, evening. Colin wants figures that win an NIH R01: one story
+Revised 2026-10-21, night. Colin wants figures that win an NIH R01: one story
 each, a variant whose structural consequence the reader can see, the JBrowse
 app UI in frame, short callouts, and several candidates to pick from or present
 together.
@@ -34,9 +34,18 @@ together.
   and by `alphaMissense`, one camera. Sessions beside the spec; the builders,
   the in-page camera reader and the capture script with a paint gate are
   machine-local in `/var/tmp/hero-figures/`.
-- **Variant pairs**, one spec file each: `protein_figure_tp53_y220c.ts`,
-  `protein_figure_brca1_m1775r.ts`, `protein_figure_snca_e46k.ts` (now four
-  sentence callouts fewer).
+- **TP53 Y220C, the hero candidate**, `protein_figure_tp53_y220c.ts`: the
+  scan over codons 198–224 above three opaque-surface panels at residue 220,
+  2XWR (Tyr220 fills the spot), 2J1X (an empty pocket) and 9S9O (rezatapopt in
+  it). The builder carries one camera through a CA superposition onto 2XWR
+  (0.5 Å over 189 residues) and aims it down the pocket's least-occluded
+  direction. Pills name the
+  state; one callout points at the empty pocket.
+- **Variant pairs** `protein_figure_brca1_m1775r.ts` and
+  `protein_figure_snca_e46k.ts`; the SNCA builder looks down each fibril's rung
+  axis and turns the E46K layer to put Lys80 on the wild type's pixel.
+- Builders for both (superposition, pocket aim, in-plane fit) are
+  machine-local in `/var/tmp/hero2/bin/`, beside the prototype shots.
 - The nine older specs in `protein_variants.ts`.
 - Protein3d 1.24.0: `protein-view-ready` waits for a color field's values and
   the paint that follows (1.23.0 flipped it 20–40 s early for `track`,
@@ -58,7 +67,7 @@ blinded ideator given only a capability sheet, a landscape survey):
   tp53_y220c 6, every older figure 4 or below. One hue shared by the codon
   column, its chip and the residue is what carries the link; the MSA panel
   hurts in every figure that has it; sentence callouts dilute.
-- Its two concrete upgrades, neither built: SNCA with both fibrils superposed
+- Its two concrete upgrades, both now built: SNCA with both fibrils superposed
   so Lys80 sits at the same screen position, and a Y220C figure in three linked
   panels (2XWR with Tyr220 plugging the site, 2J1X with the crevice open, 9S9O
   with rezatapopt in it), opaque surface clipped at the pocket, the scan as the
@@ -71,10 +80,9 @@ blinded ideator given only a capability sheet, a landscape survey):
 
 ## Next
 
-1. **A hero with a cause.** Start from the variant pairs, since each shows a
-   consequence: Y220C's pocket and its drug, M1775R's clash with the partner's
-   Phe, E46K's lost salt bridge. The reviewer's three-panel Y220C is the most
-   complete candidate; the SNCA superposition the cheapest upgrade.
+1. **Colin's read of the three-panel Y220C.** If it is the hero, a grant
+   version could add the scan painted on the wild-type surface (with a key
+   saying "effect of changing each residue") and drop the transcript track.
 2. **The painted fold as a supporting layer, not the subject**: a variant pair
    whose wild type is painted by the scan says both what the residue does and
    that the whole map agrees, if the key says what the color means.
@@ -89,13 +97,19 @@ blinded ideator given only a capability sheet, a landscape survey):
 
 ## Known weaknesses
 
-- Y220C shows the pocket by contrast between the two panels; an opaque or
-  cut-away surface read worse to every reader.
+- Y220C: half of rezatapopt sits under the surface from every direction, so
+  panel D shows its two ends; the second lump at the panel's right edge is
+  the same molecule. The camera's `radius` clips only the far side, so no
+  slab can cut the near wall away. 2J1X and 9S9O carry M133L, V203A, N239Y
+  and N268D, away from the pocket.
 - M1775R's BACH1 peptide in the mutant panel is superposed from 1T15 (1N5O has
   none); the view's title names that source, and the reviewer wants "modeled"
   in large type.
 - E46K fibrils are recombinant in-vitro folds; patient-brain folds differ, and
   6CU7 and 6UFR are different polymorphs, so "the fold rearranges" overclaims.
+  No segment superposes well (16-residue windows above 4.5 Å; the 80–97 fit
+  in the layer plane is 10.7 Å), and the panels share only Lys80's spot and the
+  C-terminal strand's direction.
 - Older figures: HBB pair is the weakest; BRAF, CFTR, APOE and F5 show an orange
   "Not in the link" in the alignment toolbar; the Factor V Manhattan reads as a
   haplotype block.
@@ -109,9 +123,14 @@ blinded ideator given only a capability sheet, a landscape survey):
 - The website generator has no in-page wait, so a figure whose color arrives
   late depends on the plugin's ready marker covering it; a fixed `delay` shot
   green folds in a different panel each run.
+- A component-id mark (`A1JMR`) draws the ligand of every chain, undrawn
+  chains included; name one copy by residue (`A:402`).
+- A fibril's principal axis of chain centroids can run across the two
+  protofilaments; the rung axis is the vector between the closest pair of
+  chains.
 - A 3 Å distance line's label lands on the residue labels; the wild-type
   Glu46–Lys80 line was tried on SNCA and dropped.
 - `/tmp` is a 16 GB quota tmpfs, so run captures with `TMPDIR=/var/tmp/<dir>`.
 - A commit message containing "update docs" deploys the site.
-- Screen outputs are machine-local scratch: `/var/tmp/hero-figures/`,
+- Screen outputs are machine-local scratch: `/var/tmp/hero2/`, `/var/tmp/hero-figures/`,
   `/var/tmp/proto-shots/`, `/var/tmp/sge-screen/`, `/var/tmp/r01-*/`.
