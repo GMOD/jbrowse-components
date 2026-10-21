@@ -21,20 +21,6 @@ import type {
   ScreenshotSpec,
 } from '../screenshot-spec-types.ts'
 
-// One labelled control in `lgv_usage_guide`: a pill in the clear strip above a
-// toolbar control, and a short arrow down into the control it names.
-//
-// Every number here is an offset from THE CONTROL, which the arrow's head
-// already resolved against, so the label, the arrow and the button move
-// together — the strip is 59px above whatever row the toolbar is on rather than
-// y=62 on the page, which is what the pills used to say. `pillDx`/`tailDx` are
-// the horizontal stagger, and they are the only thing here that is a design
-// decision rather than a measurement: the five toolbar controls resolve to
-// x 37..1067 and their labels are wider than the gaps between them, so the pills
-// have to be slid along the strip to clear each other.
-// Tools -> Assembly manager, waited out to the dialog's own "Add new assembly"
-// button. Three figures on this page open it, and the item is not admin-gated,
-// so the route is the same whichever mode the config is in.
 const openAssemblyManager = (): ScreenshotAction[] => [
   { type: 'click', text: 'Tools' },
   { type: 'waitForText', text: 'Assembly manager' },
@@ -42,6 +28,9 @@ const openAssemblyManager = (): ScreenshotAction[] => [
   { type: 'waitForText', text: 'Add new assembly' },
 ]
 
+// Offsets are from the control, so pill, arrow and button move together.
+// `pillDx`/`tailDx` stagger the pills: the labels are wider than the gaps
+// between the five toolbar controls.
 function toolbarCallout(opts: {
   selector: string
   text: string
@@ -61,33 +50,23 @@ function toolbarCallout(opts: {
     },
     {
       type: 'arrow',
-      // the tail hangs 8px under the pill's own baseline, so a re-tuned lift
-      // moves both
       fromAnchor: { selector, dx: opts.tailDx, dy: -(lift - 8) },
       anchor: { selector },
     },
   ]
 }
 
-// The highlight list's editable Label cell. `.MuiDataGrid-cell` is what tells
-// it from the column header, which carries the same `data-field`.
+// `.MuiDataGrid-cell` excludes the column header, which has the same
+// `data-field`.
 const LABEL_CELL = '.MuiDataGrid-cell[data-field="label"]'
 
-// The window the highlight figures are taken in: config_demo's hg19 over PTEN,
-// wide enough that a rubberband covers a readable part of the gene rather than
-// the whole of it.
 const PTEN_WINDOW = 'chr10:89,613,000-89,740,000'
 
-// The window the multi-row figures and the tour in videos/repeats.ts share:
-// 50 kb of 17q21, dense enough that every class in the file's palette has
-// blocks in it.
+// Shared with videos/repeats.ts; every repeat class has blocks in this window.
 const RMSK_WINDOW = 'chr17:45,700,000-45,750,000'
 
-// What videos/repeats.ts films, and what multirow/display_types_pick is
-// captured from: the RepeatMasker track in the display it opens with. The tour
-// starts in that state and takes the two menu picks that get out of it, so a
-// window or a track spelled differently in either would be a film of a page the
-// figures are not of.
+// Shared by videos/repeats.ts and multirow/display_types_pick, so the film and
+// the figure show one page.
 export const repeatVideoFixtures = {
   rmskTrackId: 'rmsk_hg38_ucsc',
   packedSession: sessionSpec(DEMO_CONFIG, {
@@ -101,17 +80,9 @@ export const repeatVideoFixtures = {
       },
     ],
   }),
-  // The same track carrying both displays, which is the shape
-  // repeatmasker_classes.md prints: the packed one first, so the track still
-  // opens the way it does everywhere else, and the multi-row one behind the
-  // menu with a height on it.
-  //
-  // The height is why the tour needs its own session. `replaceDisplay` builds
-  // the new display from its own config rather than carrying the old one's
-  // height across, so a multi-row display arriving at the default height fits
-  // the classes it discovers into it — eight lanes in the room one packed lane
-  // was using, with the labels overlapping. `rows` is deliberately absent:
-  // the display picking `repClass` itself is what the route shows.
+  // `replaceDisplay` drops the old display's height, so the multi-row display
+  // carries its own or its eight rows overlap. `rows` stays unset: the tour
+  // shows the display picking `repClass` itself.
   twoDisplaySession: sessionSpec(DEMO_CONFIG, {
     sessionTracks: [
       {
@@ -140,25 +111,21 @@ export const repeatVideoFixtures = {
   }),
 }
 
-// display_settings.md's CRAM and window. videos/config.ts films the clicks that
-// set the page's keys and display_settings_url_snapshot is the state they leave,
-// so the tour's last frame and the figure have to be one app.
+// Shared by videos/config.ts and display_settings_url_snapshot, so the tour's
+// last frame and the figure match.
 const SV_CRAM_TRACK_ID = 'volvox_sv_cram'
 const SV_CRAM_WINDOW = 'ctgA:1-10000'
-// Pinned in both sessions because the tour cannot take it: ResizeHandle
-// publishes no selector, so the drag would be measured viewport coordinates.
+// Pinned in both sessions: ResizeHandle has no selector for the tour to drag.
 const SV_CRAM_HEIGHT = 250
 
 export const settingsVideoFixtures = {
   trackId: SV_CRAM_TRACK_ID,
-  // Default gray, one read per row, with only the height already in place.
   defaultsSession: lgvSession(VOLVOX, {
     assembly: 'volvox',
     loc: SV_CRAM_WINDOW,
     tracks: [{ trackId: SV_CRAM_TRACK_ID, height: SV_CRAM_HEIGHT }],
   }),
-  // Where the tour ends, and the figure under it, in the key order of the
-  // page's JSON fence.
+  // Keys follow the order of the page's JSON fence.
   settledSession: lgvSession(VOLVOX, {
     assembly: 'volvox',
     loc: SV_CRAM_WINDOW,
@@ -173,56 +140,41 @@ export const settingsVideoFixtures = {
   }),
 }
 
-// What videos/ui.ts films. The tour ends where these stills already are, so it
-// opens on the session they were captured from rather than one written again.
+// videos/ui.ts opens on these sessions, so its tours end where the stills are.
 export const uiVideoFixtures = {
   highlightSession: lgvSession(DEMO_CONFIG, {
     assembly: 'hg19',
     loc: PTEN_WINDOW,
     tracks: ['ncbi_gff_hg19'],
   }),
-  // The span the tour rubberbands, inside the window above.
   highlightSpan: { start: 'chr10:89,620,000', end: 'chr10:89,650,000' },
-  // A gene a megabase along chr10, searched by name, so the return has
-  // somewhere to return from.
   elsewhere: 'FAS',
-  // A volvox window with one gene lane in it, and a file from the same test
-  // data that the config does NOT already open, for the add-track tour: the
-  // point of that tour is a track arriving, so it has to arrive.
+  // The add-track tour adds a file the config does not already open.
   addTrackSession: lgvSession(VOLVOX, {
     assembly: 'volvox',
     loc: 'ctgA:1-20,000',
     tracks: ['gff3tabix_genes'],
   }),
-  // The hosted copy of the same file the volvox config is built from, and it
-  // has to be hosted: a relative uri in the add-track form resolves against the
-  // CONFIG's directory, so `test_data/volvox/volvox.bw` typed into it asks for
-  // that path twice over and the track arrives 404ing. A reader pastes a url
-  // anyway, which is what the section is about.
+  // Must be absolute: the add-track form resolves a relative uri against the
+  // config's directory, so `test_data/volvox/volvox.bw` 404s.
   addTrackUrl: 'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox.bw',
-  // The session `upstream_downstream_details` is captured in, so the tour
-  // cycles the dropdown in the same panel that page's stills each freeze one
-  // state of.
+  // The session `upstream_downstream_details` is captured in.
   sequencePanelSession: lgvSession(VOLVOX, {
     assembly: 'volvox',
     loc: 'ctgA:17200-23200',
     tracks: [{ trackId: 'gff3tabix_genes', height: 300 }],
   }),
-  // An LGV with NO tracks at all, for the sequence-search tour: every lane that
-  // tour ends with is minted from the reference itself, so a config with one
-  // already open would be filming the wrong claim.
+  // No tracks: every lane the sequence-search tour ends with comes from the
+  // search.
   motifSearchSession: lgvSession(VOLVOX, {
     assembly: 'volvox',
     loc: 'ctgA:1-20,000',
   }),
-  // Three of the sixteen enzymes the Motif list panel prefills, typed over the
-  // prefill: `Launch one track per motif` means one lane per line, and sixteen
-  // lanes is a frame nothing can be read in.
+  // Three of the sixteen prefilled enzymes: the panel launches one lane
+  // per line.
   motifSearchList: 'EcoRI\tG^AATTC\nBamHI\tG^GATCC\nHindIII\tA^AGCTT',
-  // Four volvox files for the bulk-add tour, deliberately out of order and with
-  // an index between two data files: the claim the page makes is that the form
-  // pairs `.tbi` with its own data file and types each row whatever order they
-  // arrive in, and only a scrambled list shows that.
+  // Deliberately out of order, so the tour shows the form pairing each index
+  // with its data file.
   bulkAddUrls: [
     'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox-bed12.bed.gz',
     'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox-sorted.bam.bai',
@@ -230,18 +182,15 @@ export const uiVideoFixtures = {
     'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox-bed12.bed.gz.tbi',
     'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox-sorted.bam',
   ].join('\n'),
-  // A config with NO assemblies, whose defaultSession is one bare LGV. The one
-  // starting point in the corpus that opens on an app with no genome in it.
+  // A config with no assemblies.
   emptyConfig: '?config=test_data/empty.json&sessionName=Screenshot',
-  // The three URLs quickstart_adminserver.md prints, so the film and the page
-  // name the same files.
+  // Must match the URLs quickstart_adminserver.md prints.
   hg38GenomeUrls: [
     'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
     'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai',
     'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
   ].join('\n'),
-  // Where that figure clicks to select the mRNA, resolved against the track's
-  // own band rather than off the page.
+  // Where upstream_downstream_details clicks to select the mRNA.
   sequencePanelGene: {
     trackId: 'gff3tabix_genes',
     loc: 'ctgA:17,400-23,000',
@@ -250,15 +199,10 @@ export const uiVideoFixtures = {
   },
 }
 
-// The 127-epigenome ChromHMM track over 500 kb of HOXA, unclustered, which the
-// clustering tour in videos/epigenomics.ts opens on. The demo config pins the
-// track's `domain` in Roadmap's GROUP order, so the stack opens as contiguous
-// tissue blocks.
 const CHROMHMM_TRACK_ID = 'roadmap_chromhmm_multirow_hg19'
 const CHROMHMM_HOXA_WINDOW = 'chr7:26,950,000-27,450,000'
 
-// Roadmap 2015 Fig. 2's group order, which Fig. 3a keeps, and the order the
-// figure stacks its tissue bands in.
+// Roadmap 2015 Fig. 2's group order.
 const ROADMAP_FIGURE_GROUPS = [
   'IMR90',
   'ESC',
@@ -310,33 +254,17 @@ export const chromhmmVideoFixtures = {
   }),
 }
 
-// The 1000 Genomes ensemble SV callset, 3202 samples. Our own copy of EBI's
-// file, because the original has no AWS or NCBI mirror and EBI stalls a
-// connection for tens of seconds often enough that three specs reading this
-// callset failed the 2026-08-23 sweep on it. Byte-identical, so the provenance
-// url the tutorial cites still names the same data.
-//
-// Declared twice below, once per display: `showTrack` resolves by trackId and
-// hands back the open track, so two displays of one callset means two session
-// tracks pointing at the same file.
+// A byte-identical copy of EBI's file, which stalls connections. Declared as
+// two session tracks below: `showTrack` resolves by trackId, so one track
+// cannot show two displays.
 const KGP_ENSEMBLE_SV_VCF =
   'https://jbrowse.org/demos/1000g/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz'
 
-// THE RHD PANEL, shared by the `multisv_rhd` figure below and by the
-// `sv/multisample_sort` tour in videos/sv.ts. It loads UNSORTED — nothing here
-// writes a row order — because the figure sorts the matrix by CLICKING, in its
-// own `actions`. So the still and the film start from one state, and the film's
-// opening frame is the frame the figure was taken from before its first click.
-//
-// NOT the remote 1000-genomes config any more, because the copy-number lane
-// needs the Zarr plugin and a plugin can only be declared by a config
-// (reviewer: "potentially would be valuable to see our zarr based copy number
-// track here. the nested cnv are hard to see with vcf. it would be a tall
-// screenshot but might help"). test_data/1000g_cnv/config.json is the CNV
-// tutorial's own config: the plugin, the 2504-sample store and a RefSeq lane.
-// The ensemble callset it does not carry comes in as session tracks, one per
-// display, since showTrack resolves by trackId and a second display of one
-// track is not available.
+// Shared by `multisv_rhd` and the `sv/multisample_sort` tour in videos/sv.ts.
+// Loads unsorted: the figure sorts by clicking, so the film opens on the
+// figure's pre-click state. Uses the CNV tutorial's config because only a
+// config can declare the Zarr plugin. Keep one multi-sample display: a second
+// one stops the first answering `onContextMenu`, and the sort row vanishes.
 const rhdPanel = (sortRowsBy?: RowSortSpec) =>
   sessionSpec('test_data/1000g_cnv/config.json', {
     sessionTracks: [
@@ -367,39 +295,16 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
             variants: { show: true },
             forceLoad: true,
             sortRowsBy,
-            // 400 -> 290 (reviewer: "reduce height of both the
-            // multisamplevariantdisplay, the multiwiggledisplay"). 3202
-            // samples in 290 px is 0.09 px a row, which is already past what
-            // a row can be: what this lane draws is three BANDS, and a band
-            // is legible at any height that leaves it more than a few pixels.
             height: 290,
           },
-          // THE DEPTH LANE, which is what the callset cannot draw. A VCF
-          // states a genotype per record, so a locus carrying nested and
-          // overlapping calls is read as a stack of columns whose relation to
-          // each other is not on screen. QuicK-mer2 copy number is one
-          // continuous quantity per 1 kb bin per individual, so the same
-          // panel reads as levels: two copies white, one blue, zero deep
-          // blue, and a partial-length loss is a block that starts and stops
-          // where the sequence does rather than where a caller drew a record.
-          //
-          // Clustered on this window, so the dosage classes separate into
-          // bands. The rows cannot correspond to the matrix above it in any
-          // case -- that one is sorted by genotype at HGSV_1821 and this one
-          // by similarity over the window -- so clustering costs nothing and
-          // is what makes the classes visible.
-          //
-          // The store is hosted at jbrowse.org/demos/1000g, built by
-          // scripts/build_1000g_cnv_zarr.sh over this window as well as the
-          // two the CNV tutorial visits.
+          // The store covers only the windows scripts/build_1000g_cnv_zarr.sh
+          // builds; a new locus needs a rebuild.
           {
             trackId: 'cnv_1000g_zarr',
             type: 'LinearWiggleDisplay',
             mark: 'span',
-            // pinned rather than autoscaled, and symmetric about the diploid
-            // origin, for the reasons cnv1000g's CN_HEATMAP_SETTINGS gives:
-            // copy number is an absolute quantity and a diverging ramp only
-            // reads as diverging if both sides are the same width.
+            // Symmetric about the diploid origin; see cnv1000g's
+            // CN_HEATMAP_SETTINGS.
             origin: 2,
             scales: { y: { domainMin: 0, domainMax: 4 } },
             color: {
@@ -407,12 +312,6 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
               range: ['#2166ac', '#b2182b'],
               title: 'Copy number',
             },
-            // 480 -> 330, and directly under the matrix rather than with the
-            // record lane between them (reviewer: "reduce height of both ...
-            // put them stacked"). The two lanes are the same 3202 individuals
-            // measured two ways, so they are the comparison and they belong
-            // adjacent; the record lane is a legend for both of them and now
-            // sits under the pair rather than inside it.
             height: 330,
             runClustering: true,
             showTree: false,
@@ -420,24 +319,11 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
           {
             trackId: 'kgp_sv_records',
             forceLoad: true,
-            // enough for the four rows the 26 records pack into plus their
-            // name/type labels; at 130 the last row was under the lane's fold
+            // below 170 the last row of records clips
             height: 170,
-            // ONE COLOR (reviewer: "dont use all the colors on the vcf, it
-            // is confusing and distracting"). This lane used the `svTypeColor`
-            // jexl the SV-type cell preset is built on, which paints six
-            // classes over 26 overlapping records -- and every record already
-            // carries its class IN its own label (`<DEL> 70.1Kbp`), so the
-            // color was a second, weaker copy of text that was already
-            // there. The class-colored version of this idea is multisv_svtype
-            // in the multi-variant guide, on a window whose classes are the
-            // subject. Dropping the jexl also drops the floating key this
-            // spec used to have to hide by selector.
+            // One color: each label already names its SV type.
             color: '#4a5568',
           },
-          // showLabels:'name' forces gene names on at this zoom; `genes: 'only'`
-          // drops the per-transcript subfeatures so RHD/RHCE read as single
-          // labelled glyphs under the matrix
           {
             trackId: 'ncbi_refseq_hg38',
             height: 120,
@@ -449,41 +335,28 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
     ],
   })
 
-// The right-click sort row, from `sortRowsHereMenuItem` in
-// multiSampleVariantMenuItems.ts, which the tour in videos/sv.ts clicks.
+// From `sortRowsHereMenuItem` in multiSampleVariantMenuItems.ts.
 export const SORT_BY_GENOTYPE = 'Sort rows by genotype here'
 
-// The figures sort declaratively, on the record whose span holds `pos`
-// (0-based): the chr19 inversion, and HGSV_1821's midpoint.
+// `pos` is 0-based. INVERSION_SORT sits in a gap where only the inversion
+// overlaps.
 const INVERSION_SORT: RowSortSpec = { refName: '19', pos: 46_554_999 }
 const HGSV_1821_SORT: RowSortSpec = { refName: '1', pos: 25_300_121 }
 
-// The panel's shared handles: what `multisv_rhd` right-clicks and waits on, and
-// what the tour in videos/sv.ts does. Two spellings of the deletion would be
-// two figures sorting on two variants.
+// Shared by `multisv_rhd` and videos/sv.ts so both sort on one variant.
 export const multisvVideoFixtures = {
   unsorted: rhdPanel(),
   matrixTrackId: 'kgp_sv_matrix',
-  // HGSV_1821's own span. A locus range resolves to its own centre, so naming
-  // the span puts a click at the deletion's midpoint — inside it and clear of
-  // the smaller calls at either end — without writing down which pixel that is.
+  // HGSV_1821's span; a click lands at its centre, clear of the smaller calls.
   deletionSpan: '1:25,265,081-25,335,163',
-  // The matrix carrying its genotypes, which is what `sortByGenotype` reads: the
-  // action computes the order from `cellData` on the main thread, so a
-  // right-click before the fetch lands opens a menu whose item does nothing.
+  // A right-click before the genotypes load opens a sort item that does
+  // nothing.
   matrixReady: displaySettled('variant-display'),
-  // The copy-number lane's own clustering, which runs as the session opens and
-  // paints a "Clustering samples 62%" overlay across the lane until it lands.
-  // `data-clustered` is the only DOM evidence it ran, since this lane draws no
-  // tree of its own.
+  // Waits out the clustering overlay; the lane draws no tree to wait on.
   cnvClustered: `${displayPainted('wiggle-display')}[data-clustered="true"]`,
 }
 
 export const uiSpecs: ScreenshotSpec[] = [
-  // The top-level "Add" menu (Circular / Dotplot / Linear genome / Linear
-  // synteny / Tabular data / SV inspector), cropped to the menu for the
-  // developer "menus" guide. Replaces a stale capture where Add was nested
-  // under File.
   {
     mode: 'url',
     name: 'top_level_menus',
@@ -495,21 +368,14 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The no-build plugin tutorial's result. The "Complete example" plugin
-  // (test_data/no_build_plugin/esmplugin.js, loaded via esmLoc) adds a
-  // "Citations" top-level menu whose item opens a custom "Cite this JBrowse
-  // session" widget. Driving that menu route regenerates the figure from the
-  // hosted plugin instead of a hand capture — keep the plugin in sync with the
-  // code block in developer_guides/no_build_plugin.md. readyText 'Citations'
-  // waits for the (async) plugin to finish configuring before the click.
+  // Keep test_data/no_build_plugin/esmplugin.js in sync with the code block in
+  // developer_guides/no_build_plugin.md.
   {
     mode: 'url',
     name: 'no_build_final',
     url: '?config=test_data/no_build_plugin/config.json&sessionName=Screenshot',
     readyText: 'Citations',
     viewportWidth: 1200,
-    // short capture: the launcher and the widget's citation both sit near the
-    // top, so a tall viewport would just be empty white below them
     viewportHeight: 300,
     actions: [
       { type: 'click', text: 'Citations' },
@@ -519,9 +385,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Location-search autocomplete: typing a gene name into the search box surfaces
-  // matching features from the assembly's text-search index. Uses config_demo's
-  // hg19 (whose trix index covers RefSeq/Gencode names) searching "brca".
   {
     mode: 'url',
     name: 'searching_lgv',
@@ -532,7 +395,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
-    // smaller capture window in both dimensions
     viewportWidth: 1150,
     viewportHeight: 560,
     actions: [
@@ -547,27 +409,17 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Selecting a gene from the search dropdown navigates to it AND boxes the
-  // specific matched feature (not just the region). Types "EDEN" into the search
-  // box, clicks the EDEN gene option, then waits for the highlight overlay
-  // (data-testid="chrome-pinned") the chrome draws off `pinnedInk` once the
-  // searched feature resolves against the rendered features.
   {
     mode: 'url',
     name: 'search_feature_highlight',
-    // start away from EDEN (1050..9000) so its on-canvas floating label isn't in
-    // the DOM — otherwise `click text:'EDEN'` would hit that label instead of the
-    // search dropdown option. The capture only shows the post-navigation state.
-    // A searched feature auto-pins to a top layout row (layoutPinnedFeatureIdSet),
-    // so EDEN sits at the top of the otherwise-dense ctgA:1..10,000 stack.
+    // Starts away from EDEN, whose floating label would otherwise match the
+    // search option's text.
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:30,000..40,000',
       tracks: [
         {
           trackId: 'gff3tabix_genes',
-          // collapse to gene glyphs so the pinned+highlighted EDEN gene reads
-          // cleanly against the stack (reviewer)
           filter: { genes: 'only' },
         },
       ],
@@ -584,12 +436,9 @@ export const uiSpecs: ScreenshotSpec[] = [
       },
       { type: 'waitForText', text: 'EDEN' },
       { type: 'delay', ms: 800 },
-      // keyboard-select the first option (the EDEN gene): MUI's autocomplete
-      // ignores synthetic option clicks, so ArrowDown highlights it and Enter
-      // fires navigation + the search-result-selected extension point
+      // MUI's autocomplete ignores synthetic option clicks.
       { type: 'press', key: 'ArrowDown' },
       { type: 'press', key: 'Enter' },
-      // wait for navigation to settle and the highlight overlay to resolve
       {
         type: 'waitForSelector',
         selector: '[data-testid="chrome-pinned"]',
@@ -598,8 +447,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Rubberband selection on the main scalebar and the menu it pops. The volvox
-  // cram track puts Consensus sequence under the Launch group at its foot.
   {
     mode: 'url',
     name: 'rubberband',
@@ -619,9 +466,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     annotations: [{ type: 'box', anchor: { text: 'Zoom to region' } }],
   },
 
-  // display_settings.md: the state its "Change height, color and read pairing" step leaves the
-  // track in. The live link opens that end state, so the settings live in the
-  // session rather than in click actions, shared with config/settings_to_json.
   {
     mode: 'url',
     name: 'display_settings_url_snapshot',
@@ -631,21 +475,13 @@ export const uiSpecs: ScreenshotSpec[] = [
     crop: { x: 0, y: 0, width: 1500, height: 445 },
   },
 
-  // The nssv15767046 insertion at ~1:55,705,920 (hg19) shown across HG002
-  // nanopore (top), PacBio (middle), and Illumina (bottom) read tracks under the
-  // HG002 dbVar variant call. Reconstructed from DEMO_CONFIG (was a share-link
-  // that opened with the track selector covering the panel) so the sessionSpec
-  // form opens with the selector closed. The high-depth PacBio Sequel track is
-  // capped to a fixed height and the window is taller, so its deep coverage no
-  // longer pushes the Illumina reads out of frame.
   {
     mode: 'url',
     name: 'insertion',
     url: sessionSpec(DEMO_CONFIG, {
       sessionTracks: [
-        // A region-slice of the HG002 PacBio Sequel 15kb BAM (1:55.70-55.71Mb,
-        // 70 reads, 650KB) rehosted on jbrowse.org/demos/hg002 so the PacBio reads
-        // load reliably — the full remote NCBI BAM intermittently errored here.
+        // A slice rehosted on jbrowse.org/demos/hg002: the full NCBI BAM errors
+        // intermittently.
         {
           type: 'AlignmentsTrack',
           trackId: 'hg002_pacbio_chr1_insertion_slice',
@@ -673,8 +509,6 @@ export const uiSpecs: ScreenshotSpec[] = [
           assembly: 'hg19',
           loc: '1:55,705,770-55,706,090',
           tracks: [
-            // single <INS> call — a short lane is plenty (reviewer: the default
-            // height left a tall empty variant band above the reads)
             { trackId: 'nstd175.GRCh37.variant_call.vcf', height: 60 },
             { trackId: 'hg002_nanopore', height: 260 },
             {
@@ -683,8 +517,6 @@ export const uiSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'illumina_hg002',
-              // show soft clipping so the clipped bases flanking the insertion
-              // are visible on the Illumina reads
               height: 320,
               pileup: { showSoftClipping: true },
             },
@@ -697,27 +529,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 1234,
   },
 
-  // Multi-sample variant display on the 1000 Genomes phase-3 SV ensemble
-  // callset (3202 samples) across chr19:42.7-47.8Mb, sorted by genotype at the
-  // ~1.12Mb inversion HGSV_73318 (chr19:46,275,880-47,396,219, AF=0.238).
-  // Because this display draws variants at their genomic position, an
-  // inversion that size is a band a third of the window wide, and after the
-  // sort the carriers collect at the top so the band has a clean edge.
-  //
-  // This window is the display's scale case and nothing more: the sibling RHD
-  // figures below are the ones the SV-multisamples tutorial reads reads
-  // against, because chr19's large inversions are segmental-duplication
-  // mediated and short reads cannot resolve their breakpoints (measured: 10
-  // same-strand pairs in a carrier against 8 in a non-carrier). What this frame
-  // shows -- a megabase-scale call drawn at its real span across 3202 rows --
-  // is true independently of that, and it is what the display looks like at a
-  // scale no other figure in the set reaches.
-  //
-  // The right-click names 19:46,555,000, an inversion-only gap where no other SV
-  // overlaps, so the sort reliably targets the inversion. forceLoad lifts the
-  // 1MB tabix fetch gate so the 5Mb window auto-loads headless instead of
-  // showing a force-load prompt. Remote 1000genomes data, so allow a long
-  // ready/settle.
   {
     mode: 'url',
     name: 'multisv',
@@ -736,15 +547,8 @@ export const uiSpecs: ScreenshotSpec[] = [
               forceLoad: true,
               height: 400,
             },
-            // showLabels:'name' forces gene names on (the default 'auto' hides
-            // them at this 5Mb zoom past maxLabelFeatureDensity); `genes: 'only'`
-            // drops the per-transcript subfeatures so only gene-level glyphs
-            // render. heightMode 'fit' puts the whole stack inside the lane: at
-            // 5Mb the fit ladder lands on its `bodies` rung, i.e. no names, and
-            // a labeled stack fits no lane height this figure can afford
-            // (measured -- 220px still dropped the names and added 90px of
-            // whitespace). The lane's job here is which part of the window
-            // carries genes.
+            // No lane height this figure can afford shows gene names at 5 Mb;
+            // 220px still dropped them.
             {
               trackId: 'ncbi_refseq_109_hg38',
               height: 140,
@@ -762,12 +566,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     tooltip: 'hide',
   },
 
-  // The same chr19 inversion window with the display colored by SV type
-  // (`color: { field: 'svType' }`): every alt-carrying cell takes its variant's
-  // structural-variant class color and the legend names each class present,
-  // including the callset's complex (CPX) events. Sorted the same way, so the
-  // inversion band is the same band as in `multisv` and only the palette
-  // differs.
   {
     mode: 'url',
     name: 'multisv_svtype',
@@ -800,71 +598,20 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: '1KGP',
     readyTimeout: 90000,
-    // clears the 400px matrix plus the 140px gene track: at 720 the RefSeq
-    // lane was sliced off mid-labels, cutting the genes the SV calls line up
-    // against
+    // below 800 the RefSeq lane clips
     viewportHeight: 800,
     tooltip: 'hide',
   },
 
-  // The RHD locus, chr1:25.2-25.4Mb, and the figure the SV-multisamples
-  // tutorial reads its reads against. The anchor is HGSV_1821, the 70kb
-  // deletion that removes the whole of RHD (chr1:25,265,081-25,335,163, PASS,
-  // AF=0.182, 2233 hom-ref / 771 het / 198 hom-alt); deleting RHD is the most
-  // common cause of the RhD-negative blood type, so the three bands the sort
-  // produces are the three dosages of a gene rather than an anonymous interval.
-  //
-  // The window is 200kb: the deletion is then a third of the frame with RHD
-  // under it and RHCE (the 97%-identical paralog the read figures turn on) at
-  // the right-hand edge.
-  //
-  // ONE VIEW, TWO DISPLAY TYPES OF THE SAME CALLSET, which is what the review
-  // asked for ("change this to one figure where the regular
-  // linearvariantdisplay and the multisamplevariantdisplay of same data was
-  // visible, then user can see which sv is which"). It was two captures
-  // composed -- the same matrix colored by genotype and then by SV class --
-  // and the second was doing the "which SV is which" job badly: a matrix cell
-  // says a sample carries SOMETHING here, and with 26 overlapping records in
-  // this window a color change is only visible where two calls differ in their
-  // carriers. The ordinary display separates them by construction, one row per
-  // non-overlapping set, and labels each with its id and size (HGSV_1821 <DEL>
-  // 70.1Kbp), so a column in the matrix reads off a named record.
-  //
-  // The SV-type CELL coloring the second half used to carry is not lost: it is
-  // multisv_svtype in the multi-variant user guide, on a window whose classes
-  // are the subject rather than a second copy of this one.
-  //
-  // Lane order is matrix, records, genes, so the records sit between the two
-  // things they explain -- the cells above and the genes below.
-  //
-  // A second display of the same TRACK is not possible (showTrack resolves by
-  // trackId and returns the open one), so the record lane is a sessionTrack
-  // pointing at the same VCF under its own id. Two multi-sample displays in one
-  // view is separately impossible: the second one's presence makes the first
-  // stop answering `onContextMenu`, so the sort row never appears. One
-  // matrix plus one ordinary display does not hit that.
-  //
-  // The right-click names HGSV_1821's own span, so it lands on the deletion's
-  // midpoint — inside it and clear of the smaller calls at either end, so the
-  // sort reliably targets HGSV_1821 — without writing down which pixel that is.
-  // forceLoad lifts the 1MB tabix fetch gate. Remote 1000genomes data, so allow
-  // a long ready/settle.
   {
     mode: 'url',
     name: 'multisv_rhd',
     url: rhdPanel(HGSV_1821_SORT),
     readyText: '1KGP',
-    // the 2504-row store is clustered on this window as well as fetched, and
-    // the callset itself is a remote EBI tabix read
     readyTimeout: 300000,
     viewportHeight: 1240,
     tooltip: 'hide',
     actions: [
-      // the clustering RPC over 2504 rows finishes well after first paint, and
-      // a capture taken before it lands shows the store in panel order under a
-      // "Clustering samples 62%" overlay. The display publishes `data-clustered`
-      // on the same element as its first-paint testid, which is the only DOM
-      // evidence it ran with the dendrogram off.
       {
         type: 'waitForSelector',
         selector: multisvVideoFixtures.cnvClustered,
@@ -873,25 +620,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The read-level check the SV-multisamples tutorial's genotypes are read
-  // against: three 1000 Genomes high-coverage Illumina CRAMs over the RHD
-  // deletion, one per genotype at HGSV_1821, stacked in one view under the gene
-  // track. Verified read counts over a 10kb window inside RHD against a 10kb
-  // flank outside the deletion (samtools, required_fields=0x9FF):
-  //
-  //   HG00113  1/1   flank 2440   inside  149   6%
-  //   HG00096  0/1   flank 2556   inside 1421  56%
-  //   HG00097  0/0   flank 2800   inside 2759  99%
-  //
-  // so the dosage reads straight off the coverage band: gone, halved, flat.
-  //
-  // Two settings carry the figure. `pileup.show: false` drops the stacked-read
-  // band, because at 100kb a 30x pileup is a solid mass and the coverage curve
-  // is the whole subject here. And one autoscale group puts all three rows on
-  // one axis: left alone each row fits its own maximum, which drew the three
-  // genotypes at almost the same height and destroyed the comparison the figure
-  // exists to make. The band's 0.99 quantile keeps a few spikes from setting
-  // that axis.
+  // One autoscale group puts the three genotypes on one axis; per-row
+  // autoscale draws them at almost the same height.
   {
     mode: 'url',
     name: 'multisv_rhd_dosage',
@@ -900,18 +630,10 @@ export const uiSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          // 270kb where this was 100kb (review: "zoom out more"). The extra
-          // width is chosen rather than generous: RHCE sits at 25,362,249 to
-          // 25,430,192, just off the right edge of the old frame, and it is the
-          // gene the tutorial's next section is about -- reads that cannot be
-          // placed in RHD land there, because the two are a 97% identical
-          // inverted pair. Framing them together means the arcs below have
-          // somewhere to point.
+          // Wide enough to include RHCE (25,362,249-25,430,192), the paralog
+          // the tutorial turns to next.
           loc: '1:25,200,000-25,470,000',
-          // RHD's own span, from the RefSeq annotation the gene lane draws
-          // (chr1:25,272,393-25,330,445), taken from the annotation rather than
-          // measured. It bands the coverage hole in all three read tracks at
-          // once, which no per-track glyph can do.
+          // RHD's span from the RefSeq annotation.
           highlight: [
             {
               refName: '1',
@@ -923,15 +645,9 @@ export const uiSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ncbi_refseq_109_hg38',
-              // RHD -- the subject of the figure -- used to sit below this
-              // lane's 110px fold, and the reviewer reasonably reported not
-              // seeing it. Two settings fix that together: `longestCoding`
-              // draws one glyph per gene (`genes: 'only'` alone still stacked a
-              // dozen RHD transcript rows at this zoom, which grew the lane to
-              // 470px and pushed the coverage tracks off instead), and
-              // heightMode 'grow' sizes the lane to whatever rows that leaves,
-              // so the gene cannot be clipped out of its own figure by a number
-              // in this file.
+              // `genes: 'only'` alone stacks a dozen RHD transcripts and
+              // pushes the coverage off; `longestCoding` plus 'grow' keeps RHD
+              // in frame.
               heightMode: 'grow',
               geneGlyphMode: 'longestCoding',
               showLabels: 'name',
@@ -943,71 +659,13 @@ export const uiSpecs: ScreenshotSpec[] = [
               pileup: { show: false },
               coverage: { height: 190 },
               readConnections: {
-                // NO MATE-PAIR BAND, and this is a claim about the biology rather
-                // than about settings -- three rounds of review went into it, so
-                // don't put the arcs back. See `scripts/count_rhd_mate_pairs.py`,
-                // which prints the numbers below straight off the three CRAMs.
-                //
-                // The band was here as "the second, independent reading of the
-                // same event": coverage says how much sequence is there, the mates
-                // say what distance they think they are apart, so a deletion ought
-                // to show as a hole AND as pairs whose insert spans that hole. The
-                // reviewer twice reported the arcs were not over the deletion.
-                // They were right, and no setting fixes it. Counting every
-                // in-window pair (both ends in frame, mate on chr1, >=1 kb apart
-                // -- exactly what `showInterchrom: false` + `showLongRange: false`
-                // leave drawable):
-                //
-                //   sample           spans RHD   RHD<->RHCE   other
-                //   HG00113  1/1             1            1       0
-                //   HG00096  0/1             0           36       0
-                //   HG00097  0/0             1           56       1
-                //
-                // ONE pair spans the deletion in the homozygous carrier. THE RHD
-                // DELETION HAS NO READ-PAIR SIGNAL, because it is NAHR between the
-                // ~9 kb Rhesus boxes that flank RHD: a fragment crossing the
-                // junction lands wholly inside the hybrid box, which the reference
-                // also carries, so it aligns collinearly at ordinary insert size.
-                // A deletion whose breakpoints sit inside a long identical repeat
-                // is invisible to mate distance by construction.
-                //
-                // What the band actually drew is the RHD/RHCE paralogy. Those 36
-                // and 56 pairs are not scattered: they stack on two offsets,
-                // 25,283,7xx->25,409,9xx and 25,287,1xx->25,405,4xx, repeated
-                // dozens of times -- reads mismapping between a 97% identical
-                // inverted gene pair. So the band was busiest in the 0/0 control
-                // and nearly empty in the 1/1 carrier, which is a true statement
-                // about paralogy and the exact opposite of the figure's own claim.
-                // The coverage curve is the whole reading, and it is a clean one.
-                //
-                // Two earlier rounds narrowed the band before this one removed it,
-                // and both mechanisms are durable enough to be worth keeping (they
-                // are also written up in screenshot-review-plan.md, since no spec
-                // demonstrates them any more). An INTERCHROMOSOMAL pair is never
-                // drawn as an arc -- it drops a tick at each endpoint, because
-                // insert size and orientation mean nothing across refNames
-                // (compute.ts, `if (p1Ref !== p2Ref)`) -- so 270 kb of segmental
-                // duplication at 30x filled the band with a picket fence of them,
-                // and `showInterchrom: false` is what removes it. And `showLongRange`
-                // draws an arc to a mate's RECORDED position outside the window
-                // (`offScreenMateArcs`), which put the widest curves off-frame.
-                // Turning both off is what left the two arcs counted above, i.e.
-                // what made it possible to see there was nothing there.
-                //
-                // `svSignal: 'only'` is not the answer: it drops whole
-                // read-name chains in `filterChainFeatures`, which runs before the
-                // COVERAGE pipeline and not merely before layout, so it would take
-                // ~all the reads and the three curves with them. Nor is a jexl
-                // insert-size filter, for the same reason -- the coverage is
-                // downstream of it. Read cloud is worse again: its y axis is
-                // `arcsYDomainBp`, a per-TRACK maximum, so three CRAM tracks got
-                // three different insert-size scales (149 kb / 19 Mb / 8.4 Mb) and
-                // comparing the three samples is the one thing this figure does.
+                // No mate-pair band: the RHD deletion is NAHR between the
+                // Rhesus boxes and leaves no read-pair signal, so the arcs
+                // would only show RHD/RHCE paralogy
+                // (scripts/count_rhd_mate_pairs.py). `svSignal: 'only'` or a
+                // jexl insert-size filter also removes the coverage.
                 show: false,
               },
-              // 140 -> 190 with the 110px arc band's space: the curve IS the
-              // figure, so the height the band was spending goes to the thing
-              // being compared rather than off the bottom of the frame.
               height: 200,
               scales: { y: { autoscaleGroup: 'depth' } },
             })),
@@ -1016,22 +674,12 @@ export const uiSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'HG00097.final',
-    // 2.7x the span at 30x across three CRAMs. `pileup.show: false` summarises
-    // rather than draws, but the reads themselves are still fetched.
     readyTimeout: 600000,
-    // three 200px tracks over the grown gene lane; the run's own
-    // clipped/blank-below report is what corrects this
     viewportHeight: 1000,
   },
 
-  // Trio SV: the Kinh-Vietnamese trio (HG02030 child / HG02031 mother / HG02032
-  // father) Illumina reads stacked over the 1000 Genomes Illumina ensemble SV
-  // callset, at a ~43kb SV locus. The full NCBI 1000genomes CRAMs 503'd
-  // intermittently (reviewer saw an error), so each is sliced to this locus
-  // (chr1:40,476,000-40,530,000, ~12-14k reads, <1MB BAM) and rehosted on
-  // jbrowse.org/demos/kgp-trio so the reads auto-load fast and reliably.
-  // Per-track heights sized so all four tracks fit one viewport with enough of
-  // each pileup showing to read the SV signal (reviewer: increase the height).
+  // Reads are slices rehosted on jbrowse.org/demos/kgp-trio; the full NCBI
+  // CRAMs 503 intermittently.
   {
     mode: 'url',
     name: 'multi-sv-trio',
@@ -1105,18 +753,6 @@ export const uiSpecs: ScreenshotSpec[] = [
           loc: '1:40,481,472-40,524,349',
           tracks: [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
-            // read-connection arcs on each trio member: discordant /
-            // split pairs arc across the SV breakpoints, so the SV signal that is
-            // present (or absent) in child vs parents reads at a glance
-            // Super-compact reads (featureHeight 1, the 'super-compact'
-            // compactness preset) rather than the default 7, so three pileups
-            // plus the callset fit a much shorter frame (reviewer: "make the
-            // reads show using supercompact to reduce height of figure"). At
-            // 43 kb an individual read was never legible AS a read anyway --
-            // what this figure compares across the three samples is the shape
-            // of each pileup and its arc band, and both survive a 1px row.
-            // Track heights follow the reads down; the run's own
-            // clipped/blank-below report is what sizes the viewport.
             ...['HG02030', 'HG02031', 'HG02032'].map(id => ({
               trackId: `${id}_trio_slice`,
               height: 150,
@@ -1129,17 +765,9 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02030',
     readyTimeout: 90000,
-    // 860: the run reported 97.5 css px of page still below the viewport at
-    // 760, i.e. the fourth track was cut rather than the frame being tight.
-    // 874 for the 13.5 the run reported still below the fold after the arc
-    // legend gained its short-insert row.
     viewportHeight: 874,
   },
 
-  // sv_visualization.md: the TRA feature-details panel with its
-  // "Open breakpoints in split view" link. Zoomed onto a single SKBR3
-  // Sniffles translocation breakend (14:84871468 // 17:74803924) so clicking
-  // the lone variant opens the details drawer; the BREAKENDS link is annotated.
   {
     mode: 'url',
     name: 'link_to_split_view',
@@ -1149,28 +777,17 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: ['breast_cancer_sniffles_hg19_traonly_tabix'],
     }),
     readyText: '84,871',
-    // tall viewport so the full-height feature-details panel shows the
-    // LaunchBreakendPanel link below the long TRA INFO table
+    // the LaunchBreakendPanel link sits below the long TRA INFO table
     viewportHeight: 1100,
     actions: [
-      // click the TRA variant's floating feature label (stable per-feature
-      // testid) to open the feature-details drawer; the translocation's
-      // INFO.CHR2/END drive the LaunchBreakendPanel split-view link
       { type: 'click', selector: '[data-testid="feature-name-89844_3"]' },
       { type: 'waitForText', text: SPLIT_VIEW_LINK_LABEL },
       { type: 'delay', ms: 1500 },
     ],
     annotations: [
       { type: 'box', anchor: { text: SPLIT_VIEW_LINK_LABEL } },
-      // arrow + explanatory callout pointing at the boxed split-view link.
-      //
-      // The tail stays a raw point ON PURPOSE, and so does the pill below it:
-      // the pill is parked in the LGV's empty top-left, 700px above the link it
-      // explains, so its position is a decision about this frame rather than
-      // about the link. Anchoring only the tail would be worse than leaving
-      // both — it would unglue the arrow from the pill it leaves. If this pair
-      // is ever worth anchoring it is to the view they sit over, the way
-      // sv.ts's inverted_duplication callouts hang off their pileup track.
+      // The tail and pill stay raw points: the pill is parked in the view's
+      // empty top-left, and anchoring only the tail would unglue the arrow.
       {
         type: 'arrow',
         from: { x: 760, y: 300 },
@@ -1188,13 +805,6 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'breakpoint_split_view',
-    // Declarative reconstruction of the old share session (share-ITpNXoz07O):
-    // SKBR3 ngmlr split-read CRAM + Sniffles VCF over the chr1<->chr5
-    // interchromosomal translocation. Each panel is a loc window centered on
-    // its breakpoint (chr1:229,354,402 // chr5:137,884,948). The alignments
-    // display height is shortened to 140 (was ~250) so the pileups aren't tall
-    // ; the intra-view links are toggled off via the view menu below
-    // so only the cross-panel junction splines draw.
     url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
@@ -1211,10 +821,7 @@ export const uiSpecs: ScreenshotSpec[] = [
                 },
                 {
                   trackId: 'breast_cancer_sniffles_hg19',
-                  // drop the megabase-scale inversion calls that span the whole
-                  // window so only the junction breakends show
-                  // only a handful of junction breakends survive the filter, so
-                  // keep the variant lane short
+                  // drop the megabase-scale inversion calls spanning the window
                   height: 90,
                   filter: [
                     "jexl:get(feature,'end')-get(feature,'start') < 100000",
@@ -1225,8 +832,6 @@ export const uiSpecs: ScreenshotSpec[] = [
             {
               assembly: 'hg19',
               loc: '5:137,877,000-137,892,000',
-              // bottom panel mirrors the top: variants above reads (so the two
-              // pileups sit adjacent across the junction) — reviewer
               tracks: [
                 {
                   trackId: 'breast_cancer_sniffles_hg19',
@@ -1246,23 +851,10 @@ export const uiSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'SKBR3',
-    // Both panels, the shortened variant lanes and the connecting splines,
-    // with nothing under them: 1000 left 176 px of blank the run reported.
     viewportHeight: 824,
     readyTimeout: 60000,
   },
 
-  // Read-vs-reference of a SKBR3 PacBio read spanning a ~634bp insertion
-  // (purple box labeled "634" in the pileup, row 1 of the ngmlr track at this
-  // locus) — checked against the other reads piled up at this same site and
-  // 634bp is already effectively the largest consistently-supported insertion
-  // there (up to 636bp on a couple of reads, within noise). Driven live via
-  // rightclick -> Launch -> Linear read vs ref (buildReadVsRefSpec.ts)
-  // instead of a frozen share-link session, so the inline-config fix actually
-  // gets exercised. Read glyphs are canvas-drawn, so the rightclick names the
-  // insertion's coordinate and a depth into the pileup rather than a viewport
-  // point. "Curved lines" is then turned on in the synteny view's settings
-  // menu.
   {
     mode: 'url',
     name: 'read_vs_ref_insertion',
@@ -1274,16 +866,9 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'SKBR3',
     readyTimeout: 60000,
     tooltip: 'hide',
-    // the synteny read-vs-ref panel below the pileup gets clipped at the default
-    // 800px viewport, so give it extra room. Sized to the content: 950 left
-    // ~136px of page background under the launched view.
     viewportHeight: 820,
     actions: [
-      // 1:85,620,091 is the insertion site; 56px below the track's top edge is
-      // the second read row, since the coverage band above the pileup is
-      // `coverageHeight` (45) and the rows are 8px apart. Measured off the
-      // committed capture, but as a depth into the track: what used to move this
-      // click off its read was the view chrome above it, not the pileup.
+      // Depth 56px is the second read row: 45px of coverage, then 8px rows.
       {
         type: 'rightclick',
         anchor: {
@@ -1298,34 +883,21 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Linear read vs ref' },
       { type: 'click', text: 'Linear read vs ref' },
       { type: 'waitForText', text: 'Set window size' },
-      // "Open in new view", not "Replace current view": this figure wants the
-      // read-vs-ref panel UNDER the pileup it was launched from, since the
-      // insertion the reader is being pointed at is visible in both
       { type: 'click', text: 'Open in new view' },
       { type: 'waitForText', text: 'Reference sequence' },
       { type: 'waitForAppSettled' },
       { type: 'click', selector: '[aria-label="Synteny display settings"]' },
       { type: 'waitForText', text: 'Curved lines' },
       { type: 'click', text: 'Curved lines' },
-      // a checkbox row leaves the menu up (CascadingMenu keeps settings rows
-      // open), so dismiss it before the capture — the hidden wait fails the
-      // spec rather than baking an open menu into the figure
+      // A checkbox row leaves the menu open.
       { type: 'press', key: 'Escape' },
       { type: 'waitForText', text: 'Curved lines', hidden: true },
     ],
   },
-  // ────────────────────────────────────────────────────────────────────────
-  // Basic UI guides
-  // ────────────────────────────────────────────────────────────────────────
 
-  // LGV usage guide: text-label callouts anchored to the live toolbar controls
-  // (so positions track the UI, no hand-tuned coords), each on a dark pill so
-  // the reader doesn't have to cross-reference a numbered legend. Labels are
-  // staggered vertically so same-row controls don't overlap.
   {
     mode: 'url',
     name: 'lgv_usage_guide',
-    // sized to the content: the rest of the viewport was page background
     viewportHeight: 499,
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
@@ -1333,15 +905,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_cram_alignments'],
     }),
     readyText: 'ctgA',
-    // Each label sits in the clear band immediately next to the control it names,
-    // with a SHORT arrow into it (minimize arrow length, place text next
-    // to its target, don't pile every pill at the top). Two tiers track the
-    // two real control rows: the clear strip above the navigation toolbar
-    // (track selector / scroll-zoom toggle / pan / search / zoom) and the ruler
-    // strip above the track header (drag handle + track menu). The "Add view"
-    // app-bar callout was dropped (reviewer) in favor of pointing out the
-    // scroll-zoom toggle here too — scroll_zoom_toggle (just above this in the
-    // docs) is still the dedicated close-up figure for that control.
     annotations: [
       ...toolbarCallout({
         selector: 'button[title="Open track selector"]',
@@ -1383,9 +946,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Scroll-to-zoom toggle: a single frame boxing the toggle button with a
-  // callout saying what it turns on. Narrow/short viewport keeps the figure
-  // cropped to the LGV header.
   {
     mode: 'url',
     name: 'scroll_zoom_toggle',
@@ -1418,11 +978,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Add track: single frame. The "Open track..." File-menu item and
-  // the AddTrackWidget drawer it opens are shown together — open the drawer, then
-  // reopen the File menu (clicking the item closes it) so both the menu path and
-  // the resulting form are visible, with an arrow from the boxed menu item across
-  // to the boxed add-track panel.
   {
     mode: 'url',
     name: 'add_track_form',
@@ -1432,33 +987,21 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: ['ncbi_gff_hg19'],
     }),
     readyText: 'NCBI RefSeq',
-    // reviewer: the 1000x560 capture read too small — a bit larger so the File
-    // menu path and the (now denser) add-track form are legible
     viewportWidth: 1200,
     viewportHeight: 620,
     actions: [
       { type: 'click', text: 'File' },
       { type: 'waitForText', text: 'Open track...' },
-      // open the add-track drawer
       { type: 'click', text: 'Open track...' },
       { type: 'waitForText', text: 'Enter track data' },
-      // reopen the File menu so the menu path and the open form show together
       { type: 'click', text: 'File' },
       { type: 'waitForText', text: 'Open track...' },
     ],
     annotations: [
       { type: 'box', anchor: { text: 'Open track...' } },
-      // box just the add-track workflow form (not the whole full-height drawer,
-      // whose box ran off the bottom of the capture)
+      // the whole drawer's box runs off the bottom of the capture
       { type: 'box', anchor: { selector: '[data-testid="addTrackWorkflow"]' } },
-      // arrow from the "Open track..." menu item to the "Enter track data"
-      // heading of the panel it opens; head nudged left so it stops short of
-      // the field instead of pointing into the middle of the widget.
-      //
-      // Both ends resolve, so the arrow states "this item opens that form"
-      // rather than joining two page coordinates: the tail leaves the boxed menu
-      // item's own right edge (96px past its centre, which is where the box
-      // ends), and moves with it.
+      // The tail leaves the boxed item's right edge, 96px past its centre.
       {
         type: 'arrow',
         fromAnchor: { text: 'Open track...', dx: 96 },
@@ -1468,9 +1011,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Track selector open with the add-track FAB clicked; its menu now opens above
-  // the FAB (HierarchicalFab anchorOrigin) so the FAB stays visible (reviewer:
-  // the popover used to cover the FAB).
   {
     mode: 'url',
     name: 'add_track_tracklist',
@@ -1479,14 +1019,9 @@ export const uiSpecs: ScreenshotSpec[] = [
       loc: 'ctgA:1-20000',
       tracks: ['volvox_bam'],
     }),
-    // smaller browser in both stages (reduce figure width/height)
     viewportWidth: 1000,
     viewportHeight: 600,
     readyText: 'ctgA',
-    // two-stage: the top frame circles the track-selector icon in the LGV header
-    // (circle the header "tracklist" icon, not the view menu); the
-    // bottom frame opens that selector, rings the add-track FAB, and boxes the
-    // menu it launches
     stages: [
       {
         actions: [{ type: 'delay', ms: 300 }],
@@ -1504,8 +1039,6 @@ export const uiSpecs: ScreenshotSpec[] = [
             type: 'waitForSelector',
             selector: '[data-testid="hierarchical_track_selector"]',
           },
-          // open the add-track FAB menu (show the menu the FAB
-          // launches, not just a ring around the button)
           {
             type: 'click',
             selector: '[data-testid="hierarchical-add-track-fab"]',
@@ -1513,8 +1046,7 @@ export const uiSpecs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Add track' },
         ],
         annotations: [
-          // a snug ring on the FAB (no arrow — the previous arrow cut
-          // across the "Add track" box; the ring alone is clear enough)
+          // an arrow here cuts across the "Add track" box
           {
             type: 'circle',
             anchor: { selector: '[data-testid="hierarchical-add-track-fab"]' },
@@ -1525,8 +1057,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Track menu: one frame, the menu opened before the shot and a ring on each
-  // of the two places it lives (the LGV track label, the track-list entry).
   {
     mode: 'url',
     name: 'track_menu',
@@ -1536,22 +1066,18 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_sv_test'],
     }),
     viewportWidth: 1200,
-    // the opened menu is the tallest thing in the frame and this clears it; the
-    // two-frame version needed 680 to hold the taller of the two
     viewportHeight: 540,
     readyText: 'ctgA',
     actions: [
-      // open the track selector so the track-list entry menu icon is visible
       ...openTrackSelector(),
-      // filter the (virtualized) list so the target row is rendered
+      // the list is virtualized, so filter until the target row renders
       { type: 'type', text: 'Filter tracks', value: 'structural variant' },
       { type: 'delay', ms: 800 },
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       { type: 'waitForText', text: 'About track' },
     ],
     annotations: [
-      // the rings alone mark the menu icons, tight on the label's so it stays
-      // off the menu hanging below it
+      // tight on the label's ring so it stays off the menu below
       {
         type: 'circle',
         pad: 1,
@@ -1566,11 +1092,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Track label positioning over volvox tracks: the three radios sit inline
-  // under a "Track labels" subHeader inside the view menu's "Show..." submenu.
-  // Uses the light local volvox BAM; local data settles quickly so the MUI
-  // cascade stays open through capture. The view menu (hamburger) icon is
-  // ringed so the reader can see where the menu was opened from.
   {
     mode: 'url',
     name: 'tracklabels',
@@ -1594,11 +1115,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Track settings: two-stage figure — top frame opens the track menu's "Track
-  // actions" → "Settings" path (boxed); bottom frame clicks it so the Settings
-  // sidebar (ConfigurationEditor) is open. Uses volvox-bam instead of
-  // the gff3 track. Any track's settings can now be edited directly
-  // (a non-admin's edits are saved as a session override).
   {
     mode: 'url',
     name: 'edit_track_settings',
@@ -1608,7 +1124,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_bam'],
     }),
     readyText: 'ctgA',
-    // shorter browser in each stage
     viewportHeight: 640,
     stages: [
       {
@@ -1616,17 +1131,14 @@ export const uiSpecs: ScreenshotSpec[] = [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
           ...menuCascade(['Track actions', 'Settings']),
         ],
-        // box the "Track actions" parent submenu and the "Settings" item
         annotations: cascadeBoxes(['Track actions', 'Settings']),
       },
       {
-        // click Settings so the ConfigurationEditor sidebar opens
         actions: [
           { type: 'click', text: 'Settings' },
           { type: 'waitForText', text: 'Filter options' },
           { type: 'delay', ms: 1000 },
         ],
-        // box the settings widget (ConfigurationEditor drawer) that just opened
         annotations: [
           {
             type: 'box',
@@ -1637,10 +1149,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Drawer widget position, two-stage figure. Top frame opens the drawer's
-  // position menu (MoreVert in the drawer header) with the menu trigger ringed
-  // and the "left" option boxed; bottom frame clicks "left" so the drawer moves
-  // to the left side of the screen.
   {
     mode: 'url',
     name: 'drawer_widget_toggle',
@@ -1650,17 +1158,15 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_bam'],
     }),
     readyText: 'ctgA',
-    // smaller capture window in both dimensions
     viewportWidth: 1150,
     viewportHeight: 470,
     actions: [
-      // open the track selector to get a widget in the drawer
+      // the drawer needs a widget in it to move
       ...openTrackSelector(),
     ],
     stages: [
       {
         actions: [
-          // click the MoreVert to open the position menu
           { type: 'click', selector: '[data-testid="drawer-position-button"]' },
           { type: 'waitForText', text: 'left' },
         ],
@@ -1670,14 +1176,8 @@ export const uiSpecs: ScreenshotSpec[] = [
             anchor: { selector: '[data-testid="drawer-position-button"]' },
           },
           { type: 'box', anchor: { text: 'left' } },
-          // long arrow drawing the eye across the frame to the boxed "left"
-          // option. Head is nudged left of the word so it points at the item
-          // without covering the "left" label text.
-          //
-          // There is nothing at the tail — it starts in the empty pileup, half a
-          // frame down and left, and that distance IS the callout. So it is
-          // placed off the head's own anchor: the arrow keeps its length and its
-          // angle when the menu moves, instead of stretching to reach it.
+          // Placed off the head's anchor, so the arrow keeps its length and
+          // angle when the menu moves.
           {
             type: 'arrow',
             fromAnchor: { text: 'left', dx: -526, dy: 167 },
@@ -1691,8 +1191,6 @@ export const uiSpecs: ScreenshotSpec[] = [
           { type: 'click', text: 'left' },
           { type: 'delay', ms: 1500 },
         ],
-        // ring the track selector now docked on the left so the reader sees
-        // where the drawer moved to
         annotations: [
           {
             type: 'box',
@@ -1703,7 +1201,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Share session dialog, opened from the Share button in the app header.
   {
     mode: 'url',
     name: 'share_button',
@@ -1722,13 +1219,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // ────────────────────────────────────────────────────────────────────────
-  // Highlight list screenshots
-  // ────────────────────────────────────────────────────────────────────────
-
-  // Two stages: the rubberband context menu with "Highlight region" boxed, then
-  // the band it draws across the view. config_demo hg19 over PTEN, with a
-  // shorter viewport.
   {
     mode: 'url',
     name: 'highlight_list_create',
@@ -1739,7 +1229,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
-    // shorter viewport so both stacked panels stay tight
     viewportHeight: 440,
     actions: [
       { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
@@ -1758,8 +1247,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The highlight list with a label being typed, which names the band on the
-  // LGV, over config_demo's hg19. Shorter viewport keeps the figure tight.
   {
     mode: 'url',
     name: 'highlight_list_edit_label',
@@ -1781,22 +1268,11 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'click', text: 'Open highlight list' },
       { type: 'waitForText', text: 'Add label...' },
       { type: 'delay', ms: 1000 },
-      // single-click the "Add label..." cell to enter edit mode, then type
       { type: 'type', text: 'Add label...', value: 'my region' },
       { type: 'delay', ms: 1500 },
     ],
-    // The pill anchors to the Location column header in the highlight list. The
-    // callout text is left-aligned, so it's pulled well left of the right-side
-    // widget header and width-clamped to keep it from running off the right
-    // edge.
-    //
-    // The arrow points at the label CELL, which is the one thing here with no
-    // text to anchor to: it is an <input> while it is being edited, which is the
-    // state this figure is about, and an earlier `text` anchor on its value
-    // resolved to nothing and parked the callout in the top-left corner. The
-    // DataGrid's own `data-field` survives the switch to edit mode, so the head
-    // (and with it the tail, off the same cell) resolves either way. Nudged
-    // below the cell so the arrowhead doesn't cover the value it names.
+    // The label cell is an <input> while edited, so it has no text to anchor
+    // to; its `data-field` survives edit mode.
     annotations: [
       {
         type: 'text',
@@ -1816,27 +1292,18 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // ────────────────────────────────────────────────────────────────────────
-  // Track selector interactions
-  // ────────────────────────────────────────────────────────────────────────
-
-  // Track selector hamburger menu showing settings options.
   {
     mode: 'url',
     name: 'hierarchical/hierarchical_user_menu-fs8',
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:1-20000',
-      // no track opened — the figure is about the track-selector hamburger
-      // menu, and an open gene track in the LGV behind it was distracting
       tracks: [],
       tracklist: true,
     }),
     readyText: 'ctgA',
     readySelector: TRACK_SELECTOR,
     actions: [
-      // open the hamburger menu, then open the Collapse... submenu so its
-      // options are visible alongside the main menu
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
       ...menuCascade(['Collapse...', 'Collapse top-level categories']),
     ],
@@ -1846,12 +1313,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Recently used tracks: two-stage figure. The session starts with no tracks
-  // open; the shared actions open a track *through the track-selector UI* (click
-  // its checkbox), which is what actually populates the recently-used list
-  // (pre-opening tracks via the session does not). Top frame rings the
-  // recently-used (clock) button; bottom frame opens its dropdown showing the
-  // just-opened track.
+  // Only opening a track through the selector populates the recently-used
+  // list; opening it in the session does not.
   {
     mode: 'url',
     name: 'recent_tracks',
@@ -1862,29 +1325,17 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readySelector: TRACK_SELECTOR,
     readyTimeout: 60000,
-    // smaller window keeps the focus on the track-list + recently-used dropdown
     viewportWidth: 1100,
     viewportHeight: 600,
-    // single frame: open a track so it lands in "recently used", then open the
-    // recently-used dropdown and highlight both the trigger icon and the popover
-    // together (one stage with both the icon and the popover ringed)
     actions: [
-      // filter the (virtualized) list so the target row is rendered, then open
-      // it through the UI (by name) so it lands in "recently used"
       { type: 'type', text: 'Filter tracks', value: 'NCBI RefSeq' },
-      // Wait for the row, do not sleep for it. The list is virtualized, so the
-      // row does not exist until the filter has re-rendered, and 800ms was a
-      // guess about how long that takes on the machine the spec was written on.
-      // On a loaded one it is not enough, and the failure names the label
-      // ("click target not found") rather than the wait, so it reads as a track
-      // that was renamed out from under the spec. It was in config_demo.json
-      // the whole time.
+      // Wait for the row: the list is virtualized, and a missing row fails as
+      // "click target not found".
       { type: 'waitForText', text: 'NCBI RefSeq w/ top-level feature details' },
       { type: 'click', text: 'NCBI RefSeq w/ top-level feature details' },
       { type: 'delay', ms: 1500 },
-      // clear the filter (target the actual input, not the floating label, so
-      // select-all + Backspace empties it) so the tracklist behind the dropdown
-      // isn't showing distracting search text
+      // target the input, not the floating label, so select-all + Backspace
+      // empties it
       {
         type: 'type',
         selector: '[data-testid="hierarchical_track_selector"] input',
@@ -1892,7 +1343,6 @@ export const uiSpecs: ScreenshotSpec[] = [
         clear: true,
       },
       { type: 'delay', ms: 800 },
-      // open the recently-used dropdown so the popover is visible in-frame
       {
         type: 'click',
         selector: '[data-testid="recently-used-tracks-button"]',
@@ -1900,7 +1350,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'NCBI RefSeq w/ top-level feature details' },
     ],
     annotations: [
-      // ring just the recently-used trigger icon; the popover box was removed
       {
         type: 'circle',
         anchor: { selector: '[data-testid="recently-used-tracks-button"]' },
@@ -1908,9 +1357,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Favorite tracks: two-stage figure. Top frame boxes the per-track menu's
-  // "Add to favorites" item; bottom frame opens the resulting Favorites dropdown
-  // with a ring around the Favorites (star) button.
   {
     mode: 'url',
     name: 'favorite_tracks',
@@ -1922,12 +1368,10 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     viewportHeight: 560,
     actions: [
-      // open track selector
       ...openTrackSelector(),
-      // filter the (virtualized) list so the target row is rendered
+      // the list is virtualized, so filter until the target row renders
       { type: 'type', text: 'Filter tracks', value: 'volvox-sorted' },
       { type: 'delay', ms: 800 },
-      // open the track's per-track menu (showing "Add to favorites")
       {
         type: 'click',
         selector: '[data-testid="htsTrackEntryMenu-Tracks,volvox_bam"]',
@@ -1936,8 +1380,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
     stages: [
       {
-        // ring the per-track moreVert menu trigger that was clicked, plus box
-        // the "Add to favorites" item it opened
         annotations: [
           {
             type: 'circle',
@@ -1965,16 +1407,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // ────────────────────────────────────────────────────────────────────────
-  // Plugin store
-  // ────────────────────────────────────────────────────────────────────────
-
-  // Plugin store, single frame: the plugin-store drawer widget open on the right
-  // AND the Tools menu reopened over the view, with the "Plugin store" menu item
-  // ringed and an arrow pointing across to the open widget sidebar (reviewer:
-  // collapse the old two-stage figure into one that shows the menu path and the
-  // result together). The ring anchors to the menu item (smaller text area than
-  // the widget's h5 heading, so the smallest-area anchor heuristic picks it).
   {
     mode: 'url',
     name: 'plugin_store',
@@ -1986,20 +1418,14 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Plugin store' },
-      // open the widget (this closes the Tools menu)
       { type: 'click', text: 'Plugin store' },
       { type: 'waitForText', text: 'Installed plugins' },
       { type: 'delay', ms: 1500 },
-      // reopen the Tools menu so the menu path and the open widget show together
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Plugin store' },
     ],
-    // ring the "Tools" top-level menu, box the "Plugin store" menu item, and box
-    // the opened Plugin store widget itself (anchored to its "Installed plugins"
-    // heading) — reviewer asked to also highlight Tools + the widget
     annotations: [
-      // tight round ring nudged down so it isn't clipped at the top edge into an
-      // oval (make the Tools ring more square/round)
+      // nudged down so the top edge does not clip the ring into an oval
       { type: 'circle', anchor: { text: 'Tools' }, radius: 24, dy: 8 },
       { type: 'box', anchor: { text: 'Plugin store' } },
       { type: 'box', anchor: { text: 'Installed plugins' } },
@@ -2056,33 +1482,21 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // ────────────────────────────────────────────────────────────────────────
-  // Previously hand-captured UI-guide figures, now autogenerated
-  // ────────────────────────────────────────────────────────────────────────
-
-  // LGV assembly/sequence import form (quickstart_web.md) — a linear genome view
-  // with an assembly but no region opens on the assembly + sequence selectors.
   {
     mode: 'url',
     name: 'lgv_assembly',
     url: sessionSpec(VOLVOX, { views: [] }),
     readyText: 'Select a view to launch',
-    // smaller window keeps the focus on the compact import form
     viewportWidth: 900,
     viewportHeight: 231,
     actions: [
-      // the ViewLauncher BUTTON, not the menu group that used to share this
-      // wording: the group is `Launch` now, this one is still `Launch view`
+      // the ViewLauncher button; the menu group is `Launch`
       { type: 'click', text: 'Launch view' },
       { type: 'waitForText', text: 'Select assembly to view' },
       { type: 'delay', ms: 1500 },
     ],
   },
 
-  // Assembly manager dialog (quickstart_adminserver.md) opened from the Tools
-  // menu over config_demo, whose hg19/hg38/hs1 human assemblies populate the
-  // table. The Assembly manager menu item is not admin-gated, so this is
-  // reproducible headless without an admin server.
   {
     mode: 'url',
     name: 'add_hg38_assembly',
@@ -2091,8 +1505,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: [...openAssemblyManager(), { type: 'delay', ms: 1500 }],
   },
 
-  // Sample-configuration start state (quickstart_web.md) — volvox loaded with the
-  // track selector open so the available tracks are visible.
   {
     mode: 'url',
     name: 'sample_config',
@@ -2112,9 +1524,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     readySelector: TRACK_SELECTOR,
   },
 
-  // Track selector with all top-level categories collapsed (track_selector.md) —
-  // driven through the hamburger menu's "Collapse..." submenu instead of a
-  // config so it stays on plain volvox.
   {
     mode: 'url',
     name: 'hierarchical/collapse_toplevelcategories-fs8',
@@ -2138,16 +1547,9 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // No sub-category figure, deliberately. volvox's only nested categories are
-  // BigWig and Integration test, both of which sort below the ~30 tracks of
-  // Miscellaneous and Variants, so a selector captured from the top showed the
-  // action having no effect. Every visible header was still an open top-level
-  // one. Reviewed out rather than re-scoped; track_selector.md documents the
-  // slot beside the top-level figure above, which shows the same mechanism at a
-  // depth that fits in frame.
+  // No sub-category figure: volvox's nested categories sort below the fold of
+  // the selector, so the collapse looks like it did nothing.
 
-  // Default UI theme (theme.md) — a small volvox config with the track selector
-  // open so the default primary/secondary/tertiary/quaternary palette is shown.
   {
     mode: 'url',
     name: 'default_theme',
@@ -2162,13 +1564,10 @@ export const uiSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    // shorter browser: the palette + track selector fit comfortably
     viewportHeight: 520,
     readySelector: TRACK_SELECTOR,
   },
 
-  // Customized UI theme (theme.md) — same config carrying the documented custom
-  // palette (#311b92 / #0097a7 / #f57c00 / #d50000) via configuration.theme.
   {
     mode: 'url',
     name: 'customized_theme',
@@ -2183,20 +1582,12 @@ export const uiSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    // shorter browser: the palette + track selector fit comfortably
     viewportHeight: 520,
     readySelector: TRACK_SELECTOR,
   },
-  // ────────────────────────────────────────────────────────────────────────
-  // Admin-mode screenshots (quickstart_adminserver.md). Admin mode is enabled
-  // purely by the &adminKey= URL param (adminMode = !!adminKey, client-side), so
-  // these reproduce the admin-server's UI without a running admin-server backend
-  // — the dialogs render the same; only persisting writes needs the real server.
-  // ────────────────────────────────────────────────────────────────────────
+  // Admin mode comes from the &adminKey= URL param alone; no admin server is
+  // needed to render these dialogs.
 
-  // Empty assembly manager: a fresh install (empty.json has no assemblies) in
-  // admin mode, Tools -> Assembly manager opened to its empty table. sessionSpec
-  // gives a static sessionName so the title bar carries no live timestamp.
   {
     mode: 'url',
     name: 'assembly_manager',
@@ -2208,9 +1599,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: openAssemblyManager(),
   },
 
-  // Assembly manager with one assembly present: a config carrying only hg38 in
-  // admin mode, so the manager table lists the hg38 row (the state after adding
-  // an assembly in the tutorial).
   {
     mode: 'url',
     name: 'hg38_assembly_table',
@@ -2222,12 +1610,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: openAssemblyManager(),
   },
 
-  // Set-default-session dialog: admin mode, Admin -> Set default session. The
-  // dialog is a simple confirm ("Set current session as default" / "Clear
-  // default session"); persisting the choice needs the real admin-server.
-  // Two-stage figure (show what to click to open it): stage 1 boxes the
-  // "Admin" menu button that reveals the option (the menu only appears in
-  // admin mode); stage 2 is the resulting dialog.
   {
     mode: 'url',
     name: 'default_session_form',
@@ -2253,9 +1635,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Fresh-install landing: with no config and the default config.json missing,
-  // jbrowse-web shows the "It worked! JBrowse 2 is installed" banner plus a list
-  // of sample configs — what a user sees right after `jbrowse create` + serve.
   {
     mode: 'url',
     name: 'config_not_found',
@@ -2264,22 +1643,13 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'It worked!',
     viewportWidth: 1200,
     viewportHeight: 154,
-    // subject IS the missing-config landing page: the absent config.json 404s
     expectedConsole: [
       'HTTP 404 fetching config.json',
       'Failed to load resource',
     ],
-    // subject IS the missing-config landing page
     allowUnsettled: true,
   },
 
-  // Roadmap Epigenomics 2015 (Nature 518:317), Fig. 3a: all 127 epigenomes over
-  // ~3.7 Mb of chr9 from FAM205A to ALDH1B1, in Roadmap's tissue order. At 900
-  // px a row is tall enough to carry its label, tinted by tissue group.
-  // Promoter columns run through every row. Over PAX5, strong transcription
-  // with genic enhancers (4_Tx + 6_EnhG) is B cells and GM12878 only; spleen,
-  // PBMCs, iPS/ES lines and H9 neural progenitors carry transcription without
-  // the enhancers.
   {
     mode: 'url',
     name: 'chromhmm',
@@ -2334,10 +1704,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 1230,
   },
 
-  // Rinn et al. 2007 (Cell 129:1311), Fig. 3: lung fibroblasts keep the 3'
-  // half of HOXA (HOXA1-A7) active and the 5' half (HOXA9-A13) Polycomb-
-  // repressed, distal fibroblasts the reverse. Roadmap's lung and foreskin
-  // fibroblasts carry the same split, and ES cells hold both halves repressed.
   {
     mode: 'url',
     name: 'chromhmm_hoxa_fibroblasts',
@@ -2387,12 +1753,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     hideSelectors: ['[data-testid="row_focus_hint"]'],
   },
 
-  // The nine-cell ENCODE Broad HMM track over HOXA, the window its build script
-  // opens on: each cell type opens the stretch of the cluster matching its
-  // position along the body axis, blood keeps the whole cluster repressed, and
-  // H1-hESC holds it poised.
-  // The Broad track keeps its derived key: the page teaches the identity
-  // scale against that key's merged entries.
+  // Keeps its derived key: the page teaches the identity scale against that
+  // key's merged entries.
   {
     mode: 'url',
     name: 'chromhmm_encode_hoxa',
@@ -2417,17 +1779,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 620,
   },
 
-  // The "Display types" submenu, with the multi-row display boxed: the
-  // multi-row user guide's answer to "where do I turn this on". Deliberately
-  // shot on a track still in its DEFAULT display, so the figure shows the
-  // switch being available rather than already made.
-  //
-  // Shot on UCSC RepeatMasker rather than a gene track, because the menu item
-  // has to be one a reader would plausibly pick. A gene track has nothing to
-  // partition on — every feature is a gene, so multi-row gives one row per gene
-  // name — whereas rmsk carries `repClass`, and one row per repeat class is the
-  // thing this display exists for. Same 17q21 window as cookbook_color_by_type,
-  // dense enough that rows read behind the menu.
+  // Shot on a track still in its default display.
   {
     mode: 'url',
     name: 'multirow/display_types_pick',
@@ -2446,19 +1798,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     ]),
   },
 
-  // What the pick above produces, which is the half the figure was missing
-  // (review: "might want to make two-part figure showing result").
-  //
-  // The pick above partitions on `repClass` by itself whenever the file has
-  // that column (PREFERRED_ROWS_FIELDS), so this frame is one click from
-  // the one above.
-  //
-  // Declarative rather than driven, per the compose note: the state is a session
-  // a live link can open, so the figure cannot drift from a menu path and each
-  // half stays openable on its own.
-  //
-  // Same window and same viewport WIDTH as the frame above -- a vertical append
-  // pads a narrower part rather than scaling it.
+  // Same window and viewport width as display_types_pick: a vertical compose
+  // pads a narrower part.
   {
     mode: 'url',
     name: 'multirow/display_types_rows',
@@ -2473,9 +1814,7 @@ export const uiSpecs: ScreenshotSpec[] = [
             {
               trackId: 'rmsk_hg38_ucsc',
               type: 'LinearMultiRowFeatureDisplay',
-              // the class column, which is what "One row per..." offers on this
-              // file. No rowColor: this is what the menu path produces, and
-              // the cookbook figure is where a chosen palette belongs.
+              // No rowColor: the figure shows what the menu path produces.
               rows: 'repClass',
               showRowSeparators: true,
               height: 260,
@@ -2487,8 +1826,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'RepeatMasker',
     readyTimeout: 60000,
     viewportWidth: 1000,
-    // the rows plus the ruler and track header; sized from the run's own
-    // below-the-fold report
     viewportHeight: 470,
   },
 
