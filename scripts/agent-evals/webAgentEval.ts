@@ -265,7 +265,8 @@ try {
     for (let run = 1; run <= runs; run++) {
       await resetPage()
       if (task.setup) {
-        await bridge.evaluate(task.setup)
+        const page = await bridge.waitForPage(30_000)
+        await bridge.evaluate(task.setup, { timeoutMs: 120_000, page })
       }
       const prompt = task.prompt.replaceAll(
         'DATA',
