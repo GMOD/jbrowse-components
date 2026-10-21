@@ -1,95 +1,69 @@
 ---
 name: protein-figures-and-viz-features
-description: "Hero figures for the protein browser (linked genome view, ortholog alignment, one or two Mol* structures): nine specs on main and eight in the genomes_proteins tutorial. Open: color the structure from a genome track (BRCA1 saturation genome editing is the target), the unbuilt surface/distance/camera features, and figures the data supports but nobody has built (SOD1 H81R, DCLRE1C, PTPN11, VHL, PTEN)."
+description: "Hero figures for the protein browser (genome view linked to one or two Mol* structures). Three variant-to-structure figures landed on protein3d 1.23.0 (TP53 Y220C, BRCA1 M1775R, SNCA E46K) beside the nine older specs. Open: an ortholog alignment that adds evidence, the figures the data supports but nobody has built, and the older figures' known weaknesses."
 ---
 
 # Protein figures and 3D visualization features: what is left
 
-Revised 2026-10-20. Colin wants figures that win an NIH R01: one story each,
-as few and as short red callouts as possible, nothing the reader must decode.
+Revised 2026-10-21. Colin wants figures that win an NIH R01: one story each, a
+variant whose structural consequence the reader can see, WILD TYPE / MUTANT
+labels and few short callouts, the JBrowse app UI in frame.
 
 ## On main
 
-- Specs in `website/scripts/specs/protein_variants.ts` (shared helpers are
-  exported) with three empty registered files, `protein_variants_kinases.ts`,
-  `_genetics.ts` and `_more.ts`, for further figures. Figures: `kras_g12c`,
-  `kras_two_drugs`, `braf_v600e`, `cftr_f508`, `apoe_e4`, `f5_leiden`,
-  `brca1_sge`, `tp53_r273h`, `hbb_e6v`.
-- A second protein view beside the first: `pairStructure` and `pairColor` on
-  `SessionOptions`. A callout picks its view with `anchor.view`; Reset Zoom is
-  clicked per `view-container-<viewId>`.
-- Eight of the nine are in the figure store and in the "More protein browser
-  sessions" section of `tutorials/genomes_proteins.md`; `kras_g12c` is not
-  (the two-drug pair replaces it). The page lowers nothing in the
-  figure-actions ratchet: it adds 8, because gallery figures follow no
-  instruction.
-- Hosted data under `jbrowse.org/demos/`: `apoe/` and `factor_v/` (FinnGen R12
-  slices), `brca1/` and `tp53_sge/` (saturation genome editing, MaveDB
-  scores mapped to hg38). Recipes: memory `finngen-slices-hosted-for-manhattan-figures`.
+- Three figures, one spec file each, with their sessions beside them:
+  `protein_figure_tp53_y220c.ts`, `protein_figure_brca1_m1775r.ts`,
+  `protein_figure_snca_e46k.ts`. They load the hosted hg38 config and resolve
+  Protein3d from the store (1.23.0). Every number in a callout is measured;
+  the spec comments and session files carry the provenance.
+- The nine older specs in `protein_variants.ts` (`brca1_sge` retired, replaced
+  by the M1775R figure); `protein_variants_kinases.ts`, `_genetics.ts` and
+  `_more.ts` are empty and registered.
+- Protein3d 1.23.0 added the figure-session properties the three use:
+  `camera`, structure `chains`, `surface`, `silhouettes`, `marks`, `distances`,
+  orange ligands under mapped-chain coloring, and a protein-change highlight
+  label (E46K) that reads as each structure's own residue in 3D. Plugin doc:
+  `docs/figure-sessions.md`.
+- Hosted data: `jbrowse.org/demos/brca1/BRCA1.sge.missense.bedGraph.gz` and
+  `tp53_sge/TP53.sge.missense.bedGraph.gz` (every missense SNV, three rows per
+  base), beside the older `apoe/`, `factor_v/` and mean-score bigWigs.
 
-## Next, in order
+## Next
 
-1. **Merge, release and use the per-residue color.** Built and committed in
-   the `protein3d` plugin repo, in a local checkout that is neither merged nor
-   released (find it by the plugin repo's git log: `color.field: 'track'` and
-   `'values'`, a "Genome track..." palette entry, tests, `docs/per-residue-values.md`;
-   typecheck, lint and 571 tests pass; the menu dialog was not clicked in a
-   browser). Then rebuild `brca1_sge` with the structure colored by
-   `BRCA1.sge.residue_mean.bw` as a threshold scale at -1.328 and -0.748 (loss
-   of function is negative; there is no direction flag, so order `range`
-   red, orange, pale blue). The figure session keeps `userProvidedTranscriptSequence`
-   on the structure, drops the MsaView for load time, and the captured URL must
-   stay short. Captures need a local plugin build until the release. The same
-   feature serves gnomAD, deep mutational scan and AlphaMissense-as-track
-   colorings once those are hosted as bigWigs. Conservation coloring is
-   rejected: it says "conserved" for nearly every exon.
-2. **Surface, distance dashes, neighborhood sticks, camera, RMSD readout.**
-   Nothing exists: the agent stopped before writing code. They are Mol* runtime
-   APIs driven by autoruns from session properties, plus menu entries.
-   MolViewSpec cannot do it (it builds an initial scene and does not react).
-3. **Figures the data now supports**, ranked by the screens:
-   - Saturation genome editing with variants of uncertain significance:
-     BRCA1 BRCT (1T15, built, three VUS), TP53 (built; check the track's sign,
-     the drawn bars lean opposite to "higher is loss of function"), RAD51C
-     (8FAZ, loss-of-function residues sit at the ATP site).
-   - Wild-type against mutant pairs with a measured change, from the table the
-     pair agent saved: SOD1 H81R (2C9S to 3H2Q, VUS H72Q and D84N with MaveDB
-     00001217 scores), DCLRE1C H35D (7AF1 to 7AGI, both active-site zincs
-     lost), HMBS R173W, BRAF 1UWH to 1UWJ (UniProt 448 against author 447).
-   - Pathogenic against population variants: only PTPN11 (2SHP), VHL (1LM8)
-     and PTEN (1D5R) show pathogenic variants concentrated at an exposed
-     functional site; every other protein screened shows burial, which Colin
-     does not want. Needs per-residue gnomAD counts on the structure (item 1).
-4. **Unbuilt drafts from the builder agents** (session JSON and spec text, never
-   rendered or committed, in the agents' own checkouts and lost when those go):
-   EGFR, PIK3CA, IDH1, ESR1, ABL1, PCSK9, CFH, HFE, SERPINA1, PNPLA3, rpoB,
-   SNCA. Rebuild them from the helpers.
+1. **An alignment that adds evidence.** Tried on M1775R and E46K and removed:
+   at figure size the MSA shows about eight rows, all matching human. The
+   points it could make need rows it cannot show: Ensembl orthologs carry Leu at
+   BRCA1 1775 in a few mammals (Leu works in the scan) and keep a negative
+   charge at SNCA 46 (Glu, Asp in fish) in 182 of 183, but the app's NCBI set
+   showed Met in every visible row at 1775. A figure would need a filtered,
+   taller alignment or a column summary.
+2. **Figures the data supports, unbuilt:** VHL hydroxyproline pocket (1LM8 with
+   VH032 4W9H, SGE S111/H115 allelic series), MAPT S305I (10IJ vs 7P6D; built
+   and dropped: the comparison is one carrier against a different sporadic
+   disease, and its 2.5 Å Ile–Phe distance is a model clash), SOD1 H81R,
+   DCLRE1C H35D, PTPN11, PTEN.
+3. **Cold readers plateaued at 3/5** across about twenty reads, with asks that
+   contradict between rounds (connector lines "clutter", then "link not
+   shown"). Judge a revision by eye and by Colin, not by another read.
 
 ## Known weaknesses
 
-- HBB pair: the session highlight draws orange spheres on both structures, which
-  hides glutamate against valine. Weakest figure; drop or rethink.
-- The alignment toolbar shows an orange "Not in the link" on BRAF, CFTR, APOE
-  and F5.
-- Session highlight colors: alpha turns the 3D spheres dark; an opaque color
-  hides alignment letters. The default color is the only workable choice.
-- Factor V: rs6025 tops a broad plateau of nine linked variants at about 230 to
-  249, so the Manhattan reads as a haplotype block.
-- Ortholog alignments at BRCA1, TP53 and F5 were not checked for a contrast at
-  the codon.
-- The BRCA1 and TP53 scores partly circle back through ClinVar, which used
-  them as evidence.
+- Y220C shows the pocket by contrast between the two panels; an opaque or
+  cut-away surface read worse to every reader.
+- M1775R's BACH1 peptide in the mutant panel is superposed from 1T15 (1N5O has
+  none); the view's title names that source.
+- E46K fibrils are recombinant in-vitro folds; patient-brain folds differ.
+- Older figures: HBB pair is the weakest; BRAF, CFTR, APOE and F5 show an orange
+  "Not in the link" in the alignment toolbar; the Factor V Manhattan reads as a
+  haplotype block.
 
 ## Traps
 
-- FinnGen's bucket sends no CORS headers and Pan-UKB files are hg19; slice and
-  host (above). Remote `tabix` leaves a `.tbi` in the cwd.
-- `/tmp` is a 16 GB quota tmpfs: run captures with `TMPDIR=/var/tmp/<dir>`.
-- The capture needs a static server on the main checkout's `jbrowse-web` build
-  (`--port`), and a figure on disk before the diff gate runs.
+- A spec file that fails to parse breaks every capture, since the generator
+  loads them all.
+- Adding a view shifts `anchor.view` indexes; a residue callout then anchors
+  to the wrong panel without an error.
+- `/tmp` is a 16 GB quota tmpfs, so run captures with `TMPDIR=/var/tmp/<dir>`.
 - A commit message containing "update docs" deploys the site.
-- Agent runs stopped on the account's spend limit (and Fable's weekly limit,
-  reset 2026-10-25): resume a stopped agent with `SendMessage`; a new agent starts cold.
 - Screen outputs are machine-local scratch: `/var/tmp/sge-screen/`,
-  `/var/tmp/path-wt-pairs/`, `/var/tmp/variant-3d-screen/`. The scripts and
-  tables rebuild from MaveDB, ClinVar, gnomAD and RCSB.
+  `/var/tmp/r01-*/`, `/var/tmp/msa/`.

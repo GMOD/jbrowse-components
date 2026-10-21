@@ -608,31 +608,6 @@ const FINNGEN_VTE_TRACK = {
   displayDefaults: { height: 200 },
 }
 
-// SGE from Findlay 2018 (MaveDB urn:mavedb:00000097-0-2). The hotspots are
-// ClinVar VUS; 1T15's author numbering matches MANE NM_007294.4.
-const BRCA1: HotspotGene = {
-  session: readSession('protein_browser_brca1.session.json'),
-  gene: 'BRCA1',
-  hotspots: [
-    { label: 'T1700P', refName: 'chr17', start: 43063925, end: 43063928 },
-    { label: 'G1738A', refName: 'chr17', start: 43057114, end: 43057117 },
-    { label: 'A1752T', refName: 'chr17', start: 43057072, end: 43057075 },
-  ],
-}
-const BRCA1_BRCT = 'chr17:43045600-43071500[rev]'
-const BRCA1_SGE = 'brca1_sge_position_mean'
-const BRCA1_SGE_TRACK = {
-  type: 'QuantitativeTrack',
-  trackId: BRCA1_SGE,
-  name: 'BRCA1 saturation genome editing, mean score per base',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'BigWigAdapter',
-    uri: 'https://jbrowse.org/demos/brca1/BRCA1.sge.position_mean.bw',
-  },
-  displayDefaults: { height: 170 },
-}
-
 // 5MG7 (wild type) and 7B49 (R273H) share a crystal form, both DNA-bound. The
 // SGE track is Funk 2025 (MaveDB urn:mavedb:00001277-a-1), where a HIGHER
 // score means loss of function.
@@ -1157,25 +1132,6 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         anchor: { residue: 'A:506', view: 3 },
       },
     ],
-  },
-  {
-    mode: 'url',
-    name: 'protein/brca1_sge',
-    url: hotspotSession(
-      BRCA1,
-      { start: 1690, end: 1760 },
-      {
-        loc: BRCA1_BRCT,
-        tracks: [{ trackId: BRCA1_SGE, height: 170 }, HG38_GENE_TRACK],
-        sessionTracks: [BRCA1_SGE_TRACK],
-        msaHeight: 420,
-        hideTracks: ['property-conservation'],
-      },
-    ),
-    ...READY,
-    viewportWidth: 2300,
-    viewportHeight: 1150,
-    actions: RESET_ZOOM,
   },
   {
     mode: 'url',

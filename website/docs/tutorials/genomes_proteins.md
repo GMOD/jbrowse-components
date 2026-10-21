@@ -254,7 +254,14 @@ in the linear view you launched from, then narrow it to one record:
 A protein browser session takes any other JBrowse track beside the codon, and a
 second protein view beside the first. Each figure's live link opens its session.
 
-<Figure src="/img/protein/brca1_sge.png" caption="BRCA1 with a saturation genome editing score track over the BRCT exons, the ortholog alignment and 1T15. Three variants of uncertain significance are labelled in the genome view, the alignment and the structure." />
+Open a figure's live link and hover the highlighted codon in the genome view;
+each protein view then lights the residue it codes for.
+
+<Figure src="/img/protein/tp53_y220c.png" caption="TP53 with every missense change of a CRISPR scan around codon 220, above wild-type p53 (2XWR) and Y220C bound to rezatapopt (9S9O). The Y220C highlight names each structure's own residue." />
+
+<Figure src="/img/protein/brca1_m1775r_pocket.png" caption="BRCA1 with saturation genome editing scores and ClinVar records at codon 1775, above 1T15 with the BACH1 peptide and 1N5O, the M1775R crystal, with that peptide superposed from 1T15." />
+
+<Figure src="/img/protein/snca_e46k.png" caption="SNCA codons 46 and 80 above one layer of the wild-type (6CU7) and E46K (6UFR) α-synuclein fibrils, with the distance between residues 46 and 80 drawn in the mutant." />
 
 <Figure src="/img/protein/tp53_r273h.png" caption="TP53 with a saturation genome editing score track, the alignment's domains and two protein views: 5MG7 and 7B49, both bound to DNA. R273H is labelled in every view." />
 

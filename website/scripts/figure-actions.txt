@@ -10,6 +10,5 @@ tutorials/bxd_qtl.md 1
 tutorials/dog10k_lof.md 1
 tutorials/dog10k_selection.md 1
 tutorials/genomes_basics.md 4
-tutorials/genomes_proteins.md 8
 tutorials/ld_mosquitoes.md 1
 tutorials/local_ancestry.md 2

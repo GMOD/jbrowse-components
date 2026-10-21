@@ -1,0 +1,652 @@
+{
+  "name": "SNCA E46K",
+  "views": [
+    {
+      "id": "lgv-SNCA",
+      "type": "LinearGenomeView",
+      "colorByCDS": false,
+      "hideHeaderOverview": true,
+      "init": {
+        "assembly": "hg38",
+        "loc": "chr4:89828159-89828179[rev] chr4:89822303-89822323[rev]",
+        "tracks": [
+          {
+            "trackId": "snca-residues",
+            "type": "LinearBasicDisplay",
+            "height": 28,
+            "color": "jexl:get(feature,'color')"
+          },
+          {
+            "trackId": "snca-mane",
+            "height": 34
+          },
+          {
+            "trackId": "snca-clinvar-e46k",
+            "height": 40
+          }
+        ]
+      }
+    },
+    {
+      "id": "protein-SNCA-6cu7",
+      "type": "ProteinView",
+      "height": 680,
+      "zoomToBaseLevel": false,
+      "showAlignment": false,
+      "color": {
+        "field": "values",
+        "values": {
+          "1": 1,
+          "2": 1,
+          "3": 1,
+          "4": 1,
+          "5": 1,
+          "6": 1,
+          "7": 1,
+          "8": 1,
+          "9": 1,
+          "10": 1,
+          "11": 1,
+          "12": 1,
+          "13": 1,
+          "14": 1,
+          "15": 1,
+          "16": 1,
+          "17": 1,
+          "18": 1,
+          "19": 1,
+          "20": 1,
+          "21": 1,
+          "22": 1,
+          "23": 1,
+          "24": 1,
+          "25": 1,
+          "26": 1,
+          "27": 1,
+          "28": 1,
+          "29": 1,
+          "30": 1,
+          "31": 1,
+          "32": 1,
+          "33": 1,
+          "34": 1,
+          "35": 1,
+          "36": 1,
+          "37": 1,
+          "38": 1,
+          "39": 1,
+          "40": 1,
+          "41": 1,
+          "42": 1,
+          "43": 1,
+          "44": 1,
+          "45": 1,
+          "46": 2,
+          "47": 1,
+          "48": 1,
+          "49": 1,
+          "50": 1,
+          "51": 1,
+          "52": 1,
+          "53": 1,
+          "54": 1,
+          "55": 1,
+          "56": 1,
+          "57": 1,
+          "58": 1,
+          "59": 1,
+          "60": 1,
+          "61": 1,
+          "62": 1,
+          "63": 1,
+          "64": 1,
+          "65": 1,
+          "66": 1,
+          "67": 1,
+          "68": 1,
+          "69": 1,
+          "70": 1,
+          "71": 1,
+          "72": 1,
+          "73": 1,
+          "74": 1,
+          "75": 1,
+          "76": 1,
+          "77": 1,
+          "78": 1,
+          "79": 1,
+          "80": 3,
+          "81": 1,
+          "82": 1,
+          "83": 1,
+          "84": 1,
+          "85": 1,
+          "86": 1,
+          "87": 1,
+          "88": 1,
+          "89": 1,
+          "90": 1,
+          "91": 1,
+          "92": 1,
+          "93": 1,
+          "94": 1,
+          "95": 1,
+          "96": 1,
+          "97": 1,
+          "98": 1,
+          "99": 1,
+          "100": 1,
+          "101": 1,
+          "102": 1,
+          "103": 1,
+          "104": 1,
+          "105": 1,
+          "106": 1,
+          "107": 1,
+          "108": 1,
+          "109": 1,
+          "110": 1,
+          "111": 1,
+          "112": 1,
+          "113": 1,
+          "114": 1,
+          "115": 1,
+          "116": 1,
+          "117": 1,
+          "118": 1,
+          "119": 1,
+          "120": 1,
+          "121": 1,
+          "122": 1,
+          "123": 1,
+          "124": 1,
+          "125": 1,
+          "126": 1,
+          "127": 1,
+          "128": 1,
+          "129": 1,
+          "130": 1,
+          "131": 1,
+          "132": 1,
+          "133": 1,
+          "134": 1,
+          "135": 1,
+          "136": 1,
+          "137": 1,
+          "138": 1,
+          "139": 1,
+          "140": 1
+        },
+        "scale": "threshold",
+        "domain": [1.5, 2.5],
+        "range": ["#9aa7b8", "#d1007a", "#009696"],
+        "labels": ["\u03b1-synuclein", "Glu46", "Lys80"],
+        "title": "Color"
+      },
+      "camera": {
+        "position": [7.78, -21.94, -56.45],
+        "target": [3.27, -22.31, 10.3],
+        "up": [0.7177, 0.6944, 0.0524],
+        "mode": "orthographic"
+      },
+      "silhouettes": true,
+      "displayName": "Wild-type fibril, one layer seen end-on (PDB 6CU7)",
+      "distances": [],
+      "structures": [
+        {
+          "pdbId": "6cu7",
+          "chains": ["E"],
+          "assembly": "deposited",
+          "feature": {
+            "uniqueId": "NM_000345.4",
+            "type": "mRNA",
+            "refName": "chr4",
+            "start": 89726630,
+            "end": 89835667,
+            "strand": -1,
+            "name": "NM_000345.4",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 89726630,
+                "end": 89726660,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 89729193,
+                "end": 89729277,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 89822245,
+                "end": 89822388,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 89828142,
+                "end": 89828184,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 89835546,
+                "end": 89835667,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MDVFMKGLSKAKEGVVAAAEKTKQGVAEAAGKTKEGVLYVGSKTKEGVVHGVATVAEKTKEQVTNVGGAVVTGVTAVAQKTVEGAGSIAAATGFVKKDQLGKNEEGAPQEGILEDMPVDPDNEAYEMPSEEGYQDYEPEA",
+          "connectedViewId": "lgv-SNCA"
+        }
+      ]
+    },
+    {
+      "id": "protein-SNCA-6ufr",
+      "type": "ProteinView",
+      "height": 680,
+      "zoomToBaseLevel": false,
+      "showAlignment": false,
+      "color": {
+        "field": "values",
+        "values": {
+          "1": 1,
+          "2": 1,
+          "3": 1,
+          "4": 1,
+          "5": 1,
+          "6": 1,
+          "7": 1,
+          "8": 1,
+          "9": 1,
+          "10": 1,
+          "11": 1,
+          "12": 1,
+          "13": 1,
+          "14": 1,
+          "15": 1,
+          "16": 1,
+          "17": 1,
+          "18": 1,
+          "19": 1,
+          "20": 1,
+          "21": 1,
+          "22": 1,
+          "23": 1,
+          "24": 1,
+          "25": 1,
+          "26": 1,
+          "27": 1,
+          "28": 1,
+          "29": 1,
+          "30": 1,
+          "31": 1,
+          "32": 1,
+          "33": 1,
+          "34": 1,
+          "35": 1,
+          "36": 1,
+          "37": 1,
+          "38": 1,
+          "39": 1,
+          "40": 1,
+          "41": 1,
+          "42": 1,
+          "43": 1,
+          "44": 1,
+          "45": 1,
+          "46": 2,
+          "47": 1,
+          "48": 1,
+          "49": 1,
+          "50": 1,
+          "51": 1,
+          "52": 1,
+          "53": 1,
+          "54": 1,
+          "55": 1,
+          "56": 1,
+          "57": 1,
+          "58": 1,
+          "59": 1,
+          "60": 1,
+          "61": 1,
+          "62": 1,
+          "63": 1,
+          "64": 1,
+          "65": 1,
+          "66": 1,
+          "67": 1,
+          "68": 1,
+          "69": 1,
+          "70": 1,
+          "71": 1,
+          "72": 1,
+          "73": 1,
+          "74": 1,
+          "75": 1,
+          "76": 1,
+          "77": 1,
+          "78": 1,
+          "79": 1,
+          "80": 3,
+          "81": 1,
+          "82": 1,
+          "83": 1,
+          "84": 1,
+          "85": 1,
+          "86": 1,
+          "87": 1,
+          "88": 1,
+          "89": 1,
+          "90": 1,
+          "91": 1,
+          "92": 1,
+          "93": 1,
+          "94": 1,
+          "95": 1,
+          "96": 1,
+          "97": 1,
+          "98": 1,
+          "99": 1,
+          "100": 1,
+          "101": 1,
+          "102": 1,
+          "103": 1,
+          "104": 1,
+          "105": 1,
+          "106": 1,
+          "107": 1,
+          "108": 1,
+          "109": 1,
+          "110": 1,
+          "111": 1,
+          "112": 1,
+          "113": 1,
+          "114": 1,
+          "115": 1,
+          "116": 1,
+          "117": 1,
+          "118": 1,
+          "119": 1,
+          "120": 1,
+          "121": 1,
+          "122": 1,
+          "123": 1,
+          "124": 1,
+          "125": 1,
+          "126": 1,
+          "127": 1,
+          "128": 1,
+          "129": 1,
+          "130": 1,
+          "131": 1,
+          "132": 1,
+          "133": 1,
+          "134": 1,
+          "135": 1,
+          "136": 1,
+          "137": 1,
+          "138": 1,
+          "139": 1,
+          "140": 1
+        },
+        "scale": "threshold",
+        "domain": [1.5, 2.5],
+        "range": ["#9aa7b8", "#d1007a", "#009696"],
+        "labels": ["\u03b1-synuclein", "Lys46", "Lys80"],
+        "title": "Color"
+      },
+      "camera": {
+        "position": [-18.47, -13.68, 93.97],
+        "target": [-13.74, -16.91, 27.31],
+        "up": [0.8745, 0.4834, 0.0387],
+        "mode": "orthographic"
+      },
+      "silhouettes": true,
+      "displayName": "E46K fibril, one layer seen end-on (PDB 6UFR)",
+      "distances": [
+        {
+          "a": "A:46@NZ",
+          "b": "A:80@NZ",
+          "color": "#111111"
+        }
+      ],
+      "structures": [
+        {
+          "pdbId": "6ufr",
+          "chains": ["A"],
+          "assembly": "deposited",
+          "feature": {
+            "uniqueId": "NM_000345.4",
+            "type": "mRNA",
+            "refName": "chr4",
+            "start": 89726630,
+            "end": 89835667,
+            "strand": -1,
+            "name": "NM_000345.4",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 89726630,
+                "end": 89726660,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 89729193,
+                "end": 89729277,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 89822245,
+                "end": 89822388,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 89828142,
+                "end": 89828184,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 89835546,
+                "end": 89835667,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MDVFMKGLSKAKEGVVAAAEKTKQGVAEAAGKTKEGVLYVGSKTKEGVVHGVATVAEKTKEQVTNVGGAVVTGVTAVAQKTVEGAGSIAAATGFVKKDQLGKNEEGAPQEGILEDMPVDPDNEAYEMPSEEGYQDYEPEA",
+          "connectedViewId": "lgv-SNCA"
+        }
+      ]
+    }
+  ],
+  "sessionTracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "snca-residues",
+      "name": "Residues 46 and 80, colored as in 3D",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "FromConfigAdapter",
+        "features": [
+          {
+            "uniqueId": "r46",
+            "refName": "chr4",
+            "start": 89828167,
+            "end": 89828170,
+            "strand": -1,
+            "name": "Glu46 (Lys in E46K)",
+            "color": "#d1007a"
+          },
+          {
+            "uniqueId": "r80",
+            "refName": "chr4",
+            "start": 89822311,
+            "end": 89822314,
+            "strand": -1,
+            "name": "Lys80",
+            "color": "#009696"
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "snca-clinvar-e46k",
+      "name": "ClinVar VCV000014010",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "FromConfigAdapter",
+        "features": [
+          {
+            "uniqueId": "cv14010",
+            "refName": "chr4",
+            "start": 89828169,
+            "end": 89828170,
+            "name": "Pathogenic"
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "snca-mane",
+      "name": "SNCA NM_000345.4 (MANE)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "FromConfigAdapter",
+        "features": [
+          {
+            "uniqueId": "NM_000345.4",
+            "type": "mRNA",
+            "refName": "chr4",
+            "start": 89726630,
+            "end": 89835667,
+            "strand": -1,
+            "name": "NM_000345.4",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 89726630,
+                "end": 89726660,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 89729193,
+                "end": 89729277,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 89822245,
+                "end": 89822388,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 89828142,
+                "end": 89828184,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 89835546,
+                "end": 89835667,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "highlights": [
+    {
+      "assemblyName": "hg38",
+      "refName": "chr4",
+      "start": 89828167,
+      "end": 89828170,
+      "label": "E46K",
+      "color": "rgba(209,0,122,0.35)"
+    },
+    {
+      "assemblyName": "hg38",
+      "refName": "chr4",
+      "start": 89822311,
+      "end": 89822314,
+      "label": "Lys80",
+      "color": "rgba(0,150,150,0.35)"
+    }
+  ],
+  "useWorkspaces": true,
+  "activePanelId": "panel-top",
+  "layout": {
+    "id": "branch-root",
+    "direction": "column",
+    "size": 1,
+    "children": [
+      {
+        "id": "panel-top",
+        "size": 27,
+        "activeTabId": "tab-top",
+        "tabs": [
+          {
+            "id": "tab-top",
+            "viewIds": ["lgv-SNCA"]
+          }
+        ]
+      },
+      {
+        "id": "branch-bottom",
+        "direction": "row",
+        "size": 73,
+        "children": [
+          {
+            "id": "panel-left",
+            "size": 50,
+            "activeTabId": "tab-left",
+            "tabs": [
+              {
+                "id": "tab-left",
+                "viewIds": ["protein-SNCA-6cu7"]
+              }
+            ]
+          },
+          {
+            "id": "panel-right",
+            "size": 50,
+            "activeTabId": "tab-right",
+            "tabs": [
+              {
+                "id": "tab-right",
+                "viewIds": ["protein-SNCA-6ufr"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
