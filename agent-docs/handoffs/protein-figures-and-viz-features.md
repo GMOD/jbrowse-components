@@ -21,8 +21,7 @@ present together.
   script with a paint gate are machine-local in `/var/tmp/hero-figures/`.
 - **Variant pairs**, one spec file each: `protein_figure_tp53_y220c.ts`,
   `protein_figure_brca1_m1775r.ts`, `protein_figure_snca_e46k.ts` (now four
-  callouts fewer, with the wild-type Glu46–Lys80 distance drawn so the panels
-  read against each other).
+  sentence callouts fewer).
 - The nine older specs in `protein_variants.ts`.
 - Protein3d 1.24.0: `protein-view-ready` waits for a color field's values and
   the paint that follows (1.23.0 flipped it 20–40 s early for `track`,
@@ -55,9 +54,10 @@ figures, a blinded ideator given only a capability sheet, a landscape survey):
    over the three classes, may read better.
 3. **Occlusion is subtle** in software GL at figure size; worth a headed
    capture before deciding it stays on.
-4. **SNCA**: the reviewer's remaining asks, a superposition so Lys80 sits at the
-   same screen position in both panels and "a different fibril fold" in the
-   caption, are not done.
+4. **SNCA**: the reviewer's remaining asks are not done: a superposition so
+   Lys80 sits at the same screen position in both panels, "a different fibril
+   fold" in the caption, and a wild-type Glu46–Lys80 distance. The last was
+   tried: a 3 Å line's label lands on the residue labels.
 5. **Figures the data supports, unbuilt:** VHL hydroxyproline pocket (1LM8 with
    VH032 4W9H, SGE S111/H115 allelic series), SOD1 H81R, DCLRE1C H35D, PTPN11,
    PTEN.

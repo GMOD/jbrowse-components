@@ -191,13 +191,7 @@
       },
       "silhouettes": true,
       "displayName": "Wild-type fibril, one layer seen end-on (PDB 6CU7)",
-      "distances": [
-        {
-          "a": "E:46",
-          "b": "E:80",
-          "color": "#111111"
-        }
-      ],
+      "distances": [],
       "structures": [
         {
           "pdbId": "6cu7",

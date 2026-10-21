@@ -79,7 +79,7 @@ function scanVsAlphaMissense(
     ],
     hideTooltip: true,
     viewportWidth: 1600,
-    viewportHeight: 1300,
+    viewportHeight: 1225,
     actions: [
       { type: 'waitForAppSettled' },
       PARK_CURSOR,

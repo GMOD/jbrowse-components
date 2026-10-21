@@ -265,7 +265,7 @@ each protein view then lights the residue it codes for.
 
 <Figure src="/img/protein/brca1_m1775r_pocket.png" caption="BRCA1 with saturation genome editing scores and ClinVar records at codon 1775, above 1T15 with the BACH1 peptide and 1N5O, the M1775R crystal, with that peptide superposed from 1T15." />
 
-<Figure src="/img/protein/snca_e46k.png" caption="SNCA codons 46 and 80 above one layer of the wild-type (6CU7) and E46K (6UFR) α-synuclein fibrils, with the distance between residues 46 and 80 drawn in each." />
+<Figure src="/img/protein/snca_e46k.png" caption="SNCA codons 46 and 80 above one layer of the wild-type (6CU7) and E46K (6UFR) α-synuclein fibrils, with the distance between residues 46 and 80 drawn in the mutant." />
 
 <Figure src="/img/protein/tp53_r273h.png" caption="TP53 with a saturation genome editing score track, the alignment's domains and two protein views: 5MG7 and 7B49, both bound to DNA. R273H is labelled in every view." />
 

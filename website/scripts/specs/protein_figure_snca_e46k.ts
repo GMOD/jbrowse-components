@@ -30,7 +30,7 @@ export const proteinSncaE46kSpecs: ScreenshotSpec[] = [
     ],
     hideTooltip: true,
     viewportWidth: 1600,
-    viewportHeight: 1250,
+    viewportHeight: 1200,
     actions: [
       { type: 'waitForAppSettled' },
       PARK_CURSOR,
