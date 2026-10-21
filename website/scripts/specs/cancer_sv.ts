@@ -1023,11 +1023,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             },
           ],
           tracks: [['der3_vs_hg38']],
-          // ON (review: "please use showCurves:true"). The setting is `mark.interpolate`
-          // and it is a property of the SYNTENY VIEW rather than of a track, so
-          // spelled the other way in `tracks` it is one of the inline keys that
-          // are dropped in silence -- the figure would have regenerated
-          // identical and read as fixed.
+          // ON (review: "please use showCurves:true"). `mark.interpolate` is
+          // a setting of the synteny view, not of a track.
           mark: { interpolate: 'bump' },
           // 180 rather than 220: five ribbons crossing need enough band to
           // stay separable and no more, and the 40 px buys most of the row

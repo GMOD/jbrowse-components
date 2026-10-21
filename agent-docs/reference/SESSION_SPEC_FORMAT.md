@@ -23,9 +23,9 @@ or an object whose non-`trackId` keys are display settings written inline.
 `showTrackGeneric` routes every real config slot onto the display's config
 through `applyConfSettings` (`packages/core/src/configuration/getConf.ts`). So
 the vocabulary of a track entry IS the display's config slot table, and
-`jbrowse validate` checks it from `configManifest.generated.ts`. **A key that is
-neither a slot nor a state-model property is dropped silently**, which is what
-the validator exists for.
+`jbrowse validate` checks it from `configManifest.generated.ts`. A key that is
+neither a slot nor a state-model property reaches the session as an error
+(`notifySettingsReport`), and a figure capture fails on that snackbar.
 
 ## What the corpus writes
 

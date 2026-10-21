@@ -10,8 +10,6 @@ Capture races and callout anchoring: `agent-docs/reference/FIGURE_CAPTURE.md`.
   `no census on the page at all` means the build is stale. The package is
   `@jbrowse/web`, and `pnpm --filter jbrowse-web build` matches nothing and
   exits 0.
-- An inline key on a spec's `tracks` entry that is neither a config slot nor a
-  model prop is dropped silently.
 - `--cover` proves every type still paints, never that a figure is current.
 - Size a figure from the run's `CONTENT CLIPPED BELOW THE FOLD` /
   `blank below the last content` report, not off the PNG. Neither sees a display

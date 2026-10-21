@@ -220,9 +220,6 @@ function maneGeneLane({
       // join those up. The symbol is the file's own `geneSymbol` column
       // (bigBedInfo -as), which is also the column the older comment here
       // guessed was `geneName2`.
-      //
-      // A config SLOT, so it goes in the track's `displays`, not on the view's
-      // tracks entry, where it would be dropped in silence.
       displays: [
         {
           type: 'LinearBasicDisplay',
