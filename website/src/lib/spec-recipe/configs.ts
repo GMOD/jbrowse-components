@@ -2,6 +2,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { repoRoot } from '../../../scripts/paths.ts'
+import { displayTable } from './displayTable.generated.ts'
+import { defaultDisplayIn } from './displays.ts'
 import { hostedConfigs } from './hostedConfigs.generated.ts'
 
 // A spec's bare `"tracks": ["ncbi_gff_hg19"]` resolves at build time into the
@@ -49,10 +51,7 @@ export interface TrackInfo {
   type: string
   // e.g. CramAdapter
   adapterType: string
-  // The display types the track config declares, in order. `pickDisplayForView`
-  // consults these before falling back to the ones the track type registers, so
-  // a config naming exactly one settles which display a spec entry means without
-  // the plugin registry a static script cannot reach.
+  // the display types the track config declares, in order
   declaredDisplayTypes: string[]
 }
 
@@ -126,6 +125,16 @@ export function lookupTrack(
           .filter(t => typeof t === 'string'),
       }
     : undefined
+}
+
+// The display a view of `viewType` opens the track as when the spec names none.
+export function defaultDisplay(track: TrackInfo | undefined, viewType: string) {
+  return track ? defaultDisplayIn(displayTable, track, viewType) : undefined
+}
+
+// The view type a spec view's rows (`views`) open as.
+export function rowViewType(viewType: string | undefined) {
+  return viewType ? displayTable.views[viewType]?.rowType : undefined
 }
 
 export function lookupAssembly(

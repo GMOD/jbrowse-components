@@ -1,5 +1,11 @@
 import { deriveAddTrack, deriveAddTrackJson } from '../derive-add-track.ts'
-import { fileKind, lookupAssembly, lookupTrack } from './configs.ts'
+import {
+  defaultDisplay,
+  fileKind,
+  lookupAssembly,
+  lookupTrack,
+  rowViewType,
+} from './configs.ts'
 import { takeArrangement } from './arrangements.ts'
 import { captureFrame } from './agent.ts'
 import { imgRecipe } from './img.ts'
@@ -191,14 +197,6 @@ function viewName(type: string | undefined): string {
   return VIEW_NAMES[type] ?? split[0] + split.slice(1).toLowerCase()
 }
 
-// See the FieldContext note in trackStep: the one branch of pickDisplayForView a
-// static script can evaluate for itself.
-function soleDeclaredDisplay(info: TrackInfo | undefined): string | undefined {
-  return info?.declaredDisplayTypes.length === 1
-    ? info.declaredDisplayTypes[0]
-    : undefined
-}
-
 // A band's dataset in a comparative import form, rather than a track added to a
 // view that is already open.
 interface BandContext {
@@ -238,6 +236,8 @@ function addTrackTitle(
 function trackStep(
   entry: SpecTrackEntry,
   config: string,
+  // the view type the track opens in
+  viewType: string | undefined,
   sessionTracks?: RawTrack[],
   band?: BandContext,
   viaTrackSelector?: boolean,
@@ -247,13 +247,9 @@ function trackStep(
   const trackId = specTrackId(entry)
   const info = lookupTrack(config, trackId, sessionTracks)
   const kind = info ? fileKind(info.adapterType) : undefined
-  // The spec's own `type` first. Failing that, the track config's declared
-  // display — but only when it declares exactly one, which is the case
-  // `pickDisplayForView` settles without consulting the registry: with a
-  // single declared display there is nothing for the view's supported-types
-  // filter to choose between. Several declared, or none, still yields
-  // undefined rather than a guess.
-  const displayType = specDisplayType(entry) ?? soleDeclaredDisplay(info)
+  const displayType =
+    specDisplayType(entry) ??
+    (viewType ? defaultDisplay(info, viewType) : undefined)
   const context: FieldContext = {
     noun: trackNoun(info?.type, displayType),
     displayType,
@@ -322,6 +318,7 @@ function importFormSteps(
     const { unmapped: trackUnmapped, ...step } = trackStep(
       entry,
       config,
+      view.type,
       sessionTracks,
       { form, bands: distinct.length === 1 ? entries.length : 0 },
     )
@@ -417,6 +414,7 @@ function viewSteps(
   // the session holds more than this one view, so a track goes in through the
   // view's own track selector (see OPEN_TRACK)
   viaTrackSelector = false,
+  viewType = view.type,
 ): { steps: RecipeStep[]; unmapped: string[] } {
   const steps: RecipeStep[] = []
   const unmapped: string[] = []
@@ -443,6 +441,7 @@ function viewSteps(
       const { unmapped: trackUnmapped, ...step } = trackStep(
         entry,
         config,
+        viewType,
         sessionTracks,
         undefined,
         viaTrackSelector,
@@ -476,7 +475,14 @@ function viewSteps(
       : undefined
     // a sub-view is never the session's only view, so its tracks go in through
     // its own track selector
-    const sub = viewSteps(subView, config, sessionTracks, label, true)
+    const sub = viewSteps(
+      subView,
+      config,
+      sessionTracks,
+      label,
+      true,
+      subView.type ?? rowViewType(view.type),
+    )
     steps.push(...(label ? groupSteps(label, sub.steps) : sub.steps))
     unmapped.push(...sub.unmapped)
   }

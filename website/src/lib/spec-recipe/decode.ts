@@ -222,13 +222,6 @@ function bandEntries(
 // The display a track entry names, when it names one — inline as `type` or
 // inside `displaySnapshot`, the nested one winning for the same reason
 // specTrackSettings flattens that way.
-//
-// Undefined when the entry leaves the choice to the app, which is not a case a
-// recipe can quietly assume its way out of: `pickDisplayForView` resolves it
-// from the track config's own declared displays intersected with the view's
-// supported types, and neither is visible to a static script. Recipes whose
-// menu differs per display therefore emit nothing rather than guessing the
-// common case — a wrong menu name is worse than an acknowledged gap.
 export function specDisplayType(entry: SpecTrackEntry): string | undefined {
   if (typeof entry === 'string') {
     return undefined

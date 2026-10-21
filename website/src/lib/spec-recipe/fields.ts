@@ -75,16 +75,12 @@ import {
 // the JSON tab.
 //
 // The other way an entry lands in the report is a field several displays share
-// on a track whose display type went unresolved, and the fix for that one is
-// not here. Where only one display declares a field the name settles it, which
-// is what isAlignmentsOnlyField and isHicOnlyField do; otherwise the display
-// comes from `specDisplayType` — the spec's own `type` — falling back to the
-// track config's sole declared display. A figure loading a hosted config has no
-// track config to read at build time, so the spec has to name the display it
-// means. Adding `type` to the spec entry is the fix, not a looser gate here:
-// it is a no-op at render (`pickDisplayForView` takes the requested type first,
-// and these all name what the track would have opened with anyway) and it is
-// the only statement of intent a static script can trust.
+// on a track whose display type went unresolved. Where only one display
+// declares a field the name settles it, which is what isAlignmentsOnlyField and
+// isHicOnlyField do; otherwise the display is the spec's own `type`, else the
+// one the app opens (`defaultDisplay` in configs.ts). A track whose type or
+// adapter is outside the core plugins resolves neither way, and naming `type`
+// on its spec entry is the fix.
 
 export interface FieldStep {
   // click path through the UI, e.g. "Track menu → Color by... → Paired end"
@@ -100,8 +96,8 @@ export interface FieldStep {
 // height'), so a recipe passes the singular noun for the track it is describing.
 export interface FieldContext {
   noun: string
-  // The display the spec named, or undefined when it left the choice to the app
-  // (see specDisplayType). Read by the recipes whose field names a different
+  // The display the spec named or the app opens, undefined when neither is
+  // known (see trackStep). Read by the recipes whose field names a different
   // menu on different displays — without it they can only be written for one
   // display and be silently wrong on the rest.
   displayType?: string
@@ -978,11 +974,7 @@ const SUBFEATURE_LABELS: Record<string, string> = Object.fromEntries(
 // track holds, while getFeatureHeightMenuItem — the alignments display and
 // LGVSyntenyDisplay — titles it after the track's noun. Both group the sizing
 // radios under the same 'Track sizing' subheader.
-//
-// An entry that named no display keeps the noun form this table has always
-// emitted. That is an assumption, not a resolution, and it is the one place
-// here that can still be wrong; resolving it needs pickDisplayForView's plugin
-// registry.
+// An entry whose display is unknown keeps the noun form.
 const heightMenu = (noun: string, displayType?: string) =>
   displayType && CANVAS_DISPLAYS.has(displayType)
     ? `${TRACK_MENU} → Feature height`

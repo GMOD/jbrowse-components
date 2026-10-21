@@ -10,6 +10,7 @@ export { getFileName } from './getFileName.ts'
 // configuration schemas this file pulls in out of the fetch harness's graph.
 export { getRpcSessionId } from './parentWalk.ts'
 export { makeIndex } from './formatGuessers.ts'
+export { pickDisplayForView } from './displayChoice.ts'
 
 export {
   isLooseTrackConfig,
@@ -34,9 +35,10 @@ import { observable, runInAction, untracked } from 'mobx'
 import { isConfigurationModel, readConfObject } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import {
-  displayCandidates,
+  adapterCapabilities,
   displayTypesFedBy,
 } from '../pluggableElementTypes/models/baseTrackConfig.ts'
+import { chooseDisplay } from './displayChoice.ts'
 import {
   getFileHandle,
   storeFileHandle,
@@ -60,6 +62,7 @@ import type {
   AnyTrackConfig,
   TrackConfigEntry,
 } from '../configuration/index.ts'
+import type { DisplayConfSnapshot } from './displayChoice.ts'
 import type {
   BlobLocation,
   FileHandleLocation,
@@ -934,11 +937,6 @@ export interface DisplayInitialSnapshot {
   [key: string]: unknown
 }
 
-interface DisplayConfSnapshot {
-  type: string
-  displayId?: string
-}
-
 /**
  * The display type names a view can render, as a lookup set. Built once per
  * view and handed to {@link viewCanDisplayTrack} for every track, rather than
@@ -1088,52 +1086,6 @@ export function offeredTracks(
   ].filter(conf => conf !== undefined)
 }
 
-/**
- * Which display a track opens with in a given view, and the declared entry
- * that configures it: `{ type, conf }`, or undefined when the view draws none
- * of the candidates or the requested type is not among them.
- *
- * The **type** is the requested one, checked rather than taken on faith (an
- * unchecked one resolved its dangling `<trackId>-<type>` id back to the
- * track's default display, and the caller was told it got what it asked for),
- * else the first candidate among the view's own display types, else the first
- * it draws at all. The **config** is then the declared entry of that type,
- * never another one the view supports: `display.type ===
- * display.configuration.type` is the invariant `DisplayConfigurationReference`
- * assumes when it falls back to resolving by type.
- */
-export function pickDisplayForView({
-  candidates,
-  declaredDisplays,
-  requestedType,
-  viewDisplayTypes,
-  preferredDisplayTypes = new Set<string>(),
-}: {
-  /** {@link displayCandidates}, canonical names in preference order */
-  candidates: string[]
-  /** the config's display entries, their types canonical */
-  declaredDisplays: DisplayConfSnapshot[]
-  requestedType: string | undefined
-  viewDisplayTypes: string[]
-  /**
-   * The display types the view registered as its own, ahead of those it
-   * inherits through `extendedName`: a variant track on the circular view
-   * draws its chords, not the linear display the view also accepts as a
-   * ring, even where its config declares only the linear one.
-   */
-  preferredDisplayTypes?: Set<string>
-}) {
-  const supported = new Set(viewDisplayTypes)
-  const drawable = candidates.filter(name => supported.has(name))
-  const type =
-    requestedType === undefined
-      ? (drawable.find(name => preferredDisplayTypes.has(name)) ?? drawable[0])
-      : drawable.find(name => name === requestedType)
-  return type === undefined
-    ? undefined
-    : { type, conf: declaredDisplays.find(d => d.type === type) }
-}
-
 // #region trackInit
 export type TrackInit =
   | string
@@ -1185,33 +1137,25 @@ function pickTrackDisplay(
   pluginManager: PluginManager,
   conf: {
     type: string
-    adapter?: Parameters<typeof displayCandidates>[1]['adapter']
+    adapter?: { type?: unknown }
     displays?: DisplayConfSnapshot[]
   },
   viewTypeName: string,
   requested: string | undefined,
 ) {
-  const viewType = pluginManager.getViewType(viewTypeName)
-  const candidates = displayCandidates(pluginManager, conf)
-  const viewDisplayTypes = viewType.displayTypes.map(d => d.name)
   const canonical = (name: string) =>
     pluginManager.resolveDisplayTypeRecord(name)?.name ?? name
-  const declaredDisplays: DisplayConfSnapshot[] = conf.displays ?? []
-  const picked = pickDisplayForView({
-    candidates,
-    declaredDisplays: declaredDisplays.map(d => ({
+  return chooseDisplay({
+    trackDisplays: pluginManager.getTrackType(conf.type).displayTypes,
+    adapterCapabilities: adapterCapabilities(pluginManager, conf.adapter),
+    declaredDisplays: (conf.displays ?? []).map(d => ({
       ...d,
       type: canonical(d.type),
     })),
+    viewType: viewTypeName,
+    viewDisplays: pluginManager.getViewType(viewTypeName).displayTypes,
     requestedType: requested === undefined ? undefined : canonical(requested),
-    viewDisplayTypes,
-    preferredDisplayTypes: new Set(
-      viewType.displayTypes
-        .filter(d => d.viewType === viewTypeName)
-        .map(d => d.name),
-    ),
   })
-  return { picked, candidates, viewDisplayTypes }
 }
 
 /**

@@ -24,6 +24,7 @@ import {
   readFileSync,
   readdirSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -51,6 +52,10 @@ const INDEX = path.join(
   REPO_ROOT,
   '.claude/skills/jbrowse-authoring/references/config-types.md',
 )
+const DISPLAY_TABLE_OUT = path.join(
+  REPO_ROOT,
+  'website/src/lib/spec-recipe/displayTable.generated.ts',
+)
 const SCHEMA_OUT = path.join(
   REPO_ROOT,
   'products/jbrowse-cli/src/commands/validate/configSchema.generated.ts',
@@ -70,7 +75,10 @@ const SCHEMA_SITE_OUT = path.join(REPO_ROOT, 'website/static', SCHEMA_URL_PATH)
 // Runs inside the bundle, so it can reach the real PluginManager. Everything it
 // needs to say has to come back as JSON.
 const ENTRY = `
+import { readFileSync } from 'node:fs'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { trackDisplayType } from '@jbrowse/core/util/tracks'
+import { defaultDisplayIn } from '../../website/src/lib/spec-recipe/displays.ts'
 import { migratedDisplayInstanceKeys } from '@jbrowse/product-core'
 import { LIFTED_DISPLAY_KEYS } from '../../packages/synteny-core/src/liftSyntenyViewSettings.ts'
 import { JBrowseConfigF } from '@jbrowse/app-core'
@@ -738,7 +746,116 @@ const plotSettings = elements('display', n => pm.getDisplayType(n)).flatMap(
   },
 )
 
-console.log(JSON.stringify({ manifest, schema, plotSettings }))
+const viewTypes = elements('view', n => pm.getViewType(n))
+const viewNameOfModel = new Map(viewTypes.map(v => [modelOf(v.stateModel), v.name]))
+const displayTable = {
+  tracks: Object.fromEntries(
+    elements('track', n => pm.getTrackType(n)).map(t => [
+      t.name,
+      t.displayTypes.map(d => ({
+        name: d.name,
+        adapterCapabilities: [...d.adapterCapabilities],
+      })),
+    ]),
+  ),
+  adapters: Object.fromEntries(
+    elements('adapter', n => pm.getAdapterType(n)).map(a => [
+      a.name,
+      [...a.adapterCapabilities],
+    ]),
+  ),
+  displayAliases: Object.fromEntries(
+    pm
+      .getDisplayElements()
+      .flatMap(d =>
+        (d.aliases ?? [])
+          .filter(alias => !pm.displayTypes.has(alias))
+          .map(alias => [alias, d.name]),
+      ),
+  ),
+  views: Object.fromEntries(
+    viewTypes.map(v => {
+      const rows = modelOf(v.stateModel)?.properties?.views
+      const rowType = rows ? viewNameOfModel.get(modelOf(rows)) : undefined
+      return [
+        v.name,
+        {
+          displays: v.displayTypes.map(d => ({ name: d.name, viewType: d.viewType })),
+          ...(rowType ? { rowType } : {}),
+        },
+      ]
+    }),
+  ),
+}
+
+// The table answers without running the Core-preProcessTrackConfig handlers,
+// so check it against the app's own answer for every track this repo serves.
+const displayTableMismatches = []
+for (const file of __LOCAL_CONFIGS__) {
+  let config
+  try {
+    config = JSON.parse(readFileSync(file, 'utf8'))
+  } catch {
+    continue
+  }
+  const tracks = [
+    ...(Array.isArray(config?.tracks) ? config.tracks : []),
+    ...(Array.isArray(config?.assemblies) ? config.assemblies : []).map(
+      a => a?.sequence,
+    ),
+  ]
+  for (const track of tracks) {
+    const type = track?.type
+    const adapterType = track?.adapter?.type
+    if (typeof type !== 'string' || typeof adapterType !== 'string') {
+      continue
+    }
+    const info = {
+      type,
+      adapterType,
+      declaredDisplayTypes: (Array.isArray(track.displays) ? track.displays : [])
+        .map(d => d?.type)
+        .filter(t => typeof t === 'string'),
+    }
+    for (const viewType of Object.keys(displayTable.views)) {
+      const fromTable = defaultDisplayIn(displayTable, info, viewType)
+      if (fromTable === undefined) {
+        continue
+      }
+      let fromApp
+      try {
+        fromApp = unwarned(() =>
+          trackDisplayType(
+            pm,
+            getSnapshot(
+              pm
+                .getTrackType(type)
+                .configSchema.create(
+                  { ...track, assemblyNames: track.assemblyNames ?? ['any'] },
+                  { pluginManager: pm },
+                ),
+            ),
+            viewType,
+          ),
+        )
+      } catch {
+        continue
+      }
+      if (fromApp !== fromTable) {
+        displayTableMismatches.push(
+          \`\${file} \${track.trackId} in \${viewType}: the app opens \${fromApp}, the table says \${fromTable}\`,
+        )
+      }
+    }
+  }
+}
+if (displayTableMismatches.length) {
+  throw new Error(
+    \`The display table disagrees with the app:\\n  \${displayTableMismatches.join('\\n  ')}\`,
+  )
+}
+
+console.log(JSON.stringify({ manifest, schema, plotSettings, displayTable }))
 `
 
 // Every key an ADAPTER's snapshot normalizer reads, which is the candidate set
@@ -906,6 +1023,27 @@ function collectShorthandProbes() {
   return [...lead, ...[...keys].sort()]
 }
 
+// Every config the repo serves, which the display table is checked against.
+function localConfigs() {
+  return ['test_data', 'demos'].flatMap(top =>
+    readdirSync(path.join(REPO_ROOT, top), { recursive: true })
+      .map(rel => path.join(REPO_ROOT, top, String(rel)))
+      .filter(file => {
+        if (!file.endsWith('.json')) {
+          return false
+        }
+        try {
+          return (
+            statSync(file).size < 5_000_000 &&
+            readFileSync(file, 'utf8').includes('"tracks"')
+          )
+        } catch {
+          return false
+        }
+      }),
+  )
+}
+
 const dir = mkdtempSync(path.join(tmpdir(), 'jbrowse-schema-'))
 // jbrowse-web's session model imports permanentPlugins.ts, which reads the page
 // URL and localStorage at module load; the schema wants the model's properties
@@ -947,6 +1085,7 @@ const built = await esbuild.build({
     contents: ENTRY.replace('__SHORTHAND_PROBES__', () =>
       JSON.stringify(collectShorthandProbes()),
     )
+      .replace('__LOCAL_CONFIGS__', () => JSON.stringify(localConfigs()))
       .replace('__SCHEMA_ID__', JSON.stringify(SCHEMA_ID))
       .replace('__VERSION__', JSON.stringify(VERSION)),
     resolveDir: RESOLVE_DIR,
@@ -994,10 +1133,12 @@ const {
   manifest: schema,
   schema: jsonSchema,
   plotSettings,
+  displayTable,
 } = JSON.parse(payload) as {
   manifest: Record<string, any>
   schema: Record<string, unknown>
   plotSettings: { name: string; displayName: string; keys: string[] }[]
+  displayTable: Record<string, unknown>
 }
 
 const EDIT_PLOT_GUIDE = path.join(
@@ -1150,6 +1291,18 @@ checkOrWriteAll(
         '',
       ].join('\n'),
       label: path.relative(REPO_ROOT, SCHEMA_OUT),
+    },
+    {
+      path: DISPLAY_TABLE_OUT,
+      content: [
+        '// Generated by scripts/generateConfigManifest.ts — do not edit by hand.',
+        '// Regenerate with `pnpm autogen`.',
+        "import type { DisplayTable } from './displays.ts'",
+        '',
+        `export const displayTable: DisplayTable = ${JSON.stringify(displayTable, null, 2)}`,
+        '',
+      ].join('\n'),
+      label: path.relative(REPO_ROOT, DISPLAY_TABLE_OUT),
     },
     {
       path: EDIT_PLOT_GUIDE,

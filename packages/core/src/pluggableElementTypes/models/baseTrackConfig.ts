@@ -5,6 +5,7 @@ import {
   FormatAboutConfigSchemaFactory,
   FormatDetailsConfigSchemaFactory,
 } from '../../configuration/index.ts'
+import { feedsDisplay } from '../../util/displayChoice.ts'
 import { expandLooseSearchIndex } from '../../util/expandLooseSearchIndex.ts'
 import { expandTrackConfigShorthand } from './expandTrackConfigShorthand.ts'
 import {
@@ -26,6 +27,17 @@ interface TrackConfigSnapshot {
   displays?: LegacyDisplaySnapshot[]
 }
 
+/** The capabilities a track's adapter type declares, none for an unknown one. */
+export function adapterCapabilities(
+  pluginManager: PluginManager,
+  adapter: TrackConfigSnapshot['adapter'],
+) {
+  const type = adapter?.type
+  return typeof type === 'string' && pluginManager.hasAdapterType(type)
+    ? pluginManager.getAdapterType(type).adapterCapabilities
+    : []
+}
+
 /**
  * Whether a track's adapter serves what a display type draws from: every
  * `adapterCapabilities` entry the display asks for, among those the adapter
@@ -35,14 +47,7 @@ export function adapterFeeds(
   pluginManager: PluginManager,
   adapter: TrackConfigSnapshot['adapter'],
 ) {
-  const type = adapter?.type
-  const capabilities = new Set(
-    typeof type === 'string' && pluginManager.hasAdapterType(type)
-      ? pluginManager.getAdapterType(type).adapterCapabilities
-      : [],
-  )
-  return (display: { adapterCapabilities: readonly string[] }) =>
-    display.adapterCapabilities.every(c => capabilities.has(c))
+  return feedsDisplay(adapterCapabilities(pluginManager, adapter))
 }
 
 /**
@@ -58,32 +63,6 @@ export function displayTypesFedBy(
     .getTrackType(trackType)
     .displayTypes.filter(adapterFeeds(pluginManager, adapter))
     .map(d => d.name)
-}
-
-/**
- * The display types a view may open a track as, best first: those its adapter
- * feeds, the ones its config declares leading in declared order. A declared
- * display the adapter cannot feed stays in the config as settings and is never
- * a candidate.
- */
-export function displayCandidates(
-  pluginManager: PluginManager,
-  track: {
-    type: string
-    adapter?: TrackConfigSnapshot['adapter']
-    displays?: readonly { type: string }[]
-  },
-) {
-  const declared = (track.displays ?? []).map(
-    d => pluginManager.resolveDisplayTypeRecord(d.type)?.name ?? d.type,
-  )
-  const rank = (name: string) => {
-    const i = declared.indexOf(name)
-    return i === -1 ? declared.length : i
-  }
-  return displayTypesFedBy(pluginManager, track.type, track.adapter).sort(
-    (a, b) => rank(a) - rank(b),
-  )
 }
 
 /**
