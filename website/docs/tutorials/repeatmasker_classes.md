@@ -17,7 +17,6 @@ difference is hard to read. We:
   [multi-row feature display](/docs/user_guides/multirow_feature_track), one
   labelled row per class
 - pin the row order and colors in a track config
-- check the rows against the RepeatMasker file
 - serve your own RepeatMasker output the same way
 
 JBrowse reads the classes from the file, so no data preparation is needed. Every
@@ -28,7 +27,7 @@ GenArk hub config, has a RepeatMasker track to try.
 
 - a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
   [Desktop](/docs/quickstart_desktop))
-- htslib (`bgzip`, `tabix`, `htsfile`), for the check at the end
+- htslib (`bgzip`, `tabix`), for indexing your own output
 - `samtools`, for
   [serving your own RepeatMasker output](#serving-your-own-repeatmasker-output)
   and [Reproduce it end to end](#reproduce-it-end-to-end), which runs the same
@@ -53,19 +52,9 @@ npm install -g @jbrowse/cli
 The figures read UCSC's RepeatMasker track for hg38 and dm6, rehosted on
 jbrowse.org.
 
-Nothing to download: the track configs and the commands below read these files
-by URL. The [build script](#reproduce-it-end-to-end) takes a genome of your own,
-as its FASTA and RepeatMasker's `.out`.
-
-<details>
-<summary>The files</summary>
-
-| What it is                                                                                                              | File                                                     |
-| ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| Hg38, read by the tabix command under [Checking the rows against the file](#checking-the-rows-against-the-file)         | [rmsk.bed.gz](https://jbrowse.org/ucsc/hg38/rmsk.bed.gz) |
-| Dm6, the file the diff under [Reproduce it end to end](#reproduce-it-end-to-end) checks a home-built conversion against | [rmsk.bed.gz](https://jbrowse.org/ucsc/dm6/rmsk.bed.gz)  |
-
-</details>
+Nothing to download: the track configs read their files by URL. The
+[build script](#reproduce-it-end-to-end) takes a genome of your own, as its
+FASTA and RepeatMasker's `.out`.
 
 ## Where UCSC and GenArk hubs store the repeat class
 
@@ -163,34 +152,10 @@ The track opens with the first display listed, so the multi-row entry makes rows
 the default. A bare `{ "type": "LinearBasicDisplay" }` ahead of it keeps the
 packed form as the default and leaves the rows one menu click away.
 
-## Checking the rows against the RepeatMasker file {#checking-the-rows-against-the-file}
-
-To check the rows, count the classes in the file over the figures' window:
-
-```bash
-tabix https://jbrowse.org/ucsc/hg38/rmsk.bed.gz chr17:45,700,000-45,750,000 |
-  awk -F'\t' '{ n[$7]++; bp[$7] += $3 - $2 }
-    END { for (c in n) printf "%s\t%d\t%d bp\n", c, n[c], bp[c] }' |
-  sort -k3 -nr
-```
-
-The printed output lines up with the rows:
-
-- Each printed class is a row with features on screen, and its bp total is the
-  area drawn in that row.
-- JBrowse fetches past the view's edges and builds rows from everything it
-  fetched, so an empty row can come from a repeat just outside the window: the
-  figures' empty `LTR?` row is `MamRep605`, past the right edge.
-- A printed class with no row, or a row with features and no printed line, means
-  the view is showing a different file.
-
-The `Unknown` row is the control. Neither the `rowColor` above nor the
-[cookbook's color lookup](/docs/cookbook#colors) names it, and it appears
-because the rows come from the file. Pan to a window whose output has no
-`Unknown` line and the row goes away.
-
-The `tabix` command above, with `$6` in place of `$7`, counts `repFamily`, the
-finer partition (`L1`, `Alu`, `MIR`).
+The rows come from the classes in the file, so a class `rowColor` leaves out
+still gets a row, as `Unknown` does in the figures. JBrowse also fetches past
+the view's edges, so a row can be empty on screen: the figures' `LTR?` row holds
+a repeat just past the right edge.
 
 ## Serving your own RepeatMasker output
 
@@ -223,9 +188,6 @@ jbrowse sort-bed rmsk.bed | bgzip > rmsk.bed.gz
 tabix -p bed rmsk.bed.gz
 ```
 
-The bed's first seven columns match UCSC's, so the `tabix | awk` check above
-reads the result unchanged.
-
 ## Reproduce it end to end
 
 [`build_repeatmasker_classes.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_repeatmasker_classes.sh)
@@ -245,18 +207,6 @@ npx --yes serve repeatmasker_build/jbrowse2               # then open the printe
 
 `genome.fa` is the FASTA RepeatMasker was run against and `repeats.out` is its
 `.out`; either may be gzipped.
-
-On a genome UCSC also masks, compare the output with the UCSC conversion:
-
-```bash
-curl -o ucsc_rmsk.bed.gz https://jbrowse.org/ucsc/dm6/rmsk.bed.gz
-diff <(gzip -dc repeatmasker_build/rmsk.bed.gz | grep -v '^#' | cut -f1-7 | sort) \
-     <(gzip -dc ucsc_rmsk.bed.gz | grep -v '^#' | cut -f1-7 | sort)
-```
-
-No output means every interval, name, strand, family and class agrees with the
-UCSC conversion. A disagreement usually traces to the `.out` quirks the awk
-comments name.
 
 ## See also
 

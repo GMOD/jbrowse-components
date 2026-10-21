@@ -22,7 +22,6 @@ each over several. We:
 - open it as a dotplot, with one genome's chromosomes sorted by where their
   orthologs sit on the other
 - stack the genomes in a linear synteny view, with ribbons colored by set
-- check the set counts against the odp tables
 
 ## Prerequisites
 
@@ -291,26 +290,9 @@ mapping:
 
 Amphioxus and _Ephydatia_ helped build the group database, so the bundles
 running through them are expected. The cladorhizid sponge took no part, and in
-the bottom band the groups still run to it as bundles.
-
-## Checking the linkage-group counts against the odp tables
-
-To count one group, tally the chromosomes its orthologs sit on in the genome a
-table's file name leads with:
-
-```bash
-# gene_group is column 4; column 5 is the chromosome in the genome the
-# file name leads with, EMU here
-awk -F'\t' 'NR>1 && $4=="A1a" {print $5}' \
-  EMU_RES_xy_reciprocal_best_hits.coloredby_BCnS_LGs.plotted.rbh \
-  | sort | uniq -c | sort -rn
-```
-
-Run the command on another table and group to get the counts behind the stack.
-In _Hormiphora_ (`HCA_RES`), even the chromosome holding the largest share of a
-group holds less than half of it, which is why most of the stack's second band
-is faint. In the cladorhizid (`CLAa_EMU`), most of each group still sits on one
-chromosome.
+the bottom band the groups still run to it as bundles. The second band is mostly
+faint because _Hormiphora_ spreads each group over several chromosomes, none
+holding even half of it.
 
 ## Reproduce it end to end
 
