@@ -53,7 +53,24 @@ export function sessionSchemaProblems(list: ScreenshotSpec[]) {
     if (!decoded) {
       return []
     }
-    const { views = [], sessionTracks = [] } = decoded.spec
+    const { config, spec } = decoded
+    const { views = [], sessionTracks = [] } = spec
+    // an entry naming no display is checked against the one it opens as
+    for (const { entry, viewType } of viewTrackEntries(views)) {
+      if (
+        typeof entry !== 'string' &&
+        viewType !== undefined &&
+        specDisplayType(entry) === undefined
+      ) {
+        const opened = defaultDisplay(
+          lookupTrack(config, entry.trackId, sessionTracks),
+          viewType,
+        )
+        if (opened) {
+          entry.type = opened
+        }
+      }
+    }
     return [
       ...sessionTrackProblems(sessionTracks).map(
         p => `${where}: sessionTracks: ${p.where}: ${p.message}`,
