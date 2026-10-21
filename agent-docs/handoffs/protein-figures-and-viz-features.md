@@ -29,15 +29,19 @@ as few and as short red callouts as possible, nothing the reader must decode.
 
 ## Next, in order
 
-1. **Color a structure from a genome track.** The `protein3d` plugin has a
-   placed-value registry (`src/ProteinView/placedValueRegistry.ts`) that feeds
-   `alphaMissense`, `clinvarPathogenicCount` and `domain`; a `track` source
-   (bigWig, mean over the codon's three bases) is not built. An agent started it
-   in a local checkout of the plugin repo and may have committed part of it:
-   check the plugin repo's git log before redoing it. Target: `brca1_sge` with
-   the structure colored by `BRCA1.sge.residue_mean.bw` at the published
-   thresholds (-1.328, -0.748; loss of function is negative). Needs a
-   fixed-threshold ramp, a direction flag and a legend. Conservation coloring is
+1. **Merge, release and use the per-residue color.** Built and committed in
+   the `protein3d` plugin repo, in a local checkout that is neither merged nor
+   released (find it by the plugin repo's git log: `color.field: 'track'` and
+   `'values'`, a "Genome track..." palette entry, tests, `docs/per-residue-values.md`;
+   typecheck, lint and 571 tests pass; the menu dialog was not clicked in a
+   browser). Then rebuild `brca1_sge` with the structure colored by
+   `BRCA1.sge.residue_mean.bw` as a threshold scale at -1.328 and -0.748 (loss
+   of function is negative; there is no direction flag, so order `range`
+   red, orange, pale blue). The figure session keeps `userProvidedTranscriptSequence`
+   on the structure, drops the MsaView for load time, and the captured URL must
+   stay short. Captures need a local plugin build until the release. The same
+   feature serves gnomAD, deep mutational scan and AlphaMissense-as-track
+   colorings once those are hosted as bigWigs. Conservation coloring is
    rejected: it says "conserved" for nearly every exon.
 2. **Surface, distance dashes, neighborhood sticks, camera, RMSD readout.**
    Nothing exists: the agent stopped before writing code. They are Mol* runtime
