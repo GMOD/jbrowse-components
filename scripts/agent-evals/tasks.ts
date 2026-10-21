@@ -748,7 +748,8 @@ TASKS.push(
       'In hg38 at BRCA1, show the genes and the common population variants.',
     grade: `${BRCA1}
       const variants = ids.filter(i => /^hg38-dbSnp\\d+Common$/.test(i))
-      return { pass: !!view && ids.includes('hg38-ncbiRefSeqCurated') && variants.length > 0, detail: { regions, ids } }`,
+      const genes = ids.some(i => /^hg38-(ncbiRefSeq\\w*|knownGene|ensGene)$/.test(i))
+      return { pass: !!view && genes && variants.length > 0, detail: { regions, ids } }`,
   },
   {
     name: 'hs-cftr-tracks',
@@ -758,7 +759,8 @@ TASKS.push(
     grade: `${CFTR}
       const hasSnps = ids.some(i => /^hg38-dbSnp\\d+Common$/.test(i))
       const hasTfbs = ids.some(i => /^hg38-jaspar\\d{4}$/.test(i))
-      return { pass: !!view && ids.includes('hg38-ncbiRefSeqCurated') && hasSnps && hasTfbs, detail: { regions, ids } }`,
+      const hasGenes = ids.some(i => /^hg38-(ncbiRefSeq\\w*|knownGene|ensGene)$/.test(i))
+      return { pass: !!view && hasGenes && hasSnps && hasTfbs, detail: { regions, ids } }`,
   },
   {
     name: 'hs-phylop-scale',
