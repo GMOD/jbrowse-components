@@ -30,7 +30,7 @@ import { fileURLToPath } from 'node:url'
 import { servePageBridge } from './pageBridge.ts'
 import { BASELINE_SPEC, selectTasks } from './tasks.ts'
 
-import type { TaskSet } from './tasks.ts'
+import type { EvalTask, TaskSet } from './tasks.ts'
 
 const repoRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -202,7 +202,8 @@ const cwd = fs.mkdtempSync(
   path.join(os.tmpdir(), 'jbrowse-web-agent-eval-cwd-'),
 )
 const bridge = await servePageBridge(buildDir)
-const appUrl = `${bridge.url}?config=${CONFIG}`
+const appUrlFor = (task: EvalTask) =>
+  `${bridge.url}?config=${task.config ?? CONFIG}`
 console.log(`serving ${buildDir} at ${bridge.url}`)
 
 if (!deviceId) {
@@ -213,13 +214,15 @@ if (!deviceId) {
 const guide = withGuide
   ? `\n\n# Reference for the jb library\n${fs.readFileSync(path.join(repoRoot, 'website/docs/agents_live_model.md'), 'utf8')}`
   : ''
-const systemPrompt = `You are driving JBrowse Web, a genome browser, through the Claude in Chrome tools. The JBrowse tab is already open at ${appUrl} in the only connected browser, whose deviceId is ${deviceId}: call select_browser with it before the first browser action and do not ask which browser to use. The page exposes a helper library on window.jb; evaluate jb.help for the contract, then orient with jb.sessionSummary(). javascript_tool returns the last expression of the code you pass. Do the task, verify the result, then reply with one line. Do not ask questions; do not open other sites.${guide}`
+const systemPromptFor = (appUrl: string) =>
+  `You are driving JBrowse Web, a genome browser, through the Claude in Chrome tools. The JBrowse tab is already open at ${appUrl} in the only connected browser, whose deviceId is ${deviceId}: call select_browser with it before the first browser action and do not ask which browser to use. The page exposes a helper library on window.jb; evaluate jb.help for the contract, then orient with jb.sessionSummary(). javascript_tool returns the last expression of the code you pass. Do the task, verify the result, then reply with one line. Do not ask questions; do not open other sites.${guide}`
 
 // The tab the agent drove is reloaded at the config so every task starts from
 // the same page; a tab the agent left on another origin has no bridge to
 // reload through, so a new one is opened beside it. Either way the reset
 // waits for a load newer than itself, never for a fixed sleep.
-async function resetPage() {
+async function resetPage(task: EvalTask) {
+  const appUrl = appUrlFor(task)
   const before = Date.now()
   const page = bridge.current()
   if (page) {
@@ -239,7 +242,9 @@ async function resetPage() {
      return true`,
     70_000,
   )
-  await evaluateLive(BASELINE_SPEC, 120_000)
+  if (!task.config) {
+    await evaluateLive(BASELINE_SPEC, 120_000)
+  }
 }
 
 // The page polls between jobs, so a call right after a long job finds no live
@@ -270,7 +275,7 @@ const metrics: RunMetrics[] = []
 try {
   for (const task of tasks) {
     for (let run = 1; run <= runs; run++) {
-      await resetPage()
+      await resetPage(task)
       if (task.setup) {
         await evaluateLive(task.setup, 120_000)
       }
@@ -278,7 +283,12 @@ try {
         'DATA',
         bridge.url.replace(/\/$/, ''),
       )
-      const events = await claudeChrome(prompt, systemPrompt, cwd, 40)
+      const events = await claudeChrome(
+        prompt,
+        systemPromptFor(appUrlFor(task)),
+        cwd,
+        40,
+      )
       const counted = count(events)
       let verdict: { pass: boolean; detail: unknown }
       try {
