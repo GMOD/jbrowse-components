@@ -80,9 +80,21 @@ blinded ideator given only a capability sheet, a landscape survey):
 
 ## Next
 
-1. **Colin's read of the three-panel Y220C.** If it is the hero, a grant
-   version could add the scan painted on the wild-type surface (with a key
-   saying "effect of changing each residue") and drop the transcript track.
+1. **Colin's pick among the cause figures.** He liked the three-panel Y220C
+   and asked for more options. Three prototypes, unlanded, on the same recipe
+   (sessions and PNGs in `/var/tmp/hero2/shots/`, contact sheet
+   `/var/tmp/hero2/candidates.png`):
+   - **KRAS G12C** (`kr_d`, `build_three.py kras.json`): 4OBE Gly12, 4LDJ
+     Cys12, 6OIM with sotorasib bonded to Cys12 in a pocket closed in the
+     other two; a track of the six codon-12 single-base changes.
+   - **HBB E6V** (`hb_j`, `build_hbb.py`): 2HHB Glu6 with nothing beside it;
+     2HBS Val6 of one tetramer in the Phe85/Leu88 pocket of the next, as
+     cartoon with sphere marks (opaque surfaces hide the contact).
+   - **TP53 zinc** (`zn_b`, `build_zinc.py`): exons 5 and 7 as two regions,
+     Cys176, His179, Cys238 and Cys242 around one zinc in 3KMD. The weakest:
+     the scan is red across the whole stretch, so the four codons do not
+     stand out, and no structure shows a mutant.
+   - R273H was dropped: no R273H crystal with DNA except with a suppressor.
 2. **The painted fold as a supporting layer, not the subject**: a variant pair
    whose wild type is painted by the scan says both what the residue does and
    that the whole map agrees, if the key says what the color means.
