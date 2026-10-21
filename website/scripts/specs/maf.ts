@@ -6,10 +6,6 @@ import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// hg38 NCBI RefSeq (UCSC hub build, jbrowse.org/ucsc/hg38) as a session track —
-// reviewer's preferred gene track over the MANE bigBed in a few figures.
-// geneGlyphMode: 'longestCoding' on the display collapses isoforms the way
-// MANE Select did.
 export const HG38_NCBI_GENE_TRACK = {
   type: 'FeatureTrack',
   trackId: 'ncbi_genes_hg38_ucsc',
@@ -31,29 +27,18 @@ export const HG38_NCBI_GENE_TRACK = {
   },
 }
 
-// Thin local config wiring the ce11 assembly + the real UCSC ce11 26-way multiz
-// MAF (data hosted on jbrowse.org/demos/ce + UCSC) to the *built-in* MAF
-// support. The jbrowse.org/demos/ce config itself loads the old external
-// mafviewer UMD plugin, which would shadow the built-in conservation band and
-// trip the cross-origin-plugin trust dialog — so a local config path is used to
-// render with the local build's code instead.
+// A local config: the jbrowse.org/demos/ce config loads the external
+// mafviewer plugin, which shadows the built-in MAF display.
 export const CE_MAF = 'test_data/ce_maf.json'
 
-// Same ce11 26-way MAF, plus an `annotationAdapter` sub-adapter (a local bigBed
-// built from the real UCSC ce11 multiz26wayFrames data) on the MAF adapter, so
-// the per-species CDS reading-frame overlay + codon view render.
+// Adds an `annotationAdapter` built from UCSC multiz26wayFrames, which
+// drives the CDS reading-frame overlay and codon view.
 export const CE_MAF_FRAMES = 'test_data/ce_maf_frames.json'
 
-// UCSC hg38 470-way multiz (Zoonomia + more) config.
 export const HG38_470WAY = 'test_data/hg38_multiz470way.json'
 
-// A representative ~30-species slice of the hg38 470-way spanning the major
-// mammalian clades (primates, rodents+glires, laurasiatheria, afrotheria,
-// xenarthra) plus opossum and platypus as marsupial/monotreme outgroups — close
-// to the classic UCSC "30-way vertebrate" sampling. Exact leaf names from
-// hg38.470way.nh (the Cactus alignment uses HL-prefixed names for many
-// assemblies). Used as the focus, `rows.kept`; the pruned guide tree then
-// reads as a clean ~30-leaf dendrogram instead of the full 470-species tree.
+// About 30 species across the mammalian clades, for `rows.kept`. Many
+// leaf names in hg38.470way.nh carry an `HL` prefix.
 export const HG38_470WAY_30 = [
   'hg38', // human
   'panTro6', // chimp
@@ -88,11 +73,8 @@ export const HG38_470WAY_30 = [
   'HLornAna3', // platypus
 ]
 
-// MANE Select (v1.4, RefSeq/NCBI) as a session track: one curated transcript
-// per gene, so the GAPDH exon/CDS structure lines up above the 470-way heatmap
-// without the isoform clutter of the full RefSeq set. The hg38 assembly in the
-// 470way config carries refNameAliases, so this chr-named BigBed aligns to the
-// numeric ('12') MAF refnames.
+// The 470way config's refNameAliases map this chr-named bigBed onto the
+// MAF's numeric refnames.
 const HG38_MANE_TRACK = {
   type: 'FeatureTrack',
   trackId: 'mane_hg38',
@@ -107,13 +89,6 @@ const HG38_MANE_TRACK = {
   },
 }
 
-// maf_470way swaps in HG38_NCBI_GENE_TRACK (jbrowse.org/ucsc/hg38 hub build)
-// below, in place of the MANE bigBed — per reviewer ask. Same chr-named
-// refnames resolved via the 470way config's refNameAliases.
-
-// ce11 NCBI RefSeq (curated) genes as a session track (hosted at jbrowse.org/ucsc,
-// generated from UCSC), so the C. elegans maf figures carry gene context. Chrom
-// names are chrI/chrII/... matching the maf's roman-numeral refnames.
 const CE11_GENE_TRACK = {
   type: 'FeatureTrack',
   trackId: 'ce11_ncbi_refseq',
@@ -135,16 +110,10 @@ const CE11_GENE_TRACK = {
   },
 }
 
-// The rows maf_hprc_pangenome draws, out of the alignment's 464. Sixteen
-// samples, both haplotypes each, in the order the callset lists them, plus the
-// reference. Not a curated set: nothing about C4 picks these, and saying "the
-// first sixteen" is honest where "a representative selection" would not be.
-//
-// `<sample>.<haplotype>` is what the display calls a row here. The TAF's source
-// tokens are `HG00235.2.CM094400.1` and parseAssemblyAndChr keeps a numeric
-// second field with the genome, so the haplotype is part of the row name and
-// the contig is the rest. The sample ids come from the wave VCF's own header
-// (the same 232 samples), not from a hand-typed list.
+// The first sixteen samples in callset order, both haplotypes each, plus
+// the reference. parseAssemblyAndChr keeps the numeric second field of
+// `HG00235.2.CM094400.1` with the genome, so a row is
+// `<sample>.<haplotype>`.
 const HPRC_MAF_ROWS = [
   'GRCh38',
   'CHM13.1',
@@ -181,48 +150,24 @@ const HPRC_MAF_ROWS = [
   'HG00321.2',
 ]
 
-// The C4 window maf_hprc_pangenome opens. It is pangenome/hprc_graph_anatomy's
-// window, so part 2's graph is the cut part 1 labels.
+// pangenome/hprc_graph_anatomy opens the same window; keep the two equal.
 const HPRC_C4_LOCUS = 'chr6:31,980,000-32,050,000'
 
-// CYP21A1P and TNXA, the pseudogene pair of the second RCCX module. Marked
-// because it is the span the alignment rows disagree about: read off the drawn
-// figure, seven of the thirty-two haplotypes have no aligned sequence there,
-// one each of HG00099, HG00280, HG00290, HG00320 and HG00321 and both of
-// HG00146. A band there crosses the genes, the callset and the alignment in
-// one column.
+// CYP21A1P and TNXA: the span where several alignment rows have no
+// sequence. C4A and C4B already carry labels in the gene lane.
 const HPRC_C4_MARKED = 'chr6:32,005,691-32,011,057'
 
-// The alignment itself, as a session track over the graph config: the fixture
-// the graph figures load carries the graph, the callset and the genes, and the
-// MAF is the one product of release 2 it has no track for.
 const HPRC_MAF_TRACK = pageTrack(
   'tutorials/pangenome_hprc.md',
   'hprc_v2_1_mc_grch38',
 )
 
-// HPRC's per-allele VCF (pgbi) at the graph's own size, 50 bp and up. One
-// record is one whole allele, so the C4 module deletion is a single record
-// (REF 32,738 bp at chr6:31,996,629, 154 of 462 haplotypes) and the HERV-K
-// deletion that makes a C4 gene short is one record per gene (6,368 bp at
-// 31,984,685 in C4A and 32,017,423 in C4B). Every alignment row the band shows
-// white has the module deletion in this file; read off the file for the
-// sixteen samples below, nine more of their haplotypes have it and still align
-// across the band. The wave VCF drew this window blank under its LV==0 clause,
-// since every record here nests under one parent with no record of its own.
+// The pgbi VCF holds one record per whole allele. The wave VCF draws this
+// window blank: every record here nests under one parent (LV==0).
 const HPRC_PGBI_ALLELES = ['jexl:alleleLength(feature)>=50']
 
-// The 26-way alignment's rows minus `ce11` itself, for the two figures that
-// show the whole stack (review: "consider removing the ce11 row"). The
-// reference is one of the MAF's own `s` lines, so it draws as a row — and under
-// mismatch rendering a sequence against itself has no mismatches, so that row is
-// a solid grey band that reads as a broken lane rather than as the reference.
-// The focus, `rows.kept`, is the display's own "show these leaves" mechanism
-// and prunes the guide tree to match (pruneNewickToLeaves), so the dendrogram
-// beside the rows stays the tree of what is drawn. Left alone in maf_codon_tooltip, where
-// the reference codon row is what the tooltip is compared against.
-//
-// Names are the leaf labels of test_data/ce11.26way.nh, in its order.
+// Drops `ce11`: under mismatch coloring the reference row draws as a solid
+// grey band. Names follow test_data/ce11.26way.nh.
 const CE11_26WAY_NON_REFERENCE = [
   'caePb3',
   'caeRem4',
@@ -253,37 +198,22 @@ const CE11_26WAY_NON_REFERENCE = [
 
 export const mafSpecs: ScreenshotSpec[] = [
   {
-    // The UCSC ce11 26-way multiz alignment (real cross-species nematode data):
-    // the coverage band on top, then one row per aligned species (guide tree on
-    // the left from the track's .nh), zoomed in enough to read bases — each
-    // colored where a species differs from the reference. Remote 26-way data is
-    // slow to fetch + render, so the settle is long.
     mode: 'url',
     name: 'maf_track',
     url: sessionSpec(CE_MAF, {
-      // gene context above the alignment: the ce11 RefSeq gene lane so the
-      // conserved coding blocks line up with the per-species mismatch columns
       sessionTracks: [CE11_GENE_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'ce11',
-          // wider window (~6kb) so the per-species mismatch columns read as a
-          // conservation pattern under the genes, not just a handful of bases
           loc: 'chrI:2,997,000-3,003,000',
           tracks: [
             {
               trackId: 'ce11_ncbi_refseq',
-              // grow mode: the gene lane expands to show every transcript row
-              // rather than scrolling, so the full dnj-28 / nduf-5 structure
-              // sits above the alignment
               heightMode: 'grow',
             },
             {
               trackId: 'ce11.26way',
-              // Compact preset (rowHeight 8, rowProportion 0.9): a fixed small
-              // per-row height so all 26 species fit without scrolling and the
-              // conservation banding reads as one texture
               rowHeight: 8,
               alignments: { rowProportion: 0.9 },
               rows: { kept: CE11_26WAY_NON_REFERENCE },
@@ -297,19 +227,11 @@ export const mafSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 640,
     tooltip: 'hide',
-    // park the cursor in the nav bar so no coverage-band hover tooltip lingers
-    // over the capture
     actions: [PARK_CURSOR],
   },
   {
-    // Codon-view hover tooltip: in the per-species codon translation, hovering a
-    // codon cell reads out the species codon + amino acid alongside the reference
-    // codon + amino acid and the syn/nonsyn classification, so a specific change
-    // is identifiable rather than inferred from the cell color.
     mode: 'url',
     name: 'maf_codon_tooltip',
-    // the tooltip IS the figure here, so the run should complain if it ever
-    // stops appearing rather than quietly capturing the frame without it
     tooltip: 'expect',
     url: sessionSpec(CE_MAF_FRAMES, {
       sessionTracks: [CE11_GENE_TRACK],
@@ -321,9 +243,6 @@ export const mafSpecs: ScreenshotSpec[] = [
           trackLabels: 'offset',
           colorByFrame: true,
           tracks: [
-            // compact gene lane, collapsed to the longest coding transcript, so
-            // the dnj-28 / nduf-5 CDS context sits above the codon translation
-            // without pushing the rows far down
             {
               trackId: 'ce11_ncbi_refseq',
               displayMode: 'compact',
@@ -340,25 +259,13 @@ export const mafSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chrI',
     readyTimeout: 90000,
-    // wider capture so more of the codon alignment is visible (reviewer)
     viewportWidth: 1250,
-    // tall enough for the whole 470px display: at 640 the frame cut the last
-    // species row in half, which reads as a rendering fault rather than as a
-    // list that continues. Raised from 780 when the height above was fixed —
-    // it had been spelled `heightOverride`, a dead key silently dropped, so the
-    // display was capturing at its fit-to-content height rather than at 470.
+    // Below 810 the frame clips the last species row.
     viewportHeight: 810,
     actions: [
-      // an ORANGE cell in a non-reference row. The hover used to land on the
-      // ce11 row, which is the reference: its tooltip necessarily reads
-      // "Change: none", so the figure demonstrated the readout on the one case
-      // where there is nothing to read. This is caePb3's S -> L against it.
-      //
-      // Both halves of that come off the figure itself rather than off a
-      // viewport point: the tooltip in the committed capture names the codon
-      // (chrI:2,999,247), and caePb3 is the second species row, 68px down from
-      // the display's top edge — the rows are 16px apart under a ~50px coverage
-      // summary, so this is the row and not the gap above or below it.
+      // caePb3's S -> L codon. The ce11 row is the reference, whose tooltip
+      // reads "Change: none". dy 68 lands on the second species row: 16px
+      // rows under a ~50px coverage band.
       {
         type: 'hover',
         anchor: {
@@ -372,12 +279,6 @@ export const mafSpecs: ScreenshotSpec[] = [
     ],
   },
   {
-    // Color-by-source-chromosome SV mode on the 26-way alignment: each species'
-    // alignment blocks are filled by a stable color of their source chromosome
-    // (MCGV "color by chromosome"), so a row drawing from more than one source
-    // chromosome changes color — a translocation/rearrangement flag with no
-    // extra fetch. A compact legend (top-right) maps each visible source
-    // chromosome to its color.
     mode: 'url',
     name: 'maf_color_by_chromosome',
     url: sessionSpec(CE_MAF_FRAMES, {
@@ -390,15 +291,11 @@ export const mafSpecs: ScreenshotSpec[] = [
           trackLabels: 'offset',
           tracks: [
             {
-              // gene context: the source-chromosome recoloring spans these ce11
-              // genes (supr-1 / dnj-28 / nduf-5); grow mode expands the lane to
-              // show every transcript row
               trackId: 'ce11_ncbi_refseq',
               heightMode: 'grow',
             },
             {
               trackId: 'ce11.26way',
-              // Compact preset so all 26 species fit without scrolling
               rowHeight: 8,
               alignments: { rowProportion: 0.9 },
               color: 'chromosome',
@@ -411,18 +308,11 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyText: 'chrI',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    // taller frame so all 26 compact rows + the grow-mode gene lane sit inside
     viewportHeight: 640,
     tooltip: 'hide',
     actions: [PARK_CURSOR],
   },
   {
-    // Dense comparative view: the UCSC hg38 470-way multiz (mammals + more), all
-    // ~470 species at once over the GAPDH gene with the per-row identity heatmap
-    // pinned on (red = divergent, blue = conserved). The coding exons light up as
-    // conserved blue bands across the whole phylogeny while the introns stay red
-    // — genome-scale conservation read at a glance. Remote UCSC data, generous
-    // timeout.
     mode: 'url',
     name: 'maf_470way',
     url: sessionSpec(HG38_470WAY, {
@@ -431,19 +321,11 @@ export const mafSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          // a focused ~700bp window over a few GAPDH exons rather than the whole
-          // gene: at 470 rows the full-gene view is an unreadable wall, so
-          // narrowing widens each alignment column enough that the conserved
-          // (blue) exon bands and divergent (red) intron columns are legible
+          // At 470 rows a whole-gene window reads as a wall; keep it to a few
+          // exons.
           loc: '12:6,536,700-6,537,400',
           trackLabels: 'offset',
           tracks: [
-            // NCBI RefSeq gene track on top (longest-coding transcript only):
-            // the exon/CDS structure of GAPDH lines up with the conserved
-            // (blue) coding bands in the heatmap below. `genes: 'only'` drops
-            // the individual transcript features (each drawn under its own
-            // UUID id, since GAPDH has several isoforms here) down to one
-            // gene-level glyph per locus (reviewer).
             {
               trackId: 'ncbi_genes_hg38_ucsc',
               geneGlyphMode: 'longestCoding',
@@ -451,12 +333,8 @@ export const mafSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hg38.multiz470way',
-              // fit-to-display-height: the `height` config slot pins the whole
-              // display to 600px while rowHeight stays at its default 0 (fit
-              // mode), so all ~470 rows squeeze into 600px at ~1px each. Rows go
-              // sub-pixel but the conserved/divergent banding still reads as a
-              // texture, and the whole phylogeny is visible at once instead of
-              // scrolling off. The top-right legend names the red/blue ramp.
+              // rowHeight stays at its default 0, which fits every row into
+              // this height.
               height: 600,
               color: 'identity',
               rowIdentityAutoZoom: false,
@@ -468,25 +346,10 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyText: '6,53',
     readyTimeout: 120000,
     viewportWidth: 1100,
-    // tall enough that the whole 600px fit-to-height display + the view header
-    // sit inside the frame with no scroll-off
     viewportHeight: 940,
     tooltip: 'hide',
   },
   {
-    // The hg38 470-way narrowed to a representative ~30 mammals (`rows.kept`,
-    // HG38_470WAY_30) in codon view over a conserved GAPDH exon: each species'
-    // coding sequence is translated in the human reading frame, so conserved
-    // residues line up and the few amino-acid changes in the more distant
-    // species stand out. With the tree-pruning fix the guide tree on the left is
-    // the pruned ~30-leaf dendrogram (not the full 470-species tree). Chromosome-
-    // level human reference reads far cleaner than a fragmented scaffold MAF.
-    //
-    // The conservation band on top is in codon mode (`conservationMode: 'codon'`):
-    // each bar is the fraction of species whose *amino acid* matches the human
-    // reference, so synonymous (silent) 3rd-position changes read as conserved and
-    // the profile tracks protein-level constraint rather than nucleotide drift —
-    // exactly the metric a coding alignment calls for.
     mode: 'url',
     name: 'maf_470way_codon',
     url: sessionSpec(HG38_470WAY, {
@@ -497,25 +360,10 @@ export const mafSpecs: ScreenshotSpec[] = [
           assembly: 'hg38',
           trackLabels: 'offset',
           colorByFrame: true,
-          // window trimmed to sit fully inside one GAPDH coding exon: the
-          // original ran a few bp past the exon 3' end, so the species that have
-          // no aligned block there drew empty "bridge" e-lines on the right that
-          // read as artifacts. The codon view is now gap-free across the window:
-          // reviewers earlier saw blank columns spanning every row (reference
-          // included) where a reference codon's three bases straddle a MAF
-          // alignment-block boundary — those codons were dropped
-          // (computeVisibleCodons required all three in one block) while the
-          // block-agnostic per-base coverage stayed continuous.
-          // computeVisibleCodons/computeCodonConservation now stitch a codon
-          // across blocks (locateCodon resolves each base to whichever block
-          // holds it), so the codon layer lines up with the coverage band above.
+          // Stays inside one GAPDH coding exon: past its 3' end, rows with no
+          // aligned block draw empty bridge lines.
           loc: '12:6,536,485-6,536,590',
           tracks: [
-            // MANE gene track: confirms the window sits inside a GAPDH coding
-            // exon and lines the CDS up with the per-codon translation below.
-            // Compact + a pinned height: one MANE transcript needs one row,
-            // not the default display's reserved multi-row space (reviewer:
-            // reduce height of gene track).
             {
               trackId: 'mane_hg38',
               displayMode: 'compact',
@@ -523,9 +371,6 @@ export const mafSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hg38.multiz470way',
-              // fit-to-display-height, shrunk from 560: the ~30 filtered rows
-              // still fill the track tall enough to read the per-codon amino
-              // acids at a more compact per-row height (reviewer).
               height: 460,
               color: 'codon',
               conservation: { show: true, unit: 'codon' },
@@ -538,41 +383,24 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyText: '6,536,5',
     readyTimeout: 120000,
     viewportWidth: 1000,
-    // gene lane(40) + coverage/conservation bands + ~30 fitted rows at the
-    // shrunk display height. Lowered from 830 when the height above was fixed —
-    // it had been spelled `heightOverride`, a dead key silently dropped, so the
-    // display had been taller than the 460 the spec asked for.
     viewportHeight: 765,
     tooltip: 'hide',
     actions: [PARK_CURSOR],
   },
 
-  // The two halves of the summary tier, on one track at two zooms. Same
-  // session, same ~30 mammals, same region centre — only the width changes, so
-  // the figure isolates what the `summaryAdapter` does rather than confounding
-  // it with a different locus or a different species set. Both parts pin
-  // `height` and `rows.kept` identically, so the two panels stack at the
-  // same width with the same species on the same lines.
-  //
-  // Each half carries its own label. A compose has no annotation layer — the
-  // parts are captured separately and `-append`ed — so without one the stack is
-  // two near-identical browser frames whose only difference is the ruler text,
-  // which is not a before/after a reader can see at a glance.
+  // One display spec at two zooms, so only the summary tier differs. A
+  // compose has no annotation layer, so each part carries its own label.
   ...(
     [
       [
         'maf_summary_zoomed_out',
-        // ~180kb, past the 20kb force-load floor. That floor is exactly where
-        // the full alignment fetch is blocked and where `showSummary` hands the
-        // rows to the summary file instead: one bar per species per aligned
-        // run, no sequence fetched at all.
+        // Must stay past the 20kb force-load floor, where `showSummary` takes
+        // over.
         '12:6,450,000-6,630,000',
         'Zoomed out (180 kb): one bar per species, from the summary file',
       ],
       [
         'maf_summary_zoomed_in',
-        // the same track ~900x closer, inside a GAPDH exon, where the alignment
-        // itself is affordable and the rows resolve into per-base cells
         '12:6,537,000-6,537,200',
         'Zoomed in (200 bp): the alignment itself, one cell per base',
       ],
@@ -598,15 +426,8 @@ export const mafSpecs: ScreenshotSpec[] = [
               trackId: 'hg38.multiz470way',
               height: 380,
               rows: { kept: HG38_470WAY_30 },
-              // Needed by both halves, for different reasons, which is fitting
-              // since they are deliberately one display spec at two zooms. The
-              // 200bp half is below the 20kb floor, where the byte gate is live
-              // anyway (it has none — `gateActive`) and a 470-way alignment
-              // is over the cap at any span. The 180kb half is in summary mode, which is
-              // gated too now — against the summary file rather than the
-              // alignment (`byteGateAdapterConfig`) — and a 470-way summary over
-              // 180kb is a lot of per-species runs. Either way the banner would
-              // replace exactly what the figure exists to show.
+              // Both halves exceed the byte gate: the alignment at 200bp, the
+              // summary file at 180kb. The gate banner would replace the figure.
               forceLoad: true,
             },
           ],
@@ -615,12 +436,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     }),
     readyText: '12',
     readyTimeout: 120000,
-    // the two halves sit side by side (reviewer), so each is narrower and
-    // shorter than it was as a stacked pair: 1000x800 twice over was a
-    // 4000px-wide figure
     viewportWidth: 780,
-    // sized off the run's own CLIPPED/blank report, not off the PNG: 800 was
-    // right for the 460px display, and the display is 380 now.
     viewportHeight: 745,
     tooltip: 'hide',
     annotations: [
@@ -628,8 +444,6 @@ export const mafSpecs: ScreenshotSpec[] = [
         type: 'text' as const,
         text: label,
         fontSize: 20,
-        // bottom-left of the track band, `dx` clear of the tree sidebar and its
-        // species names.
         anchor: {
           trackId: 'hg38.multiz470way',
           alignX: 'left' as const,
@@ -643,97 +457,20 @@ export const mafSpecs: ScreenshotSpec[] = [
   {
     mode: 'compose',
     name: 'maf_summary_tier',
-    // side by side (reviewer): the two panels are the same track at two zooms,
-    // and stacked the second read as the next step rather than the alternative
     columns: 2,
     parts: ['maf_summary_zoomed_out', 'maf_summary_zoomed_in'],
   },
 
-  // HPRC release 2's minigraph-cactus multiple alignment, read straight off the
-  // human-pangenomics bucket by BgzipMafAdapter: a 53 GB MAF plus its taffy
-  // .tai, no conversion step and no local copy.
+  // HPRC release 2.1's minigraph-cactus MAF, read remotely. v2.0's TAF is
+  // cheaper but predates the v2.1 graph and callsets on this page.
   //
-  // v2.0's 5.96 GB TAF is cheaper to read, but it is an earlier cactus run, and
-  // the graph and the callsets on this page are v2.1.
+  // The window, the README's C4 module, fetches 3.50 MB against the 5 MB
+  // default; past ~123 kb of view the MAF exceeds it. Narrowing it drops
+  // C4B, and the caption is about copy number across C4A and C4B.
   //
-  // The MAF costs reads. Measured through queryBlockSpan over the buffered
-  // region the fetch uses (the view plus half a screen each side): the window
-  // below is 3.50 MB against the TAF's 425 KB, both inside the display's 5 MB
-  // default, so no fetchSizeLimit. What it costs is range — the alignment tier
-  // first exceeds that default at ~123 kb of view against the TAF's ~632 kb.
-  //
-  // The locus is C4, which is the example HPRCv2's own README reaches for, and
-  // the window is the README's own: GRCh38#0#chr6:31972057-32055418. It used to
-  // be narrowed to a 30 kb C4A/CYP21A1P core "so the fetch stays sane", which
-  // was a guess and a costly one — C4A is chr6:31,982,057-32,002,681 and C4B is
-  // chr6:32,014,795-32,035,418, so the narrow window held C4A alone while the
-  // figure's whole claim (and its caption) is about copy number ACROSS C4A and
-  // C4B. On the MAF the read tracks span rather than landing in whole blocks
-  // the way the TAF's did, so widening to the full module costs 1.47 MB -> 3.50
-  // MB at the gate — still inside the 5 MB default, and the figure's claim does
-  // not survive the narrow window at any price. C4A/C4B are copy-number
-  // variable in humans, so the thing to see is not phylogeny — every row is a
-  // human — but which haplotypes carry which copies. The 470-way figures above
-  // are the contrast: a missing row there means a species diverged past
-  // alignment, here it means a person does not have that segment.
-  //
-  // THE UCSC NCBI RefSeq SET, NOT MANE, AND THE REASON IS THE LABELS (review:
-  // "need to use ncbi gene track, this has NM_ transcriptid instead of gene
-  // symbols"). The MANE bigBed's `name` field is the RefSeq transcript
-  // accession, so the lane over the C4 module read NM_007293.3, NM_001002029.4,
-  // NM_000500.9 — the module's own genes, spelled in a namespace nobody reads
-  // the figure in. The GFF3 set names features by symbol, so the same lane now
-  // reads C4A, CYP21A1P, TNXA, C4B, CYP21A2, TNXB, which is the vocabulary the
-  // caption and the surrounding prose already use.
-  //
-  // It was MANE for a real reason and that reason is now handled rather than
-  // avoided: the RefSeq set does carry every recombination sub-region here, and
-  // in grow mode they filled the figure. Over this window
-  // (`tabix hg38.gff.gz NC_000006.12:31972057-32055418`) that is 24
-  // non_allelic_homologous_recombination_region, 10 enhancer, 9
-  // nucleotide_motif, 9 biological_region and 5 meiotic_recombination_region
-  // against 6 genes and 3 pseudogenes. `genes: 'only'` admits gene/pseudogene/
-  // transcript/container/CDS types and nothing else (featureAdmission.ts), so
-  // the nine are all that reach the lane; `longestCoding` keeps each of them to
-  // one glyph. Same pair maf_470way already uses on the same track.
-  //
-  // The GFF3's refNames are RefSeq accessions (NC_000006.12), which is why this
-  // works at all: the hg38 both fixture configs carry has the standard
-  // hg38_aliases.txt, whose chr6 row lists NC_000006.12, so a `chr6:` locus and
-  // the track's own contig resolve to the same thing.
-  //
-  // FOUR STATEMENTS ABOUT ONE 83 KB, which is the whole reason this session is
-  // built on the graph fixture rather than on the two-track `hprc_maf.json` it
-  // used to load. The alignment on its own draws grey rows with white in them
-  // and cannot say what the white IS: reviewed as "the maf alone doesnt tell
-  // whole story ... need multiple complementary visualizations". So the lanes
-  // around it are the other products of the same release, on one axis:
-  //
-  //   genes          C4A, CYP21A1P, TNXA, C4B, CYP21A2 -- the RCCX module
-  //   VCF            462 haplotypes clustered by genotype
-  //   alignment      32 of those haplotypes as rows of sequence, clustered
-  //   graph          the same window cut as a Bandage drawing
-  //
-  // A 1000 Genomes copy-number lane was here for one round and came out
-  // (review: "the copy number can likely be removed, it is confusing, small
-  // number of samples"). Fourteen rows of QuicK-mer2 depth beside 464 of
-  // genotype and 32 of alignment read as a third cohort rather than as a
-  // measurement of the same one. What it could say and nothing else here can --
-  // an extra tandem module collapses onto its own reference span, so a
-  // haplotype carrying two draws the same grey row as one, and gains show only
-  // in depth -- is in agent-docs/reference/HPRC_RELEASE2.md with the check that
-  // was run on it.
-  //
-  // The correspondence between what is left is an EVENT rather than a row: the
-  // graph names the assembly minigraph first took a segment from, the VCF lists
-  // every haplotype's allele, and the two clusterings are
-  // over different matrices, so their row orders are not each other's. One band
-  // marks one span in all of them (HPRC_C4_MARKED) and the reader reads down the
-  // column.
-  //
-  // The band is on CYP21A1P/TNXA rather than on C4A or C4B, which are the genes
-  // the caption names: it is the span the alignment rows drop out over, and C4A
-  // and C4B are already labelled by the gene lane.
+  // The UCSC NCBI RefSeq GFF3 names genes by symbol; the MANE bigBed names
+  // them by NM_ accession. `genes: 'only'` keeps its many recombination
+  // and enhancer regions out of the lane.
   {
     mode: 'url' as const,
     name: 'maf_hprc_pangenome',
@@ -753,9 +490,6 @@ export const mafSpecs: ScreenshotSpec[] = [
               heightMode: 'grow',
             },
             {
-              // Clustered, so the haplotypes with an allele gather into a
-              // block instead of scattering over 462 rows, which in 240 px are
-              // a texture either way; clustering gives the texture edges.
               trackId: 'hprc2_pgbi_grch38',
               variants: { show: true },
               height: 240,
@@ -764,68 +498,19 @@ export const mafSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hprc_v2_1_mc_grch38',
-              // A NAMED SUBSET, and the row height follows from it. Two
-              // reviews pull in opposite directions here and both are right:
-              // 464 rows at 2 px is "unclear what we are looking at. it just
-              // looks like bam or cram", and the identity heatmap that
-              // answered it lost the thing worth keeping -- "I actually liked
-              // it when it was a pileup, but it needs like, row labels, so you
-              // can see that they are individual samples, not super compresse
-              // rowheights. no one can tell what anything is that way."
-              //
-              // Both are satisfiable at once only by drawing fewer rows: a
-              // label needs 6 px (SvgRowLabels' MIN_TEXT_ROW_HEIGHT) and 464
-              // of those is a 2,800 px track. So the base rendering is back,
-              // over the first sixteen samples of the alignment's own order.
-              //
-              // Row names are `<sample>.<haplotype>`: the TAF's source tokens
-              // are `HG00235.2.CM094400.1` and parseAssemblyAndChr takes the
-              // numeric second field as part of the genome. The sample ids are
-              // the callset's, read off the wave VCF's header, which is the
-              // same 232 samples the alignment holds two haplotypes of each.
-              //
-              // GRCh38 first, because it is the row everything else is a
-              // difference from and the focus drops any row it does not
-              // name -- including the reference. CHM13 is listed but never
-              // drawn (its rows are not named that way in this file).
-              //
-              // The filter SELECTS; ordering is `runClustering`'s, below.
+              // A row label needs 6 px (SvgRowLabels' MIN_TEXT_ROW_HEIGHT), so
+              // the figure draws a named subset. The focus drops every row it
+              // does not name, the reference included. No CHM13 row exists
+              // under that name in this file.
               rows: { kept: HPRC_MAF_ROWS },
-              // The rows divide what the bands leave of the track's fixed
-              // height; this gives the 31 rows about 15 px each.
+              // Leaves the 31 rows about 15 px each after the bands.
               height: 530,
-              // CLUSTERED, so the rows read like the callset lane above them
-              // (review: "it would be useful to cluster the hprc samples, so it
-              // looks similar to the multi-sample variant display").
-              //
-              // This display had no clustering until this round -- its tree was
-              // always the adapter's guide phylogeny, and HPRC's TAF ships none
-              // -- so the rows came out in the alignment's own discovery order,
-              // which put a sample's two haplotypes in unrelated places and
-              // scattered the dropouts through the stack. The run is
-              // `LinearMafClusterIdentityMatrix`: per-bin identity to GRCh38
-              // over the window, where an unaligned bin scores zero, so the
-              // haplotypes that carry nothing at CYP21A1P/TNXA gather instead of
-              // being spread over 32 rows.
-              //
-              // Declarative rather than driven, the same transient launch spec
-              // the callset lane uses: the flag clears itself after the run.
               runClustering: true,
-              // A CLADOGRAM for the run's tree, where the guide-tree default is
-              // a phylogram. The distances here are mostly zero -- most of these
-              // haplotypes align and match the reference across every bin, so
-              // hclust merges them at a height of nothing -- and drawn to scale
-              // that collapses their branches against the rows and leaves the
-              // sidebar reading as two brackets over a blank column. Topology
-              // only, and the block of dropouts gets a bracket that says so.
+              // Most distances here are zero, so a phylogram collapses the
+              // branches against the rows.
               showBranchLength: false,
               alignments: { rowProportion: 1 },
             },
-            // FORCE, the Bandage drawing. The anchored layout was here first,
-            // on the argument that it shares the linear view's x axis. Reviewed
-            // down: "the backbone thing confuses me more often than the force
-            // directed. people like force directed, it embodies the complexity
-            // of graph better than backbone frequently."
             graphTrack('hprc_minigraph_segments', {
               layoutMode: 'force',
               paneHeight: 600,
@@ -839,12 +524,8 @@ export const mafSpecs: ScreenshotSpec[] = [
     viewportHeight: 1850,
     readySelector: GRAPH_DRAWN,
     readyTimeout: 360000,
-    // THE TWO CLUSTERING RUNS, one wait each. Both were once folded into the
-    // readySelector as `:has([data-testid="tree_sidebar_dendrogram"])` plus a
-    // `data-clustered`, and a body-level `:has` cannot say WHICH display drew
-    // the dendrogram — either lane satisfied it — so half the gate was decided
-    // by whichever finished first. A wait per display says which is which, and
-    // each one is a selector a reader can evaluate on its own.
+    // One wait per display: a body-level `:has` cannot say which lane drew
+    // its dendrogram.
     actions: [
       {
         type: 'waitForSelector' as const,
@@ -857,55 +538,15 @@ export const mafSpecs: ScreenshotSpec[] = [
         timeout: 240000,
       },
     ],
-    // A KEY for the two fills, where this was one sentence arguing against a
-    // wrong reading of one of them ("A blank row is a haplotype with no sequence
-    // here, not one whose sequence matches"). Two things were wrong with that
-    // and the review named both. It was a double negative, so it spent its
-    // length on the reading it was ruling out rather than on the one it meant.
-    // And it said ROW, while what the reader is actually looking at is white
-    // spans INSIDE rows that are otherwise grey, so the sentence did not appear
-    // to be about anything on screen ("what is blank e.g. 'white'").
-    //
-    // Naming both fills is shorter than arguing about one, and it makes the
-    // white legible as an absence rather than as a background the row is drawn
-    // on. The sidebar already says what a row is (`HG00099.1` is a person and
-    // which of their two haplotypes), so nothing here has to.
-    //
-    // The pill used to head with the file name, because a review asked what the
-    // picture is of and one track's sidebar label did not answer it. The frame
-    // now holds four lanes off three files, so a filename at the top of a pill
-    // sitting inside one of them would name the wrong thing; the sidebar names
-    // each lane and the tutorial's fence a few lines above prints the URL.
-    //
-    // AND THE BAND HAS TO REACH THE GRAPH. The in-app `highlight` is a band on a
-    // coordinate axis, and the force drawing has no axis for it to land on --
-    // the band crosses the graph track wherever its x falls. Same answer
-    // pangenome/hprc_graph_vs_callset reached: a ring on the node, and an arrow
-    // from the band to it.
-    //
-    // s329764+ is the node the band sits on: rank 0, 14,346 bp at
-    // GRCh38#0#chr6:31,996,631-32,010,977, and the band's
-    // 32,005,691-32,011,057 is its last 5 kb. Release 2.1 renumbered every
-    // segment and cuts this window coarser than 2.0 did, where the ring went on
-    // a 5,140 bp node that was the band almost exactly -- so the id here is read
-    // out of `probe-graph-nodes.ts` against the release the fixture names, not
-    // carried forward. The two alleles hanging across it are s348272+ (rank 8,
-    // HG00232 haplotype 2) and s352179+ (rank 77, NA18948 haplotype 2) -- ONE
-    // ring, not three, because a previous round of this on the MHC figure was
-    // reviewed as "why are there three circles". The reference node is the right
-    // survivor: the haplotypes that go white in the alignment above are the ones
-    // that do not walk it.
+    // s329764+ is the v2.1 node under the band, found with
+    // `probe-graph-nodes.ts`; re-probe after a release change.
     annotations: [
       {
         type: 'text' as const,
         text: 'Grey: aligned to GRCh38\nWhite: no aligned sequence for that haplotype',
         fontSize: 18,
         maxWidth: 380,
-        // right-aligned against the frame's right edge: naming the file made
-        // the pill wide enough that centring it on a locus ran it off the
-        // capture. `textAlign: 'end'` ends it at the anchor, and the pill's own
-        // width -- which is only known once the text is measured in the page --
-        // is what decides where it starts.
+        // End-aligned so the pill stays inside the frame.
         textAlign: 'end' as const,
         anchor: {
           trackId: 'hprc_v2_1_mc_grch38',
@@ -918,21 +559,11 @@ export const mafSpecs: ScreenshotSpec[] = [
         anchor: { graphNode: 's329764+' },
         radius: 26,
         strokeWidth: 3,
-        // The default red, and near-black was rendered against it before this
-        // was settled. The argument for moving off red is that the graph already
-        // holds some: the reference-position ramp starts at hue 0, so the 52 kb
-        // backbone node at the window's left edge is red too. Drawn, that turns
-        // out not to matter -- the node is a tube 400 px away and the mark is a
-        // thin line with a head -- while near-black loses against what is
-        // ACTUALLY next to the ring, which is the charcoal an off-reference node
-        // paints (ALT_ALLELE_COLOR, rgb(60,65,72)) and the small dark circle the
-        // graph puts on its own deletion edge. A ring has to beat its
-        // neighbourhood rather than the whole palette.
+        // Near-black loses against the charcoal off-reference nodes beside
+        // the ring; the default red does not.
       },
       {
         type: 'arrow' as const,
-        // the bottom of the banded span in the LAST lane of the linear view, so
-        // the tail leaves the band at the band's own x rather than beside it
         fromAnchor: {
           view: 0,
           trackId: 'hprc_v2_1_mc_grch38',
@@ -940,8 +571,7 @@ export const mafSpecs: ScreenshotSpec[] = [
           fracY: 1,
           dy: -8,
         },
-        // stopped short of the ring by its own radius: an anchored head resolves
-        // to the node's CENTRE, which would put the triangle inside the circle
+        // Offset by the radius: a node anchor resolves to the node's centre.
         anchor: { graphNode: 's329764+', dx: -30, dy: -30 },
         strokeWidth: 3,
       },
