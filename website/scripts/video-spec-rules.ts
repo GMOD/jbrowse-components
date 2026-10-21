@@ -121,7 +121,7 @@ export function validateVideoSpecs(
       )
     }
     const pastes = spec.steps.filter(
-      step => step.type === 'type' && step.value.trim().startsWith('{'),
+      step => step.type === 'type' && step.value.trimStart().startsWith('{'),
     )
     if (pastes.length > 0 && !paired.has(spec.name)) {
       problems.push(
