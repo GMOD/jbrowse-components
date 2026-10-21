@@ -435,7 +435,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.19, 0.85],
   },
   t2t_apes_cactus_synteny: {
-    // The human lane and the ape lanes under it at 17q12, where the two blue
+    // The human lane and the ape lanes under it at ERBB2, where the two blue
     // gutters split the stack, past the app chrome and the gene track.
     src: 'multiway_synteny/t2t_apes_cactus_17q.png',
     band: [0.29, 0.86],

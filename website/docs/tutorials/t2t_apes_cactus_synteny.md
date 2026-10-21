@@ -19,9 +19,8 @@ for every pair of genomes in it. We:
 - load them as one multi-way synteny track over the apes, each lane drawing the
   RefSeq genes of that ape's hub on
   [genomes.jbrowse.org](https://genomes.jbrowse.org)
-- color the ribbons by strand to read orientation at _TP53_ and at a block on
-  17q12
-- count the 17q12 block's aligned bases out of the file
+- color the ribbons by strand to read orientation at _TP53_ and _ERBB2_
+- count the aligned bases at _ERBB2_ out of the file
 
 ## Prerequisites
 
@@ -206,31 +205,30 @@ orientation. The session below opens on it:
 
 <Figure caption="TP53 on hg38 over six T2T ape lanes, each ribbon joining a lane to the one above, colored by strand." src="/img/multiway_synteny/t2t_apes_cactus_tp53.png" />
 
-## A block on 17q that splits the African apes
+## Orientation at ERBB2
 
-Navigate to `chr17:33,200,000-35,800,000`, on 17q12.
+Navigate to `chr17:39,400,000-40,200,000`, around _ERBB2_ on 17q12.
 
-<Figure caption="17q12 over the same lanes, colored by strand." src="/img/multiway_synteny/t2t_apes_cactus_17q.png" />
+<Figure caption="ERBB2 over the same lanes, colored by strand." src="/img/multiway_synteny/t2t_apes_cactus_17q.png" />
 
-Down the stack, the orientation changes from human to chimpanzee and back from
-gorilla to the Sumatran orangutan, so chimpanzee, bonobo and gorilla have the
-block in one orientation and human, both orangutans and the siamang in the
-other.
+The ribbons turn blue between human and chimpanzee, and again between gorilla
+and the Sumatran orangutan: chimpanzee, bonobo and gorilla carry _ERBB2_ in one
+orientation, and human, both orangutans and the siamang in the other.
 
-## Checking the 17q block against the chains
+## Checking ERBB2 against the chains
 
 The hg38 rows of the file give each ape's orientation over the window directly.
 A Cactus chain spans gaps, and a reversed chain often sits inside the gap of a
 forward one, so the script counts the bases each chain aligns inside the window:
 
 ```python
-# aligned bases per genome and strand over hg38 chr17:33.2-35.8 Mb
+# aligned bases per genome and strand over hg38 chr17:39.4-40.2 Mb
 import re
 import subprocess
 from collections import Counter
 
 PIF = 'https://jbrowse.org/demos/t2t_apes_cactus/apes.pif.gz'
-START, END = 33_200_000, 35_800_000
+START, END = 39_400_000, 40_200_000
 
 # rows keyed on hg38 ('t' prefix): one per chain against each ape
 rows = subprocess.run(
@@ -251,15 +249,13 @@ for row in rows:
             pos += n
 
 for (genome, strand), n in sorted(aligned.items()):
-    if n > 100_000:
-        print(genome, strand, n)
+    print(genome, strand, n)
 ```
 
 Chimpanzee (`GCF_028858775.2`), bonobo (`GCF_029289425.2`) and gorilla
 (`GCF_029281585.2`) align the window on the reverse strand of hg38, and both
 orangutans (`GCF_028885655.2`, `GCF_028885625.2`) and the siamang
-(`GCF_028878055.3`) on the forward strand, each with nearly all of its aligned
-bases on one strand.
+(`GCF_028878055.3`) on the forward strand.
 
 ## Reproduce it end to end
 

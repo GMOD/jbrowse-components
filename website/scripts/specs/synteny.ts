@@ -1995,10 +1995,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 1000,
   },
 
-  // 17q12, where chimpanzee, bonobo and gorilla align the block reversed and
-  // the orangutans and siamang forward. The window starts at 33.2 Mb so the
-  // orangutan lanes' frames take the forward flank on the left, not the
-  // reversed one past 35.9 Mb.
+  // ERBB2 on 17q12, where chimpanzee, bonobo and gorilla align reversed and the
+  // orangutans and siamang forward. The window stays clear of the segmental
+  // duplication near 34.6 Mb, whose copies widen the orangutan lanes' frames.
   {
     mode: 'url',
     name: 'multiway_synteny/t2t_apes_cactus_17q',
@@ -2007,7 +2006,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr17:33,200,000-35,800,000',
+          loc: 'chr17:39,400,000-40,200,000',
           tracks: [
             'hg38-ncbiRefSeq',
             {
