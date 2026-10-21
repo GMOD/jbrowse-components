@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-cmd=$(jq -r '.tool_input.command // empty')
+input=$(cat)
+cmd=$(jq -r '.tool_input.command // empty' <<<"$input")
+cwd=$(jq -r '.cwd // empty' <<<"$input")
 start='(^|[;&|(]|&&|\|\|)[[:space:]]*'
 
 refuse() {
@@ -21,5 +23,19 @@ if grep -Eq "${start}npx[[:space:]]+prettier\b" <<<"$cmd"; then
 fi
 if grep -Eq "${start}git([[:space:]]+-C[[:space:]]+[^[:space:]]+)?[[:space:]]+merge[[:space:]][^|;]*\|([^|]|$)" <<<"$cmd"; then
   refuse 'Refused: a piped git merge. The pipe hands `&&` the last command'"'"'s exit code, so a refused fast-forward runs the next step anyway. Run the merge on its own, then remove the worktree.'
+fi
+
+# A merge refused in the same message as the cleanup (parallel calls, a `;`
+# chain) still runs the removal, so the check is on the worktree itself.
+removal=$(grep -oE "git([[:space:]]+-C[[:space:]]+[^[:space:]]+)?[[:space:]]+worktree[[:space:]]+remove([[:space:]]+(-f|--force))*[[:space:]]+[^[:space:];&|)]+" <<<"$cmd" | head -1)
+if [ -n "$removal" ]; then
+  repo=$(sed -nE 's/^git[[:space:]]+-C[[:space:]]+([^[:space:]]+).*/\1/p' <<<"$removal")
+  case $repo in /*) ;; *) repo="$cwd/$repo" ;; esac
+  path=${removal##*[[:space:]]}
+  case $path in /*) ;; *) path="${repo:-$cwd}/$path" ;; esac
+  if git -C "$path" rev-parse -q --verify HEAD >/dev/null 2>&1 &&
+    ! git -C "$path" merge-base --is-ancestor HEAD main 2>/dev/null; then
+    refuse "Refused: $path holds commits main lacks. Land them first (the merge alone, then read its result), or ask the user before discarding them."
+  fi
 fi
 exit 0
