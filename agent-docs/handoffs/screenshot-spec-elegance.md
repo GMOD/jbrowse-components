@@ -1,6 +1,6 @@
 ---
 name: screenshot-spec-elegance
-description: "Making the screenshot specs (website/scripts/specs/) and their generator say each thing once. Landed: schema validation of every spec session, an action union, one session URL builder, declarative sorts and track selectors in place of clicks, one frame arranger, display-type inference (a spec names `type` only off the default). Open: the long delays and the spec respell that waits on ADR-238."
+description: "Making the screenshot specs (website/scripts/specs/) and their generator say each thing once. Landed: schema validation of every spec session, an action union, one session URL builder, declarative sorts and track selectors in place of clicks, one frame arranger, display-type inference (a spec names `type` only off the default). Open: the long delays left on menus, tooltips and Mol* cameras, and the spec respell that waits on ADR-238."
 ---
 
 # Screenshot specs: what is left
@@ -11,22 +11,22 @@ something, so the larger half of this list is app work.
 
 ## Next, each needing a capture A/B on ada
 
-- **The long delays.** After a spec's actions the generator already waits for
-  the app to settle (`waitForSpecFrame` → `waitForFrame`), so a delay that ends
-  an action list on app work is deleted, and one mid-list becomes
-  `{ type: 'waitForAppSettled' }`. 41 of the 138 are that kind:
-  - after the ready gate, alone or after `PARK_CURSOR` (16; the MAF, pangenome
-    and cactus specs, `inversion_long_read`)
-  - after a drawn or settled gate (13; `lgv_track_clicked`,
-    `launch_sequence` stage 2, `maf_hprc_pangenome`'s 25 s)
-  - after a click that starts app work (12; clustering dialogs, collapse
-    introns, the feature-sequence panels)
-
-  Probe each (`probe-app-settled.ts`) and shoot it against a baseline at the
-  pre-change commit, since a matrix of sub-pixel rows moves single pixels
-  between any two runs. The rest stay: Mol\* camera resets (about 45,
-  untracked by the app), tooltip and menu animations, a graph layout settling
-  before an anchored action, and a grid filter's debounce.
+- **The long delays (92 left).** 46 went on 2026-10-21: 40 ended an action
+  list on app work and were deleted, and 6 mid-list became
+  `{ type: 'waitForAppSettled' }`. Their 40 figures came out byte-identical
+  to a baseline shoot of the parent commit. What stays:
+  - Mol\* camera resets, which the app never sees: `protein_variants.ts`
+    (`RESET_ZOOM`, `hoverCodon`) and `tp53_nmr_ensemble`
+  - hover tooltips (`maf_codon_tooltip`, the circular hovers,
+    `rgfa_hover_sync`) and the waits before an action anchored on a graph
+    layout (`hprc_haplotype_launch`, `rgfa_hover_sync`)
+  - `openFeatureSequence`'s three, the sequence fetch between its clicks
+  - form debounces (`sv_inspector_importform_filtered`, the group-by-tag
+    preview, `highlight_list_edit_label`) and `search_feature_highlight`
+  - menu, dialog and drawer delays, most in `ui.ts`, `synteny.ts`'s import
+    forms and `cancer_sv.ts`. The frame gate's settle hold lasts 1 s, longer
+    than any MUI transition, so one ENDING an action list is likely deletable
+    too; shoot each against a baseline first.
 
 ## Next, no capture needed
 
