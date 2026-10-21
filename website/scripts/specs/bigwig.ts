@@ -7,7 +7,7 @@ import {
   hpyloriUrl,
   lgvSession,
   menuCascade,
-  openTrackSelector,
+  TRACK_SELECTOR,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
@@ -410,8 +410,10 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:1-20000',
+      tracklist: true,
     }),
     readyText: 'ctgA',
+    readySelector: TRACK_SELECTOR,
     // smaller capture in both dimensions; narrower than default but
     // still wide enough for the category "..." menu to cascade without clipping,
     // and the "Integration test" wiggle category renders within this height
@@ -420,10 +422,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     stages: [
       {
         actions: [
-          // open the track selector via the in-view header button, not the view
-          // hamburger menu, which would otherwise linger open over the capture
-          // (only the track menus should show)
-          ...openTrackSelector('button'),
           // open the category's "..." track menu (stable testid on the category
           // CascadingMenuButton)
           {

@@ -277,7 +277,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportHeight: 400,
     readyText: 'ctgA',
     tooltip: 'hide',
-    actions: openTrackSelector('menu'),
+    actions: openTrackSelector(),
   },
 
   {

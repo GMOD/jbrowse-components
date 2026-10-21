@@ -468,14 +468,6 @@ export const mafSpecs: ScreenshotSpec[] = [
               height: 600,
               color: 'identity',
               rowIdentityAutoZoom: false,
-              // The byte gate is live at this zoom — it has no span floor
-              // (`gateActive`, RegionTooLargeMixin), so it measures at
-              // whatever is on screen — and a 470-way is over the 1MB default at
-              // any span — so without this the capture is the too-large banner,
-              // not the heatmap. `readyText` is the ruler, so nothing would have
-              // failed; the figure would just have been wrong. This is the case
-              // the `forceLoad` slot documents: a view no one can click.
-              forceLoad: true,
             },
           ],
         },
@@ -551,11 +543,6 @@ export const mafSpecs: ScreenshotSpec[] = [
               color: 'codon',
               conservation: { show: true, unit: 'codon' },
               rows: { kept: HG38_470WAY_30 },
-              // Same reason as `maf_470way`: the gate is live below 20kb now.
-              // The focus narrows the rows *drawn*, not the download — the
-              // adapter still pulls all 470 species and the worker filters — so
-              // the estimate is the full 470-way's whatever the filter says.
-              forceLoad: true,
             },
           ],
         },

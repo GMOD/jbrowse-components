@@ -288,41 +288,16 @@ export const dismissMenus = (): ScreenshotAction[] => [
   { type: 'delay', ms: 300 },
 ]
 
-// Open the hierarchical track selector and leave it open, by whichever of the
-// three routes the figure wants. Eleven specs across three modules took one of
-// them, written out identically each time.
-//
-// `via` is a real choice rather than a default worth hiding, which is why it is
-// required:
-//
-//   'menu'    the view hamburger -> "Open track selector". The route a tutorial
-//             walks a reader through, and the only one that shows the item.
-//   'button'  the header button by its `title`. For the frames where the view
-//             menu must NOT be left standing over the capture, and for a view
-//             with no tracks active — the body then renders an "Open track
-//             selector" button of its own, so a text click is ambiguous where
-//             the title is unique.
-//   'text'    the same button by its visible text, for the frames where only
-//             one of them is on screen. Shorter, and it fails loudly if a
-//             second ever appears rather than picking one.
-export const openTrackSelector = (
-  via: 'menu' | 'button' | 'text',
-): ScreenshotAction[] => [
-  ...(via === 'menu'
-    ? ([
-        { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-        { type: 'waitForText', text: 'Open track selector' },
-        { type: 'click', text: 'Open track selector' },
-      ] as const)
-    : via === 'button'
-      ? ([
-          { type: 'click', selector: 'button[title="Open track selector"]' },
-        ] as const)
-      : ([{ type: 'click', text: 'Open track selector' }] as const)),
-  {
-    type: 'waitForSelector',
-    selector: '[data-testid="hierarchical_track_selector"]',
-  },
+export const TRACK_SELECTOR = '[data-testid="hierarchical_track_selector"]'
+
+// The view menu's "Open track selector", the route a tutorial walks a reader
+// through. A figure that only needs the selector open sets the view's
+// `tracklist: true` instead.
+export const openTrackSelector = (): ScreenshotAction[] => [
+  { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+  { type: 'waitForText', text: 'Open track selector' },
+  { type: 'click', text: 'Open track selector' },
+  { type: 'waitForSelector', selector: TRACK_SELECTOR },
 ]
 
 export function cgiabUrl(session?: object) {

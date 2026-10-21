@@ -2,10 +2,9 @@
 // figures.lock.
 import { displaySettled } from '@jbrowse/browser-test-utils'
 
-import { PARK_CURSOR, sessionSpec } from '../screenshot-spec-helpers.ts'
+import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { CLUSTERED_READY, CN_HEATMAP_SETTINGS } from './cnv1000g.ts'
 import { GRAPH_DRAWN, graphTrack } from './graph-fixtures.ts'
-import { SORT_BY_GENOTYPE } from './ui.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -35,7 +34,7 @@ const HGSVC3_SV_TRACK = {
 
 // Inside the callset's 114 kb deletion (HGSV_105993) but outside the 22 kb
 // one nested in it, which the callset does not record and the heatmap shows
-const OUTER_DELETION_SORT_POINT = 'chr3:162,880,000'
+const OUTER_DELETION_SORT = { refName: 'chr3', pos: 162_879_999 }
 
 // Beside the track's name, where the window has no deletion calls
 const panelLabel = (trackId: string, text: string, dy = 8): Annotation => ({
@@ -85,6 +84,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
               trackId: SV_TRACK.trackId,
               type: 'LinearMultiSampleVariantDisplay',
               forceLoad: true,
+              sortRowsBy: OUTER_DELETION_SORT,
               // Deletions only: a 35 Mb duplication at the window's edge and
               // complex calls loaded just outside it put Duplication and
               // Complex in the legend with nothing visible to key
@@ -125,24 +125,9 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     readySelector: `body:has(${displaySettled('variant-display')}):has(${CLUSTERED_READY}) ${GRAPH_DRAWN}`,
     readyTimeout: 300000,
     viewportWidth: 1500,
-    viewportHeight: 1210,
+    viewportHeight: 1220,
     tooltip: 'hide',
     diffThreshold: 0.02,
-    actions: [
-      {
-        type: 'rightclick',
-        anchor: {
-          trackId: SV_TRACK.trackId,
-          loc: OUTER_DELETION_SORT_POINT,
-          fracY: 0.5,
-        },
-      },
-      { type: 'waitForText', text: SORT_BY_GENOTYPE },
-      { type: 'click', text: SORT_BY_GENOTYPE },
-      { type: 'delay', ms: 6000 },
-      PARK_CURSOR,
-      { type: 'delay', ms: 800 },
-    ],
     annotations: [
       panelLabel(SV_TRACK.trackId, 'a'),
       panelLabel('cnv_1000g_zarr', 'b'),

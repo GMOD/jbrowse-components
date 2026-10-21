@@ -4,7 +4,7 @@ import { SPLIT_VIEW_LINK_LABEL } from '../../../plugins/variants/src/VariantFeat
 import {
   DEMO_CONFIG,
   HG38_RMSK_TRACK,
-  PARK_CURSOR,
+  TRACK_SELECTOR,
   VOLVOX,
   cascadeBoxes,
   kgUrl,
@@ -14,6 +14,7 @@ import {
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
+import type { RowSortSpec } from '../../../packages/tree-sidebar/src/rowSortAutorun.ts'
 import type {
   Annotation,
   ScreenshotAction,
@@ -338,129 +339,134 @@ const KGP_ENSEMBLE_SV_VCF =
 // The ensemble callset it does not carry comes in as session tracks, one per
 // display, since showTrack resolves by trackId and a second display of one
 // track is not available.
-const rhdPanel = sessionSpec('test_data/1000g_cnv/config.json', {
-  sessionTracks: [
-    {
-      type: 'VariantTrack',
-      trackId: 'kgp_sv_matrix',
-      name: '1KGP ensemble SV calls, 3202 samples',
-      assemblyNames: ['hg38'],
-      adapter: { type: 'VcfTabixAdapter', uri: KGP_ENSEMBLE_SV_VCF },
-    },
-    {
-      type: 'VariantTrack',
-      trackId: 'kgp_sv_records',
-      name: '1KGP ensemble SV calls',
-      assemblyNames: ['hg38'],
-      adapter: { type: 'VcfTabixAdapter', uri: KGP_ENSEMBLE_SV_VCF },
-    },
-  ],
-  views: [
-    {
-      type: 'LinearGenomeView',
-      assembly: 'hg38',
-      loc: '1:25,200,000-25,400,000',
-      tracks: [
-        {
-          trackId: 'kgp_sv_matrix',
-          type: 'LinearMultiSampleVariantDisplay',
-          variants: { show: true },
-          forceLoad: true,
-          // 400 -> 290 (reviewer: "reduce height of both the
-          // multisamplevariantdisplay, the multiwiggledisplay"). 3202
-          // samples in 290 px is 0.09 px a row, which is already past what
-          // a row can be: what this lane draws is three BANDS, and a band
-          // is legible at any height that leaves it more than a few pixels.
-          height: 290,
-        },
-        // THE DEPTH LANE, which is what the callset cannot draw. A VCF
-        // states a genotype per record, so a locus carrying nested and
-        // overlapping calls is read as a stack of columns whose relation to
-        // each other is not on screen. QuicK-mer2 copy number is one
-        // continuous quantity per 1 kb bin per individual, so the same
-        // panel reads as levels: two copies white, one blue, zero deep
-        // blue, and a partial-length loss is a block that starts and stops
-        // where the sequence does rather than where a caller drew a record.
-        //
-        // Clustered on this window, so the dosage classes separate into
-        // bands. The rows cannot correspond to the matrix above it in any
-        // case -- that one is sorted by genotype at HGSV_1821 and this one
-        // by similarity over the window -- so clustering costs nothing and
-        // is what makes the classes visible.
-        //
-        // The store is hosted at jbrowse.org/demos/1000g, built by
-        // scripts/build_1000g_cnv_zarr.sh over this window as well as the
-        // two the CNV tutorial visits.
-        {
-          trackId: 'cnv_1000g_zarr',
-          type: 'LinearWiggleDisplay',
-          mark: 'span',
-          // pinned rather than autoscaled, and symmetric about the diploid
-          // origin, for the reasons cnv1000g's CN_HEATMAP_SETTINGS gives:
-          // copy number is an absolute quantity and a diverging ramp only
-          // reads as diverging if both sides are the same width.
-          origin: 2,
-          scales: { y: { domainMin: 0, domainMax: 4 } },
-          color: {
-            field: 'score',
-            range: ['#2166ac', '#b2182b'],
-            title: 'Copy number',
+const rhdPanel = (sortRowsBy?: RowSortSpec) =>
+  sessionSpec('test_data/1000g_cnv/config.json', {
+    sessionTracks: [
+      {
+        type: 'VariantTrack',
+        trackId: 'kgp_sv_matrix',
+        name: '1KGP ensemble SV calls, 3202 samples',
+        assemblyNames: ['hg38'],
+        adapter: { type: 'VcfTabixAdapter', uri: KGP_ENSEMBLE_SV_VCF },
+      },
+      {
+        type: 'VariantTrack',
+        trackId: 'kgp_sv_records',
+        name: '1KGP ensemble SV calls',
+        assemblyNames: ['hg38'],
+        adapter: { type: 'VcfTabixAdapter', uri: KGP_ENSEMBLE_SV_VCF },
+      },
+    ],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: '1:25,200,000-25,400,000',
+        tracks: [
+          {
+            trackId: 'kgp_sv_matrix',
+            type: 'LinearMultiSampleVariantDisplay',
+            variants: { show: true },
+            forceLoad: true,
+            sortRowsBy,
+            // 400 -> 290 (reviewer: "reduce height of both the
+            // multisamplevariantdisplay, the multiwiggledisplay"). 3202
+            // samples in 290 px is 0.09 px a row, which is already past what
+            // a row can be: what this lane draws is three BANDS, and a band
+            // is legible at any height that leaves it more than a few pixels.
+            height: 290,
           },
-          // 480 -> 330, and directly under the matrix rather than with the
-          // record lane between them (reviewer: "reduce height of both ...
-          // put them stacked"). The two lanes are the same 3202 individuals
-          // measured two ways, so they are the comparison and they belong
-          // adjacent; the record lane is a legend for both of them and now
-          // sits under the pair rather than inside it.
-          height: 330,
-          runClustering: true,
-          showTree: false,
-        },
-        {
-          trackId: 'kgp_sv_records',
-          type: 'LinearVariantDisplay',
-          forceLoad: true,
-          // enough for the four rows the 26 records pack into plus their
-          // name/type labels; at 130 the last row was under the lane's fold
-          height: 170,
-          // ONE COLOR (reviewer: "dont use all the colors on the vcf, it
-          // is confusing and distracting"). This lane used the `svTypeColor`
-          // jexl the SV-type cell preset is built on, which paints six
-          // classes over 26 overlapping records -- and every record already
-          // carries its class IN its own label (`<DEL> 70.1Kbp`), so the
-          // color was a second, weaker copy of text that was already
-          // there. The class-colored version of this idea is multisv_svtype
-          // in the multi-variant guide, on a window whose classes are the
-          // subject. Dropping the jexl also drops the floating key this
-          // spec used to have to hide by selector.
-          color: '#4a5568',
-        },
-        // showLabels:'name' forces gene names on at this zoom; `genes: 'only'`
-        // drops the per-transcript subfeatures so RHD/RHCE read as single
-        // labelled glyphs under the matrix
-        {
-          trackId: 'ncbi_refseq_hg38',
-          type: 'LinearBasicDisplay',
-          height: 120,
-          showLabels: 'name',
-          filter: { genes: 'only' },
-        },
-      ],
-    },
-  ],
-})
+          // THE DEPTH LANE, which is what the callset cannot draw. A VCF
+          // states a genotype per record, so a locus carrying nested and
+          // overlapping calls is read as a stack of columns whose relation to
+          // each other is not on screen. QuicK-mer2 copy number is one
+          // continuous quantity per 1 kb bin per individual, so the same
+          // panel reads as levels: two copies white, one blue, zero deep
+          // blue, and a partial-length loss is a block that starts and stops
+          // where the sequence does rather than where a caller drew a record.
+          //
+          // Clustered on this window, so the dosage classes separate into
+          // bands. The rows cannot correspond to the matrix above it in any
+          // case -- that one is sorted by genotype at HGSV_1821 and this one
+          // by similarity over the window -- so clustering costs nothing and
+          // is what makes the classes visible.
+          //
+          // The store is hosted at jbrowse.org/demos/1000g, built by
+          // scripts/build_1000g_cnv_zarr.sh over this window as well as the
+          // two the CNV tutorial visits.
+          {
+            trackId: 'cnv_1000g_zarr',
+            type: 'LinearWiggleDisplay',
+            mark: 'span',
+            // pinned rather than autoscaled, and symmetric about the diploid
+            // origin, for the reasons cnv1000g's CN_HEATMAP_SETTINGS gives:
+            // copy number is an absolute quantity and a diverging ramp only
+            // reads as diverging if both sides are the same width.
+            origin: 2,
+            scales: { y: { domainMin: 0, domainMax: 4 } },
+            color: {
+              field: 'score',
+              range: ['#2166ac', '#b2182b'],
+              title: 'Copy number',
+            },
+            // 480 -> 330, and directly under the matrix rather than with the
+            // record lane between them (reviewer: "reduce height of both ...
+            // put them stacked"). The two lanes are the same 3202 individuals
+            // measured two ways, so they are the comparison and they belong
+            // adjacent; the record lane is a legend for both of them and now
+            // sits under the pair rather than inside it.
+            height: 330,
+            runClustering: true,
+            showTree: false,
+          },
+          {
+            trackId: 'kgp_sv_records',
+            type: 'LinearVariantDisplay',
+            forceLoad: true,
+            // enough for the four rows the 26 records pack into plus their
+            // name/type labels; at 130 the last row was under the lane's fold
+            height: 170,
+            // ONE COLOR (reviewer: "dont use all the colors on the vcf, it
+            // is confusing and distracting"). This lane used the `svTypeColor`
+            // jexl the SV-type cell preset is built on, which paints six
+            // classes over 26 overlapping records -- and every record already
+            // carries its class IN its own label (`<DEL> 70.1Kbp`), so the
+            // color was a second, weaker copy of text that was already
+            // there. The class-colored version of this idea is multisv_svtype
+            // in the multi-variant guide, on a window whose classes are the
+            // subject. Dropping the jexl also drops the floating key this
+            // spec used to have to hide by selector.
+            color: '#4a5568',
+          },
+          // showLabels:'name' forces gene names on at this zoom; `genes: 'only'`
+          // drops the per-transcript subfeatures so RHD/RHCE read as single
+          // labelled glyphs under the matrix
+          {
+            trackId: 'ncbi_refseq_hg38',
+            type: 'LinearBasicDisplay',
+            height: 120,
+            showLabels: 'name',
+            filter: { genes: 'only' },
+          },
+        ],
+      },
+    ],
+  })
 
 // The right-click sort row, from `sortRowsHereMenuItem` in
-// multiSampleVariantMenuItems.ts. Named once because the three figures below and
-// the tour in videos/sv.ts all wait on it, and a rename in the display leaves a
-// stale spelling here as a timeout against a fully-drawn matrix.
+// multiSampleVariantMenuItems.ts, which the tour in videos/sv.ts clicks.
 export const SORT_BY_GENOTYPE = 'Sort rows by genotype here'
+
+// The figures sort declaratively, on the record whose span holds `pos`
+// (0-based): the chr19 inversion, and HGSV_1821's midpoint.
+const INVERSION_SORT: RowSortSpec = { refName: '19', pos: 46_554_999 }
+const HGSV_1821_SORT: RowSortSpec = { refName: '1', pos: 25_300_121 }
 
 // The panel's shared handles: what `multisv_rhd` right-clicks and waits on, and
 // what the tour in videos/sv.ts does. Two spellings of the deletion would be
 // two figures sorting on two variants.
 export const multisvVideoFixtures = {
-  unsorted: rhdPanel,
+  unsorted: rhdPanel(),
   matrixTrackId: 'kgp_sv_matrix',
   // HGSV_1821's own span. A locus range resolves to its own centre, so naming
   // the span puts a click at the deletion's midpoint — inside it and clear of
@@ -730,6 +736,7 @@ export const uiSpecs: ScreenshotSpec[] = [
             {
               trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
               type: 'LinearMultiSampleVariantDisplay',
+              sortRowsBy: INVERSION_SORT,
               variants: { show: true },
               forceLoad: true,
               height: 400,
@@ -759,29 +766,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportHeight: 800,
     tooltip: 'hide',
-    actions: [
-      // The variant under the pointer is what the sort keys on, so the
-      // x is the whole content of this click and it is a locus, not the x=1130 it
-      // used to be (that coordinate held only for this window at this width). The
-      // ROW is immaterial — every row is a sample's cell of the same variant — so
-      // the middle of the matrix is the safest place to be, and `fracY` puts it
-      // there whatever height the display is given.
-      {
-        type: 'rightclick',
-        anchor: {
-          trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
-          loc: '19:46,555,000',
-          fracY: 0.5,
-        },
-      },
-      { type: 'waitForText', text: SORT_BY_GENOTYPE },
-      { type: 'click', text: SORT_BY_GENOTYPE },
-      { type: 'delay', ms: 6000 },
-      // move the pointer off the matrix so the mouseover crosshair doesn't bake
-      // into the capture
-      PARK_CURSOR,
-      { type: 'delay', ms: 800 },
-    ],
   },
 
   // The same chr19 inversion window with the display colored by SV type
@@ -803,6 +787,7 @@ export const uiSpecs: ScreenshotSpec[] = [
             {
               trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
               type: 'LinearMultiSampleVariantDisplay',
+              sortRowsBy: INVERSION_SORT,
               variants: { show: true },
               forceLoad: true,
               height: 400,
@@ -827,23 +812,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     // against
     viewportHeight: 800,
     tooltip: 'hide',
-    actions: [
-      // the same inversion `multisv` sorts on, named the same way, so the two
-      // figures cannot drift into sorting on different variants
-      {
-        type: 'rightclick',
-        anchor: {
-          trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
-          loc: '19:46,555,000',
-          fracY: 0.5,
-        },
-      },
-      { type: 'waitForText', text: SORT_BY_GENOTYPE },
-      { type: 'click', text: SORT_BY_GENOTYPE },
-      { type: 'delay', ms: 6000 },
-      PARK_CURSOR,
-      { type: 'delay', ms: 800 },
-    ],
   },
 
   // The RHD locus, chr1:25.2-25.4Mb, and the figure the SV-multisamples
@@ -891,17 +859,13 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multisv_rhd',
-    url: multisvVideoFixtures.unsorted,
+    url: rhdPanel(HGSV_1821_SORT),
     readyText: '1KGP',
     // the 2504-row store is clustered on this window as well as fetched, and
     // the callset itself is a remote EBI tabix read
     readyTimeout: 300000,
-    // 1490 -> 1230: 110 off the matrix, 150 off the depth lane, 20 off the gene
-    // lane. The record lane's floating SV-type key used to be hidden by
-    // selector here; it is gone with the jexl that produced it.
-    viewportHeight: 1230,
+    viewportHeight: 1240,
     tooltip: 'hide',
-    clicksChange: "sort the matrix's rows by genotype at HGSV_1821",
     actions: [
       // the clustering RPC over 2504 rows finishes well after first paint, and
       // a capture taken before it lands shows the store in panel order under a
@@ -913,26 +877,6 @@ export const uiSpecs: ScreenshotSpec[] = [
         selector: multisvVideoFixtures.cnvClustered,
         timeout: 240000,
       },
-      // the matrix, at the middle of the deletion the sort is keyed on: a locus
-      // range resolves to its own centre, so this is HGSV_1821 naming itself
-      // rather than the 0.50-of-1500px the coordinate encoded. Named once, above
-      // — the tour right-clicks the same column, and two spellings of it would
-      // be two figures sorting on two variants.
-      {
-        type: 'rightclick',
-        anchor: {
-          trackId: multisvVideoFixtures.matrixTrackId,
-          loc: multisvVideoFixtures.deletionSpan,
-          fracY: 0.5,
-        },
-      },
-      { type: 'waitForText', text: SORT_BY_GENOTYPE },
-      { type: 'click', text: SORT_BY_GENOTYPE },
-      { type: 'delay', ms: 6000 },
-      // move the pointer off the matrix so the mouseover crosshair doesn't bake
-      // into the capture
-      PARK_CURSOR,
-      { type: 'delay', ms: 800 },
     ],
   },
 
@@ -1610,7 +1554,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     actions: [
       // open the track selector so the track-list entry menu icon is visible
-      ...openTrackSelector('menu'),
+      ...openTrackSelector(),
       // filter the (virtualized) list so the target row is rendered
       { type: 'type', text: 'Filter tracks', value: 'structural variant' },
       { type: 'delay', ms: 800 },
@@ -1723,7 +1667,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 470,
     actions: [
       // open the track selector to get a widget in the drawer
-      ...openTrackSelector('menu'),
+      ...openTrackSelector(),
     ],
     stages: [
       {
@@ -1898,12 +1842,11 @@ export const uiSpecs: ScreenshotSpec[] = [
       // no track opened — the figure is about the track-selector hamburger
       // menu, and an open gene track in the LGV behind it was distracting
       tracks: [],
+      tracklist: true,
     }),
     readyText: 'ctgA',
+    readySelector: TRACK_SELECTOR,
     actions: [
-      // open the track selector directly via the header button so the LGV view
-      // menu never opens (the view menu was left open in the capture)
-      ...openTrackSelector('button'),
       // open the hamburger menu, then open the Collapse... submenu so its
       // options are visible alongside the main menu
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
@@ -1927,10 +1870,9 @@ export const uiSpecs: ScreenshotSpec[] = [
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: '1:1-100,000',
+      tracklist: true,
     }),
-    // hg19 displays the refname as "1" (no chr prefix); wait for the menubar
-    // instead of a chr label since this view starts with no tracks
-    readyText: 'Open track selector',
+    readySelector: TRACK_SELECTOR,
     readyTimeout: 60000,
     // smaller window keeps the focus on the track-list + recently-used dropdown
     viewportWidth: 1100,
@@ -1939,10 +1881,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     // recently-used dropdown and highlight both the trigger icon and the popover
     // together (one stage with both the icon and the popover ringed)
     actions: [
-      // open the track selector directly via the header button — with no tracks
-      // active the view body also renders an "Open track selector" button, so a
-      // text-based click is ambiguous; the header button's title is unique
-      ...openTrackSelector('button'),
       // filter the (virtualized) list so the target row is rendered, then open
       // it through the UI (by name) so it lands in "recently used"
       { type: 'type', text: 'Filter tracks', value: 'NCBI RefSeq' },
@@ -1997,7 +1935,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 560,
     actions: [
       // open track selector
-      ...openTrackSelector('menu'),
+      ...openTrackSelector(),
       // filter the (virtualized) list so the target row is rendered
       { type: 'type', text: 'Filter tracks', value: 'volvox-sorted' },
       { type: 'delay', ms: 800 },
@@ -2172,13 +2110,18 @@ export const uiSpecs: ScreenshotSpec[] = [
     name: 'sample_config',
     url: sessionSpec(VOLVOX, {
       views: [
-        { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1-50000' },
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracklist: true,
+        },
       ],
     }),
     viewportWidth: 1000,
     viewportHeight: 600,
     readyText: 'ctgA',
-    actions: [...openTrackSelector('text'), { type: 'delay', ms: 1000 }],
+    readySelector: TRACK_SELECTOR,
   },
 
   // Track selector with all top-level categories collapsed (track_selector.md) —
@@ -2189,12 +2132,17 @@ export const uiSpecs: ScreenshotSpec[] = [
     name: 'hierarchical/collapse_toplevelcategories-fs8',
     url: sessionSpec(VOLVOX, {
       views: [
-        { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1-50000' },
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracklist: true,
+        },
       ],
     }),
     readyText: 'ctgA',
+    readySelector: TRACK_SELECTOR,
     actions: [
-      ...openTrackSelector('text'),
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
       ...menuCascade(['Collapse...', 'Collapse top-level categories']),
       { type: 'click', text: 'Collapse top-level categories' },
@@ -2217,13 +2165,18 @@ export const uiSpecs: ScreenshotSpec[] = [
     name: 'default_theme',
     url: sessionSpec('test_data/volvox/config_theme_default.json', {
       views: [
-        { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1-50000' },
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracklist: true,
+        },
       ],
     }),
     readyText: 'ctgA',
     // shorter browser: the palette + track selector fit comfortably
     viewportHeight: 520,
-    actions: [...openTrackSelector('text'), { type: 'delay', ms: 1000 }],
+    readySelector: TRACK_SELECTOR,
   },
 
   // Customized UI theme (theme.md) — same config carrying the documented custom
@@ -2233,13 +2186,18 @@ export const uiSpecs: ScreenshotSpec[] = [
     name: 'customized_theme',
     url: sessionSpec('test_data/volvox/config_theme_custom.json', {
       views: [
-        { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1-50000' },
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracklist: true,
+        },
       ],
     }),
     readyText: 'ctgA',
     // shorter browser: the palette + track selector fit comfortably
     viewportHeight: 520,
-    actions: [...openTrackSelector('text'), { type: 'delay', ms: 1000 }],
+    readySelector: TRACK_SELECTOR,
   },
   // ────────────────────────────────────────────────────────────────────────
   // Admin-mode screenshots (quickstart_adminserver.md). Admin mode is enabled
