@@ -20,36 +20,33 @@ the autosomes have been shuffled and where the X has not. We:
 - open both on a circular view and order the mouse arc to follow the human one
 - color the ribbons by strand
 - add a gene density ring over both genomes
-- check one ribbon and one ring value against the alignment file and the bigWig
-  they came from
+- hover a ribbon for its span in each genome
 
 ## Prerequisites
 
 - a JBrowse to open the files in ([Web](/docs/quickstart_web) or
   [Desktop](/docs/quickstart_desktop))
 - to build the density ring for another pair of genomes, htslib (`bgzip`,
-  `tabix`), `bedGraphToBigWig` and `bigWigToBedGraph` from the
+  `tabix`), `bedGraphToBigWig` from the
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/), and `node` for
   the [JBrowse CLI](/docs/cli)
 
-<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig,bigWigToBedGraph START -->
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig START -->
 
 ```bash
 # Debian/Ubuntu
 sudo apt install tabix nodejs
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge htslib nodejs ucsc-bedgraphtobigwig \
-  ucsc-bigwigtobedgraph
+conda install -c bioconda -c conda-forge htslib nodejs ucsc-bedgraphtobigwig
 # or Linux x86_64 binaries for the tools apt lacks
 wget -P ~/.local/bin \
-  https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig \
-  https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bigWigToBedGraph
-chmod +x ~/.local/bin/bedGraphToBigWig ~/.local/bin/bigWigToBedGraph
+  https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig
+chmod +x ~/.local/bin/bedGraphToBigWig
 # any platform
 npm install -g @jbrowse/cli
 ```
 
-<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig,bigWigToBedGraph END -->
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig END -->
 
 ## The data
 
@@ -382,37 +379,13 @@ before the synteny track:
 
 <Figure src="/img/circular_synteny/rings.png" caption="The human and mouse circle with a gene density ring inside the ideogram, dark where a stretch is gene-rich." />
 
-## Checking a ribbon and a ring value against the source files
+## Hovering a ribbon
 
 Cut the ring session's `displayedRegionNames` to `["chr1", "chr2", "chrX"]` and
 hover the widest ribbon, the X block that runs reverse between the two genomes
 and so twists. A tooltip gives its span in each genome and its strand.
 
 <Figure src="/img/circular_synteny/ribbon_hover.png" caption="The widest X ribbon hovered, filled grey and crossing itself because it is on the reverse strand. The tooltip names its span in each genome." />
-
-The two loci in the tooltip come from one row of the PIF. `tabix` returns that
-row at the human coordinate the tooltip starts at:
-
-```bash
-# the t prefix asks for the row in hg38 coordinates; q would ask in mm39's
-tabix https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz tchrX:10447551-10447552
-```
-
-The row's strand column reads `-`, and its query span on mouse chrX is the other
-end of the ribbon. To read the ring's values back, `bigWigToBedGraph` prints the
-bins under any stretch of either arc, addressed by the bigWig's prefixed contig
-names:
-
-```bash
-# the first 100 kb of the X block, then the start of human chr19
-bigWigToBedGraph -chrom=hg38.chrX -start=10447550 -end=10547550 \
-  https://jbrowse.org/demos/circular_synteny/hg38ToMm39.genes.gff.density.bw stdout
-bigWigToBedGraph -chrom=hg38.chr19 -start=0 -end=300000 \
-  https://jbrowse.org/demos/circular_synteny/hg38ToMm39.genes.gff.density.bw stdout
-```
-
-A bin's value is the count of genes starting in it, so the pale X ring and the
-dark chr19 ring are the two counts side by side.
 
 ## Your own pair of genomes
 

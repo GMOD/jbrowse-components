@@ -18,7 +18,6 @@ hosts, and jbrowse.org keeps each chain as an indexed alignment file. We:
   UCSC hub
 - stack the genomes at _TP53_ and at _PMP22_
 - read each lane's span, width multiple and ribbons
-- check one lane against its chain file
 
 ## Prerequisites
 
@@ -278,20 +277,6 @@ alignment places the hg38 window.
 - Drag a lane label to reorder the stack.
 - Use the lane header menu to re-anchor the view on that genome or open it in a
   separate view.
-
-## Checking the marmoset lane against its chain
-
-The marmoset rows over the PMP22 window come straight out of the hosted index:
-
-```bash
-# marmoset rows over the window, 50 kb and longer:
-# hg38 start, end, strand, marmoset contig, start, end
-tabix https://jbrowse.org/ucsc/hg38/liftOver/hg38ToCalJac4.over.pif.gz tchr17:15200000-16400000 \
-  | awk -F'\t' '$11 > 50000' | cut -f3,4,5,6,8,9
-```
-
-The marmoset rows come back on both strands of chr5, the forward chain the lane
-follows and the reversed block it draws as a crossing.
 
 ## Reproduce it end to end
 

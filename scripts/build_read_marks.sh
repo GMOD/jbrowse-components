@@ -15,7 +15,7 @@
 # BAM or CRAM and the FASTA it was aligned to, it builds the same two tracks
 # over your file; CHROM picks the chromosome to scan.
 #
-# Requires: samtools, bcftools, bgzip + tabix (htslib), curl, awk, and node
+# Requires: samtools, bgzip + tabix (htslib), curl, awk, and node
 #           (the JBrowse CLI is fetched via npx unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_read_marks.sh [outdir]
 #           bash scripts/build_read_marks.sh reads.cram genome.fa [outdir]
@@ -23,7 +23,7 @@
 #
 set -euo pipefail
 
-for tool in samtools bcftools bgzip tabix curl awk node; do
+for tool in samtools bgzip tabix curl awk node; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "error: '$tool' not found on PATH" >&2
     exit 1
@@ -41,7 +41,6 @@ abspath() { case "$1" in /*) printf '%s\n' "$1" ;; *) printf '%s\n' "$PWD/$1" ;;
 CHROM="${CHROM:-chr20}"
 KG=https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage
 CRAM_URL="$KG/data/ERR3239334/NA12878.final.cram"
-SV_VCF=https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz
 UCSC=https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips
 
 if [ $# -ge 2 ]; then
@@ -255,16 +254,5 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|@CHROM@|$CHROM|g" -
 }
 JSON
 jb add-track-json counts.json --out "$APP" --update
-
-# ── The callset's answer ────────────────────────────────────────────────────
-# What the 1000 Genomes SV callset says NA12878 carries on the same chromosome,
-# for reading the count mark against: every deletion over 2 kb on a non-reference
-# genotype, with the evidence that called it.
-if [ -z "$GENOME" ]; then
-  bcftools view -s NA12878 "$SV_VCF" "$CHROM" |
-    bcftools query -i 'GT="alt" && INFO/SVTYPE="DEL" && INFO/SVLEN<-2000' \
-      -f '%CHROM\t%POS\t%END\t%INFO/SVLEN\t[%GT]\t%INFO/AF\t%INFO/EVIDENCE\n' |
-    tee "$SAMPLE.$CHROM.deletions.tsv"
-fi
 
 echo "built $OUTDIR/$APP; serve it with: npx --yes serve $OUTDIR/$APP"

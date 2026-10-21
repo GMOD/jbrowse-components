@@ -16,7 +16,6 @@ NA12878's reads on chromosome 20 we:
 - plot read depth as bars over the _EFCAB8_ deletion, and insert size as one
   point per read pair, so the deletion shows without a variant caller
 - bin the long-insert pairs to scan the whole chromosome for clusters
-- check the bars against the 1000 Genomes SV callset
 
 The plots use JBrowse's mark display, which maps feature fields to plot
 channels. In [grammar-of-graphics](/docs/config_guides/mark_display) terms, a
@@ -28,23 +27,22 @@ experimental and its config shape may change.
 - a JBrowse to open the figures' sessions in ([Web](/docs/quickstart_web) or
   [Desktop](/docs/quickstart_desktop))
 - [samtools](https://www.htslib.org/) and htslib (`bgzip`, `tabix`), for cutting
-  the pairs out and checking a window by hand
-- [bcftools](https://www.htslib.org/), for reading the callset at the end
+  the pairs out
 - [Node.js](https://nodejs.org/) and the [JBrowse CLI](/docs/cli), for the build
   script
 
-<!-- TUTORIAL_INSTALL samtools,bcftools,htslib,node,jbrowse-cli START -->
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli START -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install samtools bcftools tabix nodejs
+sudo apt install samtools tabix nodejs
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge samtools bcftools htslib nodejs
+conda install -c bioconda -c conda-forge samtools htslib nodejs
 # any platform
 npm install -g @jbrowse/cli
 ```
 
-<!-- TUTORIAL_INSTALL samtools,bcftools,htslib,node,jbrowse-cli END -->
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli END -->
 
 ## The data
 
@@ -56,11 +54,10 @@ You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
 rebuild those results. The marks and the scan step take your own CRAM or BAM.
 
-| What it is                               | File                                                                                                                                                                                                                                           |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NA12878's 30x CRAM, index beside it      | [NA12878.final.cram](https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram)                                                                                                                         |
-| The release's structural-variant callset | [1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz) |
-| UCSC's GRCh38 cytoband table, rehosted   | [cytoBand.txt](https://jbrowse.org/genomes/GRCh38/cytoBand.txt)                                                                                                                                                                                |
+| What it is                             | File                                                                                                                   |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| NA12878's 30x CRAM, index beside it    | [NA12878.final.cram](https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram) |
+| UCSC's GRCh38 cytoband table, rehosted | [cytoBand.txt](https://jbrowse.org/genomes/GRCh38/cytoBand.txt)                                                        |
 
 ## Loading hg38
 
@@ -269,40 +266,6 @@ Open both tracks on the whole of `chr20`.
 
 The bar at 34.2 Mb is a homozygous deletion, and the one at 32.9 Mb is the
 _EFCAB8_ deletion.
-
-## Checking the chr20 bars against the 1000 Genomes SV callset
-
-`bcftools` lists every deletion over 2 kb that the callset gives NA12878 on
-chr20:
-
-<!-- from: scripts/build_read_marks.sh -->
-
-```bash
-# -s keeps one sample's genotypes; -i then keeps the rows where that sample
-#   carries the allele
-bcftools view -s NA12878 1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz chr20 |
-  bcftools query -i 'GT="alt" && INFO/SVTYPE="DEL" && INFO/SVLEN<-2000' \
-    -f '%CHROM\t%POS\t%END\t%INFO/SVLEN\t[%GT]\t%INFO/AF\t%INFO/EVIDENCE\n'
-```
-
-Every deletion in that listing between 2 and 10 kb is a bar in the pair-count
-track, and the two homozygous ones are tallest. Other windows hold ten or more
-such pairs with no call: the chromosome start and 1.4, 2.8, 32.7 and 48.5 Mb.
-
-To check the _EFCAB8_ deletion against the reads, compare the depth inside the
-call with the depth beside it, and count the long pairs around it:
-
-```bash
-samtools coverage -r chr20:32937680-32941583 NA12878.final.cram | cut -f 1-3,7
-samtools coverage -r chr20:32930000-32937000 NA12878.final.cram | cut -f 1-3,7
-samtools view -q 20 NA12878.final.cram chr20:32935000-32944000 |
-  awk '{ t = $9 < 0 ? -$9 : $9; if (t > 2000) big++; else if (t > 0) norm++ }
-    END { print norm " pairs at the library insert, " big " over 2 kb" }'
-```
-
-Depth inside the call comes out about half the depth beside it, as a
-heterozygous deletion predicts. Around the call, almost every pair sits at the
-library insert, and a few dozen exceed 2 kb.
 
 ## Reproduce it end to end
 

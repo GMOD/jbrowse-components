@@ -374,31 +374,6 @@ A launched view is a few kilobases wide, so it draws each indel from the CIGAR
 `minimap2 -c` wrote. **CIGAR indels** in the settings menu sets them to colored,
 transparent or none.
 
-## Checking the Sakai gap against the PAF
-
-To print the alignments between two strains near a gap, here Sakai against K-12
-at the stx2 island, set `s` and `m` to the two strain prefixes and `lo` and `hi`
-to the window. Because `-X` emits each pair once in either direction, the
-coordinates come from whichever column holds the strain:
-
-```bash
-awk -F'\t' -v OFS='\t' -v s=Sakai -v m=K12 '
-  $1 ~ "^" s "#" && $6 ~ "^" m "#" { print $3, $4; next }
-  $1 ~ "^" m "#" && $6 ~ "^" s "#" { print $8, $9 }
-' all_vs_all.paf | sort -n | awk -v lo=1200000 -v hi=1300000 '$1 < hi && $2 > lo'
-```
-
-```text
-1207288	1207877
-1210882	1246166
-1251954	1252260
-1274685	1275548
-```
-
-The second line is the shared backbone the ribbon draws. The third is short, and
-the fourth starts at 1,274,685, so _stx2A_ and _stx2B_ fall in a stretch with no
-K-12 counterpart.
-
 ## Reproduce it end to end
 
 [`build_ecoli_pangenome_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_synteny.sh)

@@ -17,8 +17,6 @@ chr22 with the GENCODE annotation, and:
   JBrowse
 - use the page's cards and filters, and the Disagreements track of junctions
   that differ from GENCODE
-- check one disagreement, where a model merges _IL17REL_ and _TTLL8_, against
-  GENCODE
 
 The pipeline is
 [cmdcolin/gene-review-portal](https://github.com/cmdcolin/gene-review-portal),
@@ -216,22 +214,6 @@ chr22  21636314  21636431  g13605.t1:donor-1048     0  +
 chr22  23977067  23977386  g13682.t1:donor+3025     0  -
 chr22  50012765  50018574  g14001.t1:split          0  -
 ```
-
-## Checking the IL17REL and TTLL8 merge against GENCODE
-
-Query GENCODE for the two genes the Tiberius model merges:
-
-```bash
-tabix https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz \
-  chr22:49,987,402-50,067,759 |
-  awk -F'\t' '$3=="gene"' |
-  grep -E 'IL17REL|TTLL8' |
-  cut -f1,4,5,7
-```
-
-`IL17REL` ends at 50,012,765 and `TTLL8` starts at 50,018,575, both on the minus
-strand, and the Tiberius model runs through the gap between them. The same query
-at _PI4KA_ returns two genes on opposite strands.
 
 ## See also
 

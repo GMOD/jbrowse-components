@@ -17,7 +17,6 @@ than a browser fetches at once. We:
   `jbrowse make-density`
 - load the counts as gene and repeat density tracks along chromosome 1
 - zoom in to 1q21, where the tracks give way to the features themselves
-- check the tracks against counts taken straight from the files
 
 ## Prerequisites
 
@@ -28,7 +27,7 @@ than a browser fetches at once. We:
 - `bedGraphToBigWig` from the
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/), which
   `make-density` runs
-- htslib (`bgzip`, `tabix`), for the counts at the end
+- htslib (`bgzip`, `tabix`), for the build script
 
 <!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig START -->
 
@@ -178,29 +177,6 @@ gene:
 ```
 
 <Figure src="/img/gene_density_1q21.png" caption="chr1 from 150 to 160 Mb, the RefSeq genes as features above Alu and L1 per kilobase." />
-
-## Checking the tracks against counts from the files
-
-The tracks are counts, so counting the files checks them. Hovering a track shows
-the count per kilobase under the cursor. Count one megabase under the tallest
-run of the gene track, at 155 Mb, and one under a trough, at 60 Mb. A gene's
-transcripts and exons have `Parent=`, so the gene line drops them and counts
-each gene once:
-
-```bash
-tabix genes.gff.gz chr1:155,000,000-156,000,000 | grep -vc 'Parent='
-tabix Alu.bed.gz chr1:155,000,000-156,000,000 | wc -l
-tabix L1.bed.gz chr1:155,000,000-156,000,000 | wc -l
-tabix Simple_repeat.bed.gz chr1:155,000,000-156,000,000 | wc -l
-```
-
-| window, chr1  | genes | Alu  | L1  | simple repeats |
-| ------------- | ----- | ---- | --- | -------------- |
-| 155 to 156 Mb | 49    | 1298 | 254 | 269            |
-| 60 to 61 Mb   | 4     | 146  | 295 | 235            |
-
-The gene count runs with the Alu count, while L1 and the simple repeats come out
-about the same in both, the same pattern the tracks show.
 
 ## Reproduce it end to end
 

@@ -23,7 +23,6 @@ alignment into syntenic, inverted, translocated and duplicated regions. We:
   [plotsr](https://github.com/schneebergerlab/plotsr) draws them
 - draw the same accessions as lanes of a multi-way display under Columbia
   coordinates
-- check the chromosome 4 inversion against SyRI's own output
 
 ## Prerequisites
 
@@ -335,18 +334,6 @@ those two accessions, so it has the type SyRI gave that pair.
 ```
 
 <Figure caption="Col-0 chromosome 4 with a row of SyRI regions per accession above, and the accessions as lanes below." src="/img/syri/col0_lanes.png" />
-
-## Checking the chromosome 4 inversion against syri.out
-
-The largest inverted region of the Col-0 and Ler run, straight from the SyRI
-table:
-
-```bash
-awk -F'\t' '$11=="INV" {print $3-$2+1, $1, $2, $3}' Col-0_Ler.syri.out | sort -nr | head -1
-```
-
-The largest inversion is on `Chr4`, from 1,612,606 to 2,782,621, the interval
-the crossed ribbon spans and the orange block on the Ler row.
 
 ## Structural forms on the Arabidopsis pangenome page
 

@@ -18,7 +18,7 @@ chloroplast to a plasmid. We:
 - load the genome, marked as circular so the ring closes with no gap at its
   origin, and the genes as a feature track
 - open the genome in the circular view and color the genes by feature type
-- check _ND6_ against the GFF3
+- open _ND6_ and its neighbours in a linear view
 
 ## Prerequisites
 
@@ -195,20 +195,13 @@ each joined to its feature by a line.
 
 <Figure src="/img/organelle_map/mito_ring.png" caption="NC_012920.1 as a circle, the NCBI genes grouped by strand and colored by type." />
 
-## Checking ND6 against the GFF3
+## ND6 in a linear view
 
 The minus-strand row holds a single protein-coding gene, _ND6_, which sits
 between _ND5_ and _CYTB_. Type `NC_012920.1:12,000-16,569` into a linear view
 with the same track to see the three side by side:
 
 <Figure src="/img/organelle_map/nd6_linear.png" caption="The end of NC_012920.1, the NCBI genes grouped by strand." />
-
-The command below lists the minus-strand genes from the GFF3's strand column,
-_ND6_ and eight tRNA genes:
-
-```bash
-awk -F'\t' '$3 == "gene" && $7 == "-"' genes.gff3 | grep -o 'Name=[^;]*'
-```
 
 Anderson et al. (1981) published the sequence with this layout, twelve of the
 thirteen protein-coding genes on one strand and _ND6_ on the other.

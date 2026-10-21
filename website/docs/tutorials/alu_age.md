@@ -278,39 +278,6 @@ copies per megabase:
 The young share falls as the copies rise, and the plus-strand control shows no
 trend.[^perbin]
 
-## Checking the bars against the BED file
-
-Read `chr1:151,000,000-151,030,000` out of the BED, one line per lineage:
-
-```bash
-tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:151,000,000-151,030,000 |
-  awk -F'\t' '{ l = substr($4, 1, 4); n[l]++; s[l] += $12 }
-    END { for (l in n) printf "%s\t%d copies\tmean milliDiv %.0f\n", l, n[l], s[l] / n[l] }'
-```
-
-| lineage | copies | mean milliDiv |
-| ------- | -----: | ------------: |
-| AluY    |      3 |            57 |
-| AluS    |     30 |           100 |
-| FLAM    |      4 |           140 |
-| AluJ    |     12 |           150 |
-
-Count the copies in one red and one blue megabase of the share track:
-
-```bash
-tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:191,000,001-192,000,000 |
-  awk -F'\t' '$2 >= 191000000 && $4 ~ /^Alu[JSY]/ { n++; y += ($4 ~ /^AluY/) }
-    END { print n " copies, " y " AluY" }'
-```
-
-| megabase, chr1 | Alu copies | AluY |
-| -------------- | ---------: | ---: |
-| 191 to 192 Mb  |        161 |   55 |
-| 203 to 204 Mb  |        690 |   47 |
-
-The AluY count barely moves between the two megabases, and the older copies pile
-up in the dense one, so the young share is lower there and its bar is blue.
-
 ## Reproduce it end to end
 
 [`build_alu_age.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_alu_age.sh)

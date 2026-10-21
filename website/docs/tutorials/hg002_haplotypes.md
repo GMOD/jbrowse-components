@@ -19,7 +19,6 @@ and:
 - open a dotplot of the mother's copy of every chromosome against the father's
 - open the 8p23.1 inversion in a linear synteny view, with the follow button
   keeping the two haplotypes in register
-- check the inversion against the chain
 
 ## Prerequisites
 
@@ -201,20 +200,6 @@ types the same coordinates into both panels, 2 Mb into the collinear chain past
 the inversion.
 
 <Video src="/media/synteny/hg002_follow_panels.mp4" caption="The follow button places the paternal panel from the maternal one through the chain, so the location markers stay vertical as the top panel is dragged." />
-
-## Checking the 8p23.1 inversion against the chain
-
-The chain file lists each inverted block as a chain on the `-` strand, and the
-longest on maternal chr8 is the 8p23.1 inversion, the stretch the blue bar spans
-in both panels:
-
-```bash
-# the longest inverted chains on maternal chr8: start, end and length
-curl -s https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/changes/hg002v1.2_to_other_haplotype.chain.gz \
-  | gzip -dc \
-  | awk '$1 == "chain" && $3 == "chr8_MATERNAL" && $10 == "-" {print $6, $7, $7 - $6}' \
-  | sort -k3,3nr | head -3
-```
 
 ## See also
 
