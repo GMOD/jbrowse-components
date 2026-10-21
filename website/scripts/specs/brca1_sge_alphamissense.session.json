@@ -6,43 +6,38 @@
       "type": "LinearGenomeView",
       "colorByCDS": false,
       "hideHeaderOverview": true,
-      "axis": {
-        "grid": false
-      },
-      "init": {
-        "assembly": "hg38",
-        "loc": "chr17:43051051-43051129[rev]",
-        "tracks": [
-          {
-            "trackId": "brca1_sge_missense",
-            "height": 120
+      "assembly": "hg38",
+      "loc": "chr17:43051051-43051129[rev]",
+      "tracks": [
+        {
+          "trackId": "brca1_sge_missense",
+          "height": 120
+        },
+        {
+          "trackId": "hg38-alphaMissense",
+          "height": 90,
+          "type": "LinearWiggleDisplay",
+          "mark": "span",
+          "rows": "source",
+          "showLegend": false,
+          "color": {
+            "field": "score",
+            "scale": "linear",
+            "range": ["#2c7bb6", "#ffffff", "#d7191c"],
+            "domainMid": 0.5
           },
-          {
-            "trackId": "hg38-alphaMissense",
-            "height": 90,
-            "type": "LinearWiggleDisplay",
-            "mark": "span",
-            "rows": "source",
-            "showLegend": false,
-            "color": {
-              "field": "score",
-              "scale": "linear",
-              "range": ["#2c7bb6", "#ffffff", "#d7191c"],
-              "domainMid": 0.5
-            },
-            "scales": {
-              "y": {
-                "domainMin": 0,
-                "domainMax": 1
-              }
+          "scales": {
+            "y": {
+              "domainMin": 0,
+              "domainMax": 1
             }
-          },
-          {
-            "trackId": "hg38-ncbiRefSeqSelect",
-            "height": 50
           }
-        ]
-      }
+        },
+        {
+          "trackId": "hg38-ncbiRefSeqSelect",
+          "height": 50
+        }
+      ]
     },
     {
       "id": "protein-BRCA1-measured",

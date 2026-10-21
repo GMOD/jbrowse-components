@@ -1,50 +1,66 @@
 ---
 name: protein-figures-and-viz-features
-description: "Hero figures for the protein browser (genome view linked to one or two Mol* structures). Three variant-to-structure figures landed on protein3d 1.23.0 (TP53 Y220C, BRCA1 M1775R, SNCA E46K) beside the nine older specs. Open: an ortholog alignment that adds evidence, the figures the data supports but nobody has built, and the older figures' known weaknesses."
+description: "Hero figures for the protein browser (genome view linked to one or two Mol* structures). Five figures on protein3d 1.24.0: a saturation scan painted on the fold beside AlphaMissense (BRCA1 1T15, TP53 3KMD) and three variant pairs (TP53 Y220C, BRCA1 M1775R, SNCA E46K). Open: which one the grant leads with, the TP53 painting's contrast, and the older figures' weaknesses."
 ---
 
 # Protein figures and 3D visualization features: what is left
 
-Revised 2026-10-21. Colin wants figures that win an NIH R01: one story each, a
-variant whose structural consequence the reader can see, WILD TYPE / MUTANT
-labels and few short callouts, the JBrowse app UI in frame.
+Revised 2026-10-21. Colin wants figures that win an NIH R01: one story each, the
+JBrowse app UI in frame, short callouts, and several candidates to pick from or
+present together.
 
 ## On main
 
-- Three figures, one spec file each, with their sessions beside them:
-  `protein_figure_tp53_y220c.ts`, `protein_figure_brca1_m1775r.ts`,
-  `protein_figure_snca_e46k.ts`. They load the hosted hg38 config and resolve
-  Protein3d from the store (1.23.0). Every number in a callout is measured;
-  the spec comments and session files carry the provenance.
-- The nine older specs in `protein_variants.ts` (`brca1_sge` retired, replaced
-  by the M1775R figure); `protein_variants_kinases.ts`, `_genetics.ts` and
-  `_more.ts` are empty and registered.
-- Protein3d 1.23.0 added the figure-session properties the three use:
-  `camera`, structure `chains`, `surface`, `silhouettes`, `marks`, `distances`,
-  orange ligands under mapped-chain coloring, and a protein-change highlight
-  label (E46K) that reads as each structure's own residue in 3D. Plugin doc:
+- **Scan vs AlphaMissense**, `protein_figure_scan_vs_alphamissense.ts`: the
+  genome view at codon resolution with every missense change of a saturation
+  scan as a dot and the hub's AlphaMissense four-row heatmap, above one fold
+  drawn twice, colored by the scan's residue mean (`color.field: 'track'`) and
+  by AlphaMissense, one camera. BRCA1 1T15 (chains A and B, M1775R) and the
+  TP53 3KMD dimer on DNA (chains A, B, E, F, R248Q). Sessions beside the spec;
+  the builders that wrote them, the in-page camera reader and the capture
+  script with a paint gate are machine-local in `/var/tmp/hero-figures/`.
+- **Variant pairs**, one spec file each: `protein_figure_tp53_y220c.ts`,
+  `protein_figure_brca1_m1775r.ts`, `protein_figure_snca_e46k.ts` (now four
+  callouts fewer, with the wild-type Glu46–Lys80 distance drawn so the panels
+  read against each other).
+- The nine older specs in `protein_variants.ts`.
+- Protein3d 1.24.0: `protein-view-ready` waits for a color field's values and
+  the paint that follows (1.23.0 flipped it 20–40 s early for `track`,
+  `alphaMissense` and `clinvar`, and a capture showed Mol*'s chain colors under
+  the right legend), and `occlusion: true` beside `silhouettes`. Plugin doc:
   `docs/figure-sessions.md`.
-- Hosted data: `jbrowse.org/demos/brca1/BRCA1.sge.missense.bedGraph.gz` and
-  `tp53_sge/TP53.sge.missense.bedGraph.gz` (every missense SNV, three rows per
-  base), beside the older `apoe/`, `factor_v/` and mean-score bigWigs.
+- Hosted data: `jbrowse.org/demos/brca1/` (every missense SNV, residue mean
+  bigWig) and `tp53_sge/` (every missense SNV, position mean bigWig).
+
+## What the 2026-10-21 reviews said
+
+Three reads, in `/var/tmp/hero-figures/review/` (a cold reviewer of the eight
+figures, a blinded ideator given only a capability sheet, a landscape survey):
+
+- No surveyed tool (UCSC, Ensembl, gnomAD, cBioPortal, COSMIC-3D, ProtVar,
+  MaveDB, G2P, AlphaFold DB) puts nucleotide-level tracks in a genome browser
+  linked to a structure; the ideator and an independent prototype converged on
+  the scan-painted fold beside AlphaMissense.
+- The cold reviewer ranked the pairs snca_e46k 7.5, brca1_m1775r 6.5,
+  tp53_y220c 6, every older figure 4 or below; one hue shared by the codon
+  column, its chip and the residue is what carries the link; the MSA panel
+  hurts in every figure that has it.
 
 ## Next
 
-1. **An alignment that adds evidence.** Tried on M1775R and E46K and removed:
-   at figure size the MSA shows about eight rows, all matching human. The
-   points it could make need rows it cannot show: Ensembl orthologs carry Leu at
-   BRCA1 1775 in a few mammals (Leu works in the scan) and keep a negative
-   charge at SNCA 46 (Glu, Asp in fish) in 182 of 183, but the app's NCBI set
-   showed Met in every visible row at 1775. A figure would need a filtered,
-   taller alignment or a column summary.
-2. **Figures the data supports, unbuilt:** VHL hydroxyproline pocket (1LM8 with
-   VH032 4W9H, SGE S111/H115 allelic series), MAPT S305I (10IJ vs 7P6D; built
-   and dropped: the comparison is one carrier against a different sporadic
-   disease, and its 2.5 Å Ile–Phe distance is a model clash), SOD1 H81R,
-   DCLRE1C H35D, PTPN11, PTEN.
-3. **Cold readers plateaued at 3/5** across about twenty reads, with asks that
-   contradict between rounds (connector lines "clutter", then "link not
-   shown"). Judge a revision by eye and by Colin, not by another read.
+1. **Which figure leads.** Colin picks, or the grant shows several.
+2. **TP53's painting has less contrast than BRCA1's**: the Funk scan's mean per
+   codon sits near zero over much of the domain, so the 2-class threshold at 0
+   paints a mottled dimer. A cut at the paper's own call, or the residue mean
+   over the three classes, may read better.
+3. **Occlusion is subtle** in software GL at figure size; worth a headed
+   capture before deciding it stays on.
+4. **SNCA**: the reviewer's remaining asks, a superposition so Lys80 sits at the
+   same screen position in both panels and "a different fibril fold" in the
+   caption, are not done.
+5. **Figures the data supports, unbuilt:** VHL hydroxyproline pocket (1LM8 with
+   VH032 4W9H, SGE S111/H115 allelic series), SOD1 H81R, DCLRE1C H35D, PTPN11,
+   PTEN.
 
 ## Known weaknesses
 
@@ -63,7 +79,10 @@ labels and few short callouts, the JBrowse app UI in frame.
   loads them all.
 - Adding a view shifts `anchor.view` indexes; a residue callout then anchors
   to the wrong panel without an error.
+- The website generator has no in-page wait, so a figure whose color arrives
+  late depends on the plugin's ready marker covering it; a fixed `delay` shot
+  green folds in a different panel each run.
 - `/tmp` is a 16 GB quota tmpfs, so run captures with `TMPDIR=/var/tmp/<dir>`.
 - A commit message containing "update docs" deploys the site.
-- Screen outputs are machine-local scratch: `/var/tmp/sge-screen/`,
-  `/var/tmp/r01-*/`, `/var/tmp/msa/`.
+- Screen outputs are machine-local scratch: `/var/tmp/hero-figures/`,
+  `/var/tmp/proto-shots/`, `/var/tmp/sge-screen/`, `/var/tmp/r01-*/`.
