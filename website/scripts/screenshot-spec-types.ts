@@ -132,6 +132,16 @@ export interface ScreenshotStage {
   viewportHeight?: number
 }
 
+// How a figure of several frames lays them out, in the composition's own px.
+export interface FrameLayout {
+  // frames per row; 1 stacks them
+  columns?: number
+  // white space between the frames: 24 in rows, 0 stacked
+  gutter?: number
+  // white columns down both sides of a stack
+  sideMargin?: number
+}
+
 // Fields every spec shares, whatever produces its PNG. Kept apart from
 // CommonSpecFields (which is browser-capture-only) so the generator can read
 // them off a bare ScreenshotSpec without narrowing by mode first.

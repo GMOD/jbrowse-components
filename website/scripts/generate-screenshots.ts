@@ -28,14 +28,12 @@ import { launch } from 'puppeteer'
 
 import { delay, runAction } from './actions.ts'
 import {
-  IM,
-  IM_REPRODUCIBLE,
   commitScreenshot,
-  imageSize,
   optimizePng,
   pngDiffFraction,
   trailingBackgroundPx,
 } from './image-pipeline.ts'
+import { arrangeFrames } from './screenshot-arrange.ts'
 import {
   assertRenderSettled,
   assertSamePageAsReady,
@@ -200,83 +198,8 @@ async function renderSpecToTemp(
   return renderPath
 }
 
-// Gutter between side-by-side panels — a `stageColumns` grid or a horizontal
-// `compose` — in captured (2x) pixels. Two app windows sharing an edge read as
-// one window with a seam down it, which is what the border is for; a vertical
-// stack doesn't have the problem (the app's own title bar separates the frames)
-// and is left abutting, as every stacked figure in the set already is.
-const GRID_GUTTER_PX = 24
-
-// One reading of a compose spec's gutter, because two places need it to agree:
-// the ImageMagick pass that inserts it and the overlay pass that computes each
-// part's box in the finished image. They disagreeing is a callout anchored a
-// gutter's worth away from the part it names, which nothing would report.
-function composeGutter(spec: ComposeSpec) {
-  return spec.gutter ?? (spec.direction === 'horizontal' ? GRID_GUTTER_PX : 0)
-}
-
-// White border on each panel, so the pair is separated by a full gutter.
-function padPanels(files: string[], gutter = GRID_GUTTER_PX) {
-  for (const f of files) {
-    execFileSync(IM, [
-      f,
-      '-bordercolor',
-      'white',
-      '-border',
-      `${gutter / 2}`,
-      ...IM_REPRODUCIBLE,
-      f,
-    ])
-  }
-}
-
-// One reading of a stacked composition's side margin, for the same reason
-// `composeGutter` has one: the ImageMagick pass that inserts it and the overlay
-// pass that computes each part's box both need it.
-function composeSideMargin(spec: ComposeSpec) {
-  return spec.direction === 'horizontal' ? 0 : (spec.sideMargin ?? 0)
-}
-
-// White columns down BOTH sides of each part, and no rows. Symmetric, so
-// `-border WxH` with H=0 is exactly it, and unlike the gutter this one is a
-// margin at the figure's own edges — which is the point of it.
-function padSides(files: string[], margin: number) {
-  for (const f of files) {
-    execFileSync(IM, [
-      f,
-      '-bordercolor',
-      'white',
-      '-border',
-      `${margin}x0`,
-      ...IM_REPRODUCIBLE,
-      f,
-    ])
-  }
-}
-
-// A gutter ABOVE each of these files, and nothing below: `-splice` inserts rows
-// rather than framing the image, so a stack gains space between its parts
-// without gaining a margin at its own top and bottom. `-border` cannot express
-// that — it is symmetric by construction — which is why the two directions do
-// not share one call.
-function spliceGutterAbove(files: string[], gutter: number) {
-  for (const f of files) {
-    execFileSync(IM, [
-      f,
-      '-background',
-      'white',
-      '-splice',
-      `0x${gutter}+0+0`,
-      ...IM_REPRODUCIBLE,
-      f,
-    ])
-  }
-}
-
-// Capture each stage of a multi-stage figure to its own temp file, then stack
-// them top-to-bottom with ImageMagick (`convert f0 f1 -append`) into
-// `renderPath` — the same composition the hand-made two-stage teaching figures
-// used — or into rows of `stageColumns` when the spec asks for a grid.
+// Capture each stage of a multi-stage figure to its own temp file, then
+// arrange the frames into `renderPath`.
 async function captureStages(
   page: Page,
   spec: BrowserScreenshotSpec,
@@ -284,66 +207,17 @@ async function captureStages(
   renderPath: string,
   port: number,
 ) {
-  const cols = spec.stageColumns ?? 0
-  const gutter = spec.stageGutter ?? GRID_GUTTER_PX
   const stageFiles = stages.map((_, i) =>
     tempPath('jb-shot', spec.name, `-${i}`),
   )
-  const rowFiles = Array.from(
-    { length: cols > 1 ? Math.ceil(stages.length / cols) : 0 },
-    (_, i) => tempPath('jb-row', spec.name, `-${i}`),
-  )
   try {
     await captureEachStage(page, spec, stages, stageFiles, port)
-    // before padPanels, the only moment the frames are their own size
-    const sizes = spec.gridAnnotations?.length
-      ? await Promise.all(
-          stageFiles.map(async f => ({
-            ...(await imageSize(f)),
-            left: 0,
-            top: 0,
-          })),
-        )
-      : undefined
-    if (cols > 1) {
-      // rows of `cols` frames, then the rows stacked. A trailing partial row is
-      // padded on the right to the full row width rather than centered, so the
-      // frames stay on a grid a reader can scan down a column of.
-      //
-      padPanels(stageFiles, gutter)
-      for (const [r, row] of rowFiles.entries()) {
-        const frames = stageFiles.slice(r * cols, r * cols + cols)
-        execFileSync(IM, [...frames, ...IM_REPRODUCIBLE, '+append', row])
-      }
-      execFileSync(IM, [
-        ...rowFiles,
-        '-background',
-        'white',
-        '-gravity',
-        'west',
-        ...IM_REPRODUCIBLE,
-        '-append',
-        renderPath,
-      ])
-    } else {
-      execFileSync(IM, [
-        ...stageFiles,
-        ...IM_REPRODUCIBLE,
-        '-append',
-        renderPath,
-      ])
-    }
-    if (sizes && spec.gridAnnotations) {
-      await overlayOnComposition(
-        renderPath,
-        spec.gridAnnotations,
-        stageBoxes(sizes, cols, gutter),
-      )
-    }
+    await arrangeFrames(stageFiles, renderPath, {
+      columns: spec.stageColumns,
+      gutter: spec.stageGutter,
+      annotations: spec.gridAnnotations,
+    })
   } finally {
-    for (const f of rowFiles) {
-      fs.rmSync(f, { force: true })
-    }
     // also on the way out of a failed stage, so a spec that throws mid-figure
     // doesn't leave half its frames behind in tmp
     for (const f of stageFiles) {
@@ -632,207 +506,24 @@ function mirrorFile(src: string, dest: string) {
   }
 }
 
-// One part's rect in a finished composition, in the composition's own pixels.
-interface PartBox {
-  left: number
-  top: number
-  width: number
-  height: number
-}
-
-// Draw a compose spec's callouts over the finished composition.
-//
-// Each part's box is computed from that part's own dimensions and the gutter,
-// never measured off the composed image: `+append` top-aligns and `-append`
-// left-aligns, and `padPanels` puts half a gutter on every side of a
-// side-by-side panel.
-async function annotateComposition(spec: ComposeSpec, renderPath: string) {
-  const annotations = spec.annotations
-  if (!annotations?.length) {
-    return
-  }
-  const gutter = composeGutter(spec)
-  const sideMargin = composeSideMargin(spec)
-  const sizes = await Promise.all(
-    spec.parts.map(part => imageSize(path.join(outDir, `${part}.png`))),
-  )
-  let offset = 0
-  // The two directions pad differently, so the box math differs with them:
-  // side by side each part is BORDERED (half a gutter on all four sides, which
-  // is what padPanels does), stacked each part after the first is SPLICED (a
-  // whole gutter above it, and nothing at the figure's own top or bottom).
-  const boxes = sizes.map((size, i) => {
-    const box =
-      spec.direction === 'horizontal'
-        ? { left: offset + gutter / 2, top: gutter / 2, ...size }
-        : { left: sideMargin, top: offset + i * gutter, ...size }
-    offset +=
-      spec.direction === 'horizontal' ? size.width + gutter : size.height
-    return box
-  })
-  await overlayOnComposition(renderPath, annotations, boxes)
-}
-
-// Where each stage frame lands in the composition `captureStages` built, so a
-// `stages` spec can carry the same overlay a `compose` one does. Derived from
-// the append rather than measured off the result: a single column is a bare
-// `-append` of unpadded frames; a grid is `padPanels` (half a gutter every
-// side) then `+append` per row then `-append` of the rows.
-function stageBoxes(sizes: PartBox[], cols: number, gutter: number): PartBox[] {
-  if (cols <= 1) {
-    let top = 0
-    return sizes.map(size => {
-      const box = { ...size, left: 0, top }
-      top += size.height
-      return box
-    })
-  }
-  const boxes: PartBox[] = []
-  let top = 0
-  for (let start = 0; start < sizes.length; start += cols) {
-    const row = sizes.slice(start, start + cols)
-    let left = 0
-    for (const size of row) {
-      boxes.push({
-        ...size,
-        left: left + gutter / 2,
-        top: top + gutter / 2,
-      })
-      left += size.width + gutter
-    }
-    top += Math.max(...row.map(s => s.height)) + gutter
-  }
-  return boxes
-}
-
-// Draw callouts over a finished composition, with one anchorable element per
-// part.
-//
-// The composition is a flat PNG with no app in it, so this opens a page that is
-// nothing but that image and one absolutely-positioned element per part, and
-// runs the SAME overlay every other figure's callouts go through — the parts
-// are then anchorable by `[data-part="N"]` and the pill/arrow/badge vocabulary
-// is one implementation rather than an ImageMagick lookalike beside it. It is
-// also the only way a jb2export part can carry a callout at all: those render
-// through React SSR with no browser involved.
-//
-// deviceScaleFactor 1 with the viewport and the img sized to the PNG's own
-// pixels, so the capture is the composition unresampled with the overlay on
-// top. A CLI part is 1x and an app part is 2x; this pass does not know which,
-// and does not have to.
-async function overlayOnComposition(
-  renderPath: string,
-  annotations: Annotation[],
-  boxes: PartBox[],
-) {
-  const { width, height } = await imageSize(renderPath)
-  // The page is written beside the image and opened as a file:// URL rather
-  // than pushed in with setContent: an about:blank page cannot load a file://
-  // subresource, so the img would come back empty and the capture would be the
-  // callouts on white.
-  const pagePath = `${renderPath}.html`
-  fs.writeFileSync(
-    pagePath,
-    `<!doctype html><html><body style="margin:0;background:#fff">
-<img src="${path.basename(renderPath)}" style="display:block;width:${width}px;height:${height}px">
-${boxes
-  .map(
-    (b, i) =>
-      `<div data-part="${i}" style="position:absolute;left:${b.left}px;top:${b.top}px;width:${b.width}px;height:${b.height}px"></div>`,
-  )
-  .join('\n')}
-</body></html>`,
-  )
-  // `--window-size` IS LOAD-BEARING, and its absence fails in a way that looks
-  // like a corrupt figure rather than a capture bug: a viewport wider than the
-  // window screenshots as the leftmost window-width of the page TILED across
-  // the frame. `page.evaluate` reading the same image into a canvas returns the
-  // right pixels throughout, so nothing about the page or the PNG is wrong --
-  // only the compositor surface the screenshot is taken off. A composition is
-  // routinely 3000+ px wide (three 1000 px panels), which is where this bites;
-  // the app captures never do, because their viewport is CSS px at
-  // deviceScaleFactor 2. Not fixable with captureBeyondViewport or fullPage,
-  // both tried.
-  //
-  // The window is asked for LARGER than the frame in both directions, because
-  // `--window-size` is the outer window and the surface inside it is smaller by
-  // whatever chrome the headless build draws -- at an exact fit the bottom
-  // ~60 px tiled while the rest was correct, which is the same bug in its
-  // easiest-to-miss form. The viewport override still fixes the page's layout
-  // size, so the slack costs nothing.
-  const browser = await launch({
-    headless: true,
-    executablePath: findChromeExecutable(),
-    args: [...BASE_CHROME_ARGS, `--window-size=${width + 100},${height + 300}`],
-  })
-  try {
-    const page = await browser.newPage()
-    await page.setViewport({ width, height, deviceScaleFactor: 1 })
-    await page.goto(`file://${pagePath}`, { waitUntil: 'load' })
-    await drawAnnotations(page, annotations)
-    await page.screenshot({ path: renderPath })
-  } finally {
-    await browser.close()
-    fs.rmSync(pagePath, { force: true })
-  }
-}
-
-// Stack the committed PNGs of `spec.parts` into one figure (top to bottom) with
-// the same `convert -append` a `stages` capture uses, or side by side with
-// `+append` when the spec asks for it. Runs after the render pool so the parts
-// are already fresh on disk; a filter that targets only the compose spec
-// recomposes from the committed parts.
+// Arrange the committed PNGs of `spec.parts`. Runs after the render pool, so
+// the parts are already fresh on disk.
 async function captureComposeSpec(spec: ComposeSpec) {
-  const partPath = (part: string) => path.join(outDir, `${part}.png`)
-  const missing = spec.parts.filter(part => !fs.existsSync(partPath(part)))
+  const partPaths = spec.parts.map(part => path.join(outDir, `${part}.png`))
+  const missing = spec.parts.filter((_, i) => !fs.existsSync(partPaths[i]!))
   if (missing.length > 0) {
     throw new Error(`missing part image(s): ${missing.join(', ')}`)
   }
   const renderPath = tempPath('jb-compose', spec.name)
   const horizontal = spec.direction === 'horizontal'
-  const gutter = composeGutter(spec)
-  const sideMargin = composeSideMargin(spec)
-  // Any padding at all goes on a COPY of the part. They are the committed part
-  // PNGs, so padding them in place makes every part figure grow a white frame
-  // of its own each time the compose runs.
-  const padded = horizontal || gutter > 0 || sideMargin > 0
-  const partPaths = spec.parts.map((part, i) =>
-    padded ? tempPath('jb-part', spec.name, `-${i}`) : partPath(part),
-  )
-  try {
-    if (padded) {
-      for (const [i, part] of spec.parts.entries()) {
-        fs.copyFileSync(partPath(part), partPaths[i]!)
-      }
-      if (horizontal) {
-        padPanels(partPaths, gutter)
-      } else {
-        if (gutter > 0) {
-          // every part but the first, so the gutters land between them
-          spliceGutterAbove(partPaths.slice(1), gutter)
-        }
-        if (sideMargin > 0) {
-          // every part, so `-append` still left-aligns them onto one width
-          padSides(partPaths, sideMargin)
-        }
-      }
-    }
-    execFileSync(IM, [
-      ...partPaths,
-      ...IM_REPRODUCIBLE,
-      horizontal ? '+append' : '-append',
-      renderPath,
-    ])
-    await annotateComposition(spec, renderPath)
-    optimizePng(renderPath)
-    return commitTemp(renderPath, path.join(outDir, `${spec.name}.png`), spec)
-  } finally {
-    if (padded) {
-      for (const f of partPaths) {
-        fs.rmSync(f, { force: true })
-      }
-    }
-  }
+  await arrangeFrames(partPaths, renderPath, {
+    columns: horizontal ? spec.parts.length : 1,
+    gutter: spec.gutter,
+    sideMargin: horizontal ? undefined : spec.sideMargin,
+    annotations: spec.annotations,
+  })
+  optimizePng(renderPath)
+  return commitTemp(renderPath, path.join(outDir, `${spec.name}.png`), spec)
 }
 
 async function main() {
