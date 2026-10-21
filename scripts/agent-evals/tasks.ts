@@ -625,6 +625,40 @@ export const TASKS: EvalTask[] = [
       const said = answer.includes('volvox_star_fusion')
       return { pass: said, detail: { answer } }`,
   },
+  {
+    name: 'ho-hotspot-view',
+    heldOut: true,
+    prompt:
+      'Find the gene on ctgA with the most variants in the variant track. Then add a second view of just that gene showing the gene track, the variant track and the microarray signal track, with the signal scale fixed from 0 to 200, and leave the first view as it is.',
+    setup: `globalThis.evalViewId = session.views[0].id`,
+    solution: `
+      const genes = await jb.getFeatures({ trackId: 'gff3tabix_genes', loc: 'ctgA:1-30,000' })
+      const variants = await jb.getFeatures({ trackId: 'volvox_test_vcf', loc: 'ctgA:1-30,000' })
+      const count = g => variants.filter(v => v.get('start') < g.get('end') && v.get('end') > g.get('start')).length
+      const best = genes.filter(g => g.get('type') === 'gene').sort((a, b) => count(b) - count(a))[0]
+      await jb.addView({ type: 'LinearGenomeView', assembly: 'volvox', loc: best.get('name'), tracks: ['gff3tabix_genes', 'volvox_test_vcf', 'volvox_microarray'] })
+      await jb.trackModel('volvox_microarray').applyDisplaySettings({ scales: { y: { domainMin: 0, domainMax: 200 } } })
+      return jb.waitReady(30000)`,
+    grade: `
+      const genes = await jb.getFeatures({ trackId: 'gff3tabix_genes', loc: 'ctgA:1-30,000' })
+      const variants = await jb.getFeatures({ trackId: 'volvox_test_vcf', loc: 'ctgA:1-30,000' })
+      const overlaps = (a, b) => a.get('start') < b.get('end') && a.get('end') > b.get('start')
+      const ranked = genes.filter(g => g.get('type') === 'gene').map(g => ({ g, n: variants.filter(v => overlaps(v, g)).length })).sort((a, b) => b.n - a.n)
+      const best = ranked[0]?.g
+      const second = session.views.find(v => v.id !== globalThis.evalViewId && v.type === 'LinearGenomeView')
+      const ids = ['gff3tabix_genes', 'volvox_test_vcf', 'volvox_microarray']
+      const hasTracks = !!second && ids.every(id => second.tracks.some(t => t.configuration.trackId === id))
+      const [r] = second ? await jb.visibleRegions(second.id) : []
+      const atGene = !!best && !!r && r.refName === 'ctgA' && r.start < best.get('end') && r.end > best.get('start') && r.end - r.start < 15000
+      const conf = second?.tracks.find(t => t.configuration.trackId === 'volvox_microarray')?.activeDisplay.configuration
+      const min = conf && jb.readConfObject(conf, ['scales', 'y', 'domainMin'])
+      const max = conf && jb.readConfObject(conf, ['scales', 'y', 'domainMax'])
+      const firstKept = session.views.some(v => v.id === globalThis.evalViewId)
+      return {
+        pass: atGene && hasTracks && min === 0 && max === 200 && firstKept,
+        detail: { best: best?.get('name'), n: ranked[0]?.n, atGene, hasTracks, min, max, firstKept, r },
+      }`,
+  },
   // Tutorial tasks: hosted data, so a run needs the network and takes longer.
   // Each names its tutorial the way a reader would, and the grader checks the
   // state the tutorial's figure shows, by whatever route the agent took.
