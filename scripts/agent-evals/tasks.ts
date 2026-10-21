@@ -8,6 +8,10 @@
 // `{ pass, detail? }`. A grader reads STATE, never the transcript: what is on
 // screen, what the data says, what the settings are.
 
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+
 export interface EvalTask {
   name: string
   prompt: string
@@ -28,9 +32,26 @@ export interface EvalTask {
   desktopOnly?: boolean
   // A hosted config the Web eval opens in place of the volvox baseline
   config?: string
+  // Needs work outside the app: a shell, local files, command-line tools.
+  // Claude Code gets its own Bash and file tools for it, and WORK in the
+  // prompt names the run's own folder, which holds `inputs`
+  outside?: boolean
+  // files from FIXTURES (fetchFixtures.sh downloads them) copied into WORK
+  inputs?: string[]
 }
 
-export type TaskSet = 'dev' | 'heldout' | 'tutorials' | 'all'
+export type TaskSet = 'dev' | 'heldout' | 'tutorials' | 'outside' | 'all'
+
+export const FIXTURES = path.join(os.homedir(), 'agent-evals/fixtures')
+
+// A fresh folder per run, so no run reads what an earlier one left behind
+export function stageWork(task: EvalTask) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jbrowse-agent-eval-cwd-'))
+  for (const file of task.inputs ?? []) {
+    fs.copyFileSync(path.join(FIXTURES, file), path.join(dir, file))
+  }
+  return dir
+}
 export type Surface = 'desktop' | 'web'
 
 // a mistyped --filter selected nothing, and the run reported 0/0 passed
@@ -38,7 +59,14 @@ export function selectTasks(set: TaskSet, filter = '', surface: Surface) {
   const tasks = TASKS.filter(
     t =>
       (set === 'all' ||
-        set === (t.tutorial ? 'tutorials' : t.heldOut ? 'heldout' : 'dev')) &&
+        set ===
+          (t.outside
+            ? 'outside'
+            : t.tutorial
+              ? 'tutorials'
+              : t.heldOut
+                ? 'heldout'
+                : 'dev')) &&
       (surface === 'desktop' || t.desktopOnly !== true) &&
       t.name.includes(filter),
   )
@@ -911,5 +939,92 @@ TASKS.push(
         pass: !!view && /BRCA1|P38398|alphafold|pdb|\\\\.cif|\\\\.pdb/i.test(state),
         detail: { types: session.views.map(v => v.type), state: state.slice(0, 400) },
       }`,
+  },
+)
+
+// Outside tasks: real public data in local files, and steps no JBrowse tool
+// does. Each grader reads the session the agent left, or its answer.
+const ECOLI_K12 = 'NC_000913.3'
+const ECOLI_SAKAI = 'NC_002695.2'
+
+TASKS.push(
+  {
+    name: 'ob-ecoli-synteny',
+    outside: true,
+    inputs: ['k12.fna.gz', 'sakai.fna.gz'],
+    prompt:
+      'WORK/k12.fna.gz and WORK/sakai.fna.gz are the genomes of E. coli K-12 MG1655 and O157:H7 Sakai, from NCBI. Compare them in a synteny view.',
+    grade: `
+      const view = session.views.find(v => v.type === 'LinearSyntenyView')
+      if (!view) {
+        return { pass: false, detail: session.views.map(v => v.type) }
+      }
+      const rows = view.views.map(v => {
+        const name = v.assemblyNames?.[0]
+        const asm = session.assemblyManager.get(name)
+        return { name, refNames: asm?.refNames ?? [] }
+      })
+      const k12 = rows.some(r => r.refNames.includes('${ECOLI_K12}'))
+      const sakai = rows.some(r => r.refNames.includes('${ECOLI_SAKAI}'))
+      const tracks = view.syntenyTracks().map(t => t.configuration.trackId)
+      return { pass: k12 && sakai && tracks.length > 0, detail: { rows, tracks } }`,
+  },
+  {
+    name: 'ob-ecoli-map-reads',
+    outside: true,
+    inputs: ['k12.fna.gz', 'reads.fastq.gz'],
+    prompt:
+      'WORK/reads.fastq.gz holds Illumina reads from E. coli K-12 (ENA run ERR022075), and WORK/k12.fna.gz is the K-12 MG1655 genome. Map the reads to the genome and show them at lacZ.',
+    grade: `
+      const out = []
+      for (const v of session.views.filter(v => v.type === 'LinearGenomeView')) {
+        const regions = await jb.visibleRegions(v.id)
+        const atLacZ = regions.some(r => r.refName === '${ECOLI_K12}' && r.start < 365529 && r.end > 362455 && r.end - r.start < 200000)
+        for (const t of v.tracks.filter(t => t.type === 'AlignmentsTrack')) {
+          const reads = [...await jb.getFeatures({ trackId: t.configuration.trackId, viewId: v.id, loc: '${ECOLI_K12}:362,456-365,529', byteLimit: 50e6 })].length
+          out.push({ atLacZ, track: t.configuration.trackId, reads })
+        }
+      }
+      return { pass: out.some(o => o.atLacZ && o.reads >= 75), detail: out }`,
+  },
+  {
+    name: 'ob-h3k27ac-ratio',
+    outside: true,
+    inputs: ['k562_h3k27ac.bw', 'gm12878_h3k27ac.bw'],
+    prompt:
+      'WORK/k562_h3k27ac.bw and WORK/gm12878_h3k27ac.bw are ENCODE H3K27ac fold-change signal on hg38 over the beta-globin locus (ENCFF289IVJ and ENCFF469WVA). Make a bigWig of log2((K562 + 1) / (GM12878 + 1)), save it as WORK/ratio.bw, and show it on hg38 at the beta-globin locus.',
+    grade: `
+      const probes = [
+        { loc: 'chr11:5,242,001-5,244,000', start: 5242000, end: 5244000, expect: 4.18, tol: 0.5 },
+        { loc: 'chr11:5,288,001-5,290,000', start: 5288000, end: 5290000, expect: 3.75, tol: 0.5 },
+        { loc: 'chr11:5,202,001-5,204,000', start: 5202000, end: 5204000, expect: -0.21, tol: 0.4 },
+      ]
+      const out = []
+      for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))) {
+        for (const t of v.tracks.filter(t => JSON.stringify(jb.mst.getSnapshot(t.configuration)).includes('ratio.bw'))) {
+          const means = []
+          for (const p of probes) {
+            let sum = 0
+            for (const f of await jb.getFeatures({ trackId: t.configuration.trackId, viewId: v.id, loc: p.loc })) {
+              const from = Math.max(f.get('start'), p.start)
+              const to = Math.min(f.get('end'), p.end)
+              if (to > from) {
+                sum += (to - from) * f.get('score')
+              }
+            }
+            means.push(Math.round((sum / (p.end - p.start)) * 100) / 100)
+          }
+          out.push({ track: t.configuration.trackId, means, ok: means.every((m, i) => Math.abs(m - probes[i].expect) <= probes[i].tol) })
+        }
+      }
+      return { pass: out.some(o => o.ok), detail: out }`,
+  },
+  {
+    name: 'ob-brca1-read-count',
+    outside: true,
+    inputs: ['na12878_brca1.bam', 'na12878_brca1.bam.bai'],
+    prompt:
+      'WORK/na12878_brca1.bam holds NA12878 reads around BRCA1 from the 1000 Genomes 30x CRAM, on GRCh38. How many primary, non-duplicate reads with mapping quality 30 or more overlap chr17:43,119,000-43,120,000? Reply with the number.',
+    grade: `return { pass: /\\b291\\b/.test(answer), detail: { answer: answer.slice(0, 300) } }`,
   },
 )
