@@ -819,3 +819,94 @@ for (const task of TASKS.filter(t => t.name.startsWith('hs-'))) {
       ? 'https://jbrowse.org/ucsc/all.json'
       : 'https://jbrowse.org/ucsc/hg38/config.json'
 }
+
+// Reach tasks: ambitious human requests that may exceed what the tools do
+// today. A failure here marks a limit, not a defect in the grader.
+const HG38_HUB = 'https://jbrowse.org/ucsc/hg38/config.json'
+const ALL_HUB = 'https://jbrowse.org/ucsc/all.json'
+const GENE_TRACK = '/^hg38-(ncbiRefSeq\\\\w*|knownGene|ensGene)$/'
+
+TASKS.push(
+  {
+    name: 'rc-three-way-synteny',
+    tutorial: true,
+    config: ALL_HUB,
+    prompt:
+      'Show human, mouse and rat stacked in one synteny view across the BRCA1 locus, with human on top.',
+    grade: `
+      const view = session.views.find(v => v.type === 'LinearSyntenyView')
+      if (!view) {
+        return { pass: false, detail: session.views.map(v => v.type) }
+      }
+      const names = view.views.map(v => v.assemblyNames[0])
+      const human = view.views.find(v => v.assemblyNames.includes('hg38'))
+      const regions = human ? await jb.visibleRegions(human.id) : []
+      const atBrca1 = regions.some(r => r.refName.replace(/^chr/, '') === '17' && r.start < 43100000 && r.end > 43060000 && r.end - r.start < 3000000)
+      const tracks = view.syntenyTracks().length
+      const pass = names.length >= 3 && atBrca1 && names.some(n => /^mm/.test(n)) && names.some(n => /^rn/.test(n)) && tracks >= 2
+      return { pass, detail: { names, regions, tracks } }`,
+  },
+  {
+    name: 'rc-mouse-ortholog',
+    tutorial: true,
+    config: ALL_HUB,
+    prompt: 'Take me to the mouse ortholog of human BRCA1 in the mouse genome.',
+    grade: `
+      const views = session.views.flatMap(v => v.views ?? [v])
+      const found = []
+      for (const v of views) {
+        if (v.assemblyNames?.some(a => /^mm/.test(a))) {
+          const rs = await jb.visibleRegions(v.id)
+          found.push(...rs.map(r => ({ refName: r.refName, start: r.start, end: r.end })))
+        }
+      }
+      const atBrca1 = found.some(r => r.refName.replace(/^chr/, '') === '11' && r.start < 102000000 && r.end > 101000000 && r.end - r.start < 2000000)
+      return { pass: atBrca1, detail: found }`,
+  },
+  {
+    name: 'rc-clinvar-color',
+    tutorial: true,
+    config: HG38_HUB,
+    prompt:
+      'In hg38 at BRCA1, show ClinVar variants colored by their clinical significance.',
+    grade: `${BRCA1}
+      const track = view?.tracks.find(t => t.configuration.trackId === 'hg38-clinvarMain')
+      const colored = track ? JSON.stringify(jb.mst.getSnapshot(track.activeDisplay.configuration)) : ''
+      return { pass: !!track && /signif|clinsig|pathogenic/i.test(colored), detail: { regions, ids, colored: colored.slice(0, 300) } }`,
+  },
+  {
+    name: 'rc-three-genes-side-by-side',
+    tutorial: true,
+    config: HG38_HUB,
+    prompt:
+      'In hg38, show BRCA1, BRCA2 and TP53 side by side with their genes and vertebrate conservation.',
+    grade: `
+      const lgvs = session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))
+      const regs = []
+      for (const v of lgvs) {
+        const ids = v.tracks.map(t => t.configuration.trackId)
+        const ok = ids.some(i => ${GENE_TRACK}.test(i)) && ids.some(i => /phyloP|phastCons/.test(i))
+        const rs = await jb.visibleRegions(v.id)
+        regs.push(...rs.map(r => ({ refName: r.refName.replace(/^chr/, ''), start: r.start, end: r.end, ok })))
+      }
+      const hit = (chrom, from, to) => regs.some(r => r.ok && r.refName === chrom && r.start < to && r.end > from)
+      const brca1 = hit('17', 43060000, 43100000)
+      const brca2 = hit('13', 32320000, 32390000)
+      const tp53 = hit('17', 7668000, 7687000)
+      return { pass: brca1 && brca2 && tp53, detail: { brca1, brca2, tp53, regs } }`,
+  },
+  {
+    name: 'rc-protein-viewer',
+    tutorial: true,
+    config: HG38_HUB,
+    prompt:
+      'In hg38 at BRCA1, open the protein structure viewer and mark the missense variants on it.',
+    grade: `
+      const view = session.views.find(v => v.type === 'ProteinView')
+      const state = view ? JSON.stringify(jb.mst.getSnapshot(view)) : ''
+      return {
+        pass: !!view && /BRCA1|P38398|alphafold|pdb|\\\\.cif|\\\\.pdb/i.test(state),
+        detail: { types: session.views.map(v => v.type), state: state.slice(0, 400) },
+      }`,
+  },
+)
