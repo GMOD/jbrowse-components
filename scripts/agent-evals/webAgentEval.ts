@@ -233,13 +233,20 @@ async function resetPage() {
     openTab(appUrl)
   }
   await bridge.waitForPage(60_000, before)
-  await bridge.evaluate(
+  await evaluateLive(
     `for (let i = 0; i < 200 && !window.jb; i++) { await new Promise(r => setTimeout(r, 250)) }
      if (!window.jb) { throw new Error('window.jb never appeared') }
      return true`,
-    { timeoutMs: 70_000 },
+    70_000,
   )
-  await bridge.evaluate(BASELINE_SPEC, { timeoutMs: 120_000 })
+  await evaluateLive(BASELINE_SPEC, 120_000)
+}
+
+// The page polls between jobs, so a call right after a long job finds no live
+// page until the next poll lands.
+async function evaluateLive(code: string, timeoutMs: number) {
+  const page = await bridge.waitForPage(30_000)
+  return bridge.evaluate(code, { timeoutMs, page })
 }
 
 interface RunMetrics {
@@ -265,8 +272,7 @@ try {
     for (let run = 1; run <= runs; run++) {
       await resetPage()
       if (task.setup) {
-        const page = await bridge.waitForPage(30_000)
-        await bridge.evaluate(task.setup, { timeoutMs: 120_000, page })
+        await evaluateLive(task.setup, 120_000)
       }
       const prompt = task.prompt.replaceAll(
         'DATA',
