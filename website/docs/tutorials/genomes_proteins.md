@@ -249,6 +249,27 @@ in the linear view you launched from, then narrow it to one record:
 
 <Figure src="/img/genomes_msa/genomic_domains.png" caption="NLRP1 with NCBI RefSeq above UniProt - Domains, filtered to the gene's reviewed UniProt entry." />
 
+## More protein browser sessions
+
+A protein browser session takes any other JBrowse track beside the codon, and a
+second protein view beside the first. Each figure's live link opens its session.
+
+<Figure src="/img/protein/brca1_sge.png" caption="BRCA1 with a saturation genome editing score track over the BRCT exons, the ortholog alignment and 1T15. Three variants of uncertain significance are labelled in the genome view, the alignment and the structure." />
+
+<Figure src="/img/protein/tp53_r273h.png" caption="TP53 with a saturation genome editing score track, the alignment's domains and two protein views: 5MG7 and 7B49, both bound to DNA. R273H is labelled in every view." />
+
+<Figure src="/img/protein/kras_two_drugs.png" caption="KRAS with two protein views side by side, 6OIM with sotorasib and 7RPZ with MRTX1133. The genome view, the alignment and both structures mark codon 12." />
+
+<Figure src="/img/protein/apoe_e4.png" caption="APOE under a Manhattan plot of FinnGen Alzheimer's disease statistics, above the ortholog alignment and two protein views: the 1B68 crystal structure and its AlphaFold model colored by pLDDT." />
+
+<Figure src="/img/protein/f5_leiden.png" caption="F5 under a Manhattan plot of FinnGen venous thromboembolism statistics, with the alignment and two protein views: factor Va alone (7KXY) and bound to activated protein C (9MOV)." />
+
+<Figure src="/img/protein/braf_v600e.png" caption="BRAF with the activation loop and the ATP binding site as domain colors in the genome view, the alignment and 4MNF." />
+
+<Figure src="/img/protein/cftr_f508.png" caption="CFTR with its ortholog alignment and 5UAK colored by ClinVar pathogenic variant count." />
+
+<Figure src="/img/protein/hbb_e6v.png" caption="HBB with the GWAS Catalog records at the codon and two protein views, 2HHB and 2HBS, colored by hydrophobicity." />
+
 ## Adding the plugins to your own instance
 
 The plugin store lists the two plugins as **Protein3d** and **MSAView**, and
