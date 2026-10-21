@@ -25106,6 +25106,57 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "$ref": "#/$defs/TrackSnapshot"
+        },
+        {
+          "type": "object",
+          "title": "PluginDisplayTrackEntry",
+          "description": "A track opened with a display the core plugins do not register: its keys pass unchecked.",
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "not": {
+                "enum": [
+                  "LinearBasicDisplay",
+                  "LinearFeatureDisplay",
+                  "LinearMultiRowFeatureDisplay",
+                  "LinearAlignmentsDisplay",
+                  "LinearPileupDisplay",
+                  "LinearSNPCoverageDisplay",
+                  "LinearReadArcsDisplay",
+                  "LinearReadCloudDisplay",
+                  "ChordVariantDisplay",
+                  "ChordSyntenyDisplay",
+                  "DotplotDisplay",
+                  "LinearSyntenyDisplay",
+                  "LGVSyntenyDisplay",
+                  "MultiWaySyntenyDisplay",
+                  "LinearReferenceSequenceDisplay",
+                  "LinearVariantDisplay",
+                  "LinearMultiSampleVariantDisplay",
+                  "MultiLinearVariantDisplay",
+                  "LinearVariantMatrixDisplay",
+                  "LDTrackDisplay",
+                  "LinearWiggleDisplay",
+                  "MultiLinearWiggleDisplay",
+                  "LinearGCContentDisplay",
+                  "LinearGCContentTrackDisplay",
+                  "LinearMafDisplay",
+                  "LinearHicDisplay",
+                  "LinearManhattanDisplay",
+                  "LinearMarkDisplay",
+                  "LinearArcDisplay",
+                  "LinearPairedArcDisplay"
+                ]
+              }
+            }
+          },
+          "required": [
+            "trackId",
+            "type"
+          ]
         }
       ]
     },
@@ -26288,6 +26339,57 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "$ref": "#/$defs/TrackSnapshot"
+        },
+        {
+          "type": "object",
+          "title": "PluginDisplayTrackEntry",
+          "description": "A track opened with a display the core plugins do not register: its keys pass unchecked.",
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "not": {
+                "enum": [
+                  "LinearBasicDisplay",
+                  "LinearFeatureDisplay",
+                  "LinearMultiRowFeatureDisplay",
+                  "LinearAlignmentsDisplay",
+                  "LinearPileupDisplay",
+                  "LinearSNPCoverageDisplay",
+                  "LinearReadArcsDisplay",
+                  "LinearReadCloudDisplay",
+                  "ChordVariantDisplay",
+                  "ChordSyntenyDisplay",
+                  "DotplotDisplay",
+                  "LinearSyntenyDisplay",
+                  "LGVSyntenyDisplay",
+                  "MultiWaySyntenyDisplay",
+                  "LinearReferenceSequenceDisplay",
+                  "LinearVariantDisplay",
+                  "LinearMultiSampleVariantDisplay",
+                  "MultiLinearVariantDisplay",
+                  "LinearVariantMatrixDisplay",
+                  "LDTrackDisplay",
+                  "LinearWiggleDisplay",
+                  "MultiLinearWiggleDisplay",
+                  "LinearGCContentDisplay",
+                  "LinearGCContentTrackDisplay",
+                  "LinearMafDisplay",
+                  "LinearHicDisplay",
+                  "LinearManhattanDisplay",
+                  "LinearMarkDisplay",
+                  "LinearArcDisplay",
+                  "LinearPairedArcDisplay"
+                ]
+              }
+            }
+          },
+          "required": [
+            "trackId",
+            "type"
+          ]
         }
       ]
     },
@@ -26538,6 +26640,57 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "$ref": "#/$defs/TrackSnapshot"
+        },
+        {
+          "type": "object",
+          "title": "PluginDisplayTrackEntry",
+          "description": "A track opened with a display the core plugins do not register: its keys pass unchecked.",
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "not": {
+                "enum": [
+                  "LinearBasicDisplay",
+                  "LinearFeatureDisplay",
+                  "LinearMultiRowFeatureDisplay",
+                  "LinearAlignmentsDisplay",
+                  "LinearPileupDisplay",
+                  "LinearSNPCoverageDisplay",
+                  "LinearReadArcsDisplay",
+                  "LinearReadCloudDisplay",
+                  "ChordVariantDisplay",
+                  "ChordSyntenyDisplay",
+                  "DotplotDisplay",
+                  "LinearSyntenyDisplay",
+                  "LGVSyntenyDisplay",
+                  "MultiWaySyntenyDisplay",
+                  "LinearReferenceSequenceDisplay",
+                  "LinearVariantDisplay",
+                  "LinearMultiSampleVariantDisplay",
+                  "MultiLinearVariantDisplay",
+                  "LinearVariantMatrixDisplay",
+                  "LDTrackDisplay",
+                  "LinearWiggleDisplay",
+                  "MultiLinearWiggleDisplay",
+                  "LinearGCContentDisplay",
+                  "LinearGCContentTrackDisplay",
+                  "LinearMafDisplay",
+                  "LinearHicDisplay",
+                  "LinearManhattanDisplay",
+                  "LinearMarkDisplay",
+                  "LinearArcDisplay",
+                  "LinearPairedArcDisplay"
+                ]
+              }
+            }
+          },
+          "required": [
+            "trackId",
+            "type"
+          ]
         }
       ]
     },
@@ -26842,6 +26995,57 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "$ref": "#/$defs/TrackSnapshot"
+        },
+        {
+          "type": "object",
+          "title": "PluginDisplayTrackEntry",
+          "description": "A track opened with a display the core plugins do not register: its keys pass unchecked.",
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "not": {
+                "enum": [
+                  "LinearBasicDisplay",
+                  "LinearFeatureDisplay",
+                  "LinearMultiRowFeatureDisplay",
+                  "LinearAlignmentsDisplay",
+                  "LinearPileupDisplay",
+                  "LinearSNPCoverageDisplay",
+                  "LinearReadArcsDisplay",
+                  "LinearReadCloudDisplay",
+                  "ChordVariantDisplay",
+                  "ChordSyntenyDisplay",
+                  "DotplotDisplay",
+                  "LinearSyntenyDisplay",
+                  "LGVSyntenyDisplay",
+                  "MultiWaySyntenyDisplay",
+                  "LinearReferenceSequenceDisplay",
+                  "LinearVariantDisplay",
+                  "LinearMultiSampleVariantDisplay",
+                  "MultiLinearVariantDisplay",
+                  "LinearVariantMatrixDisplay",
+                  "LDTrackDisplay",
+                  "LinearWiggleDisplay",
+                  "MultiLinearWiggleDisplay",
+                  "LinearGCContentDisplay",
+                  "LinearGCContentTrackDisplay",
+                  "LinearMafDisplay",
+                  "LinearHicDisplay",
+                  "LinearManhattanDisplay",
+                  "LinearMarkDisplay",
+                  "LinearArcDisplay",
+                  "LinearPairedArcDisplay"
+                ]
+              }
+            }
+          },
+          "required": [
+            "trackId",
+            "type"
+          ]
         }
       ]
     },

@@ -217,7 +217,7 @@ function unknownKeyMessage(
     return `no display of this track declares "${key}"${guess}`
   }
   if (title.endsWith('TrackEntry')) {
-    return `"${key}" is neither a config slot nor a property of ${title.replace(/TrackEntry$/, '')}${guess} — the entry's keys are folded onto that display, and one it does not declare silently does nothing`
+    return `"${key}" is neither a config slot nor a property of ${title.replace(/TrackEntry$/, '')}${guess} — the entry's keys are folded onto that display, which reports one it does not declare as an error and ignores it`
   }
   if (schema['x-closed']) {
     return `unknown slot "${key}"${guess} — ${title} takes ${listed(accepted)}; JBrowse warns on the console and loads without it, so this setting does nothing`

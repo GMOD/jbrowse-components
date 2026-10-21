@@ -1387,6 +1387,25 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
         },
         ...displays.map(entry),
         ref('TrackSnapshot'),
+        {
+          type: 'object',
+          title: 'PluginDisplayTrackEntry',
+          description:
+            'A track opened with a display the core plugins do not register: its keys pass unchecked.',
+          properties: {
+            trackId: { type: 'string' },
+            type: {
+              type: 'string',
+              not: {
+                enum: deps.elements.displays.flatMap(d => [
+                  d.name,
+                  ...(d.aliases ?? []),
+                ]),
+              },
+            },
+          },
+          required: ['trackId', 'type'],
+        },
       ],
     }
     return name
