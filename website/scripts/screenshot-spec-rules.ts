@@ -264,6 +264,35 @@ export function countRawCallouts(list: ScreenshotSpec[]) {
   return { found, baseline: CALLOUT_BASELINE }
 }
 
+// ── The long-delay ratchet ─────────────────────────────────────────────────
+//
+// A `delay` of a second or more is nearly always a wait on app work, which
+// `waitForAppSettled` ends by asking the app instead of guessing. Converting
+// one needs `probe-app-settled.ts` first, so they go as figures are touched.
+export const LONG_DELAY_MS = 1000
+export const LONG_DELAY_BASELINE = 145
+
+export function countLongDelays(list: ScreenshotSpec[]) {
+  const found = list.flatMap(spec =>
+    spec.mode === 'url'
+      ? [
+          { name: spec.name, actions: spec.actions },
+          ...(spec.stages ?? []).map((stage, i) => ({
+            name: `${spec.name} stage ${i}`,
+            actions: stage.actions,
+          })),
+        ].flatMap(({ name, actions }) =>
+          (actions ?? []).flatMap(action =>
+            action.type === 'delay' && action.ms >= LONG_DELAY_MS
+              ? [`${name}: delay ${action.ms}`]
+              : [],
+          ),
+        )
+      : [],
+  )
+  return { found, baseline: LONG_DELAY_BASELINE }
+}
+
 // ── The detached-label ratchet ─────────────────────────────────────────────
 //
 // A `text` pill and an `arrow` whose tail leaves that same pill, written as two

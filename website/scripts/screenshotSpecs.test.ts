@@ -13,6 +13,7 @@
  */
 import {
   countDetachableLabels,
+  countLongDelays,
   pageActions,
   validateSpecs,
 } from './screenshot-spec-rules.ts'
@@ -259,4 +260,20 @@ test('it reaches a stage, where a figure keeps half its callouts', () => {
       },
     ]),
   ).toEqual(['a stage 0: "sorted"'])
+})
+
+test('a delay of a second or more counts, in a stage too', () => {
+  const { found } = countLongDelays([
+    {
+      mode: 'url',
+      name: 'a',
+      url: '?x',
+      actions: [
+        { type: 'delay', ms: 300 },
+        { type: 'delay', ms: 1000 },
+      ],
+      stages: [{ actions: [{ type: 'delay', ms: 5000 }] }],
+    },
+  ])
+  expect(found).toEqual(['a: delay 1000', 'a stage 0: delay 5000'])
 })
