@@ -664,6 +664,40 @@ const BRCA1_SGE_TRACK = {
   displayDefaults: { height: 170 },
 }
 
+// TP53 R273H, ClinVar Pathogenic (expert panel, VCV12366), chr17:7673802 C>T on the
+// minus strand, MANE NM_000546.6. 5MG7 (1.45 A, wild type) and 7B49 (1.42 A, R273H),
+// same crystal form, both DNA-bound: the three H-bonds from Arg273 to the DNA
+// phosphate are lost, His273 reaches only Asp281, local Calpha RMSD 0.30 vs 0.03
+// noise. The SGE track is Funk 2025 (MaveDB urn:mavedb:00001277-a-1): the score is
+// HIGHER for loss of function.
+const TP53_R273H: HotspotGene = {
+  session: readSession('protein_browser_tp53_r273h.session.json'),
+  gene: 'TP53',
+  hotspots: [
+    { label: 'R273H', refName: 'chr17', start: 7673800, end: 7673803 },
+  ],
+}
+const TP53_EXONS_5_8 = 'chr17:7673400-7676400[rev]'
+const TP53_SGE = 'tp53_sge_position_mean'
+const TP53_SGE_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: TP53_SGE,
+  name: 'TP53 saturation genome editing, mean score per base',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BigWigAdapter',
+    uri: 'https://jbrowse.org/demos/tp53_sge/TP53.sge.position_mean.bw',
+  },
+  displayDefaults: { height: 170 },
+}
+const TP53_CDD_UNSHOWN = [
+  '462520',
+  '375947',
+  '462238',
+  '176262:zinc binding site',
+  '176262:dimerization site',
+]
+
 export const proteinVariantSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
@@ -1176,6 +1210,42 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     viewportWidth: 2300,
     viewportHeight: 1150,
     actions: RESET_ZOOM,
+  },
+  {
+    mode: 'url',
+    name: 'protein/tp53_r273h',
+    url: hotspotSession(
+      TP53_R273H,
+      { start: 240, end: 300 },
+      {
+        loc: TP53_EXONS_5_8,
+        tracks: [{ trackId: TP53_SGE, height: 170 }, HG38_GENE_TRACK],
+        sessionTracks: [TP53_SGE_TRACK],
+        msaHeight: 420,
+        domains: true,
+        turnedOff: TP53_CDD_UNSHOWN,
+        hideTracks: ['property-conservation'],
+        pairStructure: { pdbId: '7b49' },
+      },
+    ),
+    ...domainFigure('TP53', TP53_R248, 0, true),
+    viewportWidth: 2600,
+    viewportHeight: 1150,
+    actions: [
+      { type: 'waitForAppSettled' },
+      {
+        type: 'click',
+        selector:
+          '[data-testid="view-container-protein-TP53-5mg7"] button[title="Reset Zoom"]',
+      },
+      {
+        type: 'click',
+        selector:
+          '[data-testid="view-container-protein-TP53-5mg7-pair"] button[title="Reset Zoom"]',
+      },
+      PARK_CURSOR,
+      { type: 'delay', ms: 1500 },
+    ],
   },
   {
     mode: 'url',
