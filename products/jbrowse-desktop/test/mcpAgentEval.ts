@@ -161,7 +161,9 @@ interface RunMetrics {
 
 function stripClaudeEnv() {
   return Object.fromEntries(
-    Object.entries(process.env).filter(([k]) => !k.startsWith('CLAUDE')),
+    Object.entries(process.env).filter(
+      ([k]) => k === 'CLAUDE_CONFIG_DIR' || !k.startsWith('CLAUDE'),
+    ),
   )
 }
 
