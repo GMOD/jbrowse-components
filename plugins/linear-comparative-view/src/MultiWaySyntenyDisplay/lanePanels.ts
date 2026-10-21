@@ -1,7 +1,7 @@
 import { doesIntersect2 } from '@jbrowse/core/util'
 
 import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/canLaunchSyntenyForMate.ts'
-import { mateSlice } from '../mateBpAt.ts'
+import { mateInterval } from '../mateBpAt.ts'
 
 import type { MateDiscoveryResult } from '../LaunchSyntenyView/pickMatesForRegion.ts'
 import type { ResolvedPanel } from '../LaunchSyntenyView/resolvePanel.ts'
@@ -61,7 +61,8 @@ export function lanePanelsForRegion({
           ) {
             const lo = Math.max(group.anchor.start, region.start)
             const hi = Math.min(group.anchor.end, region.end)
-            const mate = mateSlice(
+            // unrounded, so the panel's ends round outward once below
+            const mate = mateInterval(
               group.anchor,
               placement,
               placement.orientation,

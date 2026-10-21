@@ -138,3 +138,18 @@ test('a lane the settle has not framed, or that places nothing of the region, ha
   expect(mates).toEqual([])
   expect(unconfigured).toEqual([])
 })
+
+test("a panel's mate ends round outward, so it opens on every base the lane maps", () => {
+  const { mates } = lanePanelsForRegion({
+    groups: groupFeatures([
+      record('h', [0, 1000], { assemblyName: 'mouse', start: 0, end: 1007 }),
+    ]),
+    rowAssemblies: ['mouse'],
+    laneDecisions: new Map([['mouse', decision('M1', [0, 1007])]]),
+    region: { refName: 'chr1', start: 100, end: 200 },
+    anchorCanon: refName => refName,
+    trackAssemblyNames,
+  })
+  // 100.7..201.4
+  expect([mates[0]?.mateStart, mates[0]?.mateEnd]).toEqual([100, 202])
+})

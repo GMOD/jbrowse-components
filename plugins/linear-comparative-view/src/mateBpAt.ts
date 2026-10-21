@@ -23,11 +23,8 @@ export function mateBpAt(
     : mate.start + offset
 }
 
-/**
- * The mate interval the anchor interval [`start`, `end`] maps to, ordered and
- * rounded to whole bp.
- */
-export function mateSlice(
+/** The mate interval the anchor interval [`start`, `end`] maps to, ordered. */
+export function mateInterval(
   block: BpInterval,
   mate: BpInterval,
   strand: number | undefined,
@@ -36,5 +33,17 @@ export function mateSlice(
 ): BpInterval {
   const a = mateBpAt(block, mate, strand, start)
   const b = mateBpAt(block, mate, strand, end)
-  return { start: Math.round(Math.min(a, b)), end: Math.round(Math.max(a, b)) }
+  return { start: Math.min(a, b), end: Math.max(a, b) }
+}
+
+/** {@link mateInterval} rounded to whole bp */
+export function mateSlice(
+  block: BpInterval,
+  mate: BpInterval,
+  strand: number | undefined,
+  start: number,
+  end: number,
+): BpInterval {
+  const slice = mateInterval(block, mate, strand, start, end)
+  return { start: Math.round(slice.start), end: Math.round(slice.end) }
 }
