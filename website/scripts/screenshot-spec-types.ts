@@ -103,29 +103,20 @@ export const PARK_CURSOR = {
 export interface ScreenshotStage {
   actions?: ScreenshotAction[]
   annotations?: Annotation[]
-  // Load this session URL for the stage instead of continuing from the state
-  // the previous stage left. For the frame of a multi-stage figure that is a
-  // RESULT rather than a step: the end state is declared as a session spec and
-  // loaded, rather than clicked together through the UI — which is both fewer
-  // moving parts and the only way to set things a spec can write but a menu
-  // can't reach (per-track heights on a view the app creates at click time).
-  // The stage's frame is still composed into the same figure. `readySelector`
-  // goes with it: a stage that opens a different view type than the spec's
-  // first page needs its own ready gate.
+  // Load this session URL instead of continuing from the previous stage, for a
+  // frame that is a RESULT rather than a step. A session can set what no menu
+  // reaches, such as track heights on a view created at click time.
+  // `readySelector` is the ready gate for a stage opening another view type.
   url?: string
   readySelector?: string
-  // press Escape before this stage's actions to dismiss a menu/popover the
-  // previous stage left open
+  // dismiss the menu cascade the previous stage left open before this stage's
+  // actions
   closeMenusFirst?: boolean
-  // dismiss the menu cascade after this stage's actions, before its frame is
-  // captured. For a stage whose subject is the RESULT of a menu setting rather
-  // than the menu: a checkbox/radio row leaves its menu standing, so without
-  // this the frame is of the open menu over the thing it just changed.
+  // dismiss the menu cascade after this stage's actions, for a frame showing a
+  // checkbox or radio setting's result rather than the menu it leaves standing
   closeMenusAfter?: boolean
-  // height for this frame alone, applied after its actions run. The spec's own
-  // viewportHeight has to cover the tallest state, which leaves every shorter
-  // one padded with page background — an open context menu needs twice the
-  // frame the view it launches does.
+  // height for this frame alone, applied after its actions run, so a short
+  // frame isn't padded to the spec's tallest
   viewportHeight?: number
 }
 
@@ -145,23 +136,17 @@ export interface FrameLayout {
   sideMargin?: number
 }
 
-// Fields every spec shares, whatever produces its PNG. Kept apart from
-// CommonSpecFields (which is browser-capture-only) so the generator can read
-// them off a bare ScreenshotSpec without narrowing by mode first.
+// Fields every spec shares, whatever produces its PNG; CommonSpecFields is
+// browser-only.
 export interface BaseSpecFields {
   name: string
   // whether the LIVE session a reader opens is slow, overriding the timeouts
-  // screenshotSlowSpecNames otherwise infers it from. Set it wherever a budget
-  // is capture headroom rather than a claim about the reader: the Hi-C block
-  // waits minutes because four of its specs render at once on a loaded sweep
-  // machine, and opens in seconds in a browser that is only running one.
+  // screenshotSlowSpecNames infers it from; set it where a timeout is capture
+  // headroom on a loaded sweep machine rather than a claim about the reader
   slowLiveSession?: boolean
   // per-spec override of the content-stable diff gate (fraction of pixels in
-  // [0,1]). Raise it for specs with irreducible render jitter — remote-data
-  // timing, heavy text, animated chrome — so an unchanged capture isn't
-  // re-committed every regen. Prefer making the capture reproducible first;
-  // reach for this only when the jitter can't be designed out. Defaults to the
-  // global DEFAULT_DIFF_THRESHOLD.
+  // [0,1]), for jitter that can't be designed out of the capture. Defaults to
+  // DEFAULT_DIFF_THRESHOLD.
   diffThreshold?: number
 }
 
@@ -195,23 +180,17 @@ export interface CommonSpecFields extends BaseSpecFields, FrameLayout {
   // crop the capture to this CSS-px rect (ignored by embedded specs, which
   // screenshot the component element directly)
   crop?: { x: number; y: number; width: number; height: number }
-  // substrings of browser console errors this spec is EXPECTED to emit, so the
-  // generator suppresses them instead of printing them as alarming
-  // browser[error] lines. Use only for specs whose subject IS an error/empty
-  // state (e.g. the config-not-found landing page, or an assembly-manager shot
-  // captured over a view with no assembly). Anything not listed still surfaces.
+  // substrings of browser console errors this spec is EXPECTED to emit, for a
+  // spec whose subject IS an error or empty state; anything unlisted surfaces
   expectedConsole?: string[]
-  // by default the generator fails a capture that still shows a visible loading
-  // overlay, an error banner, or a region-too-large message at shoot time (a
-  // silently-saved "Loading" PNG is the failure mode this guards against). Set
-  // true only for specs whose subject IS such a state (an error landing page, a
-  // deliberately-too-large view), so the guard doesn't flag the intended content.
+  // by default the generator fails a capture still showing a loading overlay,
+  // an error banner or a region-too-large message; set true only for a spec
+  // whose subject IS such a state
   allowUnsettled?: boolean
 }
 
-// Navigate directly to a session spec URL. Every browser-rendered spec uses this
-// mode (multi-view layouts, single LGVs, everything); the session is built
-// declaratively via the helpers in screenshot-spec-helpers.ts.
+// Navigate to a session spec URL, built with the helpers in
+// screenshot-spec-helpers.ts.
 export interface SessionUrlSpec extends CommonSpecFields {
   mode: 'url'
   url: string // full query string starting with '?' or a full URL
@@ -248,11 +227,9 @@ export interface SessionUrlSpec extends CommonSpecFields {
   clicksChange?: string
 }
 
-// Invoke the @jbrowse/img CLI (jb2export) directly. These produce the
-// products/jbrowse-img/README example images — React SSR renders straight to
-// SVG/PNG with no browser involved, so they regenerate from plain jb2export
-// args instead of the URL-mode puppeteer machinery, and land in
-// products/jbrowse-img/img/ rather than website/static/img/.
+// Invoke the @jbrowse/img CLI (jb2export), which renders through React SSR with
+// no browser, for the products/jbrowse-img/README images. They land in
+// products/jbrowse-img/img/, mirrored under website/static/img/.
 export interface CliSpec extends BaseSpecFields {
   mode: 'cli'
   // 'jbrowse-img/<basename>'; basename matches the .png in products/jbrowse-img/img/
@@ -260,16 +237,12 @@ export interface CliSpec extends BaseSpecFields {
   args: string[] // jb2export args; the generator appends `--out <tmpfile>`
 }
 
-// Render the embedded `@jbrowse/react-linear-genome-view2` component itself (not
-// the jbrowse-web app) via its prebuilt UMD bundle, the exact script-tag setup
-// the embed tutorial documents. The generator serves a tiny harness page that
-// calls `createViewState(viewState)` and mounts `<JBrowseLinearGenomeView>`,
-// then screenshots the component element. Use for figures that must show the
-// embedded component rather than the full app.
+// Render the embedded `@jbrowse/react-linear-genome-view2` component from its
+// prebuilt UMD bundle, mounted the way the embed tutorial documents, and
+// screenshot its element.
 //
-// NOTE: this mode screenshots the `#root` element directly and does NOT run the
-// shared `shoot` path, so the CommonSpecFields that only take effect there
-// (annotations, crop, hideSelectors, tooltip, stages) are ignored here.
+// NOTE: this mode does not run the url mode's `shoot`, so annotations, crop,
+// hideSelectors, tooltip and stages are ignored here.
 export interface EmbeddedSpec extends CommonSpecFields {
   mode: 'embedded'
   // the object passed verbatim to the UMD's `createViewState(...)` (assembly /

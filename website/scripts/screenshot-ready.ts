@@ -27,10 +27,8 @@ import type { Page } from 'puppeteer'
 // parses process.argv, and generate-video.ts takes other flags.
 const DEFAULT_READY_TIMEOUT_MS = 30000
 
-// The ceiling for every wait a spec is subject to. readyText is only the track
-// label (present well before a slow remote BAM finishes), so a spec that says it
-// needs longer gets that everywhere — the fixed default otherwise cut off slow
-// whole-genome-alignment blocks mid-load and captured a "Loading" panel.
+// The ceiling for every wait a spec is subject to, not just the ready text,
+// which appears well before a slow remote file finishes loading.
 function readyTimeoutOf(spec: BrowserScreenshotSpec) {
   return spec.readyTimeout ?? DEFAULT_READY_TIMEOUT_MS
 }
@@ -129,11 +127,9 @@ async function waitForPlainPage(
  * change across every figure arriving as a side effect of a rendering decision.
  * Moving the corpus to another backend should be a deliberate edit here.
  *
- * **Applied at capture, never in the url builder.** `sessionSpec` builds these
- * same urls and has a second consumer — `gen-live-links.ts` bakes them into
- * the doc figures, where a pin would force WebGL on the very visitors the
- * ladder exists to route away from it. That is not hypothetical: it shipped, to
- * 251 links, and took two commits to undo.
+ * **Applied at capture, never in the url builder.** `gen-live-links.ts` bakes
+ * the same urls into the doc figures, where a pin would force WebGL on the
+ * visitors the ladder exists to route away from it.
  */
 export function pinRenderer(url: string) {
   return `${url}${url.includes('?') ? '&' : '?'}renderer=webgl`
@@ -151,10 +147,8 @@ export async function captureUrl(
     waitUntil:
       spec.waitUntil ??
       (spec.url.startsWith('http') ? 'domcontentloaded' : 'networkidle0'),
-    // networkidle0 can't be reached while a spec's data is still streaming, so a
-    // fixed 60s here failed the heavy tcga specs as a *navigation* timeout —
-    // nothing to do with the page being broken. A spec that already declares it
-    // needs longer to be ready gets the same room for its navigation.
+    // networkidle0 waits out streaming data, so a spec that needs longer to be
+    // ready gets the same room to navigate
     timeout: Math.max(60000, spec.readyTimeout ?? 0),
   })
 

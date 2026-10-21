@@ -1,11 +1,9 @@
-// Everything the run is configured by: the CLI surface, the thresholds the diff
-// gate and the reports are judged against, and the paths a capture reads from
-// and writes to.
+// The run's CLI, the thresholds its gates and reports judge by, and the paths
+// it reads and writes.
 //
-// IMPORTING THIS PARSES process.argv, and `--help` exits the process. That is
-// fine for the generator and its own modules, which are only ever loaded by a
-// run — but it is why nothing else (check-specs.ts, the live link builder)
-// should import it. Those read `screenshot-specs.ts` instead.
+// IMPORTING THIS PARSES process.argv, and `--help` exits the process, so only
+// the generator's own modules import it. Everything else reads
+// `screenshot-specs.ts`.
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -46,18 +44,14 @@ const { values } = parseArgs({
     // the smallest set of specs that still puts every declared type on screen
     cover: { type: 'boolean', default: false },
     since: { type: 'string' },
-    // take the changed-file list from a file (one path per line) instead of
-    // asking git — a CI runner already knows the diff of the PR it is building,
-    // and computing it again from a shallow checkout gets it wrong
+    // the changed-file list, one path per line, instead of asking git, which
+    // gets a shallow CI checkout's diff wrong
     'changed-from': { type: 'string' },
   },
 })
 
-// Parse a numeric CLI option, returning undefined when absent. A present but
-// unparsable value exits rather than falling back to the default: the same
-// reason parseArgs is strict about unknown flags — `--diff-threshold .5%` or
-// `--concurrency 4x` otherwise runs the whole suite under the default and
-// reports success, which is indistinguishable from the flag having worked.
+// undefined when absent; an unparsable value exits, since `--concurrency 4x`
+// falling back to the default would read as the flag having worked
 function optNum(name: string, raw: string | undefined) {
   if (raw === undefined) {
     return undefined
@@ -76,20 +70,12 @@ export { headed, exact, check, firefox, affected, cover, since }
 // the changed-file list --affected reads instead of asking git
 export const changedFrom = values['changed-from']
 export const filterTokens = parseFilterTokens(filter)
-// A filtered run names its specs, so it means them: the content-stable diff gate
-// below exists to keep an unfiltered sweep from rewriting 288 PNGs over
-// antialiasing jitter, and applying it to a spec the author just asked for is
-// how a figure gets "regenerated" and silently keeps its stale text (a rename or
-// a shortened label moves well under 0.5% of a 3000px figure). Rendering is
-// deterministic, so forcing here rewrites an unaffected figure byte-identically
-// and git sees nothing.
+// A filtered run names its specs, so it means them. The diff gate keeps a sweep
+// from rewriting the corpus over antialiasing jitter, but on a named spec it
+// keeps stale text, since a renamed label moves well under the threshold.
 export const forceCommit = force || filterTokens.length > 0
-// With dithering disabled (see optimizePng) flat-UI specs re-render byte-for-
-// byte, but text-heavy specs still drift ~0.2% from headless-Chrome sub-pixel
-// glyph-positioning jitter (ruler/track labels, SNP ticks render a hair
-// differently run-to-run). 0.5% absorbs that with ~2.5x margin while still
-// letting a genuine edit — a new legend, a moved element — through. Raise it
-// further for timing/remote-data specs.
+// Text-heavy specs drift ~0.2% from headless Chrome's sub-pixel glyph jitter;
+// 0.5% absorbs that and still lets a new legend or a moved element through.
 const DEFAULT_DIFF_THRESHOLD = 0.005
 const DEFAULT_LOCAL_PORT = 3334
 // Captures are hidpi, so an image pixel is half a CSS pixel.
@@ -107,24 +93,9 @@ export const diffThreshold =
 export const externalPort = optNum('port', values.port)
 export const servePort =
   optNum('localport', values.localport) ?? DEFAULT_LOCAL_PORT
-// Math.max(1, …) so `--concurrency 0` can't spin up zero workers and silently
-// skip every render spec while still exiting 0.
-//
-// --check defaults to serial so a drift report has one fewer confound: with four
-// browsers sharing CPU and network, "this spec is flaky" and "the machine was
-// busy" are indistinguishable. It is explicitly NOT a fix for flakiness —
-// multiwig/addtrack has gone both 0.000% and 0.7% serially, and that one is
-// still unexplained. Pass --concurrency for wall-clock.
-//
-// alignments_sort_by_base used to head this list at 17% drift in roughly half of
-// serial runs, and it turned out not to be render nondeterminism at all: its
-// right-click was a hand-measured pixel, so WHICH read the menu opened on
-// depended on how the pileup happened to pack that run — and after the spec's
-// window was narrowed from 108bp to 31bp without the number being redone, the
-// pixel wasn't even on the SNP any more. Anchoring the click to the locus
-// (scripts/locusAnchor.ts) took it to 0.000% across six renders. Worth
-// remembering before calling a figure irreducibly flaky: a fixed coordinate in
-// its action chain is a likelier cause than the renderer.
+// At least 1, so `--concurrency 0` can't skip every render spec and exit 0.
+// --check defaults to serial, where a busy machine can't pass for a flaky spec.
+// Before calling a spec flaky, look for a fixed pixel in its actions.
 export const CONCURRENCY = Math.max(
   1,
   optNum('concurrency', values.concurrency) ?? (headed || check ? 1 : 2),
@@ -190,14 +161,8 @@ export const buildPath = path.resolve(
 )
 export const testDataRoot = path.resolve(repoRoot, 'products', 'jbrowse-web')
 export const outDir = path.resolve(__dirname, '..', 'static', 'img')
-// jb2export (the @jbrowse/img CLI) renders the products/jbrowse-img/README
-// example images straight to PNG via React SSR — no browser involved, so
-// CliSpecs bypass the puppeteer pipeline entirely and land here instead of
-// outDir. Run from source with plain `node --experimental-strip-types` (not the
-// npm-installed `jb2export` binary) so a local edit to products/jbrowse-img/src
-// is reflected immediately — its src is pure .ts, so node strips it in place.
-// Its @jbrowse/* deps come from their built esm/ (see jbrowse-img's resolve.ts),
-// so a plugin change needs `pnpm build` before it shows up in a figure.
+// jb2export runs from source, so a local edit to products/jbrowse-img/src
+// shows at once; its @jbrowse/* imports come from their built esm/.
 export const jbrowseImgDir = path.resolve(repoRoot, 'products', 'jbrowse-img')
 export const jbrowseImgOutDir = path.join(jbrowseImgDir, 'img')
 export const jb2exportBin = path.join(jbrowseImgDir, 'src', 'bin.ts')
@@ -210,9 +175,8 @@ export const EMBED_UMD_PATH = path.resolve(
   'dist',
   'react-linear-genome-view.umd.production.min.js',
 )
-// Build a per-process temp PNG path for a spec, sanitizing '/' in the name and
-// tagging with the pid (and an optional suffix) so concurrent workers and the
-// two captures of a --check run never collide on one path.
+// Per pid and suffix, so concurrent workers and a --check run's two captures
+// never share a path.
 export function tempPath(prefix: string, name: string, suffix = '') {
   return path.join(
     os.tmpdir(),

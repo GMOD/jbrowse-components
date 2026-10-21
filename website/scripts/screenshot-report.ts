@@ -1,16 +1,10 @@
+// What the run noticed while it was capturing, and how it says so at the end.
+// Recording and printing share a module so every `record…` reaches the summary.
+// The reports are not failures: a clipped or tooltip-stained frame is usually
+// a number to adjust, and must only be visible.
 import { writeFileSync } from 'node:fs'
 import { relative } from 'node:path'
 
-// What the run noticed while it was capturing, and how it says so at the end.
-//
-// The recording half and the printing half are one module on purpose: each
-// report exists because something shipped wrong silently, and the observation
-// that catches it is only useful if it reaches the summary. Splitting them would
-// let a `record…` call be added with nowhere to surface.
-//
-// The reports are deliberately not failures. A figure that clipped its content,
-// kept a stray tooltip, or captured a display that never painted is usually a
-// number to adjust rather than a broken run — what it must not be is invisible.
 import { PENDING_DISPLAYS } from '@jbrowse/browser-test-utils'
 
 import {
@@ -62,16 +56,10 @@ export async function recordOverflow(page: Page, name: string) {
   )
 }
 
-// CSS px of page laid out below the bottom of the viewport, i.e. content the
-// capture cut off. The inverse of trailingBackgroundPx: too little viewport
-// rather than too much. It cannot be recovered from the PNG — a clipped figure
-// and one that happens to end flush with its last track look identical — so it
-// has to be read from the live page, and a `crop` spec frames deliberately.
-//
-// Measured off the view containers, not `documentElement.scrollHeight`: the app
-// fills the window and its overflow is absorbed by inner scroll containers, so
-// the document itself never reports being taller than the viewport even when a
-// track's rows are visibly cut in half.
+// CSS px of view below the bottom of the viewport, which the PNG alone cannot
+// tell from a figure ending flush with its last track. Measured off the view
+// containers, since the app's inner scrollers keep the document itself from
+// ever reporting overflow.
 async function overflowPx(page: Page) {
   return page.evaluate(() =>
     Math.max(
@@ -85,25 +73,15 @@ async function overflowPx(page: Page) {
 }
 
 const clippedPx = new Map<string, number>()
-// spec name -> the tooltip text seen at any of that spec's captures. A staged
-// spec shoots several frames under one name, so this accumulates the way
-// unpaintedDisplays and clippedPx do rather than keeping only the last: a stray
-// tooltip left on stage 1 is in the published figure whether or not stage 3
-// still has it, and `tooltip: 'expect'` is satisfied by any frame showing one.
-// Last-write-wins got both of those backwards, in the quiet direction: it
-// reported nothing.
-//
-// An empty array is "this spec was shot and no frame had a tooltip", which is
-// distinct from an absent key ("never shot"), and both readers below depend on
-// the difference.
+// spec name -> the tooltip texts seen across all of its frames, since a staged
+// spec's stray tooltip on any stage is in the published figure. An empty array
+// is "shot, no tooltip", distinct from an absent key, "never shot".
 const tooltipSeen = new Map<string, string[]>()
 // spec name -> displays that had not painted when its frame was taken
 const unpaintedDisplays = new Map<string, string[]>()
 
-// Note the tooltip on screen at capture, if any. Only called for a spec that
-// did not ask for suppression — a tooltip is often what a figure is
-// demonstrating, so the interesting cases are the one nobody asked for (a click
-// sequence that ended on a hoverable control) and the one a tooltip figure lost.
+// Called for a spec that did not set tooltip: 'hide', to report a tooltip
+// nobody asked for and one a tooltip figure lost.
 export async function recordTooltip(page: Page, name: string) {
   const text = await visibleTooltipText(page)
   const seen = tooltipSeen.get(name) ?? []
@@ -113,9 +91,7 @@ export async function recordTooltip(page: Page, name: string) {
   )
 }
 
-// Specs that declare a tooltip belongs in their frame. Looked up by name rather
-// than threaded through the capture, because a staged spec shoots several frames
-// under one name and the declaration is the spec's.
+// Specs that declare a tooltip belongs in their frame.
 const tooltipExpected = new Set(
   specs.filter(s => 'tooltip' in s && s.tooltip === 'expect').map(s => s.name),
 )
@@ -136,9 +112,7 @@ export interface RunTotals {
   passed: number
   failed: number
   kept: number
-  // Every spec the run intended to render, after --filter/--affected/--cover
-  // have all had their say. The only honest answer to "what did this run
-  // cover" — see RunReport.selected.
+  // every spec the run set out to render; see RunReport.selected
   selected: string[]
   failures: { name: string; error: string }[]
   flaky: { name: string; frac: number }[]
@@ -254,11 +228,8 @@ export function printSummary(totals: RunTotals) {
   writeRunReport(totals)
 }
 
-// Everything above is printed and then lost, which is the wrong lifetime for
-// half of it, so the run also leaves a machine-readable record beside its
-// console output. Its shape and its path live in ./screenshot-run-report.ts and
-// that file explains what is in it — they are over there because this module
-// imports screenshot-options.ts, and its only reader is a server that must not.
+// The machine-readable record of the run. Its shape lives in
+// screenshot-run-report.ts, which its reader can import without parsing argv.
 function writeRunReport(totals: RunTotals) {
   const report: RunReport = {
     finishedAt: new Date().toISOString(),
@@ -282,43 +253,11 @@ function writeRunReport(totals: RunTotals) {
   }
 }
 
-// Last, because it is the thing to act on.
-//
-// Figure bytes live in the S3 store, not in git, so a regen this run just wrote
-// is invisible to `git status` — and if it is never pushed, every other machine
-// and the published site keep serving the old image, with nothing anywhere
-// saying so. CI cannot catch it either: the evidence is a file on this disk.
-// This report is the replacement for the `M website/static/img/x.png` line that
-// used to make it obvious.
-//
-// It reports the whole worktree, not just this run: the figure worth catching
-// is usually one from an earlier run that never got published, and a --filter
-// run should still say so. Saying "nothing outstanding" out loud matters as
-// much as the warning — it is how a regen ends in a known state rather than an
-// assumed one.
-//
-// The LIST is the whole worktree and the COMMAND is not, which is the one place
-// those two have to disagree. A bare `pnpm figures:push` publishes everything in
-// that list and rewrites figures.lock from all of it, so in a worktree several
-// agents share, following this report's own advice sweeps somebody else's
-// unpushed regen into your commit. That is not hypothetical — it is how this
-// paragraph came to be written. So the report names what YOU are looking at and
-// hands you a command scoped to what THIS run wrote.
-//
-// The tokens are figureNames of the paths the run actually committed, matched
-// --exact. Spec names would be the obvious thing to print and are wrong: 27 of
-// 349 of them are a substring of some other figure's name, so a printed
-// `--filter dotplot` selects eleven figures this run never touched, which is the
-// same over-publishing the flag exists to stop.
-//
-// --exact is safe for the mirrored pair despite `figureName` not being
-// injective, and it is worth knowing WHY, because the surface reading says the
-// opposite. products/jbrowse-img/img/x.png and website/static/img/jbrowse-img/x.png
-// normalize to the SAME name, `jbrowse-img/x` — that is what the normalization
-// is for — so one exact token selects both halves and they move together. That
-// is also why everything below is keyed on the NAME rather than the path: both
-// halves are outstanding together, and per-path the pair printed its one name
-// twice and was counted twice in the header over it.
+// Last, because it is the thing to act on. Figure bytes live in the S3 store,
+// so an unpushed regen shows nowhere in git. The list covers the whole
+// worktree; the suggested command covers only what this run wrote, as exact
+// figure names, so following it never publishes another agent's regen.
+// A mirrored jbrowse-img pair shares one name and moves as one.
 function printUnpublished(writtenThisRun: string[]) {
   const outstanding = unpublishedFigures()
   if (outstanding.length === 0) {
@@ -328,10 +267,6 @@ function printUnpublished(writtenThisRun: string[]) {
   const mine = new Set(
     writtenThisRun.map(p => relative(figureRepoRoot, p).replaceAll('\\', '/')),
   )
-  // Collapsed to names for the same reason the tokens are (figureNames): the
-  // header is a count of FIGURES and the body is a list of them, so a mirrored
-  // pair printed per path said one figure twice and counted it twice. `this
-  // run` is per name too — writing either half is writing the figure.
   const outstandingNames = figureNames(outstanding)
   const mineNames = new Set(
     outstanding.filter(p => mine.has(p)).map(figureName),
