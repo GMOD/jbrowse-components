@@ -83,6 +83,7 @@ const stats = {
   inputTokens: 0,
   outputTokens: 0,
   toolLog: [] as string[],
+  textTail: '',
 }
 const spend = () => stats.inputTokens * priceIn + stats.outputTokens * priceOut
 
@@ -105,6 +106,11 @@ function countUsage(body: string) {
         e.content_block?.type === 'tool_use'
       ) {
         stats.toolLog.push(`${e.content_block.name} `)
+      } else if (
+        e.type === 'content_block_delta' &&
+        e.delta?.type === 'text_delta'
+      ) {
+        stats.textTail = (stats.textTail + e.delta.text).slice(-2500)
       } else if (
         e.type === 'content_block_delta' &&
         e.delta?.type === 'input_json_delta' &&
@@ -511,6 +517,9 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
     attempt,
     tools: stats.toolLog.slice(toolsBefore).map(t => t.slice(0, 300)),
     pageLog: pageLog.slice(-25),
+    streamedTextTail: stats.textTail,
+    pageClosed: page.isClosed(),
+    finalUrl: page.isClosed() ? '' : page.url().slice(0, 120),
   }
   fs.writeFileSync(
     path.join(outDir, `${task.name}-${run}.json`),
