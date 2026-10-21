@@ -155,7 +155,6 @@ function hprcSegmentsLane(domain: { start: number; end: number }) {
 function hg38GeneLane(height: number) {
   return {
     trackId: 'hg38_ncbiRefSeq_ucsc',
-    type: 'LinearBasicDisplay',
     geneGlyphMode: 'longestCoding',
     displayMode: 'compact',
     height,
@@ -210,7 +209,6 @@ export const hprcClusterFixtures = {
           hprcSegmentsLane(MHC_CLASSII_REGION),
           {
             trackId: PGBI_TRACK,
-            type: 'LinearMultiSampleVariantDisplay',
             variants: { show: true },
             height: 340,
             filter: ALLELE_FILTER,
@@ -273,7 +271,6 @@ const HPRC_BUBBLE_SCORE_SESSION_TRACK = {
 function cytobandLane() {
   return {
     trackId: 'hg38_cytobands_ucsc',
-    type: 'LinearBasicDisplay',
     displayMode: 'collapsed',
     showLabels: 'none',
     color:
@@ -370,7 +367,6 @@ function abca7View({
         ? [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
               filter: { genes: 'only' },
               displayMode: 'compact',
               height: 40,
@@ -379,12 +375,10 @@ function abca7View({
         : []),
       {
         trackId: ABCA7_VNTR_TRACK.trackId,
-        type: 'LinearBasicDisplay',
         height: 40,
       },
       {
         trackId: 'hprc_abca7_trgt',
-        type: 'LinearVariantDisplay',
         height: 40,
       },
       graphTrack('hprc_v2_1_walk_lanes', {
@@ -492,7 +486,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             // frame is landmark, name, how much the graph varies there.
             {
               trackId: 'hprc_chr1_loci',
-              type: 'LinearBasicDisplay',
               // NOT collapsed. Collapsed drops labels, and at 178 kb per css px
               // each of these features is a sub-pixel tick -- so collapsed the
               // lane was three orange specks and the names, which are the whole
@@ -895,7 +888,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             hg38GeneLane(60),
             {
               trackId: PGBI_TRACK,
-              type: 'LinearMultiSampleVariantDisplay',
               variants: { show: true },
               // 462 haplotype rows fit in no height a figure can afford, so
               // they are a texture either way, and the graph under them is
@@ -1071,14 +1063,12 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
               filter: { genes: 'only' },
               displayMode: 'compact',
               height: 40,
             },
             {
               trackId: 'hprc_kiv2_copies_all',
-              type: 'LinearVariantDisplay',
               height: 40,
             },
           ],
@@ -1151,7 +1141,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hprc_abca7_cnvtr',
-              type: 'LinearVariantDisplay',
               height: 40,
             },
           ],

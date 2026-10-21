@@ -31,7 +31,6 @@ const CASSETTE_EXON = 'chr10:7,806,974-7,807,010'
 // names carry their ENCODE accessions.
 const coverage = (trackId: string) => ({
   trackId,
-  type: 'LinearWiggleDisplay',
   height: 90,
 })
 
@@ -43,7 +42,6 @@ const coverage = (trackId: string) => ({
 // it.
 const glyph = {
   trackId: 'dtu_muscle_vs_liver',
-  type: 'LinearBasicDisplay',
   heightMode: 'grow',
 }
 

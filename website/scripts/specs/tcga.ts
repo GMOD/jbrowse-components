@@ -136,7 +136,6 @@ export const tcgaVideoFixtures = {
         tracks: [
           {
             trackId: 'tcga_brca_cnv',
-            type: 'LinearMultiRowFeatureDisplay',
             // the ERBB2 figure's own height. Left at the default the 1104 rows
             // auto-fit into ~100px and the sort has nowhere to be visible.
             height: 700,
@@ -260,7 +259,6 @@ const collapseIntrons = (gene: string) => [
 // and the row pitch is 40px.
 const MANE_TRACK = {
   trackId: 'MANE.GRCh38.v1.4.refseq',
-  type: 'LinearBasicDisplay',
   height: 84,
 }
 
@@ -315,7 +313,6 @@ function mutationFigure({
           ...(clinvar ? [CLINVAR_TRACK] : []),
           {
             trackId: 'tcga_brca_mutations',
-            type: 'LinearMultiSampleVariantDisplay',
             variantLayout: 'columns',
             ...displayOverrides,
           },
@@ -365,13 +362,11 @@ export const tcgaSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'tcga_brca_cnv_recurrence',
-              type: 'LinearWiggleDisplay',
               // same height the tutorial's own displayDefaults use
               height: 120,
             },
             {
               trackId: 'tcga_brca_cnv',
-              type: 'LinearMultiRowFeatureDisplay',
               height: 760,
               // one-shot declarative trigger, cleared once the RPC lands
               runClustering: true,
@@ -470,7 +465,6 @@ export const tcgaSpecs: ScreenshotSpec[] = [
               // ERBB2 and its neighbors in a single row instead of an isoform
               // stack that would eat the figure
               trackId: 'MANE.GRCh38.v1.4.refseq',
-              type: 'LinearBasicDisplay',
               // This window has far more MANE rows than the figure needs, and
               // height only controls how many are VISIBLE — growing it just
               // reveals more rows and re-shears the last one's labels. One row
@@ -482,7 +476,6 @@ export const tcgaSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'tcga_brca_cnv',
-              type: 'LinearMultiRowFeatureDisplay',
               height: 700,
               runClustering: true,
               clusterRegion: '17:39,000,000-40,500,000',
@@ -566,7 +559,6 @@ export const tcgaSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'tcga_brca_cnv_recurrence_by_subtype',
-              type: 'LinearMarkDisplay',
               height: SUBTYPE_ROWS_HEIGHT,
             },
           ],

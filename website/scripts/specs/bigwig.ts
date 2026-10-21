@@ -224,7 +224,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hpylori_repl_origin',
-              type: 'LinearBasicDisplay',
               height: 50,
               color: "jexl:get(feature,'color')",
             },
@@ -309,7 +308,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'colo_tumor',
-          type: 'LinearWiggleDisplay',
           // scatter rendering reads copy-number gains/losses better than
           // the filled XY plot across the whole genome
           mark: 'point',
@@ -558,7 +556,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'pur_copynumber_1000g',
-          type: 'LinearWiggleDisplay',
           height: 420,
           // one colored density strip per individual, off the track type's own
           // `rows: 'source'` seed; `mark` is a config slot, so

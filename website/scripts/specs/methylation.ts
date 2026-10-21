@@ -19,7 +19,6 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // figures on one page should be.
 const HG38_GENE_LANE = {
   trackId: 'ncbi_refseq_109_hg38_latest',
-  type: 'LinearBasicDisplay',
   geneGlyphMode: 'longestCoding',
   displayMode: 'compact',
   height: 90,
@@ -52,7 +51,6 @@ function wgbsContextTrack(
     },
     display: {
       trackId: `arabidopsis_wgbs_${context.toLowerCase()}`,
-      type: 'LinearAlignmentsDisplay',
       baseColor: { field: 'bisulfite' },
       // methylated-only is the default, so the tri-context contrast reads as
       // presence/absence of red rather than a red/blue mix per read
@@ -126,7 +124,6 @@ function imprintedPanel(loc: string, marks?: unknown[]) {
           HG38_GENE_LANE,
           {
             trackId: 'HG002_imprinted_5mC_smoothed',
-            type: 'LinearMarkDisplay',
             height: 300,
             forceLoad: true,
             ...(marks ? { marks } : {}),
@@ -188,14 +185,12 @@ const ARABIDOPSIS_CONTEXT_LANES = [
   // above all four.
   {
     trackId: `${TAIR10}-repeatMasker`,
-    type: 'LinearBasicDisplay',
     filter: ['jexl:feature.end-feature.start>1000'],
     height: 50,
   },
   // aggregate CpG/CHG/CHH fraction, one labeled row each
   {
     trackId: 'arabidopsis_methyldackel',
-    type: 'LinearWiggleDisplay',
     mark: 'bar',
     scales: { y: { domainMin: 0, domainMax: 100, title: '% methylated' } },
     height: 170,
@@ -228,7 +223,6 @@ const snrpnReadsPanel = ({ grouped = false, unmarked = true } = {}) =>
       HG38_GENE_LANE,
       {
         trackId: 'HG002_snrpn_5mC_reads',
-        type: 'LinearAlignmentsDisplay',
         height: 320,
         forceLoad: true,
         ...(grouped ? { facet: 'tags.HP' } : {}),
@@ -281,7 +275,6 @@ export const bisulfiteVideoFixtures = {
       ...ARABIDOPSIS_CONTEXT_LANES,
       {
         trackId: 'arabidopsis_wgbs',
-        type: 'LinearAlignmentsDisplay',
         baseColor: { field: 'bisulfite' },
         modifications: { cytosineContext: 'CG' },
         coverage: { show: false },
@@ -438,13 +431,11 @@ export const methylationSpecs: ScreenshotSpec[] = [
             // track instead.
             {
               trackId: 'ncbi_refseq_109_hg38_latest',
-              type: 'LinearBasicDisplay',
               geneGlyphMode: 'longestCoding',
             },
             'gencode_promoter_hg38_ucsc',
             {
               trackId: 'PAY22766-nanopore',
-              type: 'LinearAlignmentsDisplay',
               // deep ONT over a 15kb window is past the BAM byte budget, so
               // both lanes banner "Requested too much data" rather than draw
               // (reviewer). forceLoad is the declarative FORCE LOAD button,
@@ -469,7 +460,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'PBA15131-nanopore',
-              type: 'LinearAlignmentsDisplay',
               forceLoad: true,
               baseColor: { field: 'modifications' },
               modifications: { shownModifications: ['a'] },
@@ -691,12 +681,10 @@ export const methylationSpecs: ScreenshotSpec[] = [
             HG38_GENE_LANE,
             {
               trackId: 'HG002_snrpn_modkit_multi',
-              type: 'LinearWiggleDisplay',
               height: 170,
             },
             {
               trackId: 'HG002_snrpn_5mC_reads',
-              type: 'LinearAlignmentsDisplay',
               height: 460,
               forceLoad: true,
               facet: 'tags.HP',

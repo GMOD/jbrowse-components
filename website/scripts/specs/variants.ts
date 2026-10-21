@@ -118,7 +118,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: '1000g_chr1_snpeff_consequence',
-          type: 'LinearMultiSampleVariantDisplay',
           variants: { show: true },
           height: 500,
           runClustering: true,
@@ -150,7 +149,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
         {
           trackId:
             '1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf',
-          type: 'LinearMultiSampleVariantDisplay',
           variants: { show: true },
           height: 500,
         },

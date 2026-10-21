@@ -126,7 +126,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
           assembly: 'K12',
           loc: 'chr:4,540,000-4,600,000',
           tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
+            { trackId: 'K12_genes' },
             {
               // the same window's variant calls above the alignment they were
               // decomposed from (reviewer: show the evidence sources side by
@@ -149,7 +149,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'ecoli_pggb_maf',
-              type: 'LinearMafDisplay',
               height: 130,
             },
           ],
@@ -270,7 +269,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ecoli_pggb_untangle_rows',
-              type: 'LinearMultiRowFeatureDisplay',
               // four strain rows divide this height, so each is ~55px and a
               // run of red reads as a band
               height: 240,
@@ -440,10 +438,9 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
             },
           ],
           tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 90 },
+            { trackId: 'K12_genes', height: 90 },
             {
               trackId: 'ecoli_pggb_depth',
-              type: 'LinearWiggleDisplay',
               height: 150,
               scales: {
                 y: {
@@ -457,7 +454,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'ecoli_pggb_pav',
-              type: 'LinearWiggleDisplay',
               // Density rather than the default stacked XY, matched by the
               // Minigraph-Cactus sibling so the two builders stay comparable.
               // pav is a presence fraction per window, so at 4.6 Mb in 1000 px
@@ -517,12 +513,11 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
           assembly: 'K12',
           loc: 'chr:2,554,000-2,570,000',
           tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
+            { trackId: 'K12_genes' },
             {
               trackId: 'ecoli_e146_ont',
               // 320 left half the lane empty: this slice is ~20x, so the reads
               // stack about 10 deep and the rest was white
-              type: 'LinearAlignmentsDisplay',
               // Link supplementary alignments (review: "view as pairs/link supp
               // reads likely can be toggled too"). VIEW AS PAIRS has nothing to
               // act on -- these are ONT reads and not one of the 38 in this
@@ -550,7 +545,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'ecoli_pggb_depth',
-              type: 'LinearWiggleDisplay',
               height: 100,
             },
             // The MAF the graph induces, over the same window (review: "a maf
@@ -563,7 +557,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
             // them is the others' summary.
             {
               trackId: 'ecoli_pggb_maf',
-              type: 'LinearMafDisplay',
               height: 130,
             },
           ],

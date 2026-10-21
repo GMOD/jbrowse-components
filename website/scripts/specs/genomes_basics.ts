@@ -139,12 +139,10 @@ const GNOMAD_TRACK_ID = 'hg38-gnomadExomesVariantsV4_1'
 // Both frames spell theirs, so neither rests on the hub keeping its default.
 const H3K4ME3_OVERLAY = {
   trackId: 'hg38-wgEncodeRegMarkH3k4me3',
-  type: 'LinearWiggleDisplay',
   rows: '',
 }
 const H3K27AC_OVERLAY = {
   trackId: 'hg38-wgEncodeRegMarkH3k27ac',
-  type: 'LinearWiggleDisplay',
   rows: '',
 }
 const H3K4ME3_ROWS = { ...H3K4ME3_OVERLAY, rows: 'source' }

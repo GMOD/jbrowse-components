@@ -20,12 +20,10 @@ export const annotationSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'tiberius_grch38',
-          type: 'LinearBasicDisplay',
           height: 110,
         },
         {
           trackId: 'gencode_47',
-          type: 'LinearBasicDisplay',
           filter: { genes: 'only' },
           height: 170,
         },

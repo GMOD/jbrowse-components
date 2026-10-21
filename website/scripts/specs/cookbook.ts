@@ -132,7 +132,6 @@ export const cookbookSpecs: ScreenshotSpec[] = [
               // 260, not 380 (reviewer: "reduce width and height of this
               // figure also"). The repeats pack into about seven rows here, so
               // the extra 120px was empty track under them.
-              type: 'LinearBasicDisplay',
               height: 260,
             },
           ],

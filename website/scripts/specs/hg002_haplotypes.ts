@@ -96,7 +96,6 @@ function landmarkTrack(hap: 'MAT' | 'PAT') {
 function geneLane(hap: 'MAT' | 'PAT', extra: Record<string, unknown> = {}) {
   return {
     trackId: `hg002_genes_${hap.toLowerCase()}`,
-    type: 'LinearBasicDisplay',
     geneGlyphMode: 'longestCoding',
     // Same strand coloring as the landmark lane (review: "make the main gene
     // track also color by strand"), so the two lanes on a panel are one
@@ -178,7 +177,6 @@ const STRAND_COLOR = { field: 'strand' }
 function landmarkLane(hap: 'MAT' | 'PAT') {
   return {
     trackId: `hg002_landmarks_${hap.toLowerCase()}`,
-    type: 'LinearBasicDisplay',
     geneGlyphMode: 'longestCoding',
     filter: [LANDMARK_FILTER],
     color: STRAND_COLOR,

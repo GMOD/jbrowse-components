@@ -41,7 +41,6 @@ const chrome = (height: number, { hideAppBar }: Chrome) => ({
 
 const reads = {
   trackId: READS,
-  type: 'LinearAlignmentsDisplay',
   pileup: { readHeight: 1 },
   filter: {
     connections: {
@@ -119,7 +118,7 @@ const junction = (row: number) =>
 const splitPanel = (loc: string) => ({
   loc,
   assembly: GRCH38,
-  tracks: [{ trackId: CALLS, type: 'LinearVariantDisplay', height: 40 }, reads],
+  tracks: [{ trackId: CALLS, height: 40 }, reads],
 })
 
 export const junctionReads = (
@@ -181,7 +180,7 @@ export const junctionScaffold = (
             loc: 'chr13:114,348,244-114,358,244 chr3:139,971,415-139,981,415',
             assembly: GRCH38,
             tracks: [
-              { trackId: CALLS, type: 'LinearVariantDisplay', height: 40 },
+              { trackId: CALLS, height: 40 },
               // one row per read with its supplementary alignment, joined by a
               // curve across the two regions, under the arc that totals them.
               // Grouped so the split reads have a section apart from the reads

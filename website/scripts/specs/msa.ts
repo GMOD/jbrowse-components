@@ -360,10 +360,6 @@ export const msaSpecs: ScreenshotSpec[] = [
             // mouseover reads.
             {
               trackId: 'hg38-unipDomain',
-              // the track's own display type, already its default. Named so
-              // `check-spec-recipes` can resolve which menu the filter below
-              // lives in rather than reporting the field as unreachable.
-              type: 'LinearBasicDisplay',
               filter: ["jexl:get(feature,'uniProtId')=='Q9C000'"],
               height: 90,
             },

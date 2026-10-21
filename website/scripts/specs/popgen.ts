@@ -202,7 +202,6 @@ export const popgenSpecs: ScreenshotSpec[] = [
             // inversion extent on top so the Fst block below reads against it
             {
               trackId: 'in2lt_inversion',
-              type: 'LinearBasicDisplay',
               height: 40,
             },
             // What this lane is read for is a RATIO -- one arm's plateau
@@ -210,7 +209,6 @@ export const popgenSpecs: ScreenshotSpec[] = [
             // a short lane.
             {
               trackId: 'fst_in2lt',
-              type: 'LinearWiggleDisplay',
               height: 240,
             },
           ],
@@ -279,24 +277,20 @@ export const popgenSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'tajd_all',
-              type: 'LinearWiggleDisplay',
               height: 150,
             },
             {
               trackId: 'pi_all',
-              type: 'LinearWiggleDisplay',
               height: 120,
             },
             // Under pi rather than over it, so the two are read as a pair and
             // the eye compares how far each falls.
             {
               trackId: 'sites_all',
-              type: 'LinearWiggleDisplay',
               height: 100,
             },
             {
               trackId: 'dm6-ncbiRefSeqCurated',
-              type: 'LinearBasicDisplay',
               // 115 rather than the 100 the paragraph above budgeted. A gene
               // lane's height only cuts cleanly at a multiple of its row pitch,
               // which is ~28.6 css px here, and 100 cut the fourth row through
@@ -388,12 +382,10 @@ export const popgenSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'in2lt_inversion',
-              type: 'LinearBasicDisplay',
               height: 40,
             },
             {
               trackId: 'fst_in2lt',
-              type: 'LinearWiggleDisplay',
               height: 160,
             },
           ],
@@ -405,17 +397,14 @@ export const popgenSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'in2lt_inversion',
-              type: 'LinearBasicDisplay',
               height: 40,
             },
             {
               trackId: 'fst_in2lt',
-              type: 'LinearWiggleDisplay',
               height: 130,
             },
             {
               trackId: 'dgrp_In2Lt_sv',
-              type: 'LinearMultiSampleVariantDisplay',
               variants: { show: true },
               // 2 px a row: 19 carriers of 180 lines is ~10% of any height,
               // and auto-fit rows under a pixel alias into a smear
@@ -483,12 +472,10 @@ export const popgenSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'in2lt_inversion',
-              type: 'LinearBasicDisplay',
               height: 40,
             },
             {
               trackId: 'fst_in2lt',
-              type: 'LinearWiggleDisplay',
               height: 160,
             },
           ],
@@ -500,17 +487,14 @@ export const popgenSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'in2lt_inversion',
-              type: 'LinearBasicDisplay',
               height: 40,
             },
             {
               trackId: 'fst_in2lt',
-              type: 'LinearWiggleDisplay',
               height: 130,
             },
             {
               trackId: 'pi_ratio_in2lt',
-              type: 'LinearWiggleDisplay',
               height: 180,
             },
           ],

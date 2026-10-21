@@ -36,7 +36,6 @@ export function portalGraphLaunch({
         tracks: [
           {
             trackId: 'hg38_ncbiRefSeq_ucsc',
-            type: 'LinearBasicDisplay',
             geneGlyphMode: 'longestCoding',
             displayMode: 'compact',
             height: 60,
@@ -98,7 +97,6 @@ export function portalLanesView({
     tracks: [
       {
         trackId: 'hg38_ncbiRefSeq_ucsc',
-        type: 'LinearBasicDisplay',
         geneGlyphMode: 'longestCoding',
         displayMode: 'compact',
         height: 60,

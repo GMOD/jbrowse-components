@@ -48,13 +48,7 @@ const SUPER_COMPACT = { readHeight: 1 }
 // be. `forceLoad` is the declarative half of the FORCE LOAD button the banner
 // offers (RegionTooLargeMixin's `configForceLoad`), so the live link opens what
 // the figure shows and a reader clicks the same approval once.
-// `type` names the display these entries would have opened anyway, which is a
-// no-op at render (`pickDisplayForView` takes the requested type first) and the
-// only way a static script can know a pileup is a pileup: the figures load a
-// hosted config, so the recipe builder cannot read the track's own type and
-// falls back to calling its rows "features". Naming the display is what puts
-// "Read height" rather than "Feature height" in the recipe.
-const DEEP_ONT = { type: 'LinearAlignmentsDisplay', forceLoad: true }
+const DEEP_ONT = { forceLoad: true }
 
 // The independent check on every reconstruction below: Valle-Inclán et al.
 // 2022's somatic SVs, called on Illumina, PacBio, ONT, 10X and Bionano before
@@ -430,7 +424,6 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
           { trackId: 'der3_segments', height: 70 },
           {
             trackId: 'reads_vs_der3',
-            type: 'LinearAlignmentsDisplay',
             pileup: {
               showSoftClipping: true,
               // 29 reads rather than 200, so they get a row an order of magnitude
@@ -670,7 +663,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   ...GENE_TRACK,
-                  type: 'LinearBasicDisplay',
                   displayMode: 'compact',
                   height: 50,
                 },
@@ -701,13 +693,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'der3_segments',
-                  type: 'LinearBasicDisplay',
                   displayMode: 'compact',
                 },
                 {
                   ...GENE_TRACK,
                   trackId: DER3_GENES_TRACK.trackId,
-                  type: 'LinearBasicDisplay',
                   displayMode: 'compact',
                   height: 74,
                 },
@@ -988,7 +978,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // sized for, counted every record including the secondaries.)
                 {
                   trackId: 'reads_vs_der3',
-                  type: 'LinearAlignmentsDisplay',
                   // THE SAME PITCH AS THE hg38 LANE, because this figure is a
                   // comparison and a comparison is drawn at one scale. The
                   // super-compact 1px pitch this lane took (reviewer: "please
@@ -1485,7 +1474,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         GENE_TRACK,
         {
           trackId: 'K562_star_fusion',
-          type: 'LinearVariantDisplay',
           // COLLAPSED, which here means "no labels" (the slot's other job, one
           // row, this lane already had). Both records are the same call seen from
           // its two sides, so both floating labels read `NUP214--XKR3`, and each
@@ -1500,7 +1488,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'K562_isoseq',
-          type: 'LinearAlignmentsDisplay',
           height: 450,
           coverage: { height: 90 },
           sashimi: {
@@ -1678,7 +1665,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // divider are that read set, read by read.
         {
           trackId: 'K562_isoseq',
-          type: 'LinearAlignmentsDisplay',
           // A fixed lane rather than every molecule: the arc band carries the
           // count, and the first couple of hundred rows carry the shape.
           height: 800,

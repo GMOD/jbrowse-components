@@ -194,7 +194,6 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
 // lane differed from the figures' would be a route through a different page.
 const TRIO_GENE_LANE = {
   trackId: 'ncbi_refseq_109_hg38_latest',
-  type: 'LinearBasicDisplay',
   displayMode: 'compact',
   filter: { genes: 'only' },
   // was `showDescriptions: false`, meaning "names suffice here". That has no
@@ -349,7 +348,6 @@ export const trioSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'HG02024_VN049_KHVTrio.chr1.hapibd',
-          type: 'LinearMultiRowFeatureDisplay',
           height: 120,
         },
       ],
@@ -467,7 +465,6 @@ export const trioSpecs: ScreenshotSpec[] = [
         tracks: [
           {
             trackId: TRIO_PAINT_TRACK,
-            type: 'LinearMultiRowFeatureDisplay',
             // show only this parent's haplotype rows
             rows: { field: 'parenthap', kept: paintingFilter },
           },

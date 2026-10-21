@@ -420,7 +420,6 @@ export const ldSpecs: ScreenshotSpec[] = [
             // transcripts and the point is which gene the block sits on.
             {
               trackId: 'hg38-ncbiRefSeqCurated',
-              type: 'LinearBasicDisplay',
               height: 60,
               filter: { genes: 'only' },
             },
@@ -466,7 +465,6 @@ export const ldSpecs: ScreenshotSpec[] = [
             // differentiated, not the causal base. The lane already draws that.
             {
               trackId: 'kgp_lct_fst',
-              type: 'LinearWiggleDisplay',
               mark: 'point',
               color: '#0068d1',
               size: 2,
@@ -524,14 +522,13 @@ export const ldSpecs: ScreenshotSpec[] = [
             // track pulls from there regardless.
             {
               trackId: 'decode_recomb',
-              type: 'LinearWiggleDisplay',
               scales: { y: { domainMin: 0, domainMax: 100 } },
               height: 80,
             },
             // 200 cuts the panel block's apex and keeps both of its edges, which
             // are what the figure compares against the map above
-            { trackId: 'kgp_lct_pooled', type: 'LDTrackDisplay', height: 200 },
-            { trackId: 'kgp_lct_panel', type: 'LDTrackDisplay', height: 200 },
+            { trackId: 'kgp_lct_pooled', height: 200 },
+            { trackId: 'kgp_lct_panel', height: 200 },
           ],
         },
       ],
@@ -650,14 +647,12 @@ export const ldSpecs: ScreenshotSpec[] = [
             // here is where genes are, not which transcript is which.
             {
               trackId: 'hg38-ncbiRefSeqCurated',
-              type: 'LinearBasicDisplay',
               displayMode: 'collapsed',
               height: 40,
               filter: { genes: 'only' },
             },
             {
               trackId: 'kgp_lct_fst_scan',
-              type: 'LinearWiggleDisplay',
               mark: 'point',
               color: '#0068d1',
               size: 2,
@@ -828,18 +823,15 @@ export const ldSpecs: ScreenshotSpec[] = [
             // On top, so both blocks below have their extent over them.
             {
               trackId: 'ag1000g_2l_loci',
-              type: 'LinearBasicDisplay',
               height: 40,
             },
-            { trackId: 'ag1000g_2l_cmgam', type: 'LDTrackDisplay' },
+            { trackId: 'ag1000g_2l_cmgam' },
             {
               trackId: 'ag1000g_2la_karyotype_cmgam',
-              type: 'LinearMultiSampleVariantDisplay',
             },
-            { trackId: 'ag1000g_2l_gagam', type: 'LDTrackDisplay' },
+            { trackId: 'ag1000g_2l_gagam' },
             {
               trackId: 'ag1000g_2la_karyotype_gagam',
-              type: 'LinearMultiSampleVariantDisplay',
             },
           ],
         },
@@ -1003,7 +995,6 @@ export const ldSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg38-ncbiRefSeqCurated',
-              type: 'LinearBasicDisplay',
               height: 60,
               filter: { genes: 'only' },
             },
@@ -1013,7 +1004,6 @@ export const ldSpecs: ScreenshotSpec[] = [
             // 'LACTASE PERSISTENCE' string, on rs4988235 itself among others.
             {
               trackId: 'hg38-clinvarMain',
-              type: 'LinearBasicDisplay',
               height: 56,
               filter: [
                 "jexl:get(feature,'phenotypeList')=='LACTASE PERSISTENCE'",
@@ -1026,10 +1016,9 @@ export const ldSpecs: ScreenshotSpec[] = [
             // 260, cut rather than squashed: the block draws 685 px wide here,
             // so its apex is 343 px down, and 260 cuts the apex while leaving
             // both EDGES, which are what the matrix below has to stop at.
-            { trackId: 'kgp_lct_ld', type: 'LDTrackDisplay', height: 260 },
+            { trackId: 'kgp_lct_ld', height: 260 },
             {
               trackId: 'kgp_lct_haplotypes',
-              type: 'LinearMultiSampleVariantDisplay',
               // 520 of the page's 700: 300 haplotype rows is 1.73 px a row, and
               // the readout is a HORIZONTAL texture, one band decided the same
               // way straight across the block, which a ~124-row cluster still
@@ -1130,13 +1119,11 @@ export const ldSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg38-ncbiRefSeqCurated',
-              type: 'LinearBasicDisplay',
               height: 60,
               filter: { genes: 'only' },
             },
             {
               trackId: 'hg38-clinvarMain',
-              type: 'LinearBasicDisplay',
               height: 56,
               filter: [
                 "jexl:get(feature,'phenotypeList')=='LACTASE PERSISTENCE'",
@@ -1144,7 +1131,6 @@ export const ldSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'kgp_lct_population_af',
-              type: 'LinearWiggleDisplay',
             },
           ],
         },

@@ -230,7 +230,6 @@ function maneGeneLane({
     },
     lane: {
       trackId,
-      type: 'LinearBasicDisplay',
       filter: [`jexl:get(feature,'name')=='${accession}'`],
       forceLoad: true,
       height,
@@ -320,7 +319,6 @@ const HG19_MAIN_CHROMS = [
 // its two extremes.
 const HG008_BICSEQ2_LANE = {
   trackId: HG008_BICSEQ2_TRACK.trackId,
-  type: 'LinearWiggleDisplay',
   height: 130,
 }
 
@@ -339,7 +337,6 @@ const BENCHMARK_CNV_COLOR = {
 // clips CN 4+ and more off the bottom of its key.
 const benchmarkCnvLane = (trackId = 'hg008t_somatic_cnv') => ({
   trackId,
-  type: 'LinearBasicDisplay',
   color: BENCHMARK_CNV_COLOR,
   height: 120,
 })
@@ -387,7 +384,6 @@ export const cgiabVideoFixtures = {
         tracks: [
           {
             trackId: 'hg008_cnv_indexcov',
-            type: 'LinearWiggleDisplay',
             height: 200,
           },
         ],
@@ -474,7 +470,6 @@ export const svSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
-          type: 'LinearBasicDisplay',
           geneGlyphMode: 'longestCoding',
         },
       ],
@@ -496,7 +491,6 @@ export const svSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
-          type: 'LinearBasicDisplay',
           geneGlyphMode: 'longestCoding',
         },
       ],
@@ -575,7 +569,6 @@ export const svSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'colo829_cnv_coverage',
-              type: 'LinearWiggleDisplay',
               mark: 'point',
               rows: '',
               // even finer binning (basesPerSpan = bpPerPx/resolution) so the
@@ -638,7 +631,6 @@ export const svSpecs: ScreenshotSpec[] = [
             'variants_hg002',
             {
               trackId: 'hg002_nanopore_hp',
-              type: 'LinearAlignmentsDisplay',
               height: 400,
               forceLoad: true,
               facet: 'tags.HP',
@@ -674,7 +666,6 @@ export const svSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'volvox-long-reads-sv-bam',
-          type: 'LinearAlignmentsDisplay',
           coverage: {
             // taller coverage band so the clip-indicator ticks above it are
             // large enough to read (default coverageHeight is 45)
@@ -723,7 +714,6 @@ export const svSpecs: ScreenshotSpec[] = [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
             {
               trackId: 'HG02768.final',
-              type: 'LinearAlignmentsDisplay',
               unit: 'chain',
               readConnections: {
                 show: true,
@@ -878,7 +868,6 @@ export const svSpecs: ScreenshotSpec[] = [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
             {
               trackId: 'HG02768.final',
-              type: 'LinearAlignmentsDisplay',
               pileup: { show: false },
               readConnections: {
                 show: true,
@@ -946,7 +935,6 @@ export const svSpecs: ScreenshotSpec[] = [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
             {
               trackId: 'HG00151_ONT_1000g',
-              type: 'LinearAlignmentsDisplay',
               // link supplementary alignments: chains each long read's split
               // segments, so the reverse-strand core paints its flipped-strand
               // color inline between the forward flanks.
@@ -1257,30 +1245,25 @@ export const svSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg008t_benchmark_sv',
-              type: 'LinearVariantDisplay',
               height: 55,
             },
             {
               trackId: 'hg008t_severus_sv',
-              type: 'LinearVariantDisplay',
               showLabels: 'none',
               height: 45,
             },
             {
               trackId: 'hg008t_minda_sv',
-              type: 'LinearVariantDisplay',
               showLabels: 'none',
               height: 45,
             },
             {
               trackId: 'hg008t_dragen_sv',
-              type: 'LinearVariantDisplay',
               showLabels: 'none',
               height: 45,
             },
             {
               trackId: 'hg008t_nygc_sv',
-              type: 'LinearMarkDisplay',
               height: 45,
             },
             {
@@ -1288,7 +1271,6 @@ export const svSpecs: ScreenshotSpec[] = [
               // across this window, and the halving is a level to read off an
               // axis that does not move with the view
               trackId: 'hg008_depth',
-              type: 'LinearWiggleDisplay',
               mark: 'bar',
               color: '#0068d1',
               extent: 'none',
@@ -1374,12 +1356,10 @@ export const svSpecs: ScreenshotSpec[] = [
             // own length field, off the bigBed autoSql.
             {
               trackId: CLINVAR_CNV_TRACK.trackId,
-              type: 'LinearBasicDisplay',
               heightMode: 'grow',
             },
             {
               trackId: 'hg008t_benchmark_sv',
-              type: 'LinearVariantDisplay',
               // The box around the deletion, drawn by the DISPLAY rather than
               // by the annotation overlay (review: "the red box isnt really
               // quite surrounding the DEL feature"). The overlay box it
@@ -1638,7 +1618,6 @@ export const svSpecs: ScreenshotSpec[] = [
             // do not separate there at all.
             {
               trackId: 'hg008t_pacbio_full',
-              type: 'LinearAlignmentsDisplay',
               height: 260,
               pileup: { readHeight: 5 },
               forceLoad: true,
@@ -1650,10 +1629,6 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3',
-              // Named because the recipe generator reads it: this track comes
-              // from the hosted config, so a bare height has nothing to say
-              // which menu row sets it.
-              type: 'LinearAlignmentsDisplay',
               height: 260,
               pileup: { readHeight: 5 },
               forceLoad: true,
@@ -1719,7 +1694,6 @@ export const svSpecs: ScreenshotSpec[] = [
             HG008_BICSEQ2_LANE,
             {
               trackId: 'hg008_cnv_indexcov',
-              type: 'LinearWiggleDisplay',
               mark: 'point',
               rows: '',
               // Fixed 0..3, which is the manual min/max cap the walkthrough
@@ -1736,7 +1710,6 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hg008_baf',
-              type: 'LinearWiggleDisplay',
               // Same settings as the chr3 figure so the two read alike: scatter
               // over a fixed 0..1, because the value is one point per germline
               // het site and the whole signal is the spread. A line would
@@ -1842,14 +1815,12 @@ export const svSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
               geneGlyphMode: 'longestCoding',
               displayMode: 'compact',
               height: 90,
             },
             {
               trackId: 'hg008_depth',
-              type: 'LinearWiggleDisplay',
               mark: 'bar',
               color: '#0068d1',
               extent: 'none',
@@ -1860,7 +1831,6 @@ export const svSpecs: ScreenshotSpec[] = [
             { trackId: 'hg008t_nygc_cnv', height: 70 },
             {
               trackId: 'hg008t_dragen_cnv',
-              type: 'LinearVariantDisplay',
               showLabels: 'name',
               height: 70,
             },
@@ -1873,7 +1843,6 @@ export const svSpecs: ScreenshotSpec[] = [
               // height), and at the height it settled on the lower band ran
               // into the frame's bottom border and read as cut off.
               trackId: 'hg008t_wakhan_hifi_hic',
-              type: 'LinearMultiRowFeatureDisplay',
               height: 120,
             },
           ],
@@ -1949,14 +1918,12 @@ export const svSpecs: ScreenshotSpec[] = [
             // even as track")
             {
               trackId: 'grch38_cytobands',
-              type: 'LinearBasicDisplay',
               displayMode: 'collapsed',
               height: 30,
             },
             HG008_BICSEQ2_LANE,
             {
               trackId: 'hg008_depth',
-              type: 'LinearWiggleDisplay',
               // scatter of the per-bin average depth, pinned at 150 so the
               // outlier fence's spike room does not flatten the arm step
               mark: 'point',
@@ -1969,7 +1936,6 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hg008_baf',
-              type: 'LinearWiggleDisplay',
               // BAF scatter over the full 0..1: the p-arm LOH splits into the
               // mirrored pair of bands at 0 and 1, the balanced q-arm stays as
               // one band at 0.5. Scatter (not line) because the value is one
@@ -2132,7 +2098,6 @@ export const svSpecs: ScreenshotSpec[] = [
               // one transcript per gene rather than the full RefSeq isoform
               // stack, so CDKN2A reads as a single glyph under the highlight
               trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
               geneGlyphMode: 'longestCoding',
             },
             HG008_BICSEQ2_LANE,
@@ -2140,7 +2105,6 @@ export const svSpecs: ScreenshotSpec[] = [
               // one filled profile per sample, stacked on the fixed 0..80
               // range set above rather than each row's own autoscale.
               trackId: 'hg008_tn_perbase',
-              type: 'LinearWiggleDisplay',
               mark: 'bar',
               extent: 'none',
               // no cross hatches: the read is one filled profile against the
@@ -2161,7 +2125,6 @@ export const svSpecs: ScreenshotSpec[] = [
               // since a chain's members must share one group key and
               // "is-part-of-a-chain" isn't a groupable dimension; skipped.)
               trackId: 'hg008_t_reads_cdkn2a',
-              type: 'LinearAlignmentsDisplay',
               // Super-compact (featureHeight 1, the COMPACTNESS_PRESETS floor):
               // this figure is read as a coverage SHAPE — a clean drop-out
               // between two walls of reads — so 1px rows show the whole ~116x
@@ -2231,7 +2194,6 @@ export const svSpecs: ScreenshotSpec[] = [
             HG008_BICSEQ2_LANE,
             {
               trackId: 'hg008_depth',
-              type: 'LinearWiggleDisplay',
               mark: 'point',
               color: '#0068d1',
               extent: 'none',
@@ -2244,7 +2206,6 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hg008_baf',
-              type: 'LinearWiggleDisplay',
               // raw 0..1 BAF scatter. The 2+1 gain's band-split at 1/3 and 2/3
               // reads here because HG008_BAF_TRACK's resolutionMultiplier keeps
               // the fetch off the bigWig zoom levels; see the note on that const.
@@ -2310,7 +2271,6 @@ export const svSpecs: ScreenshotSpec[] = [
             HG008_BICSEQ2_LANE,
             {
               trackId: 'hg008_depth',
-              type: 'LinearWiggleDisplay',
               mark: 'point',
               color: '#0068d1',
               extent: 'none',
@@ -2322,7 +2282,6 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hg008_baf',
-              type: 'LinearWiggleDisplay',
               // raw 0..1 BAF scatter: BOTH arms split off the 0.5 het line — the
               // p-arm (loss+LOH) and the q-arm (copy-neutral LOH) — which is the
               // whole point of the figure. Nothing in this chromosome is
@@ -2414,7 +2373,6 @@ export const svSpecs: ScreenshotSpec[] = [
               // this one, so keeping both would have drawn the same signal
               // twice and left the figure a lane taller.
               trackId: 'hg008_cnv_indexcov',
-              type: 'LinearWiggleDisplay',
               mark: 'point',
               rows: '',
               // fixed 0..3 as on chr5: indexcov's centromere and repeat spikes
@@ -2426,7 +2384,6 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hg008_baf',
-              type: 'LinearWiggleDisplay',
               // raw 0..1 BAF scatter: the 18q LOH splits het SNPs into upper
               // and lower bands off the 0.5 het line, against the balanced p-arm
               // beside it. At this zoom the split only survives because

@@ -63,9 +63,6 @@ export function hpyloriSyntenyWithGenes({
   // boxes
   const geneTrack = (trackId: string) => ({
     trackId,
-    // the hosted config can't be read at build time, so the figure recipe only
-    // knows which display a `color` expression belongs to if the spec says
-    type: 'LinearBasicDisplay',
     filter: { genes: 'only' },
     // no key: each gene already prints its symbol, and a key per panel lists a
     // different subset and covers the genes at the right edge
@@ -250,7 +247,6 @@ const CHRY_P_PALINDROME_WINDOW = 'chrY:22,330,000-22,810,000'
 // centre.
 const CHRY_GENE_LANE = {
   trackId: 'hs1_chrY_genes',
-  type: 'LinearBasicDisplay',
   filter: { genes: 'only' },
   geneGlyphMode: 'longestCoding',
   displayMode: 'compact',
@@ -400,7 +396,6 @@ function tnnt3StarSession() {
         tracks: [
           {
             trackId: 'hg38_liftOver_multiway',
-            type: 'MultiWaySyntenyDisplay',
             rows: { domain: lanes, kept: lanes },
             ribbonColor: { field: 'strand' },
             height: (lanes.length + 1) * 60,
@@ -431,7 +426,6 @@ function hostedStarSession(
           { trackId: `${db}-ncbiRefSeq`, ...genes },
           {
             trackId: `${db}_liftOver_multiway`,
-            type: 'MultiWaySyntenyDisplay',
             rows: { domain: lanes, kept: lanes },
             height: (lanes.length + 1) * 34,
             ...display,
@@ -568,7 +562,6 @@ const ECOLI_ONE_VS_ALL_LANES = sessionSpec(
         tracks: [
           {
             trackId: 'ecoli_ava',
-            type: 'LGVSyntenyDisplay',
             facet: 'mateAssembly',
             hideSelfAlignments: true,
             pileup: { readHeight: 14 },
@@ -603,7 +596,6 @@ const ECOLI_ROUND_TRIP_START = sessionSpec(
         tracks: [
           {
             trackId: 'ecoli_ava',
-            type: 'LGVSyntenyDisplay',
             facet: 'mateAssembly',
             hideSelfAlignments: true,
             pileup: { readHeight: 14 },
@@ -644,7 +636,6 @@ const ECOLI_MAF_ROWS = sessionSpec(
         tracks: [
           {
             trackId: 'K12_genes',
-            type: 'LinearBasicDisplay',
             filter: { genes: 'only' },
             displayMode: 'compact',
           },
@@ -653,7 +644,6 @@ const ECOLI_MAF_ROWS = sessionSpec(
           // default the five strains and the coverage band share ~80px.
           {
             trackId: 'ecoli_pggb_maf',
-            type: 'LinearMafDisplay',
             showTree: true,
             height: 150,
           },
@@ -674,7 +664,6 @@ const GRASSES_RICE_LANES = sessionSpec(
         tracks: [
           {
             trackId: 'rice_genes',
-            type: 'LinearBasicDisplay',
             filter: { genes: 'only' },
             displayMode: 'compact',
           },
@@ -703,7 +692,6 @@ const LGV_TRACK_ZOOM_SESSION = sessionSpec(
         tracks: [
           {
             trackId: 'GCF_030704535.1-ncbiRefSeq',
-            type: 'LinearBasicDisplay',
             filter: { genes: 'only' },
             displayMode: 'compact',
             showLabels: 'auto',
@@ -934,7 +922,6 @@ export function ecoliOneVsAllUrl(levelHeight: number) {
             tracks: [
               {
                 trackId: 'ecoli_ava',
-                type: 'LGVSyntenyDisplay',
                 facet: 'mateAssembly',
                 // The K12 lane can hold no self-alignment — all_vs_all.paf
                 // is built with `minimap2 -X`, which skips each sequence's
@@ -1203,11 +1190,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'GCF_000346465.2-ncbiRefSeq',
-                    // Named even though it is what the track would open with
-                    // anyway: the config is hosted, so the figure-recipe
-                    // builder can't look the track up to learn its display,
-                    // and without one it can't say where 'compact' is set.
-                    type: 'LinearBasicDisplay',
                     filter: { genes: 'only' },
                     displayMode: 'compact',
                     // was `showDescriptions: false`, meaning "names suffice
@@ -1227,7 +1209,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'GCF_030704535.1-ncbiRefSeq',
-                    type: 'LinearBasicDisplay',
                     filter: { genes: 'only' },
                     displayMode: 'compact',
                     // as above: the retired `showDescriptions: false` resolved
@@ -1242,7 +1223,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'GCF_000208745.1-ncbiRefSeq',
-                    type: 'LinearBasicDisplay',
                     filter: { genes: 'only' },
                     displayMode: 'compact',
                     // as above: the retired `showDescriptions: false` resolved
@@ -1329,7 +1309,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'GCF_030704535.1-ncbiRefSeq',
-                type: 'LinearBasicDisplay',
                 filter: { genes: 'only' },
                 displayMode: 'compact',
                 // as above: the retired `showDescriptions: false` resolved to
@@ -1338,7 +1317,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
               {
                 trackId: 'grape_peach_cacao_blocks',
-                type: 'LGVSyntenyDisplay',
                 facet: 'mateAssembly',
                 pileup: {
                   // an anchor block is short at this zoom, and what the figure is
@@ -1389,7 +1367,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'GCF_030704535.1-ncbiRefSeq',
-                type: 'LinearBasicDisplay',
                 filter: { genes: 'only' },
                 displayMode: 'compact',
                 showLabels: 'auto',
@@ -1442,7 +1419,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'GCF_030704535.1-ncbiRefSeq',
-                type: 'LinearBasicDisplay',
                 filter: { genes: 'only' },
                 displayMode: 'compact',
                 showLabels: 'auto',
@@ -1584,7 +1560,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'human_genes',
-                type: 'LinearBasicDisplay',
                 filter: { genes: 'only' },
                 displayMode: 'compact',
               },
@@ -1624,7 +1599,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'tomato_genes',
-                type: 'LinearBasicDisplay',
                 filter: { genes: 'only' },
                 displayMode: 'compact',
                 // Ensembl's tomato GFF3 names every gene `gene:gene-Solyc04g…`,
@@ -1672,7 +1646,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'melanogaster_genes',
-                type: 'LinearBasicDisplay',
                 filter: { genes: 'only' },
                 displayMode: 'compact',
               },
@@ -1713,7 +1686,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'primate_orthologs',
-                type: 'MultiWaySyntenyDisplay',
                 ribbonColor: { field: 'strand' },
                 height: 620,
               },
@@ -1756,7 +1728,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'primate_orthologs',
-                type: 'MultiWaySyntenyDisplay',
                 ribbonColor: { field: 'strand' },
                 height: 620,
               },
@@ -1833,7 +1804,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ecoli_orthologs',
-              type: 'MultiWaySyntenyDisplay',
               height: 1500,
               // grey: red and blue here would mostly say which way each
               // chromosome was deposited, and drown the gene colors
@@ -1864,7 +1834,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ecoli_orthologs',
-              type: 'MultiWaySyntenyDisplay',
               height: 1500,
               // grey: red and blue here would mostly say which way each
               // chromosome was deposited, and drown the gene colors
@@ -1897,7 +1866,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             'hg38-ncbiRefSeq',
             {
               trackId: 'hg38_liftover_multiway',
-              type: 'MultiWaySyntenyDisplay',
               ribbonColor: { field: 'strand' },
               rows: { domain: HG38_VERTEBRATES_TREE_ORDER },
               height: 600,
@@ -1927,7 +1895,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             'hg38-ncbiRefSeq',
             {
               trackId: 't2t_apes_cactus',
-              type: 'MultiWaySyntenyDisplay',
               height: 600,
             },
           ],
@@ -1955,7 +1922,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             'hg38-ncbiRefSeq',
             {
               trackId: 't2t_apes_cactus',
-              type: 'MultiWaySyntenyDisplay',
               height: 600,
             },
           ],
@@ -2103,12 +2069,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'syri_regions_on_Col-0',
-              type: 'LinearMultiRowFeatureDisplay',
               height: 110,
             },
             {
               trackId: 'syri_pangenome',
-              type: 'MultiWaySyntenyDisplay',
               height: 640,
             },
           ],
@@ -2137,7 +2101,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'syri_regions_on_TAIR10',
-                type: 'LinearMultiRowFeatureDisplay',
                 height: 644,
               },
             ],
@@ -2171,7 +2134,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             'hg38-ncbiRefSeq',
             {
               trackId: 'hg38_liftover_multiway',
-              type: 'MultiWaySyntenyDisplay',
               ribbonColor: { field: 'strand' },
               rows: { domain: HG38_VERTEBRATES_TREE_ORDER },
               height: 600,
@@ -2242,7 +2204,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'human_genes',
-                    type: 'LinearBasicDisplay',
                     // names only. The blue Ensembl description line under every
                     // gene ("lysozyme [Source:HGNC Symbol;Acc:...]") is a
                     // second row of text per feature and at 3 Mb it is most of
@@ -2259,7 +2220,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'rhesus_genes',
-                    type: 'LinearBasicDisplay',
                     showLabels: 'name',
                     displayMode: 'compact',
                   },
@@ -2751,7 +2711,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'sorghum_genes',
-                    type: 'LinearBasicDisplay',
                     filter: { genes: 'only' },
                     displayMode: 'compact',
                     showLabels: 'none',
@@ -2765,7 +2724,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'rice_genes',
-                    type: 'LinearBasicDisplay',
                     filter: { genes: 'only' },
                     displayMode: 'compact',
                     showLabels: 'none',
@@ -2781,7 +2739,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'maize_genes',
-                    type: 'LinearBasicDisplay',
                     filter: { genes: 'only' },
                     displayMode: 'compact',
                     showLabels: 'none',
@@ -3129,7 +3086,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'K12_genes',
-                  type: 'LinearBasicDisplay',
                   filter: { genes: 'only' },
                   displayMode: 'compact',
                   // as above: the retired `showDescriptions: false` resolved
@@ -3147,7 +3103,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'Sakai_genes',
-                  type: 'LinearBasicDisplay',
                   filter: { genes: 'only' },
                   displayMode: 'compact',
                   // as above: the retired `showDescriptions: false` resolved
@@ -3259,7 +3214,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'K12_genes',
-              type: 'LinearBasicDisplay',
               filter: { genes: 'only' },
               displayMode: 'compact',
               // as above: the retired `showDescriptions: false` resolved to
@@ -3276,7 +3230,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'ecoli_ava',
-              type: 'LGVSyntenyDisplay',
               facet: 'mateAssembly',
               // "Group by... > Hide self-alignment lane". K-12 cannot have a
               // line against itself — all_vs_all.paf is built with
@@ -3460,7 +3413,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ecoli_ava_identity',
-              type: 'LinearMarkDisplay',
               height: 400,
             },
           ],
@@ -3589,7 +3541,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'grape_peach_synteny_mcscan_simple',
-                  type: 'LGVSyntenyDisplay',
                   height: 60,
                 },
               ],
@@ -3600,7 +3551,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'grape_peach_synteny_mcscan_simple',
-                  type: 'LGVSyntenyDisplay',
                   height: 60,
                 },
               ],
@@ -3683,7 +3633,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'grape_genes',
-                  type: 'LinearBasicDisplay',
                   filter: { genes: 'only' },
                   displayMode: 'compact',
                   showLabels: 'auto',
@@ -3697,7 +3646,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'peach_genes',
-                  type: 'LinearBasicDisplay',
                   filter: { genes: 'only' },
                   displayMode: 'compact',
                   showLabels: 'auto',
@@ -3751,7 +3699,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'grape_genes',
-                  type: 'LinearBasicDisplay',
                   filter: { genes: 'only' },
                   displayMode: 'compact',
                   showLabels: 'auto',
@@ -3765,7 +3712,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'peach_genes',
-                  type: 'LinearBasicDisplay',
                   filter: { genes: 'only' },
                   displayMode: 'compact',
                   showLabels: 'auto',
@@ -3977,7 +3923,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // rather than four tracks across two.
             {
               trackId: 'hg38-rmsk',
-              type: 'LinearBasicDisplay',
               displayMode: 'compact',
               // labels on: at 18 kb this window holds about a dozen elements, so
               // the names fit on one row, and the one on the L1HS is what the
@@ -3991,7 +3936,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
               // conserved chains are their own bars and the launch can be aimed
               // at a big one.
               trackId: 'hg38_to_panTro6_liftOver',
-              type: 'LGVSyntenyDisplay',
               collapseSections: false,
               // one row: this window sits inside a single chromosome-scale
               // chain, so the rest of the display would be empty canvas under
@@ -5045,14 +4989,12 @@ export const syntenyVideoFixtures = {
           tracks: [
             {
               trackId: 'GCF_030704535.1-ncbiRefSeq',
-              type: 'LinearBasicDisplay',
               filter: { genes: 'only' },
               displayMode: 'compact',
               showLabels: 'auto',
             },
             {
               trackId: 'grape_peach_cacao_blocks',
-              type: 'LGVSyntenyDisplay',
               facet: 'mateAssembly',
               pileup: { readHeight: 14 },
               height: 140,
@@ -5142,7 +5084,6 @@ export const syntenyVideoFixtures = {
           },
           {
             trackId: 'hg38_to_hs1_liftOver',
-            type: 'LGVSyntenyDisplay',
             collapseSections: false,
             pileup: { readHeight: 14 },
             height: 70,

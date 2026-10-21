@@ -64,7 +64,6 @@ function matrix(trackId: string, height: number) {
     // menu item: that slot is shared with the two LD heatmaps, so the field name
     // alone cannot settle which display it means, and an unresolved entry lands
     // in spec-recipe-unmapped.txt instead of giving the reader a click path.
-    type: 'LinearHicDisplay',
     height,
     color: { scale: 'linear', domainQuantile: 0.95 },
     selectedNormalization: 'NONE',
@@ -98,7 +97,6 @@ const junctionView = {
     // LOC*/RN7SL* entries that buries both of them.
     {
       trackId: 'mane_hg38',
-      type: 'LinearBasicDisplay',
       showLabels: 'name',
       height: 68,
     },
@@ -239,7 +237,6 @@ export const hicSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'mane_hg38',
-          type: 'LinearBasicDisplay',
           showLabels: 'name',
           height: 62,
         },

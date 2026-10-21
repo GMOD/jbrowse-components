@@ -90,7 +90,6 @@ const dock2Spec: ScreenshotSpec = {
           // window, which is the context the figure needs and all of it.
           {
             trackId: 'mm39_ncbiRefSeq_ucsc',
-            type: 'LinearBasicDisplay',
             height: 48,
           },
           // One row, whose own label states the ranking metric: this is the
@@ -105,7 +104,6 @@ const dock2Spec: ScreenshotSpec = {
           // is what makes a 3.9 kb path and a 114 kb one distinguishable.
           {
             trackId: 'mouse_minigraph_alleles',
-            type: 'LinearAlignmentsDisplay',
             coverage: { show: false },
             sashimi: { show: false },
             height: 110,
@@ -169,20 +167,17 @@ const dock2Spec: ScreenshotSpec = {
 //                             which had no yak.
 const bovineVariantLane = (height: number) => ({
   trackId: 'bovine_pangenome_vcf',
-  type: 'LinearMultiSampleVariantDisplay',
   variants: { show: true },
   height,
 })
 
 const bovineGenes = {
   trackId: 'bosTau9_ncbiRefSeq_ucsc',
-  type: 'LinearBasicDisplay',
   height: 90,
 }
 
 const bovineOmia = {
   trackId: 'omia_cattle_variants',
-  type: 'LinearBasicDisplay',
   height: 60,
 }
 
@@ -307,7 +302,6 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         bovineVariantLane(260),
         {
           trackId: 'bovine_minigraph_alleles',
-          type: 'LinearAlignmentsDisplay',
           coverage: { show: false },
           sashimi: { show: false },
           height: 90,

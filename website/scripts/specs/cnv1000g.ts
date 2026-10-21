@@ -70,7 +70,6 @@ const LADDER_TRACK = pageTrack('tutorials/population_cnv.md', 'pur_cnv_ladder')
 // diverging scale reads as diverging. The cost is that gains past 4 clamp,
 // which the legend's own bar shows.
 export const CN_HEATMAP_SETTINGS = {
-  type: 'LinearWiggleDisplay',
   mark: 'span',
   origin: 2,
   scales: { y: { domainMin: 0, domainMax: 4 } },
@@ -139,7 +138,6 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
             { trackId: GENE_TRACK, displayMode: 'compact', height: 80 },
             {
               trackId: 'pur_cnv_ladder',
-              type: 'LinearWiggleDisplay',
               height: 500,
             },
           ],
@@ -209,13 +207,13 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_refseq_hg38',
-          type: 'LinearBasicDisplay',
           displayMode: 'compact',
           height: 80,
         },
         {
           ...CN_HEATMAP_SETTINGS,
           trackId: 'cnv_1000g_zarr',
+          type: 'LinearWiggleDisplay',
           // 2504 rows, so every individual is a sub-pixel line and the pattern
           // lives in the stack rather than in any one row (as in the TCGA
           // cohort figure).

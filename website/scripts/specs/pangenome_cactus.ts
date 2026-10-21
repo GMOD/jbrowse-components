@@ -149,7 +149,6 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'K12_genes',
-              type: 'LinearBasicDisplay',
               height: 60,
               color: 'rgb(130,130,130)',
               // Genes only, which is what the lane is called. The GFF also
@@ -177,7 +176,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
             },
             // which four: the carriage lane counts the strains, and the rows
             // name them, alike for every small variant in the window
-            { trackId: MC_MAF_TRACK, type: 'LinearMafDisplay', height: 130 },
+            { trackId: MC_MAF_TRACK, height: 130 },
             graphTrack(MC_SEGMENTS_TRACK, {
               layoutMode: 'force',
               // the drawing is one backbone and one arc, a flat chain the
@@ -328,10 +327,9 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
             },
           ],
           tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
+            { trackId: 'K12_genes' },
             {
               trackId: 'ecoli_depth_by_builder',
-              type: 'LinearWiggleDisplay',
               // two rows at 150px: the doubling is 2x the plateau, so a row has
               // to be tall enough for that ratio to read.
               height: 300,
@@ -434,10 +432,9 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           assembly: 'K12',
           loc: 'chr:2,554,007-2,570,007',
           tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
+            { trackId: 'K12_genes' },
             {
               trackId: 'ecoli_cactus_maf',
-              type: 'LinearMafDisplay',
               height: 130,
             },
           ],
@@ -524,7 +521,6 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ecoli_cactus_pav_odgi_colors',
-              type: 'LinearWiggleDisplay',
               // density, not xy: odgi viz paints presence as a filled band, and
               // a 0/1 signal drawn as a bar chart is the same band with ragged
               // edges. Pinning the domain to 0-1 keeps every present base fully

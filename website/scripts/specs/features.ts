@@ -154,7 +154,6 @@ export const proteinLaunchFixtures = {
 const GROUPING_WINDOW = 'chr17:7,540,000-7,640,000'
 const GROUPING_TRACK = {
   trackId: 'ncbi_refseq_109_hg38_latest',
-  type: 'LinearBasicDisplay',
   geneGlyphMode: 'longestCoding',
   // names only: a description row under every gene doubled the forward
   // section's height and pushed the reverse one off the frame
@@ -253,7 +252,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
         'Pd8Wh30ei9R',
         {
           trackId: 'ncbi_gff_hg19',
-          type: 'LinearBasicDisplay',
           geneGlyphMode: 'longestCoding',
         },
       ],
@@ -321,7 +319,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
         'Pd8Wh30ei9R',
         {
           trackId: 'ncbi_gff_hg19',
-          type: 'LinearBasicDisplay',
           geneGlyphMode: 'longestCoding',
         },
       ],
@@ -346,7 +343,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
         {
           trackId: 'ncbi_genes_enterovirus_d',
           // tall enough for the gene row + all 12 stacked mature peptides
-          type: 'LinearBasicDisplay',
           height: 220,
           filter: { genes: 'only' },
         },
@@ -419,7 +415,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
               // The collapse-introns dialog's "Show only this feature" (on by
               // default) isolates the reshaped view to PTEN, dropping the
               // neighboring KLLN fragment — no jexl filter needed.
-              type: 'LinearBasicDisplay',
               geneGlyphMode: 'longestCoding',
             },
             {
@@ -427,7 +422,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
               // deterministic download, so the sashimi arcs are reliably present
               // at capture. compact pileup so the reads pack tightly
               trackId: 'pten_directrna',
-              type: 'LinearAlignmentsDisplay',
               pileup: { readHeight: 3 },
               sashimi: {
                 // 'auto' splits the junction arcs above and below the reads to
@@ -530,7 +524,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_refseq_109_hg38_latest',
-          type: 'LinearBasicDisplay',
           geneGlyphMode: 'longestCoding',
           height: 200,
         },
@@ -569,7 +562,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_refseq_109_hg38_latest',
-          type: 'LinearBasicDisplay',
           geneGlyphMode: 'longestCoding',
           height: 200,
         },

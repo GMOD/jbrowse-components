@@ -281,7 +281,7 @@ function exampleSpec(
           type: 'LinearGenomeView',
           assembly,
           loc,
-          tracks: [{ trackId, type: 'LinearMarkDisplay', height }],
+          tracks: [{ trackId, height }],
         },
       ],
     }),

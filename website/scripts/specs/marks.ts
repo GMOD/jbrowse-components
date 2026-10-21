@@ -120,9 +120,7 @@ function aluMarksUrl(loc: string) {
         type: 'LinearGenomeView',
         assembly: 'hg38',
         loc,
-        tracks: [
-          { trackId: 'alu_marks', type: 'LinearMarkDisplay', height: 160 },
-        ],
+        tracks: [{ trackId: 'alu_marks', height: 160 }],
       },
     ],
   })
@@ -164,7 +162,6 @@ export const marksSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'snrpn_facet',
-              type: 'LinearMarkDisplay',
               height: 400,
               forceLoad: true,
             },
@@ -193,7 +190,6 @@ export const marksSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'alu_edit_plot',
-              type: 'LinearMarkDisplay',
               height: 160,
             },
           ],
@@ -224,15 +220,11 @@ export const marksSpecs: ScreenshotSpec[] = [
 const ALU_AGE_CONFIG = 'test_data/alu_age/config.json'
 const ALU_YOUNG_SHARE = {
   trackId: 'alu_young_share',
-  type: 'LinearMarkDisplay',
   height: 90,
 }
-const ALU_AGE_TRACKS = [
-  { trackId: 'alu_age', type: 'LinearMarkDisplay', height: 110 },
-  ALU_YOUNG_SHARE,
-]
+const ALU_AGE_TRACKS = [{ trackId: 'alu_age', height: 110 }, ALU_YOUNG_SHARE]
 const ALU_CHROMOSOME_TRACKS = [
-  { trackId: 'alu_per_kb', type: 'LinearWiggleDisplay', height: 110 },
+  { trackId: 'alu_per_kb', height: 110 },
   ALU_YOUNG_SHARE,
 ]
 
@@ -268,7 +260,7 @@ export const aluAgeSpecs: ScreenshotSpec[] = [
   aluAgeSpec(
     'alu_age/locus',
     'chr1:151,000,000-151,030,000',
-    [{ trackId: 'alu_age', type: 'LinearMarkDisplay', height: 200 }],
+    [{ trackId: 'alu_age', height: 200 }],
     {
       viewportHeight: 410,
       annotations: [

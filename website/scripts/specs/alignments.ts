@@ -163,14 +163,12 @@ function strandSpecificSpec(): ScreenshotSpec {
         // C/D box 36x" strings saying nothing the figure is about.
         {
           trackId: 'ncbi_gff_hg19',
-          type: 'LinearBasicDisplay',
           showLabels: 'name',
           heightMode: 'fixed',
           height: 150,
         },
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          type: 'LinearAlignmentsDisplay',
           color,
           coverage: {
             // 120, not the 90 this had: a log axis prints a tick per power of two
@@ -287,7 +285,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'volvox-long-reads-sv-bam',
-          type: 'LinearAlignmentsDisplay',
           pileup: { showSoftClipping: true },
         },
       ],
@@ -348,7 +345,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'volvox_sv_cram_linked',
-              type: 'LinearAlignmentsDisplay',
               readConnections: {
                 show: true,
                 mark: 'cloud',
@@ -496,7 +492,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'hsv1_genes',
-          type: 'LinearBasicDisplay',
           // The NCBI GFF3's first record is the whole 108 kb long-unique region
           // as one feature, which packs above the genes and takes the lane the
           // two labels need. Filtering it out leaves UL21 and UL22 on one row,
@@ -507,7 +502,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'hsv1_mrna',
-          type: 'LinearAlignmentsDisplay',
           // 23 MB of BAM over a 152 kb genome puts every region in one index
           // bin, so the byte gate estimates 7.15 Mb for this 3.4 kb window and
           // draws its own message instead of reads. What actually arrives is
@@ -598,7 +592,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg002_nanopore_hp',
-              type: 'LinearAlignmentsDisplay',
               forceLoad: true,
               facet: 'strand',
               // the reads stay on screen under each band (reviewer: hiding them
@@ -939,7 +932,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           trackId: 'ncbi_gff_hg19',
           // give the gene track room so the B2M model is clearly visible
           // above the sashimi arcs (gene track too short to see)
-          type: 'LinearBasicDisplay',
           height: 120,
         },
         {
@@ -955,7 +947,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // Don't add a featureSpacing here: the inter-read gap is derived
           // from featureHeight by featureSpacingForHeight (0 at or below 3px,
           // 1 above) and is not a config slot, so the display would drop it.
-          type: 'LinearAlignmentsDisplay',
           sashimi: { showCounts: true, placement: 'auto' },
           pileup: { readHeight: 1 },
           scales: { y: { type: 'log' } },
@@ -983,7 +974,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // descriptions do come back at low density. Written as what it
           // actually resolved to; pinning 'name' would honor the original
           // intent but change the figure.
-          type: 'LinearBasicDisplay',
           showLabels: 'auto',
         },
         'hic',
@@ -1069,7 +1059,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'hic_gm12878_encode',
-          type: 'LinearHicDisplay',
           color: { scale: 'linear' },
           height: 700,
         },
@@ -1163,7 +1152,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'hic',
-          type: 'LinearHicDisplay',
           showLegend: true,
           showResolutionControls: true,
         },
@@ -1314,7 +1302,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg002_nanopore_hp',
-              type: 'LinearAlignmentsDisplay',
               height: 500,
               forceLoad: true,
               facet: 'tags.HP',
@@ -1347,7 +1334,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg002_nanopore_hp',
-              type: 'LinearAlignmentsDisplay',
               height: 300,
               forceLoad: true,
               // start ungrouped and uncolored: the figure demonstrates the
@@ -1444,7 +1430,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'illumina_hg002',
-          type: 'LinearAlignmentsDisplay',
           pileup: { readHeight: 3 },
         },
       ],
@@ -1483,7 +1468,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'illumina_hg002',
-          type: 'LinearAlignmentsDisplay',
           heightMode: 'fit',
           height: 260,
         },
@@ -1572,7 +1556,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         'ncbi_gff_hg19',
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          type: 'LinearAlignmentsDisplay',
           coverage: { height: 120 },
           pileup: { maxLayoutHeight: 2000 },
           filter: { junctions: { minReads: 3 } },
@@ -1602,7 +1585,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         'ncbi_gff_hg19',
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          type: 'LinearAlignmentsDisplay',
           pileup: { readHeight: 3, maxLayoutHeight: 2000 },
           coverage: {
             // taller SNPCoverage band + shorter pileup viewport + shorter
@@ -1645,7 +1627,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // LinearAlignmentsDisplay coverage-track height (default 45).
           // super-compact featureHeight=1 so every isoform read
           // stacks in view instead of hitting "Max layout height reached".
-          type: 'LinearAlignmentsDisplay',
           coverage: { height: 120 },
           pileup: { readHeight: 1 },
           height: 620,
@@ -1681,7 +1662,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         'ncbi_gff_hg19',
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          type: 'LinearAlignmentsDisplay',
           pileup: { readHeight: 3, maxLayoutHeight: 2000 },
           coverage: { height: 120 },
           filter: { junctions: { minReads: 3 } },
@@ -1730,7 +1710,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         'ncbi_gff_hg19',
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          type: 'LinearAlignmentsDisplay',
           pileup: { readHeight: 3, maxLayoutHeight: 2000 },
           coverage: { height: 160 },
           height: 380,
@@ -1803,10 +1782,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       assembly: 'hg19',
       loc: 'chr6:31,920,500-31,933,000',
       tracks: [
-        { trackId: 'ncbi_gff_hg19', type: 'LinearBasicDisplay', height: 90 },
+        { trackId: 'ncbi_gff_hg19', height: 90 },
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          type: 'LinearAlignmentsDisplay',
           facet: 'firstOfPairStrand',
           // reads under each band, colored by the dimension that grouped them
           // (reviewer: the coverage-only frame was a boring image). The switch

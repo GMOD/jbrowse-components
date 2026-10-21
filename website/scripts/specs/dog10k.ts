@@ -392,13 +392,11 @@ export const dog10kVideoFixtures = {
       tracks: [
         {
           trackId: 'canFam4_ncbi_refseq',
-          type: 'LinearBasicDisplay',
           geneGlyphMode: 'longestCoding',
           height: 80,
         },
         {
           trackId: 'dog10k_igf1_haplotype',
-          type: 'LinearMultiSampleVariantDisplay',
           variantLayout: 'columns',
           height: 620,
           lineZoneHeight: 34,
@@ -424,7 +422,6 @@ export const dog10kVideoFixtures = {
 const RETRO_TRACKS = (genesTrackId: string) => [
   {
     trackId: genesTrackId,
-    type: 'LinearBasicDisplay',
     height: 55,
   },
 ]
@@ -467,7 +464,6 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
             tracks: [
               {
                 trackId: 'canFam4_ncbi_refseq',
-                type: 'LinearBasicDisplay',
                 height: 60,
               },
               // The 55-row multi-sample display, per review, rather than the
@@ -589,7 +585,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'dog10k_wolfdog_named',
-          type: 'LinearMultiRowFeatureDisplay',
           // 64 rows. Above the 6px a row label needs, which is the whole reason
           // this figure exists next to the 486-row one below it.
           height: 700,
@@ -719,7 +714,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'canFam4_ncbi_refseq',
-          type: 'LinearBasicDisplay',
           height: 110,
         },
         // OMIA's own record of this variant, from a source that is not the
@@ -733,7 +727,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         // affected rather than merely homozygous.
         {
           trackId: 'omia_dog_variants',
-          type: 'LinearBasicDisplay',
           height: 60,
         },
         {
@@ -843,12 +836,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         // edge, which is why this is 100px rather than the 60 one gene needs.
         {
           trackId: 'canFam4_ncbi_refseq',
-          type: 'LinearBasicDisplay',
           height: 100,
         },
         {
           trackId: 'dog10k_amy2b_svs',
-          type: 'LinearMultiSampleVariantDisplay',
           // The record itself, above the 86 rows of it (review: "put the
           // regular linearvariantdisplay above the multisamplevariantdisplay so
           // users can see what type of feature everything is"). The matrix
@@ -945,12 +936,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         // this needs two packed rows rather than the one the AMY2B part uses.
         {
           trackId: 'canFam4_ncbi_refseq',
-          type: 'LinearBasicDisplay',
           height: 100,
         },
         {
           trackId: 'dog10k_rnase1_svs',
-          type: 'LinearMultiSampleVariantDisplay',
           // the same lane as the AMY2B half, and the pairing is the reason it
           // earns its place twice: one record draws as a block over the span it
           // duplicates, the other as an insertion marker at a point, so the two
@@ -1045,7 +1034,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'dog10k_size_fst',
-          type: 'LinearManhattanDisplay',
           height: FST_LANE_H,
           ...FST_AXIS_RULED,
         },
@@ -1113,7 +1101,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'canFam4_ncbi_refseq',
-          type: 'LinearBasicDisplay',
           geneGlyphMode: 'longestCoding',
           displayMode: 'compact',
           height: 90,
@@ -1143,7 +1130,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // 140 kb core dog10k-igf1-haplotype declares as its `clusterRegion`,
           // arrived at from the genotype matrix rather than from Fst.
           trackId: 'dog10k_size_fst_igf1_20kb',
-          type: 'LinearManhattanDisplay',
           height: FST_LANE_H,
           // a rule across each of a hundred windows, 6 px thick rather than
           // 9: at 9 they merge into a band and the sweep stops having edges
@@ -1424,7 +1410,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         // it says nothing here and costs a row.
         {
           trackId: 'UU_Cfam_GSD_1.0-ReferenceSequenceTrack',
-          type: 'LinearReferenceSequenceDisplay',
           showForward: true,
           showReverse: false,
           showTranslation: true,
@@ -1432,7 +1417,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'canFam4_ncbi_refseq',
-          type: 'LinearBasicDisplay',
           height: 60,
         },
         {
@@ -1570,7 +1554,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'canFam4_ncbi_refseq',
-          type: 'LinearBasicDisplay',
           height: 90,
         },
         {
@@ -1586,7 +1569,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // scripts/build_dog10k_cyp1a2_cn.sh for why it is four blocks wide and
           // for the check that rules out the repeat mask.
           trackId: 'dog10k_cyp1a2_cpg',
-          type: 'LinearBasicDisplay',
           // two rows: the labels collide before the islands do
           height: 62,
         },
@@ -1595,12 +1577,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // label and the element's extent in one animal is readable -- the
           // thing the collection lane below structurally cannot show.
           trackId: 'dog10k_cyp1a2_breed_cn',
-          type: 'LinearMultiRowFeatureDisplay',
           height: 380,
         },
         {
           trackId: 'dog10k_cyp1a2_cohort_cn',
-          type: 'LinearMultiRowFeatureDisplay',
           height: 300,
           // One-shot declarative trigger, same shape as the QTL painting's sort:
           // the display runs MultiRowClusterFeatures over the loaded features
@@ -1730,7 +1710,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'canFam4_ncbi_refseq',
-          type: 'LinearBasicDisplay',
           // the same glyph mode as dog10k-size-fst-scan-igf1, which is the
           // figure directly above this one on the page and frames part of the
           // same window: a reader moving between them should not have IGF1
@@ -1749,7 +1728,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         // differ rather than a pattern the eye is asked to take on trust.
         {
           trackId: 'dog10k_igf1_fst',
-          type: 'LinearManhattanDisplay',
           height: 150,
           // the same 0-0.8 axis as the genome-wide scan on the page above, so a
           // reader moving between them is reading one scale
@@ -1757,7 +1735,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'dog10k_igf1_haplotype',
-          type: 'LinearMultiSampleVariantDisplay',
           variantLayout: 'columns',
           height: 620,
           lineZoneHeight: 34,

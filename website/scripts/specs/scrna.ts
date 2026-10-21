@@ -18,7 +18,6 @@ const CONFIG = 'test_data/scrna_pbmc5k/config.json'
 
 const geneLane = {
   trackId: 'ncbi_refseq_hg38',
-  type: 'LinearBasicDisplay',
   displayMode: 'compact',
   height: 60,
 }
@@ -96,7 +95,6 @@ export const scrnaSpecs: ScreenshotSpec[] = [
             oneTranscriptPerGene,
             {
               trackId: 'pbmc5k_scrna_pseudobulk_hg38',
-              type: 'LinearWiggleDisplay',
               scales: { y: { type: 'log', title: 'CPM', domainMin: 1 } },
               // 9 rows, so 45px each: enough for a peak to have a shape rather
               // than being a spike two pixels tall
@@ -139,7 +137,6 @@ export const scrnaSpecs: ScreenshotSpec[] = [
               // 150, not 240: nine curves of which two carry the signal, so the
               // extra height was empty axis. The per-cell rows take it instead.
               trackId: 'pbmc5k_scrna_pseudobulk_hg38',
-              type: 'LinearWiggleDisplay',
               height: 150,
             },
             {

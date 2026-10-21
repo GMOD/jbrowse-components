@@ -274,7 +274,6 @@ export const mafSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ce11_ncbi_refseq',
-              type: 'LinearBasicDisplay',
               // grow mode: the gene lane expands to show every transcript row
               // rather than scrolling, so the full dnj-28 / nduf-5 structure
               // sits above the alignment
@@ -285,7 +284,6 @@ export const mafSpecs: ScreenshotSpec[] = [
               // Compact preset (rowHeight 8, rowProportion 0.9): a fixed small
               // per-row height so all 26 species fit without scrolling and the
               // conservation banding reads as one texture
-              type: 'LinearMafDisplay',
               rowHeight: 8,
               alignments: { rowProportion: 0.9 },
               rows: { kept: CE11_26WAY_NON_REFERENCE },
@@ -328,13 +326,11 @@ export const mafSpecs: ScreenshotSpec[] = [
             // without pushing the rows far down
             {
               trackId: 'ce11_ncbi_refseq',
-              type: 'LinearBasicDisplay',
               displayMode: 'compact',
               geneGlyphMode: 'longestCoding',
             },
             {
               trackId: 'ce11.26way',
-              type: 'LinearMafDisplay',
               height: 470,
               color: 'codon',
             },
@@ -398,13 +394,11 @@ export const mafSpecs: ScreenshotSpec[] = [
               // genes (supr-1 / dnj-28 / nduf-5); grow mode expands the lane to
               // show every transcript row
               trackId: 'ce11_ncbi_refseq',
-              type: 'LinearBasicDisplay',
               heightMode: 'grow',
             },
             {
               trackId: 'ce11.26way',
               // Compact preset so all 26 species fit without scrolling
-              type: 'LinearMafDisplay',
               rowHeight: 8,
               alignments: { rowProportion: 0.9 },
               color: 'chromosome',
@@ -452,7 +446,6 @@ export const mafSpecs: ScreenshotSpec[] = [
             // gene-level glyph per locus (reviewer).
             {
               trackId: 'ncbi_genes_hg38_ucsc',
-              type: 'LinearBasicDisplay',
               geneGlyphMode: 'longestCoding',
               filter: { genes: 'only' },
             },
@@ -464,7 +457,6 @@ export const mafSpecs: ScreenshotSpec[] = [
               // sub-pixel but the conserved/divergent banding still reads as a
               // texture, and the whole phylogeny is visible at once instead of
               // scrolling off. The top-right legend names the red/blue ramp.
-              type: 'LinearMafDisplay',
               height: 600,
               color: 'identity',
               rowIdentityAutoZoom: false,
@@ -529,7 +521,6 @@ export const mafSpecs: ScreenshotSpec[] = [
             // reduce height of gene track).
             {
               trackId: 'mane_hg38',
-              type: 'LinearBasicDisplay',
               displayMode: 'compact',
               height: 40,
             },
@@ -538,7 +529,6 @@ export const mafSpecs: ScreenshotSpec[] = [
               // fit-to-display-height, shrunk from 560: the ~30 filtered rows
               // still fill the track tall enough to read the per-codon amino
               // acids at a more compact per-row height (reviewer).
-              type: 'LinearMafDisplay',
               height: 460,
               color: 'codon',
               conservation: { show: true, unit: 'codon' },
@@ -604,13 +594,11 @@ export const mafSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ncbi_genes_hg38_ucsc',
-              type: 'LinearBasicDisplay',
               geneGlyphMode: 'longestCoding',
               filter: { genes: 'only' },
             },
             {
               trackId: 'hg38.multiz470way',
-              type: 'LinearMafDisplay',
               height: 380,
               rows: { kept: HG38_470WAY_30 },
               // Needed by both halves, for different reasons, which is fitting
@@ -764,7 +752,6 @@ export const mafSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ncbi_genes_hg38_ucsc',
-              type: 'LinearBasicDisplay',
               filter: { genes: 'only' },
               geneGlyphMode: 'longestCoding',
               heightMode: 'grow',
@@ -774,7 +761,6 @@ export const mafSpecs: ScreenshotSpec[] = [
               // block instead of scattering over 462 rows, which in 240 px are
               // a texture either way; clustering gives the texture edges.
               trackId: 'hprc2_pgbi_grch38',
-              type: 'LinearMultiSampleVariantDisplay',
               variants: { show: true },
               height: 240,
               filter: HPRC_PGBI_ALLELES,
@@ -782,7 +768,6 @@ export const mafSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hprc_v2_1_mc_grch38',
-              type: 'LinearMafDisplay',
               // A NAMED SUBSET, and the row height follows from it. Two
               // reviews pull in opposite directions here and both are right:
               // 464 rows at 2 px is "unclear what we are looking at. it just

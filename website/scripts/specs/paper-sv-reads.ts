@@ -42,7 +42,6 @@ const bamTrack = (trackId: string, name: string, uri: string) => ({
 })
 
 const connections = {
-  type: 'LinearAlignmentsDisplay',
   filter: {
     connections: { interchrom: 'exclude', offscreenMates: 'exclude' },
   },
@@ -131,13 +130,11 @@ const readEvidence = ({
         tracks: [
           {
             trackId: 'hg38_ncbiRefSeq_ucsc',
-            type: 'LinearBasicDisplay',
             geneGlyphMode: 'longestCoding',
             height: 60,
           },
           {
             trackId: CALLS,
-            type: 'LinearVariantDisplay',
             height: 85,
           },
           {

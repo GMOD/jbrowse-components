@@ -228,7 +228,7 @@ const PGGB_STRAIN_LAUNCH = sessionSpec(ECOLI_PANGENOME_CONFIG, {
       type: 'LinearGenomeView',
       assembly: 'K12',
       loc: 'chr:996,800-1,005,900',
-      tracks: [{ trackId: 'K12_genes', type: 'LinearBasicDisplay' }],
+      tracks: [{ trackId: 'K12_genes' }],
     },
     // The graph in a view of its own: the window above is 7.1 kb of a
     // base-level graph, thousands of nodes, and the node sits in a 460 bp
@@ -447,7 +447,6 @@ const PAA_SAKAI_WINDOW = 'chr:1,901,000-2,061,000'
 function strainGeneLane(trackId: string) {
   return {
     trackId,
-    type: 'LinearBasicDisplay',
     filter: { genes: 'only' },
     displayMode: 'compact',
     // was `showDescriptions: false`, which has no home on the unified labels
@@ -539,7 +538,7 @@ function ecoliHoverSession() {
         assembly: 'K12',
         loc: PATHS_WINDOW,
         tracks: [
-          { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+          { trackId: 'K12_genes', height: 70 },
           // THE ALIGNMENT, BESIDE THE GRAPH'S ANSWER (reviewer: "add maf track
           // if it helps clarify this figure"). The band the hover draws says
           // the graph attaches 65.4 kb of CFT073 across 2.1 kb of K12; a
@@ -554,7 +553,6 @@ function ecoliHoverSession() {
           // every page.
           {
             trackId: PGGB_MAF_TRACK,
-            type: 'LinearMafDisplay',
             rows: { domain: PGGB_STRAIN_ROWS },
             height: 130,
           },
@@ -652,7 +650,7 @@ function pggbLocusSession(
         assembly: 'K12',
         loc: window,
         tracks: [
-          { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+          { trackId: 'K12_genes', height: 70 },
           // The graph's own alternate routes as records on the K12 axis, which
           // is where a spur that has no reference coordinate of its own DOES
           // get one: `vg deconstruct` states it as the reference span it
@@ -672,7 +670,6 @@ function pggbLocusSession(
             ? [
                 {
                   trackId: PGGB_MAF_TRACK,
-                  type: 'LinearMafDisplay',
                   rows: { domain: PGGB_STRAIN_ROWS },
                   showTree: true,
                   height: 150,
@@ -800,7 +797,6 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
           tracks: [
             {
               trackId: 'K12_genes',
-              type: 'LinearBasicDisplay',
               filter: { genes: 'only' },
               displayMode: 'compact',
               // as in strainGeneLane: the retired `showDescriptions: false`
@@ -1000,7 +996,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             // that fit; the graph's gene chips below carry the rest.
             {
               trackId: K12_IS_TRACK,
-              type: 'LinearBasicDisplay',
               filter: ["jexl:startsWith(get(feature,'name') || '','ins')"],
               height: 50,
             },
@@ -1015,7 +1010,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             // only that they differ
             {
               trackId: PGGB_MAF_TRACK,
-              type: 'LinearMafDisplay',
               rows: { domain: PGGB_STRAIN_ROWS },
               coverage: { show: false },
               height: 110,
@@ -1082,7 +1076,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'K12_genes',
-              type: 'LinearBasicDisplay',
               height: 70,
               // the IS5's nameless mobile_genetic_element record drew labelled
               // by its raw RefSeq ID; insH21 names the element
@@ -1090,7 +1083,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: PGGB_DEPTH_TRACK,
-              type: 'LinearWiggleDisplay',
               height: 100,
             },
             {
@@ -1522,7 +1514,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           assembly: 'K12',
           loc: SEGMENT_WINDOW,
           tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 110 },
+            { trackId: 'K12_genes', height: 110 },
             {
               trackId: ECOLI_SEGMENTS_TRACK,
               type: 'LinearBasicDisplay',

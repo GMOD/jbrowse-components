@@ -57,7 +57,6 @@ const KIV2_HAPLOTYPES = [
 function hg38GeneLane(height: number) {
   return {
     trackId: 'hg38_ncbiRefSeq_ucsc',
-    type: 'LinearBasicDisplay',
     geneGlyphMode: 'longestCoding',
     displayMode: 'compact',
     height,
@@ -251,7 +250,6 @@ const nntHalosSpec: ScreenshotSpec = {
         tracks: [
           {
             trackId: 'mm39_ncbiRefSeq_ucsc',
-            type: 'LinearBasicDisplay',
             height: 48,
           },
           {

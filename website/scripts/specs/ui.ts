@@ -298,14 +298,12 @@ export const chromhmmVideoFixtures = {
     tracks: [
       {
         trackId: 'ncbi_gff_hg19',
-        type: 'LinearBasicDisplay',
         showLabels: 'name',
         filter: ["jexl:feature.type!='pseudogene'"],
         height: 120,
       },
       {
         trackId: CHROMHMM_TRACK_ID,
-        type: 'LinearMultiRowFeatureDisplay',
         height: 520,
       },
     ],
@@ -421,7 +419,6 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
           },
           {
             trackId: 'kgp_sv_records',
-            type: 'LinearVariantDisplay',
             forceLoad: true,
             // enough for the four rows the 26 records pack into plus their
             // name/type labels; at 130 the last row was under the lane's fold
@@ -443,7 +440,6 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
           // labelled glyphs under the matrix
           {
             trackId: 'ncbi_refseq_hg38',
-            type: 'LinearBasicDisplay',
             height: 120,
             showLabels: 'name',
             filter: { genes: 'only' },
@@ -570,7 +566,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'gff3tabix_genes',
-          type: 'LinearBasicDisplay',
           // collapse to gene glyphs so the pinned+highlighted EDEN gene reads
           // cleanly against the stack (reviewer)
           filter: { genes: 'only' },
@@ -752,7 +747,6 @@ export const uiSpecs: ScreenshotSpec[] = [
             // carries genes.
             {
               trackId: 'ncbi_refseq_109_hg38',
-              type: 'LinearBasicDisplay',
               height: 140,
               showLabels: 'name',
               filter: { genes: 'only' },
@@ -795,7 +789,6 @@ export const uiSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'ncbi_refseq_109_hg38',
-              type: 'LinearBasicDisplay',
               height: 140,
               showLabels: 'name',
               filter: { genes: 'only' },
@@ -930,7 +923,6 @@ export const uiSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ncbi_refseq_109_hg38',
-              type: 'LinearBasicDisplay',
               // RHD -- the subject of the figure -- used to sit below this
               // lane's 110px fold, and the reviewer reasonably reported not
               // seeing it. Two settings fix that together: `longestCoding`
@@ -947,7 +939,6 @@ export const uiSpecs: ScreenshotSpec[] = [
             },
             ...['HG00113', 'HG00096', 'HG00097'].map(s => ({
               trackId: `${s}.final`,
-              type: 'LinearAlignmentsDisplay',
               forceLoad: true,
               pileup: { show: false },
               coverage: { height: 190 },
@@ -1222,7 +1213,6 @@ export const uiSpecs: ScreenshotSpec[] = [
                   trackId: 'breast_cancer_sniffles_hg19',
                   // drop the megabase-scale inversion calls that span the whole
                   // window so only the junction breakends show
-                  type: 'LinearVariantDisplay',
                   // only a handful of junction breakends survive the filter, so
                   // keep the variant lane short
                   height: 90,
@@ -1240,7 +1230,6 @@ export const uiSpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'breast_cancer_sniffles_hg19',
-                  type: 'LinearVariantDisplay',
                   height: 90,
                   filter: [
                     "jexl:get(feature,'end')-get(feature,'start') < 100000",
@@ -2301,7 +2290,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
-          type: 'LinearBasicDisplay',
           showLabels: 'name',
           filter: ["jexl:feature.type!='pseudogene'"],
           displayMode: 'compact',
@@ -2309,7 +2297,6 @@ export const uiSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'roadmap_chromhmm_multirow_hg19',
-          type: 'LinearMultiRowFeatureDisplay',
           facet: { field: 'group', domain: ROADMAP_FIGURE_GROUPS },
           height: 900,
         },
@@ -2361,14 +2348,12 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
-          type: 'LinearBasicDisplay',
           showLabels: 'name',
           filter: ["jexl:feature.type!='pseudogene'"],
           height: 110,
         },
         {
           trackId: 'roadmap_chromhmm_multirow_hg19',
-          type: 'LinearMultiRowFeatureDisplay',
           rows: {
             field: 'cellType',
             domain: HOXA_FIBROBLAST_ROWS,
@@ -2418,14 +2403,12 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
-          type: 'LinearBasicDisplay',
           showLabels: 'name',
           filter: ["jexl:feature.type!='pseudogene'"],
           height: 110,
         },
         {
           trackId: 'broad_chromhmm_multirow_hg19',
-          type: 'LinearMultiRowFeatureDisplay',
           height: 240,
         },
       ],

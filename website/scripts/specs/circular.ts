@@ -22,7 +22,6 @@ const LIFTOVER = 'hg38ToMm39_liftover'
 // Orange, so the ring reads apart from the chromosome-colored ribbons.
 const DENSITY_RING = {
   trackId: 'hg38ToMm39_gene_density',
-  type: 'LinearWiggleDisplay',
   mark: 'span',
   color: {
     field: 'score',
@@ -121,7 +120,6 @@ export const circularSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ngmlr_cov',
-              type: 'LinearWiggleDisplay',
               scales: { y: { type: 'log' } },
               height: 80,
             },
@@ -163,7 +161,6 @@ export const circularSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'colo829_coverage_pair',
-              type: 'LinearWiggleDisplay',
               rows: { field: 'source', domain: ['Tumor', 'Normal'] },
               scales: { y: { domainMin: 0, domainMax: 100 } },
               height: 140,

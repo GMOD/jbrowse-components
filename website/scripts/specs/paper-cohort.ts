@@ -100,7 +100,6 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: HGSVC3_SV_TRACK.trackId,
-              type: 'LinearVariantDisplay',
               filter: ['jexl:alleleLength(feature)>=5000'],
               displayMode: 'compact',
               height: 70,
@@ -108,6 +107,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
             {
               ...CN_HEATMAP_SETTINGS,
               trackId: 'cnv_1000g_zarr',
+              type: 'LinearWiggleDisplay',
               height: 220,
               runClustering: true,
               showTree: false,

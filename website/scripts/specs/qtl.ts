@@ -25,7 +25,6 @@ const locusPanel = (
     tracks: [
       {
         trackId: 'mm10_ncbi_refseq',
-        type: 'LinearBasicDisplay',
         filter: {
           expressions: [`jexl:get(feature,'name')=='${gene}'`],
           genes: 'only',
@@ -35,12 +34,10 @@ const locusPanel = (
       },
       {
         trackId: 'bxd_gwas_coatcolor_mm10',
-        type: 'LinearManhattanDisplay',
         height: 160,
       },
       {
         trackId: 'bxd_chromosome_painting_mm10',
-        type: 'LinearMultiRowFeatureDisplay',
         height: 520,
         forceLoad: true,
       },

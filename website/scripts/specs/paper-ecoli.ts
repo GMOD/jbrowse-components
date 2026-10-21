@@ -22,7 +22,6 @@ export const paperEcoliSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ecoli_orthologs',
-              type: 'MultiWaySyntenyDisplay',
               height: 968,
               inlineLaneNames: true,
             },

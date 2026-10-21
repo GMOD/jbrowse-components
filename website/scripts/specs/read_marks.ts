@@ -23,7 +23,6 @@ const DELETION = 'chr20:32,925,000-32,955,000'
 
 const geneTrack = {
   trackId: 'ncbi_refseq_hg38',
-  type: 'LinearBasicDisplay',
   height: 50,
   filter: { genes: 'only' },
   geneGlyphMode: 'longestCoding',
@@ -36,7 +35,6 @@ function readsSpec(
 ): SessionUrlSpec {
   const tracks = marks.map(([trackId, height]) => ({
     trackId,
-    type: 'LinearMarkDisplay',
     height,
   }))
   return {
@@ -89,12 +87,10 @@ export const readMarksSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'na12878_chr20_pairs',
-              type: 'LinearMarkDisplay',
               height: 160,
             },
             {
               trackId: 'na12878_chr20_pair_counts',
-              type: 'LinearMarkDisplay',
               height: 100,
             },
           ],

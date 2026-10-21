@@ -24,7 +24,6 @@ export const gwasSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'gwas_track',
-          type: 'LinearManhattanDisplay',
           height: 250,
         },
       ],
@@ -50,12 +49,10 @@ export const gwasSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'sle_gwas_ld',
-          type: 'LinearManhattanDisplay',
           height: 200,
         },
         {
           trackId: 'ncbi_gff_hg19',
-          type: 'LinearBasicDisplay',
           height: 90,
           filter: { genes: 'only' },
         },

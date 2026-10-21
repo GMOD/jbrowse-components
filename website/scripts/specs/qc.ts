@@ -95,7 +95,6 @@ const SMN_HIGHLIGHT = [
 // has the reader read this lane in the read view.
 const mappabilityTrack = {
   trackId: 'hg38-umap100Quantitative',
-  type: 'LinearWiggleDisplay',
   scales: { y: { domainMin: 0, domainMax: 1 } },
   y: 'minScore',
   extent: 'none' as const,
@@ -132,7 +131,6 @@ const mappabilityTrack = {
 // this problematic region").
 const gnomadCoverageTrack = (height = 70, extent?: string) => ({
   trackId: 'hg38-gnomad3MeanCoverage',
-  type: 'LinearWiggleDisplay',
   scales: { y: { domainMin: 0, domainMax: 40 } },
   height,
   ...(extent ? { extent } : {}),
@@ -140,7 +138,6 @@ const gnomadCoverageTrack = (height = 70, extent?: string) => ({
 
 const geneTrack = (height: number, onlyGenes: boolean) => ({
   trackId: 'hg38-ncbiRefSeqCurated',
-  type: 'LinearBasicDisplay',
   height,
   ...(onlyGenes ? { filter: { genes: 'only' } } : {}),
   // ONE TRANSCRIPT PER GENE (reviewer, on two of the three figures here: "use
@@ -194,7 +191,6 @@ const panel = (loc: string) => ({
       // The current unified type: a retired one leaves the spec-recipe check
       // unable to resolve the display and so unable to give the figure's
       // "Color by" and "Show legend" a click-path.
-      type: 'LinearAlignmentsDisplay',
       // Mapping-quality coloring is the only thing on screen that separates
       // "there are no reads here" from "there are reads and none of them can be
       // placed": both draw a pileup, and the default coloring draws the same
@@ -333,7 +329,6 @@ export const qcSpecs: ScreenshotSpec[] = [
             gnomadCoverageTrack(90, 'none'),
             {
               trackId: 'na12878_qc_reads',
-              type: 'LinearAlignmentsDisplay',
               color: { field: 'mapq' },
               showLegend: true,
               // 650 kb of 30x Illumina is past every byte budget in the stack,
@@ -439,7 +434,6 @@ export const qcSpecs: ScreenshotSpec[] = [
             // segmental duplication.
             {
               trackId: 'hg38-alllowmapandsegdupregions',
-              type: 'LinearBasicDisplay',
               height: 40,
             },
             // Folded in from qc/callsets_at_smn, which this replaces: what the
@@ -450,7 +444,6 @@ export const qcSpecs: ScreenshotSpec[] = [
             // collapsing automatically was only meant for e.g. 1bp snps").
             {
               trackId: 'hg38-lrSv1kgOnt',
-              type: 'LinearBasicDisplay',
               // 100, from 130 (review: "make it render even more compressed").
               // What is read off this lane is a HOLE, and a hole is as legible
               // in four rows of records as in five -- the rows that came off are
@@ -535,12 +528,10 @@ export const qcSpecs: ScreenshotSpec[] = [
             gnomadCoverageTrack(90, 'none'),
             {
               trackId: 'hg38-alllowmapandsegdupregions',
-              type: 'LinearBasicDisplay',
               height: 40,
             },
             {
               trackId: 'hg38-lrSv1kgOnt',
-              type: 'LinearBasicDisplay',
               height: 100,
             },
           ],
@@ -554,7 +545,6 @@ export const qcSpecs: ScreenshotSpec[] = [
             mappabilityTrack,
             {
               trackId: 'na12878_qc_reads',
-              type: 'LinearAlignmentsDisplay',
               color: { field: 'mapq' },
               showLegend: true,
               forceLoad: true,
