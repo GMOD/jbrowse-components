@@ -1,3 +1,7 @@
+import { clamp } from '@jbrowse/core/util'
+
+import { mateBpAt } from '../mateBpAt.ts'
+
 import type { FeatPos } from '../LinearSyntenyDisplay/model.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
@@ -17,14 +21,8 @@ export function interpolateFollowSpan({
 }): ResolvedSpan {
   const a = toMate ? feat : feat.mate
   const b = toMate ? feat.mate : feat
-  const aLen = a.end - a.start
-  const bLen = b.end - b.start
-
-  const at = (x: number) => {
-    const u =
-      aLen > 0 ? (Math.min(Math.max(x, a.start), a.end) - a.start) / aLen : 0
-    return feat.strand === -1 ? b.end - u * bLen : b.start + u * bLen
-  }
+  const at = (x: number) =>
+    mateBpAt(a, b, feat.strand, clamp(x, a.start, a.end))
   const p = at(window.start)
   const q = at(window.end)
   const lo = Math.floor(Math.min(p, q))
