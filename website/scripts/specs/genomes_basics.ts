@@ -10,133 +10,40 @@ import {
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// Figures for the genomes_basics tutorial: the click path from the
-// genomes.jbrowse.org front page to a track drawn over TP53, and then a walk
-// through what else that one config's catalog holds at the same locus.
+// These specs load genomes.jbrowse.org's own hg38 config, so track names and
+// categories match the live site. hgdownload is slow, hence the long timeouts.
 //
-// Loads genomes.jbrowse.org's OWN hg38 config, the same way the genomes_synteny
-// and genomes_msa figures do, so the track names in the selector, the category
-// they sit under and the track the checkbox opens are the ones a reader gets on
-// the real site. An earlier version of this figure built the same picture out of
-// `sessionTracks` against a bare hg38 config, which rendered the same phyloP
-// BigWig under a name nothing in the UI would ever show.
-//
-// The BigWig itself is served by hgdownload with byte-range + CORS, so only the
-// viewed region downloads despite the file's size. hgdownload is also the
-// slowest host any of these figures touch, hence the raised ready timeouts.
-//
-// The cCRE, gnomAD and phyloP tracks carry no color key. A key belongs in the
-// jb2hubs output, not a spec's override, and that output has to keep loading
-// in older releases.
+// A color key for the cCRE, gnomAD and phyloP tracks belongs in the jb2hubs
+// output, not in a spec override.
 
-// The transcript body alone, for the figure that reads the signal against the
-// exons. Collapsed to one transcript, TP53's drawn 5' end is whichever of the
-// five transcripts tying at a 1182 bp CDS the collapse picks (this one stops at
-// 7,677,451), so the full locus above leaves the right half of the frame with
-// signal and no gene under it, nothing to line the peaks up against.
+// Ends at the collapsed TP53 transcript's drawn 5' end (7,677,451), so the
+// signal has a gene under it across the whole frame.
 const TP53_TRANSCRIPT_WINDOW = 'chr17:7,668,400-7,677,600'
 
-// A whole coding exon of TP53 (the DNA-binding domain), from
-// api.genome.ucsc.edu's ncbiRefSeqCurated exon bounds rather than eyeballed off
-// the figure above. 110 bp is inside the zoom where the sequence track draws
-// letters and its translation rows, which is what the last figure checks the
-// per-base scores against.
+// Exon bounds from UCSC's ncbiRefSeqCurated. At 110 bp the sequence track
+// draws letters and translation rows.
 const TP53_EXON_WINDOW = 'chr17:7,674,180-7,674,290'
 
-// The whole gene plus its promoter, which is the window the regulation figure
-// takes. TP53 is on the minus strand, so its TSS is the HIGH coordinate
-// (chr17:7,687,490) and that figure's subject sits at the right-hand edge of the
-// frame rather than the left.
-//
-// 28 kb, where this was 6 kb of promoter: at 6 kb every lane was high across the
-// whole frame, so the picture was a wall of signal with nothing to compare it
-// to. The gene body is the comparison -- the marks rise at one end of a gene
-// they are otherwise flat over, and the cCRE and EPDnew calls land where they
-// rise rather than everywhere.
-//
-// It reaches into WRAP53, which shares this promoter with TP53 head to head --
-// the two genes' first exons are ~1 kb apart and point away from each other, so
-// the peak the frame is about belongs to both.
+// TP53 is on the minus strand, so its TSS sits at the right edge. The gene body
+// gives the promoter marks a flat stretch to compare against.
 const TP53_LOCUS_WINDOW = 'chr17:7,666,000-7,694,000'
 
-// The axolotl RefSeq assembly's GenArk hub config, resolved from the accession
-// the way the site does it (see jb2hubs' genarkConfigPath: the digits shard the
-// path). GCF_040938575.1 rather than the GCA_ of the same assembly, because the
-// RefSeq half is the one carrying gene tracks and a name index -- which is the
-// difference the page's last section is about, and why this figure can navigate
-// by gene symbol at all.
+// The RefSeq (GCF_) half carries the gene tracks and the name index that
+// `loc: 'tp53'` needs; the GCA_ of the same assembly has neither.
 const AXOLOTL_CONFIG =
   'https://jbrowse.org/hubs/genark/GCF/040/938/575/GCF_040938575.1/config.json'
 const AXOLOTL_ASSEMBLY = 'GCF_040938575.1'
 
-// This figure opens NO track of its own, and the two it used to open are worth
-// naming because both are traps on a page whose whole claim is that a track is a
-// checkbox away. A display setting in a spec here asserts that a reader clicking
-// along arrives at this picture, and neither of the two settings these tracks
-// want is reachable by clicking on the live site:
-//
-// - GC Percent wants UCSC's own trackDb parameters for gc5Base,
-//   `windowingFunction Mean` and `viewLimits 30:70`. That is a legible curve
-//   where the wiggle default (a min-max extent, autoscaled) is a solid block: the file
-//   is 5-base bins, so every summary bin in a several-hundred-kb window spans a
-//   min near 0 and a max near 100. Both values ride in the hub config's
-//   `metadata.ucsc` and nothing translates them into `aggregate` or the
-//   display's `scales.y` domain, so a reader gets there through two track-menu
-//   trips or not at all.
-// - RepeatMasker wants one lane per repeat class.
-//   `LinearMultiRowFeatureDisplay`'s `rows` picks `name` by default, which on
-//   a GenArk bigRmskBed is one row per repeat -- thousands of hairlines,
-//   rendered rather than reasoned about. There IS a menu item for it now
-//   ("One row per...", offering the attribute names the loaded features carry),
-//   so this is a click rather than a dead end; the hub still wants to open on
-//   the right one. jb2hubs ALREADY
-//   writes the right display (hubtools' repeatClassDisplay, jexl partition,
-//   cookbook colors, fixed row order); it is gated behind RMSK_MULTIROW_DISPLAY
-//   because the display type landed after v4.3.0, which is what
-//   jbrowse.org/code/jb2/latest serves and so what the live site runs. That
-//   repo's CLAUDE.md has the part that is easy to get wrong: a release opens the
-//   gate for /ucsc/* and NOT for GenArk, whose config.json is a permanent-url
-//   production file pinned v4 hosts and Desktop still read.
-//
-// So the closing frame is the gene track the SEARCH opened and nothing else,
-// which is also all its section is about. When the gate opens, the by-class
-// display arrives in the track's own `displays[]` and a checkbox is once again
-// the whole story -- that is when a repeat lane comes back here, not before.
-
-// The gene track the site itself opens with (its defaultSession shows
-// `hg38-ncbiRefSeq`, RefSeq All), and nothing else: no height, no glyph mode, no
-// display settings at all. The landing frame of the search figure is this, since
-// a page called "basic usage" has to open on the view a reader lands in; every
-// frame at a locus collapses it, which is one click on the chip in the track.
+// No display settings, so the track draws as the site's defaultSession opens it.
 const GENE_TRACK = { trackId: 'hg38-ncbiRefSeq' }
 const PHYLOP_TRACK = { trackId: 'hg38-phyloP100way' }
 
-// By trackId rather than by name: the page's prose names this track, and a
-// trackId that stops resolving fails the capture where a stale name would
-// quietly render an empty one.
-//
-// EXOMES rather than genomes: coding sequence is what the comparison is about,
-// and the exome callset is both denser there and a fraction of the bytes.
+// A stale trackId fails the capture; a stale track name would render empty.
 const GNOMAD_TRACK_ID = 'hg38-gnomadExomesVariantsV4_1'
 
-// Histone marks over the ENCODE3 seven-cell-line panel (GM12878, H1-hESC,
-// HSMM, HUVEC, K562, NHEK, NHLF), one row per cell line.
-//
-// NOT the ENCODE4 organ averages the hub also carries, which are the tracks
-// UCSC calls "Layered": at 55 and 64 sources one shared plot box is a muddy
-// silhouette where no source is separable, and a density row each is no
-// better, because each source carries its own color and 60 hues at two pixels
-// a row is a pastel blur. Seven rows is the count at which a per-row plot is
-// legible and the legend can name every row.
-//
-// The pair is chosen rather than doubled: H3K4me3 marks promoters, H3K27ac
-// marks the active ones, so a promoter with both is doing something in that
-// cell type and one with only H3K4me3 is poised.
-//
-// `rows` is a config setting, so an inline key on the spec's tracks entry
-// reaches it. The hub writes these UCSC overlay multiWigs as an `xyplot`, every
-// source in one plot box, which is how they open; `'source'` is a row each.
-// Both frames spell theirs, so neither rests on the hub keeping its default.
+// The ENCODE3 seven-cell-line panel. The hub's ENCODE4 organ averages carry
+// 55-64 sources, illegible both overlaid and as rows. The hub opens these as an
+// `xyplot`; both frames spell `rows` so neither rests on that default.
 const H3K4ME3_OVERLAY = {
   trackId: 'hg38-wgEncodeRegMarkH3k4me3',
   rows: '',
@@ -148,75 +55,37 @@ const H3K27AC_OVERLAY = {
 const H3K4ME3_ROWS = { ...H3K4ME3_OVERLAY, rows: 'source' }
 const H3K27AC_ROWS = { ...H3K27AC_OVERLAY, rows: 'source' }
 
-// The leaf the two frames differ by, spelled once so the hovers, the callout
-// boxes and the prose cannot name it three ways. The tracks open at `rows: ''`
-// on the XY plot, so the pick that splits them is the same plot under the
-// other layout. Written out rather than imported: check-menu-labels resolves
-// each segment against the app's own literals, which is the check that would
-// catch a rename, and an import would make it vacuous.
+// Written out, not imported: check-menu-labels resolves each segment against
+// the app's literals, and an import would make that check vacuous.
 const PLOT_TYPE_PATH = ['Plot type', 'Multi-row', 'XY plot']
 
-// gnomAD's own consequence class for the variant: pLoF, missense, synonymous
-// or other. pLoF is the high-impact end, 93 of the 4,695 records over TP53.
 const GNOMAD_PLOF = "feature.annot == 'pLoF'"
 
 const FILTER_TEXT = '[data-testid="jexl-filter-text"]'
 
-// Collapsed to the longest coding transcript, which the page reaches through the
-// isoform control at the bottom right of the gene track: one click, on a chip
-// that is in the frame. Every figure at a locus takes it. At base zoom the
-// default is one codon row printed 28 times, and at gene zoom it is 28 rows in
-// a 100px band with most of them behind the track's own scrollbar.
+// A reader reaches this mode with one click on the gene track's isoform chip.
 const GENE_TRACK_COLLAPSED = {
   ...GENE_TRACK,
   geneGlyphMode: 'longestCoding',
 }
 
-// The whole config with no session at all, which is how a reader arrives: the
-// site's link goes to a bare `?config=`, so the app builds the hub's own
-// defaultSession -- chr7:155,799,529-155,812,871 (SHH), RefSeq All, and the track
-// selector already open. The two figures that walk the click path start there
-// rather than at a locus of their own, so the first frame is the frame a reader
-// is looking at when they read the paragraph.
-//
-// `sessionName` is what every other figure gets for free from `sessionSpec`, and
-// a bare `?config=` needs it spelled out: BaseRootModel names a session built
-// from a defaultSession `<name> <new Date().toLocaleString()>`, so without it the
-// app bar carries the wall-clock time of the capture. That is a figure whose
-// pixels change on every regen and which tells a reader the docs were shot on a
-// particular evening.
+// A bare `?config=` opens the hub's defaultSession, as a reader arriving does.
+// Without `sessionName` the app bar shows the capture's wall-clock time.
 const LANDING = `?config=${UCSC_HG38_CONFIG}&sessionName=Screenshot`
 
-// genomes.jbrowse.org itself, which is the first thing the page walks through
-// and the only figure here that is not a JBrowse app capture. Its pages are
-// plain Astro, so every readiness wait the generator runs (view phases, display
-// phases, the loading overlay) is trivially satisfied and the capture is gated
-// on `readyText` plus its own settle.
-//
-// Captured LIVE rather than against a local build of that site: the point of
-// these frames is what a reader sees when they follow the link in the paragraph
-// beside them, and the site is built from a different repo (~/src/jb2hubs) on
-// its own cadence. A stale-looking front page in a figure is a real regression
-// worth the sweep catching.
+// Captured live: the site builds from ~/src/jb2hubs, and a stale front page is
+// a regression worth catching. Its pages are plain Astro, so only `readyText`
+// gates the capture.
 const SITE = 'https://genomes.jbrowse.org'
 
-// What videos/genomes_basics.ts films. Both tours open on a state a figure
-// above already shows -- same config, same window, same track ids -- so the
-// route each one films runs through the app the rest of the page is of.
+// What videos/genomes_basics.ts films; each tour opens on a state a figure here
+// shows.
 export const genomesBasicsVideoFixtures = {
   gnomadTrackId: GNOMAD_TRACK_ID,
   plof: GNOMAD_PLOF,
   filterText: FILTER_TEXT,
-  // The gnomAD lane with nothing narrowing it: gnomad_filter_menu's session,
-  // one track alone in the view at the window that figure is taken at.
-  //
-  // TALLER than the figure's 200, and that height is the frame's rather than
-  // the picture's. The figure ends on the dialog and is cut to it; the tour
-  // ends on the app alone, so a frame that holds the dialog's ~490px leaves a
-  // third of the closing frame as page background at 200. It is also where the
-  // redraw reads: what this filter does is empty a lane rather than move
-  // anything inside it, and an emptied lane says that only while there is lane
-  // to see it in.
+  // Taller than the figure's 200: the tour ends on the app alone, and at 200 a
+  // third of the closing frame is page background.
   unfilteredGnomad: sessionSpec(UCSC_HG38_CONFIG, {
     views: [
       {
@@ -227,9 +96,6 @@ export const genomesBasicsVideoFixtures = {
       },
     ],
   }),
-  // The gene track alone, since adding phyloP through the selector is the
-  // route. Collapsed, like every frame at a locus on this page, so the
-  // transcript the lane is read against is one row.
   geneTrackOnly: sessionSpec(UCSC_HG38_CONFIG, {
     views: [
       {
@@ -240,21 +106,16 @@ export const genomesBasicsVideoFixtures = {
       },
     ],
   }),
-  // The catalog name, which is the whole of what the tour ticks. UCSC publishes
-  // six phyloP tracks on hg38 and the filter box narrows to all of them at
-  // once, so the words after the parenthesis are what picks one out.
+  // UCSC publishes six phyloP tracks on hg38 and the filter box matches all of
+  // them; the words after the parenthesis pick this one.
   phylopTrackName:
     'Basewise Conservation (phyloP) - 100-way vertebrate alignment',
   phylopTrackId: PHYLOP_TRACK.trackId,
 }
 
 export const genomesBasicsSpecs: ScreenshotSpec[] = [
-  // The front page: the handful of genomes most people want, and the head of the
-  // GenArk half underneath. 1100 wide, not the 1500 default, because the site
-  // lays its content out in a fixed column and a wider capture is white space
-  // down the right-hand third; 720 tall because the next thing down the page is
-  // the species-category table, and any height that includes part of it cuts a
-  // row in half.
+  // 1100 wide: the site's fixed column leaves a wider capture blank on the
+  // right. Any height past 720 cuts a row of the species-category table.
   {
     mode: 'url',
     name: 'genomes_basics/site_home',
@@ -267,9 +128,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.02,
   },
 
-  // The header typeahead, which is the third way in and the one that spans both
-  // catalogs at once. Its index is several MB and is not fetched until the box
-  // takes focus, so the wait is on an option appearing rather than on a delay.
+  // The search index loads only once the box takes focus, so the wait is on an
+  // option appearing.
   {
     mode: 'url',
     name: 'genomes_basics/site_search',
@@ -295,8 +155,6 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // /ucsc, the full UCSC database list, which is what the front page's short
-  // table is a selection from.
   {
     mode: 'url',
     name: 'genomes_basics/site_ucsc_list',
@@ -308,51 +166,9 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.02,
   },
 
-  // Landing, then the locus: the view a reader arrives in -- SHH, RefSeq All, the
-  // track selector already open, all of it the hub's own defaultSession -- with
-  // the gene symbol typed into the location box and the name index answering it.
-  //
-  // The second frame DECLARES the destination rather than pressing Enter on the
-  // first. Pressing it is honest and was tried: the hit that answers `TP53` comes
-  // out of the RefSeq All (GFF) index, so the app opens that track to show it,
-  // and the frame is then two gene tracks with a highlighted "biological region"
-  // bar across the second -- a second annotation set the page never mentions
-  // again, since every figure below works from RefSeq All alone. The declared
-  // session is that same locus with that same track.
-  //
-  // THREE FRAMES, AND THE MIDDLE ONE IS THE POINT (review: "Is this something
-  // the user will experience by default? ... this is supposed to be a
-  // step-by-step walkthrough with the user on our genomes.jbrowse.org. if it is
-  // skipping steps, that is bad").
-  //
-  // It was two, and the second was the COLLAPSED stack -- a state no reader
-  // reaches by pressing Enter. The collapse is a click on a control, and the
-  // figure was showing its result as though it were the result of the search.
-  //
-  // So the frames are now type -> Enter -> collapse.
-  //
-  // THE MIDDLE FRAME USED TO BE THE OVERFLOW -- 28 RefSeq transcripts inside a
-  // 100px band's own scrollbar, denied three times, the third time as a product
-  // bug ("it should truncate the number of isoforms so that it fits in the
-  // display height"). `auto` now caps a gene at the rows its lane has, so the
-  // default is a few legible transcripts, an `Isoforms trimmed to fit` chip,
-  // and a `+N more` badge on the gene's own label saying how many that gene is
-  // missing -- the count being per gene is the whole reason it is not on the
-  // chip, which can only ever report one number for the view.
-  //
-  // That makes the middle frame a result, and the third frame still earns its
-  // rows: the cap is the browser's answer to the height, one canonical
-  // transcript is the reader's answer to the question. The control is the loud
-  // chip now rather than the quiet icon; `track-control-isoform` is the testid
-  // on both, so the ring and the click below are unchanged.
-  //
-  // The second frame DECLARES the destination rather than pressing Enter on the
-  // first. Pressing it is honest and was tried: the hit that answers `TP53`
-  // comes out of the RefSeq All (GFF) index, so the app opens that track to
-  // show it, and the frame is then two gene tracks with a highlighted
-  // "biological region" bar across the second -- a second annotation set the
-  // page never mentions again, since every figure below works from RefSeq All
-  // alone. The declared session is that same locus with that same track.
+  // Type, then Enter, then collapse: the walkthrough must not skip the collapse
+  // click. The second frame declares its session because pressing Enter also
+  // opens the RefSeq All (GFF) track, which the page never mentions.
   {
     mode: 'url',
     name: 'genomes_basics/search_tp53',
@@ -376,8 +192,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
         ],
       },
       {
-        // GENE_TRACK, not GENE_TRACK_COLLAPSED: no glyph mode, no height, no
-        // display settings at all, so this is what Enter opens
+        // GENE_TRACK carries no settings, so this is what Enter opens
         url: sessionSpec(UCSC_HG38_CONFIG, {
           views: [
             {
@@ -398,8 +213,6 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
         ],
       },
       {
-        // continues from the frame above rather than declaring the result: the
-        // click IS the step this figure was skipping
         viewportHeight: 340,
         actions: [
           { type: 'click', selector: '[data-testid="track-control-isoform"]' },
@@ -411,27 +224,9 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The isoform control, which the next figure's session sets declaratively and
-  // a reader reaches by clicking. It has two looks one reading apart: while
-  // transcripts are collapsed it is the loud chip naming the rule that picked
-  // them — "Longest isoform" here, since UCSC's bed2gff conversion of RefSeq
-  // carries none of the `tag=MANE Select` that NCBI's own GFF3 does — and once
-  // its menu has been opened it shrinks to the quiet icon that is always in
-  // that corner afterwards.
-  //
-  // THE ICON IS WHAT THE FIGURE SHOWS (review: "i want the circle on the small
-  // icon that launches the popover. also, i dont want it to be showing the
-  // 'longest isoform' chip"). The chip is a first-session notice; the icon is
-  // the control as a reader will meet it every time after, and it is the harder
-  // one to find unaided, which is what a ring is for. So the capture reads the
-  // chip (`readIsoformNotice`, which says how) before it presses the control.
-  //
-  // `auto` would NOT do for the mode: it resolves to `all` below 100 bp/px, so
-  // at this zoom there is no chip to read and nothing on screen says
-  // transcripts could be collapsed at all.
-  //
-  // A small frame on purpose -- everything a wider one would add is the figure
-  // above it, already on the page.
+  // `readIsoformNotice` dismisses the first-session chip so the figure shows the
+  // quiet icon a reader meets afterwards. `auto` would show no chip at all: it
+  // resolves to `all` below 100 bp/px.
   {
     mode: 'url',
     name: 'genomes_basics/isoform_control',
@@ -452,19 +247,13 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.02,
     clicksOpen: "the gene track's isoform control",
     actions: [
-      // read the chip, leaving the quiet icon this figure is about
       ...readIsoformNotice(),
-      // then open the popover from the icon itself
       { type: 'click', selector: '[data-testid="track-control-isoform"]' },
       { type: 'waitForText', text: 'Representative transcript' },
       { type: 'delay', ms: 800 },
     ],
-    // A ring on the icon that opened the popover. The popover is a MUI menu, so
-    // it is placed wherever it fits rather than under what it came from, and
-    // this frame is the one case on the page where the control and its menu are
-    // at opposite corners: without the ring nothing says what was clicked.
-    // Anchored to the icon's own element, so it follows the control when the
-    // layout moves.
+    // MUI opens the popover in the opposite corner, so the ring says what was
+    // clicked.
     annotations: [
       {
         type: 'circle',
@@ -473,18 +262,9 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The alignment the score was computed from, at the same exon. Both tracks are
-  // the 470-way rather than the 100-way the page opens with, because UCSC
-  // publishes no bigMaf for multiz100way -- pairing a 100-way score with a
-  // 470-way alignment would be a picture of two different analyses.
-  //
-  // Only reachable at this zoom, and that is a property of the file rather than
-  // a choice: LinearMafDisplay byte-gates on the bigMaf's own R-tree estimate,
-  // which over TP53 is 0.06MB at 110bp, 0.54MB at 1kb and 4.76MB at 9.2kb
-  // against the 1MB fetchSizeLimit the display inherits. So this window loads
-  // and a gene-wide one is a force-load prompt (measured 2026-08-08). The third
-  // hg38 bigMaf, cactus241way, is flat at 15MB for every window and therefore
-  // opens at no zoom at all; it is dropped in jb2hubs rather than shown here.
+  // Both tracks are 470-way because UCSC publishes no bigMaf for multiz100way.
+  // LinearMafDisplay byte-gates on the bigMaf's R-tree estimate, so a gene-wide
+  // window shows a force-load prompt.
   {
     mode: 'url',
     name: 'genomes_basics/multiz_alignment',
@@ -508,37 +288,11 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.02,
   },
 
-  // ── The rest of the catalog, at the same gene ────────────────────────────
-  //
-  // Everything below is the same two clicks as phyloP, on tracks that are not
-  // conservation. They stay at TP53 on purpose: the page is one locus stepped
-  // through, so a track earns its figure by showing something about this gene
-  // rather than by being a nice picture of somewhere else.
+  // The page steps through one locus, so the tracks below stay at TP53.
 
-  // The regulation category over the whole gene, as one figure of two frames.
-  //
-  // It was two figures: a plot-type pair carrying the two histone tracks alone,
-  // and a promoter frame carrying those same two tracks plus three more. Read
-  // one after the other they were the same picture twice, the second one taller
-  // -- so this is the tracks the section names, in both frames, with only the
-  // setting between them.
-  //
-  // Side by side (`columns`), because the frames are a before and an after
-  // of one radio button and a reader compares them across rather than down.
-  //
-  // Frame 1 is UCSC's layered arrangement the tracks open in, all seven cell
-  // lines drawn over one another under the menu that separates them. Frame 2
-  // is the same six tracks after that pick, one row per cell line.
-  //
-  // Frame 2 loads a session rather than clicking the checkbox: the click would
-  // change ONE track, and a frame with one mark separated and one still
-  // overlapping reads as a bug rather than a result.
-  //
-  // EPDnew's promoter calls close the stack, not the JASPAR TFBS track that was
-  // there first: JASPAR draws every motif match above its score cutoff, which at
-  // any width is a solid orange field with no shape to read. A promoter
-  // annotation is one box, in the place the tracks above have just been arguing
-  // for.
+  // Frame 2 loads a session: a click changes one track, and one mark split
+  // beside one still overlaid reads as a bug. EPDnew closes the stack because
+  // JASPAR draws a solid field of motif matches at any width.
   {
     mode: 'url',
     name: 'genomes_basics/promoter_regulation',
@@ -564,14 +318,11 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 940,
     columns: 2,
-    // room for the arrow below; at the 24px default it has a hairline to sit in
+    // room for the arrow; the 24px default leaves it a hairline
     gutter: 240,
     diffThreshold: 0.02,
     tooltip: 'hide',
-    // Side by side, a before and an after read as two pictures of the same
-    // locus (reviewer: "there should be an arrow from panel 1 to panel 2
-    // showing it is this two stage thing"). Anchored to the frames' own boxes;
-    // `alignY: 'top'` puts it on the app bars, the one band carrying nothing.
+    // `alignY: 'top'` puts the arrow on the app bars, the one empty band
     annotations: [
       {
         type: 'arrow',
@@ -596,10 +347,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           trackMenuIcon(H3K4ME3_OVERLAY.trackId),
           ...menuCascade(PLOT_TYPE_PATH),
         ],
-        // The cascade's boxes say which items were picked and nothing says
-        // where it came from — and the menu opens over a different track's rows
-        // than the ⋮ it belongs to (reviewer: "should circle the little track
-        // menu morevert icon too").
+        // The menu opens over another track's rows, so the ring marks which ⋮
+        // opened it.
         annotations: [
           ...cascadeBoxes(PLOT_TYPE_PATH),
           {
@@ -633,18 +382,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Same two-frame shape as `about_track`: the menu item is the question and
-  // the dialog is the answer. Stacked, because the dialog is most of the
-  // frame's width.
-  //
-  // The track is alone in the view so the menu has the frame to open into, and
-  // it is UNFILTERED -- with a filter in effect `filterMenuItems` relabels the
-  // row "Filter by... (1)" and turns it into a submenu, which is a different
-  // click path from the one the reader is being shown.
-  //
-  // The pLoF filter rather than the AF one: a consequence class has no
-  // visible-in-the-picture analogue (a frequency cut looks like fewer
-  // variants).
+  // The track starts unfiltered: with a filter in effect, `filterMenuItems`
+  // turns the row into a "Filter by... (1)" submenu, a different click path.
   {
     mode: 'url',
     name: 'genomes_basics/gnomad_filter_menu',
@@ -662,8 +401,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     viewportHeight: 590,
     diffThreshold: 0.02,
-    // the menu is driven by clicking, which leaves the track's own hover
-    // tooltip standing over the frame the menu is the subject of
+    // clicking leaves the track's hover tooltip over the menu
     tooltip: 'hide',
     stages: [
       {
@@ -671,10 +409,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           trackMenuIcon(GNOMAD_TRACK_ID),
           { type: 'waitForText', text: 'Filter by...' },
         ],
-        // boxed: the menu is long and every row in it is a plausible next click
         annotations: cascadeBoxes(['Filter by...']),
-        // the menu, not the empty page under it -- the track it opens from
-        // scrolls its own rows, so nothing below the view's fold is content
         viewportHeight: 560,
       },
       {
@@ -685,46 +420,12 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           { type: 'type', selector: FILTER_TEXT, value: GNOMAD_PLOF },
           { type: 'delay', ms: 500 },
         ],
-        // back to the spec's own height, which the shorter first frame would
-        // otherwise carry into this one -- the dialog is the taller of the two
-        // and clears its bottom edge by a line
+        // without this, the first frame's 560 carries over and clips the dialog
         viewportHeight: 590,
       },
     ],
   },
 
-  // genomes_basics/gnomad_filters was here and is DELETED (review: "i might
-  // suggest deleting this figure. its just almost too detailed. we have the one
-  // filter screenshot"). It was three stacked frames of one window at three
-  // filters, and the second time it came back as too much: the three differ in
-  // one lane and repeat the whole app frame around it, which is 3000x3600 of
-  // PNG for a difference that lives in a sixth of each.
-  //
-  // gnomad_filter_menu above is the one that stays, and it is the one the
-  // section is actually about -- where the dialog is and what goes in it. The
-  // measurements that figure carried are kept here rather than deleted with it,
-  // because they are what a replacement would have to be built against
-  // (2026-08-13, over TP53_TRANSCRIPT_WINDOW against exomes.bb, with
-  // NM_000546.6's coding exons from api.genome.ucsc.edu):
-  //
-  //   coding bases                1,182 of 9,200 in the window   (12.8%)
-  //   gnomAD, any AF              3,045 records, 685 coding      (22.5%)
-  //   gnomAD, AF >= 0.001            71 records,   3 coding       (4.2%)
-  //   gnomAD, annot == pLoF          93 records
-  //
-  // So the raw callset is enriched on coding sequence because that is what an
-  // exome captures, and the common half of it is depleted there about
-  // three-fold against the base composition of the window.
-
-  // "About track" on the phyloP track, for the section about what a checkbox
-  // actually downloads: the dialog prints the adapter, so the hgdownload URL the
-  // config points at is on screen rather than asserted in a paragraph.
-  //
-  // Two frames side by side rather than the dialog alone, because the dialog is
-  // the answer and the menu item is the question: a reader who has never opened
-  // that menu cannot get to the second frame from the first. Side by side rather
-  // than stacked because the difference between the frames is one click, which a
-  // reader compares across rather than down.
   {
     mode: 'url',
     name: 'genomes_basics/about_track',
@@ -734,9 +435,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: TP53_TRANSCRIPT_WINDOW,
-          // taller than the track needs to be read, because the two frames are
-          // one grid: the dialog fills its own panel and a default-height track
-          // leaves the menu panel two thirds empty page beside it
+          // at default height the menu panel sits two-thirds empty beside the
+          // dialog's panel
           tracks: [{ ...PHYLOP_TRACK, height: 400 }],
         },
       ],
@@ -754,10 +454,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'About track' },
           { type: 'delay', ms: 800 },
         ],
-        // Both ends of the click: the kebab that opened the menu and the row
-        // inside it. The menu is placed where it fits rather than under what
-        // opened it, so neither one implies the other, and the kebab is the
-        // smallest control on the track header.
+        // The menu opens where it fits, so the ring marks the kebab that opened
+        // it.
         annotations: [
           {
             type: 'circle',
@@ -779,16 +477,12 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // A GenArk assembly, to close the page where it started: same app, same
-  // checkbox, a smaller catalog. Same gene, too -- `loc` is the bare symbol
-  // rather than a coordinate, so the frame is also the proof that the
-  // accession's own name index answered it.
+  // `loc` is the bare symbol, so the frame proves the accession's name index
+  // answers it, and the search opens RefSeq All (GFF) itself.
   //
-  // No `tracks` at all, which is the point rather than an omission: the search
-  // opens the track whose index answered -- RefSeq All (GFF) -- and highlights
-  // the hit in it, so this frame is what typing a gene symbol gets you and
-  // nothing else. See the note over AXOLOTL_CONFIG for the two tracks that used
-  // to be here and why neither is a click.
+  // Add no tracks: GC Percent and RepeatMasker each need a display setting that
+  // no click on the live site reaches. A repeat lane returns once jb2hubs opens
+  // its RMSK_MULTIROW_DISPLAY gate for GenArk.
   {
     mode: 'url',
     name: 'genomes_basics/genark_axolotl',
