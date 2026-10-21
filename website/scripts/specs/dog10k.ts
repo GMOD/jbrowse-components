@@ -1014,12 +1014,12 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // compare across, not steps to read down, and because the sample rows are the
   // axis being compared: abutted vertically the two sidebars sit 1240px apart
   // and a reader has to hold a row's place across the seam, where here the same
-  // row is on the same line in both halves. `direction: 'horizontal'` also puts
+  // row is on the same line in both halves. `columns: 2` also puts
   // the gutter in, so the pair does not read as one window with a seam.
   {
     mode: 'compose',
     name: 'dog10k-diet-genes',
-    direction: 'horizontal',
+    columns: 2,
     parts: ['dog10k-amy2b-duplication', 'dog10k-rnase1-insertion'],
   },
 

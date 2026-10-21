@@ -61,10 +61,14 @@ export function pageActions(actions: ScreenshotAction[] | undefined) {
 // - the fields an embedded capture ignores (it screenshots the component
 //   element, bypassing the shoot path) do nothing at all when set, and nothing
 //   said so
-// - a field a spec sets that the shape it chose then discards: a spec with
-//   `stages` draws each stage's own `annotations` and never its top-level ones,
-//   and a stage's `readySelector` is only consulted when that stage navigates.
-//   Both read as callouts that vanished, or a gate that never ran
+// - a field a spec sets that the shape it chose then discards: a frame layout
+//   on a single-frame spec, a side margin on a row, a stage's `readySelector`
+//   when that stage does not navigate. Each reads as a gap that never opened,
+//   or a gate that never ran
+// - a callout over arranged frames anchored to anything but a frame
+//   (`[data-part="N"]`): the composition is a flat image with no app in it
+// - a compose grid of several rows, which the recipe's one magick line cannot
+//   lay out
 // - a compose whose part is itself a compose built LATER in the list, which
 //   stacks the part's previous image every time and never says so — the compose
 //   pass walks the list in order
@@ -128,32 +132,8 @@ export function validateSpecs(list: ScreenshotSpec[]) {
         `${spec.name}: clicksOpen/clicksChange on a spec whose actions click nothing`,
       )
     }
-    if ('stageColumns' in spec && spec.stageColumns && !spec.stages?.length) {
-      problems.push(`${spec.name}: stageColumns without stages`)
-    }
-    // drawn by `captureStages` and nothing else, so on a single-frame spec it
-    // is callouts that silently never appear
-    if (
-      'gridAnnotations' in spec &&
-      spec.gridAnnotations?.length &&
-      !spec.stages?.length
-    ) {
-      problems.push(`${spec.name}: gridAnnotations without stages`)
-    }
-    // padPanels is the grid arm alone, so a stack's gutter does nothing
-    if (
-      'stageGutter' in spec &&
-      spec.stageGutter !== undefined &&
-      !((spec.stageColumns ?? 0) > 1)
-    ) {
-      problems.push(`${spec.name}: stageGutter without a stageColumns grid`)
-    }
+    problems.push(...frameLayoutProblems(spec))
     if ('stages' in spec && spec.stages?.length) {
-      if (spec.annotations?.length) {
-        problems.push(
-          `${spec.name}: ${spec.annotations.length} top-level annotation(s) alongside stages — a staged figure draws each stage's own, never these`,
-        )
-      }
       for (const [s, stage] of spec.stages.entries()) {
         if (stage.readySelector && !stage.url) {
           problems.push(
@@ -161,6 +141,42 @@ export function validateSpecs(list: ScreenshotSpec[]) {
           )
         }
       }
+    }
+  }
+  return problems
+}
+
+function frameLayoutProblems(spec: ScreenshotSpec) {
+  if (spec.mode === 'cli') {
+    return []
+  }
+  if (spec.mode !== 'compose' && !spec.stages?.length) {
+    const set = (['columns', 'gutter', 'sideMargin'] as const).filter(
+      field => spec[field] !== undefined,
+    )
+    return set.length > 0
+      ? [`${spec.name}: ${set.join(', ')} without stages`]
+      : []
+  }
+  const problems: string[] = []
+  const columns = spec.columns ?? 1
+  if (spec.sideMargin !== undefined && columns > 1) {
+    problems.push(`${spec.name}: sideMargin on a row; only a stack has one`)
+  }
+  if (spec.mode === 'compose' && columns > 1 && columns < spec.parts.length) {
+    problems.push(
+      `${spec.name}: ${columns} columns of ${spec.parts.length} parts; a compose is one row or one stack`,
+    )
+  }
+  for (const [i, a] of (spec.annotations ?? []).entries()) {
+    if (
+      [a.anchor, a.fromAnchor].some(
+        anchor => anchor && !anchor.selector?.startsWith('[data-part='),
+      )
+    ) {
+      problems.push(
+        `${spec.name}: annotation ${i} draws over the arranged frames, so it anchors to a frame ([data-part="N"]); a callout inside a frame belongs on its stage or part`,
+      )
     }
   }
   return problems

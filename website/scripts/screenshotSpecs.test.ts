@@ -79,7 +79,7 @@ test('fields an embedded capture ignores', () => {
   expect(found).toMatch('crop')
 })
 
-test('a staged figure never draws its top-level annotations', () => {
+test('a staged figure draws its top-level annotations over the frames', () => {
   expect(
     problem([
       {
@@ -90,18 +90,39 @@ test('a staged figure never draws its top-level annotations', () => {
         stages: [{ actions: [] }],
       },
     ]),
-  ).toMatch('top-level annotation(s) alongside stages')
-  // the same annotations on the stage are the correct spelling
+  ).toMatch('anchors to a frame')
   expect(
     problem([
       {
-        mode: 'url',
-        name: 'a',
-        url: '?x',
-        stages: [{ annotations: [{ type: 'box', anchor: { text: 'z' } }] }],
+        mode: 'compose',
+        name: 'c',
+        parts: [],
+        annotations: [
+          {
+            type: 'arrow',
+            fromAnchor: { selector: '[data-part="0"]' },
+            anchor: { text: 'z' },
+          },
+        ],
       },
     ]),
-  ).toBe('')
+  ).toMatch('anchors to a frame')
+  for (const annotations of [
+    [{ type: 'box' as const, anchor: { selector: '[data-part="1"]' } }],
+    undefined,
+  ]) {
+    expect(
+      problem([
+        {
+          mode: 'url',
+          name: 'a',
+          url: '?x',
+          annotations,
+          stages: [{ annotations: [{ type: 'box', anchor: { text: 'z' } }] }],
+        },
+      ]),
+    ).toBe('')
+  }
 })
 
 test('a stage ready gate that only a navigating stage would use', () => {
@@ -122,10 +143,33 @@ test('a stage ready gate that only a navigating stage would use', () => {
   ).toBe('')
 })
 
-test('stageColumns with no stages', () => {
+test('a frame layout with no stages', () => {
   expect(
-    problem([{ mode: 'url', name: 'a', url: '?x', stageColumns: 2 }]),
-  ).toMatch('stageColumns without stages')
+    problem([{ mode: 'url', name: 'a', url: '?x', columns: 2, gutter: 9 }]),
+  ).toMatch('columns, gutter without stages')
+})
+
+test('a side margin on a row', () => {
+  expect(
+    problem([
+      { mode: 'compose', name: 'c', parts: [], columns: 2, sideMargin: 9 },
+    ]),
+  ).toMatch('sideMargin on a row')
+})
+
+test('a compose of several rows', () => {
+  expect(
+    problem([
+      { mode: 'url', name: 'p', url: '?x' },
+      { mode: 'compose', name: 'c', parts: ['p', 'p', 'p'], columns: 2 },
+    ]),
+  ).toMatch('2 columns of 3 parts')
+  expect(
+    problem([
+      { mode: 'url', name: 'p', url: '?x' },
+      { mode: 'compose', name: 'c', parts: ['p', 'p', 'p'], columns: 3 },
+    ]),
+  ).toBe('')
 })
 
 // the recipe dialog would explain clicks the capture never made

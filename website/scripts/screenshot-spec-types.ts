@@ -99,9 +99,7 @@ export const PARK_CURSOR = {
   selector: '[aria-label="JBrowse"]',
 } satisfies ScreenshotAction
 
-// One frame of a multi-stage figure. The page is captured after this stage's
-// actions run; the frames are stacked vertically (ImageMagick `-append`) into a
-// single image, replacing the hand-run `convert -append` teaching figures.
+// One frame of a multi-stage figure, captured after this stage's actions run.
 export interface ScreenshotStage {
   actions?: ScreenshotAction[]
   annotations?: Annotation[]
@@ -127,18 +125,23 @@ export interface ScreenshotStage {
   // height for this frame alone, applied after its actions run. The spec's own
   // viewportHeight has to cover the tallest state, which leaves every shorter
   // one padded with page background — an open context menu needs twice the
-  // frame the view it launches does. Width is deliberately not per-stage: the
-  // frames are stacked with `-append`, which needs one width.
+  // frame the view it launches does.
   viewportHeight?: number
 }
 
-// How a figure of several frames lays them out, in the composition's own px.
+// How a figure of several frames, a compose spec's parts or a staged spec's
+// stages, lays them out, in the composition's own px (2x for an app capture, 1x
+// for a CLI part). The spec's `annotations` draw over the result.
 export interface FrameLayout {
-  // frames per row; 1 stacks them
+  // frames per row; 1 stacks them. Side by side suits two drawings of one view,
+  // which stacked read as consecutive steps. A row top-aligns its frames, so
+  // they should share a height.
   columns?: number
-  // white space between the frames: 24 in rows, 0 stacked
+  // white space between the frames: 24 in rows, 0 stacked. A stack wants one
+  // for a `trapezoid` joining two frames, whose edges otherwise share a line.
   gutter?: number
-  // white columns down both sides of a stack
+  // white columns down both sides of a stack, for a `trapezoid` from the first
+  // region of a row, which the image edge would otherwise clip
   sideMargin?: number
 }
 
@@ -164,34 +167,21 @@ export interface BaseSpecFields {
 
 export const DEFAULT_VIEWPORT = { width: 1500, height: 800 }
 
-export interface CommonSpecFields extends BaseSpecFields {
+export interface CommonSpecFields extends BaseSpecFields, FrameLayout {
   // capture-viewport height in CSS px (DEFAULT_VIEWPORT otherwise); raise it
   // for tall multi-row pileups so the track isn't clipped
   viewportHeight?: number
   // capture-viewport width in CSS px (DEFAULT_VIEWPORT otherwise); raise it for
   // wide multi-panel layouts (dotplot/synteny/whole-genome) that get cut off
   viewportWidth?: number
-  // callouts drawn over the page before capture (arrows/boxes/text/circles)
+  // callouts drawn over the page before capture (arrows/boxes/text/circles);
+  // with `stages`, over the arranged frames as on a compose spec, each frame
+  // anchorable as `[data-part="N"]`
   annotations?: Annotation[]
-  // multi-stage figure: each stage is captured and the frames stacked vertically
+  // multi-stage figure: each stage is captured and the frames arranged by the
+  // spec's FrameLayout. A per-stage `viewportHeight` is how a grid trims the
+  // blank under its shorter row.
   stages?: ScreenshotStage[]
-  // lay the stage frames out in rows of this many instead of one column. A
-  // four-stage walkthrough stacked vertically is four viewport heights of
-  // figure, most of it the same app chrome four times; in rows of two it is a
-  // quarter as tall and the frames are compared side by side. A row is
-  // `+append`ed, so the stages sharing a row have to share a height (a per-stage
-  // `viewportHeight` is fine between rows, and is how a grid trims the blank
-  // under its shorter half).
-  stageColumns?: number
-  // callouts drawn over the finished stage composition, each stage anchorable
-  // as `[data-part="N"]` — for a mark spanning two frames, which a stage's own
-  // `annotations` cannot reach out of. Anchoring INSIDE a frame is not
-  // available (the composition is a flat image); that belongs on the stage.
-  gridAnnotations?: Annotation[]
-  // gutter between the frames of a `stageColumns` grid, in CAPTURED px (2x, so
-  // the default 24 is ~12 CSS px). Raise it for a `gridAnnotations` mark that
-  // sits between the frames rather than over one.
-  stageGutter?: number
   // A tooltip on screen at capture is reported unless the spec says what it
   // wants: 'hide' removes one a menu click left lingering, 'expect' says the
   // figure is about one and reports its absence.
@@ -291,73 +281,25 @@ export interface EmbeddedSpec extends CommonSpecFields {
   readyTimeout?: number // ms override for the ready wait (default 30000)
 }
 
-// Stack already-rendered PNGs into one combined figure. Each `parts`
-// entry is another spec's name; the generator reads those specs' committed
-// static/img/<name>.png files and `convert -append`s them (top to bottom) into
-// <name>.png. It runs after the browser/cli specs so the parts are freshly
-// rendered first. Use this to assemble a before/after figure from two
-// independent DECLARATIVE specs (e.g. one session per setting) rather than an
-// imperative `stages` capture that drives the menu — the combined image then
-// can't drift from either state, and each state stays an openable live link.
+// Arrange already-rendered PNGs into one figure. Each `parts` entry is another
+// spec's name; the generator reads its committed static/img/<name>.png after
+// the browser and CLI specs have rendered. A before/after built from two
+// declarative specs, one session per setting, has states that cannot drift and
+// each open as a live link.
 //
-// A part is machinery, not a published figure: no doc references
-// `/img/<part>.png` (the doc shows the stack and reaches each state through
-// `<Figure links=...>`), so the review UI folds parts into their parent's card
-// rather than listing them as figures of their own, and the generator recomposes
-// the parent whenever a --filter selects one of its parts.
-// `annotations` here draw over the FINISHED composition, which is a different
-// thing from a part's own annotations and is the only kind a part rendered by
-// the jb2export CLI can have at all (React SSR straight to PNG — there is no
-// page for the overlay to draw into). They anchor to a part rather than to
-// anything inside one: the generator lays an element over each part's own box
-// in the composed image, so `{ selector: '[data-part="1"]' }` plus the usual
-// alignX/alignY/dx/dy is a real anchor and not a pixel measured off a previous
-// capture. A part's box comes from that part's own dimensions, so it follows a
-// re-render that changes them.
+// No doc shows a part on its own. The doc reaches each state through
+// `<Figure links=...>`, the review UI folds parts into their parent's card, and
+// a --filter on a part recomposes the parent.
 //
-// Anchoring INSIDE a part is still not available — the composition is a flat
-// image with no view model and no track elements in it — so anything that has
-// to point at a locus belongs on the part's own spec, where it can. Two
-// consequences worth knowing before reaching for this:
-//
-// - An arrow CAN now cross the seam, since both ends resolve in the same page.
-//   That does not make it the first choice: where the two halves share a
-//   landmark, a numbered `circle` on each part still says it without a line
-//   across the gutter, and where the app already labels the landmark itself,
-//   prefer that and drop the numbers.
-// - Sizes are in the composition's OWN pixels, which for a CLI part is 1x — so
-//   a `fontSize` that looks right on a 2x app capture reads half as large here.
-export interface ComposeSpec extends BaseSpecFields {
+// `annotations` draw over the finished composition, the only kind a jb2export
+// part can have. They anchor to a part, `{ selector: '[data-part="1"]' }` plus
+// alignX/alignY/dx/dy, never inside one: anything pointing at a locus belongs
+// on the part's own spec. An arrow can cross the seam, but a numbered `circle`
+// on each part, or the app's own label, says it without a line across the
+// gutter.
+export interface ComposeSpec extends BaseSpecFields, FrameLayout {
   mode: 'compose'
-  parts: string[] // spec names whose static/img PNGs are stacked, top to bottom
-  // 'horizontal' places the parts side by side (`+append`) instead of stacking
-  // them. Use it when the two states are the SAME view drawn two ways and a
-  // reader compares them across rather than down — the layout pair, where
-  // stacking makes the second look like the next step rather than the
-  // alternative. The parts then have to share a HEIGHT rather than a width.
-  direction?: 'vertical' | 'horizontal'
-  // white space BETWEEN the parts, in the composition's own px. Defaults to 24
-  // side by side and to 0 stacked, which is what every existing figure of each
-  // kind was composed at.
-  //
-  // Stacked, it is opt-in because it is only ever wanted for one reason: a
-  // `trapezoid` annotation joining the two parts needs somewhere to be drawn,
-  // and with the parts flush its two horizontal edges are the same line. It is
-  // inserted above each part after the first rather than as a border round each
-  // one, so the figure gains no margin at its top or bottom.
-  gutter?: number
-  // white columns down the LEFT and RIGHT of a stacked composition, in the
-  // composition's own px. Ignored side by side, where `padPanels` already
-  // frames each panel.
-  //
-  // Opt-in for one reason, and it is the mirror of `gutter`'s: a `trapezoid`
-  // whose narrow end is the FIRST region of the row above has a near-vertical
-  // side at x = 0, which the image edge clips. The margin is where that side
-  // gets drawn. It moves each part's box, so `annotateComposition` reads it
-  // too — a callout anchored a margin's worth off its part is the failure
-  // nothing would report.
-  sideMargin?: number
-  // callouts drawn over the composed image, anchored per part (see above)
+  parts: string[]
   annotations?: Annotation[]
 }
 

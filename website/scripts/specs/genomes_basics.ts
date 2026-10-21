@@ -525,7 +525,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // -- so this is the tracks the section names, in both frames, with only the
   // setting between them.
   //
-  // Side by side (`stageColumns`), because the frames are a before and an after
+  // Side by side (`columns`), because the frames are a before and an after
   // of one radio button and a reader compares them across rather than down.
   //
   // Frame 1 is UCSC's layered arrangement the tracks open in, all seven cell
@@ -565,16 +565,16 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     viewportWidth: 1000,
     viewportHeight: 940,
-    stageColumns: 2,
+    columns: 2,
     // room for the arrow below; at the 24px default it has a hairline to sit in
-    stageGutter: 240,
+    gutter: 240,
     diffThreshold: 0.02,
     tooltip: 'hide',
     // Side by side, a before and an after read as two pictures of the same
     // locus (reviewer: "there should be an arrow from panel 1 to panel 2
     // showing it is this two stage thing"). Anchored to the frames' own boxes;
     // `alignY: 'top'` puts it on the app bars, the one band carrying nothing.
-    gridAnnotations: [
+    annotations: [
       {
         type: 'arrow',
         strokeWidth: 10,
@@ -747,7 +747,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     viewportWidth: 1000,
     viewportHeight: 700,
-    stageColumns: 2,
+    columns: 2,
     diffThreshold: 0.02,
     stages: [
       {

@@ -411,9 +411,9 @@ tolerance ball for "did this figure move".
   cut's node ids with lengths, ranks and resolved coordinates, so a spec picks
   its target from the graph rather than from a finished PNG. Every hand-measured
   coordinate in this set had a comment listing the occasions it had gone stale.
-- **`{ mode: 'compose', direction: 'horizontal' }`** places parts side by side
-  (`+append`) instead of stacking. Use it when the two parts are the same view
-  drawn two ways — stacked, the second reads as the next step rather than as the
+- **`{ mode: 'compose', columns: 2 }`** places parts side by side (`+append`)
+  instead of stacking. Use it when the two parts are the same view drawn two
+  ways — stacked, the second reads as the next step rather than as the
   alternative. Size each part to its own content: `+append` pads the shorter
   one, so a shared height only adds dead space to the part that did not need it.
 
@@ -478,9 +478,9 @@ tolerance ball for "did this figure move".
   at `height: 400` / `y: 450` and failed at `height: 340` / `y: 400`. Re-run
   before re-designing a sort spec.
 - **A `compose` HAS an annotation layer, anchored per part.** It was built after
-  the note here said it did not exist; `annotateComposition` opens a page that
-  is nothing but the composed PNG plus one absolutely-positioned div per part,
-  and runs the same `drawAnnotationOverlay` every other figure's callouts go
+  the note here said it did not exist; `arrangeFrames` opens a page that is
+  nothing but the composed PNG plus one absolutely-positioned div per part, and
+  runs the same `drawAnnotationOverlay` every other figure's callouts go
   through. So `anchor: { selector: '[data-part="1"]' }` plus the usual
   alignX/alignY/dx/dy is a real anchor, an arrow CAN cross the seam, and a
   `jb2export` part can carry a callout at all — which is the only way one ever

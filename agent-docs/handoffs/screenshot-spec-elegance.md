@@ -1,6 +1,6 @@
 ---
 name: screenshot-spec-elegance
-description: "Making the screenshot specs (website/scripts/specs/) and their generator say each thing once. Landed: schema validation of every spec session, an action union, one session URL builder, declarative sorts and track selectors in place of clicks. Open: the long delays, display-type inference for recipes, one frame arranger, and the spec respell that waits on ADR-238."
+description: "Making the screenshot specs (website/scripts/specs/) and their generator say each thing once. Landed: schema validation of every spec session, an action union, one session URL builder, declarative sorts and track selectors in place of clicks, one frame arranger. Open: the long delays, display-type inference for recipes, and the spec respell that waits on ADR-238."
 ---
 
 # Screenshot specs: what is left
@@ -22,9 +22,6 @@ something, so the larger half of this list is app work.
   exist so the recipe builder (`spec-recipe/decode.ts`, `specDisplayType`) can
   name the menu row; `hostedConfigs.generated.ts` already holds each track's
   type.
-- **One frame arranger** for `compose` and `stages`: the ImageMagick appends
-  and the box arithmetic (`annotateComposition`, `stageBoxes`) are written
-  twice. The padding policies differ, so merging reshoots every composite.
 - **Comments.** About 37% of spec lines are comments, much of it history.
 
 ## Waits on ADR-238 (handoffs/vega-lite-vocabulary.md)

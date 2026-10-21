@@ -3912,11 +3912,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // session — a context menu, the dialog it opens, the view that dialog creates
   // — each reachable only by driving the one before it. The fourth is the
   // RESULT, so it declares its own session (`url` on the stage) instead of being
-  // clicked out of the third. They stay one spec because the grid is what puts
-  // them side by side: `compose` appends committed PNGs with no gutter and no
-  // rows, so a figure split across specs would lose the 2x2 layout below.
+  // clicked out of the third.
   //
-  // In a 2x2 grid (`stageColumns`), not a column: stacked, four frames of the
+  // In a 2x2 grid (`columns`), not a column: stacked, four frames of the
   // same app chrome ran 4320px tall and a reader scrolled past the launch to
   // reach its result. The panels carry their step number, since a grid has two
   // reading orders and the numbers pick one.
@@ -4013,7 +4011,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // "Linear synteny view with panTro6" item sits in its Launch submenu. The
     // bottom row sets its own, taller, height per stage.
     viewportHeight: 575,
-    stageColumns: 2,
+    columns: 2,
     tooltip: 'hide',
     // resolving mm39 through the hub plugin raises a "Successfully loaded"
     // snackbar over whichever frame the connection lands in
@@ -4517,7 +4515,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'compose',
     name: 'sv_synteny/color_by_attribute_steps',
     parts: ['sv_synteny/color_by_attribute', 'sv_synteny/ortholog_colors'],
-    direction: 'horizontal',
+    columns: 2,
   },
 
   // The mistake the tutorial's Troubleshooting table describes, and the app's own

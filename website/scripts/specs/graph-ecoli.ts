@@ -1592,7 +1592,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       'pangenome/rgfa_strain_launch',
       'pangenome/rgfa_segment_neighbourhood',
     ],
-    direction: 'horizontal',
+    columns: 2,
   },
   // What Settings -> Graph context buys. A region query on the reference reaches
   // a detour's entry and exit segments and nothing behind them, because the
@@ -1614,7 +1614,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     mode: 'compose',
     name: 'pangenome/graph_context',
     parts: ['pangenome/graph_context_none', 'pangenome/graph_context_hop1'],
-    direction: 'horizontal',
+    columns: 2,
   },
   // The correspondence, which is the reason to open the two views together:
   // hovering a node in the graph highlights the reference interval it occupies

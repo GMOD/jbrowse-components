@@ -133,7 +133,7 @@ const figureComposites = Object.fromEntries(
             spec.name,
             {
               parts: spec.parts,
-              horizontal: spec.direction === 'horizontal',
+              horizontal: (spec.columns ?? 1) > 1,
               gutter: spec.gutter,
               sideMargin: spec.sideMargin,
               callouts: (spec.annotations?.length ?? 0) > 0,

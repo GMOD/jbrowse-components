@@ -661,7 +661,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     name: 'maf_summary_tier',
     // side by side (reviewer): the two panels are the same track at two zooms,
     // and stacked the second read as the next step rather than the alternative
-    direction: 'horizontal',
+    columns: 2,
     parts: ['maf_summary_zoomed_out', 'maf_summary_zoomed_in'],
   },
 

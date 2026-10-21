@@ -212,11 +212,7 @@ async function captureStages(
   )
   try {
     await captureEachStage(page, spec, stages, stageFiles, port)
-    await arrangeFrames(stageFiles, renderPath, {
-      columns: spec.stageColumns,
-      gutter: spec.stageGutter,
-      annotations: spec.gridAnnotations,
-    })
+    await arrangeFrames(stageFiles, renderPath, spec)
   } finally {
     // also on the way out of a failed stage, so a spec that throws mid-figure
     // doesn't leave half its frames behind in tmp
@@ -515,13 +511,7 @@ async function captureComposeSpec(spec: ComposeSpec) {
     throw new Error(`missing part image(s): ${missing.join(', ')}`)
   }
   const renderPath = tempPath('jb-compose', spec.name)
-  const horizontal = spec.direction === 'horizontal'
-  await arrangeFrames(partPaths, renderPath, {
-    columns: horizontal ? spec.parts.length : 1,
-    gutter: spec.gutter,
-    sideMargin: horizontal ? undefined : spec.sideMargin,
-    annotations: spec.annotations,
-  })
+  await arrangeFrames(partPaths, renderPath, spec)
   optimizePng(renderPath)
   return commitTemp(renderPath, path.join(outDir, `${spec.name}.png`), spec)
 }

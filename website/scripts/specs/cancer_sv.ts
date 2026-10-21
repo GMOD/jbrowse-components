@@ -379,7 +379,7 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
       // Where each half's reads were aligned, on the half itself (reviewer: "if
       // it was shown how this was done, it is ideal e.g. text blurb saying
       // 'reads aligned to the derived contig'"). It has to be on-image rather
-      // than in the caption: `direction: 'horizontal'` composes two captures
+      // than in the caption: `columns: 2` composes two captures
       // and a reader's eye is inside a pane, not at the caption, when the
       // question "aligned to WHAT?" comes up. Anchored to the track band so the
       // pill follows the pileup rather than a measured y.
@@ -611,7 +611,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       'cancer_sv/multihop_tumour_vs_normal',
       'cancer_sv/multihop_split_view',
     ],
-    direction: 'horizontal',
+    columns: 2,
     annotations: [
       {
         type: 'arrow',
@@ -1139,7 +1139,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // 700 was cutting 70 px off the result frame, and 771 is that. All three
     // frames take this one, since they share a row.
     viewportHeight: 771,
-    stageColumns: 3,
+    columns: 3,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       loc: 'chr3:25,359,318-25,359,818',
@@ -1306,7 +1306,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // Side by side, because the two panes are the same reads in two coordinate
     // systems rather than two steps of a procedure. Stacked, the second would
     // read as what happened next.
-    direction: 'horizontal',
+    columns: 2,
   },
 
   // K562: the caller's whole output, triaged in the SV inspector -- the table of

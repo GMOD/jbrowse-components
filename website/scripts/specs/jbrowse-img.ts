@@ -727,7 +727,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // and the normal separate side by side panels ... not something jbrowse-img
   // has to do"). It was one render carrying both tracks on every panel, six
   // lanes stacked; the pair is now two renders and a `mode: 'compose'` with
-  // `direction: 'horizontal'`, which is the figure pipeline's own job and needs
+  // `columns: 2`, which is the figure pipeline's own job and needs
   // nothing of jb2export.
   //
   // The two specs are identical but for the track, deliberately: same loci, same
@@ -854,7 +854,7 @@ export const jbrowseImgComposedSpecs: ScreenshotSpec[] = [
       'jbrowse-img/sv_review_normal',
       'jbrowse-img/sv_review_derivative',
     ],
-    direction: 'horizontal',
+    columns: 3,
     annotations: [
       // fontSize 22 in a 1x composition. The app captures these pills usually
       // sit on are 2x, where the same number draws half this size relative to
@@ -911,7 +911,7 @@ export const jbrowseImgComposedSpecs: ScreenshotSpec[] = [
     parts: Object.keys(SV_SHEET_SAMPLES).map(
       sample => `jbrowse-img/sv_sheet_${row}_${sample}`,
     ),
-    direction: 'horizontal',
+    columns: Object.keys(SV_SHEET_SAMPLES).length,
   })),
   {
     mode: 'compose',
