@@ -651,11 +651,6 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
             type: 'click',
             selector: '[data-testid="follow-synteny-toggle"]',
           },
-          // The follow's exact pass is an RPC per level off the anchor's
-          // SETTLED window, so this waits on a worker round trip and then on
-          // the moved panel refetching at its new window. The canvas is already
-          // painted, so there is no new selector to wait on.
-          { type: 'delay', ms: 10000 },
         ],
         annotations: [
           {
@@ -717,9 +712,6 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       { type: 'click', selector: '[aria-label="Synteny display settings"]' },
       { type: 'waitForText', text: 'Location markers' },
       { type: 'click', text: 'Location markers' },
-      // the markers come back through the synteny RPC rather than from a repaint
-      // of what is already on the GPU, so this waits on a refetch
-      { type: 'delay', ms: 5000 },
     ],
     annotations: [
       // The button is circled as well as the row, because the row's own name is

@@ -349,7 +349,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     // bottom row's 0 tick (640 left it on the frame edge)
     viewportHeight: 690,
     tooltip: 'hide',
-    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
+    actions: [PARK_CURSOR],
     // One callout per row, saying why THAT row does what it does (reviewer:
     // "consider adding red annotation text boxes to both to explain why this
     // happened to each"). The band already names the operon and the caption
@@ -446,7 +446,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 480,
     tooltip: 'hide',
-    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
+    actions: [PARK_CURSOR],
   },
 
   // The JBrowse half of the odgi-viz correspondence pair: the same locus the
@@ -541,7 +541,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     viewportWidth: 1040,
     viewportHeight: 380,
     tooltip: 'hide',
-    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
+    actions: [PARK_CURSOR],
   },
 
   // `pangenome_cactus/pav` was here and is DELETED. It drew the aggregate odgi

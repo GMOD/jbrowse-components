@@ -828,7 +828,6 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
           type: 'waitForSelector',
           selector: displayPainted('synteny_canvas'),
         },
-        { type: 'delay', ms: 4000 },
         // No palette menu (reviewer). The launched view already draws the
         // PAF's CIGAR (cigarMode defaults to 'full', and all_vs_all.paf is
         // built with `minimap2 -c`), so the wedges inside these ribbons are the
@@ -1475,8 +1474,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
           fracY: 0.15,
         },
       },
-      { type: 'waitForAppSettled' },
-      { type: 'delay', ms: 2000 },
     ],
   },
 
@@ -4050,10 +4047,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             selector: displayPainted('synteny_canvas'),
             timeout: 120000,
           },
-          // mm39 resolves through the hub plugin and the chain track refetches
-          // at the launched view's own bpPerPx, both after the canvas first
-          // paints
-          { type: 'delay', ms: 10000 },
         ],
         // The synteny view alone now, so this frame is its own height: the
         // human panel (the launching view's two tracks, copied), the band, and
@@ -4624,9 +4617,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
             type: 'waitForSelector',
             selector: displayPainted('synteny_canvas'),
           },
-          { type: 'delay', ms: 2000 },
+          { type: 'waitForAppSettled' },
           { type: 'click', selector: '[data-testid="close_view"]' },
-          { type: 'delay', ms: 2000 },
         ],
       },
     ],

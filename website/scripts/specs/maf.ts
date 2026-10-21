@@ -299,7 +299,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     tooltip: 'hide',
     // park the cursor in the nav bar so no coverage-band hover tooltip lingers
     // over the capture
-    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
+    actions: [PARK_CURSOR],
   },
   {
     // Codon-view hover tooltip: in the per-species codon translation, hovering a
@@ -414,7 +414,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     // taller frame so all 26 compact rows + the grow-mode gene lane sit inside
     viewportHeight: 640,
     tooltip: 'hide',
-    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
+    actions: [PARK_CURSOR],
   },
   {
     // Dense comparative view: the UCSC hg38 470-way multiz (mammals + more), all
@@ -471,10 +471,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     // tall enough that the whole 600px fit-to-height display + the view header
     // sit inside the frame with no scroll-off
     viewportHeight: 940,
-    // all ~470 species over remote UCSC data — long settle so the heatmap is
-    // fully painted and the loading indicator has cleared before capture
     tooltip: 'hide',
-    actions: [{ type: 'delay', ms: 2000 }],
   },
   {
     // The hg38 470-way narrowed to a representative ~30 mammals (`rows.kept`,
@@ -547,7 +544,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     // display had been taller than the 460 the spec asked for.
     viewportHeight: 765,
     tooltip: 'hide',
-    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
+    actions: [PARK_CURSOR],
   },
 
   // The two halves of the summary tier, on one track at two zooms. Same
@@ -642,7 +639,6 @@ export const mafSpecs: ScreenshotSpec[] = [
         dy: -26,
       },
     ],
-    actions: [{ type: 'delay' as const, ms: 2000 }],
   })),
   {
     mode: 'compose',
@@ -860,8 +856,6 @@ export const mafSpecs: ScreenshotSpec[] = [
         selector: `${displayPainted('maf-display')}[data-clustered="true"]`,
         timeout: 240000,
       },
-      // the .tai alone is 4.98 MB and the first block read follows it
-      { type: 'delay' as const, ms: 25000 },
     ],
     // A KEY for the two fills, where this was one sentence arguing against a
     // wrong reading of one of them ("A blank row is a haplotype with no sequence

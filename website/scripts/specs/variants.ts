@@ -247,7 +247,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: 'Run clustering' },
           { type: 'waitForText', text: 'Run clustering', hidden: true },
-          { type: 'delay', ms: 10000 },
         ],
       },
     ],

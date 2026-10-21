@@ -1303,7 +1303,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       // insertion the reader is being pointed at is visible in both
       { type: 'click', text: 'Open in new view' },
       { type: 'waitForText', text: 'Reference sequence' },
-      { type: 'delay', ms: 1000 },
+      { type: 'waitForAppSettled' },
       { type: 'click', selector: '[aria-label="Synteny display settings"]' },
       { type: 'waitForText', text: 'Curved lines' },
       { type: 'click', text: 'Curved lines' },
@@ -1312,7 +1312,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       // spec rather than baking an open menu into the figure
       { type: 'press', key: 'Escape' },
       { type: 'waitForText', text: 'Curved lines', hidden: true },
-      { type: 'delay', ms: 2000 },
     ],
   },
   // ────────────────────────────────────────────────────────────────────────

@@ -149,7 +149,6 @@ const kiv2WalksSpec: ScreenshotSpec = {
     { type: 'click', selector: 'body' },
     PARK_CURSOR,
     { type: 'waitForSelector', selector: WALK_READOUT },
-    { type: 'delay', ms: 3000 },
   ],
   annotations: [
     { type: 'box', anchor: { selector: WALK_READOUT } },

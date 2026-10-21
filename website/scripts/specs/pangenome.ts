@@ -165,7 +165,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     // the variant lane plus one MAF row per sample and the coverage band
     viewportHeight: 710,
     tooltip: 'hide',
-    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
+    actions: [PARK_CURSOR],
   },
 
   // Projection 1b: the ribbons read OUT of the graph by `odgi untangle`, rather
@@ -283,7 +283,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     // the 240px lane plus its legend and the view chrome
     viewportHeight: 450,
     tooltip: 'hide',
-    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
+    actions: [PARK_CURSOR],
     // ONE ARM MARKED, AND MARKED IN THE DOTPLOT TOO (review: "still
     // unconvinced. complementary visualizations are useful"). The largest of
     // the five reverse runs is boxed here and on the dotplot, at its own
@@ -476,7 +476,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     // the gene lane, the 150px depth track and the whole 240px stack
     viewportHeight: 775,
     tooltip: 'hide',
-    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
+    actions: [PARK_CURSOR],
   },
 
   // What a depth trough IS, at single-read resolution. The depth and pav tracks
@@ -574,6 +574,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     // MAF's five rows and its coverage band
     viewportHeight: 865,
     tooltip: 'hide',
-    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
+    actions: [PARK_CURSOR],
   },
 ]

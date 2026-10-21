@@ -1014,7 +1014,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             timeout: 180000,
           },
           ...launchedZoomOut(6),
-          { type: 'delay', ms: 3000 },
         ],
         annotations: [
           {

@@ -782,7 +782,6 @@ export const svSpecs: ScreenshotSpec[] = [
       // "Loading" sidebar)
       { type: 'waitForText', text: 'CPX_TYPE' },
       PARK_CURSOR,
-      { type: 'delay', ms: 1000 },
     ],
     // ONE callout, and it is a LIST (review: "please simplify the red text
     // annotation even more, like a bulleted list, so it is immensely obvious").
@@ -1009,7 +1008,7 @@ export const svSpecs: ScreenshotSpec[] = [
     viewportHeight: 966,
     // the cursor would otherwise park over the pileup and raise the read tooltip
     tooltip: 'hide',
-    actions: [PARK_CURSOR, { type: 'delay', ms: 1500 }],
+    actions: [PARK_CURSOR],
     // WHAT THE TWO SECTIONS ARE (review: "consider adding additional text
     // annotation to say that the top row of groupby is reads with SA tag
     // (split alignments) and bottom row is non-split alignments. this implies

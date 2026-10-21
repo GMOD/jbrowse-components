@@ -1555,7 +1555,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             type: 'waitForSelector',
             selector: `${GRAPH_DRAWN}[data-layout="force"]`,
           },
-          { type: 'delay', ms: 3000 },
         ],
       },
     ],
@@ -1898,7 +1897,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             selector: displayPainted('synteny_canvas'),
             timeout: 120000,
           },
-          { type: 'delay', ms: 8000 },
+          { type: 'waitForAppSettled' },
           // and now the graph pane goes, leaving the five-panel synteny view.
           // Closed after the launch rather than before it: the menu item lives
           // on the graph view, so it has to be there to be clicked.
@@ -1906,7 +1905,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             type: 'click',
             selector: `${LAUNCH_OUT_VIEW} [data-testid="close_view"]`,
           },
-          { type: 'delay', ms: 3000 },
+          { type: 'waitForAppSettled' },
           // Curves, see-through indels and Follow (review: "use showCurves and
           // transparent indels maybe, and even 'follow' so that it aligns to
           // the top row better"): each strain opens framed on its own locus,
@@ -1930,7 +1929,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             selector: displayPainted('synteny_canvas'),
             timeout: 120000,
           },
-          { type: 'delay', ms: 8000 },
         ],
       },
     ],
@@ -2024,7 +2022,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           { type: 'rightclick', anchor: { graphNode: 's2132' } },
           { type: 'waitForText', text: 'Open in CFT073' },
           { type: 'click', text: 'Open in CFT073' },
-          { type: 'delay', ms: 3000 },
+          { type: 'waitForAppSettled' },
           {
             type: 'click',
             selector: `${PKS_VIEW} [data-testid="close_view"]`,
@@ -2037,7 +2035,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             selector: '[data-testid="feature-name-clbK"]',
             timeout: 120000,
           },
-          { type: 'delay', ms: 2000 },
         ],
       },
     ],

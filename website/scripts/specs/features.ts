@@ -293,7 +293,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
           // click lands nowhere, the backdrop stays, and the frame is of the menu
           // over the result it just produced.
           { type: 'click', from: { x: 700, y: 420 } },
-          { type: 'delay', ms: 5000 },
         ],
       },
     ],
@@ -484,15 +483,12 @@ export const featuresSpecs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Replace current view' },
           { type: 'click', selector: 'button::-p-text(Replace current view)' },
           { type: 'waitForText', text: 'Replace current view', hidden: true },
-          // let the reshaped view refetch, then wait for the (tiny, sliced) RNA
-          // BAM to load so the sashimi arcs are present in the capture
-          { type: 'delay', ms: 2000 },
+          { type: 'waitForAppSettled' },
           {
             type: 'waitForSelector',
             selector: '[data-testid="loading-overlay"]',
             hidden: true,
           },
-          { type: 'delay', ms: 3000 },
         ],
       },
     ],
@@ -543,7 +539,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
         selector:
           '[data-testid="sequence_type_gene_updownstream_collapsed_intron"]',
       },
-      { type: 'delay', ms: 3000 },
     ],
   },
 
@@ -574,7 +569,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
       { type: 'click', text: 'SELENOP' },
       ...openFeatureSequence(),
       { type: 'click', text: 'Protein' },
-      { type: 'delay', ms: 3000 },
     ],
   },
 
@@ -603,7 +597,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
       // the coordinate click leaves the cursor on the gene, so the hover overlay
       // shades it in the capture — move the pointer off the track to clear it
       PARK_CURSOR,
-      { type: 'delay', ms: 2000 },
     ],
     // ring the formatDetails-generated hyperlink in the feature-details panel,
     // with the explanatory text left of the drawer
@@ -646,7 +639,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
         type: 'click',
         text: 'Genomic w/ full introns +/- 100bp up+down stream',
       },
-      { type: 'delay', ms: 3000 },
     ],
   },
 
@@ -711,7 +703,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
       { type: 'waitForSelector', selector: NES_MOTIF },
       { type: 'scroll', selector: NES_MOTIF },
       { type: 'click', selector: NES_MOTIF },
-      { type: 'delay', ms: 6000 },
     ],
     tooltip: 'hide',
     annotations: [

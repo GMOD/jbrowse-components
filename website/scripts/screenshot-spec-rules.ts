@@ -286,7 +286,7 @@ export function countRawCallouts(list: ScreenshotSpec[]) {
 // `waitForAppSettled` ends by asking the app instead of guessing. Converting
 // one needs `probe-app-settled.ts` first, so they go as figures are touched.
 export const LONG_DELAY_MS = 1000
-export const LONG_DELAY_BASELINE = 138
+export const LONG_DELAY_BASELINE = 92
 
 export function countLongDelays(list: ScreenshotSpec[]) {
   const found = list.flatMap(spec =>

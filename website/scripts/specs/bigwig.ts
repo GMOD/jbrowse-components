@@ -366,7 +366,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             type: 'waitForSelector',
             selector: displayPainted('wiggle-display'),
           },
-          { type: 'delay', ms: 2000 },
         ],
         // the resulting view is half the height the open menu above needed
         viewportHeight: 340,
@@ -594,7 +593,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: 'Run clustering' },
           { type: 'waitForText', text: 'Run clustering', hidden: true },
-          { type: 'delay', ms: 7000 },
         ],
       },
     ],

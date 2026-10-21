@@ -886,10 +886,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             text: 'Sort by base at position',
             hidden: true,
           },
-          // move the pointer off the pileup so no hover tooltip lingers, then
-          // let the re-sort settle and repaint
+          // move the pointer off the pileup so no hover tooltip lingers
           PARK_CURSOR,
-          { type: 'delay', ms: 2500 },
         ],
         // make the (subtly-grouped) sort legible: point at the column where the
         // reads carrying each base at 14,481 now stack into one block. Anchored
@@ -1405,7 +1403,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             type: 'waitForSelector',
             selector: displayPainted('pileup-display'),
           },
-          { type: 'delay', ms: 2000 },
         ],
       },
     ],
