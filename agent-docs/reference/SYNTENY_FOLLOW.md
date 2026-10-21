@@ -472,8 +472,10 @@ the rows hold. Without the flag a held row and a dead follow look identical.
 
 `followMatchOrientation` (off by default) lets the exact pass turn the moving
 row round so it pans the same way as the anchor: inside one alignment by that
-block's strand, wider than one by `followReverseShare`'s overlap-weighted vote
-and only past `NEARLY_ALL` (90%) either way. A mixed window decides nothing —
+block's strand, wider than one by `followReverseShare`'s vote and only past
+`NEARLY_ALL` (90%) either way. The vote weighs records by `voteEvidence`, as the
+contig vote does, so on a gene table one long reverse gene cannot turn a row
+that ten forward orthologs hold. A mixed window decides nothing —
 the crossing ribbons are the picture of a rearrangement, and flipping would hide
 half of it. Rung 3 carries no strand and never flips.
 
