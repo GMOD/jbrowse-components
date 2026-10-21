@@ -473,8 +473,8 @@ covers installing the plugin and the one command that indexes a graph for it.
 `cactus-pangenome` also wrote `mc/ecoli.sv.gfa.gz`, the graph its minigraph
 stage built. This rGFA of the structural variation states each segment's place
 on a genome in `SN`/`SO`/`SR` tags, so
-[`gfa-to-tabix build`](https://github.com/GMOD/gfa-to-tabix#build) indexes it
-with no further arguments:
+[`gfa-to-tabix build`](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/subcommands.md#build)
+indexes it with no further arguments:
 
 ```bash
 # gfa-to-tabix build runs gfatools for the bubbles, so it has to be on PATH

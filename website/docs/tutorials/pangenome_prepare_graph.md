@@ -264,9 +264,9 @@ and read the path it takes:
 minigraph -cxasm --call -t 8 graph.rgfa.gz sample.fa > sample.call.bed
 ```
 
-[`gfa-to-tabix paths`](https://github.com/GMOD/gfa-to-tabix#paths) joins the
-call files, the reference's first, into one tabix-indexed row per bubble per
-sample, drawn as one row per haplotype:
+[`gfa-to-tabix paths`](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/subcommands.md#paths)
+joins the call files, the reference's first, into one tabix-indexed row per
+bubble per sample, drawn as one row per haplotype:
 
 ```bash
 gfa-to-tabix paths -o graph.paths ref.call.bed sample.call.bed
@@ -469,11 +469,11 @@ inventory, with the tools under [Prerequisites](#prerequisites). It:
 gfa-to-tabix build hprc-v2.1-mc-grch38.sv.gfa.gz -o hprc --assembly hg38
 ```
 
-[`gfa-to-tabix build`](https://github.com/GMOD/gfa-to-tabix#build) reads the
-graph once and writes the index, the tier, the alleles and the bubbles
+[`gfa-to-tabix build`](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/subcommands.md#build)
+reads the graph once and writes the index, the tier, the alleles and the bubbles
 concurrently. The coarse tier is also
-[`gfa-to-tabix fold`](https://github.com/GMOD/gfa-to-tabix#fold), which runs
-alone:
+[`gfa-to-tabix fold`](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/subcommands.md#fold),
+which runs alone:
 
 ```bash
 gfa-to-tabix fold hprc-v2.1-mc-grch38.sv.gfa.gz --below 10000 -o hprc.fold10000
@@ -497,7 +497,8 @@ The walk files come from the command under
   [The rGFA format](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md) and
   [gfatools](https://github.com/lh3/gfatools): the `SN`/`SO`/`SR` tags and the
   bubble calls.
-- [gfa-to-tabix](https://github.com/GMOD/gfa-to-tabix#walks): `--walks`, and the
+- [gfa-to-tabix](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/walks-format.md):
+  `--walks`, and the
   [rows it writes](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/walks-format.md).
 - [gfa-to-tabix and gbz-base compared](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/gbz-comparison.md):
   what each holds, sizes and requests on HPRC v2.1.

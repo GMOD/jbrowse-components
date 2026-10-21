@@ -228,8 +228,9 @@ and opens at the CFH deletion, one lane per haplotype under GRCh38.
 
 - Li H. [gfatools](https://github.com/lh3/gfatools), whose `bubble` subcommand
   flags the inversion.
-- [gfa-to-tabix](https://github.com/GMOD/gfa-to-tabix#walks), which files each
-  haplotype's walk under the reference so a window is one range request.
+- [gfa-to-tabix](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/walks-format.md),
+  which files each haplotype's walk under the reference so a window is one range
+  request.
 - [ggbandage](https://github.com/GMOD/ggbandage), which draws
   [RHD and CYP2D6 deletions](https://github.com/GMOD/ggbandage/blob/main/docs/gallery.md#rhd-and-cyp2d6-gene-deletions-as-arches)
   as arches over GRCh38 in ggplot2.

@@ -106,9 +106,9 @@ layout here, was built for assembly graphs, so use Bandage for one.
 
 Once indexed, the graph loads as a `GraphTrack` that draws whatever window is on
 screen as a graph.
-[`gfa-to-tabix build`](https://github.com/GMOD/gfa-to-tabix#build) 0.12.0 or
-later builds the index by the route the input format requires, and every step
-after that is the same. An rGFA's bubbles also need
+[`gfa-to-tabix build`](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/subcommands.md#build)
+0.12.0 or later builds the index by the route the input format requires, and
+every step after that is the same. An rGFA's bubbles also need
 [`gfatools`](https://github.com/lh3/gfatools) on PATH:
 
 ```bash
@@ -210,9 +210,9 @@ The graph track draws only what the zoom can show: variants smaller than ten of
 the linear view's pixels fold into the reference, the legend gives the size, and
 zooming in restores them. A track whose adapter names `coarse` gives the graph a
 second tier to cut, built by the same fold
-([`gfa-to-tabix fold`](https://github.com/GMOD/gfa-to-tabix#fold)). Once the
-linear view is zoomed out past the handover, the graph track cuts the tier and
-the size limit no longer applies; the drawing barely changes across the
+([`gfa-to-tabix fold`](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/subcommands.md#fold)).
+Once the linear view is zoomed out past the handover, the graph track cuts the
+tier and the size limit no longer applies; the drawing barely changes across the
 handover, since the fine cut has folded the same variants by then. The segments
 lane draws segments at every zoom, so load the tier's prefix as a separate track
 too, because that lane draws a whole chromosome where the segments lane refuses.
@@ -625,8 +625,8 @@ records both of its endpoints in full. A link between two backbone segments that
 leaves a coordinate _gap_ is a deletion. A link from the backbone into a rank>0
 segment enters an allele, and the allele's length is the total of the segments
 it walks before rejoining.
-[`gfa-to-tabix alleles`](https://github.com/GMOD/gfa-to-tabix#alleles) does that
-walk and needs only the two files, indexed with `--layout contig`:
+[`gfa-to-tabix alleles`](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/subcommands.md#alleles)
+does that walk and needs only the two files, indexed with `--layout contig`:
 
 ```bash
 gfa-to-tabix alleles ecoli_minigraph   # -> ecoli_minigraph.alleles.bed.gz
