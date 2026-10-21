@@ -191,7 +191,13 @@
       },
       "silhouettes": true,
       "displayName": "Wild-type fibril, one layer seen end-on (PDB 6CU7)",
-      "distances": [],
+      "distances": [
+        {
+          "a": "E:46",
+          "b": "E:80",
+          "color": "#111111"
+        }
+      ],
       "structures": [
         {
           "pdbId": "6cu7",
@@ -246,7 +252,8 @@
           "userProvidedTranscriptSequence": "MDVFMKGLSKAKEGVVAAAEKTKQGVAEAAGKTKEGVLYVGSKTKEGVVHGVATVAEKTKEQVTNVGGAVVTGVTAVAQKTVEGAGSIAAATGFVKKDQLGKNEEGAPQEGILEDMPVDPDNEAYEMPSEEGYQDYEPEA",
           "connectedViewId": "lgv-SNCA"
         }
-      ]
+      ],
+      "occlusion": true
     },
     {
       "id": "protein-SNCA-6ufr",
@@ -473,7 +480,8 @@
           "userProvidedTranscriptSequence": "MDVFMKGLSKAKEGVVAAAEKTKQGVAEAAGKTKEGVLYVGSKTKEGVVHGVATVAEKTKEQVTNVGGAVVTGVTAVAQKTVEGAGSIAAATGFVKKDQLGKNEEGAPQEGILEDMPVDPDNEAYEMPSEEGYQDYEPEA",
           "connectedViewId": "lgv-SNCA"
         }
-      ]
+      ],
+      "occlusion": true
     }
   ],
   "sessionTracks": [

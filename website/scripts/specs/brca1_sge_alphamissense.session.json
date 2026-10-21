@@ -1,0 +1,575 @@
+{
+  "name": "BRCA1 scan vs AlphaMissense",
+  "views": [
+    {
+      "id": "lgv-BRCA1",
+      "type": "LinearGenomeView",
+      "colorByCDS": false,
+      "hideHeaderOverview": true,
+      "axis": {
+        "grid": false
+      },
+      "init": {
+        "assembly": "hg38",
+        "loc": "chr17:43051051-43051129[rev]",
+        "tracks": [
+          {
+            "trackId": "brca1_sge_missense",
+            "height": 120
+          },
+          {
+            "trackId": "hg38-alphaMissense",
+            "height": 90,
+            "type": "LinearWiggleDisplay",
+            "mark": "span",
+            "rows": "source",
+            "showLegend": false,
+            "color": {
+              "field": "score",
+              "scale": "linear",
+              "range": ["#2c7bb6", "#ffffff", "#d7191c"],
+              "domainMid": 0.5
+            },
+            "scales": {
+              "y": {
+                "domainMin": 0,
+                "domainMax": 1
+              }
+            }
+          },
+          {
+            "trackId": "hg38-ncbiRefSeqSelect",
+            "height": 50
+          }
+        ]
+      }
+    },
+    {
+      "id": "protein-BRCA1-measured",
+      "type": "ProteinView",
+      "displayName": "MEASURED: saturation genome editing (PDB 1T15)",
+      "height": 520,
+      "zoomToBaseLevel": false,
+      "showAlignment": false,
+      "silhouettes": true,
+      "color": {
+        "field": "track",
+        "trackId": "brca1-sge-residue-mean",
+        "stat": "mean",
+        "title": "SGE function score (Findlay 2018)",
+        "scale": "linear",
+        "domainMin": -2.2,
+        "domainMid": -1.0,
+        "domainMax": 0.4,
+        "range": ["#d7191c", "#d9d9d9", "#2c7bb6"],
+        "labels": ["loss of function", "functional"]
+      },
+      "structures": [
+        {
+          "pdbId": "1t15",
+          "assembly": "deposited",
+          "chains": ["A", "B"],
+          "feature": {
+            "uniqueId": "NM_007294.4",
+            "type": "mRNA",
+            "refName": "chr17",
+            "start": 43045677,
+            "end": 43124096,
+            "strand": -1,
+            "name": "NM_007294.4",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 43045677,
+                "end": 43045802,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43047642,
+                "end": 43047703,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 43049120,
+                "end": 43049194,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43051062,
+                "end": 43051117,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 43057051,
+                "end": 43057135,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 43063332,
+                "end": 43063373,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43063873,
+                "end": 43063951,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43067607,
+                "end": 43067695,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 43070927,
+                "end": 43071238,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43074330,
+                "end": 43074521,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 43076487,
+                "end": 43076614,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43082403,
+                "end": 43082575,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 43090943,
+                "end": 43091032,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43091434,
+                "end": 43094860,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43095845,
+                "end": 43095922,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 43097243,
+                "end": 43097289,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43099774,
+                "end": 43099880,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 43104121,
+                "end": 43104261,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43104867,
+                "end": 43104956,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 43106455,
+                "end": 43106533,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 43115725,
+                "end": 43115779,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 43124016,
+                "end": 43124096,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MDLSALRVEEVQNVINAMQKILECPICLELIKEPVSTKCDHIFCKFCMLKLLNQKKGPSQCPLCKNDITKRSLQESTRFSQLVEELLKIICAFQLDTGLEYANSYNFAKKENNSPEHLKDEVSIIQSMGYRNRAKRLLQSEPENPSLQETSLSVQLSNLGTVRTLRTKQRIQPQKTSVYIELGSDSSEDTVNKATYCSVGDQELLQITPQGTRDEISLDSAKKAACEFSETDVTNTEHHQPSNNDLNTTEKRAAERHPEKYQGSSVSNLHVEPCGTNTHASSLQHENSSLLLTKDRMNVEKAEFCNKSKQPGLARSQHNRWAGSKETCNDRRTPSTEKKVDLNADPLCERKEWNKQKLPCSENPRDTEDVPWITLNSSIQKVNEWFSRSDELLGSDDSHDGESESNAKVADVLDVLNEVDEYSGSSEKIDLLASDPHEALICKSERVHSKSVESNIEDKIFGKTYRKKASLPNLSHVTENLIIGAFVTEPQIIQERPLTNKLKRKRRPTSGLHPEDFIKKADLAVQKTPEMINQGTNQTEQNGQVMNITNSGHENKTKGDSIQNEKNPNPIESLEKESAFKTKAEPISSSISNMELELNIHNSKAPKKNRLRRKSSTRHIHALELVVSRNLSPPNCTELQIDSCSSSEEIKKKKYNQMPVRHSRNLQLMEGKEPATGAKKSNKPNEQTSKRHDSDTFPELKLTNAPGSFTKCSNTSELKEFVNPSLPREEKEEKLETVKVSNNAEDPKDLMLSGERVLQTERSVESSSISLVPGTDYGTQESISLLEVSTLGKAKTEPNKCVSQCAAFENPKGLIHGCSKDNRNDTEGFKYPLGHEVNHSRETSIEMEESELDAQYLQNTFKVSKRQSFAPFSNPGNAEEECATFSAHSGSLKKQSPKVTFECEQKEENQGKNESNIKPVQTVNITAGFPVVGQKDKPVDNAKCSIKGGSRFCLSSQFRGNETGLITPNKHGLLQNPYRIPPLFPIKSFVKTKCKKNLLEENFEEHSMSPEREMGNENIPSTVSTISRNNIRENVFKEASSSNINEVGSSTNEVGSSINEIGSSDENIQAELGRNRGPKLNAMLRLGVLQPEVYKQSLPGSNCKHPEIKKQEYEEVVQTVNTDFSPYLISDNLEQPMGSSHASQVCSETPDDLLDDGEIKEDTSFAENDIKESSAVFSKSVQKGELSRSPSPFTHTHLAQGYRRGAKKLESSEENLSSEDEELPCFQHLLFGKVNNIPSQSTRHSTVATECLSKNTEENLLSLKNSLNDCSNQVILAKASQEHHLSEETKCSASLFSSQCSELEDLTANTNTQDPFLIGSSKQMRHQSESQGVGLSDKELVSDDEERGTGLEENNQEEQSMDSNLGEAASGCESETSVSEDCSGLSSQSDILTTQQRDTMQHNLIKLQQEMAELEAVLEQHGSQPSNSYPSIISDSSALEDLRNPEQSTSEKAVLTSQKSSEYPISQNPEGLSADKFEVSADSSTSKNKEPGVERSSPSKCPSLDDRWYMHSCSGSLQNRNYPSQEELIKVVDVEEQQLEESGPHDLTETSYLPRQDLEGTPYLESGISLFSDDPESDPSEDRAPESARVGNIPSSTSALKVPQLKVAESAQSPAAAHTTDTAGYNAMEESVSREKPELTASTERVNKRMSMVVSGLTPEEFMLVYKFARKHHITLTNLITEETTHVVMKTDAEFVCERTLKYFLGIAGGKWVVSYFWVTQSIKERKMLNEHDFEVRGDVVNGRNHQGPKRARESQDRKIFRGLEICCYGPFTNMPTDQLEWMVQLCGASVVKELSSFTLGTGVHPIVVVQPDAWTEDNGFHAIGQMCEAPVVTREWVLDSVALYQCQELDTYLIPQIPHSHY",
+          "connectedViewId": "lgv-BRCA1"
+        }
+      ],
+      "marks": [
+        {
+          "site": "A:1775",
+          "style": "spheres",
+          "color": "#d1007a"
+        },
+        {
+          "site": "B:11",
+          "style": "sticks",
+          "color": "#f28e2b"
+        }
+      ],
+      "surface": {
+        "opacity": 0.35
+      },
+      "camera": {
+        "position": [-44.934, 40.042, 88.89],
+        "target": [0.279, 31.405, 35.331],
+        "up": [0.0789, 0.9925, -0.0935],
+        "mode": "orthographic"
+      },
+      "occlusion": true
+    },
+    {
+      "id": "protein-BRCA1-predicted",
+      "type": "ProteinView",
+      "displayName": "PREDICTED: AlphaMissense (PDB 1T15)",
+      "height": 520,
+      "zoomToBaseLevel": false,
+      "showAlignment": false,
+      "silhouettes": true,
+      "color": {
+        "field": "alphaMissense"
+      },
+      "structures": [
+        {
+          "pdbId": "1t15",
+          "assembly": "deposited",
+          "chains": ["A", "B"],
+          "feature": {
+            "uniqueId": "NM_007294.4",
+            "type": "mRNA",
+            "refName": "chr17",
+            "start": 43045677,
+            "end": 43124096,
+            "strand": -1,
+            "name": "NM_007294.4",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 43045677,
+                "end": 43045802,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43047642,
+                "end": 43047703,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 43049120,
+                "end": 43049194,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43051062,
+                "end": 43051117,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 43057051,
+                "end": 43057135,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 43063332,
+                "end": 43063373,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43063873,
+                "end": 43063951,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43067607,
+                "end": 43067695,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 43070927,
+                "end": 43071238,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43074330,
+                "end": 43074521,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 43076487,
+                "end": 43076614,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43082403,
+                "end": 43082575,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 43090943,
+                "end": 43091032,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43091434,
+                "end": 43094860,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43095845,
+                "end": 43095922,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 43097243,
+                "end": 43097289,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43099774,
+                "end": 43099880,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 43104121,
+                "end": 43104261,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 43104867,
+                "end": 43104956,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 43106455,
+                "end": 43106533,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 43115725,
+                "end": 43115779,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 43124016,
+                "end": 43124096,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MDLSALRVEEVQNVINAMQKILECPICLELIKEPVSTKCDHIFCKFCMLKLLNQKKGPSQCPLCKNDITKRSLQESTRFSQLVEELLKIICAFQLDTGLEYANSYNFAKKENNSPEHLKDEVSIIQSMGYRNRAKRLLQSEPENPSLQETSLSVQLSNLGTVRTLRTKQRIQPQKTSVYIELGSDSSEDTVNKATYCSVGDQELLQITPQGTRDEISLDSAKKAACEFSETDVTNTEHHQPSNNDLNTTEKRAAERHPEKYQGSSVSNLHVEPCGTNTHASSLQHENSSLLLTKDRMNVEKAEFCNKSKQPGLARSQHNRWAGSKETCNDRRTPSTEKKVDLNADPLCERKEWNKQKLPCSENPRDTEDVPWITLNSSIQKVNEWFSRSDELLGSDDSHDGESESNAKVADVLDVLNEVDEYSGSSEKIDLLASDPHEALICKSERVHSKSVESNIEDKIFGKTYRKKASLPNLSHVTENLIIGAFVTEPQIIQERPLTNKLKRKRRPTSGLHPEDFIKKADLAVQKTPEMINQGTNQTEQNGQVMNITNSGHENKTKGDSIQNEKNPNPIESLEKESAFKTKAEPISSSISNMELELNIHNSKAPKKNRLRRKSSTRHIHALELVVSRNLSPPNCTELQIDSCSSSEEIKKKKYNQMPVRHSRNLQLMEGKEPATGAKKSNKPNEQTSKRHDSDTFPELKLTNAPGSFTKCSNTSELKEFVNPSLPREEKEEKLETVKVSNNAEDPKDLMLSGERVLQTERSVESSSISLVPGTDYGTQESISLLEVSTLGKAKTEPNKCVSQCAAFENPKGLIHGCSKDNRNDTEGFKYPLGHEVNHSRETSIEMEESELDAQYLQNTFKVSKRQSFAPFSNPGNAEEECATFSAHSGSLKKQSPKVTFECEQKEENQGKNESNIKPVQTVNITAGFPVVGQKDKPVDNAKCSIKGGSRFCLSSQFRGNETGLITPNKHGLLQNPYRIPPLFPIKSFVKTKCKKNLLEENFEEHSMSPEREMGNENIPSTVSTISRNNIRENVFKEASSSNINEVGSSTNEVGSSINEIGSSDENIQAELGRNRGPKLNAMLRLGVLQPEVYKQSLPGSNCKHPEIKKQEYEEVVQTVNTDFSPYLISDNLEQPMGSSHASQVCSETPDDLLDDGEIKEDTSFAENDIKESSAVFSKSVQKGELSRSPSPFTHTHLAQGYRRGAKKLESSEENLSSEDEELPCFQHLLFGKVNNIPSQSTRHSTVATECLSKNTEENLLSLKNSLNDCSNQVILAKASQEHHLSEETKCSASLFSSQCSELEDLTANTNTQDPFLIGSSKQMRHQSESQGVGLSDKELVSDDEERGTGLEENNQEEQSMDSNLGEAASGCESETSVSEDCSGLSSQSDILTTQQRDTMQHNLIKLQQEMAELEAVLEQHGSQPSNSYPSIISDSSALEDLRNPEQSTSEKAVLTSQKSSEYPISQNPEGLSADKFEVSADSSTSKNKEPGVERSSPSKCPSLDDRWYMHSCSGSLQNRNYPSQEELIKVVDVEEQQLEESGPHDLTETSYLPRQDLEGTPYLESGISLFSDDPESDPSEDRAPESARVGNIPSSTSALKVPQLKVAESAQSPAAAHTTDTAGYNAMEESVSREKPELTASTERVNKRMSMVVSGLTPEEFMLVYKFARKHHITLTNLITEETTHVVMKTDAEFVCERTLKYFLGIAGGKWVVSYFWVTQSIKERKMLNEHDFEVRGDVVNGRNHQGPKRARESQDRKIFRGLEICCYGPFTNMPTDQLEWMVQLCGASVVKELSSFTLGTGVHPIVVVQPDAWTEDNGFHAIGQMCEAPVVTREWVLDSVALYQCQELDTYLIPQIPHSHY",
+          "connectedViewId": "lgv-BRCA1"
+        }
+      ],
+      "marks": [
+        {
+          "site": "A:1775",
+          "style": "spheres",
+          "color": "#d1007a"
+        },
+        {
+          "site": "B:11",
+          "style": "sticks",
+          "color": "#f28e2b"
+        }
+      ],
+      "surface": {
+        "opacity": 0.35
+      },
+      "camera": {
+        "position": [-44.934, 40.042, 88.89],
+        "target": [0.279, 31.405, 35.331],
+        "up": [0.0789, 0.9925, -0.0935],
+        "mode": "orthographic"
+      },
+      "occlusion": true
+    }
+  ],
+  "sessionTracks": [
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "brca1_sge_missense",
+      "name": "BRCA1 function score, every missense change (saturation genome editing)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedGraphTabixAdapter",
+        "uri": "https://jbrowse.org/demos/brca1/BRCA1.sge.missense.bedGraph.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "brca1_sge_missense-LinearWiggleDisplay",
+          "mark": "point",
+          "size": 9,
+          "showLegend": false,
+          "color": {
+            "field": "score",
+            "scale": "linear",
+            "domainMid": -1.0,
+            "range": ["#d7191c", "#d9d9d9", "#2c7bb6"]
+          },
+          "scales": {
+            "y": {
+              "domainMin": -2.6,
+              "domainMax": 0.8
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "brca1-sge-residue-mean",
+      "name": "BRCA1 SGE residue mean",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "https://jbrowse.org/demos/brca1/BRCA1.sge.residue_mean.bw"
+      }
+    }
+  ],
+  "highlights": [
+    {
+      "assemblyName": "hg38",
+      "refName": "chr17",
+      "start": 43051069,
+      "end": 43051072,
+      "color": "rgba(209,0,122,0.3)",
+      "label": "M1775R"
+    }
+  ],
+  "useWorkspaces": true,
+  "activePanelId": "panel-top",
+  "layout": {
+    "id": "branch-root",
+    "direction": "column",
+    "size": 1,
+    "children": [
+      {
+        "id": "panel-top",
+        "size": 40,
+        "activeTabId": "tab-top",
+        "tabs": [
+          {
+            "id": "tab-top",
+            "viewIds": ["lgv-BRCA1"]
+          }
+        ]
+      },
+      {
+        "id": "branch-bottom",
+        "direction": "row",
+        "size": 60,
+        "children": [
+          {
+            "id": "panel-m",
+            "size": 50,
+            "activeTabId": "tab-m",
+            "tabs": [
+              {
+                "id": "tab-m",
+                "viewIds": ["protein-BRCA1-measured"]
+              }
+            ]
+          },
+          {
+            "id": "panel-p",
+            "size": 50,
+            "activeTabId": "tab-p",
+            "tabs": [
+              {
+                "id": "tab-p",
+                "viewIds": ["protein-BRCA1-predicted"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,487 @@
+{
+  "name": "TP53 scan vs AlphaMissense",
+  "views": [
+    {
+      "id": "lgv-TP53",
+      "type": "LinearGenomeView",
+      "colorByCDS": false,
+      "hideHeaderOverview": true,
+      "axis": {
+        "grid": false
+      },
+      "init": {
+        "assembly": "hg38",
+        "loc": "chr17:7674169-7674302[rev]",
+        "tracks": [
+          {
+            "trackId": "tp53-sge",
+            "height": 120
+          },
+          {
+            "trackId": "hg38-alphaMissense",
+            "height": 90,
+            "type": "LinearWiggleDisplay",
+            "mark": "span",
+            "rows": "source",
+            "showLegend": false,
+            "color": {
+              "field": "score",
+              "scale": "linear",
+              "range": ["#2c7bb6", "#ffffff", "#d7191c"],
+              "domainMid": 0.5
+            },
+            "scales": {
+              "y": {
+                "domainMin": 0,
+                "domainMax": 1
+              }
+            }
+          },
+          {
+            "trackId": "tp53-mane",
+            "height": 50
+          }
+        ]
+      }
+    },
+    {
+      "id": "protein-TP53-measured",
+      "type": "ProteinView",
+      "displayName": "MEASURED: CRISPR missense scan, Funk 2025 (PDB 3KMD)",
+      "height": 520,
+      "zoomToBaseLevel": false,
+      "showAlignment": false,
+      "silhouettes": true,
+      "color": {
+        "field": "track",
+        "trackId": "tp53-sge-mean",
+        "stat": "mean",
+        "title": "p53 function score (Funk 2025)",
+        "scale": "threshold",
+        "domain": [0],
+        "range": ["#4f8fc6", "#c51b1b"],
+        "labels": ["p53 works (score \u2264 0)", "p53 broken (score > 0)"]
+      },
+      "structures": [
+        {
+          "pdbId": "3kmd",
+          "assembly": "deposited",
+          "chains": ["A", "B", "E", "F"],
+          "feature": {
+            "uniqueId": "NM_000546.6",
+            "type": "mRNA",
+            "refName": "chr17",
+            "start": 7669608,
+            "end": 7676594,
+            "strand": -1,
+            "name": "NM_000546.6",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 7669608,
+                "end": 7669690,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 7670608,
+                "end": 7670715,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7673534,
+                "end": 7673608,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 7673700,
+                "end": 7673837,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 7674180,
+                "end": 7674290,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7674858,
+                "end": 7674971,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 7675052,
+                "end": 7675236,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7675993,
+                "end": 7676272,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7676381,
+                "end": 7676403,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 7676520,
+                "end": 7676594,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSD",
+          "connectedViewId": "lgv-TP53"
+        }
+      ],
+      "marks": [
+        {
+          "site": "A:248",
+          "style": "spheres",
+          "color": "#d1007a"
+        }
+      ],
+      "surface": {
+        "opacity": 0.35
+      },
+      "camera": {
+        "position": [-58.422, 92.183, -80.418],
+        "target": [-16.633, -13.495, -18.63],
+        "up": [0.9293, 0.3694, 0.0033],
+        "mode": "orthographic"
+      },
+      "occlusion": true
+    },
+    {
+      "id": "protein-TP53-predicted",
+      "type": "ProteinView",
+      "displayName": "PREDICTED: AlphaMissense (PDB 3KMD)",
+      "height": 520,
+      "zoomToBaseLevel": false,
+      "showAlignment": false,
+      "silhouettes": true,
+      "color": {
+        "field": "alphaMissense"
+      },
+      "structures": [
+        {
+          "pdbId": "3kmd",
+          "assembly": "deposited",
+          "chains": ["A", "B", "E", "F"],
+          "feature": {
+            "uniqueId": "NM_000546.6",
+            "type": "mRNA",
+            "refName": "chr17",
+            "start": 7669608,
+            "end": 7676594,
+            "strand": -1,
+            "name": "NM_000546.6",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 7669608,
+                "end": 7669690,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 7670608,
+                "end": 7670715,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7673534,
+                "end": 7673608,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 7673700,
+                "end": 7673837,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 7674180,
+                "end": 7674290,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7674858,
+                "end": 7674971,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 7675052,
+                "end": 7675236,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7675993,
+                "end": 7676272,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7676381,
+                "end": 7676403,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 7676520,
+                "end": 7676594,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSD",
+          "connectedViewId": "lgv-TP53"
+        }
+      ],
+      "marks": [
+        {
+          "site": "A:248",
+          "style": "spheres",
+          "color": "#d1007a"
+        }
+      ],
+      "surface": {
+        "opacity": 0.35
+      },
+      "camera": {
+        "position": [-58.422, 92.183, -80.418],
+        "target": [-16.633, -13.495, -18.63],
+        "up": [0.9293, 0.3694, 0.0033],
+        "mode": "orthographic"
+      },
+      "occlusion": true
+    }
+  ],
+  "sessionTracks": [
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "tp53-sge",
+      "name": "TP53 function score, every missense change (CRISPR scan, Funk 2025)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedGraphTabixAdapter",
+        "uri": "https://jbrowse.org/demos/tp53_sge/TP53.sge.missense.bedGraph.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "tp53-sge-LinearWiggleDisplay",
+          "mark": "point",
+          "size": 9,
+          "showLegend": false,
+          "color": {
+            "field": "score",
+            "scale": "threshold",
+            "domain": [0],
+            "range": ["#4f8fc6", "#c51b1b"]
+          },
+          "scales": {
+            "y": {
+              "domainMin": -1.6,
+              "domainMax": 2.2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "tp53-sge-mean",
+      "name": "TP53 scan, mean score per base",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "https://jbrowse.org/demos/tp53_sge/TP53.sge.position_mean.bw"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "tp53-mane",
+      "name": "TP53 NM_000546.6 (MANE Select)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "FromConfigAdapter",
+        "features": [
+          {
+            "uniqueId": "NM_000546.6",
+            "type": "mRNA",
+            "refName": "chr17",
+            "start": 7669608,
+            "end": 7676594,
+            "strand": -1,
+            "name": "NM_000546.6",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 7669608,
+                "end": 7669690,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 7670608,
+                "end": 7670715,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7673534,
+                "end": 7673608,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 7673700,
+                "end": 7673837,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 7674180,
+                "end": 7674290,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7674858,
+                "end": 7674971,
+                "strand": -1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 7675052,
+                "end": 7675236,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7675993,
+                "end": 7676272,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 7676381,
+                "end": 7676403,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 7676520,
+                "end": 7676594,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "highlights": [
+    {
+      "assemblyName": "hg38",
+      "refName": "chr17",
+      "start": 7674218,
+      "end": 7674221,
+      "color": "rgba(209,0,122,0.3)",
+      "label": "R248Q"
+    }
+  ],
+  "useWorkspaces": true,
+  "activePanelId": "panel-top",
+  "layout": {
+    "id": "branch-root",
+    "direction": "column",
+    "size": 1,
+    "children": [
+      {
+        "id": "panel-top",
+        "size": 40,
+        "activeTabId": "tab-top",
+        "tabs": [
+          {
+            "id": "tab-top",
+            "viewIds": ["lgv-TP53"]
+          }
+        ]
+      },
+      {
+        "id": "branch-bottom",
+        "direction": "row",
+        "size": 60,
+        "children": [
+          {
+            "id": "panel-m",
+            "size": 50,
+            "activeTabId": "tab-m",
+            "tabs": [
+              {
+                "id": "tab-m",
+                "viewIds": ["protein-TP53-measured"]
+              }
+            ]
+          },
+          {
+            "id": "panel-p",
+            "size": 50,
+            "activeTabId": "tab-p",
+            "tabs": [
+              {
+                "id": "tab-p",
+                "viewIds": ["protein-TP53-predicted"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

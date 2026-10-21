@@ -257,11 +257,15 @@ second protein view beside the first. Each figure's live link opens its session.
 Open a figure's live link and hover the highlighted codon in the genome view;
 each protein view then lights the residue it codes for.
 
+<Figure src="/img/protein/brca1_sge_alphamissense.png" caption="BRCA1 at codon 1775 with the saturation genome editing score of every missense change and the AlphaMissense score of every possible base change, above 1T15 twice: colored by the scan's residue mean on the left and by AlphaMissense on the right. The M1775R highlight names the residue in both structures." />
+
+<Figure src="/img/protein/tp53_scan_alphamissense.png" caption="TP53 at codon 248 with the Funk 2025 CRISPR scan and AlphaMissense, above the p53 dimer on DNA (3KMD) colored by the scan's mean per codon on the left and by AlphaMissense on the right." />
+
 <Figure src="/img/protein/tp53_y220c.png" caption="TP53 with every missense change of a CRISPR scan around codon 220, above wild-type p53 (2XWR) and Y220C bound to rezatapopt (9S9O). The Y220C highlight names each structure's own residue." />
 
 <Figure src="/img/protein/brca1_m1775r_pocket.png" caption="BRCA1 with saturation genome editing scores and ClinVar records at codon 1775, above 1T15 with the BACH1 peptide and 1N5O, the M1775R crystal, with that peptide superposed from 1T15." />
 
-<Figure src="/img/protein/snca_e46k.png" caption="SNCA codons 46 and 80 above one layer of the wild-type (6CU7) and E46K (6UFR) α-synuclein fibrils, with the distance between residues 46 and 80 drawn in the mutant." />
+<Figure src="/img/protein/snca_e46k.png" caption="SNCA codons 46 and 80 above one layer of the wild-type (6CU7) and E46K (6UFR) α-synuclein fibrils, with the distance between residues 46 and 80 drawn in each." />
 
 <Figure src="/img/protein/tp53_r273h.png" caption="TP53 with a saturation genome editing score track, the alignment's domains and two protein views: 5MG7 and 7B49, both bound to DNA. R273H is labelled in every view." />
 
