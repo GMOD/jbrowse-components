@@ -32,6 +32,7 @@ import {
 } from './screenshot-options.ts'
 import { validateSpecs } from './screenshot-spec-rules.ts'
 import { specs } from './screenshot-specs.ts'
+import { sessionSchemaProblems } from './specSessionSchema.ts'
 
 import type { ScreenshotSpec } from './screenshot-spec-types.ts'
 
@@ -165,6 +166,16 @@ export async function selectSpecsToRender(): Promise<
       s.parts.some(p => selectedNames.has(p)),
   )
   const filteredSpecs = [...selected, ...impliedCompose]
+
+  const sessionProblems = sessionSchemaProblems(filteredSpecs)
+  if (sessionProblems.length > 0) {
+    console.error(
+      `${sessionProblems.length} session spec key(s) JBrowse does not declare:\n${sessionProblems
+        .map(p => `  - ${p}`)
+        .join('\n')}`,
+    )
+    process.exit(1)
+  }
 
   // THE DIFF GATE NEEDS THE FIGURES IT COMPARES AGAINST, and this is where the
   // run finds out. commitScreenshot treats a missing output as a brand-new

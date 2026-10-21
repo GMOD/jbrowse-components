@@ -23,6 +23,7 @@ import {
   validateSpecs,
 } from './screenshot-spec-rules.ts'
 import { specs } from './screenshot-specs.ts'
+import { sessionSchemaProblems } from './specSessionSchema.ts'
 
 function configTrackIds(config: string) {
   const local = localConfigPath(config)
@@ -38,6 +39,7 @@ function configTrackIds(config: string) {
 const problems = [
   ...validateSpecs(specs),
   ...shadowedSessionTracks(specs, configTrackIds),
+  ...sessionSchemaProblems(specs),
 ]
 
 // The raw-pixel ratchet, alongside them: a callout or a click that names a

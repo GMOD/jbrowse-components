@@ -105,7 +105,9 @@ const dock2Spec: ScreenshotSpec = {
           // is what makes a 3.9 kb path and a 114 kb one distinguishable.
           {
             trackId: 'mouse_minigraph_alleles',
-            type: 'LinearPileupDisplay',
+            type: 'LinearAlignmentsDisplay',
+            coverage: { show: false },
+            sashimi: { show: false },
             height: 110,
           },
           graphTrack('mouse_minigraph_segments', {
@@ -305,7 +307,9 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         bovineVariantLane(260),
         {
           trackId: 'bovine_minigraph_alleles',
-          type: 'LinearPileupDisplay',
+          type: 'LinearAlignmentsDisplay',
+          coverage: { show: false },
+          sashimi: { show: false },
           height: 90,
         },
         graphTrack('bovine_minigraph_segments', {
