@@ -27,8 +27,8 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
 - htslib (`bgzip`, `tabix`) and `bcftools`
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 1.2.0 or later, for the
-  graph's files and the walk index (walk format 4, the only one the plugin
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 1.4.0 or later, for the
+  graph's files and the walk index (walk format 5, the only one the plugin
   reads)
 - [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
 - [`minigraph`](https://github.com/lh3/minigraph), for each assembly's path
@@ -351,15 +351,17 @@ tabix -H hprc-v2.1-mc-grch38.CHM13.walks.bed.gz | head -4
 ```
 
 ```text
-#walks	format:i:4	chunk:i:65536	maxnode:i:1024	stay:i:311
+#walks	format:i:5	chunk:i:65536	maxnode:i:1024	stay:i:311	abridge:i:1000000	abridgebytes:i:3000000
 #reference	CHM13
 #haplotype	GRCh38#0
 #haplotype	HG00097#1
 ```
 
 The first line gives the file's format, the chunk size, the longest node in bp,
-which sets how far before a window the browser starts reading, and the `--stay`
-the tool ran with. The file then lists its reference sample and every other
+the `--stay` the tool ran with, and the `--abridge-steps` and `--abridge-bytes`
+budgets. Where a chunk's walks cost more than those budgets, usually in a
+satellite array, gfa-to-tabix moves the costliest walks to detail rows that a
+window read skips. The file then lists its reference sample and every other
 haplotype with rows in it, the other reference included, once each.
 
 A track's `walksUri` names one reference's set by its prefix,
