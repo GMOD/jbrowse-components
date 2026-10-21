@@ -705,3 +705,105 @@ export const TASKS: EvalTask[] = [
       }`,
   },
 ]
+
+// Human tasks on the hosted hg38 hub, the grant's example requests with no
+// volvox stand-ins. Hosted data, so they sit with the tutorials and need the
+// network. No `solution`: selfCheck runs offline against volvox, so each grader
+// is proven only on its baseline and by reading the runs it grades.
+// `atLocus` leaves `view`, `regions` and `ids` for a grader to test.
+const atLocus = (chrom: string, from: number, to: number, maxSpan: number) => `
+  const lgvs = session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))
+  let view
+  let regions = []
+  for (const v of lgvs) {
+    const rs = await jb.visibleRegions(v.id)
+    if (rs.some(r => r.refName.replace(/^chr/, '') === '${chrom}' && r.start < ${to} && r.end > ${from} && r.end - r.start < ${maxSpan})) {
+      view = v
+      regions = rs
+      break
+    }
+  }
+  const ids = view ? view.tracks.map(t => t.configuration.trackId) : []`
+
+const BRCA1 = atLocus('17', 43060000, 43100000, 1000000)
+const CFTR = atLocus('7', 117400000, 117600000, 1500000)
+
+TASKS.push(
+  {
+    name: 'hs-brca1-genes',
+    tutorial: true,
+    prompt:
+      'Show the BRCA1 gene in human hg38 with the RefSeq curated genes track.',
+    grade: `${BRCA1}
+      return { pass: !!view && ids.includes('hg38-ncbiRefSeqCurated'), detail: { regions, ids } }`,
+  },
+  {
+    name: 'hs-common-variants-brca1',
+    tutorial: true,
+    prompt:
+      'In hg38 at BRCA1, show the genes and the common population variants.',
+    grade: `${BRCA1}
+      const variants = ids.filter(i => /^hg38-dbSnp\\d+Common$/.test(i))
+      return { pass: !!view && ids.includes('hg38-ncbiRefSeqCurated') && variants.length > 0, detail: { regions, ids } }`,
+  },
+  {
+    name: 'hs-cftr-tracks',
+    tutorial: true,
+    prompt:
+      'In hg38, go to CFTR and open tracks for the genes, common SNPs and transcription factor binding sites.',
+    grade: `${CFTR}
+      const hasSnps = ids.some(i => /^hg38-dbSnp\\d+Common$/.test(i))
+      const hasTfbs = ids.some(i => /^hg38-jaspar\\d{4}$/.test(i))
+      return { pass: !!view && ids.includes('hg38-ncbiRefSeqCurated') && hasSnps && hasTfbs, detail: { regions, ids } }`,
+  },
+  {
+    name: 'hs-phylop-scale',
+    tutorial: true,
+    prompt:
+      'In hg38 at BRCA1, show vertebrate conservation (phyloP, 100 species) and fix its scale from 0 to 5.',
+    grade: `${BRCA1}
+      const conf = view?.tracks.find(t => t.configuration.trackId === 'hg38-phyloP100way')?.activeDisplay.configuration
+      const min = conf && jb.readConfObject(conf, ['scales', 'y', 'domainMin'])
+      const max = conf && jb.readConfObject(conf, ['scales', 'y', 'domainMax'])
+      return { pass: !!view && min === 0 && max === 5, detail: { regions, ids, min, max } }`,
+  },
+  {
+    name: 'hs-short-arm-chr2',
+    tutorial: true,
+    prompt: 'Show the short arm of human chromosome 2 in hg38.',
+    grade: `
+      const lgvs = session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))
+      const found = []
+      for (const v of lgvs) {
+        const rs = await jb.visibleRegions(v.id)
+        found.push(...rs.map(r => ({ refName: r.refName, start: r.start, end: r.end })))
+      }
+      const arm = found.some(r => r.refName.replace(/^chr/, '') === '2' && r.start <= 2000000 && r.end >= 85000000 && r.end <= 100000000)
+      return { pass: arm, detail: found }`,
+  },
+  {
+    name: 'hs-synteny-mouse-brca1',
+    tutorial: true,
+    prompt: 'Show a synteny view of human and mouse across the BRCA1 locus.',
+    grade: `
+      const view = session.views.find(v => v.type === 'LinearSyntenyView')
+      if (!view) {
+        return { pass: false, detail: session.views.map(v => v.type) }
+      }
+      const human = view.views.find(v => v.assemblyNames.includes('hg38'))
+      const mouse = view.views.find(v => v.assemblyNames.some(a => a.startsWith('mm')))
+      const regions = human ? await jb.visibleRegions(human.id) : []
+      const atBrca1 = regions.some(r => r.refName.replace(/^chr/, '') === '17' && r.start < 43100000 && r.end > 43060000 && r.end - r.start < 2000000)
+      const tracks = view.syntenyTracks().map(t => t.configuration.trackId)
+      return { pass: Boolean(mouse) && atBrca1 && tracks.length > 0, detail: { regions, tracks, mouse: mouse?.assemblyNames } }`,
+  },
+  {
+    name: 'hs-which-tfbs-track',
+    tutorial: true,
+    prompt:
+      'Which track in human hg38 shows transcription factor binding sites? Reply with its track ID only.',
+    grade: `
+      const said = /hg38-jaspar\\d{4}/.test(answer)
+      return { pass: said, detail: { answer } }`,
+  },
+)
