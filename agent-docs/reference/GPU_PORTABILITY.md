@@ -80,10 +80,10 @@ apart.
 - **The figure corpus.** `pinRenderer` in `website/scripts/screenshot-ready.ts`
   is the one place to move it between backends. Pinning in `sessionSpec` instead
   forces WebGL on the website's gallery links, since `gen-live-links.ts` reads
-  the same builder. Before touching it, enumerate the navigation paths:
-  `renderSpecToTemp` branches to the embedded harness (pinned through
-  `setGpuOverride`) or `captureUrl`, and `captureEachStage` re-enters
-  `captureUrl` per stage.
+  the same builder. Before touching it, enumerate the navigation paths: the
+  mode table in `screenshot-modes.ts` sends an embedded spec to its harness
+  (pinned through `setGpuOverride`) and a url spec to `renderUrlSpecToTemp`,
+  whose `captureStage` re-enters `captureUrl` per stage.
 
 ### Fixes measured and eliminated
 
