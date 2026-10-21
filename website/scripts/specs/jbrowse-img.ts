@@ -1,20 +1,6 @@
-// The jbrowse-img (jb2export) figures: the example images products/jbrowse-img
-// README publishes, each one the literal argv of the command the README prints
-// beside it. They render through React SSR straight to PNG with no browser
-// involved, so they are the one spec family that bypasses the puppeteer
-// pipeline entirely (see CliSpec in screenshot-spec-types.ts).
-//
-// A spec module rather than a section of screenshot-spec-helpers.ts, which is
-// where these lived. Two things follow from the move, and the second is the
-// reason for it:
-//
-// - `sync-img-readme.ts` walks `jbrowseImgSpecs` to regenerate every command
-//   fence in the README, so that export keeps its `CliSpec[]` type and holds
-//   only commands. The one composed figure is a second export.
-// - `--affected` attributes a spec to the specs/*.ts that exports it
-//   (screenshot-impact.ts, `specFileOwners`). In the helpers barrel these had no
-//   owner and matched the `website/scripts/screenshot-` global trigger instead,
-//   so editing one jb2export command re-rendered the whole corpus.
+// Example figures for the products/jbrowse-img README, each the literal argv
+// of the command the README prints beside it. sync-img-readme.ts regenerates
+// the README's command fences from `jbrowseImgSpecs`.
 
 import {
   HG002_NANOPORE_BAM,
@@ -23,8 +9,6 @@ import {
 
 import type { CliSpec, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// S3-hosted yeast comparison (S. cerevisiae R64 vs the YJM1447 strain), used by
-// the dotplot/synteny CliSpecs below.
 export const YEAST =
   'https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447'
 
@@ -32,9 +16,7 @@ export function cliSpec(name: string, args: string[]): CliSpec {
   return { mode: 'cli', name: `jbrowse-img/${name}`, args }
 }
 
-// One panel of jbrowse-img/sv_review_pair: the same three der(3) loci and the
-// same render settings, with one sample's track. See the note on the two specs
-// that use it for why each modifier is there.
+// one panel of jbrowse-img/sv_review_pair
 function svReviewHalf(trackId: string) {
   return [
     'breakpoint',
@@ -58,14 +40,9 @@ function svReviewHalf(trackId: string) {
   ]
 }
 
-// One image of the `jb2export batch` run sv_callset_review.md teaches, over
-// COLO829.somatic-sv.vcf.gz at --flank 600 --width 1100. A spec renders one
-// PNG, so each row is the argv batch builds for that record (runBatch.ts:
-// `force:true` ahead of the track's modifiers, one --loc per panel), which
-// draws the same image batch writes under `file`. The three rows were picked
-// from the tumor and normal manifests' `links` column, one per "Reading the
-// sheet" case: 056 a fan in the tumor only, 009 a fan in both (a germline
-// insertion the caller filed as somatic), 013 no curve in either.
+// Each row is the argv `jb2export batch` builds for one record of
+// COLO829.somatic-sv.vcf.gz (runBatch.ts), one per "Reading the sheet" case in
+// sv_callset_review.md.
 const SV_SHEET_ROWS = {
   '056': {
     file: '056_chr7_104844620-chr7_104971854_r_138.png',
@@ -85,9 +62,8 @@ const SV_SHEET_SAMPLES = {
   normal: 'COLO829BL_normal_ont',
 }
 
-// Exported apart from `jbrowseImgSpecs`, which sync-img-readme.ts walks to
-// give every entry a README command: these are rows of a batch run, and the
-// command a reader types for them is the `batch` one the tutorial shows.
+// Outside `jbrowseImgSpecs`, so sync-img-readme.ts prints no command for them:
+// a reader makes these with the tutorial's `batch` command.
 export const jbrowseImgBatchRowSpecs: CliSpec[] = svSheetSpecs()
 
 function svSheetSpecs() {
@@ -112,10 +88,7 @@ function svSheetSpecs() {
 }
 
 export const jbrowseImgSpecs: CliSpec[] = [
-  // Headline (README "## Screenshot"): a multi-track human view from public
-  // files — NCBI RefSeq genes, ClinGen gene-disease, phyloP conservation,
-  // SKBR3 nanopore. --aliases reconciles the 1 / chr1 / NC_000001.10 refname
-  // styles across files.
+  // the README's "## Screenshot" headline
   cliSpec('1', [
     '--fasta',
     'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
@@ -123,8 +96,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'https://jbrowse.org/genomes/hg19/hg19_aliases.txt',
     '--gffgz',
     'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz',
-    // reduced-representation gene view (drop mRNA/exon/CDS speckle, keep gene
-    // glyphs) so the RefSeq track reads cleanly at this multi-gene zoom
     '{"filter":{"genes":"only"}}',
     '--bigbed',
     'https://jbrowse.org/genomes/hg19/clinGen/clinGenGeneDisease.bb',
@@ -138,9 +109,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // Whole-genome dotplot: every YJM1447 contig (x) vs every R64 contig (y).
-  // --autoDiagonalize reorders the R64 contigs so the main alignment forms a
-  // clean diagonal instead of a staircase.
   cliSpec('yeast_dotplot', [
     'dotplot',
     '--fasta',
@@ -154,9 +122,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1100',
   ]),
 
-  // Single-chromosome synteny ribbon: YJM1447 chr I vs R64 chr I
-  // (NC_001133.9). --drawCurves renders the ribbon as a smooth bezier instead
-  // of straight trapezoids.
   cliSpec('yeast_synteny', [
     'synteny',
     '--fasta',
@@ -174,10 +139,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
-  // Whole-genome multi-chromosome synteny straight from the CLI (assemblies
-  // stack in argv order, the PAF binds to the gap between them). autoDiagonalize
-  // reorders grape chromosomes for least overlap; colorBy query tints ribbons by
-  // peach chromosome.
   cliSpec('grape_peach_synteny', [
     'synteny',
     '--chromSizes',
@@ -198,8 +159,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
-  // Mammalian-scale: human (hs1) vs mouse (mm39). --minAlignmentLength 500000
-  // drops short alignments so the large syntenic blocks stay legible.
   cliSpec('hs1_mm39_synteny', [
     'synteny',
     '--chromSizes',
@@ -224,9 +183,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
-  // Three-level stack: hg38 / hs1 / mm39 (one ribbon per adjacent pair — a UCSC
-  // liftOver chain between each, each placed between the two assemblies it
-  // relates).
   cliSpec('hg38_hs1_mm39_synteny', [
     'synteny',
     '--chromSizes',
@@ -255,16 +211,8 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
-  // One all-vs-all PAF backing all four bands of a five-strain E. coli stack —
-  // the dataset of the all-vs-all synteny tutorial, from its hosted demo config.
-  // The spec file is what selects the track: that config carries four all-vs-all
-  // tracks (minimap2, pggb/wfmash, cactus, untangle), and a bare
-  // `synteny --config` would place every one of them on every band, so the
-  // figure would be four overlaid pipelines rather than one.
-  //
-  // The length filter hides minimap2's short alignments, which otherwise bury
-  // the shared backbone in a noise band; levelHeights is what makes the bottom
-  // band tall enough to read IAI39's inversions as crossings.
+  // The spec file picks one of the config's four all-vs-all tracks; a bare
+  // `synteny --config` overlays all four on every band.
   cliSpec('ecoli_ava_synteny', [
     '--config',
     'https://jbrowse.org/demos/ecoli_pangenome/config.json',
@@ -274,13 +222,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
-  // Circular structural-variant chord plot: SKBR3 (breast-cancer cell line,
-  // hg19) long-read Sniffles SV calls, where each inter-chromosomal chord is a
-  // translocation — the classic dense rearranged-cancer-genome view. (The cgiab
-  // HG008 somatic benchmark the reviewer pointed at draws an empty ring: its
-  // PASS calls are intra-chromosomal DEL/DUP/CNV with no BND translocations, so
-  // no chords.) --fasta only reads the .fai for chrom names/lengths; the circular
-  // view fetches no sequence.
+  // The cgiab HG008 benchmark has no BND calls, so its ring draws no chords.
   cliSpec('circular_chords', [
     'circular',
     '--fasta',
@@ -291,10 +233,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '800',
   ]),
 
-  // Two genomes on one circle: the circular synteny tutorial's hosted config,
-  // human and mouse liftOver blocks as ribbons inside a gene density ring. The
-  // spec is what opens the ring with its density rendering, and names the
-  // assemblies as a pair.
   cliSpec('circular_synteny', [
     '--config',
     'https://jbrowse.org/demos/circular_synteny/config.json',
@@ -304,17 +242,8 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '800',
   ]),
 
-  // Gene/feature track over the reference sequence: hosted hg38 NCBI RefSeq
-  // (--genome, --track) with --refseq adding the DNA-base + six-frame-translation
-  // sequence track below it. Zoomed to a TP53 intron/CDS boundary (not mid-exon)
-  // at base level, so the gene track shows readable structure — the intron thins
-  // to a line, the CDS exon begins as a solid block, and that block edge lines up
-  // with a specific reference base and the translation frame (docs "Gene tracks
-  // and the reference sequence"). `genes: 'only'` keeps the RefSeq rows to gene
-  // features; geneGlyphMode:longestCoding collapses TP53's isoform thicket to
-  // its single longest coding transcript, so one clean structure reads instead
-  // of a stack of near-identical rows. Supersedes the old standalone `sequence`
-  // refseq spec.
+  // The window sits on a TP53 intron/CDS boundary, so the exon edge lines up
+  // with a reference base and the translation frame.
   cliSpec('gene_track', [
     '--genome',
     'hg38',
@@ -329,8 +258,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1500',
   ]),
 
-  // Hi-C contact matrix: the public hg19 demo .hic streamed from S3. The
-  // triangular heatmap shows TAD structure along chr1.
   cliSpec('hic', [
     '--genome',
     'hg19',
@@ -345,9 +272,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // Dark theme, human demo (reviewer ask): hg38 PTEN locus via --genome — a clean
-  // single-canonical-transcript gene (unlike TP53's isoform thicket) — a tall
-  // NCBI RefSeq gene track over phyloP conservation, stock palette drawn dark.
   cliSpec('dark_theme', [
     '--genome',
     'hg38',
@@ -367,7 +291,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // Plain alignments pileup (bundled volvox BAM).
   cliSpec('alignments_pileup', [
     '--fasta',
     'data/volvox/volvox.fa',
@@ -379,12 +302,8 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // sort:base — HG008-T PacBio HiFi reads over CUZD1 sorted by the base at the
-  // center position, so every read carrying the ~1.8 kb somatic deletion
-  // (chr10:122,835,345-122,837,143) pulls into one contiguous band. The window
-  // is centered on the deletion midpoint so the sort pivot lands inside it (a
-  // pivot outside the deletion doesn't group the deletion reads). The legacy
-  // `alignments_readgroup` filename is kept for the doc image URL.
+  // The sort pivot, the window's centre, must land inside the CUZD1 deletion
+  // to group its reads. The doc image URL keeps the `alignments_readgroup` name.
   cliSpec('alignments_readgroup', [
     '--genome',
     'hg38',
@@ -401,9 +320,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // facet=tags.HP splits the pileup into one sub-track per haplotype. HG002
-  // ultralong ONT (hg19), the same rehosted slice HG002_NANOPORE_BAM names; the
-  // het deletion sits in one haplotype only.
   cliSpec('alignments_haplotype', [
     '--fasta',
     'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
@@ -418,38 +334,20 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // baseColor:methylation paints per-base CpG calls from a modified-base CRAM.
-  // COLO829 nanopore (hg38) over the chr20:18.50-18.51Mb CpG islands (the same
-  // islands the modifications figures use — a region with real
-  // methylation signal, not the prior featureless window). The UCSC CpG-island
-  // BED on top (reviewer ask) marks the island boundaries, so the methylated
-  // (red) flanks vs the unmethylated (blue) island cores read against the
-  // annotation. --aliases reconciles the chr20/20 refname styles for both the
-  // CRAM and the chr-named CpG BED.
   cliSpec('methylation', [
     '--fasta',
     'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
     '--aliases',
     'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-    // UCSC CpG islands (BedTabix, .csi index); argv order puts it above the
-    // methylation CRAM below.
+    // argv order stacks the CpG islands above the reads
     '--bedgz',
     'https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz',
     'index:https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz.csi',
-    // Sliced to chr20:18,495,000-18,517,000 and re-hosted off ont-open-data.
-    // BAM rather than CRAM because the source CRAM's UR points at the
-    // producer's own filesystem, so decoding it needs an M5 reference lookup
-    // that a viewer should not have to make; the --cram path is still covered
-    // by the skbr3 spec above. The comment on cancer_sv's tumour track records
-    // that streaming this CRAM "failed all four sweeps of figures.yml
-    // deterministically" at a 120s timeout -- 3.4 MB does not.
+    // The source CRAM's UR names the producer's filesystem, so decoding it
+    // needs an M5 lookup, and streaming it timed out in figures.yml.
     '--bam',
     'https://jbrowse.org/demos/ont/COLO829_tumor.ht.chr20_18.5Mb.bam',
     'baseColor:methylation',
-    // The key for that coloring. It is off by default in the app because the
-    // reader can open the track menu, which is the one thing nobody looking at
-    // a PNG can do -- so red and blue were two unexplained colors and the
-    // caption had to carry them.
     'showLegend=true',
     'height:350',
     '--loc',
@@ -458,7 +356,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // Variant track (bundled volvox VCF).
   cliSpec('variants', [
     '--fasta',
     'data/volvox/volvox.fa',
@@ -470,18 +367,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // Multi-sample variant genotype matrix: display:multivariant selects the
-  // LinearMultiSampleVariantDisplay. Each column is a variant, each row a
-  // sample; alt genotypes paint over the reference background. This draws the
-  // real 1000 Genomes phase-3 chr11 callset (2,504 samples) over the HBB
-  // β-globin locus, with the hosted NCBI RefSeq gene track (via --genome/--track)
-  // for context — common variants read as solid vertical bands, rarer ones as
-  // sparse speckle. Matches the README command exactly.
-  //
-  // (The old volvox stand-in and its "SSR renders the matrix empty for real
-  // data" note are gone: the SSR path paints real 1000 Genomes genotypes fine —
-  // verified by rendering both display:multivariant and display:multivariantmatrix
-  // against the phase-3 chr11 VCF.)
   cliSpec('multisample_variants', [
     '--genome',
     'hg19',
@@ -498,14 +383,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // Sashimi: sashimi:auto overlays splice-junction arcs on the coverage band,
-  // sized by junction read depth. Public strand-specific paired-end RNA-seq
-  // (hg19) over B2M via --genome — the long first intron reads as one big arc, the
-  // downstream exon junctions as smaller arcs. coverageHeight makes the
-  // coverage/sashimi band tall enough for the arcs to be legible;
-  // featureHeight:super-compact packs the supporting reads into a thin band
-  // below so the exon-by-exon read coverage that feeds the junctions is visible
-  // without the pileup dominating the frame.
   cliSpec('sashimi_junctions', [
     '--genome',
     'hg19',
@@ -516,11 +393,8 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam',
     'sashimi:auto',
     'coverage.height=170',
-    // LOG, because junction depth here spans three orders of magnitude: the
-    // last exon peaks near 4000 and the first two sit in the low hundreds, so a
-    // linear axis drew them as a flat line and the band was one spike with the
-    // arcs floating over nothing (reviewer). Log puts every exon on the plot,
-    // which is what the arcs are meant to be read against.
+    // junction depth spans three orders of magnitude; a linear axis flattens
+    // every exon but the last
     'scales.y.type=log',
     'featureHeight:super-compact',
     'height:420',
@@ -530,35 +404,17 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
-  // SV read-connection arcs: arcs:down links the split-read breakpoints of a
-  // structural variant in a band below the coverage (the current default arc
-  // direction). HG00151 ONT long reads (1000G-ONT S3, the MINIMAP2_ALIGNED_BAMS
-  // file that keeps the SA-tag split alignments) over a ~1.2 kb chr1 inversion —
-  // the two breakpoints show as clipped-read columns with the connecting arcs
-  // between them.
   cliSpec('sv_read_arcs', [
     '--genome',
     'hg38',
     '--bam',
     HG00151_ONT_1000G_BAM,
     'arcs:down',
-    // Chain each long read's split segments (as the inversion_long_read figure
-    // does), so the reverse-strand core paints blue between the red forward
-    // flanks — the inversion is legible in the pileup itself, not only in the
-    // arcs.
     'unit=chain',
     // the chain's segment colors live under the orientation fields
     'color.field=pairOrientation',
-    // Split the pileup on SA-tag presence, as inversion_long_read does
-    // (reviewer): the reads that cross the two breakpoints get their own
-    // labelled section under the arcs, and the flat background pileup goes
-    // below it, so the section divider says which reads carry the SV rather
-    // than leaving the reader to pick the colored ones out of a single stack.
     'facet=split',
     'coverage.height=80',
-    // grouping stacks two coverage lanes and truncates the "Not split" lane at
-    // a row boundary, so the whole SV signal fits well under the 820 the
-    // ungrouped stack needed — at 820 the bottom third was empty
     'height:560',
     '--loc',
     'chr1:197,786,900-197,789,700',
@@ -566,14 +422,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
-  // MultiWiggle: --multiwig aggregates many BigWigs into one multi-row
-  // quantitative track. The sources JSON (data/scatac_catlas.json, 16 curated
-  // subadapters carrying per-row name/color/group) is the CATlas single-cell
-  // ATAC accessibility-by-cell-type data (Zhang et al 2021), rendered over GCG
-  // (glucagon) via --genome hg38 + the RefSeq gene track. Alpha (glucagon) cells —
-  // the pancreatic cell type that expresses GCG — show strong accessibility
-  // across the locus while the other 15 cell types stay quiet on the shared
-  // autoscale: cell-type-specific chromatin accessibility at a marker gene.
   cliSpec('scatac_multiwiggle', [
     '--genome',
     'hg38',
@@ -583,23 +431,15 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--multiwig',
     'data/scatac_catlas.json',
     'name:CATlas single-cell ATAC (accessibility by cell type)',
-    // ~27px per row across the 16 cell types — tighter rows than the old 520 so
-    // the stack reads compactly (reviewer)
     'height:440',
-    // zoomed out to a ~300 kb window around GCG (not the bare gene body) so the
-    // alpha-cell peak reads as a localized, cell-type-specific spike against
-    // otherwise-quiet flanking chromatin, rather than an isolated close-up whose
-    // significance is impossible to judge
+    // a narrower window loses the quiet flanks the alpha-cell peak reads
+    // against
     '--loc',
     'chr2:162,000,000-162,300,000',
     '--width',
     '1400',
   ]),
 
-  // The README's "Remote files" example: everything streamed by URL, with
-  // --aliases reconciling the 1 / chr1 / NC_000001.10 refname styles across the
-  // four sources. Same idea as the headline above, at a locus where the ClinVar
-  // variants over the RefSeq genes are the point.
   cliSpec('remote_files', [
     '--fasta',
     'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
@@ -617,13 +457,8 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // `--genome` + repeated `--track`: the whole assembly and its hosted trackIds
-  // come from genomes.jbrowse.org, so the command names only what to show.
-  // 20 kb rather than the 100 kb the README used to print: ClinVar's variant
-  // density puts a 100 kb window over the track's own render limit, so half the
-  // figure was the words "Region too large to render". `force:true` clears that
-  // gate and was tried — it draws, but at 100 kb the variants are bare ticks,
-  // where 20 kb labels each one with its base change. Narrowing says more.
+  // ClinVar's density puts a 100 kb window over the track's render limit;
+  // `force:true` draws it, but as bare ticks with no base-change labels.
   cliSpec('hub_tracks', [
     '--genome',
     'hg19',
@@ -637,8 +472,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // A gene name rather than a locstring: resolved through the hub's Trix index
-  // (navToLocStringOrSearch), which is the only reason `--loc BRCA1` works.
+  // the hub's Trix index resolves `--loc BRCA1`
   cliSpec('gene_name_search', [
     '--genome',
     'hg19',
@@ -650,14 +484,8 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // The three README examples that show how a config is supplied, each of which
-  // renders something and so gets a figure rather than being read on faith.
-
-  // `--config` + `--assembly` + `--loc`: the bundled volvox config, whose
-  // adapters use localPath (resolved relative to the config file), so this also
-  // demonstrates that a config full of local files needs no server. `--track`
-  // is not optional here — a config supplies definitions, not an open track
-  // list, so without it this renders a correct and completely empty ruler.
+  // Without `--track` this renders an empty ruler: a config defines tracks
+  // but opens none.
   cliSpec('volvox_config', [
     '--config',
     'data/volvox/config.json',
@@ -671,9 +499,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // `--session`: a saved session supplies the view and its tracks, `--config`
-  // supplies the trackIds it names. data/skbr3/session.json is the `init` form,
-  // so this is also the only figure covering that path end to end.
+  // the only figure covering a session in the `init` form
   cliSpec('skbr3_session', [
     '--config',
     'data/config.json',
@@ -685,9 +511,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
-  // `pileup.show=false` collapses an alignments track to its coverage band alone — the
-  // same data as `alignments_pileup` above with the pileup hidden, which is
-  // what makes the pair worth showing together.
   cliSpec('snpcov', [
     '--fasta',
     'data/volvox/volvox.fa',
@@ -702,8 +525,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // SKBR3 cell-line whole-genome coverage (hg19, --loc all), log scale — the
-  // cancer karyotype's amplifications/deletions stand out.
   cliSpec('skbr3_cov', [
     '--loc',
     'all',
@@ -722,87 +543,18 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1900',
   ]),
 
-  // TUMOUR AND MATCHED NORMAL, SIDE BY SIDE, ONE RENDER EACH (review: "instead
-  // of having normal integrated, should be side-by-side figure with the tumor
-  // and the normal separate side by side panels ... not something jbrowse-img
-  // has to do"). It was one render carrying both tracks on every panel, six
-  // lanes stacked; the pair is now two renders and a `mode: 'compose'` with
-  // `columns: 2`, which is the figure pipeline's own job and needs
-  // nothing of jb2export.
-  //
-  // The two specs are identical but for the track, deliberately: same loci, same
-  // width, same track height, so the two halves are comparable line for line and
-  // `+append` pads neither. The whole claim is that the left half is full of
-  // connecting curves and the right half has none.
-  //
-  // THREE PANELS, AND THAT IS WHAT KILLED THE DOTTED LINES (review: "i dont
-  // like the dotted lines, because that means 'incomplete story'. we need to fix
-  // this, if needed with more multi-hop"). A dashed connector is exactly that,
-  // and the plugin says so: `AlignmentConnections` sets `strokeDasharray` on a
-  // pair whose `hiddenSegmentsBetween` is non-empty -- the read has a
-  // supplementary alignment at a locus that is NOT in the view. Here that locus
-  // is chr10. COLO829 chain 1 is a closed three-chromosome cycle
-  // (agent-docs/reference/SV_MULTIHOP.md): chr3, then 199 bp of chr10 at
-  // 58,717,463-58,717,662, then 183 bp of chr12 inverted, then chr3 again. With
-  // only chr3 and chr12 on screen, every read that goes the long way round is
-  // drawn dashed and correctly so. The third panel makes every connector solid.
-  //
-  // `featureHeight:super-compact` (review: "use supercompact"), which is 1 px
-  // per read. What each half is read for is the presence or absence of a bundle
-  // of curves, and at the default 7 px three pileups are most of a very tall
-  // page.
-  //
-  // `force:true` is not a taste call: the chr3 panel is 1.2 kb of 200x ONT and
-  // the byte gate refuses it, so it drew "Region too large to render". Which is
-  // also how this file found out that breakpoint mode DROPPED its --track
-  // modifiers -- `height:240` had never applied either. Fixed in
-  // products/jbrowse-img/src/breakpointInit.ts.
-  //
-  // The assembly name is no longer printed once per panel (review: "we also do
-  // not need assembly name on each level necessarily"). That is a change in
-  // SVGBreakpointSplitView rather than a flag here: a breakpoint stack is
-  // usually one assembly at several loci, so it names the first row and any row
-  // whose assembly differs from the one above it.
+  // The two halves differ only in the track, so they compare line for line.
+  // The plugin dashes a connector whose read has a supplementary alignment
+  // outside the view, so the chr10 panel keeps every connector solid
+  // (agent-docs/reference/SV_MULTIHOP.md). The byte gate refuses the 200x ONT
+  // chr3 panel without `force:true`.
   cliSpec('sv_review_tumor', svReviewHalf('COLO829_tumor_ont')),
   cliSpec('sv_review_normal', svReviewHalf('COLO829BL_normal_ont')),
 
-  // THE THIRD PANEL: THE ALLELE ITSELF (review: "if there was a 'derived allele'
-  // view of this, in order to show the linearized derived allele, it would be
-  // interesting to show alongside it"). There is, and it is a plain view rather
-  // than a breakpoint one, because the whole point of the reconstruction is that
-  // the three loci stop needing separate panels: `der3_RARB_BICC1_TRHDE` is one
-  // 39,549 bp contig, and the two panels beside this one are the first 32.7 kb
-  // of chr3, 199 bp of chr10 and 183 bp of chr12 laid end to end on it, in that
-  // order, with 6.4 kb of chr3 closing the cycle. `der3_segments` is what says
-  // so -- each segment drawn with the locus it came from -- so it goes above the
-  // reads rather than being left to the caption.
-  //
-  // Same `--config` and the same hosted files as the other two panels: the
-  // derivative assembly is in that config beside hg38 (sv_multihop.py built it;
-  // see the cancer_sv tutorial), so the third invocation differs only in which
-  // assembly it names.
-  //
-  // No `force:true` and no `featureHeight`, unlike the two beside it: 39.5 kb of
-  // a BAM holding 69 spanning reads is nowhere near the byte gate, and at the
-  // default 7 px every read is a row a reader can follow across the junctions --
-  // which is the claim. The two sample panels are 200x over 1.2 kb and need both
-  // flags for the opposite reason.
-  //
-  // The heights are picked so `+append` pads nothing: 128 + 440 comes out 679,
-  // the sample panels' height exactly. `der3_segments` needs ~120 of its 128 for
-  // the four segment rows; the reads track is the one carrying the slack, and it
-  // carries ~100 px of it, since 69 spanning reads pack shorter than the three
-  // 200x pileups beside them at any read height worth reading. Check the
-  // rendered height rather than adding to these numbers -- a track's box is not
-  // its `height:` plus a constant (374 -> 440 moved the panel 619 -> 679).
-  //
-  // 440 rather than the 374 that matched before: each row of a breakpoint export
-  // grew by its scalebar band when SVGRowHeader started drawing one (review:
-  // "scale indicators and/or keeping each row on the same relative scale"), so
-  // the sample panels are three bands taller and this one, an ordinary LGV
-  // export that has always drawn its bar, is not. Matching them is what keeps
-  // the three captions on one line -- each is anchored to the bottom of its own
-  // part, so a short panel lifts its caption out of the row.
+  // The heights make this panel as tall as the sample panels (679 px), so
+  // `+append` pads nothing and the three captions stay on one line. Check the
+  // rendered height after a change: a track's box is not its `height:` plus a
+  // constant.
   cliSpec('sv_review_derivative', [
     '--config',
     'https://jbrowse.org/demos/cancer_sv/config.json',
@@ -821,31 +573,9 @@ export const jbrowseImgSpecs: CliSpec[] = [
   ]),
 ]
 
-// The one composed jbrowse-img figure. Separate from `jbrowseImgSpecs`, which is
-// typed `CliSpec[]` because `sync-img-readme.ts` walks it to regenerate every
-// command fence in the jb2export README -- and this is not a command.
 export const jbrowseImgComposedSpecs: ScreenshotSpec[] = [
-  // The one composed jbrowse-img figure. It lives here rather than in
-  // `jbrowseImgSpecs`, which is typed `CliSpec[]` because `sync-img-readme.ts`
-  // walks it to regenerate every command fence in the jb2export README -- and
-  // this is not a command. Its three panels are: the compose is the figure
-  // pipeline putting one render beside another, which is what the review asked
-  // for ("not something jbrowse-img has to do").
-  //
-  // WHICH PANEL IS WHICH, IN RED (review: "add red text annotation boxes"). Each
-  // render does name its own track, at the 10 px jb2export writes a track label
-  // in -- correct, and unreadable in a 3072 px figure scaled to a column of
-  // prose, which is the same problem the in-app labels have in every stacked
-  // figure here. These are the parts' identities and nothing else; what each
-  // panel MEANS is the caption's job, and the third pill is the exception that
-  // proves it, since "on one axis" is the only thing in the frame that says the
-  // ruler under it is not a chromosome.
-  //
-  // Anchored per part rather than per pixel: the generator lays an element over
-  // each part's own box in the composition. The bottom-left corner is white in
-  // all three -- the sample panels' last pileup ends ~80 px short of their
-  // bottom edge and the derivative's ~35 -- so the pills sit in the frame rather
-  // than over any read.
+  // The pills sit in the bottom-left corner, which is white in all three
+  // parts.
   {
     mode: 'compose',
     name: 'jbrowse-img/sv_review_pair',
@@ -856,9 +586,8 @@ export const jbrowseImgComposedSpecs: ScreenshotSpec[] = [
     ],
     columns: 3,
     annotations: [
-      // fontSize 22 in a 1x composition. The app captures these pills usually
-      // sit on are 2x, where the same number draws half this size relative to
-      // the frame -- see ComposeSpec.
+      // fontSize 22 in this 1x composition; app captures are 2x, so the same
+      // number draws half as large there (see ComposeSpec)
       {
         type: 'text',
         text: 'tumour',
@@ -901,10 +630,6 @@ export const jbrowseImgComposedSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The contact sheet sv_callset_review.md shows: each row one call, the tumor
-  // image beside the matched normal's, as `batch` wrote them into tumor/ and
-  // normal/. A pill names each row's file, since the file name is what a reader
-  // sorts and greps the directory by.
   ...Object.keys(SV_SHEET_ROWS).map((row): ScreenshotSpec => ({
     mode: 'compose',
     name: `jbrowse-img/sv_sheet_${row}`,

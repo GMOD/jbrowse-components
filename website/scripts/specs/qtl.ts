@@ -4,14 +4,8 @@ import { lgvSession } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// Real GeneNetwork BXD data on mm10: the coat-color scan over the 198-strain
-// painting, whose rows test_data/config_bxd.json bands by each strain's coat
-// color (`rowGroups` + `facet: 'group'`). The bands come from the phenotype, so
-// a column where each band is one solid genotype is a finding, not a sort.
-//
-// The gene lane is filtered to the one gene: a whole RefSeq track over a
-// chromosome is a solid bar, and `forceLoad` is needed because the density gate
-// runs on bytes, before the filter.
+// The density gate counts bytes before the gene filter applies, so the
+// filtered gene lane still needs `forceLoad`
 const locusPanel = (
   chrom: string,
   gene: string,

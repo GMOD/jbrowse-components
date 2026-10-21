@@ -12,22 +12,13 @@ import type {
   SessionUrlSpec,
 } from '../screenshot-spec-types.ts'
 
-// Measured 2026-10-16 against the files the tracks read, so captions name the
-// direction without a number:
-//   HBB rs334 chr11:5,227,002 T>A, codon 7 GAG>GTG; 179 GWAS Catalog rows at
-//   the codon (2026-10-19), 134 of them rs334; the page filter keeps 4, one per
-//   trait. Alignment column 7: Glu in most rows, Asp in Bolivian squirrel
-//   monkey, Ala in Norway rat.
-//   1000 Genomes AF_AFR 0.100, AF_AMR 0.005, EUR/EAS/SAS 0. rs713040
-//   (chr11:5,227,013, His3, synonymous) 0.50-0.88 in every superpopulation.
-//   SOD1 E40K chr31:27,123,057 G>A (canFam4), codon 40 GAA>AAA. Dog10K: 198
-//   carriers of 1,987; wolves 0/126 and coyotes 0/8 chromosomes, breed dogs
-//   184/3186, village dogs 34/618. chr31:27,122,819 C>T is alternate in 0.96 of
-//   wolf, 0.79 of breed and 0.92 of village dog chromosomes. NCBI orthologs at
-//   residue 40: Glu in mammals, Asp in birds, Pro in fish, Lys in axolotl.
-//   AGL11 codon 197 chr18:32,255,717-32,255,719 (minus strand), CGC Arg in
-//   Pinot Noir; A0A217EJJ0 (cv. Sultanina) has Leu. AlphaFold v6 pLDDT 57.6 at
-//   197, mean 94.8 over residues 1-60. UniRef alignment: Arg in 16 of 20 rows.
+// Captions name a direction; these numbers, read off the tracks' files, back it:
+//   HBB rs334 (codon 7 GAG>GTG): AF_AFR 0.100, AF_AMR 0.005, other
+//   superpopulations 0; rs713040 (His3, synonymous) 0.50-0.88 in all. The GWAS
+//   filter keeps one row per trait at the codon.
+//   SOD1 E40K (canFam4): no wolf or coyote carries it; 198 of 1,987 dogs do.
+//   AGL11 codon 197: Arg in Pinot Noir, Leu in A0A217EJJ0 (cv. Sultanina);
+//   AlphaFold pLDDT 57.6 there.
 
 export interface ViewJson {
   init?: object
@@ -224,8 +215,7 @@ const HBB_DOMAINS = 'msaview-domains-msa-HBB'
 const HBB_CODON_7 = 'chr11:5226956-5227046[rev]'
 const HBB_EXON_2_START = 'chr11:5226750-5226799[rev]'
 
-// codon 7 on the genome; every linked view writes the label, the alignment on
-// column 7 and the structure beside Val6
+// codon 7 on the genome; the structure labels Val6
 const E6V = {
   assemblyName: 'hg38',
   refName: 'chr11',
@@ -272,9 +262,8 @@ const SICKLE_CARRIERS =
   'Sickle allele, carried mostly by African-ancestry genomes'
 const RS713040_CONTROL = 'A harmless nearby variant, common in every population'
 
-// Both pills sit in the gap right of the codon column, clear of the legend.
-// `controlDx` carries rs713040's leader across the column, whose distance in px
-// follows the figure's zoom.
+// The codon column's px width follows the figure's zoom, so each figure passes
+// its own `controlDx`.
 function kgCallouts(controlDx: number): Annotation[] {
   return [
     {
@@ -348,8 +337,6 @@ export interface HotspotGene {
   hotspots: Hotspot[]
 }
 
-// The protein browser's launch with human as the alignment's reference row,
-// and each hotspot codon as a labelled session highlight.
 export function hotspotSession(
   { session: base, gene, hotspots }: HotspotGene,
   region: { start: number; end: number },
@@ -386,9 +373,7 @@ export function hoverCodon(loc: string) {
   ]
 }
 
-// The domain track the alignment adds to the genome view, its legend closed
-// and its height grown by `grow` px to show every site's row, then the codon
-// hovered.
+// `grow` adds px to the domain track so every site's row shows.
 export function domainFigure(
   gene: string,
   codon: string,
@@ -451,29 +436,13 @@ export function residueCallout(
   }
 }
 
-// Measured 2026-10-20 from the GenPept records' CDD features and from the
-// alignments the protein browser launches (NCBI orthologs, 100 rows plus the
-// human query):
-//   KRAS NP_004976.2, CDD:133338 H_N_K_Ras_like 3-164. G12 is in the G1 box
-//   (10-17), the GTP/Mg2+ binding site (12-18, 28-30, ...) and the putative
-//   GDI interaction site (11-12, 59-60); G13 in the G1 box and GTP/Mg2+ site;
-//   Q61 in the Switch II region (59-77) and the GEF interaction site. Every
-//   aligned row has G at 12 and 13 and Q at 61 (Gekko japonicus gapped);
-//   columns 1-75 differ from human only at 67 (common cuckoo Q).
-//   TP53 NP_000537.3, CDD:176262 P53 109-288. The DNA binding site is 239, 241,
-//   248, 273, 275-277, 280; R175 is in no site (zinc 176, 179, 238, 242).
-//   Every aligned row has R at 175, 248 and 273 (bald eagle gapped at 273);
-//   columns 259-264, 268-269 and 283 vary in 25-52 rows. 1TUP chain B: R248
-//   CG 3.4 A and R273 NH2 2.5 A from DNA atoms, R175 13.2 A.
-//   BRAF NP_004324.2, CDD:270964 STKc_Raf 463-715. The activation loop site is
-//   593-606, 612-618 and holds V600; the ATP binding site ends at D594. Every
-//   aligned row has V at 600 (sunbittern gapped); 594-607 match human in every
-//   row, 608 and 610 differ in 3-4 rows.
-//   HBB NP_000509.1: the Hb-beta-like domain starts at 8, so residue 7 is
-//   outside every CDD domain and site.
-//   6OIM (KRAS G12C, sotorasib) assembly 1 is chain A, Cys12 modelled. 3OG7's
-//   assembly 1 is chain A, which leaves 597-605 unmodelled, so BRAF uses 4MNF
-//   (V600E, GDC-0879), whose chains A and B both model Glu600.
+// From the GenPept CDD features and the launched ortholog alignments:
+//   KRAS G12 and G13 sit in the G1 box, Q61 in Switch II.
+//   TP53 R248 and R273 are DNA-binding sites; R175 is in none.
+//   BRAF V600 lies in the activation loop.
+//   HBB residue 7 lies outside every CDD domain.
+//   Every aligned row keeps the hotspot residue.
+// BRAF uses 4MNF: 3OG7 leaves residues 597-605 unmodelled.
 
 // KRAS NM_004985.5, minus strand: G12 and G13 open exon 2's coding run, Q61
 // sits in exon 3.
@@ -639,12 +608,8 @@ const FINNGEN_VTE_TRACK = {
   displayDefaults: { height: 200 },
 }
 
-// BRCA1 SGE (Findlay 2018, MaveDB urn:mavedb:00000097-0-2) mapped to hg38 and
-// hosted as a per-position mean bigWig. 1T15: BRCT pair with the BACH1 phosphopeptide
-// (chain B), 1.85 A, author numbering equals the MANE transcript NM_007294.4.
-// VUS (ClinVar uncertain significance, SGE score): T1700P chr17:43063928 T>G -2.28
-// VCV531317; G1738A chr17:43057116 C>G -2.42 VCV865166; A1752T chr17:43057075 C>T
-// -2.59 VCV96944. BRCA1 is on the minus strand.
+// SGE from Findlay 2018 (MaveDB urn:mavedb:00000097-0-2). The hotspots are
+// ClinVar VUS; 1T15's author numbering matches MANE NM_007294.4.
 const BRCA1: HotspotGene = {
   session: readSession('protein_browser_brca1.session.json'),
   gene: 'BRCA1',
@@ -668,12 +633,9 @@ const BRCA1_SGE_TRACK = {
   displayDefaults: { height: 170 },
 }
 
-// TP53 R273H, ClinVar Pathogenic (expert panel, VCV12366), chr17:7673802 C>T on the
-// minus strand, MANE NM_000546.6. 5MG7 (1.45 A, wild type) and 7B49 (1.42 A, R273H),
-// same crystal form, both DNA-bound: the three H-bonds from Arg273 to the DNA
-// phosphate are lost, His273 reaches only Asp281, local Calpha RMSD 0.30 vs 0.03
-// noise. The SGE track is Funk 2025 (MaveDB urn:mavedb:00001277-a-1): the score is
-// HIGHER for loss of function.
+// 5MG7 (wild type) and 7B49 (R273H) share a crystal form, both DNA-bound. The
+// SGE track is Funk 2025 (MaveDB urn:mavedb:00001277-a-1), where a HIGHER
+// score means loss of function.
 const TP53_R273H: HotspotGene = {
   session: readSession('protein_browser_tp53_r273h.session.json'),
   gene: 'TP53',

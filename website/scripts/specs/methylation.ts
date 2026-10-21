@@ -13,10 +13,6 @@ import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// The hg38 gene lane the three COLO829 figures carry, collapsed to one longest
-// coding transcript and compact so it costs ~90px beside the methylation lanes.
-// Three copies of the same five keys, which is what a lane shared between
-// figures on one page should be.
 const HG38_GENE_LANE = {
   trackId: 'ncbi_refseq_109_hg38_latest',
   geneGlyphMode: 'longestCoding',
@@ -29,9 +25,6 @@ const ARABIDOPSIS_WGBS_CONFIG =
 const TAIR10 = 'GCF_000001735.4'
 const TAIR10_GENES = `${TAIR10}-ncbiRefSeq`
 
-// three copies of the one WGBS CRAM, each colored by a different cytosine
-// context, so the per-read pileup demonstrates the three MethylDackel contexts
-// directly (not just the aggregate). Distinct trackIds share one adapter.
 const WGBS_CRAM_ADAPTER = {
   type: 'CramAdapter',
   uri: 'https://jbrowse.org/demos/bisulfite/arabidopsis_wgbs_bisulfite.cram',
@@ -52,12 +45,8 @@ function wgbsContextTrack(
     display: {
       trackId: `arabidopsis_wgbs_${context.toLowerCase()}`,
       baseColor: { field: 'bisulfite' },
-      // methylated-only is the default, so the tri-context contrast reads as
-      // presence/absence of red rather than a red/blue mix per read
       modifications: { cytosineContext: context },
       coverage: {
-        // compact reads, coverage hidden: three stacked pileups stay legible and
-        // the row's message is the read colors, not a per-copy histogram
         show: false,
       },
       pileup: { readHeight: 3 },
@@ -71,25 +60,17 @@ const WGBS_CONTEXT_COPIES = (['CG', 'CHG', 'CHH'] as const).map(c =>
   wgbsContextTrack(c),
 )
 
-// The two per-haplotype modkit bedMethyl files as one multi-wiggle track, two
-// rows of one lane on one pinned 0-100 axis, as the page configures it. Each
-// subadapter's `name` is its row's label, since a bedMethyl feature's own
-// `source` is the modification code. HP1's red and HP2's blue match the read
-// lanes below at this locus only; the row labels say which is which.
+// HP1's red and HP2's blue match the read lanes at this locus only.
 const SNRPN_MODKIT_MULTI_TRACK = pageTrack(
   'tutorials/methylation.md',
   'HG002_snrpn_modkit_multi',
 )
 
-// The smoothing section's track as the page prints it: raw points under a
-// window step's moving average, a row per haplotype.
 const IMPRINTED_SMOOTHED_TRACK = pageTrack(
   'tutorials/methylation.md',
   'HG002_imprinted_5mC_smoothed',
 )
 
-// The page's marks with the window widened to `rows` either side, what the
-// section has the reader set through Edit plot.
 function imprintedMarksWithFrame(rows: number) {
   const [display] = IMPRINTED_SMOOTHED_TRACK.displays as {
     marks: { transform?: { type: string; frame?: unknown }[] }[]
@@ -106,7 +87,6 @@ function imprintedMarksWithFrame(rows: number) {
   }))
 }
 
-// The CpG islands, the genes and the smoothed track, at `loc`.
 function imprintedPanel(loc: string, marks?: unknown[]) {
   return sessionSpec(DEMO_CONFIG, {
     sessionTracks: [IMPRINTED_SMOOTHED_TRACK],
@@ -134,61 +114,19 @@ function imprintedPanel(loc: string, marks?: unknown[]) {
   })
 }
 
-// The three lanes the WGBS pileup is read against, shared by the contexts
-// figure and by the tour that films one pileup cycling through the contexts:
-// the gene models, the repeat lane that names the element, and the aggregate
-// MethylDackel fractions. One copy, so the film cannot document a route
-// through an app the figure beside it is not showing.
+// Shared by the contexts figure and the epigenomics tour, so both show the
+// same lanes.
 const ARABIDOPSIS_CONTEXT_LANES = [
   { trackId: TAIR10_GENES },
-  // THE TRANSPOSON, DRAWN RATHER THAN ASSERTED. The RefSeq genes above
-  // carry nothing over the silenced half, so without this lane the label
-  // below would be the figure's only evidence for the word "transposon".
-  // This lane is the TAIR10 hub's own RepeatMasker track. Over this
-  // window it returns `META1_LTR#LTR/Copia` at 4,406,005-4,411,120, the
-  // element TAIR10_Transposable_Elements.txt calls AT1TE14315.
-  //
-  // Filtered by length rather than partitioned into rows by repeat
-  // class. The class route USED to be blocked by a display defect and
-  // is not any more; it was then tried here and rejected on the
-  // picture, so don't re-walk either half.
-  //
-  // The defect, for the record, since two rounds went into it:
-  // `LinearMultiRowFeatureDisplay`'s `rows` documents
-  // `jexl:split(split(feature.name,'#')[1],'/')[0]` for exactly this
-  // file type, bigRmskBed carrying the class as a suffix on the name
-  // (`META1_LTR#LTR/Copia`) rather than in a column. Two bugs stood in
-  // front of it. `split` threw on an absent value, so a nested one
-  // banner-ed the whole display; making it total turned that into a
-  // silent ''. The cause under both was one level up — the model read
-  // the slot with a resolving reader and no feature, so the expression
-  // was evaluated on the MAIN THREAD against nothing and its answer
-  // shipped to the worker as if it were the attribute name. Fixed in
-  // `readConfObject` ("a callback read with no context is not an
-  // evaluation"), pinned by `rowsFieldTransport.test.ts`.
-  //
-  // Rendered, the class partition is worse HERE, which only a picture
-  // could say: it yields `LTR` / `Low_complexity` / `Simple_repeat`,
-  // costs 40px more, leaves `Low_complexity` empty over this window,
-  // and drops the per-feature label — so the lane stops naming
-  // `META1_LTR#LTR/Copia` and the "LTR/Copia transposon" callout loses
-  // the evidence it points at, keeping only `LTR`. The display is
-  // built for many features per row (haplotype paintings, chromHMM);
-  // this window holds five features, one of which matters. A single
-  // self-labelling bar is the right shape for that, and the row
-  // headers are the wrong tool rather than a broken one.
-  //
-  // The length filter is doing that job: the other four repeats here
-  // are 30-80 bp simple repeats ((AATAA)n, (TTC)n) and a 339 bp
-  // ATLINE1_3A fragment at the window's right edge, each of which would
-  // only add a label; 1 kb is far below the 5.1 kb element and far
-  // above all four.
+  // The RefSeq genes carry nothing over the transposon, so this lane is the
+  // callout's evidence. A `rows` partition by repeat class drops the
+  // per-feature label the callout points at. The 1 kb filter drops four short
+  // repeats and keeps the 5.1 kb element.
   {
     trackId: `${TAIR10}-repeatMasker`,
     filter: ['jexl:feature.end-feature.start>1000'],
     height: 50,
   },
-  // aggregate CpG/CHG/CHH fraction, one labeled row each
   {
     trackId: 'arabidopsis_methyldackel',
     mark: 'bar',
@@ -197,19 +135,8 @@ const ARABIDOPSIS_CONTEXT_LANES = [
   },
 ]
 
-// Arabidopsis WGBS (Col-0 DRR029742, bwameth-aligned) over
-// chr1:4,398,000-4,412,000, a window that pairs two methylation regimes: the
-// expressed ARM-repeat gene AT1G12930 (~4.398-4.406 Mb) carries gene-body CpG
-// methylation only, while the LTR element to its right (~4.406-4.411 Mb) is
-// methylated in all three plant contexts. The contexts figure below shows this at two levels: the aggregate
-// MethylDackel fractions (one row per context) AND the same per-read pileup
-// colored three ways (one copy per context), so the tri-context contrast reads
-// both quantitatively and per-molecule. The per-read copies use one-color mode:
-// methylated C = red, unmethylated sites left blank.
-// The SNRPN reads panel, in the two states the section is about: the grouping is
-// the only property that differs, so both come out of one builder rather than
-// out of two hand-kept copies. videos/methylation.ts films the route between
-// them and starts from the same `grouped: false` this pair's upper half shows.
+// videos/methylation.ts films the route between these two states, starting
+// from `grouped: false`.
 const snrpnReadsPanel = ({ grouped = false, unmarked = true } = {}) =>
   lgvSession(DEMO_CONFIG, {
     assembly: 'hg38',
@@ -232,15 +159,11 @@ const snrpnReadsPanel = ({ grouped = false, unmarked = true } = {}) =>
     ],
   })
 
-// What videos/methylation.ts films: the ungrouped panel, and the track whose
-// menu the route starts from.
 export const methylationVideoFixtures = {
   ungrouped: snrpnReadsPanel(),
   readsTrackId: 'HG002_snrpn_5mC_reads',
   bamUrl:
     'https://jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam',
-  // the island and the genes with no reads yet, over the island alone, for the
-  // tour that opens the modBAM by URL
   readsAbsent: lgvSession(DEMO_CONFIG, {
     assembly: 'hg38',
     loc: 'chr15:24,953,500-24,957,500',
@@ -255,17 +178,8 @@ export const methylationVideoFixtures = {
   }),
 }
 
-// What videos/epigenomics.ts films: ONE per-read pileup over the same three
-// lanes the contexts figure draws, opened in the CpG context the page's own
-// `addtrack` fence pins through `displayDefaults`. The figure needs a copy per
-// context to put the three side by side, and three pileups cannot say they are
-// the same molecules; recoloring one track is what says it.
-//
-// The lane is taller and its reads bigger than the figure's copies. A video is
-// filmed at deviceScaleFactor 1 and played at its own size, where the figure is
-// captured at 2 and read at whatever width the column gives it, so a 3px read
-// that is legible in the PNG is three screen pixels in the clip. The figure
-// pays for the lane three times over and this pays for it once.
+// Taller lane and reads than the figure's copies: a video plays at
+// deviceScaleFactor 1, where a 3px read is three screen pixels.
 export const bisulfiteVideoFixtures = {
   wgbsTrackId: 'arabidopsis_wgbs',
   cpgPileup: lgvSession(ARABIDOPSIS_WGBS_CONFIG, {
@@ -287,13 +201,6 @@ export const bisulfiteVideoFixtures = {
 }
 
 export const methylationSpecs: ScreenshotSpec[] = [
-  // The three plant methylation contexts, shown at both levels so the "3 modes"
-  // is unmistakable and consistent: the aggregate MethylDackel track (one 0-100%
-  // row per context) over THREE copies of the same per-read WGBS pileup, each
-  // colored by one context (CpG/CHG/CHH). Each per-read copy lines up 1:1 with
-  // its aggregate row. CpG is methylated over both the gene body AND the element
-  // (red left + right); CHG/CHH are methylated only over the silenced element
-  // (red confined to the right).
   {
     mode: 'url',
     name: 'methylation/arabidopsis_wgbs_contexts',
@@ -312,50 +219,22 @@ export const methylationSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'MethylDackel',
-    // remote CRAM (x3 copies, one adapter) + gene bigBed + three bigWigs
     readyTimeout: 90000,
-    // genes + the repeat lane + aggregate(3 rows) + 3 compact pileups +
-    // headers/ruler/overview
     viewportHeight: 995,
-    // larger red pill labels naming each context row (reviewer: push them almost
-    // to the far left edge of the data). The aggregate multiwiggle stacks
-    // CpG/CHG/CHH in one 170px container (row centers ~28/85/142px, so each label
-    // is nudged ±57px off the container center), and the three per-read pileups
-    // each get the matching label anchored to their own track row. dx pulls the
-    // pill hard toward the left edge of the ~1500px-wide data area (container
-    // center ~750, so -690 lands the pill near x≈60).
+    // The aggregate lane's three rows sit ~57px apart in its 170px container;
+    // dx -690 puts each pill near the data area's left edge.
     annotations: [
-      // WHAT EACH HALF IS DOING, which the row labels never said (review: "can
-      // potentially add 'chh silencing of transposon' ... and cpg enhancing of
-      // gene body ... (if that is what it is doing)"). It is, and the right
-      // half was worth checking rather than assuming: the RefSeq gene lane
-      // this figure draws has nothing there.
-      //
-      // TAIR10's own transposable-element table is what settles it —
-      // TAIR10_Transposable_Elements.txt from arabidopsis.org, one row per
-      // element:
-      //
-      //   AT1TE14310  4,405,694-4,405,995  META1  LTR/Copia
-      //   AT1TE14315  4,405,996-4,411,119  META1  LTR/Copia
-      //
-      // so the block that is red in all three contexts is a 5.1 kb LTR/Copia
-      // retrotransposon, and CG+CHG+CHH together is the RdDM silencing
-      // signature. Ensembl Plants' repeat endpoint returns the same interval
-      // under the id `AT4TE22180`, which is a chr4 id on chr1 — take the
-      // element's name from TAIR, not from there.
-      //
-      // The left label says "CpG only" and stops. Gene-body CpG methylation is
-      // a real and well-known pattern, but what it DOES is contested, so
-      // "enhancing" is more than the figure or the literature can carry; the
-      // tutorial says it is associated with constitutive expression and leaves
-      // it there.
+      // TAIR10_Transposable_Elements.txt names the element AT1TE14315
+      // (META1, LTR/Copia). Ensembl Plants' AT4TE22180 is a chr4 id, so take
+      // names from TAIR. The left label stops at "CpG only" because what
+      // gene-body methylation does is contested.
       {
         type: 'text' as const,
         text: 'expressed gene body: CpG only',
         fontSize: 20,
         anchor: {
           trackId: TAIR10_GENES,
-          // AT1G12930's own span, from the gene lane's NM_101164.5
+          // AT1G12930's span, from NM_101164.5
           loc: 'chr1:4,398,322-4,405,669',
           fracY: 1,
           dy: -16,
@@ -401,10 +280,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
       })),
     ],
   },
-  // ONT HG002 fiber-seq (6mA) at the GAPDH promoter, modifications mode. The
-  // enzyme-treated sample (PAY22766, top) carries 6mA (A+a) calls that the
-  // native no-enzyme control (PBA15131, bottom) lacks at the same locus. Data:
-  // https://epi2me.nanoporetech.com/chromatin-acc-hg002/
+  // PAY22766 is the Hia5-treated sample, PBA15131 the no-enzyme control.
+  // Data: https://epi2me.nanoporetech.com/chromatin-acc-hg002/
   {
     mode: 'url',
     name: 'methylation/chromatin_accessibility_6ma',
@@ -414,21 +291,11 @@ export const methylationSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          // wider than just the promoter (was 6,533,000-6,536,000) so the
-          // gene body + flanking regions are visible too — the 6mA peak only
-          // reads as significant in contrast with a flatter background either
-          // side (reviewer: too tight, no context to judge significance)
+          // The 6mA peak needs flanking background to read as significant.
           loc: 'chr12:6,528,000-6,543,000',
           tracks: [
-            // NCBI RefSeq gene (not MANE, longest-coding transcript only) +
-            // GENCODE promoter-window context so the 6mA accessibility signal
-            // reads against the GAPDH promoter/TSS (reviewer: swap MANE for a
-            // plain NCBI track, drop the CpG island — not relevant to
-            // fiber-seq accessibility — add promoter windows instead). The
-            // jbrowse.org/ucsc/hg38 hub gene track has unlabeled
-            // pseudogene/silent_region entries upstream of GAPDH in this
-            // window, so this uses the already-local, cleanly labeled RefSeq
-            // track instead.
+            // The hub gene track has unlabeled pseudogene entries upstream of
+            // GAPDH here.
             {
               trackId: 'ncbi_refseq_109_hg38_latest',
               geneGlyphMode: 'longestCoding',
@@ -436,26 +303,15 @@ export const methylationSpecs: ScreenshotSpec[] = [
             'gencode_promoter_hg38_ucsc',
             {
               trackId: 'PAY22766-nanopore',
-              // deep ONT over a 15kb window is past the BAM byte budget, so
-              // both lanes banner "Requested too much data" rather than draw
-              // (reviewer). forceLoad is the declarative FORCE LOAD button,
-              // which nothing in a capture can click.
+              // Past the BAM byte budget; without forceLoad both lanes banner.
               forceLoad: true,
-              // this is a 6mA chromatin-accessibility assay; the basecaller
-              // also emits 5mC/5hmC calls on the same reads, but those
-              // aren't what this figure is about (reviewer: 6mA only). An
-              // allow-list (shownModifications: 6mA code 'a') keeps it
-              // 6mA-only regardless of what else the caller emitted.
+              // The basecaller also emits 5mC/5hmC; the allow-list keeps 6mA.
               baseColor: { field: 'modifications' },
               modifications: { shownModifications: ['a'] },
-              // compact pileup: displayMode isn't a real slot on this
-              // display (that's the shared canvas base schema) — fixed
-              // heightMode + a small featureHeight is the actual compact-row
-              // setting, and the gap that pairs with it is derived from the
-              // height rather than set
+              // displayMode is not a slot on this display; fixed height and
+              // readHeight make the rows compact.
               heightMode: 'fixed',
               pileup: { readHeight: 3 },
-              // reviewer: label the modification-type swatches (6mA calls)
               showLegend: true,
             },
             {
@@ -471,26 +327,10 @@ export const methylationSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyTimeout: 120000,
-    // was 20000 — the prior capture committed while alignments were still
-    // downloading (progress bars baked into the PNG), so give it more room
-    // taller so both alignment tracks' full pileup (compact mode still stacks
-    // many rows for this depth) fit below the gene + promoter context tracks.
-    // 1000 clipped 24 css px off the bottom lane, per the run's own report
+    // Below 1030 the bottom lane clips.
     viewportHeight: 1030,
-    // WHICH SAMPLE IS WHICH, on the drawing (reviewer). The figure's whole
-    // claim is a contrast between two pileups, and the only thing that said
-    // which was which was two config track names in the header — `PAY22766`
-    // and `PBA15131` are accession ids, so a reader had to know the dataset to
-    // know which lane was the treatment.
-    //
-    // A pill per lane and NOTHING ELSE (reviewer: "dont need giant red boxes,
-    // just the small ones showing the text"). Each lane used to also carry a
-    // `box` around its whole rendering container, which at this height is a
-    // 400px-tall red rectangle over a pileup whose own edges already say where
-    // the lane starts and stops. The pill sits at a fracY over the left flank,
-    // where the 6mA density is lowest, so it covers reads rather than the
-    // promoter peak the figure is about. Text is two or three words; what 6mA
-    // means and what Hia5 does are in the caption.
+    // The pills sit over the left flank, where 6mA density is lowest, clear of
+    // the promoter peak.
     annotations: [
       {
         type: 'text' as const,
@@ -515,34 +355,17 @@ export const methylationSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The two halves of Group by HP, composed into one before/after (reviewer:
-  // "ungrouped and grouped would benefit from being in a two part screenshot").
-  // Same locus, same tracks, same coloring in both, so the grouping is the only
-  // difference between them and the reader is not asked to hold the first
-  // picture in mind across a section break. Built from these two url specs
-  // rather than by hand: each half is a real capture, and the compose below is
-  // what the tutorial embeds.
-  //
-  // The reads lane is shorter here than in the combined figure below, because
-  // this one pays for it twice.
   {
     mode: 'url',
     name: 'methylation/hg002_snrpn_ungrouped',
     url: snrpnReadsPanel(),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    // cpg(40) + gene(90) + reads(320) + chrome
     viewportHeight: 730,
-    // the track menu icon keeps its "Track settings" tooltip after the click,
-    // and the cursor parks over the pileup, which raises the read tooltip
+    // The track menu tooltip persists after the click, and the parked cursor
+    // raises a read tooltip.
     hideSelectors: ['.MuiTooltip-popper'],
     tooltip: 'hide',
-    // The menu path that produces the lower half, open on the upper one
-    // (reviewer: "the first screenshot may want to show the track menu for
-    // group by->tag"). The ungrouped state is the honest place for it: the
-    // radio is not yet set, so the item reads plain 'Tag...' and the picture is
-    // "here is where you go", not "here is where it already is". Same shape as
-    // sv.ts's split-read grouping figure.
     actions: [
       trackMenuIcon('HG002_snrpn_5mC_reads'),
       ...menuCascade(['Group by...', 'Tag...']),
@@ -550,26 +373,14 @@ export const methylationSpecs: ScreenshotSpec[] = [
     annotations: cascadeBoxes(['Group by...', 'Tag...']),
   },
 
-  // The other half: identical to the spec above but for `facet` on the HP tag,
-  // which is the whole claim the section makes.
   {
     mode: 'url',
     name: 'methylation/hg002_snrpn_grouped',
     url: snrpnReadsPanel({ grouped: true }),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    // cpg(40) + gene(90) + reads(320) + chrome
     viewportHeight: 730,
-    // Three pills, one word each (review: "just use shorter labels of just HP1
-    // (no added text about 'methylated across the island'"). The display writes
-    // `HP: 1` / `HP: 2` / `HP: none` itself, but in small grey type a reader
-    // scanning the figure does not stop on. What each haplotype SHOWS is the
-    // picture's job -- red across the island against blue -- so the pill only
-    // has to say which group is which.
-    //
-    // Anchored to those labels by text, so they follow the groups wherever the
-    // layout puts them. HP: 1 is the first group, so `dy` drops its pill off the
-    // track header it would otherwise cover, as in the combined figure below.
+    // HP: 1 is the first group, so `dy` drops its pill off the track header.
     annotations: [
       {
         type: 'text',
@@ -598,22 +409,13 @@ export const methylationSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The two modification color modes, which the page describes and no figure
-  // held: the default paints the positions the MM tag calls modified, and
-  // `unmodified: 'all'` also paints every CpG the tag left implicit. The claim is
-  // that an unmethylated region reads as solid blue, and only the pair shows
-  // it -- the upper half's blank stretch is the same molecules as the lower
-  // half's blue one.
-  //
-  // Same panel as the grouping pair, ungrouped, so the two figures on this page
-  // differ in exactly the property each is about.
   {
     mode: 'url',
     name: 'methylation/hg002_snrpn_marked_only',
     url: snrpnReadsPanel({ unmarked: false }),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    // 730 cut 10 css px off the bottom
+    // Below 742 the bottom lane clips.
     viewportHeight: 742,
     hideSelectors: ['.MuiTooltip-popper'],
     tooltip: 'hide',
@@ -632,7 +434,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
     url: snrpnReadsPanel(),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    // 730 cut 10 css px off the bottom
+    // Below 742 the bottom lane clips.
     viewportHeight: 742,
     hideSelectors: ['.MuiTooltip-popper'],
     tooltip: 'hide',
@@ -654,14 +456,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Allele-specific methylation at the SNRPN / PWS-IC imprinting center
-  // (chr15:24.95Mb) from HG002 ONT data, in one view (reviewer: don't compose two
-  // screenshots — add the bedMethyl track as another track in the single view).
-  // Top-to-bottom: CpG island + SNRPN gene, the per-haplotype modkit 5mC
-  // profiles in ONE multi-wiggle lane (aggregate summary), then the same HG002
-  // ONT reads grouped by HP and colored by methylation (the read-level source).
-  // One assembly, one locus, one x-scale — the aggregate profile and the reads
-  // that produce it line up column-for-column down the figure.
   {
     mode: 'url',
     name: 'methylation/hg002_snrpn_combined',
@@ -697,25 +491,14 @@ export const methylationSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    // cpg(40) + gene(90) + the merged aggregate(170) + reads(460) + chrome
     viewportHeight: 1085,
-    // THE THREE GROUPS, NAMED (reviewer: "Please label HP1, HP2, and HP
-    // none/unknown with red annotation boxes similar to
-    // methylation/hg002_snrpn_group_by_hp"). Same three pills, same anchors and
-    // the same wording as that figure, so the two read the same way; the
-    // display's own `HP: 1` / `HP: 2` / `HP: none` headers are small grey type
-    // that names the group without saying what it shows.
-    //
-    // Anchored by text, so they follow the groups wherever the pack puts them.
-    // Which haplotype is methylated is read off the render rather than assumed
-    // -- the HP tags are arbitrary and a rebuild of the BAM could swap them.
+    // The HP tags are arbitrary: read which haplotype is methylated off the
+    // render.
     annotations: [
       {
         type: 'text',
         text: 'HP1',
-        // dy only on this one: HP: 1 is the FIRST group, so its label sits
-        // against the top of the track and a pill centred on it overhangs the
-        // track header above. The other two have reads above them already.
+        // HP: 1 is the first group; without dy its pill overhangs the header.
         anchor: { text: 'HP: 1', alignX: 'right', dx: 90, dy: 18 },
       },
       {
@@ -731,22 +514,15 @@ export const methylationSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The window step over the SNRPN promoter and the start of SNHG14: the
-  // promoter DMR on one haplotype, gene-body methylation on the other, and the
-  // upstream stretch where the two sit level as the control.
   {
     mode: 'url',
     name: 'methylation/hg002_imprinted_smoothed',
     url: imprintedPanel('chr15:24,800,000-25,200,000'),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 90000,
-    // cpg(40) + gene(90) + smoothed(300) + chrome
     viewportHeight: 725,
   },
 
-  // The same track over the whole Prader-Willi and Angelman domain, the frame
-  // widened as the page has the reader do: the haplotypes part only across
-  // SNRPN and SNHG14.
   {
     mode: 'url',
     name: 'methylation/hg002_imprinted_domain',
@@ -756,7 +532,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 90000,
-    // cpg(40) + gene(90) + smoothed(300) + chrome
     viewportHeight: 725,
   },
 ]

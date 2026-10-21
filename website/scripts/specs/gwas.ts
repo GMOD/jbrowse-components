@@ -5,16 +5,7 @@ import { lgvSession } from '../screenshot-spec-helpers.ts'
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const gwasSpecs: ScreenshotSpec[] = [
-  // ────────────────────────────────────────────────────────────────────────
-  // GWAS / Manhattan plot
-  // ────────────────────────────────────────────────────────────────────────
-
-  // Manhattan plot from a real human GWAS (config_gwas hg19 genome-wide summary
-  // stats) over a whole chromosome (chr2), so the classic dense field of points
-  // with significant peaks reads as a per-chromosome Manhattan overview (reviewer:
-  // show a whole-chromosome overview). The Manhattan display draws a point per
-  // record, and a whole contig of them renders headless where genome-wide
-  // showAllRegions did not.
+  // one whole contig renders headless; genome-wide showAllRegions does not
   {
     mode: 'url',
     name: 'gwas/manhattan',
@@ -33,12 +24,7 @@ export const gwasSpecs: ScreenshotSpec[] = [
     viewportHeight: 470,
   },
 
-  // LocusZoom-style LD r² coloring at the STAT4 locus on hg19 (SLE summary
-  // stats). The index SNP auto-tracks the top hit (the lead rs4274624 the
-  // bundled SLE.ld is keyed to), so points shade red→blue by r² to it on load
-  // with no interaction. A compact gene track below anchors the peak to the
-  // STAT4 gene body (reviewer: add gene track), and the config's LD mark
-  // draws its points at 7 px so the r² shading reads clearly (reviewer).
+  // SLE.ld is keyed to rs4274624, the top hit the index SNP auto-picks here
   {
     mode: 'url',
     name: 'gwas/locuszoom_ld',
@@ -60,8 +46,6 @@ export const gwasSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 60000,
-    // Manhattan(200) + gene strip(90) + headers/ruler/overview clear the crop
     viewportHeight: 542,
-    // settle past the index auto-pick + recolor fetch that follows first paint
   },
 ]

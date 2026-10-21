@@ -7,17 +7,9 @@ import type {
   SessionUrlSpec,
 } from '../screenshot-spec-types.ts'
 
-// NA12878's 30x Illumina reads (1000 Genomes high coverage, GRCh38) read as
-// data by a mark display: depth as a coverage step, insert size as a point per
-// pair, and a derived BED of the pairs over 1 kb scanning the chromosome for
-// the same signature. The tutorial is docs/tutorials/read_marks.md; the
-// deletion is a heterozygous 3.9 kb call in an intron of EFCAB8.
-//
-// The demo config (demos/read_marks/config.json) carries the four finished
-// tracks and an hg38 whose sequence and cytobands jbrowse.org serves: the CRAM
-// decodes against it, and the UCSC hub's 2bit stalled three captures in a row.
-// Depth and insert size are a track each, and so are the chromosome scan's
-// points and its per-bin counts — a mark display draws one y axis.
+// The demo config serves its own hg38 sequence for the CRAM; the UCSC hub's
+// 2bit stalls captures. A mark display draws one y axis, so each measure is a
+// track of its own.
 const CONFIG = 'https://jbrowse.org/demos/read_marks/config.json'
 const DELETION = 'chr20:32,925,000-32,955,000'
 
@@ -58,12 +50,7 @@ function readsSpec(
 }
 
 export const readMarksSpecs: ScreenshotSpec[] = [
-  // 30 kb of an EFCAB8 intron: the read depth as bars, halving over the 3.9 kb
-  // the callset says one chromosome lacks.
   readsSpec('read_marks/depth', DELETION, [['na12878_read_depth', 160]]),
-  // The same window with the depth above and each pair's insert size below on
-  // a track of its own: a band of pairs near 4.3 kb sits over the dip, in the
-  // color of a full mapping quality.
   {
     ...readsSpec('read_marks/insert_size', DELETION, [
       ['na12878_read_depth', 120],
@@ -71,10 +58,6 @@ export const readMarksSpecs: ScreenshotSpec[] = [
     ]),
     viewportHeight: 655,
   },
-  // Chromosome 20 end to end over the derived BED: every pair under 20 kb as a
-  // point, and under it the count per zoom-following bin of the deletion-sized
-  // ones on an axis pinned at 60, so the centromere's thousands saturate and
-  // the deletions stand up as red bars.
   {
     mode: 'url',
     name: 'read_marks/chromosome',
@@ -100,8 +83,7 @@ export const readMarksSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('mark-display'),
     readyTimeout: 120000,
     viewportHeight: 510,
-    // The tallest bar outside the centromere is the homozygous deletion the
-    // tutorial names at 34.2 Mb.
+    // 34.2 Mb is the homozygous deletion the tutorial names
     annotations: [
       {
         type: 'text',

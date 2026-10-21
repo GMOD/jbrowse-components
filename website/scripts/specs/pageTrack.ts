@@ -26,8 +26,6 @@ function resolveUris(value: unknown, base: string): unknown {
   return value
 }
 
-// The lines under the heading `section` names, down to the next heading of the
-// same or a higher level.
 function sectionText(text: string, section: string) {
   const lines = text.split('\n')
   let fenced = false
@@ -50,11 +48,8 @@ function sectionText(text: string, section: string) {
 }
 
 /**
- * The text of the `json addtrack` fence `doc` prints for `trackId`, as a
- * reader copies it: what a tour types into a paste box. A page restating a
- * track as a section adds to it names the section. Throws when the page prints
- * no such track, so a renamed trackId fails the spec rather than drawing or
- * typing a stale copy.
+ * Throws when `doc` prints no such fence, so a renamed trackId fails the spec.
+ * Pass `section` when the page restates the track further down.
  */
 export function pageFenceText(doc: string, trackId: string, section?: string) {
   const text = readFileSync(join(docsDir, doc), 'utf8')
@@ -70,11 +65,8 @@ export function pageFenceText(doc: string, trackId: string, section?: string) {
 }
 
 /**
- * The track config `doc` prints for `trackId`, for a figure to load exactly
- * what the page tells a reader to paste. A page that names its files by bare
- * filename (the reader's own copy) gets them resolved against `base`, where the
- * hosted copies live. A figure opening a hosted demo config draws that config's
- * track instead, and nothing compares it with the page's fence.
+ * `base` resolves bare-filename uris to the hosted copies. A figure that opens
+ * a hosted demo config instead draws a track no check compares with the page.
  */
 export function pageTrack(
   doc: string,

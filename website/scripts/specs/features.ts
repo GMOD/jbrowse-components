@@ -14,14 +14,8 @@ import type {
   ScreenshotSpec,
 } from '../screenshot-spec-types.ts'
 
-// The feature-details route into the sequence panel, from an already-open
-// feature: wait for the item, click it, then open the "Sequence type" select so
-// the next action can pick a rendering. Three figures on this page take it.
-//
-// The delays are the panel's, not padding: the item appears before the details
-// pane has finished laying out, and the sequence fetch runs between the click
-// and the select being mounted. They were written out identically at all three
-// sites, which is the thing a helper stops drifting.
+// The delays cover the details pane's layout and the sequence fetch between the
+// click and the select mounting.
 const openFeatureSequence = (): ScreenshotAction[] => [
   { type: 'waitForText', text: 'Show feature sequence' },
   { type: 'delay', ms: 1000 },
@@ -31,10 +25,8 @@ const openFeatureSequence = (): ScreenshotAction[] => [
   { type: 'delay', ms: 1000 },
 ]
 
-// NA12878 direct-RNA nanopore reads sliced to just the PTEN locus and re-hosted,
-// so the collapse-introns/sashimi figure downloads a ~2 MB deterministic file
-// instead of range-querying the whole-genome BAM (which never quiesced before
-// the loading-overlay timeout — the source of that figure's run-to-run flakiness).
+// A PTEN-only slice of the NA12878 direct-RNA BAM: the whole-genome BAM never
+// quiesces before the loading-overlay timeout.
 export const PTEN_RNASEQ_BAM =
   'https://jbrowse.org/demos/rnaseq/NA12878-DirectRNA.PTEN.bam'
 export const PTEN_RNASEQ_ADAPTER = {
@@ -46,17 +38,11 @@ export const PTEN_RNASEQ_ADAPTER = {
   },
 }
 
-// hg38 + NCBI RefSeq + ClinVar, naming Protein3d by its store entry, so it
-// resolves to the current release with no version to bump. Rendered against the
-// *local* build (bare ?config=), which has the workspaces split API (session
-// `init`) the side-by-side launch needs.
+// Loads protein3d from the plugin store's `latest/`, so a plugin release can
+// change these figures with no commit here.
 export const PROTEIN3D_CONFIG = 'test_data/protein3d_config.json'
 
-// The volvox Apple3 mRNA, which two figures below open the feature-details panel
-// on. Naming the mRNA's own span puts the click at its midpoint, so it is the
-// furthest it can be from either end of the feature it has to hit; the depth is
-// the row that mRNA packs into, measured from the track's top edge rather than
-// from the top of the page.
+// `dy` is the row the Apple3 mRNA packs into, from the track's top edge.
 const APPLE3_MRNA = {
   trackId: 'gff3tabix_genes',
   loc: 'ctgA:17,400-23,000',
@@ -69,34 +55,16 @@ const PROTEIN_LAUNCH_GENE_TRACK = 'hg38-ncbiRefSeqCurated'
 const NES_MOTIF =
   '[data-testid="protein-feature-Motif"][data-feature-start="339"]'
 
-// TP53's own band, near the top of it: `longestCoding` draws one gene row, so a
-// centered right-click lands on empty canvas and opens the view's own menu with
-// no feature items on it.
+// `longestCoding` draws one gene row near the top, so a centered right-click
+// misses TP53 and opens the view's menu.
 const PROTEIN_LAUNCH_ANCHOR = {
   trackId: PROTEIN_LAUNCH_GENE_TRACK,
   loc: 'chr17:7,676,000',
   fracY: 0.2,
 }
 
-// The gene menu route protein/annotation_1d takes, on genomes.jbrowse.org's own
-// hg38 config — the one the msa figures load and the one the tutorial's
-// click-path is written against, rather than the pinned PROTEIN3D_CONFIG that
-// protein/connected uses. The launcher is contributed to the gene menu by the
-// plugin the hosted config loads; against the repo config's own protein3d the
-// same right-click opens a menu with neither launcher on it, so the route the
-// page documents is only reachable here.
-//
-// Split out from its one caller for the video tour `proteins/annotation_1d`,
-// which films this same route.
-//
-// The split button had two more destinations until protein3d 0.9.0 removed them
-// (`Launch MSA view (AlphaFold a3m)` and `Launch 3D structure + MSA view`), both
-// reading the a3m AlphaFold advertises as `msaUrl` for the entry. That file is
-// unfetchable — the whole `/files/msa/` path answers 403 at Google's edge — so
-// neither ever built anything, and the figure of all three connected views that
-// would have gone on this page has no route to it. The hosted `latest/` bundle
-// serves 0.9.0 as of 2026-08-25, so the menu here is two rows: Launch 3D protein
-// structure view and Launch 1D protein annotation view.
+// Uses the hosted hg38 config: against PROTEIN3D_CONFIG the gene menu has no
+// protein launchers. The `proteins/annotation_1d` tour films the same route.
 const PROTEIN_LAUNCH_SESSION = sessionSpec(UCSC_HG38_CONFIG, {
   views: [
     {
@@ -104,9 +72,7 @@ const PROTEIN_LAUNCH_SESSION = sessionSpec(UCSC_HG38_CONFIG, {
       assembly: 'hg38',
       loc: 'chr17:7,668,000-7,688,000',
       tracks: [
-        // the two settings every right-clicked gene track in these figures
-        // pins: the click is resolved against the track's band, and an auto
-        // height is a function of how many isoforms RefSeq draws here
+        // PROTEIN_LAUNCH_ANCHOR's fracY depends on both settings
         {
           trackId: PROTEIN_LAUNCH_GENE_TRACK,
           geneGlyphMode: 'longestCoding',
@@ -117,51 +83,35 @@ const PROTEIN_LAUNCH_SESSION = sessionSpec(UCSC_HG38_CONFIG, {
   ],
 })
 
-// Right-click TP53, open the launch dialog, and open the split button beside
-// its Launch. Everything the dialog can build is on that menu.
 const OPEN_PROTEIN_LAUNCH_MENU: ScreenshotAction[] = [
   { type: 'rightclick', anchor: PROTEIN_LAUNCH_ANCHOR },
   { type: 'waitForText', text: 'Launch protein view' },
   { type: 'click', text: 'Launch protein view' },
-  // Launch is disabled until the dialog has mapped the transcript to a UniProt
-  // entry and read its protein sequence, so an enabled Launch is the
-  // declarative "the dialog has resolved" rather than a guess at how long
-  // UniProt takes to answer.
+  // the dialog enables Launch once UniProt has answered
   {
     type: 'waitForSelector',
     selector: 'button:not([disabled])::-p-text(Launch)',
     timeout: 120000,
   },
-  // The arrow beside Launch. `More launch options` is the button's own
-  // aria-label; the menu it opens is where the other destination lives, and it
-  // carries no test id.
   { type: 'click', selector: 'button[aria-label="More launch options"]' },
 ]
 
-// What the `proteins/annotation_1d` tour films this same route against. The
-// session and the anchor rather than the action list: the tour writes its own
-// steps because it needs captions, holds and camera cuts the figure has no use
-// for, but a tour that opened its own session or picked its own locus would
-// document a route through an app this page's figure is not showing.
 export const proteinLaunchFixtures = {
   session: PROTEIN_LAUNCH_SESSION,
   geneAnchor: PROTEIN_LAUNCH_ANCHOR,
 }
 
-// The gene-dense window the grouping figure and the `ui/gene_track_sections`
-// tour share. Its genes carry four `gene_biotype` values, protein_coding the
-// most, so a section reorder moves most of the lane.
+// Shared with the `ui/gene_track_sections` tour; the window holds all four
+// `gene_biotype` values in GENE_CHANNEL_SPEC_JSON.
 const GROUPING_WINDOW = 'chr17:7,540,000-7,640,000'
 const GROUPING_TRACK = {
   trackId: 'ncbi_refseq_109_hg38_latest',
   geneGlyphMode: 'longestCoding',
-  // names only: a description row under every gene doubled the forward
-  // section's height and pushed the reverse one off the frame
+  // description rows push the reverse-strand section off the frame
   showLabels: 'name',
 }
 
-// What `ui/gene_track_channel_spec` pastes into Edit plot..., printed in
-// gene_track.md.
+// Pasted by the `ui/gene_track_channel_spec` tour and printed in gene_track.md.
 export const GENE_CHANNEL_SPEC_JSON = `{
   "facet": {
     "field": "gene_biotype",
@@ -188,8 +138,6 @@ export const geneGroupingVideoFixtures = {
 }
 
 export const featuresSpecs: ScreenshotSpec[] = [
-  // About track dialog (config + file header), opened from the track menu of a
-  // CRAM track so the FILE INFO panel shows the full @SQ/@PG header.
   {
     mode: 'url',
     name: 'about_track',
@@ -199,13 +147,8 @@ export const featuresSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_cram'],
     }),
     readyText: 'ctgA',
-    // The dialog is taller than the app window behind it, so what sits below it
-    // is page background and the run reads that as slack: 121 css px at the
-    // default 800. It re-centres as the viewport shrinks, so the blank closes at
-    // about half the rate you take off — 680 leaves 61, just over the 50 the run
-    // warns at. **Don't chase the warning to zero.** That needs ~580, where the
-    // dialog rises over the app's toolbar and locstring and the frame stops
-    // showing what the dialog was opened from. 61 is a framing choice.
+    // Leaves a blank-below warning on purpose: near 580 the dialog covers the
+    // toolbar it was opened from.
     viewportHeight: 680,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
@@ -216,37 +159,15 @@ export const featuresSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Color-by-CDS frame coloring on a gene track: human BRCA1 (hg19 NCBI RefSeq)
-  // zoomed to base-pair resolution with the reference sequence track above
-  // . Two stages mirror the how-to: stage 1 opens the view menu with
-  // "CDS reading frame colors" boxed; stage 2 clicks it, so each CDS codon is
-  // tinted by its reading frame, joining the amino acids that are drawn at this
-  // zoom either way, lined up to the reference codons above.
-  //
-  // ONE FRAME COLOR, which is correct and is why the guide's prose does not ask
-  // this figure to show a phase change. The window is inside BRCA1's exon 11
-  // (chr17:41,243,451-41,246,877, 3426 bp), frame is constant within a CDS
-  // segment, and the nearest junction is 550 bp away. There is no window that
-  // fixes it either: two coding exons need ~130 bp at the tightest human intron,
-  // and residue numbers stop at ~105 (below), so a frame-change frame and a
-  // lettered frame are mutually exclusive here. The lettered one is what the
-  // section is about.
-  //
-  // 91 bp, where this was 121: the residue NUMBER beside each letter (`Q1182`)
-  // is what lines the frame up against the reference codons, and it is drawn
-  // only once a codon is wide enough for the widest label the format can
-  // produce -- one letter and five digits, plus a separator (peptidePositioning,
-  // residueNumbersFit). That is a fixed budget rather than a measurement of the
-  // label in hand, deliberately, so that every residue on screen agrees and
-  // panning across residue 999 changes nothing; the cost is that a window this
-  // side of about 105 bp draws bare letters. 121 bp was just past it.
+  // The window sits inside BRCA1 exon 11, so it shows one frame color. Residue
+  // numbers (`Q1182`) draw only below about 105 bp (residueNumbersFit), too
+  // narrow to span an intron.
   {
     mode: 'url',
     name: 'gene_track_color_by_cds',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: 'chr17:41,244,000-41,244,090',
-      // offset labels so they overlay the tracks
       trackLabels: 'offset',
       tracks: [
         'Pd8Wh30ei9R',
@@ -261,8 +182,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
     viewportHeight: 500,
     stages: [
       {
-        // top frame: the view (hamburger) menu open, the color-by-CDS toggle
-        // ringed + boxed so the one click that enables it reads at a glance
         actions: [
           { type: 'click', selector: '[data-testid="view_menu_icon"]' },
           ...menuCascade(['Show...', 'CDS reading frame colors']),
@@ -276,36 +195,19 @@ export const featuresSpecs: ScreenshotSpec[] = [
         ],
       },
       {
-        // bottom frame: after the click each codon is frame-tinted with its
-        // amino acid drawn over it, aligned to the reference sequence above.
-        // A checkbox row keeps the menu up (staysOnClick), so dismiss it —
-        // otherwise it covers the left of the result it just produced
+        // the checkbox row keeps the menu open (staysOnClick)
         actions: [
           { type: 'click', text: 'CDS reading frame colors' },
-          // dismiss through the backdrop rather than Escape, which returns
-          // focus to the hamburger and leaves its tooltip in the frame.
-          //
-          // A bare coordinate on purpose, and not one that wants an anchor: the
-          // menu's backdrop covers the viewport, so this hits nothing in
-          // particular and any point off the menu would do. Same category as
-          // `dismissMenus`. It does have to be INSIDE the viewport, which is the
-          // one thing it can get wrong silently: at y 550 in a 500px capture the
-          // click lands nowhere, the backdrop stays, and the frame is of the menu
-          // over the result it just produced.
+          // Clicks the menu backdrop, since Escape leaves the hamburger's
+          // tooltip in the frame. The point must stay inside the viewport, or
+          // the menu stays up.
           { type: 'click', from: { x: 700, y: 420 } },
         ],
       },
     ],
   },
 
-  // Selenoprotein transl_except highlight: GPX1 (hg19 NCBI RefSeq, chr3, minus
-  // strand) has one in-frame UGA recoded as selenocysteine via a downstream
-  // SECIS element, written as
-  // `transl_except=(pos:complement(49395565..49395567),aa:Sec)`. Zoomed to that
-  // codon with peptide lettering on, the overridden residue is drawn as `U` on an
-  // orange codon background (translExceptColor) instead of the stop it would
-  // otherwise be. Exercises parseTranslExcept's handling of NCBI's
-  // complement()/accession-prefixed pos syntax on real data.
+  // GPX1's `transl_except=(pos:complement(49395565..49395567),aa:Sec)` codon.
   {
     mode: 'url',
     name: 'gene_track_selenocysteine',
@@ -327,21 +229,17 @@ export const featuresSpecs: ScreenshotSpec[] = [
     viewportHeight: 500,
   },
 
-  // Viral polyprotein: the enterovirus D ORF1 CDS is cleaved into mature
-  // peptides (mature_protein_region_of_CDS), stacked one row each and named on
-  // their bars from the GFF `product` by default.
   {
     mode: 'url',
     name: 'gene_track_mature_peptides',
     url: lgvSession('test_data/enterovirus_d/config.json', {
       assembly: 'GCF_000861205.1',
       loc: 'NC_001430.1:727-7,311',
-      // offset labels so they overlay the tracks
       trackLabels: 'offset',
       tracks: [
         {
           trackId: 'ncbi_genes_enterovirus_d',
-          // tall enough for the gene row + all 12 stacked mature peptides
+          // fits the gene row and all 12 stacked mature peptides
           height: 220,
           filter: { genes: 'only' },
         },
@@ -352,10 +250,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
     viewportHeight: 425,
   },
 
-  // Group by → Strand, which colors by strand on a default-colored track:
-  // the forward-strand genes pack into one section above the reverse-strand
-  // ones, each under a chip naming it, and each section takes its strand's
-  // color. A gene-dense window, so both sections hold several genes.
   {
     mode: 'url',
     name: 'gene_track_group_by_strand',
@@ -376,12 +270,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportHeight: 520,
     tooltip: 'hide',
-    // The chips are the feature: wait for the second one, which appears only
-    // once the layout has stacked both sections.
+    // the second chip appears once the layout has stacked both sections
     actions: [{ type: 'waitForText', text: 'Reverse strand' }],
   },
-  // "Collapse introns" reshapes the view to the exons placed side by side; the
-  // sashimi arcs from the RNA-seq splice junctions then connect adjacent exons.
   {
     mode: 'url',
     name: 'gene_track_collapse_introns',
@@ -399,47 +290,25 @@ export const featuresSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          // ~255kb rather than PTEN's own 109kb extent: zoomed out, the gene and
-          // its sashimi arcs occupy the middle ~40% of the frame instead of
-          // sprawling edge to edge behind the context menu (reviewer). The
-          // alignments track gates on fetch size, not zoom, and the RNA BAM is a
-          // PTEN-only slice, so the reads and arcs still render here.
+          // The view spans more than PTEN so the gene sits mid-frame; the BAM is
+          // a PTEN-only slice, so the reads still load at this width.
           loc: 'chr10:87,790,000-88,045,000',
-          // offset labels so they overlay the tracks
           trackLabels: 'offset',
           tracks: [
             {
               trackId: 'ncbi_refseq_109_hg38_latest',
-              // one clean transcript per gene so the PTEN glyph + label is tidy.
-              // The collapse-introns dialog's "Show only this feature" (on by
-              // default) isolates the reshaped view to PTEN, dropping the
-              // neighboring KLLN fragment — no jexl filter needed.
               geneGlyphMode: 'longestCoding',
             },
             {
-              // PTEN-only sliced RNA-seq BAM (see PTEN_RNASEQ_ADAPTER): a tiny
-              // deterministic download, so the sashimi arcs are reliably present
-              // at capture. compact pileup so the reads pack tightly
               trackId: 'pten_directrna',
               pileup: { readHeight: 3 },
               sashimi: {
-                // 'auto' splits the junction arcs above and below the reads to
-                // minimize crossings (vs the default 'up', which stacks them all
-                // above)
                 placement: 'auto',
               },
               filter: {
                 junctions: {
-                  // The unfiltered pileup draws 159 distinct junctions, and 122 of
-                  // them carry 1-2 reads — nanopore aligner noise, much of it splice
-                  // sites shifted a few bp off a real one (e.g. 87958024 vs the true
-                  // 87958020). Crossing arcs everywhere (reviewer: chaotic).
-                  // Counted from the CIGAR N-ops of the (fixed, re-hosted) slice:
-                  // PTEN's 9 exons give exactly 8 real introns, each with 446-717
-                  // reads, while the loudest noise junction has 99 — so any cutoff
-                  // in that gap leaves precisely the 8 canonical introns. 200 sits
-                  // mid-gap (2.2x under the weakest real junction, 2x over the
-                  // loudest noise) rather than hugging either edge.
+                  // PTEN's 8 real introns carry 446-717 reads each and the
+                  // loudest noise junction 99; the cutoff sits mid-gap.
                   minReads: 200,
                 },
               },
@@ -452,21 +321,12 @@ export const featuresSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportHeight: 590,
     tooltip: 'hide',
-    // Two-stage walkthrough: (1) right-click the gene to reveal the Collapse
-    // introns menu item, (2) the reshaped view with introns collapsed and the
-    // sashimi arcs connecting adjacent exons. The confirmation dialog had its own
-    // frame; it is now just driven through, since a stock dialog of prose and
-    // defaults taught nothing the surrounding two frames don't (reviewer).
     actions: [
-      // `readyText: 'NCBI RefSeq'` matches the track *name*, which appears before
-      // the remote GFF finishes loading — so wait for the PTEN label itself to
-      // render before acting on it.
+      // readyText matches the track name, which renders before the GFF loads
       { type: 'waitForText', text: 'PTEN' },
     ],
     stages: [
       {
-        // stage 1: right-click the gene's floating-label DOM element (not a raw
-        // pixel), revealing the context menu with Collapse introns boxed
         actions: [
           { type: 'rightclick', text: 'PTEN' },
           { type: 'waitForText', text: 'Collapse introns' },
@@ -474,10 +334,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
         annotations: [{ type: 'box', anchor: { text: 'Collapse introns' } }],
       },
       {
-        // stage 2: click through the confirmation dialog (uncaptured) → the
-        // reshaped view with introns collapsed. Scoped to `button::-p-text` so
-        // the click can't resolve to dialog prose that happens to repeat the
-        // button's wording.
+        // `button::-p-text` keeps the click off dialog prose repeating the label
         actions: [
           { type: 'click', text: 'Collapse introns' },
           { type: 'waitForText', text: 'Replace current view' },
@@ -493,24 +350,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // Gene feature-details sequence panel on a human gene (reviewer asked for a
-  // human example over the volvox EDEN one, and a gene other than SELENOP —
-  // that one's reserved for the transl_except/selenocysteine demo below in
-  // feature_detail_protein). HBB (β-globin, chr11, minus strand) is used here:
-  // reviewer asked for a *small* gene so the sequence panel shows short UTR,
-  // CDS, and intron segments all at once rather than PTEN's huge exons. HBB is
-  // the classic compact 3-exon gene (~1.6 kb, two small introns, short 5'/3'
-  // UTRs). The type selector is set to the collapsed-intron + up/down-stream
-  // variant so the panel shows the flanking sequence alongside the exon
-  // structure.
-  //
-  // Uses config_demo's hg38 + ncbi_refseq_109_hg38_latest (labels by gene
-  // symbol and exposes real CDS subfeatures, unlike the hg19 ncbi_gff / Gencode
-  // tracks the earlier FAF1 attempt tried). geneGlyphMode 'longestCoding' draws a
-  // single transcript, labeled with its gene symbol as a real floating DOM
-  // label (LinearBasicDisplay always renders one), so the click targets it by
-  // text rather than a pixel coordinate that drifts whenever the glyph's layout
-  // changes.
+  // HBB is small enough that the panel shows its UTRs, CDS and introns at once.
   {
     mode: 'url',
     name: 'feature_detail_sequence',
@@ -531,9 +371,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', text: 'HBB' },
       ...openFeatureSequence(),
-      // collapsed introns keep 10bp of each intron so the exon structure reads
-      // without huge intronic runs dominating the sequence, and the
-      // up/down-stream variant additionally shows the flanking sequence
       {
         type: 'click',
         selector:
@@ -542,12 +379,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Protein translation of SELENOP showing translation exceptions: the ten
-  // in-frame UGA stop codons that NCBI RefSeq annotates as
-  // `transl_except=(...,aa:Sec)` translate to selenocysteine (U), highlighted
-  // amber in the peptide with a legend noting "10 selenocysteines (U) from
-  // transl_except". Same setup/gene-label click as feature_detail_sequence;
-  // only the type selector differs (Protein).
+  // SELENOP carries ten `transl_except` selenocysteines.
   {
     mode: 'url',
     name: 'feature_detail_protein',
@@ -572,10 +404,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Customized feature details (customizing_feature_details.md) — volvox's
-  // gff3tabix_genes track config carries a formatDetails JEXL callback that links
-  // the name to a Google search, adds a custom "extrafield", and drops the type
-  // field; clicking a gene shows the resulting panel.
+  // volvox's gff3tabix_genes config carries the formatDetails callback.
   {
     mode: 'url',
     name: 'customized_feature_details',
@@ -585,21 +414,13 @@ export const featuresSpecs: ScreenshotSpec[] = [
       tracks: [{ trackId: 'gff3tabix_genes', height: 300 }],
     }),
     readyText: 'ctgA',
-    // shorter browser; the details panel scrolls so this only trims
-    // empty space below the ringed hyperlink
     viewportHeight: 680,
     actions: [
-      // canvas-drawn gene glyph: at this zoom the label is baked into the canvas
-      // (no DOM text / overlay div to target), so the click resolves through the
-      // view instead of naming a viewport point
       { type: 'click', anchor: APPLE3_MRNA },
       { type: 'waitForText', text: 'extrafield' },
-      // the coordinate click leaves the cursor on the gene, so the hover overlay
-      // shades it in the capture — move the pointer off the track to clear it
+      // clears the hover shading the click leaves on the gene
       PARK_CURSOR,
     ],
-    // ring the formatDetails-generated hyperlink in the feature-details panel,
-    // with the explanatory text left of the drawer
     annotations: [
       {
         type: 'circle',
@@ -618,10 +439,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Feature-details upstream/downstream sequence panel (v1.1.0 blog post) — the
-  // multi-exon volvox Apple3 gene (at ctgA:17400-23000) with "Show feature
-  // sequence" expanded into the genomic-with-introns + up/down-stream mode so
-  // the colored upstream / exon / intron / downstream sequence is shown.
   {
     mode: 'url',
     name: 'upstream_downstream_details',
@@ -642,12 +459,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Cytoband ideogram in the overview scale bar (v1.5.1 blog post) — hg19 from
-  // the demo config (which carries a cytobands adapter) zoomed to a chr1 region.
   {
     mode: 'url',
     name: 'cytobands',
-    // sized to the content: the rest of the viewport was page background
     viewportHeight: 347,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
@@ -658,12 +472,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
   },
 
-  // Connected genome + protein demo (TP53 / UniProt P04637). One ProteinView
-  // spec entry creates its own LinearGenomeView through `connectedView`, and the
-  // plugin derives the AlphaFold structure, the transcript feature and its
-  // translation from `uniprotId` + `transcriptId`. PROTEIN3D_CONFIG loads
-  // protein3d from the plugin store's `latest/` path, so a release can change
-  // this figure with no commit here.
   {
     mode: 'url',
     name: 'protein/connected',
@@ -696,9 +504,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     clicksChange:
       'select the nuclear export signal, banding its codons on the gene and its residues on the structure',
-    // The TP53 nuclear export signal (UniProt Motif 339-350): short, and alone
-    // on its row, so the clicked bar and its band read cleanly. `scroll` centres
-    // it in the alignment panel's scroller first.
+    // the motif sits off-screen in the alignment panel's scroller until `scroll`
     actions: [
       { type: 'waitForSelector', selector: NES_MOTIF },
       { type: 'scroll', selector: NES_MOTIF },
@@ -743,33 +549,24 @@ export const featuresSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The other view the protein dialog builds: a linear genome view whose
-  // GENOME is the protein. protein3d registers the UniProt accession as a
-  // temporary assembly whose reference sequence is the amino-acid chain, and
-  // opens UniProt features (a section per feature type), Antigen, AlphaFold
-  // confidence, AlphaMissense and ClinVar over it.
-  //
-  // Clicked rather than declared, so the frame is also a picture of the split
-  // button the prose names. No callouts: protein3d prefixes each trackId with
-  // the view's generated id, so no anchor can name one of its tracks.
+  // No callouts: protein3d prefixes each trackId with the view's generated id,
+  // so no anchor can name one of its tracks.
   {
     mode: 'url',
     name: 'protein/annotation_1d',
     url: PROTEIN_LAUNCH_SESSION,
     readyText: 'NCBI RefSeq',
-    // the UCSC hub config is ~570 tracks and pulls four remote plugins
     readyTimeout: 120000,
     clicksChange: 'launch the 1D protein annotation view',
     actions: [
       ...OPEN_PROTEIN_LAUNCH_MENU,
       { type: 'click', text: 'Launch 1D protein annotation view' },
       { type: 'waitForText', text: 'type: Natural variant', timeout: 120000 },
-      // opened last, after the transcript's alignment to the entry
+      // protein3d opens ClinVar last
       { type: 'waitForText', text: 'ClinVar', timeout: 120000 },
       { type: 'waitForAppSettled' },
     ],
-    // The launch leaves the cursor where the menu item was, which is over the
-    // new view's own track area.
+    // the launch leaves the cursor over the new view's tracks
     tooltip: 'hide',
     viewportHeight: 1500,
   },

@@ -6,7 +6,6 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 const ODP_CONFIG = 'https://jbrowse.org/demos/odp_linkage_groups/config.json'
 
-// the figures are about where colors fall, not which of 29 letters each is
 const HIDE_LEGEND = {
   type: 'click',
   selector: '[aria-label="Hide legend"]',
@@ -80,11 +79,8 @@ export const linkageGroupsSpecs: ScreenshotSpec[] = [
           color: { field: 'gene_group' },
           filter: [{ field: 'gene_group', valid: true }],
           autoDiagonalize: true,
-          // The jellyfish row, whose chromosomes ARE the linkage groups this
-          // figure is about (review: the reorder "sweeps top-down from
-          // Bolinopsis in its own file order, so every row below, the jellyfish
-          // included, is ordered off a comb jelly"). Anchored here the sweep
-          // runs outward both ways from it.
+          // the jellyfish row, whose chromosomes are the linkage groups; any
+          // other anchor orders the jellyfish off its neighbour
           diagonalizeAnchorRow: 2,
           mark: { interpolate: 'bump' },
           render: { antialias: false },

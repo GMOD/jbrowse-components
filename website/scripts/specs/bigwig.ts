@@ -13,10 +13,7 @@ import {
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// hpylori 26695 reference sequence adapter, shared by the GC-content and GC-skew
-// session tracks (both wrap the same assembly sequence via an absolute fasta
-// url, since session tracks don't inherit the config's baseUri). Referenced as a
-// const so both GCContentAdapters encode byte-identically.
+// Absolute URLs: session tracks don't inherit the config's baseUri.
 export const HPYLORI_26695_SEQ_ADAPTER = {
   type: 'IndexedFastaAdapter',
   fastaLocation: {
@@ -29,9 +26,6 @@ export const HPYLORI_26695_SEQ_ADAPTER = {
   },
 }
 
-// The volvox microarray BigWig, absolute-hosted so it resolves both in the local
-// generator and in the live-link session (session tracks don't inherit the
-// config's baseUri). Reused across the "all plot types" comparison figure.
 const MICROARRAY_BW_ADAPTER = {
   type: 'BigWigAdapter',
   bigWigLocation: {
@@ -40,10 +34,6 @@ const MICROARRAY_BW_ADAPTER = {
   },
 }
 
-// One QuantitativeTrack per rendering style, all wrapping the same BigWig, so a
-// single figure shows every plot type rendered live side by side. The rendering
-// style itself is applied via the flat `mark` key on the view's track reference
-// (routes into the display's configOverrides).
 const wigModeTrack = (rendering: string, name: string) => ({
   type: 'QuantitativeTrack',
   trackId: `wiggle_mode_${rendering}`,
@@ -53,10 +43,7 @@ const wigModeTrack = (rendering: string, name: string) => ({
 })
 
 export const bigwigSpecs: ScreenshotSpec[] = [
-  // reviewer: the plain line-render figure was boring on its own, and a single
-  // "plot type" menu screenshot doesn't show what each mode looks like. Instead
-  // render the same BigWig in every plot type at once — one compact track per
-  // style — so the figure teaches all the rendering options live, side by side.
+  // One BigWig drawn in every plot type.
   {
     mode: 'url',
     name: 'bigwig_line',
@@ -108,16 +95,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     viewportHeight: 793,
   },
 
-  // GC content / GC skew computed on the fly from the reference sequence — the
-  // tracks the reference sequence track's "Add GC content track" action builds.
-  // Shown whole-genome on H. pylori 26695 (a compact 1.67 Mbp bacterial genome)
-  // so the GC skew resolves real replication biology: the (G−C)/(G+C) balance
-  // stays predominantly one sign along each replichore and flips at the origin
-  // and terminus of replication, drawing the classic two-arm skew profile. Two
-  // session GCContentTracks wrap the assembly's sequence (absolute fasta url —
-  // session tracks don't inherit the config's baseUri): one in `content` mode
-  // (G+C fraction) and one in `skew` mode with a wide overlapping smoothing
-  // window, both smoothing the genome-scale curve.
   {
     mode: 'url',
     name: 'gc_content',
@@ -152,20 +129,12 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             {
               type: 'LinearWiggleDisplay',
               displayId: 'gc_skew_hpylori-LinearWiggleDisplay',
-              // taller so the two-arm skew and its zero-crossings at the origin
-              // and terminus read clearly across the whole genome
               height: 160,
             },
           ],
         },
-        // The two replication landmarks the GC skew reveals, as an actual
-        // feature track (not just highlight bands). oriC is anchored on the
-        // annotated dnaA gene (NC_018939v1:1,607,647-1,609,020, the chromosomal
-        // replication initiator that binds the origin) — a known landmark that
-        // coincides with the cumulative-skew minimum; the terminus sits at the
-        // skew maximum. Widened to ~20kb region markers so they're visible at
-        // whole-genome zoom. FromConfigAdapter keeps the features inline, so the
-        // track needs no hosted file and travels with the live-link session.
+        // oriC centres on dnaA (NC_018939v1:1,607,647-1,609,020); both markers
+        // span 20 kb so they show at whole-genome zoom.
         {
           type: 'FeatureTrack',
           trackId: 'hpylori_repl_origin',
@@ -199,12 +168,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'GCF_000307795.1',
           loc: 'NC_018939v1',
-          // interactive chip on each highlight band uses the link icon (chips are
-          // opt-in; default off draws a bare band)
-          // Faint vertical guides at the two replication landmarks the origin
-          // track names above, so the eye connects each marker to the GC-skew
-          // sign transition far below it (labels live on the feature track, not
-          // here, to avoid double-labeling).
+          // unlabeled: the origin track already names both landmarks
           highlight: [
             {
               refName: 'NC_018939v1',
@@ -235,11 +199,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'GC content',
     readyTimeout: 60000,
-    // origin track(50) + content(~100) + taller skew(160) + headers/ruler/
-    // overview; crop off the empty viewport below the three tracks
     crop: { x: 0, y: 0, width: 1500, height: 640 },
-    // The skew changes sign at both landmarks: + to − at the terminus, − to +
-    // at the origin (the leading arm wraps through 0).
     annotations: [
       {
         type: 'text',
@@ -290,63 +250,35 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Whole-genome coverage profile from a single BigWig (COLO829 tumor MinION
-  // coverage), each chromosome a separate region (no `loc` →
-  // showAllRegionsInAssembly), the default 99th-percentile clip keeping the
-  // repeat spikes off the axis so copy-number gains/losses read as
-  // elevated/depressed signal. Rebuilt from the old server-side share
-  // link as a self-contained sessionSpec; cropped to the single short track.
   {
     mode: 'url',
     name: 'bigwig/whole_genome_coverage',
-    // start at a single chromosome so the figure can walk through the setup
-    // (show how to build this view). Stage 1 opens the view menu with "Show all
-    // regions in assembly" boxed; stage 2 is the result.
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: 'chr10',
       tracks: [
         {
           trackId: 'colo_tumor',
-          // scatter rendering reads copy-number gains/losses better than
-          // the filled XY plot across the whole genome
           mark: 'point',
-          // finer binning (basesPerSpan = bpPerPx/resolution) so the
-          // whole-genome scatter resolves copy-number structure
           resolution: 5,
-          // the per-bin average without the min-max band: at whole-genome
-          // zoom the average reads the copy-number level cleanly
           extent: 'none',
         },
       ],
     }),
     readyText: 'COLO829',
-    // stage 2 zooms to the whole genome, which is the same heavy fetch `cnv`
-    // needs the headroom for — one source here rather than two
     readyTimeout: 180000,
-    // tall enough for the whole open view menu plus the Navigation submenu
-    // beside it in stage 1, which a 560px frame cut off short. Per-frame heights
-    // rather than one `crop`: the menu needs twice the height the resulting view
-    // does, and a shared crop left the bottom third of stage 2 as page
-    // background.
+    // Fits the open menu with its submenu; stage 2 sets its own, shorter height.
     viewportHeight: 680,
     stages: [
       {
-        // top frame: single chromosome, view menu open with "Show all regions in
-        // assembly" boxed — the one click that zooms the view out to the whole
-        // genome.
         actions: [
           { type: 'click', selector: '[data-testid="view_menu_icon"]' },
           ...menuCascade(['Show...', 'Show all regions in assembly']),
-          // The menu's popover layers land on top of an already-painted view,
-          // and a previous run captured this frame with the whole view body
-          // white behind them. The DOM was all there (assertViewsRendered
-          // passed after the shot), so it was raster, not render. Give the
-          // compositor a beat past waitForRasterize's two frames.
+          // After waitForRasterize's two frames the compositor can still show
+          // the view body white behind the popover.
           { type: 'delay', ms: 1000 },
         ],
         annotations: [
-          // ring the view (hamburger) menu icon that opens this menu
           {
             type: 'circle',
             anchor: { selector: '[data-testid="view_menu_icon"]' },
@@ -355,11 +287,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         ],
       },
       {
-        // bottom frame: after the click the view spans every chromosome and the
-        // scatter coverage resolves whole-genome copy-number structure. Wait on
-        // the wiggle canvas's paint-complete testid (canvasDrawn -> -done)
-        // instead of a fixed delay so the frame isn't captured blank (reviewer:
-        // the old 12s delay sometimes fired before the whole-genome render).
         actions: [
           { type: 'click', text: 'Show all regions in assembly' },
           {
@@ -367,20 +294,13 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             selector: displayPainted('wiggle-display'),
           },
         ],
-        // the resulting view is half the height the open menu above needed
         viewportHeight: 340,
       },
     ],
   },
 
-  // ────────────────────────────────────────────────────────────────────────
-  // Multi-quantitative (MultiWig) screenshots
-  // ────────────────────────────────────────────────────────────────────────
-
-  // MultiWig track menu showing the plot type submenu: a group per layout with
-  // the five plot names inside each, so the frame carries both axes a leaf
-  // writes. A single-source track would meet the plots flat and have no group
-  // to drill through, which is why this figure is shot on a MultiWig.
+  // Needs a MultiWig: a single-source track's Plot type menu has no layout
+  // groups.
   {
     mode: 'url',
     name: 'multiwig/multi_renderer_types',
@@ -397,10 +317,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     annotations: [{ type: 'box', anchor: { text: 'Plot type' } }],
   },
 
-  // multiquantitative_track.md: the track-selector selection workflow for
-  // building a multi-wiggle. Two stacked frames: (1) a category's "..." menu
-  // with "Add to selection" boxed, (2) after adding the category, the shopping
-  // cart's "Create multi-row track" item boxed.
   {
     mode: 'url',
     name: 'multiwig/trackselector',
@@ -411,24 +327,18 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     readySelector: TRACK_SELECTOR,
-    // smaller capture in both dimensions; narrower than default but
-    // still wide enough for the category "..." menu to cascade without clipping,
-    // and the "Integration test" wiggle category renders within this height
+    // any narrower and the category menu clips as it cascades
     viewportWidth: 950,
     viewportHeight: 600,
     stages: [
       {
         actions: [
-          // open the category's "..." track menu (stable testid on the category
-          // CascadingMenuButton)
           {
             type: 'click',
             selector: '[data-testid="htsCategoryMenu-Integration test"]',
           },
           { type: 'waitForText', text: 'Add to selection' },
         ],
-        // box the menu item and put the caption over the empty LGV area to its
-        // left; no arrow (arrows covered up the menu-item text)
         annotations: [
           { type: 'box', anchor: { text: 'Add to selection' } },
           {
@@ -444,7 +354,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: 'Add to selection' },
           { type: 'delay', ms: 600 },
-          // the shopping cart appears once the selection is non-empty
           { type: 'click', selector: '[data-testid="hts-shopping-cart"]' },
           { type: 'waitForText', text: 'Create multi-row track' },
         ],
@@ -462,7 +371,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Add track dialog showing the multi-wiggle workflow selector.
   {
     mode: 'url',
     name: 'multiwig/addtrack',
@@ -471,8 +379,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       loc: 'ctgA:1-20000',
     }),
     readyText: 'ctgA',
-    // shorter/narrower window — the add-track form is short and the LGV pane
-    // behind it is mostly empty
     viewportWidth: 1300,
     viewportHeight: 520,
     actions: [
@@ -481,8 +387,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       { type: 'click', text: 'Open track...' },
       { type: 'waitForText', text: 'Enter track data' },
     ],
-    // two-stage: top frame opens the workflow-selector dropdown and points at
-    // the multi-wiggle entry; bottom frame selects it and boxes the paste box
     stages: [
       {
         actions: [
@@ -530,43 +434,23 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // ────────────────────────────────────────────────────────────────────────
-  // Clustering workflows
-  // ────────────────────────────────────────────────────────────────────────
-
-  // Multi-wiggle clustering, two-stage figure over the PUR copy-number panel
-  // (1000 Genomes kidd-lab CNV bigWigs, 104 PUR individuals) added to
-  // config_demo — a far richer dataset than the synthetic volvox wiggle
-  // . Shown in multi-row density mode across a wide hg38 window
-  // (chr3:162.3-163.4 Mb, reviewer-specified), a copy-number-polymorphic region,
-  // so the per-individual copy-number differences drive a meaningful clustering.
-  // Top frame: the "Cluster rows by score" dialog open (auto/manual mode, before).
-  // Bottom frame: after "Run clustering", the 104 rows are reordered by signal
-  // similarity. showTree:false hides the dendrogram (only the row
-  // reordering matters; a tree wrongly implies phylogeny). Combines the old
-  // cluster_dialog + clustered_result into one before/after.
+  // A copy-number-polymorphic window, so the PUR rows have something to
+  // cluster on.
   {
     mode: 'url',
     name: 'multiwig/cluster_dialog',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      // reviewer-specified region
       loc: 'chr3:162,275,163-163,360,944',
       tracks: [
         {
           trackId: 'pur_copynumber_1000g',
           height: 420,
-          // one colored density strip per individual, off the track type's own
-          // `rows: 'source'` seed; `mark` is a config slot, so
-          // this flat key routes into the display's configOverrides
           mark: 'span',
-          // copy number: most cells sit at the diploid baseline (~2), so the
-          // default 99th-percentile clip clamps the amplifications near 2.2.
-          // A domainQuantile of 1 uses the true region max so the gains
-          // render at full contrast and nothing is clipped.
+          // Most cells sit at copy number 2, so the default 99th-percentile
+          // clip clamps the amplifications near 2.2.
           scales: { y: { domainQuantile: 1 } },
-          // hide the post-clustering dendrogram — the reordered rows are
-          // the point; a tree implies a phylogeny we don't mean
+          // a dendrogram would imply a phylogeny
           showTree: false,
         },
       ],
@@ -577,10 +461,8 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     viewportHeight: 620,
     stages: [
       {
-        // top frame: the Cluster rows by score dialog open, before clustering
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          // "Cluster rows by score..." now lives under a "Clustering" submenu
           { type: 'waitForText', text: 'Clustering' },
           { type: 'hover', text: 'Clustering' },
           { type: 'waitForText', text: 'Cluster rows by score...' },
@@ -589,7 +471,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         ],
       },
       {
-        // bottom frame: run clustering, then show reordered rows + dendrogram
         actions: [
           { type: 'click', text: 'Run clustering' },
           { type: 'waitForText', text: 'Run clustering', hidden: true },

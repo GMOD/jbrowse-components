@@ -8,9 +8,7 @@ import {
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// The gene-density demo's Alu BED (UCSC RepeatMasker rows, header-named
-// columns), re-declared with a mark display: two marks over one fetch, the
-// count per 10 kb drawing zoomed out and each element's divergence zoomed in.
+// The Alu BED names its columns in a header, which makes `milliDiv` a field
 const CONFIG = 'https://jbrowse.org/demos/gene_density/config.json'
 const ALU_BED = 'https://jbrowse.org/demos/gene_density/Alu.bed.gz'
 
@@ -50,9 +48,6 @@ const ALU_MARKS_TRACK = {
   ],
 }
 
-// The Alu track as a multiscale pair, which is what Edit marks opens on: two
-// rows in the mark list, so its order is the paint order and the second mark
-// carries steps the controls leave to the JSON box.
 const ALU_EDIT_PLOT_TRACK = {
   ...ALU_MARKS_TRACK,
   trackId: 'alu_edit_plot',
@@ -76,11 +71,6 @@ const ALU_EDIT_PLOT_TRACK = {
   ],
 }
 
-// The haplotagged HG002 ONT reads the methylation tutorial loads
-// (docs/tutorials/methylation.md), declared as a faceted pileup: the display's
-// formula lifts the HP tag into a field, the facet splits the reads on it, and
-// the stack packs each section on its own under its chip. Reads carrying no
-// tag land in the "HP: none" section.
 const SNRPN_FACET_TRACK = {
   type: 'AlignmentsTrack',
   trackId: 'snrpn_facet',
@@ -127,9 +117,7 @@ function aluMarksUrl(loc: string) {
 }
 
 export const marksSpecs: ScreenshotSpec[] = [
-  // Two frames of the same track: 3 Mb of 1q21, where only the binned mark is
-  // in range and the axis is counts, then 30 kb of it, where only the raw mark
-  // is and the axis is each Alu's divergence from its consensus.
+  // the two frames must straddle the marks' 100 bp/px switch
   {
     mode: 'url',
     name: 'mark_display/multiscale',
@@ -146,9 +134,6 @@ export const marksSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The same HP split the methylation tutorial reaches through Group by...,
-  // declared instead: each haplotype's reads stacked in a band of their own
-  // under the chip that names it, and the untagged reads in a third.
   {
     mode: 'url',
     name: 'mark_display/facet',
@@ -174,9 +159,6 @@ export const marksSpecs: ScreenshotSpec[] = [
     viewportHeight: 610,
   },
 
-  // Edit marks over the Alu track, opened on the one mark that track declares:
-  // the mark list on the left, and on the right its type and a control per
-  // channel that type reads, filled from the fields the scan found.
   {
     mode: 'url',
     name: 'mark_display/edit_plot',
@@ -212,11 +194,8 @@ export const marksSpecs: ScreenshotSpec[] = [
   },
 ]
 
-// The Alu tutorial (docs/tutorials/alu_age.md). The config carries the tracks:
-// the copies as a mark display, their make-density bigWig for a whole
-// chromosome, where the copies are over the fetch budget, and the per-megabase
-// BED build_alu_age.sh writes, plotted as the AluY share against the
-// genome-wide share.
+// Over a whole chromosome the Alu copies exceed the fetch budget, so the
+// chromosome frame draws their density bigWig
 const ALU_AGE_CONFIG = 'test_data/alu_age/config.json'
 const ALU_YOUNG_SHARE = {
   trackId: 'alu_young_share',
@@ -246,10 +225,8 @@ function aluAgeSpec(
   } as ScreenshotSpec
 }
 
-// A stretch where a run of Alu-sparse megabases meets a run of dense ones. The
-// wedge's narrow end is that span as a fraction of the composed part's width:
-// the data area starts at 12.4 of 3000 px and spans 2976 (see
-// ld/lct_sweep_two_scales)
+// partFrac's 12.4 and 2976 are the data area's offset and width in the 3000 px
+// part (see ld/lct_sweep_two_scales)
 const BINNED_START = 184_000_000
 const BINNED_END = 212_000_000
 const BINNED_LOC = `chr1:${BINNED_START + 1}-${BINNED_END}`

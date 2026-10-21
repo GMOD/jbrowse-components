@@ -1,15 +1,6 @@
-// One junction of the HG008-T chr3_chr13_hap1 scaffold at three scales: split
-// reads, the scaffold over the same two reference windows, and the whole
-// scaffold between the reference and hap2. The SV tutorial and the JBrowse 2 v5
-// paper both draw their figures from these, so the two cannot drift apart.
-//
-// The benchmark calls the junction as SV_190/SV_20, and the scaffold joins
-// chr13:114,353,244 to chr3:139,976,415 at 106,651,329. The scaffold carries
-// chr3 on the minus strand, which the synteny panels show as a twisted ribbon;
-// flipping chr3 instead hid the inversion in an axis label.
-//
-// The read track is a rehosted slice of the 118 GB NCBI BAM that carries these
-// two windows, and forceLoad lifts the fetch-size gate so it loads headless.
+// The SV tutorial and the JBrowse 2 v5 paper both draw this junction from these
+// specs. Flipping chr3 hides the scaffold's minus-strand chr3 in an axis label.
+// Without forceLoad the fetch-size gate stops the read slice loading headless.
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import { CGIAB_CONFIG, sessionSpec } from '../screenshot-spec-helpers.ts'
@@ -28,7 +19,6 @@ const APP_BAR_HEIGHT = 48
 const BLUE = 'rgba(31,119,180,0.45)'
 const BAND = '[data-testid="highlight-band"]'
 
-// The paper stacks all three in one figure, where the app bar would repeat
 interface Chrome {
   hideAppBar?: boolean
 }
@@ -44,7 +34,6 @@ const reads = {
   pileup: { readHeight: 1 },
   filter: {
     connections: {
-      // only connections with both ends on screen
       offscreenMates: 'exclude',
     },
   },
@@ -52,8 +41,7 @@ const reads = {
   forceLoad: true,
 }
 
-// A breakpoint is sub-pixel at every scale here, so each band is widened to a
-// few pixels
+// Each band spans more than the breakpoint, which is sub-pixel at every scale
 const band = (
   assemblyName: string,
   refName: string,
@@ -61,8 +49,6 @@ const band = (
   end: number,
 ) => ({ assemblyName, refName, start, end, color: BLUE })
 
-// The same tinted pill and blue leader in all three figures, so a reader
-// carrying one to the next recognises the marks as the same positions
 const callout = (
   text: string,
   anchor: Annotation['anchor'],
@@ -80,8 +66,7 @@ const callout = (
   dy,
 })
 
-// What a band of a track is, on the left like the row labels. Hung from the
-// track's own label, the one element a band shares a row with.
+// Anchored on the track label, the one element a band shares a row with
 const bandLabel = (
   text: string,
   trackLabel: string,
@@ -132,15 +117,14 @@ export const junctionReads = (
       {
         type: 'BreakpointSplitView',
         views: [
-          // chr3 first, the order the SV inspector's chord opens them in
+          // the SV inspector's chord opens chr3 first
           splitPanel('chr3:139,971,414-139,981,414'),
           splitPanel('chr13:114,348,244-114,358,244'),
         ],
       },
     ],
   }),
-  // Anchored left of each call's label: the record sits on the breakend, so an
-  // arrow aimed at the label would land on the breakend bar
+  // an arrow aimed at the call's label would land on the breakend bar
   annotations: [
     callout(
       'chr3 breakend',
@@ -181,16 +165,10 @@ export const junctionScaffold = (
             assembly: GRCH38,
             tracks: [
               { trackId: CALLS, height: 40 },
-              // one row per read with its supplementary alignment, joined by a
-              // curve across the two regions, under the arc that totals them.
-              // Grouped so the split reads have a section apart from the reads
-              // that stop at or run past a breakend.
               {
                 ...reads,
                 unit: 'chain',
                 facet: 'split',
-                // a split segment's strand against its molecule's, which the
-                // legend names beside the unsplit reads
                 color: { field: 'pairOrientation' },
                 showLegend: true,
                 pileup: { readHeight: 2 },
@@ -215,7 +193,7 @@ export const junctionScaffold = (
   }),
   annotations: [
     rowLabel('hap1', 1),
-    // beside each call's label in the variant lane, clear of the read curves
+    // dy keeps these clear of the read curves
     callout(
       'chr13 breakend',
       { selector: BAND, view: [0, 0], alignY: 'top' },
@@ -239,14 +217,8 @@ export const junctionScaffold = (
   ...chrome(1172, opts),
 })
 
-// hap2 above the reference and hap1 below it, one level of ribbons each. hap2
-// is collinear with both chromosomes, so the two levels differ only by the
-// rearrangement. Its chr3 material sits in a scaffold that continues into chr11
-// and chr6, which the row crops off because the reference row has neither.
-//
-// The chr3 breakend line sits between two ribbons: the scaffold's two chr3
-// segments end 22 kb apart there, one pixel at this scale. The junction marker
-// on the scaffold row says which ribbon it belongs to.
+// The scaffold's two chr3 segments end one pixel apart, so the chr3 breakend
+// line sits between two ribbons; the junction marker says which one it is.
 export const scaffoldOverview = (
   name: string,
   opts: Chrome = {},
@@ -259,7 +231,7 @@ export const scaffoldOverview = (
         type: 'LinearSyntenyView',
         mark: { interpolate: 'bump' },
         levelHeights: [200, 200],
-        // the last chr13 block before the junction is 155 kb
+        // a cutoff above 155 kb drops the last chr13 block before the junction
         filter: [{ field: 'length', gte: 100000 }],
         opacity: 0.35,
         offscreen: { show: false },

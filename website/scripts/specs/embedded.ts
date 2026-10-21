@@ -1,15 +1,8 @@
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const embeddedSpecs: ScreenshotSpec[] = [
-  // The embed tutorial's hero figure: the *embedded*
-  // `@jbrowse/react-linear-genome-view2` component (not the jbrowse-web app),
-  // captured from its prebuilt UMD bundle via the script-tag setup the tutorial
-  // documents. `viewState` mirrors the hg38 config in
-  // docs/tutorials/embed_linear_genome_view.md verbatim (gene / repeat /
-  // alignment / variant / conservation tracks at the tutorial's default hg38
-  // chr10 locus). Remote hg38
-  // data (jbrowse.org + UCSC phyloP) — long ready timeout + settle, and a
-  // relaxed diff gate since remote-timing jitter is irreducible.
+  // `viewState` copies docs/tutorials/embed_linear_genome_view.md verbatim; edit
+  // both together. Remote-data timing jitter needs the relaxed diff gate.
   {
     mode: 'embedded',
     name: 'embed_linear_genome_view/final',

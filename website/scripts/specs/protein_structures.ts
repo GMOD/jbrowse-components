@@ -3,12 +3,8 @@ import { PROTEIN3D_CONFIG } from './features.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// The tutorials/tp53_structures page: TP53's AlphaFold model, the DNA-bound
-// core domain (1TUP) and the p53 peptide on MDM2 (1YCR), each mapped to the
-// same RefSeq transcript. `structures` on LaunchView-ProteinView builds the
-// session from one link, genome view left, protein view right. The mapped-chain
-// color scheme paints the chain the transcript encodes and greys the rest;
-// protein3d releases before it coerce the name to the default chain coloring.
+// protein3d releases older than the mapped-chain scheme fall back to the
+// default chain coloring
 const R248_CODON = 'chr17:7,674,219-7,674,221'
 const GENES = 'hg38-ncbiRefSeq'
 
@@ -47,13 +43,10 @@ function tp53Session({
   })
 }
 
-// Both the model state and molstar's raster: the ready test id flips once every
-// structure has its alignment.
 const READY = {
   readySelector: '[data-testid="protein-view-ready"]',
   readyTimeout: 120000,
-  // molstar's background-task toast sits at the bottom of the canvas well after
-  // the model reports ready with three structures loading
+  // molstar's background-task toast outlives the ready signal
   hideSelectors: ['.msp-background-tasks'],
 }
 
@@ -61,9 +54,7 @@ const CHAIN_B_OPTION = '[role="listbox"] li[role="option"]:nth-child(2)'
 
 export const proteinStructuresSpecs: ScreenshotSpec[] = [
   {
-    // R248, the DNA-contact hotspot, pre-selected on 1TUP by author numbering.
-    // The seeded selection frames the camera on the residue, focuses it so it
-    // and its neighbours draw as sticks, and bands its codon on the genome view.
+    // initialResidues counts in 1TUP's author numbering
     mode: 'url',
     name: 'protein/tp53_hotspot',
     url: tp53Session({
@@ -103,8 +94,6 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
     ],
   },
   {
-    // 1YCR alone, with its Mapped chain picker open. The p53 peptide, Chain B,
-    // is checked, so it is the one colored chain on grey MDM2.
     mode: 'url',
     name: 'protein/tp53_mapped_chain',
     url: tp53Session({
@@ -142,11 +131,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
     ],
   },
   {
-    // 2L14, the transactivation domain on CBP, is twenty NMR models and each
-    // loads as a Mol* structure of its own. The seed lights the two helices the
-    // file annotates (18-26 and 46-54) on every model, and bands their codons
-    // across exons 2 to 4. Per-residue CA RMSF over the deposited models: the
-    // helices at most 1.4 Å, the linker 27-38 from 3.4 to 7.8 Å.
+    // CA RMSF over the 20 models: helices at most 1.4 Å, linker 27-38 3.4-7.8 Å
     mode: 'url',
     name: 'protein/tp53_nmr_ensemble',
     url: tp53Session({
@@ -168,8 +153,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
     viewportWidth: 2000,
     viewportHeight: 912,
     clicksChange: "reset the structure's camera to fit the whole ensemble",
-    // the seed frames the camera on the helices; Reset Zoom fits the whole
-    // ensemble, frayed ends included, once that focus has finished moving
+    // Reset Zoom fits nothing until the seed's camera focus stops moving
     actions: [
       { type: 'delay', ms: 8000 },
       { type: 'click', selector: 'button[title="Reset Zoom"]' },

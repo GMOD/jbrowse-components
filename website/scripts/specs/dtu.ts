@@ -2,76 +2,29 @@ import { displayReady, lgvSession } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// ──────────────────────────────────────────────────────────────────────────
-// Differential transcript usage — real ENCODE ENTEx data (hg38). satuRn tested
-// transcript *usage* (the fraction of a gene's reads assigned to each
-// transcript) between skeletal muscle and liver, 4 donors each, on RSEM
-// quantifications against GENCODE v29; the per-transcript result was written
-// back into the GFF3 attribute column, and the canvas gene glyph bins it
-// through a threshold color. Data + config: demos/dtu/config.json, hosted at
-// jbrowse.org/demos/dtu/.
-//
-// What makes these figures worth having is that the color is not a category
-// someone assigned — it is a continuous statistic (ΔIF, the change in isoform
-// fraction) that came out of the analysis, so the glyph carries the result
-// rather than illustrating it. The key the threshold derives lists every bin.
-// ──────────────────────────────────────────────────────────────────────────
-
+// demos/dtu/config.json is the source of the hosted config.
 const DTU_CONFIG = 'https://jbrowse.org/demos/dtu/config.json'
 
-// The cassette exon the whole figure is about. GENCODE v29 places it at
-// chr10:7,806,974-7,807,010 (37 bp): ATP5F1C-202 keeps it, ATP5F1C-201 skips
-// it. Written once and anchored from, rather than measured into viewport px —
-// the box then lands on the exon at any width or zoom (see locusAnchor.ts).
+// The 37 bp exon ATP5F1C-202 keeps and ATP5F1C-201 skips (GENCODE v29).
 const CASSETTE_EXON = 'chr10:7,806,974-7,807,010'
 
-// The demo config puts the coverage tracks in one autoscale group, the route
-// the page gives, so the two bands compare by height. They are one donor each
-// (the statistic behind the colors uses all eight), which is why the track
-// names carry their ENCODE accessions.
 const coverage = (trackId: string) => ({
   trackId,
   height: 90,
 })
 
-// `grow`, not the demo config's pinned 285. The lane packs ten transcripts and
-// the packing depends on the window, so a pinned height is right for exactly one
-// of the two figures below: at the 8 kb window it left ~40 css px of empty lane
-// under the last row, and at the whole-gene one it is the height the config was
-// tuned for. Growing to the content is right for both and takes the blank with
-// it.
+// The lane's packing depends on the window, so a pinned height leaves blank
+// lane or clips rows.
 const glyph = {
   trackId: 'dtu_muscle_vs_liver',
   heightMode: 'grow',
 }
 
-// Both figures gate on the gene lane having actually painted rather than on the
-// liver track's NAME appearing, which is in the DOM as soon as the track opens
-// and says nothing about the three canvases under it.
 const DTU_READY = displayReady('feature-display')
 
 export const dtuSpecs: ScreenshotSpec[] = [
-  // The whole gene, which is where the color encoding earns its keep: ten
-  // annotated isoforms, two of them called, and the eight the test could not
-  // separate staying neutral gray rather than competing for attention.
-  //
-  // ONE FIGURE, not the two-zoom compose this used to be the top half of
-  // (review: "i dont think this strongly benefits from the two part figure. i
-  // think we just can add the box to the part 1 figure and delete part 2
-  // figure"). The zoomed half was a second frame of the same track over the same
-  // gene, and its whole subject — the cassette exon — survives the pull-back:
-  // at 24.8 kb the 37 bp exon is about 2 css px, but the thing being marked is
-  // not the exon's WIDTH, it is that liver carries a coverage peak at
-  // 7,806,974 and muscle carries nothing there, and both are plainly visible at
-  // this zoom. So the box moved up here and the zoomed spec is gone.
-  //
-  // Right edge carried ~4 kb past the gene, the same lever the figure above
-  // documents and this one did not have. The floating color key is pinned to
-  // the track's top-right corner (FloatingLegend's `right: 10, top: 10`) with an
-  // opaque paper background and no placement slot, so on a window that ends
-  // where the gene ends it sits ON the 3' end of every row — here it covered the
-  // last exon of both colored transcripts and five of the gray ones. The only
-  // lever a spec has is where the data is, so the window carries past it.
+  // The window runs ~4 kb past the gene's 3' end because the opaque color key
+  // pins to the track's top-right corner and would cover the last exons.
   {
     mode: 'url',
     name: 'dtu/dtu_colored_gene_glyph',
@@ -84,20 +37,14 @@ export const dtuSpecs: ScreenshotSpec[] = [
     viewportHeight: 730,
     annotations: [
       {
-        // no `trackId`, so the band spans the view's whole tracks area: one
-        // vertical line tying the absent muscle signal, the liver peak and the
-        // exon box on ATP5F1C-202 together. At this zoom the exon itself is ~2
-        // px, so the pad is what makes the band findable — and what it marks is
-        // a column through three lanes, not the feature's width.
+        // No `trackId`, so the box spans all three tracks; the pad makes the
+        // ~2px exon findable.
         type: 'box',
         anchor: { loc: CASSETTE_EXON },
         pad: 9,
         strokeWidth: 3,
       },
-      // One label per coverage track, right-aligned so each pill ENDS just left
-      // of the band. Both lanes are quiet immediately left of the exon, which is
-      // the room these use; a single centered label above lands on the location
-      // box instead.
+      // Each pill ends just left of the box; a centered label lands on the box.
       {
         type: 'text',
         text: 'exon skipped',

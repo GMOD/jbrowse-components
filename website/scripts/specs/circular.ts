@@ -6,10 +6,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 const DEMO = 'test_data/config_demo.json'
 
-// hg38 and mm39 on one circle, from scripts/build_circular_synteny.sh: the
-// UCSC hg38ToMm39 liftOver chain as jbrowse.org indexes it, with the view's
-// length filter keeping rows under 100 kb off the figure, and a RefSeq gene
-// density bigWig per genome. Behind tutorials/circular_synteny.md.
+// Built by scripts/build_circular_synteny.sh.
 const CIRCULAR_SYNTENY =
   'https://jbrowse.org/demos/circular_synteny/config.json'
 const CHROMOSOMES = [
@@ -17,9 +14,6 @@ const CHROMOSOMES = [
   'chrX',
 ]
 const LIFTOVER = 'hg38ToMm39_liftover'
-// gene density as a heat strip: the average over each pixel's bins, so a
-// megabase-per-pixel ring reads genes per bin rather than the bin maximum.
-// Orange, so the ring reads apart from the chromosome-colored ribbons.
 const DENSITY_RING = {
   trackId: 'hg38ToMm39_gene_density',
   mark: 'span',
@@ -31,10 +25,6 @@ const DENSITY_RING = {
   height: 40,
 }
 
-// A two-genome circle opens with the mouse chromosomes laid out to follow the
-// human order and mirrored, which turns the ribbons from a bundle through the
-// middle into a band between the two arcs, and with each ribbon in its human
-// chromosome's color.
 function circularSyntenyView(
   displayedRegionNames: string[],
   tracks: unknown[],
@@ -55,9 +45,7 @@ function circularSyntenyView(
   })
 }
 
-// Three more pairs, each from its own demo: hg38 and panTro6 through the
-// hosted liftOver chain (scripts/build_circular_synteny.sh with
-// QUERY=panTro6), and two pairs aligned from their FASTAs by
+// Built by scripts/build_circular_synteny.sh (QUERY=panTro6) and
 // scripts/build_circular_synteny_fasta.sh.
 const demoConfig = (name: string) =>
   `https://jbrowse.org/demos/${name}/config.json`
@@ -70,10 +58,6 @@ const circularSyntenyReady = {
   viewportHeight: 900,
 } as const
 
-// COLO829's tumour and its matched normal from one MultiQuantitativeTrack, the
-// two MinION coverage bigWigs named and colored per subtrack. On rows they take
-// a band each inside the one ring, against an explicit domain so the two bands
-// share a scale and the comparison is the picture.
 const COLO829_COVERAGE = {
   type: 'MultiQuantitativeTrack',
   trackId: 'colo829_coverage_pair',
@@ -103,10 +87,6 @@ const COLO829_COVERAGE = {
 }
 
 export const circularSpecs: ScreenshotSpec[] = [
-  // SKBR3 on hg19: the sample's long-read coverage as a ring around the
-  // ideogram, its Sniffles translocations as chords through the middle. The
-  // ring is the wiggle display's own strip wrapped around the circle, so the
-  // copy-number steps read where the chords land.
   {
     mode: 'url',
     name: 'circular_view/coverage_ring_chords',
@@ -134,20 +114,9 @@ export const circularSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
   },
 
-  // The same sample pair a linear view would stack: one ring holding a band per
-  // source, with the somatic SV truth set as chords. What the rows buy is the
-  // control — a tumour step is a step only against a normal that holds level
-  // across the same stretch.
-  //
-  // No legend. A ring is the display's canvas alone, so the row labels naming
-  // each source never reach it, and the view's own key falls back to one swatch
-  // for the whole track — in the color of whichever source it takes first. The
-  // caption names the two bands instead.
-  //
-  // The row order is stated because an inner ring resamples the same strip and
-  // so resolves coarser, which on its own would make whichever band is outside
-  // look the more structured one. Shot both ways round: the steps stay with the
-  // tumour either way, and the tumour is outside here for its own legibility.
+  // No legend: the view's key shows one swatch for the whole track, in the
+  // first source's color. The caption names the two bands. Tumor sits outside
+  // because an inner band resolves coarser.
   {
     mode: 'url',
     name: 'circular_view/tumor_normal_rings',
@@ -176,11 +145,6 @@ export const circularSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
   },
 
-  // The two genomes' chromosomes around one circle, human first, and every
-  // block of the chain as a ribbon between the stretch it covers on each. An
-  // autosome's ribbons fan out across several of the other genome's
-  // chromosomes; the two X chromosomes hold one bundle, and the reorder puts
-  // that bundle's two arcs beside each other.
   {
     mode: 'url',
     name: 'circular_synteny/ribbons',
@@ -188,9 +152,6 @@ export const circularSpecs: ScreenshotSpec[] = [
     ...circularSyntenyReady,
   },
 
-  // Hovering mouse chr11's band dims every ribbon that misses it, leaving the
-  // human chromosomes it is painted with, and the tooltip names each one's
-  // share of it.
   {
     mode: 'url',
     name: 'circular_synteny/band_hover',
@@ -204,10 +165,6 @@ export const circularSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The same circle colored by strand, with the key naming the two colors: a
-  // mouse chromosome antiparallel to its human partner is one color along its
-  // whole bundle, so a ribbon of the other color inside it is a local
-  // inversion.
   {
     mode: 'url',
     name: 'circular_synteny/color_by_strand',
@@ -218,8 +175,6 @@ export const circularSpecs: ScreenshotSpec[] = [
     ...circularSyntenyReady,
   },
 
-  // The same circle with a gene density ring per genome inside the ideogram,
-  // so a ribbon's two ends can be read against how gene-rich each is.
   {
     mode: 'url',
     name: 'circular_synteny/rings',
@@ -232,10 +187,6 @@ export const circularSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
   },
 
-  // Three chromosomes of each genome: the X pair against two autosomes. The
-  // autosomes cross-wire and the X ribbons stay between the two X arcs, with
-  // nothing joining either X to an autosome. The reorder mirrors the mouse arc,
-  // so mouse chrX faces human chrX across the shortest span on the circle.
   {
     mode: 'url',
     name: 'circular_synteny/x_control',
@@ -252,8 +203,6 @@ export const circularSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
   },
 
-  // Hovering the widest X ribbon fills it in the hover color, and the tooltip
-  // names its span in each genome.
   {
     mode: 'url',
     name: 'circular_synteny/ribbon_hover',
@@ -277,10 +226,8 @@ export const circularSpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'Hovered ribbon',
         leader: true,
-        // the overlay resolves no chord anchor, so the pill points at the
-        // path's own box; the id is the PIF row's index and the perspective it
-        // was reached from — the human one, since the ribbon fetch reads the
-        // circle's first genome — stable while the file is
+        // the overlay resolves no chord anchor; the id is the PIF row index
+        // plus the first genome, stable while the file is
         anchor: { selector: 'path[data-testid="ribbon-28-t-hg38"]' },
         dx: 200,
         dy: 140,
@@ -289,9 +236,6 @@ export const circularSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 900,
   },
-  // Human and chimpanzee by strand. Human chr2 runs to chimp 2A and 2B, the
-  // fusion; the reverse bundles inside chimp chr4, chr5, chr12 and chr15-17
-  // are the pericentric inversions of Yunis and Prakash (1982).
   {
     mode: 'url',
     name: 'circular_synteny/chimp_strand',
@@ -321,9 +265,6 @@ export const circularSpecs: ScreenshotSpec[] = [
     ...circularSyntenyReady,
   },
 
-  // Two plague strains, one chromosome each, colored by strand: the blocks
-  // that cross the circle are the rearrangements between CO92 and KIM (Deng
-  // et al. 2002), and the plasmids KIM's assembly lacks stand unjoined.
   {
     mode: 'url',
     name: 'circular_synteny/yersinia',
@@ -343,9 +284,6 @@ export const circularSpecs: ScreenshotSpec[] = [
     ...circularSyntenyReady,
   },
 
-  // Arabidopsis chromosome 4 against the whole B. rapa genome: its blocks
-  // land on three B. rapa chromosomes, the whole-genome triplication (Wang et
-  // al. 2011), and the B. rapa ideogram is painted only where they do.
   {
     mode: 'url',
     name: 'circular_synteny/brassica_triplication',
@@ -364,8 +302,6 @@ export const circularSpecs: ScreenshotSpec[] = [
     ...circularSyntenyReady,
   },
 
-  // The whole of both genomes: the B. rapa ideogram as a mosaic of the five
-  // Arabidopsis chromosomes' colors.
   {
     mode: 'url',
     name: 'circular_synteny/brassica_mosaic',

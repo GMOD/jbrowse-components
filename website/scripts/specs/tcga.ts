@@ -5,13 +5,8 @@ import { pageTrack } from './pageTrack.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// The 1000 Genomes config's hg38 assembly names its contigs bare (`1`, `X`), so
-// the view's displayedRegionNames use that form. The BED's own `chr`-prefixed
-// names resolve through the assembly's refNameAliases (hg38_aliases.txt maps
-// 17 <-> chr17), which is why the track needs no renaming.
-//
-// chrY is omitted because the built BED contains no Y segments at all (checked
-// against the file), so listing it would draw an empty column.
+// The 1000 Genomes hg38 assembly names its contigs bare (`1`, `X`); the BED's
+// `chr` names resolve through refNameAliases. The BED has no chrY segments.
 const HG38_MAIN_CHROMS = [
   ...Array.from({ length: 22 }, (_, i) => String(i + 1)),
   'X',
@@ -19,30 +14,19 @@ const HG38_MAIN_CHROMS = [
 
 const CNV_DOC = 'tutorials/tcga_cohort_cnv.md'
 
-// One row per TCGA-BRCA primary tumor (1104 of them), painted from the caller's
-// raw Segment_Mean, built by scripts/build_tcga_cohort_cnv.sh from GDC
-// open-access Masked Copy Number Segment files.
 const TCGA_BRCA_CNV_TRACK = pageTrack(CNV_DOC, 'tcga_brca_cnv')
 
-// The same 1104 tumors collapsed to per-100kb gain and loss frequencies by
-// scripts/cnv_recurrence.py, on the page's pinned +-100 axis so a bar's height
-// means the same fraction in every figure.
 const TCGA_BRCA_RECURRENCE_TRACK = pageTrack(
   CNV_DOC,
   'tcga_brca_cnv_recurrence',
 )
 
-// Eight equal rows share this, so a row is SUBTYPE_ROWS_HEIGHT/8 px tall and
-// SUBTYPE_ROW_PITCH is what the callouts below measure their dy against.
+// Subtype callouts measure their dy in SUBTYPE_ROW_PITCH, one subtype's row.
 const SUBTYPE_ROWS_HEIGHT = 500
 const SUBTYPE_ROW_PITCH = SUBTYPE_ROWS_HEIGHT / 4
 
-// A label for one event in one of the four subtype rows, with an arrow into the
-// bars. `row` is the row index and `labelDy`/`headDy` are fractions of that
-// row's own height, so every offset is stated in the layout's own units and a
-// change to SUBTYPE_ROWS_HEIGHT moves the callouts with the rows. fracY stays 0
-// (the track's top edge) rather than a fraction of the whole track, so a row
-// index reads as a row index.
+// `labelDy`/`headDy` are fractions of the row's height, so the callouts follow
+// a change to SUBTYPE_ROWS_HEIGHT.
 function subtypeCallout({
   text,
   locus,
@@ -64,13 +48,7 @@ function subtypeCallout({
     fracY: 0,
   }
   const y = (frac: number) => (row + frac) * SUBTYPE_ROW_PITCH
-  // The arrow FIRST, so the label's pill (opaque white) draws over its tail. A
-  // tail has to start inside the label to leave from it -- the pill's width is
-  // only known at capture time, so it can't be dodged by a dx -- and drawn
-  // second the shaft ran across the text instead.
-  //
-  // The tail leaves from the side of the label the head is on: a label to the
-  // right of its locus (labelDx > 0) is left by its left edge.
+  // The arrow goes first so the label's opaque pill draws over its tail.
   const tailDx = labelDx > 0 ? labelDx - 20 : labelDx + 20
   return [
     {
@@ -89,40 +67,21 @@ function subtypeCallout({
   ]
 }
 
-// The same tally as TCGA_BRCA_RECURRENCE_TRACK, run once per receptor subtype
-// into eight columns, drawn as one mirrored row per subtype. All eight rows
-// share a pinned +-70, the nearest round number above the tallest bar
-// (66.85%), since each row fills only its own sign's half and autoscale would
-// give each row its own axis and make the subtypes look alike.
 const TCGA_BRCA_RECURRENCE_BY_SUBTYPE_TRACK = pageTrack(
   CNV_DOC,
   'tcga_brca_cnv_recurrence_by_subtype',
 )
 
-// The tree sidebar only mounts once clustering has produced a hierarchy
-// (TreeSidebar returns null on `!hierarchy`), so waiting on its canvas gates the
-// capture on real completion rather than on a duration guess.
+// TreeSidebar mounts its dendrogram only once clustering has finished.
 const CLUSTERED = '[data-testid="tree_sidebar_dendrogram"]'
 
-// What the clustering tour films, out of the same track config the figures use so
-// the route cannot document an app the page is not showing.
-//
-// The ERBB2 window rather than the whole genome, which is where the tutorial's
-// own instruction points: at whole-genome zoom the stack is the heaviest spec in
-// this file and software-rasterizing 1104 rows across 23 blocks per animated
-// frame is the one thing the tours are told to stay off.
-//
-// `runClustering` is deliberately ABSENT. The figures arrive clustered; a tour of
-// the menu item that clusters them has to start in the state a reader is in, so
-// this session is the same window unsorted, which is a state no figure on the
-// page carries.
+// The clustering tour films the ERBB2 window, since whole-genome is too heavy to
+// software-rasterize per frame. `runClustering` stays absent: the tour starts
+// unsorted, the state a reader is in.
 export const tcgaVideoFixtures = {
   trackId: 'tcga_brca_cnv',
-  // The chrome div, not `multirow_canvas`. The inner canvas carries a static
-  // selector for a pixel lookup and no readiness attributes at all
-  // (DisplayChromeBase spells this out), so pairing it with `data-display-drawn`
-  // builds a selector that can never match — which is how this tour's first film
-  // spent 300s waiting on a stack that had already painted.
+  // `multirow_canvas` carries no readiness attributes, so a readiness selector
+  // on it never matches; the chrome div does.
   painted: displaySettled('multirow-display'),
   unclusteredErbb2: sessionSpec(KG_CONFIG, {
     sessionTracks: [TCGA_BRCA_CNV_TRACK],
@@ -136,8 +95,8 @@ export const tcgaVideoFixtures = {
         tracks: [
           {
             trackId: 'tcga_brca_cnv',
-            // the ERBB2 figure's own height. Left at the default the 1104 rows
-            // auto-fit into ~100px and the sort has nowhere to be visible.
+            // At the default height the 1104 rows auto-fit into ~100px and the
+            // sort has no room to show.
             height: 700,
           },
         ],
@@ -146,27 +105,11 @@ export const tcgaVideoFixtures = {
   }),
 }
 
-// The four recurrent stripes to name in the genome-wide figure. Each callout
-// anchors to the gene's own coordinates in the live view — the app resolves
-// them through the same bp->px layout it painted the stripe with — so nothing
-// here has to be re-measured when the viewport width, the track heights, or the
-// wiggle track above the stack change.
+// BRCA1 (germline, not copy number) and PTEN (too faint here) stay unlabeled.
 //
-// Each locus was checked against the rendered pixels first: the labeled column
-// carries 3.5-7x its neighborhood's fraction of saturated rows. BRCA1 is
-// deliberately absent — it drives breast cancer through germline point
-// mutations, not a recurrent copy-number event, and at this scale it lands 2px
-// from ERBB2 anyway. PTEN (10q23) is the fifth classic locus but reaches only
-// ~1.4x here, too faint to point at honestly.
-//
-// `labelDy`/`headDy` are px BELOW THE TOP OF THE STACK (anchored with
-// `fracY: 0`), not a fraction of it: 1104 rows make this track ~1105px tall
-// against a 1120px viewport, so it runs off the bottom edge and a fraction of
-// its height would put a callout below the capture. Labels sit low where the
-// stack is palest, with an arrow up into the stripe. `labelDx` is a
-// readability nudge only — MYC's is large because CDKN2A's stripe is ~20px away
-// at this scale and the two pills would otherwise collide, which is also why
-// CDKN2A's label drops to its own row.
+// `labelDy`/`headDy` are px below the stack's top edge, since the ~1105px stack
+// runs off the bottom of the viewport. MYC's large `labelDx` and CDKN2A's lower
+// row keep their pills apart; the two stripes sit ~20px apart.
 const RECURRENT_LOCI = [
   { gene: 'MYC (8q24)', locus: '8:127,735,434', labelDx: -162, tailDx: -22 },
   {
@@ -183,52 +126,25 @@ const RECURRENT_LOCI = [
 
 const COHORT_TRACK_ID = 'tcga_brca_cnv'
 
-// The same cohort's somatic point mutations, as a genotype matrix: one column
-// per distinct mutation, one row per tumor, built by
-// scripts/build_tcga_cohort_mutations.sh from GDC open-access Masked Somatic
-// Mutation MAFs. The page restates the track in each section that groups it,
-// so a figure names the section whose config it draws.
+// The page restates the mutation track in each section that groups it, so a
+// figure names the section whose config it draws.
 const MUTATIONS_DOC = 'tutorials/tcga_cohort_mutations.md'
 const HISTOLOGY_SECTION = 'Facet the rows by clinical annotation'
 const SUBTYPE_SECTION = 'Facet rows by receptor subtype'
 
-// The matrix canvas only mounts once the cell-data RPC has landed, so this gates
-// each capture on real completion rather than on a duration guess.
 const MATRIX_DONE = displayPainted('variant-matrix-display')
 
-// Display height for the 979-row cohort matrices, i.e. about a third of a pixel
-// per tumor. Rows auto-fit by dividing the height and are allowed below a pixel
-// (effectiveRowHeight only floors at 1 when the line zone has swallowed the
-// display), and matrixCellMark deliberately draws sub-pixel cells at
-// float coordinates with a 0.3px overdraw rather than snapping them to a pixel.
-// So a mutated tumor in a crowded band is an antialiased smear that accumulates
-// with its neighbours, and the density difference between two clinical bands
-// reads as one band being darker than the other -- which is the comparison
-// these figures exist to make. Giving each tumor its own visible row instead
-// (1900px, reviewed and rejected) spreads the same marks over a frame six times
-// taller, where the contrast is a property of two screens of grey.
+// About a third of a pixel per tumor, so a band's mutation density reads as
+// darkness. One visible row per tumor (1900px) spreads that contrast over two
+// screens of grey.
 const MATRIX_ROWS_HEIGHT = 320
 
-// The connector band between the gene lane and the rows, where each column's
-// line lands on the base it came from. Tall enough to be read as a fan rather
-// than a fringe, which is what says whether a gene's calls pile on one codon
-// (PIK3CA) or run the length of the transcript (CDH1, TP53) -- the matrix packs
-// columns by feature index and on its own says nothing about position.
-//
-// It also decides where the floating legend sits. The legend pins to the top
-// right of the DISPLAY, so with a thin band it covers the top rows of the
-// right-most columns, which on PIK3CA is the H1047R hotspot in the band the
-// figure is about. A band this tall puts it over the connector zone instead.
+// The floating legend pins to the display's top right; below this height it
+// covers PIK3CA's H1047R hotspot instead of the connector zone.
 const LINE_ZONE_HEIGHT = 130
 
-// The gene track and the view's own chrome (header, ruler, track label), on top
-// of the display height.
 const MATRIX_CHROME_HEIGHT = 330
 
-// Collapse the gene's introns by driving the app's own action: right-click the
-// gene in the MANE lane, "Collapse introns", then replace the current view. The
-// exon intervals come out of the live feature, so nothing here is a coordinate
-// list that could drift from the transcript the lane is drawing.
 const collapseIntrons = (gene: string) => [
   { type: 'waitForText' as const, text: gene },
   { type: 'rightclick' as const, text: gene },
@@ -244,8 +160,6 @@ const collapseIntrons = (gene: string) => [
     text: 'Replace current view',
     hidden: true,
   },
-  // the reshaped view refetches every track: the matrix's own done-testid is
-  // the only thing that says the 979 rows are back
   {
     type: 'waitForSelector' as const,
     selector: '[data-testid="loading-overlay"]',
@@ -254,38 +168,21 @@ const collapseIntrons = (gene: string) => [
   { type: 'waitForSelector' as const, selector: MATRIX_DONE, timeout: 180000 },
 ]
 
-// MANE gives one transcript per gene, so the lane names the gene in a single row
-// instead of an isoform stack. 84px is two rows' worth: content starts ~4px in
-// and the row pitch is 40px.
+// 84px is two MANE rows: content starts ~4px in and the row pitch is 40px.
 const MANE_TRACK = {
   trackId: 'MANE.GRCh38.v1.4.refseq',
   height: 84,
 }
 
-// ClinVar's own submissions over the same window, as a one-row lane under the
-// gene: the germline record of a gene the cohort is mutating somatically. The
-// track ships with a CLNSIG color jexl in the config, so pathogenic calls are red
-// and benign ones blue without a per-figure color table.
 const CLINVAR_TRACK = {
   trackId: 'clinvar_ncbi_hg38',
   type: 'LinearVariantDisplay',
-  // one row of ticks, not a stack: this lane is here to be compared with the
-  // matrix's columns, not read variant by variant
   displayMode: 'collapsed',
   height: 40,
 }
 
-// The per-gene mutation-rate track that used to be drawn over the TP53 matrix
-// was DELETED here (reviewer, after two rebuilds: "please just delete this
-// figure or do something better. it is just total nonsense as is"). Worth one
-// note so it is not re-proposed: the file is one interval per GENE, so over a
-// single gene every subtype is one flat level and the track's x axis carries
-// nothing at all. Four stacked panels made that four rulers, an overlay made it
-// a wireframe, and filled colored rows made it four rectangles -- each version
-// was a bar chart of four numbers wearing a genome browser. The tutorial still
-// builds the track and shows the bedGraph the numbers come from; what it no
-// longer does is photograph it. Anything that DOES belong in a picture here
-// would need a window where the track varies, i.e. many genes, not one.
+// The mutation-rate bedGraph has one interval per gene, so over one gene each
+// subtype draws a flat level; a figure of it needs a many-gene window.
 
 function mutationFigure({
   loc,
@@ -322,14 +219,7 @@ function mutationFigure({
   })
 }
 
-// What the collapse-introns tour films: the CDH1 figure's own session, opened on
-// the whole transcript, which is the state the figure's `actions` then reshape.
-// So the clip ends on the picture the page prints and the reader has seen how it
-// was made.
-//
-// The route is `collapseIntrons` above, restated with captions and holds rather
-// than reused: a tour needs a `say` per click and a hold long enough to read a
-// menu, and the still's version is deliberately as fast as the app allows.
+// The CDH1 figure's session before its `actions` collapse the introns.
 export const tcgaMutationVideoFixtures = {
   gene: 'CDH1',
   matrixDone: MATRIX_DONE,
@@ -340,14 +230,6 @@ export const tcgaMutationVideoFixtures = {
 }
 
 export const tcgaSpecs: ScreenshotSpec[] = [
-  // The cohort view: every TCGA-BRCA primary tumor as one 1px row across the
-  // whole genome, clustered so tumors with similar profiles sit together, under
-  // the cohort's own gain/loss frequency. Recurrent events read as vertical
-  // stripes down the stack — blue at 9p21 (CDKN2A) and 10q23 (PTEN), red at
-  // 17q12 (ERBB2), 8q24 (MYC) and 11q13 (CCND1) — and every peak in the top
-  // track is one of those stripes, with a number on it that the stack alone
-  // can't give. This is the figure the tutorial is built around; it replaces a
-  // separate unclustered recurrence figure that showed the same two tracks.
   {
     mode: 'url',
     name: 'tcga/cohort_cnv_genome',
@@ -362,13 +244,11 @@ export const tcgaSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'tcga_brca_cnv_recurrence',
-              // same height the tutorial's own displayDefaults use
               height: 120,
             },
             {
               trackId: 'tcga_brca_cnv',
               height: 760,
-              // one-shot declarative trigger, cleared once the RPC lands
               runClustering: true,
               showTree: true,
             },
@@ -377,33 +257,19 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       ],
     }),
     readySelector: CLUSTERED,
-    // networkidle0 can't land inside puppeteer's fixed 60s navigation timeout
-    // while the 5.7MB BED streams
+    // networkidle0 cannot land within puppeteer's 60s navigation timeout while
+    // the 5.7MB BED streams
     waitUntil: 'domcontentloaded',
-    // by far the heaviest spec here: the whole-genome view pulls essentially the
-    // entire 5.7MB BED before it can build the 1104-row matrix and cluster it.
-    // Needs minutes under the default swiftshader rasterizer — not from fetching
-    // or clustering (2.1s and 0.4s measured) but from ~10 multi-second software
-    // GPU passes over the 1104-row canvas. Regenerate with --headed and it is
-    // ready in ~14s; the budget stays large so a headless run can still finish.
-    // See agent-docs/reference/FIGURE_CAPTURE.md, "Slow figures are SwiftShader".
+    // SwiftShader's passes over the 1104-row canvas take minutes; see
+    // agent-docs/reference/FIGURE_CAPTURE.md, "Slow figures are SwiftShader".
     readyTimeout: 900000,
     viewportWidth: 1900,
-    // tall enough for the whole 760px stack below the 120px frequency track:
-    // the review's "the heatmap is sliced at the bottom edge" was this figure's
-    // 900px viewport cutting the last ~60 rows
+    // a shorter viewport clips the bottom rows of the 760px stack
     viewportHeight: 1132,
-    // 1104 rows floored to 1px: sub-pixel row-boundary jitter between runs, so
-    // the gate sits above the default
+    // 1104 one-pixel rows jitter at row boundaries between runs
     diffThreshold: 0.02,
-    // A label beside each recurrent stripe, with an arrow up into it. Both ends
-    // of both shapes anchor to the gene's locus in the cohort track, so the
-    // whole callout is derived from the view rather than measured off a
-    // previous capture (see RECURRENT_LOCI).
     annotations: RECURRENT_LOCI.flatMap(
       ({ gene, locus, labelDx, tailDx, labelDy = 532, headDy = 422 }) => {
-        // fracY 0 puts the anchor on the stack's top edge; dy then walks down
-        // from there, so every offset is measured against the track itself
         const at = { trackId: COHORT_TRACK_ID, loc: locus, fracY: 0 }
         return [
           {
@@ -416,7 +282,6 @@ export const tcgaSpecs: ScreenshotSpec[] = [
           },
           {
             type: 'arrow' as const,
-            // tail leaves from just above the label's pill
             fromAnchor: { ...at, dx: tailDx, dy: labelDy - 13 },
             anchor: { ...at, dy: headDy },
           },
@@ -425,25 +290,8 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     ),
   },
 
-  // Clustered on chr17:39.0-40.5Mb, spanning ERBB2 (39.69-39.73Mb), the HER2 of
-  // HER2-positive breast cancer, via `clusterRegion`, so the cohort sorts into its
-  // copy-number classes at this locus as the page's fence window does. The view
-  // then shows 1.5 Mb either side, so each band's call reads against its flanks.
-  //
-  // Note the banding is qualitative, not proportional: 1104 rows in a few
-  // hundred px puts each tumor well under 1px, so rows alias and the saturated
-  // colors crowd out the neutral ones. Measured off the BED the window is 70%
-  // balanced, but it paints as ~52%.
-  //
-  // Neutral stays near-white (#f7f7f7) on purpose. A darker neutral makes this
-  // figure's balanced band more obviously "data", but washes out the
-  // genome-wide figure above, where the recurrent stripes are the whole point,
-  // and near-white neutral is the convention for CNV heatmaps. So the pale band
-  // gets a callout instead of a color: on a white page the bottom of this frame
-  // reads as track that failed to load, and "those rows are the balanced
-  // majority" is the one thing about this figure a reader cannot see. Review
-  // note on the previous render asked for exactly that, plus a shorter gene
-  // lane.
+  // The near-white neutral leaves the balanced majority looking like an
+  // unloaded track, so a callout names it.
   {
     mode: 'url',
     name: 'tcga/cohort_cnv_erbb2',
@@ -454,24 +302,13 @@ export const tcgaSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: '17:37,500,000-42,000,000',
-          // band over ERBB2 itself (ncbiRefSeq chr17:39,688,094-39,728,658), so
-          // the amplified column is tied to the gene rather than left for the
-          // reader to locate against the ruler
           highlight: ['17:39,688,094-39,728,658'],
           trackLabels: 'offset',
           tracks: [
             {
-              // MANE gives exactly one transcript per gene, so the lane names
-              // ERBB2 and its neighbors in a single row instead of an isoform
-              // stack that would eat the figure
               trackId: 'MANE.GRCh38.v1.4.refseq',
-              // This window has far more MANE rows than the figure needs, and
-              // height only controls how many are VISIBLE — growing it just
-              // reveals more rows and re-shears the last one's labels. One row
-              // is enough here: the figure's subject is the stack, ERBB2 is
-              // already marked by the `highlight` band rather than by having to
-              // be found among its neighbors' labels, and the row this leaves is
-              // the one ERBB2 is on. Content starts ~4px in, row pitch 40px.
+              // Height sets how many MANE rows show; 44px is the one row ERBB2
+              // is on.
               height: 44,
             },
             {
@@ -490,22 +327,9 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     viewportHeight: 1024,
     diffThreshold: 0.02,
-    // Two labels, both about what the coloring cannot say on a white page.
-    //
-    // fracY of the display rather than a measured pixel: clustering decides
-    // where the band boundaries land, so a coordinate would be wrong the next
-    // time the cohort or the window changes, while "just below the last colored
-    // rows" survives it. The colored bands end around 0.36 of the display, so
-    // 0.44 sits in the pale region with the boundary still in view above the
-    // pill -- which is the whole point, since that boundary is where a reader
-    // decides the track stopped loading.
-    //
-    // No arrow. One was built pointing down into the pale band and it read as a
-    // broken annotation: it leaves a label and lands on nothing visible, which
-    // is exactly the thing the label exists to explain. The label sitting
-    // inside the region names it without having to point.
-    //
-    // No number in either label (see website/CLAUDE.md).
+    // Clustering decides where the colored bands end (~0.36 of the display), so
+    // fracY 0.44 lands in the pale band with the boundary above it. An arrow
+    // into the pale band read as a broken annotation.
     annotations: [
       {
         type: 'text',
@@ -529,22 +353,6 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The pooled frequency profile split four ways by receptor subtype, genome
-  // wide. The same cutoffs and the same axis as the pooled track, so what
-  // changes between the rows is the cohort and nothing else.
-  //
-  // Whole genome rather than a locus because the differences are not at one
-  // place: 17q gain is the HER2+ row, 16q loss the HR+/HER2- row, 5q loss and
-  // 10p gain the triple-negative row, and 1q gain is the event they share. A
-  // zoom would carry one of those and imply the rest are alike.
-  //
-  // Two callouts, one per subtype-specific event, each in the half of its row
-  // that event draws in: a gain rises from the row's midline, so the ERBB2
-  // label sits near the top edge, and a loss hangs below it, so the 16q label
-  // sits near the bottom. Both anchor to the locus in the
-  // live view (`{trackId, loc}` resolves through the same bp->px layout that
-  // painted the bar), with dy measured off the track's top edge in whole row
-  // pitches, so neither has a hand-measured coordinate in it.
   {
     mode: 'url',
     name: 'tcga/cohort_cnv_recurrence_subtype',
@@ -566,17 +374,11 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       ],
     }),
     readySelector: displayPainted('mark-display'),
-    // 246KB across the whole genome, so unlike the 5.7MB stack this needs no
-    // raised navigation or ready budget
     readyTimeout: 180000,
     viewportWidth: 1900,
-    // the display plus the view's own chrome (ruler, header, track label)
     viewportHeight: SUBTYPE_ROWS_HEIGHT + 210,
     annotations: [
-      // row 1, HER2+, whose gain half holds the amplicon that names the
-      // subtype. To the RIGHT of its locus, over chr18-22 where this row is
-      // flat; chr17 sits far enough from the frame's right edge for the pill to
-      // fit beside it.
+      // right of the locus, over chr18-22 where the HER2+ row is flat
       ...subtypeCallout({
         text: 'ERBB2 (17q12)',
         locus: '17:39,688,094',
@@ -585,95 +387,44 @@ export const tcgaSpecs: ScreenshotSpec[] = [
         headDy: 0.35,
         labelDx: 60,
       }),
-      // row 0, HR+/HER2-, whose loss half holds the arm-scale loss that is this subtype's
-      // signature the way 17q gain is HER2+'s. The label names a gene on the arm
-      // rather than the arm alone -- CDH1 is at 16q22.1, and it is the gene the
-      // mutation figures on this cohort are about -- since "16q loss" on its own
-      // says where the bar is and not why it is worth a callout. ERBB2 is on 17q,
-      // not here.
       ...subtypeCallout({
         text: '16q loss (CDH1 arm)',
         locus: '16:70,000,000',
         row: 0,
         labelDy: 0.85,
         headDy: 0.65,
-        // far enough left to sit over chr13-14, where this row is flat
+        // over chr13-14, where this row is flat
         labelDx: -420,
       }),
     ],
   },
 
-  // tcga/cohort_cnv_zarr_genome WAS HERE and is gone, with the tutorial section
-  // it illustrated ("Read the same calls as a binned matrix"). It drew the same
-  // composition as cohort_cnv_genome above from the Zarr store instead of the
-  // BED, and its own caption said so: the recurrent stripes fall in the same
-  // places. So the picture carried no result of its own, and the prose around it
-  // was a bytes-over-the-wire table for two readers of one dataset. The store,
-  // its build script and test_data/tcga_cnv/config.json all still exist; what
-  // this file no longer does is photograph a second reader of the same calls.
-  // A figure here would need a view where the two readers DISAGREE.
+  // A Zarr-store figure drawn here showed the same stripes as cohort_cnv_genome;
+  // one belongs here only where the two readers disagree.
 
-  // CDH1 grouped by histology. E-cadherin loss is the defining lesion of lobular
-  // breast cancer, and this is that result as a picture: the HIGH-impact
-  // (truncating) cells crowd into the lobular band and the much larger ductal
-  // band above it is nearly empty.
-  //
-  // Faceted AND colored by the same column: `facet` makes each histology's rows
-  // contiguous and its domain puts ductal above lobular, which is the order the
-  // caption reads; `rowColor` puts the color strip in the gutter that says which
-  // band is which. Without the strip the bands are unlabeled row ranges.
-  //
-  // The connector fan is half the result here. CDH1 is a tumor suppressor and its
-  // truncating calls are spread along the transcript rather than piled on a
-  // codon, which is the contrast with PIK3CA's three hotspot bars: most of this
-  // window's columns are HIGH impact and their lines land right across the exons
-  // of the lane above.
   {
     mode: 'url',
     name: 'tcga/mutations_cdh1_histology',
     url: mutationFigure({
-      // the whole transcript, which the actions below then collapse to its
-      // exons. Two reasons for collapsing beyond the empty space: CDH1's first
-      // intron alone is 63 kb, and a window with introns in it fills the matrix
-      // with intronic MODIFIER columns -- one grey column per private intronic
-      // call -- which is what spread the coding mutations thin. Collapsed, every
-      // column in the frame is an exonic change and the connector fan lands in
-      // one bundle per exon.
+      // The actions collapse this transcript to its exons; uncollapsed, private
+      // intronic MODIFIER columns spread the coding calls thin.
       loc: '16:68,730,000-68,842,000',
       section: HISTOLOGY_SECTION,
-      // NO ClinVar lane. It was here as "the germline record of a gene the
-      // cohort is mutating somatically", but collapsed to one row over a
-      // 16-exon window it draws as a 1500px barcode of touching CLNSIG ticks:
-      // it has no column a matrix column can be lined up against, and it was
-      // the busiest thing in a figure whose subject is a density difference
-      // between two bands.
+      // No ClinVar lane: over 16 exons it draws as a barcode of touching ticks
+      // with no column to line up against the matrix.
     }),
     readySelector: MATRIX_DONE,
     readyTimeout: 180000,
     clicksChange: "collapse CDH1's introns",
     actions: collapseIntrons('CDH1'),
-    // collapsing introns raises an "Introns collapsed / UNDO" toast, which is
-    // real UI for a real click and has no business in the published frame
+    // the "Introns collapsed / UNDO" toast
     hideSelectors: ['.MuiSnackbar-root'],
     viewportWidth: 1500,
     viewportHeight:
       MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
-    // The bands are row ranges with a color strip in the gutter, and the legend
-    // is the only thing that says which range is which -- so the figure's whole
-    // result (this band, not that one) has to be read off a key in the far
-    // corner. This names the band the result is in.
-    //
-    // Only the lobular one. A matching 'ductal' pill sat in the band above and
-    // was denied (reviewer: "remove the 'ductal' text"): the ductal band is the
-    // empty majority of the rows, so a label in it names the absence of the
-    // thing the figure is about, and two pills in a frame whose subject is one
-    // of them read as a comparison between equals.
-    //
-    // fracY of the display, not a measured pixel: the matrix is 130px of
-    // connector zone over 320px of rows, and the group boundary sits where the
-    // cohort's histology counts put it, so a fraction survives a re-render that
-    // a coordinate would not. Measured off the render, the lobular band is
-    // roughly the last seventh of the rows.
+    // Only the lobular band gets a label: one in the empty ductal band names an
+    // absence. The cohort's histology counts put the lobular band in roughly the
+    // last seventh of the rows.
     annotations: [
       {
         type: 'text',
@@ -703,37 +454,10 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // PIK3CA, the page's other worked gene, in the three states its last three
-  // sections describe and none of which had a picture: banded by receptor
-  // subtype, clustered by genotype, and thinned by allele frequency. One
-  // window, one capture per state, composed into a pair per claim, so each pair
-  // differs in exactly the setting the section names.
-  //
-  // PIK3CA is an oncogene and its calls pile on two codons, which is what makes
-  // these three readable where TP53 was not (see the deletion note below): a
-  // hotspot is a column most of the cohort's carriers share, so clustering has
-  // a block to gather and the frequency filter has something to keep.
-  //
-  // Introns collapsed for the same reason CDH1's are -- the gene is 92 kb and
-  // an uncollapsed window fills the matrix with private intronic MODIFIER
-  // columns, which is precisely what the frequency filter would then be shown
-  // removing.
-  // PIK3CA banded by receptor subtype, which the "Facet rows by receptor subtype"
-  // section described and had no picture for: its sentence ended on a colon
-  // with nothing under it. Introns collapsed for the same reason CDH1's are --
-  // the gene is 92 kb and an uncollapsed window fills the matrix with private
-  // intronic MODIFIER columns.
-  //
-  // Its two siblings were captured and DROPPED, and neither is worth
-  // re-proposing as shot. `runClustering: true` on this window painted the
-  // matrix into a band a fraction of the tree sidebar's height, so the
-  // gathered block the section claims was not in the frame; the dendrogram
-  // testid is up before the matrix has redrawn, so a settle wait is where a
-  // retry starts. And `filter.minMinorAlleleFrequency: 0.01` left four columns,
-  // each expanded to a few hundred px by the columns layout and orange down
-  // most of the rows -- which reads as a variant the whole cohort carries,
-  // the opposite of the hotspot the page says survives the filter. Check what
-  // that filter keeps on somatic data before drawing it.
+  // Two siblings of this figure failed. `runClustering: true` squashed the
+  // matrix below the tree sidebar's height, and the dendrogram testid appears
+  // before the matrix redraws. `filter.minMinorAlleleFrequency: 0.01` left four
+  // wide columns that read as variants the whole cohort carries.
   {
     mode: 'url' as const,
     name: 'tcga/mutations_pik3ca_grouped',
@@ -751,12 +475,6 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
   },
 
-  // tcga/mutations_tp53_subtype was here and is DELETED (review: "unclear
-  // what this figure indicates. might delete?"). It made the CDH1 figure's
-  // claim a second time, on a gene whose contrast is a density difference
-  // rather than a block of cells: 979 tumors over a 520 px lane is half a
-  // pixel a row, so the triple-negative band being denser than the
-  // HR+/HER2- one above it is a wash a reader has to be told to see. The
-  // grouping mechanic is carried by mutations_cdh1_histology, where
-  // truncating calls crowd one band and leave the other empty.
+  // TP53 by subtype at half a pixel per row draws its density difference as a
+  // wash; mutations_cdh1_histology carries the grouping.
 ]
