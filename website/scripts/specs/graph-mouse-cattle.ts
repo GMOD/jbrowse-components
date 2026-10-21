@@ -13,7 +13,8 @@ const CONFIG = local('test_data/graphgenomeview/pangenome_nonhuman.json')
 const DOCK2_LOC = 'chr11:34,516,044-34,560,497'
 
 // Force: this single 524-segment bubble is the page's counterexample to its
-// "check the counts before the force layout" note. The other windows are chains.
+// "check the counts before the force layout" note. The other windows are
+// chains.
 const dock2Spec: ScreenshotSpec = {
   mode: 'url',
   name: 'pangenome/mouse_dock2',

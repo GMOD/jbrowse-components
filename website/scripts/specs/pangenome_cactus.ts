@@ -196,7 +196,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
             {
               type: 'LinearWiggleDisplay',
               displayId: 'ecoli_depth_by_builder-display',
-              // Autoscale would fit each row to its own max and erase the doubling.
+              // Autoscale fits each row to its own max and erases the doubling.
               scales: { y: { domainMin: 0, domainMax: 10 } },
             },
           ],
@@ -324,7 +324,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           assembly: 'K12',
           loc: 'chr:1-4,641,652',
           highlight: [
-            // getHighlightColor uses a supplied color as-is, so the gold needs alpha.
+            // getHighlightColor uses a supplied color as-is, so gold needs alpha.
             {
               refName: 'chr',
               start: 1000000,

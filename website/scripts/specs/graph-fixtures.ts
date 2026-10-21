@@ -21,7 +21,8 @@ const HOSTED_DEMO = 'https://jbrowse.org/demos/ecoli_pangenome'
 // moves these figures at the next regen. Regenerate unfiltered after one:
 // `--filter` implies `--force`, which skips the 0.5% gate and churns them all.
 
-// Across a re-cut the old graph keeps its node count until `data-loading` clears.
+// Across a re-cut the old graph keeps its node count until `data-loading`
+// clears.
 export const GRAPH_DRAWN =
   '[data-testid="linear-graph-display"][data-node-count]:not([data-loading])'
 
@@ -125,9 +126,9 @@ export const STRAINS_PER_SEGMENT_DISPLAY = {
   },
 }
 
-// The linear half of the graph's 'Reference position' ramp (REFERENCE_RAMP_MAX_HUE
-// in the plugin's GeometryBuilder). A bubble tier's rank-1 rows draw charcoal
-// by design. The graph ramps over its cut, a window-width wider each side, so
+// The linear half of the graph's 'Reference position' ramp
+// (REFERENCE_RAMP_MAX_HUE in the plugin's GeometryBuilder). A bubble tier's
+// rank-1 rows draw charcoal by design. The graph ramps over its cut, a window-width wider each side, so
 // pass the graph track the same domain as `color.domainMin`/`domainMax`.
 export function referencePositionColor({
   start,
