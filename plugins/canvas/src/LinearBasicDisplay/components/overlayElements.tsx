@@ -11,7 +11,7 @@ import {
 } from '../../RenderFeatureDataRPC/constants.ts'
 import PeptideCanvas from './PeptideCanvas.tsx'
 import { labelHit } from './hitTesting.ts'
-import { htmlToPlainText } from './hoverReadout.ts'
+import { labelTooltipText } from './hoverReadout.ts'
 import { labelColors } from './labelColors.ts'
 import { forEachDisplayLabel, labelCullBand } from './labelPositioning.ts'
 import { LABEL_OVERLAY_BACKGROUND } from './sharedRendererConstants.ts'
@@ -387,7 +387,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
             displayedRegionIndex: t.displayedRegionIndex,
             clientX: e.clientX,
             clientY: e.clientY,
-            tooltipText: htmlToPlainText(t.item.tooltip),
+            tooltipText: labelTooltipText(t.item),
           })
         }
       }}

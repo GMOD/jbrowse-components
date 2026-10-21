@@ -4,6 +4,7 @@ import { isBaseResolved } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 import { transcriptPosition } from '../transcriptPosition.ts'
 import { residueLabel } from './peptidePositioning.ts'
 
+import type { FlatbushItem } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { HitFeatureResult } from './hitTesting.ts'
 
 // An HGVS name pairs a name with coordinates, so a subfeature wins only when it
@@ -70,13 +71,13 @@ export function hoverTooltipRows(result: HitFeatureResult) {
   const featureRows = isoform
     ? [name, description, title]
     : [title, description]
-  // A single-transcript gene names its isoform after itself, and a nameless
-  // feature's mouseover and description both fall back to `function`.
-  const rows = [
-    ...featureRows.map(row => tooltipRow(row)),
-    tooltipRow(exon, hgvs, residue),
-  ].filter(Boolean)
-  return [...new Set(rows)]
+  return distinctRows([...featureRows, tooltipRow(exon, hgvs, residue)])
+}
+
+// A single-transcript gene names its isoform after itself, and a nameless
+// feature's mouseover and description both fall back to `function`.
+function distinctRows(rows: (string | undefined)[]) {
+  return [...new Set(rows.filter((row): row is string => !!row))]
 }
 
 // Text that merely contains angle brackets comes back whole, on the same
@@ -91,6 +92,15 @@ export function htmlToPlainText(html: string) {
     : html
 }
 
+function plainText(rows: string[]) {
+  return rows.map(htmlToPlainText).join('\n')
+}
+
 export function hoverTooltipText(result: HitFeatureResult) {
-  return hoverTooltipRows(result).map(htmlToPlainText).join('\n')
+  return plainText(hoverTooltipRows(result))
+}
+
+// A name label marks no base, so the feature's own rows are all it can copy.
+export function labelTooltipText({ tooltip, description }: FlatbushItem) {
+  return plainText(distinctRows([tooltip, description]))
 }
