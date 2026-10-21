@@ -18,8 +18,20 @@ const WINDOW: FollowWindow = {
   end: 2000,
 }
 
-const plan = (displays: LinearSyntenyDisplayModel[], incumbentId?: string) =>
-  planFollowStep({ displays, window: WINDOW, toMate: true, incumbentId })
+const plan = (
+  displays: LinearSyntenyDisplayModel[],
+  incumbent?: { display: LinearSyntenyDisplayModel; id: string },
+) =>
+  planFollowStep({
+    displays,
+    window: WINDOW,
+    toMate: true,
+    incumbent: incumbent && {
+      display: incumbent.display,
+      feat: { id: incumbent.id },
+      target: 'chr1',
+    },
+  })
 
 test('a level with no loaded alignments has no step', () => {
   expect(
@@ -73,22 +85,44 @@ describe('hysteresis across the tracks on one level', () => {
   test('a marginally wider block on the other track does not steal the follow', () => {
     // comparing the displays' answers on raw overlap threw the margin away, so
     // the row flapped between the two tracks as the anchor panned
-    expect(plan([trackA, trackB], 'a')?.feat.id).toBe('a')
+    expect(plan([trackA, trackB], { display: trackA, id: 'a' })?.feat.id).toBe(
+      'a',
+    )
   })
 
   test('a decisively better block on the other track does', () => {
     const sliver = display([{ id: 'a', start: 1000, end: 1100 }])
-    expect(plan([sliver, trackB], 'a')?.feat.id).toBe('b')
+    expect(plan([sliver, trackB], { display: sliver, id: 'a' })?.feat.id).toBe(
+      'b',
+    )
   })
 
   test('an incumbent the window has left is dropped', () => {
     const gone = display([{ id: 'a', start: 0, end: 500 }])
-    expect(plan([gone, trackB], 'a')?.feat.id).toBe('b')
+    expect(plan([gone, trackB], { display: gone, id: 'a' })?.feat.id).toBe('b')
   })
 
   test('an incumbent no longer loaded is simply absent', () => {
-    expect(plan([trackA, trackB], 'dropped-in-the-last-refetch')?.feat.id).toBe(
-      'b',
+    expect(
+      plan([trackA, trackB], {
+        display: trackA,
+        id: 'dropped-in-the-last-refetch',
+      })?.feat.id,
+    ).toBe('b')
+  })
+
+  test("the other track's block with the incumbent's id is no incumbent", () => {
+    // PAF ids are row indices, so two tracks for one pair both mint `0-q-…`
+    const own = display([
+      { id: '0-q', start: 1000, end: 2000, mateRefName: 'chr1' },
+    ])
+    const other = display([
+      { id: '0-q', start: 1000, end: 1900, mateRefName: 'chr5' },
+    ])
+    const step = plan([own, other], { display: own, id: '0-q' })
+    expect(step?.display).toBe(own)
+    expect(plan([other, own], { display: other, id: '0-q' })?.display).toBe(
+      other,
     )
   })
 })

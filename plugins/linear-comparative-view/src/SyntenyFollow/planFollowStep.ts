@@ -12,6 +12,7 @@ import type {
 } from '../LinearSyntenyDisplay/model.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
+import type { LevelPick } from './followLevelStates.ts'
 import type { FollowCandidate } from './pickFollowFeature.ts'
 
 // Everything one level's placement needs, read in the autorun: the async pass
@@ -45,6 +46,12 @@ interface FollowPick extends FollowCandidate {
   data: SyntenyFeatureData
 }
 
+// what the last settle placed from; a feature id names a block only within its
+// own track, since two PAF tracks for one pair mint the same ids
+export type FollowIncumbent = Pick<LevelPick, 'display' | 'target'> & {
+  feat: Pick<FeatPos, 'id'>
+}
+
 /**
  * Which alignment this level places its moving row from, across every synteny
  * track on it: the widest, with the block pick's hysteresis across tracks too.
@@ -55,15 +62,13 @@ export function planFollowStep({
   window,
   toMate,
   mateAssembly,
-  incumbentId,
-  incumbentTarget,
+  incumbent: held,
 }: {
   displays: LinearSyntenyDisplayModel[]
   window: FollowWindow
   toMate: boolean
   mateAssembly?: string
-  incumbentId?: string
-  incumbentTarget?: string
+  incumbent?: FollowIncumbent
 }): FollowStep | undefined {
   let widest: FollowPick | undefined
   let incumbent: FollowPick | undefined
@@ -72,6 +77,7 @@ export function planFollowStep({
     if (!data) {
       continue
     }
+    const incumbentId = held?.display === display ? held.feat.id : undefined
     const candidate = pickFollowFeature({
       data,
       window,
@@ -108,7 +114,7 @@ export function planFollowStep({
         window,
         toMate,
         mateAssembly,
-        incumbentTarget,
+        incumbentTarget: held?.target,
       })
   return {
     display,

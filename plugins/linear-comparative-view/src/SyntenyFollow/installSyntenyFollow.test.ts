@@ -500,6 +500,42 @@ describe('a window wider than the block it is placed by', () => {
       end: 700_000,
     })
   })
+
+  test('a slow map for a block the pick has left does not replace the one it is on', async () => {
+    const answers: ((value: unknown) => void)[] = []
+    const answerLater = () =>
+      new Promise(resolve => answers.push(resolve)) as never
+    jest
+      .mocked(requestCigarMap)
+      .mockClear()
+      .mockImplementationOnce(answerLater)
+      .mockImplementationOnce(answerLater)
+    const block = (start: number, end: number) => ({
+      refName: 'chr1',
+      start,
+      end,
+      mateRefName: 'chr1',
+      mateStart: start,
+      mateEnd: end,
+    })
+    const { rows, host } = twoRows([
+      display([block(100_000, 400_000), block(500_000, 900_000)], true),
+    ])
+    const tick = () => new Promise(resolve => setTimeout(resolve, 0))
+    place(rows[0]!, 0, 450_000)
+    installSyntenyFollow(host)
+    await tick()
+    place(rows[0]!, 450_000, CONTIG)
+    await tick()
+    expect(requestCigarMap).toHaveBeenCalledTimes(2)
+    answers[1]!({ map: 'second' })
+    await tick()
+    answers[0]!({ map: 'first' })
+    await tick()
+    place(rows[0]!, 420_000, CONTIG)
+    await tick()
+    expect(requestCigarMap).toHaveBeenCalledTimes(2)
+  })
 })
 
 // The contig vote's incumbent is where the last settle placed the row, so a

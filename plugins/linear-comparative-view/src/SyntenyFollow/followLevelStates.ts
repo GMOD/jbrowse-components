@@ -20,10 +20,23 @@ export interface LevelPick {
   transform?: FollowTransform
 }
 
+// a block by its track and id, since ids are unique only within one track
+export interface BlockRef {
+  display: LinearSyntenyDisplayModel
+  featureId: string
+}
+
+export function namesBlock(
+  ref: BlockRef | undefined,
+  display: LinearSyntenyDisplayModel,
+  featureId: string,
+) {
+  return ref?.display === display && ref.featureId === featureId
+}
+
 // Kept across settles, and a miss is recorded too, or a block with no CIGAR is
 // asked about every settle.
-export interface LevelCigarMap {
-  featureId: string
+export interface LevelCigarMap extends BlockRef {
   value?: SyntenyCigarMapResult
 }
 
@@ -34,7 +47,7 @@ export interface FollowLevelState {
   toMate?: boolean
   pick?: LevelPick
   map?: LevelCigarMap
-  mapPending?: string
+  mapPending?: BlockRef
   // latest-wins, bumped once per pass per level
   seq: number
   answer: FollowAnswerCache

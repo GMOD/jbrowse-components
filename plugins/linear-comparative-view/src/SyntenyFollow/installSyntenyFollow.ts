@@ -13,7 +13,7 @@ import {
 import { logFollowSpread, logFollowStep } from './followDebug.ts'
 import { followFrameSpan } from './followFrameSpan.ts'
 import { EMPTY_FOLLOW_REPORT } from './followHost.ts'
-import { createFollowLevelStates } from './followLevelStates.ts'
+import { createFollowLevelStates, namesBlock } from './followLevelStates.ts'
 import { followRung } from './followRung.ts'
 import { followSpreadSpans } from './followSpreadSpans.ts'
 import { followTransform } from './followTransform.ts'
@@ -412,32 +412,39 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   // Fetch the pick's CIGAR map once, not awaited: a map that never arrives costs
   // the frame pass precision, not a placement, so a failure reports nothing.
   function ensureCigarMap(state: FollowLevelState, step: FollowStep) {
+    const { display } = step
     const featureId = step.feat.id
     if (
       !step.hasCigar ||
-      state.map?.featureId === featureId ||
-      state.mapPending === featureId
+      namesBlock(state.map, display, featureId) ||
+      namesBlock(state.mapPending, display, featureId)
     ) {
       return
     }
-    state.mapPending = featureId
+    const pending = { display, featureId }
+    state.mapPending = pending
     const generation = levelStates.generation
     requestCigarMap({
-      model: step.display,
+      model: display,
       feat: step.feat,
       signal: levelStates.signal,
     })
       .then(value => {
-        // not `seq`: a later window inside the same block still wants this
-        if (generation === levelStates.generation) {
-          state.map = { featureId, value }
+        // not `seq`, since a later window inside the same block still wants
+        // this, but the pick, or a slow map replaces the one it moved on to
+        if (
+          generation === levelStates.generation &&
+          state.pick?.display === display &&
+          state.pick.feat.id === featureId
+        ) {
+          state.map = { display, featureId, value }
         }
       })
       .catch(() => {
         // asked again next settle
       })
       .finally(() => {
-        if (state.mapPending === featureId) {
+        if (state.mapPending === pending) {
           state.mapPending = undefined
         }
       })
@@ -586,8 +593,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       window,
       toMate,
       mateAssembly,
-      incumbentId: state.pick?.feat.id,
-      incumbentTarget: state.pick?.target,
+      incumbent: state.pick,
     })
     logFollowStep({
       stayingView,
@@ -775,10 +781,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             toMate,
             mateAssembly,
             transform: pick.transform,
-            map:
-              state.map?.featureId === pick.feat.id
-                ? state.map.value
-                : undefined,
+            map: namesBlock(state.map, pick.display, pick.feat.id)
+              ? state.map?.value
+              : undefined,
             incumbentTarget: pick.target,
           })
           if (
