@@ -1,3 +1,6 @@
+A tutorial shows a reader how to do a task in JBrowse. A section that only
+convinces us, the authors, that a result is right gets cut.
+
 Show rather than tell: informative figures, minimal prose. No em-dashes anywhere
 in tutorials, code comments included. Captions, numbers and voice:
 `website/CLAUDE.md`; page mechanics: `website/docs/CLAUDE.md`.
@@ -21,7 +24,6 @@ ratchet's backlog. What follows is what no check sees.
   purpose. "Put the payoff figure first" is a closed question.
 - One dataset is the default. A second belongs only where the first raised the
   question it answers.
-- Every dataset has a built-in negative control in the same figure.
 - A closing check against the raw data earns its place only as a JBrowse step a
   reader would repeat on their own data, such as opening the reads under a call.
   Cut a script that re-derives the figure's claim from the file.

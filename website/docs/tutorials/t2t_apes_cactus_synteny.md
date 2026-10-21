@@ -51,7 +51,7 @@ with Progressive Cactus (Armstrong et al. 2020).
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results. The chain steps take your own chains.
+rebuild those results, and the chain steps below take your own chains.
 
 | What it is                                                                                                | File                                                                              |
 | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
@@ -77,9 +77,6 @@ stack:
 - chimpanzee against bonobo, bonobo against gorilla, gorilla against the
   Sumatran orangutan, the Sumatran against the Bornean orangutan, and the
   Bornean orangutan against the siamang
-
-All of them come out of one multiple alignment, so the chimpanzee in the hg38
-pair and the chimpanzee in the bonobo pair are aligned the same way.
 
 `chain2paf` reads a chain uncompressed:
 
@@ -175,9 +172,9 @@ Opened on hg38 around _TP53_, the track draws a lane per ape under human, each
 in that genome's own coordinates. Each lane header names the chromosome and the
 span the lane shows, with `[rev]` where the lane runs against human.
 
-The ribbons color by strand by default (**Color by... → Strand**, under
-**Ribbons** in the track menu): each ribbon shows whether its two lanes agree in
-orientation. The session below opens on it:
+The ribbons color by strand (**Color by... → Strand**, under **Ribbons** in the
+track menu), blue where a lane runs against the one above it. The session below
+opens on _TP53_:
 
 ```json session config=https://jbrowse.org/demos/t2t_apes_cactus/config.json
 {
@@ -193,7 +190,6 @@ orientation. The session below opens on it:
           {
             "trackId": "t2t_apes_cactus",
             "type": "MultiWaySyntenyDisplay",
-            "ribbonColor": { "field": "strand" },
             "height": 600
           }
         ]

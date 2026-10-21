@@ -1983,7 +1983,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             {
               trackId: 't2t_apes_cactus',
               type: 'MultiWaySyntenyDisplay',
-              ribbonColor: { field: 'strand' },
               height: 600,
             },
           ],
@@ -2012,7 +2011,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             {
               trackId: 't2t_apes_cactus',
               type: 'MultiWaySyntenyDisplay',
-              ribbonColor: { field: 'strand' },
               height: 600,
             },
           ],
