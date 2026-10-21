@@ -1,23 +1,5 @@
-// Everything the pangenome graph figures share, whichever organism they draw:
-// the fixture configs and the switches that repoint them at a local build, the
-// ready gates, the graph track entry, and the reference-position color ramp.
-//
-// This was the preamble of specs/graph.ts, which held both organisms in 5,524
-// lines and is now specs/graph-ecoli.ts and specs/graph-hprc.ts. Of the 124
-// top-level bindings that preamble carried, five are read from both sides, and
-// they are here; the seam is that clean because the two datasets share their
-// vocabulary and nothing else.
-//
-// `local` is the one that HAS to be a single module rather than a copy per
-// organism. It writes the gitignored `*_local.json` siblings, and the
-// GRAPH_PLUGIN_LOCAL block below copies the plugin's dist — both at module
-// scope, so a second copy would do that work twice per run. ESM evaluates this
-// module once before either importer's body runs, which is what makes that
-// safe.
-//
-// This file exports no spec of its own. screenshot-impact.ts has a rule for
-// that (see `specsImporting`): an edit here selects the specs of every sibling
-// module that imports it, rather than selecting nothing.
+// `local` has to live in one module: at module scope it writes the
+// `*_local.json` siblings and copies the plugin's dist.
 import {
   cpSync,
   existsSync,
@@ -33,53 +15,19 @@ import { ECOLI_DEMO_BASE, usingLocalDemo } from './demoBase.ts'
 
 import type { ScreenshotAction } from '../screenshot-spec-types.ts'
 
-// The url the tracked fixture configs hardcode, and what ECOLI_DEMO_BASE
-// replaces in them when it is set.
 const HOSTED_DEMO = 'https://jbrowse.org/demos/ecoli_pangenome'
 
-// Figures for the pangenome tutorials that use the third-party
-// jbrowse-plugin-graphgenomeviewer (GraphGenomeView). The plugin bundle and the
-// GFA fixtures are served same-origin from test_data/graphgenomeview, so the
-// cross-origin plugin-trust dialog never triggers in the headless capture. The
-// GFA slice is the same four-strain E. coli minigraph data the pangenome_ecoli
-// tutorial builds its rGFA graph figures from.
-//
-// The anchored (rGFA) layout is computed locally from the SR:i:0 rank tags. The
-// force-directed (Bandage FMMM) layout renders through the same pipeline — the
-// worker resolves its WASM engine from the plugin's own bundle url. Both are
-// deterministic, so no graph spec needs a raised diffThreshold: FMMM seeded its
-// initial placement from clock() until the plugin fixed the seed, and the ~2%
-// of pixels that moved on every regen was enough to hide a real change (an
-// orange recolor shipped as goldenrod in three figures under that threshold).
-//
-// Every fixture names the plugin's unversioned npm url
-// (test_data/graphgenomeview/README.md), so a plugin publish moves these
-// figures at the next regen, with no diff in this repo.
-//
-// Deterministic in PIXELS is not deterministic in BYTES, and a plugin publish
-// is where that bites. Regenerating this set with `--filter` to check what a new
-// bundle moved rewrites all of them, because --filter implies --force and force
-// skips the 0.5% gate that normally absorbs the sub-pixel jitter two
-// consecutive renders of the same spec produce. The result reads as "the bundle
-// moved 25 figures" and is 25 figures of churn in figures.lock. Regenerate
-// UNFILTERED after a publish and let the gate answer, or accept that the
-// answer you get is not about the bundle.
+// Every fixture names the plugin's unversioned npm url, so a plugin publish
+// moves these figures at the next regen. Regenerate unfiltered after one:
+// `--filter` implies `--force`, which skips the 0.5% gate and churns them all.
 
-// A graph track (LinearGraphDisplay) holding a cut. The display publishes
-// `data-node-count` once its pane has a graph, and `data-cut-tier` says which
-// tier that cut came from.
-// `:not([data-loading])`, because across a re-cut the old graph keeps its
-// node count and the tier flips before the new cut lands.
+// Across a re-cut the old graph keeps its node count until `data-loading` clears.
 export const GRAPH_DRAWN =
   '[data-testid="linear-graph-display"][data-node-count]:not([data-loading])'
 
 export const graphCutDrawn = (tier: 'fine' | 'coarse') =>
   `[data-testid="linear-graph-display"][data-cut-tier="${tier}"][data-node-count]:not([data-loading])`
 
-// A graph track's display entry, its settings flat: `layoutMode`, `color`,
-// `size`, `layers`, `facet`, `rows`, `hover` and the cut's own. What it states
-// wins over the display config's. `paneHeight`, the standalone view's ceiling, is the track's `height`
-// here; unstated, the track is the config's 300 px.
 export const graphTrack = (trackId: string, props: Record<string, unknown>) => {
   const { paneHeight, ...rest } = props
   return {
@@ -90,18 +38,13 @@ export const graphTrack = (trackId: string, props: Record<string, unknown>) => {
   }
 }
 
-// A `maxRegionBp` that holds a graph track's cut near the view's window, for a
-// drawing sized to the window's own nodes: the track narrows the window-width
-// margins it cuts to fit under it. Never under the window's own span, which the
-// track refuses to cut at all.
+// Never under the window's own span, which the track refuses to cut at all.
 export function cutNear(window: number | { start: number; end: number }) {
   const span = typeof window === 'number' ? window : window.end - window.start
   return Math.ceil(span * 1.1)
 }
 
-// Open a graph track's menu and pick the row at the end of `path`, e.g.
-// ['Layout: Anchored', 'Force-directed (FMMM)']. A radio or checkbox row leaves its menu
-// standing, so a frame of the result wants `closeMenusAfter`.
+// A radio or checkbox row leaves its menu open; follow with `closeMenusAfter`.
 export function graphTrackMenu(
   trackId: string,
   path: string[],
@@ -114,43 +57,17 @@ export function graphTrackMenu(
   ]
 }
 
-// The standalone GraphGenomeView, which a whole GFA file still opens in. Its
-// showLoading holds the view phase until the geometry is built, and the ready
-// gate also waits for the toolbar, since a slow fetch could otherwise leave the
-// Layout/Color selects unpainted in the frame. `body:has(A) B` is an AND.
+// `body:has(A) B` is an AND, so the gate also waits for the toolbar.
 export const GRAPH_VIEW_DRAWN =
   '[data-view-phase="ready"] [data-testid="graph-stats"]'
 export const GRAPH_VIEW_READY = `body:has(${GRAPH_VIEW_DRAWN}) [data-testid="graph-layout-select"]`
 
-// The tracked fixtures, whose `esmUrl` is the plugin list's `latest/` url.
-// Their `*_local.json` siblings point that url at a local
-// `pnpm build` of the plugin instead and are gitignored, so a spec naming one
-// renders here and gives the reader a live link to a config that exists on no
-// server (checked by `pnpm check-live-configs`). Iterate against a local plugin
-// build by setting GRAPH_PLUGIN_LOCAL=1, and switch back before committing
-// figures.
-//
-// The sibling is WRITTEN here rather than kept by hand, because a gitignored
-// copy of a tracked config drifts and nothing notices: `hprc_local.json` was
-// made before two gene tracks were added to `hprc.json`, so under
-// GRAPH_PLUGIN_LOCAL those tracks were simply absent and a figure failed on
-// annotation anchors that resolved to nothing. That reads as a regression in whatever you are testing, which is the
-// worst possible failure for the one switch you flip only when hunting one.
+// GRAPH_PLUGIN_LOCAL=1 repoints the fixtures at a local plugin build through
+// gitignored `*_local.json` siblings. Switch back before committing figures.
 const localEsmUrl =
   '/test_data/graphgenomeview/_localdist/jbrowse-plugin-graphgenomeviewer.esm.js'
 
-// `_localdist` is COPIED from the plugin's dist/ on every GRAPH_PLUGIN_LOCAL
-// run, for the same reason the `_local.json` siblings above are written rather
-// than kept: a gitignored copy of something built elsewhere drifts and nothing
-// notices. It drifted, and it cost a full day. Every "I rebuilt the plugin and
-// the bug is still there" result in that session — across a dependency bump, two
-// upstream patches and two rounds of instrumentation — was read off a bundle
-// hours old, because this directory was a stale hand-copy. Four conclusions were
-// wrong and the real cause went unfound until the staleness was noticed.
-//
-// Missing dist/ is fatal rather than silently falling back to the pinned bundle:
-// a run that quietly tests the published plugin when you asked for the local one
-// is the same failure again.
+// The copy runs every time, since a stale hand-kept `_localdist` hides fixes.
 if (process.env.GRAPH_PLUGIN_LOCAL) {
   const pluginDist =
     process.env.GRAPH_PLUGIN_DIST ??
@@ -164,11 +81,7 @@ if (process.env.GRAPH_PLUGIN_LOCAL) {
   rmSync(dest, { force: true, recursive: true })
   cpSync(pluginDist, dest, { recursive: true })
 }
-// The fixture configs also hardcode the hosted demo's data urls, so ECOLI_DEMO_BASE
-// has to rewrite them here too — otherwise a local-demo run renders the new
-// plugin against the OLD hosted files. Same gitignored-sibling mechanism, and it
-// writes the sibling rather than keeping one by hand for the same reason: a
-// hand-kept copy of a tracked config drifts and nothing notices.
+// ECOLI_DEMO_BASE rewrites the fixtures' hosted data urls too.
 const rewriteFixture = usingLocalDemo || process.env.GRAPH_PLUGIN_LOCAL
 export const local = rewriteFixture
   ? (name: string) => {
@@ -191,26 +104,11 @@ export const local = rewriteFixture
     }
   : (name: string) => name
 
-// What the graph paints an off-reference allele in its 'Reference position'
-// scheme (REFERENCE_RAMP_ALT_COLOR in the plugin's GeometryBuilder). Hoisted so
-// the linear lane's jexl and the prose below name one color.
+// REFERENCE_RAMP_ALT_COLOR in the plugin's GeometryBuilder.
 export const ALT_ALLELE_COLOR = 'rgb(60,65,72)'
 
-// A segments lane colored by how many of the five strains walk each segment,
-// rather than by reference position. The adapter puts the walk's `SM:Z:` tag on
-// the feature as `samples` and `sampleCount`, so this is the graph's own statement
-// of membership drawn along the reference instead of read off one clicked node.
-//
-// Five discrete steps rather than a continuous ramp, because five strains is
-// five answers and the key then names each one. Grey for all five: the core
-// backbone is the background these figures are not about, and the private boxes
-// have to be what the eye lands on. An rGFA has no tag column, so `sampleCount`
-// is absent there and paints the no-value grey.
-//
-// Shared because both builders' graphs hold the same five strains and the same
-// tag: the pggb figures read it off `ecoli_pggb` and the Minigraph-Cactus one
-// off `ecoli_cactus`, and a second copy of the scale would let the two pages
-// answer the same question in different colors.
+// Shared so the pggb and Minigraph-Cactus pages answer in the same colors. An
+// rGFA has no `SM:Z:` tag, so its segments paint the no-value grey.
 export const STRAINS_PER_SEGMENT_DISPLAY = {
   color: {
     field: 'sampleCount',
@@ -227,48 +125,10 @@ export const STRAINS_PER_SEGMENT_DISPLAY = {
   },
 }
 
-// The linear half of the graph view's 'Reference position' color scheme, which
-// is the answer to "if the nodes were rainbow colored in exact same way in
-// lineargenomeview and bandage graph it might help show correspondence".
-//
-// That scheme is a hue ramp over the region the subgraph was cut from: hue 0
-// (red) at its start to 300 (magenta) at its end, at saturation 70% and
-// lightness 50% (jbrowse-plugin-graphgenomeviewer renderer/GeometryBuilder.ts,
-// REFERENCE_RAMP_MAX_HUE). It is a function of two stated numbers and a
-// midpoint, which is the whole reason it exists: a linear track can reproduce
-// it exactly, so a block above and a node below are the same color for the same
-// bp. Every scheme before it could not — depth and rank are graph quantities,
-// and the old rainbow ramped over node index, which a linear view cannot know.
-//
-// An off-reference segment comes off the ramp entirely and paints one flat
-// charcoal, matching REFERENCE_RAMP_ALT_COLOR in the plugin. It used to keep the
-// hue of the reference it replaces, paler (45%/72% against 70%/50%); review
-// asked for "a non-spectrum coloring" for the non-backbone parts, because a hue
-// on the ramp says the allele IS the reference at that position.
-//
-// WHICH LANES THAT BRANCH ACTUALLY FIRES ON, because the two kinds of index
-// differ and the charcoal has been read as a bug on the one where it does
-// (review, on pangenome/pggb_bubble_tier: "it is sort of odd to see black
-// segments in the linaergenomeview to me, i thought those are all reference"):
-//
-//  - AN rGFA SEGMENT INDEX over the reference. Never. A rank>0 segment states
-//    its coordinates on its own stable sequence, so it is not in this window at
-//    all, and the pair of rows a dense lane draws is the layout packing rank-0
-//    blocks, not rank. The branch is there for a lane opened on a contributing
-//    assembly, where those segments do appear.
-//  - A BUBBLE TIER. Every window, by construction: `gfa-to-tabix bubbles`
-//    anchors each bubble at its REFERENCE span, so a tier row alternates rank-0
-//    backbone with rank-1 bubbles tiling the same axis. Those are the charcoal
-//    blocks, and they are the point of the lane — the bubbles are what the
-//    coarse tier keeps. They pack onto their own row because at ~100 bp/px a
-//    124 bp bubble is a pixel wide and cannot sit beside its neighbours.
-//
-// `rank` is what RgfaTabixAdapter puts on the feature; a track carrying none
-// reads `undefined > 0` as false and stays on the ramp.
-//
-// The graph's own ramp runs over its cut, which a graph track makes a
-// window-width wider than the view on each side, so a lane painted with this
-// passes the same domain to the graph track as `color.domainMin`/`domainMax`.
+// The linear half of the graph's 'Reference position' ramp (REFERENCE_RAMP_MAX_HUE
+// in the plugin's GeometryBuilder). A bubble tier's rank-1 rows draw charcoal
+// by design. The graph ramps over its cut, a window-width wider each side, so
+// pass the graph track the same domain as `color.domainMin`/`domainMax`.
 export function referencePositionColor({
   start,
   end,

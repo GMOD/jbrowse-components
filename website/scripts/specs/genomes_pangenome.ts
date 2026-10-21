@@ -3,25 +3,19 @@ import { graphTrack } from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// The HPRC page and its graph launch, which open pangenome_hprc. The
-// session is the one graphRegionUrl builds in
-// ~/src/jb2hubs/website/src/components/pangenomeLinks.ts, so re-copy it when
-// that repo moves a window or a launch prop.
+// graphRegionUrl in ~/src/jb2hubs/website/src/components/pangenomeLinks.ts
+// builds the same session; re-copy it when that file moves a window or prop.
 const HPRC_PAGE = 'https://genomes.jbrowse.org/pangenomes/hprc'
-// The page's HLA / MHC example is a link to this url.
 const HPRC_MHC_ANSWER = `${HPRC_PAGE}/?region=${encodeURIComponent('chr6:32,510,001-32,600,000')}`
 export const PORTAL_CONFIG =
   'https://jbrowse.org/pangenome/hprc-grch38/config.json'
 
 const MHC_WINDOW = { refName: 'chr6', start: 32510000, end: 32600000 }
 
-// The answer's map of structural forms, and its button into JBrowse.
 const FORMS_MAP = '.ui-lanes'
 const OPEN_IN_JBROWSE = 'a.ui-open'
 
-// The Graph launch as the tutorial's reader has it after hiding the variant
-// matrix under the graph, as its C4 step says: genes over the graph. `loc` and
-// `layoutMode` move it the way the reader does after that.
+// The graph launch after the tutorial's C4 step hides the variant matrix.
 export function portalGraphLaunch({
   loc = `${MHC_WINDOW.refName}:${MHC_WINDOW.start + 1}-${MHC_WINDOW.end}`,
   layoutMode = 'auto',
@@ -51,11 +45,8 @@ export function portalGraphLaunch({
   })
 }
 
-// The haplotypes launch's window and lanes at three loci: CFH is the panel the
-// page's CFH / CFHR example answers with (its Lane table),
-// amylase and GSTT1 the lanes the HPRC tutorials choose there. GSTT1's
-// lanes are in the order "Order lanes by structure" writes: four that match
-// GRCh38's chr22, then six carrying the GSTT1 insertion.
+// GSTT1's lanes follow the order "Order lanes by structure" writes: four
+// matching GRCh38, then six carrying the insertion.
 export const PORTAL_LOCI = {
   cfhr: {
     loc: 'chr1:196740001-196850000',
@@ -116,8 +107,6 @@ export function portalHaplotypeLanes(locus: { loc: string; lanes: string[] }) {
 }
 
 export const genomesPangenomeSpecs: ScreenshotSpec[] = [
-  // The answer arrives after the page: the window's map of structural forms,
-  // read from the sidecar, over the button that opens the window in JBrowse.
   {
     mode: 'url',
     name: 'pangenome/genomes_hprc_loci',

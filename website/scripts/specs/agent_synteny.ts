@@ -4,18 +4,8 @@ import { sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// The D. simulans / D. mauritiana comparison the agent_synteny tutorial has an
-// agent build: the two hosted GenArk configs merged, their NCBI RefSeq tracks
-// kept, and one minimap2 asm20 alignment between them as a PIF. The repo copy of
-// the config is demos/fly_agent_synteny/config.json, and the PIF sits beside it
-// in the bucket.
-//
-// Point FLY_DEMO_BASE at a local `npx serve` of that build to render these
-// before the upload, the way ECOLI_DEMO_BASE works for the pangenome figures:
-//
-//   npx --yes serve -l 8085 --cors <dir holding config.json and the pif>
-//   FLY_DEMO_BASE=http://localhost:8085 node website/scripts/generate-screenshots.ts \
-//     --filter agent_synteny
+// The config's repo copy is demos/fly_agent_synteny/config.json. Point
+// FLY_DEMO_BASE at a local `npx serve` of it to render before the upload.
 const FLY_DEMO_BASE =
   process.env.FLY_DEMO_BASE ?? 'https://jbrowse.org/demos/fly_agent_synteny'
 
@@ -47,12 +37,8 @@ function flySynteny(
     collapseEmptyRows: !genes,
     levelHeights: [360],
     mark: { interpolate: 'linear' },
-    // Red forward, blue reverse, which is the one thing the colinear frame and
-    // the inversion frames differ by.
     color: { field: 'strand' },
-    // Each row shows one arm, so every alignment to an unplaced scaffold draws
-    // a mate mark labelled with its chrUn_NW_ contig, and a few hundred of them
-    // cover the band these figures are about.
+    // Shown, a few hundred chrUn_NW_ mate marks cover the band.
     offscreen: { show: false },
     ...extra,
   }
@@ -66,9 +52,6 @@ const SYNTENY_FRAME = {
 } as const
 
 export const agentSyntenySpecs: ScreenshotSpec[] = [
-  // The comparison as the agent first builds it, on a colinear 30 kb of 3R: one
-  // unbroken forward block, and each RefSeq gene meeting its counterpart exon
-  // for exon. The frame the two inversions below are read against.
   {
     mode: 'url',
     name: 'agent_synteny/comparison_built',
@@ -85,9 +68,7 @@ export const agentSyntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 604,
   },
 
-  // Both axes restricted to the six arms. Unrestricted, a few hundred unplaced
-  // scaffolds interleave both axes and the diagonal breaks into rows holding a
-  // handful of alignments each.
+  // Unrestricted to the arms, unplaced scaffolds break the diagonal apart.
   {
     mode: 'url',
     name: 'agent_synteny/dotplot_arms',
@@ -113,10 +94,6 @@ export const agentSyntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
   },
 
-  // The 2.2 Mb reverse-strand region at the centromere-proximal end of 2R, the
-  // largest of the three the PAF totals pick out and the least tidy: 75 short
-  // blocks through repeat-rich sequence, which draw as a fan rather than as the
-  // two clean crossings the X region below gives.
   {
     mode: 'url',
     name: 'agent_synteny/inversion_2r',
@@ -130,8 +107,6 @@ export const agentSyntenySpecs: ScreenshotSpec[] = [
     ...SYNTENY_FRAME,
   },
 
-  // The smaller X region: two reverse blocks crossing, with forward alignment
-  // in red on both sides of them in the same frame.
   {
     mode: 'url',
     name: 'agent_synteny/inversion_x',

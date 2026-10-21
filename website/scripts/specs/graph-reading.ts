@@ -1,9 +1,3 @@
-// The graph drawn as a graph: HPRC KIV-2 on pangenome_hprc_repeats and the mouse Nnt
-// locus on pangenome_mouse. Every figure here is the force-directed layout.
-//
-// Kept apart from graph-hprc.ts and graph-mouse-cattle.ts for the reason those
-// two are apart: this module's subject is one plugin device across two species,
-// not one species' loci.
 import {
   PARK_CURSOR,
   sessionSpec,
@@ -26,14 +20,7 @@ const NONHUMAN_CONFIG = local(
 const LANES_TRACK = 'hprc_v2_1_walk_lanes'
 const WALK_READOUT = '[data-testid="graph-walk-readout"]'
 
-// ---------------------------------------------------------------------------
-// HPRC, the LPA KIV-2 window
-// ---------------------------------------------------------------------------
-
-// The 130 kb window pangenome/hprc_lpa_kiv2 draws on pangenome_hprc_repeats. LPA's
-// own start is in frame so the gene lane labels it.
-// The KIV-2 bubble's interval, which the view frames, and the domain both the
-// linear lane and the graph paint their ramp over.
+// The linear lane and the graph both ramp their color over this interval.
 const KIV2_BUBBLE_WINDOW = 'chr6:160,616,002-160,646,753'
 const KIV2_BUBBLE_REGION = {
   refName: 'chr6',
@@ -41,8 +28,7 @@ const KIV2_BUBBLE_REGION = {
   start: 160616002,
   end: 160646753,
 }
-// The lanes the HPRC page config's haplotypes track names, which the graph track
-// cuts its walks for.
+// The haplotypes the HPRC page config's lanes track names.
 const KIV2_HAPLOTYPES = [
   'HG00097.1',
   'HG00099.1',
@@ -90,26 +76,17 @@ function kiv2WalksGraphTrack(pane: Record<string, unknown> = {}) {
       domainMin: KIV2_BUBBLE_REGION.start,
       domainMax: KIV2_BUBBLE_REGION.end,
     },
-    // the private array copies are 11 kb to 105 kb of sequence each; at
-    // proportional length they set the frame and the flank is a dot
+    // At proportional length the 11-105 kb private copies set the frame.
     bubbleSpread: 'compress',
-    // No halos or route chips (review: "so much text annotations in the
-    // graphgenomeviewer itself makes it hard to see"): nine chips stacked on
-    // the loops covered the drawing they named.
+    // Halos and route chips cover the loops they name.
     layers: { bubbles: false },
     paneHeight: 400,
     ...pane,
   })
 }
 
-// The Walk submenu names each walk by its sample, which the readout beside the
-// legend repeats.
 const HG00133_ITEM = '[data-testid^="cascading-menuitem-hg00133"]'
 
-// The eight-haplotype cut of the bubble with one walk lifted: node width is how
-// many of the nine walks carry a node, HG00133's route keeps its ink while the
-// other haplotypes' private loops fade, and the readout states its excess over
-// GRCh38, under the lanes of the same window.
 const kiv2WalksSpec: ScreenshotSpec = {
   mode: 'url',
   name: 'pangenome/graph_kiv2_walks',
@@ -152,7 +129,6 @@ const kiv2WalksSpec: ScreenshotSpec = {
   ],
   annotations: [
     { type: 'box', anchor: { selector: WALK_READOUT } },
-    // a kringle-copy node 60% of the way along HG00133's walk
     {
       type: 'text',
       text: 'HG00133 walks this loop',
@@ -166,9 +142,7 @@ const kiv2WalksSpec: ScreenshotSpec = {
   ],
 }
 
-// One color scheme: `uniform` paints the GRCh38 bar the blue the legend gives
-// shared sequence, where the reference-position ramp made it the one rainbow
-// row. The linear view is all of LPA, so the array reads as a stretch of it.
+// `uniform` keeps GRCh38's bar the legend's shared-sequence blue.
 const kiv2WalkRowsSpec: ScreenshotSpec = {
   mode: 'url',
   name: 'pangenome/graph_kiv2_walk_rows',
@@ -185,9 +159,7 @@ const kiv2WalkRowsSpec: ScreenshotSpec = {
             layoutMode: 'walkrows',
             color: 'uniform',
             subgraphHaplotypes: [],
-            // GRCh38's bar is the graph's own backbone nodes, the other rows
-            // are flat bars; at depth width its nodes swelled and thinned by
-            // carriage
+            // At depth width GRCh38's nodes swell and thin by carriage.
             size: 12,
             paneHeight: 300,
           }),
@@ -225,18 +197,9 @@ const kiv2WalkRowsSpec: ScreenshotSpec = {
   ],
 }
 
-// ---------------------------------------------------------------------------
-// Mouse, the Dock2 intron bubble
-// ---------------------------------------------------------------------------
-
-// Nnt, the page's first locus and its control: a window whose one large allele
-// is a plain insertion, so it should halo as one insertion and nothing should
-// nest.
 const NNT_WINDOW = 'chr13:119,440,000-119,600,000'
 
-// Nnt's window haloed. C57BL/6J is the reference and carries the deletion, so
-// its one large allele halos as an insertion the other strains carry, with
-// nothing inside it to open. s130043141+ is that allele.
+// s130043141+ is the Nnt allele C57BL/6J lacks.
 const nntHalosSpec: ScreenshotSpec = {
   mode: 'url',
   name: 'pangenome/graph_mouse_nnt_halos',
