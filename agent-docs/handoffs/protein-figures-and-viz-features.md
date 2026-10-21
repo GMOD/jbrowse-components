@@ -114,6 +114,15 @@ blinded ideator given only a capability sheet, a landscape survey):
   the same molecule. The camera's `radius` clips only the far side, so no
   slab can cut the near wall away. 2J1X and 9S9O carry M133L, V203A, N239Y
   and N268D, away from the pocket.
+- A 2026-10-21 review (one agent, checked against the files) ranked Y220C,
+  SNCA, KRAS. Its fixes are in: Y220C's arrow on c.659 (it sat on c.658),
+  a fainter band so the Y220F dot reads blue, KRAS switch II colored with
+  "Pocket closed" in C, the construct mutations in a tutorial footnote,
+  SNCA "rod polymorph" and its empty ClinVar row dropped. Still open: KRAS
+  shows what the drug needs, not G12C's own effect (KRAS locked on), and
+  SNCA's codon labels overprint at the two-region boundary (an LGV
+  rendering fault, unfiled). Declined: a wild-type Glu46–Lys80 distance,
+  per the trap below.
 - M1775R's BACH1 peptide in the mutant panel is superposed from 1T15 (1N5O has
   none); the view's title names that source, and the reviewer wants "modeled"
   in large type.

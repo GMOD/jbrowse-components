@@ -252,7 +252,8 @@ in the linear view you launched from, then narrow it to one record:
 ## More protein browser sessions
 
 A protein browser session takes any other JBrowse track beside the codon, and a
-second protein view beside the first. Each figure's live link opens its session.
+second protein view beside the first. Each figure's live link opens its
+session.[^constructs]
 
 Open a figure's live link and hover the highlighted codon in the genome view;
 each protein view then lights the residue it codes for.
@@ -265,11 +266,11 @@ each protein view then lights the residue it codes for.
 
 <Figure src="/img/protein/brca1_m1775r_pocket.png" caption="BRCA1 with saturation genome editing scores and ClinVar records at codon 1775, above 1T15 with the BACH1 peptide and 1N5O, the M1775R crystal, with that peptide superposed from 1T15." />
 
-<Figure src="/img/protein/snca_e46k.png" caption="SNCA codons 46 and 80 above one layer of the wild-type (6CU7) and E46K (6UFR) α-synuclein fibrils, turned so Lys80 sits at the same place in both, with the distance between residues 46 and 80 drawn in the mutant." />
+<Figure src="/img/protein/snca_e46k.png" caption="SNCA codons 46 and 80 above one layer of the wild-type rod polymorph (6CU7) and the E46K (6UFR) α-synuclein fibrils, turned so Lys80 sits at the same place in both, with the distance between residues 46 and 80 drawn in the mutant." />
 
 <Figure src="/img/protein/tp53_r273h.png" caption="TP53 with a saturation genome editing score track, the alignment's domains and two protein views: 5MG7 and 7B49, both bound to DNA. R273H is labelled in every view." />
 
-<Figure src="/img/protein/kras_g12c.png" caption="KRAS at codon 12 with its six single-base missense changes, above the KRAS surface at residue 12 in wild type (4OBE), G12C (4LDJ) and G12C bound to sotorasib (6OIM), all three from one camera." />
+<Figure src="/img/protein/kras_g12c.png" caption="KRAS at codon 12 with its six single-base missense changes, above the KRAS surface at residue 12 in wild type (4OBE), G12C (4LDJ) and G12C bound to sotorasib (6OIM), all three from one camera, with switch II colored." />
 
 <Figure src="/img/protein/apoe_e4.png" caption="APOE under a Manhattan plot of FinnGen Alzheimer's disease statistics, above the ortholog alignment and two protein views: the 1B68 crystal structure and its AlphaFold model colored by pLDDT." />
 
@@ -322,6 +323,12 @@ The approach is described in
 
 - Broz P, Dixit VM. Inflammasomes: mechanism of assembly, regulation and
   signalling. _Nat Rev Immunol_ 2016.
+
+[^constructs]:
+    Three of these crystals carry engineered mutations. In the TP53 figure, 2J1X
+    and 9S9O carry the stabilizing M133L, V203A, N239Y and N268D, none of them
+    in the pocket. In the KRAS figure, 6OIM carries C51S, C80L and C118S, which
+    remove the construct's other cysteines a covalent drug could react with.
 
 [^session]:
     A `ProteinView` entry in a session-spec URL opens a connected view for demo

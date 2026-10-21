@@ -85,6 +85,16 @@ export const proteinKrasG12cSpecs: ScreenshotSpec[] = [
       })),
       {
         type: 'text',
+        text: 'Pocket closed',
+        fontSize: 24,
+        maxWidth: 300,
+        leader: true,
+        anchor: { residue: 'A:72', view: 2 },
+        dx: 60,
+        dy: 200,
+      },
+      {
+        type: 'text',
         text: 'Bonded to Cys12',
         fontSize: 24,
         maxWidth: 300,

@@ -19,10 +19,6 @@
           {
             "trackId": "snca-mane",
             "height": 34
-          },
-          {
-            "trackId": "snca-clinvar-e46k",
-            "height": 40
           }
         ]
       }
@@ -504,24 +500,6 @@
             "strand": -1,
             "name": "Lys80",
             "color": "#009696"
-          }
-        ]
-      }
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "snca-clinvar-e46k",
-      "name": "ClinVar VCV000014010",
-      "assemblyNames": ["hg38"],
-      "adapter": {
-        "type": "FromConfigAdapter",
-        "features": [
-          {
-            "uniqueId": "cv14010",
-            "refName": "chr4",
-            "start": 89828169,
-            "end": 89828170,
-            "name": "Pathogenic"
           }
         ]
       }

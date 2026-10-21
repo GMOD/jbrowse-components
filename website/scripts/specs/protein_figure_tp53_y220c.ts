@@ -113,7 +113,7 @@ export const proteinTp53Y220cSpecs: ScreenshotSpec[] = [
         textColor: '#c51b1b',
         maxWidth: 600,
         leader: true,
-        anchor: { trackId: 'tp53-sge', loc: 'chr17:7674873', fracY: 0.42 },
+        anchor: { trackId: 'tp53-sge', loc: 'chr17:7674872', fracY: 0.42 },
         dx: -60,
         dy: -34,
       },
