@@ -22,14 +22,14 @@
     "@jbrowse/plugin-wiggle": "workspace:*",
     "@jbrowse/react-linear-genome-view2": "workspace:*",
     "@r2wc/react-to-web-component": "^2.1.1",
-    "astro": "^7.4.0",
+    "astro": "^7.4.1",
     "mobx": "^7.0.6",
     "mobx-react": "^10.0.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
+    "@astrojs/check": "^0.9.11",
     "@jbrowse/browser-test-utils": "workspace:*",
     "typescript": "^6.0.3"
   }

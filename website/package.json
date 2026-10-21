@@ -74,7 +74,7 @@
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.3.3",
-    "astro": "^7.4.0",
+    "astro": "^7.4.1",
     "astro-icon": "^1.2.0",
     "github-slugger": "2.0.0",
     "rehype-raw": "^7.0.0",
@@ -89,7 +89,7 @@
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
+    "@astrojs/check": "^0.9.11",
     "@iconify-json/mdi": "^1.2.3",
     "@jbrowse/browser-test-utils": "workspace:*",
     "@types/hast": "^3.0.5",
