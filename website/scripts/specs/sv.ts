@@ -671,7 +671,7 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG00151 Nanopore',
     readyTimeout: 90000,
-    // One frame: the session already carries `facet: split`, so a menu frame
+    // One frame: the session already sets `facet: split`, so a menu frame
     // would show the same picture.
     viewportWidth: 1400,
     // Holds the whole grouped track, including the second section's coverage
@@ -1063,8 +1063,6 @@ export const svSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
           loc: 'chr5',
-          // offset track labels so they overlay the tracks instead of taking a
-          // dedicated row
           trackLabels: 'offset',
           tracks: [
             HG008_BICSEQ2_LANE,

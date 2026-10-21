@@ -33,7 +33,7 @@ const DEEP_ONT = { forceLoad: true }
 const TRUTH_SET_TRACK = pageTrack('tutorials/cancer_sv.md', 'COLO829_truth_set')
 const TRUTH_SET = TRUTH_SET_TRACK.trackId
 
-// `+append` pads the shorter half, so each half keeps its own measured height.
+// `+append` pads the shorter half, so each half keeps its measured height.
 const MULTIHOP_HEIGHT = 1126
 const MULTIHOP_CHAIN_HEIGHT = 1188
 const MULTIHOP_WIDTH = 1000
@@ -84,7 +84,7 @@ const FLOW_NUMBER = (n: number, extra?: { view: [number, number] }) =>
 // of reads that never cross the junction.
 //
 // BreakpointSplitView's `init` drops a per-panel `highlight`, so only the
-// derivative pane carries the band.
+// derivative pane draws the band.
 const JUNCTION_HL_DER3 = {
   refName: 'der3_RARB_BICC1_TRHDE',
   start: 32722,
@@ -97,7 +97,7 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
   // view's height; neither size report sees an overflow inside a track.
   const HEIGHT = 833
   const WIDTH = 700
-  // chr10 and chr12 carry only the reads whose tails land there, so they get
+  // chr10 and chr12 draw only the reads whose tails land there, so they get
   // shorter tracks than chr3.
   const BREAKPOINT_READS = {
     trackId: TUMOUR,
@@ -163,7 +163,7 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
         {
           type: 'text',
           text: 'aligned to hg38',
-          // Both panels carry TUMOUR; `view: [0, 0]` picks the upper one.
+          // Both panels show TUMOUR; `view: [0, 0]` picks the upper one.
           anchor: {
             view: [0, 0],
             trackId: TUMOUR,
@@ -583,8 +583,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The route is the BND record's right-click menu. COLO829's ONT reads carry
-  // their partner in an SA tag, so the read menu has no mate item. r_12_1 is
+  // The route is the BND record's right-click menu. An SA tag holds each
+  // COLO829 ONT read's partner, so the read menu has no mate item. r_12_1 is
   // the junction cancer_sv/realigned_reads shows.
   {
     mode: 'url',
@@ -706,7 +706,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     columns: 2,
   },
 
-  // K562's STAR-Fusion calls in the SV inspector. Searching "chr9" leaves
+  // K562's STAR-Fusion calls in the SV inspector. A search for "chr9" leaves
   // BCR--ABL1 and NUP214--XKR3, the only calls naming chr9. The inspector's
   // chord track has no color slot, so support shows only in JunctionReadCount.
   {

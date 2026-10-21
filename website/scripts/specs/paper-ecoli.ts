@@ -1,7 +1,5 @@
 // The JBrowse 2 v5 paper's two E. coli figures, which the paper repo syncs from
-// figures.lock. Both are tutorial figures set shorter for the page: the
-// 44-genome O-antigen stack with each genome's name on its gene row, and the
-// five-strain view with 60 px ribbon bands.
+// figures.lock: tutorial figures set shorter for the page.
 import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'

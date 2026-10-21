@@ -7,7 +7,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // T2T-HG002 v1.2 ships both haplotypes as contigs of one assembly, so the
 // comparison is a self-alignment over the Q100 project's own chain. The chain
-// carries both directions (3,415 chains each way, none cross-chromosome), which
+// holds both directions (3,415 chains each way, none cross-chromosome), which
 // lets one track serve both panels. Its largest gap is 9,983 bp: chains split
 // at 10 kb, so that is the cut, not a measurement.
 //
@@ -96,7 +96,7 @@ function landmarkLane(hap: 'MAT' | 'PAT') {
 type PanelTracks = (string | Record<string, unknown>)[]
 
 // A panel with no tracks draws a "No tracks active" chip that outweighs the
-// ribbons, so each panel carries the same SyntenyTrack on its own coordinates.
+// ribbons, so each panel shows the same SyntenyTrack on its own coordinates.
 // The chain's two directions split per panel by query contig.
 const CHAIN_BLOCKS = { trackId: 'hg002v1.2_mat_vs_pat', height: 40 }
 

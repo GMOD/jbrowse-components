@@ -1,15 +1,9 @@
 // The JBrowse 2 v5 paper's read-evidence supplementary figures, which the paper
-// repo syncs from figures.lock. Two HG008-T benchmark loci in the read
-// connection modes the paper's Method lists: a 13.3 kb tandem duplication
-// (SV_128) beside a 26.7 kb deletion (SV_129) in SUZ12, and a 2.4 kb inversion
-// on chr3 (SV_23, SV_25). The calls mount twice, as the variant display's
-// records and as one arc per pair of ends. One BAM mounts twice because a view
-// shows a track once and a display draws one connection mode. The long reads group by split
-// or not, so the chains that cross a junction sit under their arcs. Grouping
-// splits coverage per group, so the long-read coverage is a track of its own.
-// The short reads take two tracks, read arcs and the read cloud, each with the
-// ordinary pairs kept as the background. The BAMs are slices of the
-// GIAB files, and the calls a copy of the benchmark VCF, hosted because the GIAB FTP answers 503 to parallel renders.
+// repo syncs from figures.lock. One BAM mounts twice because a view shows a
+// track once and a display draws one connection mode; grouping splits coverage
+// per group, so the long-read coverage is a track of its own. The BAM slices
+// and the benchmark VCF copy are hosted because the GIAB FTP answers 503 to
+// parallel renders.
 import { CGIAB_CONFIG, sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -152,8 +146,6 @@ const readEvidence = ({
               },
             ],
           },
-          // grouping splits coverage per group, so the whole-sample coverage
-          // is a track of its own
           {
             ...connections,
             trackId: HIFI_COV,

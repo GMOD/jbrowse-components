@@ -9,9 +9,9 @@ import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// QuicK-mer2 1kb copy number for 104 PUR individuals. CCL3L1/CCL4L1 was picked
-// by measurement: it spans every copy number from 0 to 10, the widest of the
-// textbook multiallelic loci probed. Do not re-pick it by reputation.
+// QuicK-mer2 1kb copy number for 104 PUR individuals. CCL3L1/CCL4L1 spans every
+// copy number from 0 to 10 across them, the widest spread of the textbook
+// multiallelic loci measured. Do not re-pick it by reputation.
 const CCL3L1_WINDOW = 'chr17:36,080,000-36,270,000'
 
 // The colored columns run chr17:36,193,000-36,457,000, so the block is about a

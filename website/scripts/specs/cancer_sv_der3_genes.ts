@@ -1,23 +1,8 @@
-// The hg38 RefSeq annotation projected onto the COLO829 derivative allele, in
-// the allele's own coordinates. What it shows is the point of the figures that
-// carry it: the allele holds RARB's first coding exon and its start codon, then
-// 183 bp of TRHDE spliced in backwards, then RARB again inverted.
-//
-// Transcribed from the tool's output, not measured off a picture:
-//
-//   sv_multihop.py derive ... --genes ncbiRefSeq.gff.gz
-//
-// writes <out>.derivative_genes.gff3 by running project_gff over the same PAF
-// rows the hosted der3_vs_hg38 track draws (see scripts/sv_multihop.py, and
-// scripts/check-build-scripts.py for what the projection guarantees). The
-// features below are that GFF3 nested by ID/Parent, which is what a Gff3Adapter
-// would hand the gene glyph, with one difference: sibling transcripts a segment
-// clips to the same shape are collapsed to one, since geneGlyphMode
-// 'longestCoding' draws one of them anyway and BICC1 alone contributes twelve.
-//
-// They ride in the session spec rather than a hosted file so the figure and its
-// live link need nothing added to demos/cancer_sv; when that GFF is hosted, this
-// becomes a normal track id.
+// The hg38 RefSeq annotation projected onto the COLO829 derivative allele,
+// transcribed from the GFF3 that `sv_multihop.py derive ... --genes
+// ncbiRefSeq.gff.gz` writes, nested by ID/Parent. Sibling transcripts clipped
+// to one shape are collapsed, since 'longestCoding' draws one anyway. Once that
+// GFF is hosted on demos/cancer_sv, this becomes a normal track id.
 const DER3 = 'der3_RARB_BICC1_TRHDE'
 
 const DER3_GENE_FEATURES = [
@@ -255,8 +240,6 @@ const DER3_GENE_FEATURES = [
   },
 ]
 
-// A session track needs its own adapter: session tracks do not inherit the
-// config's tracks, and this one exists only in the spec.
 export const DER3_GENES_TRACK = {
   type: 'FeatureTrack',
   trackId: 'der3_genes',

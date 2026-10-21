@@ -5,26 +5,13 @@ import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// The population_genomics tutorial's figure: the windowed Fst + nucleotide
-// diversity (pi) scans from the DGRP2 Drosophila panel, loaded as the exact
-// multi-wiggle track the tutorial documents. Data is the real pipeline output
-// hosted at jbrowse.org/demos/popgen (Fst of In(2L)t-inverted vs
-// standard-arrangement lines, and whole-panel pi, both 2 kb windows, matching
-// the window size scripts/build_dgrp_popgen.sh uses).
-//
-// Loaded against the hosted UCSC dm6 hub config (jbrowse.org/ucsc/dm6) so the
-// figure carries a real gene track for context and gene-name search — the setup
-// the tutorial tells the reader to build. That assembly names arms chr2L etc.;
-// the bigWigs name them 2L etc. (from the VCF header), and the hub assembly's
-// RefNameAliasAdapter (chromAlias.txt) reconciles the two at display time, which
-// is the aliasing the tutorial calls out.
+// The DGRP2 Drosophila windowed scans (scripts/build_dgrp_popgen.sh), over the
+// hosted UCSC dm6 hub. The bigWigs name arms 2L, the hub chr2L; the hub's
+// chromAlias reconciles them, which the tutorial calls out.
 const DM6_HUB = 'https://jbrowse.org/ucsc/dm6/config.json'
 
-// Two independent quantitative tracks rather than one shared-scale
-// MultiQuantitativeTrack: Fst tops out near 0.83 and pi near 0.016, a ~50x gap,
-// so stacking them into one multi-wiggle (which shares a single y-domain across
-// its rows) would crush pi to a flat line. Separate tracks each auto-scale to
-// their own data, so both signals read.
+// Separate tracks: Fst tops out near 0.83 and pi near 0.016, so a shared-scale
+// multi-wiggle would flatten pi.
 const POPGEN_DOC = 'tutorials/population_genomics.md'
 const FST_TRACK = pageTrack(POPGEN_DOC, 'fst_in2lt')
 const PI_TRACK = {
@@ -38,18 +25,9 @@ const PI_TRACK = {
   },
 }
 
-// The In(2L)t inversion extent as a single annotation feature (published
-// breakpoints 2L:2,225,744–13,154,180), so the reader can see where the
-// elevated-Fst plateau sits relative to the inverted region. An inline
-// FromConfigAdapter rather than a hosted BED — one feature needs no file.
-//
-// THOSE NUMBERS ARE RELEASE 5 AND THAT IS FINE HERE; CHECKED, DON'T RE-CHECK.
-// Corbett-Detig & Hartl aligned to "reference genome v5.31", so by the usual
-// rule they would need converting before being drawn on dm6. They don't: the
-// aertslab liftover carries its input coordinate in INFO/OriginalStart, and
-// POS - OriginalStart is 0 at every 2L position sampled from 5 kb to 22 Mb, so
-// r5 and r6 coincide on this arm. r6's added 2L sequence is past where any of
-// this sits.
+// The published In(2L)t breakpoints. They are release 5 coordinates, and r5 and
+// r6 coincide on this arm (the aertslab liftover's POS - OriginalStart is 0
+// across 2L), so no conversion is needed. Checked; don't re-check.
 const IN2LT_INVERSION_TRACK = {
   type: 'FeatureTrack',
   trackId: 'in2lt_inversion',
@@ -71,21 +49,9 @@ const IN2LT_INVERSION_TRACK = {
   },
 }
 
-// Genome-wide Tajima's D (2 kb windows, whole panel) from the same pipeline.
-// Pairs with π: a hard sweep drives BOTH down — π (fewer segregating sites) and
-// Tajima's D (an excess of rare alleles as new mutations accumulate on the swept
-// background), so the Cyp6g1 window shows a joint dip.
-//
-// THE BASELINE IS NOT ZERO AND THE FIGURE MUST NOT BE READ AS IF IT WERE.
-// Roughly three quarters of the windows flanking the sweep sit ABOVE zero, at a
-// median near +0.5. Two things put it there, both of them methodological and
-// both signed the same way: the DGRP2 callset holds variant sites only, so the
-// rare alleles that filtering takes first are the ones D is most sensitive to;
-// and the lines are inbred with homozygous diploid calls, so vcftools reads 2n
-// chromosomes off n lines (the VCF's own AN is twice its NS) and scales
-// Watterson's estimator by the harmonic number of the doubled count, which is
-// ~10% small and moves D up by a few tenths on its own. What survives both is
-// the excursion against local background, which is all the caption claims.
+// Tajima's D, which drops with pi at a hard sweep. The flanking baseline sits
+// near +0.5, not zero: DGRP2 holds variant sites only, and vcftools counts 2n
+// chromosomes off n inbred lines. Read excursions against local background.
 const TAJD_TRACK = {
   type: 'QuantitativeTrack',
   trackId: 'tajd_all',
@@ -97,18 +63,9 @@ const TAJD_TRACK = {
   },
 }
 
-// Called variants per window, column 4 of the same vcftools table pi comes from,
-// so it is the same windows over the same calls rather than a second pipeline.
-//
-// This is the lane that decides between the two readings of a diversity trough,
-// and at Cyp6g1 it comes out the informative way. Measured off the pipeline
-// table in 20 kb bins across chr2R:12.0-12.4 Mb, per 2 kb window: outside the
-// swept span the panel carries 70-100 sites at pi 0.006-0.008, and over
-// 12.14-12.18 it carries 18-20 sites at pi 0.0004-0.001. So the site count falls
-// about fivefold while pi falls about fifteenfold: the window is still being
-// called, and what collapsed is the FREQUENCY of what is called, which is the
-// same fact Tajima's D reports as a negative excursion. A window that had simply
-// lost calls would take both down together.
+// Called variants per window, from the same vcftools table as pi. At Cyp6g1 the
+// site count falls ~5x while pi falls ~15x, so the trough is frequency, not
+// lost calls.
 const SITES_TRACK = {
   type: 'QuantitativeTrack',
   trackId: 'sites_all',
@@ -120,14 +77,11 @@ const SITES_TRACK = {
   },
 }
 
-// No per-group-pi figure. Every framing of pi_INV.bw beside pi_STD.bw that was
-// tried (whole arm, one xyplot row per group, a 0-0.012 heatmap zoomed to the
-// strongest trough) gave two rows a reader cannot tell apart, so
-// popgen/in2lt_pi_ratio draws the contrast as one pooled ratio lane instead.
+// No per-group-pi figure: pi_INV.bw beside pi_STD.bw is indistinguishable in
+// every framing tried, so popgen/in2lt_pi_ratio draws one pooled ratio lane.
 
-// The DGRP In(2L)t genotypes, one row per line, for the grouping guide's facet
-// example (config_guides/grouping_and_ordering.md), so it is written here
-// rather than read off a page fence.
+// Defined inline for the grouping guide's facet example
+// (config_guides/grouping_and_ordering.md).
 const IN2LT_SV_TRACK = {
   type: 'VariantTrack',
   trackId: 'dgrp_In2Lt_sv',
@@ -149,36 +103,13 @@ const IN2LT_SV_TRACK = {
   ],
 }
 
-// log2(pi inverted / pi standard) in 250 kb bins: in 2 kb windows each group
-// swings several fold, so two per-group rows read alike. Pooled, the ratio falls to about
-// -0.5 to -1.3 at both breakpoints, sits near zero mid-inversion, and near zero
-// again toward the centromere past the proximal breakpoint, the control.
+// 250 kb bins: in 2 kb windows each group swings several fold.
 const PI_RATIO_TRACK = pageTrack(POPGEN_DOC, 'pi_ratio_in2lt')
 
 export const popgenSpecs: ScreenshotSpec[] = [
-  // Genome-wide (all six dm6 arms): the In(2L)t Fst track rises into a tall
-  // elevated block over the inverted region of chromosome 2L, while every other
-  // arm (2R, 3L, 3R, 4, X) sits at low background Fst. Plotting the whole genome
-  // (not just 2L in isolation) is what makes the elevation read AS elevated: the
-  // reader sees the 2L signal is genuinely anomalous, not a baseline the eye has
-  // nothing to compare against (reviewer). The In(2L)t inversion-extent track
-  // marks the 2L segment.
-  //
-  // THE BLOCK IS WIDER THAN THE BAR ABOVE IT, AND THAT IS THE DATA, NOT A
-  // MISDRAWN TRACK. Measured off this capture (region scale calibrated on the
-  // separators, ~50.4 kb/px): the plateau runs from the arm's telomeric end to
-  // ~14 Mb and then falls to about a third of its height, while the drawn extent
-  // is 2.23-13.15 Mb. Differentiation carrying up to 4 Mb outside inversion
-  // breakpoints is what Corbett-Detig & Hartl 2012 report, so this replicates
-  // the cited paper rather than contradicting the bar. Do NOT caption it as
-  // covering the whole arm: the distal ~9 Mb sits at the other arms' level, and
-  // it did say that for a while.
-  //
-  // No π row here, deliberately (reviewer: unclear how it matters). π carries a
-  // strong broad arm-scale profile of its own that has nothing to do with the
-  // inversion, and the surrounding prose never reads it, so it competed with the
-  // one thing this figure exists to show. π has its own figure below, at Cyp6g1,
-  // where its dip alongside Tajima's D IS the point.
+  // All six arms, so 2L's Fst reads against background. The plateau runs past
+  // the drawn inversion to ~14 Mb, as Corbett-Detig & Hartl 2012 report; the
+  // distal ~9 Mb sits at background, so do not caption it as the whole arm.
   {
     mode: 'url',
     name: 'popgen/fst_in2lt_2L',
@@ -188,8 +119,6 @@ export const popgenSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'dm6',
-          // all six major arms in order, so 2L's elevated Fst reads against the
-          // rest of the genome as background
           displayedRegionNames: [
             'chr2L',
             'chr2R',
@@ -199,14 +128,10 @@ export const popgenSpecs: ScreenshotSpec[] = [
             'chrX',
           ],
           tracks: [
-            // inversion extent on top so the Fst block below reads against it
             {
               trackId: 'in2lt_inversion',
               height: 40,
             },
-            // What this lane is read for is a RATIO -- one arm's plateau
-            // against five arms of background -- about 3.5:1, so it survives
-            // a short lane.
             {
               trackId: 'fst_in2lt',
               height: 240,
@@ -218,17 +143,11 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('wiggle-display'),
     readyText: 'Fst',
     readyTimeout: 90000,
-    // inversion(40) + fst(240) + 2 track headers + ruler/overview + app bar
     viewportHeight: 560,
   },
 
-  // Tajima's D + π at Cyp6g1 (chr2R:12,185,667): the two-part hard-sweep signature
-  // read against the gene. Both statistics dip together in the swept window — π
-  // drops (diversity removed by the hitchhiking haplotype) and Tajima's D goes
-  // sharply negative (an excess of rare alleles on the swept background),
-  // against the flanking windows either side, NOT against zero; see the
-  // baseline note on TAJD_TRACK above. Seeing both drop at the same window is
-  // what distinguishes a sweep from a plain low-diversity region.
+  // Tajima's D and pi at Cyp6g1, read against the flanking windows, not zero
+  // (see TAJD_TRACK).
   {
     mode: 'url',
     name: 'popgen/tajimad_cyp6g1',
@@ -238,15 +157,9 @@ export const popgenSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'dm6',
-          // ~400 kb around the swept window: wide enough that the joint Tajima's
-          // D + π trough reads against local background on both sides, tight
-          // enough that the highlighted sweep is a large fraction of the view and
-          // the gene track thins to where Cyp6g1 is identifiable (at 2 Mb the dip
-          // was ~3% of the width and the gene lane a solid wall)
+          // At 2 Mb the dip was ~3% of the width and the gene lane a solid
+          // wall.
           loc: 'chr2R:12,000,000-12,400,000',
-          // band the full swept window (~12.13-12.20 Mb) rather than just the
-          // gene body, so it visibly covers the whole joint Tajima's D + π dip
-          // (reviewer: highlight the entire dip)
           highlight: [
             {
               refName: 'chr2R',
@@ -256,24 +169,6 @@ export const popgenSpecs: ScreenshotSpec[] = [
               label: 'Cyp6g1',
             },
           ],
-          // EVERY LANE SHORTER (review: "improve y-screen real estate
-          // better"). None of the four had a blank band to cut, so the saving
-          // is per-lane and taken where the lane's readout survives it:
-          //
-          // - Tajima's D 200 -> 150. It is the deepest lane, and its axis is
-          //   what says it can afford this: the excursion runs +3 to -2 across
-          //   a lane autoscaled to those extremes, so a quarter off the height
-          //   is a quarter off both halves of a signal that is a shape rather
-          //   than a value.
-          // - pi 150 -> 120 and sites 120 -> 100: both are read as "does this
-          //   fall where the one above it falls", which is a comparison of two
-          //   silhouettes.
-          // - genes 150 -> 100. This is the lane with real slack. Cyp6g1 and
-          //   Cyp6g2 are PINNED to the top row by featureHighlights below, so
-          //   the rows the height buys are the ~120 neighbouring CG-number
-          //   genes, which are context and not read individually at 400 kb.
-          //
-          // 620 px of track becomes 485.
           tracks: [
             {
               trackId: 'tajd_all',
@@ -283,26 +178,18 @@ export const popgenSpecs: ScreenshotSpec[] = [
               trackId: 'pi_all',
               height: 120,
             },
-            // Under pi rather than over it, so the two are read as a pair and
-            // the eye compares how far each falls.
             {
               trackId: 'sites_all',
               height: 100,
             },
             {
               trackId: 'dm6-ncbiRefSeqCurated',
-              // 115 rather than the 100 the paragraph above budgeted. A gene
-              // lane's height only cuts cleanly at a multiple of its row pitch,
-              // which is ~28.6 css px here, and 100 cut the fourth row through
-              // the middle of its glyphs.
+              // A gene lane cuts cleanly only at a multiple of its ~28.6 px row
+              // pitch.
               height: 115,
               filter: { genes: 'only' },
-              // Name-only highlights: resolveFeatureHighlights boxes the match
-              // AND pins it to the top row. Without that Cyp6g1 sits seven rows
-              // down a ~120-gene wall of CG numbers, so the one gene the figure
-              // is about is the hardest thing in it to find. Pinning also means
-              // the track needs no `heightMode: 'grow'`, which grew past the
-              // viewport and cut the bottom row of genes mid-glyph.
+              // Name-only featureHighlights pin the match to the top row;
+              // otherwise Cyp6g1 sits seven rows down a wall of CG numbers.
               featureHighlights: [
                 { refName: 'chr2R', name: 'Cyp6g1' },
                 { refName: 'chr2R', name: 'Cyp6g2' },
@@ -315,35 +202,9 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('wiggle-display'),
     readyText: 'Tajima',
     readyTimeout: 90000,
-    // tajd(150) + pi(120) + sites(100) + genes(115) + 4 headers + ruler/overview
-    // + app bar. 945 - 135 of track.
     viewportHeight: 810,
-    // WHAT THE JOINT DIP MEANS, and what the third lane rules out (review: "try
-    // to also add red text annotation explaining significance").
-    //
-    // Two pills, and each says something the picture cannot. The first names the
-    // locus -- Cyp6g1 is the DDT/insecticide-resistance gene of Daborn et al.
-    // 2002, which is why anyone scans here -- and states that a joint fall in
-    // both statistics is what a hard sweep looks like. The second is the one
-    // that keeps the reading honest: a diversity trough has two explanations,
-    // and the sites lane is in the frame to decide between them.
-    //
-    // NO NUMBERS, per website/CLAUDE.md, and one number in particular stays out:
-    // the excursion is against the LOCAL BACKGROUND rather than against zero
-    // (see the baseline paragraph on TAJD_TRACK above), so the pill says
-    // "against the flanking windows" and leaves the median to the prose, where
-    // it can be attributed.
-    // PLACEMENT, because this frame has no blank corner and one pill in the
-    // wrong place would cover the dip it is about. Each lane's empty region is
-    // in a different place and neither is where a pill would normally go:
-    //
-    // - Tajima's D is signed and autoscaled to +3/-2, so its zero line sits
-    //   about three fifths down and the flanks BELOW that line are nearly white
-    //   — only the swept window goes deeply negative. fracY 0.63 on the left
-    //   flank is therefore the emptiest region in the figure, and it is also
-    //   directly beside the red bars it describes.
-    // - the sites lane fills from the bottom, so its slack is at the TOP. One
-    //   line rather than two for that reason: two would reach the data.
+    // Tajima's D is autoscaled to +3/-2, so the flanks below its zero line at
+    // fracY 0.63 are the emptiest region in the frame and sit beside the dip.
     annotations: [
       {
         type: 'text',
@@ -360,8 +221,6 @@ export const popgenSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // popgen/fst_in2lt_2L plus the genotypes: six arms in the top view, chr2L with
-  // one row per DGRP line in a second view under it.
   {
     mode: 'url',
     name: 'popgen/in2lt_inversion',
@@ -406,8 +265,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
             {
               trackId: 'dgrp_In2Lt_sv',
               variants: { show: true },
-              // 2 px a row: 19 carriers of 180 lines is ~10% of any height,
-              // and auto-fit rows under a pixel alias into a smear
+              // 2 px a row: auto-fit rows under a pixel alias into a smear.
               rowHeight: 2,
               height: 400,
             },
@@ -448,10 +306,6 @@ export const popgenSpecs: ScreenshotSpec[] = [
     viewportHeight: 1234,
   },
 
-  // The tutorial's figure: the six arms over Fst, then chr2L with the pi ratio. popgen/in2lt_inversion above carries the per-line genotype
-  // lane, which the grouping guide uses as a facet example; in the tutorial it
-  // was the karyotype table redrawn, so its block spanning the breakpoints was
-  // true by construction.
   {
     mode: 'url',
     name: 'popgen/in2lt_pi_ratio',

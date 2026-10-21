@@ -146,7 +146,7 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
 }
 
 // Genes above the matrix for scale: the matrix spaces one column per variant,
-// so its x axis carries no distance. Shared with the tour in
+// so its x axis shows no distance. Shared with the tour in
 // videos/variants.ts.
 const TRIO_GENE_LANE = {
   trackId: 'ncbi_refseq_109_hg38_latest',
