@@ -65,9 +65,8 @@ const TP53_LOCUS_WINDOW = 'chr17:7,666,000-7,694,000'
 // RefSeq half is the one carrying gene tracks and a name index -- which is the
 // difference the page's last section is about, and why this figure can navigate
 // by gene symbol at all.
-const AXOLOTL_CONFIG = encodeURIComponent(
-  'https://jbrowse.org/hubs/genark/GCF/040/938/575/GCF_040938575.1/config.json',
-)
+const AXOLOTL_CONFIG =
+  'https://jbrowse.org/hubs/genark/GCF/040/938/575/GCF_040938575.1/config.json'
 const AXOLOTL_ASSEMBLY = 'GCF_040938575.1'
 
 // This figure opens NO track of its own, and the two it used to open are worth

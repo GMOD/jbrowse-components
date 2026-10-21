@@ -4,9 +4,7 @@ import { sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-const ODP_CONFIG = encodeURIComponent(
-  'https://jbrowse.org/demos/odp_linkage_groups/config.json',
-)
+const ODP_CONFIG = 'https://jbrowse.org/demos/odp_linkage_groups/config.json'
 
 // the figures are about where colors fall, not which of 29 letters each is
 const HIDE_LEGEND = {

@@ -56,9 +56,7 @@ const FIT_LABEL = heightModeLabel('fit', 'read')
 // scripts/build_hsv1_demo.sh. A 152 kb genome with genes packed on both strands
 // and a library whose read strand is the transcript's -- see the strand-split
 // depth spec for why that combination is what the figure needed.
-const HSV1_CONFIG = encodeURIComponent(
-  'https://jbrowse.org/demos/hsv1/config.json',
-)
+const HSV1_CONFIG = 'https://jbrowse.org/demos/hsv1/config.json'
 
 // The green-A mismatch column `alignments_sort_by_base` is about: the base the
 // session sorts on, the base its right-click has to land on, and the base both

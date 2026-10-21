@@ -25,7 +25,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 export const CANCER_SV_BASE =
   process.env.CANCER_SV_BASE ?? 'https://jbrowse.org/demos/cancer_sv'
 
-const CONFIG = encodeURIComponent(`${CANCER_SV_BASE}/config.json`)
+const CONFIG = `${CANCER_SV_BASE}/config.json`
 
 const GENES = 'ncbi_refseq_hg38'
 const TUMOUR = 'COLO829_tumor_ont'

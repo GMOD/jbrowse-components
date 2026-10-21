@@ -7,11 +7,11 @@ import {
   TRACK_SELECTOR,
   VOLVOX,
   cascadeBoxes,
-  kgUrl,
   lgvSession,
   menuCascade,
   openTrackSelector,
   sessionSpec,
+  KG_CONFIG,
 } from '../screenshot-spec-helpers.ts'
 
 import type { RowSortSpec } from '../../../packages/tree-sidebar/src/rowSortAutorun.ts'
@@ -726,7 +726,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multisv',
-    url: kgUrl({
+    url: sessionSpec(KG_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
@@ -777,7 +777,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multisv_svtype',
-    url: kgUrl({
+    url: sessionSpec(KG_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
@@ -902,7 +902,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multisv_rhd_dosage',
-    url: kgUrl({
+    url: sessionSpec(KG_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
@@ -1044,7 +1044,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multi-sv-trio',
-    url: kgUrl({
+    url: sessionSpec(KG_CONFIG, {
       sessionTracks: [
         {
           type: 'AlignmentsTrack',

@@ -17,9 +17,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // rather than illustrating it. The key the threshold derives lists every bin.
 // ──────────────────────────────────────────────────────────────────────────
 
-const DTU_CONFIG = encodeURIComponent(
-  'https://jbrowse.org/demos/dtu/config.json',
-)
+const DTU_CONFIG = 'https://jbrowse.org/demos/dtu/config.json'
 
 // The cassette exon the whole figure is about. GENCODE v29 places it at
 // chr10:7,806,974-7,807,010 (37 bp): ATP5F1C-202 keeps it, ATP5F1C-201 skips

@@ -4,10 +4,10 @@ import {
   HG38_HS1_CONFIG,
   UCSC_HG38_CONFIG,
   VOLVOX,
-  cgiabUrl,
-  hpyloriUrl,
   menuCascade,
   sessionSpec,
+  CGIAB_CONFIG,
+  HPYLORI_CONFIG,
 } from '../screenshot-spec-helpers.ts'
 import { junctionScaffold, scaffoldOverview } from './cgiab-junction.ts'
 import {
@@ -71,7 +71,7 @@ export function hpyloriSyntenyWithGenes({
     // different subset and covers the genes at the right edge
     ...(geneColor ? { color: geneColor, showLegend: false } : {}),
   })
-  return hpyloriUrl({
+  return sessionSpec(HPYLORI_CONFIG, {
     views: [
       {
         type: 'LinearSyntenyView',
@@ -391,27 +391,24 @@ function tnnt3StarSession() {
     'loxAfr3',
     'GCF_004115215.2',
   ]
-  return sessionSpec(
-    encodeURIComponent('https://jbrowse.org/ucsc/hg38/config-staging.json'),
-    {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'NC_000011.10:1822626-2024102',
-          tracks: [
-            {
-              trackId: 'hg38_liftOver_multiway',
-              type: 'MultiWaySyntenyDisplay',
-              rows: { domain: lanes, kept: lanes },
-              ribbonColor: { field: 'strand' },
-              height: (lanes.length + 1) * 60,
-            },
-          ],
-        },
-      ],
-    },
-  )
+  return sessionSpec('https://jbrowse.org/ucsc/hg38/config-staging.json', {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: 'NC_000011.10:1822626-2024102',
+        tracks: [
+          {
+            trackId: 'hg38_liftOver_multiway',
+            type: 'MultiWaySyntenyDisplay',
+            rows: { domain: lanes, kept: lanes },
+            ribbonColor: { field: 'strand' },
+            height: (lanes.length + 1) * 60,
+          },
+        ],
+      },
+    ],
+  })
 }
 
 // A hosted reference's star opened on the lanes named, in that order, with the
@@ -424,28 +421,25 @@ function hostedStarSession(
   display: Record<string, unknown> = {},
   genes: Record<string, unknown> = {},
 ) {
-  return sessionSpec(
-    encodeURIComponent(`https://jbrowse.org/ucsc/${db}/config-staging.json`),
-    {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: db,
-          loc,
-          tracks: [
-            { trackId: `${db}-ncbiRefSeq`, ...genes },
-            {
-              trackId: `${db}_liftOver_multiway`,
-              type: 'MultiWaySyntenyDisplay',
-              rows: { domain: lanes, kept: lanes },
-              height: (lanes.length + 1) * 34,
-              ...display,
-            },
-          ],
-        },
-      ],
-    },
-  )
+  return sessionSpec(`https://jbrowse.org/ucsc/${db}/config-staging.json`, {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: db,
+        loc,
+        tracks: [
+          { trackId: `${db}-ncbiRefSeq`, ...genes },
+          {
+            trackId: `${db}_liftOver_multiway`,
+            type: 'MultiWaySyntenyDisplay',
+            rows: { domain: lanes, kept: lanes },
+            height: (lanes.length + 1) * 34,
+            ...display,
+          },
+        ],
+      },
+    ],
+  })
 }
 
 // The two files one MCScan run writes, each drawn on its own and stacked into
@@ -564,7 +558,7 @@ const ECOLI_IDENTITY_TRACK = {
 }
 
 const ECOLI_ONE_VS_ALL_LANES = sessionSpec(
-  encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json'),
+  'https://jbrowse.org/demos/ecoli_pangenome/config.json',
   {
     views: [
       {
@@ -599,7 +593,7 @@ const ECOLI_ONE_VS_ALL_LANES = sessionSpec(
 // before and 929,694-954,608 after, and Sakai.gff.gz annotates the 38.5 kb
 // between as phage terminase, tail and Nle effector genes.
 const ECOLI_ROUND_TRIP_START = sessionSpec(
-  encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json'),
+  'https://jbrowse.org/demos/ecoli_pangenome/config.json',
   {
     views: [
       {
@@ -640,7 +634,7 @@ const ECOLI_ROUND_TRIP_START = sessionSpec(
 // between them carry no IAI39: all_vs_all.paf has IAI39 running 768 bp where
 // K-12 runs 800,701-803,686, which is ybhH and ybhI.
 const ECOLI_MAF_ROWS = sessionSpec(
-  encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json'),
+  'https://jbrowse.org/demos/ecoli_pangenome/config.json',
   {
     views: [
       {
@@ -670,9 +664,7 @@ const ECOLI_MAF_ROWS = sessionSpec(
 )
 
 const GRASSES_RICE_LANES = sessionSpec(
-  encodeURIComponent(
-    'https://jbrowse.org/demos/orthofinder_grasses/config.json',
-  ),
+  'https://jbrowse.org/demos/orthofinder_grasses/config.json',
   {
     views: [
       {
@@ -701,7 +693,7 @@ const GRASSES_RICE_LANES = sessionSpec(
 // The gene-level lane stack two figures share: the zoom still, and the
 // clicked frame taken in the same window so the two are the same view
 const LGV_TRACK_ZOOM_SESSION = sessionSpec(
-  encodeURIComponent('https://jbrowse.org/demos/grape_peach_cacao/config.json'),
+  'https://jbrowse.org/demos/grape_peach_cacao/config.json',
   {
     views: [
       {
@@ -894,9 +886,7 @@ function peachGrapeChr1({
   grapeLoc = 'chr1',
 }: { marks?: boolean; peachLoc?: string; grapeLoc?: string } = {}) {
   return sessionSpec(
-    encodeURIComponent(
-      'https://jbrowse.org/demos/grape_peach_cacao/config.json',
-    ),
+    'https://jbrowse.org/demos/grape_peach_cacao/config.json',
     {
       views: [
         {
@@ -933,65 +923,62 @@ function peachGrapeChr1({
 // K-12 against four E. coli strains: mate lanes on the K-12 row over four
 // ribbon bands, each `levelHeight` px tall
 export function ecoliOneVsAllUrl(levelHeight: number) {
-  return sessionSpec(
-    encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json'),
-    {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          views: [
-            {
-              assembly: 'K12',
-              loc: 'chr:1-4,641,652',
-              tracks: [
-                {
-                  trackId: 'ecoli_ava',
-                  type: 'LGVSyntenyDisplay',
-                  facet: 'mateAssembly',
-                  // The K12 lane can hold no self-alignment — all_vs_all.paf
-                  // is built with `minimap2 -X`, which skips each sequence's
-                  // own diagonal — so it is hidden rather than explained away.
-                  hideSelfAlignments: true,
-                  pileup: {
-                    // Per-base mismatches are sub-pixel at 3.2kb/px — thousands
-                    // of inter-strain SNPs, each drawn at a 1px floor, painted
-                    // every lane a solid brown-and-purple wall and buried the
-                    // block structure the figure is about.
-                    showMismatches: false,
-                    // Thicker than the default bar: at 3.2kb/px the information
-                    // is the WHITE, and a 3px gap in a 7px bar is not a gap
-                    // anyone sees.
-                    readHeight: 20,
-                  },
-                  height: 100,
+  return sessionSpec('https://jbrowse.org/demos/ecoli_pangenome/config.json', {
+    views: [
+      {
+        type: 'LinearSyntenyView',
+        views: [
+          {
+            assembly: 'K12',
+            loc: 'chr:1-4,641,652',
+            tracks: [
+              {
+                trackId: 'ecoli_ava',
+                type: 'LGVSyntenyDisplay',
+                facet: 'mateAssembly',
+                // The K12 lane can hold no self-alignment — all_vs_all.paf
+                // is built with `minimap2 -X`, which skips each sequence's
+                // own diagonal — so it is hidden rather than explained away.
+                hideSelfAlignments: true,
+                pileup: {
+                  // Per-base mismatches are sub-pixel at 3.2kb/px — thousands
+                  // of inter-strain SNPs, each drawn at a 1px floor, painted
+                  // every lane a solid brown-and-purple wall and buried the
+                  // block structure the figure is about.
+                  showMismatches: false,
+                  // Thicker than the default bar: at 3.2kb/px the information
+                  // is the WHITE, and a 3px gap in a 7px bar is not a gap
+                  // anyone sees.
+                  readHeight: 20,
                 },
-              ],
-            },
-            // IAI39 SECOND, not last as in the standalone multi-way figure:
-            // the bands are between adjacent rows, so this is the only order
-            // where a K12<->IAI39 band exists at all. Its crossings then sit
-            // directly under the blue stretches of the IAI39 lane above, on
-            // the same K12 axis — which is the whole reason the two
-            // representations are in one frame.
-            { assembly: 'IAI39' },
-            { assembly: 'Sakai' },
-            { assembly: 'CFT073' },
-            { assembly: 'NCTC86' },
-          ],
-          tracks: ['ecoli_ava'],
-          mark: { interpolate: 'linear' },
-          // Strand, not the 'default' red the standalone multi-way figure
-          // uses, because strand is what the two halves have in common:
-          // LGVSyntenyDisplay colors its lanes by strand already, so an
-          // inversion is blue in the lane AND a blue ribbon in the band.
-          color: { field: 'strand' },
-          filter: [{ field: 'length', gte: 10000 }],
-          collapseEmptyRows: true,
-          levelHeights: [levelHeight, levelHeight, levelHeight, levelHeight],
-        },
-      ],
-    },
-  )
+                height: 100,
+              },
+            ],
+          },
+          // IAI39 SECOND, not last as in the standalone multi-way figure:
+          // the bands are between adjacent rows, so this is the only order
+          // where a K12<->IAI39 band exists at all. Its crossings then sit
+          // directly under the blue stretches of the IAI39 lane above, on
+          // the same K12 axis — which is the whole reason the two
+          // representations are in one frame.
+          { assembly: 'IAI39' },
+          { assembly: 'Sakai' },
+          { assembly: 'CFT073' },
+          { assembly: 'NCTC86' },
+        ],
+        tracks: ['ecoli_ava'],
+        mark: { interpolate: 'linear' },
+        // Strand, not the 'default' red the standalone multi-way figure
+        // uses, because strand is what the two halves have in common:
+        // LGVSyntenyDisplay colors its lanes by strand already, so an
+        // inversion is blue in the lane AND a blue ribbon in the band.
+        color: { field: 'strand' },
+        filter: [{ field: 'length', gte: 10000 }],
+        collapseEmptyRows: true,
+        levelHeights: [levelHeight, levelHeight, levelHeight, levelHeight],
+      },
+    ],
+  })
 }
 
 export const syntenySpecs: ScreenshotSpec[] = [
@@ -1168,9 +1155,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // against the wrong (peach-grape) band — leaving cacao in raw fai order.
     // Mirrors the hosted config's defaultSession init otherwise.
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/grape_peach_cacao/config.json',
-      ),
+      'https://jbrowse.org/demos/grape_peach_cacao/config.json',
       {
         views: [
           {
@@ -1206,9 +1191,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     name: 'multiway_synteny/grape_peach_cacao_gene_orthologs',
     viewportHeight: 822,
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/grape_peach_cacao/config.json',
-      ),
+      'https://jbrowse.org/demos/grape_peach_cacao/config.json',
       {
         views: [
           {
@@ -1336,9 +1319,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'multiway_synteny/blocks_one_vs_all',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/grape_peach_cacao/config.json',
-      ),
+      'https://jbrowse.org/demos/grape_peach_cacao/config.json',
       {
         views: [
           {
@@ -1398,9 +1379,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'multiway_synteny/lgv_track_lanes',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/grape_peach_cacao/config.json',
-      ),
+      'https://jbrowse.org/demos/grape_peach_cacao/config.json',
       {
         views: [
           {
@@ -1453,9 +1432,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'multiway_synteny/lgv_track_lanes_colored',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/grape_peach_cacao/config.json',
-      ),
+      'https://jbrowse.org/demos/grape_peach_cacao/config.json',
       {
         views: [
           {
@@ -1549,45 +1526,40 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_island_lanes',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'K12',
-            loc: 'chr:1,436,000-1,484,000',
-            // The anchor lane is the only lane the view's own gridlines are
-            // true at, so with them on the top lane reads as ruled and the four
-            // below as not (review: "i can see gridlines near the top row of
-            // the multiwaysyntenydisplay, but not on the rest"). Each lane's own
-            // ticks stay.
-            axis: { grid: false },
-            tracks: [
-              // 120, not 60: the drop is from five genomes to two on a 0-5
-              // axis, which at 60 px is a 24 px step read as a hairline
-              { trackId: 'ecoli_pggb_depth', height: 120 },
-              {
-                trackId: 'ecoli_ava',
-                type: 'MultiWaySyntenyDisplay',
-                rows: { domain: ['NCTC86', 'CFT073', 'Sakai', 'IAI39'] },
-                height: 340,
-                color: {
-                  field:
-                    "jexl:feature.name && (startsWith(feature.name,'paa') || startsWith(feature.name,'fea') || feature.name == 'tynA') ? 'island' : 'other'",
-                  domain: ['island', 'other'],
-                  range: ['#d62728', 'goldenrod'],
-                  labels: ['feaR, tynA, paa operon', 'other genes'],
-                  title: 'K-12 island genes',
-                },
+    url: sessionSpec('https://jbrowse.org/demos/ecoli_pangenome/config.json', {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:1,436,000-1,484,000',
+          // The anchor lane is the only lane the view's own gridlines are
+          // true at, so with them on the top lane reads as ruled and the four
+          // below as not (review: "i can see gridlines near the top row of
+          // the multiwaysyntenydisplay, but not on the rest"). Each lane's own
+          // ticks stay.
+          axis: { grid: false },
+          tracks: [
+            // 120, not 60: the drop is from five genomes to two on a 0-5
+            // axis, which at 60 px is a 24 px step read as a hairline
+            { trackId: 'ecoli_pggb_depth', height: 120 },
+            {
+              trackId: 'ecoli_ava',
+              type: 'MultiWaySyntenyDisplay',
+              rows: { domain: ['NCTC86', 'CFT073', 'Sakai', 'IAI39'] },
+              height: 340,
+              color: {
+                field:
+                  "jexl:feature.name && (startsWith(feature.name,'paa') || startsWith(feature.name,'fea') || feature.name == 'tynA') ? 'island' : 'other'",
+                domain: ['island', 'other'],
+                range: ['#d62728', 'goldenrod'],
+                labels: ['feaR, tynA, paa operon', 'other genes'],
+                title: 'K-12 island genes',
               },
-            ],
-          },
-        ],
-      },
-    ),
+            },
+          ],
+        },
+      ],
+    }),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
     viewportHeight: 712,
@@ -1602,9 +1574,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'multiway_synteny/vertebrate_hox_lanes',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/orthofinder_vertebrates/config.json',
-      ),
+      'https://jbrowse.org/demos/orthofinder_vertebrates/config.json',
       {
         views: [
           {
@@ -1644,9 +1614,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'multiway_synteny/solanaceae_lanes',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/orthofinder_solanaceae/config.json',
-      ),
+      'https://jbrowse.org/demos/orthofinder_solanaceae/config.json',
       {
         views: [
           {
@@ -1694,9 +1662,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'multiway_synteny/drosophila_lanes',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/orthofinder_drosophila/config.json',
-      ),
+      'https://jbrowse.org/demos/orthofinder_drosophila/config.json',
       {
         views: [
           {
@@ -1737,9 +1703,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'multiway_synteny/primate_tp53_lanes',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/primate_orthologs/config.json',
-      ),
+      'https://jbrowse.org/demos/primate_orthologs/config.json',
       {
         views: [
           {
@@ -1782,9 +1746,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'multiway_synteny/primate_chr17_inversions',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/primate_orthologs/config.json',
-      ),
+      'https://jbrowse.org/demos/primate_orthologs/config.json',
       {
         views: [
           {
@@ -1817,9 +1779,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'multiway_synteny/primate_chr2_fusion',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/primate_orthologs/config.json',
-      ),
+      'https://jbrowse.org/demos/primate_orthologs/config.json',
       {
         views: [
           {
@@ -1864,30 +1824,25 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_symbol_atp_operon',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/ecoli_orthologs/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'MG1655',
-            loc: 'NC_000913.3:3,910,000-3,925,000',
-            tracks: [
-              {
-                trackId: 'ecoli_orthologs',
-                type: 'MultiWaySyntenyDisplay',
-                height: 1500,
-                // grey: red and blue here would mostly say which way each
-                // chromosome was deposited, and drown the gene colors
-                ribbonColor: { scale: 'none' },
-              },
-            ],
-          },
-        ],
-      },
-    ),
+    url: sessionSpec('https://jbrowse.org/demos/ecoli_orthologs/config.json', {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'MG1655',
+          loc: 'NC_000913.3:3,910,000-3,925,000',
+          tracks: [
+            {
+              trackId: 'ecoli_orthologs',
+              type: 'MultiWaySyntenyDisplay',
+              height: 1500,
+              // grey: red and blue here would mostly say which way each
+              // chromosome was deposited, and drown the gene colors
+              ribbonColor: { scale: 'none' },
+            },
+          ],
+        },
+      ],
+    }),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportHeight: 1740,
@@ -1900,30 +1855,25 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_symbol_oantigen',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/ecoli_orthologs/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'MG1655',
-            loc: 'NC_000913.3:2,095,000-2,115,000',
-            tracks: [
-              {
-                trackId: 'ecoli_orthologs',
-                type: 'MultiWaySyntenyDisplay',
-                height: 1500,
-                // grey: red and blue here would mostly say which way each
-                // chromosome was deposited, and drown the gene colors
-                ribbonColor: { scale: 'none' },
-              },
-            ],
-          },
-        ],
-      },
-    ),
+    url: sessionSpec('https://jbrowse.org/demos/ecoli_orthologs/config.json', {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'MG1655',
+          loc: 'NC_000913.3:2,095,000-2,115,000',
+          tracks: [
+            {
+              trackId: 'ecoli_orthologs',
+              type: 'MultiWaySyntenyDisplay',
+              height: 1500,
+              // grey: red and blue here would mostly say which way each
+              // chromosome was deposited, and drown the gene colors
+              ribbonColor: { scale: 'none' },
+            },
+          ],
+        },
+      ],
+    }),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportHeight: 1740,
@@ -1937,30 +1887,25 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/hg38_vertebrates_tp53',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/hg38_vertebrates/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'hg38',
-            loc: 'chr17:7,400,000-7,700,000',
-            tracks: [
-              'hg38-ncbiRefSeq',
-              {
-                trackId: 'hg38_liftover_multiway',
-                type: 'MultiWaySyntenyDisplay',
-                ribbonColor: { field: 'strand' },
-                rows: { domain: HG38_VERTEBRATES_TREE_ORDER },
-                height: 600,
-              },
-            ],
-          },
-        ],
-      },
-    ),
+    url: sessionSpec('https://jbrowse.org/demos/hg38_vertebrates/config.json', {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr17:7,400,000-7,700,000',
+          tracks: [
+            'hg38-ncbiRefSeq',
+            {
+              trackId: 'hg38_liftover_multiway',
+              type: 'MultiWaySyntenyDisplay',
+              ribbonColor: { field: 'strand' },
+              rows: { domain: HG38_VERTEBRATES_TREE_ORDER },
+              height: 600,
+            },
+          ],
+        },
+      ],
+    }),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportHeight: 1000,
@@ -1972,7 +1917,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/t2t_apes_cactus_tp53',
-    url: sessionSpec(encodeURIComponent(T2T_APES_CACTUS_CONFIG), {
+    url: sessionSpec(T2T_APES_CACTUS_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
@@ -2000,7 +1945,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/t2t_apes_cactus_17q',
-    url: sessionSpec(encodeURIComponent(T2T_APES_CACTUS_CONFIG), {
+    url: sessionSpec(T2T_APES_CACTUS_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
@@ -2182,9 +2127,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'syri/tair10_1001g',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/arabidopsis_pangenome/config.json',
-      ),
+      'https://jbrowse.org/demos/arabidopsis_pangenome/config.json',
       {
         views: [
           {
@@ -2218,30 +2161,25 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/hg38_vertebrates_17p_strand',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/hg38_vertebrates/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'hg38',
-            loc: 'chr17:15,200,000-16,400,000',
-            tracks: [
-              'hg38-ncbiRefSeq',
-              {
-                trackId: 'hg38_liftover_multiway',
-                type: 'MultiWaySyntenyDisplay',
-                ribbonColor: { field: 'strand' },
-                rows: { domain: HG38_VERTEBRATES_TREE_ORDER },
-                height: 600,
-              },
-            ],
-          },
-        ],
-      },
-    ),
+    url: sessionSpec('https://jbrowse.org/demos/hg38_vertebrates/config.json', {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr17:15,200,000-16,400,000',
+          tracks: [
+            'hg38-ncbiRefSeq',
+            {
+              trackId: 'hg38_liftover_multiway',
+              type: 'MultiWaySyntenyDisplay',
+              ribbonColor: { field: 'strand' },
+              rows: { domain: HG38_VERTEBRATES_TREE_ORDER },
+              height: 600,
+            },
+          ],
+        },
+      ],
+    }),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportHeight: 1000,
@@ -2292,9 +2230,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'selection_pressure/lysozyme',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/primate_selection/config.json',
-      ),
+      'https://jbrowse.org/demos/primate_selection/config.json',
       {
         views: [
           {
@@ -2411,30 +2347,25 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'homoeolog_synteny/oat_ds',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/oat_homoeologs/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'DotplotView',
-            displayName: 'Oat self-alignment, dS',
-            views: [
-              { assembly: 'oat', displayedRegionNames: OAT_HOMOEOLOG_GROUPS },
-              { assembly: 'oat', displayedRegionNames: OAT_HOMOEOLOG_GROUPS },
-            ],
-            tracks: ['oat_homoeologs'],
-            color: {
-              field: 'ds',
-              domainMin: 0,
-              domainMax: 0.25,
-              title: 'dS',
-            },
+    url: sessionSpec('https://jbrowse.org/demos/oat_homoeologs/config.json', {
+      views: [
+        {
+          type: 'DotplotView',
+          displayName: 'Oat self-alignment, dS',
+          views: [
+            { assembly: 'oat', displayedRegionNames: OAT_HOMOEOLOG_GROUPS },
+            { assembly: 'oat', displayedRegionNames: OAT_HOMOEOLOG_GROUPS },
+          ],
+          tracks: ['oat_homoeologs'],
+          color: {
+            field: 'ds',
+            domainMin: 0,
+            domainMax: 0.25,
+            title: 'dS',
           },
-        ],
-      },
-    ),
+        },
+      ],
+    }),
     readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 300000,
     viewportHeight: 767,
@@ -2454,9 +2385,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'orthofinder_synteny/vertebrates',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/orthofinder_vertebrates/config.json',
-      ),
+      'https://jbrowse.org/demos/orthofinder_vertebrates/config.json',
       {
         views: [
           {
@@ -2560,9 +2489,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'orthofinder_synteny/solanaceae',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/orthofinder_solanaceae/config.json',
-      ),
+      'https://jbrowse.org/demos/orthofinder_solanaceae/config.json',
       {
         views: [
           {
@@ -2611,9 +2538,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'orthofinder_synteny/drosophila',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/orthofinder_drosophila/config.json',
-      ),
+      'https://jbrowse.org/demos/orthofinder_drosophila/config.json',
       {
         views: [
           {
@@ -2654,9 +2579,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'orthofinder_synteny/drosophila_blocks',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/orthofinder_drosophila/config.json',
-      ),
+      'https://jbrowse.org/demos/orthofinder_drosophila/config.json',
       {
         views: [
           {
@@ -2698,9 +2621,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'orthofinder_synteny/grasses',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/orthofinder_grasses/config.json',
-      ),
+      'https://jbrowse.org/demos/orthofinder_grasses/config.json',
       {
         views: [
           {
@@ -2807,9 +2728,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     name: 'orthofinder_synteny/grasses_maize_wgd',
     viewportHeight: 1200,
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/orthofinder_grasses/config.json',
-      ),
+      'https://jbrowse.org/demos/orthofinder_grasses/config.json',
       {
         views: [
           {
@@ -2929,9 +2848,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'orthofinder_synteny/wheat',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/orthofinder_wheat/config.json',
-      ),
+      'https://jbrowse.org/demos/orthofinder_wheat/config.json',
       {
         views: [
           {
@@ -3069,9 +2986,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'orthofinder_synteny/wheat_4a',
     url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/orthofinder_wheat/config.json',
-      ),
+      'https://jbrowse.org/demos/orthofinder_wheat/config.json',
       {
         views: [
           {
@@ -3167,16 +3082,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // per-query-name coloring paints everything one near-uniform color and adds
     // no signal (query-name coloring is only useful with multiple
     // chromosomes). Default red ribbons read cleaner here.
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
-      ),
-      {
-        // the minimap2 aligner's version of the stack the pggb and cactus
-        // figures draw; see ecoliAvaStack for the row order and every prop
-        views: [ecoliAvaStack('ecoli_ava')],
-      },
-    ),
+    url: sessionSpec('https://jbrowse.org/demos/ecoli_pangenome/config.json', {
+      // the minimap2 aligner's version of the stack the pggb and cactus
+      // figures draw; see ecoliAvaStack for the row order and every prop
+      views: [ecoliAvaStack('ecoli_ava')],
+    }),
     viewportHeight: ECOLI_AVA_STACK_HEIGHT,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
@@ -3208,55 +3118,50 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_stx_island',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'LinearSyntenyView',
-            views: [
-              {
-                assembly: 'K12',
-                loc: 'chr:1,026,000-1,126,000',
-                tracks: [
-                  {
-                    trackId: 'K12_genes',
-                    type: 'LinearBasicDisplay',
-                    filter: { genes: 'only' },
-                    displayMode: 'compact',
-                    // as above: the retired `showDescriptions: false` resolved
-                    // to 'auto'
-                    showLabels: 'auto',
-                  },
-                ],
-              },
-              {
-                // Both rows extend the same 30 kb further right (still 100 kb, so
-                // same bp/px and the backbone ribbon stays horizontal): pulls the
-                // stx2 island in from the cluttered right edge toward mid-view.
-                assembly: 'Sakai',
-                loc: 'chr:1,205,000-1,305,000',
-                tracks: [
-                  {
-                    trackId: 'Sakai_genes',
-                    type: 'LinearBasicDisplay',
-                    filter: { genes: 'only' },
-                    displayMode: 'compact',
-                    // as above: the retired `showDescriptions: false` resolved
-                    // to 'auto'
-                    showLabels: 'auto',
-                  },
-                ],
-              },
-            ],
-            tracks: [['ecoli_ava']],
-            mark: { interpolate: 'bump' },
-          },
-        ],
-      },
-    ),
+    url: sessionSpec('https://jbrowse.org/demos/ecoli_pangenome/config.json', {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [
+            {
+              assembly: 'K12',
+              loc: 'chr:1,026,000-1,126,000',
+              tracks: [
+                {
+                  trackId: 'K12_genes',
+                  type: 'LinearBasicDisplay',
+                  filter: { genes: 'only' },
+                  displayMode: 'compact',
+                  // as above: the retired `showDescriptions: false` resolved
+                  // to 'auto'
+                  showLabels: 'auto',
+                },
+              ],
+            },
+            {
+              // Both rows extend the same 30 kb further right (still 100 kb, so
+              // same bp/px and the backbone ribbon stays horizontal): pulls the
+              // stx2 island in from the cluttered right edge toward mid-view.
+              assembly: 'Sakai',
+              loc: 'chr:1,205,000-1,305,000',
+              tracks: [
+                {
+                  trackId: 'Sakai_genes',
+                  type: 'LinearBasicDisplay',
+                  filter: { genes: 'only' },
+                  displayMode: 'compact',
+                  // as above: the retired `showDescriptions: false` resolved
+                  // to 'auto'
+                  showLabels: 'auto',
+                },
+              ],
+            },
+          ],
+          tracks: [['ecoli_ava']],
+          mark: { interpolate: 'bump' },
+        },
+      ],
+    }),
     viewportHeight: 560,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
@@ -3328,109 +3233,104 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_one_vs_all',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'K12',
-            loc: 'chr:1,440,000-1,473,000',
-            // The island itself, banded across every track so the gene block
-            // and the two lanes that stop at its left edge are one object
-            // rather than two things a reader has to line up by eye. Explicit
-            // rgba because getHighlightColor uses a supplied color as-is. 0.13
-            // is picked off the composite, not by eye: over white it lands at
-            // (250,240,224), an obvious cream, while over a forward-strand bar
-            // it moves (240,141,131) to (237,140,116) — invisible. That matters
-            // because darker salmon already MEANS overlap depth here, so a band
-            // heavy enough to tint the bars would read as data.
-            highlight: [
-              {
-                refName: 'chr',
-                start: 1446100,
-                end: 1467921,
-                color: 'rgba(214,137,16,0.13)',
-              },
-            ],
-            tracks: [
-              {
-                trackId: 'K12_genes',
-                type: 'LinearBasicDisplay',
-                filter: { genes: 'only' },
-                displayMode: 'compact',
-                // as above: the retired `showDescriptions: false` resolved to
-                // 'auto'
-                showLabels: 'auto',
-              },
-              // The graph's segments in the graph pane's own reference-position
-              // ramp, so a node below and its span here share a hue.
-              {
-                trackId: 'ecoli_minigraph_segments',
-                type: 'LinearBasicDisplay',
-                color: referencePositionColor(PAA_COLOR_DOMAIN),
-                height: 70,
-              },
-              {
-                trackId: 'ecoli_ava',
-                type: 'LGVSyntenyDisplay',
-                facet: 'mateAssembly',
-                // "Group by... > Hide self-alignment lane". K-12 cannot have a
-                // line against itself — all_vs_all.paf is built with
-                // `minimap2 -X`, which skips each sequence's own diagonal — so
-                // its lane held only K-12's internal paralogy and every
-                // reviewer read it as missing data. Hidden, the figure is the
-                // four lanes it is actually about.
-                hideSelfAlignments: true,
-                pileup: {
-                  // Same thicker bar as the whole-genome figure below, and for
-                  // the same reason: what the reader is asked to find is where a
-                  // lane STOPS, and a 7px bar makes that a hairline.
-                  readHeight: 14,
-                },
-                // One row per strain (the LGVSyntenyDisplay default), so the
-                // track is its five lanes and nothing else. Stacked, four
-                // groups already needed 210px, almost all of it empty: the row
-                // count came from the IS-element pile at the right edge, not
-                // from the synteny anyone is looking at.
-                height: 135,
-              },
-            ],
-          },
-          // The graph of the same island, in the same frame (review: "I don't
-          // see the graph in this screenshot. should be combined figure?").
-          // What the lanes cannot say is what the strains that stop at the
-          // island's left edge carry INSTEAD — sequence absent from the
-          // alignment is absent from the PAF — and that is the short arm beside
-          // the long node here.
-          //
-          // The gfatools slice rather than a graph track's cut of the segments
-          // index: the tabix cut expands one hop off the region and a link is
-          // indexed at its reference-side endpoint, so CFT073's and IAI39's
-          // detours — which leave at s501 and rejoin at s506 — come in as 43
-          // bp/558 bp stubs with nothing behind them, which is the opposite of
-          // what this pane is here to show. `gfatools view -R … -r 1` walks the
-          // graph itself. Same file, settings and ramp as pangenome/rgfa_paa_bubble,
-          // which draws this graph under a three-strain synteny view.
-          //
-          // The plugin loads from the hosted demo config's own `esmUrl`, which
-          // is on the generator's pre-approved list (trustCapturePlugins), so
-          // the cross-origin plugin warning does not cover the capture.
-          {
-            type: 'GraphGenomeView',
-            gfaLocation: { uri: `${ECOLI_DEMO_BASE}/ecoli_paa_subgraph.gfa` },
-            layoutMode: 'force',
-            color: {
-              field: 'position',
-              domainMin: PAA_COLOR_DOMAIN.start,
-              domainMax: PAA_COLOR_DOMAIN.end,
+    url: sessionSpec('https://jbrowse.org/demos/ecoli_pangenome/config.json', {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:1,440,000-1,473,000',
+          // The island itself, banded across every track so the gene block
+          // and the two lanes that stop at its left edge are one object
+          // rather than two things a reader has to line up by eye. Explicit
+          // rgba because getHighlightColor uses a supplied color as-is. 0.13
+          // is picked off the composite, not by eye: over white it lands at
+          // (250,240,224), an obvious cream, while over a forward-strand bar
+          // it moves (240,141,131) to (237,140,116) — invisible. That matters
+          // because darker salmon already MEANS overlap depth here, so a band
+          // heavy enough to tint the bars would read as data.
+          highlight: [
+            {
+              refName: 'chr',
+              start: 1446100,
+              end: 1467921,
+              color: 'rgba(214,137,16,0.13)',
             },
+          ],
+          tracks: [
+            {
+              trackId: 'K12_genes',
+              type: 'LinearBasicDisplay',
+              filter: { genes: 'only' },
+              displayMode: 'compact',
+              // as above: the retired `showDescriptions: false` resolved to
+              // 'auto'
+              showLabels: 'auto',
+            },
+            // The graph's segments in the graph pane's own reference-position
+            // ramp, so a node below and its span here share a hue.
+            {
+              trackId: 'ecoli_minigraph_segments',
+              type: 'LinearBasicDisplay',
+              color: referencePositionColor(PAA_COLOR_DOMAIN),
+              height: 70,
+            },
+            {
+              trackId: 'ecoli_ava',
+              type: 'LGVSyntenyDisplay',
+              facet: 'mateAssembly',
+              // "Group by... > Hide self-alignment lane". K-12 cannot have a
+              // line against itself — all_vs_all.paf is built with
+              // `minimap2 -X`, which skips each sequence's own diagonal — so
+              // its lane held only K-12's internal paralogy and every
+              // reviewer read it as missing data. Hidden, the figure is the
+              // four lanes it is actually about.
+              hideSelfAlignments: true,
+              pileup: {
+                // Same thicker bar as the whole-genome figure below, and for
+                // the same reason: what the reader is asked to find is where a
+                // lane STOPS, and a 7px bar makes that a hairline.
+                readHeight: 14,
+              },
+              // One row per strain (the LGVSyntenyDisplay default), so the
+              // track is its five lanes and nothing else. Stacked, four
+              // groups already needed 210px, almost all of it empty: the row
+              // count came from the IS-element pile at the right edge, not
+              // from the synteny anyone is looking at.
+              height: 135,
+            },
+          ],
+        },
+        // The graph of the same island, in the same frame (review: "I don't
+        // see the graph in this screenshot. should be combined figure?").
+        // What the lanes cannot say is what the strains that stop at the
+        // island's left edge carry INSTEAD — sequence absent from the
+        // alignment is absent from the PAF — and that is the short arm beside
+        // the long node here.
+        //
+        // The gfatools slice rather than a graph track's cut of the segments
+        // index: the tabix cut expands one hop off the region and a link is
+        // indexed at its reference-side endpoint, so CFT073's and IAI39's
+        // detours — which leave at s501 and rejoin at s506 — come in as 43
+        // bp/558 bp stubs with nothing behind them, which is the opposite of
+        // what this pane is here to show. `gfatools view -R … -r 1` walks the
+        // graph itself. Same file, settings and ramp as pangenome/rgfa_paa_bubble,
+        // which draws this graph under a three-strain synteny view.
+        //
+        // The plugin loads from the hosted demo config's own `esmUrl`, which
+        // is on the generator's pre-approved list (trustCapturePlugins), so
+        // the cross-origin plugin warning does not cover the capture.
+        {
+          type: 'GraphGenomeView',
+          gfaLocation: { uri: `${ECOLI_DEMO_BASE}/ecoli_paa_subgraph.gfa` },
+          layoutMode: 'force',
+          color: {
+            field: 'position',
+            domainMin: PAA_COLOR_DOMAIN.start,
+            domainMax: PAA_COLOR_DOMAIN.end,
           },
-        ],
-      },
-    ),
+        },
+      ],
+    }),
     viewportHeight: 1290,
     // Both panes: the lanes' own done-marker AND the graph having drawn.
     // `body:has(A) B` is an AND — a bare list would be a CSS OR and fire on
@@ -3550,28 +3450,23 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_identity_rows',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
-      ),
-      {
-        sessionTracks: [ECOLI_IDENTITY_TRACK],
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'K12',
-            loc: 'chr:1-4,641,652',
-            tracks: [
-              {
-                trackId: 'ecoli_ava_identity',
-                type: 'LinearMarkDisplay',
-                height: 400,
-              },
-            ],
-          },
-        ],
-      },
-    ),
+    url: sessionSpec('https://jbrowse.org/demos/ecoli_pangenome/config.json', {
+      sessionTracks: [ECOLI_IDENTITY_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:1-4,641,652',
+          tracks: [
+            {
+              trackId: 'ecoli_ava_identity',
+              type: 'LinearMarkDisplay',
+              height: 400,
+            },
+          ],
+        },
+      ],
+    }),
     viewportHeight: 620,
     readySelector: displayPainted('mark-display'),
     readyTimeout: 120000,
@@ -3589,12 +3484,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_import_form',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
-      ),
-      { views: [] },
-    ),
+    url: sessionSpec('https://jbrowse.org/demos/ecoli_pangenome/config.json', {
+      views: [],
+    }),
     readyText: 'Select a view to launch',
     readyTimeout: 60000,
     // Quick start is a short form (a select, the rows it implies, Launch), so
@@ -4427,7 +4319,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/dotplot_haplotypes',
-    url: cgiabUrl({
+    url: sessionSpec(CGIAB_CONFIG, {
       views: (['hap1', 'hap2'] as const).map(hap => ({
         type: 'DotplotView',
         displayName: `HG008-T v3.2 ${hap} vs GRCh38`,
@@ -4485,7 +4377,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // until the chromosome boxes became opt-in and each axis took its own row,
     // which the run's own below-the-fold report priced at 89 css px.
     viewportHeight: 561,
-    url: hpyloriUrl({ views: [{ type: 'DotplotView', views: [{}, {}] }] }),
+    url: sessionSpec(HPYLORI_CONFIG, {
+      views: [{ type: 'DotplotView', views: [{}, {}] }],
+    }),
     // the hpylori config has synteny tracks, so the form opens in Quick start;
     // this tutorial is specifically about choosing each axis, so switch to
     // Manual rather than capture a mode the surrounding prose doesn't describe
@@ -4506,7 +4400,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_synteny/dotplot',
-    url: hpyloriUrl({
+    url: sessionSpec(HPYLORI_CONFIG, {
       views: [
         {
           type: 'DotplotView',
@@ -4637,7 +4531,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_synteny/assembly_order_warning',
-    url: hpyloriUrl({
+    url: sessionSpec(HPYLORI_CONFIG, {
       sessionTracks: [
         {
           type: 'SyntenyTrack',
@@ -5117,7 +5011,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
 // to launch at all, and rows naming no assembly are what the view reads as
 // "let me choose" (LinearSyntenyView/afterAttach.ts).
 export const syntenyVideoFixtures = {
-  emptySyntenyForm: hpyloriUrl({
+  emptySyntenyForm: sessionSpec(HPYLORI_CONFIG, {
     views: [{ type: 'LinearSyntenyView', views: [{}, {}] }],
   }),
   // Where the track-menu launch tour starts: the same grasses lane state its
@@ -5143,9 +5037,7 @@ export const syntenyVideoFixtures = {
   // submenu at all. This view has the track open, so it has the offer -- and it
   // is the reading the same section's second paragraph describes.
   restackLanes: sessionSpec(
-    encodeURIComponent(
-      'https://jbrowse.org/demos/grape_peach_cacao/config.json',
-    ),
+    'https://jbrowse.org/demos/grape_peach_cacao/config.json',
     {
       views: [
         {
@@ -5334,9 +5226,7 @@ function launchMenuStills(): ScreenshotSpec[] {
       mode: 'url',
       name: 'multiway_synteny/lane_header_menu',
       url: sessionSpec(
-        encodeURIComponent(
-          'https://jbrowse.org/demos/grape_peach_cacao/config.json',
-        ),
+        'https://jbrowse.org/demos/grape_peach_cacao/config.json',
         {
           views: [
             {

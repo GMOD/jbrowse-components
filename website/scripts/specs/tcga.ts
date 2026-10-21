@@ -1,6 +1,6 @@
 import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 
-import { kgUrl } from '../screenshot-spec-helpers.ts'
+import { KG_CONFIG, sessionSpec } from '../screenshot-spec-helpers.ts'
 import { pageTrack } from './pageTrack.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -124,7 +124,7 @@ export const tcgaVideoFixtures = {
   // builds a selector that can never match — which is how this tour's first film
   // spent 300s waiting on a stack that had already painted.
   painted: displaySettled('multirow-display'),
-  unclusteredErbb2: kgUrl({
+  unclusteredErbb2: sessionSpec(KG_CONFIG, {
     sessionTracks: [TCGA_BRCA_CNV_TRACK],
     views: [
       {
@@ -300,7 +300,7 @@ function mutationFigure({
   clinvar?: boolean
   displayOverrides?: Record<string, unknown>
 }) {
-  return kgUrl({
+  return sessionSpec(KG_CONFIG, {
     sessionTracks: [
       pageTrack(MUTATIONS_DOC, 'tcga_brca_mutations', { section }),
     ],
@@ -354,7 +354,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'tcga/cohort_cnv_genome',
-    url: kgUrl({
+    url: sessionSpec(KG_CONFIG, {
       sessionTracks: [TCGA_BRCA_RECURRENCE_TRACK, TCGA_BRCA_CNV_TRACK],
       views: [
         {
@@ -452,7 +452,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'tcga/cohort_cnv_erbb2',
-    url: kgUrl({
+    url: sessionSpec(KG_CONFIG, {
       sessionTracks: [TCGA_BRCA_CNV_TRACK],
       views: [
         {
@@ -555,7 +555,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'tcga/cohort_cnv_recurrence_subtype',
-    url: kgUrl({
+    url: sessionSpec(KG_CONFIG, {
       sessionTracks: [TCGA_BRCA_RECURRENCE_BY_SUBTYPE_TRACK],
       views: [
         {

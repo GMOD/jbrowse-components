@@ -7,9 +7,8 @@ import { sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-const CONFIG = encodeURIComponent(
-  'https://jbrowse.org/demos/orthofinder_drosophila_blocks/config.json',
-)
+const CONFIG =
+  'https://jbrowse.org/demos/orthofinder_drosophila_blocks/config.json'
 const TRACK = 'dros_blocks'
 
 // Rows in melanogaster's Muller order (X 2L 2R 3L 3R 4); the two outgroups flip

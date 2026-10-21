@@ -10,9 +10,8 @@ const DEMO = 'test_data/config_demo.json'
 // UCSC hg38ToMm39 liftOver chain as jbrowse.org indexes it, with the view's
 // length filter keeping rows under 100 kb off the figure, and a RefSeq gene
 // density bigWig per genome. Behind tutorials/circular_synteny.md.
-const CIRCULAR_SYNTENY = encodeURIComponent(
-  'https://jbrowse.org/demos/circular_synteny/config.json',
-)
+const CIRCULAR_SYNTENY =
+  'https://jbrowse.org/demos/circular_synteny/config.json'
 const CHROMOSOMES = [
   ...Array.from({ length: 19 }, (_, i) => `chr${i + 1}`),
   'chrX',
@@ -62,7 +61,7 @@ function circularSyntenyView(
 // QUERY=panTro6), and two pairs aligned from their FASTAs by
 // scripts/build_circular_synteny_fasta.sh.
 const demoConfig = (name: string) =>
-  encodeURIComponent(`https://jbrowse.org/demos/${name}/config.json`)
+  `https://jbrowse.org/demos/${name}/config.json`
 const HUMAN_AUTOSOMES = Array.from({ length: 22 }, (_, i) => `chr${i + 1}`)
 
 const circularSyntenyReady = {

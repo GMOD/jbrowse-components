@@ -10,7 +10,7 @@
 // The short reads take two tracks, read arcs and the read cloud, each with the
 // ordinary pairs kept as the background. The BAMs are slices of the
 // GIAB files, and the calls a copy of the benchmark VCF, hosted because the GIAB FTP answers 503 to parallel renders.
-import { cgiabUrl } from '../screenshot-spec-helpers.ts'
+import { CGIAB_CONFIG, sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -113,7 +113,7 @@ const readEvidence = ({
 }): ScreenshotSpec => ({
   mode: 'url',
   name,
-  url: cgiabUrl({
+  url: sessionSpec(CGIAB_CONFIG, {
     sessionTracks: [
       callsTrack(CALLS, CALLS_NAME),
       callsTrack(CALL_ARCS, CALL_ARCS_NAME),

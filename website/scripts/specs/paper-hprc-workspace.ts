@@ -15,7 +15,7 @@ import { GRAPH_DRAWN, graphTrack } from './graph-fixtures.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-const CONFIG = encodeURIComponent('https://jbrowse.org/demos/hprc/config.json')
+const CONFIG = 'https://jbrowse.org/demos/hprc/config.json'
 const SEGMENTS_TRACK = 'hprc_minigraph_segments'
 const LANES_TRACK = 'hprc_multiway'
 

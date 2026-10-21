@@ -1,5 +1,6 @@
-import { displayPainted, encodeSessionSpec } from '@jbrowse/browser-test-utils'
+import { displayPainted } from '@jbrowse/browser-test-utils'
 
+import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -17,7 +18,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // the bigWigs name them 2L etc. (from the VCF header), and the hub assembly's
 // RefNameAliasAdapter (chromAlias.txt) reconciles the two at display time, which
 // is the aliasing the tutorial calls out.
-const DM6_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/dm6/config.json')}`
+const DM6_HUB = 'https://jbrowse.org/ucsc/dm6/config.json'
 
 // Two independent quantitative tracks rather than one shared-scale
 // MultiQuantitativeTrack: Fst tops out near 0.83 and pi near 0.016, a ~50x gap,
@@ -181,7 +182,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'popgen/fst_in2lt_2L',
-    url: `${DM6_HUB}&session=${encodeSessionSpec({
+    url: sessionSpec(DM6_HUB, {
       sessionTracks: [IN2LT_INVERSION_TRACK, FST_TRACK],
       views: [
         {
@@ -215,7 +216,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
           ],
         },
       ],
-    })}&sessionName=Screenshot`,
+    }),
     readySelector: displayPainted('wiggle-display'),
     readyText: 'Fst',
     readyTimeout: 90000,
@@ -233,7 +234,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'popgen/tajimad_cyp6g1',
-    url: `${DM6_HUB}&session=${encodeSessionSpec({
+    url: sessionSpec(DM6_HUB, {
       sessionTracks: [TAJD_TRACK, PI_TRACK, SITES_TRACK],
       views: [
         {
@@ -316,7 +317,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
           ],
         },
       ],
-    })}&sessionName=Screenshot`,
+    }),
     readySelector: displayPainted('wiggle-display'),
     readyText: 'Tajima',
     readyTimeout: 90000,
@@ -370,7 +371,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'popgen/in2lt_inversion',
-    url: `${DM6_HUB}&session=${encodeSessionSpec({
+    url: sessionSpec(DM6_HUB, {
       sessionTracks: [IN2LT_INVERSION_TRACK, FST_TRACK, IN2LT_SV_TRACK],
       views: [
         {
@@ -424,7 +425,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
           ],
         },
       ],
-    })}&sessionName=Screenshot`,
+    }),
     annotations: [
       {
         type: 'text',
@@ -465,7 +466,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'popgen/in2lt_pi_ratio',
-    url: `${DM6_HUB}&session=${encodeSessionSpec({
+    url: sessionSpec(DM6_HUB, {
       sessionTracks: [IN2LT_INVERSION_TRACK, FST_TRACK, PI_RATIO_TRACK],
       views: [
         {
@@ -515,7 +516,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
           ],
         },
       ],
-    })}&sessionName=Screenshot`,
+    }),
     readySelector: displayPainted('wiggle-display'),
     readyText: PI_RATIO_TRACK.name as string,
     readyTimeout: 120000,

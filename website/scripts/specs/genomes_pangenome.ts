@@ -10,9 +10,8 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 const HPRC_PAGE = 'https://genomes.jbrowse.org/pangenomes/hprc'
 // The page's HLA / MHC example is a link to this url.
 const HPRC_MHC_ANSWER = `${HPRC_PAGE}/?region=${encodeURIComponent('chr6:32,510,001-32,600,000')}`
-export const PORTAL_CONFIG = encodeURIComponent(
-  'https://jbrowse.org/pangenome/hprc-grch38/config.json',
-)
+export const PORTAL_CONFIG =
+  'https://jbrowse.org/pangenome/hprc-grch38/config.json'
 
 const MHC_WINDOW = { refName: 'chr6', start: 32510000, end: 32600000 }
 

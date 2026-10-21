@@ -33,7 +33,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // Through ECOLI_DEMO_BASE like the pggb specs, rather than the hosted URL
 // written out, so a rebuilt-but-not-yet-uploaded demo renders these figures too.
 // Same default, so it changes no committed image.
-const CONFIG = encodeURIComponent(`${ECOLI_DEMO_BASE}/config.json`)
+const CONFIG = `${ECOLI_DEMO_BASE}/config.json`
 
 // The graph-as-a-graph figure loads the K12-only graphgenomeview fixture rather
 // than the demo config the projections above use, for the reason every other

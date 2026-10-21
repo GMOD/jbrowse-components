@@ -4,11 +4,11 @@ import {
   DEMO_CONFIG,
   VOLVOX,
   cascadeBoxes,
-  hpyloriUrl,
   lgvSession,
   menuCascade,
   TRACK_SELECTOR,
   sessionSpec,
+  HPYLORI_CONFIG,
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -121,7 +121,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'gc_content',
-    url: hpyloriUrl({
+    url: sessionSpec(HPYLORI_CONFIG, {
       sessionTracks: [
         {
           type: 'GCContentTrack',

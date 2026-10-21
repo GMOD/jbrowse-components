@@ -13,28 +13,23 @@ export const paperEcoliSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'paper/ecoli_oantigen',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/ecoli_orthologs/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'MG1655',
-            loc: 'NC_000913.3:2,095,000-2,115,000',
-            tracks: [
-              {
-                trackId: 'ecoli_orthologs',
-                type: 'MultiWaySyntenyDisplay',
-                height: 968,
-                inlineLaneNames: true,
-              },
-            ],
-          },
-        ],
-      },
-    ),
+    url: sessionSpec('https://jbrowse.org/demos/ecoli_orthologs/config.json', {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'MG1655',
+          loc: 'NC_000913.3:2,095,000-2,115,000',
+          tracks: [
+            {
+              trackId: 'ecoli_orthologs',
+              type: 'MultiWaySyntenyDisplay',
+              height: 968,
+              inlineLaneNames: true,
+            },
+          ],
+        },
+      ],
+    }),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportHeight: 1208,

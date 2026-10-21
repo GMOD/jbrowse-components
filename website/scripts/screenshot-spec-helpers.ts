@@ -88,17 +88,14 @@ export const HG38_HS1_CONFIG = 'test_data/hg38_hs1_synteny/config.json'
 // but it also loads the Hubs plugin, whose Core-handleUnrecognizedAssembly
 // handler pulls in hs1 the moment the hg38->hs1 liftOver track references it —
 // which is why no sessionAssembly is needed to make the launch item appear.
-export const UCSC_HG38_CONFIG = encodeURIComponent(
-  'https://jbrowse.org/ucsc/hg38/config.json',
-)
+export const UCSC_HG38_CONFIG = 'https://jbrowse.org/ucsc/hg38/config.json'
 export const DEMO_CONFIG = 'test_data/config_demo.json'
-// Load the remote demo configs against the *local* build (a bare ?config= url
-// that the generator prefixes with localhost), so unreleased display settings
-// like the synteny display's drawCurves slot render — jbrowse.org/code/
-// jb2/latest is an older release that ignores them. specLiveUrl still turns the
-// bare url into a jbrowse.org/code/jb2/latest link for the docs reader links.
-const CGIAB_BASE = `?config=${encodeURIComponent('https://jbrowse.org/demos/cgiab/config.json')}`
-const HPYLORI_BASE = `?config=${encodeURIComponent('https://jbrowse.org/demos/hpylori/config.json')}`
+// Hosted configs, loaded against the local build: the generator prefixes a
+// bare ?config= url with localhost, and specLiveUrl turns it into a hosted
+// link for readers.
+export const CGIAB_CONFIG = 'https://jbrowse.org/demos/cgiab/config.json'
+export const HPYLORI_CONFIG = 'https://jbrowse.org/demos/hpylori/config.json'
+export const KG_CONFIG = 'https://jbrowse.org/demos/1000g/config.json'
 
 // UCSC RepeatMasker for hg38 (jb2hubs golden-path build) as a session track: a
 // BedTabix whose `#`-header exposes a `repClass` column (SINE/LINE/LTR/DNA/
@@ -174,7 +171,7 @@ export const displayReady = displaySettled
 // instead: `pinRenderer` in screenshot-ready.ts, applied by both navigation
 // paths, plus the embedded harness which sets it through the product's API.
 export function sessionSpec(config: string, session: object) {
-  return `?config=${config}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
+  return `?config=${encodeURIComponent(config)}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
 
 // The overwhelmingly common spec shape: a session with a single
@@ -299,28 +296,3 @@ export const openTrackSelector = (): ScreenshotAction[] => [
   { type: 'click', text: 'Open track selector' },
   { type: 'waitForSelector', selector: TRACK_SELECTOR },
 ]
-
-export function cgiabUrl(session?: object) {
-  if (!session) {
-    return CGIAB_BASE
-  }
-  return `${CGIAB_BASE}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
-}
-
-export function hpyloriUrl(session: object) {
-  return `${HPYLORI_BASE}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
-}
-
-// remote 1000-genomes config loaded against the *local* build (a bare ?config=
-// url), so new display settings like readConnections render — jbrowse.org/code/
-// jb2/latest is an older release that ignores them. specLiveUrl still turns
-// this into a jbrowse.org link for readers.
-//
-// `demos/` rather than the `genomes/GRCh38/1000genomes/` path it sat under
-// until 2026-08-23, which is where every other hand-built config we host
-// lives. The old url still serves the same file and keeps working.
-const KG_CONFIG = 'https://jbrowse.org/demos/1000g/config.json'
-
-export function kgUrl(session: object) {
-  return `?config=${encodeURIComponent(KG_CONFIG)}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
-}

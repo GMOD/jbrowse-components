@@ -317,9 +317,7 @@ const MHC_FORCE_LAUNCH = portalGraphLaunch({
   layoutMode: 'force',
 })
 
-const HOSTED_HPRC_CONFIG = encodeURIComponent(
-  'https://jbrowse.org/demos/hprc/config.json',
-)
+const HOSTED_HPRC_CONFIG = 'https://jbrowse.org/demos/hprc/config.json'
 const ABCA7_REPEAT_KEY = 'chr19:1049406-1050096'
 const ABCA7_SAMPLES = [
   'HG00099',

@@ -1,6 +1,6 @@
-import { displayPainted, encodeSessionSpec } from '@jbrowse/browser-test-utils'
+import { displayPainted } from '@jbrowse/browser-test-utils'
 
-import { HG38_HS1_CONFIG } from '../screenshot-spec-helpers.ts'
+import { HG38_HS1_CONFIG, sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -17,7 +17,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // The numbers the tutorial quotes are all emitted by
 // `scripts/scan_mappability_qc.sh`, against these same files. Read that script
 // before changing a locus here; the control was chosen with it.
-const HG38_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg38/config.json')}`
+const HG38_HUB = 'https://jbrowse.org/ucsc/hg38/config.json'
 
 // SMN1 and SMN2 are 99.9% identical over ~28 kb and sit ~900 kb apart, inside a
 // segmental duplication that runs to about 1.5 Mb.
@@ -237,10 +237,10 @@ export const qcSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'qc/smn1_evidence',
-    url: `${HG38_HUB}&session=${encodeSessionSpec({
+    url: sessionSpec(HG38_HUB, {
       sessionTracks: [na12878Track],
       views: [panel(SMN1_ZOOM_LOC)],
-    })}&sessionName=Screenshot`,
+    }),
     hideSelectors: HIDE_ISOFORM_CHIP,
     // Compact rows let the whole pileup fit where it used to hit the layout
     // ceiling, so this came down from 820. Not to the 723 the blank-below
@@ -319,7 +319,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     // window with the recovery inside it since that compose was collapsed, so
     // the name outlived the comparison by two rounds.
     name: 'qc/smn_read_placement',
-    url: `${HG38_HUB}&session=${encodeSessionSpec({
+    url: sessionSpec(HG38_HUB, {
       sessionTracks: [na12878Track],
       views: [
         {
@@ -369,7 +369,7 @@ export const qcSpecs: ScreenshotSpec[] = [
           ],
         },
       ],
-    })}&sessionName=Screenshot`,
+    }),
     // 760 cut 42 css px off the bottom, from the run's own report; +95 more
     // for the mappability lane, then -120 with the pileup lane
     viewportHeight: 805,
@@ -410,7 +410,7 @@ export const qcSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'qc/smn_problematic_regions',
-    url: `${HG38_HUB}&session=${encodeSessionSpec({
+    url: sessionSpec(HG38_HUB, {
       views: [
         {
           type: 'LinearGenomeView',
@@ -460,7 +460,7 @@ export const qcSpecs: ScreenshotSpec[] = [
           ],
         },
       ],
-    })}&sessionName=Screenshot`,
+    }),
     viewportHeight: 622,
     hideSelectors: HIDE_ISOFORM_CHIP,
     // TWO PILLS, ONE MESSAGE. The previous pair said "coverage returns at
@@ -522,7 +522,7 @@ export const qcSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'qc/smn_block_and_reads',
-    url: `${HG38_HUB}&session=${encodeSessionSpec({
+    url: sessionSpec(HG38_HUB, {
       sessionTracks: [na12878Track],
       views: [
         {
@@ -564,7 +564,7 @@ export const qcSpecs: ScreenshotSpec[] = [
           ],
         },
       ],
-    })}&sessionName=Screenshot`,
+    }),
     viewportHeight: 1250,
     hideSelectors: HIDE_ISOFORM_CHIP,
     readySelector: displayPainted('pileup-display'),
@@ -652,105 +652,103 @@ export const qcSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'qc/smn_vs_t2t',
-    url: `?config=${encodeURIComponent(HG38_HS1_CONFIG)}&session=${encodeSessionSpec(
-      {
-        views: [
-          {
-            type: 'LinearSyntenyView',
-            color: { field: 'strand' },
-            // CURVES, and they are what makes three overlapping chains
-            // separable (review: "confusing screenshot ... maybe with
-            // transparent cigar indels and showcurves"). Straight ribbons over
-            // this block are three quadrilaterals that each span most of the
-            // frame's width at both ends, so they overlap almost everywhere and
-            // the band is a wash of blended color with no edge to follow. A
-            // curve pinches in the middle, so each ribbon has a waist the other
-            // two do not share and the crossing reads as a crossing.
-            mark: { interpolate: 'bump' },
-            // 'matches' is the menu's "Transparent indels": the ribbon is drawn
-            // per CIGAR match block with the gaps left open, so the parts of a
-            // chain that genuinely align are separated from the parts that only
-            // sit between them. The previous 'off' drew each chain as one solid
-            // slab hull, which is what made the band opaque; 'full' is the other
-            // extreme and was rejected earlier for being a hairball of colored
-            // slivers over a segmental duplication. This is the middle setting
-            // and the one the review asked for.
-            cigarMode: 'matches',
-            // drops the sub-kb chains the segdup throws off, leaving the three
-            // that span the block
-            filter: [{ field: 'length', gte: 10000 }],
-            // three ribbons, so the 0.2 default is pure washout here -- there
-            // is nothing piling up for it to protect
-            opacity: 0.5,
-            levelHeights: [300],
-            tracks: [['hg38_hs1_synteny']],
-            views: [
-              {
-                assembly: 'hg38',
-                // 600 kb of padding either side of the SMN2..SMN1 span, where
-                // this was 250 (review: "zoom out more please"). The three
-                // chains all end inside the old frame, so their ends were the
-                // frame's edges and could not be told apart from clipping.
-                loc: 'chr5:69,450,000-71,550,000',
-                tracks: [
-                  {
-                    trackId: 'hg38-genes',
-                    filter: { genes: 'only' },
-                    // COLLAPSED to one transcript, the opposite of what
-                    // geneTrack() above does, and for the opposite reason. Both
-                    // tracks here are configured autoHeight, so 'all' is not a
-                    // lane setting but a lane SIZE: GTF2H2 alone carries ~25
-                    // transcripts and the hg38 lane grew past 400 px, taking the
-                    // ribbon band off the bottom of the frame. The "Longest
-                    // isoform" chip it costs lands on empty lane at this width.
-                    geneGlyphMode: 'longestCoding',
-                    heightMode: 'fixed',
-                    height: 120,
-                  },
-                ],
-                trackLabels: 'offset',
-              },
-              {
-                assembly: 'hs1',
-                // the same 600 kb of padding, on this assembly's own (shorter)
-                // SMN2..SMN1 span — the two windows are deliberately not the
-                // same width, see the note above
-                loc: 'chr5:70,210,000-71,980,000',
-                tracks: [
-                  {
-                    trackId: 'hs1-genes',
-                    filter: { genes: 'only' },
-                    geneGlyphMode: 'longestCoding',
-                    // review: "hide descriptions from t2t gene track". This is
-                    // RefSeq All, so every pseudogene under the segdup carries a
-                    // full product name in a second line of blue text, and at
-                    // this width they run together into a band of unreadable
-                    // type under a lane that is here for its gene ORDER.
-                    //
-                    // `showLabels: 'name'`, not `showDescriptions: false`: the
-                    // two legacy slots were folded into one enum, and the old
-                    // pair is converted by the schema's preprocessSnapshot at
-                    // create time only. A session spec routes inline keys
-                    // through `setSlot`, which needs a slot that still exists —
-                    // so the legacy spelling would be dropped in silence here.
-                    showLabels: 'name',
-                    // PINNED, where the hg38 lane is merely capped. Both tracks
-                    // are configured `grow`, and the hs1 GFF is RefSeq All: over
-                    // this segdup it lays out seven rows of GUSB/POM121/cadherin
-                    // pseudogenes and their descriptions, which grew the bottom
-                    // lane to ~450 px and made the gene context taller than the
-                    // ribbon band it is context FOR.
-                    heightMode: 'fixed',
-                    height: 200,
-                  },
-                ],
-                trackLabels: 'offset',
-              },
-            ],
-          },
-        ],
-      },
-    )}&sessionName=Screenshot`,
+    url: sessionSpec(HG38_HS1_CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          color: { field: 'strand' },
+          // CURVES, and they are what makes three overlapping chains
+          // separable (review: "confusing screenshot ... maybe with
+          // transparent cigar indels and showcurves"). Straight ribbons over
+          // this block are three quadrilaterals that each span most of the
+          // frame's width at both ends, so they overlap almost everywhere and
+          // the band is a wash of blended color with no edge to follow. A
+          // curve pinches in the middle, so each ribbon has a waist the other
+          // two do not share and the crossing reads as a crossing.
+          mark: { interpolate: 'bump' },
+          // 'matches' is the menu's "Transparent indels": the ribbon is drawn
+          // per CIGAR match block with the gaps left open, so the parts of a
+          // chain that genuinely align are separated from the parts that only
+          // sit between them. The previous 'off' drew each chain as one solid
+          // slab hull, which is what made the band opaque; 'full' is the other
+          // extreme and was rejected earlier for being a hairball of colored
+          // slivers over a segmental duplication. This is the middle setting
+          // and the one the review asked for.
+          cigarMode: 'matches',
+          // drops the sub-kb chains the segdup throws off, leaving the three
+          // that span the block
+          filter: [{ field: 'length', gte: 10000 }],
+          // three ribbons, so the 0.2 default is pure washout here -- there
+          // is nothing piling up for it to protect
+          opacity: 0.5,
+          levelHeights: [300],
+          tracks: [['hg38_hs1_synteny']],
+          views: [
+            {
+              assembly: 'hg38',
+              // 600 kb of padding either side of the SMN2..SMN1 span, where
+              // this was 250 (review: "zoom out more please"). The three
+              // chains all end inside the old frame, so their ends were the
+              // frame's edges and could not be told apart from clipping.
+              loc: 'chr5:69,450,000-71,550,000',
+              tracks: [
+                {
+                  trackId: 'hg38-genes',
+                  filter: { genes: 'only' },
+                  // COLLAPSED to one transcript, the opposite of what
+                  // geneTrack() above does, and for the opposite reason. Both
+                  // tracks here are configured autoHeight, so 'all' is not a
+                  // lane setting but a lane SIZE: GTF2H2 alone carries ~25
+                  // transcripts and the hg38 lane grew past 400 px, taking the
+                  // ribbon band off the bottom of the frame. The "Longest
+                  // isoform" chip it costs lands on empty lane at this width.
+                  geneGlyphMode: 'longestCoding',
+                  heightMode: 'fixed',
+                  height: 120,
+                },
+              ],
+              trackLabels: 'offset',
+            },
+            {
+              assembly: 'hs1',
+              // the same 600 kb of padding, on this assembly's own (shorter)
+              // SMN2..SMN1 span — the two windows are deliberately not the
+              // same width, see the note above
+              loc: 'chr5:70,210,000-71,980,000',
+              tracks: [
+                {
+                  trackId: 'hs1-genes',
+                  filter: { genes: 'only' },
+                  geneGlyphMode: 'longestCoding',
+                  // review: "hide descriptions from t2t gene track". This is
+                  // RefSeq All, so every pseudogene under the segdup carries a
+                  // full product name in a second line of blue text, and at
+                  // this width they run together into a band of unreadable
+                  // type under a lane that is here for its gene ORDER.
+                  //
+                  // `showLabels: 'name'`, not `showDescriptions: false`: the
+                  // two legacy slots were folded into one enum, and the old
+                  // pair is converted by the schema's preprocessSnapshot at
+                  // create time only. A session spec routes inline keys
+                  // through `setSlot`, which needs a slot that still exists —
+                  // so the legacy spelling would be dropped in silence here.
+                  showLabels: 'name',
+                  // PINNED, where the hg38 lane is merely capped. Both tracks
+                  // are configured `grow`, and the hs1 GFF is RefSeq All: over
+                  // this segdup it lays out seven rows of GUSB/POM121/cadherin
+                  // pseudogenes and their descriptions, which grew the bottom
+                  // lane to ~450 px and made the gene context taller than the
+                  // ribbon band it is context FOR.
+                  heightMode: 'fixed',
+                  height: 200,
+                },
+              ],
+              trackLabels: 'offset',
+            },
+          ],
+        },
+      ],
+    }),
     viewportWidth: 1200,
     // two gene lanes plus the 300px band, from the run's own "170 css px of
     // blank below the last content" at 1070

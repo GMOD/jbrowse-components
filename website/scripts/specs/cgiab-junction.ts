@@ -12,7 +12,7 @@
 // two windows, and forceLoad lifts the fetch-size gate so it loads headless.
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
-import { cgiabUrl } from '../screenshot-spec-helpers.ts'
+import { CGIAB_CONFIG, sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -128,7 +128,7 @@ export const junctionReads = (
 ): ScreenshotSpec => ({
   mode: 'url',
   name,
-  url: cgiabUrl({
+  url: sessionSpec(CGIAB_CONFIG, {
     views: [
       {
         type: 'BreakpointSplitView',
@@ -167,7 +167,7 @@ export const junctionScaffold = (
 ): ScreenshotSpec => ({
   mode: 'url',
   name,
-  url: cgiabUrl({
+  url: sessionSpec(CGIAB_CONFIG, {
     views: [
       {
         type: 'LinearSyntenyView',
@@ -254,7 +254,7 @@ export const scaffoldOverview = (
 ): ScreenshotSpec => ({
   mode: 'url',
   name,
-  url: cgiabUrl({
+  url: sessionSpec(CGIAB_CONFIG, {
     views: [
       {
         type: 'LinearSyntenyView',

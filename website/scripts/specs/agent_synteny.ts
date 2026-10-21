@@ -19,7 +19,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 const FLY_DEMO_BASE =
   process.env.FLY_DEMO_BASE ?? 'https://jbrowse.org/demos/fly_agent_synteny'
 
-const FLY_CONFIG = encodeURIComponent(`${FLY_DEMO_BASE}/config.json`)
+const FLY_CONFIG = `${FLY_DEMO_BASE}/config.json`
 
 const SIM = 'GCF_016746395.2'
 const MAU = 'GCF_004382145.1'

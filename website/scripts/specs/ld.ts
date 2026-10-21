@@ -1,5 +1,6 @@
-import { displayPainted, encodeSessionSpec } from '@jbrowse/browser-test-utils'
+import { displayPainted } from '@jbrowse/browser-test-utils'
 
+import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -54,7 +55,7 @@ import type { PageTrackConfig } from './pageTrack.ts'
 // where the populations aren't human: the Anopheles figure below is two
 // mosquito panels, because there the presence and absence of the arrangement
 // *is* the result.
-const HG38_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg38/config.json')}`
+const HG38_HUB = 'https://jbrowse.org/ucsc/hg38/config.json'
 // LCT / MCM6 lactase-persistence locus. Recent positive selection swept a long
 // haplotype to high frequency in dairying populations, so a large block of SNPs
 // around LCT is inherited together — a long stretch of high r².
@@ -154,7 +155,7 @@ const LCT_HIGHLIGHT = [
 // scaffolds). The hub names the arm chr2L and the .vcor.gz names it 2L, which its
 // chromAlias reconciles at query time. The LCT figures above need no such
 // reconciliation -- their callset and their hub are both chr-named.
-const ANOGAM3_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/anoGam3/config.json')}`
+const ANOGAM3_HUB = 'https://jbrowse.org/ucsc/anoGam3/config.json'
 
 // The page prints Cameroon's two tracks; Gabon's are the same with its own
 // files.
@@ -386,7 +387,7 @@ export const ldSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'ld/lct_pooled_vs_panel',
-    url: `${HG38_HUB}&session=${encodeSessionSpec({
+    url: sessionSpec(HG38_HUB, {
       sessionTracks: [
         // Both lane names say which samples went in, since that is the only
         // thing that differs between them and the two triangles are otherwise
@@ -534,7 +535,7 @@ export const ldSpecs: ScreenshotSpec[] = [
           ],
         },
       ],
-    })}&sessionName=Screenshot`,
+    }),
     // same real signal as the Anopheles figure: an LD panel exists to settle on,
     // and the generator's settle takes it from there
     readySelector: displayPainted('ld-display'),
@@ -578,7 +579,7 @@ export const ldSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'ld/lct_fst_scan',
-    url: `${HG38_HUB}&session=${encodeSessionSpec({
+    url: sessionSpec(HG38_HUB, {
       sessionTracks: [
         {
           type: 'QuantitativeTrack',
@@ -670,7 +671,7 @@ export const ldSpecs: ScreenshotSpec[] = [
           ],
         },
       ],
-    })}&sessionName=Screenshot`,
+    }),
     readySelector: displayPainted('wiggle-display'),
     readyTimeout: 120000,
     // 450, not the 390 the lane and its chrome add up to: at 390 the axis was
@@ -745,7 +746,7 @@ export const ldSpecs: ScreenshotSpec[] = [
     // Cameroon block sits directly above the carriers it comes from, and the
     // empty Gabon panel above a lane with nothing to carry.
     name: 'ld/anopheles_2la',
-    url: `${ANOGAM3_HUB}&session=${encodeSessionSpec({
+    url: sessionSpec(ANOGAM3_HUB, {
       sessionTracks: [
         AG_LOCI_TRACK,
         // 340 AND UNSQUASHED. This is the panel with the block in it, so it is
@@ -843,7 +844,7 @@ export const ldSpecs: ScreenshotSpec[] = [
           ],
         },
       ],
-    })}&sessionName=Screenshot`,
+    }),
     // One testid, not a selector enumerating the four lanes: the generator's
     // frame gate already waits for every display to finish and paint (see
     // waitForReady in screenshot-ready.ts), which is what "all four are done"
@@ -979,7 +980,7 @@ export const ldSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'ld/lct_haploblock',
-    url: `${HG38_HUB}&session=${encodeSessionSpec({
+    url: sessionSpec(HG38_HUB, {
       sessionTracks: [
         pageTrack(LD_HUMAN_DOC, 'kgp_lct_ld'),
         pageTrack(LD_HUMAN_DOC, 'kgp_lct_haplotypes'),
@@ -1044,7 +1045,7 @@ export const ldSpecs: ScreenshotSpec[] = [
           ],
         },
       ],
-    })}&sessionName=Screenshot`,
+    }),
     // the dendrogram only renders once the clustering RPC lands, so this waits
     // on real completion rather than on a duration guess
     readySelector: '[data-testid="tree_sidebar_dendrogram"]',
@@ -1111,7 +1112,7 @@ export const ldSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'ld/lct_population_af',
-    url: `${HG38_HUB}&session=${encodeSessionSpec({
+    url: sessionSpec(HG38_HUB, {
       sessionTracks: [pageTrack(LD_HUMAN_DOC, 'kgp_lct_population_af')],
       views: [
         {
@@ -1148,7 +1149,7 @@ export const ldSpecs: ScreenshotSpec[] = [
           ],
         },
       ],
-    })}&sessionName=Screenshot`,
+    }),
     viewportHeight: 760,
     // the highlight is one base, a pixel wide at this zoom, so the label names
     // the column it marks

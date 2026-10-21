@@ -27,7 +27,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // in specs/graph-ecoli.ts and specs/graph-hprc.ts, which load that plugin by
 // esmUrl from a fixture config (specs/graph-fixtures.ts), so
 // they are generated and live-linkable like everything else here.
-const CONFIG = encodeURIComponent(`${ECOLI_DEMO_BASE}/config.json`)
+const CONFIG = `${ECOLI_DEMO_BASE}/config.json`
 
 // IAI39's five reverse untangle runs merged into arms, K12 against IAI39, each
 // boxed in its own color in both panels of pangenome/pggb_untangle_inversion

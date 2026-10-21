@@ -6,10 +6,10 @@ import {
   HG002_NANOPORE_HP_TRACK,
   PARK_CURSOR,
   VOLVOX,
-  cgiabUrl,
-  kgUrl,
   lgvSession,
   sessionSpec,
+  CGIAB_CONFIG,
+  KG_CONFIG,
 } from '../screenshot-spec-helpers.ts'
 import { junctionReads } from './cgiab-junction.ts'
 import { pageTrack } from './pageTrack.ts'
@@ -377,7 +377,7 @@ export const svVideoFixtures = {
 // the normal's one and the payoff frame has something to be read out of.
 export const cgiabVideoFixtures = {
   coverageTrackId: 'hg008_cnv_indexcov',
-  coverageAsLoaded: cgiabUrl({
+  coverageAsLoaded: sessionSpec(CGIAB_CONFIG, {
     sessionTracks: [HG008_INDEXCOV_TRACK],
     views: [
       {
@@ -700,7 +700,7 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'inverted_duplication',
-    url: kgUrl({
+    url: sessionSpec(KG_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
@@ -867,7 +867,7 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_channels',
-    url: kgUrl({
+    url: sessionSpec(KG_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
@@ -927,7 +927,7 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'inversion_long_read',
-    url: kgUrl({
+    url: sessionSpec(KG_CONFIG, {
       sessionTracks: [
         {
           type: 'AlignmentsTrack',
@@ -1098,7 +1098,7 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/translocation_sv_inspector_start',
-    url: cgiabUrl({ views: [] }),
+    url: sessionSpec(CGIAB_CONFIG, { views: [] }),
     readyText: 'Select a view to launch',
     readyTimeout: 60000,
     // crop off the empty viewport below the menu
@@ -1118,7 +1118,7 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/translocation_sv_inspector_view',
-    url: cgiabUrl({
+    url: sessionSpec(CGIAB_CONFIG, {
       views: [
         {
           type: 'SvInspectorView',
@@ -1239,7 +1239,7 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/sv_callset_comparison',
-    url: cgiabUrl({
+    url: sessionSpec(CGIAB_CONFIG, {
       sessionTracks: [
         HG008_DEPTH_TRACK,
         cgiabPageTrack('hg008t_severus_sv'),
@@ -1318,7 +1318,7 @@ export const svSpecs: ScreenshotSpec[] = [
     name: 'sv_cgiab/deletion_sv_inspector_search',
     // +140 for the one catalogue lane, off the run's own below-the-fold report
     viewportHeight: 990,
-    url: cgiabUrl({
+    url: sessionSpec(CGIAB_CONFIG, {
       sessionTracks: [CLINVAR_CNV_TRACK],
       views: [
         {
@@ -1506,7 +1506,7 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/deletion_linear_view',
-    url: cgiabUrl({
+    url: sessionSpec(CGIAB_CONFIG, {
       sessionTracks: [
         // A small region-slice of the 116x tumor PacBio BAM (chr10:122.8-122.87Mb,
         // ~360 reads, 2.8MB) rehosted on jbrowse.org/demos/cgiab so the reads
@@ -1591,7 +1591,7 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/vntr_tumor_normal',
-    url: cgiabUrl({
+    url: sessionSpec(CGIAB_CONFIG, {
       sessionTracks: [
         {
           type: 'AlignmentsTrack',
@@ -1701,7 +1701,7 @@ export const svSpecs: ScreenshotSpec[] = [
     // a tool that does that??") is what the coverage lane already is: goleft
     // indexcov normalizes each sample to its own median, which is why the two
     // rows can be read against each other at all.
-    url: cgiabUrl({
+    url: sessionSpec(CGIAB_CONFIG, {
       sessionTracks: [
         HG008_BICSEQ2_TRACK,
         HG008_BAF_TRACK,
@@ -1824,7 +1824,7 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_callset_comparison',
-    url: cgiabUrl({
+    url: sessionSpec(CGIAB_CONFIG, {
       sessionTracks: [
         HG008_DEPTH_TRACK,
         cgiabPageTrack('hg008t_nygc_cnv', 'cnv'),
@@ -1936,7 +1936,7 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_depth_baf',
-    url: cgiabUrl({
+    url: sessionSpec(CGIAB_CONFIG, {
       sessionTracks: [HG008_BICSEQ2_TRACK, HG008_DEPTH_TRACK, HG008_BAF_TRACK],
       views: [
         {
@@ -2053,7 +2053,7 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/driver_cdkn2a_deletion',
-    url: cgiabUrl({
+    url: sessionSpec(CGIAB_CONFIG, {
       sessionTracks: [
         HG008_BICSEQ2_TRACK,
         {
@@ -2207,7 +2207,7 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/driver_kras_gain',
-    url: cgiabUrl({
+    url: sessionSpec(CGIAB_CONFIG, {
       sessionTracks: [
         KRAS_MANE.track,
         HG008_BICSEQ2_TRACK,
@@ -2285,7 +2285,7 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_chr17_loh',
-    url: cgiabUrl({
+    url: sessionSpec(CGIAB_CONFIG, {
       sessionTracks: [
         TP53_MANE.track,
         HG008_BICSEQ2_TRACK,
@@ -2376,7 +2376,7 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/driver_smad4_loh',
-    url: cgiabUrl({
+    url: sessionSpec(CGIAB_CONFIG, {
       sessionTracks: [
         SMAD4_MANE.track,
         HG008_BICSEQ2_TRACK,
