@@ -106,7 +106,7 @@
   },
   "dependencies": {
     "@jbrowse/mobx-state-tree": "^6.9.0",
-    "mobx": "^7.0.6",
+    "mobx": "^7.1.0",
     "mobx-react": "^10.0.2"
   },
   "peerDependencies": {
