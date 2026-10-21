@@ -1407,7 +1407,7 @@ export const svSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'Searching "SV_85" filters to one DEL (a het CUZD1 deletion)',
+        text: 'search SV_85',
         // above the one row the filter leaves, starting from that row's own
         // left edge rather than from a column of the table
         anchor: {
@@ -1438,7 +1438,7 @@ export const svSpecs: ScreenshotSpec[] = [
       // `featureHighlights`, see the view above.)
       {
         type: 'text',
-        text: 'The location link opens the region below, where SVTYPE=DEL draws as the <DEL> allele',
+        text: 'opens here',
         // beside the boxed glyph: anchoring to the deletion's right edge keeps
         // the 50px gap whatever width the deletion draws at
         anchor: {
@@ -1738,7 +1738,7 @@ export const svSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'two copies: tumor on the normal, one BAF band',
+        text: 'two copies',
         maxWidth: 600,
         fontSize: 18,
         anchor: {
@@ -1749,7 +1749,7 @@ export const svSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'gain: BAF splits in two',
+        text: 'gain',
         fontSize: 18,
         leader: true,
         anchor: {
@@ -1762,7 +1762,7 @@ export const svSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'one copy lost: tumor halved, BAF at 0 and 1',
+        text: 'one copy lost',
         fontSize: 18,
         anchor: {
           trackId: 'hg008t_bicseq2',

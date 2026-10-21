@@ -389,7 +389,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'SMN1: biallelic loss causes spinal muscular atrophy',
+        text: 'SMN1',
         fontSize: 18,
         maxWidth: 330,
         anchor: {
@@ -482,7 +482,7 @@ export const qcSpecs: ScreenshotSpec[] = [
       {
         type: 'text',
         // same simplification pass as the pill below it
-        text: 'the dip is mappability: reads that fit in two places are dropped',
+        text: 'mappability dip',
         fontSize: 19,
         maxWidth: 340,
         anchor: {
@@ -498,7 +498,7 @@ export const qcSpecs: ScreenshotSpec[] = [
         // are scan_mappability_qc.sh's and they belong in the prose, where there
         // is room to say what they are counts OF.
         type: 'text',
-        text: 'even with long reads, very few calls in this block',
+        text: 'few long-read calls',
         fontSize: 18,
         maxWidth: 340,
         anchor: {
@@ -562,7 +562,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'the dip is mappability: reads that fit in two places are dropped',
+        text: 'mappability dip',
         fontSize: 19,
         maxWidth: 340,
         anchor: {
@@ -573,7 +573,7 @@ export const qcSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'even with long reads, very few calls in this block',
+        text: 'few long-read calls',
         fontSize: 18,
         maxWidth: 340,
         anchor: {
@@ -584,7 +584,7 @@ export const qcSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'SMN1: biallelic loss causes spinal muscular atrophy',
+        text: 'SMN1',
         fontSize: 18,
         maxWidth: 330,
         anchor: {

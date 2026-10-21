@@ -292,7 +292,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
           dy: 96,
         },
         textAlign: 'start',
-        text: 'CCL3L1 / CCL4L1\n\nOne of the most copy-number-\nvariable loci in the human\ngenome. Both encode chemokines\nthat bind CCR5.',
+        text: 'CCL3L1 / CCL4L1',
         fontSize: 19,
         maxWidth: 420,
       },

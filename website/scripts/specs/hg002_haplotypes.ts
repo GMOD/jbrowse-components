@@ -722,19 +722,6 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 5000 },
     ],
     annotations: [
-      {
-        type: 'text',
-        anchor: {
-          selector: '[data-testid="app-bar"]',
-          alignX: 'left',
-          alignY: 'top',
-          dx: 24,
-          dy: 30,
-        },
-        maxWidth: 640,
-        fontSize: 22,
-        text: 'Location markers pair a point on one panel with the point it maps to on the other',
-      },
       // The button is circled as well as the row, because the row's own name is
       // not enough to find it -- it is one click down from a sliders icon.
       {

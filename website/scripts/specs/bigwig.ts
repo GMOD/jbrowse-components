@@ -243,7 +243,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'Mostly positive skew (leading strand)',
+        text: 'leading strand',
         anchor: {
           trackId: 'gc_skew_hpylori',
           loc: 'NC_018939v1:166,800',
@@ -253,7 +253,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'Mostly negative skew (lagging strand)',
+        text: 'lagging strand',
         anchor: {
           trackId: 'gc_skew_hpylori',
           loc: 'NC_018939v1:1,034,100',
@@ -263,7 +263,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'Terminus: skew flips from + to −',
+        text: 'terminus',
         leader: true,
         anchor: {
           trackId: 'gc_skew_hpylori',
@@ -276,7 +276,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'Origin: skew flips from − to +',
+        text: 'origin',
         leader: true,
         anchor: {
           trackId: 'gc_skew_hpylori',

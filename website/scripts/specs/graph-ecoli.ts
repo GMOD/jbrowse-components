@@ -1287,7 +1287,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: "CFT073's allele of the boxed segment has no K12 coordinates, so no block above",
+        text: 'CFT073 only, not in K12',
         fontSize: 15,
         maxWidth: 260,
         leader: true,
