@@ -26,6 +26,8 @@ export interface EvalTask {
   tutorial?: boolean
   // needs a local path, which only Desktop reads
   desktopOnly?: boolean
+  // A hosted config the Web eval opens in place of the volvox baseline
+  config?: string
 }
 
 export type TaskSet = 'dev' | 'heldout' | 'tutorials' | 'all'
@@ -807,3 +809,11 @@ TASKS.push(
       return { pass: said, detail: { answer } }`,
   },
 )
+
+// The synteny task needs the mouse assembly, which only the union hub holds
+for (const task of TASKS.filter(t => t.name.startsWith('hs-'))) {
+  task.config =
+    task.name === 'hs-synteny-mouse-brca1'
+      ? 'https://jbrowse.org/ucsc/all.json'
+      : 'https://jbrowse.org/ucsc/hg38/config.json'
+}
