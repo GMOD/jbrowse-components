@@ -827,7 +827,7 @@ for (const task of TASKS.filter(t => /^(hs|tut)-/.test(t.name))) {
 // today. A failure here marks a limit, not a defect in the grader.
 const HG38_HUB = 'https://jbrowse.org/ucsc/hg38/config.json'
 const ALL_HUB = 'https://jbrowse.org/ucsc/all.json'
-const GENE_TRACK = '/^hg38-(ncbiRefSeq\\\\w*|knownGene|ensGene)$/'
+const GENE_TRACK = '/^hg38-(ncbiRefSeq\\w*|knownGene|ensGene)$/'
 
 TASKS.push(
   {
