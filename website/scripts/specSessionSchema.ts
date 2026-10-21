@@ -5,7 +5,16 @@
 
 import { schemaProblems } from '../../products/jbrowse-cli/src/commands/validate/schemaValidate.ts'
 import { validateConfig } from '../../products/jbrowse-cli/src/commands/validate/validateConfig.ts'
-import { decodeSpecUrl } from '../src/lib/spec-recipe/decode.ts'
+import {
+  defaultDisplay,
+  lookupTrack,
+  viewTrackEntries,
+} from '../src/lib/spec-recipe/configs.ts'
+import {
+  decodeSpecUrl,
+  specDisplayType,
+  specTrackId,
+} from '../src/lib/spec-recipe/decode.ts'
 
 import type { ScreenshotSpec } from './screenshot-spec-types.ts'
 
@@ -55,5 +64,31 @@ export function sessionSchemaProblems(list: ScreenshotSpec[]) {
         ),
       ),
     ]
+  })
+}
+
+// A track entry's `type` that names the display the app opens it as anyway.
+export function redundantDisplayTypes(list: ScreenshotSpec[]) {
+  return specUrls(list).flatMap(({ where, url }) => {
+    const decoded = decodeSpecUrl(url)
+    if (!decoded) {
+      return []
+    }
+    const { config, spec } = decoded
+    return viewTrackEntries(spec.views).flatMap(({ entry, viewType }) => {
+      const type = specDisplayType(entry)
+      const trackId = specTrackId(entry)
+      return type !== undefined &&
+        viewType !== undefined &&
+        type ===
+          defaultDisplay(
+            lookupTrack(config, trackId, spec.sessionTracks),
+            viewType,
+          )
+        ? [
+            `${where}: "${trackId}" names type ${type}, which a ${viewType} opens it as anyway; drop the type`,
+          ]
+        : []
+    })
   })
 }

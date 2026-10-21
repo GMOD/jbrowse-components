@@ -2,9 +2,12 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { repoRoot } from '../../../scripts/paths.ts'
+import { specTracks } from './decode.ts'
 import { displayTable } from './displayTable.generated.ts'
 import { defaultDisplayIn } from './displays.ts'
 import { hostedConfigs } from './hostedConfigs.generated.ts'
+
+import type { SpecTrackEntry, SpecView } from './decode.ts'
 
 // A spec's bare `"tracks": ["ncbi_gff_hg19"]` resolves at build time into the
 // track's real name and file type — the two things a reader needs to do the
@@ -135,6 +138,21 @@ export function defaultDisplay(track: TrackInfo | undefined, viewType: string) {
 // The view type a spec view's rows (`views`) open as.
 export function rowViewType(viewType: string | undefined) {
   return viewType ? displayTable.views[viewType]?.rowType : undefined
+}
+
+// Every track entry of a spec's views and their rows, with the view type each
+// opens in.
+export function viewTrackEntries(
+  views: SpecView[] = [],
+  parentType?: string,
+): { entry: SpecTrackEntry; viewType: string | undefined }[] {
+  return views.flatMap(view => {
+    const viewType = view.type ?? rowViewType(parentType)
+    return [
+      ...specTracks(view).map(entry => ({ entry, viewType })),
+      ...viewTrackEntries(view.views, viewType),
+    ]
+  })
 }
 
 export function lookupAssembly(

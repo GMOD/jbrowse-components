@@ -3,6 +3,16 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import {
+  defaultDisplay,
+  lookupTrack,
+  viewTrackEntries,
+} from '../src/lib/spec-recipe/configs.ts'
+import {
+  decodeSpecUrl,
+  specDisplayType,
+  specTrackId,
+} from '../src/lib/spec-recipe/decode.ts'
 import { specs } from './screenshot-specs.ts'
 
 import type { ScreenshotSpec } from './screenshot-spec-types.ts'
@@ -250,6 +260,30 @@ function decodeSession(url: string): { config?: string; session?: unknown } {
   return { config }
 }
 
+// The display each track entry opens as, named or the app's default: a spec
+// that leaves the choice to the app names no display type in its session.
+function openedDisplays(url: string) {
+  const decoded = decodeSpecUrl(url)
+  return decoded
+    ? viewTrackEntries(decoded.spec.views).flatMap(({ entry, viewType }) => {
+        const named = specDisplayType(entry)
+        const opened =
+          named ??
+          (viewType
+            ? defaultDisplay(
+                lookupTrack(
+                  decoded.config,
+                  specTrackId(entry),
+                  decoded.spec.sessionTracks,
+                ),
+                viewType,
+              )
+            : undefined)
+        return opened ? [opened] : []
+      })
+    : []
+}
+
 function walk(
   node: unknown,
   onType: (t: string) => void,
@@ -349,6 +383,9 @@ function buildFingerprints(): SpecFingerprint[] {
           t => types.add(t),
           id => trackRefs.add(id),
         )
+        for (const t of openedDisplays(spec.url)) {
+          types.add(t)
+        }
       }
       const local =
         config && config !== 'none' ? localConfigPath(config) : undefined

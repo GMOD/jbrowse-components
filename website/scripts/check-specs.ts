@@ -19,7 +19,10 @@ import {
   validateSpecs,
 } from './screenshot-spec-rules.ts'
 import { specs } from './screenshot-specs.ts'
-import { sessionSchemaProblems } from './specSessionSchema.ts'
+import {
+  redundantDisplayTypes,
+  sessionSchemaProblems,
+} from './specSessionSchema.ts'
 
 function configTrackIds(config: string) {
   const local = localConfigPath(config)
@@ -46,6 +49,7 @@ const problems = [
   ...validateSpecs(specs),
   ...shadowedSessionTracks(specs, configTrackIds),
   ...sessionSchemaProblems(specs),
+  ...redundantDisplayTypes(specs),
 ]
 
 // A ratchet fails on a new entry and asks for its baseline back when one goes;

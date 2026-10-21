@@ -25,10 +25,10 @@ export interface DisplayTable {
 
 /**
  * The display a view of `viewType` opens a track as when nothing names one,
- * by the app's own `chooseDisplay`; undefined where a type outside the core
- * plugins leaves it unknown. The `Core-preProcessTrackConfig` handlers do not
- * run here, and the generator fails if that changes an answer for a track in
- * `test_data/` or `demos/`.
+ * by the app's own `chooseDisplay`; undefined where a track, adapter, view or
+ * declared display type outside the core plugins leaves it unknown. The
+ * `Core-preProcessTrackConfig` handlers do not run here, and the generator
+ * fails if that changes an answer for a track in `test_data/` or `demos/`.
  */
 export function defaultDisplayIn(
   table: DisplayTable,
@@ -38,13 +38,20 @@ export function defaultDisplayIn(
   const trackDisplays = table.tracks[track.type]
   const adapterCapabilities = table.adapters[track.adapterType]
   const view = table.views[viewType]
-  return trackDisplays && adapterCapabilities && view
+  const declared = track.declaredDisplayTypes.map(
+    type => table.displayAliases[type] ?? type,
+  )
+  const core = new Set(
+    Object.values(table.tracks).flatMap(displays => displays.map(d => d.name)),
+  )
+  return trackDisplays &&
+    adapterCapabilities &&
+    view &&
+    declared.every(type => core.has(type))
     ? chooseDisplay({
         trackDisplays,
         adapterCapabilities,
-        declaredDisplays: track.declaredDisplayTypes.map(type => ({
-          type: table.displayAliases[type] ?? type,
-        })),
+        declaredDisplays: declared.map(type => ({ type })),
         viewType,
         viewDisplays: view.displays,
         requestedType: undefined,
