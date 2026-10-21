@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { reportProblems } from './check-utils.ts'
-import { localConfigPath } from './screenshot-impact.ts'
+import { localConfigPath, specFileOwners } from './screenshot-impact.ts'
 import {
   LONG_DELAY_MS,
   countDetachableLabels,
@@ -32,7 +32,17 @@ function configTrackIds(config: string) {
   return new Set(tracks.map(t => t.trackId))
 }
 
+// A spec module the barrel does not import renders nothing and fails nothing.
+const listed = new Set(specs.map(spec => spec.name))
+const unlisted = [...(await specFileOwners())]
+  .filter(([name]) => !listed.has(name))
+  .map(
+    ([name, file]) =>
+      `${name} (${file}) is not in screenshot-specs.ts's \`specs\`, so nothing renders it`,
+  )
+
 const problems = [
+  ...unlisted,
   ...validateSpecs(specs),
   ...shadowedSessionTracks(specs, configTrackIds),
   ...sessionSchemaProblems(specs),
