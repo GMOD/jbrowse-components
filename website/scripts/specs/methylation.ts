@@ -546,7 +546,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
     // the track menu icon keeps its "Track settings" tooltip after the click,
     // and the cursor parks over the pileup, which raises the read tooltip
     hideSelectors: ['.MuiTooltip-popper'],
-    hideTooltip: true,
+    tooltip: 'hide',
     // The menu path that produces the lower half, open on the upper one
     // (reviewer: "the first screenshot may want to show the track menu for
     // group by->tag"). The ungrouped state is the honest place for it: the
@@ -626,7 +626,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
     // 730 cut 10 css px off the bottom
     viewportHeight: 742,
     hideSelectors: ['.MuiTooltip-popper'],
-    hideTooltip: true,
+    tooltip: 'hide',
     annotations: [
       {
         type: 'text',
@@ -645,7 +645,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
     // 730 cut 10 css px off the bottom
     viewportHeight: 742,
     hideSelectors: ['.MuiTooltip-popper'],
-    hideTooltip: true,
+    tooltip: 'hide',
     annotations: [
       {
         type: 'text',

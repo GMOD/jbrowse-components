@@ -165,7 +165,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // the variant lane plus one MAF row per sample and the coverage band
     viewportHeight: 710,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 
@@ -284,7 +284,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // the 240px lane plus its legend and the view chrome
     viewportHeight: 450,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
     // ONE ARM MARKED, AND MARKED IN THE DOTPLOT TOO (review: "still
     // unconvinced. complementary visualizations are useful"). The largest of
@@ -479,7 +479,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // the gene lane, the 150px depth track and the whole 240px stack
     viewportHeight: 775,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 
@@ -580,7 +580,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     // gene lane + the pileup with its coverage band + the depth wiggle + the
     // MAF's five rows and its coverage band
     viewportHeight: 865,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 ]

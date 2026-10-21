@@ -380,7 +380,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     readyText: 'NCBI RefSeq',
     readyTimeout: 90000,
     viewportHeight: 520,
-    hideTooltip: true,
+    tooltip: 'hide',
     // The chips are the feature: wait for the second one, which appears only
     // once the layout has stacked both sections.
     actions: [{ type: 'waitForText', text: 'Reverse strand' }],
@@ -458,7 +458,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     readyText: 'NCBI RefSeq',
     readyTimeout: 90000,
     viewportHeight: 590,
-    hideTooltip: true,
+    tooltip: 'hide',
     // Two-stage walkthrough: (1) right-click the gene to reveal the Collapse
     // introns menu item, (2) the reshaped view with introns collapsed and the
     // sashimi arcs connecting adjacent exons. The confirmation dialog had its own
@@ -721,7 +721,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
       { type: 'click', selector: NES_MOTIF },
       { type: 'delay', ms: 6000 },
     ],
-    hideTooltip: true,
+    tooltip: 'hide',
     annotations: [
       {
         type: 'text',
@@ -787,7 +787,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     ],
     // The launch leaves the cursor where the menu item was, which is over the
     // new view's own track area.
-    hideTooltip: true,
+    tooltip: 'hide',
     viewportHeight: 1500,
   },
 ]

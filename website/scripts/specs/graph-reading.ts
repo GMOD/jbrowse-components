@@ -133,7 +133,7 @@ const kiv2WalksSpec: ScreenshotSpec = {
   readyTimeout: 240000,
   viewportWidth: 1400,
   viewportHeight: 910,
-  hideTooltip: true,
+  tooltip: 'hide',
   clicksChange: "lift HG00133's walk out of the graph",
   actions: [
     trackMenuIcon(LANES_TRACK),
@@ -201,7 +201,7 @@ const kiv2WalkRowsSpec: ScreenshotSpec = {
   readyTimeout: 240000,
   viewportWidth: 1400,
   viewportHeight: 740,
-  hideTooltip: true,
+  tooltip: 'hide',
   actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   annotations: [
     {
@@ -273,7 +273,7 @@ const nntHalosSpec: ScreenshotSpec = {
   readyTimeout: 300000,
   viewportWidth: 1400,
   viewportHeight: 830,
-  hideTooltip: true,
+  tooltip: 'hide',
   annotations: [
     {
       type: 'text',

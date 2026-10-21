@@ -19,8 +19,6 @@ export interface SpecRunState {
   flaky?: number
   updated?: string
   suppressed?: number
-  // selected and then deliberately not rendered, with why
-  skipped?: string
 }
 
 export interface SpecPart extends ScreenshotPart {
@@ -51,7 +49,6 @@ export interface RunSummary {
   // how much of the corpus the run reached. `filter` cannot answer that:
   // --affected and --cover narrow just as hard and leave it empty.
   selected: number
-  skipped: number
   total: number
 }
 

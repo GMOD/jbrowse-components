@@ -8,7 +8,11 @@ import { chordPoint, ideogramPoint } from './chordAnchor.ts'
 import { locusPoint } from './locusAnchor.ts'
 import { selectorPoint } from './selectorAnchor.ts'
 
-import type { ActionAnchor, ScreenshotAction } from './screenshot-specs.ts'
+import type {
+  ActionAnchor,
+  ActionTarget,
+  ScreenshotAction,
+} from './screenshot-spec-types.ts'
 import type { ElementHandle, Page } from 'puppeteer'
 
 // re-exported so generate-screenshots.ts keeps importing it from './actions'
@@ -16,7 +20,6 @@ export { delay }
 
 // Default wait for an element to appear/become-visible before acting on it.
 export const FIND_TIMEOUT = 30000
-const DEFAULT_ACTION_DELAY_MS = 500
 
 // puppeteer text-pseudo-selector: matches an element by its visible text. Used
 // to reach HTML floating labels / menu items that carry no testid.
@@ -241,14 +244,17 @@ export async function waitForVisible(
   }
 }
 
-const targetName = (action: ScreenshotAction) =>
+type TargetedAction = { type: ScreenshotAction['type'] } & ActionTarget
+type DragAction = Extract<ScreenshotAction, { type: 'drag' }>
+
+const targetName = (action: ActionTarget) =>
   action.selector ? `selector "${action.selector}"` : `text "${action.text}"`
 
 // Resolve an action's target element from either a CSS selector or visible text.
 // On timeout, rethrow with the human target (the spec's `text`/`selector`) so a
 // renamed menu item reads as `click target not found: text "Settings"` instead
 // of puppeteer's parsed-selector blob ([[[{name,value}]]]).
-function resolveTarget(page: Page, action: ScreenshotAction) {
+function resolveTarget(page: Page, action: TargetedAction) {
   const selector =
     action.selector ?? (action.text ? textSelector(action.text) : undefined)
   if (!selector) {
@@ -265,7 +271,7 @@ function resolveTarget(page: Page, action: ScreenshotAction) {
 // no-op and report success.
 async function assertEnabled(
   el: Awaited<ReturnType<typeof resolveTarget>>,
-  action: ScreenshotAction,
+  action: TargetedAction,
 ) {
   const disabled = await el?.evaluate(
     node => !!node.closest('[aria-disabled="true"], :disabled'),
@@ -347,7 +353,7 @@ async function clickElement(
 const viewportBound = (page: Page) => page.viewport()
 
 function assertInViewport(
-  action: ScreenshotAction,
+  action: { type: string },
   point: { x: number; y: number },
   bound: { width: number; height: number } | null,
 ) {
@@ -370,7 +376,7 @@ function assertInViewport(
 // name instead of clicking the top-left corner of the page.
 async function anchorPoint(
   page: Page,
-  action: ScreenshotAction,
+  action: { type: string },
   anchor: ActionAnchor,
 ) {
   const point = anchor.chord
@@ -390,7 +396,7 @@ async function anchorPoint(
   return point
 }
 
-async function actionPoint(page: Page, action: ScreenshotAction) {
+async function actionPoint(page: Page, action: TargetedAction) {
   if (action.anchor) {
     return anchorPoint(page, action, action.anchor)
   }
@@ -404,7 +410,7 @@ async function actionPoint(page: Page, action: ScreenshotAction) {
 // because generate-video.ts draws the cursor along the same two points the drag
 // runs between: a rubberband follows the real mouse, so a drawn cursor gliding
 // somewhere else would draw the selection where the pointer is not.
-export async function dragPoints(page: Page, action: ScreenshotAction) {
+export async function dragPoints(page: Page, action: DragAction) {
   const from = action.fromAnchor
     ? await anchorPoint(page, action, action.fromAnchor)
     : action.from
@@ -432,7 +438,7 @@ export async function dragPoints(page: Page, action: ScreenshotAction) {
 // the click below is the one the stills take, and the cursor is drawn onto
 // whatever it is about to hit. A menu item's rect has settled by the time
 // resolveTarget returns, so the two lookups agree.
-export async function actionTargetPoint(page: Page, action: ScreenshotAction) {
+export async function actionTargetPoint(page: Page, action: TargetedAction) {
   const point = await actionPoint(page, action)
   if (point) {
     return point
@@ -446,7 +452,7 @@ export async function actionTargetPoint(page: Page, action: ScreenshotAction) {
 
 export async function runAction(page: Page, action: ScreenshotAction) {
   if (action.type === 'delay') {
-    await delay(action.ms ?? DEFAULT_ACTION_DELAY_MS)
+    await delay(action.ms)
   } else if (action.type === 'click') {
     // canvas-drawn features (reads, gene glyphs) have no DOM node, so allow a
     // viewport-coordinate click via action.from / action.anchor
@@ -505,9 +511,9 @@ export async function runAction(page: Page, action: ScreenshotAction) {
       await el?.click()
     }
     if (action.paste) {
-      await page.keyboard.sendCharacter(action.value ?? '')
+      await page.keyboard.sendCharacter(action.value)
     } else {
-      await page.keyboard.type(action.value ?? '', {
+      await page.keyboard.type(action.value, {
         delay: action.typeDelayMs,
       })
     }
@@ -564,14 +570,8 @@ export async function runAction(page: Page, action: ScreenshotAction) {
       )
     }
   } else if (action.type === 'press') {
-    if (!action.key) {
-      throw new Error('press action needs a key')
-    }
     await page.keyboard.press(action.key)
   } else if (action.type === 'waitForSelector') {
-    if (!action.selector) {
-      throw new Error('waitForSelector action needs a selector')
-    }
     // rethrow puppeteer's parsed-selector blob ([[[{name,value}]]]) as the
     // readable selector so a timeout names what was missing
     await waitForVisible(page, action.selector, {
@@ -587,7 +587,7 @@ export async function runAction(page: Page, action: ScreenshotAction) {
     //
     // The gate an interaction needs, and the one a fixed `delay` was standing in
     // for: it ends when the session reports itself finished and stays finished,
-    // rather than at a number somebody picked. `ms` overrides how long that hold
+    // rather than at a number somebody picked. `holdMs` overrides how long that hold
     // is; `timeout` is the ceiling. See waitForAppSettled's own doc for why it is
     // a hold.
     //
@@ -597,16 +597,10 @@ export async function runAction(page: Page, action: ScreenshotAction) {
     // on it can only time out.
     await waitForAppSettled(page, {
       ...(action.timeout ? { timeout: action.timeout } : {}),
-      ...(action.ms ? { holdMs: action.ms } : {}),
+      ...(action.holdMs ? { holdMs: action.holdMs } : {}),
     })
-    // the chain covers every member of the union, so this last comparison is
-    // provably true — kept explicit so adding an action type surfaces here
-    // rather than silently falling into the waitForText branch
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   } else if (action.type === 'waitForText') {
-    if (!action.text) {
-      throw new Error('waitForText action needs text')
-    }
     await waitForVisible(page, textSelector(action.text), {
       hidden: action.hidden,
       timeout: action.timeout,
@@ -616,9 +610,6 @@ export async function runAction(page: Page, action: ScreenshotAction) {
       )
     })
   } else {
-    // a spec that mistypes an action type (or drops a required field) used to
-    // fall through every branch and no-op, producing a wrong-but-plausible
-    // figure with no error
-    throw new Error(`unknown action type: ${JSON.stringify(action)}`)
+    action satisfies never
   }
 }

@@ -6,7 +6,11 @@ import { UCSC_HG38_CONFIG } from '../screenshot-spec-helpers.ts'
 import { PARK_CURSOR } from '../screenshot-spec-types.ts'
 import { pageTrack } from './pageTrack.ts'
 
-import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type {
+  Annotation,
+  ScreenshotSpec,
+  SessionUrlSpec,
+} from '../screenshot-spec-types.ts'
 
 // Measured 2026-10-16 against the files the tracks read, so captions name the
 // direction without a number:
@@ -145,10 +149,10 @@ export const READY = {
     'body:has([data-testid="protein-view-ready"]):has([data-testid="msa_canvas"])',
   readyTimeout: 300000,
   hideSelectors: ['.msp-background-tasks', '.msp-highlight-info'],
-  hideTooltip: true,
+  tooltip: 'hide',
   viewportWidth: 2000,
   viewportHeight: 1050,
-}
+} satisfies Partial<SessionUrlSpec>
 
 export const RESET_ZOOM = [
   { type: 'click' as const, selector: 'button[title="Reset Zoom"]' },

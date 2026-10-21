@@ -52,7 +52,6 @@ import {
   check,
   diffThreshold,
   externalPort,
-  filterTokens,
   firefox,
   forceCommit,
   headed,
@@ -116,7 +115,7 @@ async function shoot(
   annotations: Annotation[] | undefined,
   file: string,
 ) {
-  if (spec.hideTooltip) {
+  if (spec.tooltip === 'hide') {
     await hideLingeringTooltip(page)
   } else {
     // Not hidden — a tooltip is often what a figure is demonstrating. Recorded
@@ -937,7 +936,6 @@ async function main() {
     failed: 0,
     kept: 0,
     selected: [...renderSpecs, ...composeSpecs].map(s => s.name),
-    skipped: [],
     failures: [],
     flaky: [],
     changed: [],
@@ -985,9 +983,7 @@ async function main() {
     body: (page: Page) => Promise<T>,
   ): Promise<T> {
     for (let attempt = 0; ; attempt++) {
-      const browser = await launch(
-        buildLaunchOptions(firefox || !!spec.firefox),
-      )
+      const browser = await launch(buildLaunchOptions(firefox))
       try {
         const page = await browser.newPage()
         await freezeAnimations(page)
@@ -1112,29 +1108,7 @@ async function main() {
     }
   }
 
-  // Selected and then not rendered. Recorded with its reason, not just counted:
-  // the committed PNG stays, so the figure looks current, and only this list
-  // says the run declined to check it.
-  function skip(spec: ScreenshotSpec, reason: string) {
-    console.log(`${progress()} ⊘ ${spec.name} (${reason})`)
-    totals.skipped.push({ name: spec.name, reason })
-  }
-
   async function runSpec(spec: ScreenshotSpec) {
-    if (spec.curated) {
-      skip(spec, 'curated, keeping committed image')
-      return
-    }
-    // Not gated on --filter, unlike heavyNetwork: naming this one in a
-    // headless run does not make it renderable, it just fails more explicitly.
-    if (spec.headedOnly && !headed) {
-      skip(spec, 'needs a real GPU; re-run with --headed')
-      return
-    }
-    if (spec.heavyNetwork && !filterTokens.length) {
-      skip(spec, 'heavy remote data; name it in --filter to re-render')
-      return
-    }
     // Stacking a part that just failed to render would publish a figure half
     // made of a stale image, and the run would still report success.
     const brokenParts =

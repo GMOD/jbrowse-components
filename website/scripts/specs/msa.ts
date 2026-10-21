@@ -238,7 +238,7 @@ export const msaSpecs: ScreenshotSpec[] = [
       'body:has([data-testid="protein-view-ready"]):has([data-testid="msa_canvas"])',
     readyTimeout: 300000,
     hideSelectors: ['.msp-background-tasks'],
-    hideTooltip: true,
+    tooltip: 'hide',
     viewportWidth: 2000,
     viewportHeight: 1300,
   },
@@ -316,7 +316,7 @@ export const msaSpecs: ScreenshotSpec[] = [
         viewportHeight: 700,
       },
     ],
-    hideTooltip: true,
+    tooltip: 'hide',
     viewportHeight: 900,
     // the UCSC hub config is ~570 tracks and pulls four remote plugins, the
     // same reason genomes_synteny raises this
@@ -375,7 +375,7 @@ export const msaSpecs: ScreenshotSpec[] = [
     // the UCSC hub config is ~570 tracks and pulls four remote plugins, the
     // same reason the two specs above raise this
     readyTimeout: 120000,
-    hideTooltip: true,
+    tooltip: 'hide',
     viewportHeight: 390,
   },
 ]

@@ -41,7 +41,6 @@ function RunPills({ spec }: { spec: SpecEntry }) {
   const pct = (frac: number) => `${(frac * 100).toFixed(2)}%`
   return (
     <>
-      {r.skipped ? <Pill cls="notcovered">skipped — {r.skipped}</Pill> : null}
       {r.failed ? <Pill cls="failed">✗ failed to render</Pill> : null}
       {r.flaky !== undefined ? (
         <Pill cls="flaky">

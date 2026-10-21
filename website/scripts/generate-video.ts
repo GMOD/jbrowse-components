@@ -193,7 +193,7 @@ function readingMs(line: string) {
 }
 
 const pasted = (step: VideoStep) =>
-  step.type === 'type' && (step.value ?? '').length > PASTE_OVER_CHARS
+  step.type === 'type' && step.value.length > PASTE_OVER_CHARS
 
 // A `type` step as it is filmed. Off camera — a `cut` step, or the boot of a
 // tour that follows a tab — the keystrokes are wall clock nobody watches, so
@@ -323,11 +323,16 @@ async function confusingOnCamera(
 // A step, in whatever it gave the report to point at. `say` first because it is
 // the line the reader saw while the step was on screen.
 function describeStep(step: VideoStep) {
+  if (step.say) {
+    return step.say
+  }
+  if (step.type === 'delay') {
+    return `delay ${step.ms}ms`
+  }
   return (
-    step.say ??
-    step.selector ??
-    step.text ??
-    (step.type === 'delay' ? `delay ${step.ms}ms` : step.type)
+    ('selector' in step && step.selector) ||
+    ('text' in step && step.text) ||
+    step.type
   )
 }
 
@@ -428,11 +433,11 @@ async function filmStep(
         }
       }
     }
-    if (step.type === 'press' && step.key) {
+    if (step.type === 'press') {
       await keyPress(page, step.key)
     }
     const action = filmedAction(step)
-    if (action.paste) {
+    if (action.type === 'type' && action.paste) {
       await keyPress(page, 'Ctrl V')
     }
     await runAction(page, action)
@@ -604,7 +609,7 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
       // what the spec chose to hold, and the caption's reading time, are not
       // the app keeping anyone waiting
       const chosen =
-        reading + holdMs(step) + (step.type === 'delay' ? (step.ms ?? 0) : 0)
+        reading + holdMs(step) + (step.type === 'delay' ? step.ms : 0)
       const waited = cam.filmed - startedAt - chosen
       if (!step.cut && waited > SLOW_STEP_MS) {
         slowSteps.push([describeStep(step), waited])

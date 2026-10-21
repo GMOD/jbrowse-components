@@ -298,7 +298,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     viewportHeight: 640,
-    hideTooltip: true,
+    tooltip: 'hide',
     // park the cursor in the nav bar so no coverage-band hover tooltip lingers
     // over the capture
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
@@ -312,7 +312,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     name: 'maf_codon_tooltip',
     // the tooltip IS the figure here, so the run should complain if it ever
     // stops appearing rather than quietly capturing the frame without it
-    expectTooltip: true,
+    tooltip: 'expect',
     url: sessionSpec(CE_MAF_FRAMES, {
       sessionTracks: [CE11_GENE_TRACK],
       views: [
@@ -419,7 +419,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // taller frame so all 26 compact rows + the grow-mode gene lane sit inside
     viewportHeight: 640,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
   {
@@ -489,7 +489,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     viewportHeight: 940,
     // all ~470 species over remote UCSC data — long settle so the heatmap is
     // fully painted and the loading indicator has cleared before capture
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [{ type: 'delay', ms: 2000 }],
   },
   {
@@ -569,7 +569,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     // it had been spelled `heightOverride`, a dead key silently dropped, so the
     // display had been taller than the 460 the spec asked for.
     viewportHeight: 765,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 
@@ -603,7 +603,7 @@ export const mafSpecs: ScreenshotSpec[] = [
         'Zoomed in (200 bp): the alignment itself, one cell per base',
       ],
     ] as const
-  ).map(([name, loc, label]) => ({
+  ).map(([name, loc, label]): ScreenshotSpec => ({
     mode: 'url' as const,
     name,
     url: sessionSpec(HG38_470WAY, {
@@ -650,7 +650,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     // sized off the run's own CLIPPED/blank report, not off the PNG: 800 was
     // right for the 460px display, and the display is 380 now.
     viewportHeight: 745,
-    hideTooltip: true,
+    tooltip: 'hide',
     annotations: [
       {
         type: 'text' as const,

@@ -195,7 +195,7 @@ function strandSpecificSpec(): ScreenshotSpec {
     readyTimeout: 60000,
     // the gene track, the sashimi/coverage band and the pileup
     viewportHeight: 718,
-    hideTooltip: true,
+    tooltip: 'hide',
     annotations: [
       // Which setting this is, anchored in the gene lane's empty band rather
       // than at the old raw (24, 56) -- that coordinate was chosen when this
@@ -276,7 +276,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportWidth: 1100,
     viewportHeight: 400,
     readyText: 'ctgA',
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: openTrackSelector('menu'),
   },
 
@@ -535,7 +535,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     // off the run's own below-the-fold report
     viewportHeight: 1015,
-    hideTooltip: true,
+    tooltip: 'hide',
   },
 
   // Strand-split coverage: what grouping does to the coverage band itself. The
@@ -624,7 +624,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
     viewportHeight: 690,
-    hideTooltip: true,
+    tooltip: 'hide',
     // THE COLUMN, MARKED (review: "it might be good to make this screenshot on
     // an example that has dramatic differences between strandedness e.g. on
     // viral sample"). The dramatic thing is here and the frame was making a
@@ -736,7 +736,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_sv_cram'],
     }),
     readyText: 'ctgA',
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [
       { type: 'rightclick', anchor: CTX_MENU_READ },
       { type: 'waitForText', text: 'Open feature details' },
@@ -840,7 +840,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // height 500 gives the right-click context menu breathing room below its last
     // item instead of clipping it at the frame edge (menu cut off)
     crop: { x: 0, y: 0, width: 1100, height: 500 },
-    hideTooltip: true,
+    tooltip: 'hide',
     // two-stage: top frame is the right-click "SNP/Mismatch → Sort by base at
     // position" menu; bottom frame closes the menu to show the resulting sorted
     // pileup (reads carrying the same base at ctgA:14481 grouped together)
@@ -1243,7 +1243,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'CpG',
     readyTimeout: 60000,
-    hideTooltip: true,
+    tooltip: 'hide',
     // no track menu in this frame: the mode radios carry no color swatches at
     // that level, so the open menu covered half the reads to show nothing the
     // row labels don't already say (reviewer). Wide single frame, both rows'
@@ -1364,7 +1364,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
     viewportHeight: 550,
-    hideTooltip: true,
+    tooltip: 'hide',
     // Three-stage figure: stage 1 is the menu path (track menu ->
     // Group by... submenu, the inner item boxed); stage 2 is the dialog that item
     // opens, with the Tag dimension chosen and HP entered; stage 3 submits it and
@@ -1522,11 +1522,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // whitespace while still leaving room for the deep "Read connections" submenu
     viewportHeight: 600,
     // dismissing the menu leaves the track-menu button hovered, so MUI paints
-    // its "Track settings" tooltip into the result frame. `hideTooltip` rather
+    // its "Track settings" tooltip into the result frame. `tooltip: 'hide'` rather
     // than a `.MuiTooltip-popper` hideSelector, which hid it from the capture
     // but not from the run's own tooltip check — that runs first, so every regen
     // reported a stray tooltip the figure did not have.
-    hideTooltip: true,
+    tooltip: 'hide',
     stages: [
       {
         actions: [
@@ -1826,6 +1826,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     // the run reported 107 css px clipped below the fold at 780
     viewportHeight: 890,
-    hideTooltip: true,
+    tooltip: 'hide',
   },
 ]

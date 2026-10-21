@@ -758,7 +758,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: '1KGP',
     readyTimeout: 90000,
     viewportHeight: 800,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [
       // The variant under the pointer is what the sort keys on, so the
       // x is the whole content of this click and it is a locus, not the x=1130 it
@@ -826,7 +826,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     // lane was sliced off mid-labels, cutting the genes the SV calls line up
     // against
     viewportHeight: 800,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [
       // the same inversion `multisv` sorts on, named the same way, so the two
       // figures cannot drift into sorting on different variants
@@ -900,7 +900,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     // lane. The record lane's floating SV-type key used to be hidden by
     // selector here; it is gone with the jexl that produced it.
     viewportHeight: 1230,
-    hideTooltip: true,
+    tooltip: 'hide',
     clicksChange: "sort the matrix's rows by genotype at HGSV_1821",
     actions: [
       // the clustering RPC over 2504 rows finishes well after first paint, and
@@ -1340,7 +1340,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'SKBR3',
     readyTimeout: 60000,
-    hideTooltip: true,
+    tooltip: 'hide',
     // the synteny read-vs-ref panel below the pileup gets clipped at the default
     // 800px viewport, so give it extra room. Sized to the content: 950 left
     // ~136px of page background under the launched view.
@@ -2258,7 +2258,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'Tools',
     viewportWidth: 1000,
     viewportHeight: 540,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: openAssemblyManager(),
   },
 
@@ -2272,7 +2272,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'Tools',
     viewportWidth: 1000,
     viewportHeight: 540,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: openAssemblyManager(),
   },
 
@@ -2289,7 +2289,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'Tools',
     viewportWidth: 1000,
     viewportHeight: 480,
-    hideTooltip: true,
+    tooltip: 'hide',
     stages: [
       {
         actions: [

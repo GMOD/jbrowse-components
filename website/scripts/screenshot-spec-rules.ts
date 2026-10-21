@@ -108,10 +108,7 @@ export function validateSpecs(list: ScreenshotSpec[]) {
           ['stages', spec.stages?.length],
           ['crop', spec.crop],
           ['hideSelectors', spec.hideSelectors?.length],
-          ['hideTooltip', spec.hideTooltip],
-          // no `recordTooltip` on this path either, so a declared tooltip is
-          // neither hidden nor reported missing
-          ['expectTooltip', spec.expectTooltip],
+          ['tooltip', spec.tooltip],
         ] as const
       )
         .filter(([, set]) => set)
@@ -150,11 +147,6 @@ export function validateSpecs(list: ScreenshotSpec[]) {
       !((spec.stageColumns ?? 0) > 1)
     ) {
       problems.push(`${spec.name}: stageGutter without a stageColumns grid`)
-    }
-    if ('expectTooltip' in spec && spec.expectTooltip && spec.hideTooltip) {
-      problems.push(
-        `${spec.name}: expectTooltip and hideTooltip contradict each other`,
-      )
     }
     if ('stages' in spec && spec.stages?.length) {
       if (spec.annotations?.length) {
@@ -248,7 +240,12 @@ export function countRawCallouts(list: ScreenshotSpec[]) {
   const actions = (name: string, list: ScreenshotAction[] | undefined) => {
     for (const action of list ?? []) {
       // a rubberband drag genuinely is two viewport points
-      if (action.type !== 'drag' && action.from && !action.anchor) {
+      if (
+        action.type !== 'drag' &&
+        'from' in action &&
+        action.from &&
+        !action.anchor
+      ) {
         found.push(`${name}: ${action.type} from`)
       }
     }

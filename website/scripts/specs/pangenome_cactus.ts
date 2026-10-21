@@ -199,7 +199,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     viewportHeight: 1070,
-    hideTooltip: true,
+    tooltip: 'hide',
     // The dashed edge is one link with no bases; its bow is the force layout's
     // spring, so it reads as the biggest thing in the frame unless named.
     annotations: [
@@ -350,7 +350,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     // the gene lane plus the whole 300px two-row stack, with room for the
     // bottom row's 0 tick (640 left it on the frame edge)
     viewportHeight: 690,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
     // One callout per row, saying why THAT row does what it does (reviewer:
     // "consider adding red annotation text boxes to both to explain why this
@@ -448,7 +448,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     viewportHeight: 480,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 
@@ -544,7 +544,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     // figures stack cleanly in the docs at the same scale
     viewportWidth: 1040,
     viewportHeight: 380,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 

@@ -585,7 +585,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     viewportHeight: 454,
     // Before over after, the default stacking. Side by side, two 1400px frames
     // made one image too wide to read at page width.
-    hideTooltip: true,
+    tooltip: 'hide',
     stages: [
       {
         // Nothing to do: this is the state the reader arrives in, and what the
@@ -714,7 +714,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     // So the frame is the header plus the menu's full height rather than the
     // height of the figure above, whose end state it otherwise continues.
     viewportHeight: 560,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [
       { type: 'click', selector: '[aria-label="Synteny display settings"]' },
       { type: 'waitForText', text: 'Location markers' },

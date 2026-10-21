@@ -190,7 +190,7 @@ export const screenshotLiveLabels: Record<string, string> = Object.fromEntries(
 )
 
 // Specs whose live session is genuinely slow to open — a heavy remote fetch
-// (heavyNetwork) or a whole-genome view that clusters thousands of rows, which
+// or a whole-genome view that clusters thousands of rows, which
 // the reader pays for in their own browser. The Figure macro annotates their
 // "Open in JBrowse" link so a reader who clicks it knows to expect a wait rather
 // than a broken page. Derived from the spec, not a hand-kept list, so it can't
@@ -220,7 +220,10 @@ function longestActionTimeout(spec: SessionUrlSpec) {
     ...(spec.actions ?? []),
     ...(spec.stages ?? []).flatMap(stage => stage.actions ?? []),
   ]
-  return Math.max(0, ...actions.map(action => action.timeout ?? 0))
+  return Math.max(
+    0,
+    ...actions.map(action => ('timeout' in action && action.timeout) || 0),
+  )
 }
 
 export const screenshotSlowSpecNames = new Set(
@@ -229,8 +232,7 @@ export const screenshotSlowSpecNames = new Set(
       spec =>
         spec.mode === 'url' &&
         (spec.slowLiveSession ??
-          (spec.heavyNetwork ||
-            (spec.readyTimeout ?? 0) >= SLOW_TIMEOUT_MS ||
+          ((spec.readyTimeout ?? 0) >= SLOW_TIMEOUT_MS ||
             longestActionTimeout(spec) >= SLOW_TIMEOUT_MS)),
     )
     .map(spec => spec.name),

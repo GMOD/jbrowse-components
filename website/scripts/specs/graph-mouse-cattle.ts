@@ -126,7 +126,7 @@ const dock2Spec: ScreenshotSpec = {
   // A force layout of this cut needs the room: the panel's point is its
   // topology, and the graph track takes up to 600 px.
   viewportHeight: 1150,
-  hideTooltip: true,
+  tooltip: 'hide',
   annotations: [
     {
       type: 'text',
@@ -211,7 +211,7 @@ function bovineLocusSpec(
     readyTimeout: 300000,
     viewportWidth: 1400,
     viewportHeight,
-    hideTooltip: true,
+    tooltip: 'hide',
   }
 }
 
@@ -365,7 +365,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     viewportWidth: 1400,
     viewportHeight: 550,
-    hideTooltip: true,
+    tooltip: 'hide',
     annotations: [
       {
         type: 'text',

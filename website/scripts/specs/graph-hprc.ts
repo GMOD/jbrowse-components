@@ -531,7 +531,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // anchored drawing restated the lanes above and a force drawing of it is
     // one arc; the tier lane carries the same nodes on the axis.
     viewportHeight: 580,
-    hideTooltip: true,
+    tooltip: 'hide',
     // The blank is the loudest thing in the picture and nothing on the image
     // said what it was. The caption used to call it the centromere and 1q12,
     // which is both something a reader has to already know and not what the
@@ -707,7 +707,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     allowUnsettled: true,
     viewportWidth: 1000,
     viewportHeight: 780,
-    hideTooltip: true,
+    tooltip: 'hide',
   },
   // The inversion in one linear view: the bubble lane states the flag, and the
   // lanes cross between HG00099's two haplotypes with FLNA and EMD in opposite
@@ -743,7 +743,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 240000,
     viewportWidth: 1000,
     viewportHeight: 680,
-    hideTooltip: true,
+    tooltip: 'hide',
   },
   // pangenome/hprc_repeat_classes was here and is DELETED (review: "i dont think
   // i really understand this figure. consider deleting. just not actually
@@ -838,7 +838,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     viewportWidth: 1000,
     viewportHeight: 1170,
-    hideTooltip: true,
+    tooltip: 'hide',
     annotations: [
       // s343607+ is HG02391#2's 68 kb segment inside the array bubble, the
       // longest node in the cut and the widest loop in the drawing. Its
@@ -924,7 +924,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 360000,
     viewportWidth: 1000,
     viewportHeight: 1340,
-    hideTooltip: true,
+    tooltip: 'hide',
     // The event in the graph as well as in the tracks (review: "i see there is a
     // highlight on the lineargenomeview but no highlight in the graph itself").
     // The force drawing has no coordinate axis, so the graph side is a ring on
@@ -991,7 +991,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     viewportWidth: 1100,
     viewportHeight: 1232,
-    hideTooltip: true,
+    tooltip: 'hide',
     stages: [
       {
         viewportHeight: 660,
@@ -1089,7 +1089,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     }),
     viewportWidth: 1400,
     viewportHeight: 1300,
-    hideTooltip: true,
+    tooltip: 'hide',
     clicksChange: "open the record's repeat copies view",
     actions: [
       { type: 'waitForAppSettled', timeout: 120000 },
@@ -1165,7 +1165,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // the card alone: the clicked record's view held one 40px row over 70% of
     // the frame, all blank under it
     crop: { x: 1016, y: 48, width: 384, height: 862 },
-    hideTooltip: true,
+    tooltip: 'hide',
     clicksChange: "open the record's repeat copies view",
     actions: [
       { type: 'waitForAppSettled', timeout: 120000 },
@@ -1195,7 +1195,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 240000,
     viewportWidth: 1400,
     viewportHeight: 1065,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   },
   {
@@ -1221,7 +1221,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 240000,
     viewportWidth: 1400,
     viewportHeight: 745,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   },
 
@@ -1304,7 +1304,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 240000,
     viewportWidth: 1400,
     viewportHeight: 540,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   },
   // What the host page's one command writes, drawn: its four tracks over C4,
@@ -1335,6 +1335,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: GRAPH_DRAWN,
     readyTimeout: 180000,
     viewportHeight: 1080,
-    hideTooltip: true,
+    tooltip: 'hide',
   },
 ]

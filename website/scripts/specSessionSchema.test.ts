@@ -2,9 +2,9 @@
 
 import { sessionSchemaProblems } from './specSessionSchema.ts'
 
-import type { ScreenshotSpec } from './screenshot-spec-types.ts'
+import type { SessionUrlSpec } from './screenshot-spec-types.ts'
 
-const spec = (session: object): ScreenshotSpec => ({
+const spec = (session: object): SessionUrlSpec => ({
   mode: 'url',
   name: 'a',
   url: `?config=c.json&session=spec-${encodeURIComponent(JSON.stringify(session))}`,

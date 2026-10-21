@@ -1510,7 +1510,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
     viewportHeight: 680,
-    hideTooltip: true,
+    tooltip: 'hide',
     clicksChange:
       "select a ribbon, outlining its ortholog group and opening the pair's details",
     actions: [
@@ -1761,7 +1761,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 180000,
     viewportHeight: 833,
-    hideTooltip: true,
+    tooltip: 'hide',
     clicksChange: "close the legend's gene cluster section",
     actions: [
       { type: 'click', selector: '[aria-label="Hide Gene cluster"]' },
@@ -4124,7 +4124,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // bottom row sets its own, taller, height per stage.
     viewportHeight: 575,
     stageColumns: 2,
-    hideTooltip: true,
+    tooltip: 'hide',
     // resolving mm39 through the hub plugin raises a "Successfully loaded"
     // snackbar over whichever frame the connection lands in
     hideSelectors: ['.MuiSnackbar-root'],
@@ -4586,7 +4586,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 842,
     // half of a side-by-side pair — see color_by_attribute_steps
     viewportWidth: 900,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       { type: 'waitForText', text: 'Color by...' },
@@ -4777,7 +4777,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // hanging over the selection the top frame is OF, reading "x - out of
     // bounds". Hidden at the shot rather than cleared with PARK_CURSOR: the
     // cursor is what holds the rubberband and the context menu that go with it.
-    hideTooltip: true,
+    tooltip: 'hide',
     stages: [
       // top frame: the context menu left open by the shared actions above
       {},
@@ -5307,7 +5307,7 @@ function launchMenuStills(): ScreenshotSpec[] {
       readySelector: displayPainted('pileup-display'),
       readyTimeout: 120000,
       viewportHeight: 440,
-      hideTooltip: true,
+      tooltip: 'hide',
       clicksOpen: "an alignment's context menu at its Launch submenu",
       actions: [
         // 8px into the first lane's row at featureHeight 14; the lanes are
@@ -5362,7 +5362,7 @@ function launchMenuStills(): ScreenshotSpec[] {
       readySelector: displaySettled('multiway-synteny-display'),
       readyTimeout: 120000,
       viewportHeight: 520,
-      hideTooltip: true,
+      tooltip: 'hide',
       clicksOpen: "a lane's context menu",
       actions: [
         {
@@ -5384,7 +5384,7 @@ function launchMenuStills(): ScreenshotSpec[] {
       readySelector: displayPainted('maf-display'),
       readyTimeout: 180000,
       viewportHeight: 560,
-      hideTooltip: true,
+      tooltip: 'hide',
       actions: [
         // the tour's drag from the top row to the bottom one, ending short of
         // the tour's span so the menu the release raises opens inside the

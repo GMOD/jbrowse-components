@@ -596,7 +596,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     }),
     readySelector: `[data-testid="${TUMOUR}-loaded"]`,
     readyTimeout: 300000,
-    hideTooltip: true,
+    tooltip: 'hide',
   },
 
   // The two above as one figure, since they are one event twice: the reads clip

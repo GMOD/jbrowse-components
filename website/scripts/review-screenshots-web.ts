@@ -256,7 +256,6 @@ function buildFigureStatePayload(): FigureState {
       // read as verified by it. Zero for a report written before this was
       // recorded, which the banner reports as unknown rather than as a sweep.
       selected: run.selected.length,
-      skipped: run.skipped.length,
       total: run.total,
     },
   }
@@ -285,7 +284,6 @@ function loadRunReport(): RunReport | undefined {
       check: parsed.check ?? false,
       selected: parsed.selected ?? [],
       total: parsed.total ?? 0,
-      skipped: parsed.skipped ?? [],
       failures: parsed.failures ?? [],
       flaky: parsed.flaky ?? [],
       updated: parsed.updated ?? [],
@@ -315,9 +313,6 @@ function specRunStates(run: RunReport | undefined) {
   // pass "no entry" conflates "nothing to report" with "never opened".
   for (const name of run.selected) {
     touch(name)
-  }
-  for (const s of run.skipped) {
-    touch(s.name).skipped = s.reason
   }
   for (const f of run.failures) {
     touch(f.name).failed = f.error

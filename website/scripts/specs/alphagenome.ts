@@ -5,6 +5,7 @@ import { readIsoformNotice } from '../screenshot-spec-helpers.ts'
 import type {
   ScreenshotAction,
   ScreenshotSpec,
+  SessionUrlSpec,
 } from '../screenshot-spec-types.ts'
 
 // Figures for the AlphaGenome tutorial (tutorials/alphagenome.md), which shows
@@ -207,14 +208,14 @@ const addAndSettle = (display: string): ScreenshotAction[] => [
 // becoming enabled, the cached chip, the display settling — are what these
 // figures actually depend on.
 //
-// `hideTooltip` because the view menu is opened by clicking its icon, which
+// `tooltip: 'hide'` because the view menu is opened by clicking its icon, which
 // leaves that icon's tooltip standing in the corner for the whole run.
 const common = {
   mode: 'url' as const,
   url: `?config=${CONFIG}`,
   readyTimeout: 120000,
-  hideTooltip: true,
-}
+  tooltip: 'hide',
+} satisfies Partial<SessionUrlSpec>
 
 export const alphagenomeSpecs: ScreenshotSpec[] = [
   // The claim the tutorial is built on: predicted RNA-seq in two cell types is

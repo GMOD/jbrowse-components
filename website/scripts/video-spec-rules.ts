@@ -121,7 +121,7 @@ export function validateVideoSpecs(
       )
     }
     const pastes = spec.steps.filter(
-      step => step.type === 'type' && step.value?.trim().startsWith('{'),
+      step => step.type === 'type' && step.value.trim().startsWith('{'),
     )
     if (pastes.length > 0 && !paired.has(spec.name)) {
       problems.push(
@@ -188,7 +188,9 @@ function storyProblems(spec: VideoSpec) {
   )
   if (
     clicks.length > 0 &&
-    clicks.every(step => ZOOM_BUTTON.test(step.selector ?? ''))
+    clicks.every(
+      step => 'selector' in step && ZOOM_BUTTON.test(step.selector ?? ''),
+    )
   ) {
     problems.push(
       `${at}: every click is a zoom button, and zooming is navigation a reader already knows; film a menu path, a dialog or a form, or leave the two ends to figures`,
@@ -203,7 +205,7 @@ function storyProblems(spec: VideoSpec) {
     if (
       step.type === 'type' &&
       step.selector === LOCATION_BOX &&
-      COORDINATES.test(step.value?.trim() ?? '')
+      COORDINATES.test(step.value.trim())
     ) {
       problems.push(
         `${at}: types "${step.value}" into the location box; search a gene name, or select the span on the scale bar, so the viewer sees where the view is going`,

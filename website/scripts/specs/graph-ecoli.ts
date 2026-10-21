@@ -842,7 +842,7 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
     // the gene lane over the graph track (the 1 hop cut is the taller drawing
     // of the two, so it sets this); re-measure at the reshoot
     viewportHeight: 912,
-    hideTooltip: true,
+    tooltip: 'hide',
     annotations: [
       ...(
         [
@@ -1029,7 +1029,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     viewportWidth: 1000,
     viewportHeight: 730,
-    hideTooltip: true,
+    tooltip: 'hide',
     // The fold keeps K12's segments and folds variants under 50 bp into them,
     // so the boxed node is the IS5 element itself, K12 1,299,498-1,300,697, and
     // the other four strains take the 1.2 kb deletion edge past it.
@@ -1106,7 +1106,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     viewportWidth: 1000,
     viewportHeight: 610,
-    hideTooltip: true,
+    tooltip: 'hide',
     // WHERE EACH LANE COMES FROM, on the drawing (reviewer: "please make it
     // clear how this figure was made, it is a very cool and important track").
     // The tutorial prints the whole track config in the fence immediately above
@@ -1187,7 +1187,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     viewportWidth: 1000,
     viewportHeight: 740,
-    hideTooltip: true,
+    tooltip: 'hide',
     // The bar's own anchor is its polyline midpoint, thousands of px off the
     // left edge, so the pointer goes in from the graph's second row label,
     // CFT073's. A `text` anchor finds the MAF lane's label first.
@@ -1262,7 +1262,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // re-measure at the reshoot
     viewportHeight: 1090,
-    hideTooltip: true,
+    tooltip: 'hide',
     // THE STORY IS ONE BUBBLE READ IN BOTH PANELS (review: "what is the
     // 'story'?"). s1278 is 5.8 kb of K12 and s2272 is CFT073's 8.6 kb allele
     // of the same stretch: the blue boxes pair the one segment across the
@@ -1457,7 +1457,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     // driving it: the pane is the graph's, so shortening the capture alone
     // clips the bubble instead of scaling it.
     viewportHeight: 1190,
-    hideTooltip: true,
+    tooltip: 'hide',
     // One ring in each half, on the same segment (review: "we may want to circle
     // entries in the lineargenomeview/linearsyntenyview and the correspondence
     // in graphgenomeview"). The shared hue already says they are the same
@@ -1537,7 +1537,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // enough for the linear view plus the open track menu
     viewportHeight: 670,
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [
       trackMenuIcon(ECOLI_SEGMENTS_TRACK),
       ...menuCascade(['Display types', 'Graph']),
@@ -1657,7 +1657,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     viewportHeight: 920,
     // The graph's own hover tooltip stays: it names the node and gives the
     // coordinates on the assembly that contributed it, which is the other half
-    // of the correspondence the band shows. spec.hideTooltip does not reach it;
+    // of the correspondence the band shows. `tooltip: 'hide'` does not reach it;
     // that only hides core's BaseTooltip.
     actions: [
       { type: 'delay', ms: 3000 },
@@ -1798,7 +1798,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     // reads the cluster's names out of
     viewportWidth: 1400,
     viewportHeight: 612,
-    hideTooltip: true,
+    tooltip: 'hide',
     annotations: [
       {
         type: 'text',
@@ -1856,7 +1856,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     viewportHeight: 580,
-    hideTooltip: true,
+    tooltip: 'hide',
     stages: [
       {
         viewportHeight: 580,
@@ -1995,7 +1995,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     // the taller frame, the force drawing plus the node menu; re-measure at the
     // reshoot
     viewportHeight: 820,
-    hideTooltip: true,
+    tooltip: 'hide',
     stages: [
       {
         // This is also the height stage two ACTS at (a stage resizes after its

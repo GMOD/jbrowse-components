@@ -200,7 +200,7 @@ export const circularSpecs: ScreenshotSpec[] = [
     name: 'circular_synteny/band_hover',
     url: circularSyntenyView(CHROMOSOMES, [LIFTOVER]),
     ...circularSyntenyReady,
-    expectTooltip: true,
+    tooltip: 'expect',
     clicksOpen: "a chromosome band's tooltip",
     actions: [
       { type: 'hover', anchor: { ideogram: 'mm39 chr11' } },
@@ -270,7 +270,7 @@ export const circularSpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('circular-ring-canvas'),
     readyTimeout: 180000,
-    expectTooltip: true,
+    tooltip: 'expect',
     clicksOpen: "a ribbon's tooltip",
     actions: [
       { type: 'hover', anchor: { chord: 'chrX:10,447,551..34,924,653' } },

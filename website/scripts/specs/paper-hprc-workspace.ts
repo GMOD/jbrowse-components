@@ -123,7 +123,7 @@ const session = (
 const gates = {
   readySelector: BOTH_READY,
   readyTimeout: 240000,
-  hideTooltip: true,
+  tooltip: 'hide',
 } as const
 
 const callouts: Annotation[] = [

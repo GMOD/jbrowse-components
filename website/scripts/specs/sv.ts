@@ -778,7 +778,7 @@ export const svSpecs: ScreenshotSpec[] = [
     // dont want the variant feature to have mouseover shading on it"). The wash
     // over the variant was `boxStyles.hover` in the canvas overlay, which tracks
     // the pointer and so stayed for as long as the click left it there;
-    // `hideTooltip` removed the MUI tooltip above it and could never touch the
+    // `tooltip: 'hide'` removed the MUI tooltip above it and could never touch the
     // wash, because that box is drawn by the display rather than by a popper.
     // The selection border stays, and should: it says which feature the sidebar
     // is describing.
@@ -1020,7 +1020,7 @@ export const svSpecs: ScreenshotSpec[] = [
     // down. Back to a frame that holds the whole grouped track.
     viewportHeight: 966,
     // the cursor would otherwise park over the pileup and raise the read tooltip
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [PARK_CURSOR, { type: 'delay', ms: 1500 }],
     // WHAT THE TWO SECTIONS ARE (review: "consider adding additional text
     // annotation to say that the top row of groupby is reads with SA tag

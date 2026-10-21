@@ -103,12 +103,6 @@ function Run({ r }: { r?: RunSummary }) {
   return (
     <div className="storeline">
       Last run {agoText(r.finishedAt)}, {scope}.{' '}
-      {r.skipped ? (
-        <>
-          {r.skipped} selected spec(s) were skipped (curated / heavy remote data
-          / needs a GPU).{' '}
-        </>
-      ) : null}
       {r.failed ? (
         <>
           <strong>{r.failed} spec(s) failed to render</strong> — their cards

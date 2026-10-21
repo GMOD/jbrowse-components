@@ -31,127 +31,73 @@ export interface ActionAnchor extends AnnotationAnchor {
   band?: string
 }
 
-export interface ScreenshotAction {
-  type:
-    | 'click'
-    | 'rightclick'
-    | 'hover'
-    | 'type'
-    | 'drag'
-    | 'scroll'
-    | 'waitForText'
-    | 'waitForSelector'
-    | 'waitForAppSettled'
-    | 'press'
-    | 'delay'
-  selector?: string
-  text?: string
-  // for 'delay': how long to sleep.
-  //
-  // A sleep waiting on APP WORK — a navigation, a launched view, a re-sort, a
-  // setting that refetches — is `waitForAppSettled` instead. The app publishes
-  // when it is working and when it has stopped, so the number is a guess against
-  // a fact: too short captures the frame before the work, and it does that
-  // silently, since the figure it produces looks finished. What is left for a
-  // sleep is the chrome the app says nothing about — a menu's open animation, a
-  // tooltip's delay, a hover settling.
-  ms?: number
-  // for 'press': a puppeteer keyboard key name (e.g. 'ArrowDown', 'Enter') — used
-  // to drive keyboard-only widgets like the MUI search-autocomplete dropdown,
-  // which ignores synthetic option clicks
-  key?: KeyInput
-  // for 'waitForText'/'waitForSelector': wait for the element to be hidden
-  hidden?: boolean
-  // override the default 30s wait for this action's target (FIND_TIMEOUT), for
-  // waits and for the click/hover/type/scroll target lookup alike.
-  // Use for actions gated on real heavy compute (e.g. RPC
-  // clustering over thousands of samples) that can legitimately run long,
-  // especially on a slower CI runner.
-  timeout?: number
-  // for 'type': text to type into the focused/selected input
-  value?: string
-  // for 'type': triple-click the field to select existing content first
-  clear?: boolean
-  // for 'type': ms between keystrokes. Unset types the whole value in one go,
-  // which is what a screenshot wants — a still of a filled field is the same
-  // still however the characters got there. generate-video sets it, because a
-  // field that fills in a single frame is the one thing in a tour that no hand
-  // could have done.
-  typeDelayMs?: number
-  // for 'type': insert the whole value as one input event, the way a paste
-  // does. generate-video sets it for a URL or a config, which a reader pastes
-  // and a film typing it a character at a time turns into a flicker.
-  paste?: boolean
-  // for 'drag': start/end points in viewport CSS px (used for rubberband drags).
-  // 'click'/'rightclick'/'hover' also accept `from` alone, to act on a bare
-  // viewport coordinate (canvas-drawn features have no DOM node to target).
-  //
-  // 'scroll' takes neither: it centers the target (selector/text) in its nearest
-  // horizontally-scrollable ancestor — e.g. a wide feature bar in a horizontally
-  // scrollable alignment track that's otherwise off the right edge.
-  from?: { x: number; y: number }
-  to?: { x: number; y: number }
-  // for 'drag': the same two ends, resolved from the live model instead of
-  // written down — `anchor` for the one-point actions, these for the two-point
-  // one. A rubberband is the case that needs it most and had it least: both its
-  // ends were measured pixels, so a drag was correct only at the width, locus
-  // and layout it was measured against, and widening the video frame from 1280
-  // invalidated every one of them at once. Pair a `loc` with a `band` naming
-  // the strip to drag on:
-  //
-  //   fromAnchor: { loc: 'ctgA:4000', band: RUBBERBAND }
-  //   toAnchor:   { loc: 'ctgA:9000', band: RUBBERBAND }
-  //
-  // Each takes precedence over the matching `from`/`to`.
-  fromAnchor?: ActionAnchor
-  toAnchor?: ActionAnchor
-  // for 'click'/'rightclick'/'hover': resolve the point to act on from the live
-  // model instead of writing it down — the case `from` existed for (a canvas
-  // with no element per feature) where the app can still say where it drew
-  // things. Takes precedence over `from`. Two kinds resolve:
-  //
-  //   graphNode  a GFA segment in a graph track, with `trackId` naming which when
-  //              the view holds several, or in a GraphGenomeView
-  //              (@jbrowse/capture's graphAnchor.ts)
-  //   loc        a genomic coordinate in a linear view (scripts/locusAnchor.ts),
-  //              with `trackId` naming which track to land in and `fracY` how far
-  //              down its band (default the middle)
-  //   selector   an element's own rect (scripts/selectorAnchor.ts), with `view`
-  //              scoping the query to one view's container and
-  //              `alignX`/`alignY`/`dx`/`dy` picking the point on it. For the
-  //              strips a model cannot name a coordinate in — a synteny row's
-  //              ruler, whose x is a fraction rather than a locus.
-  //
-  // Prefer either over `from`. A hand-measured coordinate is correct only for
-  // the width, locus and layout it was measured against, and nothing tells you
-  // when one of those changes — see locusAnchor.ts for what that cost.
-  anchor?: ActionAnchor
+interface Point {
+  x: number
+  y: number
 }
 
-// Park the mouse somewhere that cannot react to it, so no overview-ruler
-// position readout or feature hover is left hanging in the capture.
-//
-// The JBrowse wordmark in the app bar, by its own `aria-label`, rather than the
-// `{ x: 950, y: 60 }` this idiom used to be written as. That point was described
-// in every copy as "the inert app header" and is nothing of the sort: at
-// viewportWidth 1000 it lands in the *view's* title bar a few px from the
-// minimize button, so it was one toolbar tweak away from parking the cursor on a
-// control and one narrower viewport away from parking it on the canvas. The
-// wordmark is the only thing up there that is guaranteed inert — it is an svg
-// with no handlers — and it moves with the layout instead of having to be
-// re-measured when the layout moves.
-//
-// The swap is inert: of the 16 figures converted, every one whose spec changed
-// in no other way came back byte-identical. The six that did move moved on app
-// drift accumulated since they were last swept — `alignments_soft_clipped_menu`
-// gained a `Launch` item and lost `Set max layout height...`, which is 12%
-// of its pixels and nothing to do with where the cursor sits. Those six were
-// restored from the store rather than committed, so the sweep can pick the drift
-// up on its own with nothing else in the diff.
-export const PARK_CURSOR: ScreenshotAction = {
+// What a one-point action acts on: an element by `selector` or visible `text`,
+// or a point. A point resolves from `anchor` against the live model; `from` is
+// a viewport pixel, correct only at the width, locus and layout it was measured
+// against.
+export interface ActionTarget {
+  selector?: string
+  text?: string
+  anchor?: ActionAnchor
+  from?: Point
+  // the wait for the target, overriding FIND_TIMEOUT
+  timeout?: number
+}
+
+export type ScreenshotAction =
+  | ({ type: 'click' } & ActionTarget)
+  | ({ type: 'rightclick' } & ActionTarget)
+  | ({ type: 'hover' } & ActionTarget)
+  // centers the target in its nearest horizontally-scrollable ancestor
+  | ({ type: 'scroll' } & ActionTarget)
+  | ({
+      type: 'type'
+      value: string
+      // replace the field's content rather than appending to it
+      clear?: boolean
+      // ms between keystrokes; unset types the value in one go
+      typeDelayMs?: number
+      // insert the value as one input event, as a paste does
+      paste?: boolean
+    } & ActionTarget)
+  // A rubberband pairs a `loc` with a `band` naming the strip to drag on:
+  // `fromAnchor: { loc: 'ctgA:4000', band: RUBBERBAND }`. Each anchor takes
+  // precedence over its pixel twin.
+  | {
+      type: 'drag'
+      from?: Point
+      to?: Point
+      fromAnchor?: ActionAnchor
+      toAnchor?: ActionAnchor
+      timeout?: number
+    }
+  // a puppeteer key name, for keyboard-only widgets such as the search
+  // autocomplete, which ignores synthetic option clicks
+  | { type: 'press'; key: KeyInput }
+  | {
+      type: 'waitForSelector'
+      selector: string
+      hidden?: boolean
+      timeout?: number
+    }
+  | { type: 'waitForText'; text: string; hidden?: boolean; timeout?: number }
+  // Waits until the app reports its work finished and holds that for `holdMs`.
+  // Use it for anything an action started: a navigation, a launch, a refetch.
+  | { type: 'waitForAppSettled'; holdMs?: number; timeout?: number }
+  // For chrome the app says nothing about: a menu animation, a tooltip delay.
+  | { type: 'delay'; ms: number }
+
+// Parks the mouse on the JBrowse wordmark, an svg with no handlers, so no
+// hover readout or tooltip is left in the capture.
+export const PARK_CURSOR = {
   type: 'hover',
   selector: '[aria-label="JBrowse"]',
-}
+} satisfies ScreenshotAction
 
 // One frame of a multi-stage figure. The page is captured after this stage's
 // actions run; the frames are stacked vertically (ImageMagick `-append`) into a
@@ -191,25 +137,6 @@ export interface ScreenshotStage {
 // them off a bare ScreenshotSpec without narrowing by mode first.
 export interface BaseSpecFields {
   name: string
-  // committed PNG is a hand-curated / real-human-data screenshot the spec body
-  // can't reproduce; the generator skips it so a regen never clobbers it
-  curated?: boolean
-  // spec reproduces fine but pulls so much remote data that a routine regen is
-  // more likely to time out than to produce a new image. Skipped in an
-  // unfiltered run; still rendered when named in --filter, so it stays
-  // regenerable on purpose rather than by luck. No spec sets it today: where it
-  // has been reached for, rehosting a slice of the oversized input was the
-  // better fix than skipping the spec.
-  heavyNetwork?: boolean
-  // spec renders correctly only against a real GPU. Headless falls back to
-  // swiftshader, and software-rasterizing a large WebGL display (a density
-  // heatmap of thousands of rows, a whole-genome view with a block per contig)
-  // pegs the main thread long enough that puppeteer's own page.evaluate times
-  // out — nothing throws, and a reader on a GPU never sees it, so a headless
-  // run fails in a way that looks like a broken figure rather than a missing
-  // rasterizer. Skipped unless --headed, keeping the committed PNG, instead of
-  // failing the run. See reference-swiftshader-pileup-zoom-stall.
-  headedOnly?: boolean
   // whether the LIVE session a reader opens is slow, overriding the timeouts
   // screenshotSlowSpecNames otherwise infers it from. Set it wherever a budget
   // is capture headroom rather than a claim about the reader: the Hi-C block
@@ -255,30 +182,16 @@ export interface CommonSpecFields extends BaseSpecFields {
   // the default 24 is ~12 CSS px). Raise it for a `gridAnnotations` mark that
   // sits between the frames rather than over one.
   stageGutter?: number
-  // suppress the hover/right-click tooltip (which lingers while a context menu
-  // is open) so it doesn't clutter the capture
-  hideTooltip?: boolean
-  // this figure is ABOUT a tooltip, so one is supposed to be on screen.
-  //
-  // Tooltips are not hidden by default and should not be: a tooltip is often the
-  // thing a figure is demonstrating. What is worth catching is the accidental
-  // one, left behind because a click sequence happened to end on a hoverable
-  // control, which lands in a committed PNG with nobody the wiser. So the run
-  // reports a tooltip it did not expect, and — declared here — one it expected
-  // and did not get.
-  expectTooltip?: boolean
+  // A tooltip on screen at capture is reported unless the spec says what it
+  // wants: 'hide' removes one a menu click left lingering, 'expect' says the
+  // figure is about one and reports its absence.
+  tooltip?: 'hide' | 'expect'
   // CSS selectors for transient chrome to hide just before capture (e.g. a MUI
   // snackbar toast or the hover tooltip left over from driving a menu):
   // `['.MuiSnackbar-root', '.MuiTooltip-popper']`. Each matched element is
   // `display:none`'d. Use for UI that a click sequence necessarily triggers but
   // shouldn't appear in the final frame.
   hideSelectors?: string[]
-  // render this spec with the Firefox backend instead of Chrome. Headless
-  // Chrome's swiftshader rasterizes some WebGL/molstar content (e.g. the
-  // protein3d structure canvas) as a featureless blob with no visible
-  // selection; headless Firefox renders it cleanly. The CLI `--firefox` flag
-  // forces every spec onto Firefox; this opts a single spec in for normal regens
-  firefox?: boolean
   // crop the capture to this CSS-px rect (ignored by embedded specs, which
   // screenshot the component element directly)
   crop?: { x: number; y: number; width: number; height: number }
@@ -313,9 +226,6 @@ export interface SessionUrlSpec extends CommonSpecFields {
   // census — so `readyText` or `readySelector` is its whole positive signal,
   // followed by network idle
   noSession?: boolean
-  // CSS selector of an iframe holding a JBrowse on a noSession page: the
-  // capture also waits for that JBrowse's session and paint gates
-  readyFrame?: string
   // the spec's `assembly` presets an import form rather than opening a view,
   // so the census has no open assembly to wait for
   formAssembly?: boolean
@@ -359,7 +269,7 @@ export interface CliSpec extends BaseSpecFields {
 //
 // NOTE: this mode screenshots the `#root` element directly and does NOT run the
 // shared `shoot` path, so the CommonSpecFields that only take effect there
-// (annotations, crop, hideSelectors, hideTooltip, stages) are ignored here.
+// (annotations, crop, hideSelectors, tooltip, stages) are ignored here.
 export interface EmbeddedSpec extends CommonSpecFields {
   mode: 'embedded'
   // the object passed verbatim to the UMD's `createViewState(...)` (assembly /

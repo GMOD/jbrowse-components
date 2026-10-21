@@ -43,9 +43,6 @@ export interface RunReport {
   // how many specs existed at the time, so a reader can size `selected`
   // against the corpus rather than against today's spec list
   total: number
-  // selected, then deliberately not rendered — the committed image is kept and
-  // says nothing about the current app
-  skipped: { name: string; reason: string }[]
   failures: { name: string; error: string }[]
   flaky: { name: string; frac: number }[]
   updated: { name: string; detail: string }[]

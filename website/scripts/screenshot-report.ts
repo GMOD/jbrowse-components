@@ -89,7 +89,7 @@ const clippedPx = new Map<string, number>()
 // spec shoots several frames under one name, so this accumulates the way
 // unpaintedDisplays and clippedPx do rather than keeping only the last: a stray
 // tooltip left on stage 1 is in the published figure whether or not stage 3
-// still has it, and `expectTooltip` is satisfied by any frame showing one.
+// still has it, and `tooltip: 'expect'` is satisfied by any frame showing one.
 // Last-write-wins got both of those backwards, in the quiet direction: it
 // reported nothing.
 //
@@ -117,7 +117,7 @@ export async function recordTooltip(page: Page, name: string) {
 // than threaded through the capture, because a staged spec shoots several frames
 // under one name and the declaration is the spec's.
 const tooltipExpected = new Set(
-  specs.filter(s => 'expectTooltip' in s && s.expectTooltip).map(s => s.name),
+  specs.filter(s => 'tooltip' in s && s.tooltip === 'expect').map(s => s.name),
 )
 
 // Print a titled, ===-barred block of lines to stderr (failure/flaky summaries).
@@ -140,10 +140,6 @@ export interface RunTotals {
   // have all had their say. The only honest answer to "what did this run
   // cover" — see RunReport.selected.
   selected: string[]
-  // Selected and then deliberately not rendered, with why. A count was enough
-  // for the console line; the review UI needs the names, because a figure kept
-  // because its spec is `curated` looks exactly like one the app still produces.
-  skipped: { name: string; reason: string }[]
   failures: { name: string; error: string }[]
   flaky: { name: string; frac: number }[]
   changed: { name: string; result: CommitResult }[]
@@ -156,12 +152,12 @@ export interface RunTotals {
 export const pct = (n: number) => `${(n * 100).toFixed(3)}%`
 
 export function printSummary(totals: RunTotals) {
-  const { passed, failed, kept, skipped } = totals
+  const { passed, failed, kept } = totals
   const { failures, flaky, changed, suppressed, slacked } = totals
   console.log(
     `\n${passed} ${check ? 'checked' : 'succeeded'}, ${failed} failed${
       check ? `, ${flaky.length} flaky` : `, ${kept} unchanged`
-    }${skipped.length > 0 ? `, ${skipped.length} skipped (curated / heavy remote data / needs a GPU)` : ''}`,
+    }`,
   )
   if (changed.length > 0) {
     printReport(
@@ -207,7 +203,7 @@ export function printSummary(totals: RunTotals) {
   )
   if (strayTooltips.length > 0) {
     printReport(
-      `TOOLTIP LEFT IN THE CAPTURE (${strayTooltips.length}) — a hover the actions ended on; park the cursor or set hideTooltip, or set expectTooltip if the figure is about it`,
+      `TOOLTIP LEFT IN THE CAPTURE (${strayTooltips.length}) — a hover the actions ended on; park the cursor or set tooltip: 'hide', or tooltip: 'expect' if the figure is about it`,
       strayTooltips.map(
         ([name, texts]) =>
           `• ${name}.png: ${texts.map(t => `"${t}"`).join(', ')}`,
@@ -219,7 +215,7 @@ export function printSummary(totals: RunTotals) {
   )
   if (missingTooltips.length > 0) {
     printReport(
-      `EXPECTED TOOLTIP MISSING (${missingTooltips.length}) — the spec sets expectTooltip but nothing was on screen`,
+      `EXPECTED TOOLTIP MISSING (${missingTooltips.length}) — the spec sets tooltip: 'expect' but nothing was on screen`,
       missingTooltips.map(([name]) => `• ${name}.png`),
     )
   }
@@ -270,7 +266,6 @@ function writeRunReport(totals: RunTotals) {
     check,
     selected: totals.selected,
     total: specs.length,
-    skipped: totals.skipped,
     failures: totals.failures,
     flaky: totals.flaky,
     updated: totals.changed.map(({ name, result }) => ({

@@ -204,7 +204,7 @@ export const marksSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportHeight: 1000,
     hideSelectors: ['.MuiTooltip-popper'],
-    hideTooltip: true,
+    tooltip: 'hide',
     actions: [
       trackMenuIcon('alu_edit_plot'),
       { type: 'waitForText', text: 'Edit marks...' },

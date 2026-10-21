@@ -4,7 +4,7 @@
 // and the whole spec-fixture graph behind them.
 import type { ScreenshotAction } from './screenshot-spec-types.ts'
 
-export interface VideoStep extends ScreenshotAction {
+interface VideoStepFields {
   // One line across the frame's lower centre, from this step until the next
   // line replaces it: what this phase of the tour does and why, in plain words.
   // The frame already shows the labels being clicked, so a line that repeats
@@ -48,6 +48,8 @@ export interface VideoStep extends ScreenshotAction {
   // tab opens with is a blank frame and then an app booting.
   opensTab?: boolean
 }
+
+export type VideoStep = ScreenshotAction & VideoStepFields
 
 export interface VideoSpec {
   // Output basename under website/static/media, directories allowed:

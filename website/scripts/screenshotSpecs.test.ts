@@ -69,14 +69,12 @@ test('fields an embedded capture ignores', () => {
       mode: 'embedded',
       name: 'a',
       viewState: {},
-      hideTooltip: true,
-      expectTooltip: true,
+      tooltip: 'hide',
       crop: { x: 0, y: 0, width: 1, height: 1 },
     },
   ])
   expect(found).toMatch('embedded specs ignore')
-  expect(found).toMatch('hideTooltip')
-  expect(found).toMatch('expectTooltip')
+  expect(found).toMatch('tooltip')
   expect(found).toMatch('crop')
 })
 
@@ -123,18 +121,7 @@ test('a stage ready gate that only a navigating stage would use', () => {
   ).toBe('')
 })
 
-test('contradictory tooltip flags, and stageColumns with no stages', () => {
-  expect(
-    problem([
-      {
-        mode: 'url',
-        name: 'a',
-        url: '?x',
-        expectTooltip: true,
-        hideTooltip: true,
-      },
-    ]),
-  ).toMatch('contradict each other')
+test('stageColumns with no stages', () => {
   expect(
     problem([{ mode: 'url', name: 'a', url: '?x', stageColumns: 2 }]),
   ).toMatch('stageColumns without stages')

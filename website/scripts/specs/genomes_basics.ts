@@ -570,7 +570,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     // room for the arrow below; at the 24px default it has a hairline to sit in
     stageGutter: 240,
     diffThreshold: 0.02,
-    hideTooltip: true,
+    tooltip: 'hide',
     // Side by side, a before and an after read as two pictures of the same
     // locus (reviewer: "there should be an arrow from panel 1 to panel 2
     // showing it is this two stage thing"). Anchored to the frames' own boxes;
@@ -667,7 +667,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.02,
     // the menu is driven by clicking, which leaves the track's own hover
     // tooltip standing over the frame the menu is the subject of
-    hideTooltip: true,
+    tooltip: 'hide',
     stages: [
       {
         actions: [

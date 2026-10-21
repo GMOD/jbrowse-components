@@ -62,7 +62,7 @@ function waitsOf(spec: SessionUrlSpec) {
     spec.readyTimeout ?? 0,
     ...(spec.actions ?? [])
       .filter(action => WAITS.has(action.type))
-      .map(action => action.timeout ?? 0),
+      .map(action => ('timeout' in action && action.timeout) || 0),
   )
   return {
     ...(timeout > DEFAULT_TIMEOUT ? { timeout } : {}),

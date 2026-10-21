@@ -126,7 +126,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Chain A (109 aa)' },
       { type: 'delay', ms: 1000 },
     ],
-    hideTooltip: true,
+    tooltip: 'hide',
     annotations: [
       { type: 'box', pad: 2, anchor: { selector: CHAIN_B_OPTION } },
       {
