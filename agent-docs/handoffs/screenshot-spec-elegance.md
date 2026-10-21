@@ -28,10 +28,6 @@ something, so the larger half of this list is app work.
     than any MUI transition, so one ENDING an action list is likely deletable
     too; shoot each against a baseline first.
 
-## Next, no capture needed
-
-- **Comments.** About 37% of spec lines are comments, much of it history.
-
 ## Waits on ADR-238 (handoffs/vega-lite-vocabulary.md)
 
 The specs respell once, after each concept lands: rows and facet (seven
