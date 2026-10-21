@@ -22,9 +22,6 @@ something, so the larger half of this list is app work.
   exist so the recipe builder (`spec-recipe/decode.ts`, `specDisplayType`) can
   name the menu row; `hostedConfigs.generated.ts` already holds each track's
   type.
-- **Derive the spec barrel** in `screenshot-specs.ts` from the directory, as
-  `screenshot-impact.ts` already discovers modules. A compose spec has to come
-  after its parts, and some modules export several lists.
 - **One frame arranger** for `compose` and `stages`: the ImageMagick appends
   and the box arithmetic (`annotateComposition`, `stageBoxes`) are written
   twice. The padding policies differ, so merging reshoots every composite.
