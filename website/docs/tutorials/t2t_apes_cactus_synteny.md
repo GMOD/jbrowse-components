@@ -20,14 +20,14 @@ for every pair of genomes in it. We:
   RefSeq genes of that ape's hub on
   [genomes.jbrowse.org](https://genomes.jbrowse.org)
 - color the ribbons by strand to read orientation at _TP53_ and _ERBB2_
-- count the aligned bases at _ERBB2_ out of the file
 
 ## Prerequisites
 
 - [chain2paf](https://github.com/AndreaGuarracino/chain2paf), built with
   `cargo install --path .` from its checkout
 - The [JBrowse CLI](/docs/cli), for `jbrowse make-pif`
-- htslib (`tabix`) and `python3`, for the check at the end
+- htslib (`bgzip`, `tabix`), which `jbrowse make-pif` calls
+- `python3`, for the build script
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
@@ -214,48 +214,6 @@ Navigate to `chr17:39,400,000-40,200,000`, around _ERBB2_ on 17q12.
 The ribbons turn blue between human and chimpanzee, and again between gorilla
 and the Sumatran orangutan: chimpanzee, bonobo and gorilla carry _ERBB2_ in one
 orientation, and human, both orangutans and the siamang in the other.
-
-## Checking ERBB2 against the chains
-
-The hg38 rows of the file give each ape's orientation over the window directly.
-A Cactus chain spans gaps, and a reversed chain often sits inside the gap of a
-forward one, so the script counts the bases each chain aligns inside the window:
-
-```python
-# aligned bases per genome and strand over hg38 chr17:39.4-40.2 Mb
-import re
-import subprocess
-from collections import Counter
-
-PIF = 'https://jbrowse.org/demos/t2t_apes_cactus/apes.pif.gz'
-START, END = 39_400_000, 40_200_000
-
-# rows keyed on hg38 ('t' prefix): one per chain against each ape
-rows = subprocess.run(
-    ['tabix', PIF, f'thg38#0#chr17:{START}-{END}'],
-    capture_output=True, text=True, check=True,
-).stdout.splitlines()
-
-aligned = Counter()
-for row in rows:
-    f = row.split('\t')
-    pos, strand, genome = int(f[2]), f[4], f[5].split('#')[0]
-    cigar = next(x[5:] for x in f[12:] if x.startswith('cg:Z:'))
-    for n, op in re.findall(r'(\d+)([MID])', cigar):
-        n = int(n)
-        if op == 'M':
-            aligned[genome, strand] += max(0, min(pos + n, END) - max(pos, START))
-        if op != 'I':
-            pos += n
-
-for (genome, strand), n in sorted(aligned.items()):
-    print(genome, strand, n)
-```
-
-Chimpanzee (`GCF_028858775.2`), bonobo (`GCF_029289425.2`) and gorilla
-(`GCF_029281585.2`) align the window on the reverse strand of hg38, and both
-orangutans (`GCF_028885655.2`, `GCF_028885625.2`) and the siamang
-(`GCF_028878055.3`) on the forward strand.
 
 ## Reproduce it end to end
 

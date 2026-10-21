@@ -21,8 +21,10 @@ ratchet's backlog. What follows is what no check sees.
   purpose. "Put the payoff figure first" is a closed question.
 - One dataset is the default. A second belongs only where the first raised the
   question it answers.
-- Every dataset has a built-in negative control in the same figure, and the page
-  ends by checking the inference against the raw data.
+- Every dataset has a built-in negative control in the same figure.
+- A closing check against the raw data earns its place only as a JBrowse step a
+  reader would repeat on their own data, such as opening the reads under a call.
+  Cut a script that re-derives the figure's claim from the file.
 - `pangenome_ecoli` and `pangenome_cactus` take the same strains through the
   same sections on purpose, so a reader can compare the two graph builders.
 
