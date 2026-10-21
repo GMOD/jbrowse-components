@@ -31,6 +31,7 @@ import { servePageBridge } from './pageBridge.ts'
 import { BASELINE_SPEC, selectTasks } from './tasks.ts'
 
 import type { EvalTask, TaskSet } from './tasks.ts'
+import type { Page } from 'puppeteer'
 
 const repoRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -81,6 +82,7 @@ const stats = {
   lastEnd: 0,
   inputTokens: 0,
   outputTokens: 0,
+  toolLog: [] as string[],
 }
 const spend = () => stats.inputTokens * priceIn + stats.outputTokens * priceOut
 
@@ -98,6 +100,17 @@ function countUsage(body: string) {
           (u.input_tokens ?? 0) +
           (u.cache_creation_input_tokens ?? 0) +
           (u.cache_read_input_tokens ?? 0)
+      } else if (
+        e.type === 'content_block_start' &&
+        e.content_block?.type === 'tool_use'
+      ) {
+        stats.toolLog.push(`${e.content_block.name} `)
+      } else if (
+        e.type === 'content_block_delta' &&
+        e.delta?.type === 'input_json_delta' &&
+        stats.toolLog.length > 0
+      ) {
+        stats.toolLog[stats.toolLog.length - 1] += e.delta.partial_json
       } else if (e.type === 'message_delta') {
         outputs = e.usage?.output_tokens ?? outputs
       }
@@ -345,10 +358,53 @@ const tasks = selectTasks(taskSet, filter, 'web').filter(
 )
 const rows: { task: string; run: number; pass: boolean }[] = []
 
+const profileStalls = args.includes('--profile-stalls')
+const waitMs = Number(flag('wait', '240')) * 1000
+const retries = !args.includes('--no-retry')
+
+async function profilePage(page: Page) {
+  const client = await page.createCDPSession()
+  await client.send('Profiler.enable')
+  await client.send('Profiler.start')
+  await sleep(4000)
+  const { profile } = (await client.send('Profiler.stop')) as {
+    profile: {
+      nodes: {
+        id: number
+        callFrame: { functionName: string; url: string; lineNumber: number }
+      }[]
+      samples: number[]
+    }
+  }
+  const byId = new Map(profile.nodes.map(n => [n.id, n.callFrame]))
+  const counts = new Map<string, number>()
+  for (const id of profile.samples) {
+    const f = byId.get(id)
+    const key = `${f?.functionName || '(anonymous)'} ${f?.url.split('/').pop()}:${f?.lineNumber}`
+    counts.set(key, (counts.get(key) ?? 0) + 1)
+  }
+  const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12)
+  console.log(
+    `profile of a run still going after 60 s (${profile.samples.length} samples):`,
+  )
+  for (const [key, n] of top) {
+    console.log(`  ${String(n).padStart(6)}  ${key}`)
+  }
+}
+
 async function runOnce(task: EvalTask, run: number, attempt: number) {
   const context = await browser.createBrowserContext()
   const page = await context.newPage()
   await page.setViewport({ width: 1400, height: 900 })
+  const pageLog: string[] = []
+  page.on('console', m =>
+    pageLog.push(`${m.type()}: ${m.text().slice(0, 200)}`),
+  )
+  page.on('pageerror', e =>
+    pageLog.push(`pageerror: ${String(e).slice(0, 300)}`),
+  )
+  page.on('error', e => pageLog.push(`CRASH: ${String(e).slice(0, 300)}`))
+  page.on('close', () => pageLog.push('page closed'))
   await page.evaluateOnNewDocument(
     (s: string, v: string) => {
       localStorage.setItem('chatbot-settings', s)
@@ -360,6 +416,7 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
   )
   const before = Date.now()
   const startedBefore = stats.started
+  const toolsBefore = stats.toolLog.length
   const inBefore = stats.inputTokens
   const outBefore = stats.outputTokens
   let answer = ''
@@ -392,7 +449,14 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
     await input!.type(task.prompt)
     await page.click('button[aria-label="Send message"]')
     const sentAt = Date.now()
-    while (Date.now() - sentAt < 240_000) {
+    const profileTimer = profileStalls
+      ? setTimeout(() => {
+          profilePage(page).catch((e: unknown) => {
+            console.log('profile failed', String(e))
+          })
+        }, 60_000)
+      : undefined
+    while (Date.now() - sentAt < waitMs) {
       await sleep(1000)
       const pw = await page.$('input[type="password"]')
       if (pw) {
@@ -406,6 +470,7 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
         break
       }
     }
+    clearTimeout(profileTimer)
     answer = await page.$$eval(
       '[data-role="assistant"]',
       els => (els.at(-1) as HTMLElement | undefined)?.innerText ?? '',
@@ -444,6 +509,8 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
     usd: Number((inputTokens * priceIn + outputTokens * priceOut).toFixed(3)),
     seconds: Math.round((Date.now() - before) / 1000),
     attempt,
+    tools: stats.toolLog.slice(toolsBefore).map(t => t.slice(0, 300)),
+    pageLog: pageLog.slice(-25),
   }
   fs.writeFileSync(
     path.join(outDir, `${task.name}-${run}.json`),
@@ -475,7 +542,7 @@ try {
         break outer
       }
       let result = await runOnce(task, run, 1)
-      if (result.stalled) {
+      if (result.stalled && retries) {
         console.log(`stalled: ${task.name}; retrying once`)
         result = await runOnce(task, run, 2)
       }
