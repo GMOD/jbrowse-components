@@ -353,11 +353,13 @@ async function evaluateLive(code: string, timeoutMs: number, answer = '') {
 }
 
 fs.mkdirSync(outDir, { recursive: true })
-const browser = await puppeteer.launch({
-  headless: true,
-  args: ['--no-sandbox'],
-  protocolTimeout: 300_000,
-})
+const launchBrowser = () =>
+  puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox'],
+    protocolTimeout: 300_000,
+  })
+let browser = await launchBrowser()
 const only = flag('tasks', '').split(',').filter(Boolean)
 const tasks = selectTasks(taskSet, filter, 'web').filter(
   t => only.length === 0 || only.includes(t.name),
@@ -550,10 +552,42 @@ try {
         console.log(`stopped: estimated spend passed $${budget}`)
         break outer
       }
-      let result = await runOnce(task, run, 1)
+      const guarded = async (attempt: number) => {
+        try {
+          return await runOnce(task, run, attempt)
+        } catch (e) {
+          console.log(`browser lost on ${task.name}: ${String(e).slice(0, 80)}`)
+          await browser.close().catch(() => {})
+          browser = await launchBrowser()
+          rows.push({ task: task.name, run, pass: false })
+          fs.writeFileSync(
+            path.join(outDir, `${task.name}-${run}.json`),
+            JSON.stringify(
+              {
+                task: { name: task.name, prompt: task.prompt },
+                row: {
+                  task: task.name,
+                  run,
+                  pass: false,
+                  detail: 'the browser crashed during the run',
+                  answer: '',
+                  error: String(e).slice(0, 300),
+                  inputTokens: 0,
+                  outputTokens: 0,
+                  attempt,
+                },
+              },
+              null,
+              2,
+            ),
+          )
+          return { answer: '', stalled: false }
+        }
+      }
+      let result = await guarded(1)
       if (result.stalled && retries) {
         console.log(`stalled: ${task.name}; retrying once`)
-        result = await runOnce(task, run, 2)
+        result = await guarded(2)
       }
       const answer = result.answer
       if (/credit balance|insufficient|billing/i.test(answer)) {
