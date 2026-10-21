@@ -204,13 +204,13 @@ count", not a measurement.
 Haplotype walks
 ---------------
 
-  hprc-v2.1-mc-grch38-f4.GRCh38.walks.bed.gz       1,224,904,576 bytes
-  hprc-v2.1-mc-grch38-f4.GRCh38.walks.bed.gz.tbi       667,942
-  hprc-v2.1-mc-grch38-f4.CHM13.walks.bed.gz        1,244,459,337
-  hprc-v2.1-mc-grch38-f4.CHM13.walks.bed.gz.tbi        625,194
+  hprc-v2.1-mc-grch38-f5.GRCh38.walks.bed.gz       1,550,433,855 bytes
+  hprc-v2.1-mc-grch38-f5.GRCh38.walks.bed.gz.tbi     1,332,761
+  hprc-v2.1-mc-grch38-f5.CHM13.walks.bed.gz        1,462,001,275
+  hprc-v2.1-mc-grch38-f5.CHM13.walks.bed.gz.tbi      1,007,257
 
-  Every haplotype's path through the base-level v2.1 graph, in walk format 4
-  (gfa-to-tabix docs/walks-format.md): one file per reference, filed under
+  Every haplotype's path through the base-level v2.1 graph, in walk format 5
+  (gfa-to-tabix 1.4, docs/walks-format.md): one file per reference, filed under
   64 kb chunks of it. A chunk holds the reference's path through it once, each
   distinct route a haplotype takes off that path once, the lengths of the
   nodes those routes visit, and each haplotype's piece as the list of routes
@@ -218,13 +218,15 @@ Haplotype walks
   only the haplotypes it is asked for. Where Minigraph-Cactus clips a contig
   into several W lines, the first and last piece of each line give the bp the
   graph lacks before the next, so walk rows say which of a gap's bases are
-  not in the graph.
+  not in the graph. In the 1% of chunks too costly to read whole, mostly
+  repeat arrays, the file keeps a summary row per costliest haplotype and its
+  steps in a detail record, which the graph track loads on request.
 
   The hprc_v2_1_walk_lanes track draws haplotype lanes from the GRCh38 file:
   it aligns each haplotype's walk to the reference's, and each lane to the
   next, on the nodes both visit, with no base compared. It reads no gbz.db
   and no haplotype index. Its walksUri names the file by its prefix,
-  hprc-v2.1-mc-grch38-f4.GRCh38, and defaultHaplotypes names the lanes it
+  hprc-v2.1-mc-grch38-f5.GRCh38, and defaultHaplotypes names the lanes it
   draws unless the haplotype menu says otherwise.
 
   Each file's first header line gives format:i:4; chunk:i:65536, the chunk
@@ -245,7 +247,7 @@ Haplotype walks
     vg convert -f hprc-v2.1-mc-grch38.gbz | pigz > hprc-v2.1-mc-grch38.W.gfa.gz
                                                        # vg 1.76.1, 17 min, 90 GB
     gfa-to-tabix hprc-v2.1-mc-grch38.W.gfa.gz --walks --refs GRCh38,CHM13 \
-      -o hprc-v2.1-mc-grch38-f4                      # 39:10, 13.1 GB RSS
+      -o hprc-v2.1-mc-grch38-f5                      # 39:10, 13.1 GB RSS
 
   The defaults --chunk 65536 and --stay 311 apply.
 

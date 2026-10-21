@@ -35,7 +35,7 @@ cd "$OUT"
 
 HPRC=https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC
 HOSTED=https://jbrowse.org/pangenome/hprc-grch38
-WALKS=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-f4.GRCh38.walks.bed.gz
+WALKS=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-f5.GRCh38.walks.bed.gz
 
 echo "== every haplotype's span across the locus, from the walk file"
 [ -s walk_spans.mjs ] || curl -fsSLO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/walk_spans.mjs
