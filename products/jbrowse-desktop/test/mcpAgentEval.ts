@@ -52,6 +52,7 @@ import {
 import {
   BASELINE_SPEC,
   selectTasks,
+  stageWork,
 } from '../../../scripts/agent-evals/tasks.ts'
 import { desktopRoot, openVolvox, repoRoot } from './mcpHarness.ts'
 
@@ -98,6 +99,16 @@ const MCP_TOOLS = [
   'mcp__jbrowse__docs',
   'mcp__jbrowse__screenshot',
   'mcp__jbrowse__open',
+]
+const OUTSIDE_TOOLS = [
+  'Bash',
+  'Read',
+  'Write',
+  'Edit',
+  'Glob',
+  'Grep',
+  'WebFetch',
+  'WebSearch',
 ]
 
 const SYSTEM = `You are driving JBrowse Desktop over its MCP tools. A session is already open. Do the task using the tools, verify the result, then reply with one line. Do not ask questions; make reasonable choices yourself.`
@@ -167,7 +178,14 @@ function stripClaudeEnv() {
   )
 }
 
-async function runAgent(prompt: string, cwd: string, mcpConfig: string) {
+async function runAgent(
+  prompt: string,
+  cwd: string,
+  mcpConfig: string,
+  outside: boolean,
+) {
+  const allowed = outside ? [...MCP_TOOLS, ...OUTSIDE_TOOLS] : MCP_TOOLS
+  const disallowed = ['Task', 'TodoWrite', ...(outside ? [] : OUTSIDE_TOOLS)]
   const events: StreamEvent[] = []
   const child = spawn(
     'claude',
@@ -183,9 +201,9 @@ async function runAgent(prompt: string, cwd: string, mcpConfig: string) {
       mcpConfig,
       '--strict-mcp-config',
       '--allowedTools',
-      MCP_TOOLS.join(','),
+      allowed.join(','),
       '--disallowedTools',
-      'Bash,Read,Write,Edit,Glob,Grep,WebSearch,WebFetch,Task,TodoWrite',
+      disallowed.join(','),
       '--append-system-prompt',
       SYSTEM,
       '--max-turns',
@@ -350,7 +368,6 @@ function median(values: number[]) {
 }
 
 fs.mkdirSync(outDir, { recursive: true })
-const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'jbrowse-agent-eval-cwd-'))
 const serverPath = path.resolve(
   flag('server', path.join(desktopRoot, 'build/mcpServer.js')),
 )
@@ -409,8 +426,11 @@ try {
             timeoutMs: 120_000,
           })
         }
-        const prompt = task.prompt.replaceAll('DATA', repoRoot)
-        events = await runAgent(prompt, cwd, mcpConfig)
+        const cwd = stageWork(task)
+        const prompt = task.prompt
+          .replaceAll('DATA', repoRoot)
+          .replaceAll('WORK', cwd)
+        events = await runAgent(prompt, cwd, mcpConfig, task.outside === true)
         counted = count(events, routes)
         if (counted.usd === 0 && counted.tokensOut === 0) {
           refusal = counted.answer || 'no result event'

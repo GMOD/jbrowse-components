@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url'
 import puppeteer from 'puppeteer'
 
 import { servePageBridge } from './pageBridge.ts'
-import { BASELINE_SPEC, selectTasks } from './tasks.ts'
+import { BASELINE_SPEC, selectTasks, stageWork } from './tasks.ts'
 
 import type { EvalTask, TaskSet } from './tasks.ts'
 import type { Page } from 'puppeteer'
@@ -454,7 +454,7 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
       'textarea[aria-label="Message input"]',
       { timeout: 45_000 },
     )
-    await input!.type(task.prompt)
+    await input!.type(task.prompt.replaceAll('WORK', stageWork(task)))
     await page.click('button[aria-label="Send message"]')
     const sentAt = Date.now()
     const profileTimer = profileStalls
