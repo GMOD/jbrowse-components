@@ -205,7 +205,9 @@ async function runAgent(
       '--disallowedTools',
       disallowed.join(','),
       '--append-system-prompt',
-      SYSTEM,
+      outside
+        ? `${SYSTEM} You also have a shell and file tools; keep every file you make in your working directory.`
+        : SYSTEM,
       '--max-turns',
       '40',
     ],
