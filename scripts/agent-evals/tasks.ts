@@ -569,6 +569,31 @@ export const TASKS: EvalTask[] = [
       const rows = { forward: d?.showForward, reverse: d?.showReverse, translation: d?.showTranslation }
       return { pass: rows.forward === true && rows.reverse === true && rows.translation === true, detail: rows }`,
   },
+  {
+    name: 'ho-circos-sv',
+    heldOut: true,
+    prompt:
+      'Show the structural variant calls from the volvox structural variant test track on a Circos-style circular plot, and leave the existing view open.',
+    solution: `return jb.addView({ type: 'CircularView', assembly: 'volvox', tracks: ['volvox_sv_test'] })`,
+    grade: `
+      const views = jb.sessionSummary().views
+      const circular = views.find(v => v.type === 'CircularView')
+      const tracks = (circular?.tracks ?? []).map(t => t.trackId)
+      return {
+        pass: tracks.includes('volvox_sv_test') && views.some(v => v.type === 'LinearGenomeView'),
+        detail: views.map(v => ({ type: v.type, tracks: (v.tracks ?? []).map(t => t.trackId) })),
+      }`,
+  },
+  {
+    name: 'ho-open-fusion-track',
+    heldOut: true,
+    prompt: 'Open the track that has the gene fusion calls.',
+    solution: `return jb.addTrack({ trackId: 'volvox_star_fusion' })`,
+    grade: `
+      const t = ${shownTrack('volvox_star_fusion')}
+      const phase = t?.activeDisplay?.displayPhase
+      return { pass: !!t && (phase === undefined || phase === 'ready'), detail: { shown: !!t, phase } }`,
+  },
   // Tutorial tasks: hosted data, so a run needs the network and takes longer.
   // Each names its tutorial the way a reader would, and the grader checks the
   // state the tutorial's figure shows, by whatever route the agent took.
