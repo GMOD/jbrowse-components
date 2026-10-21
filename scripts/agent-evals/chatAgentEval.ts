@@ -15,7 +15,7 @@
 //
 // Usage: node scripts/agent-evals/chatAgentEval.ts [--model m] [--filter name]
 //        [--runs N] [--out dir] [--build dir] [--plugin dir] [--budget usd]
-//        [--set dev|heldout|tutorials|all] [--price-in usd/M] [--price-out usd/M]
+//        [--system-prompt file] [--set dev|heldout|tutorials|all] [--price-in usd/M] [--price-out usd/M]
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import http from 'node:http'
@@ -46,8 +46,8 @@ const filter = flag('filter', '')
 const runs = Number(flag('runs', '1'))
 const taskSet = flag('set', 'all') as TaskSet
 const budget = Number(flag('budget', '10'))
-const priceIn = Number(flag('price-in', '3')) / 1e6
-const priceOut = Number(flag('price-out', '15')) / 1e6
+const priceIn = Number(flag('price-in', '2')) / 1e6
+const priceOut = Number(flag('price-out', '10')) / 1e6
 const buildDir = path.resolve(
   flag('build', path.join(repoRoot, 'products/jbrowse-web/build')),
 )
@@ -198,7 +198,9 @@ function serveProxy() {
 const bridge = await servePageBridge(buildDir)
 const configs = new Map<string, string>()
 
-const staticServer = http.createServer((req, res) => {
+let hubOrigin = ''
+
+const staticServer = http.createServer(async (req, res) => {
   res.setHeader('access-control-allow-origin', '*')
   const url = new URL(req.url ?? '/', 'http://localhost')
   if (url.pathname === '/plugin.js') {
@@ -207,13 +209,34 @@ const staticServer = http.createServer((req, res) => {
     return
   }
   const doc = configs.get(url.pathname.slice(1))
-  if (doc === undefined) {
+  if (doc !== undefined) {
+    res.setHeader('content-type', 'application/json')
+    res.end(doc)
+    return
+  }
+  if (!hubOrigin) {
     res.statusCode = 404
     res.end()
     return
   }
-  res.setHeader('content-type', 'application/json')
-  res.end(doc)
+  const range = req.headers.range
+  const upstream = await fetch(`${hubOrigin}${url.pathname}${url.search}`, {
+    headers: range ? { range } : {},
+  }).catch(() => undefined)
+  if (!upstream) {
+    res.statusCode = 502
+    res.end()
+    return
+  }
+  const headers: Record<string, string> = {}
+  for (const name of ['content-type', 'content-range', 'accept-ranges']) {
+    const value = upstream.headers.get(name)
+    if (value) {
+      headers[name] = value
+    }
+  }
+  res.writeHead(upstream.status, headers)
+  res.end(Buffer.from(await upstream.arrayBuffer()))
 })
 const staticUrl = await new Promise<string>(resolve => {
   staticServer.listen(0, '127.0.0.1', () => {
@@ -246,9 +269,11 @@ function absolutize(node: unknown, base: string) {
 }
 
 async function configFor(task: EvalTask) {
-  const name = task.config
-    ? new URL(task.config).pathname.replaceAll('/', '_')
-    : 'volvox.json'
+  const hub = task.config ? new URL(task.config) : undefined
+  const name = hub ? hub.pathname.slice(1) : 'volvox.json'
+  if (hub) {
+    hubOrigin = hub.origin
+  }
   if (!configs.has(name)) {
     let doc: { plugins?: unknown[] }
     let base: string
@@ -279,6 +304,12 @@ const passworder = require('@metamask/browser-passworder')
 const vault: string = await passworder.encrypt(PASSWORD, {
   anthropic: 'proxy-placeholder',
 })
+const defaultPrompt =
+  "You are an expert in biological processes and an assistant for answering questions regarding JBrowse 2, OR the user's running JBrowse 2 session.\n**No matter the question, you must provide a clear, accurate, and complete response to the question.**"
+const promptFile = flag('system-prompt', '')
+const systemPrompt = promptFile
+  ? fs.readFileSync(promptFile, 'utf8').trim()
+  : defaultPrompt
 const settings = JSON.stringify({
   provider: 'anthropic',
   providerSettings: {
@@ -287,8 +318,7 @@ const settings = JSON.stringify({
     google: { model: 'gemini-2.5-flash-lite' },
     ollama: { baseUrl: 'http://localhost:11434', model: 'qwen3:0.6b' },
   },
-  defaultSystemPrompt:
-    "You are an expert in biological processes and an assistant for answering questions regarding JBrowse 2, OR the user's running JBrowse 2 session.\n**No matter the question, you must provide a clear, accurate, and complete response to the question.**",
+  defaultSystemPrompt: systemPrompt,
   useProviderSystemPrompt: false,
 })
 
@@ -307,6 +337,7 @@ fs.mkdirSync(outDir, { recursive: true })
 const browser = await puppeteer.launch({
   headless: true,
   args: ['--no-sandbox'],
+  protocolTimeout: 300_000,
 })
 const only = flag('tasks', '').split(',').filter(Boolean)
 const tasks = selectTasks(taskSet, filter, 'web').filter(
@@ -314,7 +345,7 @@ const tasks = selectTasks(taskSet, filter, 'web').filter(
 )
 const rows: { task: string; run: number; pass: boolean }[] = []
 
-async function runOnce(task: EvalTask, run: number) {
+async function runOnce(task: EvalTask, run: number, attempt: number) {
   const context = await browser.createBrowserContext()
   const page = await context.newPage()
   await page.setViewport({ width: 1400, height: 900 })
@@ -322,6 +353,7 @@ async function runOnce(task: EvalTask, run: number) {
     (s: string, v: string) => {
       localStorage.setItem('chatbot-settings', s)
       localStorage.setItem('chatbot-vault', v)
+      localStorage.setItem('chatbot-jb-approval', 'off')
     },
     settings,
     vault,
@@ -378,6 +410,9 @@ async function runOnce(task: EvalTask, run: number) {
       '[data-role="assistant"]',
       els => (els.at(-1) as HTMLElement | undefined)?.innerText ?? '',
     )
+    if (!answer) {
+      error = await page.evaluate(() => document.body.innerText.slice(-700))
+    }
   } catch (e) {
     error = e instanceof Error ? e.message : String(e)
   }
@@ -408,6 +443,7 @@ async function runOnce(task: EvalTask, run: number) {
     outputTokens,
     usd: Number((inputTokens * priceIn + outputTokens * priceOut).toFixed(3)),
     seconds: Math.round((Date.now() - before) / 1000),
+    attempt,
   }
   fs.writeFileSync(
     path.join(outDir, `${task.name}-${run}.json`),
@@ -417,10 +453,18 @@ async function runOnce(task: EvalTask, run: number) {
       2,
     ),
   )
-  rows.push({ task: task.name, run, pass: row.pass })
+  const stalled =
+    !answer &&
+    /timed out|no page carrying/.test(
+      `${error} ${JSON.stringify(verdict.detail)}`,
+    )
+  if (!(stalled && attempt === 1)) {
+    rows.push({ task: task.name, run, pass: row.pass })
+  }
   console.log(
     `${row.pass ? 'pass' : 'FAIL'}  ${task.name.padEnd(28)} calls=${row.calls} in=${inputTokens} out=${outputTokens} ${row.seconds}s ~$${row.usd}  total ~$${spend().toFixed(2)}`,
   )
+  return { answer, stalled }
 }
 
 try {
@@ -430,7 +474,16 @@ try {
         console.log(`stopped: estimated spend passed $${budget}`)
         break outer
       }
-      await runOnce(task, run)
+      let result = await runOnce(task, run, 1)
+      if (result.stalled) {
+        console.log(`stalled: ${task.name}; retrying once`)
+        result = await runOnce(task, run, 2)
+      }
+      const answer = result.answer
+      if (/credit balance|insufficient|billing/i.test(answer)) {
+        console.log('stopped: the API reports a credit or billing problem')
+        break outer
+      }
     }
   }
 } finally {
