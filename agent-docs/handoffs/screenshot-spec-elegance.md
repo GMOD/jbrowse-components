@@ -11,10 +11,22 @@ something, so the larger half of this list is app work.
 
 ## Next, each needing a capture A/B on ada
 
-- Each long delay converted to `waitForAppSettled`, after
-  `probe-app-settled.ts`; lower `LONG_DELAY_BASELINE` as they go. Shoot a
-  baseline at the pre-change commit too: a matrix of sub-pixel rows moves
-  single pixels between any two runs.
+- **The long delays.** After a spec's actions the generator already waits for
+  the app to settle (`waitForSpecFrame` → `waitForFrame`), so a delay that ends
+  an action list on app work is deleted, and one mid-list becomes
+  `{ type: 'waitForAppSettled' }`. 41 of the 138 are that kind:
+  - after the ready gate, alone or after `PARK_CURSOR` (16; the MAF, pangenome
+    and cactus specs, `inversion_long_read`)
+  - after a drawn or settled gate (13; `lgv_track_clicked`,
+    `launch_sequence` stage 2, `maf_hprc_pangenome`'s 25 s)
+  - after a click that starts app work (12; clustering dialogs, collapse
+    introns, the feature-sequence panels)
+
+  Probe each (`probe-app-settled.ts`) and shoot it against a baseline at the
+  pre-change commit, since a matrix of sub-pixel rows moves single pixels
+  between any two runs. The rest stay: Mol\* camera resets (about 45,
+  untracked by the app), tooltip and menu animations, a graph layout settling
+  before an anchored action, and a grid filter's debounce.
 
 ## Next, no capture needed
 
