@@ -57,6 +57,39 @@ test('anchors the genotype sort on the record covering the column', () => {
   expect(display.sources[0]!.name).toBe('S0')
 })
 
+// A click inside a large deletion picks the shortest record under it, so a
+// sort written as a column has to anchor there too, not on the deletion.
+test('anchors on the shortest record covering the column', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  display.setSources(SOURCES)
+  display.setLoadedRegion(
+    0,
+    { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
+    undefined,
+  )
+  const genotypeDict = ['0/0', '1/1']
+  const codes = (gts: string[]) =>
+    new Uint32Array(gts.map(g => genotypeDict.indexOf(g) + 1))
+  display.setCellData({
+    sampleNames: ['S0', 'S1', 'S2'],
+    genotypeDict,
+    simplifiedFeatures: [
+      { id: 'big', data: { start: 0, end: 1000, refName: 'ctgA' } },
+      { id: 'small', data: { start: 450, end: 550, refName: 'ctgA' } },
+    ],
+    perRegionCellData: {
+      0: {
+        featureInfo: [
+          { featureId: 'big', genotypeCodes: codes(['1/1', '0/0', '0/0']) },
+          { featureId: 'small', genotypeCodes: codes(['0/0', '0/0', '1/1']) },
+        ],
+      },
+    },
+  } as unknown as Parameters<typeof display.setCellData>[0])
+  display.sortRowsByGenotypeAt('ctgA', 500)
+  expect(display.sources[0]!.name).toBe('S2')
+})
+
 test('leaves the rows alone at a column no record covers', () => {
   const display = displayWithCells()
   display.sortRowsByGenotypeAt('ctgA', 600)

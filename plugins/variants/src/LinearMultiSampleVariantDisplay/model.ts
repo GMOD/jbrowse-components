@@ -1429,27 +1429,34 @@ export function stateModelFactory(
         /**
          * #action
          * `sortByGenotype` at a genomic column, the declarative `sortRowsBy`
-         * entry point. Returns whether it sorted, so `sortRowsBy` stays set for
-         * the fetch that brings a record to the column. `refName` arrives
+         * entry point. Anchors on the record a click there picks
+         * (`pickVariantCell`): the shortest covering the column, the later of
+         * two as short. Returns whether it sorted, so `sortRowsBy` stays set
+         * for the fetch that brings a record to the column. `refName` arrives
          * canonical; a record's is whatever the file spelled.
          */
         sortRowsByGenotypeAt(refName: string, pos: number) {
           const features = self.cellData?.simplifiedFeatures
-          const hit =
-            features &&
-            loadedRegionIndexAt(self.loadedRegions, refName, pos) !== undefined
-              ? features.find(({ data }) => {
-                  const { start, end } = data
-                  return (
-                    typeof start === 'number' &&
-                    typeof end === 'number' &&
-                    start <= pos &&
-                    pos < end &&
-                    canonicalizeViewRefName(self, String(data.refName)) ===
-                      refName
-                  )
-                })
-              : undefined
+          if (
+            !features ||
+            loadedRegionIndexAt(self.loadedRegions, refName, pos) === undefined
+          ) {
+            return false
+          }
+          let hit: { id: string; length: number } | undefined
+          for (const { id, data } of features) {
+            const { start, end } = data
+            if (
+              typeof start === 'number' &&
+              typeof end === 'number' &&
+              start <= pos &&
+              pos < end &&
+              end - start <= (hit?.length ?? Infinity) &&
+              canonicalizeViewRefName(self, String(data.refName)) === refName
+            ) {
+              hit = { id, length: end - start }
+            }
+          }
           return hit ? self.sortByGenotype(hit.id) : false
         },
       }))
