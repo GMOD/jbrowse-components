@@ -27,6 +27,7 @@ function input(overrides: Partial<BuildLanesInput> = {}): BuildLanesInput {
     sashimiDownKeysByGroup: new Map(),
     collapsedKeys: new Set(),
     heightOverridesPx: new Map(),
+    expandedKeys: new Set(),
     showPileup: true,
     fitHeightToDisplay: false,
     ...overrides,

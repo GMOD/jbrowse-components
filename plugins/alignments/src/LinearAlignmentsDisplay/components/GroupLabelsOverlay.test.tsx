@@ -48,6 +48,7 @@ function renderOverlay(overrides: Partial<LinearAlignmentsDisplayModel> = {}) {
       height: SECTION_HEIGHT,
       collapsed: false,
       heightOverridePx: undefined,
+      expanded: false,
       // Clipped by the lane's viewport slice, which is the cap the chip's expand
       // can raise.
       clippedBy: 'budget',

@@ -1852,9 +1852,9 @@ describe('per-lane state belongs to one grouping key space', () => {
   test('a height override goes with the collapse', () => {
     const display = collapsedUntaggedLane()
     display.toggleGroupExpanded('')
-    expect(display.groupHeightOverrides.has('')).toBe(true)
+    expect(display.expandedGroupKeys.has('')).toBe(true)
     display.configuration.setSubschema('facet', {})
-    expect(display.groupHeightOverrides.has('')).toBe(false)
+    expect(display.expandedGroupKeys.has('')).toBe(false)
   })
 
   // A live figure keys on this, since the collapses and height overrides are
@@ -1879,13 +1879,14 @@ describe('per-lane state belongs to one grouping key space', () => {
     const display = collapsedUntaggedLane()
     display.toggleGroupExpanded('')
     display.hideGroup('1')
-    const [hidden, [collapsed, heights]] = display.groupStateKey as [
+    const [hidden, [collapsed, heights, expanded]] = display.groupStateKey as [
       string[],
-      [string[], Record<string, number>],
+      [string[], Record<string, number>, string[]],
     ]
     expect(hidden).toEqual(['1'])
     expect(collapsed).toEqual([''])
-    expect(Object.keys(heights)).toEqual([''])
+    expect(heights).toEqual({})
+    expect(expanded).toEqual([''])
   })
 
   // Grouping FROM ungrouped is the same collision the other way round: the

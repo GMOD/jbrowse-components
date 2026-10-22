@@ -767,14 +767,26 @@ export function nextGroupHeightOverride({
   return Math.max(rowHeight, Math.round((existingPx ?? displayedPx) + dy))
 }
 
-// The row caps a set of per-lane height overrides imposes. An override is a
-// BAND height and a cap is a row count, so every px between two row boundaries,
-// and every px past what the lane's reads fill, names the same caps.
-export function groupRowCaps(
-  overridesPx: ReadonlyMap<string, number>,
-  rowHeight: number,
-) {
+// The row caps the per-lane height overrides and "show all" lanes impose. An
+// override is a BAND height and a cap is a row count, so every px between two
+// row boundaries, and every px past what the lane's reads fill, names the same
+// caps. A "show all" lane takes the ceiling as its own cap, which opts it out
+// of the shared budget and the collapse as an override does.
+export function groupRowCaps({
+  overridesPx,
+  expandedKeys,
+  ceilingPx,
+  rowHeight,
+}: {
+  overridesPx: ReadonlyMap<string, number>
+  expandedKeys: ReadonlySet<string>
+  ceilingPx: number
+  rowHeight: number
+}) {
   const caps = new Map<string, RowCap>()
+  for (const key of expandedKeys) {
+    caps.set(key, overrideCap(maxRowsFor(ceilingPx, rowHeight)))
+  }
   for (const [key, px] of overridesPx) {
     caps.set(key, overrideCap(maxRowsFor(px, rowHeight)))
   }

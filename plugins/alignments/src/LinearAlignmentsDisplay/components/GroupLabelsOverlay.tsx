@@ -90,7 +90,8 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
         // Off the section, not looked back up by its key: a `renderSections`
         // entry IS its lane, chip state included.
         const { groupKey, label, collapsed } = section
-        const hasOverride = section.heightOverridePx !== undefined
+        const hasOverride =
+          section.heightOverridePx !== undefined || section.expanded
         return {
           key: groupKey,
           label: model.groupChipLabel(label),

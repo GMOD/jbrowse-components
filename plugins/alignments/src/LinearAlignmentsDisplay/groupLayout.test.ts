@@ -258,12 +258,37 @@ test('nextGroupHeightOverride: grows past the content, which pads the band', () 
 })
 
 test('groupRowCaps: px inside one row, or past the content, name one cap', () => {
-  const caps = (px: number) => groupRowCaps(new Map([['HP: 1', px]]), 20)
+  const none = new Set<string>()
+  const caps = (px: number) =>
+    groupRowCaps({
+      overridesPx: new Map([['HP: 1', px]]),
+      expandedKeys: none,
+      ceilingPx: 6000,
+      rowHeight: 20,
+    })
   // every px of a row, and every px of pad past what the reads fill, is one cap
   expect(caps(100)).toEqual(caps(119))
   expect(caps(100)).not.toEqual(caps(120))
   expect(caps(100).get('HP: 1')).toEqual({ rows: 5, source: 'override' })
-  expect(groupRowCaps(new Map(), 20).size).toBe(0)
+  expect(
+    groupRowCaps({
+      overridesPx: new Map(),
+      expandedKeys: none,
+      ceilingPx: 6000,
+      rowHeight: 20,
+    }).size,
+  ).toBe(0)
+})
+
+test('groupRowCaps: a "show all" lane caps at the ceiling, a drag over it wins', () => {
+  const caps = groupRowCaps({
+    overridesPx: new Map([['HP: 2', 100]]),
+    expandedKeys: new Set(['HP: 1', 'HP: 2']),
+    ceilingPx: 6000,
+    rowHeight: 20,
+  })
+  expect(caps.get('HP: 1')).toEqual({ rows: 300, source: 'override' })
+  expect(caps.get('HP: 2')).toEqual({ rows: 5, source: 'override' })
 })
 
 test('nextGroupHeightOverride: floors at one row', () => {

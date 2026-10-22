@@ -157,7 +157,12 @@ test('a lane clipped by its viewport slice offers the chip', () => {
   expect(rowsIn(display, 0)).toBeGreaterThan(clipped)
   // and the affordance flips to "fit to view" rather than lingering
   expect(expandable(display, '1')).toBe(false)
-  expect(display.groupHeightOverrides.has('1')).toBe(true)
+  expect(display.laneFor('1')!.expanded).toBe(true)
+  // the band is as tall as the reads it now stacks, not padded out to the
+  // ceiling as a drag pads it
+  expect(display.sections.sections[0]!.pileupHeight).toBe(
+    rowsIn(display, 0) * display.rowHeight,
+  )
 })
 
 // A stacked lane can still hit the display-wide ceiling, where expanding it is
@@ -241,7 +246,7 @@ test('a lane clipped by its own override raises nothing', () => {
   expect(clippedBy(display, '1')).toBe('ceiling')
 
   display.toggleGroupExpanded('1')
-  expect(display.groupHeightOverrides.has('1')).toBe(true)
+  expect(display.laneFor('1')!.expanded).toBe(true)
   expect(clippedBy(display, '1')).toBe('override')
   expect(expandable(display, '1')).toBe(false)
   expect(ceilingClipped(display, '1')).toBe(false)
@@ -318,8 +323,10 @@ test('a height drag inside one row keeps the layout', () => {
   display.setPileupMaxLayoutHeight(4000)
   display.toggleGroupExpanded('1')
   const { rowHeight } = display
-  const px = display.groupHeightOverrides.get('1')!
+  const px = display.sections.sections[0]!.pileupHeight
   display.resizeGroupHeight('1', 100 * rowHeight - px)
+  // a drag over an expanded lane takes over its cap
+  expect(display.laneFor('1')!.expanded).toBe(false)
   expect(rowsIn(display, 0)).toBe(100)
   const before = display.laidOutByGroupUncolored
 
