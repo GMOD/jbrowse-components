@@ -6,6 +6,8 @@ export interface HicRenderState extends TriangleFrame {
   domainMin: number
   domainMax: number
   scaleType: ScaleTypeCode
+  /** `rampMidNorm` of `color.domainMid`, 0.5 unset */
+  midNorm: number
   colorRamp: Uint8Array
 }
 

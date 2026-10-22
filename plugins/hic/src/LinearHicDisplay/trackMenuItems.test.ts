@@ -184,6 +184,22 @@ describe('hic color rows on a display', () => {
     expect(display.colorEncoding.scale).toBe('linear')
   })
 
+  // count's preset names juicebox under `linear`, and the toggle writes
+  // `symlog`: the ramp must not fall back to the scheme-less default
+  it('Log scale keeps the field preset ramp', () => {
+    const { display } = createDisplay()
+    click(display, 'Log scale')
+    expect(display.colorScheme).toBe(DEFAULT_HIC_COLOR_SCHEME)
+  })
+
+  it('picking the field preset scheme writes no config delta', () => {
+    const { display } = createDisplay()
+    display.setColorScheme('viridis')
+    expect(display.plot).toEqual({ color: { scheme: 'viridis' } })
+    display.setColorScheme(DEFAULT_HIC_COLOR_SCHEME)
+    expect(display.plot).toEqual({})
+  })
+
   it('Emphasize faint contacts writes color.domainQuantile', () => {
     const { display } = createDisplay()
     click(display, 'Emphasize faint contacts')

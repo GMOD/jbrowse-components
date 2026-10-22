@@ -7188,11 +7188,15 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "scheme",
-              "type": "ColorScheme"
+              "type": "(ColorScheme | undefined)"
             },
             {
               "name": "reverse",
               "type": "(boolean | undefined)"
+            },
+            {
+              "name": "domainMid",
+              "type": "(number | undefined)"
             },
             {
               "name": "domainMin",
@@ -7218,7 +7222,8 @@ export const configManifest: ConfigManifest = {
           },
           "fieldPresets": {
             "count": {
-              "scale": "linear"
+              "scale": "linear",
+              "scheme": "juicebox"
             }
           },
           "fieldDefault": "count"

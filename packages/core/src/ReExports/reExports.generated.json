@@ -4648,6 +4648,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/MatrixRampMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/MultiRegionDisplayMixin": {
       "package": "@jbrowse/display-kit",
       "names": [

@@ -528,7 +528,6 @@ JBrowseWebRootModel.setSavedSessionMetadata
 JBrowseWebRootModel.setSessionDB
 JBrowseWebRootModel.version
 JBrowseWebSessionModel.removePermanentPlugin
-LDTrackDisplay.colorScheme
 LDTrackDisplay.dprimeAvailable
 LDTrackDisplay.lineZoneHeight
 LDTrackDisplay.prefersOffset
@@ -831,8 +830,6 @@ LinearGenomeView.zoomTo
 LinearHicDisplay.availableNormalizations
 LinearHicDisplay.canStepResolutionCoarser
 LinearHicDisplay.canStepResolutionFiner
-LinearHicDisplay.colorScaleType
-LinearHicDisplay.colorScheme
 LinearHicDisplay.effectiveResolution
 LinearHicDisplay.legendTop
 LinearHicDisplay.renderState
@@ -1046,6 +1043,9 @@ MafSequenceWidget.hoverHighlight
 MafSequenceWidget.regions
 MafSequenceWidget.samples
 MafSequenceWidget.setHoverHighlight
+MatrixRampMixin.colorReverse
+MatrixRampMixin.colorScaleType
+MatrixRampMixin.colorScheme
 MultiWaySyntenyDisplay.adapterCapabilities
 MultiWaySyntenyDisplay.adapterDeclaresLanes
 MultiWaySyntenyDisplay.adapterPairsOnAnchor

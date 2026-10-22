@@ -1,5 +1,6 @@
 import { enterTriangleCellSpace } from '@jbrowse/display-kit/triangleTransform'
 import { makeScoreNormalizer } from '@jbrowse/render-core/scoreScale'
+import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
 import { makeHicFillStyleLut } from './colorRamp.ts'
 import {
@@ -33,8 +34,15 @@ export function drawHicBlocks(
   if (numContacts === 0) {
     return
   }
-  const { viewScale, yScalar, domainMin, domainMax, scaleType, colorRamp } =
-    state
+  const {
+    viewScale,
+    yScalar,
+    domainMin,
+    domainMax,
+    scaleType,
+    midNorm,
+    colorRamp,
+  } = state
   const normalize = makeScoreNormalizer(domainMin, domainMax, scaleType, 1)
   const fillStyleLut = makeHicFillStyleLut(colorRamp)
   const { minSum, maxSum } = enterTriangleCellSpace(ctx, state, width)
@@ -49,7 +57,9 @@ export function drawHicBlocks(
     if (sum < lo || sum > maxSum || py - px > maxDiff) {
       continue
     }
-    const fill = fillStyleLut(normalize(getInstanceCount(instances, i)))
+    const fill = fillStyleLut(
+      rampMidT(normalize(getInstanceCount(instances, i)), midNorm),
+    )
     if (fill !== undefined) {
       ctx.fillStyle = fill
       ctx.fillRect(px * viewScale, py * viewScale, size, size)

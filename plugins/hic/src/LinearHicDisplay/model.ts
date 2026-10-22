@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getBpDisplayStr } from '@jbrowse/core/util'
-import { rampDomain, rampLutOf } from '@jbrowse/core/util/colorRamp'
+import { rampDomain } from '@jbrowse/core/util/colorRamp'
 import {
   installPrerequisiteFetch,
   readFor,
@@ -14,32 +14,26 @@ import {
 import { clipQuantileOf } from '@jbrowse/core/util/quantileExtent'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
+import MatrixRampMixin from '@jbrowse/display-kit/MatrixRampMixin'
 import PointerHoverMixin from '@jbrowse/display-kit/PointerHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import TriangleMatrixMixin from '@jbrowse/display-kit/TriangleMatrixMixin'
-import {
-  colorForScheme,
-  colorSettingOf,
-  matrixColorEncodingOf,
-} from '@jbrowse/display-kit/colorConfigSchema'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { triangleAxis } from '@jbrowse/display-kit/triangleTransform'
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
   denormalizeScore,
+  rampMidNorm,
   scaleTypeCode,
 } from '@jbrowse/render-core/scoreScale'
 
 import { computeCountStats } from '../RenderHicDataRPC/countStats.ts'
 import { legendStops } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
-import {
-  DEFAULT_HIC_COLOR_SCHEME,
-  HIC_FIELD_PRESETS,
-} from './hicColorConfigSchema.ts'
+import { HIC_FIELD_PRESETS } from './hicColorConfigSchema.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
 import type {
@@ -53,20 +47,13 @@ import type {
 import type { HicTrackConfigModel } from './configSchema.ts'
 import type { HicColorScale } from './hicColorConfigSchema.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
-import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
-import type { ContinuousRef } from '@jbrowse/core/util/markEncoding'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
 
 // The fallback order when the selected normalization is not in the file.
 const NORMALIZATION_PREFERENCE = ['KR', 'SCALE', 'VC_SQRT', 'VC']
-
-type HicColorEncoding = ContinuousRef & {
-  scheme: ColorSchemeName
-  domainQuantile: number
-}
 
 function contactsLabel(normalization: string, scale?: HicColorScale) {
   const qualifiers = [
@@ -116,6 +103,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       TrackHeightMixin(),
       GlobalFetchMixin(),
       LegendMixin(),
+      MatrixRampMixin(HIC_FIELD_PRESETS),
       TriangleMatrixMixin<HicDataResult>(),
       PointerHoverMixin<HicContactItem>(
         (a, b) =>
@@ -165,70 +153,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * The `color` object as it paints, through the shared reader and
-       * `count`'s preset: a linear, symlog or log ramp whose `reverse`, where unset,
-       * follows whether the scheme runs dark at its low end. The `scheme` and
-       * `domainQuantile` slots have defaults, so both are always set.
-       */
-      get colorEncoding(): HicColorEncoding {
-        return matrixColorEncodingOf(
-          colorSettingOf(self.configuration.color),
-          HIC_FIELD_PRESETS,
-        ) as HicColorEncoding
-      },
-      /**
-       * #getter
-       */
-      get colorScaleType(): HicColorScale {
-        return this.colorEncoding.scale
-      },
-      /**
-       * #getter
-       */
-      get colorScheme(): ColorSchemeName {
-        return this.colorEncoding.scheme
-      },
-      /**
-       * #getter
-       * `color.reverse`, or where unset whether the scheme runs dark at its
-       * low end.
-       */
-      get colorReverse(): boolean {
-        return !!this.colorEncoding.reverse
-      },
-      /**
-       * #getter
-       * The ramp's 256 entries: the GPU's texture, the Canvas2D fill and the
-       * legend read this one table. It reads `colorScheme` and `colorReverse`
-       * rather than the encoding, so a domain edit re-uploads no texture.
-       */
-      get colorRamp(): Uint8Array {
-        return rampLutOf({
-          scheme: this.colorScheme,
-          reverse: this.colorReverse,
-        })
-      },
-      /**
-       * #getter
-       * `color.domainMin`, undefined while it follows the counts from 0.
-       */
-      get colorDomainMin(): number | undefined {
-        return this.colorEncoding.domainMin
-      },
-      /**
-       * #getter
-       * `color.domainMax`, undefined while it follows the loaded counts.
-       */
-      get colorDomainMax(): number | undefined {
-        return this.colorEncoding.domainMax
-      },
-      /**
-       * #getter
        * `color.domainQuantile`: the quantile of the loaded counts an unset
        * `domainMax` follows, their maximum at 1.
        */
       get colorQuantile(): number {
-        return this.colorEncoding.domainQuantile
+        return getConf(self, ['color', 'domainQuantile'])
       },
       /**
        * #getter
@@ -346,6 +275,21 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
+       * Where `color.domainMid` sits on the normalized ramp, 0.5 unset, so a
+       * diverging scheme centres on it and equal distances from it take equal
+       * colors.
+       */
+      get colorMidNorm(): number {
+        const [lo, hi] = self.colorDomain
+        return rampMidNorm(
+          lo,
+          hi,
+          scaleTypeCode(self.colorScaleType),
+          self.colorEncoding.domainMid,
+        )
+      },
+      /**
+       * #getter
        * The binsize index auto mode picks: the largest at most 2 bp/px, about
        * half a bin per pixel, else the finest.
        */
@@ -388,7 +332,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
               ? `${label} · ${getBpDisplayStr(rpcData.resolution)}`
               : label,
             domain,
-            stops: legendStops(self.colorRamp),
+            stops: legendStops(self.colorRamp, self.colorMidNorm),
             extent: [domain[0], rpcData?.maxScore ?? 0],
           },
         ]
@@ -450,6 +394,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           domainMin,
           domainMax,
           scaleType: self.scaleType,
+          midNorm: self.colorMidNorm,
           colorRamp: self.colorRamp,
         }
       },
@@ -532,21 +477,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           self,
           ['color', 'domainQuantile'],
           f ? self.saturationQuantile : 1,
-        )
-      },
-      /**
-       * #action
-       * The scheme, with `reverse` back to unset so it follows the scheme.
-       */
-      setColorScheme(scheme: ColorSchemeName) {
-        setConf(
-          self,
-          'color',
-          colorForScheme(
-            getSnapshot(self.configuration.color),
-            scheme,
-            DEFAULT_HIC_COLOR_SCHEME,
-          ),
         )
       },
       /**

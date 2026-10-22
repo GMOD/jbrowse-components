@@ -3,8 +3,8 @@ import { makeRampFillStyleLut } from '@jbrowse/render-core/canvas2dUtils'
 
 import { MIN_VISIBLE_ALPHA } from './shaders/hic.consts.generated.ts'
 
-export function legendStops(ramp: Uint8Array) {
-  return stopsFromRampLut(ramp, 11)
+export function legendStops(ramp: Uint8Array, midNorm: number) {
+  return stopsFromRampLut(ramp, 11, midNorm)
 }
 
 /**

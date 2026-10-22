@@ -5,26 +5,18 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { reservedPx } from '@jbrowse/core/util/bandLayout'
-import {
-  rampDomain,
-  rampLutOf,
-  stopsFromRampLut,
-} from '@jbrowse/core/util/colorRamp'
+import { rampDomain, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
+import MatrixRampMixin from '@jbrowse/display-kit/MatrixRampMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import TriangleMatrixMixin from '@jbrowse/display-kit/TriangleMatrixMixin'
-import {
-  colorForScheme,
-  colorSettingOf,
-  matrixColorEncodingOf,
-} from '@jbrowse/display-kit/colorConfigSchema'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { triangleAxis } from '@jbrowse/display-kit/triangleTransform'
 import { ldValueComputed } from '@jbrowse/ld-core'
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 
@@ -45,8 +37,6 @@ import type {
 } from './components/ldRenderingBackendTypes.ts'
 import type { LDDisplayConfigSchema } from './configSchemaLDTrack.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
-import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
-import type { ContinuousRef } from '@jbrowse/core/util/markEncoding'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
@@ -90,6 +80,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       TrackHeightMixin(),
       GlobalFetchMixin(),
       LegendMixin(),
+      MatrixRampMixin(LD_FIELD_PRESETS),
       TriangleMatrixMixin<LDDataResult>(),
       types.model({
         /**
@@ -267,35 +258,14 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
     .views(self => ({
       /**
        * #getter
-       * The `color` object under the preset of the loaded metric, so a stale
-       * triangle during a metric switch keeps its hue. Both presets name a
-       * scheme, so the encoding always has one.
+       * The loaded metric, so a stale triangle during a metric switch keeps
+       * its hue.
        */
-      get colorEncoding(): ContinuousRef & { scheme: ColorSchemeName } {
-        return matrixColorEncodingOf(
-          {
-            ...colorSettingOf(self.configuration.color),
-            field: self.effectiveLdMetric,
-          },
-          LD_FIELD_PRESETS,
-        ) as ContinuousRef & { scheme: ColorSchemeName }
+      get paintedColorField(): LDMetric {
+        return self.effectiveLdMetric
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get colorScheme(): ColorSchemeName {
-        return self.colorEncoding.scheme
-      },
-      /**
-       * #getter
-       * `color.reverse`, or where unset whether the scheme runs dark at its
-       * low end.
-       */
-      get colorReverse(): boolean {
-        return !!self.colorEncoding.reverse
-      },
       /**
        * #getter
        * The domain the statistic is colored over: each pinned end holds, and
@@ -304,20 +274,6 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       get colorDomain(): [number, number] {
         const { domainMin, domainMax } = self.colorEncoding
         return rampDomain(domainMin, domainMax, LD_VALUE_EXTENT)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The ramp's 256 entries, read by the GPU texture, the Canvas2D fill and
-       * the legend. Reads `colorScheme` and `colorReverse` rather than the
-       * encoding, so a domain edit re-uploads no texture.
-       */
-      get colorRamp(): Uint8Array {
-        return rampLutOf({
-          scheme: self.colorScheme,
-          reverse: self.colorReverse,
-        })
       },
     }))
     .views(self => ({
@@ -432,23 +388,6 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       * The scheme, with `reverse` back to unset so it follows the scheme.
-       * The painted metric's own preset writes `scheme` unset, so it keeps
-       * following the metric.
-       */
-      setColorScheme(scheme: ColorSchemeName) {
-        setConf(
-          self,
-          'color',
-          colorForScheme(
-            getSnapshot(self.configuration.color),
-            scheme,
-            LD_FIELD_PRESETS[self.effectiveLdMetric].scheme,
-          ),
-        )
-      },
       /**
        * #action
        */

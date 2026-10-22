@@ -32,6 +32,7 @@ const contactMark: MarkShape<HicUploadData, HicContactParams> = {
       viewScale: p.viewScale,
       viewOffsetX: p.viewOffsetX,
       scaleType: p.scaleType,
+      rampMidNorm: p.midNorm,
     })
   },
 

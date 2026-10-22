@@ -87,23 +87,18 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-availablenormalizations">**availableNormalizations**</span><br><code>string[] &#124; undefined</code> |  |
 | <span id="getter-availableresolutions">**availableResolutions**</span><br><code>number[] &#124; undefined</code> | Smallest first, so a negative `resolutionBias` is always finer. |
 | <span id="getter-resolutionbias">**resolutionBias**</span><br><code>number</code> |  |
-| <span id="getter-colorencoding">**colorEncoding**</span><br><code>HicColorEncoding</code> | The `color` object as it paints, through the shared reader and `count`'s preset: a linear, symlog or log ramp whose `reverse`, where unset, follows whether the scheme runs dark at its low end. The `scheme` and `domainQuantile` slots have defaults, so both are always set. |
-| <span id="getter-colorscaletype">**colorScaleType**</span><br><code>"linear" &#124; "log" &#124; "symlog"</code> |  |
-| <span id="getter-colorscheme">**colorScheme**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>"blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma"…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>"blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma" &#124; "purpleorange" &#124; "redblue" &#124; "redgreyblue" &#124; "reds" &#124; "redyellowblue" &#124; "viridis"</code></pre></dialog></span> |  |
-| <span id="getter-colorreverse">**colorReverse**</span><br><code>boolean</code> | `color.reverse`, or where unset whether the scheme runs dark at its low end. |
-| <span id="getter-colorramp">**colorRamp**</span><br><code>Uint8Array&lt;ArrayBufferLike&gt;</code> | The ramp's 256 entries: the GPU's texture, the Canvas2D fill and the legend read this one table. It reads `colorScheme` and `colorReverse` rather than the encoding, so a domain edit re-uploads no texture. |
-| <span id="getter-colordomainmin">**colorDomainMin**</span><br><code>number &#124; undefined</code> | `color.domainMin`, undefined while it follows the counts from 0. |
-| <span id="getter-colordomainmax">**colorDomainMax**</span><br><code>number &#124; undefined</code> | `color.domainMax`, undefined while it follows the loaded counts. |
 | <span id="getter-colorquantile">**colorQuantile**</span><br><code>number</code> | `color.domainQuantile`: the quantile of the loaded counts an unset `domainMax` follows, their maximum at 1. |
 | <span id="getter-colorfollowspercentile">**colorFollowsPercentile**</span><br><code>boolean</code> | Whether an unset `color.domainMax` saturates at `colorQuantile` rather than the counts' maximum. |
-| <span id="getter-saturationquantile">**saturationQuantile**</span><br><code>number</code> | The quantile "Emphasize faint contacts" saturates at: `colorQuantile` while it clips, else the one ticking it writes. The worker computes this one whichever is drawn, so the toggle refetches nothing. |
+| <span id="getter-saturationquantile">**saturationQuantile**</span><br><code>number</code> | The quantile "Emphasize faint contacts" saturates at: `colorQuantile` while it clips, else the one ticking it writes. Each fetch asks the worker for this one whichever is drawn, so the toggle reselects nothing. |
 | <span id="getter-selectednormalization">**selectedNormalization**</span><br><code>string</code> |  |
 | <span id="getter-hasresolutions">**hasResolutions**</span><br><code>boolean</code> | Whether the binsize list has arrived; every resolution control gates on it. |
 | <span id="getter-activenormalization">**activeNormalization**</span><br><code>string</code> | The normalization to request: the selection where the file has it, else the next best it does. A getter, so a file lacking the selection never marks the track edited. |
+| <span id="getter-loadedquantilescore">**loadedQuantileScore**</span><br><code>number</code> | The loaded counts' `saturationQuantile`: the worker's answer, or after an edit a selection over the loaded matrix, so a new percentile refetches nothing. The next fetch asks the worker for the new one. |
 | <span id="getter-colordomain">**colorDomain**</span><br><code>[number, number]</code> | The domain the counts are colored over, as every ramp spans one: a pinned end holds, and an open one follows the loaded counts from 0, the top at their `colorQuantile` below 1, else their maximum. |
 | <span id="getter-awaitingprerequisite">**awaitingPrerequisite**</span><br><code>boolean</code> | Retry is two-stage: the contact fetch declines until the header it needs lands, and the header's arrival wakes it. `infoFetchFailure.test.ts` pins it. |
 | <span id="getter-appliednormalization">**appliedNormalization**</span><br><code>string</code> | The normalization the loaded matrix has, which falls back per binsize (KR at 5 kb, nothing at 2.5 Mb is typical). The menu ticks this. Fetch-derived, so it stays out of `rpcProps()`. |
 | <span id="getter-scaletype">**scaleType**</span><br><code>ScaleTypeCode</code> |  |
+| <span id="getter-colormidnorm">**colorMidNorm**</span><br><code>number</code> | Where `color.domainMid` sits on the normalized ramp, 0.5 unset, so a diverging scheme centres on it and equal distances from it take equal colors. |
 | <span id="getter-autoresolutionidx">**autoResolutionIdx**</span><br><code>number</code> | The binsize index auto mode picks: the largest at most 2 bp/px, about half a bin per pixel, else the finest. |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The count ramp, once there is a domain to span. The ends are where the ramp paints them, and a top below the largest loaded count reads `≥`. The title names the loaded binsize, so a figure carries it. |
 | <span id="getter-effectiveresolutionidx">**effectiveResolutionIdx**</span><br><code>number</code> | The index in effect after `resolutionBias`, clamped so a bias set at another zoom cannot index out of range. |
@@ -115,11 +110,13 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> | The static blocks plus the binsize, so a pan inside them redraws and only a block entering or a binsize step refetches. Undefined until the header lands. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>78 inherited getters from 10 models</summary>
+<summary>84 inherited getters from 11 models</summary>
 
 From [PointerHoverMixin](../pointerhovermixin): <span id="getter-hoveredfeature">[`hoveredFeature`](../pointerhovermixin#getter-hoveredfeature)</span>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="getter-heightmode">[`heightMode`](../trianglematrixmixin#getter-heightmode)</span>, <span id="getter-matrixtop">[`matrixTop`](../trianglematrixmixin#getter-matrixtop)</span>, <span id="getter-canvaswidth">[`canvasWidth`](../trianglematrixmixin#getter-canvaswidth)</span>, <span id="getter-viewtransform">[`viewTransform`](../trianglematrixmixin#getter-viewtransform)</span>, <span id="getter-matrixregions">[`matrixRegions`](../trianglematrixmixin#getter-matrixregions)</span>, <span id="getter-matrixheight">[`matrixHeight`](../trianglematrixmixin#getter-matrixheight)</span>, <span id="getter-matrixblocks">[`matrixBlocks`](../trianglematrixmixin#getter-matrixblocks)</span>, <span id="getter-yscalar">[`yScalar`](../trianglematrixmixin#getter-yscalar)</span>, <span id="getter-triangletransform">[`triangleTransform`](../trianglematrixmixin#getter-triangletransform)</span>, <span id="getter-triangleframe">[`triangleFrame`](../trianglematrixmixin#getter-triangleframe)</span>
+
+From [MatrixRampMixin](../matrixrampmixin): <span id="getter-paintedcolorfield">[`paintedColorField`](../matrixrampmixin#getter-paintedcolorfield)</span>, <span id="getter-colorencoding">[`colorEncoding`](../matrixrampmixin#getter-colorencoding)</span>, <span id="getter-colorscaletype">[`colorScaleType`](../matrixrampmixin#getter-colorscaletype)</span>, <span id="getter-colorscheme">[`colorScheme`](../matrixrampmixin#getter-colorscheme)</span>, <span id="getter-colorreverse">[`colorReverse`](../matrixrampmixin#getter-colorreverse)</span>, <span id="getter-colorramp">[`colorRamp`](../matrixrampmixin#getter-colorramp)</span>
 
 From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendright">[`legendRight`](../legendmixin#getter-legendright)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span>, <span id="getter-haslegendkey">[`hasLegendKey`](../legendmixin#getter-haslegendkey)</span>
 
@@ -144,7 +141,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { normalization: string; quantile: number; }</code> | The settings that refetch. The binsize is zoom-derived, so it is passed as a separate argument. |
+| <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { normalization: string; }</code> | The settings that refetch. The binsize is zoom-derived and the quantile reselects on the main thread, so both ride as call arguments. |
 | <span id="method-hittest">**hitTest**</span><br><code>(mouseX: number, mouseY: number) =&gt; HicContactItem &#124; undefined</code> | The contact under a display-px point, through the inverse of the transform the matrix was drawn with. |
 | <span id="method-hoverhitat">**hoverHitAt**</span><br><code>(mouseX: number, mouseY: number) =&gt; HicContactItem &#124; undefined</code> | No contact while the matrix loads: a global display replaces its whole frame, so the cells it holds are on their way out. |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
@@ -171,7 +168,6 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: HicRenderingBackend) =&gt; void</code> |  |
 | <span id="action-setlogscale">**setLogScale**</span><br><code>(log: boolean) =&gt; void</code> | The Log scale toggle: `color.scale` symlog, which keeps every nonzero count visible, or unset for `count`'s linear preset. |
 | <span id="action-setcolorfollowspercentile">**setColorFollowsPercentile**</span><br><code>(f: boolean) =&gt; void</code> |  |
-| <span id="action-setcolorscheme">**setColorScheme**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(scheme: "blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox"…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(scheme: "blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma" &#124; "purpleorange" &#124; "redblue" &#124; "redgreyblue" &#124; "reds" &#124; "redyellowblue" &#124; "viridis") =&gt; void</code></pre></dialog></span> | The scheme, with `reverse` back to unset so it follows the scheme. |
 | <span id="action-setselectednormalization">**setSelectedNormalization**</span><br><code>(f: string) =&gt; void</code> |  |
 | <span id="action-setfileinfo">**setFileInfo**</span><br><code>(read: AdapterRead&lt;HicFileInfo&gt;) =&gt; void</code> |  |
 | <span id="action-resetresolutionbias">**resetResolutionBias**</span><br><code>() =&gt; void</code> |  |
@@ -180,11 +176,13 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-stepresolution">**stepResolution**</span><br><code>(delta: number) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>37 inherited actions from 9 models</summary>
+<summary>38 inherited actions from 10 models</summary>
 
 From [PointerHoverMixin](../pointerhovermixin): <span id="action-setpointer">[`setPointer`](../pointerhovermixin#action-setpointer)</span>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="action-setrpcdata">[`setRpcData`](../trianglematrixmixin#action-setrpcdata)</span>, <span id="action-setheightmode">[`setHeightMode`](../trianglematrixmixin#action-setheightmode)</span>
+
+From [MatrixRampMixin](../matrixrampmixin): <span id="action-setcolorscheme">[`setColorScheme`](../matrixrampmixin#action-setcolorscheme)</span>
 
 From [LegendMixin](../legendmixin): <span id="action-setshowlegend">[`setShowLegend`](../legendmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../legendmixin#action-dismisslegendsection)</span>
 

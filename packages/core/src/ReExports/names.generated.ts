@@ -459,6 +459,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/legendHost': ['isLegendHost'],
   '@jbrowse/display-kit/LegendMixin': ['default', 'legendCheckboxItem', 'legendMixinSlots'],
   '@jbrowse/display-kit/MarkSvgLayer': ['default'],
+  '@jbrowse/display-kit/MatrixRampMixin': ['default'],
   '@jbrowse/display-kit/MultiRegionDisplayMixin': ['MAX_STORED_REGIONS', 'default'],
   '@jbrowse/display-kit/planRegionFetch': ['isBlockCovered', 'planRegionFetch', 'regionAssemblyMismatchMessage', 'retryOutcomeForPlan'],
   '@jbrowse/display-kit/PlotDialog': ['default'],

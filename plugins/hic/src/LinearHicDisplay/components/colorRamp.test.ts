@@ -134,7 +134,7 @@ describe('color ramps', () => {
     '%s legend samples the same source as the ramp',
     scheme => {
       const ramp = generateColorRamp(scheme)
-      const stops = legendStops(ramp)
+      const stops = legendStops(ramp, 0.5)
       expect(stops).toHaveLength(11)
       expect(stops[0]!.offset).toBe(0)
       expect(stops[10]!.offset).toBe(1)

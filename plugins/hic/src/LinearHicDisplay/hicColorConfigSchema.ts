@@ -1,9 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
+import { colorRampSlots } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
-import type { FieldPresets } from '@jbrowse/display-kit/colorConfigSchema'
+import type { MatrixFieldPresets } from '@jbrowse/display-kit/MatrixRampMixin'
 
 export const HIC_COLOR_SCALES = ['linear', 'symlog', 'log'] as const
 
@@ -12,12 +13,12 @@ export type HicColorScale = (typeof HIC_COLOR_SCALES)[number]
 /** A bin's contact count, the one thing Hi-C's color maps. */
 export const HIC_COLOR_FIELD = 'count'
 
-/** `count` runs along a linear ramp while `scale` is unset. */
-export const HIC_FIELD_PRESETS = {
-  [HIC_COLOR_FIELD]: { scale: 'linear' },
-} as const satisfies FieldPresets<HicColorScale>
-
 export const DEFAULT_HIC_COLOR_SCHEME: ColorSchemeName = 'juicebox'
+
+/** `count` runs along a linear juicebox ramp while `scale` and `scheme` are unset. */
+export const HIC_FIELD_PRESETS = {
+  [HIC_COLOR_FIELD]: { scale: 'linear', scheme: DEFAULT_HIC_COLOR_SCHEME },
+} as const satisfies MatrixFieldPresets<typeof HIC_COLOR_FIELD>
 
 /**
  * #config HicColor
@@ -54,11 +55,10 @@ export const hicColorConfigSchema = ConfigurationSchema(
      * #slot scheme
      */
     scheme: {
-      type: 'stringEnum',
+      type: 'maybeStringEnum',
       model: types.enumeration('ColorScheme', [...COLOR_SCHEMES]),
-      defaultValue: DEFAULT_HIC_COLOR_SCHEME,
       description:
-        'the named ramp counts run across; juicebox fades from transparent to red',
+        "the named ramp the field runs across; unset is the field's own, juicebox for count, which fades from transparent to red",
     },
     /**
      * #slot reverse
@@ -70,6 +70,13 @@ export const hicColorConfigSchema = ConfigurationSchema(
       description:
         "turns the scheme's ramp round; unset reverses a scheme dark at its low end",
     },
+    /**
+     * #slot domainMid
+     * The value the ramp's middle stop sits at, so a diverging scheme centres
+     * on it and equal distances from it take equal colors; unset, the stops
+     * spread evenly across the domain.
+     */
+    domainMid: colorRampSlots.domainMid,
     /**
      * #slot domainMin
      */

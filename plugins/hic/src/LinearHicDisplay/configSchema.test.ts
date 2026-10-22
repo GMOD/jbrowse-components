@@ -29,14 +29,13 @@ describe('color', () => {
     )
   })
 
-  test('unset, it is a linear juicebox ramp', () => {
+  test("unset, it is count's linear juicebox ramp", () => {
     const conf = make()
-    expect(readConfObject(conf, ['color', 'scheme'])).toBe(
-      DEFAULT_HIC_COLOR_SCHEME,
-    )
+    expect(readConfObject(conf, ['color', 'scheme'])).toBeUndefined()
     expect(readConfObject(conf, ['color', 'field'])).toBe('count')
     expect(readConfObject(conf, ['color', 'scale'])).toBeUndefined()
     expect(fieldScaleOf(HIC_FIELD_PRESETS, 'count')).toBe('linear')
+    expect(HIC_FIELD_PRESETS.count.scheme).toBe(DEFAULT_HIC_COLOR_SCHEME)
   })
 
   test.each([
@@ -56,15 +55,6 @@ describe('color', () => {
   test.each(COLOR_SCHEMES)('takes the shared %s scheme', scheme => {
     const conf = make({ color: { scheme } })
     expect(readConfObject(conf, ['color', 'scheme'])).toBe(scheme)
-  })
-
-  // The track menu's scheme radios write the default value rather than an
-  // `undefined` reset, which marks nothing edited only because stripDefault
-  // omits a slot equal to its default.
-  test('picking the default writes no config delta', () => {
-    const conf = make()
-    conf.color.setSlot('scheme', DEFAULT_HIC_COLOR_SCHEME)
-    expect(getSnapshot(conf)).not.toHaveProperty('color')
   })
 
   test('picking a non-default scheme does persist', () => {

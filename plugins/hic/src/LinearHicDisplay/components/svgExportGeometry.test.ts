@@ -35,6 +35,7 @@ function exportBin(yScalar: number) {
       domainMin: 0,
       domainMax: 1,
       scaleType: SCALE_TYPE_LINEAR,
+      midNorm: 0.5,
       colorRamp: rampLutOf({ scheme: 'fall' }),
       viewScale: 1,
       viewOffsetX: 0,

@@ -13484,8 +13484,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "the named ramp counts run across; juicebox fades from transparent to red.",
-              "default": "juicebox",
+              "description": "the named ramp the field runs across; unset is the field's own, juicebox for count, which fades from transparent to red.",
               "if": {
                 "type": "null"
               },
@@ -13513,6 +13512,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               },
               "else": {
                 "type": "boolean"
+              }
+            },
+            "domainMid": {
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
               }
             },
             "domainMin": {

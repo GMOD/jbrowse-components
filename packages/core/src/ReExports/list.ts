@@ -459,6 +459,7 @@ export default [
   '@jbrowse/display-kit/legendHost',
   '@jbrowse/display-kit/LegendMixin',
   '@jbrowse/display-kit/MarkSvgLayer',
+  '@jbrowse/display-kit/MatrixRampMixin',
   '@jbrowse/display-kit/MultiRegionDisplayMixin',
   '@jbrowse/display-kit/planRegionFetch',
   '@jbrowse/display-kit/PlotDialog',

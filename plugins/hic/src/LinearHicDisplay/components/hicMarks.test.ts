@@ -50,6 +50,7 @@ function makeRenderState(overrides?: Partial<HicRenderState>): HicRenderState {
     domainMin: 0,
     domainMax: 100,
     scaleType: SCALE_TYPE_LINEAR,
+    midNorm: 0.5,
     colorRamp: rampLutOf({ scheme: 'juicebox' }),
     viewScale: 1,
     viewOffsetX: 0,

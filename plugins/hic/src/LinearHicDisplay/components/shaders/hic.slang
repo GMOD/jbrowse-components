@@ -25,6 +25,7 @@ struct Uniforms {
   float  viewScale;
   float  viewOffsetX;
   int    scaleType;
+  float  rampMidNorm;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -52,8 +53,9 @@ public static const float MIN_VISIBLE_ALPHA = 0.01;
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  float t = normalizeScore(
-    fragIn.count, u.domainMin, u.domainMax, u.scaleType, 1.0);
+  float t = rampMidT(
+    normalizeScore(fragIn.count, u.domainMin, u.domainMax, u.scaleType, 1.0),
+    u.rampMidNorm);
   float4 c = rampColorPremultiplied(colorRamp, t);
   if (c.a < MIN_VISIBLE_ALPHA) {
     discard;
