@@ -184,7 +184,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     renderState: RenderStateOf,
     sec: SectionRenderOf,
   ): ConnectorMarkHit | undefined {
-    const feeds = model.connectorFeedsByGroup.get(section.groupKey)
+    const feeds = model.themed.connectorFeedsByGroup.get(section.groupKey)
     if (!feeds || feeds.size === 0) {
       return undefined
     }
@@ -207,7 +207,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     renderState: RenderStateOf,
     sec: SectionRenderOf,
   ): SashimiMarkHit | undefined {
-    const feeds = model.sashimiFeedsByGroup.get(section.groupKey)
+    const feeds = model.themed.sashimiFeedsByGroup.get(section.groupKey)
     if (!feeds || feeds.size === 0) {
       return undefined
     }
@@ -256,7 +256,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     const hover = resolveArcBandHover(
       canvasX,
       canvasY,
-      model.arcFeedsByGroup.get(section.groupKey) ?? new Map(),
+      model.themed.arcFeedsByGroup.get(section.groupKey) ?? new Map(),
       bandState,
       model.renderBlocks,
     )

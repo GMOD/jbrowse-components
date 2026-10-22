@@ -74,8 +74,8 @@ and a constant fill is one color in a chain too.
 
 **`buildLanes` (lanes.ts) is where a group key becomes data** — the raw map, the
 laid-out map, the sashimi sides, and the collapse/override state, per lane, in
-stacking order. The read-connection feeds join in `sourceSections`, after
-layout, because they are colored and the layout must not read the palette. A
+stacking order. The read-connection feeds join in `themed.sourceSections`,
+after layout, because they are colored and the layout must not read the palette. A
 `renderSections` entry IS its lane plus band geometry, so a consumer walking
 sections has every per-lane answer in hand and none of them are optional. Don't
 reach back into a by-key collection from a call site that already has a lane;

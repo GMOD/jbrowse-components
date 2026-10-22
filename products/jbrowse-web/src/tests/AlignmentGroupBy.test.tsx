@@ -103,7 +103,7 @@ test('group draws per-section paired-end arcs', async () => {
       expect(display.groupOrder.length).toBe(2)
       // every section carries its own arc feed, and arcs are actually produced.
       let totalArcs = 0
-      for (const section of display.sourceSections) {
+      for (const section of display.themed.sourceSections) {
         for (const feed of section.arcFeeds.values()) {
           totalArcs += feed.links.count + feed.dashed.count
         }
@@ -138,7 +138,7 @@ test('group draws per-section read-cloud lines', async () => {
       // cloud sets a shared, cross-group Y-domain (undefined only in arc mode).
       expect(display.arcsYDomainBp).toBeGreaterThan(0)
       let totalArcs = 0
-      for (const section of display.sourceSections) {
+      for (const section of display.themed.sourceSections) {
         for (const feed of section.arcFeeds.values()) {
           totalArcs += feed.links.count + feed.dashed.count
         }
@@ -183,10 +183,9 @@ test('group draws per-section sashimi arcs', async () => {
       expect(reverse!.junctions.length).toBeGreaterThan(0)
       // and each lane's marks are fed its own junctions
       const drawn = (key: string) =>
-        [...(display.sashimiFeedsByGroup.get(key)?.values() ?? [])].reduce(
-          (n, feed) => n + feed.up.count + feed.down.count,
-          0,
-        )
+        [
+          ...(display.themed.sashimiFeedsByGroup.get(key)?.values() ?? []),
+        ].reduce((n, feed) => n + feed.up.count + feed.down.count, 0)
       expect(drawn('1')).toBe(0)
       expect(drawn('-1')).toBe(reverse!.junctions.length)
     },

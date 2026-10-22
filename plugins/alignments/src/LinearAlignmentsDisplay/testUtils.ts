@@ -438,7 +438,7 @@ export function createTestAlignmentsDisplay() {
   const Session = baseSession
     .volatile(() => ({
       rpcManager: { call: () => Promise.resolve(makeEmptyAlignmentsResult()) },
-      // `colorPalette` derives from the session's, so without it the harness
+      // `themed` derives from the session's palette, so without it the harness
       // boots a display that throws the moment a test reads any getter
       // resolving a color — the cross-region arc geometry being the first.
       palette: resolvePalette(),

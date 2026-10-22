@@ -12,7 +12,7 @@ function renderTip(payload: TooltipPayload) {
       model={{
         mouseoverExtraInformation: payload,
         hoverCoverageBand: undefined,
-        colorPalette: {} as ColorPalette,
+        themed: { colors: {} as ColorPalette },
         showModifications: false,
       }}
       mouseState={{ x: 0, y: 0, clientX: 0, clientY: 0 }}

@@ -84,7 +84,7 @@ function createDisplay({ withRegions = false } = {}) {
     rpcManager: {
       call: jest.fn(() => Promise.resolve(makeEmptyAlignmentsResult())),
     },
-    // `colorPalette` (and so `renderState`) derives from the session theme
+    // `themed` (and so `renderState`) derives from the session theme
     theme: createJBrowseTheme(),
     palette: resolvePalette(),
     // the feature-details lookup asks for the region's sequence adapter, and
@@ -255,7 +255,7 @@ describe('colorKeyTitle', () => {
 describe('colorKeyDescending', () => {
   function binLabels(display: ReturnType<typeof createDisplay>) {
     return display
-      .legendItems(display.colorPalette)
+      .legendItems(display.themed.colors)
       .map(item => item.label)
       .filter(label => label.includes('MAPQ') || label.includes('tags.NM'))
   }
@@ -1621,7 +1621,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
   }
 
   const region0 = (display: ReturnType<typeof displayWithOneRead>) =>
-    display.sourceSections[0]!.laidOutPileupMap.get(0)!
+    display.themed.sourceSections[0]!.laidOutPileupMap.get(0)!
 
   test('a band resize leaves every laid-out payload identical', () => {
     const display = displayWithOneRead()

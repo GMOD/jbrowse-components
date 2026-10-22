@@ -62,7 +62,7 @@ import {
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
-import { autorun, compareStructural, observable } from 'mobx'
+import { autorun, compareStructural, computed, observable } from 'mobx'
 
 import { buildArcBandFeeds } from '../features/arcs/bandFeed.ts'
 import { collectArcs, resolveArcsByGroup } from '../features/arcs/compute.ts'
@@ -290,6 +290,18 @@ const NO_SASHIMI_FEEDS: ReadonlyMap<number, SashimiBandFeed> = new Map()
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
 const NO_ARC_FEEDS: ReadonlyMap<number, ArcBandFeed> = new Map()
 const NO_CONNECTOR_FEEDS: ReadonlyMap<number, ConnectorFeed> = new Map()
+
+/**
+ * The read palette in one theme and the marks colored from it, by group and
+ * displayed region, joined to the laid-out sections in stacking order.
+ */
+export interface ThemedSources {
+  colors: ColorPalette
+  arcFeedsByGroup: ReadonlyMap<string, ReadonlyMap<number, ArcBandFeed>>
+  sashimiFeedsByGroup: ReadonlyMap<string, ReadonlyMap<number, SashimiBandFeed>>
+  connectorFeedsByGroup: ReadonlyMap<string, ReadonlyMap<number, ConnectorFeed>>
+  sourceSections: SectionSource[]
+}
 
 /**
  * What a right-click on the pileup resolved: the anchor, the hit and the read
@@ -938,34 +950,11 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Derived from the session theme, so headless SVG export and RPC have
-           * it without a mounted component.
-           */
-          get colorPalette(): ColorPalette {
-            return this.colorPaletteIn(getPaletteHost(self).palette)
-          },
-
-          /**
-           * #getter
            * `color.labels` against the read buckets and values it names, which
            * every key row, hover and connection curve names a bucket by.
            */
           get declaredReadLabels(): DeclaredReadLabels {
             return declaredReadLabels(self.colorEncoding, self.colorLabels)
-          },
-
-          /**
-           * #method
-           * The read palette over `theme`, with the category colors
-           * `color` sets. SVG export passes the theme it renders with.
-           */
-          colorPaletteIn(theme: JBrowsePalette): ColorPalette {
-            return buildColorPaletteFromPalette(theme, {
-              declared: writtenReadCategoryColors(
-                self.colorSetting.value,
-                self.colorEncoding,
-              ),
-            })
           },
 
           /**
@@ -1077,8 +1066,8 @@ export default function stateModelFactory(
            * #getter
            * Per group, which junctions draw in the strip below coverage (by
            * `junctionKey`): the one sashimi side decision, read by
-           * `sashimiDownArcLanes` to reserve the strip and `sashimiFeedsByGroup`
-           * to place each arc. refNames come from `loadedRegions`, keeping this
+           * `sashimiDownArcLanes` to reserve the strip and `themed`'s sashimi
+           * feeds to place each arc. refNames come from `loadedRegions`, keeping this
            * a tier-1 (fetch) derivation. A region not yet loaded gets a unique
            * key, so regions not proven to share a chromosome never pool onto
            * one bp line.
@@ -1744,37 +1733,6 @@ export default function stateModelFactory(
           get crossRegionArcsByGroup() {
             return this.arcsResult.crossRegionByGroup
           },
-
-          /**
-           * #getter
-           * The band's marks' input, per group and region
-           * (`buildArcBandFeeds`).
-           */
-          get arcFeedsByGroup() {
-            return this.arcFeedsByGroupIn(this.colorPalette)
-          },
-
-          /**
-           * #method
-           * `arcFeedsByGroup` colored from `colors`, which the SVG export
-           * passes to draw in the export's theme.
-           */
-          arcFeedsByGroupIn(colors: ColorPalette) {
-            const { byGroup, crossRegionByGroup } = this.arcsResult
-            const displayed = this.displayedRegionInfos
-            return new Map(
-              [...byGroup].map(([key, byRegion]) => [
-                key,
-                buildArcBandFeeds({
-                  byRegion,
-                  crossRegion: crossRegionByGroup.get(key) ?? [],
-                  displayed,
-                  colors,
-                  colorField: self.readConnectionsColorField,
-                }),
-              ]),
-            )
-          },
         }
       })
       .views(self => ({
@@ -2346,146 +2304,6 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The sashimi marks' input, per group and region
-           * (`buildSashimiBandFeeds`). In bp, so a pan or zoom rebuilds
-           * nothing.
-           */
-          get sashimiFeedsByGroup() {
-            return this.sashimiFeedsByGroupIn(self.colorPalette)
-          },
-
-          /**
-           * #getter
-           * The connector mark's input, per group and region
-           * (`buildConnectorFeeds`): the pairs `bezierPairSections` places, in
-           * bp and rows, so a pan or zoom rebuilds nothing.
-           */
-          get connectorFeedsByGroup() {
-            return this.connectorFeedsByGroupIn(self.colorPalette)
-          },
-
-          /**
-           * #method
-           * `connectorFeedsByGroup` colored from `colors`, for the SVG export's
-           * theme.
-           */
-          connectorFeedsByGroupIn(colors: ColorPalette) {
-            const { displayedRegions } = self.view
-            return new Map(
-              self.bezierPairSections.map(sec => [
-                sec.groupKey,
-                buildConnectorFeeds({
-                  pairs: sec.pairs,
-                  displayedRegions,
-                  featureHeight: self.featureHeight,
-                  featureSpacing: self.featureSpacing,
-                  pileupHeight: sec.pileupHeight,
-                  colors,
-                  colorField: self.readConnectionsColorField,
-                  labels: self.declaredReadLabels.categories,
-                }),
-              ]),
-            )
-          },
-
-          /**
-           * #method
-           * How this display's connectors paint a connection between two
-           * reads, in `theme`. The breakpoint split view draws its curves
-           * between panels through it, so they agree with the arcs and
-           * connectors inside each panel.
-           */
-          connectorStylerIn(theme: JBrowsePalette): ConnectorStyler {
-            return connectorStyler({
-              colors: self.colorPaletteIn(theme),
-              colorField: self.readConnectionsColorField,
-              labels: self.declaredReadLabels.categories,
-            })
-          },
-
-          /**
-           * #method
-           * `sashimiFeedsByGroup` colored from `colors`, which the SVG export
-           * passes to draw in the export's theme.
-           */
-          sashimiFeedsByGroupIn(colors: ColorPalette) {
-            if (!this.drawsSashimi) {
-              return NO_SASHIMI_FEEDS_BY_GROUP
-            }
-            const displayed = self.displayedRegionInfos
-            return new Map(
-              this.sashimiJunctionSections.map(sec => [
-                sec.groupKey,
-                buildSashimiBandFeeds({
-                  junctions: sec.junctions,
-                  downJunctionKeys: sec.sashimiDownKeys,
-                  displayed,
-                  colors,
-                }),
-              ]),
-            )
-          },
-
-          /**
-           * #getter
-           * Per-section upload input in stacking order: each section's laid-out
-           * region map with its arc and sashimi feeds, keyed by group. Both renderers pair uploaded
-           * section `s` with drawn section `s` by INDEX, so this list and
-           * `renderState.sections` both derive from `renderSections` and share
-           * its length and order.
-           */
-          get sourceSections(): SectionSource[] {
-            return this.sourceSectionsWith(
-              self.arcFeedsByGroup,
-              this.sashimiFeedsByGroup,
-              this.connectorFeedsByGroup,
-            )
-          },
-
-          /**
-           * #method
-           * `sourceSections` with the connections colored from `colors`, for
-           * the SVG export's theme.
-           */
-          sourceSectionsIn(colors: ColorPalette): SectionSource[] {
-            return this.sourceSectionsWith(
-              self.arcFeedsByGroupIn(colors),
-              this.sashimiFeedsByGroupIn(colors),
-              this.connectorFeedsByGroupIn(colors),
-            )
-          },
-
-          /**
-           * #method
-           * The laid-out sections with each lane's read connections and splice
-           * junctions, which join here rather than on the lane: both are colored, and the
-           * layout must not read the palette.
-           */
-          sourceSectionsWith(
-            feeds: ReadonlyMap<string, ReadonlyMap<number, ArcBandFeed>>,
-            sashimiFeeds: ReadonlyMap<
-              string,
-              ReadonlyMap<number, SashimiBandFeed>
-            >,
-            connectorFeeds: ReadonlyMap<
-              string,
-              ReadonlyMap<number, ConnectorFeed>
-            >,
-          ): SectionSource[] {
-            return self.renderSections.map(
-              ({ groupKey, laidOutPileupMap }) => ({
-                groupKey,
-                laidOutPileupMap,
-                arcFeeds: feeds.get(groupKey) ?? NO_ARC_FEEDS,
-                sashimiFeeds: sashimiFeeds.get(groupKey) ?? NO_SASHIMI_FEEDS,
-                connectorFeeds:
-                  connectorFeeds.get(groupKey) ?? NO_CONNECTOR_FEEDS,
-              }),
-            )
-          },
-
-          /**
-           * #getter
            * The junction strands drawn, one key row each. Read off the merged
            * junctions rather than the projected arcs, so a pan does not rebuild
            * the legend.
@@ -2521,6 +2339,132 @@ export default function stateModelFactory(
                 )
               : []
           },
+        }
+      })
+      .views(self => {
+        function themedIn(theme: JBrowsePalette): ThemedSources {
+          const colors = computed(() =>
+            buildColorPaletteFromPalette(theme, {
+              declared: writtenReadCategoryColors(
+                self.colorSetting.value,
+                self.colorEncoding,
+              ),
+            }),
+          )
+          const arcFeedsByGroup = computed(() => {
+            const { byGroup, crossRegionByGroup } = self.arcsResult
+            const displayed = self.displayedRegionInfos
+            return new Map(
+              [...byGroup].map(([key, byRegion]) => [
+                key,
+                buildArcBandFeeds({
+                  byRegion,
+                  crossRegion: crossRegionByGroup.get(key) ?? [],
+                  displayed,
+                  colors: colors.get(),
+                  colorField: self.readConnectionsColorField,
+                }),
+              ]),
+            )
+          })
+          const sashimiFeedsByGroup = computed(() => {
+            if (!self.drawsSashimi) {
+              return NO_SASHIMI_FEEDS_BY_GROUP
+            }
+            const displayed = self.displayedRegionInfos
+            return new Map(
+              self.sashimiJunctionSections.map(sec => [
+                sec.groupKey,
+                buildSashimiBandFeeds({
+                  junctions: sec.junctions,
+                  downJunctionKeys: sec.sashimiDownKeys,
+                  displayed,
+                  colors: colors.get(),
+                }),
+              ]),
+            )
+          })
+          const connectorFeedsByGroup = computed(() => {
+            const { displayedRegions } = self.view
+            return new Map(
+              self.bezierPairSections.map(sec => [
+                sec.groupKey,
+                buildConnectorFeeds({
+                  pairs: sec.pairs,
+                  displayedRegions,
+                  featureHeight: self.featureHeight,
+                  featureSpacing: self.featureSpacing,
+                  pileupHeight: sec.pileupHeight,
+                  colors: colors.get(),
+                  colorField: self.readConnectionsColorField,
+                  labels: self.declaredReadLabels.categories,
+                }),
+              ]),
+            )
+          })
+          const sourceSections = computed(() =>
+            self.renderSections.map(({ groupKey, laidOutPileupMap }) => ({
+              groupKey,
+              laidOutPileupMap,
+              arcFeeds: arcFeedsByGroup.get().get(groupKey) ?? NO_ARC_FEEDS,
+              sashimiFeeds:
+                sashimiFeedsByGroup.get().get(groupKey) ?? NO_SASHIMI_FEEDS,
+              connectorFeeds:
+                connectorFeedsByGroup.get().get(groupKey) ?? NO_CONNECTOR_FEEDS,
+            })),
+          )
+          return {
+            get colors() {
+              return colors.get()
+            },
+            get arcFeedsByGroup() {
+              return arcFeedsByGroup.get()
+            },
+            get sashimiFeedsByGroup() {
+              return sashimiFeedsByGroup.get()
+            },
+            get connectorFeedsByGroup() {
+              return connectorFeedsByGroup.get()
+            },
+            get sourceSections() {
+              return sourceSections.get()
+            },
+          }
+        }
+        return {
+          /**
+           * #getter
+           * The read colors in the session theme and the marks colored from
+           * them (`themedIn`).
+           */
+          get themed(): ThemedSources {
+            return themedIn(getPaletteHost(self).palette)
+          },
+
+          /**
+           * #method
+           * The read palette over `theme`, with the category colors `color`
+           * sets, and the read connections and splice junctions colored from
+           * it, each joined to its laid-out section. The SVG export passes the
+           * theme it renders with. Each member is memoized on its own, so a
+           * pan or a relayout rebuilds no feed.
+           */
+          themedIn,
+
+          /**
+           * #method
+           * How this display's connectors paint a connection between two
+           * reads, in `theme`. The breakpoint split view draws its curves
+           * between panels through it, so they agree with the arcs and
+           * connectors inside each panel.
+           */
+          connectorStylerIn(theme: JBrowsePalette): ConnectorStyler {
+            return connectorStyler({
+              colors: themedIn(theme).colors,
+              colorField: self.readConnectionsColorField,
+              labels: self.declaredReadLabels.categories,
+            })
+          },
 
           /**
            * #getter
@@ -2539,7 +2483,7 @@ export default function stateModelFactory(
            * not be the session's.
            */
           colorScalesIn(theme: JBrowsePalette): ColorScale[] {
-            const palette = self.colorPaletteIn(theme)
+            const palette = themedIn(theme).colors
             return getAlignmentsColorScales({
               ramps: colorRampScales({
                 colorBy: self.colorBy,
@@ -2554,7 +2498,7 @@ export default function stateModelFactory(
               arcLegendItems: () => self.arcLegendItems(palette),
               connectionLegendItems: () => self.connectionLegendItems(palette),
               sashimiLegendItems: sashimiLegendItems(
-                this.sashimiLegendStrands,
+                self.sashimiLegendStrands,
                 theme.alignmentFill,
               ),
             })
@@ -2592,7 +2536,7 @@ export default function stateModelFactory(
          * #getter
          */
         get renderState() {
-          const palette = self.colorPalette
+          const palette = self.themed.colors
           return {
             scrollTop: self.scrollTop,
             featureHeight: self.featureHeight,
@@ -2668,7 +2612,7 @@ export default function stateModelFactory(
           return self.showSashimiCounts && self.drawsSashimi
             ? sashimiLabels(
                 this.renderState,
-                self.sourceSections.map(sec => sec.sashimiFeeds),
+                self.themed.sourceSections.map(sec => sec.sashimiFeeds),
               )
             : NO_SASHIMI_LABELS
         },
@@ -2689,7 +2633,7 @@ export default function stateModelFactory(
             const feeds =
               groupKey === undefined
                 ? undefined
-                : self.sashimiFeedsByGroup.get(groupKey)
+                : self.themed.sashimiFeedsByGroup.get(groupKey)
             const highlight =
               feeds && groupKey !== undefined
                 ? selectedSashimiHighlight(
@@ -2723,7 +2667,7 @@ export default function stateModelFactory(
             const feeds =
               groupKey === undefined
                 ? undefined
-                : self.connectorFeedsByGroup.get(groupKey)
+                : self.themed.connectorFeedsByGroup.get(groupKey)
             const highlight = feeds
               ? selectedConnectorHighlight(
                   selected,
@@ -3160,7 +3104,7 @@ export default function stateModelFactory(
               SolidColorDialog,
               {
                 label: 'Read color',
-                color: written ?? rgb255(self.colorPalette.colorPairLR),
+                color: written ?? rgb255(self.themed.colors.colorPairLR),
                 written,
                 onChange: (color: string) => {
                   self.setColorValue(color)
@@ -3491,7 +3435,7 @@ export default function stateModelFactory(
             // (GPU_DISPLAY_LIFECYCLE.md, the whole-map sync).
             cells: () =>
               oneCell('sources', {
-                sections: self.sourceSections,
+                sections: self.themed.sourceSections,
               }),
             // `hasRegionData` is the per-REGION store, not a group's laid-out
             // map: a grouped fetch over a region with no reads partitions to

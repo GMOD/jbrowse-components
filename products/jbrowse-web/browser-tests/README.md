@@ -319,7 +319,9 @@ import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 
 interface Display extends Pick<LinearAlignmentsDisplayModel, 'setSort'> {
   // read-back shapes stay hand-written and narrow — it is the calls that rot
-  sourceSections: { laidOutPileupMap: ReadonlyMap<number, /* … */ unknown> }[]
+  themed: {
+    sourceSections: { laidOutPileupMap: ReadonlyMap<number, /* … */ unknown> }[]
+  }
 }
 ```
 

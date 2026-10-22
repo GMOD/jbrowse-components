@@ -81,14 +81,14 @@ test('a pan re-merges nothing and rebuilds no feed', () => {
   const labels = identityCounter<unknown>()
   const stop = autorun(() => {
     merges.note(display.sashimiJunctionSections)
-    feeds.note(display.sashimiFeedsByGroup)
+    feeds.note(display.themed.sashimiFeedsByGroup)
     labels.note(display.sashimiLabels)
   })
 
   for (let i = 1; i <= FRAMES; i++) {
     view.setNewView(10, i * 7)
     merges.note(display.sashimiJunctionSections)
-    feeds.note(display.sashimiFeedsByGroup)
+    feeds.note(display.themed.sashimiFeedsByGroup)
     labels.note(display.sashimiLabels)
   }
   stop()
@@ -102,7 +102,7 @@ test('a pan re-merges nothing and rebuilds no feed', () => {
 
   // …and the feed is carrying something, so the expectations above cannot
   // pass by the pipeline being empty or the pan being a no-op.
-  expect(display.sashimiFeedsByGroup.get('')!.get(0)!.up.count).toBe(2)
+  expect(display.themed.sashimiFeedsByGroup.get('')!.get(0)!.up.count).toBe(2)
   expect(display.sashimiJunctionSections[0]!.junctions).toHaveLength(2)
 })
 
@@ -116,12 +116,12 @@ test('with count labels on, a pan re-projects the labels alone', () => {
   const feeds = identityCounter<unknown>()
   const labels = identityCounter<unknown>()
   const stop = autorun(() => {
-    feeds.note(display.sashimiFeedsByGroup)
+    feeds.note(display.themed.sashimiFeedsByGroup)
     labels.note(display.sashimiLabels)
   })
   for (let i = 1; i <= FRAMES; i++) {
     view.setNewView(10, i * 7)
-    feeds.note(display.sashimiFeedsByGroup)
+    feeds.note(display.themed.sashimiFeedsByGroup)
     labels.note(display.sashimiLabels)
   }
   stop()
@@ -179,11 +179,11 @@ test('read connections on: a pan leaves the band feeds the same object', () => {
 
   const feeds = identityCounter<unknown>()
   const stop = autorun(() => {
-    feeds.note(display.arcFeedsByGroup)
+    feeds.note(display.themed.arcFeedsByGroup)
   })
   for (let i = 1; i <= FRAMES; i++) {
     view.setNewView(10, i * 7)
-    feeds.note(display.arcFeedsByGroup)
+    feeds.note(display.themed.arcFeedsByGroup)
   }
   stop()
 

@@ -63,13 +63,10 @@ function AlignmentsSvgBody({
   }))
   // The on-screen render state and labels, which already carry the scroll and
   // the display's height; only the width and the export theme's colors differ.
-  const state = {
-    ...model.renderState,
-    canvasWidth,
-    colors: model.colorPaletteIn(palette),
-  }
+  const themed = model.themedIn(palette)
+  const state = { ...model.renderState, canvasWidth, colors: themed.colors }
   const labels = model.visibleLabels
-  const sections = model.sourceSectionsIn(state.colors)
+  const sections = themed.sourceSections
   const sashimiCounts = model.showSashimiCounts
     ? sashimiLabels(
         state,

@@ -87,7 +87,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
   model: {
     mouseoverExtraInformation: TooltipPayload | undefined
     hoverCoverageBand: { topOffset: number; coverageHeight: number } | undefined
-    colorPalette: ColorPalette
+    themed: { colors: ColorPalette }
     showModifications: boolean
   }
   mouseState: MouseState | undefined
@@ -95,7 +95,6 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
   const {
     mouseoverExtraInformation: tooltipData,
     hoverCoverageBand,
-    colorPalette,
     showModifications,
   } = model
   const { classes } = useStyles()
@@ -143,7 +142,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
       // draws, so a row's swatch is the color of the bar segment above the
       // cursor by construction rather than by a second spelling of the palette.
       const baseColors = buildBaseCssMap({
-        colors: colorPalette,
+        colors: model.themed.colors,
         showModifications,
       })
       return (

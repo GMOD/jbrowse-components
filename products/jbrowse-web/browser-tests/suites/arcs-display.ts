@@ -30,7 +30,7 @@ interface LiveModel {
       tracks: {
         displays: Pick<
           LinearAlignmentsDisplayModel,
-          'arcsByGroup' | 'crossRegionArcsByGroup' | 'arcFeedsByGroup'
+          'arcsByGroup' | 'crossRegionArcsByGroup' | 'themed'
         >[]
       }[]
     }[]
@@ -106,7 +106,7 @@ async function arcCounts(page: Page) {
       }
     }
     let drawnAcross = 0
-    for (const byRegion of display.arcFeedsByGroup.values()) {
+    for (const byRegion of display.themed.arcFeedsByGroup.values()) {
       for (const [region, feed] of byRegion) {
         for (const lane of [feed.links, feed.dashed]) {
           for (let i = 0; i < lane.count; i++) {

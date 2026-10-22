@@ -71,7 +71,7 @@ test('a cross-region arc is one connection, filed under its first foot and place
     }
   }
   expect(display.crossRegionArcsByGroup.get('')).toHaveLength(1)
-  const feeds = display.sourceSections[0]!.arcFeeds
+  const feeds = display.themed.sourceSections[0]!.arcFeeds
   expect(feeds.get(0)!.links.count).toBe(1)
   expect(feeds.get(0)!.links.x2Region[0]).toBe(1)
   expect(feeds.get(1)?.links.count ?? 0).toBe(0)
@@ -99,7 +99,7 @@ test('and it draws, with both feet on their own region', () => {
   const recorder = recordPath()
   ARC_LINK_MARKS[1]!.paintBlock(
     recorder.ctx,
-    display.sourceSections[0]!.arcFeeds.get(0)!,
+    display.themed.sourceSections[0]!.arcFeeds.get(0)!,
     canvasWideBlock(0, renderState.canvasWidth),
     { ...renderState, arcBand: renderState.sections[0]!.arcBand! },
   )
@@ -133,7 +133,9 @@ test('a single-region view has none of this', () => {
   )
   expect(display.crossRegionArcsByGroup.get('')).toHaveLength(0)
   expect(display.arcsByGroup.get('')!.get(0)!.numArcs).toBe(1)
-  expect(display.sourceSections[0]!.arcFeeds.get(0)!.links.x2Region[0]).toBe(0)
+  expect(
+    display.themed.sourceSections[0]!.arcFeeds.get(0)!.links.x2Region[0],
+  ).toBe(0)
   expect(display.renderSections[0]!.arcBandHeight).toBeGreaterThan(0)
 })
 
@@ -196,7 +198,7 @@ function clipRecordingCtx() {
 
 test('an arc whose mate no window shows runs off its own block, clipped, not as a stem', () => {
   const display = straddlingDisplay()
-  const feed = display.sourceSections[0]!.arcFeeds.get(0)!
+  const feed = display.themed.sourceSections[0]!.arcFeeds.get(0)!
   expect(feed.ticks.count).toBe(0)
   expect(feed.links.count).toBe(0)
   expect(feed.clippedLinks.count).toBe(1)
@@ -206,7 +208,7 @@ test('an arc whose mate no window shows runs off its own block, clipped, not as 
   drawAlignmentsToCtx(
     ctx,
     {
-      sections: display.sourceSections,
+      sections: display.themed.sourceSections,
     },
     display.renderBlocks,
     display.renderState,

@@ -28,13 +28,15 @@ interface Display extends Pick<
   LinearAlignmentsDisplayModel,
   'colorByField' | 'setSort'
 > {
-  // One entry per stacked group; ungrouped (this suite) is the single section.
-  sourceSections: {
-    laidOutPileupMap: ReadonlyMap<
-      number,
-      { readKeys: ArrayLike<number> | string[]; readYs: ArrayLike<number> }
-    >
-  }[]
+  themed: {
+    // One entry per stacked group; ungrouped (this suite) is the single section.
+    sourceSections: {
+      laidOutPileupMap: ReadonlyMap<
+        number,
+        { readKeys: ArrayLike<number> | string[]; readYs: ArrayLike<number> }
+      >
+    }[]
+  }
 }
 interface LiveModel {
   JBrowseSession: {
@@ -88,7 +90,9 @@ async function assertSpanningReadsShareRows(page: Page) {
     const display = JBrowseSession.views[0]!.tracks[0]!.displays[0]!
     // The one (ungrouped) section's per-region layout, read the way the
     // renderers read it — the sole source of laid-out rows on the model.
-    const byRegion = [...display.sourceSections[0]!.laidOutPileupMap.values()]
+    const byRegion = [
+      ...display.themed.sourceSections[0]!.laidOutPileupMap.values(),
+    ]
     // `readKeys`, not id strings: the worker ships the record id and the string
     // is built only where one escapes (alignments-core/src/readIdentity.ts). Identity across
     // regions is exactly what a key is, so this reads the same array the layout

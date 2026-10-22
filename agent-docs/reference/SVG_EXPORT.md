@@ -40,7 +40,14 @@ same framed state.
 the export dialog picks a theme the session need not be showing. A model input
 built from the theme gets a twin taking the palette (`renderStateIn`,
 `colorPaletteIn`, `rowsEncodePropsIn`), and the body calls that. Patching a
-palette into the getter's output re-copies model logic into the export. The
+palette into the getter's output re-copies model logic into the export.
+
+**Several inputs off one palette share one twin.** The alignments display's
+`themedIn(theme)` holds its palette, its read-connection and junction feeds
+and the sections joining them, each member memoized on its own; `themed` is
+the session theme's.
+
+The
 exported key draws `legendSpecIn(palette)`, so a display whose key takes
 colors from the theme overrides `LegendMixin`'s `colorScalesIn` (alignments,
 MAF); the default is `colorScales`. A ring's exports run `plotOnly`, so the

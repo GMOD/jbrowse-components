@@ -127,7 +127,7 @@ function feetIn(d: string) {
 // each foot as the SIGN it points in, left and right by where it starts, since
 // that is the whole content of the mark.
 function paintedArc(display: ReturnType<typeof interchromDisplay>) {
-  const feeds = display.sourceSections[0]!.arcFeeds
+  const feeds = display.themed.sourceSections[0]!.arcFeeds
   const arcCount = (feed: ArcBandFeed) =>
     feed.links.count + feed.crossLinks.count
   const owners = [...feeds].filter(([, feed]) => arcCount(feed) > 0)
@@ -306,7 +306,7 @@ test('the hover highlight traces the feet too', () => {
   const hover = resolveArcBandHover(
     feetStarts(display)[0]! - 8,
     footY,
-    display.sourceSections[0]!.arcFeeds,
+    display.themed.sourceSections[0]!.arcFeeds,
     { ...renderState, arcBand },
     display.renderBlocks,
   )
