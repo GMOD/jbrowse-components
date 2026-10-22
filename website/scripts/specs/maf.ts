@@ -31,7 +31,7 @@ export const HG38_NCBI_GENE_TRACK = {
 // mafviewer plugin, which shadows the built-in MAF display.
 export const CE_MAF = 'test_data/ce_maf.json'
 
-// Adds an `annotationAdapter` built from UCSC multiz26wayFrames, which
+// Adds an `framesAdapter` built from UCSC multiz26wayFrames, which
 // drives the CDS reading-frame overlay and codon view.
 export const CE_MAF_FRAMES = 'test_data/ce_maf_frames.json'
 

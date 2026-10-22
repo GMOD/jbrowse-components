@@ -27,8 +27,8 @@ interface MafFetchSelf extends FetchEachRegionModel {
   adapterConfig: Record<string, unknown>
   rpcProps: () => { rowFocus: string[] | undefined }
   // what the summary tier reads the frames for; the detail tier always does
-  annotationsActive: boolean
-  annotationAdapterConfig: Record<string, unknown> | undefined
+  framesActive: boolean
+  framesAdapterConfig: Record<string, unknown> | undefined
   resolvedByteLimit: () => number | undefined
   setFramesGateBlocked: (blocked: boolean) => void
   setSamples: (arg: SampleSet) => void
@@ -149,14 +149,14 @@ async function callMafRegions<R extends SampleSet>(
   ) => Promise<R | RegionTooLargeResult>,
 ): Promise<MafBatch<R> | RegionTooLargeResult> {
   // #region rawFetchRegions
-  // The CDS-frame annotation overlay (when configured) fetches in the same
+  // The CDS-frame frames strip (when configured) fetches in the same
   // signal-guarded pass as the main data so the two share staleness
   // book-keeping; the two RPCs run concurrently.
   //
   // Concurrently, and each is itself a per-region fan-out, so they get a
   // slot apiece rather than the shared callback: two fan-outs writing one
   // status field directly is last-writer-wins between them, and the
-  // annotation branch's rows are a small fraction of the alignment's.
+  // frames branch's rows are a small fraction of the alignment's.
   const slot = createStatusFanOut(ctx.statusCallback)
   const scope = refusalScope(ctx)
   const [results, frames] = await Promise.all([
@@ -167,7 +167,7 @@ async function callMafRegions<R extends SampleSet>(
         scope.guard(() => call(region, regionCtx, displayedRegionIndex)),
     ).then(landed),
     withFrames
-      ? fetchAnnotationData(self, regions, {
+      ? fetchFramesData(self, regions, {
           ...scope.ctx,
           statusCallback: slot(),
         })
@@ -217,12 +217,12 @@ const NO_FRAMES = Promise.resolve({
 
 /**
  * Fetch per-species CDS frame rows (UCSC `mafFrames`) for the buffered regions
- * from the MAF adapter's `annotationAdapter`, in parallel with the main fetch
+ * from the MAF adapter's `framesAdapter`, in parallel with the main fetch
  * and under its signal. The detail tier always reads them; the summary tier
  * reads them while the strip is on. They land under the tier's own commit and
  * staleness guard.
  *
- * Gated by the `byteLimit` the RPC carries: `executeMafAnnotationData` measures
+ * Gated by the `byteLimit` the RPC carries: `executeMafFramesData` measures
  * the frames file before it downloads.
  *
  * Fails soft: a frames-file error is logged, not thrown. A refusal is reported
@@ -230,13 +230,13 @@ const NO_FRAMES = Promise.resolve({
  * region refuses the overlay, since a strip drawn over the regions that fit
  * reads as the full exon set.
  */
-async function fetchAnnotationData(
+async function fetchFramesData(
   self: MafFetchSelf,
   needed: IndexedRegion[],
   ctx: FetchContext,
 ): Promise<{ byIndex: Map<number, MafFrameRecord[]>; refused: boolean }> {
   const byIndex = new Map<number, MafFrameRecord[]>()
-  const adapterConfig = self.annotationAdapterConfig
+  const adapterConfig = self.framesAdapterConfig
   if (!adapterConfig) {
     return { byIndex, refused: false }
   }
@@ -245,7 +245,7 @@ async function fetchAnnotationData(
     const results = landed(
       await callEachRegion(needed, scope.ctx, (region, regionCtx) =>
         scope.guard(() =>
-          regionCtx.callRpc('LinearMafGetAnnotationData', {
+          regionCtx.callRpc('LinearMafGetFramesData', {
             adapterConfig,
             regions: [region],
             byteLimit: self.resolvedByteLimit(),
@@ -262,7 +262,7 @@ async function fetchAnnotationData(
   } catch (e) {
     // an abort here is the main batch's refusal cutting the overlay short
     if (!ctx.isStale() && !isAbortException(e)) {
-      console.error('MAF CDS-frame annotation fetch failed', e)
+      console.error('MAF CDS-frame fetch failed', e)
     }
   }
   return { byIndex, refused: false }
@@ -329,7 +329,7 @@ export async function fetchMafSummaryData(
     self,
     regions,
     ctx,
-    self.annotationsActive,
+    self.framesActive,
     (region, regionCtx) =>
       regionCtx.callRpc('LinearMafGetSummaryData', {
         ...rpcArgs(self),

@@ -36,7 +36,7 @@ export const mafConservationConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot
-     * `codon` reads frames off the MAF adapter's `annotationAdapter`.
+     * `codon` reads frames off the MAF adapter's `framesAdapter`.
      */
     unit: {
       type: 'stringEnum',

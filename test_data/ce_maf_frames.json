@@ -42,7 +42,7 @@
             "locationType": "UriLocation"
           }
         },
-        "annotationAdapter": {
+        "framesAdapter": {
           "type": "BigBedAdapter",
           "bigBedLocation": {
             "uri": "ce11.26way.chrI_subset.frames.bb",

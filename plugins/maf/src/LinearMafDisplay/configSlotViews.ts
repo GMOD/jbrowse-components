@@ -36,18 +36,6 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #getter
      */
-    get showAllLetters(): boolean {
-      return getConf(self, ['alignments', 'showAllLetters'])
-    },
-    /**
-     * #getter
-     */
-    get showAsUpperCase(): boolean {
-      return getConf(self, ['alignments', 'showAsUpperCase'])
-    },
-    /**
-     * #getter
-     */
     get showCoverage(): boolean {
       return getConf(self, ['coverage', 'show'])
     },
@@ -176,26 +164,20 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #getter
      */
-    get rowIdentityAutoZoom(): boolean {
-      return getConf(self, 'rowIdentityAutoZoom')
-    },
-    /**
-     * #getter
-     */
-    get showAnnotations(): boolean {
-      return getConf(self, ['alignments', 'showAnnotations'])
+    get showFrames(): boolean {
+      return getConf(self, ['alignments', 'frames', 'show'])
     },
     /**
      * #getter
      */
     get showInversions(): boolean {
-      return getConf(self, ['alignments', 'showInversions'])
+      return getConf(self, ['alignments', 'inversions', 'show'])
     },
     /**
      * #getter
      */
     get showReferenceRow(): boolean {
-      return getConf(self, 'showReferenceRow')
+      return getConf(self, ['alignments', 'reference', 'show'])
     },
   }
 }
@@ -207,12 +189,6 @@ export function configSlotActions(self: ConfigSlotSelf) {
      */
     setRowProportion(n: number) {
       setConf(self, ['alignments', 'rowProportion'], n)
-    },
-    /**
-     * #action
-     */
-    setShowAllLetters(f: boolean) {
-      setConf(self, ['alignments', 'showAllLetters'], f)
     },
     /**
      * #action
@@ -229,12 +205,6 @@ export function configSlotActions(self: ConfigSlotSelf) {
           MAF_FIELD_PRESETS.identity.scheme,
         ),
       )
-    },
-    /**
-     * #action
-     */
-    setShowAsUpperCase(arg: boolean) {
-      setConf(self, ['alignments', 'showAsUpperCase'], arg)
     },
     /**
      * #action
@@ -281,26 +251,20 @@ export function configSlotActions(self: ConfigSlotSelf) {
     /**
      * #action
      */
-    setRowIdentityAutoZoom(arg: boolean) {
-      setConf(self, 'rowIdentityAutoZoom', arg)
-    },
-    /**
-     * #action
-     */
-    setShowAnnotations(arg: boolean) {
-      setConf(self, ['alignments', 'showAnnotations'], arg)
+    setShowFrames(arg: boolean) {
+      setConf(self, ['alignments', 'frames', 'show'], arg)
     },
     /**
      * #action
      */
     setShowInversions(arg: boolean) {
-      setConf(self, ['alignments', 'showInversions'], arg)
+      setConf(self, ['alignments', 'inversions', 'show'], arg)
     },
     /**
      * #action
      */
     setShowReferenceRow(arg: boolean) {
-      setConf(self, 'showReferenceRow', arg)
+      setConf(self, ['alignments', 'reference', 'show'], arg)
     },
   }
 }

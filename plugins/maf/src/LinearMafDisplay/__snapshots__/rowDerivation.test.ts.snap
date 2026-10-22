@@ -1099,11 +1099,6 @@ exports[`sort at a column orders the rows by base and drops the supplied tree 1`
       "name": "mm10",
       "rowColor": "#0000aa",
     },
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
   ],
   "treeDrawn": false,
   "treeLeaves": undefined,

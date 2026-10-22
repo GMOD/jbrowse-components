@@ -16,7 +16,7 @@ import type { Region, UriLocation } from '@jbrowse/core/util'
  * Every read takes the shared `byteLimit`, and each measures the file it is
  * about to read — the alignment index on the detail path and in the sequence
  * widget's `MafGetSequences`, the `summaryAdapter` sub-adapter on the summary
- * one, the frames file on the annotation one — so the number the banner quotes
+ * one, the frames file on the frames one — so the number the banner quotes
  * always describes the download that was actually refused.
  */
 export interface BaseMafRpcArgs extends GatedFetchArgs {
@@ -149,7 +149,7 @@ export interface MafFrameRecord {
 /**
  * What either tier stores for one region: the tier's own record beside the CDS
  * frames the same fetch pass brought back. `frames` is undefined with no
- * annotation adapter on, and when the frames read declined the region
+ * frames adapter on, and when the frames read declined the region
  * (`framesGateBlocked`).
  */
 export interface MafRegionPayload<T> {

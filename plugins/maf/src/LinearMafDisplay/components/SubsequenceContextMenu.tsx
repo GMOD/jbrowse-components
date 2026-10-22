@@ -41,7 +41,7 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
   contextCoord: ContextCoord | undefined
   setContextCoord: (c: ContextCoord | undefined) => void
 }) {
-  const { samples, coarseTierActive } = model
+  const { samples, exportSamples, coarseTierActive } = model
   // Both entries need the per-base alignment, so both are off past the summary
   // tier's floor, like the track menu's subsequence entry.
   const zoomHint = coarseTierActive ? ZOOM_IN_FOR_BAND : undefined
@@ -75,7 +75,7 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
               {
                 label: 'All rows',
                 onClick: () => {
-                  openRows(samples)
+                  openRows(exportSamples)
                 },
               },
               zoomHint,

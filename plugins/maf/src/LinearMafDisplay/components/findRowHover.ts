@@ -1,5 +1,5 @@
 import { insertionBarWidth } from '@jbrowse/alignments-core'
-import { DASH, LOWER_BIT, isGapByte } from '@jbrowse/core/util/alignedBytes'
+import { DASH, isGapByte } from '@jbrowse/core/util/alignedBytes'
 
 import { blockIndexAtBp } from '../../LinearMafRenderer/blockAtBp.ts'
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
@@ -141,7 +141,6 @@ function cellHitInRow(
   block: MafBlock,
   row: MafAlignedRow,
   targetBp: number,
-  showAsUpperCase: boolean,
 ): CellHit | undefined {
   const column = alignedColumnAt(block, row, targetBp)
   if (!column || isGapByte(column.code)) {
@@ -150,7 +149,7 @@ function cellHitInRow(
   const { code, baseOffset } = column
   return {
     kind: 'cell',
-    base: String.fromCharCode(showAsUpperCase ? code & ~LOWER_BIT : code),
+    base: String.fromCharCode(code),
     chr: row.chr,
     pos: forwardPos(row, baseOffset),
     strand: row.strand,
@@ -170,7 +169,6 @@ function insertionHitInRow(
   bpPerPx: number,
   rowBandPx: number,
   binBp: number,
-  showAsUpperCase: boolean,
 ): InsertionHit | undefined {
   const { x, row, length, count } = mergedInsertions(region, binBp)
   let nearest = -1
@@ -188,14 +186,13 @@ function insertionHitInRow(
   }
   return nearest === -1
     ? undefined
-    : describeInsertion(region, rowIndex, x[nearest]!, showAsUpperCase)
+    : describeInsertion(region, rowIndex, x[nearest]!)
 }
 
 function describeInsertion(
   region: MafRegionData,
   rowIndex: number,
   anchor: number,
-  showAsUpperCase: boolean,
 ): InsertionHit | undefined {
   const record = regionInsertions(region).find(
     r => r.rowIndex === rowIndex && r.anchorBp === anchor,
@@ -209,9 +206,7 @@ function describeInsertion(
     for (let k = byteStart; k < byteEnd; k++) {
       const code = aln[k]!
       if (!isGapByte(code)) {
-        sequence += String.fromCharCode(
-          showAsUpperCase ? code & ~LOWER_BIT : code,
-        )
+        sequence += String.fromCharCode(code)
       }
     }
   }
@@ -273,7 +268,6 @@ export function findRowHoverAtBp(
   region: MafRegionData,
   bp: HoverBp,
   rowIndex: number,
-  showAsUpperCase: boolean,
   bpPerPx: number,
   insertionBinBp: number | undefined,
   rowBandPx: number,
@@ -289,7 +283,6 @@ export function findRowHoverAtBp(
           bpPerPx,
           rowBandPx,
           insertionBinBp,
-          showAsUpperCase,
         )
   if (insertion) {
     return insertion
@@ -302,7 +295,7 @@ export function findRowHoverAtBp(
   const row = block.rows.find(r => r.rowIndex === rowIndex)
   if (row) {
     return (
-      cellHitInRow(block, row, targetBp, showAsUpperCase) ??
+      cellHitInRow(block, row, targetBp) ??
       deletionHitInRow(
         block,
         row,

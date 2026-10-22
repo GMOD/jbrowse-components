@@ -18,11 +18,15 @@ import { MAF_Y_FIELDS } from './rowRenderings.ts'
 import type { RetiredSpelling } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-/** The v4 mafviewer plugin's row settings, top-level there. */
+/**
+ * The v4 mafviewer plugin's row settings, top-level there. Letters now follow
+ * `color` and keep the file's case, so the two letter settings lift to
+ * nothing.
+ */
 const retiredMafSpellings: Record<string, RetiredSpelling> = {
   rowProportion: v => ({ alignments: { rowProportion: v } }),
-  showAllLetters: v => ({ alignments: { showAllLetters: v } }),
-  showAsUpperCase: v => ({ alignments: { showAsUpperCase: v } }),
+  showAllLetters: () => ({}),
+  showAsUpperCase: () => ({}),
 }
 
 /**
@@ -56,8 +60,8 @@ const retiredMafSpellings: Record<string, RetiredSpelling> = {
  * ```
  */
 export default function configSchemaF() {
-  // The CDS-frame annotation source is a sub-adapter on the MAF adapter
-  // (`annotationAdapter`), not a display slot.
+  // The CDS-frame source is a sub-adapter on the MAF adapter
+  // (`framesAdapter`), not a display slot.
   return ConfigurationSchema(
     'LinearMafDisplay',
     {
@@ -154,8 +158,8 @@ export default function configSchemaF() {
       /**
        * #slot alignments
        * The per-species rows, which take the height the bands above them
-       * leave: `show`, `rowProportion`, `showAllLetters`, `showAsUpperCase`,
-       * `showInversions` and `showAnnotations`.
+       * leave: `show`, `rowProportion`, and the `inversions`, `frames` and
+       * `reference` parts.
        */
       alignments: mafAlignmentsConfigSchema,
       /**
@@ -174,34 +178,6 @@ export default function configSchemaF() {
        * `height` and `unit`, `base` or `codon`.
        */
       conservation: mafConservationConfigSchema,
-      /**
-       * #slot
-       * When true (the default), identity, as `color` or as `y`, draws only
-       * while zoomed out, and zooming in to base level swaps it back for the
-       * bases (UCSC `wigMaf` behavior). When false identity draws at every
-       * zoom.
-       */
-      rowIdentityAutoZoom: {
-        type: 'boolean',
-        defaultValue: DEFAULTS.rowIdentityAutoZoom,
-        description:
-          'show the bases instead of the identity plot once zoomed in to base level (UCSC wigMaf); false draws identity at every zoom',
-      },
-      /**
-       * #slot
-       * Draw the reference species as a separate row. Under mismatch coloring
-       * every cell in it matches by definition, so UCSC omits it. The row the
-       * worker named as the reference (`refSampleId`) is the one dropped.
-       *
-       * The row hides everywhere the row set reaches, including the FASTA "View
-       * subsequences" downloads and the per-species navigation menus. The other
-       * rows are still scored against the reference sequence.
-       */
-      showReferenceRow: {
-        type: 'boolean',
-        defaultValue: DEFAULTS.showReferenceRow,
-        description: 'give the reference species a row of its own',
-      },
     },
     // #region schemaOptions
     {

@@ -60,8 +60,6 @@ interface MafMenuSelf
   hasLegendKey: boolean
   showLegend: boolean
   setShowLegend: (arg: boolean) => void
-  showAllLetters: boolean
-  showAsUpperCase: boolean
   showTree: boolean
   showRowLabels: boolean
   setShowRowLabels: (arg: boolean) => void
@@ -79,16 +77,16 @@ interface MafMenuSelf
   zoomedToBaseLevel: boolean
   framesGateBlocked: boolean
   conservationUnit: ConservationUnit
-  showAnnotations: boolean
+  showFrames: boolean
   showInversions: boolean
-  annotationAdapterConfig: Record<string, unknown> | undefined
+  framesAdapterConfig: Record<string, unknown> | undefined
   selectedColorField: MafColorField
   colorByField: (field: MafColorField) => void
   yField: MafYField | undefined
+  rowsY: MafYField | undefined
   setYField: (field: MafYField | undefined) => void
   colorScheme: ColorSchemeName | undefined
   setColorScheme: (scheme: ColorSchemeName) => void
-  rowIdentityAutoZoom: boolean
   // Declared so the shared `rowHeightMenuItem` contract is checked here; maf is
   // the one display with a proportion.
   rowHeight: number
@@ -99,8 +97,6 @@ interface MafMenuSelf
   setRowHeight: (n: number) => void
   setFitToHeight: () => void
   setRowProportion: (n: number) => void
-  setShowAllLetters: (f: boolean) => void
-  setShowAsUpperCase: (f: boolean) => void
   setShowTree: (f: boolean) => void
   setShowBranchLength: (f: boolean) => void
   setShowCoverage: (f: boolean) => void
@@ -108,9 +104,8 @@ interface MafMenuSelf
   setShowConservation: (f: boolean) => void
   setShowReferenceRow: (f: boolean) => void
   setConservationUnit: (m: ConservationUnit) => void
-  setShowAnnotations: (f: boolean) => void
+  setShowFrames: (f: boolean) => void
   setShowInversions: (f: boolean) => void
-  setRowIdentityAutoZoom: (f: boolean) => void
   rowFocus?: readonly string[]
   setRowFocus: (names?: readonly string[]) => void
   setScrollTop: (scrollTop: number) => void
@@ -119,12 +114,11 @@ interface MafMenuSelf
   resetRowArrangement: () => void
 }
 
-// The CDS-frame overlays need a reading frame, so they appear only with an
-// `annotationAdapter` (mafFrames). The strip can be on and draw nothing when
-// the RPC's byte gate declines the read (`executeMafAnnotationData`), so the
-// menu says so.
+// The frames strip needs a `framesAdapter` (mafFrames). It can be on and draw
+// nothing when the RPC's byte gate declines the read (`executeMafFramesData`),
+// so the menu says so.
 function frameMenuItems(self: MafMenuSelf): MenuItem[] {
-  return self.annotationAdapterConfig
+  return self.framesAdapterConfig
     ? [
         toggleItem(
           withHint(
@@ -133,8 +127,8 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
               ? 'too much frame data here, zoom in'
               : undefined,
           ),
-          self.showAnnotations,
-          self.setShowAnnotations,
+          self.showFrames,
+          self.setShowFrames,
         ),
       ]
     : []
@@ -148,7 +142,7 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
 function colorFieldRow(self: MafMenuSelf, field: MafColorField): MenuItem {
   const label = MAF_COLOR_FIELD_LABELS[field]
   const hint =
-    self.yField === 'identity' && field !== 'identity'
+    self.rowsY === 'identity' && field !== 'identity'
       ? 'the X-Y plot draws its bars in one color'
       : field === 'codon' && !self.zoomedToBaseLevel
         ? 'zoom in to base level'
@@ -168,7 +162,7 @@ function colorMenuItem(self: MafMenuSelf): MenuItem {
     blocks: [
       {
         rows: MAF_COLOR_FIELDS.filter(
-          field => field !== 'codon' || !!self.annotationAdapterConfig,
+          field => field !== 'codon' || !!self.framesAdapterConfig,
         ).map(field => colorFieldRow(self, field)),
       },
     ],
@@ -181,7 +175,7 @@ function colorMenuItem(self: MafMenuSelf): MenuItem {
 }
 
 function conservationResolutionMenuItems(self: MafMenuSelf): MenuItem[] {
-  return self.annotationAdapterConfig
+  return self.framesAdapterConfig
     ? [
         makeRadioSubMenu({
           label: 'Conservation resolution',
@@ -230,7 +224,7 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
     ),
     toggleItem(
       withHint(
-        'Conservation (% identity)',
+        'Conservation',
         self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined,
       ),
       self.showConservation,
@@ -242,22 +236,6 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       self.setShowInversions,
     ),
     ...frameMenuItems(self),
-    toggleItem(
-      'Bases when zoomed in',
-      self.rowIdentityAutoZoom,
-      self.setRowIdentityAutoZoom,
-      { helpText: 'identity, in either plot, yields to the bases' },
-    ),
-    toggleItem(
-      'Letters at all positions',
-      self.showAllLetters,
-      self.setShowAllLetters,
-    ),
-    toggleItem(
-      'Letters as uppercase',
-      self.showAsUpperCase,
-      self.setShowAsUpperCase,
-    ),
     // Only where a key exists: `bases` mode has nothing to key.
     ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
   ]

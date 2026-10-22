@@ -177,7 +177,7 @@ test('the rows paint in the export palette, not the session one', async () => {
 // export's theme, as the cells it keys do.
 test('the exported key is in the export palette', async () => {
   const { display, view } = createMafTestEnvironment({
-    annotationAdapter: { type: 'BigBedAdapter' },
+    framesAdapter: { type: 'BigBedAdapter' },
   }).createDisplay()
   view.zoomTo(0.5)
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)

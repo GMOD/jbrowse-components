@@ -41,10 +41,10 @@ function bedTabixSummary(summaryLoc: FileLocation | undefined) {
  * user had. Optional, and omitted when unset so the slot keeps its `null`
  * default.
  */
-function framesAnnotation(framesLoc: FileLocation | undefined) {
+function framesSlot(framesLoc: FileLocation | undefined) {
   return framesLoc
     ? {
-        annotationAdapter: {
+        framesAdapter: {
           type: 'BigBedAdapter',
           bigBedLocation: framesLoc,
         },
@@ -121,7 +121,7 @@ export function buildAdapterConfig(args: BuildArgs) {
               },
             }
           : {}),
-        ...framesAnnotation(framesLoc),
+        ...framesSlot(framesLoc),
       }
     case 'MafTabixAdapter':
       return {
@@ -140,7 +140,7 @@ export function buildAdapterConfig(args: BuildArgs) {
             },
         samples,
         ...bedTabixSummary(summaryLoc),
-        ...framesAnnotation(framesLoc),
+        ...framesSlot(framesLoc),
       }
     case 'BgzipTaffyAdapter':
       return {
@@ -153,7 +153,7 @@ export function buildAdapterConfig(args: BuildArgs) {
         // alignment — but a deep one still costs span x depth, so the zoom-out
         // tier is worth offering here too.
         ...bedTabixSummary(summaryLoc),
-        ...framesAnnotation(framesLoc),
+        ...framesSlot(framesLoc),
       }
     case 'BgzipMafAdapter':
       // A bgzip-compressed MAF with a sibling taffy `.tai` — the form
@@ -168,7 +168,7 @@ export function buildAdapterConfig(args: BuildArgs) {
         nhLocation: nhLoc,
         samples,
         ...bedTabixSummary(summaryLoc),
-        ...framesAnnotation(framesLoc),
+        ...framesSlot(framesLoc),
       }
   }
 }

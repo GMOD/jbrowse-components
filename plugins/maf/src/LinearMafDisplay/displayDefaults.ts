@@ -6,17 +6,7 @@ export const DEFAULTS = {
   rowHeight: 15,
   height: 300,
   rowProportion: 0.8,
-  showAllLetters: false,
-  showAsUpperCase: true,
-  showTree: true,
-  showRowLabels: true,
-  showBranchLength: true,
   showAlignments: true,
-  rowIdentityAutoZoom: true,
-  showAnnotations: false,
-  showInversions: false,
-  // On, so existing tracks keep drawing the row.
-  showReferenceRow: true,
 } as const
 
 // Each preset pairs a row height with the glyph proportion that reads best at

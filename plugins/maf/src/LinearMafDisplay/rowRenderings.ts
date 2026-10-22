@@ -37,3 +37,60 @@ export const MAF_COLOR_FIELD_LABELS = {
 export function paintsBases(rendering: RowRendering) {
   return rendering === 'mismatch' || rendering === 'base'
 }
+
+/** How identity draws: heatmap cells, or X-Y bars in one color or the ramp's. */
+export type IdentityEncoding = 'heatmap' | 'bars' | 'rampBars'
+
+export interface RowPlan {
+  /** what colors the cells now */
+  color: MafColorField
+  /** what the bars' height carries now, undefined where rows are cells */
+  y: MafYField | undefined
+  rendering: RowRendering
+  /** the cells are drawn base by base, so letters and indels draw over them */
+  bases: boolean
+  identity: IdentityEncoding | undefined
+}
+
+/**
+ * What the rows draw from the written `color` and `y` and the view's state.
+ * The summary tier draws its own bars, so the cells fall back to the
+ * mismatches there. At base level a one-base identity is a match call the
+ * bases draw with more to say, so identity in either plot yields to them, and
+ * the codon view needs base level and a frames adapter to define codons.
+ */
+export function resolveRowPlan({
+  field,
+  y,
+  summaryTier,
+  baseLevel,
+  hasFrames,
+}: {
+  field: MafColorField
+  y: MafYField | undefined
+  summaryTier: boolean
+  baseLevel: boolean
+  hasFrames: boolean
+}): RowPlan {
+  const color: MafColorField =
+    summaryTier ||
+    (field === 'codon' && !(hasFrames && baseLevel)) ||
+    (field === 'identity' && baseLevel)
+      ? 'mismatch'
+      : field
+  const rowsY = summaryTier || baseLevel ? undefined : y
+  return {
+    color,
+    y: rowsY,
+    rendering: rowsY ? 'xyplot' : color,
+    bases: !summaryTier && !rowsY && paintsBases(color),
+    identity:
+      rowsY === 'identity'
+        ? color === 'identity'
+          ? 'rampBars'
+          : 'bars'
+        : color === 'identity'
+          ? 'heatmap'
+          : undefined,
+  }
+}

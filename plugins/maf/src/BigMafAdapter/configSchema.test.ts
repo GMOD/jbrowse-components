@@ -17,20 +17,20 @@ describe('BigMafAdapter configSchema', () => {
     expect(readConfObject(conf, 'summaryAdapter')).toEqual(summaryAdapter)
   })
 
-  test('annotationAdapter defaults to unset (no CDS-frames overlay)', () => {
+  test('framesAdapter defaults to unset (no CDS-frames overlay)', () => {
     const conf = configSchema.create({ type: 'BigMafAdapter' })
-    expect(readConfObject(conf, 'annotationAdapter')).toBeUndefined()
+    expect(readConfObject(conf, 'framesAdapter')).toBeUndefined()
   })
 
-  test('annotationAdapter stores the CDS-frames sub-adapter config verbatim', () => {
-    const annotationAdapter = {
+  test('framesAdapter stores the CDS-frames sub-adapter config verbatim', () => {
+    const framesAdapter = {
       type: 'BigBedAdapter',
       bigBedLocation: { uri: 'https://example.com/x.frames.bb' },
     }
     const conf = configSchema.create({
       type: 'BigMafAdapter',
-      annotationAdapter,
+      framesAdapter,
     })
-    expect(readConfObject(conf, 'annotationAdapter')).toEqual(annotationAdapter)
+    expect(readConfObject(conf, 'framesAdapter')).toEqual(framesAdapter)
   })
 })

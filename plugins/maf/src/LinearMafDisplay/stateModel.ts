@@ -66,12 +66,12 @@ import { navigationFields } from '../util/navigationFields.ts'
 import { copyParent, placeCopyRows } from '../util/sampleCopies.ts'
 import { computeVisibleCodonGlyphs, findCodonAt } from './codons.ts'
 import { mafColorScales } from './colorScales.ts'
-import {
-  computeVisibleAnnotations,
-  findFrameAt,
-} from './components/computeVisibleAnnotations.ts'
 import { computeVisibleDeletions } from './components/computeVisibleDeletions.ts'
 import { computeVisibleEmptyLines } from './components/computeVisibleEmptyLines.ts'
+import {
+  computeVisibleFrames,
+  findFrameAt,
+} from './components/computeVisibleFrames.ts'
 import {
   computeVisibleInversions,
   consensusStrandByRowChr,
@@ -94,7 +94,7 @@ import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
 import { rowNavigationTargetsOf } from './rowNavigationTargets.ts'
-import { paintsBases } from './rowRenderings.ts'
+import { paintsBases, resolveRowPlan } from './rowRenderings.ts'
 import {
   ZOOM_IN_FOR_BAND,
   buildMafTrackMenuItems,
@@ -117,17 +117,19 @@ import type {
   Sample,
 } from '../types.ts'
 import type { CodonGlyph } from './codons.ts'
-import type { FrameMarker } from './components/computeVisibleAnnotations.ts'
+import type { FrameMarker } from './components/computeVisibleFrames.ts'
 import type { StrandConsensus } from './components/computeVisibleInversions.ts'
 import type { HoverBp } from './components/findRowHover.ts'
 import type { MafRowGeometryParams } from './components/visibleRegionGeometry.ts'
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
+import type { MafRowsEncodeProps, MafRowsSource } from './encodeMafRows.ts'
 import type {
   IdentityEncoding,
-  MafRowsEncodeProps,
-  MafRowsSource,
-} from './encodeMafRows.ts'
-import type { MafColorField, MafYField, RowRendering } from './rowRenderings.ts'
+  MafColorField,
+  MafYField,
+  RowPlan,
+  RowRendering,
+} from './rowRenderings.ts'
 import type { MafHover } from './util.ts'
 import type { CoverageBandState } from '@jbrowse/alignments-core'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -227,6 +229,15 @@ function rowsNamedOrCopied(
 }
 
 const NO_DETAIL: ReadonlyMap<number, MafRegionData> = new Map()
+
+function sampleOf(s: MafSource): Sample {
+  return {
+    id: s.name,
+    label: s.label ?? s.name,
+    color: s.rowColor,
+    ...navigationFields(s),
+  }
+}
 
 /** A categorical field whose preset names no `range` paints the theme's. */
 function paintsThemeColors(field: MafColorField) {
@@ -428,41 +439,36 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The CDS-frame annotation adapter snapshot (UCSC `mafFrames`) from the
-         * MAF adapter config, or undefined when unset.
-         *
-         * Read by array slot path off the live parent track: a slot read
-         * against a snapshot misses defaulted slots
-         * (`core/configuration/CLAUDE.md`).
+         * The MAF adapter's `framesAdapter` (UCSC `mafFrames`), or undefined.
+         * Read by slot path off the live parent track, since a slot read
+         * against a snapshot misses defaulted slots.
          */
-        get annotationAdapterConfig(): Record<string, unknown> | undefined {
+        get framesAdapterConfig(): Record<string, unknown> | undefined {
           return (
-            getConf(self.parentTrack, ['adapter', 'annotationAdapter']) ??
-            undefined
+            getConf(self.parentTrack, ['adapter', 'framesAdapter']) ?? undefined
           )
         },
       }))
       .views(self => ({
         /**
          * #getter
-         * Whether the per-species CDS frame strip draws: an annotation adapter
-         * is configured and "CDS frames" is on. Codon view gates
-         * separately on `framesInUse`.
+         * The CDS frame strip draws: a frames adapter is configured and
+         * `alignments.frames.show` is on.
          */
-        get annotationsActive(): boolean {
-          return self.showAnnotations && !!self.annotationAdapterConfig
+        get framesActive(): boolean {
+          return self.showFrames && !!self.framesAdapterConfig
         },
         /**
          * #getter
-         * An annotation adapter is configured and something reads its frames:
-         * the strip, the codon view or the codon band.
+         * A frames adapter is configured and something reads its frames: the
+         * strip, the codon view or the codon band.
          */
         get framesInUse(): boolean {
           return (
-            (self.showAnnotations ||
+            (self.showFrames ||
               self.colorField === 'codon' ||
               (self.showConservation && self.conservationUnit === 'codon')) &&
-            !!self.annotationAdapterConfig
+            !!self.framesAdapterConfig
           )
         },
       }))
@@ -605,7 +611,7 @@ export default function stateModelFactory(
         get coarseReadKey() {
           return {
             settings: self.settingsFetchInputs,
-            frames: self.annotationsActive,
+            frames: self.framesActive,
           }
         },
       }))
@@ -638,17 +644,18 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Sample list keyed by sample id (alias of `sources` mapped to the
-         * project's canonical `{ id, label, color }` shape). Consumed by
-         * MafSequenceWidget, color legend, etc.
+         * The display rows as `Sample`s, row for row.
          */
         get samples(): Sample[] {
-          return self.sources.map(s => ({
-            id: s.name,
-            label: s.label ?? s.name,
-            color: s.rowColor,
-            ...navigationFields(s),
-          }))
+          return self.sources.map(sampleOf)
+        },
+        /**
+         * #getter
+         * The rows a whole-window FASTA export writes: every focused row, the
+         * reference included whether or not it draws.
+         */
+        get exportSamples(): Sample[] {
+          return self.clusterableSources.map(sampleOf)
         },
         /**
          * #getter
@@ -743,9 +750,9 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Per-region CDS frame rows (UCSC `mafFrames`) for the annotation
-         * overlay. The tier on screen is checked first and the other tier fills
-         * gaps, so the overlay stays visible across the summary-detail swap.
+         * Per-region CDS frame rows (UCSC `mafFrames`) for the frames strip.
+         * The tier on screen is checked first and the other tier fills gaps,
+         * so the strip stays visible across the summary-detail swap.
          */
         get framesDataMap(): ReadonlyMap<number, MafFrameRecord[]> {
           const detail = self.detailPayloads
@@ -1482,9 +1489,9 @@ export default function stateModelFactory(
             ])
             return [
               ...superConfigProblemsOf(conf),
-              ...(colorField === 'codon' && !self.annotationAdapterConfig
+              ...(colorField === 'codon' && !self.framesAdapterConfig
                 ? [
-                    'color.field: codon needs an annotationAdapter on the MAF adapter to define reading frames, so the rows paint the mismatches',
+                    'color.field: codon needs a framesAdapter on the MAF adapter to define reading frames, so the rows paint the mismatches',
                   ]
                 : []),
               ...(range.length > 0 && paintsThemeColors(colorField)
@@ -1498,88 +1505,58 @@ export default function stateModelFactory(
            * #getter
            * The Color by menu's tick: the color field, with codon falling back
            * to the mismatches where no frames file defines a reading frame.
-           * Zoom-independent.
            */
           get selectedColorField(): MafColorField {
-            return self.colorField === 'codon' && !self.annotationAdapterConfig
+            return self.colorField === 'codon' && !self.framesAdapterConfig
               ? 'mismatch'
               : self.colorField
           },
           /**
            * #getter
-           * Identity yields to the bases at base level while
-           * `rowIdentityAutoZoom` is on, where the letters say more than a mean.
+           * What the rows draw now (`resolveRowPlan`).
            */
-          get identityYields() {
-            return self.rowIdentityAutoZoom && self.zoomedToBaseLevel
+          get rowPlan(): RowPlan {
+            return resolveRowPlan({
+              field: self.colorField,
+              y: self.yField,
+              summaryTier: self.coarseTierActive,
+              baseLevel: self.zoomedToBaseLevel,
+              hasFrames: !!self.framesAdapterConfig,
+            })
           },
         }
       })
       .views(self => ({
         /**
          * #getter
-         * What colors the cells now: the color field, or the mismatches where
-         * it cannot draw (summary tier, codons without base level or a frames
-         * file, identity at base level via `identityYields`).
          */
         get rowsColor(): MafColorField {
-          const field = self.colorField
-          return self.coarseTierActive
-            ? 'mismatch'
-            : field === 'codon'
-              ? self.annotationAdapterConfig && self.zoomedToBaseLevel
-                ? 'codon'
-                : 'mismatch'
-              : field === 'identity' && self.identityYields
-                ? 'mismatch'
-                : field
+          return self.rowPlan.color
         },
         /**
          * #getter
-         * What the row bars' height encodes now, or undefined where each row
-         * is one band of cells.
          */
         get rowsY(): MafYField | undefined {
-          return self.coarseTierActive || self.identityYields
-            ? undefined
-            : self.yField
+          return self.rowPlan.y
         },
-      }))
-      .views(self => ({
         /**
          * #getter
-         * What the rows paint now: the X-Y plot while `rowsY` is set, else
-         * `rowsColor`. Every painter, the key and the export branch on it.
+         * Every painter, the key and the export branch on it.
          */
         get activeRowRendering(): RowRendering {
-          return self.rowsY ? 'xyplot' : self.rowsColor
+          return self.rowPlan.rendering
         },
-      }))
-      .views(self => ({
         /**
          * #getter
-         * The cells are drawn base by base, so the letters, the insertion
-         * markers and the deletion counts draw over them. Not on the summary
-         * tier, whose rows are the summary bars.
          */
-        get basesRenderingActive() {
-          return (
-            !self.coarseTierActive && !self.rowsY && paintsBases(self.rowsColor)
-          )
+        get basesRenderingActive(): boolean {
+          return self.rowPlan.bases
         },
         /**
          * #getter
-         * How identity draws now: the heatmap's cells, the X-Y plot's bars in
-         * one color, or its bars on the ramp where `color` is identity too.
          */
         get identityEncoding(): IdentityEncoding | undefined {
-          return self.rowsY === 'identity'
-            ? self.rowsColor === 'identity'
-              ? 'rampBars'
-              : 'bars'
-            : self.rowsColor === 'identity'
-              ? 'heatmap'
-              : undefined
+          return self.rowPlan.identity
         },
       }))
       .views(self => ({
@@ -1606,7 +1583,6 @@ export default function stateModelFactory(
                 region,
                 bp,
                 rowIndex,
-                self.showAsUpperCase,
                 bpPerPx,
                 self.basesRenderingActive ? self.encodeBinBp : undefined,
                 drawnRowHeightPx(self.effectiveRowHeight, self.rowProportion),
@@ -1653,8 +1629,6 @@ export default function stateModelFactory(
                 view: self.host,
                 rpcDataMap: self.detailOnScreen,
                 ...self.rowGeometry(),
-                showAllLetters: self.showAllLetters,
-                showAsUpperCase: self.showAsUpperCase,
                 colorMatches: self.rowsColor === 'base',
               })
             : []
@@ -1697,13 +1671,12 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Positioned per-species CDS frame boxes for the annotation overlay.
-         * Empty unless an annotation adapter is configured and the overlay is
-         * on. Reuses the `src`-to-row mapping of the summary bars.
+         * Positioned per-species CDS frame boxes for the frames strip. Empty
+         * unless a frames adapter is configured and the strip is on. Reuses the `src`-to-row mapping of the summary bars.
          */
         get visibleFrames(): FrameMarker[] {
-          return self.rowsVisible && self.annotationsActive
-            ? computeVisibleAnnotations({
+          return self.rowsVisible && self.framesActive
+            ? computeVisibleFrames({
                 view: self.host,
                 framesDataMap: self.framesDataMap,
                 rowIndexBySrc: self.rowIndexBySrc,
@@ -1733,7 +1706,7 @@ export default function stateModelFactory(
             self.host.initialized &&
             self.conservationBandActive &&
             self.conservationUnit === 'codon' &&
-            !!self.annotationAdapterConfig &&
+            !!self.framesAdapterConfig &&
             !!self.defaultCodonSpecies
           )
         },
@@ -1992,7 +1965,7 @@ export default function stateModelFactory(
         /**
          * #action
          * Record whether the last frames read was declined as over budget. Set
-         * both ways by every fetch pass that reaches the annotation adapter, so
+         * both ways by every fetch pass that reaches the frames adapter, so
          * zooming back in clears it without anything else having to.
          */
         setFramesGateBlocked(blocked: boolean) {

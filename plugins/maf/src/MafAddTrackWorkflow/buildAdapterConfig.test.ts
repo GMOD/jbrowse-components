@@ -361,7 +361,7 @@ describe('buildAdapterConfig', () => {
     'MafTabixAdapter',
     'BgzipTaffyAdapter',
     'BgzipMafAdapter',
-  ] as const)('%s carries a frames annotationAdapter', fileTypeChoice => {
+  ] as const)('%s carries a frames framesAdapter', fileTypeChoice => {
     const framesLoc: FileLocation = {
       uri: 'multiz30wayFrames.bb',
       locationType: 'UriLocation',
@@ -378,7 +378,7 @@ describe('buildAdapterConfig', () => {
         samples,
       }),
     ).toMatchObject({
-      annotationAdapter: {
+      framesAdapter: {
         type: 'BigBedAdapter',
         bigBedLocation: framesLoc,
       },

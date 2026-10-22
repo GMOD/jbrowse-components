@@ -1,7 +1,7 @@
 import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { of } from 'rxjs'
 
-import { executeMafAnnotationData } from './executeMafAnnotationData.ts'
+import { executeMafFramesData } from './executeMafFramesData.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
@@ -33,7 +33,7 @@ async function run(bytes: number | undefined, byteLimit?: number) {
   )
   mockGetFeatureAdapter.mockResolvedValue({ getFeatures, getRegionByteSize })
   const statusCallback = jest.fn()
-  const result = await executeMafAnnotationData({
+  const result = await executeMafFramesData({
     pluginManager: {} as PluginManager,
     args: {
       regions: [REGION],
@@ -78,7 +78,7 @@ test('measures nothing without a byteLimit', async () => {
     getFeatures: () => of(FRAME),
     getRegionByteSize,
   })
-  const result = await executeMafAnnotationData({
+  const result = await executeMafFramesData({
     pluginManager: {} as PluginManager,
     args: {
       regions: [REGION],
@@ -90,7 +90,7 @@ test('measures nothing without a byteLimit', async () => {
   expect(isRegionRefused(result)).toBe(false)
 })
 
-// Only mafFrames-shaped rows contribute: a plain annotation adapter without a
+// Only mafFrames-shaped rows contribute: a plain frames adapter without a
 // `src` species column names no row to draw on.
 test('keeps the frame rows that name a species', async () => {
   const { result } = await run(500, 1_000_000)

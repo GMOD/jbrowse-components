@@ -9,9 +9,8 @@ import type { LinearMafDisplayModel } from './stateModel.ts'
 describe('band titles', () => {
   // Through the setters, not `displaySnapshot`: these are config slots, and a
   // display snapshot carries properties — a slot spelled there is dropped.
-  function display(annotationAdapter?: unknown) {
-    return createMafTestEnvironment({ annotationAdapter }).createDisplay()
-      .display
+  function display(framesAdapter?: unknown) {
+    return createMafTestEnvironment({ framesAdapter }).createDisplay().display
   }
   function withSamples(d: LinearMafDisplayModel) {
     d.setSamples({

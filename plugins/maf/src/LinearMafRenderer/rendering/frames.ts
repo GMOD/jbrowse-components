@@ -1,4 +1,4 @@
-import type { FrameMarker } from '../../LinearMafDisplay/components/computeVisibleAnnotations.ts'
+import type { FrameMarker } from '../../LinearMafDisplay/components/computeVisibleFrames.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 /**
@@ -10,7 +10,7 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
  * A plain lookup: `frameColorIndex` resolved the frame + strand into a palette
  * slot when the marker was built, so nothing here knows the palette's layout.
  */
-export function drawMafAnnotations(
+export function drawMafFrames(
   ctx: Ctx2D,
   markers: FrameMarker[],
   frameColors: (string | undefined)[],

@@ -1,6 +1,6 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
-import { createMafTestEnvironment } from './testEnv.ts'
+import { createMafTestEnvironment, zoomPastBaseLevel } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -57,7 +57,7 @@ function disabledHintOn(items: MenuItem[], label: string) {
   return undefined
 }
 
-const BAND_ROWS = ['Coverage', 'Conservation (% identity)']
+const BAND_ROWS = ['Coverage', 'Conservation']
 const HINT = 'zoom in past the summary tier'
 
 describe('the band toggles say when the summary tier has overridden them', () => {
@@ -138,7 +138,7 @@ describe('the right-click sort says when the summary tier has its data', () => {
 })
 
 const framesEnv = () =>
-  createMafTestEnvironment({ annotationAdapter: { type: 'BigBedAdapter' } })
+  createMafTestEnvironment({ framesAdapter: { type: 'BigBedAdapter' } })
 
 // `zoomedToBaseLevel` reads the debounced coarse zoom, which the headless view
 // only publishes when asked.
@@ -191,7 +191,8 @@ describe('the Color by rows say when the X-Y plot draws one color', () => {
   const HINT = 'the X-Y plot draws its bars in one color'
 
   it('hints on every field but identity while y is identity', () => {
-    const { display } = createMafTestEnvironment().createDisplay()
+    const { display, view } = createMafTestEnvironment().createDisplay()
+    zoomPastBaseLevel(view)
     display.setYField('identity')
     const items = display.trackMenuItems()
     expect(hintOn(items, 'Source chromosome')).toBe(HINT)

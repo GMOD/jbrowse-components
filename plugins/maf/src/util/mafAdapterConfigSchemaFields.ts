@@ -1,25 +1,18 @@
 import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesTsv'
 
+import type { RetiredSpelling } from '@jbrowse/core/configuration'
+
+/** The beta name of `framesAdapter`, which jb2hubs configs still write. */
+export const retiredMafAdapterSpellings: Record<string, RetiredSpelling> = {
+  annotationAdapter: framesAdapter => ({ framesAdapter }),
+}
+
 /**
- * The slots every MAF adapter has beyond its own file format — the ones
- * `MafAdapterBase` reads, which is why they belong beside it rather than in
- * four schemas.
- *
- * They were copied out verbatim into each, and two had already drifted: the
- * `samples` description on both bgzip schemas stopped at `assemblyName` and
- * never mentioned `assemblyConfigLocation`, which the other two document and
- * `normalizeSamples` honors on all four. So the config page for a `.maf.gz`
- * track said the field did not exist.
- *
- * **The description is the whole explanation.** The config-doc generator
- * renders a spread slot's `description` and never the JSDoc above it (see
- * `regionTooLargeConfigSchemaFields`), so anything written up here reaches
- * neither the docs page nor the config editor.
- *
- * `summaryAdapter` is the parameter because it is the one genuinely per-format
- * slot: what a zoom-out read costs depends on the file it reads, and the two
- * `.tai` formats have measured numbers to quote. The others are identical
- * across the four by construction.
+ * The slots every MAF adapter has beyond its own file format, the ones
+ * `MafAdapterBase` reads. The config-doc generator renders a spread slot's
+ * `description`, never the JSDoc above it, so the description is the whole
+ * explanation. `summaryAdapter` is the parameter because what a zoom-out read
+ * costs depends on the file it reads.
  */
 export function mafAdapterConfigSchemaFields({
   summaryAdapter,
@@ -56,10 +49,10 @@ export function mafAdapterConfigSchemaFields({
     /**
      * #slot
      */
-    annotationAdapter: {
+    framesAdapter: {
       type: 'maybeFrozen',
       description:
-        'optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way',
+        "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying each species' CDS reading frames for the frames strip, the codon view and the codon conservation band; leave it unset to disable",
     },
   } as const
 }

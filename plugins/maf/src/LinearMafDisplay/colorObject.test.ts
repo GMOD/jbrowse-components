@@ -3,9 +3,9 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { createMafTestEnvironment } from './testEnv.ts'
 
-function displayWith(color: unknown, annotationAdapter: unknown = null) {
+function displayWith(color: unknown, framesAdapter: unknown = null) {
   return createMafTestEnvironment({
-    annotationAdapter,
+    framesAdapter,
     displayConfig: { color },
   }).createDisplay()
 }
@@ -158,7 +158,7 @@ describe('notices', () => {
   test('codon with no frames file says the rows paint the mismatches', () => {
     const { display } = displayWith('codon')
     expect(display.notices).toEqual([
-      expect.stringMatching(/^color\.field: codon needs an annotationAdapter/),
+      expect.stringMatching(/^color\.field: codon needs a framesAdapter/),
     ])
     expect(displayWith('codon', {}).display.notices).toEqual([])
   })

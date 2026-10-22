@@ -6,7 +6,11 @@ import {
   getFrameLegendItems,
 } from '../LinearMafRenderer/util.ts'
 import { emptyMafWireRegionData } from './components/coverageTestFixture.ts'
-import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
+import {
+  createMafTestEnvironment,
+  stageDetailRegion,
+  zoomPastBaseLevel,
+} from './testEnv.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
 
@@ -71,7 +75,7 @@ describe('the CDS strip keys itself', () => {
   const keyLabels = (display: LinearMafDisplayModel) =>
     display.legendSpec.sections.flatMap(s => s.items.map(i => i.label))
   const framesEnv = () =>
-    createMafTestEnvironment({ annotationAdapter: { type: 'BigBedAdapter' } })
+    createMafTestEnvironment({ framesAdapter: { type: 'BigBedAdapter' } })
 
   function seed(display: LinearMafDisplayModel, showStrip: boolean) {
     display.setSamples({
@@ -79,7 +83,7 @@ describe('the CDS strip keys itself', () => {
       treeNewick: undefined,
       samplesCanonical: true,
     })
-    display.setShowAnnotations(showStrip)
+    display.setShowFrames(showStrip)
     stageDetailRegion(display, 0, emptyMafWireRegionData(), {
       frames: [
         {
@@ -132,8 +136,7 @@ describe('the CDS strip keys itself', () => {
     const { display } = framesEnv().createDisplay()
     seed(display, true)
     display.colorByField('identity')
-    // pins the plot on at this zoom, where it would otherwise yield to the bases
-    display.setRowIdentityAutoZoom(false)
+    zoomPastBaseLevel(display.view)
     expect(display.activeRowRendering).toBe('identity')
 
     expect(display.legendSpec.sections.map(s => s.title)).toEqual([
@@ -144,12 +147,12 @@ describe('the CDS strip keys itself', () => {
 
   // At base level each identity cell is one base, red or blue, so the key
   // names those two rather than a ramp whose middle nothing draws.
-  it('keys base-level identity with its two colors', () => {
+  it('keys one-base identity cells with their two colors', () => {
     const { display } = framesEnv().createDisplay()
     seed(display, false)
     display.colorByField('identity')
-    display.setRowIdentityAutoZoom(false)
-    expect(display.zoomedToBaseLevel).toBe(true)
+    zoomPastBaseLevel(display.view)
+    expect(display.encodeBinBp).toBe(1)
     expect(display.legendSpec.sections[0]!.items.map(i => i.label)).toEqual([
       'Conserved (base matches)',
       'Divergent (base differs)',

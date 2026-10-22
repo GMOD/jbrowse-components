@@ -31,6 +31,7 @@ import type {
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafFrameRecord, MafSummaryRecord } from '../types.ts'
 import type { CodonFills } from './codons.ts'
+import type { IdentityEncoding } from './rowRenderings.ts'
 import type { InsertionChannels } from '@jbrowse/alignments-core'
 import type { SpanChannels } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -59,12 +60,6 @@ export const EMPTY_MAF_COVERAGE: MafCoverageRegion = {
 }
 
 const WIDEST_MARKER_PX = textWidthForNumber(Number.MAX_SAFE_INTEGER)
-
-/**
- * How identity draws, where it does: the heatmap's cells, or the X-Y plot's
- * bars in one color or on the heatmap's ramp.
- */
-export type IdentityEncoding = 'heatmap' | 'bars' | 'rampBars'
 
 /** Everything a region's rows encode reads beyond the region itself. */
 export interface MafRowsEncodeProps {

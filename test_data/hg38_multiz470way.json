@@ -45,7 +45,7 @@
             "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470waySummary.bb"
           }
         },
-        "annotationAdapter": {
+        "framesAdapter": {
           "type": "BigBedAdapter",
           "bigBedLocation": {
             "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470wayFrames.bb"

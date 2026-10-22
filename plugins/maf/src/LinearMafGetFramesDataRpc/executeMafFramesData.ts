@@ -9,19 +9,19 @@ import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 
 /**
  * The same three args as the other two tiers, `byteLimit` included. What
- * differs is the value, not the shape: the annotation adapter is a separate
+ * differs is the value, not the shape: the frames adapter is a separate
  * frozen config snapshot read off the display config rather than the track's
  * MAF adapter config model, and `getAdapter` accepts a snapshot directly.
  */
-export type LinearMafGetAnnotationDataArgs = BaseMafRpcArgs
+export type LinearMafGetFramesDataArgs = BaseMafRpcArgs
 
-export interface LinearMafGetAnnotationDataResult {
+export interface LinearMafGetFramesDataResult {
   records: MafFrameRecord[]
 }
 
 /**
  * Fetch the per-species CDS frame rows (UCSC `mafFrames`) overlapping a region
- * from the MAF adapter's `annotationAdapter` sub-adapter (typically a
+ * from the MAF adapter's `framesAdapter` sub-adapter (typically a
  * BigBedAdapter over `multiz<N>wayFrames.bb`). Each row carries the reference
  * extent, the species (`src`), the reading `frame`, and the gene `name` — enough
  * for the display to draw a frame-colored CDS box on that species' row. It is a
@@ -35,15 +35,15 @@ export interface LinearMafGetAnnotationDataResult {
  * file's own measurement, like every other executor's; the display's banner
  * quotes the tier it measured itself, so nothing else reads this number.
  */
-export async function executeMafAnnotationData({
+export async function executeMafFramesData({
   pluginManager,
   args,
 }: {
   pluginManager: PluginManager
-  args: RpcExecuteArgs<'LinearMafGetAnnotationData'>
-}): Promise<LinearMafGetAnnotationDataResult | RegionTooLargeResult> {
+  args: RpcExecuteArgs<'LinearMafGetFramesData'>
+}): Promise<LinearMafGetFramesDataResult | RegionTooLargeResult> {
   // `statusCallback` is this branch's own slot in the fetch's status fan-out —
-  // `fetchMafData` hands the annotation branch one — so the frames read reports
+  // `fetchMafData` hands the frames branch one — so the frames read reports
   // progress alongside the alignment's instead of leaving the slot empty.
   const { regions, byteLimit, signal, statusCallback } = args
   const region = regions[0]!
@@ -66,12 +66,12 @@ export async function executeMafAnnotationData({
     f => {
       const src = f.get('src')
       // Only mafFrames-shaped features (those carrying a `src` species column)
-      // contribute; a plain reference annotation adapter without `src` is ignored
+      // contribute; a plain reference frames adapter without `src` is ignored
       // here (it would need a different, reference-row-only path).
       if (typeof src === 'string') {
         // `nextFramePos` alone of the autoSql's four linkage columns — see
         // `MafFrameRecord` for why the other three have no reader. A plain
-        // annotation adapter without it yields undefined and the cross-exon
+        // frames adapter without it yields undefined and the cross-exon
         // stitch no-ops.
         const nextFramePos = f.get('nextFramePos')
         records.push({

@@ -6,7 +6,7 @@ import BigMafAdapterF from './BigMafAdapter/index.ts'
 import LinearMafClusterIdentityMatrixF from './LinearMafClusterIdentityRpc/index.ts'
 import LinearMafDisplayF from './LinearMafDisplay/index.ts'
 import LinearMafGetAlignmentDataF from './LinearMafGetAlignmentDataRpc/index.ts'
-import LinearMafGetAnnotationDataF from './LinearMafGetAnnotationDataRpc/index.ts'
+import LinearMafGetFramesDataF from './LinearMafGetFramesDataRpc/index.ts'
 import LinearMafGetSummaryDataF from './LinearMafGetSummaryDataRpc/index.ts'
 import MafAddTrackWorkflowF from './MafAddTrackWorkflow/index.ts'
 import MafGetSequencesF from './MafGetSequencesRpc/index.ts'
@@ -27,7 +27,7 @@ export default class MafPlugin extends Plugin {
     LinearMafDisplayF(pluginManager)
     LinearMafClusterIdentityMatrixF(pluginManager)
     LinearMafGetAlignmentDataF(pluginManager)
-    LinearMafGetAnnotationDataF(pluginManager)
+    LinearMafGetFramesDataF(pluginManager)
     LinearMafGetSummaryDataF(pluginManager)
     MafTabixAdapterF(pluginManager)
     MafAddTrackWorkflowF(pluginManager)

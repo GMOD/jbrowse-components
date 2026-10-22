@@ -91,7 +91,7 @@ export function frameColorIndex(frame: number, strand: number): number {
 
 /**
  * The color key for the CDS-frame strip, built through the very indexer
- * `drawMafAnnotations` paints with — same rule as the codon key below.
+ * `drawMafFrames` paints with — same rule as the codon key below.
  *
  * The strip had no key at all, on screen or exported, and could not have had
  * one: `colorScales` dispatches on `activeRowRendering`, and the strip is an
@@ -178,12 +178,10 @@ export function getCodonLegendItems(
   })
 }
 
-/** What a per-base letter paints in, by the cell under it. */
+/** What a per-base letter paints in: the contrast of its cell's color. */
 export interface MafLabelColors {
   forBase: Record<string, string>
   unknownBase: string
-  /** over a match cell */
-  neutral: string
 }
 
 export function getMafLabelColors(palette: JBrowsePalette): MafLabelColors {
@@ -196,6 +194,5 @@ export function getMafLabelColors(palette: JBrowsePalette): MafLabelColors {
       ]),
     ),
     unknownBase: getContrastText(unknownBaseColor),
-    neutral: palette.text.primary,
   }
 }

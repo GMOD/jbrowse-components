@@ -1,4 +1,7 @@
-import { getConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
+import {
+  getConfigurationSchemaDefinition,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 
 import bgzipMaf from '../BgzipMafAdapter/configSchema.ts'
 import bgzipTaffy from '../BgzipTaffyAdapter/configSchema.ts'
@@ -25,7 +28,7 @@ const NAMES = Object.keys(SCHEMAS) as (keyof typeof SCHEMAS)[]
 // stopped at `assemblyName` and never mentioned `assemblyConfigLocation`, which
 // `normalizeSamples` honors on all four — so a `.maf.gz` track's config page
 // said the field did not exist.
-test.each(['samples', 'nhLocation', 'samplesTsvLocation', 'annotationAdapter'])(
+test.each(['samples', 'nhLocation', 'samplesTsvLocation', 'framesAdapter'])(
   '%s is one table, not four',
   name => {
     const first = slot(SCHEMAS[NAMES[0]!], name)
@@ -56,3 +59,12 @@ test('summaryAdapter keeps its type across the four', () => {
     )
   }
 })
+
+test.each(NAMES)(
+  '%s lifts the beta annotationAdapter to framesAdapter',
+  name => {
+    const frames = { type: 'BigBedAdapter', uri: 'frames.bb' }
+    const conf = SCHEMAS[name].create({ type: name, annotationAdapter: frames })
+    expect(readConfObject(conf, 'framesAdapter')).toEqual(frames)
+  },
+)

@@ -122,8 +122,8 @@ function makeSelf() {
         committedBytes.push(bytes)
         committedPartials.push(partial)
       },
-      annotationsActive: false,
-      annotationAdapterConfig: undefined as Record<string, unknown> | undefined,
+      framesActive: false,
+      framesAdapterConfig: undefined as Record<string, unknown> | undefined,
       resolvedByteLimit: () => 1_000_000 as number | undefined,
       rpcProps: () => ({ rowFocus: undefined as string[] | undefined }),
       fetchRegions: (
@@ -425,8 +425,8 @@ describe('the CDS-frame read is measured against its own file', () => {
   function framesSelf(over: Record<string, unknown> = {}) {
     const made = makeSelf()
     Object.assign(made.self, {
-      annotationsActive: true,
-      annotationAdapterConfig: { type: 'BigBedAdapter' },
+      framesActive: true,
+      framesAdapterConfig: { type: 'BigBedAdapter' },
       ...over,
     })
     return made
@@ -438,7 +438,7 @@ describe('the CDS-frame read is measured against its own file', () => {
   function respondWith(refuse: boolean) {
     mockRpcCall.mockImplementation((_s: string, method: string) =>
       Promise.resolve(
-        method === 'LinearMafGetAnnotationData' && refuse
+        method === 'LinearMafGetFramesData' && refuse
           ? { regionTooLarge: true }
           : {
               samples: [],
@@ -455,7 +455,7 @@ describe('the CDS-frame read is measured against its own file', () => {
     mockRpcCall.mock.calls.filter(c => c[1] === method)
 
   // The budget travels with the read rather than ahead of it: the worker
-  // measures the annotation adapter itself and refuses in the same round trip,
+  // measures the frames adapter itself and refuses in the same round trip,
   // so nothing on the critical path waits on a separate probe.
   test('sends the budget with the read, and no pre-flight probe', async () => {
     const { self } = framesSelf()
@@ -463,7 +463,7 @@ describe('the CDS-frame read is measured against its own file', () => {
     await fetchMafAlignmentData(self as any, NEEDED)
 
     expect(callsTo('CoreGetRegionByteEstimate')).toHaveLength(0)
-    const frames = callsTo('LinearMafGetAnnotationData')
+    const frames = callsTo('LinearMafGetFramesData')
     expect(frames).toHaveLength(NEEDED.length)
     expect(frames[0]![2].adapterConfig).toEqual({ type: 'BigBedAdapter' })
     expect(frames[0]![2].byteLimit).toBe(1_000_000)
@@ -505,9 +505,7 @@ describe('the CDS-frame read is measured against its own file', () => {
     })
     respondWith(false)
     await fetchMafAlignmentData(self as any, NEEDED)
-    expect(
-      callsTo('LinearMafGetAnnotationData')[0]![2].byteLimit,
-    ).toBeUndefined()
+    expect(callsTo('LinearMafGetFramesData')[0]![2].byteLimit).toBeUndefined()
     expect(framesFetched()).toEqual([0, 3])
   })
 
@@ -517,7 +515,7 @@ describe('the CDS-frame read is measured against its own file', () => {
     const { self, framesFetched, framesBlocked } = framesSelf()
     mockRpcCall.mockImplementation((_s: string, method: string, args: any) =>
       Promise.resolve(
-        method === 'LinearMafGetAnnotationData' &&
+        method === 'LinearMafGetFramesData' &&
           args.regions[0].refName === 'ctgB'
           ? { regionTooLarge: true }
           : {
@@ -563,23 +561,23 @@ describe('the CDS-frame read is measured against its own file', () => {
   })
 
   test('the detail tier reads them with every frame consumer off', async () => {
-    const { self } = framesSelf({ annotationsActive: false })
+    const { self } = framesSelf({ framesActive: false })
     respondWith(false)
     await fetchMafAlignmentData(self as any, NEEDED)
-    expect(callsTo('LinearMafGetAnnotationData')).toHaveLength(2)
+    expect(callsTo('LinearMafGetFramesData')).toHaveLength(2)
   })
 
   test('the summary tier reads none while the strip is off', async () => {
-    const made = framesSelf({ annotationsActive: false })
+    const made = framesSelf({ framesActive: false })
     respondWith(false)
     await fetchSummary(made)
-    expect(callsTo('LinearMafGetAnnotationData')).toHaveLength(0)
+    expect(callsTo('LinearMafGetFramesData')).toHaveLength(0)
   })
 
   test('a track with no frames file reads none', async () => {
-    const { self } = framesSelf({ annotationAdapterConfig: undefined })
+    const { self } = framesSelf({ framesAdapterConfig: undefined })
     respondWith(false)
     await fetchMafAlignmentData(self as any, NEEDED)
-    expect(callsTo('LinearMafGetAnnotationData')).toHaveLength(0)
+    expect(callsTo('LinearMafGetFramesData')).toHaveLength(0)
   })
 })

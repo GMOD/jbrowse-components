@@ -15,7 +15,7 @@ const GREY = packAbgr(140, 140, 140, 255)
 
 function displayWith(color: unknown) {
   const { display, view } = createMafTestEnvironment({
-    displayConfig: { color, rowIdentityAutoZoom: false },
+    displayConfig: { color },
   }).createDisplay()
   view.zoomTo(16)
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)

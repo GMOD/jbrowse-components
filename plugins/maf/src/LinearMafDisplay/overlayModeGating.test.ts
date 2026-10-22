@@ -1,6 +1,10 @@
 import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
-import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
+import {
+  createMafTestEnvironment,
+  stageDetailRegion,
+  zoomPastBaseLevel,
+} from './testEnv.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
 
@@ -53,8 +57,7 @@ describe('insertion markers are only encoded for the rendering that draws them',
   it('emits none while the per-row identity plot owns the rows', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
-    // auto-zoom off pins the identity plot on at this zoom
-    display.setRowIdentityAutoZoom(false)
+    zoomPastBaseLevel(display.view)
     display.colorByField('identity')
     expect(display.activeRowRendering).toBe('identity')
     expect(insertionsOf(display)).toBe(0)
@@ -110,7 +113,7 @@ describe('the hover names an insertion only where its marker draws', () => {
   it('names the base under the identity plot', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
-    display.setRowIdentityAutoZoom(false)
+    zoomPastBaseLevel(display.view)
     display.colorByField('identity')
     expect(atAnchor(display)).toBe('cell')
   })

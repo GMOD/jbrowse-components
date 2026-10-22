@@ -12,8 +12,9 @@ function sample(id: string) {
   return { id, label: id }
 }
 
-function makeDisplay(samples: string[]) {
+function makeDisplay(samples: string[], showReferenceRow = true) {
   const { display } = createMafTestEnvironment().createDisplay()
+  display.setShowReferenceRow(showReferenceRow)
   display.setSamples({
     samples: samples.map(sample),
     treeNewick: `((${samples[0]},${samples[1]}),${samples[2]});`,
@@ -60,9 +61,15 @@ function leafNames(node: {
     : [node.data?.name ?? '']
 }
 
-// Under the default mismatch coloring the reference's own row matches at every
-// column, so it draws as a solid match-colored bar carrying no information.
-// UCSC omits it.
+// Under every color but `base` the reference's own row draws one constant
+// color, so it is off by default; the FASTA export keeps it.
+test('the reference row is off by default and the export keeps it', () => {
+  const display = makeDisplay([REF, 'panTro4', 'mm10'], false)
+  landRegion(display)
+  expect(rowNames(display)).toEqual(['panTro4', 'mm10'])
+  expect(display.exportSamples.map(s => s.id)).toEqual([REF, 'panTro4', 'mm10'])
+})
+
 test('hiding the reference drops its row and leaves the others in order', () => {
   const display = makeDisplay([REF, 'panTro4', 'mm10'])
   landRegion(display)

@@ -26,17 +26,9 @@ test.each(['light', 'dark'] as const)(
   'an IUPAC letter reads against its unknown-base cell (%s)',
   mode => {
     const { fill, palette } = fillOf(
-      { x: 0, y: 0, text: 'R', lowerBase: 'r', onBase: true },
+      { x: 0, y: 0, text: 'R', lowerBase: 'r' },
       mode,
     )
     expect(fill).not.toBe(getMafColorPalette(palette).unknownBaseColor)
   },
 )
-
-test('a letter over a match cell takes the neutral text color', () => {
-  const { fill, palette } = fillOf(
-    { x: 0, y: 0, text: 'A', lowerBase: 'a', onBase: false },
-    'light',
-  )
-  expect(fill).toBe(palette.text.primary)
-})

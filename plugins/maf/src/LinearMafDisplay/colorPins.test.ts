@@ -100,7 +100,6 @@ function keyOf(
   stage?: (display: ReturnType<typeof makeDisplay>['display']) => void,
 ) {
   const { display, view } = makeDisplay()
-  display.setRowIdentityAutoZoom(false)
   if (rendering === 'rampBars') {
     display.colorByField('identity')
     display.setYField('identity')
@@ -116,7 +115,7 @@ function keyOf(
 }
 
 function makeDisplay() {
-  return createMafTestEnvironment({ annotationAdapter: {} }).createDisplay()
+  return createMafTestEnvironment({ framesAdapter: {} }).createDisplay()
 }
 
 function stageTwoChromosomes(
@@ -172,7 +171,7 @@ describe('each field keys as it did', () => {
   })
 
   test('identity at one base a cell keys its two ends', () => {
-    expect(keyOf('identity', 1)).toEqual([
+    expect(keyOf('identity', 1.5)).toEqual([
       {
         kind: 'categorical',
         id: 'heatmap-base',

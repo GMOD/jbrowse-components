@@ -19,7 +19,7 @@ import type { Region } from '@jbrowse/core/util'
  */
 export function createMafTestEnvironment({
   summaryAdapter = null,
-  annotationAdapter = null,
+  framesAdapter = null,
   assemblyEnd = 10_000_000,
   viewRegionEnd = assemblyEnd,
   displayConfig,
@@ -27,11 +27,11 @@ export function createMafTestEnvironment({
   // Adapter-level `summaryAdapter` snapshot; the zoom-out summary path is off
   // when it is null.
   summaryAdapter?: unknown
-  // Adapter-level `annotationAdapter` (UCSC mafFrames) snapshot. Only its
+  // Adapter-level `framesAdapter` (UCSC mafFrames) snapshot. Only its
   // presence is read by the gates — the display asks whether a reading frame
   // *can* be defined, and the RPC that reads it is stubbed here — so a bare
   // `{}` is enough to turn the frame-gated options on.
-  annotationAdapter?: unknown
+  framesAdapter?: unknown
   assemblyEnd?: number
   // How much of the assembly `createDisplay` displays by default.
   viewRegionEnd?: number
@@ -45,10 +45,10 @@ export function createMafTestEnvironment({
       name: 'MafTabixAdapter',
       slots: {
         summaryAdapter: { type: 'maybeFrozen' },
-        annotationAdapter: { type: 'maybeFrozen' },
+        framesAdapter: { type: 'maybeFrozen' },
       },
       // No `samples` slot on the adapter → the sample-discovery path.
-      config: { type: 'MafTabixAdapter', summaryAdapter, annotationAdapter },
+      config: { type: 'MafTabixAdapter', summaryAdapter, framesAdapter },
     },
     displayName: 'LinearMafDisplay',
     configSchema: () => configSchemaF(),
@@ -100,4 +100,13 @@ export function stageDetailRegion(
   if (data.refSampleId !== undefined) {
     display.setRefSampleId(data.refSampleId)
   }
+}
+
+/**
+ * Zoom just past base level, where identity draws rather than yielding to the
+ * bases, while a base still spans more than half a pixel (`encodeBinBp` 1).
+ */
+export function zoomPastBaseLevel(view: LinearMafDisplayModel['view']) {
+  view.zoomTo(1.5)
+  view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
 }

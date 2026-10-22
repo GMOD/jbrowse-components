@@ -1,7 +1,4 @@
-import {
-  computeVisibleAnnotations,
-  findFrameAt,
-} from './computeVisibleAnnotations.ts'
+import { computeVisibleFrames, findFrameAt } from './computeVisibleFrames.ts'
 
 import type { MafFrameRecord } from '../../types.ts'
 
@@ -38,7 +35,7 @@ function rec(over: Partial<MafFrameRecord>): MafFrameRecord {
 }
 
 test('positions a CDS frame strip at the bottom of its species row', () => {
-  const markers = computeVisibleAnnotations({
+  const markers = computeVisibleFrames({
     view,
     framesDataMap: { get: () => [rec({ src: 'rn6', frame: 1 })] },
     rowIndexBySrc,
@@ -69,7 +66,7 @@ test('positions a CDS frame strip at the bottom of its species row', () => {
 test.each([15, 4, 2.5, 1.24, 1, 0.5, 0.06])(
   'the CDS strip is a band on the row at rowHeight %p, not instead of it',
   rowHeight => {
-    const markers = computeVisibleAnnotations({
+    const markers = computeVisibleFrames({
       view,
       framesDataMap: { get: () => [rec({ src: 'rn6' })] },
       rowIndexBySrc,
@@ -89,7 +86,7 @@ test.each([15, 4, 2.5, 1.24, 1, 0.5, 0.06])(
 // far end of a table laid out in reverse — three pieces of arithmetic in three
 // files that were only jointly checkable.
 test('mirrors the palette slot for minus-strand CDS', () => {
-  const markers = computeVisibleAnnotations({
+  const markers = computeVisibleFrames({
     view,
     framesDataMap: { get: () => [rec({ frame: 2, strand: -1 })] },
     rowIndexBySrc,
@@ -104,7 +101,7 @@ test('mirrors the palette slot for minus-strand CDS', () => {
 })
 
 test('drops rows whose src is not in the current source set', () => {
-  const markers = computeVisibleAnnotations({
+  const markers = computeVisibleFrames({
     view,
     framesDataMap: { get: () => [rec({ src: 'unlisted_species' })] },
     rowIndexBySrc,
@@ -117,7 +114,7 @@ test('drops rows whose src is not in the current source set', () => {
 })
 
 test('mirrors x for reversed regions', () => {
-  const markers = computeVisibleAnnotations({
+  const markers = computeVisibleFrames({
     view: {
       bpPerPx: 1,
       visibleRegions: [
@@ -146,7 +143,7 @@ test('mirrors x for reversed regions', () => {
 // here, so the strip ends at px10. Anchoring the leftmost edge instead puts it
 // at 9.9 and slides the strip a pixel off the exon it marks.
 test('widens a sub-pixel strip away from its start edge on a reversed region', () => {
-  const markers = computeVisibleAnnotations({
+  const markers = computeVisibleFrames({
     view: {
       bpPerPx: 10,
       visibleRegions: [
@@ -170,7 +167,7 @@ test('widens a sub-pixel strip away from its start edge on a reversed region', (
 })
 
 test('emits nothing when a region has no fetched frames', () => {
-  const markers = computeVisibleAnnotations({
+  const markers = computeVisibleFrames({
     view,
     framesDataMap: { get: () => undefined },
     rowIndexBySrc,
@@ -211,7 +208,7 @@ describe('findFrameAt', () => {
 // gene-dense window across a deep alignment produces a lot of them and about
 // half sit off screen. Same `[bpLo, bpHi)` cull the block overlays apply.
 test('skips frame records outside the visible span', () => {
-  const markers = computeVisibleAnnotations({
+  const markers = computeVisibleFrames({
     view,
     framesDataMap: {
       get: () => [

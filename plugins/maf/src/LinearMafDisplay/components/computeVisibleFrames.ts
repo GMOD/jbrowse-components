@@ -24,7 +24,7 @@ export interface FrameMarker {
   colorIndex: number
 }
 
-interface ComputeVisibleAnnotationsParams extends MafRowGeometryParams {
+interface ComputeVisibleFramesParams extends MafRowGeometryParams {
   view: VisibleRegionsView
   framesDataMap: RegionDataMap<MafFrameRecord[]>
   /**
@@ -52,13 +52,13 @@ export function findFrameAt(
 }
 
 /**
- * Positioned per-species CDS frame markers for the annotation overlay: one
+ * Positioned per-species CDS frame markers for the frames strip: one
  * frame-colored strip per `mafFrames` row, on its `src` species' row. The strip
  * is a thin band at the bottom of the row so it does not hide the base coloring
  * beneath.
  */
-export function computeVisibleAnnotations(
-  params: ComputeVisibleAnnotationsParams,
+export function computeVisibleFrames(
+  params: ComputeVisibleFramesParams,
 ): FrameMarker[] {
   const { view, framesDataMap, rowIndexBySrc, rowHeight } = params
   const markers: FrameMarker[] = []

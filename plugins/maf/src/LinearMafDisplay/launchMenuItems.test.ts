@@ -38,7 +38,7 @@ function model(
 ) {
   return {
     id: 'display1',
-    samples: [{ id: 's0' }, { id: 's1' }, { id: 's2' }],
+    exportSamples: [{ id: 's0' }, { id: 's1' }, { id: 's2' }],
     sources: [{ name: 's0' }, { name: 's1' }, { name: 's2' }],
     adapterConfig: { type: 'MafTabixAdapter' },
     coarseTierActive,

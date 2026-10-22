@@ -1,6 +1,6 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
-import { createMafTestEnvironment } from './testEnv.ts'
+import { createMafTestEnvironment, zoomPastBaseLevel } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -15,9 +15,8 @@ describe('row coloring is the color field and the bar height', () => {
   })
 
   it('a bar height pick keeps the color, and a color pick keeps the bars', () => {
-    const { display } = createMafTestEnvironment({
-      displayConfig: { rowIdentityAutoZoom: false },
-    }).createDisplay()
+    const { display, view } = createMafTestEnvironment().createDisplay()
+    zoomPastBaseLevel(view)
     display.setYField('identity')
     expect(display.colorField).toBe('mismatch')
     expect(display.identityEncoding).toBe('bars')
@@ -31,13 +30,10 @@ describe('row coloring is the color field and the bar height', () => {
   })
 
   it('takes a color and a bar height a config names together', () => {
-    const { display } = createMafTestEnvironment({
-      displayConfig: {
-        color: 'identity',
-        y: 'identity',
-        rowIdentityAutoZoom: false,
-      },
+    const { display, view } = createMafTestEnvironment({
+      displayConfig: { color: 'identity', y: 'identity' },
     }).createDisplay()
+    zoomPastBaseLevel(view)
     expect(display.selectedColorField).toBe('identity')
     expect(display.rowsColor).toBe('identity')
     expect(display.rowsY).toBe('identity')
@@ -48,7 +44,7 @@ describe('row coloring is the color field and the bar height', () => {
   it('does not select codon view without a frames adapter', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     display.colorByField('codon')
-    expect(display.annotationAdapterConfig).toBeUndefined()
+    expect(display.framesAdapterConfig).toBeUndefined()
     expect(display.selectedColorField).toBe('mismatch')
     expect(display.rowsColor).toBe('mismatch')
   })
@@ -96,9 +92,8 @@ describe('the track menu writes color and the bar height apart', () => {
   })
 
   it('reaches identity bars on the identity ramp', () => {
-    const { display } = createMafTestEnvironment({
-      displayConfig: { rowIdentityAutoZoom: false },
-    }).createDisplay()
+    const { display, view } = createMafTestEnvironment().createDisplay()
+    zoomPastBaseLevel(view)
     const pick = (menu: string, label: string) => {
       const row = subMenu(display.trackMenuItems(), menu).find(
         i => 'label' in i && i.label === label,
@@ -120,7 +115,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
   // stubbed, so the shape of the frames adapter doesn't matter here.
   const framesEnv = (opts: { summaryAdapter?: unknown } = {}) =>
     createMafTestEnvironment({
-      annotationAdapter: { type: 'BigBedAdapter' },
+      framesAdapter: { type: 'BigBedAdapter' },
       ...opts,
     })
 
@@ -153,7 +148,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     expect(display.activeRowRendering).toBe('mismatch')
   })
 
-  it('yields an identity plot to the bases at base level, unless pinned', () => {
+  it('yields an identity plot to the bases at base level', () => {
     const { display, view } = framesEnv().createDisplay()
     display.colorByField('identity')
     zoomAndSettle(view, 100)
@@ -162,9 +157,6 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     // UCSC wigMaf: zoomed in, the letters say more than a per-pixel mean of them
     zoomAndSettle(view, 0.5)
     expect(display.activeRowRendering).toBe('mismatch')
-
-    display.setRowIdentityAutoZoom(false)
-    expect(display.activeRowRendering).toBe('identity')
   })
 
   it('yields the bar height to the color field at base level', () => {

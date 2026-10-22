@@ -60,7 +60,7 @@ export const MAF_FIELD_PRESETS = {
  * `base` every base, `identity` the mean identity to the reference along a
  * ramp, `chromosome` each block by the rank of its source chromosome within
  * the row, and `codon` each codon by its amino-acid change, given an
- * `annotationAdapter`. A string is the field. Each field has one scale:
+ * `framesAdapter`. A string is the field. Each field has one scale:
  * `identity` runs from `domainMin` 0 to `domainMax` 1 along the
  * `redgreyblue` scheme, as every display's identity does, and the others are
  * categorical. The bases and the

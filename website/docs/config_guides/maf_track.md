@@ -219,7 +219,7 @@ row as a bar chart of its identity to the reference in place of a band of cells:
 
 ## CDS frames
 
-`annotationAdapter` on the MAF adapter points at a UCSC `mafFrames` file (a
+`framesAdapter` on the MAF adapter points at a UCSC `mafFrames` file (a
 `BigBedAdapter` over `multiz<N>wayFrames.bb`): each gene's CDS reading frame
 projected through the alignment, one record per (species, region), keyed by
 `src` species. It enables the "CDS frames" overlay and the "Codon changes (amino
@@ -248,7 +248,7 @@ and frames (codon view) files from the same download directory:
         "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470waySummary.bb"
       }
     },
-    "annotationAdapter": {
+    "framesAdapter": {
       "type": "BigBedAdapter",
       "bigBedLocation": {
         "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470wayFrames.bb"

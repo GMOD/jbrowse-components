@@ -27,7 +27,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 export type MafLaunchModel = SampleNavigationModel &
   MafSyntenyLaunchModel &
   SubsequenceHost & {
-    samples: Sample[]
+    exportSamples: Sample[]
     sources: unknown[]
     coarseTierActive: boolean
     view: { width: number }
@@ -57,7 +57,7 @@ export function mafLaunchMenuItems({
         {
           label: 'View subsequences (visible region)',
           icon: NotesIcon,
-          disabled: model.samples.length === 0,
+          disabled: model.exportSamples.length === 0,
           onClick: () => {
             // `width - 1`, the last pixel the window paints, matching the
             // entries below.
@@ -67,7 +67,7 @@ export function mafLaunchMenuItems({
               view,
               0,
               view.width - 1,
-              model.samples,
+              model.exportSamples,
             )
           },
         },

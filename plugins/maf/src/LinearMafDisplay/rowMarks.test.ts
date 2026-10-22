@@ -2,7 +2,11 @@ import { autorun } from 'mobx'
 
 import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
-import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
+import {
+  createMafTestEnvironment,
+  stageDetailRegion,
+  zoomPastBaseLevel,
+} from './testEnv.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
 import type { Region } from '@jbrowse/core/util'
@@ -161,9 +165,9 @@ describe('color by source chromosome is a row mark', () => {
 
 describe('identity is a row mark', () => {
   it('encodes the heatmap as cells and no bars', () => {
-    const { display } = createMafTestEnvironment().createDisplay()
+    const { display, view } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
-    display.setRowIdentityAutoZoom(false)
+    zoomPastBaseLevel(view)
     display.colorByField('identity')
     const payload = display.encodedUpload.get(0)!
     expect(payload.cells.count).toBe(0)
@@ -172,9 +176,9 @@ describe('identity is a row mark', () => {
   })
 
   it('encodes the X-Y plot as bars, on the ramp only under color identity', () => {
-    const { display } = createMafTestEnvironment().createDisplay()
+    const { display, view } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
-    display.setRowIdentityAutoZoom(false)
+    zoomPastBaseLevel(view)
     display.setYField('identity')
     const flat = display.encodedUpload.get(0)!.identityBars!
     expect(flat.count).toBeGreaterThan(0)
@@ -193,7 +197,7 @@ describe('identity is a row mark', () => {
       ],
     })
     seedRegion(display)
-    display.setRowIdentityAutoZoom(false)
+    zoomPastBaseLevel(display.view)
     display.colorByField('identity')
     const dispose = observed(display)
     const before = display.encodedUpload.get(0)!.identity

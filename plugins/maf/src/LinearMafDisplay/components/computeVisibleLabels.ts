@@ -1,10 +1,5 @@
 import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
-import {
-  DASH,
-  LOWER_BIT,
-  isGapByte,
-  sameBase,
-} from '@jbrowse/core/util/alignedBytes'
+import { DASH, LOWER_BIT, isGapByte } from '@jbrowse/core/util/alignedBytes'
 
 import { CHAR_SIZE_WIDTH } from '../../LinearMafRenderer/rendering/types.ts'
 import { paintsMatchColor } from '../../LinearMafRenderer/resolveCellColor.ts'
@@ -17,28 +12,22 @@ export interface VisibleLabel {
   y: number
   text: string
   lowerBase: string
-  /** the cell under the letter paints its base's color, not the match color */
-  onBase: boolean
 }
 
 interface ComputeVisibleLabelsParams extends MafOverlayParams {
-  showAllLetters: boolean
-  showAsUpperCase: boolean
   /** a matching base's cell paints its own color */
   colorMatches: boolean
 }
 
+/**
+ * A letter over every cell that paints its base's color, in the case the file
+ * gives it: under `color: 'mismatch'` the mismatches, under `base` every base.
+ */
+
 export function computeVisibleLabels(
   params: ComputeVisibleLabelsParams,
 ): VisibleLabel[] {
-  const {
-    view,
-    rpcDataMap,
-    rowHeight,
-    showAllLetters,
-    showAsUpperCase,
-    colorMatches,
-  } = params
+  const { view, rpcDataMap, rowHeight, colorMatches } = params
 
   const labels: VisibleLabel[] = []
   const { h, offset, firstRow, endRow } = rowViewport(params)
@@ -82,20 +71,18 @@ export function computeVisibleLabels(
               break
             }
             const alnCode = alignmentBytes[i]!
-            if (bp >= bpLo && !isGapByte(alnCode)) {
-              if (showAllLetters || !sameBase(refCode, alnCode)) {
-                const displayCode = showAsUpperCase
-                  ? alnCode & ~LOWER_BIT
-                  : alnCode
-                labels.push({
-                  // +0.5 → cell center, orientation-aware via bpToPx
-                  x: bpToPx(bp + 0.5),
-                  y: yPos,
-                  text: String.fromCharCode(displayCode),
-                  lowerBase: String.fromCharCode(alnCode | LOWER_BIT),
-                  onBase: !paintsMatchColor(refCode, alnCode, colorMatches),
-                })
-              }
+            if (
+              bp >= bpLo &&
+              !isGapByte(alnCode) &&
+              !paintsMatchColor(refCode, alnCode, colorMatches)
+            ) {
+              labels.push({
+                // +0.5 → cell center, orientation-aware via bpToPx
+                x: bpToPx(bp + 0.5),
+                y: yPos,
+                text: String.fromCharCode(alnCode),
+                lowerBase: String.fromCharCode(alnCode | LOWER_BIT),
+              })
             }
             genomicOffset++
           }

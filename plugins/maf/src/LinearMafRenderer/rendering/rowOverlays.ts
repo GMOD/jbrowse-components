@@ -6,17 +6,17 @@ import {
   getMafColorPalette,
   getMafLabelColors,
 } from '../util.ts'
-import { drawMafAnnotations } from './annotations.ts'
 import { drawMafCodons } from './codons.ts'
 import { drawMafDeletionLabels } from './deletions.ts'
 import { drawMafEmptyLines } from './emptyLines.ts'
+import { drawMafFrames } from './frames.ts'
 import { drawInversions } from './inversions.ts'
 import { drawMafLabels } from './labels.ts'
 
 import type { CodonGlyph } from '../../LinearMafDisplay/codons.ts'
-import type { FrameMarker } from '../../LinearMafDisplay/components/computeVisibleAnnotations.ts'
 import type { DeletionMarker } from '../../LinearMafDisplay/components/computeVisibleDeletions.ts'
 import type { EmptyLineSegment } from '../../LinearMafDisplay/components/computeVisibleEmptyLines.ts'
+import type { FrameMarker } from '../../LinearMafDisplay/components/computeVisibleFrames.ts'
 import type { InversionMarker } from '../../LinearMafDisplay/components/computeVisibleInversions.ts'
 import type { VisibleLabel } from '../../LinearMafDisplay/components/computeVisibleLabels.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
@@ -63,7 +63,7 @@ export function paintMafRowOverlays(
 ) {
   const { blocks, channelsOf, frame, params } = overlays.insertions
   drawMafEmptyLines(ctx, overlays.emptyLines, theme.colors)
-  drawMafAnnotations(ctx, overlays.frames, theme.frameColors)
+  drawMafFrames(ctx, overlays.frames, theme.frameColors)
   paintInsertionLabels(ctx, blocks, channelsOf, frame, params)
   drawMafDeletionLabels(ctx, overlays.deletions, theme.colors)
   drawMafLabels(ctx, overlays.labels, theme.labelColors)

@@ -292,7 +292,7 @@ describe('the frames overlay across the swap', () => {
   const framesEnv = () =>
     createMafTestEnvironment({
       summaryAdapter: { type: 'BigBedAdapter' },
-      annotationAdapter: { type: 'BigBedAdapter' },
+      framesAdapter: { type: 'BigBedAdapter' },
     })
   const frame = (name: string): MafFrameRecord => ({
     refName: 'ctgA',
@@ -309,7 +309,7 @@ describe('the frames overlay across the swap', () => {
   it('reads the tier on screen first', () => {
     const { display, view } = framesEnv().createDisplay()
     seedSources(display)
-    display.setShowAnnotations(true)
+    display.setShowFrames(true)
     seedSummary(display, view.displayedRegions, [], [frame('wide')])
     seedAlignment(display, undefined, [frame('narrow')])
 
@@ -325,7 +325,7 @@ describe('the frames overlay across the swap', () => {
   it('stands in with the other tier where the tier on screen holds none', () => {
     const { display, view } = framesEnv().createDisplay()
     seedSources(display)
-    display.setShowAnnotations(true)
+    display.setShowFrames(true)
     seedAlignment(display, undefined, [frame('narrow')])
 
     view.zoomTo(100)
