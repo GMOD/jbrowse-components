@@ -325,8 +325,8 @@ A linear synteny or dotplot view snapshot's v4.3.0 settings, lifted onto the
 view: `colorBy` (a mode string), `alpha` and `minAlignmentLength` sat on each
 synteny display, and land as `color`, `opacity` and a `filter` predicate
 on `length`.
-Launch links from the genomes portal put the mode string on the
-view itself, which lifts the same way.
+An older genomes-portal launch link puts the mode string on the view
+itself, which lifts the same way.
 
 ```js
 // type signature

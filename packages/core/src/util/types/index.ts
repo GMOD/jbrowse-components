@@ -207,7 +207,6 @@ export interface AbstractSessionModel
   setSelection: (feature: Feature) => void
   setSession?: (arg: { name: string; [key: string]: unknown }) => void
   clearSelection: () => void
-  duplicateCurrentSession?: () => void
   version: string
   gitCommit?: string
   getTrackActionMenuItems?: (arg: {
@@ -877,8 +876,6 @@ export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
 export interface AbstractDisplayModel {
   id: string
   parentTrack: AbstractTrackModel
-  renderDelay: number
-  cannotBeRenderedReason?: string
 }
 export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
   return (

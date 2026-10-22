@@ -46,7 +46,6 @@ describe('the band stack', () => {
         lineZoneHeight: 30,
       }),
     ).toEqual({
-      laneTop: 0,
       laneHeight: 20,
       wantsName: false,
       wantsDescription: false,
@@ -67,7 +66,6 @@ describe('the band stack', () => {
         lineZoneHeight: 30,
       }),
     ).toEqual({
-      laneTop: 0,
       laneHeight: 0,
       wantsName: false,
       wantsDescription: false,

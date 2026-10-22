@@ -32,8 +32,6 @@ interface VariantTopBandsInput {
 }
 
 export interface VariantTopBands {
-  /** Always 0: the lane is the topmost band. */
-  laneTop: number
   /** **0 when the lane is off**. */
   laneHeight: number
   /**
@@ -108,7 +106,6 @@ export function variantTopBandsGeometry({
     lineZone: { active: true, height: lineZoneHeight },
   })
   return {
-    laneTop: top.lane,
     laneHeight: reserved.lane,
     wantsName: modeCanShowName(variantLaneLabels),
     wantsDescription: modeCanShowDescription(variantLaneLabels),

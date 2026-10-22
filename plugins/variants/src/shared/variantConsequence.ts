@@ -134,19 +134,11 @@ export function getVariantConsequences(feature: Feature) {
 }
 
 /**
- * The impact scale's domain value for a variant: its most severe tier, or
- * {@link UNANNOTATED_IMPACT}.
- */
-export function getVariantImpactDomain(feature: Feature) {
-  return getVariantImpact(feature) || UNANNOTATED_IMPACT
-}
-
-/**
  * A CSS color for the variant's most severe impact tier, for use as a
  * per-feature `color` jexl.
  */
 export function getVariantImpactColor(feature: Feature) {
-  return IMPACT_COLOR[getVariantImpact(feature)] ?? NO_IMPACT_COLOR
+  return getImpactColor(getVariantImpact(feature))
 }
 
 /** The swatch {@link getVariantImpactColor} paints one domain value with. */

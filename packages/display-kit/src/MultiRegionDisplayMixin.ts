@@ -649,8 +649,8 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #action
-         * Forget one region — for a display pruning what has scrolled off
-         * screen.
+         * Forget one region, as `evictRegionStore` does past its cap. Tests
+         * use it to stage an evicted region.
          */
         dropLoadedRegion(displayedRegionIndex: number) {
           self.loadedRegions.delete(displayedRegionIndex)
