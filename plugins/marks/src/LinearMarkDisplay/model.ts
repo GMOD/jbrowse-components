@@ -2047,6 +2047,7 @@ export type {
 } from './markList.ts'
 export type { MarkPlot, MarkPlotSettings } from './markPlot.ts'
 export type { MarkProblem } from './markProblems.ts'
+export type { RowKeySpace, RowName } from './rowTable.ts'
 export type { JoinedPlotFields, PlotFields } from './scanPlotFields.ts'
 export type { StepChannels } from './stepChannels.ts'
 
