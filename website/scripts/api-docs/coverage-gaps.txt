@@ -50,7 +50,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1326)
+# model members with no description (1325)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -996,7 +996,6 @@ LinearSyntenyView.setCigarMode
 LinearSyntenyView.setDiagonalizeAnchorRow
 LinearSyntenyView.setError
 LinearSyntenyView.setFollowAnchorIndex
-LinearSyntenyView.setFollowMatchOrientation
 LinearSyntenyView.setFollowSynteny
 LinearSyntenyView.setInterpolate
 LinearSyntenyView.setLaunch

@@ -26,4 +26,3 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | --- | --- |
 | <span id="slot-follow">**follow**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | the other rows follow the anchor row through the alignment; a drag or zoom on a row makes it the anchor |
 | <span id="slot-anchor">**anchor**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | the genome row, counted from the top, the others follow |
-| <span id="slot-matchorientation">**matchOrientation**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | while following, flip a row whose placing alignment runs the other way from the anchor's, so the two pan in the same direction |

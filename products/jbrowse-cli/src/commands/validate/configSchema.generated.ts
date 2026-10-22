@@ -26986,16 +26986,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "type": "number"
           }
-        },
-        "matchOrientation": {
-          "description": "while following, flip a row whose placing alignment runs the other way from the anchor's, so the two pan in the same direction.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
         }
       },
       "patternProperties": {
