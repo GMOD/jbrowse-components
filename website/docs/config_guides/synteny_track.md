@@ -309,6 +309,25 @@ way the scored table above names `score`. For a partner species the export
 lacks, the script writes no table and exits without an error, so check each
 `--species` name against the `homology_species` column in the file.
 
+### From gene symbols
+
+NCBI's RefSeq pipelines name a gene after its ortholog, so for RefSeq
+annotations the table is a join on each GFF3's gene names, with no alignment.
+[`symbols_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/symbols_to_blocks.py)
+writes the table and a BED per genome, and prints the column order:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/symbols_to_blocks.py
+# --anchor names the genome whose genes are the rows
+python3 symbols_to_blocks.py --anchor human -o primates.blocks \
+  human=human.gff.gz chimp=chimp.gff.gz macaque=macaque.gff.gz
+```
+
+[](/docs/tutorials/primate_orthologs_synteny) runs it on eukaryotic annotations.
+[](/docs/tutorials/ecoli_orthologs_synteny) adds the flags bacterial (PGAP)
+annotations need, for genes named by locus tag and genes renamed between
+releases.
+
 ### From reciprocal best BLAST hits
 
 Reduce each direction of an all-vs-all `blastp` or DIAMOND run (`-outfmt 6`) to
