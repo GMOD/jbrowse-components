@@ -13464,8 +13464,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "default": "count",
-          "const": "count",
+          "default": "observed",
+          "enum": [
+            "observed",
+            "observed/expected"
+          ],
           "type": "string"
         },
         {
@@ -13474,13 +13477,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "count, each bin's contact count.",
-              "default": "count",
+              "description": "observed, each bin's contact count, or observed/expected, that count over the file's expected count at its distance.",
+              "default": "observed",
               "if": {
                 "type": "null"
               },
               "else": {
-                "const": "count"
+                "enum": [
+                  "observed",
+                  "observed/expected"
+                ]
               }
             },
             "scheme": {

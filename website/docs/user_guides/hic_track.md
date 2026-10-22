@@ -161,17 +161,24 @@ reorder so the links sit above it. A link's `size` sets its stroke width, and
 
 At tens of megabases the matrix separates into two interleaved sets of regions
 that preferentially contact regions of the same set: the A compartment, which is
-gene-rich and active, and the B compartment, which is not. In a published figure
-this reads as a checkerboard, but that picture is drawn from an
-_observed/expected_ matrix, where each bin has been divided by the average
-contact at its separation and then correlated. JBrowse draws raw or
-matrix-balanced counts, and against the steep decay of contact with distance the
-compartment signal stays a faint texture. Balanced counts on a linear ramp show
-it best; `Log scale` on a deeply sequenced file returns solid red.
+gene-rich and active, and the B compartment, which is not. Against the steep
+decay of contact with distance, that signal stays a faint texture in the counts.
 
-Load the compartment call itself; the processing pipeline has already made it.
-ENCODE publishes two such files per Hi-C experiment, both derived from the
-matrix in the same track:
+**Values → Observed/expected** divides each count by the file's expected count
+at its distance, the view Juicebox calls O/E. The decay drops out, so a block
+between two regions of one compartment draws red and a block between opposite
+compartments blue. The ratio runs from a quarter to fourfold around 1 on every
+track, so two tracks set to it share one scale; hovering a bin prints the ratio,
+the count and the expected count. Where the file has no expected values at the
+binsize on screen, JBrowse draws the counts instead and the key says
+**Contacts**.
+
+<Figure src="/img/hic/observed_expected.png" caption="Observed/expected over hg19 chr8, red where two regions contact more than their distance predicts." links="Open this view=hic/observed_expected" />
+
+Published compartment figures usually correlate those ratios as well, which
+JBrowse does not draw. The compartment call itself is the closer match, and the
+processing pipeline has already made it. ENCODE publishes two such files per
+Hi-C experiment, both derived from the matrix in the same track:
 
 - The **compartment eigenvector**, a BigWig. Its sign is the compartment
   assignment and its magnitude is how strongly a bin belongs, so it loads as an

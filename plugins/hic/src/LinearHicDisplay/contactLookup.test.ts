@@ -75,6 +75,7 @@ function makeData(
     originBp: 0,
     resolution: 1000,
     appliedNormalization: 'KR',
+    appliedField: 'observed',
     regions,
     pairRuns,
   } satisfies HicDataResult

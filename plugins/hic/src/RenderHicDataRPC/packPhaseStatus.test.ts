@@ -45,6 +45,7 @@ test('the pack after the download reports its own determinate phase', async () =
       originBp: 0,
       resolution: RES,
       normalization: 'KR',
+      field: 'observed',
       quantile: 0.95,
       statusCallback: status => {
         statuses.push(status)

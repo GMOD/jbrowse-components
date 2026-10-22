@@ -7,15 +7,19 @@ import { colorSchemeMenuItem } from '@jbrowse/display-kit/colorByMenu'
 import { makeResolutionSubMenuItem } from '@jbrowse/wiggle-core/chrome'
 import BalanceIcon from '@mui/icons-material/Balance'
 import GridOnIcon from '@mui/icons-material/GridOn'
+import InsightsIcon from '@mui/icons-material/Insights'
 import ViewQuiltIcon from '@mui/icons-material/ViewQuilt'
 
-import type { HicColorScale } from './hicColorConfigSchema.ts'
+import type { HicColorField, HicColorScale } from './hicColorConfigSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { TriangleHeightMode } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 interface HicMenuSelf extends IStateTreeNode {
+  colorField: HicColorField
+  paintedColorField: HicColorField
+  setColorField: (field: HicColorField) => void
   colorScaleType: HicColorScale
   colorFollowsPercentile: boolean
   saturationQuantile: number
@@ -120,6 +124,44 @@ function colorScaleMenuItems(self: HicMenuSelf): MenuItem[] {
   ]
 }
 
+const FIELD_ITEMS: { value: HicColorField; label: string; helpText: string }[] =
+  [
+    {
+      value: 'observed',
+      label: 'Observed',
+      helpText: 'Each bin colored by its contact count.',
+    },
+    {
+      value: 'observed/expected',
+      label: 'Observed/expected',
+      helpText:
+        "Each count over the file's expected count at that distance, so compartments and loops show above the decay of contact with distance. Red is enriched, blue depleted.",
+    },
+  ]
+
+// Ticks the field the loaded cells are; a file with no expected values at the
+// binsize paints counts, and the row asked for says why.
+function fieldMenuItem(self: HicMenuSelf): MenuItem {
+  const { colorField, paintedColorField } = self
+  return {
+    label: 'Values',
+    icon: InsightsIcon,
+    subMenu: radioItems(
+      FIELD_ITEMS.map(item => ({
+        ...item,
+        helpText:
+          item.value === colorField && paintedColorField !== colorField
+            ? 'This file has no expected values at the current resolution, so the cells show counts.'
+            : item.helpText,
+      })),
+      paintedColorField,
+      field => {
+        self.setColorField(field)
+      },
+    ),
+  }
+}
+
 // The schemes the file offers, ticked by what the loaded matrix carries: a
 // file can hold a scheme at one binsize and not another.
 function normalizationMenuItems(self: HicMenuSelf): MenuItem[] {
@@ -156,7 +198,11 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
     ...resolutionMenuItems(self),
     ...makeShowSubMenu(showMenuItems(self)),
     layoutMenuItem(self),
-    colorSchemeMenuItem(self, colorScaleMenuItems(self)),
+    fieldMenuItem(self),
+    colorSchemeMenuItem(
+      self,
+      self.paintedColorField === 'observed' ? colorScaleMenuItems(self) : [],
+    ),
     ...normalizationMenuItems(self),
   ]
 }

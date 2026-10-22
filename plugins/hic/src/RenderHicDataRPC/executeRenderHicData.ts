@@ -32,6 +32,7 @@ export async function executeRenderHicData({
     originBp,
     resolution,
     normalization,
+    field,
     quantile,
     signal,
     statusCallback,
@@ -47,10 +48,21 @@ export async function executeRenderHicData({
   ).getMultiRegionContactRecords(regions, {
     resolution,
     normalization,
+    expected: field === 'observed/expected',
     signal,
     statusCallback,
   })
   checkAbortSignal(signal)
+
+  // A file with no expected values at this binsize paints its counts and says
+  // so; one missing them for some pairs leaves those pairs out, since a count
+  // on a ratio ramp would read as enrichment.
+  const appliedField =
+    field === 'observed/expected' &&
+    (pairs.length === 0 || pairs.some(pair => pair.expected))
+      ? 'observed/expected'
+      : 'observed'
+  const ratio = appliedField === 'observed/expected'
 
   const w = resolution / Math.SQRT2
   const resultRegions = buildResultRegions(regions, axisBlocks, resolution)
@@ -67,7 +79,21 @@ export async function executeRenderHicData({
     },
     report => {
       let read = 0
-      for (const { region1Idx, region2Idx, bin1, bin2, counts } of pairs) {
+      for (const pair of pairs) {
+        const { region1Idx, region2Idx, bin1, bin2, counts, expected } = pair
+        if (ratio && !expected) {
+          read += bin1.length
+          report(read)
+          continue
+        }
+        // Hoisted so the loop reads one array or one number: within a
+        // chromosome the expected count indexes by distance, between
+        // chromosomes it is the map's average.
+        const byDistance =
+          expected?.kind === 'intra' ? expected.values : undefined
+        const firstDistance =
+          expected?.kind === 'intra' ? expected.firstDistance : 0
+        const average = expected?.kind === 'inter' ? expected.average : 1
         const r1 = resultRegions[region1Idx]!
         const r2 = resultRegions[region2Idx]!
         const off1 = r1.combinedOffset
@@ -85,6 +111,17 @@ export async function executeRenderHicData({
           if (Number.isNaN(count)) {
             continue
           }
+          let value = count
+          if (ratio) {
+            const e = byDistance
+              ? byDistance[Math.abs(bin2[k]! - bin1[k]!) - firstDistance]!
+              : average
+            value = count / e
+            // a zero expected count makes no ratio
+            if (!Number.isFinite(value)) {
+              continue
+            }
+          }
           const u1 = (bin1[k]! + off1) * w
           const u2 = (bin2[k]! + off2) * w
           const m1 = r1.reversed ? mirror1 - u1 : u1
@@ -92,11 +129,17 @@ export async function executeRenderHicData({
           // Only a pair inside one reversed region can come out of order, and
           // the matrix is symmetric, so re-canonicalize to stay above the axis.
           setInstancePosition(packed, at, Math.min(m1, m2), Math.max(m1, m2))
-          setInstanceCount(packed, at, count)
+          setInstanceCount(packed, at, value)
           at++
         }
         if (at > start) {
-          pairRuns.push({ region1Idx, region2Idx, start, end: at })
+          pairRuns.push({
+            region1Idx,
+            region2Idx,
+            start,
+            end: at,
+            expected: ratio ? expected : undefined,
+          })
         }
         read += n
         report(read)
@@ -118,9 +161,17 @@ export async function executeRenderHicData({
       originBp,
       resolution,
       appliedNormalization,
+      appliedField,
       regions: resultRegions,
       pairRuns,
     },
-    [instances.buffer],
+    [
+      instances.buffer,
+      ...new Set(
+        pairRuns.flatMap(run =>
+          run.expected?.kind === 'intra' ? [run.expected.values.buffer] : [],
+        ),
+      ),
+    ],
   )
 }

@@ -4,6 +4,7 @@ import { DEFAULT_HIC_COLOR_SCHEME } from './hicColorConfigSchema.ts'
 import { createTestEnvironment } from './testEnv.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
+import type { HicColorField } from './hicColorConfigSchema.ts'
 import type { LinearHicDisplayModel } from './model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -13,6 +14,9 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 function baseSelf() {
   return {
+    colorField: 'observed' as HicColorField,
+    paintedColorField: 'observed' as HicColorField,
+    setColorField: jest.fn(),
     colorScaleType: 'linear' as const,
     colorFollowsPercentile: true,
     saturationQuantile: 0.95,
@@ -150,7 +154,12 @@ describe('hic track menu shape', () => {
         availableNormalizations: undefined,
       }),
     )
-    expect(items.map(labelOf)).toEqual(['Show...', 'Layout', 'Color scheme'])
+    expect(items.map(labelOf)).toEqual([
+      'Show...',
+      'Layout',
+      'Values',
+      'Color scheme',
+    ])
 
     expect(
       buildHicTrackMenuItems(makeSelf({ availableNormalizations: [] })).map(

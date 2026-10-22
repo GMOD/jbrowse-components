@@ -7221,12 +7221,20 @@ export const configManifest: ConfigManifest = {
             "string": "field"
           },
           "fieldPresets": {
-            "count": {
+            "observed": {
               "scale": "linear",
               "scheme": "juicebox"
+            },
+            "observed/expected": {
+              "scale": "log",
+              "scheme": "redblue",
+              "reverse": true,
+              "domainMin": 0.25,
+              "domainMax": 4,
+              "domainMid": 1
             }
           },
-          "fieldDefault": "count"
+          "fieldDefault": "observed"
         },
         {
           "name": "resolutionBias",

@@ -5,9 +5,13 @@ import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
+import { expectedOf } from '../contactLookup.ts'
 import { HicRenderer } from './HicRenderer.ts'
 
-import type { HicDataResult } from '../../RenderHicDataRPC/types.ts'
+import type {
+  HicContactItem,
+  HicDataResult,
+} from '../../RenderHicDataRPC/types.ts'
 import type { LinearHicDisplayModel } from '../model.ts'
 import type { MouseState } from '@jbrowse/core/ui/useMouseTracking'
 
@@ -60,15 +64,13 @@ const ContactAxisGuides = observer(function ContactAxisGuides({
 const HicTooltip = observer(function HicTooltip({
   locus1,
   locus2,
-  label,
-  value,
+  rows,
   x,
   y,
 }: {
   locus1: string
   locus2: string
-  label: string
-  value: string
+  rows: readonly (readonly [string, string])[]
   x: number
   y: number
 }) {
@@ -76,12 +78,32 @@ const HicTooltip = observer(function HicTooltip({
     <BaseTooltip clientPoint={{ x, y }}>
       <div>{locus1}</div>
       <div>{locus2}</div>
-      <div>
-        {label}: {value}
-      </div>
+      {rows.map(([label, value]) => (
+        <div key={label}>
+          {label}: {value}
+        </div>
+      ))}
     </BaseTooltip>
   )
 })
+
+// A ratio is read with its two operands beside it, so speckle over a tiny
+// expected count can be told from signal.
+function valueRows(
+  model: LinearHicDisplayModel,
+  data: HicDataResult,
+  item: HicContactItem,
+) {
+  const value = [model.valueLabel, formatScore(item.value)] as const
+  const expected = expectedOf(data, item)
+  return expected === undefined
+    ? [value]
+    : [
+        value,
+        ['Observed', formatScore(item.value * expected)] as const,
+        ['Expected', formatScore(expected)] as const,
+      ]
+}
 
 const HicPointer = observer(function HicPointer({
   model,
@@ -104,8 +126,7 @@ const HicPointer = observer(function HicPointer({
         <HicTooltip
           locus1={formatLocus(rpcData, item.region1Idx, item.bin1)}
           locus2={formatLocus(rpcData, item.region2Idx, item.bin2)}
-          label={model.valueLabel}
-          value={formatScore(item.value)}
+          rows={valueRows(model, rpcData, item)}
           x={mouseState.clientX}
           y={mouseState.clientY}
         />

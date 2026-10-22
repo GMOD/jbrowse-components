@@ -43,6 +43,7 @@ export function toContacts(
   const pairs: RegionPairContacts[] = groups.map(g => ({
     region1Idx: g.region1Idx,
     region2Idx: g.region2Idx,
+    appliedNormalization,
     bin1: Int32Array.from(g.c, c => c.bin1),
     bin2: Int32Array.from(g.c, c => c.bin2),
     counts: Float32Array.from(g.c, c => c.counts),

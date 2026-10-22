@@ -29,7 +29,7 @@ scale, the facet and the transform step are one object each (ADR-131, 135, 142,
 and hit test all derive from it. A display that spells one of those concepts its
 own way is the finding. The row axis follows it (ADR-165). Text follows it in
 typography only: `FloatingText` and `SvgHaloText` are the one emit, and placement
-stays each display's (ADR-162). Hi-C reads color through `count`'s linear
+stays each display's (ADR-162). Hi-C reads color through `observed`'s linear or `observed/expected`'s diverging
 preset, LD through `r2`'s and `dprime`'s, the field being the statistic the
 file serves, and MAF through one preset per field.
 

@@ -55,6 +55,10 @@ shows what each does to the picture:
 - **[`color.domainMax`](/docs/config/hiccolor/#slot-domainmax)** pins the count
   the color scale saturates at. Unset, it follows the loaded counts, so two
   tracks given the same number share one scale
+- **[`color.field`](/docs/config/hiccolor/#slot-field)** is `observed`, the
+  counts, or `observed/expected`, each count over the file's expected count at
+  its distance, drawn diverging around 1
+  ([compartments](/docs/user_guides/hic_track#compartments-and-subcompartments))
 
 ## Loops and interactions as arcs
 

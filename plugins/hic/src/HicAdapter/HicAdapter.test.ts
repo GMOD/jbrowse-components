@@ -4,6 +4,7 @@ import { isAbortException } from '@jbrowse/core/util'
 import HicAdapter from './HicAdapter.ts'
 import configSchema from './configSchema.ts'
 
+import type { ExpectedValues } from '@gmod/hic'
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -84,6 +85,11 @@ interface MockParser {
     binsize?: number,
     opts?: { onProgress?: (current: number, total: number) => void },
   ) => Promise<ReturnType<typeof oneContact>>
+  getExpectedValues?: (
+    norm: string,
+    ref: { chr: string },
+    ref2: { chr: string },
+  ) => Promise<ExpectedValues | undefined>
 }
 
 function makeAdapter(hic: MockParser) {
@@ -338,4 +344,52 @@ test('a non-empty pair that fell back does downgrade the reported normalization'
   )
 
   expect(appliedNormalization).toBe('NONE')
+})
+
+// Each normalization has its own expected vector, and a file can lack one
+// for a chromosome: dividing a pair's counts by another normalization's
+// expected values draws a plausible, wrong ratio.
+test('each pair asks for its expected counts under the normalization it got', async () => {
+  const asked: string[] = []
+  const adapter = makeAdapter({
+    getMetaData: () => Promise.resolve(metadata),
+    getNormalizationOptions: () => Promise.resolve(['NONE', 'KR']),
+    getContactRecords: (_norm, ref, ref2) =>
+      Promise.resolve(
+        oneContact(0, 1, 5, {
+          appliedNormalization:
+            ref.chr === '2' && ref2.chr === '2' ? 'NONE' : 'KR',
+        }),
+      ),
+    getExpectedValues: (norm, ref, ref2) => {
+      asked.push(`${ref.chr}-${ref2.chr}:${norm}`)
+      return Promise.resolve({ kind: 'inter', average: 2 })
+    },
+  })
+  const { pairs } = await adapter.getMultiRegionContactRecords(
+    [
+      { assemblyName: 'test', refName: '1', start: 0, end: 1000000 },
+      { assemblyName: 'test', refName: '2', start: 0, end: 1000000 },
+    ],
+    { resolution: 100000, normalization: 'KR', expected: true },
+  )
+  expect(asked.sort()).toEqual(['1-1:KR', '1-2:KR', '2-2:NONE'])
+  expect(pairs.map(p => [p.appliedNormalization, p.expected?.kind])).toEqual([
+    ['KR', 'inter'],
+    ['KR', 'inter'],
+    ['NONE', 'inter'],
+  ])
+})
+
+test('counts alone ask the file for no expected values', async () => {
+  const getExpectedValues = jest.fn()
+  const adapter = makeAdapter({
+    ...makeMockParser(),
+    getExpectedValues,
+  })
+  await adapter.getMultiRegionContactRecords(
+    [{ assemblyName: 'test', refName: '1', start: 0, end: 1000000 }],
+    { resolution: 100000, normalization: 'NONE' },
+  )
+  expect(getExpectedValues).not.toHaveBeenCalled()
 })

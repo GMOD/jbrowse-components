@@ -107,7 +107,19 @@ histogram.** The obvious cheaper estimate fails on exactly the property that
 made the percentile necessary: linear buckets over `[min, max]` drop nearly
 every value into the first one and collapse the answer toward zero.
 
-**The quantile rides beside the request, not in its key.** The worker selects
+**Observed/expected divides by the expected count of the normalization each
+pair actually got.** A file stores one expected-value vector per normalization
+and binsize, and a chromosome can lack a normalization the rest of the file
+has, so dividing by the requested one's vector draws a plausible, wrong ratio.
+The worker leaves out a pair with no expected values rather than painting its
+counts on the ratio ramp, where they would read as enrichment; a binsize with
+none at all paints counts and names them in the key. The worker attaches each
+pair's expected values to its run, so the hover prints the count and the expected
+count beside the ratio. `@gmod/hic`'s `getExpectedValues` is checked against straw's own O/E,
+and `realFileObservedExpected.test.ts` runs the same cells through the adapter,
+worker and hover.
+
+**The quantile is a call argument outside the fetch key.** The worker selects
 for the quantile it was asked for, so a pan or zoom costs the main thread
 nothing. An edited percentile reselects over the loaded matrix on the main
 thread, tens of milliseconds at millions of contacts, and the next fetch asks

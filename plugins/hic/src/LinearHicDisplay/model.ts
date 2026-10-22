@@ -18,11 +18,12 @@ import MatrixRampMixin from '@jbrowse/display-kit/MatrixRampMixin'
 import PointerHoverMixin from '@jbrowse/display-kit/PointerHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import TriangleMatrixMixin from '@jbrowse/display-kit/TriangleMatrixMixin'
+import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { triangleAxis } from '@jbrowse/display-kit/triangleTransform'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
   denormalizeScore,
@@ -45,7 +46,7 @@ import type {
   HicRenderingBackend,
 } from './components/hicRenderingBackendTypes.ts'
 import type { HicTrackConfigModel } from './configSchema.ts'
-import type { HicColorScale } from './hicColorConfigSchema.ts'
+import type { HicColorField, HicColorScale } from './hicColorConfigSchema.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -55,12 +56,19 @@ import type React from 'react'
 // The fallback order when the selected normalization is not in the file.
 const NORMALIZATION_PREFERENCE = ['KR', 'SCALE', 'VC_SQRT', 'VC']
 
-function contactsLabel(normalization: string, scale?: HicColorScale) {
+// The key's and the tooltip's name for a value: the field, its normalization
+// and, for a count, a scale other than linear. A ratio is always log.
+function valueName(
+  field: HicColorField,
+  normalization: string,
+  scale?: HicColorScale,
+) {
   const qualifiers = [
     normalization === 'NONE' ? undefined : normalization,
-    scale === 'linear' ? undefined : scale,
+    field === 'observed' && scale !== 'linear' ? scale : undefined,
   ].filter(q => q !== undefined)
-  return qualifiers.length ? `Contacts (${qualifiers.join(', ')})` : 'Contacts'
+  const name = field === 'observed' ? 'Contacts' : 'Observed/expected'
+  return qualifiers.length ? `${name} (${qualifiers.join(', ')})` : name
 }
 
 interface HicFileInfo {
@@ -187,6 +195,23 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        */
       get selectedNormalization(): string {
         return getConf(self, 'selectedNormalization')
+      },
+      /**
+       * #getter
+       * `color.field`, what the fetch asks the worker to put in each cell.
+       */
+      get colorField(): HicColorField {
+        return getConf(self, ['color', 'field'])
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The field the loaded cells are: observed/expected falls back to the
+       * counts where the file has no expected values at the binsize.
+       */
+      get paintedColorField(): HicColorField {
+        return self.rpcData?.appliedField ?? self.colorField
       },
     }))
     .views(self => ({
@@ -320,7 +345,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         if (!(domain[1] > domain[0])) {
           return []
         }
-        const label = contactsLabel(
+        const label = valueName(
+          self.paintedColorField,
           self.appliedNormalization,
           self.colorScaleType,
         )
@@ -333,7 +359,12 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
               : label,
             domain,
             stops: legendStops(self.colorRamp, self.colorMidNorm),
-            extent: [domain[0], rpcData?.maxScore ?? 0],
+            // a ratio's smallest value is not scored, and one below the
+            // bottom of a fixed domain is the usual case
+            extent: [
+              self.paintedColorField === 'observed' ? domain[0] : 0,
+              rpcData?.maxScore ?? 0,
+            ],
           },
         ]
       },
@@ -359,7 +390,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * What the tooltip calls a bin's value.
        */
       get valueLabel(): string {
-        return contactsLabel(self.appliedNormalization)
+        return valueName(self.paintedColorField, self.appliedNormalization)
       },
     }))
     .views(self => ({
@@ -419,8 +450,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * quantile reselects on the main thread, so both ride as call
        * arguments.
        */
-      rpcProps(): { normalization: string } {
-        return { normalization: self.activeNormalization }
+      rpcProps(): { normalization: string; field: HicColorField } {
+        return {
+          normalization: self.activeNormalization,
+          field: self.colorField,
+        }
       },
       /**
        * #method
@@ -463,8 +497,20 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #action
+       * What the cells show; a new field starts from its own preset, so a
+       * count's scheme or pinned top does not carry onto a ratio.
+       */
+      setColorField(field: HicColorField) {
+        setConf(
+          self,
+          'color',
+          colorForField(getSnapshot(self.configuration.color), field),
+        )
+      },
+      /**
+       * #action
        * The Log scale toggle: `color.scale` symlog, which keeps every nonzero
-       * count visible, or unset for `count`'s linear preset.
+       * count visible, or unset for `observed`'s linear preset.
        */
       setLogScale(log: boolean) {
         setConf(self, ['color', 'scale'], log ? 'symlog' : undefined)

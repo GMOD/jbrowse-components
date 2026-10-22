@@ -10,26 +10,52 @@ export const HIC_COLOR_SCALES = ['linear', 'symlog', 'log'] as const
 
 export type HicColorScale = (typeof HIC_COLOR_SCALES)[number]
 
-/** A bin's contact count, the one thing Hi-C's color maps. */
-export const HIC_COLOR_FIELD = 'count'
+/**
+ * What a bin's color maps, in Juicebox's names: its contact count, or that
+ * count over the count expected at its distance.
+ */
+export const HIC_COLOR_FIELDS = ['observed', 'observed/expected'] as const
+
+export type HicColorField = (typeof HIC_COLOR_FIELDS)[number]
 
 export const DEFAULT_HIC_COLOR_SCHEME: ColorSchemeName = 'juicebox'
 
-/** `count` runs along a linear juicebox ramp while `scale` and `scheme` are unset. */
+/**
+ * Each field's ramp while the config leaves it unwritten. A ratio diverges
+ * around 1 on a log scale over a fixed quarter to fourfold, so two tracks, and
+ * two conditions, read one color for one ratio; enrichment paints red.
+ */
 export const HIC_FIELD_PRESETS = {
-  [HIC_COLOR_FIELD]: { scale: 'linear', scheme: DEFAULT_HIC_COLOR_SCHEME },
-} as const satisfies MatrixFieldPresets<typeof HIC_COLOR_FIELD>
+  observed: { scale: 'linear', scheme: DEFAULT_HIC_COLOR_SCHEME },
+  'observed/expected': {
+    scale: 'log',
+    scheme: 'redblue',
+    reverse: true,
+    domainMin: 0.25,
+    domainMax: 4,
+    domainMid: 1,
+  },
+} as const satisfies MatrixFieldPresets<HicColorField>
 
 /**
  * #config HicColor
  * #category display
- * The Hi-C display's `color`: a bin's contact count through a `linear`,
- * `symlog` or `log` scale onto a named `scheme`. An unset `domainMax` follows the loaded
- * counts, saturating at their `domainQuantile`, the 95th percentile by
- * default, or at their maximum at a quantile of 1; setting it gives every
- * zoom, and every track that sets the same number, one scale. The slots are
- * the shared color object's, so `jbrowse validate` and "Edit plot..." judge
- * them as they judge any other display's.
+ * The Hi-C display's `color`: a bin's `observed` contact count, or its
+ * `observed/expected` ratio, through a `linear`, `symlog` or `log` scale onto
+ * a named `scheme`.
+ *
+ * - `observed`: an unset `domainMax` follows the loaded counts, saturating at
+ *   their `domainQuantile`, the 95th percentile by default, or at their
+ *   maximum at a quantile of 1. Setting it gives every zoom, and every track
+ *   that sets the same number, one scale.
+ * - `observed/expected`: each count over the file's expected count at that
+ *   distance, the view Juicebox calls O/E, which shows compartments and loops
+ *   under the decay of contact with distance. It diverges around 1 from a
+ *   quarter to fourfold, and where the file has no expected values at the
+ *   binsize, the display paints the counts and the key says so.
+ *
+ * The slots are the shared color object's, so `jbrowse validate` and "Edit
+ * plot..." judge them as they judge any other display's.
  *
  * #example
  * ```js
@@ -47,9 +73,10 @@ export const hicColorConfigSchema = ConfigurationSchema(
      */
     field: {
       type: 'stringEnum',
-      model: types.enumeration('HicColorField', [HIC_COLOR_FIELD]),
-      defaultValue: HIC_COLOR_FIELD,
-      description: "count, each bin's contact count",
+      model: types.enumeration('HicColorField', [...HIC_COLOR_FIELDS]),
+      defaultValue: 'observed',
+      description:
+        "observed, each bin's contact count, or observed/expected, that count over the file's expected count at its distance",
     },
     /**
      * #slot scheme

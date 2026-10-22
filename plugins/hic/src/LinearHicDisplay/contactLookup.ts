@@ -215,6 +215,24 @@ function findRegion(regions: HicResultRegion[], u: number) {
 }
 
 /**
+ * The expected count of a hovered contact, where the loaded values are
+ * observed/expected: its pair's run carries the pair's expected counts.
+ */
+export function expectedOf(data: HicDataResult, item: HicContactItem) {
+  const run = data.pairRuns.find(
+    r => r.region1Idx === item.region1Idx && r.region2Idx === item.region2Idx,
+  )
+  const expected = run?.expected
+  return !expected
+    ? undefined
+    : expected.kind === 'inter'
+      ? expected.average
+      : expected.values[
+          Math.abs(item.bin2 - item.bin1) - expected.firstDistance
+        ]
+}
+
+/**
  * The contact at pre-rotation point (`ux`, `uy`), inverting
  * `position = (bin + combinedOffset) * binWidth` as the worker built it.
  */

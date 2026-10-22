@@ -31,6 +31,7 @@ const DATA: HicDataResult = {
   originBp: 0,
   resolution: 1000,
   appliedNormalization: 'NONE',
+  appliedField: 'observed',
   regions: [
     {
       refName: 'ctgA',

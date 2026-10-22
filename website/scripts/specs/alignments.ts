@@ -665,6 +665,26 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
 
   {
     mode: 'url',
+    name: 'hic/observed_expected',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr8',
+      trackLabels: 'offset',
+      tracks: [
+        {
+          trackId: 'hic',
+          color: 'observed/expected',
+          showLegend: true,
+        },
+      ],
+    }),
+    viewportHeight: 530,
+    readySelector: displayPainted('hic-display'),
+    readyTimeout: HIC_READY_TIMEOUT,
+    slowLiveSession: false,
+  },
+  {
+    mode: 'url',
     name: 'hic/overlay_controls',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',

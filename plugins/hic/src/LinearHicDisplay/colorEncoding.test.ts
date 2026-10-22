@@ -20,6 +20,7 @@ const DATA: HicDataResult = {
   originBp: 0,
   resolution: 1000,
   appliedNormalization: 'NONE',
+  appliedField: 'observed',
   regions: [
     {
       refName: 'ctgA',
@@ -78,7 +79,7 @@ describe.each(['linear', 'symlog', 'log'] as const)('a %s scale', scale => {
 test('the encoding is the one object every surface reads', () => {
   const display = loaded({ scale: 'log', scheme: 'viridis', domainMax: 50 })
   expect(display.colorEncoding).toEqual({
-    field: 'count',
+    field: 'observed',
     scale: 'log',
     scheme: 'viridis',
     reverse: true,

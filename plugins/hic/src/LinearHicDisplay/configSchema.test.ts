@@ -24,18 +24,18 @@ function make(snap: Record<string, unknown> = {}) {
 
 describe('color', () => {
   test('a bare string names the field, as every color object reads one', () => {
-    expect(readConfObject(make({ color: 'count' }), ['color', 'field'])).toBe(
-      'count',
-    )
+    expect(
+      readConfObject(make({ color: 'observed' }), ['color', 'field']),
+    ).toBe('observed')
   })
 
-  test("unset, it is count's linear juicebox ramp", () => {
+  test("unset, it is observed's linear juicebox ramp", () => {
     const conf = make()
     expect(readConfObject(conf, ['color', 'scheme'])).toBeUndefined()
-    expect(readConfObject(conf, ['color', 'field'])).toBe('count')
+    expect(readConfObject(conf, ['color', 'field'])).toBe('observed')
     expect(readConfObject(conf, ['color', 'scale'])).toBeUndefined()
-    expect(fieldScaleOf(HIC_FIELD_PRESETS, 'count')).toBe('linear')
-    expect(HIC_FIELD_PRESETS.count.scheme).toBe(DEFAULT_HIC_COLOR_SCHEME)
+    expect(fieldScaleOf(HIC_FIELD_PRESETS, 'observed')).toBe('linear')
+    expect(HIC_FIELD_PRESETS.observed.scheme).toBe(DEFAULT_HIC_COLOR_SCHEME)
   })
 
   test.each([

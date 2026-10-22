@@ -110,6 +110,7 @@ async function run(c: Case, records: TestContact[]) {
       originBp: region.start,
       resolution: c.res,
       normalization: 'KR',
+      field: 'observed',
       quantile: 0.95,
     },
   })

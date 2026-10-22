@@ -62,6 +62,7 @@ function makeData(contacts: { bin1: number; bin2: number }[], span: number) {
     originBp: 0,
     resolution: 1000,
     appliedNormalization: 'KR',
+    appliedField: 'observed',
     regions: [
       {
         refName: 'ctgA',

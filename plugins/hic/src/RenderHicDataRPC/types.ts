@@ -1,3 +1,5 @@
+import type { HicColorField } from '../LinearHicDisplay/hicColorConfigSchema.ts'
+import type { ExpectedValues } from '@gmod/hic'
 import type { Region } from '@jbrowse/core/util'
 import type { TriangleAxisBlock } from '@jbrowse/display-kit/triangleTransform'
 
@@ -13,6 +15,8 @@ export interface RenderHicDataArgs {
   originBp: number
   resolution: number
   normalization: string
+  /** what each instance's value is: the count, or the count over its expected */
+  field: HicColorField
   /** the quantile `quantileScore` answers */
   quantile: number
 }
@@ -34,6 +38,8 @@ export interface RegionPairRun {
   region2Idx: number
   start: number
   end: number
+  /** the pair's expected counts, where the values are observed/expected */
+  expected?: ExpectedValues
 }
 
 /** What reading a region back out of `instances` needs, per region index. */
@@ -75,6 +81,11 @@ export interface HicDataResult {
   resolution: number
   /** what the file applied, which falls back per binsize */
   appliedNormalization: string
+  /**
+   * What the values are: the field asked for, or `observed` where it was
+   * observed/expected and the file has no expected values at this binsize.
+   */
+  appliedField: HicColorField
   regions: HicResultRegion[]
   /**
    * Hover recovers a contact's bins from its float32 position through these

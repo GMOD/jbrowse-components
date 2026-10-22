@@ -11,6 +11,10 @@ export const HIC_PLOT_EXAMPLES: PlotExample[] = [
     description: 'the same ramp, saturating at 500 contacts',
   },
   {
+    plot: '{ "color": "observed/expected" }',
+    description: 'each count over its expected count, diverging around 1',
+  },
+  {
     plot: '{ "color": null }',
     description: 'the default ramp',
   },

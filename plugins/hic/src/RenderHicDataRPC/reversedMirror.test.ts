@@ -44,6 +44,7 @@ async function run(regions: Region[], records: TestContact[]) {
       originBp: 0,
       resolution: RES,
       normalization: 'KR',
+      field: 'observed',
       quantile: 0.95,
     },
   })

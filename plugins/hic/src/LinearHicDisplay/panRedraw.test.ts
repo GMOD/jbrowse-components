@@ -25,6 +25,7 @@ function makeHicResult(args: RenderHicDataArgs): HicDataResult {
     originBp: args.originBp,
     resolution: args.resolution,
     appliedNormalization: args.normalization,
+    appliedField: 'observed',
     regions: [],
     pairRuns: [],
   }
