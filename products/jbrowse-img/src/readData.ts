@@ -13,6 +13,7 @@ import {
   hasComparativeArgs,
   isSequenceAdapter,
   modifierValue,
+  uniqueId,
 } from '@jbrowse/launch-args'
 
 import { makeMultiWiggleTrackConfig, syntenyTrackTypes } from './makeConfigs.ts'
@@ -100,23 +101,15 @@ function readTrackArray(file: string): Track[] {
   return tracks
 }
 
-// A track's id is its file's basename, so two inputs that share one — the
-// everyday `--bam tumor/sample.bam --bam normal/sample.bam` — collided: the
-// second `showTrack` found the first already open and handed it back, so only
-// one of the two files was ever drawn, and which one won came down to config
-// order. Suffix the later ones so both render. The display NAME still defaults
-// to the basename for both, hence the pointer at `name:`.
+// `--bam tumor/sample.bam --bam normal/sample.bam` would open one track under
+// one id; the second gets a suffix, and both keep the basename as their name.
 function uniqueTrackId(used: Set<string>, base: string) {
-  let id = base
-  for (let i = 2; used.has(id); i++) {
-    id = `${base}-${i}`
-  }
+  const id = uniqueId(used, base)
   if (id !== base) {
     console.warn(
       `Warning: more than one track is named "${base}"; opening this one as "${id}". Pass name:<label> to tell them apart.`,
     )
   }
-  used.add(id)
   return id
 }
 

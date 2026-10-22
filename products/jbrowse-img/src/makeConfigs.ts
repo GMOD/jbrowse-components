@@ -4,8 +4,6 @@ import { makeLocation, syntenyFlags, trackFlags } from '@jbrowse/launch-args'
 
 import type { Assembly, Track } from './types.ts'
 
-export { makeLocation }
-
 export const trackTypes: string[] = [...trackFlags, 'multiwig']
 
 export const syntenyTrackTypes: string[] = syntenyFlags

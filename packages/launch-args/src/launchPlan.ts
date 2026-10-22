@@ -152,7 +152,11 @@ function modifierName(mod: string) {
   return splitModifier(mod)?.[0] ?? ''
 }
 
-function uniqueId(used: Set<string>, base: string) {
+/**
+ * `base`, or the first of `base-2`, `base-3`, ... that `used` lacks, which it
+ * adds to `used`.
+ */
+export function uniqueId(used: Set<string>, base: string) {
   let id = base
   for (let i = 2; used.has(id); i++) {
     id = `${base}-${i}`
