@@ -2,19 +2,14 @@ import { createReadStream } from 'node:fs'
 import { createInterface } from 'node:readline'
 import { createGunzip } from 'node:zlib'
 
-export interface Segment {
-  start: number
-  end: number
-}
+import { proteinRangeToGenome } from 'g2p_mapper'
 
-export interface CodingTranscript {
+import type { Feat } from 'g2p_mapper'
+
+export interface CodingTranscript extends Feat {
   id: string
-  refName: string
-  strand: '+' | '-'
-  /** CDS parts in genome order, 0-based half-open */
-  segments: Segment[]
-  /** bases before the first codon, the first CDS part's GFF phase */
-  phase: number
+  strand: 1 | -1
+  subfeatures: Feat[]
 }
 
 export interface ProteinCall {
@@ -96,32 +91,30 @@ export async function readCodingTranscripts(file: string) {
       ...(attrs.get('protein_id') ?? []),
       ...(isGtf ? [] : (attrs.get('ID') ?? [])),
     ]
-    const start = +cols[3]! - 1
-    const end = +cols[4]!
-    const phase = cols[7] === '.' ? 0 : +cols[7]!
+    const cds = {
+      refName: cols[0]!,
+      start: +cols[3]! - 1,
+      end: +cols[4]!,
+      type: 'CDS',
+      phase: cols[7] === '.' ? 0 : +cols[7]!,
+    }
     for (const parent of parents) {
       const entry = byTranscript.get(parent) ?? {
         transcript: {
           id: parent,
-          refName: cols[0]!,
-          strand: cols[6] === '-' ? '-' : '+',
-          segments: [],
-          phase: 0,
+          refName: cds.refName,
+          start: cds.start,
+          end: cds.end,
+          strand: cols[6] === '-' ? -1 : 1,
+          subfeatures: [],
         },
         aliases: [],
       }
       byTranscript.set(parent, entry)
       const { transcript } = entry
-      const first =
-        transcript.segments.length === 0 ||
-        (transcript.strand === '+'
-          ? start < transcript.segments[0]!.start
-          : end > transcript.segments.at(-1)!.end)
-      if (first) {
-        transcript.phase = phase
-      }
-      transcript.segments.push({ start, end })
-      transcript.segments.sort((a, b) => a.start - b.start)
+      transcript.start = Math.min(transcript.start, cds.start)
+      transcript.end = Math.max(transcript.end, cds.end)
+      transcript.subfeatures.push(cds)
       entry.aliases.push(...aliases)
     }
   }
@@ -195,36 +188,54 @@ export function parseCall(
 }
 
 /**
- * The genome blocks under residues `startAa..endAa` (1-based, inclusive),
- * walking the CDS in the direction of translation. Returns the blocks in
- * genome order, or an empty list when the residues fall past the CDS end.
+ * HMMER reports every family that clears its threshold, so related families
+ * (SH3_1, SH3_2, SH3_9) stack on one stretch of protein. Where two hits on a
+ * protein share more than half the shorter one, the lower E-value wins, as
+ * pfam_scan and InterProScan resolve them. Calls from InterProScan pass
+ * through, already resolved.
+ */
+export function bestOfOverlappingHmmerHits(calls: ProteinCall[]) {
+  const kept: ProteinCall[] = []
+  const byProtein = new Map<string, ProteinCall[]>()
+  for (const call of calls) {
+    if (call.source === 'HMMER') {
+      const list = byProtein.get(call.protein) ?? []
+      list.push(call)
+      byProtein.set(call.protein, list)
+    } else {
+      kept.push(call)
+    }
+  }
+  for (const hits of byProtein.values()) {
+    const accepted: ProteinCall[] = []
+    for (const hit of hits.sort((a, b) => +a.evalue - +b.evalue)) {
+      const clashes = accepted.some(a => {
+        const shared =
+          Math.min(a.end, hit.end) - Math.max(a.start, hit.start) + 1
+        const shorter = Math.min(a.end - a.start, hit.end - hit.start) + 1
+        return shared * 2 > shorter
+      })
+      if (!clashes) {
+        accepted.push(hit)
+      }
+    }
+    kept.push(...accepted)
+  }
+  return kept
+}
+
+/**
+ * The genome blocks under residues `startAa..endAa` (1-based, inclusive, as
+ * domain callers report them), in genome order.
  */
 export function projectResidues(
   transcript: CodingTranscript,
   startAa: number,
   endAa: number,
 ) {
-  const { segments, strand, phase } = transcript
-  const cdsLength = segments.reduce((sum, s) => sum + s.end - s.start, 0)
-  const from = (startAa - 1) * 3 + phase
-  const to = Math.min(endAa * 3 + phase, cdsLength)
-  const ordered = strand === '+' ? segments : [...segments].reverse()
-  const blocks: Segment[] = []
-  let offset = 0
-  for (const s of ordered) {
-    const len = s.end - s.start
-    const lo = Math.max(from, offset) - offset
-    const hi = Math.min(to, offset + len) - offset
-    if (hi > lo) {
-      blocks.push(
-        strand === '+'
-          ? { start: s.start + lo, end: s.start + hi }
-          : { start: s.end - hi, end: s.end - lo },
-      )
-    }
-    offset += len
-  }
-  return blocks.sort((a, b) => a.start - b.start)
+  return proteinRangeToGenome(transcript, startAa - 1, endAa).map(
+    ([start, end]) => ({ start, end }),
+  )
 }
 
 export const BED_HEADER = [
@@ -249,12 +260,18 @@ export const BED_HEADER = [
   'evalue',
 ]
 
+/** BED's 0..1000 score as ten times -log10(E), so 1e-50 scores 500 */
+export function evalueScore(evalue: string) {
+  const score = Math.round(-10 * Math.log10(Number(evalue)))
+  return Number.isNaN(score) ? 0 : Math.min(1000, Math.max(0, score))
+}
+
 const tsvField = (s: string) => s.replaceAll(/[\t\n\r]/g, ' ')
 
 export function bedLine(
   transcript: CodingTranscript,
   call: ProteinCall,
-  blocks: Segment[],
+  blocks: { start: number; end: number }[],
 ) {
   const start = blocks[0]!.start
   const end = blocks.at(-1)!.end
@@ -263,8 +280,8 @@ export function bedLine(
     start,
     end,
     tsvField(call.name),
-    0,
-    transcript.strand,
+    evalueScore(call.evalue),
+    transcript.strand === 1 ? '+' : '-',
     start,
     end,
     0,

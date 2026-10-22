@@ -7,13 +7,13 @@ import fs from 'node:fs'
 
 import { runCommand, runInTmpDir } from '../../testUtil.ts'
 import {
+  bestOfOverlappingHmmerHits,
+  evalueScore,
   findTranscript,
   parseCall,
   projectResidues,
   readCodingTranscripts,
 } from './project.ts'
-
-import type { CodingTranscript } from './project.ts'
 
 const gff3 = `##gff-version 3
 ctgA\t.\tmRNA\t101\t230\t.\t+\t.\tID=rna-XM_1.1
@@ -24,44 +24,6 @@ ctgA\t.\tCDS\t401\t430\t.\t-\t0\tParent=minus
 ctgB\t.\tCDS\t11\t40\t.\t+\t1\tParent=partial
 `
 
-const plus: CodingTranscript = {
-  id: 'plus',
-  refName: 'ctgA',
-  strand: '+',
-  segments: [
-    { start: 100, end: 130 },
-    { start: 200, end: 230 },
-  ],
-  phase: 0,
-}
-const minus: CodingTranscript = { ...plus, strand: '-' }
-
-test('residues across an intron give a block on each side', () => {
-  // residues 8..14 are bases 21..42 of the CDS: 9 in the first part, 12 in the second
-  expect(projectResidues(plus, 8, 14)).toEqual([
-    { start: 121, end: 130 },
-    { start: 200, end: 212 },
-  ])
-})
-
-test('a minus-strand CDS translates from its rightmost part', () => {
-  expect(projectResidues(minus, 1, 12)).toEqual([
-    { start: 124, end: 130 },
-    { start: 200, end: 230 },
-  ])
-})
-
-test('the first part phase shifts every codon', () => {
-  expect(projectResidues({ ...plus, phase: 1 }, 1, 1)).toEqual([
-    { start: 101, end: 104 },
-  ])
-})
-
-test('residues past the CDS give no blocks, a call reaching past it stops there', () => {
-  expect(projectResidues(plus, 21, 30)).toEqual([])
-  expect(projectResidues(plus, 20, 30)).toEqual([{ start: 227, end: 230 }])
-})
-
 test('reads CDS parts and matches a protein by any of its names', async () => {
   await runInTmpDir(async () => {
     fs.writeFileSync('genes.gff3', gff3)
@@ -69,13 +31,21 @@ test('reads CDS parts and matches a protein by any of its names', async () => {
     expect(transcripts).toBe(3)
     const ncbi = findTranscript(lookup, 'XP_1.1')!
     expect(ncbi.id).toBe('rna-XM_1.1')
-    expect(ncbi.segments).toEqual([
-      { start: 100, end: 130 },
-      { start: 200, end: 230 },
+    // residues 8..14 are CDS bases 21..42: 9 in the first part, 12 in the second
+    expect(projectResidues(ncbi, 8, 14)).toEqual([
+      { start: 121, end: 130 },
+      { start: 200, end: 212 },
     ])
     expect(findTranscript(lookup, 'XM_1')).toBe(ncbi)
-    expect(findTranscript(lookup, 'minus')!.strand).toBe('-')
-    expect(findTranscript(lookup, 'partial')!.phase).toBe(1)
+    // a minus-strand CDS translates from its rightmost part
+    expect(projectResidues(findTranscript(lookup, 'minus')!, 1, 12)).toEqual([
+      { start: 324, end: 330 },
+      { start: 400, end: 430 },
+    ])
+    // the leading phase base belongs to no residue
+    expect(projectResidues(findTranscript(lookup, 'partial')!, 1, 1)).toEqual([
+      { start: 11, end: 14 },
+    ])
     expect(findTranscript(lookup, 'XP_2')).toBeUndefined()
   })
 })
@@ -164,7 +134,7 @@ test('writes an indexed BED12 a block per exon', async () => {
         121,
         212,
         'Protein kinase domain',
-        0,
+        50,
         '+',
         121,
         212,
@@ -182,6 +152,33 @@ test('writes an indexed BED12 a block per exon', async () => {
       ].join('\t'),
     ])
   })
+})
+
+test('the best of overlapping HMMER hits wins; InterProScan calls pass through', () => {
+  const hit = (name: string, start: number, end: number, evalue: string) => ({
+    protein: 'p',
+    start,
+    end,
+    accession: name,
+    name,
+    description: '',
+    source: 'HMMER',
+    evalue,
+  })
+  const kept = bestOfOverlappingHmmerHits([
+    hit('SH3_1', 10, 60, '1e-10'),
+    hit('SH3_2', 12, 62, '1e-12'),
+    hit('SH2', 58, 150, '1e-5'),
+    { ...hit('PF1', 10, 60, '1'), source: 'Pfam' },
+  ])
+  expect(kept.map(k => k.name).sort()).toEqual(['PF1', 'SH2', 'SH3_2'])
+})
+
+test('the BED score is ten times -log10(E), within 0..1000', () => {
+  expect(evalueScore('1e-50')).toBe(500)
+  expect(evalueScore('0')).toBe(1000)
+  expect(evalueScore('2')).toBe(0)
+  expect(evalueScore('-')).toBe(0)
 })
 
 test('refuses calls that match no transcript', async () => {

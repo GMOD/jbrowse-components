@@ -11,12 +11,15 @@ import {
 import {
   BED_HEADER,
   bedLine,
+  bestOfOverlappingHmmerHits,
   findTranscript,
   parseCall,
   projectResidues,
   readCodingTranscripts,
   readLines,
 } from './project.ts'
+
+import type { ProteinCall } from './project.ts'
 
 export async function run(args?: string[]) {
   const options = {
@@ -56,7 +59,9 @@ export async function run(args?: string[]) {
     'The calls name each protein by its transcript ID, its CDS protein_id, ' +
     'or its CDS ID (gffread -y, NCBI and Ensembl protein FASTA all match). ' +
     'A feature spanning an intron becomes one BED12 row with a block per ' +
-    'exon. Add the file with disableGeneHeuristic so JBrowse draws the blocks ' +
+    'exon. Where HMMER hits on one protein overlap by more than half, the ' +
+    'lowest E-value is kept, as pfam_scan does. ' +
+    'Add the file with disableGeneHeuristic so JBrowse draws the blocks ' +
     'rather than a transcript. Requires bgzip and tabix on the PATH.'
 
   if (flags.help) {
@@ -95,6 +100,7 @@ export async function run(args?: string[]) {
   let skippedSource = 0
   let pastCds = 0
   const isProtein = (id: string) => findTranscript(lookup, id) !== undefined
+  const parsed: ProteinCall[] = []
   for await (const line of readLines(calls)) {
     const call = parseCall(line, isProtein)
     if (!call) {
@@ -102,8 +108,11 @@ export async function run(args?: string[]) {
     }
     if (sources && !sources.includes(call.source.toLowerCase())) {
       skippedSource++
-      continue
+    } else {
+      parsed.push(call)
     }
+  }
+  for (const call of bestOfOverlappingHmmerHits(parsed)) {
     const transcript = findTranscript(lookup, call.protein)
     if (!transcript) {
       unmatched.add(call.protein)
