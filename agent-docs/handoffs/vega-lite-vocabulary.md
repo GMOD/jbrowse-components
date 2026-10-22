@@ -69,6 +69,14 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    `featureHeight` by 0.6 and 0.3 (`HEIGHT_MULTIPLIERS`), and its "Feature
    height" menu writes the mode, where alignments' presets write
    `pileup.readHeight`.
+   - The views' pixel layout words move in the same pass: the circular
+     view's `spacingPx` (Vega-Lite's facet `spacing`), `paddingPx`
+     (`padding`), `minimumRadiusPx` (the zoom-out extent) and
+     `minVisibleWidth` (the width below which a region elides), with the
+     synteny view's `overdrawPx` and the dotplot's `lineWidth`. Renaming
+     the circle's alone would give each concept a second spelling.
+   - The circle draws no ruler flags, so it has no `axis` to respell; an
+     `axis.labels` there would be a new feature, not a rename.
 6. **Comparative leftovers**:
    - The `indels` part takes over `cigarMode` and `drawCigar`, after step 1.
    - The multi-way display's ribbons part takes over `ribbonColor`,
