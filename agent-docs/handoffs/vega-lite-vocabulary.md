@@ -92,6 +92,7 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
        shape, wiggle and synteny scale lists), LGVSynteny's `strand` default
        moves to `impliedField`, `baseColor`'s `none` becomes
        `pileup.bases.show`.
+       **Claimed 2026-10-22, worktree `channel-step0`.**
      - Pass A, together: every color object, the hand-written ones included
        (HicColor, MafColor, MarkShape, MarkSize, RowColor, WiggleColor,
        `baseColor`, `readConnections.color`), and every reader of the flat
