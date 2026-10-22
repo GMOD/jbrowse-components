@@ -29,9 +29,20 @@ const AssemblySelector = observer(function AssemblySelector({
   const { classes } = useStyles()
   const { assemblyNames, assemblyManager } = session
 
-  // ignore a stale/removed selection so MUI doesn't warn about an out-of-range
-  // select value
-  const value = selected && assemblyNames.includes(selected) ? selected : ''
+  // A selection the host does not offer still shows when the manager resolves
+  // it: an alias, or the assembly a comparative view synthesized for its own
+  // panel, which is what the add-track form there submits to. A removed one is
+  // dropped, so MUI doesn't warn about an out-of-range value.
+  const canonical = selected
+    ? (assemblyManager.getCanonicalAssemblyName(selected) ?? selected)
+    : ''
+  const options =
+    !canonical ||
+    assemblyNames.includes(canonical) ||
+    !assemblyManager.get(canonical)
+      ? assemblyNames
+      : [...assemblyNames, canonical]
+  const value = options.includes(canonical) ? canonical : ''
   const error = assemblyNames.length ? '' : 'No configured assemblies'
   return (
     <TextField
@@ -48,7 +59,7 @@ const AssemblySelector = observer(function AssemblySelector({
       disabled={!!error}
       className={classes.importFormEntry}
     >
-      {assemblyNames.map(name => (
+      {options.map(name => (
         <MenuItem key={name} value={name}>
           {assemblyManager.get(name)?.displayName || name}
         </MenuItem>
