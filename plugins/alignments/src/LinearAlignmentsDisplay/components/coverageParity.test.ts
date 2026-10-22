@@ -12,6 +12,7 @@ import {
   indicatorFields,
   packedInterbaseSegments,
 } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
 import { Canvas2DAlignmentsRenderer } from '../renderers/Canvas2DAlignmentsRenderer.ts'
 import {
   ALIGNMENTS_PASSES,
@@ -655,7 +656,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       chainMode: false,
       showLinkedReadLines: false,
       collapseSections: false,
-      readConnectionsLineWidth: 1,
+      readConnectionsStrokeScale: arcStrokeScale(1),
       linkRegions: [],
       showOutline: false,
       pileupTopOffset: sec.pileupTopOffset,

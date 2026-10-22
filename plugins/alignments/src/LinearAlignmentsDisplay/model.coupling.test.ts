@@ -40,9 +40,9 @@ import {
 } from './testUtils.ts'
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
-import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
 import type { ResolvedBlock } from '../shared/hitTestTypes.ts'
 import type { BaseLayer, ReadColorBy } from '../shared/types.ts'
+import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 
 // The block a right-click resolves. Only refName is read by the menu items
 // under test, but the hit carries a whole block or none at all, so the cases
@@ -238,14 +238,18 @@ describe('colorByField', () => {
 describe('colorKeyTitle', () => {
   test("a preset field's title heads the key until one is written", () => {
     const display = createDisplay()
-    display.applyPlot({ color: { field: 'mapq' } })
+    display.applyPlot({ encoding: { color: { field: 'mapq' } } })
     expect(display.colorKeyTitle).toBe('Mapping quality')
     expect(display.colorScales.map(s => s.title)).toContain('Mapping quality')
 
-    display.applyPlot({ color: { field: 'mapq', title: 'MAPQ' } })
+    display.applyPlot({
+      encoding: { color: { field: 'mapq', legend: { title: 'MAPQ' } } },
+    })
     expect(display.colorKeyTitle).toBe('MAPQ')
 
-    display.applyPlot({ color: { field: 'mapq', scale: 'linear' } })
+    display.applyPlot({
+      encoding: { color: { field: 'mapq', scale: { type: 'linear' } } },
+    })
     expect(display.colorKeyTitle).toBeUndefined()
   })
 })
@@ -262,17 +266,24 @@ describe('colorKeyDescending', () => {
 
   test("mapq's key lists 30+ first until the color says otherwise", () => {
     const display = createDisplay()
-    display.applyPlot({ color: { field: 'mapq' } })
+    display.applyPlot({ encoding: { color: { field: 'mapq' } } })
     expect(binLabels(display)[0]).toBe('MAPQ 30+ (high confidence)')
 
-    display.applyPlot({ color: { field: 'mapq', descending: false } })
+    display.applyPlot({
+      encoding: { color: { field: 'mapq', legend: { descending: false } } },
+    })
     expect(binLabels(display)[0]).toBe('MAPQ 0 (multi-mapping)')
   })
 
   test('a threshold over a tag keys highest first where written', () => {
     const display = createDisplay()
     display.applyPlot({
-      color: { field: 'tags.NM', scale: 'threshold', domain: ['1', '5'] },
+      encoding: {
+        color: {
+          field: 'tags.NM',
+          scale: { type: 'threshold', domain: ['1', '5'] },
+        },
+      },
     })
     expect(binLabels(display)).toEqual([
       'tags.NM < 1',
@@ -281,11 +292,12 @@ describe('colorKeyDescending', () => {
     ])
 
     display.applyPlot({
-      color: {
-        field: 'tags.NM',
-        scale: 'threshold',
-        domain: ['1', '5'],
-        descending: true,
+      encoding: {
+        color: {
+          field: 'tags.NM',
+          scale: { type: 'threshold', domain: ['1', '5'] },
+          legend: { descending: true },
+        },
       },
     })
     expect(binLabels(display)[0]).toBe('tags.NM ≥ 5')
@@ -293,9 +305,9 @@ describe('colorKeyDescending', () => {
 
   test('turning the key round re-bakes no read', () => {
     const display = createDisplay()
-    display.applyPlot({ color: { field: 'mapq' } })
+    display.applyPlot({ encoding: { color: { field: 'mapq' } } })
     const before = display.readColorContext
-    setConf(display, ['color', 'descending'], false)
+    setConf(display, ['encoding', 'color', 'legend', 'descending'], false)
     expect(display.colorKeyDescending).toBe(false)
     expect(display.readColorContext).toBe(before)
   })
@@ -317,7 +329,7 @@ describe('keySectionOrder', () => {
   test("a mapq facet's bins order no key of raw MAPQs", () => {
     const display = createDisplay()
     display.applyPlot({
-      color: { field: 'mapq', scale: 'categorical' },
+      encoding: { color: { field: 'mapq', scale: { type: 'ordinal' } } },
       facet: { field: 'mapq' },
     })
     expect(display.keySectionOrder).toBeUndefined()
@@ -1580,13 +1592,11 @@ test('a region arrival invalidates renderState, not just the size gate', () => {
 //    `readYs` — the token `GpuAlignmentsRenderer` keys its upload memo on —
 //    reference-identical.
 describe('upload tiers: what a settings change does to the laid-out payloads', () => {
-  function displayWithOneRead(
-    color: Partial<AlignmentsColorSetting> = { field: 'tags.HP' },
-  ) {
+  function displayWithOneRead(color: ColorSlots = { field: 'tags.HP' }) {
     const display = createDisplay()
     // Tag coloring is the CPU-baked scheme `colorTagMap` feeds; set it before
     // seeding, since colorBy is an rpcProps (tier-1) setting and clears data.
-    display.applyPlot({ color })
+    display.applyPlot({ encoding: { color } })
     display.setRpcData(
       0,
       {
@@ -1639,7 +1649,9 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     const beforeLayout = display.laidOutByGroupUncolored
     const before = region0(display)
 
-    display.applyPlot({ color: { field: 'tags.HP', range: ['#ff0000'] } })
+    display.applyPlot({
+      encoding: { color: { field: 'tags.HP', scale: { range: ['#ff0000'] } } },
+    })
 
     const after = region0(display)
     // Layout memoized across the recolor…
@@ -1654,12 +1666,12 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
   })
 
   test('a color write that leaves a pinned insert-size band alone keeps the layout', () => {
-    const pinned = { field: 'insertSize', domain: ['150', '600'] }
+    const pinned = { field: 'insertSize', scale: { domain: ['150', '600'] } }
     const display = displayWithOneRead(pinned)
     const beforeLayout = display.laidOutByGroupUncolored
     const before = region0(display)
 
-    display.applyPlot({ color: { ...pinned, value: 'red' } })
+    display.applyPlot({ encoding: { color: { ...pinned, value: 'red' } } })
 
     expect(display.laidOutByGroupUncolored).toBe(beforeLayout)
     expect(region0(display).readYs).toBe(before.readYs)
@@ -1669,7 +1681,9 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     const display = displayWithOneRead()
     const before = display.rpcProps()
 
-    display.applyPlot({ color: { field: 'tags.HP', range: ['#ff0000'] } })
+    display.applyPlot({
+      encoding: { color: { field: 'tags.HP', scale: { range: ['#ff0000'] } } },
+    })
 
     expect(display.rpcProps()).toStrictEqual(before)
   })

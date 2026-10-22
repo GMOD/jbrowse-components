@@ -143,7 +143,7 @@ function withoutNoValue(
 
 /**
  * The scale the tag, attribute, MAPQ and mate-reference fields bake through,
- * read off the resolved `color`. With nothing declared a value's color is a
+ * read off the resolved `encoding.color`. With nothing declared a value's color is a
  * function of the value alone (`bakedValueColor`); a `domain` or `range` hands
  * the listed values their colors in order, over the same tag palette. `''`
  * in `domain` names a read with no value, which the category table colors
@@ -173,7 +173,7 @@ export function bakedColorScale(
     return thresholdScale(scaled)
   }
   const { domain, range } =
-    scaled?.scale === 'categorical'
+    scaled?.scale === 'ordinal'
       ? withoutNoValue(scaled.domain?.map(String) ?? [], scaled.range)
       : { domain: [], range: undefined }
   if (domain.length > 0 || range?.length) {

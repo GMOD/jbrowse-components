@@ -157,7 +157,7 @@ function tagColorScaleOf({
     typeof colorEncoding === 'object' &&
     colorEncoding.scale === 'linear'
     ? 'linear'
-    : 'categorical'
+    : 'ordinal'
 }
 
 // Names the tag in the label once one is picked ("Tag (HP)...") — the radio is
@@ -182,11 +182,11 @@ function tagItem(model: AnyColorByModel): MenuItem {
             const color = tagColorFor(
               model.writtenColor,
               tag,
-              scale ?? 'categorical',
+              scale ?? 'ordinal',
               model.parkedColor,
             )
             model.parkColor('color', model.writtenColor, color)
-            model.applyPlot({ color })
+            model.applyPlot({ encoding: { color } })
           },
           handleClose,
         },

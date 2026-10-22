@@ -1,4 +1,5 @@
 import { ARC_COLOR_INTERCHROM } from '../../features/arcs/arcColors.ts'
+import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
 import { arcsToRegionResult } from '../../features/arcs/arcRegions.ts'
 import { buildArcBandFeeds } from '../../features/arcs/bandFeed.ts'
 import { ARC_SHAPE_ARC } from '../../features/arcs/shapes.ts'
@@ -50,7 +51,7 @@ function clampedDomeInk(down: boolean, width: number) {
   const state = {
     ...makeTestRenderState({
       canvasWidth: 1000,
-      readConnectionsLineWidth: width,
+      readConnectionsStrokeScale: arcStrokeScale(width),
       linkRegions: [{ anchorPx: 0, anchorBp: 0, signedPxPerBp: 1 }],
     }),
     arcBand: band,
@@ -105,7 +106,7 @@ function crossChromosomeInk(gapPx: number) {
   const state = {
     ...makeTestRenderState({
       canvasWidth: 1000,
-      readConnectionsLineWidth: 1,
+      readConnectionsStrokeScale: arcStrokeScale(1),
       linkRegions: [
         { anchorPx: 0, anchorBp: 0, signedPxPerBp: 1 },
         { anchorPx: 500, anchorBp: 0, signedPxPerBp: 1 },

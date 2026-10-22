@@ -223,7 +223,7 @@ function scaleOf(
  * (inverted)" against the fill's "Split paired-end read (inverted)"), still
  * earns its row.
  *
- * `colorTitle` is the color's heading, `color.title` or its field preset's
+ * `colorTitle` is the color's heading, `encoding.color.legend.title` or its field preset's
  * (`colorKeyTitle`), unset keeping the display's own and `''` drawing none. It heads the read fill's color bar when the
  * fill is a ramp, since the read rows beside a bar are the buckets every
  * scheme paints, and otherwise the read rows, standing in for "Read" when
@@ -474,7 +474,7 @@ function strandLabelOverrides(colorType: ColorSchemeType | undefined) {
 // rewording, the CPU-baked schemes name what the leftover neutral bucket means
 // in their own terms — a read the tag is absent from, or a block with no mate —
 // rather than the bare "No value" the table can't specialize.
-// `declared` is `color.labels` by bucket (`declaredReadLabels`), which names a
+// `declared` is `encoding.color.scale.names` by bucket (`declaredReadLabels`), which names a
 // bucket over every wording here.
 export function readCategoryLabelOverrides(
   colorBy: ColorBy | undefined,
@@ -1091,7 +1091,7 @@ function schemeLegend({
 // palette and the bucket scan, which the two consumers below split differently.
 interface ReadDisplayLegendArgs {
   colorBy: ColorBy | undefined
-  // `color.labels` against what it names (`declaredReadLabels`)
+  // `encoding.color.scale.names` against what it names (`declaredReadLabels`)
   labels?: DeclaredReadLabels
   // A threshold key lists its highest interval first (`colorKeyDescending`).
   descending?: boolean

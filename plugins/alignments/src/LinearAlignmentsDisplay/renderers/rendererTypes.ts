@@ -12,7 +12,7 @@ import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ArcColorField } from '../../shared/types.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
-import type { LinkRegion } from '@jbrowse/render-core/marks'
+import type { LinkRegion, LinkSizeScale } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
 import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
@@ -72,7 +72,7 @@ export interface RenderState {
   // The overlap tint is what makes that depth readable, hence a second reason
   // (besides chain mode) for that layer to draw.
   collapseSections: boolean
-  readConnectionsLineWidth: number
+  readConnectionsStrokeScale: LinkSizeScale
   // The read cloud's largest insert size, which tops its log y axis; absent
   // in arc mode, where an arc's apex is its own half-width.
   arcsYDomainBp?: number

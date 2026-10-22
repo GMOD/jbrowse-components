@@ -179,7 +179,7 @@ export function orderedGroups(
 // `orderedGroups` re-sorts to fix. Every consumer looks a key up by `groupOrder`,
 // so nothing depends on this map's iteration order; don't start.
 //
-// `insertSizeBand` is the `color` object's pinned cut points. Every insert-size
+// `insertSizeBand` is `encoding.color`'s pinned cut points. Every insert-size
 // reader — the read fills, the arcs, the hover — takes the band off the region's
 // data, so replacing it here is what keeps the three on one threshold.
 export function buildRawDataByGroup(

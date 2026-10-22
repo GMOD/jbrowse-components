@@ -46,8 +46,8 @@ function makeModel() {
       this.showOrdinaryPairs = v ?? true
     },
     readConnectionsLineWidth: 1,
-    setReadConnectionsLineWidth(v: number) {
-      this.readConnectionsLineWidth = v
+    setReadConnectionsLineWidth(v?: number) {
+      this.readConnectionsLineWidth = v ?? 1
     },
     // The SV-channel row is served from this menu, so its settings from
     // outside it are on the mock as well.
@@ -240,7 +240,7 @@ test('every toggle keeps the menu open', () => {
   expect(toggles.every(i => staysOpenOnClick(i))).toBe(true)
 })
 
-// `readConnections.lineWidth` had a setter and no way to reach it: every
+// The arc width had a setter and no way to reach it: every
 // renderer and the SVG export read the width, and nothing in the UI wrote one.
 describe('arc line width row', () => {
   function lineWidthRow(model: ReturnType<typeof makeModel>) {

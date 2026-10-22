@@ -11,6 +11,7 @@ import {
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { qualityRampCss } from '../features/perBaseQuality/colors.ts'
 import { alignmentsColorEncoding } from './alignmentsColor.ts'
+import { colorSettingOf } from './colorSettingFixture.ts'
 import { sectionOrder } from './groupFeatures.ts'
 import {
   arcColorCategoryLabel,
@@ -27,7 +28,6 @@ import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from './types.ts'
 import type { BakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
 import type { RefNamePosition } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
-import type { AlignmentsColorSetting } from './alignmentsColor.ts'
 import type { BaseLayer, ColorBy, ColorSchemeType } from './types.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
 import type { ColorScale, RampScale } from '@jbrowse/core/ui/colorScale'
@@ -336,26 +336,15 @@ describe('getReadDisplayLegendItems', () => {
   // per read, so it is the color drawn rather than a second table agreeing with
   // it. There used to be that second table (`colorTagMap`).
   test('a declared scale keys its own order, ramp and bins in the painted colors', () => {
-    const declared: AlignmentsColorSetting = {
-      value: undefined,
-      field: 'tags.HP',
-      scale: undefined,
-      domain: [],
-      range: [],
-      scheme: undefined,
-      reverse: false,
-      domainMin: undefined,
-      domainMax: undefined,
-      domainMid: undefined,
-    }
     const HP: ColorBy = { type: 'tag', tag: 'HP' }
     const ordered = bakedColorScale(
       HP,
-      alignmentsColorEncoding({
-        ...declared,
-        domain: ['2', '1'],
-        range: ['#ff0000', '#0000ff'],
-      }),
+      alignmentsColorEncoding(
+        colorSettingOf({
+          field: 'tags.HP',
+          scale: { domain: ['2', '1'], range: ['#ff0000', '#0000ff'] },
+        }),
+      ),
       undefined,
       undefined,
     )
@@ -372,13 +361,12 @@ describe('getReadDisplayLegendItems', () => {
     const NM: ColorBy = { type: 'tag', tag: 'NM' }
     const ramp = bakedColorScale(
       NM,
-      alignmentsColorEncoding({
-        ...declared,
-        field: 'tags.NM',
-        scale: 'linear',
-        domainMin: 0,
-        domainMax: 10,
-      }),
+      alignmentsColorEncoding(
+        colorSettingOf({
+          field: 'tags.NM',
+          scale: { type: 'linear', domainMin: 0, domainMax: 10 },
+        }),
+      ),
       undefined,
       undefined,
     )
@@ -395,13 +383,16 @@ describe('getReadDisplayLegendItems', () => {
 
     const bins = bakedColorScale(
       NM,
-      alignmentsColorEncoding({
-        ...declared,
-        field: 'tags.NM',
-        scale: 'threshold',
-        domain: ['5'],
-        range: ['#00ff00', '#ff0000'],
-      }),
+      alignmentsColorEncoding(
+        colorSettingOf({
+          field: 'tags.NM',
+          scale: {
+            type: 'threshold',
+            domain: ['5'],
+            range: ['#00ff00', '#ff0000'],
+          },
+        }),
+      ),
       undefined,
       undefined,
     )
@@ -415,18 +406,18 @@ describe('getReadDisplayLegendItems', () => {
     const NM: ColorBy = { type: 'tag', tag: 'NM' }
     const ramp = bakedColorScale(
       NM,
-      alignmentsColorEncoding({
-        value: undefined,
-        field: 'tags.NM',
-        scale: 'linear',
-        domain: [],
-        range: [],
-        scheme: 'juicebox',
-        reverse: false,
-        domainMin: 0,
-        domainMax: 10,
-        domainMid: undefined,
-      }),
+      alignmentsColorEncoding(
+        colorSettingOf({
+          field: 'tags.NM',
+          scale: {
+            type: 'linear',
+            scheme: 'juicebox',
+            reverse: false,
+            domainMin: 0,
+            domainMax: 10,
+          },
+        }),
+      ),
       undefined,
       undefined,
     )

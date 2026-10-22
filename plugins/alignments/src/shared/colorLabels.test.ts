@@ -13,6 +13,7 @@ import {
   declaredReadLabels,
   isBakedScheme,
 } from './alignmentsColor.ts'
+import { colorSettingOf } from './colorSettingFixture.ts'
 import {
   arcColorCategoryLabel,
   colorRampScales,
@@ -24,29 +25,16 @@ import {
 } from './legendUtils.ts'
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
-import type { AlignmentsColorSetting } from './alignmentsColor.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
-
-const UNSET: AlignmentsColorSetting = {
-  value: undefined,
-  field: '',
-  scale: undefined,
-  domain: [],
-  range: [],
-  scheme: undefined,
-  reverse: false,
-  domainMin: undefined,
-  domainMax: undefined,
-  domainMid: undefined,
-}
+import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 
 function keyOf(
-  color: Partial<AlignmentsColorSetting>,
+  color: ColorSlots,
   labels: string[],
   present: ReadColorCategory[],
   presentTagValues?: ReadonlySet<string>,
 ) {
-  const encoding = alignmentsColorEncoding({ ...UNSET, ...color })
+  const encoding = alignmentsColorEncoding(colorSettingOf(color))
   const colorBy = colorByOf(encoding)
   const declared = declaredReadLabels(encoding, labels)
   return {
@@ -69,10 +57,10 @@ function keyOf(
   }
 }
 
-describe('color.labels names the key rows range colors', () => {
+describe('scale.names names the key rows range colors', () => {
   test('a label names the preset level its domain entry names', () => {
     const { labels, hover } = keyOf(
-      { field: 'pairOrientation', domain: ['RR', 'LL'] },
+      { field: 'pairOrientation', scale: { domain: ['RR', 'LL'] } },
       ['Inverted'],
       ['pairLR', 'pairRR', 'pairLL'],
     )
@@ -97,7 +85,7 @@ describe('color.labels names the key rows range colors', () => {
 
   test('a tag names its domain values and the read with no value', () => {
     const { labels, hover } = keyOf(
-      { field: 'tags.HP', domain: ['1', '2', ''] },
+      { field: 'tags.HP', scale: { domain: ['1', '2', ''] } },
       ['Maternal', 'Paternal', 'Unphased'],
       ['tag', 'noTagValue'],
       new Set(['1', '2']),
@@ -109,7 +97,7 @@ describe('color.labels names the key rows range colors', () => {
   test('a threshold over a tag names its bins from the lowest', () => {
     expect(
       keyOf(
-        { field: 'tags.NM', scale: 'threshold', domain: ['5'] },
+        { field: 'tags.NM', scale: { type: 'threshold', domain: ['5'] } },
         ['Few edits'],
         ['tag'],
       ).labels,
@@ -119,7 +107,7 @@ describe('color.labels names the key rows range colors', () => {
   test('an empty entry keeps its own name', () => {
     expect(
       keyOf(
-        { field: 'tags.HP', domain: ['1', '2'] },
+        { field: 'tags.HP', scale: { domain: ['1', '2'] } },
         ['', 'Paternal'],
         ['tag'],
         new Set(['1', '2']),
@@ -129,7 +117,7 @@ describe('color.labels names the key rows range colors', () => {
 
   test('the arc key, the arc hover and the connection curves name the bucket as the read key does', () => {
     const { declared } = keyOf(
-      { field: 'pairOrientation', domain: ['RR'] },
+      { field: 'pairOrientation', scale: { domain: ['RR'] } },
       ['Inverted'],
       [],
     )
@@ -157,7 +145,7 @@ describe('color.labels names the key rows range colors', () => {
   })
 })
 
-describe('color.title heads the key the color object draws', () => {
+describe('legend.title heads the key the color channel draws', () => {
   const model = (reads: LegendItem[], arcs: LegendItem[] = []) => ({
     legendItems: () => reads,
     arcLegendTitle: 'Arc colors',
@@ -223,17 +211,15 @@ describe('color.title heads the key the color object draws', () => {
   })
 })
 
-test('a scheme pick over the same field keeps the labels and title, a new field drops them', () => {
-  const written = {
-    ...UNSET,
+test('a scheme pick over the same field keeps the names and title, a new field drops them', () => {
+  const written: ColorSlots = {
     field: 'tags.HP',
-    domain: ['1', '2'],
-    labels: ['Maternal', 'Paternal'],
-    title: 'Haplotype',
+    scale: { domain: ['1', '2'], names: ['Maternal', 'Paternal'] },
+    legend: { title: 'Haplotype' },
   }
   expect(colorForField(written, 'tags.HP')).toMatchObject({
-    labels: ['Maternal', 'Paternal'],
-    title: 'Haplotype',
+    scale: { names: ['Maternal', 'Paternal'] },
+    legend: { title: 'Haplotype' },
   })
-  expect(colorForField(written, 'tags.NM')).not.toHaveProperty('labels')
+  expect(colorForField(written, 'tags.NM')).not.toHaveProperty('scale')
 })

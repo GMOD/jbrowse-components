@@ -97,7 +97,7 @@ const V4_COLOR_FIELDS: Record<string, string> = {
   mateRefName: 'mateRefName',
 }
 
-// the v4 schemes that drew a cell per base, the `baseColor` object's now
+// the v4 schemes that drew a cell per base, `pileup.bases`' fields now
 const V4_BASE_COLOR_FIELDS: Record<string, string> = {
   perBaseQuality: 'baseQuality',
   perBaseLettering: 'base',
@@ -131,8 +131,14 @@ export function colorSlotsOf(value: unknown): DisplayEntry {
         }
       : undefined
   return {
-    ...(field ? { color: { field } } : {}),
-    ...(baseField ? { baseColor: { field: baseField } } : {}),
+    ...(field ? { encoding: { color: { field } } } : {}),
+    ...(baseField
+      ? {
+          pileup: {
+            bases: { show: true, encoding: { color: { field: baseField } } },
+          },
+        }
+      : {}),
     ...(settings ? { modifications: settings } : {}),
   }
 }
@@ -177,15 +183,16 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
 /**
  * The config spellings v1-v4 wrote on this display and the four it retired,
  * as `retired` declares them. v4's `colorBy` named a scheme and held the
- * modification settings, which are the `color` or `baseColor` object's field
- * and the `modifications` slot now; its LinearReadArcsDisplay gated the two
+ * modification settings, which are the `encoding.color` or `pileup.bases`
+ * field and the `modifications` slot now; its LinearReadArcsDisplay gated the two
  * arc classes under the draw verb, which are `filter.connections`
  * categories now; its read size and layout cap are `pileup`'s `readHeight`
  * and `maxLayoutHeight`; its `jexlFilters` has no slot, since
  * `filter` is the read filter object. The coverage display's scale slots land
  * on the band's `scales.y`. `flipStrandLongReadChains` went: a split segment's
  * strand against its molecule is a level of the orientation fields, which
- * `color.range` recolors.
+ * `encoding.color.scale.range` recolors. v4's arc `lineWidth` stroked every
+ * arc alike, which `readConnections.encoding.strokeWidth.value` does.
  */
 // #region retired
 export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
@@ -205,7 +212,9 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   ...retiredScaleSpellings,
   multiTicks: () => ({}),
   jitter: () => ({}),
-  lineWidth: v => ({ readConnections: { lineWidth: v } }),
+  lineWidth: v => ({
+    readConnections: { encoding: { strokeWidth: { value: v } } },
+  }),
   featureHeight: v => ({ pileup: { readHeight: v } }),
   maxHeight: v => ({ pileup: { maxLayoutHeight: v } }),
   hideSmallIndels: () => ({}),
@@ -269,6 +278,9 @@ function wholeFilterOf(value: unknown): DisplayEntry {
 }
 
 const INSTANCE_SLOTS: Record<string, (value: unknown) => DisplayEntry> = {
+  // v4.3.0's pileup and arcs displays held their key's toggle as state
+  showLegend: value =>
+    typeof value === 'boolean' ? { legend: { show: value } } : {},
   colorBy: colorSlotsOf,
   colorBySetting: colorSlotsOf,
   filterBy: wholeFilterOf,
