@@ -49,3 +49,16 @@ as the user guide said to, drew content. It also pinned a content axis to
   declares no zoom range (ADR-125).
 - The browser suite's two GC captures read `test_data/volvox/config_gc.json`,
   whose tracks carry the 500 bp window on their adapters.
+
+### Amendment (2026-10-22): the adapter speaks `op`, `window` and `step`
+
+The GC adapter's three settings are `op` (`content` or `skew`), `window` and `step`, the
+words the mark display's `aggregate` and `bin` steps use; the schema's `retired`
+map lifts `gcMode`, `windowSize` and `windowDelta`. `step` defaults to
+`'auto'`: the largest 1/2/5 rung at or under one point per pixel at the wiggle
+display's `resolution`. The adapter declares that rung as its zoom range, so a
+zoom across a rung now refetches, and the sequence comes back from the range
+cache. A window narrower than the step widens to it, which keeps the output at
+one or two bins per pixel when zoomed out. A cold review of the generated
+reference proposed the shape; it proposed `op: 'gc'`, and `content` stayed
+because the menu says "GC content".

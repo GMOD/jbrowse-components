@@ -141,10 +141,10 @@ exports[`every registered schema slot default 1`] = `
     "features": "frozen = []",
   },
   "adapter: GCContentAdapter": {
-    "gcMode": "stringEnum = "content" of ["content","skew"]",
+    "op": "stringEnum = "content" of ["content","skew"]",
     "sequenceAdapter": "maybeFrozen = undefined",
-    "windowDelta": "maybeNumber = undefined",
-    "windowSize": "number = 100",
+    "step": "number = "auto"",
+    "window": "number = 100",
   },
   "adapter: GWASAdapter": {
     "autoSql": "string = """,

@@ -99,6 +99,8 @@ const NON_STRING_KINDS = new Set([
 interface Decl {
   kind: string
   enumValues?: Set<string>
+  // a string default on a non-string slot (`step: 'auto'`) is a legal value
+  stringDefault?: string
 }
 
 function buildInventory() {
@@ -142,7 +144,10 @@ function buildInventory() {
         continue
       }
       const [, name, kind = SUB_SCHEMA_KIND, values] = m
-      const decl: Decl = { kind }
+      const decl: Decl = {
+        kind,
+        stringDefault: /= <code>'([^']*)'<\/code>/.exec(line)?.[1],
+      }
       if (ENUM_KINDS.has(kind) && values) {
         decl.enumValues = new Set(values.split(',').map(v => v.trim()))
         if (pageId && anchor) {
@@ -246,7 +251,7 @@ function checkProse(
 // moves, this fails loudly and names the parser as the thing to fix, rather than
 // letting the gate go quiet.
 function assertInventoryParsed(
-  declsBySlot: Map<string, { kind: string; enumValues?: Set<string> }[]>,
+  declsBySlot: Map<string, Decl[]>,
   displaySlots: Set<string>,
 ) {
   const problems: string[] = []
@@ -286,6 +291,9 @@ function assertInventoryParsed(
 
 // Could this declaration hold this literal string?
 function accepts(decl: Decl, value: string) {
+  if (decl.stringDefault === value) {
+    return true
+  }
   if (decl.enumValues) {
     return decl.enumValues.has(value)
   }

@@ -15,12 +15,17 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { RawFeatureArrays } from '@jbrowse/plugin-wiggle'
 
+// the wiggle display's points per pixel, which an `auto` step follows
+interface GCOptions extends BaseOptions {
+  resolution?: number
+}
+
 const G = 1
 const C = 2
 const VALID = 4
-const BASE_CLASS = new Uint8Array(256).fill(VALID)
+const BASE_CLASS = new Uint8Array(256)
 for (const [letters, kind] of [
-  ['Nn', 0],
+  ['AaTt', VALID],
   ['Gg', G | VALID],
   ['Cc', C | VALID],
 ] as const) {
@@ -50,7 +55,21 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
    * the track is read for.
    */
   public async getValueDomain(): Promise<[number, number] | undefined> {
-    return this.getConf('gcMode') === 'content' ? [0, 1] : undefined
+    return this.getConf('op') === 'content' ? [0, 1] : undefined
+  }
+
+  /** The zoom an `auto` step's rung serves; a fixed step serves every zoom. */
+  public async getZoomRange(opts?: GCOptions) {
+    return this.gcWindow(opts).zoomRange
+  }
+
+  private gcWindow(opts?: GCOptions) {
+    return resolveGCWindow({
+      window: this.getConf('window'),
+      step: this.getConf('step'),
+      bpPerPx: opts?.bpPerPx,
+      resolution: opts?.resolution,
+    })
   }
 
   /**
@@ -60,7 +79,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
    */
   public async getFeatureArrays(
     regions: Region[],
-    opts?: BaseOptions,
+    opts?: GCOptions,
   ): Promise<RawFeatureArrays[]> {
     const slot = createStatusFanOut(opts?.statusCallback)
     return Promise.all(
@@ -72,27 +91,21 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
 
   private async regionArrays(
     query: Region,
-    opts?: BaseOptions,
+    opts?: GCOptions,
   ): Promise<RawFeatureArrays> {
     const { statusCallback, signal } = opts ?? {}
     const sequenceAdapter = await this.configure()
-    const { windowSize, windowDelta } = resolveGCWindow(
-      this.getConf('windowSize'),
-      this.getConf('windowDelta'),
-    )
-    const skew = this.getConf('gcMode') === 'skew'
+    const { window: width, step } = this.gcWindow(opts)
+    const skew = this.getConf('op') === 'skew'
     // the window scored at position i is [i - leftHalf, i + rightHalf)
-    const leftHalf = windowSize >> 1
-    const rightHalf = windowSize - leftHalf
+    const leftHalf = width >> 1
+    const rightHalf = width - leftHalf
 
-    // Snapped to a windowDelta grid, the scored positions
-    // `qs + leftHalf + k * windowDelta` are the same whatever the query, so
+    // Snapped to a step grid, the scored positions
+    // `qs + leftHalf + k * step` are the same whatever the query, so
     // panning extends the curve instead of sliding it. 0 is on every grid.
-    const qs = Math.max(
-      0,
-      Math.floor((query.start - leftHalf) / windowDelta) * windowDelta,
-    )
-    const qe = Math.ceil((query.end + rightHalf) / windowDelta) * windowDelta
+    const qs = Math.max(0, Math.floor((query.start - leftHalf) / step) * step)
+    const qe = Math.ceil((query.end + rightHalf) / step) * step
 
     const residues =
       (await sequenceAdapter.getSequence(
@@ -103,7 +116,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
     return updateStatus('Calculating GC', statusCallback, async () => {
       const capacity = Math.max(
         0,
-        Math.floor((residues.length - windowSize) / windowDelta) + 1,
+        Math.floor((residues.length - width) / step) + 1,
       )
       const starts = new Int32Array(capacity)
       const ends = new Int32Array(capacity)
@@ -118,11 +131,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
       let lo = 0
       let hi = 0
       const breakpoint = createAbortBreakpoint(signal)
-      for (
-        let i = leftHalf;
-        i + rightHalf <= residues.length;
-        i += windowDelta
-      ) {
+      for (let i = leftHalf; i + rightHalf <= residues.length; i += step) {
         if (breakpoint.due()) {
           await breakpoint.yield()
         }
@@ -138,14 +147,12 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
           nc -= (k & C) >> 1
           valid -= k >> 2
         }
-        // a window of Ns has no GC fraction, and one with no G or C no skew:
-        // no bin, rather than a 0 the sequence never said
         const denominator = skew ? ng + nc : valid
         if (denominator > 0) {
-          // the middle windowDelta bases of the window, so bins tile
-          const binStart = qs + i - leftHalf + ((windowSize - windowDelta) >> 1)
+          // the middle step bases of the window, so bins tile
+          const binStart = qs + i - leftHalf + ((width - step) >> 1)
           starts[n] = binStart
-          ends[n] = binStart + windowDelta
+          ends[n] = binStart + step
           scores[n] = (skew ? ng - nc : ng + nc) / denominator
           n++
         }

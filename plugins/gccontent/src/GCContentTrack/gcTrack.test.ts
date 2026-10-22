@@ -10,7 +10,12 @@ import WigglePlugin from '@jbrowse/plugin-wiggle'
 import GCContentPlugin from '../index.ts'
 import { liftGCSettings } from './liftGCSettings.ts'
 
-import type { MenuItem, RadioMenuItem, SubMenuItem } from '@jbrowse/core/ui'
+import type {
+  CheckboxMenuItem,
+  MenuItem,
+  RadioMenuItem,
+  SubMenuItem,
+} from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function makePluginManager() {
@@ -86,41 +91,46 @@ async function createTrack(adapter: Record<string, unknown> = {}) {
   return { track, display: track.displays[0]! }
 }
 
-test('the window, step and mode live on the adapter, and each refetches', async () => {
+test('the op, window and step live on the adapter, and each refetches', async () => {
   const { track, display } = await createTrack()
-  const initial = display.settingsFetchInputs
-  track.setGCMode('skew')
-  expect(readConfObject(track.configuration.adapter, 'gcMode')).toBe('skew')
-  expect(display.settingsFetchInputs).not.toEqual(initial)
-  const afterMode = display.settingsFetchInputs
-  track.setGCContentParams({ windowSize: 50, windowDelta: 10 })
+  let previous = display.settingsFetchInputs
+  for (const write of [
+    () => track.setOp('skew'),
+    () => track.setWindow(50),
+    () => track.setStep(10),
+  ]) {
+    write()
+    expect(display.settingsFetchInputs).not.toEqual(previous)
+    previous = display.settingsFetchInputs
+  }
   expect(display.adapterConfig).toMatchObject({
     type: 'GCContentAdapter',
-    gcMode: 'skew',
-    windowSize: 50,
-    windowDelta: 10,
+    op: 'skew',
+    window: 50,
+    step: 10,
   })
-  expect(display.settingsFetchInputs).not.toEqual(afterMode)
 })
 
-test('a step never outlives a window shrunk below it', async () => {
+test('the step follows the zoom until a fixed one is chosen, and its reset returns there', async () => {
   const { track } = await createTrack()
-  track.setGCContentParams({ windowSize: 1000, windowDelta: 1000 })
-  track.setGCContentParams({ windowSize: 20 })
-  expect([track.windowSize, track.windowDelta]).toEqual([20, 20])
-  track.setGCContentParams({ windowSize: 500, windowDelta: 25 })
-  track.setGCContentParams({ windowSize: 400 })
-  expect(track.windowDelta).toBe(25)
-})
-
-test('an unset step follows the window, and a step equal to it stays unset', async () => {
-  const { track } = await createTrack()
-  track.setGCContentParams({ windowSize: 50 })
-  expect([track.windowSize, track.windowDelta]).toEqual([50, 50])
-  track.setGCContentParams({ windowDelta: 50 })
-  expect(track.stepTilesWindow).toBe(true)
-  track.setGCContentParams({ windowSize: 80 })
-  expect(track.windowDelta).toBe(80)
+  const params = () =>
+    resolveSubMenu(
+      (track.trackMenuItems() as MenuItem[]).find(
+        i => 'label' in i && i.label === 'GC parameters',
+      ) as SubMenuItem,
+    )
+  const labels = () => params().map(i => ('label' in i ? i.label : i.type))
+  expect(track.step).toBe('auto')
+  expect(labels()).not.toContain('Step size')
+  const follows = params().find(
+    i => 'label' in i && i.label === 'Step follows zoom',
+  ) as CheckboxMenuItem
+  expect(follows.checked).toBe(true)
+  follows.onClick(track)
+  expect(track.step).toBe(track.window)
+  expect(labels()).toContain('Step size')
+  track.setStep('auto')
+  expect(labels()).not.toContain('Step size')
 })
 
 test('the track menu carries the GC parameters beside the plot', async () => {
@@ -132,7 +142,7 @@ test('the track menu carries the GC parameters beside the plot', async () => {
   expect(items.some(i => 'label' in i && i.label === 'GC skew')).toBe(false)
 })
 
-test('GC parameters opens on a content / skew radio pair that sets the mode', async () => {
+test('GC parameters opens on a content / skew radio pair that sets the op', async () => {
   const { track } = await createTrack()
   const params = (track.trackMenuItems() as MenuItem[]).find(
     i => 'label' in i && i.label === 'GC parameters',
@@ -143,7 +153,7 @@ test('GC parameters opens on a content / skew radio pair that sets the mode', as
     { type: 'radio', label: 'GC skew', checked: false },
   ])
   ;(skew as RadioMenuItem).onClick(track)
-  expect(track.gcMode).toBe('skew')
+  expect(track.op).toBe('skew')
 })
 
 test("content's axis is the fraction's own [0, 1], skew's follows the data", async () => {
@@ -181,8 +191,8 @@ test("v4's GC display settings land on the adapter, and a bare sequence adapter 
     ],
   })
   expect(readConfObject(conf, ['adapter', 'type'])).toBe('GCContentAdapter')
-  expect(readConfObject(conf, ['adapter', 'windowSize'])).toBe(10)
-  expect(readConfObject(conf, ['adapter', 'gcMode'])).toBe('skew')
+  expect(readConfObject(conf, ['adapter', 'window'])).toBe(10)
+  expect(readConfObject(conf, ['adapter', 'op'])).toBe('skew')
   expect(readConfObject(conf, ['adapter', 'sequenceAdapter'])).toMatchObject({
     type: 'IndexedFastaAdapter',
   })

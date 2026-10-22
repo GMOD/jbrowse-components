@@ -1055,17 +1055,22 @@ export const configManifest: ConfigManifest = {
           "type": "(frozen | undefined)"
         },
         {
-          "name": "windowSize",
+          "name": "op",
+          "type": "GC op"
+        },
+        {
+          "name": "window",
           "type": "number"
         },
         {
-          "name": "windowDelta",
-          "type": "(number | undefined)"
-        },
-        {
-          "name": "gcMode",
-          "type": "gcMode"
+          "name": "step",
+          "type": "(number | \"auto\")"
         }
+      ],
+      "legacyKeys": [
+        "windowSize",
+        "windowDelta",
+        "gcMode"
       ],
       "shorthandKeys": []
     },

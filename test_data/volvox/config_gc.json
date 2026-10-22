@@ -23,7 +23,8 @@
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "GCContentAdapter",
-        "windowSize": 500
+        "window": 500,
+        "step": 500
       }
     },
     {
@@ -33,8 +34,9 @@
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "GCContentAdapter",
-        "gcMode": "skew",
-        "windowSize": 500
+        "op": "skew",
+        "window": 500,
+        "step": 500
       }
     }
   ]

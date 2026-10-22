@@ -271,5 +271,5 @@ test('the new GC track computes content through its adapter, drawn as a wiggle',
     'LinearWiggleDisplay',
   )
   // the stored conf leaves the default, content, out
-  expect(track.adapter).not.toHaveProperty('gcMode', 'skew')
+  expect(track.adapter).not.toHaveProperty('op', 'skew')
 })

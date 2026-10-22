@@ -2969,25 +2969,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             }
           }
         },
-        "windowSize": {
-          "default": 100,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "windowDelta": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "gcMode": {
-          "description": "calculate GC content fraction or GC skew (G-C)/(G+C).",
+        "op": {
+          "description": "GC content fraction, or GC skew (G-C)/(G+C).",
           "default": "content",
           "if": {
             "type": "null"
@@ -2998,6 +2981,45 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "skew"
             ]
           }
+        },
+        "window": {
+          "description": "bp each score is computed over.",
+          "default": 100,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "step": {
+          "description": "bp between scores, or \\"auto\\" to follow the zoom.",
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "const": "auto"
+              }
+            ]
+          }
+        },
+        "windowSize": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "windowDelta": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "gcMode": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },

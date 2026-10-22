@@ -2,7 +2,7 @@ import { readConfObject, setConf } from '@jbrowse/core/configuration'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { makeSizeMenu } from '@jbrowse/core/ui'
-import { radioItems } from '@jbrowse/core/ui/menuItems'
+import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { toLocale } from '@jbrowse/core/util'
 // the same four columns QuantitativeTrack downloads, and this track renders the
 // wiggle body anyway — a second copy of the writer was one place for the
@@ -10,13 +10,11 @@ import { toLocale } from '@jbrowse/core/util'
 import { bedGraphFormatOptions } from '@jbrowse/plugin-wiggle'
 import FunctionsIcon from '@mui/icons-material/Functions'
 
-import {
-  WINDOW_SIZE_DEFAULT,
-  resolveGCWindow,
-} from '../GCContentAdapter/gcWindow.ts'
+import { AUTO_STEP, WINDOW_DEFAULT } from '../GCContentAdapter/gcWindow.ts'
 import configSchemaF from './configSchema.ts'
 
 import type { GCContentAdapterConfig } from '../GCContentAdapter/configSchema.ts'
+import type { GCStep } from '../GCContentAdapter/gcWindow.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -36,82 +34,57 @@ export default function GCContentTrackF(pm: PluginManager) {
           },
           /**
            * #getter
-           * The `GCContentAdapter` computing the signal, which holds the
-           * window, the step and the mode.
+           * The `GCContentAdapter` computing the signal, which holds the op,
+           * the window and the step.
            */
           get gcAdapter(): GCContentAdapterConfig {
             return self.configuration.adapter
           },
           /**
            * #getter
-           * The window and step the adapter scores with, resolved.
            */
-          get gcWindow() {
-            return resolveGCWindow(
-              readConfObject(this.gcAdapter, 'windowSize'),
-              readConfObject(this.gcAdapter, 'windowDelta'),
-            )
+          get op(): 'content' | 'skew' {
+            return readConfObject(this.gcAdapter, 'op')
+          },
+          /**
+           * #getter
+           * The window as configured, before a wider step widens it.
+           */
+          get window(): number {
+            return readConfObject(this.gcAdapter, 'window')
           },
           /**
            * #getter
            */
-          get windowSize() {
-            return this.gcWindow.windowSize
-          },
-          /**
-           * #getter
-           */
-          get windowDelta() {
-            return this.gcWindow.windowDelta
-          },
-          /**
-           * #getter
-           * Whether the step is unset, tiling the windows.
-           */
-          get stepTilesWindow() {
-            return readConfObject(this.gcAdapter, 'windowDelta') === undefined
-          },
-          /**
-           * #getter
-           */
-          get gcMode(): 'content' | 'skew' {
-            return readConfObject(this.gcAdapter, 'gcMode')
+          get step(): GCStep {
+            return readConfObject(this.gcAdapter, 'step')
           },
         }))
         .actions(self => ({
           /**
            * #action
-           * Either parameter alone; the other keeps its value. A step at or
-           * past the window is written unset, so the windows tile and the
-           * step grows with the window again.
            */
-          setGCContentParams({
-            windowSize = self.windowSize,
-            windowDelta = self.stepTilesWindow ? undefined : self.windowDelta,
-          }: {
-            windowSize?: number
-            windowDelta?: number
-          }) {
-            setConf(self.gcAdapter, 'windowSize', windowSize)
-            setConf(
-              self.gcAdapter,
-              'windowDelta',
-              windowDelta === undefined || windowDelta >= windowSize
-                ? undefined
-                : windowDelta,
-            )
+          setOp(op: 'content' | 'skew') {
+            setConf(self.gcAdapter, 'op', op)
           },
           /**
            * #action
            */
-          setGCMode(mode: 'content' | 'skew') {
-            setConf(self.gcAdapter, 'gcMode', mode)
+          setWindow(window: number) {
+            setConf(self.gcAdapter, 'window', window)
+          },
+          /**
+           * #action
+           */
+          setStep(step: GCStep) {
+            setConf(self.gcAdapter, 'step', step)
           },
         }))
         .views(self => {
           const { trackMenuItems: superTrackMenuItems } = self
           return {
             trackMenuItems(): MenuItem[] {
+              const { step } = self
               return [
                 ...superTrackMenuItems(),
                 {
@@ -124,9 +97,9 @@ export default function GCContentTrackF(pm: PluginManager) {
                         { value: 'content', label: 'GC content' },
                         { value: 'skew', label: 'GC skew' },
                       ],
-                      self.gcMode,
-                      mode => {
-                        self.setGCMode(mode)
+                      self.op,
+                      op => {
+                        self.setOp(op)
                       },
                     ),
                     { type: 'divider' },
@@ -138,36 +111,50 @@ export default function GCContentTrackF(pm: PluginManager) {
                       max: 100_000,
                       format: formatBp,
                       commitOnRelease: true,
-                      getValue: () => self.windowSize,
-                      isDefault: self.windowSize === WINDOW_SIZE_DEFAULT,
-                      onChange: windowSize => {
-                        self.setGCContentParams({ windowSize })
+                      getValue: () => self.window,
+                      isDefault: self.window === WINDOW_DEFAULT,
+                      onChange: window => {
+                        self.setWindow(window)
                       },
                       onReset: () => {
-                        self.setGCContentParams({
-                          windowSize: WINDOW_SIZE_DEFAULT,
-                        })
+                        self.setWindow(WINDOW_DEFAULT)
                       },
                     }),
-                    makeSizeMenu({
-                      label: 'Step size',
-                      title: 'Step',
-                      scale: 'log',
-                      min: 1,
-                      max: self.windowSize,
-                      format: formatBp,
-                      commitOnRelease: true,
-                      getValue: () => self.windowDelta,
-                      isDefault: self.stepTilesWindow,
-                      onChange: windowDelta => {
-                        self.setGCContentParams({ windowDelta })
+                    toggleItem(
+                      'Step follows zoom',
+                      step === AUTO_STEP,
+                      follows => {
+                        self.setStep(follows ? AUTO_STEP : self.window)
                       },
-                      onReset: () => {
-                        self.setGCContentParams({
-                          windowDelta: self.windowSize,
-                        })
+                      {
+                        helpText:
+                          'One score per pixel, on a 1, 2, 5, 10 bp ladder; a window narrower than the step widens to it',
                       },
-                    }),
+                    ),
+                    ...(step === AUTO_STEP
+                      ? []
+                      : [
+                          makeSizeMenu({
+                            label: 'Step size',
+                            title: 'Step',
+                            scale: 'log',
+                            min: 1,
+                            max: 100_000,
+                            format: formatBp,
+                            commitOnRelease: true,
+                            getValue: () =>
+                              typeof self.step === 'number'
+                                ? self.step
+                                : self.window,
+                            isDefault: false,
+                            onChange: step => {
+                              self.setStep(step)
+                            },
+                            onReset: () => {
+                              self.setStep(AUTO_STEP)
+                            },
+                          }),
+                        ]),
                   ],
                 },
               ]

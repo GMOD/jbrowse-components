@@ -22,8 +22,9 @@ cold fetch per span, then a GC count over the string):
 | 50 Mb | 17.5 MB | 1270 ms | 516 ms | 373 MB |
 | 249 Mb (all of chr1) | 77.3 MB | 5663 ms | 3046 ms | 1289 MB |
 
-At the default 100 bp step, all of chr1 is also 2.49M bins, 30 MB of typed
-arrays across the worker boundary for about a thousand pixels.
+The adapter's default `step: 'auto'` keeps the output to one or two bins per
+pixel, so the read and the scan are the whole cost. At a fixed 100 bp step, all
+of chr1 is also 2.49M bins, 30 MB of typed arrays across the worker boundary.
 
 ## Options
 
@@ -46,5 +47,6 @@ FASTA is read in 64 KB blocks, about 20 KB compressed on chr1, so a thousand
 scattered 1 kb windows still inflate a thousand blocks, about a quarter of the
 whole read, and each pixel then shows the GC of 1 kb out of its 250 kb.
 
-A step that follows the zoom (the mark display's `bin.step: 'auto'`) cuts the
-bin count and the transfer to the main thread, and leaves the read as it is.
+The multi-way synteny view's lane layers already stop a computed adapter at
+`LANE_TEMPLATE_MAX_BP` (5 Mb) and say so in the band's title, so a span cap on
+the wiggle display would match a rule the app already has.

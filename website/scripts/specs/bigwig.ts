@@ -108,9 +108,9 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           adapter: {
             type: 'GCContentAdapter',
             sequenceAdapter: HPYLORI_26695_SEQ_ADAPTER,
-            gcMode: 'content',
-            windowSize: 2000,
-            windowDelta: 2000,
+            op: 'content',
+            window: 2000,
+            step: 2000,
           },
         },
         {
@@ -121,9 +121,9 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           adapter: {
             type: 'GCContentAdapter',
             sequenceAdapter: HPYLORI_26695_SEQ_ADAPTER,
-            gcMode: 'skew',
-            windowSize: 20000,
-            windowDelta: 2000,
+            op: 'skew',
+            window: 20000,
+            step: 2000,
           },
           displays: [
             {

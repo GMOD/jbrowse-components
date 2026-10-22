@@ -9,8 +9,13 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 Computes GC content (or GC skew) from an assembly's sequence at render time,
 so there is no data file to prepare: the sequence comes from the assembly
-the track is displayed against. The window, the step and the mode are
-this adapter's, which the `GCContentTrack` menu's GC parameters write.
+the track is displayed against. Each score is the `op` over a `window` of
+bases, one every `step`; the `GCContentTrack` menu's GC parameters write
+all three.
+
+Only A, C, G and T count. N and the ambiguity codes are left out of both the
+fraction and its denominator, so a window holding no A, C, G or T, such as
+an assembly gap, has no score, nor does a skew window holding no G or C.
 
 ## Example usage
 
@@ -22,6 +27,23 @@ this adapter's, which the `GCContentTrack` menu's GC parameters write.
   assemblyNames: ['hg38'],
   adapter: {
     type: 'GCContentAdapter',
+  },
+}
+```
+
+GC skew in fixed 10 kb windows every 1 kb:
+
+```js
+{
+  type: 'GCContentTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'GCContentAdapter',
+    op: 'skew',
+    window: 10000,
+    step: 1000,
   },
 }
 ```
@@ -38,7 +60,18 @@ Adapter slots go inside the track's `adapter`: `"adapter": { "type": "GCContentA
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-sequenceadapter">**sequenceAdapter**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) | don't set this — JBrowse computes GC from the assembly the track is displayed against. It stays as an escape hatch for scoring some *other* sequence, and setting it pins the track to that source even when the assembly's own sequence changes<br>_advanced_ |
-| <span id="slot-windowsize">**windowSize**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | width in bp of the window each score is computed over, centered on the position. 1 scores single bases; wider windows smooth the signal |
-| <span id="slot-windowdelta">**windowDelta**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | step in bp between successive windows. Unset, it equals `windowSize` and the windows tile; smaller values overlap them, giving a denser, smoother signal for proportionally more work. A step wider than the window narrows to it |
-| <span id="slot-gcmode">**gcMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (content, skew) = <code>'content'</code> | calculate GC content fraction or GC skew (G-C)/(G+C) |
+| <span id="slot-sequenceadapter">**sequenceAdapter**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) | the sequence scored in place of the assembly's own, such as a hard-masked FASTA on the same coordinates. Unset, the track scores the sequence of the assembly it is shown against, and follows that assembly's sequence if it changes<br>_advanced_ |
+| <span id="slot-op">**op**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (content, skew) = <code>'content'</code> | `content` is the fraction of bases that are G or C, in [0, 1]; `skew` is (G - C) / (G + C), in [-1, 1] |
+| <span id="slot-window">**window**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | bp each score is computed over, centered on the bin it is drawn as. A step wider than the window widens it to the step, so every base is scored. 1 scores single bases; wider windows smooth the signal |
+| <span id="slot-step">**step**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>'auto'</code> | bp between successive scores, or `"auto"` to follow the zoom: the largest 1/2/5 rung (1, 2, 5, 10, 20, ... bp) at or under one point per pixel at the display's resolution. A step under the window overlaps the windows for a smoother signal |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `windowSize` | moved into a current slot |
+| `windowDelta` | moved into a current slot |
+| `gcMode` | moved into a current slot |
