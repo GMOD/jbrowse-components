@@ -485,8 +485,8 @@ describe('contextMenuTargetForHit', () => {
   })
 
   // The depth histogram has a widget behind it, so it gets a menu like every
-  // other mark that does. Only an arc — whose feed is junctions, with nothing
-  // to open — still falls through.
+  // other mark that does. Only an arc, a splice junction and a connector still
+  // fall through.
   it('a coverage hit carries the coverage hit but no feature', () => {
     const cov = { type: 'coverage', position: 1 } as const
     const target = contextMenuTargetForHit(

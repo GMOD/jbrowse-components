@@ -118,8 +118,8 @@ export interface ContextMenuTarget {
 
 // What a right-click resolves to, or undefined for a mark with nothing to
 // offer — which falls through to the BROWSER's menu rather than opening an
-// empty one. An arc is the only such mark: its feed is junctions, so there is
-// no read to act on and no bin to open.
+// empty one. Three marks do: an arc, a splice junction and a connector, none of
+// which has a menu of its own (ADR-225 for the connector).
 //
 // A cigar/modification hit carries the read's featureId so the read's own items
 // (view mate, feature details) stay reachable over a mismatched or modified

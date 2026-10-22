@@ -183,9 +183,9 @@ export function writePileupFrame(
 
 /**
  * The whole struct for one block, as a `MarkShape.writeUniforms`: what a caller
- * drawing the pileup marks through `drawMarks` would stage. The renderer takes
- * the two halves above instead, and `pileupUniformsParity.test.ts` pins that
- * the two spellings stage the same bytes.
+ * drawing the pileup marks through `drawMarks` would stage. No caller does
+ * today: the renderers plan the pileup passes and write the two halves above
+ * themselves, and this is those two calls, so it stages the same bytes.
  */
 export function writePileupUniforms(
   scratch: ArrayBuffer,
