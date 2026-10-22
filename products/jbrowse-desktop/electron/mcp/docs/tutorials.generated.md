@@ -307,6 +307,19 @@ Page: https://jbrowse.org/jb2/docs/tutorials/genomes_synteny/
 - https://jbrowse.org/ucsc/mm39/config-staging.json
 - https://jbrowse.org/ucsc/panTro6/config.json
 
+## Inspecting phased reads (GIAB HG002)
+
+Open GIAB HG002 nanopore, PacBio and Illumina reads on hg19, group and color them by the HP haplotype tag, compare one insertion across three platforms, and split coverage by strand to tell a variant from an artifact
+
+Page: https://jbrowse.org/jb2/docs/tutorials/giab_hg002_reads/
+
+- https://jbrowse.org/code/jb2/main/test_data/config_demo.json
+- https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam
+- https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam.bai
+- https://jbrowse.org/demos/hg002/HG002.Sequel.15kb.chr1_insertion.bam
+- https://jbrowse.org/demos/hg002/HG002.Sequel.15kb.chr1_insertion.bam.bai
+- https://jbrowse.org/genomes/hg19/giab/HG002_SVs_Tier1_v0.6.vcf.gz
+
 ## Comparing one genome's two haplotypes (T2T-HG002)
 
 Load T2T-HG002 v1.2 and the Q100 project's own maternal-to-paternal chain, plot one haplotype against the other genome-wide, and look at the 8p23.1 inversion in a linear synteny view

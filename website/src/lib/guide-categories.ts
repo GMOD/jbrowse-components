@@ -98,6 +98,7 @@ export const TUTORIAL_ORDER = [
   'repeatmasker_classes',
   'quickstart_web',
   'quickstart_desktop',
+  'giab_hg002_reads',
   'synteny_visualization',
   'hg002_haplotypes',
   'hg38_vertebrates_synteny',

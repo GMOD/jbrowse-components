@@ -147,6 +147,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // Keeps the two track names, which are what say which lane is which.
     position: 'left',
   },
+  giab_hg002_reads: {
+    // the HP-grouped pileup under the SV call
+    src: 'smalldel.png',
+    band: [0.15, 0.6],
+  },
   rnaseq: {
     // sashimi arcs over the junction reads
     src: 'rnaseq/basic.png',

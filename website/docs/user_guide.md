@@ -60,6 +60,10 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ## Tutorials
 
+### Getting started
+
+- [](/docs/tutorials/giab_hg002_reads)
+
 ### genomes.jbrowse.org
 
 - [](/docs/tutorials/genomes_basics)

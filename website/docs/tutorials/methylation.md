@@ -354,6 +354,7 @@ then type `chr15:22,200,000-26,900,000` to take in the whole imprinted domain:
 - [](/docs/tutorials/bisulfite)
 - [](/docs/tutorials/analyze_trio)
 - [](/docs/tutorials/hg002_haplotypes)
+- [](/docs/tutorials/giab_hg002_reads)
 - [](/docs/tutorials/rnaseq)
 - [](/docs/user_guides/quantitative_track)
 
