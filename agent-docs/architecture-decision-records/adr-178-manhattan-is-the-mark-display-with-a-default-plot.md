@@ -55,10 +55,16 @@ transforms or Edit plot.
   to the filter, adopted the runner-up and got the first back, refetching each
   way without end; a plot whose only LD mark plots `r2` drew nothing before a
   join and so never found an index to join. An index SNP a display `filter`
-  hides still colors its partners.
+  hides still colors its partners. (Amended 2026-10-22: the adapter reports
+  the top hit of each of 256 equal bins of the fetched region, and `topSnp`
+  counts only a hit inside a visible block. A fetch reaches half a screen
+  past each edge, so one hit per region picked an index off screen and drew
+  every visible point grey. Only the bin straddling a screen edge can still
+  hide an on-screen SNP behind a stronger one past the edge.)
 - **The index is picked once** (amended 2026-10-14). The display writes
-  `indexSnp` from `topSnp` only while none is set: when a plot first joins LD,
-  and when "Color by LD to index SNP" is turned on. After that only the user
+  `indexSnp` from `topSnp` at two moments: when a plot first joins LD with no
+  index set, and when "Color by LD to index SNP" is turned on, which replaces
+  any earlier pick (`ldAutoIndex.test.ts`). After that only the user
   moves it, by right-click or "Set index SNP to top hit". It first followed
   `topSnp` until pinned, which turned one fetch's output into the next fetch's
   input. Reviews of that loop found an index left on a contig scrolled off

@@ -10,7 +10,7 @@ import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 
 import { LD_FIELD, LD_ROLE_FIELD } from '../GWASAdapter/ldFields.ts'
 import { LD_WINDOW_BP } from '../GWASAdapter/ldJoin.ts'
-import { readTopHit } from '../GWASAdapter/topHit.ts'
+import { readTopHits } from '../GWASAdapter/topHit.ts'
 import { ldJoinFor } from './ldJoinResolver.ts'
 import {
   colorsByLd,
@@ -133,25 +133,36 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The highest-scoring SNP loaded for the regions on screen, as a 1-based
-       * `chr:bp`. `GWASAdapter` reports each region's top hit off the file, so
-       * no filter, zoom gate or mark of the plot moves it. A region scrolled
-       * off screen stays loaded, and is not counted.
+       * The highest-scoring SNP on screen, as a 1-based `chr:bp`.
+       * `GWASAdapter` reports each region's top hits off the file, so no
+       * filter, zoom gate or mark of the plot moves it. A fetch reaches past
+       * the screen and a region scrolled off screen stays loaded, so only a
+       * hit inside a visible block counts.
        *
        * A tie goes to the lowest region index, then the lowest position,
        * never to arrival order, so one load picks the same SNP however its
        * regions land (`ldAutoIndex.test.ts`).
        */
       get topSnp(): string | undefined {
-        const onScreen = new Set(
-          self.trackVisibleRegions.map(b => b.displayedRegionIndex),
+        const blocks = self.trackVisibleRegions.toSorted(
+          (a, b) =>
+            a.displayedRegionIndex - b.displayedRegionIndex ||
+            a.start - b.start,
         )
         let best: { score: number; start: number; refName: string } | undefined
-        for (const idx of [...onScreen].sort((a, b) => a - b)) {
-          const loaded = self.loadedRegions.get(idx)
-          const hit = readTopHit(self.rpcDataMap.get(idx)?.facts)
-          if (loaded && hit && (!best || hit.score > best.score)) {
-            best = { ...hit, refName: loaded.refName }
+        for (const block of blocks) {
+          const idx = block.displayedRegionIndex
+          const hits = self.loadedRegions.has(idx)
+            ? readTopHits(self.rpcDataMap.get(idx)?.facts)
+            : []
+          for (const hit of hits) {
+            if (
+              hit.start + 1 > block.start &&
+              hit.start < block.end &&
+              (!best || hit.score > best.score)
+            ) {
+              best = { ...hit, refName: block.refName }
+            }
           }
         }
         return best ? `${best.refName}:${best.start + 1}` : undefined

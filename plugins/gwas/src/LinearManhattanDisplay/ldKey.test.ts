@@ -4,6 +4,7 @@ import {
   SLE_REGION,
   slePluginManager,
 } from '../GWASAdapter/sle.fixture.ts'
+import { readTopHits } from '../GWASAdapter/topHit.ts'
 import { LD_INDEX_COLOR } from './ldPlot.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -61,8 +62,12 @@ test('LD coloring keys the r² bins and the index SNP as a pink diamond, and nam
   expect(keys.flatMap(k => labels(k.entries))).not.toContain('(no value)')
 })
 
+// The SLE positions lie past the test view's ctgA, so this reads the hits the
+// region reported rather than `topSnp`, which counts only hits on screen.
 test('the top hit is the index SNP once the join moves it into its own mark', async () => {
   const display = await ldColoredOverSle()
-  expect(display.topSnp).toBe(`ctgA:${SLE_INDEX_START + 1}`)
+  const hits = readTopHits(display.rpcDataMap.get(0)?.facts)
+  const best = Math.max(...hits.map(h => h.score))
+  expect(hits.find(h => h.score === best)?.start).toBe(SLE_INDEX_START)
   expect(display.notices).toEqual([])
 })

@@ -54,7 +54,7 @@ export function manhattanFixture({
   }
 }
 
-/** A region's top hit as `GWASAdapter` reports it in a fetch's `facts`. */
+/** A region's one top hit as `GWASAdapter` reports it in a fetch's `facts`. */
 export function topHitFacts(start: number, score: number) {
-  return { [TOP_HIT_FACT]: { start, score } }
+  return { [TOP_HIT_FACT]: [{ start, score }] }
 }

@@ -2,6 +2,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { waitFor } from '@testing-library/react'
 import { when } from 'mobx'
 
+import { TOP_HIT_FACT } from '../GWASAdapter/topHit.ts'
 import { LD_COLOR, LD_MARKS } from './ldPlot.ts'
 import { manhattanFixture, topHitFacts } from './manhattan.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -226,6 +227,31 @@ describe('LinearManhattanDisplay LD auto-index', () => {
 
     view.navTo({ refName: 'ctgB', start: 0, end: 10_000 })
     expect(display.topSnp).toBe('ctgB:501')
+  })
+
+  // A fetch reaches half a screen past each edge, and the region's single top
+  // hit sat there: the index landed off screen with every visible point grey.
+  it('counts only the hits on screen, not the loaded margin', () => {
+    const { createDisplay } = createTestEnvironment({ marks: LD_MARKS })
+    const { display } = createDisplay()
+    const view = getContainingView(display) as LinearGenomeViewModel
+    view.navTo({ refName: 'ctgA', start: 4000, end: 6000 })
+    display.setRpcData(
+      0,
+      {
+        layers: [
+          manhattanFixture({ x: [3000, 5000], y: [9, 3], flatbush: false }),
+        ],
+        facts: {
+          [TOP_HIT_FACT]: [
+            { start: 3000, score: 9 },
+            { start: 5000, score: 3 },
+          ],
+        },
+      },
+      { refName: 'ctgA', start: 3000, end: 7000, assemblyName: 'volvox' },
+    )
+    expect(display.topSnp).toBe('ctgA:5001')
   })
 
   // Manhattan's supersession replaced the mark display's, so an export of a
