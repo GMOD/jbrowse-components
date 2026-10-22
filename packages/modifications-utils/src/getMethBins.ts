@@ -56,7 +56,8 @@ export interface MethBins {
  * Bins per-read base modifications and their probabilities onto the reference
  * offsets of `window` (the whole read without one), indexed from `refStart`.
  * Only cytosines in `context` are considered (default CpG); plants also use
- * CHG/CHH.
+ * CHG/CHH. With `fill`, a cytosine in context that the MM tag left implicit
+ * bins as unmethylated (probability 0) where the tag allows it.
  *
  * Every ML probability is `(N + 0.5) / 256`, which float32 holds exactly.
  */
@@ -71,6 +72,7 @@ export function getMethBins(
     window,
   }: ParsedModData,
   context: CytosineContext = 'CG',
+  fill = true,
 ): MethBins {
   const isReverse = fstrand === -1
   const lo = Math.max(0, window?.refStart ?? 0)
@@ -120,7 +122,7 @@ export function getMethBins(
   // '.'/absent flag (low probability for skipped bases) lets us fill them in.
   const methMods = modifications.filter(m => m.type === 'm')
   const fillUnmethylated =
-    methMods.length > 0 && !methMods.some(m => m.unknownSkip)
+    fill && methMods.length > 0 && !methMods.some(m => m.unknownSkip)
 
   // A '-' MM group assays the cytosines of the strand OPPOSITE the read, so a
   // both-strand modBAM ('C+m;G-m') has its uncalled sites in both directions.

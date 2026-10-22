@@ -136,37 +136,22 @@ export function extractModifications(
     window.readStart,
     window.readEnd,
   )
-  const fillUnmarked = colorBy.modifications?.unmodified === 'all'
-
-  // `unmodified: 'all'` hands 5mC/5hmC to extractMethylation (the getMethBins context
-  // walk paints every cytosine, called or not), so those two types are dropped
-  // here to avoid double marks — matching the old standalone methylation scheme.
-  //
-  // **It drops those two types, NOT the read's other ones.** getMethBins is
-  // cytosine-only, so skipping the whole paint left a Fiber-seq read's 6mA with
-  // nothing to draw it: picking the 2-color view on `C+m?;A+a` data silently
-  // painted 2 marks where the by-type view painted 5, and the menu offered a
-  // 6mA checkbox over a channel that was gone. The remainder is drawn 2-color,
-  // which is what this view IS and what its help text already promises — "for
-  // other modifications the called positions are drawn, blue where the call is
-  // more likely negative".
-  //
-  // A read declaring nothing but 5mC/5hmC — the ordinary methylation modBAM —
-  // filters to an empty list and skips the walk, exactly as it did before.
-  //
-  // Unticked types leave before the per-position max, so a hidden type never
-  // outscores a shown one, as in extractMethylation.
   const mods = colorBy.modifications
+  const twoColor = paintsUnmodifiedCalls(mods)
+
+  // The 2-color view hands 5mC/5hmC to extractMethylation, which weighs them
+  // and unmodified against each other per cytosine; the read's other types
+  // (a Fiber-seq read's 6mA) are still drawn here. Unticked types leave before
+  // the per-position max, so a hidden type never outscores a shown one.
   const drawn = modifications.filter(
     m =>
       isModificationTypeVisible(mods, m.type) &&
-      !(fillUnmarked && isMethylationFillType(m.type)),
+      !(twoColor && isMethylationFillType(m.type)),
   )
   if (drawn.length > 0) {
     const modStrand = strand === -1 ? -1 : 1
     const modThreshold =
       (mods?.threshold ?? DEFAULT_MODIFICATION_THRESHOLD) / 100
-    const twoColor = paintsUnmodifiedCalls(mods)
     forEachMaxProbMod(
       drawn,
       getModProbabilityBytes(feature),
@@ -194,18 +179,11 @@ export function extractModifications(
       },
     )
   }
-  // Two readings of the same ML tag, and which one is built matters. The marks
-  // path above only ever COMPARES probabilities, so it takes the raw bytes
-  // (`forEachMaxProbMod` says why that is exact). `getMethBins` needs the
-  // scaled numbers, and it is the ONLY thing that reads this field — so
-  // building the scaled `number[]` unconditionally allocated one per read,
-  // thousands of entries on a nanopore read, and discarded it in every mode but
-  // fill-unmarked.
-  //
+  // getMethBins reads the scaled ML numbers; the marks above compare raw bytes.
   // Cut to the region, so `extractMethylation` must be handed the same one.
   return {
     modifications,
-    probabilities: fillUnmarked ? getModProbabilities(feature) : undefined,
+    probabilities: twoColor ? getModProbabilities(feature) : undefined,
     cigarOps,
     seq,
     fstrand: strand,
@@ -215,7 +193,9 @@ export function extractModifications(
 }
 
 /**
- * The fill view's marks: one per cytosine in context, called or not.
+ * Paints the 2-color view's cytosine marks, one per called cytosine in
+ * context, each the most likely of 5mC, 5hmC and unmodified. `unmodified: 'all'` adds the
+ * cytosines the MM tag left implicit.
  *
  * Takes the whole `modifications` slot rather than just its cytosine context,
  * because the winner selection below also has to know which types the type
@@ -253,12 +233,15 @@ export function extractMethylation(
 ) {
   const showMeth = isModificationTypeVisible(mods, 'm')
   const showHydroxy = isModificationTypeVisible(mods, 'h')
-  if (!showMeth && !showHydroxy) {
+  if (
+    (!showMeth && !showHydroxy) ||
+    !modData.modifications.some(m => isMethylationFillType(m.type))
+  ) {
     return
   }
   const { start: regionStart, end: regionEnd } = region
   const { refStart, methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
-    getMethBins(modData, mods?.cytosineContext)
+    getMethBins(modData, mods?.cytosineContext, mods?.unmodified === 'all')
 
   const methStrand = strand === -1 ? -1 : 1
   const kStart = Math.max(0, regionStart - featureStart - refStart)

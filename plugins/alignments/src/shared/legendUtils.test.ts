@@ -640,22 +640,25 @@ describe('getReadDisplayLegendItems', () => {
     ).toEqual(['6mA'])
   })
 
-  test('fill-unmarked (methylation) view keys the states it paints, incl. the blue unmethylated swatch', () => {
-    const mods = new Map([
-      ['m', 'red'],
-      ['h', 'magenta'],
-    ])
-    const items = legendFor(
-      { type: 'modifications', modifications: { unmodified: 'all' } },
-      [],
-      { detectedModifications: mods },
-    )
-    expect(items).toEqual([
-      { color: '#ff0000', label: '5mC methylated' },
-      { color: '#ffc0cb', label: '5hmC methylated' },
-      { color: '#0000ff', label: 'Unmethylated' },
-    ])
-  })
+  test.each(['all', 'calls'] as const)(
+    "2-color view (unmodified: '%s') keys the methylation states it paints",
+    unmodified => {
+      const mods = new Map([
+        ['m', 'red'],
+        ['h', 'magenta'],
+      ])
+      const items = legendFor(
+        { type: 'modifications', modifications: { unmodified } },
+        [],
+        { detectedModifications: mods },
+      )
+      expect(items).toEqual([
+        { color: '#ff0000', label: '5mC methylated' },
+        { color: '#ffc0cb', label: '5hmC methylated' },
+        { color: '#0000ff', label: 'Unmethylated' },
+      ])
+    },
+  )
 
   // Bisulfite is reference-based and parses no MM/ML tags, so the detected-types
   // map is ALWAYS empty for it — the real shape of a bisulfite track. Gating its
@@ -679,9 +682,8 @@ describe('getReadDisplayLegendItems', () => {
     ).toEqual(['5mC methylated', 'Unmethylated'])
   })
 
-  // Regression: two-color over a non-cytosine mod paints blue low-probability
-  // calls (extract.ts), but usesMethylationLegend is false for it, so the
-  // by-type branch keyed only '6mA' and left the blue marks unexplained.
+  // Two-color over a non-cytosine mod paints blue low-probability calls
+  // (extract.ts), so the legend keys that blue beside 6mA.
   test('two-color over a non-cytosine mod keys its blue unmodified swatch', () => {
     const mods = new Map([['a', 'purple']])
     expect(

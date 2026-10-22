@@ -7,6 +7,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
+import { isMethylationView } from '../../shared/types.ts'
 import { extractMethylation, extractModifications } from './extract.ts'
 
 import type { ColorBy } from '../../shared/types.ts'
@@ -29,20 +30,41 @@ function makeFeature() {
   })
 }
 
-function run(colorBy: ColorBy) {
-  const detected = new Set<string>()
-  const seenModTypes = new Map<string, ModificationType>()
+// Both extractors, gated the way `extractFeatureArrays` gates them
+function drive(
+  feature: SimpleFeature,
+  colorBy: ColorBy,
+  region: Region,
+  detected = new Set<string>(),
+  seenModTypes = new Map<string, ModificationType>(),
+) {
   const out: ModificationEntry[] = []
-  extractModifications(
-    makeFeature(),
+  const modData = extractModifications(
+    feature,
     0,
     100,
     1,
-    { start: 0, end: Number.MAX_SAFE_INTEGER },
+    region,
     colorBy,
     detected,
     seenModTypes,
     out,
+  )
+  if (isMethylationView(colorBy) && modData) {
+    extractMethylation(0, 100, 1, region, modData, out, colorBy.modifications)
+  }
+  return out
+}
+
+function run(colorBy: ColorBy) {
+  const detected = new Set<string>()
+  const seenModTypes = new Map<string, ModificationType>()
+  const out = drive(
+    makeFeature(),
+    colorBy,
+    { start: 0, end: Number.MAX_SAFE_INTEGER } as Region,
+    detected,
+    seenModTypes,
   )
   return { detected, seenModTypes, out }
 }
@@ -196,23 +218,11 @@ describe('extractModifications', () => {
 // paint and the cytosine walk are two calls that between them cover a read's
 // types once each. Both bugs below were in the seam between them.
 function runFill(feature: SimpleFeature, colorBy: ColorBy) {
-  const out: ModificationEntry[] = []
-  const region = { refName: 'ctgA', start: 100, end: 120 } as Region
-  const modData = extractModifications(
-    feature,
-    0,
-    100,
-    1,
-    region,
-    colorBy,
-    new Set<string>(),
-    new Map<string, ModificationType>(),
-    out,
-  )
-  if (modData) {
-    extractMethylation(0, 100, 1, region, modData, out, colorBy.modifications)
-  }
-  return out
+  return drive(feature, colorBy, {
+    refName: 'ctgA',
+    start: 100,
+    end: 120,
+  } as Region)
 }
 
 // Forward read, 4 CpGs at read pos 0,2,4,6, called by both C+m and C+h.
@@ -305,24 +315,8 @@ describe('the fill view honours the modification-type filter', () => {
   // The by-type and calls views pick one winner per position too. An unticked
   // type leaves before that pick, so CpG2, where the hidden 5hmC outscores
   // 5mC, still draws its 5mC call.
-  function runMarks(colorBy: ColorBy) {
-    const out: ModificationEntry[] = []
-    extractModifications(
-      makeMethFeature(),
-      0,
-      100,
-      1,
-      { start: 100, end: 120 },
-      colorBy,
-      new Set<string>(),
-      new Map<string, ModificationType>(),
-      out,
-    )
-    return out
-  }
-
   test('by-type: a cytosine 5hmC won still draws its 5mC call', () => {
-    const out = runMarks({
+    const out = runFill(makeMethFeature(), {
       type: 'modifications',
       modifications: { threshold: 5, shownModifications: ['m'] },
     })
@@ -335,7 +329,7 @@ describe('the fill view honours the modification-type filter', () => {
   })
 
   test('calls: a cytosine 5hmC won reads 5mC-or-not', () => {
-    const out = runMarks({
+    const out = runFill(makeMethFeature(), {
       type: 'modifications',
       modifications: { unmodified: 'calls', shownModifications: ['m'] },
     })
@@ -357,6 +351,53 @@ describe('the fill view honours the modification-type filter', () => {
       }),
     )
     expect(all.length).toBeGreaterThan(0)
+  })
+})
+
+describe('the calls view weighs 5mC and 5hmC as the fill view does', () => {
+  // m = h = 115 (~0.45 each) leaves unmodified at ~0.10, so the cytosine
+  // paints 5mC at 0.45
+  test('unmodified is 1 - m - h, not 1 - max', () => {
+    const out = runFill(
+      new SimpleFeature({
+        uniqueId: 'mh',
+        refName: 'ctgA',
+        start: 100,
+        end: 102,
+        strand: 1,
+        CIGAR: '2M',
+        seq: 'CG',
+        tags: { MM: 'C+m?,0;C+h?,0;', ML: [115, 115] },
+      }),
+      { type: 'modifications', modifications: { unmodified: 'calls' } },
+    )
+    expect(out).toHaveLength(1)
+    expect(out[0]!.noMod).toBe(false)
+    expect(out[0]!.modType).toBe('m')
+    expect(out[0]!.prob).toBeCloseTo(115.5 / 256, 5)
+  })
+
+  // 'C+m' without '?' lets the fill paint the uncalled CpG at 102; only 'all'
+  // asks for it
+  test('only the all level fills the cytosines the tag left implicit', () => {
+    const feature = () =>
+      new SimpleFeature({
+        uniqueId: 'implicit',
+        refName: 'ctgA',
+        start: 100,
+        end: 104,
+        strand: 1,
+        CIGAR: '4M',
+        seq: 'CGCG',
+        tags: { MM: 'C+m,0;', ML: [230] },
+      })
+    const positions = (unmodified: 'calls' | 'all') =>
+      runFill(feature(), {
+        type: 'modifications',
+        modifications: { unmodified },
+      }).map(m => m.position)
+    expect(positions('calls')).toEqual([100])
+    expect(positions('all')).toEqual([100, 102])
   })
 })
 

@@ -23,7 +23,7 @@ import {
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { fieldValueReader } from './groupFeatures.ts'
 import { mateMapqOf } from './splitAlignment.ts'
-import { isFillUnmarkedMode, paintsUnmodifiedCalls } from './types.ts'
+import { isMethylationView, paintsUnmodifiedCalls } from './types.ts'
 import { getMappingQuality, getMateRefName, getStrand } from './util.ts'
 
 import type { BaseLayer, ReadColorBy } from './types.ts'
@@ -266,7 +266,7 @@ export function extractFeatureArrays<T extends FeatureData>(
           )
         : undefined
 
-    if (isFillUnmarkedMode(baseLayer) && modData) {
+    if (isMethylationView(baseLayer) && modData) {
       extractMethylation(
         readIndex,
         featureStart,

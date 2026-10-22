@@ -17,11 +17,11 @@ export type ModificationUnmodified = (typeof MODIFICATION_UNMODIFIED)[number]
 
 export interface ModificationColorBy {
   // Which unmodified sites paint blue. `calls` paints the calls more likely
-  // unmodified, under modifications and bisulfite alike. `all` also paints
-  // every cytosine in the context, implicit ones included, merging 5mC/5hmC to
-  // the most likely state and ignoring the threshold: the former standalone
-  // 'methylation' scheme as a level of this one. Under bisulfite, which already
-  // walks every cytosine, `all` paints as `calls` does.
+  // unmodified, under modifications and bisulfite alike, and ignores the
+  // threshold; a cytosine called 5mC and 5hmC paints its most likely state of
+  // the two and unmodified. `all` also paints the cytosines in the context the
+  // MM tag left implicit. Under bisulfite, which already walks every cytosine,
+  // `all` paints as `calls` does.
   unmodified?: ModificationUnmodified
   // Allow-list of modification type codes to draw: ONLY these render, so a "6mA
   // only" view (shownModifications: ['a']) stays 6mA-only even if the basecaller
@@ -136,23 +136,23 @@ export interface BaseLayer extends ColorBy {
   attribute?: undefined
 }
 
-// True when modification coloring fills in unmarked canonical bases (the
-// implicit-unmethylated cytosine walk): `unmodified: 'all'` under
-// modifications. Reads only reach this through `colorByOf`, so the retired
+// True for the modifications 2-color view, at either `unmodified` level, where
+// extractMethylation paints each cytosine's most likely state among 5mC, 5hmC
+// and unmodified. `unmodified: 'all'` also fills the cytosines the basecaller
+// left implicit. Reads only reach this through `colorByOf`, so the retired
 // `methylation` name is never seen here.
-export function isFillUnmarkedMode(colorBy: ColorBy | undefined) {
+export function isMethylationView(colorBy: ColorBy | undefined) {
   return (
     colorBy?.type === 'modifications' &&
-    colorBy.modifications?.unmodified === 'all'
+    paintsUnmodifiedCalls(colorBy.modifications)
   )
 }
 
 // True when the mode keys the methylated/unmethylated legend (5mC/5hmC named)
-// rather than the per-type MM palette: the fill-unmarked cytosine walk and
-// bisulfite (read C->T vs. reference) both do — see extractBisulfite / the
-// fill-unmarked path.
+// rather than the per-type MM palette, as extractMethylation and
+// extractBisulfite paint.
 export function usesMethylationLegend(colorBy: ColorBy | undefined) {
-  return isFillUnmarkedMode(colorBy) || colorBy?.type === 'bisulfite'
+  return isMethylationView(colorBy) || colorBy?.type === 'bisulfite'
 }
 
 // True when the mode actually paints the explicit "not modified" (blue) state,

@@ -13,13 +13,14 @@ import these from a plugin.
 Bins per-read base modifications and their probabilities onto the reference
 offsets of `window` (the whole read without one), indexed from `refStart`.
 Only cytosines in `context` are considered (default CpG); plants also use
-CHG/CHH.
+CHG/CHH. With `fill`, a cytosine in context that the MM tag left implicit
+bins as unmethylated (probability 0) where the tag allows it.
 
 Every ML probability is `(N + 0.5) / 256`, which float32 holds exactly.
 
 ```js
 // type signature
-({ modifications, probabilities, cigarOps, seq, fstrand, flen, window, }: ParsedModData, context?: CytosineContext) => MethBins
+({ modifications, probabilities, cigarOps, seq, fstrand, flen, window, }: ParsedModData, context?: CytosineContext, fill?: boolean) => MethBins
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getMethBins.ts)
