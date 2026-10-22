@@ -8,15 +8,21 @@
       "hideHeaderOverview": true,
       "init": {
         "assembly": "hg38",
-        "loc": "chr3:46373391-46373606",
+        "loc": "chr3:46370246-46376906",
         "tracks": [
           {
-            "trackId": "ccr5-mane",
-            "height": 50
+            "trackId": "ccr5_hg38_to_delta32",
+            "type": "MultiWaySyntenyDisplay",
+            "rows": {
+              "domain": ["ccr5_delta32"]
+            },
+            "laneGeneTracks": ["ccr5_hg38_gene", "ccr5_delta32_gene"],
+            "showLegend": false,
+            "height": 140
           },
           {
             "trackId": "ccr5-HG00137",
-            "height": 150,
+            "height": 140,
             "sort": {
               "field": "base",
               "pos": 46373468,
@@ -25,7 +31,7 @@
           },
           {
             "trackId": "ccr5-HG00101",
-            "height": 150,
+            "height": 140,
             "sort": {
               "field": "base",
               "pos": 46373468,
@@ -34,7 +40,7 @@
           },
           {
             "trackId": "ccr5-HG00096",
-            "height": 150,
+            "height": 140,
             "sort": {
               "field": "base",
               "pos": 46373468,
@@ -45,29 +51,10 @@
       }
     },
     {
-      "id": "lgv-gene",
-      "type": "LinearGenomeView",
-      "assembly": "hg38",
-      "loc": "chr3:46370246-46376906",
-      "hideHeaderOverview": true,
-      "tracks": [
-        {
-          "trackId": "ccr5_hg38_to_delta32",
-          "type": "MultiWaySyntenyDisplay",
-          "rows": {
-            "domain": ["ccr5_delta32"]
-          },
-          "laneGeneTracks": ["ccr5_delta32_gene"],
-          "showLegend": false,
-          "height": 150
-        }
-      ]
-    },
-    {
       "id": "protein-CCR5-6meo",
       "type": "ProteinView",
       "displayName": "CCR5 bound by HIV gp120 (PDB 6MEO)",
-      "height": 880,
+      "height": 725,
       "zoomToBaseLevel": false,
       "showAlignment": false,
       "color": {
@@ -433,7 +420,7 @@
         "title": "CCR5"
       },
       "camera": {
-        "position": [174.543, 107.208, 42.352],
+        "position": [180.985, 94.612, 7.299],
         "target": [153.07, 149.193, 159.194],
         "up": [-0.4028, 0.8353, -0.3742],
         "mode": "orthographic"
@@ -483,7 +470,7 @@
       "id": "protein-CCR5-v3",
       "type": "ProteinView",
       "displayName": "What Δ32 leaves: residues 1-184 (PDB 6MEO)",
-      "height": 880,
+      "height": 725,
       "zoomToBaseLevel": false,
       "showAlignment": false,
       "color": {
@@ -849,7 +836,7 @@
         "title": "CCR5"
       },
       "camera": {
-        "position": [174.543, 107.208, 42.352],
+        "position": [180.985, 94.612, 7.299],
         "target": [153.07, 149.193, 159.194],
         "up": [-0.4028, 0.8353, -0.3742],
         "mode": "orthographic"
@@ -977,12 +964,12 @@
   "activePanelId": "panel-reads",
   "layout": {
     "id": "branch-root",
-    "direction": "column",
+    "direction": "row",
     "size": 1,
     "children": [
       {
         "id": "panel-reads",
-        "size": 36.0,
+        "size": 46,
         "activeTabId": "tab-reads",
         "tabs": [
           {
@@ -992,20 +979,9 @@
         ]
       },
       {
-        "id": "panel-gene",
-        "size": 15.0,
-        "activeTabId": "tab-gene",
-        "tabs": [
-          {
-            "id": "tab-gene",
-            "viewIds": ["lgv-gene"]
-          }
-        ]
-      },
-      {
         "id": "branch-structures",
         "direction": "row",
-        "size": 49.0,
+        "size": 54,
         "children": [
           {
             "id": "panel-protein-CCR5-6meo",

@@ -8,10 +8,9 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // One session carrying the whole chain, so it needs one config holding hg38,
 // the Δ32 allele and the Protein3d plugin: demos/ccr5/config.json.
 //
-// The reads are legible at 216 bp and the gene needs 6.6 kb, so they cannot
-// share a view at any zoom; the two genome views are that, not a style. The
-// gene view's Δ32 lane carries the allele's own gene, so no reference-coordinate
-// codon track is needed to say the coding sequence ends early.
+// The Δ32 allele is a multiway lane in the reads' own view. At the whole gene's
+// 6.6 kb the reads carrying the deletion still read as one dark column, so one
+// genome view holds the reads and both alleles' genes.
 const CCR5_CONFIG = 'https://jbrowse.org/demos/ccr5/config.json'
 
 const PANELS = ['protein-CCR5-6meo', 'protein-CCR5-v3'] as const
@@ -42,7 +41,7 @@ export const proteinCcr5ComboSpecs: ScreenshotSpec[] = [
     ],
     hideTooltip: true,
     viewportWidth: 1800,
-    viewportHeight: 2180,
+    viewportHeight: 920,
     actions: [
       { type: 'waitForAppSettled' },
       PARK_CURSOR,
@@ -52,9 +51,8 @@ export const proteinCcr5ComboSpecs: ScreenshotSpec[] = [
       ...(
         [
           ['A', 'lgv-CCR5'],
-          ['B', 'lgv-gene'],
-          ['C', PANELS[0]],
-          ['D', PANELS[1]],
+          ['B', PANELS[0]],
+          ['C', PANELS[1]],
         ] as const
       ).map(([text, id]) => ({
         type: 'circle' as const,
@@ -69,6 +67,19 @@ export const proteinCcr5ComboSpecs: ScreenshotSpec[] = [
         dy: 16,
       })),
       {
+        type: 'text',
+        text: 'Premature stop',
+        fontSize: 20,
+        leader: true,
+        anchor: {
+          trackId: 'ccr5_hg38_to_delta32',
+          loc: 'chr3:46,373,581',
+          fracY: 0.76,
+        },
+        dx: 140,
+        dy: -30,
+      },
+      {
         type: 'legend',
         fontSize: 20,
         entries: [
@@ -79,10 +90,10 @@ export const proteinCcr5ComboSpecs: ScreenshotSpec[] = [
         anchor: {
           selector: `[data-testid="view-container-${PANELS[0]}"] [data-testid="protein-view-molstar"]`,
           alignX: 'left',
-          alignY: 'top',
+          alignY: 'bottom',
         },
-        dx: 110,
-        dy: 70,
+        dx: 16,
+        dy: -130,
       },
     ],
   },
