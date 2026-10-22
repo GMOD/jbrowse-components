@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { getConf, parsePlot } from '@jbrowse/core/configuration'
+import { onPatch } from '@jbrowse/mobx-state-tree'
 
 import { PLOT_EXAMPLES } from './plotExamples.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -319,4 +320,21 @@ test('Solid color parks the field, its order and range for the way back', () => 
   expect(d.colorByMode).toBe('default')
   expect(d.colorSetting.field).toBe('')
   expect(d.groupByPlot(undefined, false)).toEqual({ facet: null })
+})
+
+// Every color tier keys on the channel's arrays, so a write of the color
+// already painting would re-bake for nothing.
+test('a pick of what already paints writes nothing', () => {
+  const d = display()
+  d.applyPlot({
+    encoding: { color: { field: 'biotype', scale: { range: ['red'] } } },
+  })
+  const solid = display()
+  solid.setColorValue('purple')
+  const patches: unknown[] = []
+  onPatch(d.configuration, patch => patches.push(patch))
+  onPatch(solid.configuration, patch => patches.push(patch))
+  d.colorByField('biotype')
+  solid.setColorValue('purple')
+  expect(patches).toEqual([])
 })

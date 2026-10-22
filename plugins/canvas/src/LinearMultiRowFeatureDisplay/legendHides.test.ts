@@ -7,7 +7,12 @@ import { createTestEnvironment } from './testEnv.ts'
 function display() {
   const { display } = createTestEnvironment({
     displayConfig: {
-      color: { field: 'state', domain: ['Enh', 'Tss'], range: ['red', 'blue'] },
+      encoding: {
+        color: {
+          field: 'state',
+          scale: { domain: ['Enh', 'Tss'], range: ['red', 'blue'] },
+        },
+      },
     },
   }).createDisplay()
   display.setHiddenCategories(['Enh'])
@@ -36,11 +41,11 @@ describe('the hidden categories follow the key that named them', () => {
 
   it('stay through a palette edit, a kept fallback color, the scale it already had, and a repartition', () => {
     const d = display()
-    setConf(d, 'color', {
-      ...readConfObject(d.configuration, 'color'),
-      range: ['green', 'blue'],
+    const color = readConfObject(d.configuration, ['encoding', 'color'])
+    setConf(d, ['encoding', 'color'], {
+      ...color,
       value: '#888',
-      scale: 'categorical',
+      scale: { ...color.scale, range: ['green', 'blue'], type: 'ordinal' },
     })
     d.setRowsField('clade')
     expect(d.activeHiddenCategories).toEqual(['Enh'])
@@ -49,11 +54,11 @@ describe('the hidden categories follow the key that named them', () => {
   it('come back with an undo that restores the key and the display together', () => {
     const d = display()
     const before = getSnapshot(d)
-    const color = readConfObject(d.configuration, 'color')
+    const color = readConfObject(d.configuration, ['encoding', 'color'])
     d.colorByField('strand')
     expect(d.activeHiddenCategories).toEqual([])
     runInAction(() => {
-      setConf(d, 'color', color)
+      setConf(d, ['encoding', 'color'], color)
       applySnapshot(d, before)
     })
     expect(d.activeHiddenCategories).toEqual(['Enh'])

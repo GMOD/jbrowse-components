@@ -939,7 +939,9 @@ export default function stateModelFactory(
          */
         colorByItemRgb() {
           if (!self.paintsItemRgb) {
-            setConf(self, ['encoding', 'color'], { scale: { type: 'identity' } })
+            setConf(self, ['encoding', 'color'], {
+              scale: { type: 'identity' },
+            })
           }
         },
         /**

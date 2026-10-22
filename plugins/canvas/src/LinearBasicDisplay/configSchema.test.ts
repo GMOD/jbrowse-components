@@ -21,7 +21,9 @@ describe('LinearBasicDisplay configSchema', () => {
       { displayId: 'test', type: 'LinearBasicDisplay' },
       { pluginManager: pm },
     )
-    expect(readConfObject(config, ['encoding', 'color', 'value'])).toBeUndefined()
+    expect(
+      readConfObject(config, ['encoding', 'color', 'value']),
+    ).toBeUndefined()
     expect(readConfObject(config, 'utrColor')).toBeUndefined()
     expect(readConfObject(config, 'connectorColor')).toBeUndefined()
     expect(readConfObject(config, 'featureHeight')).toBe(10)
@@ -187,7 +189,9 @@ describe('LinearBasicDisplay configSchema', () => {
         },
         { pluginManager: pm },
       )
-      expect(readConfObject(config, ['encoding', 'color', 'value'])).toBe('blue')
+      expect(readConfObject(config, ['encoding', 'color', 'value'])).toBe(
+        'blue',
+      )
     })
 
     it('works with CanvasFeatureRenderer type too', () => {
@@ -199,7 +203,9 @@ describe('LinearBasicDisplay configSchema', () => {
         },
         { pluginManager: pm },
       )
-      expect(readConfObject(config, ['encoding', 'color', 'value'])).toBe('green')
+      expect(readConfObject(config, ['encoding', 'color', 'value'])).toBe(
+        'green',
+      )
     })
 
     it('no-op when renderer is absent', () => {
@@ -207,7 +213,9 @@ describe('LinearBasicDisplay configSchema', () => {
         { displayId: 'test', type: 'LinearBasicDisplay', color1: 'purple' },
         { pluginManager: pm },
       )
-      expect(readConfObject(config, ['encoding', 'color', 'value'])).toBe('purple')
+      expect(readConfObject(config, ['encoding', 'color', 'value'])).toBe(
+        'purple',
+      )
     })
 
     it('converts boolean showLabels lifted from renderer to enum', () => {
@@ -309,7 +317,9 @@ describe('LinearBasicDisplay configSchema', () => {
         },
         { pluginManager: pm },
       )
-      expect(readConfObject(config, ['encoding', 'color', 'value'])).toBe('blue')
+      expect(readConfObject(config, ['encoding', 'color', 'value'])).toBe(
+        'blue',
+      )
       expect(readConfObject(config, 'connectorColor')).toBe('gray')
       expect(readConfObject(config, 'utrColor')).toBe('lightblue')
       expect(readConfObject(config, 'outlineColor')).toBe('black')

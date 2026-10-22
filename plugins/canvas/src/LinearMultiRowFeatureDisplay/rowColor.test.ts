@@ -32,7 +32,9 @@ function loaded(displayConfig: Record<string, unknown>) {
   return display
 }
 
-const DECLARED = { rowColor: { domain: ['c', 'a'], range: ['#0f0', '#00f'] } }
+const DECLARED = {
+  rowColor: { scale: { domain: ['c', 'a'], range: ['#0f0', '#00f'] } },
+}
 
 test('the dialog seeds each row with the color the config gives it', () => {
   const display = loaded(DECLARED)
@@ -49,7 +51,7 @@ test('a reorder writes the declared pairs back in their own order', () => {
   const [a, b, c, none] = display.editableSources
   display.applyRowEdits([c!, a!, b!, none!])
   expect(display.rowSort).toEqual(['c', 'a', 'b', ''])
-  expect(display.configuration.rowColor.domain).toEqual(['c', 'a'])
+  expect(display.configuration.rowColor.scale.domain).toEqual(['c', 'a'])
   expect(display.rowStylingIsCustom).toBe(false)
   expect(display.rowLabels).toEqual({})
 })
@@ -57,15 +59,16 @@ test('a reorder writes the declared pairs back in their own order', () => {
 test('a recolor is custom until a reset returns the declared colors', () => {
   const display = loaded(DECLARED)
   display.applyRowEdits(display.editableSources, {
-    domain: ['c', 'a', 'b'],
-    range: ['#0f0', '#00f', '#f00'],
+    scale: { domain: ['c', 'a', 'b'], range: ['#0f0', '#00f', '#f00'] },
   })
-  expect(pairedColorsOf(display.rowColorSetting).get('b')).toBe('#f00')
+  expect(pairedColorsOf(display.rowColorSetting.scale).get('b')).toBe('#f00')
   expect(display.rowStylingIsCustom).toBe(true)
   expect(display.rowArrangementIsCustom).toBe(true)
 
   display.resetRowArrangement()
-  expect(Object.fromEntries(pairedColorsOf(display.rowColorSetting))).toEqual({
+  expect(
+    Object.fromEntries(pairedColorsOf(display.rowColorSetting.scale)),
+  ).toEqual({
     c: '#0f0',
     a: '#00f',
   })
@@ -94,11 +97,12 @@ test('a submit over a window holding a fraction of the rows leaves the rest stan
   display.setRpcData(0, rows(['a', 'b']), ctgA)
   const [a, b] = display.editableSources
   display.applyRowEdits([b!, a!], {
-    domain: ['c', 'a'],
-    range: ['#0f0', '#f00'],
+    scale: { domain: ['c', 'a'], range: ['#0f0', '#f00'] },
   })
-  expect(display.configuration.rowColor.domain).toEqual(['c', 'a'])
-  expect(Object.fromEntries(pairedColorsOf(display.rowColorSetting))).toEqual({
+  expect(display.configuration.rowColor.scale.domain).toEqual(['c', 'a'])
+  expect(
+    Object.fromEntries(pairedColorsOf(display.rowColorSetting.scale)),
+  ).toEqual({
     c: '#0f0',
     a: '#f00',
   })
@@ -137,19 +141,19 @@ test('the row colors keep their identity across a reorder, a focus and a relabel
 })
 
 test("unknown: '' deals no palette, and the pairs still paint", () => {
-  const display = loaded({ rowColor: { ...DECLARED.rowColor, unknown: '' } })
+  const display = loaded({
+    rowColor: { scale: { ...DECLARED.rowColor.scale, unknown: '' } },
+  })
   expect(display.rowColorsByIndex).toEqual(
     abgrsOf(['#00f', undefined, '#0f0', undefined]),
   )
 })
 
 test('a recolor from None reads as Each row, and None clears it', () => {
-  const display = loaded({ rowColor: { unknown: '' } })
+  const display = loaded({ rowColor: { scale: { unknown: '' } } })
   expect(display.rowColorChoice).toBe('')
   display.applyRowEdits(display.editableSources, {
-    domain: ['b'],
-    range: ['#123456'],
-    unknown: '',
+    scale: { domain: ['b'], range: ['#123456'], unknown: '' },
   })
   expect(display.rowColorChoice).toBe('name')
   expect(display.rowColorsByIndex).toEqual(
@@ -234,8 +238,7 @@ test('rowColor by group pairs its domain with its range, on the blocks and the l
   const display = loaded({
     rowColor: {
       field: 'group',
-      domain: ['AB', 'C'],
-      range: ['#e41a1c', '#123456'],
+      scale: { domain: ['AB', 'C'], range: ['#e41a1c', '#123456'] },
     },
     ...GROUPS,
   })
@@ -262,9 +265,7 @@ test('a row with no group takes no color from the deal', () => {
   const unknown = loaded({
     rowColor: {
       field: 'group',
-      domain: ['C'],
-      range: ['#123456'],
-      unknown: '#999999',
+      scale: { domain: ['C'], range: ['#123456'], unknown: '#999999' },
     },
     ...GROUPS,
   })
@@ -275,7 +276,7 @@ test('a row with no group takes no color from the deal', () => {
 
 test('a pair naming the empty value paints the rows with no group', () => {
   const display = loaded({
-    rowColor: { field: 'group', domain: [''], range: ['#cccccc'] },
+    rowColor: { field: 'group', scale: { domain: [''], range: ['#cccccc'] } },
     ...GROUPS,
   })
   expect(display.rowColorsByIndex[3]).toBe(cssColorToABGR('#cccccc'))

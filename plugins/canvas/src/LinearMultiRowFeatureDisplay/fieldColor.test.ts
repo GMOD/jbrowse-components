@@ -36,11 +36,13 @@ function pack(field: string): MultiRowRegionData {
 
 const THRESHOLD = {
   field: 'segmean',
-  scale: 'threshold',
-  domain: ['-1', '1'],
-  range: ['#0000ff', '#eeeeee', '#ff0000'],
-  labels: ['Loss', 'Balanced', 'Gain'],
-  title: 'Copy number',
+  scale: {
+    type: 'threshold',
+    domain: ['-1', '1'],
+    range: ['#0000ff', '#eeeeee', '#ff0000'],
+    names: ['Loss', 'Balanced', 'Gain'],
+  },
+  legend: { title: 'Copy number' },
 }
 
 test('the worker ships each feature its field value, and each value its row', () => {
@@ -62,7 +64,7 @@ test('the worker ships each feature its field value, and each value its row', ()
 describe('a color field on the multi-row display', () => {
   function display() {
     const env = createTestEnvironment({
-      displayConfig: { rows: 'sample', color: THRESHOLD },
+      displayConfig: { rows: 'sample', encoding: { color: THRESHOLD } },
     }).createDisplay()
     env.display.setRpcData(0, pack('segmean'), ctgA)
     return env.display
@@ -104,8 +106,13 @@ describe('a color field on the multi-row display', () => {
   it('sends the worker the field alone, so a recolor is no refetch', () => {
     const d = display()
     const before = d.rpcProps()
-    setConf(d, ['color', 'range'], ['black', 'grey', 'white'])
-    setConf(d, ['color', 'labels'], [])
+    setConf(
+      d,
+      ['encoding', 'color', 'scale', 'range'],
+      ['black', 'grey', 'white'],
+    )
+    setConf(d, ['encoding', 'color', 'scale', 'names'], [])
+    setConf(d, ['encoding', 'color', 'legend', 'title'], 'Segment mean')
     expect(d.rpcProps()).toEqual(before)
     expect(before.colorConfig).toEqual({ value: undefined, field: 'segmean' })
   })
@@ -119,7 +126,7 @@ describe('a color field on the multi-row display', () => {
   // score, and strand under its own preset.
   it('offers score to Color by and clusters on it where the color names it', () => {
     const d = createTestEnvironment({
-      displayConfig: { rows: 'sample', color: { field: 'score' } },
+      displayConfig: { rows: 'sample', encoding: { color: 'score' } },
     }).createDisplay().display
     d.setRpcData(
       0,
@@ -148,14 +155,13 @@ describe('a color field on the multi-row display', () => {
 describe('a ramp color on the multi-row display', () => {
   const RAMP = {
     field: 'segmean',
-    scale: 'linear',
-    range: ['#000000', '#ffffff'],
-    title: 'Copy number',
+    scale: { type: 'linear', range: ['#000000', '#ffffff'] },
+    legend: { title: 'Copy number' },
   }
 
   function display() {
     const env = createTestEnvironment({
-      displayConfig: { rows: 'sample', color: RAMP },
+      displayConfig: { rows: 'sample', encoding: { color: RAMP } },
     }).createDisplay()
     env.display.setRpcData(0, pack('segmean'), ctgA)
     return env.display
@@ -198,11 +204,11 @@ describe('a ramp color on the multi-row display', () => {
     })
     expect(data.usedItemRgb).toBe(true)
     for (const color of [
-      { field: 'score', scale: 'linear' },
+      { field: 'score', scale: { type: 'linear' } },
       { field: 'score' },
     ]) {
       const { display: d } = createTestEnvironment({
-        displayConfig: { rows: 'sample', color },
+        displayConfig: { rows: 'sample', encoding: { color } },
       }).createDisplay()
       d.setRpcData(0, data, ctgA)
       expect(d.colorLegend).toEqual([])
@@ -216,7 +222,7 @@ describe('a ramp color on the multi-row display', () => {
   // a domain no reader can check against the picture.
   it('keys nothing while no feature has drawn', () => {
     const env = createTestEnvironment({
-      displayConfig: { rows: 'sample', color: RAMP },
+      displayConfig: { rows: 'sample', encoding: { color: RAMP } },
     }).createDisplay()
     expect(env.display.colorScales.some(scale => scale.kind === 'ramp')).toBe(
       false,
@@ -240,7 +246,12 @@ test('a domain quantile weighs each feature, so a lone spike stops short', () =>
   const env = createTestEnvironment({
     displayConfig: {
       rows: 'sample',
-      color: { field: 'score', scale: 'linear', domainQuantile: 0.9 },
+      encoding: {
+        color: {
+          field: 'score',
+          scale: { type: 'linear', domainQuantile: 0.9 },
+        },
+      },
     },
   }).createDisplay()
   env.display.setRpcData(

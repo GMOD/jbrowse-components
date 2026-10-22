@@ -129,8 +129,7 @@ setting whole, and `null` clears one. Each of these pastes as it is:
 - `{ "encoding": { "color": "strand" } }` forward strand red, reverse blue
 - `{ "encoding": { "color": { "field": "gene_biotype", "scale": { "domain": ["protein_coding", "lncRNA"], "range": ["#1f77b4", "#ff7f0e"] } } } }`
   those two biotypes blue and orange, and every other value a distinct color
-- `{ "encoding": { "color": { "value": "#1f77b4" } } }` one color for
-  everything
+- `{ "encoding": { "color": { "value": "#1f77b4" } } }` one color for everything
 - `{ "filter": { "genes": "only" } }` genes only
 - `{ "filter": ["jexl:feature.score > 100"] }` scores above 100
 - `{ "facet": null, "encoding": null }` ungrouped, default color

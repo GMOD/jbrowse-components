@@ -27,8 +27,7 @@ const ROW_GROUPS = [
 
 const BY_GROUP = {
   field: 'group',
-  domain: ['Village dog', 'Wolf'],
-  range: ['#e41a1c', '#377eb8'],
+  scale: { domain: ['Village dog', 'Wolf'], range: ['#e41a1c', '#377eb8'] },
 }
 
 function makeDisplay(n: number, height: number, rowColor: unknown = BY_GROUP) {

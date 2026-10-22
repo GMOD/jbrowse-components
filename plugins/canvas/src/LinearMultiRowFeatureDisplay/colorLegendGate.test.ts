@@ -15,13 +15,14 @@ function menuLabels(display: { trackMenuItems: () => MenuItem[] }): string[] {
   })
 }
 
-const IDENTITY = {
-  color: {
-    scale: 'identity',
+const IDENTITY_COLOR = {
+  scale: {
+    type: 'identity',
     domain: ['red', 'blue'],
-    labels: ['EUR', 'AFR'],
+    names: ['EUR', 'AFR'],
   },
 }
+const IDENTITY = { encoding: { color: IDENTITY_COLOR } }
 
 function painted(): MultiRowRegionData {
   return {
@@ -67,10 +68,14 @@ describe('the color key waits for a painting to key', () => {
   it('lists the colors in domain order, under the heading Feature colors', () => {
     const { display } = createTestEnvironment({
       displayConfig: {
-        color: {
-          scale: 'identity',
-          domain: ['green', 'red', 'blue'],
-          labels: ['SAS', 'EUR', 'AFR'],
+        encoding: {
+          color: {
+            scale: {
+              type: 'identity',
+              domain: ['green', 'red', 'blue'],
+              names: ['SAS', 'EUR', 'AFR'],
+            },
+          },
         },
       },
     }).createDisplay()
@@ -81,10 +86,18 @@ describe('the color key waits for a painting to key', () => {
     expect(display.colorScales[0]!.title).toBe('Feature colors')
   })
 
-  it('names a color the labels leave out by the color itself', () => {
+  it('names a color the names leave out by the color itself', () => {
     const { display } = createTestEnvironment({
       displayConfig: {
-        color: { scale: 'identity', domain: ['red', 'blue'], labels: ['EUR'] },
+        encoding: {
+          color: {
+            scale: {
+              type: 'identity',
+              domain: ['red', 'blue'],
+              names: ['EUR'],
+            },
+          },
+        },
       },
     }).createDisplay()
     display.setRpcData(0, painted(), ctgA)
@@ -94,7 +107,9 @@ describe('the color key waits for a painting to key', () => {
 
   it('keys nothing under a constant color, which paints no color of its own', () => {
     const { display } = createTestEnvironment({
-      displayConfig: { color: { ...IDENTITY.color, value: 'orange' } },
+      displayConfig: {
+        encoding: { color: { ...IDENTITY_COLOR, value: 'orange' } },
+      },
     }).createDisplay()
     display.setRpcData(0, painted(), ctgA)
 
@@ -105,7 +120,9 @@ describe('the color key waits for a painting to key', () => {
   it('keys the colors a jexl value paints', () => {
     const { display } = createTestEnvironment({
       displayConfig: {
-        color: { ...IDENTITY.color, value: "jexl:get(feature,'color')" },
+        encoding: {
+          color: { ...IDENTITY_COLOR, value: "jexl:get(feature,'color')" },
+        },
       },
     }).createDisplay()
     display.setRpcData(0, painted(), ctgA)

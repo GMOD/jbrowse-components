@@ -11,7 +11,7 @@ type DisplaySnapshot = {
   type?: string
   geneGlyphMode?: string
   showLabels?: unknown
-  color?: string
+  encoding?: { color?: { value?: string } }
   connectorColor?: string
   utrColor?: string
   outlineColor?: string

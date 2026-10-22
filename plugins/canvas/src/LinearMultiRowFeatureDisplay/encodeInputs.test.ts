@@ -31,8 +31,9 @@ function makeDisplay(displayConfig?: Record<string, unknown>) {
 }
 
 // The default palette paints every row, so the legend keys nothing and a
-// toggle hides nothing; a `color` slot leaves the baked colors to the legend.
-const KEYED = { color: 'steelblue' }
+// toggle hides nothing; an `encoding.color` value leaves the baked colors to
+// the legend.
+const KEYED = { encoding: { color: { value: 'steelblue' } } }
 
 // `installUpload` memoizes the display's declared `inputs`, so what that getter
 // reads decides how often every region's instance buffer is rebuilt. This stands
@@ -87,8 +88,7 @@ describe('encodeInputs', () => {
       'a recolor',
       (d: ReturnType<typeof makeDisplay>) => {
         d.applyRowEdits([{ name: 'sampleA' }, { name: 'sampleB' }], {
-          domain: ['sampleA'],
-          range: ['red'],
+          scale: { domain: ['sampleA'], range: ['red'] },
         })
       },
     ],
@@ -116,9 +116,9 @@ describe('encodeInputs', () => {
     encode.dispose()
   })
 
-  // Under a `color` value a row's color paints no block, so no row is exempt
-  // from a category hide and no recolor changes which features the buffer
-  // holds.
+  // Under an `encoding.color` value a row's color paints no block, so no row
+  // is exempt from a category hide and no recolor changes which features the
+  // buffer holds.
   it('re-encodes for no row color while the color object paints the blocks', () => {
     const { createDisplay } = createTestEnvironment({ displayConfig: KEYED })
     const { display } = createDisplay()
@@ -147,8 +147,7 @@ describe('encodeInputs', () => {
     const rows = names.map(name => ({ name }))
     const recolor = (colors: Record<string, string>) => {
       display.applyRowEdits(rows, {
-        domain: Object.keys(colors),
-        range: Object.values(colors),
+        scale: { domain: Object.keys(colors), range: Object.values(colors) },
       })
     }
     const encode = countRecomputes(() => display.encodeInputs)
