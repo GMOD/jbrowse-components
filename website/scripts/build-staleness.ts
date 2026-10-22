@@ -284,7 +284,7 @@ export async function collectStalenessFacts(
   const head = git(['rev-parse', 'HEAD'], repoRoot)
   const commit = stamp?.commit
   const base = { source, stamp, missing, repoRoot, head }
-  if (stamp?.dev || commit === undefined || head === undefined) {
+  if (!stamp || stamp.dev || commit === undefined || head === undefined) {
     return base
   }
   // a build stamped before snapshots existed compiled its commit, plus
