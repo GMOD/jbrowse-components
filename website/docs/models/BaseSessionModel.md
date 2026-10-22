@@ -53,7 +53,7 @@ From [SnackbarModel](../snackbarmodel): <span id="volatile-snackbarmessages">[`s
 | <span id="getter-configuration">**configuration**</span><br><code>Instance&lt;JB_CONFIG_SCHEMA&gt;</code> |  |
 | <span id="getter-adminmode">**adminMode**</span><br><code>boolean</code> |  |
 | <span id="getter-textsearchmanager">**textSearchManager**</span><br><code>TextSearchManager</code> |  |
-| <span id="getter-assemblies">**assemblies**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;Confi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;ConfigurationSchemaType&lt;…&gt;&gt;)[]</code></pre></dialog></span> |  |
+| <span id="getter-assemblies">**assemblies**</span><br><code><a href="../../config/baseassembly">BaseAssemblyConfig</a>[]</code> |  |
 | <span id="getter-dialogcomponent">**DialogComponent**</span><br><code>DialogComponentType</code> |  |
 | <span id="getter-dialogprops">**DialogProps**</span><br><code>Record&lt;string, unknown&gt;</code> |  |
 | <span id="getter-animationmode">**animationMode**</span><br><code>AnimationMode</code> | resolved feature-layout animation mode (never undefined) |

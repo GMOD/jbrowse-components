@@ -25,7 +25,7 @@ The configuration slots for this model are documented on its [config schema page
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-conf">**conf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;Config…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;ConfigurationSchemaType&lt;…&gt;&gt;</code></pre></dialog></span> | The config typed off the concrete schema. `ConfigurationReference` erases `self.configuration` to `any` (the reference's MST instance brand doesn't include the schema's slot definitions), so reads go through this getter to recover per-slot types and slot-name validation. |
+| <span id="getter-conf">**conf**</span><br><code><a href="../../config/oauthinternetaccount">OAuthInternetAccountConfig</a></code> | The config typed off the concrete schema. `ConfigurationReference` erases `self.configuration` to `any` (the reference's MST instance brand doesn't include the schema's slot definitions), so reads go through this getter to recover per-slot types and slot-name validation. |
 | <span id="getter-authendpoint">**authEndpoint**</span><br><code>string</code> |  |
 | <span id="getter-tokenendpoint">**tokenEndpoint**</span><br><code>string</code> |  |
 | <span id="getter-needspkce">**needsPKCE**</span><br><code>boolean</code> |  |

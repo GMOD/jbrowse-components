@@ -18,7 +18,7 @@ builds on this model.
 | --- | --- |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
 | <span id="property-type">**type**</span><br><code>type: types.string</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(BaseInternetAccountConfig)</code> |  |
+| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(<a href="../../config/baseinternetaccount">BaseInternetAccountConfig</a>)</code> |  |
 
 ## Getters
 

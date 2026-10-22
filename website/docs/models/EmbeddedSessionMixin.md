@@ -62,7 +62,7 @@ From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="volatile
 | <span id="getter-viewtitlebars">**viewTitleBars**</span><br><code>boolean</code> | An embedded view is drawn with no title bar above it, so its menu sits in the view's controls. |
 | <span id="getter-version">**version**</span><br><code>string</code> |  |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  |
-| <span id="getter-assemblymanager">**assemblyManager**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; { aft…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; { afterAttach(): void; removeAssembly(asm: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; IStateTreeNode&lt;…&gt;): void; addAssembly(configuration: any): void; } &amp; IStateTreeNode&lt;…&gt;</code></pre></dialog></span> |  |
+| <span id="getter-assemblymanager">**assemblyManager**</span><br><code><a href="../assemblymanager">AssemblyManager</a></code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>21 inherited getters from 5 models</summary>

@@ -179,6 +179,7 @@ export function extractWithComment(
   // tagged member is orphaned (no model renders it anywhere).
   const { claimed, unresolved } = collectDelegatedClaims(checker, sources)
   assertNoUnresolvedDelegations(unresolved)
+  const named = printedTypes(checker, sources)
   // Member-tagged nodes in files that document no #stateModel and that no model
   // claimed. Each renders on no page — see `orphanMembers`.
   const memberTagged = new Map<string, string>()
@@ -228,6 +229,7 @@ export function extractWithComment(
       if (delegated) {
         emitDelegatedMembers(
           checker,
+          named,
           delegated,
           node.getSourceFile().fileName,
           cb,
@@ -255,7 +257,7 @@ export function extractWithComment(
     } else if (ts.isSpreadAssignment(node) && tags.includes('slot')) {
       emitSpreadSlots(node, comment, cb)
     } else if (tags.length && !delegatedAway) {
-      const { name, signature, declId } = describeSymbol(checker, node)
+      const { name, signature, declId } = describeSymbol(checker, named, node)
       if (!isStateModel && tags.some(isMemberTag)) {
         memberTagged.set(
           memberKey(node),
@@ -298,7 +300,7 @@ export function extractWithComment(
       // Untagged members are recovered structurally from their position in the
       // MST factory chain. A node either has a tag (handled above, unchanged) or
       // is examined here, so no member is ever emitted twice.
-      emitUntaggedMember(checker, node, comment, cb, blindSpots)
+      emitUntaggedMember(checker, named, node, comment, cb, blindSpots)
     }
     ts.forEachChild(node, n => {
       visit(n, isStateModel, isConfig)
@@ -560,6 +562,7 @@ interface BlindSpot {
 // that resist structural classification are recorded as blind spots instead.
 function emitUntaggedMember(
   checker: ts.TypeChecker,
+  named: PrintedType[],
   node: ts.Node,
   comment: string,
   cb: (obj: ExtractedNode) => void,
@@ -571,7 +574,7 @@ function emitUntaggedMember(
   }
   const type = memberType(node, block)
   if (type) {
-    const { name, signature, declId } = describeSymbol(checker, node)
+    const { name, signature, declId } = describeSymbol(checker, named, node)
     if (name && !(block === 'actions' && LIFECYCLE_HOOKS.has(name))) {
       cb({
         type,
@@ -861,6 +864,7 @@ function assertNoUnresolvedDelegations(blocks: UnresolvedBlock[]) {
 // block hoisted to the front of one reads as a different model.
 function emitDelegatedMembers(
   checker: ts.TypeChecker,
+  named: PrintedType[],
   { kind, obj }: DelegatedBlock,
   modelFile: string,
   cb: (obj: ExtractedNode) => void,
@@ -885,7 +889,7 @@ function emitDelegatedMembers(
       : structural
         ? [structural]
         : []
-    const { name, signature, declId } = describeSymbol(checker, prop)
+    const { name, signature, declId } = describeSymbol(checker, named, prop)
     if (
       !types.length ||
       !name ||
@@ -971,7 +975,11 @@ function memberType(node: ts.Node, kind: MemberBlock): TagType | undefined {
   return isFn ? 'action' : undefined
 }
 
-function describeSymbol(checker: ts.TypeChecker, node: ts.Node) {
+function describeSymbol(
+  checker: ts.TypeChecker,
+  named: PrintedType[],
+  node: ts.Node,
+) {
   const nameNode = getNameNode(node)
   const symbol = nameNode ? checker.getSymbolAtLocation(nameNode) : undefined
   const decl = symbol?.valueDeclaration
@@ -987,7 +995,8 @@ function describeSymbol(checker: ts.TypeChecker, node: ts.Node) {
       symbolName === 'default' && nameNode && ts.isIdentifier(nameNode)
         ? nameNode.text
         : symbolName,
-    signature: symbol && decl ? typeSignature(checker, symbol, decl) : '',
+    signature:
+      symbol && decl ? typeSignature(checker, named, symbol, decl) : '',
     declId: symbolDeclId(checker, symbol),
   }
 }
@@ -1015,6 +1024,7 @@ function declaredType(
 
 function typeSignature(
   checker: ts.TypeChecker,
+  named: PrintedType[],
   symbol: ts.Symbol,
   decl: ts.Declaration,
 ) {
@@ -1026,11 +1036,14 @@ function typeSignature(
     return overloads
       .map(overload =>
         shortenSignature(
-          checker.signatureToString(
-            overload,
-            decl,
-            ts.TypeFormatFlags.NoTruncation |
-              ts.TypeFormatFlags.WriteArrowStyleSignature,
+          nameTypes(
+            named,
+            checker.signatureToString(
+              overload,
+              decl,
+              ts.TypeFormatFlags.NoTruncation |
+                ts.TypeFormatFlags.WriteArrowStyleSignature,
+            ),
           ),
         ),
       )
@@ -1039,9 +1052,184 @@ function typeSignature(
   const printed = checker.typeToString(type)
   return shortenSignature(
     TRUNCATED.test(printed)
-      ? checker.typeToString(type, undefined, ts.TypeFormatFlags.NoTruncation)
+      ? nameTypes(
+          named,
+          checker.typeToString(
+            type,
+            undefined,
+            ts.TypeFormatFlags.NoTruncation,
+          ),
+        )
       : printed,
   )
+}
+
+// The checker forgets an alias like `CircularViewModel = Instance<…>` once it
+// resolves, so a member returning another model prints that model's whole
+// expanded type, which elision then reduces to `ModelInstanceTypeProps<…> & {…}
+// & {…} & …`. Each documented model's and config schema's instance type prints
+// as the same text wherever it appears, so `nameTypes` swaps that text for the
+// model's page name before eliding. A config node becomes `<schema>Config`, the
+// codebase's own spelling, which keeps `LinearBasicDisplayConfig` apart from the
+// `LinearBasicDisplay` model.
+//
+// A model's match stops short of its trailing `& IStateTreeNode<…>`, which
+// names the MST type holding the node. A model held as `types.optional(M, {})`
+// prints `IStateTreeNode<IOptionalIType<…>>` there and is still M. A node that
+// extends M in place keeps its extra members, as in `Dotplot1DView & {
+// readonly width: … }`.
+export interface PrintedType {
+  name: string
+  body: string
+  isModel: boolean
+}
+
+const NODE_TAIL = ' & IStateTreeNode<'
+
+function printedTypes(
+  checker: ts.TypeChecker,
+  sources: readonly ts.SourceFile[],
+) {
+  const byBody = new Map<string, PrintedType>()
+  for (const sourceFile of sources) {
+    const text = sourceFile.getFullText()
+    const tags = (['stateModel', 'config'] as const).filter(tag =>
+      startsWithTag(text, tag),
+    )
+    if (/\.test\.tsx?$/.test(sourceFile.fileName) || !tags.length) {
+      continue
+    }
+    const walk = (node: ts.Node) => {
+      const comment = getOwnJSDocText(node)
+      const tag = comment && tags.find(t => startsWithTag(comment, t))
+      const instance = tag && instanceType(checker, node)
+      if (tag && instance) {
+        const printed = checker.typeToString(
+          instance,
+          undefined,
+          ts.TypeFormatFlags.NoTruncation,
+        )
+        const isModel = tag === 'stateModel'
+        const body = isModel ? nodeBody(printed) : printed
+        const { name } = parseTaggedComment(comment, tag, '')
+        if (body && name && !byBody.has(body)) {
+          byBody.set(body, {
+            name: isModel ? name : configNodeName(name),
+            body,
+            isModel,
+          })
+        }
+      }
+      ts.forEachChild(node, walk)
+    }
+    ts.forEachChild(sourceFile, walk)
+  }
+  return [...byBody.values()].sort((a, b) => b.body.length - a.body.length)
+}
+
+export function configNodeName(schema: string) {
+  return schema.endsWith('Config') ? schema : `${schema}Config`
+}
+
+// MST's `IType` declares its instance type as a `Type` property, and a
+// configuration schema is an `IType`. A factory's model is its return type.
+function instanceType(checker: ts.TypeChecker, node: ts.Node) {
+  const fn = factoryFunction(node)
+  const signature = fn && checker.getSignatureFromDeclaration(fn)
+  const type = signature
+    ? checker.getReturnTypeOfSignature(signature)
+    : ts.isVariableDeclaration(node)
+      ? checker.getTypeAtLocation(node)
+      : undefined
+  const instance = type?.getProperty('Type')
+  return instance && checker.getTypeOfSymbolAtLocation(instance, node)
+}
+
+// A model instance's text without its outermost `& IStateTreeNode<…>`, which
+// has to be the last thing in it.
+function nodeBody(text: string) {
+  let depth = 0
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i]!
+    if (c === '"') {
+      i = closingQuote(text, i)
+    } else if ('<{(['.includes(c)) {
+      depth++
+    } else if ('>})]'.includes(c) && !(c === '>' && text[i - 1] === '=')) {
+      depth--
+    } else if (
+      depth === 0 &&
+      text.startsWith(NODE_TAIL, i) &&
+      groupEnd(text, i + NODE_TAIL.length - 1) === text.length
+    ) {
+      return text.slice(0, i)
+    }
+  }
+  return undefined
+}
+
+// The index just past the bracket closing the one at `open`, counting every
+// bracket kind; the `>` of a `=>` closes nothing, and a quoted string is
+// skipped whole.
+function groupEnd(sig: string, open: number) {
+  let depth = 0
+  for (let i = open; i < sig.length; i++) {
+    const c = sig[i]!
+    if (c === '"') {
+      i = closingQuote(sig, i)
+    } else if ('<{(['.includes(c)) {
+      depth++
+    } else if ('>})]'.includes(c) && !(c === '>' && sig[i - 1] === '=')) {
+      depth--
+      if (depth === 0) {
+        return i + 1
+      }
+    }
+  }
+  return -1
+}
+
+// Where a match of `body` at `at` ends, and the member groups a node adds to
+// a model; -1 when the text there is not the whole instance.
+function matchEnd(sig: string, at: number, { body, isModel }: PrintedType) {
+  let end = at + body.length
+  const extras: string[] = []
+  if (!isModel) {
+    return { end, extras }
+  }
+  while (sig.startsWith(' & {', end)) {
+    const close = groupEnd(sig, end + 3)
+    extras.push(sig.slice(end + 3, close))
+    end = close
+  }
+  return {
+    end: sig.startsWith(NODE_TAIL, end)
+      ? groupEnd(sig, end + NODE_TAIL.length - 1)
+      : -1,
+    extras,
+  }
+}
+
+export function nameTypes(types: PrintedType[], sig: string) {
+  let out = sig
+  for (const type of types) {
+    let at = type.body.length <= out.length ? out.indexOf(type.body) : -1
+    while (at >= 0) {
+      const { end, extras } = matchEnd(out, at, type)
+      if (end > 0) {
+        const replacement = [type.name, ...extras].join(' & ')
+        const wrapped =
+          !extras.length && out[at - 1] === '(' && out[end] === ')'
+        const from = wrapped ? at - 1 : at
+        out =
+          out.slice(0, from) + replacement + out.slice(wrapped ? end + 1 : end)
+        at = out.indexOf(type.body, from + replacement.length)
+      } else {
+        at = out.indexOf(type.body, at + 1)
+      }
+    }
+  }
+  return out
 }
 
 // The marks the checker leaves: a cut at the end, a count where it dropped
@@ -2163,16 +2351,20 @@ function preCell(code: string) {
 // code renders inline; anything longer shows its head and opens in full in a
 // dialog, so one 300-character generic type can't blow up the row it sits in.
 // Raw `<code>` rather than a markdown code span because these carry backticks
-// (jexl defaults are template literals).
+// (jexl defaults are template literals). `link` rewrites the escaped code with
+// anchors; the dialog's trigger is a button, which can't hold one.
 const MAX_INLINE_CELL_CODE = 64
-export function codeCell(code: string | undefined) {
+export function codeCell(
+  code: string | undefined,
+  link = (html: string) => html,
+) {
   const flat = (code ?? '').replace(/\s+/g, ' ').trim()
   return flat
     ? flat.length <= MAX_INLINE_CELL_CODE
-      ? `<code>${escapeCellHtml(flat)}</code>`
+      ? `<code>${link(escapeCellHtml(flat))}</code>`
       : dialogCell(
           `<code>${escapeCellHtml(`${flat.slice(0, MAX_INLINE_CELL_CODE - 1).trimEnd()}…`)}</code>`,
-          `<pre><code>${preCell(code ?? '')}</code></pre>`,
+          `<pre><code>${link(preCell(code ?? ''))}</code></pre>`,
         )
     : ''
 }

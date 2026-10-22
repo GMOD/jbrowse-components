@@ -8,6 +8,7 @@ import {
   lastTaggedLine,
   markdownTable,
   markerBlockNames,
+  nameTypes,
   overviewSection,
   parseTaggedComment,
   removeComments,
@@ -490,6 +491,49 @@ describe('elideSignature', () => {
   test('reads past a bracket inside a string literal', () => {
     const sig = `(a: "<" | ">", b: Map<string, ${'x'.repeat(200)}>) => void`
     expect(elideSignature(sig, 180)).toBe('(a: "<" | ">", b: Map<…>) => void')
+  })
+})
+
+describe('nameTypes', () => {
+  const view = {
+    name: 'LinearGenomeView',
+    body: 'ModelInstanceTypeProps<{ id: string; }> & { readonly bpPerPx: number; }',
+    isModel: true,
+  }
+  const config = {
+    name: 'BaseAssemblyConfig',
+    body: 'ConfigNodeProps<{ name: string; }> & ConfigNodeActions & ConfigNodeBrand<ConfigurationSchemaType<{ name: string; }>>',
+    isModel: false,
+  }
+  const node = (holder: string) => `IStateTreeNode<${holder}<{ id: string; }>>`
+
+  test('names a model whatever MST type holds it', () => {
+    expect(
+      nameTypes(
+        [view],
+        `(${view.body} & ${node('IModelType')}) | (${view.body} & ${node('IOptionalIType')})`,
+      ),
+    ).toBe('LinearGenomeView | LinearGenomeView')
+  })
+
+  test('keeps the members a node adds to a model', () => {
+    expect(
+      nameTypes(
+        [view],
+        `(${view.body} & { readonly width: number; } & ${node('IOptionalIType')})[]`,
+      ),
+    ).toBe('(LinearGenomeView & { readonly width: number; })[]')
+  })
+
+  test('leaves a prefix of a model that is not followed by its node alone', () => {
+    const sig = `${view.body} & { pickAt(): void; }`
+    expect(nameTypes([view], sig)).toBe(sig)
+  })
+
+  test('names a config node, which has no node tail', () => {
+    expect(nameTypes([config], `(name: string) => (${config.body})[]`)).toBe(
+      '(name: string) => BaseAssemblyConfig[]',
+    )
   })
 })
 

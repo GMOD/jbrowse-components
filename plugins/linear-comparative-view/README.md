@@ -42,7 +42,7 @@ for, so a painted ribbon always has an overlay to hover.
 
 ```js
 // type signature
-({…}: { level: ModelInstanceTypeProps<…> & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & { pickFeatureAt(x: number, y: number): SyntenyPickResult | undefined; } & { showOffscreenMateContig(hit: OffscreenMateHit): void; startRenderingBackend(backend: SyntenyRenderingBackend): void; afterAttach(): void; } & IStateTreeNode<…>; children?: ReactNode; }) => Element
+({ level, children, }: { level: LinearSyntenyViewHelper; children?: ReactNode; }) => Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyViewHelper/SyntenyLevel.tsx)
@@ -65,7 +65,7 @@ to a `TrackStack`:
 
 ```js
 // type signature
-({…}: { view: ModelInstanceTypeProps<…> & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & { afterAttach(): void; } & IStateTreeNode<…>; renderRow?: ((row: ModelInstanceTypeProps<…> & any & IStateTreeNode<…>, index: number) => ReactNode) | undefined; style?: CSSProperties | undefined; }) => Element
+({ view, renderRow, style, }: { view: LinearSyntenyView; renderRow?: ((row: ModelInstanceTypeProps<any> & any & IStateTreeNode<any>, index: number) => ReactNode) | undefined; style?: CSSProperties | undefined; }) => Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/SyntenyStack.tsx)
