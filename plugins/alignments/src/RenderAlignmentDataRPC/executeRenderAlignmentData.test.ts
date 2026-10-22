@@ -15,9 +15,10 @@ import { classifyInsertSize } from '../shared/insertSizeStats.ts'
 import { executeRenderAlignmentData } from './executeRenderAlignmentData.ts'
 
 import type * as ReadBaseCounts from '../features/modCoverage/readBaseCounts.ts'
-import type { BaseLayer, ReadFilter, WorkerFacet } from '../shared/types.ts'
+import type { BaseLayer, WorkerFacet } from '../shared/types.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter', () => ({
   getFeatureAdapterOrThrow: jest.fn().mockResolvedValue({}),
@@ -57,7 +58,7 @@ function run(
     junctions?: boolean
     baseLayer?: BaseLayer
     facet?: WorkerFacet
-    filterBy?: ReadFilter
+    filter?: FieldPredicate[]
   },
   featuresArray: Feature[] = spliced,
 ) {
@@ -178,19 +179,15 @@ const outwardProper = [2500, 2600, 2700, 2800].map(tlen =>
   pair(`rf${tlen}`, tlen, PROPER, 'R1F2'),
 )
 
-async function bandOf(featuresArray: Feature[], filterBy?: ReadFilter) {
-  const result = await run({ showCoverage: false, filterBy }, featuresArray)
+async function bandOf(featuresArray: Feature[], filter?: FieldPredicate[]) {
+  const result = await run({ showCoverage: false, filter }, featuresArray)
   if ('regionTooLarge' in result) {
     throw new Error('the mocked adapter measured no bytes')
   }
   return result.value.groups[0]!.data.insertSizeStats
 }
 
-const ONLY_SV_SIGNAL: ReadFilter = {
-  flagInclude: 0,
-  flagExclude: 0,
-  svSignal: 'only',
-}
+const ONLY_SV_SIGNAL: FieldPredicate[] = [{ field: 'svSignal', equal: true }]
 
 test('keeping only SV evidence keeps the band the unfiltered fetch gives', async () => {
   const reads = [...concordant, ...longInserts.flat()]
@@ -207,16 +204,15 @@ test('outward 0x2 pairs kept as SV evidence do not set the band', async () => {
 })
 
 // Proper pairs at MAPQ 0 sit in repeats, where TLEN is arbitrary
-test('minMapq shapes the band', async () => {
+test('a mapq floor shapes the band', async () => {
   const repeats = Array.from({ length: 30 }, (_, i) =>
     pair(`mq0_${i}`, 3000 + i * 1500, PROPER, 'F1R2', 0),
   ).flat()
   const passing = await bandOf(concordant)
-  const band = await bandOf([...concordant, ...repeats], {
-    flagInclude: 0,
-    flagExclude: 0,
-    minMapq: 1,
-  })
+  const band = await bandOf(
+    [...concordant, ...repeats],
+    [{ field: 'mapq', gte: 1 }],
+  )
   expect(band).toEqual(passing)
   expect(band).not.toEqual(await bandOf([...concordant, ...repeats]))
 })

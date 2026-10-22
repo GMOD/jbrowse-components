@@ -3,8 +3,8 @@
  */
 /**
  * The read-filter modifiers against a real alignments display whose config
- * already filters: each composes onto what the config said, as the track menu
- * would, instead of resetting its siblings to the schema defaults.
+ * already filters: each composes onto what the config said, by field, as the
+ * track menu would, instead of resetting its siblings to the defaults.
  */
 import path from 'node:path'
 
@@ -13,14 +13,18 @@ import { enableStaticRendering } from 'mobx-react'
 
 import { applyDisplayOpts } from './applyTrackOpts.ts'
 
-import type { ReadFilterSnapshot } from '@jbrowse/launch-args/displaySettings'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 enableStaticRendering(true)
 
 const volvox = path.join(__dirname, '..', 'data', 'volvox')
 
-async function filtered(configured: Record<string, unknown>, opts: string[]) {
+interface FieldPredicate {
+  field: string
+  [test: string]: unknown
+}
+
+async function filtered(configured: FieldPredicate[], opts: string[]) {
   const model = await createViewStateAsync({
     config: {
       assemblies: [
@@ -63,67 +67,85 @@ async function filtered(configured: Record<string, unknown>, opts: string[]) {
   )) as LinearGenomeViewModel
   const spec = await applyDisplayOpts(view, 'reads', 'alignments', opts)
   const display = view.tracks[0]!.displays[0] as {
-    readFilter: ReadFilterSnapshot
+    writtenFilter: FieldPredicate[]
     junctionFilter: Record<string, unknown>
   }
   return { display, spec }
 }
 
-test('a category edit leaves the flag masks the track config set', async () => {
-  const { display } = await filtered({ flagExclude: 1796 }, ['split:only'])
-  expect(display.readFilter).toMatchObject({ flagExclude: 1796, split: 'only' })
+test('a category edit leaves the flag fields the track config set', async () => {
+  const { display } = await filtered(
+    [{ field: 'flags.SECONDARY', equal: false }],
+    ['split:only'],
+  )
+  expect(display.writtenFilter).toEqual([
+    { field: 'flags.SECONDARY', equal: false },
+    { field: 'split', equal: true },
+  ])
 })
 
 test('an omitted half of flags keeps the configured mask', async () => {
-  const { display } = await filtered({ flagInclude: 2, flagExclude: 1796 }, [
-    'flags::256',
+  const { display } = await filtered(
+    [
+      { field: 'flags.PROPER_PAIR', equal: true },
+      { field: 'flags.SECONDARY', equal: false },
+    ],
+    ['flags::256'],
+  )
+  // exclude 256 alone, as `samtools view -F 256` says: SECONDARY out, and the
+  // three default exclusions lifted by their bare fields
+  expect(display.writtenFilter).toEqual([
+    { field: 'flags.PROPER_PAIR', equal: true },
+    { field: 'flags.SECONDARY', equal: false },
+    { field: 'flags.UNMAP' },
+    { field: 'flags.QCFAIL' },
+    { field: 'flags.DUP' },
   ])
-  expect(display.readFilter).toMatchObject({ flagInclude: 2, flagExclude: 256 })
 })
 
 test('a tag filter is a second condition, not a replacement', async () => {
-  const { display } = await filtered({ tags: [{ tag: 'HP', value: '1' }] }, [
-    'filterTag:RG:lane3',
-  ])
-  expect(display.readFilter.tags).toEqual([
-    { tag: 'HP', value: '1' },
-    { tag: 'RG', value: 'lane3' },
+  const { display } = await filtered(
+    [{ field: 'tags.HP', equal: '1' }],
+    ['filterTag:RG:lane3'],
+  )
+  expect(display.writtenFilter).toEqual([
+    { field: 'tags.HP', equal: '1' },
+    { field: 'tags.RG', equal: 'lane3' },
   ])
 })
 
-test('a junction filter in a settings bag keeps the configured members', async () => {
-  const { display } = await filtered({ junctions: { minReads: 7 } }, [
-    '{"filter":{"junctions":{"nonCanonical":"exclude"}}}',
-    'split:only',
-  ])
+test('a junction filter in a settings bag keeps the configured fields', async () => {
+  const { display } = await filtered(
+    [{ field: 'junction.reads', gte: 7 }],
+    ['{"filter":{"junctions":{"nonCanonical":"exclude"}}}', 'split:only'],
+  )
   expect(display.junctionFilter).toEqual({
     minReads: 7,
     nonCanonical: 'exclude',
   })
-  expect(display.readFilter).toMatchObject({ split: 'only' })
+  expect(display.writtenFilter).toContainEqual({ field: 'split', equal: true })
 })
 
 test('a category at all unsets an earlier modifier and the config alike', async () => {
-  const { display } = await filtered({ svSignal: 'only' }, [
-    'split:only',
-    'split:all',
-    'svSignal:all',
-  ])
-  expect(display.readFilter.split).toBeUndefined()
-  expect(display.readFilter.svSignal).toBeUndefined()
+  const { display } = await filtered(
+    [{ field: 'svSignal', equal: true }],
+    ['split:only', 'split:all', 'svSignal:all'],
+  )
+  expect(display.writtenFilter).toEqual([])
 })
 
-test('the returned spec carries the read filter as drawn', async () => {
+test('the returned spec carries the filter as written', async () => {
   const { spec } = await filtered(
-    { flagExclude: 1796, tags: [{ tag: 'HP', value: '1' }] },
+    [
+      { field: 'flags.SECONDARY', equal: false },
+      { field: 'tags.HP', equal: '1' },
+    ],
     ['split:only', 'filterTag:RG:lane3'],
   )
-  expect(spec.filter).toMatchObject({
-    flagExclude: 1796,
-    split: 'only',
-    tags: [
-      { tag: 'HP', value: '1' },
-      { tag: 'RG', value: 'lane3' },
-    ],
-  })
+  expect(spec.filter).toEqual([
+    { field: 'flags.SECONDARY', equal: false },
+    { field: 'tags.HP', equal: '1' },
+    { field: 'tags.RG', equal: 'lane3' },
+    { field: 'split', equal: true },
+  ])
 })

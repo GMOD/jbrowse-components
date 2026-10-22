@@ -170,7 +170,7 @@ export interface TagFilter {
   value?: string
 }
 
-/** The junctions the display draws: its `filter.junctions`, read as `junctionFilter`. */
+/** The junctions the display draws: its `junction` filter fields, read as `junctionFilter`. */
 export interface JunctionFilter {
   minReads: number
   // A junction whose motif was never read off the reference is canonical here,
@@ -178,7 +178,7 @@ export interface JunctionFilter {
   nonCanonical?: CategoryFilter
 }
 
-/** The connections the display draws: its `filter.connections`, read as `connectionFilter`. */
+/** The connections the display draws: its `connection` and `breakpoint` filter fields, read as `connectionFilter`. */
 export interface ConnectionFilter {
   interchrom?: CategoryFilter
   // a mate on the same chromosome outside the loaded window
@@ -186,39 +186,6 @@ export interface ConnectionFilter {
   // counted over one fragment length on both sides of the breakpoint
   // (`clusteredInterchromSupport`); a split read is exempt
   minInterchromReads: number
-}
-
-export interface ReadFilter {
-  flagExclude: number
-  flagInclude: number
-  // A read passes with a mapping quality of at least this; MAPQ 255 passes.
-  minMapq?: number
-  readName?: string
-  // Multiple tag filters are AND-ed (a read must pass every one). Kept plural so
-  // independent quick-filters like HP (haplotype) and RG (read group) coexist
-  // instead of clobbering each other.
-  tags?: TagFilter[]
-  // The four read categories, one vocabulary (see `CategoryFilter`) because to a
-  // user they are one kind of question — which reads do I want. They apply at
-  // two different points, though, and the split is not arbitrary: `spliced` is
-  // decided per record as the adapter parses it, while the other three are
-  // properties of a read's whole chain (its mate and supplementary segments
-  // grouped by name) and so cannot be answered until the window is fetched.
-  // See `filterSpliced` in the adapters vs `filterChainFeatures` in the worker.
-  //
-  // Spliced means the CIGAR carries a reference skip (`N`).
-  spliced?: CategoryFilter
-  // SV evidence, judged per chain: a split read, an indel of 50 bp or more, or
-  // a paired primary read the aligner did not call concordant, with both ends
-  // placed (`svSignalTier`).
-  svSignal?: CategoryFilter
-  // A read with no other alignment of itself in this window: no mate and no
-  // split or supplementary segment here.
-  alone?: CategoryFilter
-  // Part of a chimeric/split alignment: the aligner emitted a supplementary
-  // segment for the read (SAM flag 0x800), read off the SA tag rather than off
-  // what this window happened to fetch.
-  split?: CategoryFilter
 }
 
 // `pairing` sections reads but filters none: it has several levels, and a
@@ -229,7 +196,7 @@ export const READ_CATEGORY_KEYS = [
   'alone',
   'split',
   'spliced',
-] as const satisfies readonly (keyof ReadFilter)[]
+] as const
 
 export type ReadCategoryKey = (typeof READ_CATEGORY_KEYS)[number]
 

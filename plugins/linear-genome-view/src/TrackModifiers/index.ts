@@ -127,15 +127,20 @@ function readFilterOf({ category, settings }: ModifierLaunch) {
     : undefined
 }
 
-// the display snapshot a track opens with. It merges `filter` into the
-// configured one member by member, except `tags`, a list it replaces: a
-// `filterTag:` adds to the track's own tags, which `finishOpen` reads once open
+// The display an alignments launch writes its read filter onto, once open
+interface FilterDisplay {
+  applyFilterObject?: (filter: ReadFilterSnapshot) => void
+  writtenFilter?: unknown[]
+}
+
+// the display snapshot a track opens with. An alignments `filter` stays out of
+// it: `finishOpen` writes it onto the configured filter by field, as the track
+// menu would, since the list in a snapshot would replace the configured one
 function launchSnapshot(launch: ModifierLaunch) {
   const { snap, displayType } = launch.settings
-  const { tags, ...launchFilter } = readFilterOf(launch) ?? {}
+  const { filter: _filter, ...unfiltered } = snap
   return {
-    ...snap,
-    ...(tags ? { filter: launchFilter } : {}),
+    ...(readFilterOf(launch) ? unfiltered : snap),
     ...(displayType ? { type: displayType } : {}),
   }
 }
@@ -163,22 +168,17 @@ function centerSort(
   }
 }
 
-// the tags `filterTag:` adds to the configured ones, then the member writes
+// the read filter onto the configured one, then the member writes
 function finishOpen(
   view: ModifierView,
   trackId: string,
   launch: ModifierLaunch,
   opened: { displays: unknown[] },
 ) {
-  const tags = readFilterOf(launch)?.tags
-  if (tags) {
-    const display = opened.displays[0] as
-      | { readFilter?: ReadFilterSnapshot }
-      | undefined
-    view.showTrack(
-      trackId,
-      {},
-      { filter: { tags: [...(display?.readFilter?.tags ?? []), ...tags] } },
+  const filter = readFilterOf(launch)
+  if (filter) {
+    ;(opened.displays[0] as FilterDisplay | undefined)?.applyFilterObject?.(
+      filter,
     )
   }
   return writeMembers(view, trackId, launch.members)
@@ -228,8 +228,9 @@ export async function launchTrackWithModifiers(
     return undefined
   }
   const members = finishOpen(view, trackId, launch, opened)
-  const readFilter = readFilterOf(launch)
-  const drawnFilter = readFilter && readFilterAsDrawn(opened, readFilter)
+  const drawnFilter =
+    readFilterOf(launch) &&
+    (opened.displays[0] as FilterDisplay | undefined)?.writtenFilter
   return {
     trackId,
     ...launched,
@@ -285,32 +286,6 @@ export async function launchTrackInit(
   if (notes.length) {
     session.notify(notes.join('; '), 'warning')
   }
-}
-
-// the read members the display holds, beside the junction and connection
-// tests the modifiers named
-function readFilterAsDrawn(
-  opened: { displays: unknown[] },
-  stated: ReadFilterSnapshot,
-): ReadFilterSnapshot | undefined {
-  const display = opened.displays[0] as
-    | {
-        readFilter?: ReadFilterSnapshot
-        junctionFilter?: Record<string, unknown>
-        connectionFilter?: Record<string, unknown>
-      }
-    | undefined
-  return display?.readFilter
-    ? {
-        ...display.readFilter,
-        ...(stated.junctions
-          ? { junctions: display.junctionFilter ?? stated.junctions }
-          : {}),
-        ...(stated.connections
-          ? { connections: display.connectionFilter ?? stated.connections }
-          : {}),
-      }
-    : undefined
 }
 
 /**

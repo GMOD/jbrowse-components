@@ -2,7 +2,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { defaultFilterFlags } from '../shared/util.ts'
 import GetGlobalValueForTag from './GetGlobalValueForTag.ts'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -42,7 +41,7 @@ test('a value carried only by hidden reads is not found', async () => {
     adapterConfig: { type: 'BamAdapter' },
     regions: [region],
     tag: 'HP',
-    filterBy: { ...defaultFilterFlags, svSignal: 'only' },
+    filter: [{ field: 'svSignal', equal: true }],
   })
   expect(values).toEqual(['2'])
 })

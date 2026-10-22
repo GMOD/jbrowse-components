@@ -24,6 +24,7 @@ import { connectorColorShift } from '../features/arcs/arcColors.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { colorFieldOf } from '../shared/alignmentsColor.ts'
+import { mergeFilter } from '../shared/alignmentsFilter.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from '../shared/types.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
 import { applyReadColorsByGroup } from './groupLayout.ts'
@@ -1054,7 +1055,7 @@ describe('read categories + filter submenu', () => {
     expect(hasMenuItem(show, 'Show only split alignments')).toBe(false)
   })
 
-  test('a category radio writes filterBy', () => {
+  test('a category radio writes its field', () => {
     const display = createDisplay()
     // Scoped to the category row rather than the group above it: the group's
     // label carries the active count, so it is renamed by the very click being
@@ -1067,21 +1068,21 @@ describe('read categories + filter submenu', () => {
       ),
       'Hide SV evidence',
     )
-    expect(display.readFilter.svSignal).toBe('exclude')
+    expect(display.writtenFilter).toEqual([{ field: 'svSignal', equal: false }])
 
-    // and back to the absent state, not a stored 'all'
+    // and back to the absent state, with no entry left on the field
     clickMenuItem(
       menuSubItems(display.trackMenuItems(), 'SV evidence — hidden'),
       'All reads',
     )
-    expect(display.readFilter.svSignal).toBeUndefined()
+    expect(display.writtenFilter).toEqual([])
   })
 
   // The category row says what it is doing without being opened, and the group
   // above it counts — so a filtered track reads as filtered at the top level.
   test('an active category shows on its own row and in the count', () => {
     const display = createDisplay()
-    display.setReadFilter({ ...display.readFilter, svSignal: 'exclude' })
+    display.setFilterFields({ svSignal: [{ field: 'svSignal', equal: false }] })
     const filters = menuSubItems(display.trackMenuItems(), 'Filter by... (1)')
     expect(hasMenuItem(filters, 'SV evidence — hidden')).toBe(true)
   })
@@ -1089,64 +1090,65 @@ describe('read categories + filter submenu', () => {
   // The label is the only place the track chrome admits a filter is hiding
   // reads, and a category not counted there was the bug: three of these used to
   // hide reads while it read "Filter by..." with no number at all.
-  test('the count includes the read categories', () => {
+  test('the count is the fields the filter moved', () => {
     const display = createDisplay()
     expect(findMenuItem(display.trackMenuItems(), 'Filter by...')).toBeDefined()
 
-    display.setReadFilter({
-      ...display.readFilter,
-      readName: 'readA',
-      tags: [{ tag: 'HP', value: '1' }],
-      svSignal: 'exclude',
-      split: 'only',
+    display.setFilterFields({
+      name: [{ field: 'name', equal: 'readA' }],
+      'tags.HP': [{ field: 'tags.HP', equal: '1' }],
+      svSignal: [{ field: 'svSignal', equal: false }],
+      split: [{ field: 'split', equal: true }],
     })
     expect(
       findMenuItem(display.trackMenuItems(), 'Filter by... (4)'),
     ).toBeDefined()
   })
 
-  // `setReadFilter` writes the read members alone, or every Filter menu click
-  // would reset the junction and connection filters
-  test('a read filter write keeps filter.junctions and filter.connections', () => {
+  // A write names its fields alone, or every Filter menu click would reset the
+  // junction and connection tests
+  test('a read field write keeps the junction and connection fields', () => {
     const display = createDisplay()
     display.setJunctionFilter({ minReads: 7, nonCanonical: 'exclude' })
     display.setConnectionFilter({ interchrom: 'exclude' })
-    display.setReadFilter({ ...display.readFilter, svSignal: 'exclude' })
-    expect(display.readFilter.svSignal).toBe('exclude')
+    display.setFilterFields({ svSignal: [{ field: 'svSignal', equal: false }] })
     expect(display.junctionFilter).toEqual({
       minReads: 7,
       nonCanonical: 'exclude',
     })
     expect(display.connectionFilter.interchrom).toBe('exclude')
+    expect(display.readPredicates).toContainEqual({
+      field: 'svSignal',
+      equal: false,
+    })
   })
 
-  // jbrowse-img hands a settings bag's `filter` to this action, so a typo
-  // there is an error rather than an unfiltered export
-  test('a read filter write refuses a key that is no read member', () => {
+  // jbrowse-img hands a settings bag's object-form `filter` to this action, so
+  // a typo there is an error rather than an unfiltered export
+  test('an object-form write refuses a member the object form lacks', () => {
     const display = createDisplay()
     expect(() => {
-      display.setReadFilter({
-        ...display.readFilter,
+      display.applyFilterObject({
         svSignal: 'only',
         flagExcludes: 4,
       } as never)
-    }).toThrow('not flagExcludes')
-    expect(display.readFilter.svSignal).toBeUndefined()
+    }).toThrow('filter has no flagExcludes')
+    expect(display.writtenFilter).toEqual([])
   })
 
-  // the Filter menu's clear writes the default masks alone
-  test('a read member the write leaves out goes back to its default', () => {
+  // the Filter menu's "Clear all filters"
+  test('clearing the filter writes back what the config declares', () => {
     const display = createDisplay()
-    display.setReadFilter({
-      ...display.readFilter,
-      readName: 'readA',
-      tags: [{ tag: 'HP', value: '1' }],
-      split: 'only',
+    display.setFilterFields({
+      name: [{ field: 'name', equal: 'readA' }],
+      'tags.HP': [{ field: 'tags.HP', equal: '1' }],
+      split: [{ field: 'split', equal: true }],
+      'flags.DUP': [],
     })
-    display.setReadFilter({ flagInclude: 0, flagExclude: 1540 })
-    expect(display.readFilter.readName).toBeUndefined()
-    expect(display.readFilter.tags).toEqual([])
-    expect(display.readFilter.split).toBeUndefined()
+    expect(display.filterNarrowing().count).toBe(4)
+    display.filterNarrowing().clear()
+    expect(display.writtenFilter).toEqual([])
+    expect(display.filterPredicates).toEqual(mergeFilter([]))
   })
 })
 

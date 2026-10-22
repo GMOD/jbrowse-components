@@ -203,7 +203,12 @@ test('a read-group tag filter keeps only that group', async () => {
       adapter
         .getFeatures(
           { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50000 },
-          { filterBy: { flagInclude: 0, flagExclude: 0, tags } },
+          {
+            filter: (tags ?? []).map(({ tag, value }) => ({
+              field: `tags.${tag}`,
+              equal: value,
+            })),
+          },
         )
         .pipe(toArray()),
     )
@@ -226,11 +231,7 @@ test('an RG tag filter on a CRAM with no read groups keeps no read', async () =>
       .getFeatures(
         { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 20000 },
         {
-          filterBy: {
-            flagInclude: 0,
-            flagExclude: 0,
-            tags: [{ tag: 'RG', value: '4' }],
-          },
+          filter: [{ field: 'tags.RG', equal: '4' }],
         },
       )
       .pipe(toArray()),

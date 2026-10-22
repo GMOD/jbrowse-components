@@ -1,6 +1,6 @@
 import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
+import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import { withPreset } from '@jbrowse/core/util/colorScale'
-import { filterMembersNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
@@ -16,15 +16,24 @@ import {
   colorFieldOf,
   pinnedInsertSizeBand,
 } from '../shared/alignmentsColor.ts'
+import {
+  connectionEntries,
+  connectionFilterOf,
+  filterListOf,
+  filterPatchOfObject,
+  filterProblems,
+  junctionEntries,
+  junctionFilterOf,
+  mergeFilter,
+  readPredicatesOf,
+  sameEntries,
+  strayFilterMembers,
+  withFields,
+} from '../shared/alignmentsFilter.ts'
 import { arcColorFieldOf } from '../shared/arcColorOptions.ts'
 import { facetUnitNotices } from '../shared/groupFeatures.ts'
 import { sortOf } from './alignmentsSortConfigSchema.ts'
 import {
-  readFilterMembers,
-  readFilterOf,
-} from './baseAlignmentsFilterConfigSchema.ts'
-import {
-  DEFAULT_MIN_SASHIMI_READS,
   READ_CONNECTIONS_MARK_TYPE,
   drawnReadConnectionsOf,
   readConnectionsMarkOf,
@@ -34,12 +43,12 @@ import type {
   AlignmentsColorEncoding,
   AlignmentsColorSetting,
 } from '../shared/alignmentsColor.ts'
+import type { FilterObject } from '../shared/alignmentsFilter.ts'
 import type {
   ArcColorField,
   BaseLayer,
   ColorSchemeType,
   ConnectionFilter,
-  ReadFilter,
   Facet,
   LayoutOrder,
   ModificationColorBy,
@@ -55,7 +64,16 @@ import type {
   ReadConnectionsPlacement,
   SashimiPlacement,
 } from './constants.ts'
+import type { Reversible } from '@jbrowse/core/ui/filterMenuItems'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+/** The `filter` list as written, before the defaults merge in. */
+export function writtenFilterOf(
+  conf: BaseLinearAlignmentsDisplayConfigModel,
+): FieldPredicate[] {
+  return filterListOf(readConfObject(conf, 'filter'))
+}
 
 /**
  * Every track-menu toggle that is nothing but its config slot, read with
@@ -92,6 +110,15 @@ export function alignmentsConfigProblems(
       }),
       readConfObject(conf, 'unit'),
     ),
+    ...filterProblems(writtenFilterOf(conf)),
+    ...(readsConfOf(conf)
+      ? []
+      : writtenFilterOf(conf)
+          .filter(p => p.field.startsWith('junction.'))
+          .map(
+            p =>
+              `filter: ${p.field} tests splice junctions, which this display does not draw`,
+          )),
   ]
 }
 
@@ -101,8 +128,9 @@ export interface ConfigSlotSelf extends IStateTreeNode {
 }
 
 /**
- * The display's configuration when it declares `sashimi`, `filter.junctions`,
- * `baseColor` and `modifications`, which LGVSyntenyDisplay's leaves out.
+ * The display's configuration when it declares `sashimi`, `baseColor` and
+ * `modifications`, which LGVSyntenyDisplay's leaves out, and so draws the
+ * splice junctions the `junction` filter fields test.
  * `getConf` reads an undeclared slot as undefined without failing, so every
  * read of the four goes through here, and a display without them answers off.
  */
@@ -119,7 +147,7 @@ export function requireReadsConf(self: ConfigSlotSelf) {
   const conf = readsConfOf(self.configuration)
   if (!conf) {
     throw new Error(
-      `${self.type} has no sashimi, filter.junctions, baseColor or modifications`,
+      `${self.type} has no sashimi, junction filter, baseColor or modifications`,
     )
   }
   return conf
@@ -228,19 +256,28 @@ export function configSlotViews(self: ConfigSlotSelf) {
       const conf = readsConfOf(self.configuration)
       return conf ? readConfObject(conf, ['sashimi', 'labels', 'show']) : false
     },
-    /** #getter */
+    /**
+     * #getter
+     * The `filter` list as written, before the defaults merge in: what a
+     * session spec reopens the display with.
+     */
+    get writtenFilter(): FieldPredicate[] {
+      return writtenFilterOf(self.configuration)
+    },
+    /**
+     * #getter
+     * The `filter` list the display applies: what is written, merged over
+     * the defaults by field.
+     */
+    get filterPredicates(): FieldPredicate[] {
+      return mergeFilter(this.writtenFilter)
+    },
+    /**
+     * #getter
+     * The splice junctions drawn, off the `junction` fields.
+     */
     get junctionFilter(): JunctionFilter {
-      const conf = readsConfOf(self.configuration)
-      return conf
-        ? {
-            minReads: readConfObject(conf, ['filter', 'junctions', 'minReads']),
-            nonCanonical: readConfObject(conf, [
-              'filter',
-              'junctions',
-              'nonCanonical',
-            ]),
-          }
-        : { minReads: DEFAULT_MIN_SASHIMI_READS }
+      return junctionFilterOf(this.filterPredicates)
     },
     /** #getter */
     get showReadConnections(): boolean {
@@ -278,7 +315,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      * Whether the band draws its ordinary pairs: the arcs' concordant ones
      * (`isConcordantPairRead`, whose failure on a paired primary read is
-     * `filter.svSignal`'s discordant clause) and the cloud's modal-insert
+     * the `svSignal` filter field's discordant clause) and the cloud's modal-insert
      * ones. Unset, arcs keep them and the cloud drops them.
      */
     get showOrdinaryPairs(): boolean {
@@ -289,24 +326,13 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * `minInterchromReads` counts within one fragment length on both sides of
+     * The connections drawn, off the `connection` and `breakpoint` fields.
+     * `breakpoint.reads` counts within one fragment length on both sides of
      * a breakpoint (`clusteredInterchromSupport`), since a mate-pair
      * breakpoint is not localized to a base.
      */
     get connectionFilter(): ConnectionFilter {
-      return {
-        interchrom: getConf(self, ['filter', 'connections', 'interchrom']),
-        offscreenMates: getConf(self, [
-          'filter',
-          'connections',
-          'offscreenMates',
-        ]),
-        minInterchromReads: getConf(self, [
-          'filter',
-          'connections',
-          'minInterchromReads',
-        ]),
-      }
+      return connectionFilterOf(this.filterPredicates)
     },
 
     /**
@@ -431,22 +457,34 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
+     * The read fields of `filterPredicates`, which the worker applies.
      */
-    get readFilter(): ReadFilter {
-      return readFilterOf(self.configuration.filter)
+    get readPredicates(): FieldPredicate[] {
+      return readPredicatesOf(this.filterPredicates)
     },
     /**
      * #method
-     * How `filter` differs from what the track's config declares, its read
-     * members and its junction and connection tests together: the "Filter
-     * by..." count and what "Clear all filters" writes back.
+     * How `filter` differs from what the track's config declares, as a count
+     * of the fields that moved: the "Filter by..." count, and what "Clear all
+     * filters" writes back.
      */
-    filterNarrowing() {
-      return filterMembersNarrowing(self, [
-        ...readFilterMembers,
-        'junctions',
-        'connections',
-      ])
+    filterNarrowing(): Reversible {
+      const written = writtenFilterOf(self.configuration)
+      const base = filterListOf(baseDisplayConfig(self).filter)
+      const fields = new Set([...written, ...base].map(p => p.field))
+      const moved = [...fields].filter(
+        field =>
+          !sameEntries(
+            written.filter(p => p.field === field),
+            base.filter(p => p.field === field),
+          ),
+      )
+      return {
+        count: moved.length,
+        clear: () => {
+          setConf(self.configuration, 'filter', base)
+        },
+      }
     },
     /**
      * #getter
@@ -471,41 +509,40 @@ export function configSlotViews(self: ConfigSlotSelf) {
   }
 }
 
-// One member at a time, so a patch leaves the members it does not name as
-// they were, the `junctions` and `connections` objects among them; `undefined`
-// clears a category back to unfiltered.
-function patchFilter(
-  conf: BaseLinearAlignmentsDisplayConfigModel,
-  path: readonly string[],
-  patch: object,
-) {
-  for (const [member, value] of Object.entries(patch)) {
-    setConf(conf, ['filter', ...path, member] as never, value)
-  }
-}
-
 export function configSlotActions(self: ConfigSlotSelf) {
+  function setFilterFields(
+    patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
+  ) {
+    setConf(
+      self.configuration,
+      'filter',
+      withFields(writtenFilterOf(self.configuration), patch),
+    )
+  }
   return {
     /**
      * #action
-     * Writes every read member, one `filterBy` leaves out back to its
-     * default, and leaves `filter.junctions` and `filter.connections` as
-     * they are. A key that is no read member is refused before any lands.
+     * Replaces the entries on each field the patch names, `undefined`
+     * returning a field to its defaults; every other field keeps what was
+     * written.
      */
-    setReadFilter(filterBy: Partial<ReadFilter>) {
-      const stray = Object.keys(filterBy).filter(
-        key => !readFilterMembers.includes(key as keyof ReadFilter),
-      )
+    setFilterFields,
+
+    /**
+     * #action
+     * An object-form filter, a launch modifier's or a JSON settings bag's,
+     * written onto this display's list by field as the track menu writes
+     * (`filterPatchOfObject`).
+     */
+    applyFilterObject(object: FilterObject) {
+      const stray = strayFilterMembers(object as Record<string, unknown>)
       if (stray.length > 0) {
-        throw new Error(
-          `setReadFilter takes ${readFilterMembers.join(', ')}, not ${stray.join(', ')}`,
-        )
+        throw new Error(`filter has no ${stray.join(', ')}`)
       }
-      patchFilter(
-        self.configuration,
-        [],
-        Object.fromEntries(
-          readFilterMembers.map(member => [member, filterBy[member]]),
+      setFilterFields(
+        filterPatchOfObject(
+          object,
+          mergeFilter(writtenFilterOf(self.configuration)),
         ),
       )
     },
@@ -595,7 +632,8 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setJunctionFilter(patch: Partial<JunctionFilter>) {
-      patchFilter(requireReadsConf(self), ['junctions'], patch)
+      requireReadsConf(self)
+      setFilterFields(junctionEntries(patch))
     },
 
     /**
@@ -649,7 +687,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setConnectionFilter(patch: Partial<ConnectionFilter>) {
-      patchFilter(self.configuration, ['connections'], patch)
+      setFilterFields(connectionEntries(patch))
     },
   }
 }

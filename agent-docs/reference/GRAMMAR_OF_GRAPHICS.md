@@ -177,8 +177,8 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
 - **A predicate lives where what it selects lives**
   ([ADR-232](../architecture-decision-records/adr-232-a-predicate-lives-where-what-it-selects-lives.md)).
   The alignments display's `filter` holds its tests on reads and on the data
-  derived from them, `filter.junctions` and `filter.connections`, and every
-  part drawing junctions or connections reads them: the sashimi arcs and the
+  derived from them, the `junction`, `connection` and `breakpoint` fields, and
+  every part drawing junctions or connections reads them: the sashimi arcs and the
   tables engine's junctions, and the arcs, the read cloud and the curved
   connectors over the pileup.
 - **`scales.y.rules` draws fixed lines.** A `rule` layer with a constant `y`,

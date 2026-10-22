@@ -7,13 +7,13 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { BaseSamAdapter } from '../shared/BaseSamAdapter.ts'
-import { dropsRead } from '../shared/util.ts'
+import { dropsRecord } from '../shared/alignmentsFilter.ts'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature.ts'
 
-import type { ReadFilter } from '../shared/types.ts'
 import type { CramAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 /**
  * How many workers @gmod/cram should decode slices on, per RPC worker.
@@ -181,10 +181,10 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
   getFeatures(
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
-      filterBy?: ReadFilter
+      filter?: FieldPredicate[]
     },
   ) {
-    const { signal, filterBy, statusCallback } = opts ?? {}
+    const { signal, filter, statusCallback } = opts ?? {}
     const { refName, start, end, originalRefName } = region
 
     return ObservableCreate<Feature>(async observer => {
@@ -220,7 +220,7 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
           }),
       )
       checkAbortSignal(signal)
-      const drops = dropsRead(filterBy)
+      const drops = dropsRecord(filter)
       await withProgress(
         {
           label: 'Processing alignments',

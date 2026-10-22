@@ -3,13 +3,13 @@ import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import type { ReadFilter } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   BaseOptions,
   LodTier,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 /**
  * Resolve the data adapter, attach the sequence adapter (if any), fetch all
@@ -23,7 +23,7 @@ export async function fetchFeaturesFromAdapter({
   adapterConfig,
   sequenceAdapter,
   region,
-  filterBy,
+  filter,
   lodTier,
   statusCallback,
   signal,
@@ -33,7 +33,7 @@ export async function fetchFeaturesFromAdapter({
   adapterConfig: Record<string, unknown>
   sequenceAdapter?: Record<string, unknown>
   region: Region
-  filterBy?: ReadFilter
+  filter?: FieldPredicate[]
   // Which detail tier a tiered adapter should serve. Only the synteny displays
   // set it (a PIF has a coarse no-CIGAR tier); read adapters ignore it.
   lodTier?: LodTier
@@ -56,9 +56,9 @@ export async function fetchFeaturesFromAdapter({
     sequenceAdapter,
   })
 
-  const fetchOpts: BaseOptions & { filterBy?: ReadFilter } = {
+  const fetchOpts: BaseOptions & { filter?: FieldPredicate[] } = {
     signal,
-    filterBy,
+    filter,
     lodTier,
     statusCallback,
   }

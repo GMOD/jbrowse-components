@@ -64,7 +64,7 @@ async function launched(entry: { trackId: string } & Record<string, unknown>) {
             {
               type: 'LinearAlignmentsDisplay',
               displayId: 'reads-display',
-              filter: { tags: [{ tag: 'HP', value: '1' }] },
+              filter: [{ field: 'tags.HP', equal: '1' }],
             },
           ],
         },
@@ -126,31 +126,30 @@ test('modifiers write over the entry, and sort at the navigated center', async (
   expect(display()).toMatchObject({
     height: 150,
     sort: { field: 'base', refName: 'ctgA' },
-    filter: {
-      tags: [
-        { tag: 'HP', value: '1' },
-        { tag: 'RG', value: 'lane3' },
-      ],
-    },
+    filter: [
+      { field: 'tags.HP', equal: '1' },
+      { field: 'tags.RG', equal: 'lane3' },
+    ],
   })
   const { pos } = display().sort as { pos: number }
   expect(Math.abs(pos - 3500)).toBeLessThan(10)
 }, 60000)
 
-test("a modifier writes the members it names over the entry's own", async () => {
+test("a modifier writes the fields it names over the entry's own", async () => {
   const { display } = await launched({
     trackId: 'reads',
-    filter: { flagExclude: 3844, tags: [{ tag: 'SA', value: '1' }] },
+    filter: [
+      { field: 'flags.SECONDARY', equal: false },
+      { field: 'tags.SA', equal: '1' },
+    ],
     modifiers: ['mapq:20', 'filterTag:RG:lane3'],
   })
-  expect(display().filter).toMatchObject({
-    flagExclude: 3844,
-    minMapq: 20,
-    tags: [
-      { tag: 'SA', value: '1' },
-      { tag: 'RG', value: 'lane3' },
-    ],
-  })
+  expect(display().filter).toEqual([
+    { field: 'flags.SECONDARY', equal: false },
+    { field: 'tags.SA', equal: '1' },
+    { field: 'mapq', gte: 20 },
+    { field: 'tags.RG', equal: 'lane3' },
+  ])
 }, 60000)
 
 test("the entry's display type picks what a modifier writes", async () => {

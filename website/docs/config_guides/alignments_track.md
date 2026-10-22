@@ -28,8 +28,10 @@ index resolves automatically. Coloring, height, and filtering are slots on the
 - **`color`, `height`, `filter`, the coverage band's `scales.y` and the four
   bands, `coverage`, `pileup`, `sashimi` and `readConnections`,** are
   [`LinearAlignmentsDisplay`](/docs/config/linearalignmentsdisplay) slots; each
-  band object holds whether it draws, its height and a `filter`. Reads draw gray
-  with mismatches marked until
+  band object holds whether it draws and its height, and
+  [`filter`](/docs/config/baselinearalignmentsdisplay/#slot-filter) is one list
+  of field tests on the reads, the junctions and the connections. Reads draw
+  gray with mismatches marked until
   [`color`](/docs/config/linearalignmentsdisplay/#slot-color) names a field —
   `strand`, `pairOrientation`, `insertSize` or `tags.XX` — and
   [`baseColor`](/docs/config/linearalignmentsdisplay/#slot-basecolor) draws

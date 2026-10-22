@@ -7,15 +7,15 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { BaseSamAdapter } from '../shared/BaseSamAdapter.ts'
+import { dropsRecord } from '../shared/alignmentsFilter.ts'
 import { seqFetchSpan } from '../shared/seqFetchSpan.ts'
-import { dropsRead } from '../shared/util.ts'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature.ts'
 
-import type { ReadFilter } from '../shared/types.ts'
 import type { BamAdapterConfig } from './configSchema.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { Region } from '@jbrowse/core/util/types'
 
 /**
@@ -106,13 +106,13 @@ export abstract class BamAdapterBase<
   getFeatures(
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
-      filterBy?: ReadFilter
+      filter?: FieldPredicate[]
     },
   ) {
     // originalRefName is not read here — fetchRegionSeq resolves it, since the
     // reference read is the only consumer of the assembly-side name
     const { refName, start, end } = region
-    const { signal, filterBy, statusCallback } = opts ?? {}
+    const { signal, filter, statusCallback } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
       await this.setup(opts)
       const { bam } = this.configure()
@@ -152,7 +152,7 @@ export abstract class BamAdapterBase<
       )
       checkAbortSignal(signal)
 
-      const drops = dropsRead(filterBy)
+      const drops = dropsRecord(filter)
       // Only reads lacking an MD tag need the reference, and whether ANY does is
       // only knowable once the records are in — hence `span` below. But the
       // SPAN itself needs no records: seqFetchSpan clamps to [start, end), so

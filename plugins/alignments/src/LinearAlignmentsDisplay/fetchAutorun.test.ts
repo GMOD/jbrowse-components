@@ -602,11 +602,11 @@ describe('FetchVisibleRegions autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
-  // The read categories ride `filterBy`, which is already an rpcProps field, so
+  // The read categories ride `filter`, which is already an rpcProps field, so
   // what this pins is that they reach the worker at all — they are applied
   // there (`filterChainFeatures`), so a category the fetch does not re-run for
   // is a filter that silently does nothing until the next unrelated refetch.
-  it('refetches when a read category changes (filterBy rides rpcProps)', async () => {
+  it('refetches when a read category changes (filter rides rpcProps)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
@@ -617,7 +617,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setReadFilter({ ...display.readFilter, alone: 'exclude' })
+    display.setFilterFields({ alone: [{ field: 'alone', equal: false }] })
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
     await waitFor(() => {
@@ -625,12 +625,34 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore2 = mockRpcCall.mock.calls.length
-    display.setReadFilter({ ...display.readFilter, svSignal: 'only' })
+    display.setFilterFields({ svSignal: [{ field: 'svSignal', equal: true }] })
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
     await waitFor(() => {
       expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore2)
     })
+  })
+
+  // The junction and connection fields share the list but are main-thread
+  // tests: the worker is handed the read fields alone, so an edit to these
+  // redraws without a fetch.
+  it('does not refetch when a junction or connection field changes', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.setJunctionFilter({ minReads: 9, nonCanonical: 'exclude' })
+    display.setConnectionFilter({ interchrom: 'exclude' })
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+    expect(display.junctionFilter.minReads).toBe(9)
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
   // Only the schemes the worker extracts different data for are in rpcProps

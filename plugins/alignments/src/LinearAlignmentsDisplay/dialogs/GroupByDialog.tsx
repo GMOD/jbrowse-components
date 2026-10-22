@@ -19,12 +19,8 @@ import { TAG_FIELD_PREFIX, facetTag } from '../../shared/facetLabels.ts'
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
 import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
-import type {
-  BaseLayer,
-  ReadFilter,
-  Facet,
-  ReadColorBy,
-} from '../../shared/types.ts'
+import type { BaseLayer, Facet, ReadColorBy } from '../../shared/types.ts'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // Exactly what this dialog reads. `getGroupByMenuItem` extends it with the
@@ -38,7 +34,7 @@ export interface GroupByDialogModel extends IStateTreeNode {
   // display's filter is in `rpcProps`, so a value only filtered-out reads carry
   // never becomes a section.
   adapterConfig: Record<string, unknown>
-  readFilter: ReadFilter
+  readPredicates: FieldPredicate[]
   // Read by `getUniqueTags` too, and the reason its scan can be refused: that
   // scan IS the render fetch's download, so it is measured against the render
   // fetch's budget rather than running unbounded beside a refused track.

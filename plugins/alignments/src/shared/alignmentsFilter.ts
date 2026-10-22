@@ -2,6 +2,7 @@ import { CIGAR_HAS_SKIP, samFlagNames } from '@jbrowse/cigar-utils'
 import {
   compilePredicates,
   testsSomething,
+  withLowerBound,
 } from '@jbrowse/core/util/fieldPredicate'
 
 import { TAG_FIELD_PREFIX } from './facetLabels.ts'
@@ -64,6 +65,21 @@ export function isReadField(field: string) {
   return isRecordField(field) || field === MAPQ_FIELD || CHAIN_FIELDS.has(field)
 }
 
+// The supporting-read floor for a splice junction: a single-read junction is
+// dominated by alignment noise, and unreadable at the 1px stroke
+// `strokeWidthForCount` floors it to.
+export const DEFAULT_MIN_SASHIMI_READS = 2
+
+// The reads an inter-chromosomal breakpoint must gather before its connector
+// ticks draw, for the same reason: single-read marks are dominated by
+// mismapping. They are counted over one fragment length on both sides rather
+// than at a coordinate, since a mate pair straddles a breakpoint instead of
+// landing on it (`clusteredInterchromSupport`). On HG002 300x, 200 kb at
+// 1:2,000,000, 844 of 856 breakpoints carried exactly one read, and widening
+// the window from 0 to 2 kb merged only five clusters, so they are scattered
+// rather than badly keyed, which is what makes them droppable.
+export const DEFAULT_MIN_INTERCHROM_READS = 2
+
 /**
  * What applies with nothing written: unmapped, QC-failed and duplicate reads
  * out (samtools' 1540), and a floor of two reads under a splice junction and
@@ -73,8 +89,8 @@ export const ALIGNMENTS_FILTER_DEFAULTS: readonly FieldPredicate[] = [
   { field: 'flags.UNMAP', equal: false },
   { field: 'flags.QCFAIL', equal: false },
   { field: 'flags.DUP', equal: false },
-  { field: JUNCTION_READS, gte: 2 },
-  { field: BREAKPOINT_READS, gte: 2 },
+  { field: JUNCTION_READS, gte: DEFAULT_MIN_SASHIMI_READS },
+  { field: BREAKPOINT_READS, gte: DEFAULT_MIN_INTERCHROM_READS },
 ]
 
 /**
@@ -102,7 +118,7 @@ export function entriesOn(
   return predicates.filter(p => p.field === field)
 }
 
-function sameEntries(
+export function sameEntries(
   a: readonly FieldPredicate[],
   b: readonly FieldPredicate[],
 ) {
@@ -303,6 +319,9 @@ export function flagMasksOf(predicates: readonly FieldPredicate[]) {
   return { include, exclude }
 }
 
+/** The SAM flag bits the defaults require and exclude: 0 and 1540. */
+export const DEFAULT_FLAG_MASKS = flagMasksOf(ALIGNMENTS_FILTER_DEFAULTS)
+
 /** Every flag field's entries for two masks; a bit in neither tests nothing. */
 export function flagEntries(
   include: number,
@@ -471,7 +490,7 @@ export function filterProblems(written: readonly FieldPredicate[]): string[] {
 
 // ---- the object form v4 and the first v5 betas wrote ----
 
-interface FilterObject {
+export interface FilterObject {
   flagInclude?: unknown
   flagExclude?: unknown
   minMapq?: unknown
@@ -482,85 +501,191 @@ interface FilterObject {
   svSignal?: unknown
   alone?: unknown
   split?: unknown
-  junctions?: { minReads?: unknown; nonCanonical?: unknown }
-  connections?: {
-    interchrom?: unknown
-    offscreenMates?: unknown
-    minInterchromReads?: unknown
-  }
+  junctions?: unknown
+  connections?: unknown
+}
+
+function membersOf(v: unknown): Record<string, unknown> {
+  return typeof v === 'object' && v !== null
+    ? (v as Record<string, unknown>)
+    : {}
 }
 
 function isCategory(v: unknown): v is CategoryFilter {
   return v === 'only' || v === 'exclude'
 }
 
+const OBJECT_MEMBERS: Record<string, readonly string[] | undefined> = {
+  flagInclude: undefined,
+  flagExclude: undefined,
+  minMapq: undefined,
+  readName: undefined,
+  tags: undefined,
+  tagFilter: undefined,
+  spliced: undefined,
+  svSignal: undefined,
+  alone: undefined,
+  split: undefined,
+  junctions: ['minReads', 'nonCanonical'],
+  connections: ['interchrom', 'offscreenMates', 'minInterchromReads'],
+}
+
 /**
- * The predicate list an object-form `filter` says: v4's `filterBy` and the
- * object the first v5 betas wrote. A member left out keeps its default.
+ * The members an object-form filter names that it does not have, as dotted
+ * paths: what a write refuses, so a typo is an error rather than an
+ * unfiltered track.
  */
-export function predicatesOfFilterObject(
+export function strayFilterMembers(object: Record<string, unknown>) {
+  return Object.entries(object).flatMap(([key, value]) => {
+    if (!(key in OBJECT_MEMBERS)) {
+      return [key]
+    }
+    const nested = OBJECT_MEMBERS[key]
+    return nested && typeof value === 'object' && value !== null
+      ? Object.keys(value)
+          .filter(k => !nested.includes(k))
+          .map(k => `${key}.${k}`)
+      : []
+  })
+}
+
+// A member a patch names: a value, or `null` for unset
+function given(object: Record<string, unknown>, key: string) {
+  return key in object && object[key] !== undefined
+}
+
+function categoryOrUnset(v: unknown): CategoryFilter | undefined {
+  return isCategory(v) ? v : undefined
+}
+
+/**
+ * The fields an object-form `filter` writes, composed onto `current` (a
+ * merged list) as the track menu composes: a member the object names
+ * replaces its fields and `null` unsets them, an omitted flag mask half keeps
+ * `current`'s, and `tags` add to the tags `current` holds. What a launch
+ * modifier and a JSON settings bag write.
+ */
+export function filterPatchOfObject(
   object: FilterObject,
-): FieldPredicate[] {
-  let list: FieldPredicate[] = []
-  const set = (
-    patch: Record<string, readonly FieldPredicate[] | undefined>,
-  ) => {
-    list = withFields(list, patch)
-  }
+  current: readonly FieldPredicate[],
+): Record<string, FieldPredicate[]> {
+  const o = object as Record<string, unknown>
+  const patch: Record<string, FieldPredicate[]> = {}
   const { flagInclude, flagExclude } = object
   if (typeof flagInclude === 'number' || typeof flagExclude === 'number') {
-    set(
+    const masks = flagMasksOf(current)
+    Object.assign(
+      patch,
       flagEntries(
-        typeof flagInclude === 'number' ? flagInclude : 0,
-        typeof flagExclude === 'number' ? flagExclude : 1540,
+        typeof flagInclude === 'number' ? flagInclude : masks.include,
+        typeof flagExclude === 'number' ? flagExclude : masks.exclude,
       ),
     )
   }
-  if (typeof object.minMapq === 'number') {
-    set({ [MAPQ_FIELD]: [{ field: MAPQ_FIELD, gte: object.minMapq }] })
+  if (given(o, 'minMapq')) {
+    patch[MAPQ_FIELD] = withLowerBound(
+      entriesOn(current, MAPQ_FIELD),
+      MAPQ_FIELD,
+      typeof object.minMapq === 'number' ? object.minMapq : undefined,
+    )
   }
-  if (typeof object.readName === 'string') {
-    set({ name: [{ field: 'name', equal: object.readName }] })
+  if (given(o, 'readName')) {
+    patch.name =
+      typeof object.readName === 'string'
+        ? [{ field: 'name', equal: object.readName }]
+        : []
   }
-  const tags = [
+  // v4's dialog asked for `*` to mean "any value", and its empty value kept
+  // the reads lacking the tag, which nobody meant: both are any value
+  const added = [
     ...(Array.isArray(object.tags) ? object.tags : []),
     ...(object.tagFilter ? [object.tagFilter] : []),
-  ].filter(
-    (t): t is TagFilter =>
-      typeof t === 'object' && t !== null && typeof t.tag === 'string',
-  )
-  if (tags.length > 0) {
-    set(tagEntries(list, tags))
+  ]
+    .filter(
+      (t): t is TagFilter =>
+        typeof t === 'object' && t !== null && typeof t.tag === 'string',
+    )
+    .map(({ tag, value }) =>
+      value === undefined || value === '*' || value === ''
+        ? { tag }
+        : { tag, value },
+    )
+  if (given(o, 'tags') || added.length > 0) {
+    Object.assign(
+      patch,
+      tagEntries(current, [
+        ...(object.tags === null ? [] : tagFiltersOf(current)),
+        ...added,
+      ]),
+    )
   }
   for (const key of ['spliced', 'svSignal', 'alone', 'split'] as const) {
-    const value = object[key]
-    if (isCategory(value)) {
-      set({ [key]: categoryEntries(key, value) })
+    if (given(o, key)) {
+      patch[key] = categoryEntries(key, categoryOrUnset(object[key]))
     }
   }
-  const { junctions = {}, connections = {} } = object
-  set(
+  const junctions = membersOf(object.junctions)
+  Object.assign(
+    patch,
     junctionEntries({
       ...(typeof junctions.minReads === 'number'
         ? { minReads: junctions.minReads }
         : {}),
-      ...(isCategory(junctions.nonCanonical)
-        ? { nonCanonical: junctions.nonCanonical }
+      ...(given(junctions, 'nonCanonical')
+        ? { nonCanonical: categoryOrUnset(junctions.nonCanonical) }
         : {}),
     }),
   )
-  set(
+  const connections = membersOf(object.connections)
+  Object.assign(
+    patch,
     connectionEntries({
-      ...(isCategory(connections.interchrom)
-        ? { interchrom: connections.interchrom }
+      ...(given(connections, 'interchrom')
+        ? { interchrom: categoryOrUnset(connections.interchrom) }
         : {}),
-      ...(isCategory(connections.offscreenMates)
-        ? { offscreenMates: connections.offscreenMates }
+      ...(given(connections, 'offscreenMates')
+        ? { offscreenMates: categoryOrUnset(connections.offscreenMates) }
         : {}),
       ...(typeof connections.minInterchromReads === 'number'
         ? { minInterchromReads: connections.minInterchromReads }
         : {}),
     }),
   )
-  return list
+  return patch
+}
+
+/**
+ * The predicate list an object-form `filter` says: v4's `filterBy` and the
+ * object the first v5 betas wrote, each member over the defaults.
+ */
+export function predicatesOfFilterObject(
+  object: FilterObject,
+): FieldPredicate[] {
+  return withFields([], filterPatchOfObject(object, ALIGNMENTS_FILTER_DEFAULTS))
+}
+
+/**
+ * A display config snapshot with an object-form `filter` lifted to the list,
+ * on every path a snapshot arrives by; a list passes through.
+ */
+export function liftFilterObject(snapshot: Record<string, unknown>) {
+  const { filter } = snapshot
+  return typeof filter === 'object' && filter !== null && !Array.isArray(filter)
+    ? { ...snapshot, filter: filterListOf(filter) }
+    : snapshot
+}
+
+/** A `filter` value as the list it says: a list as is, the object form lifted. */
+export function filterListOf(value: unknown): FieldPredicate[] {
+  return Array.isArray(value)
+    ? (value as FieldPredicate[])
+    : typeof value === 'object' && value !== null
+      ? predicatesOfFilterObject(value)
+      : []
+}
+
+/** The adapters' drop test, over `compileRecordFilter`; drops nothing when no field applies. */
+export function dropsRecord(filter: readonly FieldPredicate[] | undefined) {
+  const keeps = compileRecordFilter(filter)
+  return keeps ? (read: FilterableRead) => !keeps(read) : () => false
 }

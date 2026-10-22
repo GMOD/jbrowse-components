@@ -8,27 +8,23 @@
  */
 
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
-import type {
-  BaseLayer,
-  ReadFilter,
-  ReadColorBy,
-  WorkerFacet,
-} from '../shared/types'
+import type { BaseLayer, ReadColorBy, WorkerFacet } from '../shared/types'
 import type { ReadKeys } from '@jbrowse/alignments-core'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 
 // Args for the single RenderAlignmentData RPC. The worker has no chain mode:
 // chain identity is joined on the main thread (`attachChainFields`), and the
 // one thing chains change about a fetch is the unit a facet keeps whole
-// (`WorkerFacet.unit`). Every read filter rides `filterBy`, the
-// grouped-by-read-name ones included.
+// (`WorkerFacet.unit`). Every read filter rides `filter`, the read fields of
+// the display's predicate list, the grouped-by-read-name ones included.
 export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
-  filterBy?: ReadFilter
+  filter?: FieldPredicate[]
   colorBy?: ReadColorBy
   // the per-base layer, which extracts beside whatever `colorBy` fills reads with
   baseLayer?: BaseLayer

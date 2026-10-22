@@ -9,8 +9,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 The alignments display's `sashimi` setting: the splice-junction arcs, over
 the coverage band or in a strip below it, and in that strip alone while
-`coverage.show` is off. Which junctions draw is the display's
-`filter.junctions`.
+`coverage.show` is off. Which junctions draw is the display's `filter`, by
+its `junction` fields.
 
 ## Example usage
 
@@ -18,7 +18,10 @@ the coverage band or in a strip below it, and in that strip alone while
 {
   type: 'LinearAlignmentsDisplay',
   sashimi: { placement: 'auto', labels: { show: true } },
-  filter: { junctions: { minReads: 5, nonCanonical: 'exclude' } },
+  filter: [
+    { field: 'junction.reads', gte: 5 },
+    { field: 'junction.canonical', equal: true },
+  ],
 }
 ```
 

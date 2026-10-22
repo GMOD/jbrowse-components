@@ -1,6 +1,5 @@
 import {
   CIGAR_H,
-  CIGAR_HAS_SKIP,
   CIGAR_S,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
@@ -9,7 +8,6 @@ import {
 } from '@jbrowse/cigar-utils'
 import { getContrastText } from '@jbrowse/core/ui/palette'
 
-import type { ReadFilter } from './types.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -28,11 +26,6 @@ export function cigarHasEndClip(ops: ArrayLike<number>) {
     last === CIGAR_S ||
     last === CIGAR_H
   )
-}
-
-export const defaultFilterFlags = {
-  flagInclude: 0,
-  flagExclude: 1540,
 }
 
 // A feature's SAM bitwise flags, defaulting to 0 for features that carry none
@@ -157,66 +150,6 @@ export function getOrCreate<K, V>(
     map.set(key, value)
   }
   return value
-}
-
-function filterReadFlag(
-  flags: number,
-  flagInclude: number,
-  flagExclude: number,
-) {
-  return (flags & flagInclude) !== flagInclude || (flags & flagExclude) !== 0
-}
-
-// True when the spliced-read filter drops this read. `hasSkip` is a thunk
-// because answering it walks the CIGAR, which no read pays for while the
-// filter is off.
-export function filterSpliced(
-  spliced: ReadFilter['spliced'],
-  hasSkip: () => boolean,
-) {
-  return spliced === 'only'
-    ? !hasSkip()
-    : spliced === 'exclude'
-      ? hasSkip()
-      : false
-}
-
-// An unset value passes any read carrying the tag: comparing against it
-// stringified kept exactly the reads LACKING the tag.
-export function filterTagValue(readVal: unknown, filterVal?: string) {
-  return filterVal === undefined
-    ? readVal === undefined
-    : `${readVal}` !== filterVal
-}
-
-interface FilterableRead {
-  flags: number
-  name: string | undefined
-  getTag(tag: string): unknown
-  cigarCategoryBits: number
-}
-
-// Whether `filterBy` drops a read, for every adapter: flags, read name, the
-// AND-ed tag filters and the spliced filter, which reads the record's own
-// `cigarCategoryBits`, the whole-record answer the extract stores for the sort.
-export function dropsRead(filterBy: ReadFilter | undefined) {
-  const {
-    flagInclude = 0,
-    flagExclude = 0,
-    tags,
-    readName,
-    spliced,
-  } = filterBy ?? {}
-  // an entry naming no tag tests nothing
-  const tagTests = tags?.filter(tf => tf.tag !== '') ?? []
-  return (read: FilterableRead) =>
-    filterReadFlag(read.flags, flagInclude, flagExclude) ||
-    (readName !== undefined && read.name !== readName) ||
-    tagTests.some(tf => filterTagValue(read.getTag(tf.tag), tf.value)) ||
-    filterSpliced(
-      spliced,
-      () => (read.cigarCategoryBits & CIGAR_HAS_SKIP) !== 0,
-    )
 }
 
 export interface SamHeaderLine {

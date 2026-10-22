@@ -7,7 +7,6 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import { filterChainFeatures } from '../RenderAlignmentDataRPC/filterChainFeatures.ts'
-import { defaultFilterFlags } from './util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -96,10 +95,10 @@ describe.each(CASES)('$name', ({ flags, str, num }) => {
   // What the READ filter does with a lone pair of this kind: an empty result
   // under `svSignal: 'only'` means "the read filter calls this ordinary".
   const ordinaryAsRead =
-    filterChainFeatures([feature('r', flags, str), feature('r', flags, str)], {
-      ...defaultFilterFlags,
-      svSignal: 'only',
-    }).length === 0
+    filterChainFeatures(
+      [feature('r', flags, str), feature('r', flags, str)],
+      [{ field: 'svSignal', equal: true }],
+    ).length === 0
 
   test('the arc predicate agrees with the read filter', () => {
     expect(isConcordantPairRead(flags, num)).toBe(ordinaryAsRead)

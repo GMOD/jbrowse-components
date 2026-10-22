@@ -116,7 +116,10 @@ const filtered = register(
   'filtered',
   [
     track('volvox_alignments', 'LinearAlignmentsDisplay', {
-      filter: { flagExclude: 1556, readName: READ_NAME },
+      filter: [
+        { field: 'flags.REVERSE', equal: false },
+        { field: 'name', equal: READ_NAME },
+      ],
     }),
   ],
   `unique(volvox_alignments$reads$name) == ${JSON.stringify(READ_NAME)}`,

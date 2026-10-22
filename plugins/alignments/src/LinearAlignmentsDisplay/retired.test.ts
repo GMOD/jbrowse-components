@@ -2,6 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes/models'
 
 import AlignmentsPlugin from '../index.ts'
+import { filterListOf } from '../shared/alignmentsFilter.ts'
 import { colorSlotsOf, retiredState } from './retired.ts'
 
 function alignmentsEntries(displays: Record<string, unknown>[]) {
@@ -189,11 +190,16 @@ test("an instance's v4 filter replaces its sub-node's whole", () => {
     filterBySetting: { flagInclude: 0, flagExclude: 1028 },
   }) as { filter: Record<string, unknown> }
   expect(filter).toMatchObject({ flagExclude: 1028, tags: null })
+  expect(filterListOf(filter)).not.toContainEqual(
+    expect.objectContaining({ field: 'tags.HP' }),
+  )
   expect(
-    retiredState.lift({
-      filterBySetting: { tagFilter: { tag: 'HP', value: '1' } },
-    }).filter,
-  ).toMatchObject({ tags: [{ tag: 'HP', value: '1' }] })
+    filterListOf(
+      retiredState.lift({
+        filterBySetting: { tagFilter: { tag: 'HP', value: '1' } },
+      }).filter,
+    ),
+  ).toContainEqual({ field: 'tags.HP', equal: '1' })
 })
 
 // v4's filterBy held the read members alone, so its lift leaves a v4

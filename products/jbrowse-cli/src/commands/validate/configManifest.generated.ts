@@ -3705,94 +3705,42 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "filter",
-          "type": "AlignmentsFilterConfigurationSchema",
+          "type": "FieldPredicateConfigurationSchema[]",
           "subSlots": [
             {
-              "name": "flagInclude",
-              "type": "number"
+              "name": "field",
+              "type": "string"
             },
             {
-              "name": "flagExclude",
-              "type": "number"
+              "name": "equal",
+              "type": "((string | number | boolean) | undefined)"
             },
             {
-              "name": "minMapq",
+              "name": "lt",
               "type": "(number | undefined)"
             },
             {
-              "name": "readName",
-              "type": "(string | undefined)"
+              "name": "lte",
+              "type": "(number | undefined)"
             },
             {
-              "name": "tags",
-              "type": "TagFilterConfigurationSchema[]",
-              "subSlots": [
-                {
-                  "name": "tag",
-                  "type": "string"
-                },
-                {
-                  "name": "value",
-                  "type": "(string | undefined)"
-                }
-              ],
-              "schema": "TagFilter"
+              "name": "gt",
+              "type": "(number | undefined)"
             },
             {
-              "name": "spliced",
-              "type": "(CategoryFilter | undefined)"
+              "name": "gte",
+              "type": "(number | undefined)"
             },
             {
-              "name": "svSignal",
-              "type": "(CategoryFilter | undefined)"
+              "name": "oneOf",
+              "type": "((string | number | boolean)[] | undefined)"
             },
             {
-              "name": "alone",
-              "type": "(CategoryFilter | undefined)"
-            },
-            {
-              "name": "split",
-              "type": "(CategoryFilter | undefined)"
-            },
-            {
-              "name": "connections",
-              "type": "ConnectionFilterConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "interchrom",
-                  "type": "(CategoryFilter | undefined)"
-                },
-                {
-                  "name": "offscreenMates",
-                  "type": "(CategoryFilter | undefined)"
-                },
-                {
-                  "name": "minInterchromReads",
-                  "type": "number"
-                }
-              ],
-              "schema": "ConnectionFilter",
-              "writes": "members"
-            },
-            {
-              "name": "junctions",
-              "type": "JunctionFilterConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "minReads",
-                  "type": "number"
-                },
-                {
-                  "name": "nonCanonical",
-                  "type": "(CategoryFilter | undefined)"
-                }
-              ],
-              "schema": "JunctionFilter",
-              "writes": "members"
+              "name": "valid",
+              "type": "(boolean | undefined)"
             }
           ],
-          "schema": "AlignmentsFilter",
-          "writes": "members"
+          "schema": "FieldPredicate"
         },
         {
           "name": "facet",
@@ -4571,78 +4519,42 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "filter",
-          "type": "BaseAlignmentsFilterConfigurationSchema",
+          "type": "FieldPredicateConfigurationSchema[]",
           "subSlots": [
             {
-              "name": "flagInclude",
-              "type": "number"
+              "name": "field",
+              "type": "string"
             },
             {
-              "name": "flagExclude",
-              "type": "number"
+              "name": "equal",
+              "type": "((string | number | boolean) | undefined)"
             },
             {
-              "name": "minMapq",
+              "name": "lt",
               "type": "(number | undefined)"
             },
             {
-              "name": "readName",
-              "type": "(string | undefined)"
+              "name": "lte",
+              "type": "(number | undefined)"
             },
             {
-              "name": "tags",
-              "type": "TagFilterConfigurationSchema[]",
-              "subSlots": [
-                {
-                  "name": "tag",
-                  "type": "string"
-                },
-                {
-                  "name": "value",
-                  "type": "(string | undefined)"
-                }
-              ],
-              "schema": "TagFilter"
+              "name": "gt",
+              "type": "(number | undefined)"
             },
             {
-              "name": "spliced",
-              "type": "(CategoryFilter | undefined)"
+              "name": "gte",
+              "type": "(number | undefined)"
             },
             {
-              "name": "svSignal",
-              "type": "(CategoryFilter | undefined)"
+              "name": "oneOf",
+              "type": "((string | number | boolean)[] | undefined)"
             },
             {
-              "name": "alone",
-              "type": "(CategoryFilter | undefined)"
-            },
-            {
-              "name": "split",
-              "type": "(CategoryFilter | undefined)"
-            },
-            {
-              "name": "connections",
-              "type": "ConnectionFilterConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "interchrom",
-                  "type": "(CategoryFilter | undefined)"
-                },
-                {
-                  "name": "offscreenMates",
-                  "type": "(CategoryFilter | undefined)"
-                },
-                {
-                  "name": "minInterchromReads",
-                  "type": "number"
-                }
-              ],
-              "schema": "ConnectionFilter",
-              "writes": "members"
+              "name": "valid",
+              "type": "(boolean | undefined)"
             }
           ],
-          "schema": "BaseAlignmentsFilter",
-          "writes": "members"
+          "schema": "FieldPredicate"
         },
         {
           "name": "facet",

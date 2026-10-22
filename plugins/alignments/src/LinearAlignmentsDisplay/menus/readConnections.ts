@@ -8,10 +8,8 @@ import {
 import { categoryFilterItem } from '@jbrowse/display-kit/categoryFilter'
 import PolylineIcon from '@mui/icons-material/Polyline'
 
-import {
-  DEFAULT_MIN_INTERCHROM_READS,
-  READ_CONNECTIONS_OPTIONS,
-} from '../constants.ts'
+import { DEFAULT_MIN_INTERCHROM_READS } from '../../shared/alignmentsFilter.ts'
+import { READ_CONNECTIONS_OPTIONS } from '../constants.ts'
 import { getSvChannelsMenuItem } from './svChannels.ts'
 
 import type { ConnectionFilter } from '../../shared/types.ts'
@@ -41,10 +39,8 @@ interface ReadConnectionsModel {
 }
 
 // `readConnections.lineWidth`'s default, spelled again here for the reset item
-// and the is-default marker — the same duplication
-// `DEFAULT_MIN_INTERCHROM_READS` carries, and for the same reason: the config
-// docgen renders a slot default off its AST source text, so the slot cannot name
-// a constant.
+// and the is-default marker: the config docgen renders a slot default off its
+// AST source text, so the slot cannot name a constant.
 const DEFAULT_READ_CONNECTIONS_LINE_WIDTH = 1
 
 const PLACEMENT_OPTIONS: { value: ReadConnectionsPlacement; label: string }[] =
@@ -74,7 +70,7 @@ export function getReadConnectionsMenuItem(
     disabled: model.drawnReadConnections === 'off',
     disabledHelpText: 'Choose "Read arcs" or "Read cloud" first',
   }
-  // `filter.connections` reaches the band and the curved connectors alike
+  // the `connection` filter fields reach the band and the curved connectors alike
   const filterGate = {
     disabled: model.drawnReadConnections === 'off' && !model.showConnectors,
     disabledHelpText:

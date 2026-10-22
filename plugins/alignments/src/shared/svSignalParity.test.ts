@@ -13,7 +13,6 @@ import { filterChainFeatures } from '../RenderAlignmentDataRPC/filterChainFeatur
 import { buildBaseFeatureData } from './buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from './buildBaseReadArrays.ts'
 import { extractFeatureArrays } from './extractFeatureArrays.ts'
-import { defaultFilterFlags } from './util.ts'
 
 // The read filter, the `svSignal` sort and the breakpoint split view each ask
 // "is this read SV evidence?", the filter of the feature in the worker and the
@@ -127,10 +126,10 @@ const overlay = {
 }
 
 describe.each(CASES.map((c, i) => ({ ...c, i })))('$name', ({ i, tier }) => {
-  const kept = filterChainFeatures([features[i]!], {
-    ...defaultFilterFlags,
-    svSignal: 'only',
-  })
+  const kept = filterChainFeatures(
+    [features[i]!],
+    [{ field: 'svSignal', equal: true }],
+  )
 
   test('the filter, the sort and the split view agree', () => {
     expect({

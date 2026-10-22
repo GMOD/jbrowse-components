@@ -77,30 +77,6 @@ export {
   type SashimiPlacement,
 } from '../features/sashimi/junctions.ts'
 
-// Default supporting-read floor for a sashimi junction: hide single-read
-// junctions, which are dominated by alignment noise and unreadable at the 1px
-// stroke `strokeWidthForCount` floors them to. Lets the menu's reset/is-default
-// check name the default instead of hardcoding a bare 2. Must match
-// `filter.junctions.minReads`' default in junctionFilterConfigSchema.ts, which spells
-// the same number as a literal so the config docgen can render it (it reads the
-// AST node's source text, so a reference here would publish as the identifier).
-export const DEFAULT_MIN_SASHIMI_READS = 2
-
-// Default reads a translocation breakpoint must gather before its connector
-// ticks are drawn. Same shape and the same reason as the sashimi floor above —
-// single-read marks are dominated by mismapping — and spelled as a literal in
-// `connectionFilterConfigSchema.ts` for the same docgen reason. Keep the
-// two in step.
-//
-// What differs is how the reads are COUNTED: over a window of one fragment
-// length on both sides rather than at a coordinate, since a mate pair straddles
-// a breakpoint instead of landing on it (`clusteredInterchromSupport`). Measured
-// on HG002 300x, 200 kb at 1:2,000,000: 844 of 856 breakpoints carried exactly
-// one read, and widening the window from 0 to 2 kb merged only five clusters —
-// so they are scattered rather than badly keyed, which is what makes them
-// droppable.
-export const DEFAULT_MIN_INTERCHROM_READS = 2
-
 // Whether a point feature (mismatch / small insertion) may intercept a
 // click/hover. Clickable when zoomed to base level (bpPerPx <= 1), when
 // frequency filtering is off (the feature then draws fully opaque), or when its

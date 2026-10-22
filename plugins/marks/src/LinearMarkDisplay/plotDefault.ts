@@ -4,8 +4,8 @@ import type { PlotFields } from './scanPlotFields.ts'
 export const DEFAULT_PLOT_FIELD = 'score'
 const IDENTITY_FIELD = 'identity'
 
-// SAM flags 0x4 unmapped, 0x200 QC fail and 0x400 duplicate: the alignments
-// display's default `flagExclude`.
+// SAM flags 0x4 unmapped, 0x200 QC fail and 0x400 duplicate: the reads the
+// alignments display's default `filter` leaves out.
 export const KEEP_MAPPED_PASSING_UNIQUE_READS =
   'jexl:(feature.flags & 1540) == 0'
 

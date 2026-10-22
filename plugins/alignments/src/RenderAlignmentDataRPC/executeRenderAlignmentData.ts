@@ -254,7 +254,7 @@ export async function executeRenderAlignmentData({
     adapterConfig,
     sequenceAdapter,
     regions,
-    filterBy,
+    filter,
     colorBy,
     baseLayer,
     sortTag,
@@ -291,12 +291,12 @@ export async function executeRenderAlignmentData({
     adapterConfig,
     sequenceAdapter,
     region,
-    filterBy,
+    filter,
     lodTier,
     statusCallback,
     signal,
   })
-  const sample = sampleFeatures(featuresArray, filterBy)
+  const sample = sampleFeatures(featuresArray, filter)
   const insertSizeStats = computePairedInsertSizeStats(sample)
 
   // The category filters group reads by name (they short-circuit to the sample
@@ -306,7 +306,7 @@ export async function executeRenderAlignmentData({
   // (computeReadBaseCounts), so they fetch nothing.
   let regionSequence: string | undefined
   let regionSequenceStart = region.start
-  const inputFeatures = selectChains(sample, filterBy)
+  const inputFeatures = selectChains(sample, filter)
   if (baseLayer?.type === 'bisulfite' && sequenceAdapter) {
     const result = await fetchReferenceSequence({
       pluginManager,

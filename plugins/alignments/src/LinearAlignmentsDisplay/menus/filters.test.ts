@@ -1,13 +1,13 @@
-import { defaultFilterFlags } from '../../shared/util.ts'
+import { mergeFilter } from '../../shared/alignmentsFilter.ts'
 import { getFiltersMenuItems } from './filters.ts'
 
-import type { ReadFilter } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
-function mapqRow(readFilter: ReadFilter) {
+function mapqRow(written: FieldPredicate[]) {
   const model = {
-    readFilter,
-    setReadFilter: jest.fn(),
+    filterPredicates: mergeFilter(written),
+    setFilterFields: jest.fn(),
     filterNarrowing: () => ({ count: 0, clear: () => {} }),
   }
   const items = getFiltersMenuItems(model)
@@ -23,8 +23,8 @@ function mapqRow(readFilter: ReadFilter) {
   return { row, radios, model }
 }
 
-test('the mapping-quality row offers the facet bin edges and writes minMapq', () => {
-  const { radios, model } = mapqRow(defaultFilterFlags)
+test('the mapping-quality row offers the facet bin edges and writes a mapq floor', () => {
+  const { radios, model } = mapqRow([])
   expect(radios.map(r => r.label)).toEqual([
     'All reads',
     'MAPQ 1+',
@@ -33,15 +33,28 @@ test('the mapping-quality row offers the facet bin edges and writes minMapq', ()
   ])
   expect(radios.find(r => r.checked)?.label).toBe('All reads')
   radios.find(r => r.label === 'MAPQ 10+')!.onClick()
-  expect(model.setReadFilter).toHaveBeenCalledWith({
-    ...defaultFilterFlags,
-    minMapq: 10,
+  expect(model.setFilterFields).toHaveBeenCalledWith({
+    mapq: [{ field: 'mapq', gte: 10 }],
   })
 })
 
 test('a minimum the dialog wrote gets a radio of its own, checked', () => {
-  const { row, radios } = mapqRow({ ...defaultFilterFlags, minMapq: 20 })
+  const { row, radios } = mapqRow([{ field: 'mapq', gte: 20 }])
   expect(radios.map(r => r.label)).toContain('MAPQ 20+')
   expect(radios.find(r => r.checked)?.label).toBe('MAPQ 20+')
   expect(row.label).toContain('20+')
+})
+
+test('a floor change keeps the ceiling written on the same field', () => {
+  const { radios, model } = mapqRow([
+    { field: 'mapq', gte: 20 },
+    { field: 'mapq', lte: 50 },
+  ])
+  radios.find(r => r.label === 'MAPQ 30+')!.onClick()
+  expect(model.setFilterFields).toHaveBeenCalledWith({
+    mapq: [
+      { field: 'mapq', gte: 30 },
+      { field: 'mapq', lte: 50 },
+    ],
+  })
 })

@@ -121,8 +121,8 @@ matters.
   lying on the row vanishes into it. `connectorShape` bows a
   hidden-segment line whose ends share a row for that reason, and a one-ended
   hop's mark needs the same.
-- **Gate on the filters that exist**: `filter.connections.offscreenMates`
-  and `.interchrom`, combined by `emitsOffScreenPartner` — which exists
+- **Gate on the filters that exist**: the `connection.offscreen` and
+  `connection.interchrom` fields, combined by `emitsOffScreenPartner` — which exists
   because layering them as an AND once made unticking off-screen mates silently
   untick inter-chromosomal pairs.
 - **Legend.** `bezierConnectionLegendItems` builds one row per *color*, and each

@@ -1,3 +1,10 @@
+import {
+  DEFAULT_FLAG_MASKS,
+  flagMasksOf,
+  mergeFilter,
+  tagFiltersOf,
+  withFields,
+} from '../../shared/alignmentsFilter.ts'
 import { getContextMenuItems, getHitMenuItems } from './contextMenu.ts'
 
 import type { CoverageHitResult } from '../../features/coverage/types.ts'
@@ -7,14 +14,12 @@ import type {
   CigarHitResult,
   ResolvedBlock,
 } from '../../shared/hitTestTypes.ts'
-import type { ReadFilter } from '../../shared/types.ts'
 import type { ContextMenuHit } from '../components/hitTestPipeline.ts'
 import type { AlignmentsUnit } from '../constants.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 type SortCall = [type: string, pos: number, refName: string]
-
-const defaultFilterBy: ReadFilter = { flagInclude: 0, flagExclude: 1540 }
 
 // A minimal block under the right-click; only refName is read by the sort items.
 function makeBlock(refName: string): ResolvedBlock {
@@ -62,11 +67,13 @@ function makeModel(
     noHit?: boolean
     contextMenuFeature?: Feature
     contextMenuFeatureId?: string
-    readFilter?: ReadFilter
+    written?: FieldPredicate[]
   } = {},
 ) {
   const sortCalls: SortCall[] = []
-  const filterCalls: ReadFilter[] = []
+  const filterCalls: Readonly<
+    Record<string, readonly FieldPredicate[] | undefined>
+  >[] = []
   const selected: Feature[] = []
   const {
     cigarHit,
@@ -106,12 +113,17 @@ function makeModel(
           modHit,
           coverageHit,
         } as ContextMenuHit | undefined),
-    readFilter: defaultFilterBy,
+    written: [] as FieldPredicate[],
+    get filterPredicates(): FieldPredicate[] {
+      return mergeFilter(model.written)
+    },
     // Record every call and apply it, so successive quick-filter clicks read the
-    // accumulated filterBy (the coexistence path this suite guards).
-    setReadFilter(filterBy: ReadFilter) {
-      filterCalls.push(filterBy)
-      model.readFilter = filterBy
+    // accumulated filter (the coexistence path this suite guards).
+    setFilterFields(
+      patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
+    ) {
+      filterCalls.push(patch)
+      model.written = withFields(model.written, patch)
     },
     setSort(arg: { field: string; pos: number; refName: string }) {
       sortCalls.push([arg.field, arg.pos, arg.refName])
@@ -490,9 +502,8 @@ test('filter for this read sets the read name (QNAME), keeping flags', () => {
   })
   const filter = findSubMenu(run(model), 'Filter')
   filter.find(i => i.label === 'Filter for this read')!.onClick()
-  expect(model.filterCalls).toEqual([
-    { flagInclude: 0, flagExclude: 1540, readName: 'readABC' },
-  ])
+  expect(model.written).toEqual([{ field: 'name', equal: 'readABC' }])
+  expect(flagMasksOf(model.filterPredicates)).toEqual(DEFAULT_FLAG_MASKS)
 })
 
 test('haplotype and read-group tag filters coexist instead of clobbering', () => {
@@ -507,85 +518,55 @@ test('haplotype and read-group tag filters coexist instead of clobbering', () =>
   filter
     .find(i => i.label === 'Filter for this read group (RG:lib1)')!
     .onClick()
-  expect(model.filterCalls).toEqual([
-    {
-      flagInclude: 0,
-      flagExclude: 1540,
-      tags: [{ tag: 'HP', value: '1' }],
-    },
-    {
-      flagInclude: 0,
-      flagExclude: 1540,
-      tags: [
-        { tag: 'HP', value: '1' },
-        { tag: 'RG', value: 'lib1' },
-      ],
-    },
+  expect(model.filterCalls).toHaveLength(2)
+  expect(tagFiltersOf(model.filterPredicates)).toEqual([
+    { tag: 'HP', value: '1' },
+    { tag: 'RG', value: 'lib1' },
   ])
 })
 
 test('re-filtering the same tag replaces its value, not duplicates', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC', tags: { HP: 2 } }),
-    readFilter: {
-      flagInclude: 0,
-      flagExclude: 1540,
-      tags: [{ tag: 'HP', value: '1' }],
-    },
+    written: [{ field: 'tags.HP', equal: '1' }],
   })
   findSubMenu(run(model), 'Filter')
     .find(i => i.label === 'Filter for this haplotype (HP:2)')!
     .onClick()
-  expect(model.filterCalls).toEqual([
-    {
-      flagInclude: 0,
-      flagExclude: 1540,
-      tags: [{ tag: 'HP', value: '2' }],
-    },
-  ])
+  expect(model.written).toEqual([{ field: 'tags.HP', equal: '2' }])
 })
 
 test('clear appears only when a read/tag filter is active and keeps flags', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC' }),
-    readFilter: { flagInclude: 0, flagExclude: 1540, readName: 'readABC' },
+    written: [{ field: 'name', equal: 'readABC' }],
   })
   const filter = findSubMenu(run(model), 'Filter')
   filter.find(i => i.label === 'Clear read/tag filters')!.onClick()
-  expect(model.filterCalls).toEqual([
-    {
-      flagInclude: 0,
-      flagExclude: 1540,
-      readName: undefined,
-      tags: undefined,
-    },
-  ])
+  expect(model.written).toEqual([])
+  expect(flagMasksOf(model.filterPredicates)).toEqual(DEFAULT_FLAG_MASKS)
 })
 
-// The row names two filters and undoes two. It cleared by rebuilding filterBy
-// from the masks, which was the same thing until every read category moved in
-// there — after which this row silently cleared four filters it did not set and
-// does not name. "Clear all filters" in the track menu is the one that clears
-// everything.
+// The row names two filters and undoes two. It once cleared by rebuilding the
+// filter from the masks, which silently cleared four read categories it did not
+// set and does not name. "Clear all filters" in the track menu is the one that
+// clears everything.
 test('clear leaves the read categories alone', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC' }),
-    readFilter: {
-      flagInclude: 0,
-      flagExclude: 1540,
-      readName: 'readABC',
-      svSignal: 'only',
-      split: 'only',
-    },
+    written: [
+      { field: 'name', equal: 'readABC' },
+      { field: 'svSignal', equal: true },
+      { field: 'split', equal: true },
+    ],
   })
   findSubMenu(run(model), 'Filter')
     .find(i => i.label === 'Clear read/tag filters')!
     .onClick()
-  expect(model.filterCalls[0]).toMatchObject({
-    svSignal: 'only',
-    split: 'only',
-    readName: undefined,
-  })
+  expect(model.written).toEqual([
+    { field: 'svSignal', equal: true },
+    { field: 'split', equal: true },
+  ])
 })
 
 test('no clear item without an active read/tag filter', () => {
@@ -602,7 +583,7 @@ test('no clear item without an active read/tag filter', () => {
 test('a read category alone offers no clear item', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC' }),
-    readFilter: { flagInclude: 0, flagExclude: 1540, spliced: 'only' },
+    written: [{ field: 'spliced', equal: true }],
   })
   const filter = findSubMenu(run(model), 'Filter')
   expect(filter.map(i => i.label)).not.toContain('Clear read/tag filters')

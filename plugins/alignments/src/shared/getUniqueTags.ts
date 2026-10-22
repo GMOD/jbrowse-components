@@ -3,12 +3,12 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 
-import type { ReadFilter } from './types.ts'
 import type { StatusCallback } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // The distinct values a tag takes over the visible blocks on the track's
-// genomes, under the display's own read filter — `filterBy` comes off `self`
+// genomes, under the display's own read filter — `readPredicates` comes off `self`
 // beside `adapterConfig` because both describe the same fetch, and a caller
 // that passed one without the other would be enumerating a different read set
 // than the track draws.
@@ -24,7 +24,7 @@ export async function getUniqueTags({
 }: {
   self: IStateTreeNode & {
     adapterConfig: Record<string, unknown>
-    readFilter: ReadFilter
+    readPredicates: FieldPredicate[]
     resolvedByteLimit: () => number | undefined
   }
   tag: string
@@ -34,13 +34,13 @@ export async function getUniqueTags({
   }
 }) {
   const { rpcManager } = getSession(self)
-  const { adapterConfig, readFilter: filterBy } = self
+  const { adapterConfig, readPredicates: filter } = self
   const sessionId = getRpcSessionId(self)
   const onTrack = onTrackAssembly(self)
   return rpcManager.call(sessionId, 'PileupGetGlobalValueForTag', {
     adapterConfig,
     tag,
-    filterBy,
+    filter,
     byteLimit: self.resolvedByteLimit(),
     regions: containingLgv(self).staticBlocks.contentBlocks.filter(b =>
       onTrack(b.assemblyName),

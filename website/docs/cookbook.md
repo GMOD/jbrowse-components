@@ -139,7 +139,7 @@ and a theme. Every recipe below changes one piece of it.
       "displayDefaults": {
         "heightMode": "fit",
         "color": { "field": "mapq" },
-        "filter": { "flagExclude": 1540, "flagInclude": 0 }
+        "filter": [{ "field": "mapq", "gte": 20 }]
       }
     },
     {
@@ -350,11 +350,7 @@ pass every `jexl:` expression, on variant tracks too:
     "color": { "field": "mapq" },
     "pileup": { "softClips": { "show": true } },
     "facet": { "field": "tags.HP", "sort": ["2", "1"] },
-    "filter": {
-      "flagExclude": 1540,
-      "flagInclude": 0,
-      "tags": [{ "tag": "HP", "value": "1" }]
-    }
+    "filter": [{ "field": "tags.HP", "equal": "1" }]
   }
 }
 ```
@@ -370,8 +366,10 @@ pass every `jexl:` expression, on variant tracks too:
   value) stacks first — the same slot
   [feature, variant, mark and multiway synteny tracks](/docs/config_guides/grouping_and_ordering)
   all take
-- `flagExclude` 1540 hides unmapped, vendor-failed, and duplicate reads; 3844
-  also hides secondary and supplementary
+- `filter` lists the tests a read must pass, each written over the
+  [defaults](/docs/config/baselinearalignmentsdisplay/#slot-filter) on its own
+  field: `{ "field": "flags.SECONDARY", "equal": false }` also hides secondary
+  alignments, and `{ "field": "flags.DUP" }` brings duplicates back
   ([flag explainer](https://broadinstitute.github.io/picard/explain-flags.html))
 - CRAM uses `CramAdapter` in place of `BamAdapter`
 

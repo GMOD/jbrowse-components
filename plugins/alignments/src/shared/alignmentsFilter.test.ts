@@ -17,12 +17,23 @@ import {
   withField,
   withFields,
 } from './alignmentsFilter.ts'
-import { dropsRead } from './util.ts'
 
 import type { FilterableRead } from './alignmentsFilter.ts'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 const merged = (written: FieldPredicate[]) => mergeFilter(written)
+
+// The defaults left the config schema for this list, so ConfigSlotDefaults no
+// longer pins them: a changed default shows here instead
+test('the defaults, spelled out', () => {
+  expect(ALIGNMENTS_FILTER_DEFAULTS).toEqual([
+    { field: 'flags.UNMAP', equal: false },
+    { field: 'flags.QCFAIL', equal: false },
+    { field: 'flags.DUP', equal: false },
+    { field: 'junction.reads', gte: 2 },
+    { field: 'breakpoint.reads', gte: 2 },
+  ])
+})
 
 describe('the merge by field', () => {
   test('nothing written is the defaults', () => {
@@ -168,7 +179,7 @@ describe('the read fields the dialog edits', () => {
   })
 })
 
-describe('the record test keeps what dropsRead keeps', () => {
+describe('the record test', () => {
   const read = (
     flags: number,
     tags: Record<string, unknown> = {},
@@ -192,24 +203,40 @@ describe('the record test keeps what dropsRead keeps', () => {
     read(0, {}, true),
     read(0, {}, false, 'r2'),
   ]
+  const T = true
+  const F = false
 
   test.each([
-    [{ flagInclude: 0, flagExclude: 1540 }],
-    [{ flagInclude: 2, flagExclude: 1540 | 256 }],
-    [{ flagInclude: 0, flagExclude: 0 }],
-    [{ flagInclude: 0, flagExclude: 1540, tags: [{ tag: 'HP', value: '1' }] }],
-    [{ flagInclude: 0, flagExclude: 1540, tags: [{ tag: 'HP' }] }],
-    [{ flagInclude: 0, flagExclude: 1540, readName: 'r2' }],
-    [{ flagInclude: 0, flagExclude: 1540, spliced: 'only' as const }],
-    [{ flagInclude: 0, flagExclude: 1540, spliced: 'exclude' as const }],
-  ])('%j', filterBy => {
-    const drops = dropsRead(filterBy)
+    [{}, [T, F, F, T, T, T, T, T, T, T]],
+    [
+      { flagInclude: 2, flagExclude: 1540 | 256 },
+      [F, F, F, T, F, F, F, F, F, F],
+    ],
+    [{ flagInclude: 0, flagExclude: 0 }, [T, T, T, T, T, T, T, T, T, T]],
+    [{ tags: [{ tag: 'HP', value: '1' }] }, [F, F, F, F, F, T, F, F, F, F]],
+    [{ tags: [{ tag: 'HP' }] }, [F, F, F, F, F, T, T, F, F, F]],
+    [{ readName: 'r2' }, [F, F, F, F, F, F, F, F, F, T]],
+    [{ spliced: 'only' as const }, [F, F, F, F, F, F, F, F, T, F]],
+    [{ spliced: 'exclude' as const }, [T, F, F, T, T, T, T, T, F, T]],
+  ])('%j', (object, kept) => {
     const keeps = compileRecordFilter(
-      mergeFilter(predicatesOfFilterObject(filterBy)),
+      mergeFilter(predicatesOfFilterObject(object)),
     )
-    expect(reads.map(r => keeps?.(r) ?? true)).toEqual(
-      reads.map(r => !drops(r)),
-    )
+    expect(reads.map(r => keeps?.(r) ?? true)).toEqual(kept)
+  })
+
+  test('a tag value is the read’s, and no value passes any read carrying the tag', () => {
+    const keeps = compileRecordFilter([
+      { field: 'tags.HP', equal: '1' },
+      { field: 'tags.RG', valid: true },
+    ])!
+    expect(keeps(read(0, { HP: 1, RG: 'lib1' }))).toBe(true)
+    expect(keeps(read(0, { HP: 2, RG: 'lib1' }))).toBe(false)
+    expect(keeps(read(0, { HP: 1 }))).toBe(false)
+  })
+
+  test('a tag row naming no tag tests nothing', () => {
+    expect(predicatesOfFilterObject({ tags: [{ tag: '' }] })).toEqual([])
   })
 })
 

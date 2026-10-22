@@ -1,7 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { alignmentsBaseColorConfigSchema } from './alignmentsBaseColorConfigSchema.ts'
-import { alignmentsFilterConfigSchema } from './alignmentsFilterConfigSchema.ts'
 import { alignmentsModificationsConfigSchema } from './alignmentsModificationsConfigSchema.ts'
 import { baseLinearAlignmentsDisplayConfigSchema } from './baseConfigSchema.ts'
 import { sashimiConfigSchema } from './sashimiConfigSchema.ts'
@@ -16,7 +15,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * histogram with the sashimi arcs over it, the read connections, and the
  * pileup. Each band is one object, `coverage`, `sashimi`, `readConnections`
  * and `pileup`, holding whether it draws and its height; the settings every
- * band shares sit beside them: `filter`, which holds the read, junction and
+ * band shares sit beside them: `filter`, one list of the read, junction and
  * connection tests, `unit`, `facet`, `sort` and `color`.
  *
  * #example
@@ -87,7 +86,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   displayDefaults: {
  *     coverage: { height: 80 },
  *     sashimi: { placement: 'auto', labels: { show: true } },
- *     filter: { junctions: { minReads: 5, nonCanonical: 'exclude' } },
+ *     filter: [
+ *       { field: 'junction.reads', gte: 5 },
+ *       { field: 'junction.canonical', equal: true },
+ *     ],
  *   },
  * }
  * ```
@@ -96,20 +98,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearAlignmentsDisplay',
     {
-      /**
-       * #slot
-       * Every test the display applies, read by every part that draws the
-       * data a test names, and every test must hold. The read members (the
-       * flag masks, `minMapq`, `readName`, `tags` and the read categories
-       * `spliced`, `svSignal`, `alone` and `split`, each `"only"`,
-       * `"exclude"` or unset) run before every band, so coverage counts only
-       * the reads they pass; by default `flagExclude` drops unmapped,
-       * QC-failed and duplicate reads (1540). `junctions` tests the splice
-       * junctions the sashimi arcs and their counts draw, and `connections`
-       * the connections the arcs, the read cloud and the connectors over the
-       * pileup draw.
-       */
-      filter: alignmentsFilterConfigSchema,
       /**
        * #slot baseColor
        * The per-base layer drawn over the reads, whatever fills them:
@@ -129,8 +117,8 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot sashimi
        * The splice-junction arcs, drawn in the coverage band: `show`,
-       * `height`, `placement` and `labels`; `filter.junctions` filters the
-       * junctions drawn.
+       * `height`, `placement` and `labels`; the `junction` filter fields
+       * filter the junctions drawn.
        */
       sashimi: sashimiConfigSchema,
     },

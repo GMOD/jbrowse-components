@@ -1,6 +1,6 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
-import { DEFAULT_MIN_SASHIMI_READS } from '../constants.ts'
+import { DEFAULT_MIN_SASHIMI_READS } from '../../shared/alignmentsFilter.ts'
 import { getSashimiMenuItem } from './sashimi.ts'
 
 import type { JunctionFilter } from '../../shared/types.ts'

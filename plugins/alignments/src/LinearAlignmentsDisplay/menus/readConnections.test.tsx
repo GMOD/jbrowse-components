@@ -1,7 +1,7 @@
 import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import { DEFAULT_MIN_INTERCHROM_READS } from '../constants.ts'
+import { DEFAULT_MIN_INTERCHROM_READS } from '../../shared/alignmentsFilter.ts'
 import { getReadConnectionsMenuItem } from './readConnections.ts'
 
 import type { Facet, ConnectionFilter } from '../../shared/types.ts'

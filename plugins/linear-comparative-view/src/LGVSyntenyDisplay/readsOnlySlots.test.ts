@@ -5,16 +5,25 @@ import { createDisplay } from './testEnv.ts'
 
 // A synteny block has no introns, basecaller tags or qualities, so the schema
 // stops at the alignments base and the shared model answers these off.
-test('the schema declares no sashimi, junction filter, baseColor or modifications', () => {
+test('the schema declares no sashimi, baseColor or modifications', () => {
   const definition = getConfigurationSchemaDefinition(configSchemaF())!
   for (const slot of ['sashimi', 'baseColor', 'modifications']) {
     expect(definition).not.toHaveProperty(slot)
   }
-  const filter = getConfigurationSchemaDefinition(
-    definition.filter as Parameters<typeof getConfigurationSchemaDefinition>[0],
-  )!
-  expect(filter).not.toHaveProperty('junctions')
-  expect(filter).toHaveProperty('connections')
+})
+
+// The filter list is the alignments display's, so a junction field is a
+// config the display cannot apply, and it says so
+test('a junction field in the filter is a config problem', () => {
+  const display = createDisplay()
+  const conf = configSchemaF().create({
+    type: 'LGVSyntenyDisplay',
+    displayId: 'p',
+    filter: [{ field: 'junction.reads', gte: 5 }],
+  })
+  expect(display.configProblemsOf(conf)).toContainEqual(
+    'filter: junction.reads tests splice junctions, which this display does not draw',
+  )
 })
 
 test('the model answers the four off and fetches no junctions', () => {

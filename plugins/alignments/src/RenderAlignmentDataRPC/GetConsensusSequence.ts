@@ -6,20 +6,21 @@ import {
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 
+import { flagMasksOf } from '../shared/alignmentsFilter.ts'
 import { isMismatchFeature } from '../shared/extractCigarFeatures.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
 import { filterChainFeatures } from './filterChainFeatures.ts'
 
-import type { ReadFilter } from '../shared/types.ts'
 import type { ConsensusVariant } from '@jbrowse/alignments-core'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 interface GetConsensusSequenceArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
-  filterBy?: ReadFilter
+  filter?: FieldPredicate[]
   minDepth?: number
   callFract?: number
   hetFract?: number
@@ -50,7 +51,7 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
       adapterConfig,
       sequenceAdapter,
       regions,
-      filterBy,
+      filter,
       minDepth,
       callFract,
       hetFract,
@@ -73,7 +74,7 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
       adapterConfig,
       sequenceAdapter,
       region,
-      filterBy,
+      filter,
       statusCallback,
       signal,
     })
@@ -102,15 +103,19 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
     // that could drift from it. `MismatchFeature` satisfies core's
     // `ConsensusFeature` structurally. The read-category filters go first, as
     // they do for the pileup, so the tally is over the reads on screen.
-    const features = filterChainFeatures(featuresArray, filterBy).filter(f =>
+    const features = filterChainFeatures(featuresArray, filter).filter(f =>
       isMismatchFeature(f),
     )
 
-    // Features are already flag-filtered at fetch time by filterBy; reuse the
-    // same flagExclude here so the tally can't re-drop reads the user chose to
+    // Features are already flag-filtered at fetch time by `filter`; reuse its
+    // excluded flags here so the tally can't re-drop reads the user chose to
     // keep (e.g. secondary alignments). Falls back to the samtools-parity
-    // default when called without a filterBy.
-    const tally = buildConsensusTally(features, region, filterBy?.flagExclude)
+    // default when called without a `filter`.
+    const tally = buildConsensusTally(
+      features,
+      region,
+      filter && flagMasksOf(filter).exclude,
+    )
     const consensusOpts = { minDepth, callFract, hetFract, includeInsertions }
     const consensus = computeConsensus(reference, tally, consensusOpts)
     const variants = computeConsensusVariants(reference, tally, consensusOpts)

@@ -11,15 +11,16 @@ import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { BaseAlignmentsAdapter } from '../shared/BaseAlignmentsAdapter.ts'
+import { dropsRecord } from '../shared/alignmentsFilter.ts'
 import { seqFetchSpan } from '../shared/seqFetchSpan.ts'
-import { dropsRead, parseSamHeader } from '../shared/util.ts'
+import { parseSamHeader } from '../shared/util.ts'
 import SamRecordFeature from './SamRecordFeature.ts'
 import { parseSamHeaderLine, parseSamLine } from './parseSam.ts'
 
-import type { ReadFilter } from '../shared/types.ts'
 import type { SamAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 // RNAME, the column SAM records are grouped by (QNAME, FLAG, RNAME, ...)
 const RNAME_COLUMN = 2
@@ -113,15 +114,15 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
 
   getFeatures(
     region: Region & { originalRefName?: string },
-    opts?: BaseOptions & { filterBy?: ReadFilter },
+    opts?: BaseOptions & { filter?: FieldPredicate[] },
   ) {
     const { refName, start, end, originalRefName } = region
-    const { signal, filterBy, statusCallback } = opts ?? {}
+    const { signal, filter, statusCallback } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
       const { intervalTreeMap } = await this.loadData(opts)
       checkAbortSignal(signal)
       const tree = intervalTreeMap[refName]
-      const drops = dropsRead(filterBy)
+      const drops = dropsRecord(filter)
       const records = tree
         ? tree(statusCallback)
             .search([start, end])

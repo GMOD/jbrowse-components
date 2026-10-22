@@ -14,7 +14,6 @@ import {
 import cramConfigSchema from '../CramAdapter/configSchema.ts'
 import { filterChainFeatures } from '../RenderAlignmentDataRPC/filterChainFeatures.ts'
 import { isSplitAlignment } from './splitAlignment.ts'
-import { defaultFilterFlags } from './util.ts'
 
 import type { MismatchFeature } from './extractCigarFeatures.ts'
 
@@ -64,7 +63,7 @@ async function reads(adapter: BamAdapter | CramAdapter) {
     adapter
       .getFeatures(
         { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50000 },
-        { filterBy: { flagInclude: 0, flagExclude: 0 } },
+        { filter: [] },
       )
       .pipe(toArray()),
   )
@@ -124,10 +123,9 @@ test('svSignal on long reads keeps the placed split reads and SV-size indels', a
     true,
   )
   const kept = new Set(
-    filterChainFeatures(features, {
-      ...defaultFilterFlags,
-      svSignal: 'only',
-    }).map(f => f.get('name')!),
+    filterChainFeatures(features, [{ field: 'svSignal', equal: true }]).map(f =>
+      f.get('name')!,
+    ),
   )
   expect(kept).toEqual(evidenceNames)
   expect(kept.size).toBeGreaterThan(0)

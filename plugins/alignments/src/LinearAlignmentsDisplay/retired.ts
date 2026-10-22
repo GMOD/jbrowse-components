@@ -1,16 +1,8 @@
-import {
-  applyRetiredSpellings,
-  getConfigurationSchemaMetadata,
-  liftRetiredSpellings,
-} from '@jbrowse/core/configuration'
+import { applyRetiredSpellings } from '@jbrowse/core/configuration'
 import { isValidTag } from '@jbrowse/core/util'
 import { retiredScaleSpellings } from '@jbrowse/wiggle-core'
 
 import { TAG_FIELD_PREFIX } from '../shared/facetLabels.ts'
-import {
-  baseAlignmentsFilterConfigSchema,
-  readFilterMembers,
-} from './baseAlignmentsFilterConfigSchema.ts'
 
 import type { RetiredSpelling } from '@jbrowse/core/configuration'
 import type {
@@ -179,10 +171,11 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
  * as `retired` declares them. v4's `colorBy` named a scheme and held the
  * modification settings, which are the `color` or `baseColor` object's field
  * and the `modifications` slot now; its LinearReadArcsDisplay gated the two
- * arc classes under the draw verb, which are `filter.connections`
- * categories now; its read size and layout cap are `pileup`'s `readHeight`
+ * arc classes under the draw verb, which are `connection` filter fields
+ * now; its read size and layout cap are `pileup`'s `readHeight`
  * and `maxLayoutHeight`; its `jexlFilters` has no slot, since
- * `filter` is the read filter object. The coverage display's scale slots land
+ * `filter` is the predicate list. A lift here writes the object form, which
+ * `liftFilterObject` turns into the list. The coverage display's scale slots land
  * on the band's `scales.y`. `flipStrandLongReadChains` went: a split segment's
  * strand against its molecule is a level of the orientation fields, which
  * `color.range` recolors.
@@ -245,29 +238,41 @@ function sortSlot(value: unknown): DisplayEntry {
     : {}
 }
 
+// The read members of the object form a v4 filterBy wrote
+const V4_READ_MEMBERS = [
+  'flagInclude',
+  'flagExclude',
+  'minMapq',
+  'readName',
+  'tags',
+  'spliced',
+  'svSignal',
+  'alone',
+  'split',
+]
+
+// A v4 filterBy was the whole read filter, so its lift names every read member
+// it leaves out as unset: merged over a sub-node's or another view's, it
+// replaces those members rather than inheriting a tag filter. It never spoke
+// for the junctions or connections, which keep what they were.
+function wholeFilterOf(value: unknown): DisplayEntry {
+  const { tagFilter, ...members } = isObject(value) ? value : {}
+  return {
+    filter: {
+      ...Object.fromEntries(V4_READ_MEMBERS.map(member => [member, null])),
+      ...members,
+      // v4's one tag filter, under the member the merge replaces
+      ...(tagFilter ? { tags: [tagFilter] } : {}),
+    },
+  }
+}
+
 // The `*Setting` names are what v4.3.0 sessions carry: its mixin declared
 // `colorBySetting`/`filterBySetting` and wrote them back out under those
 // names. The bare names are for hand-written snapshots.
 //
 // `hideSmallIndelsSetting` and `hideLargeIndelsSetting` have no slot to go to:
 // the feature went rather than moved.
-const filterMeta = getConfigurationSchemaMetadata(
-  baseAlignmentsFilterConfigSchema,
-)!
-
-// A v4 filterBy was the whole read filter, so its lift names every read member
-// it leaves out as unset: merged over a sub-node's or another view's, it
-// replaces those members rather than inheriting a tag filter. It never spoke
-// for `junctions` or `connections`, which keep what they were.
-function wholeFilterOf(value: unknown): DisplayEntry {
-  return {
-    filter: {
-      ...Object.fromEntries(readFilterMembers.map(member => [member, null])),
-      ...(isObject(value) ? liftRetiredSpellings(filterMeta, value) : {}),
-    },
-  }
-}
-
 const INSTANCE_SLOTS: Record<string, (value: unknown) => DisplayEntry> = {
   colorBy: colorSlotsOf,
   colorBySetting: colorSlotsOf,

@@ -6010,13 +6010,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
-    "TagFilter": {
-      "title": "TagFilter",
+    "FieldPredicate": {
+      "title": "FieldPredicate",
       "type": "object",
       "x-closed": true,
       "properties": {
-        "tag": {
-          "description": "the SAM tag, HP or RG.",
+        "field": {
+          "description": "the field tested, as the display names its fields.",
           "default": "",
           "if": {
             "type": "null"
@@ -6025,219 +6025,71 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PlainString"
           }
         },
-        "value": {
-          "description": "the value the tag has to hold; unset passes any read with the tag.",
+        "equal": {
+          "description": "the value must equal this. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "ConnectionFilter": {
-      "title": "ConnectionFilter",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "interchrom": {
-          "description": "\`only\`, \`exclude\`, or unset for unfiltered: connections to a mate or split segment on another chromosome, an arc or a connector where both chromosomes are displayed and a tick at each breakpoint otherwise.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
-          }
-        },
-        "offscreenMates": {
-          "description": "\`only\`, \`exclude\`, or unset for unfiltered: connections to a mate or split segment elsewhere on the same chromosome and outside the loaded window, drawn as vertical lines. A connector joins two laid-out reads, so it is never one.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
-          }
-        },
-        "minInterchromReads": {
-          "description": "an inter-chromosomal connection draws only with at least this many reads clustered at its breakpoint, counted over one fragment length on both sides; 1 draws every one, and a split read is exempt.",
-          "default": 2,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "JunctionFilter": {
-      "title": "JunctionFilter",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "minReads": {
-          "description": "a junction draws only with at least this many supporting reads; 1 draws every junction.",
-          "default": 2,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "nonCanonical": {
-          "description": "\`only\`, \`exclude\`, or unset for unfiltered: junctions whose splice motif is none of GT-AG, GC-AG or AT-AC. The motif is read off the reference, so filtering needs a sequence adapter, and a junction whose motif could not be read counts as canonical.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "AlignmentsFilter": {
-      "title": "AlignmentsFilter",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "tagFilter": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "flagInclude": {
-          "description": "a read passes only with every one of these SAM flag bits set, samtools -f.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "flagExclude": {
-          "description": "a read passes only with none of these SAM flag bits set, samtools -F; 1540 drops unmapped, QC-failed and duplicate reads.",
-          "default": 1540,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "minMapq": {
-          "description": "a read passes only with a mapping quality of at least this; a read with MAPQ 255 (none reported) passes. Unset passes every read.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "readName": {
-          "description": "the one read name shown; unset shows every read.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "tags": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/TagFilter"
+            "not": {
+              "$ref": "#/$defs/JexlString"
             }
           }
         },
-        "spliced": {
-          "description": "only, exclude, or unset for unfiltered.",
+        "lt": {
+          "description": "the value must be below this.",
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
+            "type": "number"
           }
         },
-        "svSignal": {
-          "description": "only, exclude, or unset for unfiltered.",
+        "lte": {
+          "description": "the value must be at most this.",
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
+            "type": "number"
           }
         },
-        "alone": {
-          "description": "only, exclude, or unset for unfiltered.",
+        "gt": {
+          "description": "the value must be above this.",
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
+            "type": "number"
           }
         },
-        "split": {
-          "description": "only, exclude, or unset for unfiltered.",
+        "gte": {
+          "description": "the value must be at least this.",
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
+            "type": "number"
           }
         },
-        "connections": {
+        "oneOf": {
+          "description": "the value must be one of these. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/ConnectionFilter"
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
-        "junctions": {
+        "valid": {
+          "description": "true admits only records with a value for the field, false only those without.",
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/JunctionFilter"
+            "type": "boolean"
           }
         }
       },
@@ -7349,7 +7201,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/AlignmentsFilter"
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FieldPredicate"
+            }
           }
         },
         "facet": {
@@ -7988,126 +7843,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
-    "BaseAlignmentsFilter": {
-      "title": "BaseAlignmentsFilter",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "tagFilter": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "flagInclude": {
-          "description": "a read passes only with every one of these SAM flag bits set, samtools -f.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "flagExclude": {
-          "description": "a read passes only with none of these SAM flag bits set, samtools -F; 1540 drops unmapped, QC-failed and duplicate reads.",
-          "default": 1540,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "minMapq": {
-          "description": "a read passes only with a mapping quality of at least this; a read with MAPQ 255 (none reported) passes. Unset passes every read.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "readName": {
-          "description": "the one read name shown; unset shows every read.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "tags": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/TagFilter"
-            }
-          }
-        },
-        "spliced": {
-          "description": "only, exclude, or unset for unfiltered.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
-          }
-        },
-        "svSignal": {
-          "description": "only, exclude, or unset for unfiltered.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
-          }
-        },
-        "alone": {
-          "description": "only, exclude, or unset for unfiltered.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
-          }
-        },
-        "split": {
-          "description": "only, exclude, or unset for unfiltered.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
-          }
-        },
-        "connections": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/ConnectionFilter"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
     "LGVSyntenySort": {
       "title": "LGVSyntenySort",
       "anyOf": [
@@ -8553,7 +8288,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/BaseAlignmentsFilter"
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FieldPredicate"
+            }
           }
         },
         "facet": {
@@ -25501,94 +25239,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "^_+comment": {}
       },
       "unevaluatedProperties": false
-    },
-    "FieldPredicate": {
-      "title": "FieldPredicate",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "field": {
-          "description": "the field tested, as the display names its fields.",
-          "default": "",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "equal": {
-          "description": "the value must equal this. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
-          }
-        },
-        "lt": {
-          "description": "the value must be below this.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "lte": {
-          "description": "the value must be at most this.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "gt": {
-          "description": "the value must be above this.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "gte": {
-          "description": "the value must be at least this.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "oneOf": {
-          "description": "the value must be one of these. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
-          }
-        },
-        "valid": {
-          "description": "true admits only records with a value for the field, false only those without.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
     },
     "SyntenyColor": {
       "title": "SyntenyColor",

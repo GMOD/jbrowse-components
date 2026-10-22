@@ -161,7 +161,7 @@ test('filters by flag, read name and tag', async () => {
     adapter
       .getFeatures(
         { assemblyName: 'test', refName: 'ctgA', start: 0, end: 40 },
-        { filterBy: { flagInclude: 16, flagExclude: 0 } },
+        { filter: [{ field: 'flags.REVERSE', equal: true }] },
       )
       .pipe(toArray()),
   )
@@ -171,7 +171,7 @@ test('filters by flag, read name and tag', async () => {
     adapter
       .getFeatures(
         { assemblyName: 'test', refName: 'ctgA', start: 0, end: 40 },
-        { filterBy: { flagInclude: 0, flagExclude: 0, readName: 'snp' } },
+        { filter: [{ field: 'name', equal: 'snp' }] },
       )
       .pipe(toArray()),
   )

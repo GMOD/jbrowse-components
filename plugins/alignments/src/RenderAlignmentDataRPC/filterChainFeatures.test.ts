@@ -1,9 +1,8 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { defaultFilterFlags } from '../shared/util.ts'
 import { filterChainFeatures } from './filterChainFeatures.ts'
 
-import type { ReadFilter } from '../shared/types.ts'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 const PAIRED = 0x1
 const PROPER_PAIR = 0x2
@@ -11,10 +10,21 @@ const MATE_UNMAPPED = 0x8
 const SECONDARY = 0x100
 const SUPPLEMENTARY = 0x800
 
-// The flag masks are required on ReadFilter and irrelevant here — the adapters
-// apply those, not this function. Only the categories vary per test.
-function filt(categories: Partial<ReadFilter> = {}): ReadFilter {
-  return { ...defaultFilterFlags, ...categories }
+// The read categories and the MAPQ floor as the list's entries. The flag
+// fields are irrelevant here: the adapters apply those, not this function.
+function filt({
+  minMapq,
+  ...categories
+}: { minMapq?: number } & Partial<
+  Record<'svSignal' | 'alone' | 'split', 'only' | 'exclude'>
+> = {}): FieldPredicate[] {
+  return [
+    ...Object.entries(categories).map(([field, value]) => ({
+      field,
+      equal: value === 'only',
+    })),
+    ...(minMapq === undefined ? [] : [{ field: 'mapq', gte: minMapq }]),
+  ]
 }
 
 // A two-read chain sharing one QNAME with the given orientation/flags.

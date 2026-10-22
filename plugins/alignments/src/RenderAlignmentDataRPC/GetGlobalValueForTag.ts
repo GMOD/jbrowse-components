@@ -5,11 +5,11 @@ import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { extractFeatureTagValue } from '../shared/extractFeatureTagValue.ts'
 import { filterChainFeatures } from './filterChainFeatures.ts'
 
-import type { ReadFilter } from '../shared/types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 interface GetGlobalValueForTagArgs {
   adapterConfig: Record<string, unknown>
@@ -21,7 +21,7 @@ interface GetGlobalValueForTagArgs {
   // decide whether a tag grouping would exceed `MAX_GROUPS`, so a value carried
   // only by filtered-out reads both padded "Found values" and could block Submit
   // on a grouping that would in fact have produced a handful of sections.
-  filterBy?: ReadFilter
+  filter?: FieldPredicate[]
   // The display's own gate budget (`resolvedByteLimit()`), so this scan is
   // refused wherever the render fetch would be. It downloads every read of every
   // visible block — the largest thing the group-by dialog does — so ungated it
@@ -43,7 +43,7 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
   name = 'PileupGetGlobalValueForTag' as const
 
   async execute(args: RpcExecuteArgs<'PileupGetGlobalValueForTag'>) {
-    const { regions, tag, filterBy, byteLimit, signal, statusCallback } = args
+    const { regions, tag, filter, byteLimit, signal, statusCallback } = args
 
     const dataAdapter = await getFeatureAdapterOrThrow({
       ...args,
@@ -64,13 +64,13 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
       return tooLarge
     }
 
-    // Spread like `fetchFeaturesFromAdapter`'s: `filterBy` is an alignments
+    // Spread like `fetchFeaturesFromAdapter`'s: `filter` is an alignments
     // concept the BAM/CRAM adapters read off the options bag, not a BaseOptions
     // field.
-    const fetchOpts: BaseOptions & { filterBy?: ReadFilter } = {
+    const fetchOpts: BaseOptions & { filter?: FieldPredicate[] } = {
       signal,
       statusCallback,
-      filterBy,
+      filter,
     }
     const tagValues = new Set<string>()
     for (const region of regions) {
@@ -82,7 +82,7 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
       // they do in the render fetch.
       const features = filterChainFeatures(
         await dataAdapter.getFeaturesArray(region, fetchOpts),
-        filterBy,
+        filter,
       )
       for (const feature of features) {
         // The same extractor the render path keys on, so a field-backed tag (no

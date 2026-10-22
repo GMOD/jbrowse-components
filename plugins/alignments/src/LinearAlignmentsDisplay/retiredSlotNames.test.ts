@@ -1,6 +1,11 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 
+import {
+  connectionFilterOf,
+  filterListOf,
+  mergeFilter,
+} from '../shared/alignmentsFilter.ts'
 import configSchemaFactory from './configSchema.ts'
 
 function create(snapshot: Record<string, unknown>) {
@@ -11,33 +16,36 @@ function create(snapshot: Record<string, unknown>) {
   })
 }
 
+const connectionsOf = (conf: ReturnType<typeof create>) =>
+  connectionFilterOf(mergeFilter(filterListOf(readConfObject(conf, 'filter'))))
+
 // v4.3.0's LinearReadArcsDisplay wrote these two under the draw verb, so a
 // released config can carry them
 test('the v4 draw verbs lift onto the connection filter', () => {
   const conf = create({ drawInter: false, drawLongRange: false })
-  expect(readConfObject(conf, ['filter', 'connections', 'interchrom'])).toBe(
-    'exclude',
-  )
-  expect(
-    readConfObject(conf, ['filter', 'connections', 'offscreenMates']),
-  ).toBe('exclude')
-  expect(
-    readConfObject(create({ drawInter: true }), [
-      'filter',
-      'connections',
-      'interchrom',
-    ]),
-  ).toBeUndefined()
+  expect(connectionsOf(conf)).toMatchObject({
+    interchrom: 'exclude',
+    offscreenMates: 'exclude',
+  })
+  expect(connectionsOf(create({ drawInter: true })).interchrom).toBeUndefined()
 })
 
 test('the current spelling beside a retired one wins', () => {
   const conf = create({
     drawInter: false,
-    filter: { connections: { interchrom: 'only' } },
+    filter: [{ field: 'connection.interchrom', equal: true }],
   })
-  expect(readConfObject(conf, ['filter', 'connections', 'interchrom'])).toBe(
-    'only',
-  )
+  expect(connectionsOf(conf).interchrom).toBe('only')
+})
+
+test('an object-form filter lifts to the list', () => {
+  const conf = create({
+    filter: { minMapq: 20, connections: { interchrom: 'only' } },
+  })
+  expect(readConfObject(conf, 'filter')).toEqual([
+    { field: 'mapq', gte: 20 },
+    { field: 'connection.interchrom', equal: true },
+  ])
 })
 
 test('mismatchAlpha lifts onto pileup.fadeLowBaseQuality, top level and renderer', () => {

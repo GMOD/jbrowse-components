@@ -152,8 +152,9 @@ type ReadCategoryKey = (typeof READ_CATEGORY_KEYS)[number]
 
 /**
  * The filter half of an alignments display's state, as a command line may
- * state it. Every field optional: the ReadFilter schema fills the masks a
- * partial one leaves out, and an absent category is an unfiltered one.
+ * state it: the object form the display's `applyFilterObject` writes onto its
+ * `filter` list by field. Every member optional: an omitted flag mask keeps
+ * the display's, and `null` unsets a category.
  */
 export type ReadFilterSnapshot = {
   flagInclude?: number

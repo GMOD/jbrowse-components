@@ -28,7 +28,7 @@ on screen. Three things ride on that, each a silently wrong picture if missed:
   endpoint gap, which `arcsYDomainBp` maxes and the ruler prints as an insert
   size. Arc mode draws the arc unvalued (`arcCrossLink`), half as tall as its
   feet are apart, since it has no genomic radius.
-- **`filter.connections.interchrom` and `minInterchromReads` gate both marks** from one hoisted
+- **The `connection.interchrom` and `breakpoint.reads` filter fields gate both marks** from one hoisted
   condition, so neither mark escapes the setting or the mismapping floor. The
   curved connectors over the pileup take the same verdict from the collection
   stage (`collectArcs`' `belowFloor`), by QNAME, even with the band off.

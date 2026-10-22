@@ -240,7 +240,10 @@ test('the spliced filter partitions reads by a CIGAR skip', async () => {
       await firstValueFrom(
         adapter
           .getFeatures(query, {
-            filterBy: { flagInclude: 0, flagExclude: 0, spliced },
+            filter:
+              spliced === undefined
+                ? []
+                : [{ field: 'spliced', equal: spliced === 'only' }],
           })
           .pipe(toArray()),
       )

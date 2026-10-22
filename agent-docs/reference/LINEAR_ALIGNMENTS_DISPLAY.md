@@ -283,7 +283,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   color?" — which at any real depth every read on that outer edge answers yes
   to. They merged into one mark whose width counted them all and whose hover
   named one of their partners.
-- **`minInterchromReads` is gated against the number each mark DRAWS with** —
+- **`breakpoint.reads` is gated against the number each mark DRAWS with** —
   a cluster's size for an arc, the coalesced total for a tick — and split
   junctions are exempt (`clearsInterchromFloor`). Gating a tick's addends made
   the hover's count follow the filter.

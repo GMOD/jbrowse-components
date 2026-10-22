@@ -52,7 +52,6 @@ import {
   bakedColorScale,
   linearFieldExtent,
 } from './LinearAlignmentsDisplay/bakedColorScale.ts'
-import { readFilterOf } from './LinearAlignmentsDisplay/baseAlignmentsFilterConfigSchema.ts'
 import { attachChainFields } from './LinearAlignmentsDisplay/chainFields.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
@@ -140,6 +139,13 @@ import {
   pinnedInsertSizeBand,
   writtenReadCategoryColors,
 } from './shared/alignmentsColor.ts'
+import {
+  connectionFilterOf,
+  filterListOf,
+  junctionFilterOf,
+  mergeFilter,
+  readPredicatesOf,
+} from './shared/alignmentsFilter.ts'
 import { arcColorFieldOf } from './shared/arcColorOptions.ts'
 import { paintsModifications } from './shared/colorSchemes.ts'
 import { facetTag } from './shared/facetLabels.ts'
@@ -857,6 +863,11 @@ function sectionConnections(
  * arc is listed once, under the region holding its near foot, else its far
  * one, else the first its span crosses.
  */
+// The display's `filter` merged over the defaults, as the display applies it.
+function filterOf(conf: DisplayConf) {
+  return mergeFilter(filterListOf(readConfObject(conf, 'filter')))
+}
+
 function readConnectionTables(
   conf: DisplayConf,
   dataByGroup: ReadonlyMap<string, ReadonlyMap<number, WorkerPileupData>>,
@@ -864,7 +875,7 @@ function readConnectionTables(
   colors: ReturnType<typeof colorReads>,
 ) {
   const band = conf.readConnections
-  const connectionFilter = conf.filter.connections
+  const connectionFilter = connectionFilterOf(filterOf(conf))
   const mode = drawnReadConnectionsOf(
     readConfObject(band, 'show'),
     readConnectionsMarkOf(readConfObject(band, ['mark', 'type'])),
@@ -883,17 +894,7 @@ function readConnectionTables(
           {
             colorField,
             cloud,
-            filter: {
-              interchrom: readConfObject(connectionFilter, 'interchrom'),
-              offscreenMates: readConfObject(
-                connectionFilter,
-                'offscreenMates',
-              ),
-              minInterchromReads: readConfObject(
-                connectionFilter,
-                'minInterchromReads',
-              ),
-            },
+            filter: connectionFilter,
             showOrdinaryPairs: ordinaryPairsShown(
               readConfObject(band, ['ordinaryPairs', 'show']),
               cloud,
@@ -1307,7 +1308,7 @@ export async function alignmentTables(
     adapterConfig,
     sequenceAdapter,
     regions: fetchRegions,
-    filterBy: readFilterOf(conf.filter),
+    filter: readPredicatesOf(filterOf(conf)),
     colorBy,
     baseLayer,
     sortTag: chain ? undefined : sortTag,
@@ -1416,14 +1417,7 @@ export async function alignmentTables(
   const paint = markColors(colors.palette, baseLayer)
   const thresholds: MarkThresholds = {
     minAlleleFraction: readConfObject(conf, ['coverage', 'minAlleleFraction']),
-    junctions: {
-      minReads: readConfObject(conf, ['filter', 'junctions', 'minReads']),
-      nonCanonical: readConfObject(conf, [
-        'filter',
-        'junctions',
-        'nonCanonical',
-      ]),
-    },
+    junctions: junctionFilterOf(filterOf(conf)),
   }
   const band = colors.insertSizeBand
   const connections = readConnectionTables(

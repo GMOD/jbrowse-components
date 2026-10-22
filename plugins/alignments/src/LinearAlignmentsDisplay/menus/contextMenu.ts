@@ -13,6 +13,11 @@ import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
+import {
+  readNameOf,
+  tagEntries,
+  tagFiltersOf,
+} from '../../shared/alignmentsFilter.ts'
 import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
 import { TAG_FIELD_PREFIX, facetTag } from '../../shared/facetLabels.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
@@ -40,16 +45,13 @@ import {
 import { queueSortByTagDialog } from './sortGroup.ts'
 
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
-import type {
-  ColumnSortField,
-  ReadFilter,
-  SortColumn,
-} from '../../shared/types.ts'
+import type { ColumnSortField, SortColumn } from '../../shared/types.ts'
 import type { ContextMenuHit } from '../components/hitTestPipeline.ts'
 import type { AlignmentsUnit } from '../constants.ts'
 import type { FeatureLookupModel } from './contextMenuFeature.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { PanelStop } from '@jbrowse/sv-core'
 
@@ -65,11 +67,13 @@ interface HitMenuModel extends IStateTreeNode {
   setSort: (sort: SortColumn) => void
 }
 
-// The read/tag quick-filter rows read and merge into the same slot, and nothing
-// else.
+// The read/tag quick-filter rows read and write the `name` and tag fields of
+// the same list, and nothing else.
 interface FilterModel {
-  readFilter: ReadFilter
-  setReadFilter: (filter: ReadFilter) => void
+  filterPredicates: FieldPredicate[]
+  setFilterFields: (
+    patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
+  ) => void
 }
 
 interface ContextMenuModel
@@ -98,14 +102,11 @@ function getReadTag(feat: Feature, tag: string): string | undefined {
   return val === undefined ? undefined : String(val)
 }
 
-// Set the filter for one tag while preserving filters on other tags, so quick
+// Set the filter for one tag's field, leaving the other tags' alone, so quick
 // HP/RG filters (and any dialog-set tag) coexist instead of clobbering.
 function setTagFilter(self: FilterModel, tag: string, value: string) {
-  const others = (self.readFilter.tags ?? []).filter(f => f.tag !== tag)
-  self.setReadFilter({
-    ...self.readFilter,
-    tags: [...others, { tag, value }],
-  })
+  const field = `${TAG_FIELD_PREFIX}${tag}`
+  self.setFilterFields({ [field]: [{ field, equal: value }] })
 }
 
 // Cigar and coverage-indicator hits build the identical two-item submenu: sort
@@ -177,7 +178,7 @@ function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
       label: 'Filter for this read',
       icon: FilterAltIcon,
       onClick: () => {
-        self.setReadFilter({ ...self.readFilter, readName })
+        self.setFilterFields({ name: [{ field: 'name', equal: readName }] })
       },
     })
   }
@@ -196,24 +197,18 @@ function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
       })
     }
   }
-  // Undoes the two rows above and nothing else. It used to rebuild `filterBy`
-  // from the masks alone, which was the same thing while those were the only
-  // other fields — now that every read category lives there too, dropping them
-  // would clear four filters this row does not name and did not set. The track
-  // menu's "Clear all filters" is the one that clears everything.
-  const hasReadOrTagFilter =
-    self.readFilter.readName !== undefined ||
-    (self.readFilter.tags?.length ?? 0) > 0
-  if (hasReadOrTagFilter) {
+  // Undoes the two rows above and nothing else: the `name` and tag fields.
+  // The track menu's "Clear all filters" is the one that clears everything.
+  const predicates = self.filterPredicates
+  if (
+    readNameOf(predicates) !== undefined ||
+    tagFiltersOf(predicates).length > 0
+  ) {
     sub.push({
       label: 'Clear read/tag filters',
       icon: FilterAltOffIcon,
       onClick: () => {
-        self.setReadFilter({
-          ...self.readFilter,
-          readName: undefined,
-          tags: undefined,
-        })
+        self.setFilterFields({ name: [], ...tagEntries(predicates, []) })
       },
     })
   }

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
 import { variantsToVcf } from '@jbrowse/alignments-core'
-import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
 import {
   CopyToClipboardButton,
   ErrorBanner,
@@ -32,13 +31,13 @@ import GetAppIcon from '@mui/icons-material/GetApp'
 import { Button, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { defaultFilterFlags } from '../shared/util.ts'
+import { mergeFilter, readPredicatesOf } from '../shared/alignmentsFilter.ts'
 import ConsensusSettingsPanel from './ConsensusSettingsPanel.tsx'
 import { useConsensusSettings } from './useConsensusSettings.ts'
 
-import type { ReadFilter } from '../shared/types.ts'
 import type { ConsensusVcfEntry } from '@jbrowse/alignments-core'
 import type { Region } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type {
   IAnyStateTreeNode,
   IStateTreeNode,
@@ -56,7 +55,7 @@ function download(content: string, filename: string, type: string) {
 
 export interface ConsensusDisplay extends IStateTreeNode {
   adapterConfig: Record<string, unknown>
-  readFilter?: ReadFilter
+  readPredicates?: FieldPredicate[]
 }
 
 interface ConsensusData {
@@ -112,17 +111,15 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
     excludeSecondary,
   } = settings
 
-  // The track's active filterBy flows through, but its default keeps secondary
-  // alignments, unlike samtools. The SECONDARY bit is set/cleared rather than
-  // left alone, so unchecking includes secondary even when the track itself
-  // excluded them.
-  const base = display.readFilter ?? defaultFilterFlags
-  const filterBy = {
-    ...base,
-    flagExclude: excludeSecondary
-      ? base.flagExclude | SAM_FLAG_SECONDARY
-      : base.flagExclude & ~SAM_FLAG_SECONDARY,
-  }
+  // The track's active read filter flows through, but its default keeps
+  // secondary alignments, unlike samtools. The SECONDARY field is set or
+  // dropped rather than left alone, so unchecking includes secondary even when
+  // the track itself excluded them.
+  const base = display.readPredicates ?? readPredicatesOf(mergeFilter([]))
+  const filter: FieldPredicate[] = [
+    ...base.filter(p => p.field !== 'flags.SECONDARY'),
+    ...(excludeSecondary ? [{ field: 'flags.SECONDARY', equal: false }] : []),
+  ]
 
   const totalBp = regions.reduce((a, r) => a + (r.end - r.start), 0)
   const tooLargeToFetch = totalBp > MAX_CONSENSUS_BP
@@ -147,7 +144,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           {
             regions,
             adapterConfig: display.adapterConfig,
-            filterBy,
+            filter,
             minDepth,
             callFract,
             hetFract: effectiveHetFract,
@@ -168,7 +165,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
             {
               adapterConfig: params.adapterConfig,
               regions: [region],
-              filterBy: params.filterBy,
+              filter: params.filter,
               minDepth: params.minDepth,
               callFract: params.callFract,
               hetFract: params.hetFract,

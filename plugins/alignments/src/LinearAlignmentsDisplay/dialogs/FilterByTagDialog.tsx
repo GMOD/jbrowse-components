@@ -2,6 +2,7 @@ import { Fragment, useState } from 'react'
 
 import { samFlagDescriptions, samFlagLabels } from '@jbrowse/cigar-utils'
 import { Dialog, TagTextField } from '@jbrowse/core/ui'
+import { lowerBoundOf, withLowerBound } from '@jbrowse/core/util/fieldPredicate'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
@@ -20,9 +21,18 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { defaultFilterFlags } from '../../shared/util.ts'
+import {
+  DEFAULT_FLAG_MASKS,
+  entriesOn,
+  flagEntries,
+  flagMasksOf,
+  readNameOf,
+  tagEntries,
+  tagFiltersOf,
+} from '../../shared/alignmentsFilter.ts'
 
-import type { ReadFilter } from '../../shared/types.ts'
+import type { TagFilter } from '../../shared/types.ts'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -113,8 +123,8 @@ const FlagFilterSection = observer(function FlagFilterSection(props: {
   const { classes, cx } = useStyles()
   const { flagInclude, flagExclude, setFlagInclude, setFlagExclude } = props
   const atDefault =
-    flagInclude === defaultFilterFlags.flagInclude &&
-    flagExclude === defaultFilterFlags.flagExclude
+    flagInclude === DEFAULT_FLAG_MASKS.include &&
+    flagExclude === DEFAULT_FLAG_MASKS.exclude
   // Open when it is doing something beyond the default. The masks are the
   // dialog's expert control and its tallest section, so it stays out of the way
   // of the fields above until a track is actually filtered by one.
@@ -198,8 +208,8 @@ interface TagRow {
   value: string
 }
 
-function tagRowsOf(tags: ReadFilter['tags']): TagRow[] {
-  return tags?.length
+function tagRowsOf(tags: readonly TagFilter[]): TagRow[] {
+  return tags.length > 0
     ? tags.map((f, id) => ({ id, tag: f.tag, value: f.value ?? '' }))
     : [{ id: 0, tag: '', value: '' }]
 }
@@ -338,24 +348,33 @@ const MapqFilterSection = observer(function MapqFilterSection(props: {
 // they used to open the dialog and outweigh the rest of it put together.
 const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   model: {
-    readFilter: ReadFilter
-    setReadFilter: (arg: ReadFilter) => void
+    filterPredicates: FieldPredicate[]
+    setFilterFields: (
+      patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
+    ) => void
   }
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const { readFilter } = model
-  const [flagInclude, setFlagInclude] = useState(readFilter.flagInclude)
-  const [flagExclude, setFlagExclude] = useState(readFilter.flagExclude)
-  const [tagRows, setTagRows] = useState(() => tagRowsOf(readFilter.tags))
-  const [readName, setReadName] = useState(readFilter.readName ?? '')
-  const [minMapq, setMinMapq] = useState(
-    readFilter.minMapq === undefined ? '' : `${readFilter.minMapq}`,
+  const predicates = model.filterPredicates
+  const [flagInclude, setFlagInclude] = useState(
+    () => flagMasksOf(predicates).include,
   )
+  const [flagExclude, setFlagExclude] = useState(
+    () => flagMasksOf(predicates).exclude,
+  )
+  const [tagRows, setTagRows] = useState(() =>
+    tagRowsOf(tagFiltersOf(predicates)),
+  )
+  const [readName, setReadName] = useState(readNameOf(predicates) ?? '')
+  const [minMapq, setMinMapq] = useState(() => {
+    const floor = lowerBoundOf(predicates, 'mapq')
+    return floor === undefined ? '' : `${floor}`
+  })
 
   const handleReset = () => {
-    setFlagInclude(defaultFilterFlags.flagInclude)
-    setFlagExclude(defaultFilterFlags.flagExclude)
+    setFlagInclude(DEFAULT_FLAG_MASKS.include)
+    setFlagExclude(DEFAULT_FLAG_MASKS.exclude)
     setTagRows([
       { id: Math.max(...tagRows.map(r => r.id)) + 1, tag: '', value: '' },
     ])
@@ -365,29 +384,23 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
 
   const handleSubmit = () => {
     // An empty value box is an unset value, which passes any read carrying
-    // the tag (filterTagValue)
+    // the tag (`valid: true`)
     const tags = tagRows
       .filter(r => r.tag !== '')
       .map(r =>
         r.value === '' ? { tag: r.tag } : { tag: r.tag, value: r.value },
       )
-    model.setReadFilter({
-      // Spread first: the read categories live in `readFilter` too and are edited
-      // from the track menu, so a Submit here must carry them through rather
-      // than rebuild the object from what this dialog happens to show.
-      ...readFilter,
-      flagInclude,
-      flagExclude,
-      // An empty field means "no read-name filter", so omit it rather than
-      // storing ''. Consumers test `readName !== undefined` to decide whether a
-      // filter is active (the context menu's "Clear read/tag filters"), and ''
-      // would also change `readFilter` identity and trigger a pointless refetch.
-      readName: readName === '' ? undefined : readName,
-      minMapq:
-        minMapq === '' || !Number.isFinite(Number(minMapq))
-          ? undefined
-          : Number(minMapq),
-      tags: tags.length > 0 ? tags : undefined,
+    const floor =
+      minMapq === '' || !Number.isFinite(Number(minMapq))
+        ? undefined
+        : Number(minMapq)
+    // The fields this dialog shows and no others, so the read categories the
+    // track menu edits carry through a Submit.
+    model.setFilterFields({
+      ...flagEntries(flagInclude, flagExclude),
+      ...tagEntries(predicates, tags),
+      name: readName === '' ? [] : [{ field: 'name', equal: readName }],
+      mapq: withLowerBound(entriesOn(predicates, 'mapq'), 'mapq', floor),
     })
     handleClose()
   }

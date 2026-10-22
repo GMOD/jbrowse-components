@@ -3,7 +3,7 @@ import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { categoryFilterItem } from '@jbrowse/display-kit/categoryFilter'
 import AltRouteIcon from '@mui/icons-material/AltRoute'
 
-import { DEFAULT_MIN_SASHIMI_READS } from '../constants.ts'
+import { DEFAULT_MIN_SASHIMI_READS } from '../../shared/alignmentsFilter.ts'
 
 import type { JunctionFilter } from '../../shared/types.ts'
 import type { SashimiPlacement } from '../constants.ts'

@@ -18,11 +18,11 @@ import { BamFile } from '@gmod/bam'
 import { RemoteFile } from 'generic-filehandle2'
 
 import { clusteredInterchromSupport } from '../src/features/arcs/arcClustering.ts'
+import { DEFAULT_FLAG_MASKS } from '../src/shared/alignmentsFilter.ts'
 import {
   getInsertSizeStats,
   widenBandToEventScale,
 } from '../src/shared/insertSizeStats.ts'
-import { defaultFilterFlags } from '../src/shared/util.ts'
 
 import type { PendingArc } from '../src/features/arcs/arcTypes.ts'
 import type { BamRecord } from '@gmod/bam'
@@ -156,9 +156,8 @@ async function main() {
 
   const kept = records.filter(
     r =>
-      (r.flags & defaultFilterFlags.flagExclude) === 0 &&
-      (r.flags & defaultFilterFlags.flagInclude) ===
-        defaultFilterFlags.flagInclude,
+      (r.flags & DEFAULT_FLAG_MASKS.exclude) === 0 &&
+      (r.flags & DEFAULT_FLAG_MASKS.include) === DEFAULT_FLAG_MASKS.include,
   )
   const tlens: number[] = []
   for (const r of kept) {

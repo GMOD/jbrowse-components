@@ -2,23 +2,30 @@ import { applyDisplayOpts } from './applyTrackOpts.ts'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// The snapshot each modifier list hands launchTrack. What a real display makes
-// of a read filter is readFilterModifiers.test.ts.
+// The snapshot each modifier list hands launchTrack, and the read filter it
+// writes onto the opened display. What a real display makes of a read filter
+// is readFilterModifiers.test.ts.
 
 function fakeView() {
   const calls: unknown[] = []
+  const filters: unknown[] = []
+  const display = {
+    applyFilterObject(filter: unknown) {
+      filters.push(filter)
+    },
+  }
   const view = {
     centerLineInfo: undefined,
     showTrack(_id: string, _t: unknown, snap: unknown) {
       calls.push(snap)
-      return { displays: [{}] }
+      return { displays: [display] }
     },
     async launchTrack(_id: string, _t: unknown, snap: unknown) {
       calls.push(snap)
-      return { displays: [{}] }
+      return { displays: [display] }
     },
   }
-  return { view: view as unknown as LinearGenomeViewModel, calls }
+  return { view: view as unknown as LinearGenomeViewModel, calls, filters }
 }
 
 test("a feature track's filter object rides in on the snapshot", async () => {
@@ -27,21 +34,24 @@ test("a feature track's filter object rides in on the snapshot", async () => {
   expect(calls[0]).toEqual({ filter: { genes: 'only' } })
 })
 
-test('a read filter rides in on the snapshot beside the other settings', async () => {
-  const { view, calls } = fakeView()
+// A read filter in the open snapshot would replace the configured list, so it
+// is written onto the opened display by field instead
+test('a read filter follows the open, the other settings ride the snapshot', async () => {
+  const { view, calls, filters } = fakeView()
   await applyDisplayOpts(view, 't', 'alignments', ['height:400', 'split:only'])
-  expect(calls[0]).toEqual({ height: 400, filter: { split: 'only' } })
+  expect(calls).toEqual([{ height: 400 }])
+  expect(filters).toEqual([{ split: 'only' }])
 })
 
-test('the tag filters follow the open, onto the tags the track has', async () => {
-  const { view, calls } = fakeView()
+test('every read filter modifier lands in the one write after the open', async () => {
+  const { view, calls, filters } = fakeView()
   await applyDisplayOpts(view, 't', 'alignments', [
     'mapq:20',
     'filterTag:RG:lane3',
   ])
-  expect(calls).toEqual([
-    { filter: { minMapq: 20 } },
-    { filter: { tags: [{ tag: 'RG', value: 'lane3' }] } },
+  expect(calls).toEqual([{}])
+  expect(filters).toEqual([
+    { minMapq: 20, tags: [{ tag: 'RG', value: 'lane3' }] },
   ])
 })
 

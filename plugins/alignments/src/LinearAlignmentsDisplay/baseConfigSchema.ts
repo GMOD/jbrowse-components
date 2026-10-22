@@ -1,14 +1,15 @@
 import { coverageBandConfigSchema } from '@jbrowse/alignments-core/coverageBandConfigSchema'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, plotList } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { fieldPredicateConfigSchema } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
 import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
+import { liftFilterObject } from '../shared/alignmentsFilter.ts'
 import { alignmentsColorConfigSchema } from './alignmentsColorConfigSchema.ts'
 import { alignmentsSortConfigSchema } from './alignmentsSortConfigSchema.ts'
-import { baseAlignmentsFilterConfigSchema } from './baseAlignmentsFilterConfigSchema.ts'
 import { ALIGNMENTS_UNITS } from './constants.ts'
 import { pileupConfigSchema } from './pileupConfigSchema.ts'
 import { readConnectionsConfigSchema } from './readConnectionsConfigSchema.ts'
@@ -21,7 +22,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * The slots LinearAlignmentsDisplay and LGVSyntenyDisplay share: the coverage,
  * pileup and read connection bands, and the `filter`, `unit`, `facet`, `sort`
  * and `color` every band reads. LinearAlignmentsDisplay adds the sashimi band,
- * `filter.junctions`, `baseColor` and `modifications`, which apply only to
+ * the `junction` filter fields, `baseColor` and `modifications`, which apply only to
  * reads; a synteny block has no introns, basecaller tags or
  * qualities.
  */
@@ -59,16 +60,24 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot
-     * Every test the display applies, and every test must hold. The read
-     * members (the flag masks, `minMapq`, `readName`, `tags` and the read
-     * categories `spliced`, `svSignal`, `alone` and `split`, each `"only"`,
-     * `"exclude"` or unset) run before every band, so coverage counts only
-     * the reads they pass; by default `flagExclude` drops unmapped,
-     * QC-failed and duplicate reads (1540). `connections` tests the
-     * connections the arcs, the read cloud and the connectors over the
-     * pileup draw.
+     * The alignments drawn, a list of [](/docs/config/fieldpredicate) entries
+     * every one of which must hold. The read fields run before every band,
+     * so coverage counts only the reads they pass: `flags.UNMAP` and the
+     * other samtools flag names, `mapq` (MAPQ 255, none reported, passes a
+     * floor), `name`, `tags.HP` and any other tag, and the read categories
+     * `spliced`, `svSignal`, `alone` and `split`. `junction.reads` and
+     * `junction.canonical` test the splice junctions, and
+     * `connection.interchrom`, `connection.offscreen` and `breakpoint.reads`
+     * the connections the arcs, the read cloud and the connectors draw.
+     *
+     * A written list merges with the defaults by field: unmapped, QC-failed
+     * and duplicate reads out (`flags.UNMAP`, `flags.QCFAIL` and `flags.DUP`
+     * `equal: false`), and `junction.reads` and `breakpoint.reads` at least
+     * 2. An entry replaces its own field's defaults, and an entry naming a
+     * field with no test, such as `{ field: "flags.DUP" }`, only removes
+     * them.
      */
-    filter: baseAlignmentsFilterConfigSchema,
+    filter: plotList(types.array(fieldPredicateConfigSchema)),
     /**
      * #slot facet
      * In-track stacked grouping, one labelled section per value: a read
@@ -152,8 +161,8 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * #slot readConnections
      * The connections between mates and split segments: `show` (default
      * off), `mark` (`arc` or `cloud`), `height`, `placement`, `lineWidth`,
-     * `color` and `ordinaryPairs`; `filter.connections` filters the
-     * connections drawn.
+     * `color` and `ordinaryPairs`; the `connection` and `breakpoint` filter
+     * fields filter the connections drawn.
      */
     readConnections: readConnectionsConfigSchema,
   },
@@ -163,6 +172,7 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      */
     baseConfiguration: baseLinearDisplayConfigSchema,
     retired: retiredConfigSpellings,
+    preProcessSnapshot: liftFilterObject,
   },
 )
 

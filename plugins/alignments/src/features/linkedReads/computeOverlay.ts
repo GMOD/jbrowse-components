@@ -136,7 +136,7 @@ export function enumerateBezierPairs(
 }
 
 /**
- * Whether the connectors draw a pair under `filter.connections`, by the test
+ * Whether the connectors draw a pair under `connectionFilter`, by the test
  * the arc band applies to the same connection. A connector joins two laid-out
  * reads, so it is never an off-screen mate, and it crosses chromosomes when
  * its two ends' regions do. Such a mate link draws only when the band's

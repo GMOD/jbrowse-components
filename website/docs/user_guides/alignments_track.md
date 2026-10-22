@@ -68,8 +68,9 @@ The track menu's **Color by...** offers several schemes.
   the right copy, which happens when the best score is tied across positions
   ([Li, Ruan and Durbin 2008](https://doi.org/10.1101/gr.078212.108)). A
   **secondary** alignment (FLAG `0x100`) is a competing placement recorded as a
-  separate record; the default `flagExclude` of 1540 (duplicate, QC-fail,
-  unmapped) does not drop those. The
+  separate record; the default
+  [`filter`](/docs/config/baselinearalignmentsdisplay/#slot-filter) drops
+  duplicate, QC-failed and unmapped reads, and keeps those. The
   [mappability QC tutorial](/docs/tutorials/mappability_qc) works a locus where
   MAPQ 0 covers a whole gene.
 - **Per-base quality** colors every base by Phred score on the same cividis

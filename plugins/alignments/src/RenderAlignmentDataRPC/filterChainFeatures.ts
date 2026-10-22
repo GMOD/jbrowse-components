@@ -1,18 +1,19 @@
 import { readKeyOf, svSignalTier } from '@jbrowse/alignments-core'
 import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
 import { groupBy } from '@jbrowse/core/util'
+import { compilePredicates } from '@jbrowse/core/util/fieldPredicate'
 
+import {
+  chainPredicatesOf,
+  compileMapqFilter,
+} from '../shared/alignmentsFilter.ts'
 import { featureChainKey } from '../shared/chainGroupingKey.ts'
 import { chainIsSplit, readCategoryBitsOf } from '../shared/splitAlignment.ts'
-import {
-  MAPQ_UNAVAILABLE,
-  getFlags,
-  getMappingQuality,
-} from '../shared/util.ts'
+import { getFlags, getMappingQuality } from '../shared/util.ts'
 
-import type { CategoryFilter, ReadFilter } from '../shared/types.ts'
 import type { ReadKey } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 // A chain is SV evidence when any of its records has an `svSignalTier`
 // (ADR-229), so the concordant mate of a split read stays with it. The split test reads
@@ -85,48 +86,38 @@ function isAloneChain(mateCounts: Map<string, number>) {
     chain.length === 1 && mateCounts.get(mateKey(chain[0]!)) === 1
 }
 
-// Applied here, not in the adapters, so a synteny block answers `minMapq` too.
-// MAPQ 255 means none reported, and passes as in `samtools view -q`.
-function passingMapq(features: Feature[], minMapq: number | undefined) {
-  return minMapq === undefined
-    ? features
-    : features.filter(f => {
-        const mapq = getMappingQuality(f)
-        return mapq === MAPQ_UNAVAILABLE || mapq >= minMapq
-      })
-}
-
-// Keep the chains a category filter asks for. `'only'` keeps the ones the
-// predicate holds for, `'exclude'` drops them, and absent leaves them alone.
-function keepCategory(
-  chains: Feature[][],
-  filter: CategoryFilter | undefined,
-  predicate: (chain: Feature[]) => boolean,
+// Applied here, not in the adapters, so a synteny block answers `mapq` too.
+// MAPQ 255 means none reported, and passes a floor as in `samtools view -q`.
+function passingMapq(
+  features: Feature[],
+  filter: readonly FieldPredicate[] | undefined,
 ) {
-  return filter === undefined
-    ? chains
-    : chains.filter(c => predicate(c) === (filter === 'only'))
+  const keeps = compileMapqFilter(filter, getMappingQuality)
+  return keeps ? features.filter(keeps) : features
 }
 
 // Both read-filter steps, for a caller with no use for the sample between them.
 export function filterChainFeatures(
   features: Feature[],
-  filterBy?: ReadFilter,
+  filter?: readonly FieldPredicate[],
 ) {
-  return selectChains(sampleFeatures(features, filterBy), filterBy)
+  return selectChains(sampleFeatures(features, filter), filter)
 }
 
-// The reads the sample filters keep: one per record, at or above `minMapq`.
+// The reads the sample filters keep: one per record, passing `mapq`.
 // These define what the track measures, so the insert-size band reads them
 // (executeRenderAlignmentData) before `selectChains` picks what to show.
-export function sampleFeatures(features: Feature[], filterBy?: ReadFilter) {
-  return passingMapq(dedupeById(features), filterBy?.minMapq)
+export function sampleFeatures(
+  features: Feature[],
+  filter?: readonly FieldPredicate[],
+) {
+  return passingMapq(dedupeById(features), filter)
 }
 
 // The three read-category filters that need a whole chain to answer, applied
-// to `sampleFeatures`' output after grouping reads by name. `filterBy.spliced`
-// is the fourth and is not here: it is per-record, so the adapters answer it
-// as they parse.
+// to `sampleFeatures`' output after grouping reads by name. `spliced` is the
+// fourth and is not here: it is per-record, so the adapters answer it as they
+// parse.
 //
 // PER WORKER CALL, i.e. per displayed region — the RPC takes `regions[0]`. So
 // "chain of one" means "one alignment in THIS window", and in a multi-region
@@ -138,26 +129,43 @@ export function sampleFeatures(features: Feature[], filterBy?: ReadFilter) {
 // the other two, which are about what is on screen. Making them view-wide means
 // moving the filter to the main thread, where the coverage histogram these also
 // thin is no longer being computed.
-export function selectChains(sample: Feature[], filterBy?: ReadFilter) {
-  const { svSignal, alone, split } = filterBy ?? {}
-  if (svSignal === undefined && alone === undefined && split === undefined) {
+export function selectChains(
+  sample: Feature[],
+  filter?: readonly FieldPredicate[],
+) {
+  const predicates = chainPredicatesOf(filter)
+  if (predicates.length === 0) {
     return sample
   }
-  let rawChains = Object.values(groupBy(sample, featureChainKey))
-  if (alone !== undefined) {
-    const mateCounts = new Map<string, number>()
-    for (const f of sample) {
-      const key = mateKey(f)
-      mateCounts.set(key, (mateCounts.get(key) ?? 0) + 1)
+  // a chain is alone by its mate's count over the sample, built only when an
+  // entry asks
+  let alone: ((chain: Feature[]) => boolean) | undefined
+  const aloneOf = () => {
+    if (!alone) {
+      const mateCounts = new Map<string, number>()
+      for (const f of sample) {
+        const key = mateKey(f)
+        mateCounts.set(key, (mateCounts.get(key) ?? 0) + 1)
+      }
+      alone = isAloneChain(mateCounts)
     }
-    rawChains = keepCategory(rawChains, alone, isAloneChain(mateCounts))
+    return alone
   }
-  rawChains = keepCategory(rawChains, svSignal, isSvSignalChain)
-  rawChains = keepCategory(rawChains, split, chainIsSplit)
+  const keeps = compilePredicates<Feature[]>(predicates, field =>
+    field === 'svSignal'
+      ? { kind: 'get', get: isSvSignalChain }
+      : field === 'split'
+        ? { kind: 'get', get: chainIsSplit }
+        : field === 'alone'
+          ? { kind: 'get', get: chain => aloneOf()(chain) }
+          : undefined,
+  )
+  const rawChains = Object.values(groupBy(sample, featureChainKey))
+  const kept = keeps ? rawChains.filter(keeps) : rawChains
   // same key as the dedupe above, for the same reason: this is identity within
   // one fetch, which is the thing `readKeyOf` is cheap at
   const keptIds = new Set<ReadKey>()
-  for (const chain of rawChains) {
+  for (const chain of kept) {
     for (const f of chain) {
       keptIds.add(readKeyOf(f))
     }

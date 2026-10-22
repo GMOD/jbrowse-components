@@ -1363,7 +1363,7 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Which pairs the connectors draw under `filter.connections`. The
+           * Which pairs the connectors draw under `connectionFilter`. The
            * inter-chromosomal floor comes from the arc band's collection
            * stage, which runs only once a connector crosses chromosomes. The
            * chain layout's own cross-region links read no filter, as its
@@ -2847,7 +2847,7 @@ export default function stateModelFactory(
          */
         rpcProps() {
           return {
-            filterBy: self.readFilter,
+            filter: self.readPredicates,
             // Only the part the worker reads, so switching between
             // shader-decided schemes leaves these props identical and repaints
             // without a refetch.

@@ -4,29 +4,37 @@ import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { makeRadioSubMenu, withHint } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
 import { MAPQ_BINS } from '@jbrowse/core/util/colorScale'
+import { lowerBoundOf, withLowerBound } from '@jbrowse/core/util/fieldPredicate'
 import { categoryFilterItem } from '@jbrowse/display-kit/categoryFilter'
 
+import {
+  categoryEntries,
+  categoryOf,
+  entriesOn,
+} from '../../shared/alignmentsFilter.ts'
 import { READ_CATEGORIES } from '../../shared/readCategoryFilters.ts'
 
 import type { ReadCategorySpec } from '../../shared/readCategoryFilters.ts'
-import type { ReadFilter } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversible, Reversibles } from '@jbrowse/core/ui/filterMenuItems'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 const FilterByTagDialog = lazy(() => import('../dialogs/FilterByTagDialog.tsx'))
 
 interface FiltersModel {
-  readFilter: ReadFilter
-  setReadFilter: (arg: ReadFilter) => void
+  filterPredicates: FieldPredicate[]
+  setFilterFields: (
+    patch: Readonly<Record<string, readonly FieldPredicate[] | undefined>>,
+  ) => void
   /** How `filter` differs from what the track's config declares. */
   filterNarrowing: () => Reversible
 }
 
-// The whole of `filterBy` as one entry rather than one per field: the dialog's
+// The whole of `filter` as one entry rather than one per field: the dialog's
 // own Reset is the per-field recovery, and each category row below undoes
 // itself, so naming an undo row here would offer a second, coarser one.
 function filterNarrowings(model: FiltersModel): Reversibles {
-  return { filterBy: model.filterNarrowing() }
+  return { filter: model.filterNarrowing() }
 }
 
 function readCategoryItem(
@@ -35,9 +43,9 @@ function readCategoryItem(
 ): MenuItem {
   return categoryFilterItem(
     { ...spec, all: 'All reads' },
-    model.readFilter[spec.key],
+    categoryOf(model.filterPredicates, spec.key),
     value => {
-      model.setReadFilter({ ...model.readFilter, [spec.key]: value })
+      model.setFilterFields({ [spec.key]: categoryEntries(spec.key, value) })
     },
   )
 }
@@ -49,7 +57,7 @@ const MAPQ_THRESHOLDS: number[] = MAPQ_BINS.map(b => b.min)
   .toReversed()
 
 function minMapqItem(model: FiltersModel): MenuItem {
-  const current = model.readFilter.minMapq
+  const current = lowerBoundOf(model.filterPredicates, 'mapq')
   const thresholds =
     current === undefined || MAPQ_THRESHOLDS.includes(current)
       ? MAPQ_THRESHOLDS
@@ -67,9 +75,12 @@ function minMapqItem(model: FiltersModel): MenuItem {
       ...thresholds.map((min): [string, string] => [`${min}`, `MAPQ ${min}+`]),
     ],
     onChange: choice => {
-      model.setReadFilter({
-        ...model.readFilter,
-        minMapq: choice === 'all' ? undefined : Number(choice),
+      model.setFilterFields({
+        mapq: withLowerBound(
+          entriesOn(model.filterPredicates, 'mapq'),
+          'mapq',
+          choice === 'all' ? undefined : Number(choice),
+        ),
       })
     },
   })
