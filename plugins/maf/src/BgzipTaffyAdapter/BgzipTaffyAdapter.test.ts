@@ -491,14 +491,12 @@ describe('BgzipTaffyAdapter methods', () => {
           length: 0,
         },
       ],
-      columnNumber: 0,
     }
 
     const columns = ['AC', 'GT', 'AC']
 
     finalizeBlock(block, columns, testDecoder)
 
-    expect(block.columnNumber).toBe(3)
     expect(block.rows[0]!.bases).toBe('AGA') // First char from each column
     expect(block.rows[1]!.bases).toBe('CTC') // Second char from each column
     expect(block.rows[0]!.length).toBe(3)
@@ -525,7 +523,6 @@ describe('BgzipTaffyAdapter methods', () => {
           length: 0,
         },
       ],
-      columnNumber: 0,
     }
 
     // Row 0 gets: A, -, A = 2 non-gap
@@ -558,7 +555,6 @@ describe('blockToFeature', () => {
   test('no sampleFilter — all rows included, dot-split', () => {
     const block = {
       rows: [makeRow('hg38.chr1', 'ACGT'), makeRow('mm10.chr2', 'ACGT')],
-      columnNumber: 4,
     }
     const feature = tafBlockOf(block, splitResolve)
     expect(feature).toBeDefined()
@@ -575,7 +571,6 @@ describe('blockToFeature', () => {
   test('no sampleFilter — a haplotype suffix stays on the sample id', () => {
     const block = {
       rows: [makeRow('hg38.chr1', 'ACGT'), makeRow('HG002.1.chr1', 'ACGT')],
-      columnNumber: 4,
     }
     const aln = tafBlockOf(block, splitResolve)!.alignments
     expect(aln['HG002.1']).toBeDefined()
@@ -586,7 +581,6 @@ describe('blockToFeature', () => {
   test('no sampleFilter — a dotted contig accession is not read as a version', () => {
     const block = {
       rows: [makeRow('hg38.CM000663.2', 'ACGT')],
-      columnNumber: 4,
     }
     const aln = tafBlockOf(block, splitResolve)!.alignments
     expect(aln.hg38!.chr).toBe('CM000663.2')
@@ -599,7 +593,6 @@ describe('blockToFeature', () => {
         makeRow('mm10.chr2', 'ACGT'),
         makeRow('panTro6.chr1', 'ACGT'),
       ],
-      columnNumber: 4,
     }
     const filter = new Set(['hg38', 'panTro6'])
     const feature = tafBlockOf(block, makeSourceResolver(filter).resolve)
@@ -615,7 +608,6 @@ describe('blockToFeature', () => {
         makeRow('Species1.2.chr3', 'TGCA'),
         makeRow('Species2.1.chr3', 'ACGT'),
       ],
-      columnNumber: 4,
     }
     const filter = new Set(['Species1.1', 'Species1.2'])
     const feature = tafBlockOf(block, makeSourceResolver(filter).resolve)
@@ -639,7 +631,6 @@ describe('blockToFeature', () => {
         makeRow('HG002#1#chr1', 'ACGT'),
         makeRow('HG002#2#chr1', 'ACGT'),
       ],
-      columnNumber: 4,
     }
     const aln = tafBlockOf(block, splitResolve)!.alignments
     expect(Object.keys(aln)).toEqual(['K12#1', 'HG002#1', 'HG002#2'])
@@ -649,7 +640,6 @@ describe('blockToFeature', () => {
   test('PanSN rows narrow to a configured sample set', () => {
     const block = {
       rows: [makeRow('K12#1#chr', 'ACGT'), makeRow('O157#1#chr', 'TGCA')],
-      columnNumber: 4,
     }
     const aln = tafBlockOf(
       block,
@@ -659,25 +649,13 @@ describe('blockToFeature', () => {
     expect(aln['K12#1']!.chr).toBe('chr')
   })
 
-  test('returns undefined for empty block', () => {
-    expect(
-      tafBlockOf({ rows: [], columnNumber: 0 }, splitResolve),
-    ).toBeUndefined()
-    expect(
-      tafBlockOf(
-        {
-          rows: [makeRow('hg38.chr1', 'ACGT')],
-          columnNumber: 0,
-        },
-        splitResolve,
-      ),
-    ).toBeUndefined()
+  test('returns undefined for a block with no rows', () => {
+    expect(tafBlockOf({ rows: [] }, splitResolve)).toBeUndefined()
   })
 
   test('ref row drives genomic span (start + length)', () => {
     const block = {
       rows: [makeRow('hg38.chr1', 'AC-GT')],
-      columnNumber: 5,
     }
     const feature = tafBlockOf(block, splitResolve)!
     expect(feature.start).toBe(100)
@@ -1239,7 +1217,6 @@ describe('blockToFeature places a minus-strand reference row forward', () => {
       row('hg38.chr1', 'ACGTACGTAC', -1, 2000),
       row('mm10.chr2', 'ACGTACGTAT', 1, 3000),
     ],
-    columnNumber: 10,
   }
 
   test('flips the span through the reference srcSize', () => {

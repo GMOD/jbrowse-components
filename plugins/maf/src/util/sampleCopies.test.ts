@@ -175,7 +175,6 @@ test('TAF keeps every copy', () => {
         row(ref[0], ref[1], 1),
         ...copies.map(([at, s]) => row(CONTIG, at, s === '+' ? 1 : -1)),
       ],
-      columnNumber: ref[2].length,
     },
     makeSourceResolver().resolve,
   )!

@@ -17,7 +17,6 @@ export interface RowState {
 // Represents an alignment block (like Alignment in C)
 export interface AlignmentBlock {
   rows: RowState[]
-  columnNumber: number
 }
 
 /**
@@ -104,10 +103,7 @@ export function parseCoordinatesAndEstablishBlock(
   pBlock: AlignmentBlock | undefined,
   instructions: RowInstruction[],
 ): AlignmentBlock {
-  const block: AlignmentBlock = {
-    rows: [],
-    columnNumber: 0,
-  }
+  const block: AlignmentBlock = { rows: [] }
 
   if (pBlock) {
     for (const pRow of pBlock.rows) {
@@ -183,7 +179,6 @@ export function finalizeBlock(
   decoder: TextDecoder,
 ) {
   const numCols = columns.length
-  block.columnNumber = numCols
   const buffer = new Uint8Array(numCols)
 
   for (let j = 0; j < block.rows.length; j++) {
@@ -207,7 +202,7 @@ export function finalizeBlock(
 /**
  * A finalized block into `sink` through `reader`: the first row is the
  * reference and fixes the span, every row resolves to its sample. Nothing for
- * a block with no rows or no columns.
+ * a block with no rows; `BgzipTaffyAdapter` finalizes only a block with columns.
  */
 export function readTafBlock(
   block: AlignmentBlock,
@@ -215,7 +210,7 @@ export function readTafBlock(
   sink: MafBlockSink,
   keep: KeepBlock,
 ) {
-  if (block.rows.length === 0 || block.columnNumber === 0) {
+  if (block.rows.length === 0) {
     return false
   }
   reader.begin()
