@@ -15,9 +15,14 @@ function ccr5Session() {
 
 // The reads stream from the 1000 Genomes 30x CRAMs on the public S3 bucket:
 // HG00137 is Δ32/Δ32, HG00101 Δ32/+ and HG00096 +/+ in the 2022 phased panel.
-// Δ32 keeps residues 1-184, so the session colors 185 on; gp120 (chain G) is
-// a cartoon mark of its own color.
-const PANELS = ['protein-CCR5-6meo', 'protein-CCR5-4mbs'] as const
+// The read tracks are tall because a short track packs the reads carrying the
+// deletion out of sight. Δ32 keeps residues 1-184, so the session colors 185
+// on; gp120 (chain G) is a cartoon mark of its own color, and its V3 crown
+// (310-315) sticks of a brighter one.
+const PANELS = ['protein-CCR5-6meo', 'protein-CCR5-v3'] as const
+
+const molstar = (id: string) =>
+  `[data-testid="view-container-${id}"] [data-testid="protein-view-molstar"]`
 
 export const proteinCcr5Delta32Specs: ScreenshotSpec[] = [
   {
@@ -38,7 +43,7 @@ export const proteinCcr5Delta32Specs: ScreenshotSpec[] = [
     ],
     hideTooltip: true,
     viewportWidth: 1800,
-    viewportHeight: 1410,
+    viewportHeight: 1928,
     actions: [
       { type: 'waitForAppSettled' },
       PARK_CURSOR,
@@ -72,7 +77,7 @@ export const proteinCcr5Delta32Specs: ScreenshotSpec[] = [
           { label: 'HIV gp120', color: '#2e9e6b' },
         ],
         anchor: {
-          selector: `[data-testid="view-container-${PANELS[0]}"] [data-testid="protein-view-molstar"]`,
+          selector: molstar(PANELS[0]),
           alignX: 'left',
           alignY: 'top',
         },
@@ -81,13 +86,25 @@ export const proteinCcr5Delta32Specs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'Maraviroc',
+        text: 'Every read carries the deletion',
+        fontSize: 24,
+        color: '#d1007a',
+        textColor: '#d1007a',
+        maxWidth: 420,
+        leader: true,
+        anchor: { trackId: 'ccr5-HG00137', loc: 'chr3:46373468', fracY: 0.86 },
+        dx: 260,
+        dy: 40,
+      },
+      {
+        type: 'text',
+        text: 'V3 crown',
         fontSize: 24,
         maxWidth: 300,
         leader: true,
-        anchor: { residue: 'A:1101', view: 2 },
-        dx: -200,
-        dy: 170,
+        anchor: { residue: 'G:313', view: 2 },
+        dx: 150,
+        dy: -120,
       },
     ],
   },

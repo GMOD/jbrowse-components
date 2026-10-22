@@ -107,9 +107,16 @@ blinded ideator given only a capability sheet, a landscape survey):
    view stay critical. `protein/ccr5_delta32` is the first: three 1000
    Genomes 30x CRAMs streamed from the public S3 bucket (HG00137 Δ32/Δ32,
    HG00101 Δ32/+, HG00096 +/+, genotypes from EBI's 2022 phased panel; the S3
-   copies of the 2020 VCFs are empty), over 6MEO (gp120) and 4MBS
-   (maraviroc) colored by the residues Δ32 loses (185 on; it keeps 1–184,
+   copies of the 2020 VCFs are empty), over two views of 6MEO (gp120)
+   colored by the residues Δ32 loses (185 on; it keeps 1–184,
    adds 31 frameshifted, stops at 215). Builder `/var/tmp/ccr5/bin/`.
+   A track of the codons Δ32's shifted frame reads (31 new ones, then a stop
+   at 216) carries the step between the missing bases and the missing half of
+   the receptor; `/var/tmp/ccr5/bin/frameshift.py` writes them. Panel C is gp120's V3 crown (residues 310-315) reaching into the
+   bundle Δ32 deletes. Maraviroc went: Colin called it an analogy
+   beside a consequence. Allele frequency went too, since its interesting
+   form is by population ([[no-race-or-ancestry-framed-figures]]), and so did
+   ClinVar, which draws the deletion as a green "benign" bar here.
    Unbuilt ideas on the same footing: a population-constraint track whose
    depleted stretch lands on an interface, RNA-seq junctions proving an exon
    skip with the skipped residues on the fold, tumor reads at KRAS codon 12,
@@ -168,6 +175,9 @@ blinded ideator given only a capability sheet, a landscape survey):
 - A fibril's principal axis of chain centroids can run across the two
   protofilaments; the rung axis is the vector between the closest pair of
   chains.
+- An alignments track short enough to pack the reads carrying a deletion out
+  of sight shows none of them, and the figure reads as if the sample were
+  reference; CCR5's read tracks are 160px for that reason.
 - A 3 Å distance line's label lands on the residue labels; the wild-type
   Glu46–Lys80 line was tried on SNCA and dropped.
 - `/tmp` is a 16 GB quota tmpfs, so run captures with `TMPDIR=/var/tmp/<dir>`.

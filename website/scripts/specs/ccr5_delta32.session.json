@@ -8,7 +8,7 @@
       "hideHeaderOverview": true,
       "init": {
         "assembly": "hg38",
-        "loc": "chr3:46373398-46373539",
+        "loc": "chr3:46373391-46373606",
         "tracks": [
           {
             "trackId": "ccr5-mane",
@@ -16,15 +16,21 @@
           },
           {
             "trackId": "ccr5-HG00137",
-            "height": 92
+            "height": 160
           },
           {
             "trackId": "ccr5-HG00101",
-            "height": 92
+            "height": 160
           },
           {
             "trackId": "ccr5-HG00096",
-            "height": 92
+            "height": 160
+          },
+          {
+            "trackId": "ccr5-frameshift",
+            "type": "LinearBasicDisplay",
+            "height": 54,
+            "color": "jexl:get(feature,'color')"
           }
         ]
       }
@@ -33,7 +39,7 @@
       "id": "protein-CCR5-6meo",
       "type": "ProteinView",
       "displayName": "CCR5 bound by HIV gp120 (PDB 6MEO)",
-      "height": 640,
+      "height": 780,
       "zoomToBaseLevel": false,
       "showAlignment": false,
       "color": {
@@ -399,7 +405,7 @@
         "title": "CCR5"
       },
       "camera": {
-        "position": [30.192, 151.92, 269.853],
+        "position": [62.079, 153.082, 238.121],
         "target": [147.11, 156.181, 153.504],
         "up": [-0.4028, 0.8353, -0.3742],
         "mode": "orthographic"
@@ -446,10 +452,10 @@
       ]
     },
     {
-      "id": "protein-CCR5-4mbs",
+      "id": "protein-CCR5-v3",
       "type": "ProteinView",
-      "displayName": "CCR5 bound by maraviroc (PDB 4MBS)",
-      "height": 640,
+      "displayName": "gp120's V3 crown in the helix bundle (PDB 6MEO)",
+      "height": 780,
       "zoomToBaseLevel": false,
       "showAlignment": false,
       "color": {
@@ -815,29 +821,83 @@
         "title": "CCR5"
       },
       "camera": {
-        "position": [153.773, 98.014, -36.671],
-        "target": [149.855, 108.415, 22.29],
-        "up": [0.2, 0.9671, -0.1573],
+        "position": [126.78, 146.731, 197.735],
+        "target": [159.376, 147.919, 165.299],
+        "up": [-0.4028, 0.8353, -0.3742],
         "mode": "orthographic"
       },
       "silhouettes": true,
       "occlusion": true,
       "marks": [
         {
-          "site": "A:1101",
-          "mark": "spheres",
+          "site": "G:*",
+          "mark": "cartoon",
           "encoding": {
             "color": {
-              "value": "#f28e2b"
+              "value": "#2e9e6b"
+            }
+          }
+        },
+        {
+          "site": "G:310",
+          "mark": "sticks",
+          "encoding": {
+            "color": {
+              "value": "#13c08a"
+            }
+          }
+        },
+        {
+          "site": "G:311",
+          "mark": "sticks",
+          "encoding": {
+            "color": {
+              "value": "#13c08a"
+            }
+          }
+        },
+        {
+          "site": "G:312",
+          "mark": "sticks",
+          "encoding": {
+            "color": {
+              "value": "#13c08a"
+            }
+          }
+        },
+        {
+          "site": "G:313",
+          "mark": "sticks",
+          "encoding": {
+            "color": {
+              "value": "#13c08a"
+            }
+          }
+        },
+        {
+          "site": "G:314",
+          "mark": "sticks",
+          "encoding": {
+            "color": {
+              "value": "#13c08a"
+            }
+          }
+        },
+        {
+          "site": "G:315",
+          "mark": "sticks",
+          "encoding": {
+            "color": {
+              "value": "#13c08a"
             }
           }
         }
       ],
       "structures": [
         {
-          "pdbId": "4mbs",
+          "pdbId": "6meo",
           "assembly": "deposited",
-          "chains": ["A"],
+          "chains": ["B"],
           "feature": {
             "uniqueId": "NM_001394783.1",
             "type": "mRNA",
@@ -921,6 +981,273 @@
         "type": "CramAdapter",
         "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3240114/HG00096.final.cram"
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ccr5-frameshift",
+      "name": "Δ32 reading frame: 31 new codons, then a stop",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "FromConfigAdapter",
+        "features": [
+          {
+            "uniqueId": "fs185",
+            "refName": "chr3",
+            "start": 46373486,
+            "end": 46373489,
+            "name": "I185",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs186",
+            "refName": "chr3",
+            "start": 46373489,
+            "end": 46373492,
+            "name": "K186",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs187",
+            "refName": "chr3",
+            "start": 46373492,
+            "end": 46373495,
+            "name": "D187",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs188",
+            "refName": "chr3",
+            "start": 46373495,
+            "end": 46373498,
+            "name": "S188",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs189",
+            "refName": "chr3",
+            "start": 46373498,
+            "end": 46373501,
+            "name": "H189",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs190",
+            "refName": "chr3",
+            "start": 46373501,
+            "end": 46373504,
+            "name": "L190",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs191",
+            "refName": "chr3",
+            "start": 46373504,
+            "end": 46373507,
+            "name": "G191",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs192",
+            "refName": "chr3",
+            "start": 46373507,
+            "end": 46373510,
+            "name": "A192",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs193",
+            "refName": "chr3",
+            "start": 46373510,
+            "end": 46373513,
+            "name": "G193",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs194",
+            "refName": "chr3",
+            "start": 46373513,
+            "end": 46373516,
+            "name": "P194",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs195",
+            "refName": "chr3",
+            "start": 46373516,
+            "end": 46373519,
+            "name": "A195",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs196",
+            "refName": "chr3",
+            "start": 46373519,
+            "end": 46373522,
+            "name": "A196",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs197",
+            "refName": "chr3",
+            "start": 46373522,
+            "end": 46373525,
+            "name": "A197",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs198",
+            "refName": "chr3",
+            "start": 46373525,
+            "end": 46373528,
+            "name": "C198",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs199",
+            "refName": "chr3",
+            "start": 46373528,
+            "end": 46373531,
+            "name": "H199",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs200",
+            "refName": "chr3",
+            "start": 46373531,
+            "end": 46373534,
+            "name": "G200",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs201",
+            "refName": "chr3",
+            "start": 46373534,
+            "end": 46373537,
+            "name": "H201",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs202",
+            "refName": "chr3",
+            "start": 46373537,
+            "end": 46373540,
+            "name": "L202",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs203",
+            "refName": "chr3",
+            "start": 46373540,
+            "end": 46373543,
+            "name": "L203",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs204",
+            "refName": "chr3",
+            "start": 46373543,
+            "end": 46373546,
+            "name": "L204",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs205",
+            "refName": "chr3",
+            "start": 46373546,
+            "end": 46373549,
+            "name": "G205",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs206",
+            "refName": "chr3",
+            "start": 46373549,
+            "end": 46373552,
+            "name": "N206",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs207",
+            "refName": "chr3",
+            "start": 46373552,
+            "end": 46373555,
+            "name": "P207",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs208",
+            "refName": "chr3",
+            "start": 46373555,
+            "end": 46373558,
+            "name": "K208",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs209",
+            "refName": "chr3",
+            "start": 46373558,
+            "end": 46373561,
+            "name": "N209",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs210",
+            "refName": "chr3",
+            "start": 46373561,
+            "end": 46373564,
+            "name": "S210",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs211",
+            "refName": "chr3",
+            "start": 46373564,
+            "end": 46373567,
+            "name": "A211",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs212",
+            "refName": "chr3",
+            "start": 46373567,
+            "end": 46373570,
+            "name": "S212",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs213",
+            "refName": "chr3",
+            "start": 46373570,
+            "end": 46373573,
+            "name": "V213",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs214",
+            "refName": "chr3",
+            "start": 46373573,
+            "end": 46373576,
+            "name": "S214",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs215",
+            "refName": "chr3",
+            "start": 46373576,
+            "end": 46373579,
+            "name": "K215",
+            "color": "#c05a00"
+          },
+          {
+            "uniqueId": "fs216",
+            "refName": "chr3",
+            "start": 46373579,
+            "end": 46373582,
+            "name": "STOP",
+            "color": "#111111"
+          }
+        ]
+      }
     }
   ],
   "highlights": [
@@ -942,7 +1269,7 @@
     "children": [
       {
         "id": "panel-top",
-        "size": 44.0,
+        "size": 52.0,
         "activeTabId": "tab-top",
         "tabs": [
           {
@@ -954,7 +1281,7 @@
       {
         "id": "branch-bottom",
         "direction": "row",
-        "size": 56.0,
+        "size": 48.0,
         "children": [
           {
             "id": "panel-6meo",
@@ -968,13 +1295,13 @@
             ]
           },
           {
-            "id": "panel-4mbs",
+            "id": "panel-v3",
             "size": 50,
-            "activeTabId": "tab-4mbs",
+            "activeTabId": "tab-v3",
             "tabs": [
               {
-                "id": "tab-4mbs",
-                "viewIds": ["protein-CCR5-4mbs"]
+                "id": "tab-v3",
+                "viewIds": ["protein-CCR5-v3"]
               }
             ]
           }
