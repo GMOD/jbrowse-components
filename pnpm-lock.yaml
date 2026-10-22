@@ -1540,21 +1540,12 @@ importers:
       '@jbrowse/plugin-bed':
         specifier: workspace:^
         version: link:../bed
-      '@jbrowse/plugin-linear-genome-view':
-        specifier: workspace:^
-        version: link:../linear-genome-view
       '@jbrowse/plugin-marks':
         specifier: workspace:^
         version: link:../marks
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
-      '@jbrowse/wiggle-core':
-        specifier: workspace:^
-        version: link:../../packages/wiggle-core
-      '@mui/icons-material':
-        specifier: ^9.5.0
-        version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -1577,6 +1568,9 @@ importers:
       '@jbrowse/display-test-utils':
         specifier: workspace:^
         version: link:../../packages/display-test-utils
+      '@jbrowse/plugin-linear-genome-view':
+        specifier: workspace:^
+        version: link:../linear-genome-view
 
   plugins/hic:
     dependencies:

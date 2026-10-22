@@ -36,11 +36,8 @@
     "@jbrowse/ld-core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.9.0",
     "@jbrowse/plugin-bed": "workspace:^",
-    "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/plugin-marks": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
-    "@jbrowse/wiggle-core": "workspace:^",
-    "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
     "mobx": "^7.1.0",
     "mobx-react": "^10.0.2",
@@ -60,6 +57,7 @@
   },
   "sideEffects": false,
   "devDependencies": {
-    "@jbrowse/display-test-utils": "workspace:^"
+    "@jbrowse/display-test-utils": "workspace:^",
+    "@jbrowse/plugin-linear-genome-view": "workspace:^"
   }
 }
