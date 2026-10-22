@@ -432,8 +432,8 @@ layer encoder (`buildSourceRenderData`):
 - `domain`, `scaleType` and `symlogConstant` are the axis `scales.y`
   resolves to, and `rules` the reference lines it draws.
 - `ramps` holds the score's color bar where one ramp paints every row
-  (`scoreRampApplies`, the display's own rule): density, or a declared
-  gradient outside the line renderings.
+  (`scoreGradientPaints`, the display's own rule): density, or a declared
+  gradient.
 
 A source paints the color the display gives it, through the tree sidebar's
 own rules (`dealtValueColors`, `resolveRowColors`, `markColorOf`): its row
