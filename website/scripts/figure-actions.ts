@@ -7,6 +7,8 @@
 // before the tag inside that section, so a page that shows the result and then
 // says how to get it is flagged the same as one that never says.
 
+import { unwrapBold } from './unwrap-bold.ts'
+
 const LOCSTRING = /`[A-Za-z0-9_.-]+:[\d,]+-[\d,]+`/
 const MENU_PATH = /\*\*[^*\n]*→[^*\n]*\*\*/
 const IMPERATIVE =
@@ -25,7 +27,7 @@ export function unpromptedTags(text: string): UnpromptedTag[] {
   const out: UnpromptedTag[] = []
   let inFence = false
   let actionSeen = false
-  text.split('\n').forEach((line, i) => {
+  unwrapBold(text).forEach(({ line: i, text: line }) => {
     if (/^\s*(?:```|~~~)/.test(line)) {
       if (!inFence && ACTION_FENCE.test(line)) {
         actionSeen = true

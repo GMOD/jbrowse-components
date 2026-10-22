@@ -43,3 +43,17 @@ test("a new section forgets the previous section's instruction", () => {
   )
   expect(unpromptedTags(text).map(t => t.line)).toEqual([15])
 })
+
+test('a menu path wrapped across two lines prompts the tag', () => {
+  const text = page(
+    '## Color\n\nThe genes stay grey until **Color by... →\nAttribute...** names a field.\n\n<Figure src="/img/a.png" />',
+  )
+  expect(unpromptedTags(text)).toEqual([])
+})
+
+test('a blank line ends the paragraph a path can wrap within', () => {
+  const text = page(
+    '## Color\n\nThe genes stay **grey →\n\nlater** on.\n\n<Figure src="/img/a.png" />',
+  )
+  expect(unpromptedTags(text)).toHaveLength(1)
+})

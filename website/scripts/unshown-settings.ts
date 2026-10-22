@@ -14,6 +14,9 @@
 // store` (Web) installs a plugin. What each produces is whatever the next
 // instruction then shows.
 
+// The opening's list of what the page does names settings ahead of the
+// sections that use them, so a path before the first heading is not counted.
+
 // The figure has to come AFTER the setting. A page whose section shows a
 // picture and then names a setting has shown something else: `dog10k_lof`
 // draws copy number and then, thirty lines on, says to cluster the rows.
@@ -24,6 +27,8 @@
 // frame above the sentence. **Don't shoot a second figure for one of these.**
 // Where a page is worth repairing at all, name the setting before the figure it
 // produced.
+import { unwrapBold } from './unwrap-bold.ts'
+
 const MENU_PATH =
   /\*\*[^*\n]*→[^*\n]*\*\*|\*\*[^*\n]+\*\*\s*→\s*\*\*[^*\n]+\*\*/
 const PLUMBING =
@@ -44,7 +49,7 @@ export function unshownSettings(text: string): UnshownSetting[] {
   const found: { line: number; path: string; section: number }[] = []
   let inFence = false
   let section = -1
-  for (const [i, line] of lines.entries()) {
+  for (const { line: i, text: line } of unwrapBold(text)) {
     if (TAIL.test(line)) {
       break
     }
@@ -64,7 +69,7 @@ export function unshownSettings(text: string): UnshownSetting[] {
       media.push(i)
       continue
     }
-    if (MENU_PATH.test(line) && !PLUMBING.test(line)) {
+    if (section >= 0 && MENU_PATH.test(line) && !PLUMBING.test(line)) {
       found.push({
         line: i + 1,
         path: MENU_PATH.exec(line)![0].replaceAll('*', ''),
