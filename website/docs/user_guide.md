@@ -1,6 +1,6 @@
 ---
 title: User guide
-sidebar_label: Overview
+sidebar_label: All user guides
 description:
   Index of the guides for driving JBrowse, covering track types, views, and the
   rest of the app.

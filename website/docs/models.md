@@ -1,5 +1,6 @@
 ---
 title: State models
+sidebar_label: All state models
 description:
   Auto-generated reference for JBrowse's MobX state-tree models, grouped by
   category.

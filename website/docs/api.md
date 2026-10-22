@@ -1,5 +1,6 @@
 ---
 title: Exported functions
+sidebar_label: All exported functions
 description:
   Auto-generated reference for the functions each JBrowse plugin package exports
   for reuse.

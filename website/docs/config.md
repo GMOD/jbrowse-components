@@ -1,5 +1,6 @@
 ---
 title: Configuration schema
+sidebar_label: All config types
 description:
   Auto-generated reference for every JBrowse configuration type, grouped by
   category.

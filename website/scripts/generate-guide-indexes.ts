@@ -150,7 +150,7 @@ function buildUserGuide(): string {
   const lines: string[] = [
     '---',
     'title: User guide',
-    'sidebar_label: Overview',
+    'sidebar_label: All user guides',
     'description:',
     '  Index of the guides for driving JBrowse, covering track types, views, and the',
     '  rest of the app.',
@@ -172,7 +172,7 @@ function buildConfigGuide(): string {
   const lines: string[] = [
     '---',
     'title: Config guide',
-    'sidebar_label: Overview',
+    'sidebar_label: All config guides',
     'description:',
     '  Index of the guides for configuring JBrowse, covering assemblies, tracks,',
     '  callbacks, and deployment, on the web, the desktop and the CLI.',
@@ -191,7 +191,7 @@ function buildConfigGuide(): string {
 function buildDeveloperGuide(): string {
   const preamble = `---
 title: Developer guide
-sidebar_label: Overview
+sidebar_label: All developer guides
 description:
   How JBrowse 2 is packaged and structured, and how to write plugins and
   pluggable elements.
