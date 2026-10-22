@@ -50,3 +50,15 @@ test('override:false falls back to the adapter refName when no alias matches the
   )
   expect(refNameAliases.chr1).toBe('chr1')
 })
+
+// a contig named like an Object.prototype member is a real contig, and a query
+// naming one that is not in the assembly finds nothing
+test('prototype member names are ordinary names', () => {
+  const { refNameAliases, lowerCaseRefNameAliases } = buildRefNameMaps(
+    [{ refName: 'chr1' }, { refName: 'constructor' }],
+    [],
+  )
+  expect(refNameAliases.constructor).toBe('constructor')
+  expect(refNameAliases.toString).toBeUndefined()
+  expect(lowerCaseRefNameAliases.hasOwnProperty).toBeUndefined()
+})

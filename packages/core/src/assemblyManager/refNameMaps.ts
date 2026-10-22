@@ -44,7 +44,8 @@ export function buildRefNameMaps(
   refNameAliasCollection: Alias[],
 ): RefNameMaps {
   const fastaRefNames = new Set(regions.map(r => r.refName))
-  const refNameAliases: RefNameAliases = {}
+  // no prototype, so a query like "constructor" finds no inherited member
+  const refNameAliases: RefNameAliases = Object.create(null)
   for (const { refName, aliases, override } of refNameAliasCollection) {
     // override:true (the default), or unset as with chromAlias files whose
     // refName column already matches the FASTA, makes the adapter's refName the
@@ -63,7 +64,8 @@ export function buildRefNameMaps(
 
   // identity-map each region's refName (??= so an override alias wins) and
   // record where the canonical name differs from the sequence adapter's name
-  const canonicalToSeqAdapterRefNames: Record<string, string> = {}
+  const canonicalToSeqAdapterRefNames: Record<string, string> =
+    Object.create(null)
   for (const { refName } of regions) {
     const canonical = (refNameAliases[refName] ??= refName)
     if (canonical !== refName) {
@@ -72,7 +74,7 @@ export function buildRefNameMaps(
   }
 
   // a lowercase index, so getCanonicalRefName can resolve a lower-case query
-  const lowerCaseRefNameAliases: RefNameAliases = {}
+  const lowerCaseRefNameAliases: RefNameAliases = Object.create(null)
   for (const [key, canonical] of Object.entries(refNameAliases)) {
     lowerCaseRefNameAliases[key.toLowerCase()] = canonical
   }
