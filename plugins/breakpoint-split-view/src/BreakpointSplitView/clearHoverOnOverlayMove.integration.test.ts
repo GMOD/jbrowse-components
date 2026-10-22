@@ -130,7 +130,14 @@ test('a track above the overlay track growing clears it, one below does not', as
     ],
   })) as unknown as BreakpointViewModel
   view.setWidth(800)
-  await when(() => view.initialized && view.overlayTracks.length === 1)
+  // every track the test reads, not just the matched one: each row opens its
+  // tracks one after another, so `calls` matching says nothing about `below`
+  await when(
+    () =>
+      view.initialized &&
+      view.overlayTracks.length === 1 &&
+      view.views[1]!.tracks.length === 3,
+  )
   const display = (level: number, trackId: string) =>
     view.views[level]!.getTrack(trackId)!.displays[0]! as {
       height: number
