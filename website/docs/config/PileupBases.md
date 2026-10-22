@@ -29,5 +29,5 @@ A setting written to it names members one by one: a member left out stays as it 
 | Slot | Description |
 | --- | --- |
 | <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | draw the per-base layer over the reads |
-| <span id="slot-encoding">**encoding**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ConfigurationSchema( 'PileupBasesEncoding', { color: alignments…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ConfigurationSchema(&#10;&#160;&#160;'PileupBasesEncoding',&#10;&#160;&#160;{&#10;&#160;&#160;&#160;&#160;color: alignmentsBaseColorConfigSchema,&#10;&#160;&#160;},&#10;&#160;&#160;encodingOptions,&#10;)</code></pre></dialog></span> | The layer's channels: `encoding.color`, the per-base variable. |
+| <span id="slot-encoding">**encoding**</span><br>[PileupBasesEncoding sub-schema](#slot-encodingcolor) | The layer's channels: `encoding.color`, the per-base variable. |
 | <span id="slot-encodingcolor">**encoding.color**</span><br>[AlignmentsBaseColor](../alignmentsbasecolor) | The per-base variable the layer paints. |

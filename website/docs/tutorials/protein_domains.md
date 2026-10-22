@@ -138,7 +138,7 @@ its family:
     "disableGeneHeuristic": true
   },
   "displayDefaults": {
-    "color": { "field": "name" }
+    "encoding": { "color": "name" }
   }
 }
 ```

@@ -29,7 +29,6 @@ export const figureLiveRefs: Record<string, string> = {
   "multiway_synteny/ecoli_symbol_atp_operon": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_orthologs%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22MG1655%22%2C%22loc%22%3A%22NC_000913.3%3A3%2C910%2C000-3%2C925%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ecoli_orthologs%22%2C%22height%22%3A1500%2C%22ribbons%22%3A%7B%22encoding%22%3A%7B%22color%22%3A%7B%22value%22%3A%22rgba(130%2C130%2C130%2C0.3)%22%7D%7D%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "multiway_synteny/ecoli_symbol_oantigen": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_orthologs%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22MG1655%22%2C%22loc%22%3A%22NC_000913.3%3A2%2C095%2C000-2%2C115%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ecoli_orthologs%22%2C%22height%22%3A1500%2C%22ribbons%22%3A%7B%22encoding%22%3A%7B%22color%22%3A%7B%22value%22%3A%22rgba(130%2C130%2C130%2C0.3)%22%7D%7D%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "multiway_synteny/hg38_vertebrates_tp53": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fhg38_vertebrates%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C400%2C000-7%2C700%2C000%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%2C%7B%22trackId%22%3A%22hg38_liftover_multiway%22%2C%22ribbons%22%3A%7B%22encoding%22%3A%7B%22color%22%3A%22strand%22%7D%7D%2C%22rows%22%3A%7B%22sort%22%3A%5B%22panTro6%22%2C%22gorGor6%22%2C%22ponAbe3%22%2C%22rheMac10%22%2C%22calJac4%22%2C%22mm39%22%2C%22canFam6%22%2C%22bosTau9%22%5D%7D%2C%22height%22%3A600%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "multiway_synteny/t2t_apes_cactus_tp53": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Ft2t_apes_cactus%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C400%2C000-7%2C700%2C000%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%2C%7B%22trackId%22%3A%22t2t_apes_cactus%22%2C%22height%22%3A600%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "multiway_synteny/t2t_apes_cactus_17q": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Ft2t_apes_cactus%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A39%2C400%2C000-40%2C200%2C000%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%2C%7B%22trackId%22%3A%22t2t_apes_cactus%22%2C%22height%22%3A600%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "multiway_synteny/hprc_amylase_stack": "?config=test_data%2Famylase%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearSyntenyView%22%2C%22views%22%3A%5B%7B%22assembly%22%3A%22HG01361.1%22%2C%22loc%22%3A%22CM089019.1%3A103%2C831%2C655-104%2C050%2C048%22%2C%22tracks%22%3A%5B%22hprc_genes_HG01361_1%22%5D%7D%2C%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr1%3A103%2C520%2C894-103%2C832%2C637%22%2C%22tracks%22%3A%5B%22hg38_ncbiRefSeq_ucsc%22%5D%7D%2C%7B%22assembly%22%3A%22HG00133.1%22%2C%22loc%22%3A%22CM090045.1%3A103%2C669%2C666-103%2C981%2C330%22%2C%22tracks%22%3A%5B%22hprc_genes_HG00133_1%22%5D%7D%2C%7B%22assembly%22%3A%22NA18608.2%22%2C%22loc%22%3A%22CM089849.1%3A103%2C796%2C766-104%2C203%2C421%22%2C%22tracks%22%3A%5B%22hprc_genes_NA18608_2%22%5D%7D%2C%7B%22assembly%22%3A%22HG00232.1%22%2C%22loc%22%3A%22CM089991.1%3A103%2C491%2C008-103%2C991%2C760%22%2C%22tracks%22%3A%5B%22hprc_genes_HG00232_1%22%5D%7D%5D%2C%22tracks%22%3A%5B%22amylase_adjacent%22%5D%2C%22encoding%22%3A%7B%22color%22%3A%22strand%22%7D%2C%22mark%22%3A%7B%22interpolate%22%3A%22bump%22%7D%2C%22levelHeights%22%3A%5B110%2C110%2C110%2C110%5D%7D%5D%7D&sessionName=Screenshot",
   "multiway_synteny/hprc_gstt1_lanes": "?config=https%3A%2F%2Fjbrowse.org%2Fpangenome%2Fhprc-grch38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr22%3A23950001-24060000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38_ncbiRefSeq_ucsc%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A60%7D%2C%7B%22trackId%22%3A%22hprc_v2_1_walk_lanes%22%2C%22type%22%3A%22MultiWaySyntenyDisplay%22%2C%22rows%22%3A%7B%22sort%22%3A%5B%22HG00128%232%22%2C%22HG01960%231%22%2C%22HG00146%232%22%2C%22HG01109%231%22%2C%22HG00099%231%22%2C%22HG00232%231%22%2C%22HG00133%231%22%2C%22HG00126%232%22%2C%22HG00146%231%22%2C%22HG00097%231%22%5D%2C%22kept%22%3A%5B%22HG00128%232%22%2C%22HG01960%231%22%2C%22HG00146%232%22%2C%22HG01109%231%22%2C%22HG00099%231%22%2C%22HG00232%231%22%2C%22HG00133%231%22%2C%22HG00126%232%22%2C%22HG00146%231%22%2C%22HG00097%231%22%5D%7D%2C%22height%22%3A561%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -342,6 +341,7 @@ export const figureLiveRefs: Record<string, string> = {
   "gwas/locuszoom_ld": "?config=test_data%2Fconfig_gwas.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%222%3A191%2C790%2C000-192%2C120%2C000%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22sle_gwas_ld%22%2C%22height%22%3A200%7D%2C%7B%22trackId%22%3A%22ncbi_gff_hg19%22%2C%22height%22%3A90%2C%22filter%22%3A%7B%22genes%22%3A%22only%22%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "gene_density_chr1": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fgene_density%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr1%22%2C%22tracks%22%3A%5B%22hg38_genes_density%22%2C%22hg38_Alu_density%22%2C%22hg38_L1_density%22%2C%22hg38_Simple_repeat_density%22%5D%7D%5D%7D&sessionName=Screenshot",
   "gene_density_1q21": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fgene_density%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr1%3A150%2C000%2C000-160%2C000%2C000%22%2C%22tracks%22%3A%5B%22hg38_genes%22%2C%22hg38_Alu_density%22%2C%22hg38_L1_density%22%5D%7D%5D%7D&sessionName=Screenshot",
+  "protein_domains/vav": "?config=https%3A%2F%2Fjbrowse.org%2Fhubs%2Fgenark%2FGCF%2F003%2F254%2F395%2FGCF_003254395.2%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22pfam_domains%22%2C%22name%22%3A%22Pfam%20domains%22%2C%22assemblyNames%22%3A%5B%22GCF_003254395.2%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BedTabixAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fprotein_domains%2Fpfam.bed.gz%22%2C%22disableGeneHeuristic%22%3Atrue%7D%2C%22displayDefaults%22%3A%7B%22encoding%22%3A%7B%22color%22%3A%22name%22%7D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GCF_003254395.2%22%2C%22loc%22%3A%22NC_037640.1%3A1%2C971%2C400-1%2C976%2C800%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22GCF_003254395.2-ncbiGff%22%2C%22height%22%3A120%7D%2C%7B%22trackId%22%3A%22pfam_domains%22%2C%22height%22%3A200%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "organelle_map/mito_ring": "?config=test_data%2Fhuman_mito%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22CircularView%22%2C%22assembly%22%3A%22human_mito%22%2C%22height%22%3A780%2C%22showLegend%22%3Atrue%2C%22tracks%22%3A%5B%22mito_genes%22%5D%7D%5D%7D&sessionName=Screenshot",
   "organelle_map/nd6_linear": "?config=test_data%2Fhuman_mito%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22human_mito%22%2C%22loc%22%3A%22NC_012920.1%3A12%2C000-16%2C569%22%2C%22tracks%22%3A%5B%22mito_genes%22%5D%7D%5D%7D&sessionName=Screenshot",
   "hg002_haplotypes_import_form": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fhg002%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22DotplotView%22%2C%22views%22%3A%5B%7B%7D%2C%7B%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -596,7 +596,6 @@ export const figureSlowSpecs: string[] = [
   "multiway_synteny/primate_tp53_lanes",
   "multiway_synteny/solanaceae_lanes",
   "multiway_synteny/t2t_apes_cactus_17q",
-  "multiway_synteny/t2t_apes_cactus_tp53",
   "multiway_synteny/vertebrate_hox_lanes",
   "orthofinder_synteny/drosophila",
   "orthofinder_synteny/drosophila_blocks",
@@ -835,11 +834,6 @@ export const figureFrames: Record<
     "timeout": 240000
   },
   "multiway_synteny/hg38_vertebrates_tp53": {
-    "width": 1500,
-    "height": 1000,
-    "timeout": 240000
-  },
-  "multiway_synteny/t2t_apes_cactus_tp53": {
     "width": 1500,
     "height": 1000,
     "timeout": 240000
@@ -2247,6 +2241,10 @@ export const figureFrames: Record<
   "gene_density_1q21": {
     "width": 1500,
     "height": 620
+  },
+  "protein_domains/vav": {
+    "width": 1200,
+    "height": 580
   },
   "organelle_map/mito_ring": {
     "width": 1000,

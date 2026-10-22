@@ -71,7 +71,7 @@ The `facet` setting opens the track already split by `HP`:
   },
   "displayDefaults": {
     "facet": { "field": "tags.HP" },
-    "color": { "field": "tags.HP" }
+    "encoding": { "color": "tags.HP" }
   }
 }
 ```
