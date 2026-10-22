@@ -146,7 +146,7 @@ function unquote(value: string): string {
     const inner = value.slice(1, -1)
     return quote === '"'
       ? inner.replaceAll('\\"', '"').replaceAll('\\\\', '\\')
-      : inner
+      : inner.replaceAll("''", "'")
   }
   return value
 }
@@ -167,18 +167,23 @@ export function parseFrontmatter(
   if (!match) {
     return undefined
   }
-  const result: Record<string, string> = {}
+  const pieces: Record<string, string[]> = {}
   let key: string | undefined
   for (const line of match[1]!.split('\n')) {
     const kv = KEY_LINE.exec(line)
     if (kv) {
       key = kv[1]!
-      result[key] = unquote(kv[2]!.trim())
+      pieces[key] = [kv[2]!.trim()]
     } else if (key !== undefined && line.trim()) {
-      result[key] += ` ${line.trim()}`
+      pieces[key]!.push(line.trim())
     }
   }
-  return result
+  return Object.fromEntries(
+    Object.entries(pieces).map(([k, v]) => [
+      k,
+      unquote(v.filter(Boolean).join(' ')),
+    ]),
+  )
 }
 
 // Compact pipe table, as lines. The generated index pages want it dense: the

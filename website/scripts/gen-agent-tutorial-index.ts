@@ -4,11 +4,15 @@
 // An agent asked to reproduce a tutorial searched the bundled docs for the
 // tutorial's data and found nothing, because no tutorial page is bundled; it
 // then guessed at public buckets. A data URL here is one `docs search` away.
-// URLs inside a session-spec link are percent-encoded, so each page is read
-// decoded as well as raw.
+// A page's URLs include each `<Figure>`'s live link, which many tutorials name
+// nowhere in their text. URLs inside a session-spec link are percent-encoded,
+// so each is read decoded as well as raw.
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { MAIN_CODE_BASE } from '../src/lib/code-base.ts'
+import { parseAttrs } from '../src/lib/inline-html.ts'
+import { figureLiveRefs } from '../src/lib/liveLinks.generated.ts'
 import { checkOrWrite, parseFrontmatter } from './check-utils.ts'
 
 const TUTORIALS = 'website/docs/tutorials'
@@ -16,7 +20,7 @@ const OUT = 'products/jbrowse-desktop/electron/mcp/docs/tutorials.generated.md'
 const SITE = 'https://jbrowse.org/jb2/docs/tutorials'
 
 const DATA_FILE =
-  /https?:\/\/[^\s"'`<>()[\]{},|]+?\.(?:bam|cram|bai|crai|csi|tbi|bw|bigwig|bb|bigbed|vcf|vcf\.gz|bcf|gff3?|gff3?\.gz|gtf|gtf\.gz|bed|bed\.gz|bedpe|bedpe\.gz|bedgraph|bedmethyl|bedmethyl\.gz|paf|paf\.gz|pif\.gz|delta|chain|maf|maf\.gz|fa|fa\.gz|fasta|fasta\.gz|fna\.gz|2bit|fai|gzi|hic|gfa|gfa\.gz|json|sizes|txt\.gz|tsv|tsv\.gz)(?=$|[^\w.])/gi
+  /https?:\/\/[^\s"'`<>()[\]{},|?&=#]+?\.(?:bam|cram|bai|crai|csi|tbi|bw|bigwig|bb|bigbed|vcf|vcf\.gz|bcf|gff3?|gff3?\.gz|gtf|gtf\.gz|bed|bed\.gz|bedpe|bedpe\.gz|bedgraph|bedmethyl|bedmethyl\.gz|paf|paf\.gz|pif\.gz|delta|chain|maf|maf\.gz|fa|fa\.gz|fasta|fasta\.gz|fna\.gz|2bit|fai|gzi|hic|gfa|gfa\.gz|json|sizes|txt\.gz|tsv|tsv\.gz)(?=$|[^\w.])/gi
 
 function decoded(text: string) {
   try {
@@ -29,12 +33,43 @@ function decoded(text: string) {
   }
 }
 
+const specLink = (name: string | undefined) => {
+  const ref = name ? figureLiveRefs[name] : undefined
+  return ref === undefined ? undefined : new URL(ref, MAIN_CODE_BASE).href
+}
+
+// A live link's `config` resolved against the app it opens, which names the
+// hosted copy of a `test_data/` config the link carries relative
+function configUrl(link: string) {
+  try {
+    const config = new URL(link).searchParams.get('config')
+    return config ? new URL(config, link).href : undefined
+  } catch {
+    return undefined
+  }
+}
+
+// The live links remark-figure.ts gives a page's figures: `link=`, else the
+// spec named by `src`, plus every spec in `links=`.
+function figureLinks(text: string) {
+  return [...text.matchAll(/<Figure\s+([\s\S]*?)\s*\/>/g)].flatMap(match => {
+    const attrs = parseAttrs(match[1]!)
+    return [
+      attrs.link ??
+        specLink(attrs.src?.replace(/^\/img\//, '').replace(/\.png$/, '')),
+      ...(attrs.links ?? '')
+        .split(',')
+        .map(l => specLink(l.split('=')[1]?.trim())),
+    ].flatMap(link => (link ? [link, configUrl(link) ?? ''] : []))
+  })
+}
+
 function dataUrls(text: string) {
   const urls = new Set<string>()
   for (const source of [text, decoded(text)]) {
     for (const match of source.matchAll(DATA_FILE)) {
       const url = match[0]
-      if (!/\/code\/jb2\/|\/jb2\/docs\//.test(url)) {
+      if (!/\/code\/jb2\/(?![\w.-]+\/test_data\/)|\/jb2\/docs\//.test(url)) {
         urls.add(url)
       }
     }
@@ -50,7 +85,7 @@ const pages = fs
     const text = fs.readFileSync(path.join(TUTORIALS, name), 'utf8')
     const front = parseFrontmatter(text) ?? {}
     const slug = name.replace(/\.md$/, '')
-    const urls = dataUrls(text)
+    const urls = dataUrls([text, ...figureLinks(text)].join('\n'))
     return urls.length === 0
       ? []
       : [
@@ -72,9 +107,9 @@ checkOrWrite({
 
 # Tutorials and the data they load
 
-Each website tutorial, its page and every data file it loads, with the URLs
-inside its session links decoded. To reproduce a tutorial, start from its files
-here; its page holds the steps and settings.
+Each website tutorial, its page and every data file it loads, read from its
+text and its figures' live links, with session-link URLs decoded. To reproduce
+a tutorial, start from its files here; its page holds the steps and settings.
 
 ${pages.join('\n')}`,
   label: OUT,

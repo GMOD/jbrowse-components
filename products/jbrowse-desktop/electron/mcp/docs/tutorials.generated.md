@@ -2,9 +2,9 @@
 
 # Tutorials and the data they load
 
-Each website tutorial, its page and every data file it loads, with the URLs
-inside its session links decoded. To reproduce a tutorial, start from its files
-here; its page holds the steps and settings.
+Each website tutorial, its page and every data file it loads, read from its
+text and its figures' live links, with session-link URLs decoded. To reproduce
+a tutorial, start from its files here; its page holds the steps and settings.
 
 ## Driving JBrowse with an AI agent (two Drosophila genomes)
 
@@ -14,6 +14,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/agent_synteny/
 
 - https://hgdownload.soe.ucsc.edu/hubs/GCF/004/382/145/GCF_004382145.1/GCF_004382145.1.fa.gz
 - https://hgdownload.soe.ucsc.edu/hubs/GCF/016/746/395/GCF_016746395.2/GCF_016746395.2.fa.gz
+- https://jbrowse.org/demos/fly_agent_synteny/config.json
 
 ## Synteny visualization (all-vs-all minimap2)
 
@@ -23,6 +24,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/allvsall_synteny/
 
 - https://jbrowse.org/demos/ecoli_pangenome/all_vs_all.paf.gz
 - https://jbrowse.org/demos/ecoli_pangenome/config.json
+- https://jbrowse.org/demos/ecoli_pangenome/ecoli_paa_subgraph.gfa
 
 ## AlphaGenome predictions
 
@@ -42,6 +44,8 @@ Declare a BED column as the height of a bar and another as its color, count feat
 Page: https://jbrowse.org/jb2/docs/tutorials/alu_age/
 
 - https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
+- https://jbrowse.org/code/jb2/main/test_data/alu_age/Alu.young_share.bed.gz
+- https://jbrowse.org/code/jb2/main/test_data/alu_age/config.json
 - https://jbrowse.org/demos/gene_density/Alu.bed.density.bw
 - https://jbrowse.org/demos/gene_density/Alu.bed.gz
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
@@ -54,6 +58,7 @@ Paint a child's inherited haplotype blocks from hap-ibd IBD segments, one row pe
 Page: https://jbrowse.org/jb2/docs/tutorials/analyze_trio/
 
 - https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz
+- https://jbrowse.org/code/jb2/main/test_data/config_demo.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 
 ## Methylation (bisulfite)
@@ -64,6 +69,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/bisulfite/
 
 - https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/GCF_000001735.4.2bit
 - https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/bbi/GCF_000001735.4_TAIR10.1.rmsk.bb
+- https://jbrowse.org/code/jb2/main/test_data/arabidopsis_methylation/config_emseq_bisulfite.json
 - https://jbrowse.org/demos/bisulfite/arabidopsis_wgbs_bisulfite.cram
 - https://jbrowse.org/hubs/genark/GCF/000/001/735/GCF_000001735.4/config.json
 
@@ -73,6 +79,7 @@ Chromosome-painting and a QTL Manhattan plot from GeneNetwork BXD data
 
 Page: https://jbrowse.org/jb2/docs/tutorials/bxd_qtl/
 
+- https://jbrowse.org/code/jb2/main/test_data/config_bxd.json
 - https://jbrowse.org/demos/bxd/bxd_painting.bed.gz
 - https://jbrowse.org/demos/bxd/mm10.ncbiRefSeq.sorted.gtf.gz
 - https://jbrowse.org/genomes/mm10/fasta/mm10.fa.gz
@@ -101,6 +108,7 @@ Paint many-cell-type ChromHMM states in one multi-row track
 Page: https://jbrowse.org/jb2/docs/tutorials/chromhmm/
 
 - https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit
+- https://jbrowse.org/code/jb2/main/test_data/config_demo.json
 - https://jbrowse.org/demos/chromhmm/roadmap_15state_127epigenomes.bb
 - https://jbrowse.org/demos/chromhmm/wgEncodeBroadHmm.multirow.bb
 - https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz
@@ -125,7 +133,7 @@ Assemble a config.json with the jbrowse CLI and open it in JBrowse Desktop
 
 Page: https://jbrowse.org/jb2/docs/tutorials/cli_desktop/
 
-- https://your-jbrowse/?config=http://localhost:3000/config.json
+- http://localhost:3000/config.json
 
 ## Structural variants (Cancer GIAB) part 2: copy number
 
@@ -138,8 +146,25 @@ Page: https://jbrowse.org/jb2/docs/tutorials/cnv_cgiab/
 - https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Wakhan-CNA_20240308/vcf_inputs/merge_output_tumor.vcf.gz
 - https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3/HG008-T--HG008-N.cnv.annotated.v7.final.bed
 - https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/PacBio_Revio_20240125/pacbio-wgs-wdl_germline_20240206/HG008-N-P.GRCh38.deepvariant.phased.vcf.gz
+- https://jbrowse.org/demos/cgiab/HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all.bw
 - https://jbrowse.org/demos/cgiab/HG008-N_indexcov.bw
+- https://jbrowse.org/demos/cgiab/HG008-T.hificnv.depth.bw
+- https://jbrowse.org/demos/cgiab/HG008-T_PacBio-HiFi-Revio_116x.demo_slices.bam
+- https://jbrowse.org/demos/cgiab/HG008-T_PacBio-HiFi-Revio_116x.demo_slices.bam.bai
+- https://jbrowse.org/demos/cgiab/HG008-T_baf.bcftools.bw
+- https://jbrowse.org/demos/cgiab/HG008-T_bicseq2_log2ratio.bedgraph
+- https://jbrowse.org/demos/cgiab/HG008-T_coverage_perbase.bw
 - https://jbrowse.org/demos/cgiab/HG008-T_indexcov.bw
+- https://jbrowse.org/demos/cgiab/config.json
+- https://jbrowse.org/genomes/GRCh38/mane/MANE.GRCh38.v1.4.refseq.bb
+
+## Display settings
+
+Change a track's height, color and read pairing, then make the change stick in a link, a session file, or config.json
+
+Page: https://jbrowse.org/jb2/docs/tutorials/display_settings/
+
+- https://jbrowse.org/code/jb2/main/test_data/volvox/config.json
 
 ## A loss-of-function allele across breeds (Dog10K)
 
@@ -148,6 +173,7 @@ Locate a nonsense variant from the reference sequence, then read its genotypes a
 Page: https://jbrowse.org/jb2/docs/tutorials/dog10k_lof/
 
 - https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.2bit
+- https://jbrowse.org/code/jb2/main/test_data/dog10k/config.json
 - https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 
 ## A selected haplotype (Dog10K)
@@ -157,6 +183,7 @@ Scan Dog10K dogs and wolves for allele-frequency differences between breeds at b
 Page: https://jbrowse.org/jb2/docs/tutorials/dog10k_selection/
 
 - https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.2bit
+- https://jbrowse.org/code/jb2/main/test_data/dog10k/config.json
 - https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 - https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf
 
@@ -167,6 +194,7 @@ Genotype four classes of structural variant across dog breeds and read each agai
 Page: https://jbrowse.org/jb2/docs/tutorials/dog10k_svs/
 
 - https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.2bit
+- https://jbrowse.org/code/jb2/main/test_data/dog10k/config.json
 - https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz
 - https://kiddlabshare.med.umich.edu/dog10K/Manta-SV_2022-03-28/SV-genotype-v2.merge.agg_only.08032022.vcf.gz
 - https://zenodo.org/api/records/14968874/files/Dog10k_manta_paragraph.vcf.gz
@@ -182,6 +210,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/dtu/
 - https://jbrowse.org/demos/dtu/ENCFF253OSP.liver.minus.bigWig
 - https://jbrowse.org/demos/dtu/ENCFF518WGP.muscle.minus.bigWig
 - https://jbrowse.org/demos/dtu/ENCFF565QRM.liver.plus.bigWig
+- https://jbrowse.org/demos/dtu/config.json
 - https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 - https://www.encodeproject.org/files/ENCFF007ZBY/@@download/ENCFF007ZBY.bigWig
@@ -228,6 +257,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/gene_density/
 - https://jbrowse.org/demos/gene_density/Alu.bed.density.bw
 - https://jbrowse.org/demos/gene_density/L1.bed.density.bw
 - https://jbrowse.org/demos/gene_density/Simple_repeat.bed.density.bw
+- https://jbrowse.org/demos/gene_density/config.json
 - https://jbrowse.org/demos/gene_density/genes.gff.density.bw
 - https://jbrowse.org/demos/gene_density/genes.gff.gz
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
@@ -240,6 +270,7 @@ Compare gene predictions with an existing annotation, sort the disagreements int
 
 Page: https://jbrowse.org/jb2/docs/tutorials/gene_prediction_review/
 
+- https://jbrowse.org/code/jb2/main/test_data/config_demo.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 - https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz
 - https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz
@@ -251,6 +282,18 @@ Open a hosted genome, search a gene, and work through the UCSC track catalog on 
 Page: https://jbrowse.org/jb2/docs/tutorials/genomes_basics/
 
 - https://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw
+- https://jbrowse.org/hubs/genark/GCF/040/938/575/GCF_040938575.1/config.json
+- https://jbrowse.org/ucsc/hg38/config.json
+
+## Proteins on genomes.jbrowse.org
+
+Type a gene into the protein browser and open its exons, its 3D structure and a protein alignment as one linked JBrowse session, then launch the same views from a gene's right-click menu
+
+Page: https://jbrowse.org/jb2/docs/tutorials/genomes_proteins/
+
+- https://jbrowse.org/code/jb2/main/test_data/protein3d_config.json
+- https://jbrowse.org/demos/ccr5/config.json
+- https://jbrowse.org/ucsc/hg38/config.json
 
 ## Synteny on genomes.jbrowse.org
 
@@ -258,6 +301,10 @@ Open a UCSC liftOver track in a linear genome view and launch a synteny view fro
 
 Page: https://jbrowse.org/jb2/docs/tutorials/genomes_synteny/
 
+- https://jbrowse.org/code/jb2/main/test_data/hg38_hs1_synteny/config.json
+- https://jbrowse.org/ucsc/hg38/config-staging.json
+- https://jbrowse.org/ucsc/hg38/config.json
+- https://jbrowse.org/ucsc/mm39/config-staging.json
 - https://jbrowse.org/ucsc/panTro6/config.json
 
 ## Comparing one genome's two haplotypes (T2T-HG002)
@@ -266,7 +313,9 @@ Load T2T-HG002 v1.2 and the Q100 project's own maternal-to-paternal chain, plot 
 
 Page: https://jbrowse.org/jb2/docs/tutorials/hg002_haplotypes/
 
+- https://jbrowse.org/demos/hg002/config.json
 - https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1.MAT.loff.v0.6.gff.gz
+- https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1.PAT.loff.v0.6.gff.gz
 - https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/hg002v1.2.fasta.gz
 
 ## Synteny from liftOver chains (hg38 and eight vertebrates)
@@ -297,6 +346,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/hic_structural_variants/
 - https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig
 - https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic
 - https://encode-public.s3.amazonaws.com/2021/10/28/70e6944c-1212-45f9-855c-dbc74e9a21f5/ENCFF712NKX.bedpe.gz
+- https://jbrowse.org/code/jb2/main/test_data/config_demo.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 
 ## Synteny visualization (a polyploid against itself)
@@ -315,6 +365,8 @@ Triage a fusion caller's short-read calls against long RNA reads from the same c
 
 Page: https://jbrowse.org/jb2/docs/tutorials/k562_fusions/
 
+- https://jbrowse.org/demos/cancer_sv/K562.star-fusion.tsv
+- https://jbrowse.org/demos/cancer_sv/config.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 - https://www.encodeproject.org/files/ENCFF092NLB/@@download/ENCFF092NLB.bam
 - https://www.encodeproject.org/files/ENCFF433YKW/@@download/ENCFF433YKW.bam
@@ -329,6 +381,7 @@ Precompute an LD triangle with PLINK, and cut a window that shows the block's ed
 Page: https://jbrowse.org/jb2/docs/tutorials/ld_human/
 
 - https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
+- https://hgdownload.soe.ucsc.edu/gbdb/hg38/recombRate/recombAvg.bw
 - https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz
 - https://jbrowse.org/demos/popgen/lct_1kg38_chr2_af_CEU.bw
 - https://jbrowse.org/demos/popgen/lct_1kg38_chr2_af_CHB.bw
@@ -337,7 +390,9 @@ Page: https://jbrowse.org/jb2/docs/tutorials/ld_human/
 - https://jbrowse.org/demos/popgen/lct_1kg38_chr2_af_TSI.bw
 - https://jbrowse.org/demos/popgen/lct_1kg38_chr2_af_YRI.bw
 - https://jbrowse.org/demos/popgen/lct_1kg38_chr2_fst_eur_vs_rest.bw
+- https://jbrowse.org/demos/popgen/lct_1kg38_chr2_fst_eur_vs_rest_scan.bw
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
+- https://jbrowse.org/ucsc/hg38/config.json
 
 ## LD across an inversion (mosquitoes)
 
@@ -350,6 +405,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/ld_mosquitoes/
 - https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam_samples.tsv
 - https://jbrowse.org/demos/popgen/ag1000g_2La_GAgam.vcf.gz
 - https://jbrowse.org/demos/popgen/ag1000g_2La_GAgam_samples.tsv
+- https://jbrowse.org/ucsc/anoGam3/config.json
 
 ## Local ancestry (Dog10K)
 
@@ -358,6 +414,7 @@ Paint wolf-derived haplotype blocks in two wolfdog breeds, against 219 other bre
 Page: https://jbrowse.org/jb2/docs/tutorials/local_ancestry/
 
 - https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.2bit
+- https://jbrowse.org/code/jb2/main/test_data/dog10k/config.json
 - https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf
 
 ## Low-mappability regions (SMN)
@@ -375,10 +432,21 @@ Page: https://jbrowse.org/jb2/docs/tutorials/mappability_qc/
 - https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/encBlacklist.bb
 - https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/grcExclusions.bb
 - https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit
+- https://jbrowse.org/code/jb2/main/test_data/hg38_hs1_synteny/config.json
+- https://jbrowse.org/ucsc/hg38/config.json
 - https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz
 - https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_CHM13/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-chm13-R9-LSK110-guppy-sup-5mC.phased.bam
 - https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam
 - https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram
+- https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram.crai
+
+## Synteny from MCScan anchors (grape, peach)
+
+Load a pairwise jcvi MCScan run as gene-level and block-level synteny tracks, and convert an MCScanX run into the same files
+
+Page: https://jbrowse.org/jb2/docs/tutorials/mcscan_synteny_grape_peach/
+
+- https://jbrowse.org/code/jb2/main/test_data/config_dotplot.json
 
 ## Methylation (long-read)
 
@@ -386,6 +454,7 @@ Per-read, aggregate, and allele-specific 5mC from HG002 nanopore reads
 
 Page: https://jbrowse.org/jb2/docs/tutorials/methylation/
 
+- https://jbrowse.org/code/jb2/main/test_data/config_demo.json
 - https://jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam
 - https://jbrowse.org/demos/methylation/HG002_SNRPN_hp1.modkit.bed.gz
 - https://jbrowse.org/demos/methylation/HG002_SNRPN_hp2.modkit.bed.gz
@@ -418,6 +487,16 @@ Page: https://jbrowse.org/jb2/docs/tutorials/odp_linkage_groups_synteny/
 - https://bitbucket.org/EphydatiaGenome/ephydatiagenome/downloads/Emu_genome_v1.fa.gz
 - https://jbrowse.org/demos/odp_linkage_groups/config.json
 
+## A map of the human mitochondrial genome
+
+The human mitochondrial genome drawn as a circular map from NCBI's FASTA and GFF3, with its genes split by strand and the D-loop drawn across the origin
+
+Page: https://jbrowse.org/jb2/docs/tutorials/organelle_map/
+
+- https://jbrowse.org/code/jb2/main/test_data/human_mito/config.json
+- https://jbrowse.org/code/jb2/main/test_data/human_mito/mito.gff.gz
+- https://jbrowse.org/code/jb2/main/test_data/human_mito/sequence.fasta.gz
+
 ## Synteny visualization (OrthoFinder orthogroups)
 
 Stack genomes on OrthoFinder orthogroups, built from protein homology, as the synteny table
@@ -426,8 +505,11 @@ Page: https://jbrowse.org/jb2/docs/tutorials/orthofinder_synteny/
 
 - https://host/B.fa.gz
 - https://host/B.gff3.gz
+- https://jbrowse.org/demos/orthofinder_drosophila/config.json
 - https://jbrowse.org/demos/orthofinder_drosophila/drosophila.blocks.paf.gz
 - https://jbrowse.org/demos/orthofinder_grasses/config.json
+- https://jbrowse.org/demos/orthofinder_solanaceae/config.json
+- https://jbrowse.org/demos/orthofinder_vertebrates/config.json
 - https://jbrowse.org/demos/orthofinder_wheat/config.json
 
 ## Pangenome (Minigraph-Cactus)
@@ -436,10 +518,19 @@ Build a Minigraph-Cactus pangenome graph and load its linear projections in JBro
 
 Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_cactus/
 
+- https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/config.json
 - https://jbrowse.org/demos/ecoli_pangenome/K12.fa.gz
+- https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz
+- https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz.tbi
+- https://jbrowse.org/demos/ecoli_pangenome/config.json
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.links.bed.gz
+- https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.maf.bed.gz
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.segs.bed.gz
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus_depth.bw
+- https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus_pav_CFT073.bw
+- https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus_pav_IAI39.bw
+- https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus_pav_NCTC86.bw
+- https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus_pav_Sakai.bw
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_depth.bw
 
 ## Pangenome (cattle)
@@ -449,6 +540,7 @@ Open the bovine super-pangenome, deconstruct it into the callset that lists each
 Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_cattle/
 
 - https://hgdownload.soe.ucsc.edu/goldenPath/bosTau9/bigZips/bosTau9.2bit
+- https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/pangenome_nonhuman.json
 - https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.alleles.bed.gz
 - https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz
 - https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.links.bed.gz
@@ -464,15 +556,26 @@ Build a pggb pangenome graph of several strains and load its linear projections 
 
 Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_ecoli/
 
+- https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/config.json
 - https://jbrowse.org/demos/ecoli_pangenome/K12.fa.gz
+- https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz
+- https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz.tbi
+- https://jbrowse.org/demos/ecoli_pangenome/config.json
+- https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.maf.bed.gz
+- https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_depth.bw
 
-##  "Pangenome (HPRC) part 1: the graph's alleles and the haplotypes that have them"
+## Pangenome (HPRC) part 1: the graph's alleles and the haplotypes that have them
 
 Open HPRC release 2's pangenome graph from genomes.jbrowse.org as a track of the linear view, trace an allele to the assembly it came from, list every haplotype with it from the release's phased VCF, and read the same alleles as aligned bases in the release's multiple alignment
 
 Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc/
 
+- https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/hprc.json
+- https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.bubbles.bed.gz
 - https://jbrowse.org/pangenome/hprc-grch38/NA20809.2.chrom.sizes
+- https://jbrowse.org/pangenome/hprc-grch38/config.json
+- https://jbrowse.org/ucsc/hg38/hg38.gff.gz
+- https://jbrowse.org/ucsc/hg38/hg38.gff.gz.csi
 - https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz
 - https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz
 - https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
@@ -483,6 +586,8 @@ Draw HPRC haplotypes as lanes in assembly coordinates, aligned to each other by 
 
 Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc_haplotypes/
 
+- https://jbrowse.org/demos/hprc_multiway/config.json
+- https://jbrowse.org/pangenome/hprc-grch38/config.json
 - https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
 
 ## Pangenome (HPRC) part 3: repeat lengths across haplotypes
@@ -491,12 +596,16 @@ Count kringle copies in LPA and tell their two repeat types apart, measure the A
 
 Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc_repeats/
 
+- https://jbrowse.org/code/jb2/main/test_data/amylase/config.json
+- https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/hprc.json
 - https://jbrowse.org/demos/hprc/config.json
 - https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa
 - https://jbrowse.org/demos/hprc/hprc_abca7_cnvtr.vcf.gz
 - https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz
 - https://jbrowse.org/demos/hprc/hprc_kiv2_copies_all.vcf.gz
 - https://jbrowse.org/demos/hprc/hprc_samples.tsv
+- https://jbrowse.org/demos/hprc/lpa_uniprot_domains.bed.gz
+- https://jbrowse.org/pangenome/hprc-grch38/config.json
 - https://zenodo.org/records/8329210/files/adotto_repeats.hg38.bed.gz
 
 ## Pangenome (mouse)
@@ -507,12 +616,23 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_mouse/
 
 - https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.2bit
 - https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz
+- https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/pangenome_nonhuman.json
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.alleles.bed.gz
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.links.bed.gz
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.segs.bed.gz
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.links.bed.gz
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.segs.bed.gz
+
+## Pangenome (hosting your own graph)
+
+One command turns your pangenome graph into the indexed files JBrowse browses by locus, plus the config that puts them on tracks
+
+Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_prepare_graph/
+
+- https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/hprc.json
+- https://jbrowse.org/demos/hprc/config.json
+- https://jbrowse.org/pangenome/hprc-grch38/config.json
 
 ## CNV across a population (1000 Genomes)
 
@@ -522,6 +642,8 @@ Page: https://jbrowse.org/jb2/docs/tutorials/population_cnv/
 
 - https://1000genomes.s3.amazonaws.com/phase3/integrated_sv_map/supporting/GRCh38_positions/ALL.wgs.integrated_sv_map_v2_GRCh38.20130502.svs.genotypes.vcf.gz
 - https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Variant_Calls/1.0/GRCh38/variants_GRCh38_sv_insdel_sym_HGSVC2024v1.0.vcf.gz
+- https://jbrowse.org/code/jb2/main/test_data/1000g_cnv/config.json
+- https://jbrowse.org/code/jb2/main/test_data/config_demo.json
 - https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00551.qm2.CN.1k.bw
 - https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw
 - https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00731.qm2.CN.1k.bw
@@ -547,6 +669,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/population_genomics/
 - https://jbrowse.org/demos/popgen/pi_ratio_In2Lt.bw
 - https://jbrowse.org/demos/popgen/sites_all.bw
 - https://jbrowse.org/demos/popgen/tajimad_all.bw
+- https://jbrowse.org/ucsc/dm6/config.json
 - https://jbrowse.org/ucsc/dm6/ncbiRefSeq.gff.gz
 - https://resources.aertslab.org/DGRP2/NCSU/final/dm6/DGRP2.source_NCSU.dm6.final.SNPs_only.vcf.gz
 
@@ -568,6 +691,7 @@ Open BRAF on codon 600, whose V600E change drives about half of melanomas, besid
 Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_braf/
 
 - https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb
+- https://jbrowse.org/ucsc/hg38/config.json
 
 ## Variants on protein structures part 2: degenerative myelopathy in dogs
 
@@ -578,6 +702,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_dog_myelopathy/
 - https://jbrowse.org/demos/dog10k_sod1/dog10k_samples.tsv
 - https://jbrowse.org/demos/dog10k_sod1/dog10k_sod1.vcf.gz
 - https://jbrowse.org/demos/dog10k_sod1/dog10k_sod1.vcf.gz.tbi
+- https://jbrowse.org/ucsc/canFam4/config.json
 - https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 
 ## Variants on protein structures part 4: KRAS G12 in the GTP pocket
@@ -587,8 +712,17 @@ Open KRAS on codon 12, the most often mutated codon of the gene in cancer, besid
 Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_kras/
 
 - https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb
+- https://jbrowse.org/ucsc/hg38/config.json
 
-##  'Variants on protein structures part 1: sickle cell from GWAS hit to haemoglobin S'
+## Variants on protein structures part 3: seedless grapes on an AlphaFold model
+
+Open the grapevine seedlessness gene VviAGL11 on codon 197 beside its AlphaFold model, and read the model's per-residue confidence before reading anything into the residue the seedless allele changes
+
+Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_seedless_grape/
+
+- https://jbrowse.org/hubs/genark/GCF/030/704/535/GCF_030704535.1/config.json
+
+## Variants on protein structures part 1: sickle cell from GWAS hit to haemoglobin S
 
 Follow the sickle cell allele of HBB from its GWAS Catalog associations and its distribution across 1000 Genomes ancestries to the residue it changes in the crystal structure of sickle haemoglobin
 
@@ -597,8 +731,17 @@ Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_sickle_cell/
 - https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr11.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
 - https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr11.filtered.SNV_INDEL_SV_phased_panel.vcf.gz.tbi
 - https://jbrowse.org/demos/1000g/1kgp_3202_superpopulations.tsv
+- https://jbrowse.org/ucsc/hg38/config.json
 - https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz
 - https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz.csi
+
+## Variants on protein structures part 5: TP53 R248 and R273 on DNA
+
+Open TP53 on codons 248 and 273, two of its most often mutated codons in cancer, beside the crystal structure of the p53 core domain bound to DNA, and read which of NCBI's conserved sites they fall in
+
+Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_tp53/
+
+- https://jbrowse.org/ucsc/hg38/config.json
 
 ## A grammar of graphics over a BAM (NA12878 insert size)
 
@@ -607,6 +750,7 @@ Declare a read's depth, insert size and mapping quality as the channels of a plo
 Page: https://jbrowse.org/jb2/docs/tutorials/read_marks/
 
 - https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz
+- https://jbrowse.org/demos/read_marks/config.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 - https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram
 
@@ -616,6 +760,7 @@ Spliced reads, splice arcs, and strand-specific coverage in RNA-seq
 
 Page: https://jbrowse.org/jb2/docs/tutorials/rnaseq/
 
+- https://jbrowse.org/code/jb2/main/test_data/config_demo.json
 - https://jbrowse.org/demos/rnaseq/rnaseq_junctions.bed.gz
 - https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz
 - https://jbrowse.org/ucsc/hg19/cytoBandIdeo.bed.gz
@@ -630,6 +775,7 @@ Aggregate single-cell ATAC into per-cell-type coverage BigWigs
 
 Page: https://jbrowse.org/jb2/docs/tutorials/scatac_pseudobulk/
 
+- https://jbrowse.org/code/jb2/main/test_data/config_demo.json
 - https://jbrowse.org/demos/scatac_pbmc5k/CD8_Memory.bw
 - https://jbrowse.org/demos/scatac_pbmc5k/CD8_Naive.bw
 - https://jbrowse.org/demos/scatac_pbmc5k/Naive_B.bw
@@ -642,6 +788,7 @@ Aggregate single-cell RNA into per-cell-type coverage BigWigs, with a row per ce
 Page: https://jbrowse.org/jb2/docs/tutorials/scrna_pseudobulk/
 
 - https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_possorted_genome_bam.bam
+- https://jbrowse.org/code/jb2/main/test_data/scrna_pbmc5k/config.json
 - https://jbrowse.org/demos/scrna_pbmc5k/CD14_Mono.bw
 - https://jbrowse.org/demos/scrna_pbmc5k/CD4_T.bw
 - https://jbrowse.org/demos/scrna_pbmc5k/CD8_T.bw
@@ -681,7 +828,9 @@ Page: https://jbrowse.org/jb2/docs/tutorials/sv_multisamples/
 - https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240129/HG00113.final.cram
 - https://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/1000G_2504_high_coverage/data/ERR3242423/HG02768.final.cram
 - https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz
+- https://jbrowse.org/code/jb2/main/test_data/1000g_cnv/config.json
 - https://jbrowse.org/demos/1000g/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz
+- https://jbrowse.org/demos/1000g/config.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 
 ## Structural variants (Cancer GIAB) part 1: breakpoints
@@ -698,7 +847,11 @@ Page: https://jbrowse.org/jb2/docs/tutorials/sv_visualization_cgiab/
 - https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3/HG008-T--HG008-N.sv.annotated.v7.somatic.high_confidence.final.bedpe
 - https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/references/GRCh38/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz
 - https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb
+- https://jbrowse.org/demos/cgiab/HG008-T.hificnv.depth.bw
+- https://jbrowse.org/demos/cgiab/HG008-T_chr10_CUZD1_deletion.bam
+- https://jbrowse.org/demos/cgiab/HG008-T_chr10_CUZD1_deletion.bam.bai
 - https://jbrowse.org/demos/cgiab/config.json
+- https://jbrowse.org/genomes/GRCh38/cgiab/GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz
 - https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008N_v6.3/HG008N_v6.3.fasta.gz
 - https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008T_v3.2/HG008T_v3.2.fasta.gz
 
@@ -712,8 +865,19 @@ Page: https://jbrowse.org/jb2/docs/tutorials/synteny_visualization/
 - https://hgdownload.soe.ucsc.edu/hubs/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1.fa.gz
 - https://hgdownload.soe.ucsc.edu/hubs/GCF/000/982/695/GCF_000982695.1/GCF_000982695.1.fa.gz
 - https://hgdownload.soe.ucsc.edu/hubs/GCF/025/998/455/GCF_025998455.1/GCF_025998455.1.fa.gz
+- https://jbrowse.org/demos/hpylori/26695_vs_chc155.pif.gz
+- https://jbrowse.org/demos/hpylori/26695_vs_chc155.pif.gz.tbi
+- https://jbrowse.org/demos/hpylori/config.json
 - https://jbrowse.org/hubs/genark/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1_ASM30779v1_genomic.gff.gz
 - https://jbrowse.org/hubs/genark/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1_ASM30779v1_genomic.gff.gz.csi
+
+## Rearrangements between genomes by type (SyRI)
+
+Load the SyRI classification of the differences between assembled genomes, so each syntenic, inverted, translocated or duplicated region is a ribbon colored by its type, in a stack of six Arabidopsis accessions and as lanes in the reference coordinates
+
+Page: https://jbrowse.org/jb2/docs/tutorials/syri_synteny/
+
+- https://jbrowse.org/code/jb2/main/test_data/syri/config.json
 
 ## Synteny from a Cactus alignment (T2T apes)
 
@@ -730,6 +894,7 @@ Plot somatic copy number across a cohort of tumors, one row per sample
 
 Page: https://jbrowse.org/jb2/docs/tutorials/tcga_cohort_cnv/
 
+- https://jbrowse.org/demos/1000g/config.json
 - https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 
@@ -739,6 +904,7 @@ Read somatic point mutations across a cohort of tumors as a genotype matrix, fac
 
 Page: https://jbrowse.org/jb2/docs/tutorials/tcga_cohort_mutations/
 
+- https://jbrowse.org/demos/1000g/config.json
 - https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv
 - https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
@@ -749,4 +915,5 @@ Open an AlphaFold model, the DNA-bound core domain and the MDM2 complex of p53 i
 
 Page: https://jbrowse.org/jb2/docs/tutorials/tp53_structures/
 
+- https://jbrowse.org/code/jb2/main/test_data/protein3d_config.json
 - https://rest.uniprot.org/uniprotkb/P04637.gff

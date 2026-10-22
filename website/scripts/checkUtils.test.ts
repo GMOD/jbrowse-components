@@ -1,4 +1,4 @@
-import { parseMetadata } from './check-utils.ts'
+import { parseFrontmatter, parseMetadata } from './check-utils.ts'
 
 const doc = (body: string) => `---\n${body}\n---\n\n# Heading\n`
 
@@ -36,4 +36,18 @@ test('stops at the next top-level key', () => {
 
 test('is empty for a doc with no metadata block', () => {
   expect(parseMetadata(doc('name: x\ndescription: y'))).toEqual({})
+})
+
+test('a quoted value folded under its key comes out as one unquoted line', () => {
+  expect(
+    parseFrontmatter(
+      doc(
+        "title:\n  'Part 1: sickle cell, the gene''s\n  variant'\ndescription:\n  \"Two: lines\"\nsidebar: plain",
+      ),
+    ),
+  ).toEqual({
+    title: "Part 1: sickle cell, the gene's variant",
+    description: 'Two: lines',
+    sidebar: 'plain',
+  })
 })
