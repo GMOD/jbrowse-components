@@ -1,6 +1,6 @@
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 
-import type { Sample } from '../types.ts'
+import type { MafSource } from '../types.ts'
 
 /**
  * Build a FASTA-formatted string from per-sample raw sequences.
@@ -15,7 +15,7 @@ import type { Sample } from '../types.ts'
  */
 export function formatFastaSequences(
   rawSequences: string[],
-  samples: Sample[] | undefined,
+  samples: MafSource[] | undefined,
   singleLine: boolean,
 ): string {
   if (!samples || rawSequences.length === 0) {

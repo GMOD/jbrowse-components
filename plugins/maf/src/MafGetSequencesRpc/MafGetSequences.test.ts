@@ -32,7 +32,7 @@ async function run(bytes: number | undefined, byteLimit?: number) {
     regions: [REGION],
     adapterConfig: { type: 'MafTabixAdapter' },
     sessionId: 'session-1',
-    samples: [{ id: 'mm10', label: 'mm10' }],
+    samples: [{ name: 'mm10', label: 'mm10' }],
     showAllLetters: true,
     byteLimit,
   })

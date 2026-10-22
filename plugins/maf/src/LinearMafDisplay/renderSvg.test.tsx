@@ -37,8 +37,8 @@ function clusteredDisplay() {
   view.zoomTo(1)
   display.setSamples({
     samples: [
-      { id: 'hg38', label: 'hg38' },
-      { id: 'mm10', label: 'mm10' },
+      { name: 'hg38', label: 'hg38' },
+      { name: 'mm10', label: 'mm10' },
     ],
     treeNewick: undefined,
     samplesCanonical: true,
@@ -89,8 +89,8 @@ function summaryTierDisplay() {
   }).createDisplay()
   display.setSamples({
     samples: [
-      { id: 'hg38', label: 'hg38' },
-      { id: 'mm10', label: 'mm10' },
+      { name: 'hg38', label: 'hg38' },
+      { name: 'mm10', label: 'mm10' },
     ],
     treeNewick: undefined,
     samplesCanonical: true,

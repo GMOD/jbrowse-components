@@ -19,8 +19,8 @@ function summaryBars(display: LinearMafDisplayModel) {
 function seedSources(display: LinearMafDisplayModel) {
   display.setSamples({
     samples: [
-      { id: 'hg38', label: 'hg38' },
-      { id: 'panTro4', label: 'panTro4' },
+      { name: 'hg38', label: 'hg38' },
+      { name: 'panTro4', label: 'panTro4' },
     ],
     treeNewick: undefined,
     samplesCanonical: true,

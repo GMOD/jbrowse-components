@@ -147,7 +147,7 @@ test('the subtree filter drops rows but the sample list keeps every genome', asy
   // mm10 is filtered out of the arena and still listed, so the sidebar tree can
   // offer it back. Discovery order is the order the blocks named them, which is
   // why this cannot be read off the packer's own dictionary.
-  expect(samples.map(s => s.id)).toEqual(['hg38', 'mm10', 'rn6'])
+  expect(samples.map(s => s.name)).toEqual(['hg38', 'mm10', 'rn6'])
   expect(samples.length).toBe(3)
 })
 
@@ -185,7 +185,7 @@ test('a species seen only on an e line is discovered and packed as an empty', as
   expect(rowSeqs(regionData)).toEqual(['ACGT'])
   expect([...regionData.blockEmptyStart]).toEqual([0, 1])
   expect([...regionData.emptyStart]).toEqual([7])
-  expect(samples.map(s => s.id)).toEqual(['hg38', 'canFam'])
+  expect(samples.map(s => s.name)).toEqual(['hg38', 'canFam'])
 })
 
 test('a region with no blocks packs empty rather than throwing', async () => {

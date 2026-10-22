@@ -53,16 +53,16 @@ export abstract class MafAdapterBase<
    */
   async sampleIds(opts?: BaseOptions) {
     const { samples } = await this.getSamples(opts)
-    return samples.length ? new Set(samples.map(s => s.id)) : undefined
+    return samples.length ? new Set(samples.map(s => s.name)) : undefined
   }
 
   async listRowSources(opts?: BaseOptions): Promise<RowSourceListing> {
     const { samples, treeNewick } = await this.getSamples(opts)
     return {
       field: 'alignments',
-      sources: samples.map(({ id, label, color }) => ({
-        name: id,
-        ...(label && label !== id ? { label } : {}),
+      sources: samples.map(({ name, label, color }) => ({
+        name,
+        ...(label !== name ? { label } : {}),
         ...(color ? { color } : {}),
       })),
       ...(treeNewick === undefined ? {} : { tree: treeNewick }),

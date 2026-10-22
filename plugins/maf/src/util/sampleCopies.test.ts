@@ -208,13 +208,13 @@ test('a focus on a sample ships its copy rows', async () => {
 test('withCopyRows puts copies after their sample in its color', () => {
   const rows = withCopyRows(
     [
-      { id: 'GRCh38', label: 'GRCh38' },
-      { id: 'HG01175.1', label: 'HG01175 hap1', color: 'red' },
-      { id: 'HG00097.1', label: 'HG00097.1' },
+      { name: 'GRCh38', label: 'GRCh38' },
+      { name: 'HG01175.1', label: 'HG01175 hap1', color: 'red' },
+      { name: 'HG00097.1', label: 'HG00097.1' },
     ],
     ['GRCh38', 'HG01175.1', 'HG01175.1~2', 'HG00097.1', 'HG01175.1~3'],
   )
-  expect(rows.map(r => [r.id, r.label, r.color])).toEqual([
+  expect(rows.map(r => [r.name, r.label, r.color])).toEqual([
     ['GRCh38', 'GRCh38', undefined],
     ['HG01175.1', 'HG01175 hap1', 'red'],
     ['HG01175.1~2', 'HG01175 hap1 copy 2', 'red'],

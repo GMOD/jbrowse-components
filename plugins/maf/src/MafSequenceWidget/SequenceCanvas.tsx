@@ -8,10 +8,10 @@ import { observer } from 'mobx-react'
 import { CHAR_WIDTH, ROW_HEIGHT } from './constants.ts'
 import { drawSequenceGrid } from './drawSequenceGrid.ts'
 
-import type { Sample } from '../types.ts'
+import type { MafSource } from '../types.ts'
 
 interface SequenceCanvasProps {
-  samples: Sample[]
+  samples: MafSource[]
   sequences: string[]
   colorBackground: boolean
   scrollTop: number

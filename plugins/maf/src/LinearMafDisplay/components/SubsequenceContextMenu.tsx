@@ -41,15 +41,15 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
   contextCoord: ContextCoord | undefined
   setContextCoord: (c: ContextCoord | undefined) => void
 }) {
-  const { samples, exportSamples, coarseTierActive } = model
+  const { sources, clusterableSources, coarseTierActive } = model
   // Both entries need the per-base alignment, so both are off past the summary
   // tier's floor, like the track menu's subsequence entry.
   const zoomHint = coarseTierActive ? ZOOM_IN_FOR_BAND : undefined
   const { startRow, endRow } = contextCoord
     ? rowSpanAtY(model, contextCoord.startY, contextCoord.endY)
     : { startRow: 0, endRow: 0 }
-  const selectedRows = samples.slice(startRow, endRow)
-  const openRows = (rows: typeof samples) => {
+  const selectedRows = sources.slice(startRow, endRow)
+  const openRows = (rows: typeof sources) => {
     if (contextCoord) {
       openSubsequenceWidget(
         getSession(model),
@@ -75,7 +75,7 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
               {
                 label: 'All rows',
                 onClick: () => {
-                  openRows(exportSamples)
+                  openRows(clusterableSources)
                 },
               },
               zoomHint,

@@ -168,7 +168,7 @@ pins both halves.
 as UCSC db names, scientific names that map to several assemblies (the alignment
 was built against exactly one, so a guess gives silently wrong coordinates), or
 lab-internal ids. The mapping is provenance from whoever built the alignment, so
-`Sample` (`plugins/maf/src/types.ts`) carries an optional `assemblyName` in the
+`MafSource` (`plugins/maf/src/types.ts`) carries an optional `assemblyName` in the
 track config; unset means not navigable.
 
 - **`ensureAssembly` probes with `assemblyManager.has()`, never `get()`.** `get()`

@@ -2,16 +2,16 @@ import { clusteredCladeLayout } from '@jbrowse/tree-sidebar'
 
 import { runMafClustering } from './runMafClustering.ts'
 
+import type { MafSource } from '../types.ts'
 import type {
   ClusterIdentityMatrixCaller,
   MafClusterSelf,
 } from './runMafClustering.ts'
-import type { MafSource } from './stateModel.ts'
 
 const regions = [{ assemblyName: 'hg38', refName: 'chr6', start: 0, end: 100 }]
 
 function src(name: string): MafSource {
-  return { name }
+  return { name, label: name }
 }
 
 // `adapterConfig` is forwarded to the RPC opaquely and never read here, and the

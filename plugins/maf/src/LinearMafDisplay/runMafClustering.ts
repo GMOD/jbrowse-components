@@ -3,7 +3,7 @@ import {
   clusterProvenanceFromRegions,
 } from '@jbrowse/tree-sidebar'
 
-import type { MafSource } from './stateModel.ts'
+import type { MafSource } from '../types.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ClusterRunModel, RpcMethodCaller } from '@jbrowse/tree-sidebar'

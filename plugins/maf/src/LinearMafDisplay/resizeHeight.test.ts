@@ -8,7 +8,7 @@ function setup(nSamples: number, rowHeight: number) {
   const { display } = createMafTestEnvironment().createDisplay()
   display.setSamples({
     samples: Array.from({ length: nSamples }, (_, i) => ({
-      id: `s${i}`,
+      name: `s${i}`,
       label: `s${i}`,
     })),
     treeNewick: undefined,
@@ -114,7 +114,7 @@ describe('fit-to-display-height keeps the track height', () => {
     const before = display.height
     display.setSamples({
       samples: Array.from({ length: 40 }, (_, i) => ({
-        id: `x${i}`,
+        name: `x${i}`,
         label: `x${i}`,
       })),
       treeNewick: undefined,
@@ -185,7 +185,7 @@ describe('resizable band height floor', () => {
 test('hidden alignments draw no tree and reserve no gutter', () => {
   const { display } = createMafTestEnvironment().createDisplay()
   display.setSamples({
-    samples: ['a', 'b', 'c'].map(id => ({ id, label: id })),
+    samples: ['a', 'b', 'c'].map(name => ({ name, label: name })),
     treeNewick: '((a,b),c);',
     samplesCanonical: true,
   })

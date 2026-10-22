@@ -122,7 +122,7 @@ function stageTwoChromosomes(
   display: ReturnType<typeof makeDisplay>['display'],
 ) {
   display.setSamples({
-    samples: [{ id: 'sp1', label: 'sp1' }],
+    samples: [{ name: 'sp1', label: 'sp1' }],
     treeNewick: undefined,
     samplesCanonical: true,
   })

@@ -79,7 +79,7 @@ describe('the CDS strip keys itself', () => {
 
   function seed(display: LinearMafDisplayModel, showStrip: boolean) {
     display.setSamples({
-      samples: [{ id: 'hg38', label: 'hg38' }],
+      samples: [{ name: 'hg38', label: 'hg38' }],
       treeNewick: undefined,
       samplesCanonical: true,
     })

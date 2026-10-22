@@ -13,7 +13,7 @@ afterEach(() => {
 })
 
 function sample(id: string) {
-  return { id, label: id }
+  return { name: id, label: id }
 }
 
 const EMPTY_ALIGNMENT_DATA = {

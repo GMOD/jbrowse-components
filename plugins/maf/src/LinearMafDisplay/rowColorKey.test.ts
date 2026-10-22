@@ -9,8 +9,8 @@ function loaded(rowColor?: string) {
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
   display.setSamples({
     samples: [
-      { id: 'hg38', label: 'Human', color: '#aa0000' },
-      { id: 'panTro4', label: 'Chimp' },
+      { name: 'hg38', label: 'Human', color: '#aa0000' },
+      { name: 'panTro4', label: 'Chimp' },
     ],
     treeNewick: undefined,
     samplesCanonical: true,

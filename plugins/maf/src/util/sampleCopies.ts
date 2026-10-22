@@ -1,4 +1,4 @@
-import type { Sample } from '../types.ts'
+import type { MafSource } from '../types.ts'
 
 /**
  * A block can hold several rows of one sample: Cactus writes one per copy of a
@@ -75,9 +75,9 @@ export function placeCopyRows<T extends { name: string }>(rows: readonly T[]) {
  * list joins the end.
  */
 export function withCopyRows(
-  samples: readonly Sample[],
+  samples: readonly MafSource[],
   discovered: Iterable<string>,
-): Sample[] {
+): MafSource[] {
   const copiesOf = new Map<string, string[]>()
   for (const id of discovered) {
     const parent = copyParent(id)
@@ -93,21 +93,21 @@ export function withCopyRows(
   if (!copiesOf.size) {
     return [...samples]
   }
-  const listed = new Set(samples.map(s => s.id))
-  const out: Sample[] = []
-  const placeCopies = (sample: Sample | undefined, parent: string) => {
-    for (const id of copiesOf.get(parent) ?? []) {
+  const listed = new Set(samples.map(s => s.name))
+  const out: MafSource[] = []
+  const placeCopies = (sample: MafSource | undefined, parent: string) => {
+    for (const name of copiesOf.get(parent) ?? []) {
       out.push({
         ...sample,
-        id,
-        label: `${sample?.label ?? parent} copy ${id.slice(parent.length + 1)}`,
+        name,
+        label: `${sample?.label ?? parent} copy ${name.slice(parent.length + 1)}`,
       })
     }
   }
   for (const sample of samples) {
-    if (copyParent(sample.id) === undefined) {
+    if (copyParent(sample.name) === undefined) {
       out.push(sample)
-      placeCopies(sample, sample.id)
+      placeCopies(sample, sample.name)
     }
   }
   for (const parent of copiesOf.keys()) {

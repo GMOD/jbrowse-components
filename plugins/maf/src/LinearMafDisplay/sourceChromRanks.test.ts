@@ -10,7 +10,7 @@ import type { LinearMafDisplayModel } from './stateModel.ts'
 // row has a rank order to report.
 function loadTwoChromBlocks(display: LinearMafDisplayModel) {
   display.setSamples({
-    samples: [{ id: 'sp1', label: 'sp1' }],
+    samples: [{ name: 'sp1', label: 'sp1' }],
     treeNewick: undefined,
     samplesCanonical: true,
   })

@@ -14,7 +14,7 @@ import type {
   MafFrameRecord,
   MafRegionPayload,
   MafSummaryRecord,
-  Sample,
+  MafSource,
 } from '../types.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
@@ -36,7 +36,7 @@ interface MafFetchSelf extends FetchEachRegionModel {
 }
 
 interface SampleSet {
-  samples: Sample[]
+  samples: MafSource[]
   treeNewick: string | undefined
   samplesCanonical: boolean
 }
@@ -54,15 +54,15 @@ export function unionSampleSets(
   results: readonly { result: SampleSet }[],
 ): SampleSet | undefined {
   const first = results[0]?.result
-  const byId = new Map<string, Sample>()
+  const byName = new Map<string, MafSource>()
   for (const { result } of results) {
     for (const sample of result.samples) {
-      byId.set(sample.id, sample)
+      byName.set(sample.name, sample)
     }
   }
   return first
     ? {
-        samples: [...byId.values()],
+        samples: [...byName.values()],
         treeNewick: first.treeNewick,
         samplesCanonical: first.samplesCanonical,
       }

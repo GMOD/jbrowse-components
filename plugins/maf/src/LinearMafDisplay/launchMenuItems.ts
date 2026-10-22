@@ -9,7 +9,7 @@ import {
 import { openSubsequenceWidget } from './openSubsequenceWidget.ts'
 import { ZOOM_IN_FOR_BAND, zoomGatedItem } from './trackMenuItems.ts'
 
-import type { Sample } from '../types.ts'
+import type { MafSource } from '../types.ts'
 import type { SampleNavigationModel } from './components/sampleNavigationItems.ts'
 import type {
   MafSyntenyHost,
@@ -27,7 +27,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 export type MafLaunchModel = SampleNavigationModel &
   MafSyntenyLaunchModel &
   SubsequenceHost & {
-    exportSamples: Sample[]
+    clusterableSources: MafSource[]
     sources: unknown[]
     coarseTierActive: boolean
     view: { width: number }
@@ -57,7 +57,7 @@ export function mafLaunchMenuItems({
         {
           label: 'View subsequences (visible region)',
           icon: NotesIcon,
-          disabled: model.exportSamples.length === 0,
+          disabled: model.clusterableSources.length === 0,
           onClick: () => {
             // `width - 1`, the last pixel the window paints, matching the
             // entries below.
@@ -67,7 +67,7 @@ export function mafLaunchMenuItems({
               view,
               0,
               view.width - 1,
-              model.exportSamples,
+              model.clusterableSources,
             )
           },
         },

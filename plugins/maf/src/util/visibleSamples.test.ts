@@ -1,9 +1,6 @@
 import { visibleSamples } from './visibleSamples.ts'
 
-const listed = [
-  { id: 'hg38', label: 'hg38' },
-  { id: 'mm10', label: 'mm10' },
-]
+const listed = [{ name: 'hg38' }, { name: 'mm10' }]
 
 test('a focus naming a listed species ships that set', () => {
   expect(visibleSamples(['mm10', 'rn6'], listed)).toEqual(

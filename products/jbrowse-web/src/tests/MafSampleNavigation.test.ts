@@ -7,7 +7,7 @@ import configSnapshot from '../../test_data/volvox/config_maf_navigation.json' w
 import { utilizeFetchMockForTest, volvoxGetFile } from './generateReadBuffer.ts'
 import { getPluginManager } from './util.tsx'
 
-import type { Sample } from '../../../../plugins/maf/src/types.ts'
+import type { SampleConfigEntry } from '../../../../plugins/maf/src/util/getSamples.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 jest.mock('../makeWorkerInstance', () => () => {})
@@ -22,7 +22,10 @@ async function setup() {
     (t: AnyConfigurationModel) =>
       readConfObject(t, 'trackId') === 'volvox_maf_navigable',
   )!
-  const samples = readConfObject(track, ['adapter', 'samples']) as Sample[]
+  const samples = readConfObject(track, [
+    'adapter',
+    'samples',
+  ]) as SampleConfigEntry[]
   const reported: string[] = []
   getEnv(session).pluginManager.listenToExtensionPoint(
     'Core-handleUnrecognizedAssembly',
@@ -33,14 +36,14 @@ async function setup() {
   return { session, samples, reported }
 }
 
-function targetFor(sample: Sample) {
+function targetFor(sample: SampleConfigEntry) {
   return {
     assemblyName: sample.assemblyName!,
     assemblyConfigLocation: sample.assemblyConfigLocation,
     chr: 'chrA',
     start: 5489,
     end: 5664,
-    sampleLabel: sample.label,
+    sampleLabel: sample.label ?? sample.id,
   }
 }
 

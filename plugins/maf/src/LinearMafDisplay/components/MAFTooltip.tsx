@@ -124,7 +124,7 @@ const MAFTooltip = observer(function MAFTooltip({
         frame={frame}
         codon={codon}
         summary={summary}
-        summarySampleLabel={model.samples[rowIndex]?.label}
+        summarySampleLabel={model.sources[rowIndex]?.label}
         identity={identity}
       />
     </BaseTooltip>

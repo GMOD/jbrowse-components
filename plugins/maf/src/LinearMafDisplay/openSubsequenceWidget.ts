@@ -1,7 +1,7 @@
 import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 
-import type { Sample } from '../types.ts'
+import type { MafSource } from '../types.ts'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -57,7 +57,7 @@ export function openSubsequenceWidget(
   view: LinearGenomeViewModel,
   startPx: number,
   endPx: number,
-  samples: Sample[],
+  samples: MafSource[],
 ) {
   if (!isSessionModelWithWidgets(session) || samples.length === 0) {
     return

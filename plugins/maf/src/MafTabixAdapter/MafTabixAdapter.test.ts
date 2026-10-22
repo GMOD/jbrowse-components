@@ -176,7 +176,7 @@ describe('MafTabixAdapter reads a maf_to_bed BED', () => {
     const { samples, treeNewick } = await adapter().getSamples()
     expect(treeNewick).toContain('volvox')
     // leaf order drives row order
-    expect(samples.map(s => s.id)).toContain('simvolvox')
+    expect(samples.map(s => s.name)).toContain('simvolvox')
   })
 
   it('lists its species as rows over the alignments record, in tree order', async () => {

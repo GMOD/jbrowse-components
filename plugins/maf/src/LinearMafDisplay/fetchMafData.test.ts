@@ -4,7 +4,7 @@ import {
   unionSampleSets,
 } from './fetchMafData.ts'
 
-import type { Sample } from '../types.ts'
+import type { MafSource } from '../types.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { RegionFetchContext } from '@jbrowse/display-kit/regionCommit'
 
@@ -21,8 +21,8 @@ jest.mock('@jbrowse/core/util/tracks', () => ({
   getRpcSessionId: () => 'session-1',
 }))
 
-function sample(id: string): Sample {
-  return { id, label: id }
+function sample(id: string): MafSource {
+  return { name: id, label: id }
 }
 
 function result(...ids: string[]) {
@@ -40,20 +40,20 @@ describe('unionSampleSets', () => {
     // A sample-discovery track over a viewport whose first buffered region is a
     // MAF gap (no blocks → no samples) but a later region has alignments.
     const set = unionSampleSets([result(), result('hg38', 'mm10')])
-    expect(set?.samples.map(s => s.id)).toEqual(['hg38', 'mm10'])
+    expect(set?.samples.map(s => s.name)).toEqual(['hg38', 'mm10'])
   })
 
   test('unions regions that discovered different genomes, first-seen order', () => {
     // Neither region's set can stand for the batch: the worker drops samples
     // missing from the client's order, so picking one hides the other's rows.
     const set = unionSampleSets([result('hg38', 'mm10'), result('hg38', 'rn6')])
-    expect(set?.samples.map(s => s.id)).toEqual(['hg38', 'mm10', 'rn6'])
+    expect(set?.samples.map(s => s.name)).toEqual(['hg38', 'mm10', 'rn6'])
   })
 
   test('collapses to the one set when every region reports it', () => {
     // Configured-samples tracks return the same complete set for every region.
     const set = unionSampleSets([result('hg38'), result('hg38')])
-    expect(set?.samples.map(s => s.id)).toEqual(['hg38'])
+    expect(set?.samples.map(s => s.name)).toEqual(['hg38'])
   })
 
   test('is empty when every region is empty', () => {

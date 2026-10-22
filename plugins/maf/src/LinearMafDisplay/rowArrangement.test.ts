@@ -5,7 +5,7 @@ import { createMafTestEnvironment } from './testEnv.ts'
 const TREE = '((hg38,panTro4),mm10);'
 
 function sample(id: string) {
-  return { id, label: id }
+  return { name: id, label: id }
 }
 
 function rowNames(display: { sources?: { name: string }[] }) {
@@ -48,7 +48,7 @@ describe('a discovered row set widens under a custom arrangement', () => {
       samplesCanonical: false,
     })
     display.setSamples({
-      samples: [{ id: 'panTro4', label: 'Chimp', color: 'red' }],
+      samples: [{ name: 'panTro4', label: 'Chimp', color: 'red' }],
       treeNewick: undefined,
       samplesCanonical: false,
     })
@@ -316,8 +316,8 @@ describe('the configured per-sample color reaches the sidebar', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     display.setSamples({
       samples: [
-        { id: 'hg38', label: 'Human', color: 'red' },
-        { id: 'mm10', label: 'Mouse' },
+        { name: 'hg38', label: 'Human', color: 'red' },
+        { name: 'mm10', label: 'Mouse' },
       ],
       treeNewick: undefined,
       samplesCanonical: true,
@@ -340,8 +340,8 @@ describe('the configured per-sample color reaches the sidebar', () => {
 
 describe('rowColor tints a row over the adapter color', () => {
   const SAMPLES = [
-    { id: 'hg38', label: 'Human', color: 'red' },
-    { id: 'mm10', label: 'Mouse' },
+    { name: 'hg38', label: 'Human', color: 'red' },
+    { name: 'mm10', label: 'Mouse' },
   ]
 
   function tinted(rowColor?: { domain: string[]; range: string[] }) {

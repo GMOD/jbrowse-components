@@ -27,8 +27,8 @@ test('no showAllLetters', () => {
   const result = processFeaturesToFasta({
     features: [mockFeature],
     samples: [
-      { id: 'assembly1', label: 'assembly1' },
-      { id: 'assembly2', label: 'assembly2' },
+      { name: 'assembly1', label: 'assembly1' },
+      { name: 'assembly2', label: 'assembly2' },
     ],
     regions: [
       {
@@ -49,8 +49,8 @@ test('showAllLetters', () => {
   const result = processFeaturesToFasta({
     features: [mockFeature],
     samples: [
-      { id: 'assembly1', label: 'assembly1' },
-      { id: 'assembly2', label: 'assembly2' },
+      { name: 'assembly1', label: 'assembly1' },
+      { name: 'assembly2', label: 'assembly2' },
     ],
     showAllLetters: true,
     regions: [
@@ -91,8 +91,8 @@ test('gap in assembly1', () => {
   const result = processFeaturesToFasta({
     features: [mockFeature],
     samples: [
-      { id: 'assembly1', label: 'assembly1' },
-      { id: 'assembly2', label: 'assembly2' },
+      { name: 'assembly1', label: 'assembly1' },
+      { name: 'assembly2', label: 'assembly2' },
     ],
     regions: [
       {
@@ -136,8 +136,8 @@ test('includeInsertions - single insertion in one sample', () => {
   const result = processFeaturesToFasta({
     features: [mockFeature],
     samples: [
-      { id: 'assembly1', label: 'assembly1' },
-      { id: 'assembly2', label: 'assembly2' },
+      { name: 'assembly1', label: 'assembly1' },
+      { name: 'assembly2', label: 'assembly2' },
     ],
     includeInsertions: true,
     showAllLetters: true,
@@ -185,8 +185,8 @@ test('includeInsertions - insertions in multiple samples with different lengths'
   const result = processFeaturesToFasta({
     features: [mockFeature],
     samples: [
-      { id: 'assembly1', label: 'assembly1' },
-      { id: 'assembly2', label: 'assembly2' },
+      { name: 'assembly1', label: 'assembly1' },
+      { name: 'assembly2', label: 'assembly2' },
     ],
     includeInsertions: true,
     showAllLetters: true,
@@ -234,8 +234,8 @@ test('includeInsertions - insertions at multiple positions', () => {
   const result = processFeaturesToFasta({
     features: [mockFeature],
     samples: [
-      { id: 'assembly1', label: 'assembly1' },
-      { id: 'assembly2', label: 'assembly2' },
+      { name: 'assembly1', label: 'assembly1' },
+      { name: 'assembly2', label: 'assembly2' },
     ],
     includeInsertions: true,
     showAllLetters: true,
@@ -277,8 +277,8 @@ test('includeInsertions=false ignores insertions', () => {
   const result = processFeaturesToFasta({
     features: [mockFeature],
     samples: [
-      { id: 'assembly1', label: 'assembly1' },
-      { id: 'assembly2', label: 'assembly2' },
+      { name: 'assembly1', label: 'assembly1' },
+      { name: 'assembly2', label: 'assembly2' },
     ],
     includeInsertions: false,
     showAllLetters: true,
@@ -302,8 +302,8 @@ test('includeInsertions with no insertions present', () => {
   const result = processFeaturesToFasta({
     features: [mockFeature],
     samples: [
-      { id: 'assembly1', label: 'assembly1' },
-      { id: 'assembly2', label: 'assembly2' },
+      { name: 'assembly1', label: 'assembly1' },
+      { name: 'assembly2', label: 'assembly2' },
     ],
     includeInsertions: true,
     showAllLetters: true,
@@ -364,8 +364,8 @@ test('includeInsertions - insertion only in non-visible sample should not add ga
   const result = processFeaturesToFasta({
     features: [mockFeature],
     samples: [
-      { id: 'assembly1', label: 'assembly1' },
-      { id: 'assembly2', label: 'assembly2' },
+      { name: 'assembly1', label: 'assembly1' },
+      { name: 'assembly2', label: 'assembly2' },
     ],
     includeInsertions: true,
     showAllLetters: true,
@@ -429,8 +429,8 @@ test('includeInsertions - mixed visible/non-visible insertions', () => {
   const result = processFeaturesToFasta({
     features: [mockFeature],
     samples: [
-      { id: 'assembly1', label: 'assembly1' },
-      { id: 'assembly2', label: 'assembly2' },
+      { name: 'assembly1', label: 'assembly1' },
+      { name: 'assembly2', label: 'assembly2' },
     ],
     includeInsertions: true,
     showAllLetters: true,
@@ -480,8 +480,8 @@ test('includeInsertions - insertion trailing the last reference base', () => {
   const result = processFeaturesToFasta({
     features: [mockFeature],
     samples: [
-      { id: 'assembly1', label: 'assembly1' },
-      { id: 'assembly2', label: 'assembly2' },
+      { name: 'assembly1', label: 'assembly1' },
+      { name: 'assembly2', label: 'assembly2' },
     ],
     includeInsertions: true,
     showAllLetters: true,
@@ -530,8 +530,8 @@ test('includeInsertions - insertions meeting at a block seam both survive', () =
   const result = processFeaturesToFasta({
     features: [blockA, blockB],
     samples: [
-      { id: 'assembly1', label: 'assembly1' },
-      { id: 'assembly2', label: 'assembly2' },
+      { name: 'assembly1', label: 'assembly1' },
+      { name: 'assembly2', label: 'assembly2' },
     ],
     includeInsertions: true,
     showAllLetters: true,

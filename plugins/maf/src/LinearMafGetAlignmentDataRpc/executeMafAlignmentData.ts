@@ -9,7 +9,7 @@ import { collectMafTransferables } from './collectTransferables.ts'
 import { MafRegionSink } from './mafRegionSink.ts'
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { BaseMafRpcArgs, Sample } from '../types.ts'
+import type { BaseMafRpcArgs, MafSource } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
@@ -22,7 +22,7 @@ export interface LinearMafGetAlignmentDataArgs extends BaseMafRpcArgs {
 }
 
 export interface LinearMafGetAlignmentDataResult {
-  samples: Sample[]
+  samples: MafSource[]
   treeNewick: string | undefined
   /**
    * True when `samples` came from config or the guide tree: the same complete
@@ -107,7 +107,7 @@ export async function executeMafAlignmentData({
   const samples = withCopyRows(
     hasConfiguredSamples
       ? configSamples
-      : [...sink.discovered].map(id => ({ id, label: id })),
+      : [...sink.discovered].map(name => ({ name, label: name })),
     sink.discovered,
   )
 

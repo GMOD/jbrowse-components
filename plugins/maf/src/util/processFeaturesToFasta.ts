@@ -1,6 +1,6 @@
 import { DASH, LOWER_BIT, SPACE } from '@jbrowse/core/util/alignedBytes'
 
-import type { AlignmentRecord, Sample } from '../types.ts'
+import type { AlignmentRecord, MafSource } from '../types.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 interface InsertionInfo {
@@ -41,13 +41,13 @@ export function processFeaturesToFasta({
   includeInsertions,
 }: {
   regions: Region[]
-  samples: Sample[]
+  samples: MafSource[]
   showAllLetters?: boolean
   includeInsertions?: boolean
   features: Iterable<Feature>
 }): FastaResult {
   const region = regions[0]!
-  const sampleToRowMap = new Map(samples.map((s, i) => [s.id, i]))
+  const sampleToRowMap = new Map(samples.map((s, i) => [s.name, i]))
   const rlen = region.end - region.start
 
   // Byte-per-cell rows pre-filled with '-' (DASH). Compared to string[][],

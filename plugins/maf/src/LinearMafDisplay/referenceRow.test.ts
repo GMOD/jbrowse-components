@@ -9,7 +9,7 @@ import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 const REF = 'hg38'
 
 function sample(id: string) {
-  return { id, label: id }
+  return { name: id, label: id }
 }
 
 function makeDisplay(samples: string[], showReferenceRow = true) {
@@ -68,7 +68,11 @@ test('a hidden reference stays in the export', () => {
   const display = makeDisplay([REF, 'panTro4', 'mm10'], false)
   landRegion(display)
   expect(rowNames(display)).toEqual(['panTro4', 'mm10'])
-  expect(display.exportSamples.map(s => s.id)).toEqual([REF, 'panTro4', 'mm10'])
+  expect(display.clusterableSources.map(s => s.name)).toEqual([
+    REF,
+    'panTro4',
+    'mm10',
+  ])
 })
 
 test('hiding the reference drops its row and leaves the others in order', () => {

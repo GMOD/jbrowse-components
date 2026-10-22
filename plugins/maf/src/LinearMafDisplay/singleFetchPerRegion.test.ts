@@ -5,13 +5,14 @@ import { emptyMafCoverage } from './components/coverageTestFixture.ts'
 import { createMafTestEnvironment } from './testEnv.ts'
 
 import type { MafAlignedRow } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { MafSource } from '../types.ts'
 
 // A LinearMafGetAlignmentData result with no blocks; `samples` is what each test
 // varies, since that (not the block content) is what drives the cache key here.
 // `samplesCanonical` false makes it a sample-discovery result, which the display
 // unions rather than replaces.
 function makeMafResult(
-  samples: { id: string; label: string }[],
+  samples: MafSource[],
   samplesCanonical = true,
   // Sample ids to emit one aligned row for, in the worker's own order. Left
   // empty except where a test is about placement — the worker names rows and
@@ -42,8 +43,8 @@ function makeMafResult(
 }
 
 const HG38_MM10 = [
-  { id: 'hg38', label: 'hg38' },
-  { id: 'mm10', label: 'mm10' },
+  { name: 'hg38', label: 'hg38' },
+  { name: 'mm10', label: 'mm10' },
 ]
 
 // Run the fetch autorun to quiescence: each pass advances past the 600 ms
@@ -135,7 +136,7 @@ describe('LinearMafDisplay alignment fetch count', () => {
     mockRpcCall.mockImplementation((_id, method) =>
       Promise.resolve(
         method === 'LinearMafGetAlignmentData'
-          ? makeMafResult([{ id: 'rn6', label: 'rn6' }, ...HG38_MM10], true, [
+          ? makeMafResult([{ name: 'rn6', label: 'rn6' }, ...HG38_MM10], true, [
               'hg38',
               'mm10',
             ])
@@ -174,8 +175,8 @@ describe('LinearMafDisplay alignment fetch count', () => {
               args.regions[0].start === 0
                 ? HG38_MM10
                 : [
-                    { id: 'hg38', label: 'hg38' },
-                    { id: 'rn6', label: 'rn6' },
+                    { name: 'hg38', label: 'hg38' },
+                    { name: 'rn6', label: 'rn6' },
                   ],
               false,
             )

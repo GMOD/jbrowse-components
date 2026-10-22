@@ -1,5 +1,6 @@
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region, UriLocation } from '@jbrowse/core/util'
+import type { RowSource } from '@jbrowse/tree-sidebar'
 
 /**
  * Shared types for MAF alignment data
@@ -158,21 +159,23 @@ export interface MafRegionPayload<T> {
 }
 
 /**
- * Sample/organism metadata for display
+ * One species row, in the worker's reply, the display's rows and the sequence
+ * widget alike: `RowSource` plus the two navigation fields only MAF has. Every
+ * producer fills `label`, with the name when the config gives none. The
+ * adapter's `samples[].color` is the row's own `color`, which a `rowColor`
+ * entry overrides.
  */
-export interface Sample {
-  id: string
+export interface MafSource extends RowSource {
   label: string
-  color?: string
   /**
-   * The assembly this sample's own genome is loaded as, making its rows
-   * navigable ("open this species' locus in a new view"). Unset — the default —
-   * means the row is not navigable.
+   * The assembly this row's own genome is loaded as, making the row navigable
+   * ("open this species' locus in a new view"). Unset — the default — means
+   * the row is not navigable.
    *
-   * Deliberately supplied by the config rather than derived from `id`: sample
-   * ids are UCSC db names in some alignments, scientific names in others (which
-   * map to several assemblies, so a name lookup can silently land on the wrong
-   * one), and lab-internal ids in others still. See
+   * Supplied by the config rather than derived from `name`: sample names are
+   * UCSC db names in some alignments, scientific names in others (which map to
+   * several assemblies, so a name lookup can silently land on the wrong one),
+   * and lab-internal ids in others still. See
    * `agent-docs/reference/MAF_LARGE_BLOCKS.md`.
    */
   assemblyName?: string

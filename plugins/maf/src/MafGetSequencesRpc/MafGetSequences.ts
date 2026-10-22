@@ -4,7 +4,7 @@ import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 
 import { processFeaturesToFasta } from '../util/processFeaturesToFasta.ts'
 
-import type { BaseMafRpcArgs, Sample } from '../types.ts'
+import type { BaseMafRpcArgs, MafSource } from '../types.ts'
 import type { FastaResult } from '../util/processFeaturesToFasta.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
@@ -19,7 +19,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 }
 
 export interface MafGetSequencesArgs extends BaseMafRpcArgs {
-  samples: Sample[]
+  samples: MafSource[]
   showAllLetters: boolean
   includeInsertions?: boolean
 }

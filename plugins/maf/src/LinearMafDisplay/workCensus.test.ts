@@ -5,7 +5,8 @@ import { emptyMafCoverage } from './components/coverageTestFixture.ts'
 import { runMafClustering } from './runMafClustering.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
-import type { LinearMafDisplayModel, MafSource } from './stateModel.ts'
+import type { MafSource } from '../types.ts'
+import type { LinearMafDisplayModel } from './stateModel.ts'
 
 beforeEach(() => {
   jest.useFakeTimers()
@@ -16,10 +17,10 @@ afterEach(() => {
 })
 
 const SAMPLES = [
-  { id: 'hg38', label: 'Human', color: '#aa0000' },
-  { id: 'panTro4', label: 'Chimp' },
-  { id: 'mm10', label: 'Mouse', color: '#0000aa' },
-  { id: 'rn6', label: 'Rat' },
+  { name: 'hg38', label: 'Human', color: '#aa0000' },
+  { name: 'panTro4', label: 'Chimp' },
+  { name: 'mm10', label: 'Mouse', color: '#0000aa' },
+  { name: 'rn6', label: 'Rat' },
 ]
 
 const REGIONS = [
@@ -43,7 +44,7 @@ function arrive(display: LinearMafDisplayModel, index: number) {
         {
           startBp,
           refSeq: 'ACGT',
-          rows: SAMPLES.map(({ id }) => ({ sampleId: id, seq: 'ACGT' })),
+          rows: SAMPLES.map(({ name }) => ({ sampleId: name, seq: 'ACGT' })),
         },
       ],
       { coverage: emptyMafCoverage(startBp), refSampleId: 'hg38' },

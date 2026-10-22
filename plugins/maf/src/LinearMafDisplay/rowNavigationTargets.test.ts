@@ -2,7 +2,7 @@ import { emptyMafCoverage } from './components/coverageTestFixture.ts'
 import { rowNavigationTargetsOf } from './rowNavigationTargets.ts'
 
 import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { MafSource } from './stateModel.ts'
+import type { MafSource } from '../types.ts'
 
 const enc = new TextEncoder()
 
@@ -27,8 +27,8 @@ const region: MafRegionData = {
 
 const sources: MafSource[] = [
   { name: 'hg38', label: 'Human' },
-  { name: 'mm10', assemblyName: 'mouse' },
-  { name: 'rn6' },
+  { name: 'mm10', label: 'mm10', assemblyName: 'mouse' },
+  { name: 'rn6', label: 'rn6' },
 ]
 
 function targets(

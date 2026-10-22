@@ -13,8 +13,8 @@ import type { LinearMafDisplayModel } from './stateModel.ts'
 function seedRegion(display: LinearMafDisplayModel) {
   display.setSamples({
     samples: [
-      { id: 'hg38', label: 'hg38' },
-      { id: 'panTro4', label: 'panTro4' },
+      { name: 'hg38', label: 'hg38' },
+      { name: 'panTro4', label: 'panTro4' },
     ],
     treeNewick: undefined,
     samplesCanonical: true,
@@ -74,7 +74,7 @@ describe('insertion markers are only encoded for the rendering that draws them',
   it('draws deletion counts with the bases alone', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     display.setSamples({
-      samples: [{ id: 'hg38', label: 'hg38' }],
+      samples: [{ name: 'hg38', label: 'hg38' }],
       treeNewick: undefined,
       samplesCanonical: true,
     })

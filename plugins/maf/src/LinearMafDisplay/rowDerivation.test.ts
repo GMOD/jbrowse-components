@@ -5,16 +5,17 @@ import { emptyMafCoverage } from './components/coverageTestFixture.ts'
 import { runMafClustering } from './runMafClustering.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
-import type { MafSource, LinearMafDisplayModel } from './stateModel.ts'
+import type { MafSource } from '../types.ts'
+import type { LinearMafDisplayModel } from './stateModel.ts'
 
 type Display = LinearMafDisplayModel
 
 // Adapter samples as a `samples` config supplies them: a label and a color
 // are the row's own. Canonical order is the guide tree's leaf order.
 const SAMPLES = [
-  { id: 'hg38', label: 'Human', color: '#aa0000' },
-  { id: 'panTro4', label: 'Chimp' },
-  { id: 'mm10', label: 'Mouse', color: '#0000aa' },
+  { name: 'hg38', label: 'Human', color: '#aa0000' },
+  { name: 'panTro4', label: 'Chimp' },
+  { name: 'mm10', label: 'Mouse', color: '#0000aa' },
 ]
 
 const TREE = '((hg38,panTro4),mm10);'
@@ -128,7 +129,7 @@ test('a discovered row joins after a reorder', () => {
   const display = loaded()
   display.setRowOrder([{ name: 'mm10' }, { name: 'hg38' }])
   display.setSamples({
-    samples: [{ id: 'rn6', label: 'Rat' }],
+    samples: [{ name: 'rn6', label: 'Rat' }],
     treeNewick: undefined,
     samplesCanonical: false,
   })

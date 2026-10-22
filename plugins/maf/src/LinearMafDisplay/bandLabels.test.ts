@@ -14,7 +14,7 @@ describe('band titles', () => {
   }
   function withSamples(d: LinearMafDisplayModel) {
     d.setSamples({
-      samples: [{ id: 'hg38', label: 'hg38' }],
+      samples: [{ name: 'hg38', label: 'hg38' }],
       treeNewick: undefined,
       samplesCanonical: true,
     })

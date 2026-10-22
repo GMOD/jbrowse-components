@@ -43,7 +43,6 @@ import {
   RowHeightMixin,
   TreeSidebarMixin,
   treeOfLeaves,
-  rowsNamed,
   getLeafNames,
   resetRowOrderMenuItems,
   setupTreeSidebarAutoruns,
@@ -62,8 +61,12 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import { identityOver } from '../LinearMafRenderer/identity.ts'
 import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
-import { navigationFields } from '../util/navigationFields.ts'
-import { copyParent, placeCopyRows } from '../util/sampleCopies.ts'
+import {
+  copyParent,
+  isRowVisible,
+  placeCopyRows,
+} from '../util/sampleCopies.ts'
+import { visibleSamples } from '../util/visibleSamples.ts'
 import { computeVisibleCodonGlyphs, findCodonAt } from './codons.ts'
 import { mafColorScales } from './colorScales.ts'
 import { computeVisibleDeletions } from './components/computeVisibleDeletions.ts'
@@ -113,8 +116,8 @@ import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
 import type {
   MafFrameRecord,
   MafRegionPayload,
+  MafSource,
   MafSummaryRecord,
-  Sample,
 } from '../types.ts'
 import type { CodonGlyph } from './codons.ts'
 import type { FrameMarker } from './components/computeVisibleFrames.ts'
@@ -136,7 +139,6 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
-import type { UriLocation } from '@jbrowse/core/util'
 import type { BandBounds } from '@jbrowse/core/util/bandHeight'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type {
@@ -146,11 +148,7 @@ import type {
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  RowAlias,
-  RowSource,
-  SvgSidebarProps,
-} from '@jbrowse/tree-sidebar'
+import type { RowAlias, SvgSidebarProps } from '@jbrowse/tree-sidebar'
 import type { ValueScale } from '@jbrowse/wiggle-core'
 
 /**
@@ -159,18 +157,6 @@ import type { ValueScale } from '@jbrowse/wiggle-core'
  */
 export interface MafRowHover {
   name: string
-}
-
-/**
- * One species row: `RowSource` plus the two navigation fields only MAF has. The
- * adapter's `samples[].color` is the row's own `color`, which a `rowColor`
- * entry overrides.
- */
-export interface MafSource extends RowSource {
-  /** assembly this row's genome is loaded as, when it is navigable */
-  assemblyName?: string
-  /** config to load that assembly from, when the session lacks it */
-  assemblyConfigLocation?: UriLocation
 }
 
 // A right-click's reference column plus the hit under it, resolved once so menu
@@ -212,32 +198,7 @@ function withKnownCopies(
   return kept.length ? placeCopyRows([...incoming, ...kept]) : [...incoming]
 }
 
-/**
- * The rows a focus names, by their own name or the sample they copy, as the
- * worker's `isRowVisible` reads it.
- */
-function rowsNamedOrCopied(
-  rows: MafSource[],
-  focus: readonly string[] | undefined,
-  alias: RowAlias | undefined,
-) {
-  if (!alias || !focus?.length) {
-    return rowsNamed(rows, focus)
-  }
-  const named = new Set(focus)
-  return rows.filter(r => named.has(r.name) || named.has(alias(r.name) ?? ''))
-}
-
 const NO_DETAIL: ReadonlyMap<number, MafRegionData> = new Map()
-
-function sampleOf(s: MafSource): Sample {
-  return {
-    id: s.name,
-    label: s.label ?? s.name,
-    color: s.rowColor,
-    ...navigationFields(s),
-  }
-}
 
 /** A categorical field whose preset names no `range` paints the theme's. */
 function paintsThemeColors(field: MafColorField) {
@@ -400,19 +361,13 @@ export default function stateModelFactory(
           treeNewick,
           samplesCanonical,
         }: {
-          samples: Sample[]
+          samples: MafSource[]
           treeNewick: string | undefined
           samplesCanonical: boolean
         }) {
-          const incoming = samples.map(s => ({
-            name: s.id,
-            label: s.label,
-            color: s.color,
-            ...navigationFields(s),
-          }))
           const next = samplesCanonical
-            ? withKnownCopies(self.sourcesVolatile, incoming)
-            : unionSources(self.sourcesVolatile, incoming)
+            ? withKnownCopies(self.sourcesVolatile, samples)
+            : unionSources(self.sourcesVolatile, samples)
           if (!deepEqual(next, self.sourcesVolatile)) {
             self.sourcesVolatile = next
           }
@@ -529,15 +484,18 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * `editableSources` narrowed to the focus as the worker's
-         * `visibleSamples` narrows: on a track that lists its species, a focus
-         * naming none of them shows every row; on a discovering track the focus
-         * applies as given.
+         * `editableSources` narrowed to the focus by the worker's own rule,
+         * `visibleSamples`, so the rows drawn are the rows shipped.
          */
         get clusterableSources(): MafSource[] {
-          const { editableSources, rowFocus, rowAlias } = self
-          const named = rowsNamedOrCopied(editableSources, rowFocus, rowAlias)
-          return self.speciesListed && !named.length ? editableSources : named
+          const { editableSources, rowFocus, speciesListed } = self
+          const visible = visibleSamples(
+            rowFocus,
+            speciesListed ? editableSources : [],
+          )
+          return visible
+            ? editableSources.filter(r => isRowVisible(r.name, visible))
+            : editableSources
         },
       }))
       .views(self => ({
@@ -642,21 +600,6 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
-        /**
-         * #getter
-         * The display rows as `Sample`s, row for row.
-         */
-        get samples(): Sample[] {
-          return self.sources.map(sampleOf)
-        },
-        /**
-         * #getter
-         * The rows a whole-window FASTA export writes: every focused row, the
-         * reference included whether or not it draws.
-         */
-        get exportSamples(): Sample[] {
-          return self.clusterableSources.map(sampleOf)
-        },
         /**
          * #getter
          * Maps a `src` (species) to its display row index. The single source for
@@ -1300,7 +1243,7 @@ export default function stateModelFactory(
          * the reference bp range `[startBp, endBp)`, the loci an "open this
          * species here" navigation targets. A row contributes nothing with no
          * aligned base in the range, no fetched block covering it, or a genome
-         * not loaded as an assembly (`Sample.assemblyName` unset).
+         * not loaded as an assembly (`MafSource.assemblyName` unset).
          *
          * Takes the whole row range at once, since the menu builds an entry per
          * row on every open.
@@ -1594,7 +1537,7 @@ export default function stateModelFactory(
           const source = sources[rowIndex]!
           return {
             ...hit,
-            sampleLabel: source.label ?? source.name,
+            sampleLabel: source.label,
           }
         },
         /**

@@ -14,8 +14,8 @@ import type { Region } from '@jbrowse/core/util'
 function seedRegion(display: LinearMafDisplayModel) {
   display.setSamples({
     samples: [
-      { id: 'hg38', label: 'hg38' },
-      { id: 'panTro4', label: 'panTro4' },
+      { name: 'hg38', label: 'hg38' },
+      { name: 'panTro4', label: 'panTro4' },
     ],
     treeNewick: undefined,
     samplesCanonical: true,
@@ -61,8 +61,8 @@ function summaryTier() {
   }).createDisplay()
   display.setSamples({
     samples: [
-      { id: 'hg38', label: 'hg38' },
-      { id: 'mm10', label: 'mm10' },
+      { name: 'hg38', label: 'hg38' },
+      { name: 'mm10', label: 'mm10' },
     ],
     treeNewick: undefined,
     samplesCanonical: true,

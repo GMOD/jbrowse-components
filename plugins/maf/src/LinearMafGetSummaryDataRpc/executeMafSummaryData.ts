@@ -5,7 +5,7 @@ import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
 import { isRowVisible } from '../util/sampleCopies.ts'
 import { visibleSamples } from '../util/visibleSamples.ts'
 
-import type { BaseMafRpcArgs, MafSummaryRecord, Sample } from '../types.ts'
+import type { BaseMafRpcArgs, MafSummaryRecord, MafSource } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
@@ -17,7 +17,7 @@ export interface LinearMafGetSummaryDataArgs extends BaseMafRpcArgs {
 }
 
 export interface LinearMafGetSummaryDataResult {
-  samples: Sample[]
+  samples: MafSource[]
   treeNewick: string | undefined
   /**
    * Whether `samples` is the authoritative row set (see the alignment RPC's
@@ -127,7 +127,7 @@ export async function executeMafSummaryData({
     // path can answer for itself.
     samples: hasConfiguredSamples
       ? configSamples
-      : [...discovered].map(id => ({ id, label: id })),
+      : [...discovered].map(name => ({ name, label: name })),
     treeNewick,
     samplesCanonical: hasConfiguredSamples,
     records,

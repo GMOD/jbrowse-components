@@ -3,7 +3,7 @@ import { of } from 'rxjs'
 
 import { executeMafSummaryData } from './executeMafSummaryData.ts'
 
-import type { MafSummaryRecord, Sample } from '../types.ts'
+import type { MafSummaryRecord, MafSource } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 
@@ -44,7 +44,7 @@ async function run({
   rowFocus,
   records = RECORDS,
 }: {
-  samples: Sample[]
+  samples: MafSource[]
   rowFocus?: string[]
   records?: MafSummaryRecord[]
 }) {
@@ -80,9 +80,9 @@ describe('the summary RPC names the species its own records carry', () => {
     const out = await run({ samples: [] })
     // first-seen order, deduped
     expect(out.samples).toEqual([
-      { id: 'volvox', label: 'volvox' },
-      { id: 'simvolvox', label: 'simvolvox' },
-      { id: 'microvolvox', label: 'microvolvox' },
+      { name: 'volvox', label: 'volvox' },
+      { name: 'simvolvox', label: 'simvolvox' },
+      { name: 'microvolvox', label: 'microvolvox' },
     ])
     // ...and non-canonical, so the client unions it into rows the alignment
     // path may already have discovered rather than replacing them
@@ -94,7 +94,7 @@ describe('the summary RPC names the species its own records carry', () => {
     // the sidebar tree and "clear filter" need every genome, so discovery runs
     // before the filter — exactly as the alignment path discovers from every
     // block row before narrowing `blocks`
-    expect(out.samples.map(s => s.id)).toEqual([
+    expect(out.samples.map(s => s.name)).toEqual([
       'volvox',
       'simvolvox',
       'microvolvox',
@@ -105,8 +105,8 @@ describe('the summary RPC names the species its own records carry', () => {
 
   it('leaves a configured row set alone and reports it canonical', async () => {
     const configured = [
-      { id: 'volvox', label: 'Volvox' },
-      { id: 'simvolvox', label: 'Sim' },
+      { name: 'volvox', label: 'Volvox' },
+      { name: 'simvolvox', label: 'Sim' },
     ]
     const out = await run({ samples: configured })
     expect(out.samples).toEqual(configured)
@@ -119,8 +119,8 @@ describe('the summary RPC names the species its own records carry', () => {
 describe('the summary RPC filters rows as the detail tier does', () => {
   const records = [...RECORDS, record('simvolvox~2', 0)]
   const samples = [
-    { id: 'volvox', label: 'volvox' },
-    { id: 'simvolvox', label: 'simvolvox' },
+    { name: 'volvox', label: 'volvox' },
+    { name: 'simvolvox', label: 'simvolvox' },
   ]
 
   it('a focus on a sample keeps its copy rows', async () => {

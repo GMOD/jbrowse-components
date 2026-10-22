@@ -26,7 +26,7 @@ function displayWith(color: unknown) {
 // every base, so the heatmap paints the two ends of the ramp
 function stageTwoIdentities(display: LinearMafDisplayModel) {
   display.setSamples({
-    samples: [{ id: 'sp1', label: 'sp1' }],
+    samples: [{ name: 'sp1', label: 'sp1' }],
     treeNewick: undefined,
     samplesCanonical: true,
   })

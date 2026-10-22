@@ -1,8 +1,8 @@
 import { findRowSpans } from './components/findRowSpan.ts'
 
 import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { MafSource } from '../types.ts'
 import type { RowSpan } from './components/findRowSpan.ts'
-import type { MafSource } from './stateModel.ts'
 import type { UriLocation } from '@jbrowse/core/util'
 
 export interface RowNavigationTarget extends RowSpan {
@@ -69,7 +69,7 @@ export function rowNavigationTargetsOf({
         ...span,
         assemblyName,
         assemblyConfigLocation: source.assemblyConfigLocation,
-        sampleLabel: source.label ?? source.name,
+        sampleLabel: source.label,
         rowIndex,
       })
     }

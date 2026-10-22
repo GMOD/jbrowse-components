@@ -38,7 +38,11 @@ function model(
 ) {
   return {
     id: 'display1',
-    exportSamples: [{ id: 's0' }, { id: 's1' }, { id: 's2' }],
+    clusterableSources: [
+      { name: 's0', label: 's0' },
+      { name: 's1', label: 's1' },
+      { name: 's2', label: 's2' },
+    ],
     sources: [{ name: 's0' }, { name: 's1' }, { name: 's2' }],
     adapterConfig: { type: 'MafTabixAdapter' },
     coarseTierActive,

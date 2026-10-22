@@ -3,9 +3,7 @@ import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 import { parseNewick, writeNewick } from '@jbrowse/tree-sidebar'
 import { pruneNewickToLeaves } from '@jbrowse/tree-sidebar/clusterUtils'
 
-import { navigationFields } from './navigationFields.ts'
-
-import type { Sample } from '../types.ts'
+import type { MafSource } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { FileLocation, UriLocation } from '@jbrowse/core/util'
@@ -23,7 +21,8 @@ export interface SampleConfigEntry {
 export type SampleConfig = (string | SampleConfigEntry)[]
 
 /**
- * The `samples` slot as rows.
+ * The `samples` slot as rows. A config entry keeps its published `id` key,
+ * which becomes the row's `name`.
  *
  * Each entry is read on its own — a bare name or an object — so an array may
  * mix the two. It used to be typed off element 0, which read
@@ -40,21 +39,24 @@ export type SampleConfig = (string | SampleConfigEntry)[]
  * An entry naming nothing is dropped rather than becoming a nameless row — it
  * used to throw out of sample resolution, which fails the whole track.
  */
-export function normalizeSamples(r: SampleConfig): Sample[] {
+export function normalizeSamples(r: SampleConfig): MafSource[] {
   return r.flatMap(s => {
     // `Partial`, because `samples` is a frozen slot: nothing has checked that
     // an object entry carries an id at all, and the declared `string` is the
     // contract rather than a fact about the config that was loaded.
     const entry: Partial<SampleConfigEntry> =
       typeof s === 'string' ? { id: s } : s
-    const id = entry.id?.trim()
-    return id
+    const name = entry.id?.trim()
+    return name
       ? [
           {
-            id,
-            label: entry.label ?? id,
+            name,
+            label: entry.label ?? name,
             color: entry.color,
-            ...navigationFields(entry),
+            ...(entry.assemblyName ? { assemblyName: entry.assemblyName } : {}),
+            ...(entry.assemblyConfigLocation
+              ? { assemblyConfigLocation: entry.assemblyConfigLocation }
+              : {}),
           },
         ]
       : []
@@ -94,15 +96,15 @@ export function collectLeafNames(node: NewickNode) {
 /**
  * Merge a parsed Newick tree with per-sample config overrides. Leaf order
  * drives row order; `configSamples` supplies label/color for matching ids.
- * Leaves with no override get `{ id, label: id }`.
+ * Leaves with no override get `{ name, label: name }`.
  */
 export function resolveSamplesFromTree(
   treeNewick: string,
-  configSamples: Sample[],
-): Sample[] {
-  const overrides = new Map(configSamples.map(s => [s.id, s]))
+  configSamples: MafSource[],
+): MafSource[] {
+  const overrides = new Map(configSamples.map(s => [s.name, s]))
   return collectLeafNames(parseNewick(treeNewick)).map(
-    id => overrides.get(id) ?? { id, label: id },
+    name => overrides.get(name) ?? { name, label: name },
   )
 }
 
@@ -154,7 +156,7 @@ export async function getSamplesFromConfig(
   }
   const { sources } = await getSamplesTsvSources({
     location: samplesTsvLocation,
-    names: samples.length ? samples.map(s => s.id) : undefined,
+    names: samples.length ? samples.map(s => s.name) : undefined,
     namesLabel: treeNewick ? 'the guide tree' : 'the samples slot',
     pluginManager,
     opts: { signal },
@@ -169,13 +171,13 @@ export async function getSamplesFromConfig(
   }
 }
 
-function mergeSamplesTsv(samples: Sample[], rows: SamplesTsvRow[]) {
-  const byId = new Map(rows.map(row => [row.name, row]))
+function mergeSamplesTsv(samples: MafSource[], rows: SamplesTsvRow[]) {
+  const byName = new Map(rows.map(row => [row.name, row]))
   const base = samples.length
-    ? samples.filter(s => byId.has(s.id))
-    : rows.map(row => ({ id: row.name, label: row.name }))
+    ? samples.filter(s => byName.has(s.name))
+    : rows.map(row => ({ name: row.name, label: row.name }))
   return base.map(sample => {
-    const { label, color, assemblyName } = byId.get(sample.id)!
+    const { label, color, assemblyName } = byName.get(sample.name)!
     return {
       ...sample,
       ...(label ? { label } : {}),
@@ -185,10 +187,10 @@ function mergeSamplesTsv(samples: Sample[], rows: SamplesTsvRow[]) {
   })
 }
 
-function pruneTree(treeNewick: string, samples: Sample[]) {
+function pruneTree(treeNewick: string, samples: MafSource[]) {
   const pruned = pruneNewickToLeaves(
     parseNewick(treeNewick),
-    new Set(samples.map(s => s.id)),
+    new Set(samples.map(s => s.name)),
   )
   return pruned ? writeNewick(pruned) : undefined
 }

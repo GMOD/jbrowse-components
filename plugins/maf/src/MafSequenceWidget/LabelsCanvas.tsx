@@ -7,10 +7,10 @@ import { observer } from 'mobx-react'
 
 import { FONT, ROW_HEIGHT } from './constants.ts'
 
-import type { Sample } from '../types.ts'
+import type { MafSource } from '../types.ts'
 
 interface LabelsCanvasProps {
-  samples: Sample[]
+  samples: MafSource[]
   labelWidth: number
   scrollTop: number
   containerHeight: number
