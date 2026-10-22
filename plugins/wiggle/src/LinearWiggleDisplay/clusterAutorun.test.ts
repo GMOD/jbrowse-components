@@ -53,6 +53,48 @@ describe('MultiLinearWiggleDisplay declarative runClustering', () => {
     ).toHaveLength(1)
   })
 
+  it('on a log axis with no scores loaded runs without waiting on a domain', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment({
+      displayConfig: { scales: { y: { type: 'log' } } },
+    })
+    mockRpcCall.mockImplementation((_sid: string, method: string) =>
+      Promise.resolve(
+        method === 'MultiWiggleClusterScoreMatrix'
+          ? { order: [1, 0], tree: '(b,a);' }
+          : makeMultiWiggleData('a', 'b'),
+      ),
+    )
+    const { display } = createDisplay({ runClustering: true })
+    jest.advanceTimersByTime(700)
+    await waitFor(() => {
+      expect(display.discoveredRows.length).toBe(2)
+    })
+    expect(display.domain).toBeUndefined()
+    jest.advanceTimersByTime(700)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(display.rowTree).toBe('(b,a);')
+    })
+  })
+
+  it('on a log axis waits for the domain while scores are loaded', () => {
+    const { createDisplay } = createTestEnvironment({
+      displayConfig: { scales: { y: { type: 'log' } } },
+    })
+    const { display } = createDisplay()
+    const scored = makeMultiWiggleData('a', 'b')[0]!
+    scored.sources[0]!.numFeatures = 1
+    display.setRpcData(0, scored, {
+      refName: 'ctgA',
+      start: 0,
+      end: 1000,
+      assemblyName: 'volvox',
+    })
+    expect(display.clusterableSources.length).toBe(2)
+    expect(display.domain).toBeUndefined()
+    expect(display.autoClusterReady).toBe(false)
+  })
+
   // The declarative path has no dialog to report into, so the RPC's status
   // lands on the display, where DisplayChrome shows it as a corner chip.
   it('reports clustering progress on the display, then clears it', async () => {

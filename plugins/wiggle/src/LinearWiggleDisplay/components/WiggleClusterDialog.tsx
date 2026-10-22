@@ -42,7 +42,15 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
       canRun={model.clusterableSources.length >= MIN_CLUSTER_ROWS}
       matrixKey={
         model.clusterableSources.length
-          ? ['scoreMatrix', sourceNames, samplesPerPixel, model.scaleType]
+          ? [
+              'scoreMatrix',
+              sourceNames,
+              samplesPerPixel,
+              model.scaleType,
+              ...(model.scaleType === 'linear'
+                ? []
+                : [model.domain?.[0], model.domain?.[1], model.symlogConstant]),
+            ]
           : null
       }
       run={args => runWiggleClustering({ model, samplesPerPixel, ...args })}

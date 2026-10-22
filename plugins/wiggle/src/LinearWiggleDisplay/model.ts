@@ -488,6 +488,23 @@ export default function stateModelFactory(
       get drawsRowLabels() {
         return self.numSources > 1 && !self.isOverlay && self.showRowLabels
       },
+      /**
+       * #getter
+       * `TreeSidebarMixin`'s hook. On a log or symlog axis it also waits for
+       * the domain the matrix places scores through, which lags the data
+       * until the view settles; with no scores loaded there is none to wait
+       * for.
+       */
+      get autoClusterReady(): boolean {
+        return (
+          self.clusterableSources.length > 1 &&
+          (self.scaleType === 'linear' ||
+            self.domain !== undefined ||
+            ![...self.rpcDataMap.values()].some(d =>
+              d.sources.some(source => source.numFeatures > 0),
+            ))
+        )
+      },
     }))
     .views(self => ({
       /**
