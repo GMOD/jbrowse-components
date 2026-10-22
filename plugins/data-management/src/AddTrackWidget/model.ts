@@ -41,11 +41,9 @@ export interface IndexingAttr {
 /**
  * The track config this widget builds, before the session validates it: the
  * fields it always writes, plus whatever a plugin's `mixinData` contributed.
- *
- * A description of what the widget writes, NOT a guarantee about what survives
- * the merge — `mixinData` is a plugin extension point and the merge lets it
- * write any key, which is deliberate for `assemblyNames` (a multi-genome track
- * replaces the single view assembly) and untested for the rest.
+ * `mixinData` may replace `assemblyNames` (a multi-genome track names more than
+ * the view's one assembly) and add to `adapter`; `trackId`, `type` and `name`
+ * stay the widget's.
  */
 export interface DraftTrackConfig extends Record<string, unknown> {
   trackId: string
@@ -478,8 +476,10 @@ export default function f(pluginManager: PluginManager) {
         // file covers — on the adapter, and on the track itself, since the
         // track selector only offers a track that lists every assembly the
         // view displays (filterTracks). Non-synteny tracks leave it empty so
-        // their config isn't polluted with assembly-pair fields.
-        return deepMerge(base, self.mixinData)
+        // their config isn't polluted with assembly-pair fields. The identity
+        // fields are the widget's own, whatever a picker contributed.
+        const { trackId, type } = base
+        return { ...deepMerge(base, self.mixinData), trackId, type, name }
       },
       /**
        * #getter

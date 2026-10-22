@@ -1,16 +1,21 @@
 import PluggableElementBase from './PluggableElementBase.ts'
 
+import type { AddTrackWorkflowModel } from '../util/addTrackFromWidget.ts'
 import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
 
-// The Add Track widget renders workflow components with both `model` and a
-// `switchWorkflow` callback (see AddTrackWidget), so both are part of the
-// contract. Components that only read `model` stay assignable (extra prop).
-type BasicComponent = React.ComponentType<{
-  model: any
+/**
+ * What the Add Track widget renders a workflow with. A component reading only
+ * `model` stays assignable.
+ */
+export interface AddTrackWorkflowProps {
+  model: AddTrackWorkflowModel
+  /** show another workflow, by its registered name */
   switchWorkflow: (name: string) => void
-}>
-type AddTrackWorkflowComponentType =
+}
+
+type BasicComponent = React.ComponentType<AddTrackWorkflowProps>
+export type AddTrackWorkflowComponentType =
   | React.LazyExoticComponent<BasicComponent>
   | BasicComponent
 

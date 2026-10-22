@@ -13,8 +13,8 @@ import {
   isRelativeUrl,
 } from '../AddTrackWidget/urlWarnings.ts'
 
-import type { AddTrackModel } from '../AddTrackWidget/model.ts'
 import type { TrackConfRow } from './buildConfigs.ts'
+import type { AddTrackWorkflowModel } from '@jbrowse/core/util'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export interface NamedRow {
@@ -165,7 +165,7 @@ export async function submitBulkTracks({
   model,
   named,
 }: {
-  model: AddTrackModel
+  model: AddTrackWorkflowModel
   named: NamedRow[]
 }) {
   const timestamp = Date.now()

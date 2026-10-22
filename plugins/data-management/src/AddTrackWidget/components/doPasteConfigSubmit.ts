@@ -6,13 +6,13 @@ import {
 
 import { parseTrackConfigs } from './parseTrackConfigs.ts'
 
-import type { AddTrackModel } from '../model.ts'
+import type { AddTrackWorkflowModel } from '@jbrowse/core/util'
 
 export async function doPasteConfigSubmit({
   model,
   jsonText,
 }: {
-  model: AddTrackModel
+  model: AddTrackWorkflowModel
   jsonText: string
 }) {
   const session = getSession(model)

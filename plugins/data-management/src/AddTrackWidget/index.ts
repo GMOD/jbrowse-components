@@ -14,9 +14,25 @@ import {
   PASTE_JSON_WORKFLOW,
 } from './workflowNames.ts'
 
+import type { AddTrackModel } from './model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AddTrackWorkflowComponentType } from '@jbrowse/core/pluggableElementTypes'
+import type { ComponentType, LazyExoticComponent } from 'react'
 
 const configSchema = ConfigurationSchema('AddTrackWidget', {})
+
+type BuiltInWorkflow = ComponentType<{
+  model: AddTrackModel
+  switchWorkflow: (name: string) => void
+}>
+
+// The widget renders every workflow with its own model, so the ones it ships
+// may read all of AddTrackModel, not only the slice a plugin's workflow gets
+function builtIn(
+  component: BuiltInWorkflow | LazyExoticComponent<BuiltInWorkflow>,
+) {
+  return component as AddTrackWorkflowComponentType
+}
 
 // Loaded with the widget, since it is the workflow the widget opens on; a lazy
 // level of its own would hold the form back by React's suspense reveal delay
@@ -46,7 +62,7 @@ export default function AddTrackWidgetF(pluginManager: PluginManager) {
         name: DEFAULT_WORKFLOW,
         displayName: 'Add a track from file or URL',
         category: 'general',
-        ReactComponent: DefaultAddTrackWorkflow,
+        ReactComponent: builtIn(DefaultAddTrackWorkflow),
       }),
   )
   pluginManager.addAddTrackWorkflowType(

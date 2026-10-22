@@ -15,7 +15,7 @@ import { customNames } from './customNames.ts'
 import { summarizeBulkInput } from './preview.ts'
 import { resolveTrackNames } from './util.ts'
 
-import type { AddTrackModel } from '../AddTrackWidget/model.ts'
+import type { AddTrackWorkflowModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -31,7 +31,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   model,
   switchWorkflow,
 }: {
-  model: AddTrackModel
+  model: AddTrackWorkflowModel
   switchWorkflow: (name: string) => void
 }) {
   const { classes } = useStyles()

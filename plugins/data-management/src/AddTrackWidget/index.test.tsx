@@ -548,3 +548,17 @@ test('getTrackConfig fills the identity fields the add path reads', () => {
   expect(typeof config?.trackId).toBe('string')
   expect(config?.trackId).toContain('test.bam')
 })
+
+test('a picker cannot replace the identity fields', () => {
+  const { widget } = makeHg38Session()
+  widget.setTrackData({
+    uri: 'https://example.com/test.bam',
+    locationType: 'UriLocation',
+  })
+  widget.setMixinData({ trackId: 7, type: 'FeatureTrack', name: ['x'] })
+
+  const config = widget.getTrackConfig(1_700_000_000_000)
+  expect(config?.trackId).toContain('test.bam')
+  expect(config?.type).toBe('AlignmentsTrack')
+  expect(config?.name).toBe('test.bam')
+})

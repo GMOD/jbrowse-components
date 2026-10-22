@@ -65,5 +65,9 @@ export { default as RpcMethodType } from './RpcMethodType.ts'
 export { default as RpcMethodTypeWithRenameRegion } from './RpcMethodTypeWithRenameRegion.ts'
 export { default as RpcMethodTypeWithRenameRegions } from './RpcMethodTypeWithRenameRegions.ts'
 export { default as AddTrackWorkflowType } from './AddTrackWorkflowType.ts'
-export type { AddTrackWorkflowCategory } from './AddTrackWorkflowType.ts'
+export type {
+  AddTrackWorkflowCategory,
+  AddTrackWorkflowComponentType,
+  AddTrackWorkflowProps,
+} from './AddTrackWorkflowType.ts'
 export { default as TextSearchAdapterType } from './TextSearchAdapterType.ts'

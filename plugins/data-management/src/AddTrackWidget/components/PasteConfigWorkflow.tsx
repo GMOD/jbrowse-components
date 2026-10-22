@@ -9,7 +9,7 @@ import { observer } from 'mobx-react'
 import { PASTE_JSON_WORKFLOW } from '../workflowNames.ts'
 import { doPasteConfigSubmit } from './doPasteConfigSubmit.ts'
 
-import type { AddTrackModel } from '../model.ts'
+import type { AddTrackWorkflowModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   textbox: {
@@ -23,7 +23,11 @@ const useStyles = makeStyles()({
 })
 
 const PasteConfigAddTrackWorkflow = observer(
-  function PasteConfigAddTrackWorkflow({ model }: { model: AddTrackModel }) {
+  function PasteConfigAddTrackWorkflow({
+    model,
+  }: {
+    model: AddTrackWorkflowModel
+  }) {
     const { classes } = useStyles()
     const { form, update } = workflowForm(model, PASTE_JSON_WORKFLOW, {
       jsonText: '',
