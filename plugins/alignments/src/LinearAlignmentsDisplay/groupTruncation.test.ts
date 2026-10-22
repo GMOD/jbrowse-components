@@ -232,6 +232,23 @@ test('a lane collapsed to one row names the collapse as its cap', () => {
   expect(ceilingClipped(display, '1')).toBe(false)
 })
 
+// A collapsed section lays its reads on one row whatever the sort, so "Sort
+// by..." is offered only once some section stacks again.
+test('sorting is blocked while every section is collapsed', () => {
+  const display = seed(
+    [
+      { key: '1', label: 'HP: 1', n: 40 },
+      { key: '2', label: 'HP: 2', n: 40 },
+    ],
+    { collapseRows: true },
+  )
+  expect(display.canSortReads).toBe(false)
+  expect(display.sortReadsBlockedReason).toMatch(/one row/)
+
+  display.toggleGroupExpanded('1')
+  expect(display.canSortReads).toBe(true)
+})
+
 // A lane the user sized themselves still clips, and neither signal fires: what
 // their own cap hides is their own doing. That used to be a second read of
 // `groupMaxHeightOverrides` beside the classification; now the layout records

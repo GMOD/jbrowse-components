@@ -727,9 +727,24 @@ export default function stateModelFactory(
           get sortReadsBlockedReason(): string | undefined {
             return self.unit === 'chain'
               ? 'Chain rows are ordered by chain — turn off "View as pairs / link supplementary alignments" to sort reads'
-              : self.showPileup
-                ? undefined
-                : 'Turn on Show... → Pileup to sort reads'
+              : !self.showPileup
+                ? 'Turn on Show... → Pileup to sort reads'
+                : this.everySectionCollapsed
+                  ? 'Every group is drawn on one row — turn off Show... → "Collapse groups to one row", or expand a group from its label, to sort reads'
+                  : undefined
+          },
+
+          /**
+           * #getter
+           * Whether every section lays its reads on one row: the collapse is
+           * in effect and no section opted out by an expand or a drag.
+           */
+          get everySectionCollapsed() {
+            return (
+              this.collapseSections &&
+              this.groupHeightOverrides.size === 0 &&
+              this.expandedGroupKeys.size === 0
+            )
           },
 
           /**
