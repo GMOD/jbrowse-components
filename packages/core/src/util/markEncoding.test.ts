@@ -7,6 +7,7 @@ import {
 import {
   GLYPH_DIAMOND,
   GLYPH_DISC,
+  GLYPH_SQUARE,
   GLYPH_TRIANGLE,
 } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
@@ -818,10 +819,11 @@ test('shape is a name or a jexl expression returning one', () => {
 })
 
 const GLYPHS: ShapeName[] = ['circle', 'triangle-down', 'diamond']
-const CODE = {
+const CODE: Record<ShapeName, number> = {
   circle: GLYPH_DISC,
   'triangle-down': GLYPH_TRIANGLE,
   diamond: GLYPH_DIAMOND,
+  square: GLYPH_SQUARE,
 }
 
 test('an unpinned shape scale derives each shape from the value, so two regions agree', () => {
@@ -891,6 +893,29 @@ test('a pinned shape domain walks the range in order', () => {
     GLYPH_DIAMOND,
     GLYPH_TRIANGLE,
   ])
+})
+
+test('a square draws where a constant or a range names it', () => {
+  const constant = encodeFeatures(features, { shape: 'square' }, ALL, { jexl })
+  expect([...constant.glyph]).toEqual(features.map(() => GLYPH_SQUARE))
+  const ranged = encodeFeatures(
+    features,
+    {
+      shape: {
+        field: 'strand',
+        scale: 'categorical',
+        domain: [1, -1],
+        range: ['square', 'circle'],
+      },
+    },
+    ALL,
+    { jexl },
+  )
+  expect(ranged.shapeScale?.entries).toEqual([
+    { value: '1', shape: 'square' },
+    { value: '-1', shape: 'circle' },
+  ])
+  expect(ranged.glyph[0]).toBe(GLYPH_SQUARE)
 })
 
 test('a value the shape domain leaves out takes a shape no listed value holds', () => {

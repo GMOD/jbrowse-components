@@ -273,7 +273,13 @@ describe('a scale beside its field', () => {
     const options = [...screen.getByTestId('scale-color').children].map(
       o => (o as HTMLOptionElement).value,
     )
-    expect(options).toEqual(['categorical', 'linear', 'log', 'threshold'])
+    expect(options).toEqual([
+      'categorical',
+      'linear',
+      'log',
+      'symlog',
+      'threshold',
+    ])
   })
 
   it('names a ramp its stops and pins its ends', () => {

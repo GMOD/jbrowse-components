@@ -1,7 +1,7 @@
 ---
 id: markcolor
 title: MarkColor
-description: "A mark's encoding.color: one CSS color or jexl: callback for every instance, or a field through a categorical scale (a range color per value), a linear or log scale (a ramp between domainMin and…"
+description: "A mark's encoding.color: one CSS color or jexl: callback for every instance, or a field through a categorical scale (a range color per value), a linear, log or symlog scale (a ramp between domainMin…"
 sidebar_label: Display -> MarkColor
 ---
 
@@ -9,9 +9,10 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 A mark's `encoding.color`: one CSS color or `jexl:` callback for every
 instance, or a field through a categorical scale (a `range` color per
-value), a `linear` or `log` scale (a ramp between `domainMin` and
-`domainMax`, `domainMid` placing its middle stop where a diverging ramp
-turns) or a `threshold` scale (a `range` color per interval between the
+value), a `linear`, `log` or `symlog` scale (a ramp between `domainMin`
+and `domainMax`, `domainMid` placing its middle stop where a diverging ramp
+turns; `symlog` runs logarithmic away from 0 and linear through it, so a
+signed fold change ramps on both sides) or a `threshold` scale (a `range` color per interval between the
 cut points `domain` lists). A string is the field, as every channel's is
 inside `encoding`; a constant is `{ value }`. A scale is what the legend
 describes.
@@ -91,16 +92,16 @@ A setting written to it replaces it whole, since its members are alternatives: a
 | <span id="slot-breaks">**breaks**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | The values a categorical key lists, in this order; empty lists every value the loaded regions met. A value left out still paints, as ggplot2's `breaks` leaves it. |
 | <span id="slot-missinglabel">**missingLabel**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | The key's name for a feature with nothing in `field`; unset is "(no value)". |
 | <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | the feature field a scale reads, or a jexl expression over feature, which is slower per feature and so the opt-in |
-| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical, linear, log, threshold) | categorical hands out range colors per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field |
+| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical, linear, log, symlog, threshold) | categorical hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field |
 | <span id="slot-domain">**domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | for a categorical scale, the values in legend order, walking the range from the first entry and continuing into the default palette past its end (a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead |
-| <span id="slot-domainmin">**domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the bottom of a linear or log scale's domain; unset follows the loaded values |
-| <span id="slot-domainmax">**domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the top of a linear or log scale's domain; unset follows the loaded values |
-| <span id="slot-domainquantile">**domainQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own<br>_advanced_ |
-| <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colors a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme |
+| <span id="slot-domainmin">**domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the bottom of a ramp's domain; unset follows the loaded values |
+| <span id="slot-domainmax">**domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the top of a ramp's domain; unset follows the loaded values |
+| <span id="slot-domainquantile">**domainQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own<br>_advanced_ |
+| <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colors a categorical scale hands its domain in order, a threshold scale its intervals, or a ramp's evenly spaced stops; empty is the default palette, or the scheme |
 | <span id="slot-unknown">**unknown**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | color for a value missing from domain: unset takes the next palette color where the display deals one, a color paints that color, "" adds no color from this setting, so a row keeps the color it already has, a variant cell takes the alt hue and a feature the no-value grey |
 | <span id="slot-labels">**labels**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | key label for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its name |
-| <span id="slot-scheme">**scheme**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (viridis, magma, inferno, cividis, juicebox, fall, reds, blues, redblue, purpleorange, redgreyblue, redyellowblue) | a named ramp: a linear or log scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it |
-| <span id="slot-reverse">**reverse**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | turns the ramp round, so its last color paints the bottom of a linear or log domain or a threshold's lowest interval; unset follows the field's preset, else runs as written |
+| <span id="slot-scheme">**scheme**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (viridis, magma, inferno, cividis, juicebox, fall, reds, blues, redblue, purpleorange, redgreyblue, redyellowblue) | a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it |
+| <span id="slot-reverse">**reverse**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written |
 | <span id="slot-domainmid">**domainMid**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it |
 | <span id="slot-title">**title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | key title; unset keeps the display's own heading, "" draws none |
 | <span id="slot-descending">**descending**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | threshold key lists the highest interval first; unset follows the field's preset, else the lowest first |

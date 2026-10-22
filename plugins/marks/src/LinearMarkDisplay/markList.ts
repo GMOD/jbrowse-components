@@ -34,6 +34,7 @@ import type {
   Mark,
   MarkColorScale,
   MarkFrame,
+  MarkShape,
   MarkValueScaleType,
   RowTable,
 } from '@jbrowse/render-core/marks'
@@ -277,6 +278,20 @@ export function linkChannelsOf(d: MarkRegionData, i: number) {
   return withLanes(d.layers[i], MARK_VALUE_LANES.link)
 }
 
+// What every shape standing at a value reads besides its own members: the one
+// y scale, its region's color scale and its row band.
+function valuedParams(s: MarkRenderState, d: MarkRegionData, i: number) {
+  return {
+    domain: s.domainY,
+    scaleType: s.scaleTypeY,
+    symlogConstant: s.symlogConstantY,
+    colorScale: regionColorScale(s, d, i),
+    rowHeight: s.rowHeight,
+    rowOffsetPx: -s.scrollTop,
+    rowTable: s.rowTable,
+  }
+}
+
 /** What mark `i`'s link draws under, as its pass and the text layer read it. */
 export function linkParamsOf(
   entry: MarkEntry,
@@ -285,19 +300,13 @@ export function linkParamsOf(
   d: MarkRegionData,
 ): LinkParams {
   return {
-    domain: s.domainY,
-    scaleType: s.scaleTypeY,
-    symlogConstant: s.symlogConstantY,
-    colorScale: regionColorScale(s, d, i),
+    ...valuedParams(s, d, i),
     regions: s.linkRegions,
     linkShape: entry.linkShape,
     valued: entry.valued,
     sizePx: s.markSizes[i]!,
     sizeScale: s.sizeScales[i],
     insetPx: s.valueInsetPx,
-    rowHeight: s.rowHeight,
-    rowOffsetPx: -s.scrollTop,
-    rowTable: s.rowTable,
   }
 }
 
@@ -320,114 +329,102 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
   })
 }
 
+// Entry `i`'s shape over layer `i`, sampling the ramp its region paints
+// through, off outside the entry's zoom range.
+function layerMark<C, P>(
+  entry: MarkEntry,
+  i: number,
+  shape: MarkShape<C, P>,
+  id: string,
+  channels: (d: MarkRegionData) => C | undefined,
+  params: (s: MarkRenderState, d: MarkRegionData) => P,
+) {
+  return defineMark({
+    shape: withPassId(shape, id),
+    channels,
+    params,
+    textures: (s: MarkRenderState, d: MarkRegionData) => ({
+      colorRamp: rampLut(regionColorScale(s, d, i)),
+    }),
+    enabled: (s: MarkRenderState) => markDrawsAt(entry, s.bpPerPx),
+  })
+}
+
 function shapeMark(entry: MarkEntry, i: number) {
   const { type } = entry
   const id = `${type}#${i}`
-  const enabled = (s: MarkRenderState) => markDrawsAt(entry, s.bpPerPx)
   switch (type) {
     case 'text': {
       return undefined
     }
     case 'bar': {
-      return defineMark({
-        shape: withPassId(barMark, id),
-        channels: (d: MarkRegionData) =>
-          withLanes(d.layers[i], MARK_VALUE_LANES.bar),
-        params: (s: MarkRenderState, d: MarkRegionData) => ({
-          domain: s.domainY,
-          scaleType: s.scaleTypeY,
-          symlogConstant: s.symlogConstantY,
-          colorScale: regionColorScale(s, d, i),
+      return layerMark(
+        entry,
+        i,
+        barMark,
+        id,
+        d => withLanes(d.layers[i], MARK_VALUE_LANES.bar),
+        (s, d) => ({
+          ...valuedParams(s, d, i),
           origin: s.origin,
           minWidthPx: s.minWidthPx,
           seamPx: CANVAS_SEAM_PX,
-          rowHeight: s.rowHeight,
-          rowOffsetPx: -s.scrollTop,
-          rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState, d: MarkRegionData) => ({
-          colorRamp: rampLut(regionColorScale(s, d, i)),
-        }),
-        enabled,
-      })
+      )
     }
     case 'point': {
-      return defineMark({
-        shape: withPassId(pointMark, id),
-        channels: (d: MarkRegionData) =>
-          withLanes(d.layers[i], MARK_VALUE_LANES.point),
-        params: (s: MarkRenderState, d: MarkRegionData) => ({
-          domain: s.domainY,
-          scaleType: s.scaleTypeY,
-          symlogConstant: s.symlogConstantY,
-          colorScale: regionColorScale(s, d, i),
+      return layerMark(
+        entry,
+        i,
+        pointMark,
+        id,
+        d => withLanes(d.layers[i], MARK_VALUE_LANES.point),
+        (s, d) => ({
+          ...valuedParams(s, d, i),
           diameterPx: s.markSizes[i]!,
           insetPx: s.valueInsetPx,
-          rowHeight: s.rowHeight,
-          rowOffsetPx: -s.scrollTop,
-          rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState, d: MarkRegionData) => ({
-          colorRamp: rampLut(regionColorScale(s, d, i)),
-        }),
-        enabled,
-      })
+      )
     }
     case 'rule': {
-      return defineMark({
-        shape: withPassId(ruleMark, id),
-        channels: (d: MarkRegionData) =>
-          withLanes(d.layers[i], MARK_VALUE_LANES.rule),
-        params: (s: MarkRenderState, d: MarkRegionData) => ({
-          domain: s.domainY,
-          scaleType: s.scaleTypeY,
-          symlogConstant: s.symlogConstantY,
-          colorScale: regionColorScale(s, d, i),
+      return layerMark(
+        entry,
+        i,
+        ruleMark,
+        id,
+        d => withLanes(d.layers[i], MARK_VALUE_LANES.rule),
+        (s, d) => ({
+          ...valuedParams(s, d, i),
           sizePx: s.markSizes[i]!,
           minWidthPx: s.minWidthPx,
           insetPx: s.valueInsetPx,
-          rowHeight: s.rowHeight,
-          rowOffsetPx: -s.scrollTop,
-          rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState, d: MarkRegionData) => ({
-          colorRamp: rampLut(regionColorScale(s, d, i)),
-        }),
-        enabled,
-      })
+      )
     }
     case 'line': {
-      return defineMark({
-        shape: withPassId(
-          lineMarkOf(entry.interpolate ?? DEFAULT_LINE_INTERPOLATE),
-          `${type}-${entry.interpolate ?? DEFAULT_LINE_INTERPOLATE}#${i}`,
-        ),
-        channels: (d: MarkRegionData) =>
-          withLanes(d.layers[i], MARK_VALUE_LANES.line),
-        params: (s: MarkRenderState, d: MarkRegionData) => ({
-          domain: s.domainY,
-          scaleType: s.scaleTypeY,
-          symlogConstant: s.symlogConstantY,
-          colorScale: regionColorScale(s, d, i),
+      const interpolate = entry.interpolate ?? DEFAULT_LINE_INTERPOLATE
+      return layerMark(
+        entry,
+        i,
+        lineMarkOf(interpolate),
+        `${type}-${interpolate}#${i}`,
+        d => withLanes(d.layers[i], MARK_VALUE_LANES.line),
+        (s, d) => ({
+          ...valuedParams(s, d, i),
           colorFromY: s.colorsFromY[i]!,
           origin: s.origin,
           lineWidth: s.markSizes[i]!,
-          rowHeight: s.rowHeight,
-          rowOffsetPx: -s.scrollTop,
-          rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState, d: MarkRegionData) => ({
-          colorRamp: rampLut(regionColorScale(s, d, i)),
-        }),
-        enabled,
-      })
+      )
     }
     case 'span': {
-      return defineMark({
-        shape: withPassId(spanMark, id),
-        channels: (d: MarkRegionData) =>
-          withLanes(d.layers[i], MARK_VALUE_LANES.span),
-        params: (s: MarkRenderState, d: MarkRegionData) => ({
+      return layerMark(
+        entry,
+        i,
+        spanMark,
+        id,
+        d => withLanes(d.layers[i], MARK_VALUE_LANES.span),
+        (s, d) => ({
           colorScale: regionColorScale(s, d, i),
           rowHeight: s.rowHeight,
           rowProportion: s.rowProportions[i]!,
@@ -436,23 +433,17 @@ function shapeMark(entry: MarkEntry, i: number) {
           scrollTop: s.scrollTop,
           rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState, d: MarkRegionData) => ({
-          colorRamp: rampLut(regionColorScale(s, d, i)),
-        }),
-        enabled,
-      })
+      )
     }
     case 'link': {
-      return defineMark({
-        shape: withPassId(linkMark, id),
-        channels: (d: MarkRegionData) => linkChannelsOf(d, i),
-        params: (s: MarkRenderState, d: MarkRegionData) =>
-          linkParamsOf(entry, i, s, d),
-        textures: (s: MarkRenderState, d: MarkRegionData) => ({
-          colorRamp: rampLut(regionColorScale(s, d, i)),
-        }),
-        enabled,
-      })
+      return layerMark(
+        entry,
+        i,
+        linkMark,
+        id,
+        d => linkChannelsOf(d, i),
+        (s, d) => linkParamsOf(entry, i, s, d),
+      )
     }
   }
 }

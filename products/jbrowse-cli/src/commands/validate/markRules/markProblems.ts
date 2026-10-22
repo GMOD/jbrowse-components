@@ -73,9 +73,9 @@ export const MARK_RULES = {
   'threshold-cut-count': 'warning',
   /** A threshold `range` not one color longer than its cuts. */
   'threshold-range': 'warning',
-  /** A `domain` on a linear or log color, whose ends are `domainMin` and `domainMax`. */
+  /** A `domain` on a linear, log or symlog color, whose ends are `domainMin` and `domainMax`. */
   'ramp-domain': 'warning',
-  /** A linear or log color whose `range` lists one color, which paints every value alike. */
+  /** A linear, log or symlog color whose `range` lists one color, which paints every value alike. */
   'ramp-range': 'warning',
   /** A scale's `domainMax` below its `domainMin`: a color ramp's, a width's or `scales.y`'s. */
   'domain-ends': 'warning',
@@ -299,8 +299,6 @@ function sizeFieldOf(size: SizeSnapshot | undefined) {
       : ''
 }
 
-// A shape's labels name its domain values in order, as a color's do, and a
-// constant shape names none.
 // What a reader writes as a color, without the color parser the rule list
 // cannot carry into `jbrowse validate`.
 function spellsColor(text: string) {

@@ -4893,7 +4893,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "a named ramp: a linear or log scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
+              "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -4915,7 +4915,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "reverse": {
-              "description": "turns the ramp round, so its last color paints the bottom of a linear or log domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
+              "description": "turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
               "if": {
                 "type": "null"
               },
@@ -4933,7 +4933,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMin": {
-              "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
+              "description": "the bottom of a ramp's domain; unset follows the loaded values.",
               "if": {
                 "type": "null"
               },
@@ -4942,7 +4942,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMax": {
-              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+              "description": "the top of a ramp's domain; unset follows the loaded values.",
               "if": {
                 "type": "null"
               },
@@ -4951,7 +4951,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainQuantile": {
-              "description": "the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
+              "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
               "default": 1,
               "if": {
                 "type": "null"
@@ -6393,7 +6393,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMin": {
-              "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
+              "description": "the bottom of a ramp's domain; unset follows the loaded values.",
               "if": {
                 "type": "null"
               },
@@ -6402,7 +6402,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMax": {
-              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+              "description": "the top of a ramp's domain; unset follows the loaded values.",
               "if": {
                 "type": "null"
               },
@@ -6411,7 +6411,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainQuantile": {
-              "description": "the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
+              "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
               "default": 1,
               "if": {
                 "type": "null"
@@ -6433,7 +6433,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "a named ramp: a linear or log scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
+              "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -6455,7 +6455,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "reverse": {
-              "description": "turns the ramp round, so its last color paints the bottom of a linear or log domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
+              "description": "turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
               "if": {
                 "type": "null"
               },
@@ -8147,7 +8147,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMin": {
-              "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
+              "description": "the bottom of a ramp's domain; unset follows the loaded values.",
               "if": {
                 "type": "null"
               },
@@ -8156,7 +8156,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMax": {
-              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+              "description": "the top of a ramp's domain; unset follows the loaded values.",
               "if": {
                 "type": "null"
               },
@@ -8165,7 +8165,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainQuantile": {
-              "description": "the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
+              "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
               "default": 1,
               "if": {
                 "type": "null"
@@ -8187,7 +8187,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "a named ramp: a linear or log scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
+              "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -8209,7 +8209,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "reverse": {
-              "description": "turns the ramp round, so its last color paints the bottom of a linear or log domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
+              "description": "turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
               "if": {
                 "type": "null"
               },
@@ -8990,7 +8990,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "a named ramp: a linear or log scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
+              "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -9012,7 +9012,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "reverse": {
-              "description": "turns the ramp round, so its last color paints the bottom of a linear or log domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
+              "description": "turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
               "if": {
                 "type": "null"
               },
@@ -9030,7 +9030,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMin": {
-              "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
+              "description": "the bottom of a ramp's domain; unset follows the loaded values.",
               "if": {
                 "type": "null"
               },
@@ -9039,7 +9039,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMax": {
-              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+              "description": "the top of a ramp's domain; unset follows the loaded values.",
               "if": {
                 "type": "null"
               },
@@ -9233,7 +9233,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "categorical hands out range colors per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field.",
+              "description": "categorical hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field.",
               "if": {
                 "type": "null"
               },
@@ -9243,6 +9243,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "categorical",
                   "linear",
                   "log",
+                  "symlog",
                   "threshold"
                 ]
               }
@@ -9271,7 +9272,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMin": {
-              "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
+              "description": "the bottom of a ramp's domain; unset follows the loaded values.",
               "if": {
                 "type": "null"
               },
@@ -9280,7 +9281,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMax": {
-              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+              "description": "the top of a ramp's domain; unset follows the loaded values.",
               "if": {
                 "type": "null"
               },
@@ -9289,7 +9290,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainQuantile": {
-              "description": "the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
+              "description": "the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
               "default": 1,
               "if": {
                 "type": "null"
@@ -9299,7 +9300,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colors a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme.",
+              "description": "CSS colors a categorical scale hands its domain in order, a threshold scale its intervals, or a ramp's evenly spaced stops; empty is the default palette, or the scheme.",
               "if": {
                 "type": "null"
               },
@@ -9343,7 +9344,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "a named ramp: a linear or log scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
+              "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -9365,7 +9366,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "reverse": {
-              "description": "turns the ramp round, so its last color paints the bottom of a linear or log domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
+              "description": "turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
               "if": {
                 "type": "null"
               },
@@ -9455,7 +9456,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "value": {
-              "description": "circle, triangle-down, diamond or jexl callback.",
+              "description": "circle, triangle-down, diamond, square or jexl callback.",
               "default": "circle",
               "if": {
                 "type": "null"
@@ -9466,7 +9467,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "enum": [
                       "circle",
                       "triangle-down",
-                      "diamond"
+                      "diamond",
+                      "square"
                     ]
                   },
                   {
@@ -9508,7 +9510,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "enum": [
                     "circle",
                     "triangle-down",
-                    "diamond"
+                    "diamond",
+                    "square"
                   ]
                 }
               }
@@ -12441,7 +12444,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "a named ramp: a linear or log scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
+              "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -12463,7 +12466,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "reverse": {
-              "description": "turns the ramp round, so its last color paints the bottom of a linear or log domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
+              "description": "turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
               "if": {
                 "type": "null"
               },
@@ -25521,7 +25524,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "a named ramp: a linear or log scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
+              "description": "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -25543,7 +25546,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "reverse": {
-              "description": "turns the ramp round, so its last color paints the bottom of a linear or log domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
+              "description": "turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written.",
               "if": {
                 "type": "null"
               },
@@ -25561,7 +25564,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMin": {
-              "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
+              "description": "the bottom of a ramp's domain; unset follows the loaded values.",
               "if": {
                 "type": "null"
               },
@@ -25570,7 +25573,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMax": {
-              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+              "description": "the top of a ramp's domain; unset follows the loaded values.",
               "if": {
                 "type": "null"
               },

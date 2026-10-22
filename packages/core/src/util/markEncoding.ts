@@ -20,7 +20,7 @@ import { valueText } from './groupKeys.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { numericValue } from './numericValue.ts'
 import { scaleExtent } from './quantileExtent.ts'
-import { SHAPE_CODES, SHAPE_NAMES } from './shapeNames.ts'
+import { DEFAULT_SHAPE_RANGE, SHAPE_CODES } from './shapeNames.ts'
 import { buildJexlContext } from './simpleFeature.ts'
 import {
   isMissing,
@@ -771,9 +771,10 @@ export function encodeFeatures<L extends LaneName>(
     const shapeField = categoricalField(shapeEncoding.field, {
       domain: shapeEncoding.domain?.map(String),
     })
-    const range = shapeEncoding.range ?? SHAPE_NAMES
+    const range = shapeEncoding.range ?? DEFAULT_SHAPE_RANGE
     const shapeOf = categoricalScale(shapeField.domain, range, {
-      fallback: range.length > shapeField.domain.length ? [] : SHAPE_NAMES,
+      fallback:
+        range.length > shapeField.domain.length ? [] : DEFAULT_SHAPE_RANGE,
     })
     const entries = paintCategories(
       table,

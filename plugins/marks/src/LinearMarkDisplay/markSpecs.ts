@@ -1,3 +1,9 @@
+import {
+  DEFAULT_LINE_WIDTH_PX,
+  DEFAULT_LINK_STROKE_PX,
+  DEFAULT_POINT_DIAMETER_PX,
+} from './markVocabulary.ts'
+
 import type { MarkType } from './markVocabulary.ts'
 
 /** An encoding channel a mark reads, besides `x` and `x2`. */
@@ -46,6 +52,8 @@ export interface MarkSpec {
    * through the `size` lane. Absent, the mark draws no size.
    */
   readonly size?: 'constant' | 'channel'
+  /** The px a mark reading `size` draws at where its encoding writes no number. */
+  readonly defaultSizePx?: number
   /**
    * Whether the mark strokes through its instances in order, and so asks for
    * the series each one belongs to.
@@ -74,18 +82,21 @@ export const MARK_SPECS = {
     value: 'required',
     hit: 'index',
     size: 'constant',
+    defaultSizePx: DEFAULT_POINT_DIAMETER_PX,
   },
   rule: {
     channels: ['y', 'row', 'color'],
     value: 'required',
     hit: 'rows',
     size: 'constant',
+    defaultSizePx: DEFAULT_POINT_DIAMETER_PX,
   },
   line: {
     channels: ['y', 'row', 'color'],
     value: 'required',
     hit: 'rows',
     size: 'constant',
+    defaultSizePx: DEFAULT_LINE_WIDTH_PX,
     path: true,
   },
   span: {
@@ -104,6 +115,7 @@ export const MARK_SPECS = {
     hit: 'index',
     farFoot: true,
     size: 'channel',
+    defaultSizePx: DEFAULT_LINK_STROKE_PX,
   },
 } as const satisfies Record<MarkType, MarkSpec>
 
@@ -119,6 +131,14 @@ export function readsValue(type: MarkType) {
 /** Whether a mark type may plot a `y`, and so folds its values into the axis. */
 export function plotsValue(type: MarkType) {
   return specOf(type).value !== 'none'
+}
+
+/**
+ * A mark's size in px: the number its `encoding.size` writes, else its type's
+ * default, and 0 for a type that draws no size.
+ */
+export function markSizePx(type: MarkType, written: number | undefined) {
+  return written ?? specOf(type).defaultSizePx ?? 0
 }
 
 /** Whether a mark type answers a hover through the hit index the worker builds. */

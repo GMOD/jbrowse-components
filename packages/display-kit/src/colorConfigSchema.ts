@@ -374,7 +374,7 @@ export const colorReverseSlot = {
   reverse: {
     type: 'maybeBoolean',
     description:
-      "turns the ramp round, so its last color paints the bottom of a linear or log domain or a threshold's lowest interval; unset follows the field's preset, else runs as written",
+      "turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written",
   },
 } as const
 
@@ -384,7 +384,7 @@ export const colorRampSlots = {
     type: 'maybeStringEnum',
     model: types.enumeration('ColorScheme', [...COLOR_SCHEMES]),
     description:
-      "a named ramp: a linear or log scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it",
+      "a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it",
   },
   ...colorReverseSlot,
   domainMid: {
@@ -394,22 +394,21 @@ export const colorRampSlots = {
   },
 } as const
 
-/** A linear or log scale's two ends, each pinned or following the data. */
+/** A ramp's two ends, each pinned or following the data. */
 export const colorDomainEndsSlots = {
   domainMin: {
     type: 'maybeNumber',
     description:
-      "the bottom of a linear or log scale's domain; unset follows the loaded values",
+      "the bottom of a ramp's domain; unset follows the loaded values",
   },
   domainMax: {
     type: 'maybeNumber',
-    description:
-      "the top of a linear or log scale's domain; unset follows the loaded values",
+    description: "the top of a ramp's domain; unset follows the loaded values",
   },
 } as const
 
 /**
- * The quantile an open end of a linear or log color scale follows over the
+ * The quantile an open end of a color ramp follows over the
  * loaded values: 1 spans their extremes, and below it each end is clipped at
  * that quantile of the values on its side of 0, so one spike no longer takes
  * the whole ramp and a ramp over GC spans the data rather than starting at 0.
@@ -422,7 +421,7 @@ export const colorDomainQuantileSlot = {
     type: 'number',
     defaultValue: 1,
     description:
-      'the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own',
+      'the quantile an open end of a ramp follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own',
     advanced: true,
   },
 } as const

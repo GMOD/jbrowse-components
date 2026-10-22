@@ -3310,7 +3310,7 @@ test('a mark s size and color default by its type, and a text mark knows whether
     { mark: 'text', encoding: { color: { value: 'red' } } },
     { mark: 'text', encoding: { color: { field: 'type' } } },
   ]).createDisplay()
-  expect(display.markSizes).toEqual([4, 4, 2, 4, 4, 4])
+  expect(display.markSizes).toEqual([4, 4, 2, 0, 0, 0])
   expect(display.encodings.map(e => e.color)).toEqual([
     '#0068d1',
     '#0068d1',

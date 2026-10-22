@@ -126,7 +126,7 @@ Each mark's `encoding` maps feature fields to the channels its type reads:
 | `y`     | `bar`, `point`, `rule`, `line`, `text` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped. A `text` may leave it empty and stand at the apex of a link between its two ends, or in the middle of its band |
 | `row`   | every mark                             | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, in the mark's, the facet's or the display's                                                                          |
 | `color` | every mark                             | a field through a scale (below), or a constant `{ "value": … }` holding a CSS color or a jexl callback returning one; a bare string is a field                                                                                                              |
-| `shape` | `point`                                | `circle`, `triangle-down` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                                                                                       |
+| `shape` | `point`                                | `circle`, `triangle-down`, `diamond` or `square`, a jexl callback returning one, or a categorical scale (below)                                                                                                                                             |
 | `size`  | `point`, `rule`, `line`, `link`        | a number of px, a point's diameter, a rule's thickness, a line's width or a link's stroke; or, on a link, a field read through a linear or log scale into a px range (below)                                                                                |
 | `text`  | `text`                                 | the field printed, `name` by default; a feature with nothing there prints nothing                                                                                                                                                                           |
 
@@ -316,14 +316,15 @@ readable.
   them one row, Other. One row per color, so two values painted alike share a
   row. A key of one color, or over 20 rows, is not drawn.
 
-- **linear** or **log** —
+- **linear**, **log** or **symlog** —
   `{ "field": "signal", "scale": "linear", "domainMin": 0, "domainMax": 50, "range": ["white", "red"] }`
 
-  `scheme` names a ramp in place of `range`, and `reverse` turns either round.
-  An end left off spans every loaded region and moves as you pan, so pin both
-  for a figure and one for a floor or a ceiling. `domainMid` places the middle
-  stop, which is how a diverging ramp centres on zero inside an asymmetric
-  domain.
+  `symlog` runs logarithmic away from 0 and linear through it, so a signed fold
+  change ramps on both sides. `scheme` names a ramp in place of `range`, and
+  `reverse` turns either round. An end left off spans every loaded region and
+  moves as you pan, so pin both for a figure and one for a floor or a ceiling.
+  `domainMid` places the middle stop, which is how a diverging ramp centres on
+  zero inside an asymmetric domain.
 
 - **threshold** —
   `{ "field": "signal", "scale": "threshold", "domain": [10, 50], "range": ["#eee", "#f90", "#c00"] }`
@@ -351,9 +352,9 @@ for features with nothing in the field.
 Other channels take a scale too. `shape` takes the same categorical form,
 `{ "field": "svType", "scale": "categorical" }`, where `range` lists the shapes
 to hand out as a color scale's lists colors (`circle`, `triangle-down`,
-`diamond` in that order when left off) and `domain` lists the values in legend
-order. The legend then has a second key whose swatches are the shapes
-themselves:
+`diamond` in that order when left off, `square` only where listed, since a
+circle 3 px across draws as one) and `domain` lists the values in legend order.
+The legend then has a second key whose swatches are the shapes themselves:
 
 ```json
 {
@@ -936,8 +937,8 @@ each reported under its id:
 | `threshold-no-cuts` | warning | A threshold color naming no cut, so every value paints one color. |
 | `threshold-cut-count` | warning | A threshold color naming more cuts than it paints, so a value past the eighth takes the ninth color. |
 | `threshold-range` | warning | A threshold `range` not one color longer than its cuts. |
-| `ramp-domain` | warning | A `domain` on a linear or log color, whose ends are `domainMin` and `domainMax`. |
-| `ramp-range` | warning | A linear or log color whose `range` lists one color, which paints every value alike. |
+| `ramp-domain` | warning | A `domain` on a linear, log or symlog color, whose ends are `domainMin` and `domainMax`. |
+| `ramp-range` | warning | A linear, log or symlog color whose `range` lists one color, which paints every value alike. |
 | `domain-ends` | warning | A scale's `domainMax` below its `domainMin`: a color ramp's, a width's or `scales.y`'s. |
 | `domain-quantile` | warning | A color ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. |
 | `log-floor` | warning | A log scale's `domainMin` at or below 0, which a log scale cannot represent, so the end floors above it. |

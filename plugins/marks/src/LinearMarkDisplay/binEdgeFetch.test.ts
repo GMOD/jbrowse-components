@@ -87,27 +87,42 @@ test('a bin step widens the fetch and the loaded span to the bin edges it stradd
   expect(fetchedRegion(mockRpcCall)).toMatchObject({ start: 3_000, end: 9_500 })
 })
 
-test("a mark outside its zoom range widens the fetch only by its bin at the view's zoom", async () => {
-  const { display, mockRpcCall } = await setup([
-    ...RAW_MARKS,
-    {
-      mark: 'bar',
-      transform: [{ type: 'bin', step: 'auto' }],
-      encoding: { y: 'count' },
-      minBpPerPx: 1000,
-    },
-  ])
+// Edges off every bin the view's zoom resolves `auto` to, so a width taken
+// from any step would move them.
+const UNALIGNED = [
+  { region: { ...REGION, start: 3_333, end: 9_377 }, displayedRegionIndex: 0 },
+]
 
-  display.fetchNeeded(NEEDED)
+test.each([
+  ['zoomed in past its range', { minBpPerPx: 1000 }],
+  ['zoomed out past its range', { maxBpPerPx: 0.5 }],
+])(
+  'a binned mark %s leaves the fetch as it was handed',
+  async (_, zoomRange) => {
+    const { display, mockRpcCall } = await setup([
+      ...RAW_MARKS,
+      {
+        mark: 'bar',
+        transform: [{ type: 'bin', step: 'auto' }],
+        encoding: { y: 'count' },
+        ...zoomRange,
+      },
+    ])
 
-  await waitFor(() => {
-    expect(display.loadedRegions.get(0)).toMatchObject({
-      start: 3_300,
-      end: 9_400,
+    display.fetchNeeded(UNALIGNED)
+
+    await waitFor(() => {
+      expect(display.loadedRegions.get(0)).toMatchObject({
+        start: 3_333,
+        end: 9_377,
+      })
     })
-  })
-  expect(fetchedRegion(mockRpcCall)).toMatchObject({ start: 3_300, end: 9_400 })
-})
+    expect(fetchedRegion(mockRpcCall)).toMatchObject({
+      start: 3_333,
+      end: 9_377,
+    })
+  },
+)
 
 test('a display with no bin step fetches the span it was handed', async () => {
   const { display, mockRpcCall } = await setup(RAW_MARKS)

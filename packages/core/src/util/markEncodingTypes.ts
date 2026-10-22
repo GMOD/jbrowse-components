@@ -8,6 +8,7 @@
 
 import type { ZoomRange } from '../data_adapters/BaseAdapter/zoomRange.ts'
 import type { ColorSchemeName } from './colorSchemes.ts'
+import type { ShapeName } from './shapeNameList.ts'
 import type { AggregateOpName } from './stepOutputs.ts'
 
 /**
@@ -100,13 +101,13 @@ export type ColorEncoding =
   | ContinuousRef
   | ThresholdRef
 
-export type ShapeName = 'circle' | 'triangle-down' | 'diamond'
+export type { ShapeName }
 
 /**
  * #api
  * A {@link ShapeName}, a `jexl:` expression over `feature` returning one, or
  * a field bound to a categorical scale whose `range` lists the shape names
- * handed out — the three shapes, in order, when absent.
+ * handed out — `DEFAULT_SHAPE_RANGE` when absent.
  */
 export type ShapeEncoding =
   | ShapeName

@@ -73,7 +73,6 @@ import {
   sidebarPanelWidth,
 } from '@jbrowse/tree-sidebar'
 import {
-  DEFAULT_POINT_DIAMETER_PX,
   ScoreScaleMixin,
   autoscaleDomainFromSpans,
   axisPlotBox,
@@ -123,11 +122,8 @@ import {
   toBinEdges,
   widestBinStep,
 } from './markRequest.ts'
-import { readsValue } from './markSpecs.ts'
-import {
-  DEFAULT_LINE_WIDTH_PX,
-  DEFAULT_LINK_STROKE_PX,
-} from './markVocabulary.ts'
+import { markSizePx, readsValue } from './markSpecs.ts'
+import { DEFAULT_POINT_DIAMETER_PX } from './markVocabulary.ts'
 import { sharedKeyNotice, sharedKeysOf } from './pinDistinct.ts'
 import { defaultPlot } from './plotDefault.ts'
 import {
@@ -225,23 +221,9 @@ function storedRegionData(result: EncodedLayersResult): MarkRegionData {
   }
 }
 
-/**
- * A mark's `encoding.size` number with its type's default where none is
- * written: a point's diameter, a rule's thickness, the 1 px a line strokes at
- * or the 2 px a link does.
- */
-export function markSizeOf({
-  mark,
-  encoding,
-}: Pick<MarkConfig, 'mark' | 'encoding'>) {
-  return (
-    encoding.size.value ??
-    (mark.type === 'link'
-      ? DEFAULT_LINK_STROKE_PX
-      : mark.type === 'line'
-        ? DEFAULT_LINE_WIDTH_PX
-        : DEFAULT_POINT_DIAMETER_PX)
-  )
+// A mark's `encoding.size` number, or its type's default where none is written.
+function markSizeOf({ mark, encoding }: Pick<MarkConfig, 'mark' | 'encoding'>) {
+  return markSizePx(mark.type, encoding.size.value)
 }
 
 /** The marks at the view's zoom: which draw. */
@@ -413,7 +395,7 @@ export function stateModelFactory(
         /**
          * #getter
          * Each mark's `encoding.size` number in px, its type's default where
-         * none is written, which a bar or span leaves unread.
+         * none is written, and 0 for a bar, span or text, which draw none.
          */
         get markSizes(): number[] {
           return self.conf.marks.map(markSizeOf)
@@ -1886,14 +1868,20 @@ export function stateModelFactory(
       .actions(self => ({
         /**
          * #action
+         * Fetch each needed region widened to the edges of the widest bin a
+         * shared step or a mark drawing at this zoom cuts, so no bin a drawn
+         * mark plots is cut at the fetch edge.
          */
         fetchNeeded(needed: IndexedRegion[]) {
           const { bpPerPx, displayedRegions } = self.host
-          const { transform, facet } = self.rpcProps()
+          const { visible } = self.markView
+          const { transform, facet, layers } = self.rpcProps()
           const step = widestBinStep([
             ...transform,
             ...(facet?.transform ?? []),
-            ...self.conf.marks.flatMap(m => stepsOf(m.transform, bpPerPx)),
+            ...layers.flatMap((layer, i) =>
+              visible[i] ? (layer.transform ?? []) : [],
+            ),
           ])
           const regions =
             step > 0

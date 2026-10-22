@@ -3647,6 +3647,7 @@
     "@jbrowse/core/util/shapeNameList": {
       "package": "@jbrowse/core",
       "names": [
+        "DEFAULT_SHAPE_RANGE",
         "SHAPE_NAMES"
       ],
       "worker": "real"
@@ -3654,6 +3655,7 @@
     "@jbrowse/core/util/shapeNames": {
       "package": "@jbrowse/core",
       "names": [
+        "DEFAULT_SHAPE_RANGE",
         "SHAPE_CODES",
         "SHAPE_NAMES"
       ],

@@ -52,14 +52,15 @@ const markShapeSchema = ConfigurationSchema(
   {
     /**
      * #slot marks.encoding.shape.value
-     * `circle`, `triangle-down` or `diamond`, or a jexl callback over
-     * `feature` returning one, for a point mark whose shape is not a scale.
+     * `circle`, `triangle-down`, `diamond` or `square`, or a jexl callback
+     * over `feature` returning one, for a point mark whose shape is not a
+     * scale.
      */
     value: {
       type: 'stringEnum',
       model: types.enumeration('ShapeName', [...SHAPE_NAMES]),
       defaultValue: 'circle',
-      description: 'circle, triangle-down, diamond or jexl callback',
+      description: 'circle, triangle-down, diamond, square or jexl callback',
       contextVariable: ['feature'],
     },
     /**
@@ -86,7 +87,7 @@ const markShapeSchema = ConfigurationSchema(
     /**
      * #slot marks.encoding.shape.range
      * The shape names a categorical scale hands out, in order. Empty is
-     * `circle`, `triangle-down`, `diamond`.
+     * `circle`, `triangle-down`, `diamond`; `square` draws only where listed.
      */
     range: {
       type: 'stringEnumArray',
@@ -217,8 +218,8 @@ const markEncodingSchema = ConfigurationSchema(
      * #slot marks.encoding.shape
      * For a point mark: a field through a categorical scale over `circle`,
      * `triangle-down` and `diamond`, written bare or as an object, or a
-     * constant `{ value }`, one of those names or a jexl callback returning
-     * one. A scale is what the legend describes.
+     * constant `{ value }`, one of those names, `square`, or a jexl callback
+     * returning one. A scale is what the legend describes.
      */
     shape: markShapeSchema,
     /**

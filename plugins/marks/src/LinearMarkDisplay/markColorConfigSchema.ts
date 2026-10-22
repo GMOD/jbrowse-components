@@ -21,9 +21,10 @@ import { MARK_COLOR_SCALES } from './markVocabulary.ts'
  * #category display
  * A mark's `encoding.color`: one CSS color or `jexl:` callback for every
  * instance, or a field through a categorical scale (a `range` color per
- * value), a `linear` or `log` scale (a ramp between `domainMin` and
- * `domainMax`, `domainMid` placing its middle stop where a diverging ramp
- * turns) or a `threshold` scale (a `range` color per interval between the
+ * value), a `linear`, `log` or `symlog` scale (a ramp between `domainMin`
+ * and `domainMax`, `domainMid` placing its middle stop where a diverging ramp
+ * turns; `symlog` runs logarithmic away from 0 and linear through it, so a
+ * signed fold change ramps on both sides) or a `threshold` scale (a `range` color per interval between the
  * cut points `domain` lists). A string is the field, as every channel's is
  * inside `encoding`; a constant is `{ value }`. A scale is what the legend
  * describes.
@@ -109,7 +110,7 @@ export const markColorSchema = ConfigurationSchema(
       field:
         'the feature field a scale reads, or a jexl expression over feature, which is slower per feature and so the opt-in',
       scale:
-        'categorical hands out range colors per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field',
+        'categorical hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field',
     }),
     ...colorDomainSlot({
       domain:
@@ -119,7 +120,7 @@ export const markColorSchema = ConfigurationSchema(
     ...colorDomainQuantileSlot,
     ...colorRangeSlot({
       range:
-        "CSS colors a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme",
+        "CSS colors a categorical scale hands its domain in order, a threshold scale its intervals, or a ramp's evenly spaced stops; empty is the default palette, or the scheme",
     }),
     ...colorUnknownSlot,
     ...colorLabelsSlot,

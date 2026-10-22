@@ -242,6 +242,30 @@ test('a ramp over the plotted field takes its extent off the values and its ends
   })
 })
 
+test('a symlog ramp repaints the loaded values and hands the shapes its scale', () => {
+  const display = loaded([
+    {
+      mark: 'bar',
+      encoding: { y: 'score', color: { field: 'depth', scale: 'linear' } },
+    },
+  ])
+  const before = JSON.stringify(display.rpcProps())
+
+  editColor(display, 'scale', 'symlog')
+
+  expect(JSON.stringify(display.rpcProps())).toBe(before)
+  expect(layerOf(display).scale).toMatchObject({
+    kind: 'ramp',
+    scale: 'symlog',
+    extent: [1, 8],
+  })
+  expect(display.paintScales[0]).toMatchObject({
+    scale: 'symlog',
+    domain: [1, 8],
+  })
+  expect(display.configProblems).toEqual([])
+})
+
 test('a color over another field crosses as its field and reads the values that lane carries', () => {
   const display = loaded([
     {

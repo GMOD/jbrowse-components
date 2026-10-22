@@ -50,6 +50,9 @@ export function markInterpolateOf(entry: {
   const { mark } = entry
   return typeof mark === 'string' ? undefined : mark?.interpolate
 }
+/** The diameter a point draws at, and a rule's thickness, where its `size` is left unwritten. */
+export const DEFAULT_POINT_DIAMETER_PX = 4
+
 /** The width a line strokes at where its `size` is left unwritten. */
 export const DEFAULT_LINE_WIDTH_PX = 1
 
@@ -71,6 +74,7 @@ export const MARK_COLOR_SCALES = [
   'categorical',
   'linear',
   'log',
+  'symlog',
   'threshold',
 ] as const
 

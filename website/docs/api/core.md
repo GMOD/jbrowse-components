@@ -1430,7 +1430,7 @@ The `point` mark's painter code for each shape an encoding can name.
 import { SHAPE_CODES } from '@jbrowse/core/util/shapeNames'
 
 // type signature
-Record<ShapeName, number>
+Record<"circle" | "diamond" | "square" | "triangle-down", number>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/shapeNames.ts)
@@ -1439,7 +1439,7 @@ Record<ShapeName, number>
 
 A ShapeName, a `jexl:` expression over `feature` returning one, or
 a field bound to a categorical scale whose `range` lists the shape names
-handed out — the three shapes, in order, when absent.
+handed out — `DEFAULT_SHAPE_RANGE` when absent.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 

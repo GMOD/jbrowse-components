@@ -1,6 +1,7 @@
 import {
   GLYPH_DIAMOND,
   GLYPH_DISC,
+  GLYPH_SQUARE,
   GLYPH_TRIANGLE,
 } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
@@ -14,6 +15,7 @@ export const SHAPE_CODES: Record<ShapeName, number> = {
   circle: GLYPH_DISC,
   'triangle-down': GLYPH_TRIANGLE,
   diamond: GLYPH_DIAMOND,
+  square: GLYPH_SQUARE,
 }
 
-export { SHAPE_NAMES } from './shapeNameList.ts'
+export { DEFAULT_SHAPE_RANGE, SHAPE_NAMES } from './shapeNameList.ts'

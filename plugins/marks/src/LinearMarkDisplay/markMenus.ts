@@ -18,13 +18,12 @@ import {
   sortRowsHereMenuItem,
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
-import {
-  DEFAULT_POINT_DIAMETER_PX,
-  makeScoreAxisMenuItem,
-} from '@jbrowse/wiggle-core'
+import { makeScoreAxisMenuItem } from '@jbrowse/wiggle-core'
 import { makeMarkSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
+
+import { DEFAULT_POINT_DIAMETER_PX } from './markVocabulary.ts'
 
 import type { LinearMarkDisplayModel } from './model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
