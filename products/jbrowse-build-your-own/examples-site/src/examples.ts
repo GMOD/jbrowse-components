@@ -112,6 +112,13 @@ export const pages: ExamplePage[] = [
     group: 'Data sources',
   },
   {
+    slug: 'inline-plugin',
+    title: 'Your own data source',
+    description:
+      "A plugin in the page adds an adapter that reads genes from Ensembl's REST API.",
+    group: 'Data sources',
+  },
+  {
     slug: 'table-of-calls',
     title: 'Navigating from a table of calls',
     description: 'Click a structural variant call to open and mark it.',
