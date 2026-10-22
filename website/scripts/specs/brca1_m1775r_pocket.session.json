@@ -452,7 +452,8 @@
           }
         }
       ],
-      "silhouettes": true
+      "silhouettes": true,
+      "occlusion": true
     },
     {
       "id": "protein-BRCA1-1n5o",
@@ -882,7 +883,8 @@
           }
         }
       ],
-      "silhouettes": true
+      "silhouettes": true,
+      "occlusion": true
     }
   ],
   "sessionTracks": [
