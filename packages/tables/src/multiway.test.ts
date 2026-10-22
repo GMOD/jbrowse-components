@@ -142,6 +142,12 @@ test('SyRI calls color their ribbons, and a lane unaligned on both sides opens n
   })
   expect(pinned.lanes.chrom[2]).toBe('Chr2')
   expect(t.lanes.chrom[2]).toBe('Chr1')
+
+  const flipped = await engine.multiway({
+    ...SYRI,
+    flips: { Cvi: { refName: 'Chr1', flipped: !t.lanes.flipped[2] } },
+  })
+  expect(flipped.lanes.flipped[2]).toBe(!t.lanes.flipped[2])
 })
 
 test('a gene table joins a gene across a lane that lacks it', async () => {

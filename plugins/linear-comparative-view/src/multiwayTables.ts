@@ -71,6 +71,7 @@ import { getMate } from './syntenyMate.ts'
 import type { LaneLinks } from './MultiWaySyntenyDisplay/alignmentOps.ts'
 import type {
   LaneDecision,
+  LaneFlipPin,
   LanePin,
 } from './MultiWaySyntenyDisplay/laneDecision.ts'
 import type { Lane } from './MultiWaySyntenyDisplay/laneStack.ts'
@@ -104,6 +105,11 @@ export interface MultiWayTablesArgs {
    * lane picker pins them, by assembly
    */
   pins?: Record<string, LanePin>
+  /**
+   * A lane's orientation against the anchor's on the contig `refName`, as the
+   * lane's flip pins it, by assembly
+   */
+  flips?: Record<string, LaneFlipPin>
   /**
    * The display's settings, as a `MultiWaySyntenyDisplay` config writes
    * them: `ribbonColor` (a CSS color, or the color object's slots such as
@@ -418,7 +424,13 @@ function alignmentRows(
  */
 export async function multiwayTables(
   pluginManager: PluginManager,
-  { adapterConfig, anchor: anchorArgs, pins = {}, display }: MultiWayTablesArgs,
+  {
+    adapterConfig,
+    anchor: anchorArgs,
+    pins = {},
+    flips = {},
+    display,
+  }: MultiWayTablesArgs,
 ) {
   const settings = readDisplay(display)
   const axis = comparativeAxis(anchorArgs, adapterConfig, 0)
@@ -535,6 +547,7 @@ export async function multiwayTables(
     anchorReversed: reversed,
     previous: new Map(),
     pinned: new Map(Object.entries(pins)),
+    pinnedFlips: new Map(Object.entries(flips)),
     openingsOf,
   })
   const frameOf = (decision: LaneDecision, assemblyName: string) => {
