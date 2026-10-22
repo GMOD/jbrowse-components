@@ -260,11 +260,12 @@ class InstancePen implements LinePen {
   private x = 0
   private y = 0
   private inRun = false
+  private readonly ctx: MarkContext2D
+  private readonly colorOf: (i: number) => number
 
-  constructor(
-    private readonly ctx: MarkContext2D,
-    private readonly colorOf: (i: number) => number,
-  ) {
+  constructor(ctx: MarkContext2D, colorOf: (i: number) => number) {
+    this.ctx = ctx
+    this.colorOf = colorOf
     ctx.beginPath()
   }
 
@@ -332,12 +333,14 @@ export class BandPen implements LinePen {
   private colorY = 0
   private drawing = false
   private readonly path: CappedPath
+  private readonly ctx: MarkContext2D
+  private readonly top: number
+  private readonly bottom: number
 
-  constructor(
-    private readonly ctx: MarkContext2D,
-    private readonly top: number,
-    private readonly bottom: number,
-  ) {
+  constructor(ctx: MarkContext2D, top: number, bottom: number) {
+    this.ctx = ctx
+    this.top = top
+    this.bottom = bottom
     this.path = new CappedPath(ctx, 'stroke')
   }
 
