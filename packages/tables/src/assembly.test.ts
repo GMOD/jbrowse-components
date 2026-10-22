@@ -214,3 +214,12 @@ test('a calls VCF with no GT reads as records with their FILTER, INFO and FORMAT
   expect(vcf?.format).toEqual({ DP: [40, 35], AD: [12, 2], NAD: [0, 0] })
   expect(vcf?.formatFields.type).toEqual(['Float', 'Float', 'Float'])
 })
+
+test('an assembly that fails to resolve is read again on the next call', async () => {
+  await engine.clearCache()
+  const missing = { name: 'nowhere', uri: volvox('nowhere.fa').uri }
+  await expect(engine.regions({ assembly: missing })).rejects.toThrow()
+  expect((await engine.cache()).assemblies).toBe(0)
+  await engine.regions({ assembly })
+  expect((await engine.cache()).assemblies).toBe(1)
+})

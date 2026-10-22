@@ -105,16 +105,20 @@ export function forgetAssemblies() {
  * {@link RESOLVED_ASSEMBLIES} most recently read.
  */
 export function assemblyResolver(pluginManager: PluginManager) {
-  return (config: AssemblyConfig) => {
-    const key = JSON.stringify(config)
-    const assembly = resolved.get(key) ?? resolveAssembly(pluginManager, config)
-    resolved.delete(key)
-    resolved.set(key, assembly)
+  const resolveForgettingFailure = (key: string, config: AssemblyConfig) => {
+    const assembly = resolveAssembly(pluginManager, config)
     assembly.catch(() => {
       if (resolved.get(key) === assembly) {
         resolved.delete(key)
       }
     })
+    return assembly
+  }
+  return (config: AssemblyConfig) => {
+    const key = JSON.stringify(config)
+    const assembly = resolved.get(key) ?? resolveForgettingFailure(key, config)
+    resolved.delete(key)
+    resolved.set(key, assembly)
     for (const oldest of resolved.keys()) {
       if (resolved.size <= RESOLVED_ASSEMBLIES) {
         break
