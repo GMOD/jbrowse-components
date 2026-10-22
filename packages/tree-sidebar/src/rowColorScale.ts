@@ -8,16 +8,20 @@ import type { RowAlias } from './arrangeRows.ts'
 import type { RowSource } from './types.ts'
 import type { CategoricalEntry } from '@jbrowse/core/ui/colorScale'
 
-/**
- * The `rowColor` object as read: the row attribute whose values take the
- * colors, `name` for the rows themselves, the values paired with a color,
- * and what an unpaired value takes.
- */
-export interface RowColorSetting {
-  field: string
+/** The `rowColor.scale` as read: the values paired with a color, and what an unpaired value takes. */
+export interface RowColorScaleSetting {
   domain: readonly string[]
   range: readonly string[]
   unknown?: string
+}
+
+/**
+ * The `rowColor` object as read: the row attribute whose values take the
+ * colors, `name` for the rows themselves, and its `scale`.
+ */
+export interface RowColorSetting {
+  field: string
+  scale: RowColorScaleSetting
 }
 
 const NONE: ReadonlyMap<string, string> = new Map()
@@ -28,7 +32,7 @@ const NONE: ReadonlyMap<string, string> = new Map()
  * rest by `dealRowColors`. An attribute's values deal always, first seen
  * first, except the empty value, which takes a color only from a pair: a row
  * with no value is missing, not a category, as ggplot's `na.value`. A row name
- * deals only while `namesDeal` or an `unknown` stands in for the palette, and
+ * deals only while `namesDeal` or a `scale.unknown` stands in for the palette, and
  * a row with its own color takes no turn. None for an attribute no row
  * carries. Reads no row where only the pairs paint, so a reorder deals nothing
  * again. `declared` lists values of an attribute the config states, which
@@ -40,7 +44,8 @@ export function dealtValueColors(
   namesDeal: boolean,
   declared: readonly string[] = [],
 ): ReadonlyMap<string, string> {
-  const { field, unknown } = setting
+  const { field, scale } = setting
+  const { unknown } = scale
   if (field === 'name') {
     return dealRowColors(
       unknown !== '' && (namesDeal || unknown !== undefined)
@@ -48,7 +53,7 @@ export function dealtValueColors(
             .filter(row => row.color === undefined)
             .map(row => row.name)
         : [],
-      setting,
+      scale,
     )
   }
   const rows = rowsOf()
@@ -57,7 +62,7 @@ export function dealtValueColors(
         [...declared, ...rows.map(row => rowFieldValue(row, field))].filter(
           value => value !== '',
         ),
-        setting,
+        scale,
       )
     : NONE
 }
@@ -146,10 +151,11 @@ function keyColor(row: RowSource, value: string, key: RowColorKeyInputs) {
 /**
  * The key entry `row` is listed under: its value of the `rowColor` field, the
  * "(no value)" entry where it has none, the "Other" entry where it took the
- * `unknown` color, or undefined where it has no color.
+ * `scale.unknown` color, or undefined where it has no color.
  */
 export function rowColorKeyValue(row: RowSource, key: RowColorKeyInputs) {
-  const { field, unknown } = key.setting
+  const { field, scale } = key.setting
+  const { unknown } = scale
   const value = field === 'name' ? row.name : rowFieldValue(row, field)
   const color = keyColor(row, value, key)
   return color === undefined
@@ -166,14 +172,15 @@ export function rowColorKeyValue(row: RowSource, key: RowColorKeyInputs) {
  * per value some row carries with a color, in deal order, at most
  * `MAX_LEGEND_ITEMS` and then a "+N more" note, then "(no value)" in the
  * color of the first colored row with no value, and a trailing "Other" in
- * the `unknown` color where a row took it.
+ * the `scale.unknown` color where a row took it.
  */
 export function rowColorKeyEntries(
   rows: readonly RowSource[],
   key: RowColorKeyInputs,
   labelOf: (name: string) => string,
 ): CategoricalEntry[] {
-  const { field, unknown } = key.setting
+  const { field, scale } = key.setting
+  const { unknown } = scale
   const listed = new Map<string, CategoricalEntry>()
   let other = false
   let noValue: CategoricalEntry | undefined

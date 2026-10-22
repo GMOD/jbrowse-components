@@ -9,7 +9,7 @@ export const BINDINGS: readonly ShaderBinding[] = [
   { index: 2, kind: 'uniform', name: 'u', stages: ['compute'] },
 ]
 
-export const COMPUTE_ENTRY_POINT = "sampleDistance"
+export const COMPUTE_ENTRY_POINT = 'sampleDistance'
 
 export const WORKGROUP_SIZE_X = 16
 
@@ -24,7 +24,6 @@ export const UNIFORM_OFFSET_U32 = {
   accumulate: 2,
   finalize: 3,
 } as const
-
 
 export interface Uniforms {
   n: number

@@ -62,8 +62,12 @@ export {
 } from './clusterUtils.ts'
 export { orderRowsByDomain } from './arrangeRows.ts'
 export { ROW_COLOR_SCALE_ID, rowFieldValue } from './rowColorScale.ts'
-export type { RowColorKeyInputs, RowColorSetting } from './rowColorScale.ts'
-export { rowColorChoiceLabel } from './rowColorChoice.ts'
+export type {
+  RowColorKeyInputs,
+  RowColorScaleSetting,
+  RowColorSetting,
+} from './rowColorScale.ts'
+export { rowColorChoiceLabel, rowColorSettingOf } from './rowColorChoice.ts'
 export type { RowColorSnapshot } from './rowColorChoice.ts'
 export type {
   RowAlias,

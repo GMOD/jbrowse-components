@@ -50,7 +50,7 @@ export interface ValueColor {
 }
 
 /**
- * The `unknown` swatch: the color every row or value with no pair of its own
+ * The `scale.unknown` swatch: the color every row or value with no pair of its own
  * takes; `''` for none from this setting; or undefined for automatic, the
  * palette where it deals and the row's own color otherwise.
  */
