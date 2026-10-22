@@ -174,9 +174,9 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
   `a-config-rename-reaches-ggjbrowse`). Its synteny and dotplot lists are
   respelled up to `data.resolution`, and its multi-way `pins` are records.
   Its `rows` and `facet` lists still write `domain` (`R/multiway.R`,
-  `scripts/gallery.R`, two tutorials, two testthat files).
+  its gallery script, two tutorials, two testthat files).
 - **jb2hubs:** `hubtools/src/repeatClassDisplay.ts` and
-  `website/src/components/geneOrderStar.ts` write `rows.domain`. Display-kit's
+  its website's `geneOrderStar.ts` write `rows.domain`. Display-kit's
   `retiredOrderSpelling` lifts it to `sort` until they write `sort` and the
   hosted hub configs regenerate, then it goes.
 - **jbrowse-img:** its flags (`--minAlignmentLength`, `--drawCurves`) still
