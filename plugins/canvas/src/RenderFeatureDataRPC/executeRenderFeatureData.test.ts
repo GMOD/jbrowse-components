@@ -26,7 +26,7 @@ describe('buildFeatureAdmission', () => {
     const admit = buildFeatureAdmission({
       jexl,
       config: mockDisplayConfig({
-        filter: { expressions: [`jexl:get(feature,'type')=='gene'`] },
+        filter: [{ field: `jexl:get(feature,'type')=='gene'`, equal: true }],
       }),
     })
     expect(admit(feat('gene'))).toBe(true)
@@ -37,12 +37,10 @@ describe('buildFeatureAdmission', () => {
     const admit = buildFeatureAdmission({
       jexl,
       config: mockDisplayConfig({
-        filter: {
-          expressions: [
-            `jexl:get(feature,'type')=='gene'`,
-            `jexl:get(feature,'score')>5`,
-          ],
-        },
+        filter: [
+          { field: `jexl:get(feature,'type')=='gene'`, equal: true },
+          { field: `jexl:get(feature,'score')>5`, equal: true },
+        ],
       }),
     })
     expect(admit(feat('gene', { score: 10 }))).toBe(true)
@@ -62,7 +60,7 @@ describe('buildFeatureAdmission', () => {
       jexl,
       config: mockDisplayConfig({
         transcriptTypes: ['mRNA'],
-        filter: { expressions: [], genes: 'only' },
+        filter: [{ field: 'geneLike', equal: true }],
       }),
     })
     expect(admit(feat('gene'))).toBe(true)
@@ -76,7 +74,7 @@ describe('buildFeatureAdmission', () => {
       jexl,
       config: mockDisplayConfig({
         transcriptTypes: ['mRNA'],
-        filter: { expressions: [], genes: 'exclude' },
+        filter: [{ field: 'geneLike', equal: false }],
       }),
     })
     expect(admit(feat('gene'))).toBe(false)
@@ -91,7 +89,7 @@ describe('buildFeatureAdmission', () => {
       config: mockDisplayConfig({
         transcriptTypes: [],
         containerTypes: [],
-        filter: { expressions: [], genes: 'only' },
+        filter: [{ field: 'geneLike', equal: true }],
       }),
     })
     for (const type of ['ncRNA_gene', 'pseudogene', 'lnc_RNA', 'tRNA', 'CDS']) {
@@ -104,7 +102,10 @@ describe('buildFeatureAdmission', () => {
     const admit = buildFeatureAdmission({
       jexl,
       config: mockDisplayConfig({
-        filter: { expressions: [`jexl:get(feature,'score')>5`], genes: 'only' },
+        filter: [
+          { field: `jexl:get(feature,'score')>5`, equal: true },
+          { field: 'geneLike', equal: true },
+        ],
       }),
     })
     expect(admit(feat('gene', { score: 10 }))).toBe(true)

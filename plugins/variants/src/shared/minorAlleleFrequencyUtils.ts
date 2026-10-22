@@ -1,3 +1,4 @@
+import { compilePredicates } from '@jbrowse/core/util/fieldPredicate'
 import { unwrapFeature } from '@jbrowse/core/util/simpleFeature'
 
 import {
@@ -8,8 +9,9 @@ import { hasProcessGenotypes } from './hasProcessGenotypes.ts'
 
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
-interface AlleleSummary {
+export interface AlleleSummary {
   // Frequency of the second-most-common allele among *called* alleles (the VCF
   // AN definition). No-call '.' is not an allele: it is excluded from both the
   // minor-allele candidacy and the denominator — counted as one, a site whose
@@ -113,42 +115,52 @@ export function featureMissingness(feature: Feature) {
   return counts ? calculateMissingnessFrequency(counts) : 0
 }
 
-interface SiteThresholds {
-  minMinorAlleleFrequency: number
-  /** 1 or undefined keeps every site */
-  maxMissingness?: number
+/** The `filter` fields a site's allele summary answers, beside the record's own. */
+export const SITE_FILTER_FIELDS: readonly string[] = [
+  'minorAlleleFrequency',
+  'missingness',
+]
+
+export function isSiteField(field: string) {
+  return SITE_FILTER_FIELDS.includes(field)
 }
 
 /**
- * Whether a site's allele summary clears the thresholds. A site with no called
- * allele anywhere has no cell to draw, so it drops whatever they are; a
- * monomorphic site is a real row of the file and stays.
+ * The site test the `filter` list's site fields compile to, once per fetch. A
+ * site with no called allele anywhere has no cell to draw, so it fails
+ * whatever they say; a monomorphic site is a real row of the file and stays.
  */
-export function passesSiteThresholds(
-  summary: ReturnType<typeof summarizeAlleleCounts>,
-  { minMinorAlleleFrequency, maxMissingness = 1 }: SiteThresholds,
+export function compileSiteFilter(
+  siteFilter: readonly FieldPredicate[] | undefined,
 ) {
-  return (
-    summary.calledAlleleCount > 0 &&
-    summary.minorAlleleFrequency >= minMinorAlleleFrequency &&
-    summary.missingness <= maxMissingness
+  const keeps = compilePredicates<AlleleSummary>(
+    (siteFilter ?? []).filter(p => isSiteField(p.field)),
+    field => ({
+      kind: 'get',
+      get:
+        field === 'minorAlleleFrequency'
+          ? s => s.minorAlleleFrequency
+          : s => s.missingness,
+    }),
   )
+  return (summary: AlleleSummary) =>
+    summary.calledAlleleCount > 0 && (keeps === undefined || keeps(summary))
 }
 
 /**
- * One feature through the jexl `filterChain` and the thresholds, off one
+ * One feature through the jexl `filterChain` and the site test, off one
  * allele-count pass; undefined where it fails either.
  */
 export function filterVariant(
   feature: Feature,
-  thresholds: SiteThresholds,
+  passesSite: (summary: AlleleSummary) => boolean,
   filterChain?: SerializableFilterChain,
 ): FilteredVariant | undefined {
   if (filterChain && !filterChain.passes(feature)) {
     return undefined
   }
   const summary = summarizeAlleleCounts(computeAlleleCounts(feature))
-  return passesSiteThresholds(summary, thresholds)
+  return passesSite(summary)
     ? { feature, mostFrequentAlt: summary.mostFrequentAlt }
     : undefined
 }
@@ -158,15 +170,17 @@ export function getFilteredVariants({
   features,
   filterChain,
   report,
-  ...thresholds
-}: SiteThresholds & {
+  siteFilter,
+}: {
   features: Iterable<Feature>
+  siteFilter?: readonly FieldPredicate[]
   filterChain?: SerializableFilterChain
   report?: ProgressReporter
 }) {
+  const passesSite = compileSiteFilter(siteFilter)
   const results: FilteredVariant[] = []
   for (const feature of features) {
-    const kept = filterVariant(feature, thresholds, filterChain)
+    const kept = filterVariant(feature, passesSite, filterChain)
     if (kept) {
       results.push(kept)
     }

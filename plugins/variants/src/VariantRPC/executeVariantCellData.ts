@@ -153,8 +153,7 @@ export async function variantCellData({
     unit,
     referenceDrawingMode = 'skip',
     color,
-    minMinorAlleleFrequency,
-    maxMissingness,
+    siteFilter,
     filters,
     regions,
     statusCallback,
@@ -203,8 +202,7 @@ export async function variantCellData({
     report =>
       analyzeVariants({
         features,
-        minMinorAlleleFrequency,
-        maxMissingness,
+        siteFilter,
         filterChain: filters,
         report,
       }),

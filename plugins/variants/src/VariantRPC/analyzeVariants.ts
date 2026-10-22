@@ -10,8 +10,8 @@ import { buildSampleIndex, internGenotype } from '../shared/genotypeCodec.ts'
 import { featureHasPhaseSet } from '../shared/getPhasedColor.ts'
 import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
 import {
+  compileSiteFilter,
   getFilteredVariants,
-  passesSiteThresholds,
   summarizeAlleleCounts,
 } from '../shared/minorAlleleFrequencyUtils.ts'
 import { featureHasConsequence } from '../shared/variantConsequence.ts'
@@ -19,6 +19,7 @@ import { featureHasConsequence } from '../shared/variantConsequence.ts'
 import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 export interface SimplifiedVariantFeature {
   id: string
@@ -181,19 +182,17 @@ export function makeHeaderRemapper(columnByName: Map<string, number>) {
  * materializing a substring. The memo also counts samples per entry, so the
  * MAF and missingness filters weigh each distinct genotype once.
  *
- * With a MAF or missingness threshold set, `getFilteredVariants`' cheaper count
- * drops rejected sites before the analysis walks the rest.
+ * With a site field in the filter, `getFilteredVariants`' cheaper count drops
+ * rejected sites before the analysis walks the rest.
  */
 export function analyzeVariants({
   features,
-  minMinorAlleleFrequency = 0,
-  maxMissingness = 1,
+  siteFilter,
   filterChain,
   report,
 }: {
   features: Feature[]
-  minMinorAlleleFrequency?: number
-  maxMissingness?: number
+  siteFilter?: readonly FieldPredicate[]
   filterChain?: SerializableFilterChain
   report?: ProgressReporter
 }): AnalyzedVariants {
@@ -203,12 +202,12 @@ export function analyzeVariants({
   let hasPhaseSet = false
   let hasSvType = false
 
+  const passesSite = compileSiteFilter(siteFilter)
   const passing =
-    minMinorAlleleFrequency > 0 || maxMissingness < 1
+    siteFilter && siteFilter.length > 0
       ? getFilteredVariants({
           features,
-          minMinorAlleleFrequency,
-          maxMissingness,
+          siteFilter,
           filterChain,
         }).map(v => v.feature)
       : filterChain
@@ -388,12 +387,7 @@ export function analyzeVariants({
 
     const summary = summarizeAlleleCounts(alleleCounts)
     const { mostFrequentAlt } = summary
-    if (
-      passesSiteThresholds(summary, {
-        minMinorAlleleFrequency,
-        maxMissingness,
-      })
-    ) {
+    if (passesSite(summary)) {
       const featureId = feature.id()
       filteredVariants.push({ feature, mostFrequentAlt })
       if (codes) {

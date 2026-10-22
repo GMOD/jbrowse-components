@@ -5,13 +5,13 @@ import { makeRadioSubMenu, withHint } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
 import { MAPQ_BINS } from '@jbrowse/core/util/colorScale'
 import { lowerBoundOf, withLowerBound } from '@jbrowse/core/util/fieldPredicate'
-import { categoryFilterItem } from '@jbrowse/display-kit/categoryFilter'
-
 import {
   categoryEntries,
+  categoryFilterItem,
   categoryOf,
-  entriesOn,
-} from '../../shared/alignmentsFilter.ts'
+} from '@jbrowse/display-kit/categoryFilter'
+
+import { entriesOn } from '../../shared/alignmentsFilter.ts'
 import { READ_CATEGORIES } from '../../shared/readCategoryFilters.ts'
 
 import type { ReadCategorySpec } from '../../shared/readCategoryFilters.ts'

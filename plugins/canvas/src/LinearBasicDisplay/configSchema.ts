@@ -6,7 +6,6 @@ import {
   SUBFEATURE_LABELS,
 } from '../RenderFeatureDataRPC/renderConfig.ts'
 import baseConfigSchemaFactory from './baseConfigSchema.ts'
-import { basicFeatureFilterConfigSchema } from './basicFeatureFilterConfigSchema.ts'
 import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -59,12 +58,6 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
        */
       fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
       /**
-       * #slot filter
-       * The features the display draws: the jexl `expressions`, and `genes`,
-       * the gene-like features as a category.
-       */
-      filter: basicFeatureFilterConfigSchema,
-      /**
        * #slot
        */
       // `maybeColor` for the same reason as `color`: the default is
@@ -115,7 +108,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * feature types the gene category (`filter.genes`) counts beside
+       * feature types the `geneLike` filter field counts beside
        * every gene, transcript and RNA type, plus the fallback for recognizing
        * a CHILDLESS transcript as one of a gene's isoforms.
        */

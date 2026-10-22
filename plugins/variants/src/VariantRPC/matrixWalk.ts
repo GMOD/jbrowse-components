@@ -3,7 +3,10 @@ import { createProgressReporter } from '@jbrowse/core/util'
 import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
 
 import { buildSampleIndex } from '../shared/genotypeCodec.ts'
-import { filterVariant } from '../shared/minorAlleleFrequencyUtils.ts'
+import {
+  compileSiteFilter,
+  filterVariant,
+} from '../shared/minorAlleleFrequencyUtils.ts'
 import { collectSampleNames, makeHeaderRemapper } from './analyzeVariants.ts'
 import { fetchVariantFeatures } from './fetchVariantFeatures.ts'
 
@@ -33,7 +36,7 @@ export async function prepareMatrixWalk({
   pluginManager: PluginManager
   args: MatrixWalkArgs
 }) {
-  const { regions, signal, statusCallback, filters } = args
+  const { regions, signal, statusCallback, filters, siteFilter } = args
   const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
   const rawFeatures = await fetchVariantFeatures(dataAdapter, regions, args)
 
@@ -44,9 +47,10 @@ export async function prepareMatrixWalk({
     statusCallback,
     signal,
   })
+  const passesSite = compileSiteFilter(siteFilter)
   const filteredVariants: FilteredVariant[] = []
   for (const feature of rawFeatures) {
-    const kept = filterVariant(feature, args, filters)
+    const kept = filterVariant(feature, passesSite, filters)
     if (kept) {
       filteredVariants.push(kept)
     }

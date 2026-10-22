@@ -1,5 +1,5 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { fireEvent, render, screen } from '@testing-library/react'
 
 import { createTestEnvironment } from './testEnv.ts'
@@ -58,12 +58,9 @@ describe('multi-sample variant filter sliders', () => {
     fireEvent.change(input, { target: { value: 0.2 } })
 
     expect(model.minMinorAlleleFrequency).toBeCloseTo(0.2)
-    expect(
-      readConfObject(model.configuration, [
-        'filter',
-        'minMinorAlleleFrequency',
-      ]),
-    ).toBeCloseTo(0.2)
+    expect(predicatesOf(model.configuration.filter)).toEqual([
+      { field: 'minorAlleleFrequency', gte: 0.2 },
+    ])
     expect(screen.getByText('MAF: 0.20')).toBeTruthy()
   })
 

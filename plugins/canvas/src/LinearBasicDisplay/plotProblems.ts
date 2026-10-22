@@ -1,4 +1,4 @@
-import { filterExpressionsOf } from '@jbrowse/core/util/jexlFilters'
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { isJexl, stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 
 import type { FeatureFacet } from './facet.ts'
@@ -43,9 +43,9 @@ function colorExpression(color: unknown) {
 export function plotJexlProblems(draft: Plot, jexl: JexlInstance) {
   const expressions = [
     { setting: 'color', code: colorExpression(draft.color) },
-    ...filterExpressionsOf(draft.filter).map(code => ({
+    ...predicatesOf(draft.filter).map(p => ({
       setting: 'filter',
-      code,
+      code: p.field,
     })),
   ]
   return expressions.flatMap(({ setting, code }) => {

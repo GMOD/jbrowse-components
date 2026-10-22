@@ -1,19 +1,18 @@
 import { coverageBandConfigSchema } from '@jbrowse/alignments-core/coverageBandConfigSchema'
-import { ConfigurationSchema, plotList } from '@jbrowse/core/configuration'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
-import { fieldPredicateConfigSchema } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
+import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
 import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
-import { liftFilterObject } from '../shared/alignmentsFilter.ts'
 import { alignmentsColorConfigSchema } from './alignmentsColorConfigSchema.ts'
 import { alignmentsSortConfigSchema } from './alignmentsSortConfigSchema.ts'
 import { ALIGNMENTS_UNITS } from './constants.ts'
 import { pileupConfigSchema } from './pileupConfigSchema.ts'
 import { readConnectionsConfigSchema } from './readConnectionsConfigSchema.ts'
-import { retiredConfigSpellings } from './retired.ts'
+import { liftV4Filter, retiredConfigSpellings } from './retired.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -77,7 +76,7 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * field with no test, such as `{ field: "flags.DUP" }`, only removes
      * them.
      */
-    filter: plotList(types.array(fieldPredicateConfigSchema)),
+    filter: fieldPredicateList(),
     /**
      * #slot facet
      * In-track stacked grouping, one labelled section per value: a read
@@ -172,7 +171,7 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      */
     baseConfiguration: baseLinearDisplayConfigSchema,
     retired: retiredConfigSpellings,
-    preProcessSnapshot: liftFilterObject,
+    preProcessSnapshot: liftV4Filter,
   },
 )
 

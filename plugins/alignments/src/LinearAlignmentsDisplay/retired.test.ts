@@ -2,8 +2,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes/models'
 
 import AlignmentsPlugin from '../index.ts'
-import { filterListOf } from '../shared/alignmentsFilter.ts'
 import { colorSlotsOf, retiredState } from './retired.ts'
+
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 function alignmentsEntries(displays: Record<string, unknown>[]) {
   const pluginManager = new PluginManager([new AlignmentsPlugin()])
@@ -139,7 +140,8 @@ test('lifts the settings off the pre-4.x nested sub-nodes', () => {
     }),
   ).toEqual({
     baseColor: { field: 'modifications' },
-    filter: expect.objectContaining({ flagInclude: 0, flagExclude: 1536 }),
+    // 1536 keeps unmapped reads, which the default 1540 drops
+    filter: [{ field: 'flags.UNMAP' }],
   })
   expect(retiredState.keys).toEqual(
     expect.arrayContaining(['PileupDisplay', 'SNPCoverageDisplay']),
@@ -158,7 +160,8 @@ test('lifts the released *Setting spelling, which wins over the bare one', () =>
     }),
   ).toEqual({
     color: { field: 'insertSizeAndOrientation' },
-    filter: expect.objectContaining({ flagInclude: 0, flagExclude: 1540 }),
+    // the default masks, so nothing to write
+    filter: [],
     pileup: { maxLayoutHeight: 900, mismatches: { show: false } },
   })
 })
@@ -168,7 +171,7 @@ test("the read cloud's hidden singletons and proper pairs lift", () => {
   expect(
     retiredState.lift({ drawSingletons: false, drawProperPairs: false }),
   ).toEqual({
-    filter: { alone: 'exclude' },
+    filter: [{ field: 'alone', equal: false }],
     readConnections: { ordinaryPairs: { show: false } },
   })
   expect(
@@ -188,28 +191,25 @@ test("an instance's v4 filter replaces its sub-node's whole", () => {
       },
     },
     filterBySetting: { flagInclude: 0, flagExclude: 1028 },
-  }) as { filter: Record<string, unknown> }
-  expect(filter).toMatchObject({ flagExclude: 1028, tags: null })
-  expect(filterListOf(filter)).not.toContainEqual(
-    expect.objectContaining({ field: 'tags.HP' }),
-  )
+  }) as { filter: FieldPredicate[] }
+  // 1028 keeps QC-failed reads, which the default 1540 drops
+  expect(filter).toEqual([{ field: 'flags.QCFAIL' }])
   expect(
-    filterListOf(
-      retiredState.lift({
-        filterBySetting: { tagFilter: { tag: 'HP', value: '1' } },
-      }).filter,
-    ),
-  ).toContainEqual({ field: 'tags.HP', equal: '1' })
+    retiredState.lift({
+      filterBySetting: { tagFilter: { tag: 'HP', value: '1' } },
+    }).filter,
+  ).toEqual([{ field: 'tags.HP', equal: '1' }])
 })
 
 // v4's filterBy held the read members alone, so its lift leaves a v4
-// LinearReadArcsDisplay's `drawInter` lift in `filter.connections` standing
-test('a v4 filter lift leaves the junction and connection filters', () => {
+// LinearReadArcsDisplay's draw verbs to their own lift
+test('a v4 filter lift names no junction or connection field', () => {
   const { filter } = retiredState.lift({
     filterBySetting: { flagInclude: 0, flagExclude: 1028 },
-  }) as { filter: Record<string, unknown> }
-  expect(filter).not.toHaveProperty('junctions')
-  expect(filter).not.toHaveProperty('connections')
+  }) as { filter: FieldPredicate[] }
+  expect(
+    filter.some(p => /^(junction|connection|breakpoint)\./.test(p.field)),
+  ).toBe(false)
 })
 
 test('a v4 sort carries into sort by its v5 name, counted from 0', () => {

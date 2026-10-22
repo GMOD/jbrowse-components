@@ -50,16 +50,18 @@ test('facet, color and filter read back as the box shows them', () => {
   })
 })
 
-test("a plot's filter list writes the expressions and keeps the gene category", () => {
+// A plot's `filter` is the whole list, as Vega-Lite's is, and an entry the
+// bare-string form says prints as that string
+test("a plot's filter list is written whole", () => {
   const d = display()
   d.setGenesFilter('only')
-  expect(d.plot).toEqual({ filter: { genes: 'only' } })
+  expect(d.plot).toEqual({ filter: ['geneLike'] })
+  d.applyPlot({ filter: ['jexl:feature.score > 5', 'geneLike'] })
+  expect(d.plot).toEqual({ filter: ['jexl:feature.score > 5', 'geneLike'] })
   d.applyPlot({ filter: ['jexl:feature.score > 5'] })
-  expect(d.plot).toEqual({
-    filter: { expressions: ['jexl:feature.score > 5'], genes: 'only' },
-  })
-  d.applyPlot({ filter: { genes: null } })
-  expect(d.plot).toEqual({ filter: ['jexl:feature.score > 5'] })
+  expect(d.genesFilter).toBeUndefined()
+  d.applyPlot({ filter: [{ field: 'score', gte: 5 }] })
+  expect(d.plot).toEqual({ filter: [{ field: 'score', gte: 5 }] })
 })
 
 test('a string is the one-value form: the facet field, or the constant color', () => {

@@ -2,6 +2,10 @@ import { applyRetiredSpellings } from '@jbrowse/core/configuration'
 import { isValidTag } from '@jbrowse/core/util'
 import { retiredScaleSpellings } from '@jbrowse/wiggle-core'
 
+import {
+  predicatesOfFilterObject,
+  withFields,
+} from '../shared/alignmentsFilter.ts'
 import { TAG_FIELD_PREFIX } from '../shared/facetLabels.ts'
 
 import type { RetiredSpelling } from '@jbrowse/core/configuration'
@@ -10,6 +14,7 @@ import type {
   RetiredDisplayState,
   RetiredDisplayType,
 } from '@jbrowse/core/pluggableElementTypes'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 function isObject(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === 'object' && !Array.isArray(v)
@@ -172,10 +177,9 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
  * modification settings, which are the `color` or `baseColor` object's field
  * and the `modifications` slot now; its LinearReadArcsDisplay gated the two
  * arc classes under the draw verb, which are `connection` filter fields
- * now; its read size and layout cap are `pileup`'s `readHeight`
- * and `maxLayoutHeight`; its `jexlFilters` has no slot, since
- * `filter` is the predicate list. A lift here writes the object form, which
- * `liftFilterObject` turns into the list. The coverage display's scale slots land
+ * now, and its `filterBy` the read fields; `liftV4Filter` reads those three
+ * together. Its read size and layout cap are `pileup`'s `readHeight` and
+ * `maxLayoutHeight`. The coverage display's scale slots land
  * on the band's `scales.y`. `flipStrandLongReadChains` went: a split segment's
  * strand against its molecule is a level of the orientation fields, which
  * `color.range` recolors.
@@ -183,13 +187,6 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
 // #region retired
 export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   colorBy: colorSlotsOf,
-  drawInter: v =>
-    v === false ? { filter: { connections: { interchrom: 'exclude' } } } : {},
-  drawLongRange: v =>
-    v === false
-      ? { filter: { connections: { offscreenMates: 'exclude' } } }
-      : {},
-  filterBy: filter => ({ filter }),
   jexlFilters: () => ({}),
   pileupDisplay: block => subDisplaySlotsOf(block, 'pileup'),
   snpCoverageDisplay: block => subDisplaySlotsOf(block, 'coverage'),
@@ -212,6 +209,52 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   renderers: rendererSlotsOf,
 }
 // #endregion
+
+const isPlainObject = isObject
+
+/**
+ * v4's three filter keys on a display config, `filterBy` and the read arcs
+ * display's `drawInter` and `drawLongRange`, as one predicate list under the
+ * `filter` the snapshot writes, which wins on every field it names. Read
+ * together rather than as three `retired` lifts, which would each write
+ * `filter` and keep only the first.
+ */
+export function liftV4Filter(snapshot: Record<string, unknown>) {
+  const { filterBy, drawInter, drawLongRange, ...rest } = snapshot
+  if (
+    filterBy === undefined &&
+    drawInter === undefined &&
+    drawLongRange === undefined
+  ) {
+    return snapshot
+  }
+  const lifted = predicatesOfFilterObject({
+    ...(isPlainObject(filterBy) ? filterBy : {}),
+    connections: {
+      ...(drawInter === false ? { interchrom: 'exclude' } : {}),
+      ...(drawLongRange === false ? { offscreenMates: 'exclude' } : {}),
+    },
+  })
+  return {
+    ...rest,
+    filter: Array.isArray(rest.filter)
+      ? overFields(lifted, rest.filter as FieldPredicate[])
+      : lifted,
+  }
+}
+
+// `written`'s entries over `lifted`'s, field by field
+function overFields(lifted: FieldPredicate[], written: FieldPredicate[]) {
+  return withFields(
+    lifted,
+    Object.fromEntries(
+      [...new Set(written.map(p => p.field))].map(field => [
+        field,
+        written.filter(p => p.field === field),
+      ]),
+    ),
+  )
+}
 
 // v4 named a sort by its menu label and counted the position from 1; a
 // `Start location` sort was the default order and names nothing here.
@@ -307,13 +350,18 @@ function instanceSlotsOf(source: DisplayEntry) {
   return slots
 }
 
+// The instance lifts build v4's filter object, which merges member by member,
+// and leave it as the predicate list once merged
 export const retiredState: RetiredDisplayState = {
   keys: [...Object.keys(INSTANCE_SLOTS), ...NESTED_SUBNODES],
   lift: instance => {
     const subNode = NESTED_SUBNODES.map(k => instance[k]).find(isObject)
-    return underEntry(
+    const { filter, ...slots } = underEntry(
       subNode ? instanceSlotsOf(subNode) : {},
       instanceSlotsOf(instance),
     )
+    return isObject(filter)
+      ? { ...slots, filter: predicatesOfFilterObject(filter) }
+      : slots
   },
 }

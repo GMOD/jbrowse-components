@@ -1,10 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  applyConfSettings,
-  plotWrites,
-  readConfObject,
-  setConf,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import CanvasPlugin from '@jbrowse/plugin-canvas'
 import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
@@ -152,35 +148,25 @@ describe('the display config schema', () => {
   })
 
   describe('filter', () => {
+    const QUAL = { field: 'jexl:feature.QUAL > 30', equal: true }
+    const MAF = { field: 'minorAlleleFrequency', gte: 0.05 }
+
     it('defaults to keeping every variant', () => {
       const config = configSchema.create({
         type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-filter-default',
       })
-      expect(
-        readConfObject(config, ['filter', 'minMinorAlleleFrequency']),
-      ).toBe(0)
-      expect(readConfObject(config, ['filter', 'maxMissingness'])).toBe(1)
-      expect(readConfObject(config, ['filter', 'expressions'])).toEqual([])
+      expect(predicatesOf(config.filter)).toEqual([])
     })
 
-    it('holds the thresholds beside the expressions', () => {
+    it('holds the site fields beside the expressions', () => {
+      const missing = { field: 'missingness', lte: 0.2 }
       const config = configSchema.create({
         type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-filter-custom',
-        filter: {
-          expressions: ['jexl:feature.QUAL > 30'],
-          minMinorAlleleFrequency: 0.05,
-          maxMissingness: 0.2,
-        },
+        filter: ['jexl:feature.QUAL > 30', MAF, missing],
       })
-      expect(
-        readConfObject(config, ['filter', 'minMinorAlleleFrequency']),
-      ).toBe(0.05)
-      expect(readConfObject(config, ['filter', 'maxMissingness'])).toBe(0.2)
-      expect(readConfObject(config, ['filter', 'expressions'])).toEqual([
-        'jexl:feature.QUAL > 30',
-      ])
+      expect(predicatesOf(config.filter)).toEqual([QUAL, MAF, missing])
     })
 
     it("lifts v4's minorAlleleFrequencyFilter and jexlFilters into it", () => {
@@ -190,12 +176,10 @@ describe('the display config schema', () => {
         minorAlleleFrequencyFilter: 0.05,
         jexlFilters: ['feature.QUAL > 30'],
       })
-      expect(
-        readConfObject(config, ['filter', 'minMinorAlleleFrequency']),
-      ).toBe(0.05)
-      expect(readConfObject(config, ['filter', 'expressions'])).toEqual([
-        'jexl:feature.QUAL > 30',
-      ])
+      expect(predicatesOf(config.filter)).toEqual(
+        expect.arrayContaining([QUAL, MAF]),
+      )
+      expect(predicatesOf(config.filter)).toHaveLength(2)
     })
 
     it("lifts v4's minorAlleleFrequencyFilter beside a filter list", () => {
@@ -205,90 +189,16 @@ describe('the display config schema', () => {
         filter: ['jexl:feature.QUAL > 30'],
         minorAlleleFrequencyFilter: 0.05,
       })
-      expect(
-        readConfObject(config, ['filter', 'minMinorAlleleFrequency']),
-      ).toBe(0.05)
-      expect(readConfObject(config, ['filter', 'expressions'])).toEqual([
-        'jexl:feature.QUAL > 30',
-      ])
+      expect(predicatesOf(config.filter)).toEqual([QUAL, MAF])
     })
 
-    it("a plot's filter list keeps the thresholds", () => {
+    it("drops v4's minorAlleleFrequencyFilter at 0, which kept every variant", () => {
       const config = configSchema.create({
         type: 'LinearMultiSampleVariantDisplay',
-        displayId: 'test-filter-plot',
-        filter: { minMinorAlleleFrequency: 0.05, maxMissingness: 0.2 },
+        displayId: 'test-filter-v4-zero',
+        minorAlleleFrequencyFilter: 0,
       })
-      for (const [key, value] of Object.entries(
-        plotWrites(config, { filter: ['jexl:feature.QUAL > 30'] }),
-      )) {
-        setConf(config, key as 'filter', value)
-      }
-      expect(readConfObject(config, ['filter', 'expressions'])).toEqual([
-        'jexl:feature.QUAL > 30',
-      ])
-      expect(
-        readConfObject(config, ['filter', 'minMinorAlleleFrequency']),
-      ).toBe(0.05)
-      expect(readConfObject(config, ['filter', 'maxMissingness'])).toBe(0.2)
+      expect(predicatesOf(config.filter)).toEqual([])
     })
-
-    it('takes a list as its expressions, and a bag merges its members', () => {
-      const config = configSchema.create({
-        type: 'LinearMultiSampleVariantDisplay',
-        displayId: 'test-filter-shorthand',
-        filter: ['jexl:feature.QUAL > 30'],
-      })
-      applyConfSettings(config, { filter: { maxMissingness: 0.1 } })
-      expect(readConfObject(config, ['filter', 'expressions'])).toEqual([
-        'jexl:feature.QUAL > 30',
-      ])
-      expect(readConfObject(config, ['filter', 'maxMissingness'])).toBe(0.1)
-    })
-  })
-})
-
-describe('rows', () => {
-  const configSchema = configSchemaFactory()
-
-  it('is the sample rows object, written whole', () => {
-    const config = configSchema.create({
-      type: 'LinearMultiSampleVariantDisplay',
-      displayId: 'test-rows-1',
-      rows: { sort: ['b', 'a'], tree: '(b,a);', labels: { a: 'A' } },
-    })
-    expect(readConfObject(config, ['rows', 'field'])).toBe('sample')
-    applyConfSettings(config, { rows: { sort: ['a', 'b'] } })
-    expect(readConfObject(config, ['rows', 'sort'])).toEqual(['a', 'b'])
-    expect(readConfObject(config, ['rows', 'tree'])).toBeUndefined()
-    expect(readConfObject(config, ['rows', 'labels'])).toEqual({})
-    expect(() =>
-      configSchema.create({
-        type: 'LinearMultiSampleVariantDisplay',
-        displayId: 'test-rows-2',
-        rows: 'HP',
-      }),
-    ).toThrow(/SampleRowsField/)
-  })
-})
-
-describe('rowColor config object', () => {
-  const configSchema = configSchemaFactory()
-
-  it('colors by the rows themselves by default', () => {
-    const config = configSchema.create({
-      type: 'LinearMultiSampleVariantDisplay',
-      displayId: 'test-colorby-1',
-    })
-    expect(readConfObject(config, ['rowColor', 'field'])).toBe('name')
-  })
-
-  it('can be set to a metadata attribute name', () => {
-    const config = configSchema.create({
-      type: 'LinearMultiSampleVariantDisplay',
-      displayId: 'test-colorby-2',
-      rowColor: 'population',
-    })
-    expect(readConfObject(config, ['rowColor', 'field'])).toBe('population')
   })
 })

@@ -64,7 +64,7 @@ export function findGlyph(
 
     // Container shapes are chosen structurally; `containerTypes` is the one
     // explicit override. `featureAdmission` lowercases the same slot, so a
-    // case-sensitive test here would let `filter.genes` admit a feature the
+    // case-sensitive test here would let the `geneLike` filter field admit a feature the
     // dispatch then refuses to stack.
     if (
       isTopLevel &&

@@ -21,11 +21,7 @@ const regions = [
 // which site filters produced it. Asserted alongside the order and tree
 // because it has to be written in the same action as the tree — provenance left
 // over from a previous run would caption this one with the wrong region.
-const withUnit = (unit: string) => [
-  { name: 'unit', value: unit },
-  { name: 'MAF filter', value: '0' },
-  { name: 'max missingness', value: '1' },
-]
+const withUnit = (unit: string) => [{ name: 'unit', value: unit }]
 
 const PROVENANCE = {
   regions: [{ refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' }],
@@ -40,8 +36,7 @@ const THREE = [
 
 function makeModel(overrides: Partial<ReducedModel> = {}): ReducedModel {
   return {
-    minMinorAlleleFrequency: 0,
-    maxMissingness: 1,
+    siteFilter: [],
     sourcesBase: THREE,
     clusterableSources: THREE,
     editableSources: THREE,
@@ -84,8 +79,7 @@ describe('runGenotypeClustering', () => {
       expect.objectContaining({
         regions,
         sources: model.clusterableSources,
-        minMinorAlleleFrequency: 0,
-        maxMissingness: 1,
+        siteFilter: [],
         unit: 'sample',
       }),
     )
@@ -125,8 +119,10 @@ describe('runGenotypeClustering', () => {
 
   it('passes through the display filter values', async () => {
     const model = makeModel({
-      minMinorAlleleFrequency: 0.05,
-      maxMissingness: 0.2,
+      siteFilter: [
+        { field: 'minorAlleleFrequency', gte: 0.05 },
+        { field: 'missingness', lte: 0.2 },
+      ],
     })
     const rpcManager = makeRpcManager(async () => ({
       order: [0, 1, 2],
@@ -146,8 +142,10 @@ describe('runGenotypeClustering', () => {
       'session-1',
       'MultiSampleVariantClusterGenotypeMatrix',
       expect.objectContaining({
-        minMinorAlleleFrequency: 0.05,
-        maxMissingness: 0.2,
+        siteFilter: [
+          { field: 'minorAlleleFrequency', gte: 0.05 },
+          { field: 'missingness', lte: 0.2 },
+        ],
       }),
     )
   })

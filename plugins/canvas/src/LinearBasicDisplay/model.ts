@@ -6,9 +6,14 @@ import {
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { isGeneLikeType, pluralize } from '@jbrowse/core/util'
-import { filterMembersNarrowing } from '@jbrowse/core/util/jexlFilters'
+import { predicatesOf, replaceField } from '@jbrowse/core/util/fieldPredicate'
+import { filterFieldNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
-import { categoryFilterItem } from '@jbrowse/display-kit/categoryFilter'
+import {
+  categoryEntries,
+  categoryFilterItem,
+  categoryOf,
+} from '@jbrowse/display-kit/categoryFilter'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import SegmentIcon from '@mui/icons-material/Segment'
@@ -19,6 +24,7 @@ import {
   addTrimmedIsoformPicks,
   mergeIsoformPicks,
 } from '../RenderFeatureDataRPC/isoformPicks.ts'
+import { GENE_LIKE_FIELD } from '../RenderFeatureDataRPC/renderConfig.ts'
 import baseStateModelFactory from './baseModel.ts'
 import { collapseIntronsMenuItem } from './collapseIntronsMenu.ts'
 import {
@@ -118,7 +124,10 @@ export default function stateModelFactory(
       },
 
       get genesFilter(): CategoryFilter | undefined {
-        return getConf(self, ['filter', 'genes'])
+        return categoryOf(
+          predicatesOf(self.configuration.filter),
+          GENE_LIKE_FIELD,
+        )
       },
 
       // Off the live zoom: off the debounced one, a region fetched in the
@@ -214,7 +223,15 @@ export default function stateModelFactory(
       },
 
       setGenesFilter(value?: CategoryFilter) {
-        setConf(self, ['filter', 'genes'], value)
+        setConf(
+          self.configuration,
+          'filter',
+          replaceField(
+            predicatesOf(self.configuration.filter),
+            GENE_LIKE_FIELD,
+            categoryEntries(GENE_LIKE_FIELD, value),
+          ),
+        )
       },
 
       setShowChevrons(value: boolean) {
@@ -267,7 +284,10 @@ export default function stateModelFactory(
         featureNarrowings() {
           return {
             ...superFeatureNarrowings(),
-            genes: filterMembersNarrowing(self, ['genes']),
+            genes: filterFieldNarrowing(
+              self,
+              field => field === GENE_LIKE_FIELD,
+            ),
           }
         },
 

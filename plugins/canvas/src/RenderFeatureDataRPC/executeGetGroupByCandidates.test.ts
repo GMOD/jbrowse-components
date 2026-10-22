@@ -96,7 +96,9 @@ test('an over-budget region returns the gate result and downloads nothing', asyn
 test('a value only filtered-out features carry is not a section', async () => {
   const scan = await run({
     config: {
-      filter: { expressions: [`jexl:get(feature,'biotype')!='pseudogene'`] },
+      filter: [
+        { field: `jexl:get(feature,'biotype')!='pseudogene'`, equal: true },
+      ],
     },
   })
   expect(scan).toContainEqual({

@@ -25,21 +25,22 @@ function open(seed?: Record<string, unknown>) {
   }
 }
 
-it("a seed keeps the filter's other tests in the text", () => {
+// a filter list is written whole, as Vega-Lite's is
+it('a seed writes the filter list whole', () => {
   const { field, display, apply } = open({
     filter: ['jexl:feature.score > 100'],
   })
   expect(JSON.parse(field.value)).toEqual({
-    filter: { expressions: ['jexl:feature.score > 100'], genes: 'only' },
+    filter: ['jexl:feature.score > 100'],
   })
   apply()
-  expect(display.genesFilter).toBe('only')
+  expect(display.genesFilter).toBeUndefined()
   expect(display.configuredFilters()).toEqual(['jexl:feature.score > 100'])
 })
 
 it('a member deleted from the text resets', () => {
   const { display, type, apply } = open()
-  type({ filter: { expressions: ['jexl:feature.score > 100'] } })
+  type({ filter: ['jexl:feature.score > 100'] })
   expect(screen.getByText('Sets filter')).toBeInTheDocument()
   apply()
   expect(display.genesFilter).toBeUndefined()

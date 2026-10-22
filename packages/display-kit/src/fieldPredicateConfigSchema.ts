@@ -1,7 +1,6 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, plotList } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const Scalar = types.union(types.string, types.number, types.boolean)
@@ -14,6 +13,11 @@ const Scalar = types.union(types.string, types.number, types.boolean)
  * list admits a record that passes every entry. A comparison on a missing
  * value is false, and `valid: false` selects the missing values.
  *
+ * A `field` written `jexl:` is computed per feature, where the display reads
+ * jexl, and a bare string entry is one that must hold:
+ * `"jexl:feature.score > 100"` is `{ field: "jexl:feature.score > 100",
+ * equal: true }`.
+ *
  * #example
  * ```js
  * filter: [{ field: 'length', gte: 10000 }, { field: 'identity', gte: 0.9 }]
@@ -24,6 +28,9 @@ const Scalar = types.union(types.string, types.number, types.boolean)
  * ```js
  * filter: [{ field: 'gene_group', valid: true }]
  * ```
+ * ```js
+ * filter: ['jexl:feature.end - feature.start > 1000']
+ * ```
  */
 export const fieldPredicateConfigSchema = ConfigurationSchema(
   'FieldPredicate',
@@ -31,10 +38,14 @@ export const fieldPredicateConfigSchema = ConfigurationSchema(
     /**
      * #slot
      */
+    // A callback slot, so a `jexl:` field is taken as written; readers take
+    // the snapshot, which never evaluates it
     field: {
       type: 'string',
       defaultValue: '',
-      description: 'the field tested, as the display names its fields',
+      description:
+        'the field tested, as the display names its fields, or a jexl: expression computed per feature',
+      contextVariable: ['feature'],
     },
     /**
      * #slot
@@ -80,16 +91,19 @@ export const fieldPredicateConfigSchema = ConfigurationSchema(
         'true admits only records with a value for the field, false only those without',
     },
   },
-  { closed: true },
+  {
+    closed: true,
+    shorthand: 'field',
+    shorthandWith: { equal: true },
+    writes: 'whole',
+  },
 )
 
 export interface FieldPredicateConfig extends Instance<
   typeof fieldPredicateConfigSchema
 > {}
 
-/** A filter list's entries as the compiler reads them. */
-export function predicatesOf(
-  list: readonly { field: string }[] | undefined,
-): FieldPredicate[] {
-  return (list ?? []).map(p => p as FieldPredicate)
+/** A display's `filter` slot: a list of predicates, edited by "Edit plot...". */
+export function fieldPredicateList() {
+  return plotList(types.array(fieldPredicateConfigSchema))
 }

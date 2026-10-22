@@ -44,8 +44,7 @@ const MultiSampleVariantClusterDialog = observer(
         fetchMatrix={({ rpcManager, sessionId, ...args }) =>
           rpcManager.call(sessionId, 'MultiSampleVariantGetGenotypeMatrix', {
             sources: model.clusterableSources,
-            minMinorAlleleFrequency: model.minMinorAlleleFrequency,
-            maxMissingness: model.maxMissingness,
+            siteFilter: model.siteFilter,
             filters: model.filters,
             adapterConfig: model.adapterConfig,
             unit: model.unit,

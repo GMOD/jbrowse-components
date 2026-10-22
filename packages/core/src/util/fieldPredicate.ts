@@ -1,3 +1,5 @@
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+
 /**
  * Vega-Lite's field predicate (ADR-238): the `field` of each record and the
  * tests its value must pass, every one given. A comparison on a missing value
@@ -351,4 +353,98 @@ export function withLowerBound(
     return testsSomething(updated) ? [updated] : []
   })
   return placed ? next : [...next, { field, gte }]
+}
+
+/**
+ * The tightest upper bound the predicates put on `field`, or undefined: the
+ * ceiling a slider on one field reads, as `lowerBoundOf` reads the floor.
+ */
+export function upperBoundOf(
+  predicates: readonly FieldPredicate[],
+  field: string,
+) {
+  let bound: number | undefined
+  for (const p of predicates) {
+    if (p.field === field) {
+      for (const b of [p.lte, p.lt]) {
+        if (b !== undefined && (bound === undefined || b < bound)) {
+          bound = b
+        }
+      }
+    }
+  }
+  return bound
+}
+
+/**
+ * The predicate list with `field`'s upper bound set to `lte`, or removed with
+ * undefined; the ceiling a slider on one field writes.
+ */
+export function withUpperBound(
+  predicates: readonly FieldPredicate[],
+  field: string,
+  lte: number | undefined,
+): FieldPredicate[] {
+  let placed = lte === undefined
+  const next = predicates.flatMap(p => {
+    if (p.field !== field) {
+      return [p]
+    }
+    const { lt: _lt, lte: _lte, ...rest } = p
+    const updated: FieldPredicate =
+      placed || lte === undefined ? rest : { ...rest, lte }
+    placed = true
+    return testsSomething(updated) ? [updated] : []
+  })
+  return placed ? next : [...next, { field, lte }]
+}
+
+/**
+ * A `filter` list's entries off a list node or a snapshot, never through
+ * `readConfObject`, which would evaluate a `jexl:` field. A bare string entry
+ * no schema has lifted yet is the expression that must hold,
+ * `{ field, equal: true }`.
+ */
+export function predicatesOf(list: unknown): FieldPredicate[] {
+  const entries = isStateTreeNode(list) ? getSnapshot(list) : list
+  return Array.isArray(entries)
+    ? entries.map(entry =>
+        typeof entry === 'string'
+          ? { field: entry, equal: true }
+          : (entry as FieldPredicate),
+      )
+    : []
+}
+
+/**
+ * Whether a predicate is a `jexl:` expression that must hold, as a bare string
+ * entry writes one.
+ */
+export function isExpressionEntry(p: FieldPredicate) {
+  return (
+    p.field.startsWith('jexl:') &&
+    p.equal === true &&
+    p.lt === undefined &&
+    p.lte === undefined &&
+    p.gt === undefined &&
+    p.gte === undefined &&
+    p.oneOf === undefined &&
+    p.valid === undefined
+  )
+}
+
+/**
+ * The list with `field`'s entries replaced by `entries`, in the place the
+ * field's first entry held, or after the rest; every other entry kept.
+ */
+export function replaceField(
+  predicates: readonly FieldPredicate[],
+  field: string,
+  entries: readonly FieldPredicate[],
+): FieldPredicate[] {
+  const at = predicates.findIndex(p => p.field === field)
+  const rest = predicates.filter(p => p.field !== field)
+  return at === -1
+    ? [...rest, ...entries]
+    : [...rest.slice(0, at), ...entries, ...rest.slice(at)]
 }

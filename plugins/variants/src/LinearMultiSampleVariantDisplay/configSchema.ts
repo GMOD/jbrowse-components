@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
+import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -15,7 +16,6 @@ import {
   VARIANT_UNITS,
 } from '../shared/constants.ts'
 import { cellColorConfigSchema } from './cellColorConfigSchema.ts'
-import { variantFilterConfigSchema } from './variantFilterConfigSchema.ts'
 import { variantsBandConfigSchema } from './variantsBandConfigSchema.ts'
 
 /**
@@ -152,10 +152,16 @@ export default function configSchemaFactory() {
       },
       /**
        * #slot filter
-       * The variants the display draws: the jexl `expressions`, a minimum
-       * minor allele frequency and a maximum missingness.
+       * The variants the display draws, a list of
+       * [](/docs/config/fieldpredicate) entries a site must all pass: a field
+       * of the record's own, a `jexl:` expression that must hold,
+       * `minorAlleleFrequency`, the share of its called alleles the second
+       * most frequent one makes up, and `missingness`, the share of its
+       * alleles uncalled. `[{ field: "minorAlleleFrequency", gte: 0.05 }]`
+       * drops the rare variants; a site with no called allele draws nothing
+       * whatever the list says.
        */
-      filter: variantFilterConfigSchema,
+      filter: fieldPredicateList(),
       ...rowHeightConfigSchemaFields(),
       ...treeSidebarConfigSchemaFields({
         tree: 'Show the sample clustering tree in the sidebar',
@@ -294,13 +300,10 @@ export default function configSchemaFactory() {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
       // v4's two multi-sample displays spelt the sidebar labels and the
-      // reference-allele paint as booleans, kept the allele-frequency floor
-      // outside the filter, named a color scheme the `color` object has no
-      // member for, and carried the wiggle scale slots the matrix never read.
+      // reference-allele paint as booleans, named a color scheme the `color`
+      // object has no member for, and carried the wiggle scale slots the
+      // matrix never read.
       retired: {
-        minorAlleleFrequencyFilter: (minMinorAlleleFrequency: unknown) => ({
-          filter: { minMinorAlleleFrequency },
-        }),
         renderingMode: (v: unknown) => ({
           unit: v === 'phased' ? 'haplotype' : 'sample',
         }),
@@ -317,8 +320,29 @@ export default function configSchemaFactory() {
         numStdDev: () => ({}),
         minimalTicks: () => ({}),
       },
+      preProcessSnapshot: liftMinorAlleleFrequencyFilter,
     },
   )
+}
+
+// v4's `minorAlleleFrequencyFilter`, a floor beside its `jexlFilters`: read
+// here rather than in `retired`, where two lifts into one `filter` list would
+// keep the first and drop the other
+function liftMinorAlleleFrequencyFilter(snapshot: Record<string, unknown>) {
+  const { minorAlleleFrequencyFilter, ...rest } = snapshot
+  if (minorAlleleFrequencyFilter === undefined) {
+    return snapshot
+  }
+  return typeof minorAlleleFrequencyFilter === 'number' &&
+    minorAlleleFrequencyFilter > 0
+    ? {
+        ...rest,
+        filter: [
+          ...(Array.isArray(rest.filter) ? rest.filter : []),
+          { field: 'minorAlleleFrequency', gte: minorAlleleFrequencyFilter },
+        ],
+      }
+    : rest
 }
 
 export type LinearMultiSampleVariantDisplayConfigModel = ReturnType<

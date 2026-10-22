@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { colorConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
-import { featureFilterConfigSchema } from '@jbrowse/display-kit/featureFilterConfigSchema'
+import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
 import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -43,10 +43,14 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       }),
       /**
        * #slot filter
-       * The features the display draws: `expressions`, a list of `jexl:`
-       * tests.
+       * The features the display draws, a list of
+       * [](/docs/config/fieldpredicate) entries a feature must all pass: a
+       * field of the feature's own (`{ field: "score", gte: 100 }`), a `jexl:`
+       * expression that must hold (`"jexl:feature.type == 'gene'"`), or
+       * `geneLike`, true for every gene, transcript and RNA type, the
+       * `transcriptTypes` and `containerTypes`, and a top-level CDS.
        */
-      filter: featureFilterConfigSchema,
+      filter: fieldPredicateList(),
       // Not a fallback for the byte axis: an index size cannot tell a few
       // large features from many tiny ones.
       /**

@@ -4,6 +4,10 @@ import {
   testsSomething,
   withLowerBound,
 } from '@jbrowse/core/util/fieldPredicate'
+import {
+  categoryEntries,
+  categoryOf,
+} from '@jbrowse/display-kit/categoryFilter'
 
 import { TAG_FIELD_PREFIX } from './facetLabels.ts'
 
@@ -118,7 +122,7 @@ export function entriesOn(
   return predicates.filter(p => p.field === field)
 }
 
-export function sameEntries(
+function sameEntries(
   a: readonly FieldPredicate[],
   b: readonly FieldPredicate[],
 ) {
@@ -172,30 +176,6 @@ export function withFields(
 /** The read fields alone, which is what the worker is handed. */
 export function readPredicatesOf(predicates: readonly FieldPredicate[]) {
   return predicates.filter(p => isReadField(p.field))
-}
-
-// ---- categories: a boolean field tested `equal: true` or `equal: false` ----
-
-/**
- * A boolean field's entries as the three-way menu reads them: `only` for
- * `equal: true`, `exclude` for `equal: false`, unset otherwise.
- */
-export function categoryOf(
-  predicates: readonly FieldPredicate[],
-  field: string,
-): CategoryFilter | undefined {
-  const equal = entriesOn(predicates, field).find(
-    p => typeof p.equal === 'boolean',
-  )?.equal
-  return equal === true ? 'only' : equal === false ? 'exclude' : undefined
-}
-
-/** The entries a category radio writes on `field`. */
-export function categoryEntries(
-  field: string,
-  value: CategoryFilter | undefined,
-): FieldPredicate[] {
-  return value === undefined ? [] : [{ field, equal: value === 'only' }]
 }
 
 // ---- counts: an integer floor ----
@@ -488,7 +468,7 @@ export function filterProblems(written: readonly FieldPredicate[]): string[] {
   })
 }
 
-// ---- the object form v4 and the first v5 betas wrote ----
+// ---- the object form: v4's, and what a launch modifier writes ----
 
 export interface FilterObject {
   flagInclude?: unknown
@@ -655,33 +635,14 @@ export function filterPatchOfObject(
 }
 
 /**
- * The predicate list an object-form `filter` says: v4's `filterBy` and the
- * object the first v5 betas wrote, each member over the defaults.
+ * The predicate list a v4.3.0 session or config's filter object says: its
+ * `filterBy`, the instance's `drawSingletons` and the read arcs display's
+ * draw verbs, each member over the defaults.
  */
 export function predicatesOfFilterObject(
   object: FilterObject,
 ): FieldPredicate[] {
   return withFields([], filterPatchOfObject(object, ALIGNMENTS_FILTER_DEFAULTS))
-}
-
-/**
- * A display config snapshot with an object-form `filter` lifted to the list,
- * on every path a snapshot arrives by; a list passes through.
- */
-export function liftFilterObject(snapshot: Record<string, unknown>) {
-  const { filter } = snapshot
-  return typeof filter === 'object' && filter !== null && !Array.isArray(filter)
-    ? { ...snapshot, filter: filterListOf(filter) }
-    : snapshot
-}
-
-/** A `filter` value as the list it says: a list as is, the object form lifted. */
-export function filterListOf(value: unknown): FieldPredicate[] {
-  return Array.isArray(value)
-    ? (value as FieldPredicate[])
-    : typeof value === 'object' && value !== null
-      ? predicatesOfFilterObject(value)
-      : []
 }
 
 /** The adapters' drop test, over `compileRecordFilter`; drops nothing when no field applies. */

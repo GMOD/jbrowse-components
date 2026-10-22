@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import {
@@ -7,6 +7,7 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { activeCount } from '@jbrowse/core/ui/filterMenuItems'
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
@@ -153,10 +154,11 @@ describe('canvas display filters', () => {
     expect(display.configuredFilters()).toEqual([`jexl:get(feature,'score')>5`])
   })
 
-  it('refuses a bare expression in the filter slot', () => {
-    expect(() => createDisplay([`get(feature,'type')=='gene'`])).toThrow(
-      /is not an expression/,
-    )
+  // a bare string is a field that must hold, and a `jexl:` one is computed
+  it('reads a bare field name as that field being true', () => {
+    const display = createDisplay(['geneLike'])
+    expect(display.genesFilter).toBe('only')
+    expect(display.configuredFilters()).toEqual([])
   })
 
   it('a track that declares no filters opens the dialog empty', () => {
@@ -164,12 +166,13 @@ describe('canvas display filters', () => {
     expect(display.configuredFilters()).toEqual([])
   })
 
-  it('setFilter writes filter.expressions and leaves the gene category', () => {
+  it('setFilter writes the expressions and leaves the gene category', () => {
     const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
     display.setGenesFilter('only')
     display.setFilter([`jexl:get(feature,'score')>5`])
-    expect(getConf(display, ['filter', 'expressions'])).toEqual([
-      `jexl:get(feature,'score')>5`,
+    expect(predicatesOf(display.configuration.filter)).toEqual([
+      { field: 'geneLike', equal: true },
+      { field: `jexl:get(feature,'score')>5`, equal: true },
     ])
     expect(display.configuredFilters()).toEqual([`jexl:get(feature,'score')>5`])
     expect(display.genesFilter).toBe('only')
@@ -218,16 +221,15 @@ describe('canvas display filters', () => {
 
   it('rpcProps().displayConfig.filter carries the whole filter', () => {
     const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
-    expect(display.rpcProps().displayConfig.filter).toEqual({
-      expressions: [`jexl:get(feature,'type')=='gene'`],
-      genes: undefined,
-    })
+    expect(display.rpcProps().displayConfig.filter).toEqual([
+      { field: `jexl:get(feature,'type')=='gene'`, equal: true },
+    ])
     display.setFilter([`jexl:get(feature,'score')>5`])
     display.setGenesFilter('exclude')
-    expect(display.rpcProps().displayConfig.filter).toEqual({
-      expressions: [`jexl:get(feature,'score')>5`],
-      genes: 'exclude',
-    })
+    expect(display.rpcProps().displayConfig.filter).toEqual([
+      { field: `jexl:get(feature,'score')>5`, equal: true },
+      { field: 'geneLike', equal: false },
+    ])
   })
 })
 

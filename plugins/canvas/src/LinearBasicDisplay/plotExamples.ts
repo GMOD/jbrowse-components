@@ -10,7 +10,7 @@ export const PLOT_EXAMPLES: PlotExample[] = [
     description: 'forward strand red, reverse blue',
   },
   {
-    plot: '{ "filter": { "genes": "only" } }',
+    plot: '{ "filter": ["geneLike"] }',
     description: 'genes only',
   },
   {

@@ -1,11 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 
-import {
-  connectionFilterOf,
-  filterListOf,
-  mergeFilter,
-} from '../shared/alignmentsFilter.ts'
+import { connectionFilterOf, mergeFilter } from '../shared/alignmentsFilter.ts'
 import configSchemaFactory from './configSchema.ts'
 
 function create(snapshot: Record<string, unknown>) {
@@ -17,7 +14,7 @@ function create(snapshot: Record<string, unknown>) {
 }
 
 const connectionsOf = (conf: ReturnType<typeof create>) =>
-  connectionFilterOf(mergeFilter(filterListOf(readConfObject(conf, 'filter'))))
+  connectionFilterOf(mergeFilter(predicatesOf(conf.filter)))
 
 // v4.3.0's LinearReadArcsDisplay wrote these two under the draw verb, so a
 // released config can carry them
@@ -38,13 +35,22 @@ test('the current spelling beside a retired one wins', () => {
   expect(connectionsOf(conf).interchrom).toBe('only')
 })
 
-test('an object-form filter lifts to the list', () => {
+// v4.3.0's pileup display wrote its read filter as `filterBy`; the two read
+// arcs verbs beside it land in the same list
+test('a v4 filterBy and draw verb lift together, under the list written', () => {
   const conf = create({
-    filter: { minMapq: 20, connections: { interchrom: 'only' } },
+    filterBy: {
+      flagInclude: 0,
+      flagExclude: 1540 | 256,
+      tagFilter: { tag: 'HP', value: '1' },
+    },
+    drawInter: false,
+    filter: [{ field: 'tags.HP', equal: '2' }],
   })
-  expect(readConfObject(conf, 'filter')).toEqual([
-    { field: 'mapq', gte: 20 },
-    { field: 'connection.interchrom', equal: true },
+  expect(predicatesOf(conf.filter)).toEqual([
+    { field: 'flags.SECONDARY', equal: false },
+    { field: 'tags.HP', equal: '2' },
+    { field: 'connection.interchrom', equal: false },
   ])
 })
 

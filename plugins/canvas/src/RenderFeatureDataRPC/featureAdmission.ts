@@ -1,6 +1,8 @@
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { isGeneLikeType } from '@jbrowse/core/util'
+import { compilePredicates } from '@jbrowse/core/util/fieldPredicate'
 
+import { GENE_LIKE_FIELD } from './renderConfig.ts'
 import { featureType } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
@@ -13,8 +15,8 @@ export type AdmissionConfig = Pick<
 >
 
 // Core's gene-like rule keeps an Ensembl `ncRNA_gene` or a bare `tRNA`; the
-// configured types and a prokaryote's top-level CDS join it. `filter.genes`
-// tests by it, and these names claim the fit height first.
+// configured types and a prokaryote's top-level CDS join it. The `geneLike`
+// filter field tests by it, and these names claim the fit height first.
 export function geneTypeTest(
   config: Pick<DisplayConfig, 'transcriptTypes' | 'containerTypes'>,
 ) {
@@ -49,20 +51,16 @@ export function buildFeatureAdmission({
   soloFeatureIds?: string[]
   hiddenFeatureIds?: string[]
 }) {
-  const { expressions, genes } = config.filter
   const filterChain = new SerializableFilterChain({
-    filters: expressions,
+    filters: config.filter.filter(p => p.field !== GENE_LIKE_FIELD),
     jexl,
   })
-
-  const isGeneType = genes ? geneTypeTest(config) : undefined
-  const passesGeneGate = (feature: Feature) => {
-    if (!isGeneType) {
-      return true
-    }
-    const isGene = isGeneType(featureType(feature))
-    return genes === 'only' ? isGene : !isGene
-  }
+  const isGeneType = geneTypeTest(config)
+  const passesGeneGate =
+    compilePredicates<Feature>(
+      config.filter.filter(p => p.field === GENE_LIKE_FIELD),
+      () => ({ kind: 'get', get: f => isGeneType(featureType(f)) }),
+    ) ?? (() => true)
 
   // An exact uniqueId-membership match; an empty or absent set admits
   // everything.

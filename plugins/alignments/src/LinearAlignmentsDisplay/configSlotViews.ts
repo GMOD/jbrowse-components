@@ -1,6 +1,7 @@
 import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
-import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import { withPreset } from '@jbrowse/core/util/colorScale'
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
+import { filterFieldNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
@@ -19,14 +20,12 @@ import {
 import {
   connectionEntries,
   connectionFilterOf,
-  filterListOf,
   filterPatchOfObject,
   filterProblems,
   junctionEntries,
   junctionFilterOf,
   mergeFilter,
   readPredicatesOf,
-  sameEntries,
   strayFilterMembers,
   withFields,
 } from '../shared/alignmentsFilter.ts'
@@ -72,7 +71,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 export function writtenFilterOf(
   conf: BaseLinearAlignmentsDisplayConfigModel,
 ): FieldPredicate[] {
-  return filterListOf(readConfObject(conf, 'filter'))
+  return predicatesOf(conf.filter)
 }
 
 /**
@@ -469,22 +468,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * filters" writes back.
      */
     filterNarrowing(): Reversible {
-      const written = writtenFilterOf(self.configuration)
-      const base = filterListOf(baseDisplayConfig(self).filter)
-      const fields = new Set([...written, ...base].map(p => p.field))
-      const moved = [...fields].filter(
-        field =>
-          !sameEntries(
-            written.filter(p => p.field === field),
-            base.filter(p => p.field === field),
-          ),
-      )
-      return {
-        count: moved.length,
-        clear: () => {
-          setConf(self.configuration, 'filter', base)
-        },
-      }
+      return filterFieldNarrowing(self, () => true)
     },
     /**
      * #getter

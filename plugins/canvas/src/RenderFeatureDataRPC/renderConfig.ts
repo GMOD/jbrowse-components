@@ -4,8 +4,8 @@ import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
 
 import type { SubfeatureLabels } from './displayModes.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
-import type { CategoryFilter } from '@jbrowse/display-kit/categoryFilter'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 export {
@@ -64,13 +64,10 @@ export function workerColorOf({
 }
 
 /**
- * The display's `filter` as the worker reads it: the jexl expressions, and on
- * `LinearBasicDisplay` the gene category.
+ * The field the gene category filters by: true for a gene-like top-level
+ * feature (`geneTypeTest`).
  */
-export interface WorkerFeatureFilter {
-  expressions: string[]
-  genes?: CategoryFilter
-}
+export const GENE_LIKE_FIELD = 'geneLike'
 
 // Fully enumerated — no index signature, so a typo on any property is a type
 // error rather than silently typing as `unknown`.
@@ -91,7 +88,8 @@ export interface DisplayConfig {
   subParts: string
   impliedUTRs: boolean
   mouseover: string
-  filter: WorkerFeatureFilter
+  // the display's `filter` list, its `jexl:` fields as written
+  filter: FieldPredicate[]
   // `number | string` because the slot declares `contextVariable: ['feature']`
   // and so may hold a `jexl:` expression. Read it through `featureHeightPx`; the
   // union makes any new direct read a type error rather than a Float32Array full

@@ -118,9 +118,10 @@ filter as text ([](/docs/user_guides/edit_plot)). `facet` and `color` are the
 display's two settings of those names, in the shape a config file takes them:
 `facet` stacks a section per value of a field, in the order its `sort` lists;
 `color` is a CSS color or a jexl expression, or `{ "field": … }` for one color
-per value; `filter` is the list of jexl expressions **Filter by...** edits.
-Applying a spec changes only the channels it names, an object replaces the
-setting whole, and `null` clears one. Each of these pastes as it is:
+per value; `filter` is the list of tests **Filter by...** edits: `jexl:`
+expressions that must hold, and `geneLike` for the gene-like features. Applying
+a spec changes only the channels it names, an object replaces the setting whole,
+and `null` clears one. Each of these pastes as it is:
 
 - `{ "facet": "strand" }` one section per strand
 - `{ "facet": { "field": "gene_biotype", "sort": ["protein_coding", "lncRNA"] } }`
@@ -130,7 +131,7 @@ setting whole, and `null` clears one. Each of these pastes as it is:
 - `{ "color": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"], "range": ["#1f77b4", "#ff7f0e"] } }`
   those two biotypes blue and orange, and every other value a distinct color
 - `{ "color": "#1f77b4" }` one color for everything
-- `{ "filter": { "genes": "only" } }` genes only
+- `{ "filter": ["geneLike"] }` genes only
 - `{ "filter": ["jexl:feature.score > 100"] }` scores above 100
 - `{ "facet": null, "color": null }` ungrouped, default color
 

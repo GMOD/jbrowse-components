@@ -26,6 +26,7 @@ import {
 import {
   baseJexlFilters,
   configuredJexlFilters,
+  writeJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
 import { withHitIndex } from '@jbrowse/core/util/markEncoding'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
@@ -524,14 +525,14 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * the jexl filters `filter.expressions` holds
+         * The `jexl:` expressions the `filter` list holds.
          */
         get configuredFilters() {
           return () => configuredJexlFilters(self)
         },
         /**
          * #getter
-         * What the track's config declares for `filter.expressions`, which "Clear all
+         * The expressions the track's config declares, which "Clear all
          * filters" returns to.
          */
         get baseFilters() {
@@ -1722,15 +1723,11 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * Write `filter.expressions`; undefined returns them to what the
-         * track's config declares.
+         * Write the `filter` list's expressions; undefined returns them to
+         * what the track's config declares.
          */
         setFilter(filters?: string[]) {
-          setConf(
-            self,
-            ['filter', 'expressions'],
-            filters ?? self.baseFilters(),
-          )
+          writeJexlFilters(self, filters ?? self.baseFilters())
         },
         /**
          * #action

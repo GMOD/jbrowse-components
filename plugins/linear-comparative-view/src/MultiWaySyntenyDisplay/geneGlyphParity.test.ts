@@ -126,7 +126,7 @@ const config: DisplayConfig = {
   subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
   impliedUTRs: true,
   mouseover: '',
-  filter: { expressions: [] },
+  filter: [],
   color: { value: undefined, field: '' },
   connectorColor: undefined,
   utrColor: undefined,

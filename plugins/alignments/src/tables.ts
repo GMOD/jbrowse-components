@@ -33,6 +33,7 @@ import {
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
 import { withPreset } from '@jbrowse/core/util/colorScale'
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { SCALE_TYPE_LOG } from '@jbrowse/render-core/scoreScale'
 import { linkStrokeWidthPx } from '@jbrowse/render-core/shaders/linkMark'
@@ -141,7 +142,6 @@ import {
 } from './shared/alignmentsColor.ts'
 import {
   connectionFilterOf,
-  filterListOf,
   junctionFilterOf,
   mergeFilter,
   readPredicatesOf,
@@ -865,7 +865,7 @@ function sectionConnections(
  */
 // The display's `filter` merged over the defaults, as the display applies it.
 function filterOf(conf: DisplayConf) {
-  return mergeFilter(filterListOf(readConfObject(conf, 'filter')))
+  return mergeFilter(predicatesOf(conf.filter))
 }
 
 function readConnectionTables(

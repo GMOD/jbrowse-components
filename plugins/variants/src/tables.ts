@@ -9,6 +9,7 @@ import {
   CATEGORICAL_FIELD_PRESETS,
   withPreset,
 } from '@jbrowse/core/util/colorScale'
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import {
   colorEncodingOf,
   paintedColorEncoding,
@@ -52,6 +53,7 @@ import {
   resolveSampleName,
   rowAliasOf,
 } from './shared/getSources.ts'
+import { isSiteField } from './shared/minorAlleleFrequencyUtils.ts'
 
 import type { VariantUnit } from './shared/constants.ts'
 import type { ProcessedSource } from './shared/types.ts'
@@ -91,8 +93,8 @@ export interface VariantTablesArgs {
   /**
    * The display's config as a track's `displays` entry writes it for a
    * `LinearMultiSampleVariantDisplay`: `color`, `unit` (`'allele'` or
-   * `'haplotype'`), `filter` (`expressions`, `minMinorAlleleFrequency`,
-   * `maxMissingness`), `referenceDrawingMode`, `shadeByDosage`, the
+   * `'haplotype'`), `filter` (a predicate list, `minorAlleleFrequency` and
+   * `missingness` among its fields), `referenceDrawingMode`, `shadeByDosage`, the
    * arrangement `rows` and `facet` and the rest of its slots. Unset reads the
    * default display.
    */
@@ -187,7 +189,8 @@ export async function variantTables(
   )
   const unit: VariantUnit = readConfObject(conf, 'unit')
   const shade: boolean = readConfObject(conf, 'shadeByDosage')
-  const filters: string[] = readConfObject(conf.filter, 'expressions')
+  const predicates = predicatesOf(conf.filter)
+  const filters = predicates.filter(p => !isSiteField(p.field))
   const arrangement = {
     domain: readConfObject(conf.rows, 'sort'),
     labels: readConfObject(conf.rows, 'labels'),
@@ -225,11 +228,7 @@ export async function variantTables(
           .sort()
       : undefined,
     referenceDrawingMode: readConfObject(conf, 'referenceDrawingMode'),
-    minMinorAlleleFrequency: readConfObject(
-      conf.filter,
-      'minMinorAlleleFrequency',
-    ),
-    maxMissingness: readConfObject(conf.filter, 'maxMissingness'),
+    siteFilter: predicates.filter(p => isSiteField(p.field)),
     filters: filters.length
       ? new SerializableFilterChain({ filters, jexl: pluginManager.jexl })
       : undefined,

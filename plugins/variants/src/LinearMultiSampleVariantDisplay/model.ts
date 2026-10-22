@@ -19,11 +19,19 @@ import {
   withPreset,
 } from '@jbrowse/core/util/colorScale'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
+import {
+  lowerBoundOf,
+  predicatesOf,
+  upperBoundOf,
+  withLowerBound,
+  withUpperBound,
+} from '@jbrowse/core/util/fieldPredicate'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { readFor } from '@jbrowse/core/util/installPrerequisiteFetch'
 import {
   baseJexlFilters,
   configuredJexlFilters,
+  writeJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
@@ -91,6 +99,7 @@ import {
   rowAliasOf,
 } from '../shared/getSources.ts'
 import { CellSolidColorDialog } from '../shared/lazyDialogs.ts'
+import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
 import {
   sitesBySpan,
   sortSourcesAroundVariant,
@@ -153,6 +162,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
@@ -302,7 +312,7 @@ export type VariantLayoutBackend =
  *     unit: 'haplotype',
  *     rowColor: 'population',
  *     rows: { sort: ['NA12878', 'NA12891'] },
- *     filter: { minMinorAlleleFrequency: 0.05 },
+ *     filter: [{ field: 'minorAlleleFrequency', gte: 0.05 }],
  *   },
  * ]
  * ```
@@ -558,14 +568,14 @@ export function stateModelFactory(
         },
         /**
          * #method
-         * The filters the `filter` config slot holds.
+         * The `jexl:` expressions the `filter` list holds.
          */
         configuredFilters(): string[] {
           return configuredJexlFilters(self)
         },
         /**
          * #method
-         * What the track's config declares for `filter`, which "Clear all
+         * The expressions the track's config declares, which "Clear all
          * filters" returns to.
          */
         baseFilters(): string[] {
@@ -813,7 +823,7 @@ export function stateModelFactory(
            * #action
            */
           setFilter(f?: string[]) {
-            setConf(self, ['filter', 'expressions'], f ?? self.baseFilters())
+            writeJexlFilters(self, f ?? self.baseFilters())
           },
           /**
            * #action
@@ -879,13 +889,29 @@ export function stateModelFactory(
            * #action
            */
           setMinMinorAlleleFrequency(arg: number) {
-            setConf(self, ['filter', 'minMinorAlleleFrequency'], arg)
+            setConf(
+              self.configuration,
+              'filter',
+              withLowerBound(
+                predicatesOf(self.configuration.filter),
+                'minorAlleleFrequency',
+                arg > 0 ? arg : undefined,
+              ),
+            )
           },
           /**
            * #action
            */
           setMaxMissingness(arg: number) {
-            setConf(self, ['filter', 'maxMissingness'], arg)
+            setConf(
+              self.configuration,
+              'filter',
+              withUpperBound(
+                predicatesOf(self.configuration.filter),
+                'missingness',
+                arg < 1 ? arg : undefined,
+              ),
+            )
           },
           /**
            * #action
@@ -987,28 +1013,41 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Min minor allele frequency a variant needs to draw; 0 keeps every
-         * variant
+         * The `filter` list's site fields, `minorAlleleFrequency` and
+         * `missingness`, which the worker tests off each site's allele summary.
+         */
+        get siteFilter(): FieldPredicate[] {
+          return predicatesOf(self.configuration.filter).filter(p =>
+            isSiteField(p.field),
+          )
+        },
+
+        /**
+         * #getter
+         * The floor the filter puts on `minorAlleleFrequency`, 0 for none: the
+         * slider's value
          */
         get minMinorAlleleFrequency(): number {
-          return getConf(self, ['filter', 'minMinorAlleleFrequency'])
+          return lowerBoundOf(this.siteFilter, 'minorAlleleFrequency') ?? 0
         },
 
         /**
          * #getter
-         * Max fraction of no-call genotypes a variant may have before it's
-         * hidden; 1 keeps every variant
+         * The ceiling the filter puts on `missingness`, 1 for none: the
+         * slider's value
          */
         get maxMissingness(): number {
-          return getConf(self, ['filter', 'maxMissingness'])
+          return upperBoundOf(this.siteFilter, 'missingness') ?? 1
         },
 
         /**
          * #getter
-         * The jexl filter expressions as the RPC's `filters` arg.
+         * The `filter` list's other entries as the RPC's `filters` arg.
          */
         get filters() {
-          const filters = self.configuredFilters()
+          const filters = predicatesOf(self.configuration.filter).filter(
+            p => !isSiteField(p.field),
+          )
           return filters.length
             ? new SerializableFilterChain({
                 filters,
@@ -1200,8 +1239,7 @@ export function stateModelFactory(
           return {
             layout: self.variantLayout,
             sampleFilter: self.sampleFilter,
-            minMinorAlleleFrequency: self.minMinorAlleleFrequency,
-            maxMissingness: self.maxMissingness,
+            siteFilter: self.siteFilter,
             filters: self.filters,
             unit: self.unit,
             color: self.cellHue.read,

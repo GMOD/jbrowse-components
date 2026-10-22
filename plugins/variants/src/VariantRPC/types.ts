@@ -4,18 +4,19 @@ import type { Source } from '../shared/types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 interface BaseVariantRpcArgs {
   adapterConfig: Record<string, unknown>
   headers?: Record<string, string>
   regions: Region[]
   bpPerPx?: number
-  minMinorAlleleFrequency: number
-  // fraction of no-call genotypes above which a variant is hidden; 1 keeps all
-  maxMissingness: number
-  // jexl filters from the Edit filters dialog. On the wire this is a string[];
-  // RpcMethodTypeWithFiltersAndRenameRegions rebuilds it into a chain in the
-  // worker (and serializes the chain to string[] on the way out).
+  // the display filter's site fields, `minorAlleleFrequency` and
+  // `missingness`, compiled over each site's allele summary
+  siteFilter: FieldPredicate[]
+  // the display filter's other entries, a feature's own fields and `jexl:`
+  // tests. RpcMethodTypeWithFiltersAndRenameRegions rebuilds the list into a
+  // chain in the worker (and serializes the chain to the list on the way out).
   filters?: SerializableFilterChain
 }
 

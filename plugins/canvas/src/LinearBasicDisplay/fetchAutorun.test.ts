@@ -552,7 +552,7 @@ describe('SettingsInvalidate autorun', () => {
       expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
       const lastArgs = mockRpcCall.mock.calls.at(-1)![2]
       expect(lastArgs).toMatchObject({
-        displayConfig: { filter: { genes: 'only' } },
+        displayConfig: { filter: [{ field: 'geneLike', equal: true }] },
       })
     })
   })
@@ -599,7 +599,7 @@ describe('SettingsInvalidate autorun', () => {
     })
     const lastArgs = mockRpcCall.mock.calls.at(-1)![2]
     expect(lastArgs).toMatchObject({
-      displayConfig: { filter: { genes: 'only' } },
+      displayConfig: { filter: [{ field: 'geneLike', equal: true }] },
     })
   })
 
@@ -619,7 +619,7 @@ describe('SettingsInvalidate autorun', () => {
 
     expect(mockRpcCall).toHaveBeenCalledTimes(1)
     expect(mockRpcCall.mock.calls[0]![2]).toMatchObject({
-      displayConfig: { filter: { genes: 'only' } },
+      displayConfig: { filter: [{ field: 'geneLike', equal: true }] },
     })
   })
 })
@@ -1742,7 +1742,7 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
 
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
     expect(mockRpcCall.mock.calls.at(-1)![2]).toMatchObject({
-      displayConfig: { filter: { genes: 'only' } },
+      displayConfig: { filter: [{ field: 'geneLike', equal: true }] },
     })
   })
 

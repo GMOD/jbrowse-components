@@ -103,8 +103,15 @@ function folded(member: unknown, value: unknown): unknown {
       folded(node[key], child),
     ]),
   )
-  const entries = Object.entries(members)
-  if (meta.options.shorthandWith || entries.length !== 1) {
+  // the members a bare value lifts to besides its own, which a fold drops
+  const { shorthandWith = {} } = meta.options
+  const entries = Object.entries(members).filter(
+    ([key, member]) => !(key in shorthandWith && shorthandWith[key] === member),
+  )
+  if (
+    entries.length !== 1 ||
+    Object.keys(members).length !== 1 + Object.keys(shorthandWith).length
+  ) {
     return members
   }
   const [slot, bare] = entries[0]!

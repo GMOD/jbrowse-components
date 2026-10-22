@@ -1,28 +1,28 @@
 // own module, not the configuration barrel: that barrel re-exports modules
 // which import this one, and a value import back into it is the cycle shape
 // `openFeatureWidget` documents
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
-
-import { getConf, setConf } from '../configuration/getConf.ts'
+import { setConf } from '../configuration/getConf.ts'
 import { baseDisplayConfig } from './baseDisplayConfig.ts'
-import { deepEqual } from './deepEqual.ts'
+import { isExpressionEntry, predicatesOf } from './fieldPredicate.ts'
 import { ensureJexlPrefix } from './jexlStrings.ts'
 
 import type { AnyConfigurationModel } from '../configuration/types.ts'
 import type { RetiredDisplayState } from '../pluggableElementTypes/DisplayType.ts'
 import type { Reversible } from '../ui/filterMenuItems.ts'
+import type { FieldPredicate } from './fieldPredicate.ts'
 
 /**
  * The feature-filter contract, shared by every display offering a "Filter
- * by..." row: **`filter.expressions`** holds the filters applied, as `jexl:`
- * expressions (`featureFilterConfigSchema` in display-kit, on the canvas, mark
- * and multi-sample variant displays). The dialog, a feature's "Filter" actions
- * and "Edit plot..." all write that member, and the session keeps the write as
- * it keeps any track setting, so "Reset track settings" returns it with the
- * rest.
+ * by..." row: the **`jexl:` expressions** of the display's `filter` list,
+ * each an entry that must hold (`{ field: "jexl:…", equal: true }`, or the
+ * bare string it lifts from), on the canvas, mark and variant displays. The
+ * dialog, a feature's "Filter" actions and "Edit plot..." all write them, and
+ * the session keeps the write as it keeps any track setting, so "Reset track
+ * settings" returns it with the rest. The list's other entries are no part
+ * of the contract, and a write of the expressions keeps them.
  */
 export interface JexlFilterSource {
-  /** The slot's filters, in practice `configuredJexlFilters(self)`. */
+  /** The list's expressions, in practice `configuredJexlFilters(self)`. */
   configuredFilters: () => string[]
 }
 
@@ -38,70 +38,83 @@ export interface JexlFilterModel extends JexlFilterSource {
   setFilter: (filters?: string[]) => void
 }
 
-/** What `filter.expressions` holds: a display's `configuredFilters`. */
-export function configuredJexlFilters(
-  self: Parameters<typeof getConf>[0],
-): string[] {
-  return getConf(self, ['filter', 'expressions'])
-}
-
 /**
- * The expressions a config entry's `filter` states, in either spelling: the
- * object's `expressions`, or the list shorthand. For a reader of a snapshot,
- * where no schema has lifted the shorthand yet.
+ * The `jexl:` expressions a `filter` list states, off the list node, a
+ * snapshot or a config entry no schema has lifted.
  */
 export function filterExpressionsOf(filter: unknown): string[] {
-  const list = Array.isArray(filter)
-    ? filter
-    : (filter as { expressions?: unknown } | undefined)?.expressions
-  return Array.isArray(list) ? list.map(String) : []
+  return predicatesOf(filter)
+    .filter(isExpressionEntry)
+    .map(p => p.field)
+}
+
+/** The expressions `filter` holds: a display's `configuredFilters`. */
+export function configuredJexlFilters(self: {
+  configuration: AnyConfigurationModel
+}): string[] {
+  return filterExpressionsOf(self.configuration.filter)
 }
 
 /**
- * What the track's config declares for this display's `filter.expressions`,
- * before the session wrote any: a display's `baseFilters`. Empty in a session
- * that keeps no base.
+ * What the track's config declares for this display's expressions, before the
+ * session wrote any: a display's `baseFilters`. Empty in a session that keeps
+ * no base.
  */
 export function baseJexlFilters(self: object): string[] {
   return filterExpressionsOf(baseDisplayConfig(self).filter)
 }
 
 /**
- * What the track's config declares for this display's `filter`, as a snapshot
- * writes it, a default left out: `{}` where it declares none.
+ * Writes `expressions` as the `filter` list's expression entries, after its
+ * other entries, which stay as they were: a display's `setFilter`.
  */
-export function baseFilterOf(self: object): Record<string, unknown> {
-  const { filter } = baseDisplayConfig(self)
-  return Array.isArray(filter)
-    ? { expressions: filter }
-    : typeof filter === 'object' && filter !== null
-      ? (filter as Record<string, unknown>)
-      : {}
+export function writeJexlFilters(
+  self: { configuration: AnyConfigurationModel },
+  expressions: readonly string[],
+) {
+  setConf(self.configuration, 'filter', [
+    ...predicatesOf(self.configuration.filter).filter(
+      p => !isExpressionEntry(p),
+    ),
+    ...expressions.map(e => ({ field: ensureJexlPrefix(e), equal: true })),
+  ])
 }
 
 /**
- * The `Reversible` for members of a display's `filter` (ADR-204): the count is
- * how many differ from what the track's config declares, and the clear writes
- * the declared values back, so a filter an admin declared is never one the
- * user narrowed. Both sides compare as snapshots, a default left out of each.
+ * The `Reversible` for the `filter` fields `selects` picks (ADR-204): the
+ * count is how many differ from what the track's config declares, and the
+ * clear writes the declared entries back, so a filter an admin declared is
+ * never one the user narrowed. Both sides compare as written, before any
+ * display's defaults merge in.
  */
-export function filterMembersNarrowing(
+export function filterFieldNarrowing(
   self: { configuration: AnyConfigurationModel },
-  members: readonly string[],
+  selects: (field: string) => boolean,
 ): Reversible {
-  const base = baseFilterOf(self)
-  const written = getSnapshot<Record<string, unknown> | undefined>(
-    self.configuration.filter,
-  )
-  const moved = members.filter(
-    member => !deepEqual(written?.[member], base[member]),
+  const written = predicatesOf(self.configuration.filter)
+  const base = predicatesOf(baseDisplayConfig(self).filter)
+  const entriesOn = (list: FieldPredicate[], field: string) =>
+    JSON.stringify(list.filter(p => p.field === field))
+  const moved = new Set(
+    [...written, ...base]
+      .map(p => p.field)
+      .filter(
+        field =>
+          selects(field) &&
+          entriesOn(written, field) !== entriesOn(base, field),
+      ),
   )
   return {
-    count: moved.length,
+    count: moved.size,
+    // off the list as it stands when run: "Clear all" runs one clear after
+    // another, and the list this one read may be gone by then
     clear: () => {
-      for (const member of moved) {
-        setConf(self, ['filter', member], base[member] ?? null)
-      }
+      setConf(self.configuration, 'filter', [
+        ...predicatesOf(self.configuration.filter).filter(
+          p => !moved.has(p.field),
+        ),
+        ...base.filter(p => moved.has(p.field)),
+      ])
     },
   }
 }
@@ -128,20 +141,16 @@ export function jexlFilterNarrowing(self: JexlFilterModel): Reversible {
 }
 
 /**
- * A v4 session's display-instance `jexlFiltersSetting`, which is
- * `filter.expressions` now: the retired state the canvas and single-sample
- * variant displays declare (ADR-168).
+ * A v4 session's display-instance `jexlFiltersSetting`: the `filter` list's
+ * expressions now, the retired state the canvas and single-sample variant
+ * displays declare (ADR-168).
  */
 export const retiredFilterState: RetiredDisplayState = {
   keys: ['jexlFiltersSetting'],
   lift: ({ jexlFiltersSetting }) =>
     Array.isArray(jexlFiltersSetting)
       ? {
-          filter: {
-            expressions: jexlFiltersSetting.map(f =>
-              ensureJexlPrefix(String(f)),
-            ),
-          },
+          filter: jexlFiltersSetting.map(f => ensureJexlPrefix(String(f))),
         }
       : {},
 }

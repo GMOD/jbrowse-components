@@ -1,11 +1,11 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { lowerBoundOf } from '@jbrowse/core/util/fieldPredicate'
+import { categoryOf } from '@jbrowse/display-kit/categoryFilter'
 import { ThemeProvider } from '@mui/material'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 
 import {
   DEFAULT_FLAG_MASKS,
-  categoryOf,
   flagMasksOf,
   mergeFilter,
   readNameOf,

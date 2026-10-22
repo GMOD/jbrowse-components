@@ -1,6 +1,7 @@
 import type { VariantUnit } from './constants.ts'
 import type { ProcessedSource } from './types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ClusterRunModel } from '@jbrowse/tree-sidebar'
 
@@ -13,11 +14,9 @@ export interface ReducedModel
   // the focus: what both clustering paths cluster, so a re-run inside a
   // focused clade resolves that clade rather than the whole cohort.
   clusterableSources: ProcessedSource[]
-  // Always resolved off a config slot with a default (0 / 1), so both clustering
-  // entry points forward the display's real thresholds rather than restating
-  // "off" defaults of their own.
-  minMinorAlleleFrequency: number
-  maxMissingness: number
+  // The display filter's site fields, so both clustering entry points forward
+  // the display's own rather than restating "off" defaults of their own.
+  siteFilter: FieldPredicate[]
   filters?: SerializableFilterChain
   adapterConfig: Record<string, unknown>
   unit: VariantUnit

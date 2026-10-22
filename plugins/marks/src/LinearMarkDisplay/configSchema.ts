@@ -5,7 +5,7 @@ import {
   paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
-import { featureFilterConfigSchema } from '@jbrowse/display-kit/featureFilterConfigSchema'
+import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
@@ -471,10 +471,12 @@ export function configSchemaFactory() {
       },
       /**
        * #slot filter
-       * The features the display draws: `expressions`, a list of `jexl:`
-       * tests.
+       * The features the display draws, a list of
+       * [](/docs/config/fieldpredicate) entries a feature must all pass: a
+       * field of the feature's own (`{ field: "score", gte: 5 }`) or a
+       * `jexl:` expression that must hold.
        */
-      filter: featureFilterConfigSchema,
+      filter: fieldPredicateList(),
     },
     {
       explicitlyTyped: true,

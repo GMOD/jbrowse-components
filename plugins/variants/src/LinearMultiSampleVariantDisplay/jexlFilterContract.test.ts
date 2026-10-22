@@ -1,6 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
+import { setConf } from '@jbrowse/core/configuration'
 import { activeCount } from '@jbrowse/core/ui/filterMenuItems'
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
 import CanvasPlugin from '@jbrowse/plugin-canvas'
 import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
@@ -21,7 +22,7 @@ import type { LinearMultiSampleVariantDisplayModel } from './model.ts'
 //   from `baseLinearDisplayConfigSchema`, so a track config declaring filters
 //   was read by nothing;
 // - it did not prefix, so a bare filter reached `stringToJexlExpression`,
-//   which throws. The slot now refuses one.
+//   which throws. A bare string in the `filter` list now names a field.
 //
 // The LD display was the third participant until it stopped reading genotypes:
 // it draws a file of already-computed pairs and has no features to filter.
@@ -54,25 +55,31 @@ describe.each(CASES)('%s jexl filters', (_name, createDisplay) => {
     const { display } = createDisplay()
     expect(display.configuredFilters()).toEqual([])
 
-    setConf(
-      display,
-      ['filter', 'expressions'],
-      ["jexl:get(feature,'name')=='BRCA1'"],
-    )
+    setConf(display.configuration, 'filter', [
+      "jexl:get(feature,'name')=='BRCA1'",
+    ])
     expect(display.configuredFilters()).toEqual([
       "jexl:get(feature,'name')=='BRCA1'",
     ])
   })
 
-  it('refuses a bare expression', () => {
+  it('reads a bare string as a field, not an expression', () => {
     const { display } = createDisplay()
-    expect(() => {
-      setConf(
-        display,
-        ['filter', 'expressions'],
-        ["get(feature,'name')=='BRCA1'"],
-      )
-    }).toThrow(/is not an expression/)
+    setConf(display.configuration, 'filter', ['name'])
+    expect(display.configuredFilters()).toEqual([])
+    expect(predicatesOf(display.configuration.filter)).toEqual([
+      { field: 'name', equal: true },
+    ])
+  })
+
+  it('keeps the site fields through an expression write', () => {
+    const { display } = createDisplay()
+    display.setMinMinorAlleleFrequency(0.1)
+    display.setFilter(["jexl:get(feature,'score')>99"])
+    expect(predicatesOf(display.configuration.filter)).toEqual([
+      { field: 'minorAlleleFrequency', gte: 0.1 },
+      { field: "jexl:get(feature,'score')>99", equal: true },
+    ])
   })
 
   it('writes the slot, and a clear goes back to what the track config declares', () => {
@@ -83,7 +90,7 @@ describe.each(CASES)('%s jexl filters', (_name, createDisplay) => {
     expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(0)
 
     display.setFilter(["jexl:get(feature,'score')>99"])
-    expect(getConf(display, ['filter', 'expressions'])).toEqual([
+    expect(display.configuredFilters()).toEqual([
       "jexl:get(feature,'score')>99",
     ])
     expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(1)
@@ -118,7 +125,7 @@ test("a v4.3 session's jexlFiltersSetting on a variant display lands in its filt
     { type: 'LinearVariantDisplay', displayId: 'd', ...lifted },
     { pluginManager },
   )
-  expect(readConfObject(conf, ['filter', 'expressions'])).toEqual([
-    "jexl:get(feature,'score')>99",
+  expect(predicatesOf(conf.filter)).toEqual([
+    { field: "jexl:get(feature,'score')>99", equal: true },
   ])
 })

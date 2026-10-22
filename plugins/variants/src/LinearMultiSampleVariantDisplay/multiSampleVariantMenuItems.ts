@@ -6,7 +6,7 @@ import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { copyText } from '@jbrowse/core/util/copyText'
 import {
-  filterMembersNarrowing,
+  filterFieldNarrowing,
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
@@ -42,6 +42,7 @@ import {
   MultiSampleVariantClusterDialog as ClusterDialog,
   JexlFilterDialog,
 } from '../shared/lazyDialogs.ts'
+import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
 import { IMPACT_FIELD } from '../shared/variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 import { variantFilterFields } from '../shared/variantFilterFields.ts'
@@ -359,10 +360,7 @@ export function variantTrackMenuItems(
       // user's. Neither slider names its own undo row; each has its own reset
       // inline below, and the group clear is what resets the whole set.
       narrowings: {
-        thresholds: filterMembersNarrowing(self, [
-          'minMinorAlleleFrequency',
-          'maxMissingness',
-        ]),
+        thresholds: filterFieldNarrowing(self, isSiteField),
         filter: jexlFilterNarrowing(self),
       },
       onEdit: () => {

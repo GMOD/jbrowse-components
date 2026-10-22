@@ -278,7 +278,7 @@ export interface FlatbushItem extends HitItemBase {
   // unless a facet other than strand asked for it.
   groupKey?: string
   densityFade: boolean
-  // A type the gene category (`filter.genes`) counts, whose name claims the
+  // A type the gene category (the `geneLike` filter field) counts, whose name claims the
   // fit height first.
   // Absent in fixtures predating the field.
   gene?: boolean

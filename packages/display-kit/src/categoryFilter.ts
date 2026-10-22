@@ -1,6 +1,7 @@
 import { makeRadioSubMenu, withHint } from '@jbrowse/core/ui/menuItems'
 
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 /**
  * A category in a filter: `only` its members, `exclude` them, or unset for
@@ -11,6 +12,29 @@ import type { MenuItem } from '@jbrowse/core/ui'
 export const CATEGORY_FILTERS = ['only', 'exclude'] as const
 
 export type CategoryFilter = (typeof CATEGORY_FILTERS)[number]
+
+/**
+ * A boolean field's entries in a `filter` list as the three-way menu reads
+ * them: `only` for `equal: true`, `exclude` for `equal: false`, unset
+ * otherwise.
+ */
+export function categoryOf(
+  predicates: readonly FieldPredicate[],
+  field: string,
+): CategoryFilter | undefined {
+  const equal = predicates.find(
+    p => p.field === field && typeof p.equal === 'boolean',
+  )?.equal
+  return equal === true ? 'only' : equal === false ? 'exclude' : undefined
+}
+
+/** The entries a category radio writes on `field`: none for unset. */
+export function categoryEntries(
+  field: string,
+  value: CategoryFilter | undefined,
+): FieldPredicate[] {
+  return value === undefined ? [] : [{ field, equal: value === 'only' }]
+}
 
 export interface CategoryFilterLabels {
   noun: string

@@ -22,6 +22,7 @@ import {
   baseJexlFilters,
   configuredJexlFilters,
   jexlFilterNarrowing,
+  writeJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
@@ -337,15 +338,15 @@ export default function baseStateModelFactory(
 
       /**
        * #method
-       * The jexl filters `filter.expressions` holds.
+       * The `jexl:` expressions the `filter` list holds.
        */
       configuredFilters(): string[] {
         return configuredJexlFilters(self)
       },
       /**
        * #method
-       * What the track's config declares for `filter.expressions`, which
-       * "Clear all filters" returns to.
+       * The expressions the track's config declares, which "Clear all
+       * filters" returns to.
        */
       baseFilters(): string[] {
         return baseJexlFilters(self)
@@ -1289,15 +1290,11 @@ export default function baseStateModelFactory(
 
         /**
          * #action
-         * Write `filter.expressions` (already-`jexl:`-prefixed); undefined
-         * returns them to what the track's config declares.
+         * Write the `filter` list's expressions, its other entries kept;
+         * undefined returns them to what the track's config declares.
          */
         setFilter(filters?: string[]) {
-          setConf(
-            self,
-            ['filter', 'expressions'],
-            filters ?? self.baseFilters(),
-          )
+          writeJexlFilters(self, filters ?? self.baseFilters())
         },
 
         /**
