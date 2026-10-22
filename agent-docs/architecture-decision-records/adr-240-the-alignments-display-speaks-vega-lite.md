@@ -9,7 +9,9 @@ summary: "ADR-238's end state for LinearAlignmentsDisplay and LGVSyntenyDisplay,
 
 Accepted (2026-10-22), with three calls open (below). The alignments stage of
 [ADR-238](adr-238-every-display-speaks-vega-lite.md), whose order of work this
-follows; nothing here is built yet.
+follows. Amended the same day: a ramp's quantile is `scale.domainQuantile`,
+not `{ quantile }`, which no slot type holds and which reads as d3's
+`type: 'quantile'`.
 
 Five reviews shaped it: an Opus design pass from ADR-238 and the schemas, two
 Opus arbiters on its calls (one on Vega-Lite fidelity, one on authors, writers
@@ -172,7 +174,7 @@ them in its own stage:
 | `filter.junctions.minReads`, `nonCanonical` | `junction.reads gte`, `junction.canonical equal` |
 | `filter.connections.interchrom`, `offscreenMates`, `minInterchromReads` | `connection.interchrom`, `connection.offscreen`, `breakpoint.reads gte` |
 | `facet.domain` | `facet.sort`; every `domain` that only orders moves in the same sweep |
-| `color.*` | `encoding.color`: `scale.{type, domain, range, names, scheme, reverse, domainMin, domainMax, domainMid}`, `{ quantile }` for `domainQuantile`, `legend.{show, title, descending}` |
+| `color.*` | `encoding.color`: `scale.{type, domain, range, names, scheme, reverse, domainMin, domainMax, domainMid, domainQuantile}`, `legend.{show, title, descending}` |
 | `showLegend` | `legend.show` |
 | `scales.y.*` | `coverage.encoding.y.scale` and `.axis`, with wiggle's y step (`ScoreScaleMixin` hard-codes the path); `rules` follows wiggle's spelling |
 | `coverage.showInterbaseIndicators`, `minAlleleFraction` | `coverage.interbase.show`, `coverage.alleles.filter` |

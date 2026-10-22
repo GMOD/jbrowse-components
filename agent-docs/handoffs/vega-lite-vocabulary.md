@@ -89,10 +89,11 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
      step 2; claim it here before starting):
      - Words: ADR-240's (`scale.names`, `scale.group`, `legend.descending`, a
        display-wide `legend.show` beside each channel's), `scale.type`
-       `ordinal` for `categorical`, and a scalar `scale.quantile` for a
-       ramp's `domainQuantile` (amend ADR-240's `{ quantile }`, which no slot
-       type holds and which would split today's one q). A bare string inside
-       `encoding` is a field, as on the mark display.
+       `ordinal` for `categorical`, and `scale.domainQuantile` for a ramp's
+       quantile (ADR-240's table amended: no slot type holds `{ quantile }`,
+       and `scale.quantile` reads as d3's `type: 'quantile'`). A bare string
+       inside `encoding` is a field, as on the mark display.
+       **Pass A claimed 2026-10-22.**
      - Step 0 landed as
        [ADR-241](../architecture-decision-records/adr-241-a-color-object-is-unset-a-value-or-a-field.md):
        a color object is unset, a `value` or a `field`, and the field a write
