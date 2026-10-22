@@ -1,7 +1,7 @@
 import { PAIR_DIRECTION_NUM } from '@jbrowse/alignments-core'
 
 import { drawnConnections } from '../readChains.ts'
-import { buildBreakpointPath, chainHighlightRects } from './overlayUtils.tsx'
+import { buildJunctionPath, chainHighlightRects } from './overlayUtils.tsx'
 
 import type { ReadEntry } from '../readChains.ts'
 import type { ConnectorRow, LayoutRecord, OverlayLevel } from '../types.ts'
@@ -206,22 +206,34 @@ describe('drawnConnections', () => {
   })
 })
 
-describe('buildBreakpointPath', () => {
-  test('builds straight line with ticks when y values differ', () => {
-    const path = buildBreakpointPath(50, 0, 150, 50, 30, 170)
-    expect(path).toBe('M 30 0 L 50 0 L 150 50 L 170 50')
+describe('buildJunctionPath', () => {
+  // A deletion: its start keeps the sequence to its left, its end the
+  // sequence to its right, so the feet point outward and the curve leaves
+  // each end toward the other.
+  const start = { x: 50, y: 100, tick: 30, keeps: -1, reversed: false }
+  const end = { x: 150, y: 100, tick: 170, keeps: 1, reversed: false }
+
+  function controls(path: string) {
+    const [, c] = /C ([^C]*) \S+ \S+ L/.exec(path)!
+    return c!.split(' ').map(Number)
+  }
+
+  test('feet run from each tick to its end', () => {
+    const path = buildJunctionPath(start, end)
+    expect(path.startsWith('M 30 100 L 50 100 C')).toBe(true)
+    expect(path.endsWith('150 100 L 170 100')).toBe(true)
   })
 
-  test('builds arc with ticks when y values are equal (flat line)', () => {
-    const path = buildBreakpointPath(50, 100, 150, 100, 30, 170)
-    expect(path).toContain('M 30 100 L 50 100')
-    expect(path).toContain('Q')
-    expect(path).toContain('L 170 100')
-    expect(path).toContain('100 70')
+  test('the curve leaves each end on the side it joins, and bows over one row', () => {
+    const [c1x, c1y, c2x, c2y] = controls(buildJunctionPath(start, end))
+    expect(c1x).toBeGreaterThan(50)
+    expect(c2x).toBeLessThan(150)
+    expect(c1y).toBeLessThan(100)
+    expect(c2y).toBeLessThan(100)
   })
 
-  test('arc control point is at midpoint horizontally', () => {
-    const path = buildBreakpointPath(0, 100, 200, 100, -20, 220)
-    expect(path).toContain('100 70')
+  test('a reversed region mirrors the side an end leaves from', () => {
+    const [c1x] = controls(buildJunctionPath({ ...start, reversed: true }, end))
+    expect(c1x).toBeLessThan(50)
   })
 })

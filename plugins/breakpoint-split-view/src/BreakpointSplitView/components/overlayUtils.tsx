@@ -4,6 +4,7 @@ import { CONNECTION_LABELS } from '@jbrowse/alignments-core'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
   assembleLocString,
+  bezierConnectorPath,
   getSession,
   getStrokeProps,
   truncateMiddle,
@@ -96,21 +97,32 @@ export function getTestId(trackId: string, hasMatches: boolean) {
  */
 export type RowAssemblies = (Assembly | undefined)[]
 
-// Flat (y1===y2) connections render as a quadratic arc bowed upward, keeping
-// same-row links visible; otherwise a straight line.
-const FLAT_ARC_HEIGHT = 30
+/** One placed end of a junction, in overlay px. */
+export interface JunctionPoint {
+  x: number
+  y: number
+  /** where the foot over the kept arm ends, from `breakendTickPx` */
+  tick: number
+  /** which way the sequence this end keeps runs: 1 right, -1 left, 0 unknown */
+  keeps: number
+  reversed: boolean
+}
 
-export function buildBreakpointPath(
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  x1Tick: number,
-  x2Tick: number,
-) {
-  return y1 === y2
-    ? `M ${x1Tick} ${y1} L ${x1} ${y1} Q ${(x1 + x2) / 2} ${y1 - FLAT_ARC_HEIGHT} ${x2} ${y2} L ${x2Tick} ${y2}`
-    : `M ${x1Tick} ${y1} L ${x1} ${y1} L ${x2} ${y2} L ${x2Tick} ${y2}`
+// A junction as the link mark draws one: a foot over the arm each end keeps,
+// and between the ends the connector cubic, which leaves each end on the side
+// it joins and bows over a pair on one row.
+export function buildJunctionPath(a: JunctionPoint, b: JunctionPoint) {
+  const curve = bezierConnectorPath({
+    x1: a.x,
+    y1: a.y,
+    x2: b.x,
+    y2: b.y,
+    s1: -a.keeps,
+    s2: -b.keeps,
+    reversed1: a.reversed,
+    reversed2: b.reversed,
+  })
+  return `M ${a.tick} ${a.y} L${curve.slice(1)} L ${b.tick} ${b.y}`
 }
 
 function featureTooltipLabel(feature: Feature) {
