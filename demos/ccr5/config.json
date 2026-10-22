@@ -1,0 +1,119 @@
+{
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
+  "assemblies": [
+    {
+      "name": "hg38",
+      "displayName": "Human (hg38)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/hg38/hg38.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg38/hg38.chromAlias.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg38/hg38.cytoBand.txt.gz"
+        }
+      },
+      "circularRefNames": ["chrM"],
+      "geneticCodes": { "chrM": 2 }
+    },
+    {
+      "name": "ccr5_delta32",
+      "displayName": "CCR5 Δ32 allele (hg38 chr3:46,368,001-46,379,000 less rs333)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "ccr5_delta32-ref",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/demos/ccr5/ccr5_delta32.fa.gz"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "ccr5_hg38_gene",
+      "name": "CCR5 NM_001394783.1 (hg38)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/demos/ccr5/ccr5_hg38.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ccr5_delta32_gene",
+      "name": "CCR5 on the Δ32 allele",
+      "assemblyNames": ["ccr5_delta32"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/demos/ccr5/ccr5_delta32.gff3.gz"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "ccr5_hg38_to_delta32",
+      "name": "hg38 to Δ32 allele",
+      "assemblyNames": ["hg38", "ccr5_delta32"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "uri": "https://jbrowse.org/demos/ccr5/hg38_vs_ccr5_delta32.paf",
+        "queryAssembly": "hg38",
+        "targetAssembly": "ccr5_delta32"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38-ncbiRefSeqSelect",
+      "name": "NCBI RefSeq Select and MANE",
+      "assemblyNames": ["hg38"],
+      "category": ["Genes and Gene Predictions"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqSelect.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqSelect.gff.gz.csi"
+          }
+        }
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "CCR5 Δ32 beside the reference",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "displayName": "CCR5: hg38 above, the Δ32 allele below",
+        "views": [
+          {
+            "assembly": "hg38",
+            "loc": "chr3:46,370,500-46,376,700",
+            "tracks": ["ccr5_hg38_gene"]
+          },
+          {
+            "assembly": "ccr5_delta32",
+            "loc": "chr3_delta32:2,500-8,668",
+            "tracks": ["ccr5_delta32_gene"]
+          }
+        ],
+        "tracks": ["ccr5_hg38_to_delta32"]
+      }
+    ]
+  }
+}
