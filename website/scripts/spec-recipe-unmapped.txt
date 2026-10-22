@@ -8,13 +8,14 @@
 color
 colorScheme
 connectedView
+encoding.color
+encoding.opacity
 geneTrackId
 height
 layers
 loadedRegion
 loadedTrackId
 maxRegionBp
-opacity
 paneHeight
 render
 repeatKey
