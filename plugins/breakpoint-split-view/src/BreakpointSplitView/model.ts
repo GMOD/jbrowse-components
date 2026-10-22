@@ -38,18 +38,18 @@ import {
 } from './readChains.ts'
 import {
   VIEW_DIVIDER_HEIGHT,
-  calc,
   computeOverlayY,
   findFeatureViewLevel,
   getBlockFeatures,
-  intersect,
   layoutUnknown,
   linksOwnReads,
+  featureLayoutIn,
   makeOffscreenLayout,
   overlayJexlFilters,
   overlayKind,
   placeOnRow,
   readSourceOf,
+  tracksInEveryRow,
 } from './util.ts'
 import { getVariantJunctions } from './variantJunctions.ts'
 
@@ -343,20 +343,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * Find all track ids that match across multiple views, or return just
-       * the single view's track if only a single row is used
+       * The tracks open in every row, in the first row's order
        */
       // The OverlayTrack annotation is load-bearing: `view.tracks` is an MST
       // pluggable union TS widens to `any`, so without it every field read
       // through this getter is unchecked. A `display.notReady?.()` guard against
       // a method no display defines survived here for exactly that reason.
       get matchedTracks(): OverlayTrack[] {
-        return self.views.length === 1
-          ? self.views[0]!.tracks
-          : intersect(
-              elt => elt.configuration.trackId,
-              ...self.views.map(view => view.tracks as OverlayTrack[]),
-            )
+        return tracksInEveryRow(
+          self.views.map(view => view.tracks as OverlayTrack[]),
+        )
       },
 
       /**
@@ -547,7 +543,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           c
             .map(feature => {
               for (const [level, track] of tracks.entries()) {
-                const layout = calc(track, feature)
+                const layout = featureLayoutIn(track, feature)
                 if (layout) {
                   return { feature, layout, level }
                 }

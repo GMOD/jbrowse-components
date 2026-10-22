@@ -278,21 +278,18 @@ export function findFeatureViewLevel(
   return undefined
 }
 
-// https://stackoverflow.com/a/49186706/2129219 the array-intersection package
-// on npm has a large kb size, and we are just intersecting open track ids so
-// simple is better
-export function intersect<T>(
-  cb: (l: T) => string,
-  a1: T[] = [],
-  a2: T[] = [],
-  ...rest: T[][]
-): T[] {
-  const ids = new Set(a2.map(elt => cb(elt)))
-  const a12 = a1.filter(value => ids.has(cb(value)))
-  return rest.length === 0 ? a12 : intersect(cb, a12, ...rest)
+// The tracks open, by trackId, in every one of the given rows.
+export function tracksInEveryRow<
+  T extends { configuration: { trackId: string } },
+>(rows: T[][]) {
+  const [first = [], ...rest] = rows
+  const others = rest.map(r => new Set(r.map(t => t.configuration.trackId)))
+  return first.filter(t =>
+    others.every(ids => ids.has(t.configuration.trackId)),
+  )
 }
 
-export function calc(track: OverlayTrack, f: Feature) {
+export function featureLayoutIn(track: OverlayTrack, f: Feature) {
   return track.displays[0]!.searchFeatureByID?.(f.id())
 }
 
@@ -303,7 +300,7 @@ export function linksOwnReads(d: OverlayDisplay) {
   return (d.bezierArcScope ?? 'none') !== 'none'
 }
 
-// A failed `calc` is ambiguous. With a layout, the feature really is off-display
+// A failed `featureLayoutIn` is ambiguous. With a layout, the feature really is off-display
 // and the bottom-edge curve is the signal it exists. With no layout — data
 // cleared, or the too-large banner up — its position is merely unknown, and
 // snapping collapses every connection onto one line until the data lands.
