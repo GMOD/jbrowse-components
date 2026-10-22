@@ -76,6 +76,7 @@ import {
   rowViewMenuItems,
   syntenyTracksMenuItems,
 } from './menus.ts'
+import { syntenyNavigationConfigSchema } from './navigationConfigSchema.ts'
 import { syntenyOffscreenConfigSchema } from './offscreenConfigSchema.ts'
 import { sharedFit } from './sharedFit.ts'
 import { liftLegacySyntenyView } from './util/liftViewLevelTracks.ts'
@@ -221,10 +222,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
          * #property
-         * The non-anchor rows follow the anchor row through the alignment,
-         * moving to whatever region aligns to its window.
+         * How a move on one row carries to the others, a
+         * [](/docs/config/syntenynavigation) object: `{ follow: true }` has
+         * the rows follow the `anchor` row through the alignment.
          */
-        followSynteny: types.stripDefault(types.boolean, false),
+        navigation: types.stripDefault(syntenyNavigationConfigSchema, {}),
         /**
          * #property
          * The coordinate system, a [](/docs/config/syntenycoord) object:
@@ -236,11 +238,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         coord: types.stripDefault(syntenyCoordConfigSchema, {}),
         /**
          * #property
-         * Which genome row drives the others while following.
-         */
-        followAnchorIndex: types.stripDefault(types.number, 0),
-        /**
-         * #property
          * Which genome row "Re-order chromosomes" keeps as it is: the rows
          * below it are ordered against the row above them, and the rows above
          * it against the row below. It matters wherever the top row is not the
@@ -250,12 +247,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * off a comb jelly instead.
          */
         diagonalizeAnchorRow: types.stripDefault(types.number, 0),
-        /**
-         * #property
-         * While following, flip a row whose placing alignment runs the other
-         * way from the anchor's, so the two pan in the same direction.
-         */
-        followMatchOrientation: types.stripDefault(types.boolean, false),
         /**
          * #property
          * One synteny band per adjacent pair of `views`, each holding one
@@ -292,6 +283,54 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * synteny track, a multi-contig answer refused as mostly filler.
        */
       followReport: EMPTY_FOLLOW_REPORT,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * `navigation.follow`
+       */
+      get followSynteny(): boolean {
+        return readConfObject(self.navigation, 'follow')
+      },
+      /**
+       * #getter
+       * `navigation.anchor`
+       */
+      get followAnchorIndex(): number {
+        return readConfObject(self.navigation, 'anchor')
+      },
+      /**
+       * #getter
+       * `navigation.matchOrientation`
+       */
+      get followMatchOrientation(): boolean {
+        return readConfObject(self.navigation, 'matchOrientation')
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Rewrite members of `navigation`, keeping the rest.
+       */
+      setNavigation(members: {
+        follow?: boolean
+        anchor?: number
+        matchOrientation?: boolean
+      }) {
+        const now = getSnapshot(self.navigation) as Record<string, unknown>
+        const was = {
+          follow: self.followSynteny,
+          anchor: self.followAnchorIndex,
+          matchOrientation: self.followMatchOrientation,
+        }
+        if (
+          Object.entries(members).some(
+            ([k, v]) => was[k as keyof typeof was] !== v,
+          )
+        ) {
+          self.navigation = cast({ ...now, ...members })
+        }
+      },
     }))
     .views(self => ({
       /**
@@ -697,13 +736,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setFollowSynteny(flag: boolean) {
-        self.followSynteny = flag
+        self.setNavigation({ follow: flag })
       },
       /**
        * #action
        */
       setFollowAnchorIndex(idx: number) {
-        self.followAnchorIndex = idx
+        self.setNavigation({ anchor: idx })
       },
       /**
        * #action
@@ -755,7 +794,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         // empty stack leaves them alone.
         if (self.views.length > 0) {
           const lastRow = self.views.length - 1
-          self.followAnchorIndex = clamp(self.followAnchorIndex, 0, lastRow)
+          self.setNavigation({
+            anchor: clamp(self.followAnchorIndex, 0, lastRow),
+          })
           self.diagonalizeAnchorRow = clamp(
             self.diagonalizeAnchorRow,
             0,
@@ -840,7 +881,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           self.levels.splice(firstBand, 0, cast({ height }))
         }
         if (idx < self.followAnchorIndex) {
-          self.followAnchorIndex -= 1
+          self.setNavigation({ anchor: self.followAnchorIndex - 1 })
         }
         if (idx < self.diagonalizeAnchorRow) {
           self.diagonalizeAnchorRow -= 1
@@ -873,7 +914,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const lastRow = self.views.length - 1
         self.views.replace([...self.views].reverse())
         self.levels.replace([...self.levels].reverse())
-        self.followAnchorIndex = lastRow - self.followAnchorIndex
+        self.setNavigation({ anchor: lastRow - self.followAnchorIndex })
         self.diagonalizeAnchorRow = lastRow - self.diagonalizeAnchorRow
       },
 
@@ -881,7 +922,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setFollowMatchOrientation(arg: boolean) {
-        self.followMatchOrientation = arg
+        self.setNavigation({ matchOrientation: arg })
       },
       /**
        * #action

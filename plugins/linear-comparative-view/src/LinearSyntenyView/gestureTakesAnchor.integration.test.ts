@@ -395,8 +395,7 @@ test.each([0, 2])(
         { assembly: 'volvox1' },
         { assembly: 'volvox2', displayedRegionNames: ['ctgA'] },
       ],
-      followSynteny: true,
-      followAnchorIndex,
+      navigation: { follow: true, anchor: followAnchorIndex },
     })
     expect(view.followSynteny).toBe(true)
     expect(view.followAnchorIndex).toBe(followAnchorIndex)

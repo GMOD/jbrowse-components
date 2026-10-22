@@ -8513,16 +8513,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/SyntenyData"
           }
         },
-        "hideSelfAlignments": {
-          "description": "Hide the group matching the view's own assembly when grouping by mate assembly.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "maxFeatureScreenDensity": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -18748,9 +18738,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "hideSelfAlignments": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideSelfAlignments"
-            },
             "maxFeatureScreenDensity": {
               "anyOf": [
                 {
@@ -26973,6 +26960,47 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "SyntenyNavigation": {
+      "title": "SyntenyNavigation",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "follow": {
+          "description": "the other rows follow the anchor row through the alignment; a drag or zoom on a row makes it the anchor.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "anchor": {
+          "description": "the genome row, counted from the top, the others follow.",
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "matchOrientation": {
+          "description": "while following, flip a row whose placing alignment runs the other way from the anchor's, so the two pan in the same direction.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearSyntenyViewTrackEntry": {
       "title": "LinearSyntenyViewTrackEntry",
       "description": "A track to open in a LinearSyntenyView: a trackId, or an object whose other keys are the display's config slots and state written inline.",
@@ -27141,20 +27169,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "trackSelectorType": {
           "type": "string"
         },
-        "followSynteny": {
-          "type": "boolean"
+        "navigation": {
+          "$ref": "#/$defs/SyntenyNavigation"
         },
         "coord": {
           "description": "Launch key, resolved by the LinearSyntenyView launcher on open."
         },
-        "followAnchorIndex": {
-          "type": "number"
-        },
         "diagonalizeAnchorRow": {
           "type": "number"
-        },
-        "followMatchOrientation": {
-          "type": "boolean"
         },
         "levels": {
           "type": "array",

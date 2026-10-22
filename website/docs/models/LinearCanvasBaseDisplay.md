@@ -213,9 +213,9 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | `LegendMixin`'s hook: the key the color channel's scale derives. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>90 inherited getters from 12 models</summary>
+<summary>89 inherited getters from 12 models</summary>
 
-From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-displayhiddengroupkeys">[`displayHiddenGroupKeys`](../hiddengroupsmixin#getter-displayhiddengroupkeys)</span>, <span id="getter-owngroupstate">[`ownGroupState`](../hiddengroupsmixin#getter-owngroupstate)</span>, <span id="getter-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#getter-hiddengroups)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span>
+From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-owngroupstate">[`ownGroupState`](../hiddengroupsmixin#getter-owngroupstate)</span>, <span id="getter-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#getter-hiddengroups)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span>
 
 From [CanvasFeatureGateMixin](../canvasfeaturegatemixin): <span id="getter-gateenabled">[`gateEnabled`](../canvasfeaturegatemixin#getter-gateenabled)</span>, <span id="getter-visiblefeaturedensityperpx">[`visibleFeatureDensityPerPx`](../canvasfeaturegatemixin#getter-visiblefeaturedensityperpx)</span>, <span id="getter-maxfeaturedensity">[`maxFeatureDensity`](../canvasfeaturegatemixin#getter-maxfeaturedensity)</span>, <span id="getter-densitytoolarge">[`densityTooLarge`](../canvasfeaturegatemixin#getter-densitytoolarge)</span>
 

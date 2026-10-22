@@ -4985,10 +4985,6 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "SyntenyData",
           "writes": "members"
-        },
-        {
-          "name": "hideSelfAlignments",
-          "type": "boolean"
         }
       ],
       "legacyKeys": [
@@ -8889,11 +8885,9 @@ export const configManifest: ConfigManifest = {
         "overdrawPx",
         "launch",
         "trackSelectorType",
-        "followSynteny",
+        "navigation",
         "coord",
-        "followAnchorIndex",
         "diagonalizeAnchorRow",
-        "followMatchOrientation",
         "levels",
         "views"
       ],

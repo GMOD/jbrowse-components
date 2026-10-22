@@ -31,6 +31,12 @@ spelling, not a new house word. That means no new `min*`, `max*`, `show*` or
 - `data.resolution` on the comparative views and the LGVSynteny and
   multi-way displays, which replaced `lodMode`.
 - The chord displays' `mark.depth`, which replaced `bezierRadiusRatio`.
+- The linear synteny view's `navigation` (`follow`, `anchor`,
+  `matchOrientation`), which replaced `followSynteny`, `followAnchorIndex`
+  and `followMatchOrientation`. `diagonalizeAnchorRow` stays apart: a gesture
+  takes the follow anchor, and only the reorder dialog sets this one.
+- LGVSyntenyDisplay's self lane as a `facet.hidden` entry, which replaced
+  `hideSelfAlignments`.
 - Wiggle's `mark` as Vega-Lite's mark object, `{ type, interpolate }`, a bare
   name lifting to the type; the chord displays' `mark` is a plot setting
   beside it.
@@ -120,11 +126,6 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
      ticks too, which it skips today), and `color`, `utrColor` and `text`
      under `encoding`. `splitStrands` and `inlineLaneNames` change layout and
      have no spelling yet.
-   - Not yet decided: LGVSyntenyDisplay's `hideSelfAlignments` is a predicate
-     on `mateAssembly` that needs a way to name the view's own assembly; the
-     linear synteny view's `followSynteny`, `followAnchorIndex` and
-     `followMatchOrientation`, and its `diagonalizeAnchorRow`, may be one
-     `navigation` part.
    - Off-screen mate marks honor only the `length` filter: the worker sends
      no attribute lanes with the mates, so an `identity` predicate cannot
      reach them.

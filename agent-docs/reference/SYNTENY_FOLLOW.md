@@ -478,7 +478,7 @@ the rows hold. Without the flag a held row and a dead follow look identical.
 
 ## Orientation is matched once per decision, and only when opted in
 
-`followMatchOrientation` (off by default) lets the exact pass turn the moving
+`navigation.matchOrientation` (off by default) lets the exact pass turn the moving
 row round so it pans the same way as the anchor: inside one alignment by that
 block's strand, wider than one by `followReverseShare`'s vote and only past
 `NEARLY_ALL` (90%) either way. The vote weighs records by `voteEvidence`, as the

@@ -145,8 +145,8 @@ test('an unknown key logs and raises no toast', async () => {
   expect(notify).not.toHaveBeenCalled()
 })
 
-test('the follow is one property, and the retired rowSync is not a key', async () => {
-  const view = await open({ views: ROWS, followSynteny: true })
+test('the follow is a navigation member, and the retired rowSync is not a key', async () => {
+  const view = await open({ views: ROWS, navigation: { follow: true } })
   expect(view.followSynteny).toBe(true)
   expect(warnings()).toEqual([])
 

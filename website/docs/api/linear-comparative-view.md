@@ -24,7 +24,7 @@ key; and `config`, the display's config with its defaults filled. Positions are 
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, anchor: anchorArgs, pins, display }: MultiWayTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, anchor: anchorArgs, pins, flips, display, }: MultiWayTablesArgs) => Promise<…>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/multiwayTables.ts)
