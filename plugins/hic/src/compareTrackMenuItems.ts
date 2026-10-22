@@ -66,7 +66,7 @@ export function comparisonTrackConf(
       {
         type: 'LinearHicDisplay',
         displayId: `${trackId}-LinearHicDisplay`,
-        color: 'observed/control',
+        encoding: { color: 'observed/control' },
       },
     ],
   }

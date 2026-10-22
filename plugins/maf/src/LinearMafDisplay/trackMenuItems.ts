@@ -138,9 +138,9 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
 }
 
 /**
- * One Color by row, a `color.field`. The codon and identity rows can tick a
- * field that yields at the current zoom; the hint and the toggle say why the
- * rows show bases.
+ * One Color by row, an `encoding.color.field`. The codon and identity rows
+ * can tick a field that yields at the current zoom; the hint and the toggle
+ * say why the rows show bases.
  */
 function colorFieldRow(self: MafMenuSelf, field: MafColorField): MenuItem {
   const label = MAF_COLOR_FIELD_LABELS[field]

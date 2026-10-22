@@ -197,10 +197,12 @@ describe('hic color rows on a display', () => {
     }
   }
 
-  it('Log scale writes color.scale, and unticking leaves no delta', () => {
+  it('Log scale writes encoding.color.scale.type, and unticking leaves no delta', () => {
     const { display } = createDisplay()
     click(display, 'Log scale')
-    expect(display.plot).toEqual({ color: { scale: 'symlog' } })
+    expect(display.plot).toEqual({
+      encoding: { color: { scale: { type: 'symlog' } } },
+    })
     expect(display.colorEncoding.scale).toBe('symlog')
     click(display, 'Log scale')
     expect(display.plot).toEqual({})
@@ -218,15 +220,19 @@ describe('hic color rows on a display', () => {
   it('picking the field preset scheme writes no config delta', () => {
     const { display } = createDisplay()
     display.setColorScheme('viridis')
-    expect(display.plot).toEqual({ color: { scheme: 'viridis' } })
+    expect(display.plot).toEqual({
+      encoding: { color: { scale: { scheme: 'viridis' } } },
+    })
     display.setColorScheme(DEFAULT_HIC_COLOR_SCHEME)
     expect(display.plot).toEqual({})
   })
 
-  it('Emphasize faint contacts writes color.domainQuantile', () => {
+  it('Emphasize faint contacts writes encoding.color.scale.domainQuantile', () => {
     const { display } = createDisplay()
     click(display, 'Emphasize faint contacts')
-    expect(display.plot).toEqual({ color: { domainQuantile: 1 } })
+    expect(display.plot).toEqual({
+      encoding: { color: { scale: { domainQuantile: 1 } } },
+    })
     click(display, 'Emphasize faint contacts')
     expect(display.plot).toEqual({})
   })

@@ -157,23 +157,23 @@ export function getCodonLegendItems(
   palette: JBrowsePalette,
   {
     domain = [],
-    labels = [],
+    names = [],
   }: {
     domain?: readonly (string | number)[]
-    labels?: readonly string[]
+    names?: readonly string[]
   } = {},
 ): LegendItem[] {
   const { fill } = getCodonColors(palette)
   const preset = MAF_FIELD_PRESETS.codon
-  const names = keyNames(domain, labels)
-  const presetNames = keyNames(preset.domain, preset.labels)
-  const order = new Set([...domain.map(String), ...preset.domain])
+  const keyed = keyNames(domain, names)
+  const presetNames = keyNames(preset.scale.domain, preset.scale.names)
+  const order = new Set([...domain.map(String), ...preset.scale.domain])
   return [...order].flatMap(value => {
     const color = Object.hasOwn(fill, value)
       ? fill[value as CodonChange]
       : undefined
     return color
-      ? [{ label: names.get(value) ?? presetNames.get(value) ?? value, color }]
+      ? [{ label: keyed.get(value) ?? presetNames.get(value) ?? value, color }]
       : []
   })
 }

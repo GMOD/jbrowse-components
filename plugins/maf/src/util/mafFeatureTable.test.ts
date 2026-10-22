@@ -105,7 +105,7 @@ test('species cells over the packed table answer what they do over MafFeatures',
   expect(packed.table.length).toBeGreaterThan(0)
   expect(rowsOf(packed.table)).toEqual(rowsOf(features.table))
   expect(packed.row).toEqual(features.row)
-  const encoding = { color: { field: 'state', scale: 'categorical' as const } }
+  const encoding = { color: { field: 'state', scale: 'ordinal' as const } }
   const lanes = ['row', 'color'] as const
   expect(
     encodeFeatures(packed.table, { ...encoding, row: packed.row }, lanes),

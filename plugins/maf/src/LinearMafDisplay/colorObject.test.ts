@@ -1,12 +1,12 @@
 import { readConfObject, setConf } from '@jbrowse/core/configuration'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, onPatch } from '@jbrowse/mobx-state-tree'
 
 import { createMafTestEnvironment } from './testEnv.ts'
 
 function displayWith(color: unknown, framesAdapter: unknown = null) {
   return createMafTestEnvironment({
     framesAdapter,
-    displayConfig: { color },
+    displayConfig: color === undefined ? {} : { encoding: { color } },
   }).createDisplay()
 }
 
@@ -16,7 +16,7 @@ describe('the color encoding is the field through its preset', () => {
       'mismatch',
       {
         field: 'mismatch',
-        scale: 'categorical',
+        scale: 'ordinal',
         domain: ['A', 'C', 'G', 'T', 'N', 'gap', 'match'],
       },
     ],
@@ -24,7 +24,7 @@ describe('the color encoding is the field through its preset', () => {
       'base',
       {
         field: 'base',
-        scale: 'categorical',
+        scale: 'ordinal',
         domain: ['A', 'C', 'G', 'T', 'N', 'gap'],
       },
     ],
@@ -43,9 +43,9 @@ describe('the color encoding is the field through its preset', () => {
       'chromosome',
       {
         field: 'chromosome',
-        scale: 'categorical',
+        scale: 'ordinal',
         domain: ['0', '1', '2', '3', '4'],
-        labels: [
+        names: [
           'Main chromosome',
           '2nd source',
           '3rd source',
@@ -58,9 +58,9 @@ describe('the color encoding is the field through its preset', () => {
       'codon',
       {
         field: 'codon',
-        scale: 'categorical',
+        scale: 'ordinal',
         domain: ['nonsyn', 'syn', 'stop'],
-        labels: ['Nonsynonymous', 'Synonymous', 'Stop gained'],
+        names: ['Nonsynonymous', 'Synonymous', 'Stop gained'],
       },
     ],
   ])('%s', (field, encoding) => {
@@ -69,7 +69,10 @@ describe('the color encoding is the field through its preset', () => {
   })
 
   test('a written member wins over the preset', () => {
-    const { display } = displayWith({ field: 'identity', domainMin: 0.7 })
+    const { display } = displayWith({
+      field: 'identity',
+      scale: { domainMin: 0.7 },
+    })
     expect(display.colorEncoding).toMatchObject({
       domainMin: 0.7,
       domainMax: 1,
@@ -85,25 +88,26 @@ describe('the key reads the encoding', () => {
     return display.colorScales[0]
   }
 
-  test('a written title heads it, and "" draws none', () => {
-    expect(chromosomeKey({ title: 'Scaffold' })).toMatchObject({
+  test('a written legend.title heads it, and "" draws none', () => {
+    expect(chromosomeKey({ legend: { title: 'Scaffold' } })).toMatchObject({
       title: 'Scaffold',
     })
-    expect(chromosomeKey({ title: '' })).toMatchObject({ title: '' })
+    expect(chromosomeKey({ legend: { title: '' } })).toMatchObject({
+      title: '',
+    })
   })
 
-  test('written labels name the ranks', () => {
-    expect(chromosomeKey({ labels: ['Home'] })).toMatchObject({
+  test('written scale.names name the ranks', () => {
+    expect(chromosomeKey({ scale: { names: ['Home'] } })).toMatchObject({
       entries: [{ label: 'Home' }],
     })
   })
 
-  test('codon labels and order follow the encoding, every change listed', () => {
+  test('codon names and order follow the encoding, every change listed', () => {
     const { display, view } = displayWith(
       {
         field: 'codon',
-        domain: ['stop', 'nonsyn'],
-        labels: ['Stop', 'Changed'],
+        scale: { domain: ['stop', 'nonsyn'], names: ['Stop', 'Changed'] },
       },
       {},
     )
@@ -120,19 +124,45 @@ describe('the key reads the encoding', () => {
   })
 })
 
-describe('a Color by pick writes through the color object', () => {
+describe('a Color by pick writes through encoding.color', () => {
   test("a new field drops the old field's members", () => {
-    const { display } = displayWith({ field: 'chromosome', range: ['red'] })
+    const { display } = displayWith({
+      field: 'chromosome',
+      scale: { range: ['red'] },
+    })
     display.colorByField('identity')
-    expect(getSnapshot(display.configuration.color)).toEqual({
+    expect(getSnapshot(display.configuration.encoding.color)).toEqual({
       field: 'identity',
     })
   })
 
   test('the same field keeps them', () => {
-    const { display } = displayWith({ field: 'identity', domainMin: 0.7 })
+    const { display } = displayWith({
+      field: 'identity',
+      scale: { domainMin: 0.7 },
+    })
     display.colorByField('identity')
-    expect(readConfObject(display.configuration.color, 'domainMin')).toBe(0.7)
+    expect(
+      readConfObject(display.configuration, [
+        'encoding',
+        'color',
+        'scale',
+        'domainMin',
+      ]),
+    ).toBe(0.7)
+  })
+
+  test('a pick of what already paints writes nothing', () => {
+    const { display } = displayWith({
+      field: 'identity',
+      scale: { domainMin: 0.7 },
+      legend: { title: 'Identity' },
+    })
+    const patches: unknown[] = []
+    const dispose = onPatch(display.configuration, p => patches.push(p))
+    display.colorByField('identity')
+    dispose()
+    expect(patches).toEqual([])
   })
 })
 
@@ -145,12 +175,11 @@ describe('notices', () => {
   test('a problem the shared reader finds reaches the corner and the plot editor alike', () => {
     const { display } = displayWith({
       field: 'identity',
-      domainMin: 0.9,
-      domainMax: 0.5,
+      scale: { domainMin: 0.9, domainMax: 0.5 },
     })
     expect(display.notices).toHaveLength(1)
     expect(display.notices[0]).toMatch(
-      /^color\.domainMax: domainMax is below domainMin/,
+      /^encoding\.color\.scale\.domainMax: domainMax is below domainMin/,
     )
     expect(display.plotProblems(display.plot)).toEqual(display.notices)
   })
@@ -158,17 +187,25 @@ describe('notices', () => {
   test('codon with no frames file says the rows paint the mismatches', () => {
     const { display } = displayWith('codon')
     expect(display.notices).toEqual([
-      expect.stringMatching(/^color\.field: codon needs a framesAdapter/),
+      expect.stringMatching(
+        /^encoding\.color\.field: codon needs a framesAdapter/,
+      ),
     ])
     expect(displayWith('codon', {}).display.notices).toEqual([])
   })
 
   test('a range on a field painting the theme says it goes unread', () => {
-    const { display } = displayWith({ field: 'base', range: ['red'] })
+    const { display } = displayWith({
+      field: 'base',
+      scale: { range: ['red'] },
+    })
     expect(display.notices).toEqual([
-      "color.range: base paints the theme's colors and reads no range",
+      "encoding.color.scale.range: base paints the theme's colors and reads no range",
     ])
-    setConf(display, 'color', { field: 'chromosome', range: ['red'] })
+    setConf(display, ['encoding', 'color'], {
+      field: 'chromosome',
+      scale: { range: ['red'] },
+    })
     expect(display.notices).toEqual([])
   })
 })
