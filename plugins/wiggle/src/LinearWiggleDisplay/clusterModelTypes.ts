@@ -8,4 +8,8 @@ export interface ReducedModel extends IStateTreeNode, ClusterRunModel<Source> {
   clusterableSources: Source[]
   adapterConfig: Record<string, unknown>
   yField: string
+  // the y scale, which the matrix's scores are placed through
+  scaleType: string
+  domain: [number, number] | undefined
+  symlogConstant: number
 }

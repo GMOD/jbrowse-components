@@ -1,5 +1,7 @@
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
+import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
+import { resolveSymlogConstant } from '@jbrowse/wiggle-core'
 
 import { parseSamplesPerPixel } from './parseSamplesPerPixel.ts'
 
@@ -25,8 +27,9 @@ export function useClusterSamplingOptions() {
 // Score-matrix RPC args for both the session-triggered run and the dialog.
 // The density comes from the run's own span, not the view's zoom: the columns
 // are pixel bins, so clustering a 140 kb locus while the view shows 10 Mb would
-// otherwise bin it into a handful of columns. The field is the plot's `y`, so
-// rows cluster on the numbers on screen, as `sortSourcesByScoreAt` sorts them.
+// otherwise bin it into a handful of columns. The field is the plot's `y` and
+// the scores sit where a log or symlog axis draws them, so rows cluster on the
+// heights on screen.
 export function clusterScoreMatrixArgs(
   model: ReducedModel,
   samplesPerPixel: string,
@@ -42,5 +45,20 @@ export function clusterScoreMatrixArgs(
     adapterConfig: model.adapterConfig,
     yField: model.yField,
     bpPerPx: span / width / density,
+    scale: matrixScale(model),
   }
+}
+
+function matrixScale({ scaleType, domain, symlogConstant }: ReducedModel) {
+  return domain && scaleType !== 'linear'
+    ? {
+        scaleType: scaleTypeCode(scaleType),
+        domain,
+        symlogConstant: resolveSymlogConstant(
+          domain[0],
+          domain[1],
+          symlogConstant,
+        ),
+      }
+    : undefined
 }

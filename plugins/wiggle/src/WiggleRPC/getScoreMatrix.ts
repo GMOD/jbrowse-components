@@ -1,5 +1,6 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
+import { normalizeScoreUnclamped } from '@jbrowse/render-core/shaders/scoreScale'
 import {
   binSpan,
   columnMeans,
@@ -10,7 +11,7 @@ import { summaryFieldOf } from '@jbrowse/wiggle-core/summaryFields'
 import { fetchSourceRaws } from '../fetchRegionRaws.ts'
 
 import type { RawFeatureArrays } from '../util.ts'
-import type { GetScoreMatrixArgs } from './types.ts'
+import type { GetScoreMatrixArgs, MatrixScale } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
 import type { ColumnSegment } from '@jbrowse/tree-sidebar/binColumns'
@@ -41,6 +42,25 @@ function addValues(
   }
 }
 
+// Where each score sits up the axis, so a log or symlog track clusters on the
+// heights it draws and a deep sample's peaks do not outweigh every other row's.
+// Linear needs no pass: an affine map moves no average-linkage merge.
+function toAxisSpace(row: Float32Array, scale: MatrixScale) {
+  const [min, max] = scale.domain
+  for (let x = 0; x < row.length; x++) {
+    const v = row[x]!
+    if (!Number.isNaN(v)) {
+      row[x] = normalizeScoreUnclamped(
+        v,
+        min,
+        max,
+        scale.scaleType,
+        scale.symlogConstant,
+      )
+    }
+  }
+}
+
 // Payload plus call context rather than an `RpcExecuteArgs<'Key'>`, because
 // this body serves two registry entries — `MultiWiggleGetScoreMatrix` reads the
 // matrix out and `MultiWiggleClusterScoreMatrix` clusters it — so there is no
@@ -52,7 +72,7 @@ export async function getScoreMatrix({
   args: GetScoreMatrixArgs & RpcCallContext
   pluginManager: PluginManager
 }) {
-  const { sources, regions, bpPerPx, yField = 'score', signal } = args
+  const { sources, regions, bpPerPx, yField = 'score', scale, signal } = args
   const field = summaryFieldOf(yField)
   const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
@@ -107,7 +127,14 @@ export async function getScoreMatrix({
         addValues(sums, counts, seg, values, field)
       }
     }
-    columnMeans(sums, counts, 0, row)
+    // NaN where no feature covers a column: a file with no record there said
+    // nothing, and reading that as 0 put a bedMethyl sample missing coverage
+    // beside the unmethylated ones. The clustering run imputes the column's
+    // mean, and the R script and TSV write NA.
+    columnMeans(sums, counts, 0, row, Number.NaN)
+    if (scale) {
+      toAxisSpace(row, scale)
+    }
     if (breakpoint.due()) {
       await breakpoint.yield()
     }

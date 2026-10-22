@@ -1,7 +1,9 @@
-import { clusterMatrix } from '@jbrowse/tree-sidebar/clusterMatrix'
+import {
+  clusterMatrix,
+  imputeMissingToSiteMean,
+} from '@jbrowse/tree-sidebar/clusterMatrix'
 
 import { buildGenotypeMatrix } from './buildGenotypeMatrix.ts'
-import { imputeMissingToSiteMean } from './genotypeMatrixEncoding.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'

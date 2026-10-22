@@ -3,8 +3,10 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
+import { SCALE_TYPE_LOG } from '@jbrowse/render-core/scoreScale'
 
 import { MultiWiggleGetScoreMatrix } from './MultiWiggleGetScoreMatrix.ts'
+import { executeClusterScoreMatrix } from './executeClusterScoreMatrix.ts'
 import { getScoreMatrix } from './getScoreMatrix.ts'
 
 import type { GetScoreMatrixArgs } from './types.ts'
@@ -13,6 +15,9 @@ import type { Feature, Region } from '@jbrowse/core/util'
 import type { SummaryField } from '@jbrowse/wiggle-core/summaryFields'
 
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter')
+
+// a column no feature covers
+const N = Number.NaN
 
 // Both are real rather than cast stubs: getFeatureAdapterOrThrow is mocked, so
 // neither is read, and a real one costs nothing.
@@ -86,7 +91,7 @@ describe('getScoreMatrix', () => {
       sources: ['a'],
       bpPerPx: 10,
     })
-    expect(Array.from(rows.get('a')!)).toEqual([7, 7, 7, 7, 7, 0, 0, 0, 0, 0])
+    expect(Array.from(rows.get('a')!)).toEqual([7, 7, 7, 7, 7, N, N, N, N, N])
   })
 
   // A bedGraph/bedMethyl subtrack (the modkit use-case) has base-resolution
@@ -101,7 +106,7 @@ describe('getScoreMatrix', () => {
       sources: ['a'],
       bpPerPx: 10,
     })
-    expect(Array.from(rows.get('a')!)).toEqual([0, 0, 3, 0, 0, 0, 0, 5, 0, 0])
+    expect(Array.from(rows.get('a')!)).toEqual([N, N, 3, N, N, N, N, 5, N, N])
   })
 
   // Pins the ACCUMULATOR's width, which no ordinary assertion reaches: every
@@ -147,7 +152,7 @@ describe('getScoreMatrix', () => {
     expect(Array.from(rows.get('a')!)).toEqual([30, 30])
   })
 
-  it('leaves a source with no features an all-zero row', async () => {
+  it('leaves a source with no features an all-missing row', async () => {
     const rows = await run({
       features: [feat('a', 0, 100, 4)],
       regions: [region('chr1', 0, 100)],
@@ -155,7 +160,7 @@ describe('getScoreMatrix', () => {
       bpPerPx: 50,
     })
     expect(Array.from(rows.get('a')!)).toEqual([4, 4])
-    expect(Array.from(rows.get('b')!)).toEqual([0, 0])
+    expect(Array.from(rows.get('b')!)).toEqual([N, N])
   })
 
   // Every visible block contributes a segment; a whole-genome or
@@ -178,7 +183,7 @@ describe('getScoreMatrix', () => {
       sources: ['a'],
       bpPerPx: 10,
     })
-    expect(Array.from(rows.get('a')!)).toEqual([9, 9, 9, 0, 0])
+    expect(Array.from(rows.get('a')!)).toEqual([9, 9, 9, N, N])
   })
 
   // Several features per column is the norm for base-resolution data at any
@@ -242,9 +247,9 @@ describe('getScoreMatrix multi-source adapter', () => {
       'b',
     ])
 
-    expect(Array.from(rows.get('a')!)).toEqual([1, 0, 2, 2])
+    expect(Array.from(rows.get('a')!)).toEqual([1, N, 2, 2])
     // sub-column feature in region 0 column 0, nothing in region 1
-    expect(Array.from(rows.get('b')!)).toEqual([8, 0, 0, 0])
+    expect(Array.from(rows.get('b')!)).toEqual([8, N, N, N])
   })
 
   it('bins the summaryField the plot draws, and skips a NaN score', async () => {
@@ -272,12 +277,12 @@ describe('getScoreMatrix multi-source adapter', () => {
         }),
       })
 
-    expect(Array.from((await matrix('score')).get('a')!)).toEqual([2, 0])
-    expect(Array.from((await matrix('minScore')).get('a')!)).toEqual([1, 0])
-    expect(Array.from((await matrix('maxScore')).get('a')!)).toEqual([9, 0])
+    expect(Array.from((await matrix('score')).get('a')!)).toEqual([2, N])
+    expect(Array.from((await matrix('minScore')).get('a')!)).toEqual([1, N])
+    expect(Array.from((await matrix('maxScore')).get('a')!)).toEqual([9, N])
   })
 
-  it('leaves a subtrack the adapter did not report an all-zero row', async () => {
+  it('leaves a subtrack the adapter did not report an all-missing row', async () => {
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getMultiSourceFeatureArraysMulti: jest
         .fn()
@@ -294,7 +299,7 @@ describe('getScoreMatrix multi-source adapter', () => {
     })
 
     expect(Array.from(rows.get('a')!)).toEqual([3, 3])
-    expect(Array.from(rows.get('ghost')!)).toEqual([0, 0])
+    expect(Array.from(rows.get('ghost')!)).toEqual([N, N])
   })
 })
 
@@ -334,5 +339,58 @@ describe('MultiWiggleGetScoreMatrix.execute', () => {
     const rows = unwrapRpcResult(result)
     expect([...rows.keys()]).toEqual(['a', 'b'])
     expect(result.transferables).toEqual([...rows.values()].map(r => r.buffer))
+  })
+})
+
+describe('the clustering run', () => {
+  function adapterOf(features: Feature[]) {
+    jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getFeaturesArray: jest.fn().mockResolvedValue(features),
+    } as never)
+  }
+
+  // A sample covered at two CpGs of five belongs beside the fully covered
+  // sample it matches there; reading its gaps as 0% put it with the
+  // unmethylated one.
+  it('clusters a sparse row by what it measured, not by its gaps', async () => {
+    const cpgs = [0, 10, 20, 30, 40]
+    adapterOf([
+      ...cpgs.map(s => feat('high', s, s + 1, 0.9)),
+      ...[0, 10].map(s => feat('sparse', s, s + 1, 0.9)),
+      ...cpgs.map(s => feat('low', s, s + 1, 0.1)),
+    ])
+    const { tree } = await executeClusterScoreMatrix({
+      pluginManager: pm,
+      args: callArgs({
+        regions: [region('chr1', 0, 50)],
+        sources: ['high', 'sparse', 'low'],
+        bpPerPx: 10,
+      }),
+    })
+    expect(tree).toMatch(/\((high|sparse):[\d.]+,(high|sparse):[\d.]+\)/)
+  })
+
+  it('places each score where a log axis draws it', async () => {
+    adapterOf([
+      feat('a', 0, 10, 1),
+      feat('a', 10, 20, 10),
+      feat('a', 20, 30, 100),
+    ])
+    const rows = await getScoreMatrix({
+      pluginManager: pm,
+      args: {
+        ...callArgs({
+          regions: [region('chr1', 0, 30)],
+          sources: ['a'],
+          bpPerPx: 10,
+        }),
+        scale: {
+          scaleType: SCALE_TYPE_LOG,
+          domain: [1, 100],
+          symlogConstant: 1,
+        },
+      },
+    })
+    expect(Array.from(rows.get('a')!)).toEqual([0, 0.5, 1])
   })
 })

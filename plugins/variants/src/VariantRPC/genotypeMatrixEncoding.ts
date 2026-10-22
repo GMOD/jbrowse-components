@@ -113,45 +113,6 @@ export function readAltDosages(
   }
 }
 
-// Replace every no-call with its site's mean across the samples that do have a
-// call, so it contributes nothing to that site's term in the distance. This is
-// the standard treatment in genotype PCA / GRM work. A site with no calls at
-// all imputes to 0, i.e. drops out entirely.
-export function imputeMissingToSiteMean(rows: Map<string, Float32Array>) {
-  const arrays = [...rows.values()]
-  const numRows = arrays.length
-  const numSites = arrays[0]?.length ?? 0
-  if (numRows === 0 || numSites === 0) {
-    return rows
-  }
-  const sums = new Float64Array(numSites)
-  const counts = new Uint32Array(numSites)
-  for (let r = 0; r < numRows; r++) {
-    const row = arrays[r]!
-    for (let s = 0; s < numSites; s++) {
-      const v = row[s]!
-      if (!Number.isNaN(v)) {
-        sums[s] = sums[s]! + v
-        counts[s] = counts[s]! + 1
-      }
-    }
-  }
-  const means = new Float32Array(numSites)
-  for (let s = 0; s < numSites; s++) {
-    const count = counts[s]!
-    means[s] = count === 0 ? 0 : sums[s]! / count
-  }
-  for (let r = 0; r < numRows; r++) {
-    const row = arrays[r]!
-    for (let s = 0; s < numSites; s++) {
-      if (Number.isNaN(row[s]!)) {
-        row[s] = means[s]!
-      }
-    }
-  }
-  return rows
-}
-
 // Write the per-haplotype alt-allele indicator of one phased genotype into
 // `out[outOffset .. outOffset + ploidy)`: 0 for the reference allele, 1 for any
 // alt, NaN where the haplotype has nothing to say.

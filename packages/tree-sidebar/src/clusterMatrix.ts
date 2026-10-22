@@ -206,3 +206,46 @@ function nameTheUnnamedLeaf(newick: string) {
   }
   return writeNewick(root)
 }
+
+/**
+ * Replace every NaN with its column's mean across the rows that have a value,
+ * so a missing value contributes nothing to that column's term in the
+ * distance, which hclust needs since it rejects non-finite input. This is the
+ * standard treatment of a no-call in genotype PCA / GRM work, and a score
+ * column no feature covered gets the same. A column with no values at all
+ * imputes to 0, i.e. drops out entirely.
+ */
+export function imputeMissingToSiteMean(rows: Map<string, Float32Array>) {
+  const arrays = [...rows.values()]
+  const numRows = arrays.length
+  const numSites = arrays[0]?.length ?? 0
+  if (numRows === 0 || numSites === 0) {
+    return rows
+  }
+  const sums = new Float64Array(numSites)
+  const counts = new Uint32Array(numSites)
+  for (let r = 0; r < numRows; r++) {
+    const row = arrays[r]!
+    for (let s = 0; s < numSites; s++) {
+      const v = row[s]!
+      if (!Number.isNaN(v)) {
+        sums[s] = sums[s]! + v
+        counts[s] = counts[s]! + 1
+      }
+    }
+  }
+  const means = new Float32Array(numSites)
+  for (let s = 0; s < numSites; s++) {
+    const count = counts[s]!
+    means[s] = count === 0 ? 0 : sums[s]! / count
+  }
+  for (let r = 0; r < numRows; r++) {
+    const row = arrays[r]!
+    for (let s = 0; s < numSites; s++) {
+      if (Number.isNaN(row[s]!)) {
+        row[s] = means[s]!
+      }
+    }
+  }
+  return rows
+}

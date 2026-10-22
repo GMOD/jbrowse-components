@@ -1,4 +1,7 @@
-import { clusterMatrix } from '@jbrowse/tree-sidebar/clusterMatrix'
+import {
+  clusterMatrix,
+  imputeMissingToSiteMean,
+} from '@jbrowse/tree-sidebar/clusterMatrix'
 
 import { getScoreMatrix } from './getScoreMatrix.ts'
 
@@ -14,7 +17,7 @@ export async function executeClusterScoreMatrix({
 }) {
   const matrix = await getScoreMatrix({ pluginManager, args })
   return clusterMatrix({
-    data: matrix,
+    data: imputeMissingToSiteMean(matrix),
     statusCallback: args.statusCallback,
     signal: args.signal,
   })

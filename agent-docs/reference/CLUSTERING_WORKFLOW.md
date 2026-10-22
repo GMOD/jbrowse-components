@@ -22,6 +22,15 @@ the display's `rows` config object (ADR-157) and derives `clusterableSources`.
 **Wiggle** (`getScoreMatrix.ts`): each column is the MEAN of every feature
 covering it, because several features routinely land in one.
 
+- **A column no feature covers is NaN**, imputed to the column's mean before
+  hclust and written `NA` to the R script and TSV, as a no-call is. Reading it
+  as 0 put a bedMethyl sample missing coverage beside the unmethylated ones. A
+  bedGraph that omits its zero runs loses those zeros to the mean, the cost of
+  one rule for every file.
+- **On a log or symlog axis the scores are placed through the display's scale**
+  (`MatrixScale`), so rows cluster on the heights drawn and the caption names
+  the scale. Linear sends none: an affine map moves no average-linkage merge.
+
 **The accumulator is `Float64Array` and the row is `Float32Array`, deliberately.**
 Summing many f32s into an f32 is uncompensated; the row stays f32 because it is
 a `postMessage` transferable and BigWig scores are f32. `getScoreMatrix.test.ts`

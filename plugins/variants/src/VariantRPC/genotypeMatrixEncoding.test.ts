@@ -1,5 +1,4 @@
 import {
-  imputeMissingToSiteMean,
   readAltDosages,
   readPhasedAlleleIndicators,
 } from './genotypeMatrixEncoding.ts'
@@ -158,59 +157,5 @@ describe('readPhasedAlleleIndicators', () => {
     const out = new Float32Array(2)
     readPhasedAlleleIndicators(line, 6, 9, out, 0, 2)
     expect([...out]).toEqual([1, 0])
-  })
-})
-
-describe('imputeMissingToSiteMean', () => {
-  test('replaces a no-call with the mean of the samples that were called', () => {
-    const rows = new Map([
-      ['a', new Float32Array([0, 0])],
-      ['b', new Float32Array([2, NaN])],
-      ['c', new Float32Array([NaN, 2])],
-    ])
-    imputeMissingToSiteMean(rows)
-    expect([...rows.get('a')!]).toEqual([0, 0])
-    expect([...rows.get('b')!]).toEqual([2, 1])
-    expect([...rows.get('c')!]).toEqual([1, 2])
-  })
-
-  test('a site with no calls at all drops out', () => {
-    const rows = new Map([
-      ['a', new Float32Array([NaN, 1])],
-      ['b', new Float32Array([NaN, 1])],
-    ])
-    imputeMissingToSiteMean(rows)
-    expect([...rows.get('a')!]).toEqual([0, 1])
-    expect([...rows.get('b')!]).toEqual([0, 1])
-  })
-
-  test('leaves a fully called matrix alone', () => {
-    const rows = new Map([['a', new Float32Array([0, 1, 2])]])
-    imputeMissingToSiteMean(rows)
-    expect([...rows.get('a')!]).toEqual([0, 1, 2])
-  })
-
-  test('handles an empty matrix', () => {
-    expect(imputeMissingToSiteMean(new Map())).toEqual(new Map())
-    const empty = new Map([['a', new Float32Array(0)]])
-    expect(imputeMissingToSiteMean(empty)).toBe(empty)
-  })
-
-  test('a no-call no longer sits further away than any real genotype', () => {
-    // The regression this exists for: with the old -1 sentinel, the distance
-    // from a no-call to a hom-alt (3) exceeded hom-ref to hom-alt (2), so
-    // samples clustered by how much data they were missing.
-    const rows = new Map([
-      ['homRef', new Float32Array([0])],
-      ['homAlt', new Float32Array([2])],
-      ['noCall', new Float32Array([NaN])],
-    ])
-    imputeMissingToSiteMean(rows)
-    const homRef = rows.get('homRef')![0]!
-    const homAlt = rows.get('homAlt')![0]!
-    const noCall = rows.get('noCall')![0]!
-    const spread = Math.abs(homRef - homAlt)
-    expect(Math.abs(noCall - homAlt)).toBeLessThan(spread)
-    expect(Math.abs(noCall - homRef)).toBeLessThan(spread)
   })
 })

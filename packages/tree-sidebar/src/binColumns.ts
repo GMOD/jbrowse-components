@@ -71,20 +71,20 @@ export function binSpan(
 }
 
 /**
- * Each column's mean of what `binSpan` added into `row`, 0 where nothing did.
- * A mean rather than the last value: at 10 kb/px a column holds hundreds of a
- * bedMethyl's CpGs, and a BigWig zoom bin is already a mean.
+ * Each column's mean of what `binSpan` added into `row`, `empty` where nothing
+ * did. A mean rather than the last value: at 10 kb/px a column holds hundreds
+ * of a bedMethyl's CpGs, and a BigWig zoom bin is already a mean.
  */
 export function columnMeans<R extends Float32Array>(
   sums: Float64Array,
   counts: Int32Array,
   rowOffset: number,
   row: R,
+  empty = 0,
 ) {
   for (let x = 0; x < row.length; x++) {
     const n = counts[rowOffset + x]!
-    const sum = sums[rowOffset + x]!
-    row[x] = n > 1 ? sum / n : sum
+    row[x] = n === 0 ? empty : sums[rowOffset + x]! / n
   }
   return row
 }

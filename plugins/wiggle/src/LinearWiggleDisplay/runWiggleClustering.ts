@@ -48,6 +48,7 @@ export async function runWiggleClustering({
         name: 'samples/px',
         value: String(parseSamplesPerPixel(samplesPerPixel)),
       },
+      ...(args.scale ? [{ name: 'scale', value: model.scaleType }] : []),
     ]),
     matrix: () =>
       rpcManager.call(sessionId, 'MultiWiggleClusterScoreMatrix', {
