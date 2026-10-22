@@ -309,6 +309,24 @@ test('flatten fans out a record keyed by name, and key names each entry', () => 
   ).toEqual([])
 })
 
+test('cells answers an insertion after the block’s last reference base', () => {
+  const block = feature(100, 103, {
+    seq: 'ACG--',
+    alignments: { x: { seq: 'ACGTT' } },
+  })
+  const out = runTransforms(
+    [block],
+    [
+      { type: 'flatten', field: 'alignments', key: 'species' },
+      { type: 'cells' },
+    ],
+  )
+  expect(rows(out, 'start', 'end', 'state', 'base', 'length')).toEqual([
+    [103, 103, 'insertion', 'TT', 2],
+    [100, 103, 'match', undefined, undefined],
+  ])
+})
+
 test('cells answers each row’s runs against the block it was fanned out of', () => {
   const block = feature(100, 108, {
     seq: 'ACG-TACGT',

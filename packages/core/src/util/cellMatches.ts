@@ -227,6 +227,10 @@ class SectionBins {
         edge += size
       }
     }
+    // as cellsStep does, an insertion after the block's last reference base
+    if (inserting) {
+      this.touch(bin, bin, r)
+    }
     if (runOpen) {
       this.touch(runBin, pos > edge - size ? bin : bin - 1, r)
     }

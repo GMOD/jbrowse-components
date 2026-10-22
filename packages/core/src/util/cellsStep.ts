@@ -469,6 +469,16 @@ class RunLanes {
       }
       pos++
     }
+    // an insertion is written when the next reference base arrives, so one
+    // after the block's last is written here, in the same order
+    if (insertAt >= 0) {
+      start[n] = pos
+      end[n] = pos
+      state[n] = INSERTION
+      textAt[n] = insertAt
+      parentRow[n] = r
+      n++
+    }
     if (runStart >= 0) {
       start[n] = runStart
       end[n] = pos
