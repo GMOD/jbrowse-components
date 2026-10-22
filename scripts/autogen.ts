@@ -149,6 +149,7 @@ const GENERATORS: Generator[] = [
     name: 'agent tutorial index',
     argv: web('gen-agent-tutorial-index.ts'),
     independent: true,
+    needs: ['live links'],
   },
   {
     // spec-recipe-unmapped.txt, and recipe-path-labels.ts when an exemption
@@ -307,6 +308,12 @@ const GENERATORS: Generator[] = [
     argv: api('generate.ts'),
     needs: ['config schema manifest', 'runtime re-exports'],
     wholeRepoProgram: true,
+  },
+  {
+    // website/scripts/figure-manifest.json, from every <Figure> in the docs
+    // the generators above have finished writing.
+    name: 'figure manifest',
+    argv: web('audit-figures.ts'),
   },
 ]
 
