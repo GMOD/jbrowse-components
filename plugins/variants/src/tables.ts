@@ -721,7 +721,7 @@ function rowColorsOf(
   const entries = attribute
     ? rowColorKeyEntries(
         dealRows,
-        { setting, pairs: pairedColorsOf(setting), dealt, resolved },
+        { setting, pairs: pairedColorsOf(setting.scale), dealt, resolved },
         name => name,
       )
     : []

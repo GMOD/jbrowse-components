@@ -507,8 +507,7 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
     const display = sortableDisplay()
     const [s0, s1, s2] = display.editableSources
     display.applyRowEdits([{ ...s0!, label: 'first' }, s1!, s2!], {
-      domain: ['S0'],
-      range: ['red'],
+      scale: { domain: ['S0'], range: ['red'] },
     })
 
     display.sortByGenotype('v1')

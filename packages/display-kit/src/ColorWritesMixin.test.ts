@@ -17,6 +17,8 @@ import {
   encodingOptions,
 } from './colorConfigSchema.ts'
 
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
 
@@ -47,7 +49,7 @@ const TestColor = ConfigurationSchema(
   colorChannelOptions('encoding.color'),
 )
 
-function displayOf(color: ReturnType<typeof ConfigurationSchema>) {
+function displayOf(color: AnyConfigurationSchemaType) {
   return types.compose(
     types.model({
       configuration: ConfigurationSchema('TestWritesDisplay', {

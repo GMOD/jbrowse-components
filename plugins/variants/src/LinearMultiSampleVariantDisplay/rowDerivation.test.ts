@@ -166,8 +166,7 @@ describe('allele count', () => {
     const display = loaded()
     const [s0, s1, s2, s3] = display.editableSources
     display.applyRowEdits([{ ...s2!, label: 'Two' }, s0!, s3!, s1!], {
-      domain: [s3!.name, s1!.name],
-      range: ['#123456', '#654321'],
+      scale: { domain: [s3!.name, s1!.name], range: ['#123456', '#654321'] },
     })
     expect(derived(display)).toMatchSnapshot()
     display.resetRowArrangement()
@@ -187,8 +186,7 @@ describe('allele count', () => {
 
     display.applyRowEdits(display.editableSources, {
       field: 'population',
-      domain: ['AFR'],
-      range: ['#123456'],
+      scale: { domain: ['AFR'], range: ['#123456'] },
     })
     const afr = display.sources.filter(s => s.population === 'AFR')
     expect(afr.length).toBeGreaterThan(1)
@@ -276,7 +274,7 @@ describe('phased', () => {
     const [h0, h1, h2, h3, h4, h5, h6] = display.editableSources
     display.applyRowEdits(
       [h6!, { ...h1!, label: 'Zero, second' }, h0!, h4!, h2!, h3!, h5!],
-      { domain: [h4!.name], range: ['#123456'] },
+      { scale: { domain: [h4!.name], range: ['#123456'] } },
     )
     expect(derived(display)).toMatchSnapshot()
     display.resetRowArrangement()

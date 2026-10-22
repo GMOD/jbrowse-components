@@ -125,8 +125,7 @@ describe('multi-sample variant colorBy', () => {
     expect(model.rowPaletteDeals).toBe(false)
     expect(model.rowColorChoice).toBe('')
     model.applyRowEdits(model.editableSources, {
-      domain: ['HG001'],
-      range: ['#123456'],
+      scale: { domain: ['HG001'], range: ['#123456'] },
     })
     expect(model.rowColorChoice).toBe('name')
     expect(model.sources[0]!.rowColor).toBe('#123456')
