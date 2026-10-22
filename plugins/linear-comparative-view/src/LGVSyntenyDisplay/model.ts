@@ -14,7 +14,6 @@ import {
   getFiltersMenuItems,
   getHitMenuItems,
   getSortMenuItem,
-  NO_HIDDEN_GROUPS,
 } from '@jbrowse/plugin-alignments'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
 // into the alignments display model would undo that display's lazy loading.
@@ -121,44 +120,34 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
     .views(self => ({
       /**
        * #getter
-       * Whether the view's own assembly lane is hidden — see the slot.
+       * The mate-assembly keys of the lane an all-vs-all track draws for the
+       * view's own assembly: the view's name, and every name the track
+       * declares for the same assembly, since the adapter keys a lane by the
+       * track's spelling.
        */
-      get hideSelfAlignments(): boolean {
-        return getConf(self, 'hideSelfAlignments')
-      },
-
-      /**
-       * #getter
-       * The lane an all-vs-all track draws for the view's own assembly: its
-       * mate-assembly group key is that assembly name. Hidden as a group key
-       * rather than filtered out of the fetch, so unchecking the option shows
-       * it again without a refetch.
-       *
-       * The display's own half of `hiddenGroupKeys`, which unions it with the
-       * lanes the user hid from a chip — overriding that would have dropped
-       * theirs.
-       *
-       * The key is the name the adapter resolved out of the track's
-       * `assemblyNames`, and the view may spell the same assembly another way,
-       * so every declared name that is this assembly goes in beside the
-       * view's own.
-       */
-      get displayHiddenGroupKeys(): ReadonlySet<string> {
+      get selfLaneKeys(): string[] {
         const assemblyName = self.view.assemblyNames[0]
-        if (
-          !this.hideSelfAlignments ||
-          self.facet?.field !== 'mateAssembly' ||
-          assemblyName === undefined
-        ) {
-          return NO_HIDDEN_GROUPS
+        if (assemblyName === undefined) {
+          return []
         }
         const { assemblyManager } = getSession(self)
-        return new Set([
-          assemblyName,
-          ...getConf(self.parentTrack, 'assemblyNames').filter(name =>
-            isSameAssemblyName(name, assemblyName, assemblyManager),
-          ),
-        ])
+        return [
+          ...new Set([
+            assemblyName,
+            ...getConf(self.parentTrack, 'assemblyNames').filter(name =>
+              isSameAssemblyName(name, assemblyName, assemblyManager),
+            ),
+          ]),
+        ]
+      },
+      /**
+       * #getter
+       * Whether `facet.hidden` holds the self lane, the "Hide self-alignment
+       * lane" box.
+       */
+      get selfLaneHidden(): boolean {
+        const keys = this.selfLaneKeys
+        return keys.length > 0 && keys.every(k => self.hiddenGroups.has(k))
       },
 
       /**
@@ -238,10 +227,12 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
     .actions(self => ({
       /**
        * #action
-       * Show/hide the view's own assembly lane of an all-vs-all track.
+       * Write the self lane into `facet.hidden`, or take it out.
        */
-      setHideSelfAlignments(flag: boolean) {
-        setConf(self, 'hideSelfAlignments', flag)
+      setSelfLaneHidden(flag: boolean) {
+        const keys = new Set(self.selfLaneKeys)
+        const rest = [...self.hiddenGroups].filter(k => !keys.has(k))
+        setConf(self, ['facet', 'hidden'], flag ? [...rest, ...keys] : rest)
         self.setScrollTop(0)
       },
       /**

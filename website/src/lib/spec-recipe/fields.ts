@@ -304,12 +304,17 @@ function alignmentsFacetStep(value: unknown): FieldStep | undefined {
   // matched by key rather than indexed, so no cast into ReadDimension is needed
   // to look one up by arbitrary JSON (same reason colorByStep scans by value)
   const label = Object.entries(FACET_LABELS).find(([k]) => k === field)?.[1]
+  const hidden = asList(asRecord(value)?.hidden) ?? []
   return label
     ? {
         path: `${TRACK_MENU} → Group by... → ${label}`,
         note:
           field === 'mateAssembly'
-            ? 'Synteny tracks only: one section per assembly on the other side of the alignment.'
+            ? `Synteny tracks only: one section per assembly on the other side of the alignment.${
+                hidden.length
+                  ? ` The figure hides the ${hidden.join(', ')} lane: "Hide self-alignment lane" below the radios for the view's own assembly, or Hide on a lane's chip.`
+                  : ''
+              }`
             : undefined,
       }
     : undefined
@@ -1654,13 +1659,6 @@ export const trackFields: Record<string, FieldRecipe> = {
     typeof value === 'boolean' && displayType === 'MultiWaySyntenyDisplay'
       ? {
           path: `${TRACK_MENU} → Show... → Gene labels (${value ? 'checked' : 'unchecked'})`,
-        }
-      : undefined,
-  hideSelfAlignments: (value, { displayType }) =>
-    typeof value === 'boolean' && displayType === 'LGVSyntenyDisplay'
-      ? {
-          path: `${TRACK_MENU} → Group by... → Hide self-alignment lane (${value ? 'checked' : 'unchecked'})`,
-          note: 'Below a divider at the foot of that submenu, and only meaningful on an all-vs-all track, which is what has a self lane.',
         }
       : undefined,
   scales: scalesStep,

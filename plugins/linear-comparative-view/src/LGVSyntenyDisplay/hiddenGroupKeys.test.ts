@@ -2,7 +2,7 @@ import { createDisplay } from './testEnv.ts'
 
 function hidden(display: ReturnType<typeof createDisplay>) {
   display.facetByField('mateAssembly')
-  display.setHideSelfAlignments(true)
+  display.setSelfLaneHidden(true)
   return [...display.hiddenGroupKeys].sort()
 }
 
@@ -22,30 +22,26 @@ test('hides the lane keyed on an alias the track declares', () => {
   expect(hidden(display)).toEqual(['volvox', 'volvox_alias'])
 })
 
-test('nothing is hidden under another grouping, or with the option off', () => {
-  const display = createDisplay()
-  display.setHideSelfAlignments(true)
-  display.facetByField('strand')
-  expect(display.hiddenGroupKeys.size).toBe(0)
-  display.facetByField('mateAssembly')
-  display.setHideSelfAlignments(false)
-  expect(display.hiddenGroupKeys.size).toBe(0)
-})
-
-// The two halves are unioned, not one over the other: overriding
-// `hiddenGroupKeys` outright would have dropped every lane the user hid from a
-// chip the moment the self-lane option was on.
-test('a lane hidden from a chip is hidden alongside the self lane', () => {
+// The self lane is a `facet.hidden` entry like a chip's, so it shares the
+// chips' fate: another grouping drops it, and Show all brings it back.
+test('the self lane is one more facet.hidden key', () => {
   const display = createDisplay()
   display.facetByField('mateAssembly')
-  display.setHideSelfAlignments(true)
+  display.setSelfLaneHidden(true)
+  expect(display.selfLaneHidden).toBe(true)
   display.hideGroup('volvox_random')
   expect([...display.hiddenGroupKeys].sort()).toEqual([
     'volvox',
     'volvox_random',
   ])
+  display.setSelfLaneHidden(false)
+  expect([...display.hiddenGroupKeys]).toEqual(['volvox_random'])
+  display.setSelfLaneHidden(true)
   display.showAllGroups()
-  expect([...display.hiddenGroupKeys]).toEqual(['volvox'])
+  expect(display.selfLaneHidden).toBe(false)
+  display.setSelfLaneHidden(true)
+  display.facetByField('strand')
+  expect(display.hiddenGroupKeys.size).toBe(0)
 })
 
 // A group key names a lane only within the grouping that issued it, so the

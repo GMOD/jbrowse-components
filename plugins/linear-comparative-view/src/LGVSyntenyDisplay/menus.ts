@@ -26,8 +26,8 @@ interface GroupByModel {
   // in. `groupByRadioMenuItem` needs it to drop the per-read dimensions the
   // worker would degrade to ungrouped.
   unit: AlignmentsUnit
-  hideSelfAlignments: boolean
-  setHideSelfAlignments: (flag: boolean) => void
+  selfLaneHidden: boolean
+  setSelfLaneHidden: (flag: boolean) => void
 }
 
 // Synteny grouping is a plain radio group, not the alignments Group-by dialog:
@@ -54,11 +54,8 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
   // checkbox doesn't read as one of them. Synteny-specific: only an all-vs-all
   // track has a self lane.
   //
-  // Offered only while mate-assembly grouping is on, which is the same condition
-  // `hiddenGroupKeys` reads: under any other dimension the self alignments are
-  // not a lane of their own, so the box hid nothing whichever way it was ticked.
-  // Absent rather than disabled, like `collapseSectionsItems` and the interbase
-  // toggle below.
+  // Offered only while mate-assembly grouping is on: the box writes the self
+  // lane's keys into `facet.hidden`, which hides a lane only under its field.
   return {
     ...item,
     subMenu: [
@@ -68,8 +65,8 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
             { type: 'divider' as const },
             toggleItem(
               'Hide self-alignment lane',
-              model.hideSelfAlignments,
-              model.setHideSelfAlignments,
+              model.selfLaneHidden,
+              model.setSelfLaneHidden,
               {
                 helpText:
                   "Drop the mate-assembly lane for the view's own assembly. " +

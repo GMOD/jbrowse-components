@@ -76,20 +76,6 @@ export default function configSchemaF() {
           'Draw each facet section as a single row rather than a stack',
       },
       /**
-       * #slot
-       * Hide the lane an all-vs-all track draws for the view's own assembly.
-       * That lane has no self-alignment line, because aligners skip each
-       * sequence's diagonal, so it shows only the assembly's internal paralogy,
-       * which readers consistently read as missing data. Only meaningful when
-       * grouping by mate assembly.
-       */
-      hideSelfAlignments: {
-        type: 'boolean',
-        defaultValue: false,
-        description:
-          "Hide the group matching the view's own assembly when grouping by mate assembly",
-      },
-      /**
        * #slot sort
        * The row order, with `length` the default so big syntenic blocks
        * cluster at the top; a string is the `field`.

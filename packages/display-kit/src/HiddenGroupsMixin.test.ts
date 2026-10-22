@@ -67,18 +67,6 @@ test('a config naming hidden sections opens with them hidden', () => {
   expect([...host.hiddenGroupKeys]).toEqual(['0'])
 })
 
-test('hiddenGroupKeys folds in what the display hides for itself', () => {
-  const Self = Host.views(() => ({
-    get displayHiddenGroupKeys(): ReadonlySet<string> {
-      return new Set(['self'])
-    },
-  }))
-  const host = Self.create({ configuration: { facet: 'strand' } })
-  expect([...host.hiddenGroupKeys]).toEqual(['self'])
-  host.hideGroup('-1')
-  expect([...host.hiddenGroupKeys].sort()).toEqual(['-1', 'self'])
-})
-
 // A chain grouping by nothing where the facet names a per-read field: the
 // hidden keys name that field's sections, and `''` would hide the whole
 // ungrouped stack.

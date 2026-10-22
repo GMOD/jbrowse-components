@@ -420,8 +420,7 @@ const ECOLI_ONE_VS_ALL_LANES = sessionSpec(
         tracks: [
           {
             trackId: 'ecoli_ava',
-            facet: 'mateAssembly',
-            hideSelfAlignments: true,
+            facet: { field: 'mateAssembly', hidden: ['K12'] },
             pileup: { readHeight: 14 },
             height: 135,
           },
@@ -445,8 +444,7 @@ const ECOLI_ROUND_TRIP_START = sessionSpec(
         tracks: [
           {
             trackId: 'ecoli_ava',
-            facet: 'mateAssembly',
-            hideSelfAlignments: true,
+            facet: { field: 'mateAssembly', hidden: ['K12'] },
             pileup: { readHeight: 14 },
             height: 135,
           },
@@ -683,9 +681,8 @@ export function ecoliOneVsAllUrl(levelHeight: number) {
             tracks: [
               {
                 trackId: 'ecoli_ava',
-                facet: 'mateAssembly',
                 // `minimap2 -X` built the PAF, so the K12 lane would be empty
-                hideSelfAlignments: true,
+                facet: { field: 'mateAssembly', hidden: ['K12'] },
                 pileup: {
                   // at 3.2kb/px the SNPs, each at a 1px floor, paint a solid wall
                   showMismatches: false,
@@ -2268,9 +2265,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'ecoli_ava',
-              facet: 'mateAssembly',
               // `minimap2 -X` built the PAF, so the K12 lane holds only paralogy
-              hideSelfAlignments: true,
+              facet: { field: 'mateAssembly', hidden: ['K12'] },
               pileup: {
                 readHeight: 14,
               },

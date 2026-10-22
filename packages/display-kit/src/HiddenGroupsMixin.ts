@@ -20,7 +20,7 @@ const keySpaceHost = (self: object) => self as GroupKeySpaceHost
 /**
  * #stateModel HiddenGroupsMixin
  * #category display
- * #crossCuttingMixin The sections a reader hid from an in-track grouping's chips: the `facet.hidden` keys while the stack groups by the facet's field, `hideGroup` and `showAllGroups` writing them, the `displayHiddenGroupKeys` hook a display uses to hide a lane, `hiddenGroupKeys` folding both, `groupStateKey` (with the `ownGroupState` hook) for a live figure to key on, and the `dropGroupState` reset that fires when the host's `groupKeySpace` moves
+ * #crossCuttingMixin The sections a reader hid from an in-track grouping's chips: the `facet.hidden` keys while the stack groups by the facet's field, `hideGroup` and `showAllGroups` writing them, `hiddenGroupKeys` reading them, `groupStateKey` (with the `ownGroupState` hook) for a live figure to key on, and the `dropGroupState` reset that fires when the host's `groupKeySpace` moves
  *
  * The hidden sections are config, `facet.hidden`, so they ride a session and
  * a share link, and a new `field` written whole starts with none. A key names
@@ -35,16 +35,6 @@ export default function HiddenGroupsMixin() {
   return types
     .model('HiddenGroupsMixin', {})
     .views(() => ({
-      /**
-       * #getter
-       * Overridable hook: lanes the display hides itself, apart from
-       * the ones the user hid from a chip. Empty by default;
-       * LGVSyntenyDisplay hides the self-alignment lane of an all-vs-all
-       * track through it.
-       */
-      get displayHiddenGroupKeys(): ReadonlySet<string> {
-        return NO_HIDDEN_GROUPS
-      },
       /**
        * #getter
        * Overridable hook: the per-group state a display keeps beyond the
@@ -78,15 +68,11 @@ export default function HiddenGroupsMixin() {
     .views(self => ({
       /**
        * #getter
-       * Every key the stack drops: what the user hid and what the display
-       * hides for itself. A fresh Set per change, so a layout memo comparing
-       * its inputs by identity sees a hide.
+       * Every key the stack drops. A fresh Set per change, so a layout memo
+       * comparing its inputs by identity sees a hide.
        */
       get hiddenGroupKeys(): ReadonlySet<string> {
-        const own = self.displayHiddenGroupKeys
-        return self.hiddenGroups.size === 0
-          ? own
-          : new Set([...own, ...self.hiddenGroups])
+        return self.hiddenGroups
       },
       /**
        * #getter

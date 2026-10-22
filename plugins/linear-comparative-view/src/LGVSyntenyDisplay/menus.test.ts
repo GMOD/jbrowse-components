@@ -7,15 +7,15 @@ import type { AlignmentsUnit, ReadDimension } from '@jbrowse/plugin-alignments'
 
 function makeModel(
   field?: ReadDimension,
-  hideSelfAlignments = false,
+  selfLaneHidden = false,
   unit: AlignmentsUnit = 'read',
 ) {
   return {
     facet: field ? { field } : undefined,
     facetByField: jest.fn(),
     unit,
-    hideSelfAlignments,
-    setHideSelfAlignments: jest.fn(),
+    selfLaneHidden,
+    setSelfLaneHidden: jest.fn(),
   }
 }
 
@@ -101,18 +101,18 @@ test('the self-lane toggle is offered only under mate-assembly grouping', () => 
   )
 })
 
-test('the self-lane toggle reflects and flips hideSelfAlignments', () => {
+test('the self-lane toggle reflects and flips selfLaneHidden', () => {
   const off = makeModel('mateAssembly')
   const item = items(off).find(i => i.label === 'Hide self-alignment lane')!
   expect(item.checked).toBe(false)
   item.onClick()
-  expect(off.setHideSelfAlignments).toHaveBeenCalledWith(true)
+  expect(off.setSelfLaneHidden).toHaveBeenCalledWith(true)
 
   const on = makeModel('mateAssembly', true)
   items(on)
     .find(i => i.label === 'Hide self-alignment lane')!
     .onClick()
-  expect(on.setHideSelfAlignments).toHaveBeenCalledWith(false)
+  expect(on.setSelfLaneHidden).toHaveBeenCalledWith(false)
 })
 
 // Every interbase mark is drawn in the coverage band, and this display defaults
