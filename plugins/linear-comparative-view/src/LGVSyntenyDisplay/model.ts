@@ -69,252 +69,248 @@ import type { LodMode } from '@jbrowse/synteny-core'
  */
 function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
   const baseModel = linearAlignmentsDisplayStateModelFactory(schema)
-  return (
-    types
-      .compose(
-        'LGVSyntenyDisplay',
-        baseModel,
-        LodTierInfoMixin(),
-        types.model({
-          /**
-           * #property
-           */
-          type: types.literal('LGVSyntenyDisplay'),
-          /**
-           * #property
-           */
-          configuration: ConfigurationReference(schema),
-        }),
-      )
-      // showCoverage defaults to false for synteny via the config-slot override
-      // in configSchemaF (the base alignments display defaults it to true).
-      .views(self => ({
+  return types
+    .compose(
+      'LGVSyntenyDisplay',
+      baseModel,
+      LodTierInfoMixin(),
+      types.model({
         /**
-         * #getter
-         * the level-of-detail tier the reader pinned, or 'auto' for the
-         * adapter's own bpPerPx threshold. `lodTier` is what resolves it
+         * #property
          */
-        get resolution(): LodMode {
-          return getConf(self, ['data', 'resolution'])
-        },
+        type: types.literal('LGVSyntenyDisplay'),
         /**
-         * #getter
-         * synteny features open the SyntenyFeatureWidget; the inherited
-         * `selectFeature` action reads this getter, so no override is needed.
+         * #property
          */
-        get featureWidgetType() {
-          return {
-            type: 'SyntenyFeatureWidget',
-            id: 'syntenyFeature',
-          }
-        },
-
-        /**
-         * #getter
-         * A row here is a PAF block, not a read — the group-label chips say
-         * "Show all features". The ONE place that word is chosen: the two menu
-         * builders below that take a `noun` read it from here rather than
-         * spelling it again, so the chips and the menus cannot end up naming the
-         * same row two different things.
-         */
-        get featureNoun() {
-          return 'feature'
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Whether the view's own assembly lane is hidden — see the slot.
-         */
-        get hideSelfAlignments(): boolean {
-          return getConf(self, 'hideSelfAlignments')
-        },
-
-        /**
-         * #getter
-         * The lane an all-vs-all track draws for the view's own assembly: its
-         * mate-assembly group key is that assembly name. Hidden as a group key
-         * rather than filtered out of the fetch, so unchecking the option shows
-         * it again without a refetch.
-         *
-         * The display's own half of `hiddenGroupKeys`, which unions it with the
-         * lanes the user hid from a chip — overriding that would have dropped
-         * theirs.
-         *
-         * The key is the name the adapter resolved out of the track's
-         * `assemblyNames`, and the view may spell the same assembly another way,
-         * so every declared name that is this assembly goes in beside the
-         * view's own.
-         */
-        get displayHiddenGroupKeys(): ReadonlySet<string> {
-          const assemblyName = self.view.assemblyNames[0]
-          if (
-            !this.hideSelfAlignments ||
-            self.facet?.field !== 'mateAssembly' ||
-            assemblyName === undefined
-          ) {
-            return NO_HIDDEN_GROUPS
-          }
-          const { assemblyManager } = getSession(self)
-          return new Set([
-            assemblyName,
-            ...getConf(self.parentTrack, 'assemblyNames').filter(name =>
-              isSameAssemblyName(name, assemblyName, assemblyManager),
-            ),
-          ])
-        },
-
-        /**
-         * #method
-         * A mate-assembly chip reads the assembly's display name
-         */
-        groupChipLabel(label: string) {
-          return self.facet?.field === 'mateAssembly'
-            ? getSession(self).assemblyManager.getDisplayName(label)
-            : label
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Whether this track's adapter has tiered storage to switch between —
-         * gates the "Level of detail" menu.
-         */
-        get hasLodCapableAdapter() {
-          return trackHasLodTiers(self.parentTrack)
-        },
-        /**
-         * #getter
-         * The tier this display's fetch asks for: the alignments base's hook,
-         * resolved here on the main thread off the SETTLED zoom. It is the
-         * base's `zoomFetchArgs` term and rides the RPC at the call site, so a
-         * tier flip refetches the regions on screen while they keep drawing —
-         * and, being settled, a gesture travelling through the threshold does
-         * not hand `FetchVisibleRegions` a tier of a zoom it never stops at,
-         * on the pipeline whose extract is the expensive one. The tier the
-         * adapter will serve once `lodTierInfo` has landed: a file with no
-         * coarse tier is 'fine' at any zoom, and the threshold is clamped up
-         * to the file's `--coarse` bound.
-         */
-        get lodTier() {
-          return lodTierAt(self, self.host.coarseBpPerPx, self.resolution)
-        },
-        /**
-         * #getter
-         * The same tier off the live zoom, for the base's `dataSuperseded`.
-         */
-        get liveLodTier() {
-          return lodTierAt(self, self.host.bpPerPx, self.resolution)
-        },
-      }))
-      .actions(self => {
-        const { fetchNeeded } = self
+        configuration: ConfigurationReference(schema),
+      }),
+    )
+    .views(self => ({
+      /**
+       * #getter
+       * the level-of-detail tier the reader pinned, or 'auto' for the
+       * adapter's own bpPerPx threshold. `lodTier` is what resolves it
+       */
+      get resolution(): LodMode {
+        return getConf(self, ['data', 'resolution'])
+      },
+      /**
+       * #getter
+       * synteny features open the SyntenyFeatureWidget; the inherited
+       * `selectFeature` action reads this getter, so no override is needed.
+       */
+      get featureWidgetType() {
         return {
-          afterAttach() {
-            installLodTierInfoFetch(self)
-          },
-          /**
-           * #action
-           * The inherited fetch, with each region's assembly respelled the way
-           * the track declares it. The view names its assembly canonically and
-           * the adapter answers a region by comparing that text against its configured
-           * `assemblyNames` in a worker with no assembly manager, so a track
-           * declaring an alias would fetch nothing. The comparative views do the
-           * same through `renameRegionsForAdapter`.
-           */
-          fetchNeeded(needed: IndexedRegion[]) {
-            const { assemblyManager } = getSession(self)
-            const assemblyNames = getConf(self.parentTrack, 'assemblyNames')
-            fetchNeeded(
-              needed.map(({ region, displayedRegionIndex }) => ({
-                displayedRegionIndex,
-                region: regionsInAssemblyNamespace(
-                  [region],
-                  assemblyNames,
-                  assemblyManager,
-                )[0]!,
-              })),
-            )
-          },
+          type: 'SyntenyFeatureWidget',
+          id: 'syntenyFeature',
         }
-      })
-      .actions(self => ({
-        /**
-         * #action
-         * Show/hide the view's own assembly lane of an all-vs-all track.
-         */
-        setHideSelfAlignments(flag: boolean) {
-          setConf(self, 'hideSelfAlignments', flag)
-          self.setScrollTop(0)
+      },
+
+      /**
+       * #getter
+       * A row here is a PAF block, not a read — the group-label chips say
+       * "Show all features". The ONE place that word is chosen: the two menu
+       * builders below that take a `noun` read it from here rather than
+       * spelling it again, so the chips and the menus cannot end up naming the
+       * same row two different things.
+       */
+      get featureNoun() {
+        return 'feature'
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether the view's own assembly lane is hidden — see the slot.
+       */
+      get hideSelfAlignments(): boolean {
+        return getConf(self, 'hideSelfAlignments')
+      },
+
+      /**
+       * #getter
+       * The lane an all-vs-all track draws for the view's own assembly: its
+       * mate-assembly group key is that assembly name. Hidden as a group key
+       * rather than filtered out of the fetch, so unchecking the option shows
+       * it again without a refetch.
+       *
+       * The display's own half of `hiddenGroupKeys`, which unions it with the
+       * lanes the user hid from a chip — overriding that would have dropped
+       * theirs.
+       *
+       * The key is the name the adapter resolved out of the track's
+       * `assemblyNames`, and the view may spell the same assembly another way,
+       * so every declared name that is this assembly goes in beside the
+       * view's own.
+       */
+      get displayHiddenGroupKeys(): ReadonlySet<string> {
+        const assemblyName = self.view.assemblyNames[0]
+        if (
+          !this.hideSelfAlignments ||
+          self.facet?.field !== 'mateAssembly' ||
+          assemblyName === undefined
+        ) {
+          return NO_HIDDEN_GROUPS
+        }
+        const { assemblyManager } = getSession(self)
+        return new Set([
+          assemblyName,
+          ...getConf(self.parentTrack, 'assemblyNames').filter(name =>
+            isSameAssemblyName(name, assemblyName, assemblyManager),
+          ),
+        ])
+      },
+
+      /**
+       * #method
+       * A mate-assembly chip reads the assembly's display name
+       */
+      groupChipLabel(label: string) {
+        return self.facet?.field === 'mateAssembly'
+          ? getSession(self).assemblyManager.getDisplayName(label)
+          : label
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether this track's adapter has tiered storage to switch between —
+       * gates the "Level of detail" menu.
+       */
+      get hasLodCapableAdapter() {
+        return trackHasLodTiers(self.parentTrack)
+      },
+      /**
+       * #getter
+       * The tier this display's fetch asks for: the alignments base's hook,
+       * resolved here on the main thread off the SETTLED zoom. It is the
+       * base's `zoomFetchArgs` term and rides the RPC at the call site, so a
+       * tier flip refetches the regions on screen while they keep drawing —
+       * and, being settled, a gesture travelling through the threshold does
+       * not hand `FetchVisibleRegions` a tier of a zoom it never stops at,
+       * on the pipeline whose extract is the expensive one. The tier the
+       * adapter will serve once `lodTierInfo` has landed: a file with no
+       * coarse tier is 'fine' at any zoom, and the threshold is clamped up
+       * to the file's `--coarse` bound.
+       */
+      get lodTier() {
+        return lodTierAt(self, self.host.coarseBpPerPx, self.resolution)
+      },
+      /**
+       * #getter
+       * The same tier off the live zoom, for the base's `dataSuperseded`.
+       */
+      get liveLodTier() {
+        return lodTierAt(self, self.host.bpPerPx, self.resolution)
+      },
+    }))
+    .actions(self => {
+      const { fetchNeeded } = self
+      return {
+        afterAttach() {
+          installLodTierInfoFetch(self)
         },
         /**
          * #action
+         * The inherited fetch, with each region's assembly respelled the way
+         * the track declares it. The view names its assembly canonically and
+         * the adapter answers a region by comparing that text against its configured
+         * `assemblyNames` in a worker with no assembly manager, so a track
+         * declaring an alias would fetch nothing. The comparative views do the
+         * same through `renameRegionsForAdapter`.
          */
-        setResolution(arg: LodMode) {
-          setConf(self, ['data', 'resolution'], arg)
+        fetchNeeded(needed: IndexedRegion[]) {
+          const { assemblyManager } = getSession(self)
+          const assemblyNames = getConf(self.parentTrack, 'assemblyNames')
+          fetchNeeded(
+            needed.map(({ region, displayedRegionIndex }) => ({
+              displayedRegionIndex,
+              region: regionsInAssemblyNamespace(
+                [region],
+                assemblyNames,
+                assemblyManager,
+              )[0]!,
+            })),
+          )
         },
-      }))
-      .views(self => ({
-        /**
-         * #method
-         */
-        contextMenuItems(): MenuItem[] {
-          // The mismatch / interbase-indicator details come from the base
-          // alignments display: this display renders those same layers off the
-          // PAF cs/CIGAR (see its "Show..." menu), so a right-click on one has
-          // to reach its details — before this, a right-click on an interbase
-          // indicator (which carries no feature) produced no menu at all. The
-          // read-specific half of the base menu (mate, read/HP/RG filters, read
-          // name + sequence copies) is what a PAF block has no answer for, and
-          // is replaced by the feature items. `sort: false` because the curated
-          // "Sort by..." menu offers no position-anchored mode.
-          return [
-            ...getHitMenuItems(self, { sort: false }),
-            ...featureMenuItems(self),
-          ]
-        },
-        /**
-         * #method
-         */
-        // Every entry is a submenu, in the same order as the alignments display's
-        // track menu (color, sort, filter, group, show, height) — the two share a
-        // state model and a component, so the menus should read the same way. The
-        // per-setting curation (which color schemes, which sort modes, which
-        // layers) is what makes this synteny's menu rather than a copy.
-        trackMenuItems() {
-          return [
-            // Paired-end and modification/bisulfite coloring are deliberately
-            // not opted into: a PAF block has no mate pair and no basecaller
-            // tags. 'mateRefName' is named for the mate a BAM read has, so it
-            // is relabelled here for the thing a PAF block aligns to —
-            // chromosome painting, matching the synteny view's Query mode.
-            getColorByMenuItem(self, {
-              colorOptions: colorFieldOptions('', 'strand', 'mapq', {
-                field: 'mateRefName',
-                label: 'Query',
-              }),
+      }
+    })
+    .actions(self => ({
+      /**
+       * #action
+       * Show/hide the view's own assembly lane of an all-vs-all track.
+       */
+      setHideSelfAlignments(flag: boolean) {
+        setConf(self, 'hideSelfAlignments', flag)
+        self.setScrollTop(0)
+      },
+      /**
+       * #action
+       */
+      setResolution(arg: LodMode) {
+        setConf(self, ['data', 'resolution'], arg)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       */
+      contextMenuItems(): MenuItem[] {
+        // The mismatch / interbase-indicator details come from the base
+        // alignments display: this display renders those same layers off the
+        // PAF cs/CIGAR (see its "Show..." menu), so a right-click on one has
+        // to reach its details — before this, a right-click on an interbase
+        // indicator (which carries no feature) produced no menu at all. The
+        // read-specific half of the base menu (mate, read/HP/RG filters, read
+        // name + sequence copies) is what a PAF block has no answer for, and
+        // is replaced by the feature items. `sort: false` because the curated
+        // "Sort by..." menu offers no position-anchored mode.
+        return [
+          ...getHitMenuItems(self, { sort: false }),
+          ...featureMenuItems(self),
+        ]
+      },
+      /**
+       * #method
+       */
+      // Every entry is a submenu, in the same order as the alignments display's
+      // track menu (color, sort, filter, group, show, height) — the two share a
+      // state model and a component, so the menus should read the same way. The
+      // per-setting curation (which color schemes, which sort modes, which
+      // layers) is what makes this synteny's menu rather than a copy.
+      trackMenuItems() {
+        return [
+          // Paired-end and modification/bisulfite coloring are deliberately
+          // not opted into: a PAF block has no mate pair and no basecaller
+          // tags. 'mateRefName' is named for the mate a BAM read has, so it
+          // is relabelled here for the thing a PAF block aligns to —
+          // chromosome painting, matching the synteny view's Query mode.
+          getColorByMenuItem(self, {
+            colorOptions: colorFieldOptions('', 'strand', 'mapq', {
+              field: 'mateRefName',
+              label: 'Query',
             }),
-            ...editPlotMenuItems(self),
-            // No base pair / tag: a PAF block has no per-base sequence to sort a
-            // column by, and no SAM tags.
-            getSortMenuItem(self, {
-              noun: self.featureNoun,
-              modes: ['position', 'length', 'strand', 'mapq'],
-            }),
-            ...getFiltersMenuItems(self),
-            getSyntenyGroupByMenuItem(self),
-            ...getSyntenyShowMenuItems(self),
-            // Same submenu the synteny view and dotplot show, from one source, so
-            // the three surfaces can't word the same setting differently
-            ...lodMenuItems(self),
-            getFeatureHeightMenuItem(self, self.featureNoun, {
-              disabled: !self.showPileup,
-              disabledHelpText: `Turn on "Show... → Alignments" to change ${self.featureNoun} height`,
-            }),
-          ] satisfies MenuItem[]
-        },
-      }))
-  )
+          }),
+          ...editPlotMenuItems(self),
+          // No base pair / tag: a PAF block has no per-base sequence to sort a
+          // column by, and no SAM tags.
+          getSortMenuItem(self, {
+            noun: self.featureNoun,
+            modes: ['position', 'length', 'strand', 'mapq'],
+          }),
+          ...getFiltersMenuItems(self),
+          getSyntenyGroupByMenuItem(self),
+          ...getSyntenyShowMenuItems(self),
+          // Same submenu the synteny view and dotplot show, from one source, so
+          // the three surfaces can't word the same setting differently
+          ...lodMenuItems(self),
+          getFeatureHeightMenuItem(self, self.featureNoun, {
+            disabled: !self.showPileup,
+            disabledHelpText: `Turn on "Show... → Alignments" to change ${self.featureNoun} height`,
+          }),
+        ] satisfies MenuItem[]
+      },
+    }))
 }
 
 export type LGVSyntenyDisplayStateModel = ReturnType<typeof stateModelFactory>

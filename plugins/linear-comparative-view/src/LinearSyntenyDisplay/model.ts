@@ -513,17 +513,8 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           this.fetchRegionsKey,
           this.bpPerPxBucketKey,
           this.regionSignature,
-          // The CIGAR options and nothing else about how a ribbon is DRAWN:
-          // these two gate the CIGAR parse, so they genuinely change what the
-          // fetch brings back. `drawLocationMarkers` was here too, and it was
-          // the odd one — markers need nothing from the adapter a plain fetch has
-          // not already got, so ticking a checkbox for a purely visual grid
-          // re-downloaded and re-parsed the whole track to arrive at the
-          // identical features. The worker emits the ticks unconditionally now
-          // and `computedColors` paints them transparent when the toggle is off,
-          // which makes the toggle a color-lane patch through
-          // `SYNTENY_INSTANCE_CACHE` — the same path a color change takes to avoid an
-          // RPC.
+          // The one drawing setting here: cigarMode gates the CIGAR parse.
+          // `axis.grid` stays out, since `computedColors` paints the ticks.
           view.cigarMode,
           view.offscreenDrawn,
           // the resolved tier, not view.resolution: in 'auto' the mode is constant
@@ -594,10 +585,8 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * the gpuProps half of the rpcProps/gpuProps split. Color changes
        * flow through here without touching the RPC.
        *
-       * `drawLocationMarkers` goes through the same color lane, so it stays out
-       * of `currentFetchKey`. The worker always emits the ticks, and a zero
-       * alpha here turns them off, so the toggle costs one color-lane patch
-       * (`SYNTENY_INSTANCE_CACHE`) and no refetch of the track.
+       * `axis.grid` goes through the same color lane: the worker always emits
+       * the ticks, and a zero alpha here turns them off without a refetch.
        */
       get computedColors() {
         const { instanceData, featureData } = self
@@ -611,7 +600,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           trackColor: this.trackColor,
           valueColor: this.view.colorValue,
           opacity: this.view.opacityFade,
-          drawLocationMarkers: this.view.axisGrid,
+          axisGrid: this.view.axisGrid,
           groundColor: this.groundColor,
           namePosition: this.paintedRefNamePosition,
           attributeRanges: this.view.attributeRanges,

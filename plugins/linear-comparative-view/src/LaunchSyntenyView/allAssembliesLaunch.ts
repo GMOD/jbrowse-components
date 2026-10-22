@@ -9,7 +9,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export const ALL_ASSEMBLIES_LABEL = 'Linear synteny view, all assemblies here'
+const ALL_ASSEMBLIES_LABEL = 'Linear synteny view, all assemblies here'
 
 /**
  * The multi-panel launch from one synteny track: a row for every assembly

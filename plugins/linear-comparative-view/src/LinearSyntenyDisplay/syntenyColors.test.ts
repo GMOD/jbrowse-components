@@ -193,14 +193,14 @@ describe('the location-marker toggle', () => {
     instanceFeatureIdx: new Uint32Array([0, 0]),
     instanceCount: 2,
   }
-  const paint = (drawLocationMarkers?: boolean) =>
+  const paint = (axisGrid?: boolean) =>
     computeSyntenyColors({
       groundColor: '#fff',
       instanceData: markerData,
       featureData,
       field: 'track',
       trackColor: TRACK_COLOR,
-      drawLocationMarkers,
+      axisGrid,
       attributeRanges: {},
     })
 
@@ -214,7 +214,7 @@ describe('the location-marker toggle', () => {
         featureData,
         field: 'strand',
         trackColor: TRACK_COLOR,
-        drawLocationMarkers: true,
+        axisGrid: true,
         attributeRanges: {},
       })[1],
     ).toBe(on[1])
@@ -232,7 +232,7 @@ describe('the location-marker toggle', () => {
       featureData,
       field: 'track',
       trackColor: TRACK_COLOR,
-      drawLocationMarkers: true,
+      axisGrid: true,
       attributeRanges: {},
     })
     expect(abgrRed(dark[1]!)).toBe(255)
@@ -258,7 +258,7 @@ describe('the location-marker toggle', () => {
       ),
       field: 'track',
       trackColor: TRACK_COLOR,
-      drawLocationMarkers: true,
+      axisGrid: true,
       attributeRanges: {},
       filter: [{ field: 'identity', gte: 0.9 }],
       hiddenFeatures: new Set([2]),

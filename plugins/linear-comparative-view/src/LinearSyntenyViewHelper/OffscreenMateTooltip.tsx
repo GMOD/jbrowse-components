@@ -20,7 +20,7 @@ export interface OffscreenMateHover extends OffscreenMateHit {
 
 // What the click will do, read off the destination the click itself resolves,
 // so the promise names the locus the snackbar will
-export function offscreenMateClickHint(
+function offscreenMateClickHint(
   side: OffscreenMateSide,
   dest: MateNavDestination,
 ) {

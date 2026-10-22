@@ -400,7 +400,7 @@ export async function syntenyTables(
     featureData,
     ...colorArgs,
     valueColor: settings.valueColor,
-    drawLocationMarkers: config.axis.grid,
+    axisGrid: config.axis.grid,
     groundColor: bandGroundColor(),
   })
   const featureColor = createComparativeColorFunction({

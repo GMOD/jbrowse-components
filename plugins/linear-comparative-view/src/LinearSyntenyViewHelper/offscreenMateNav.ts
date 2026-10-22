@@ -9,7 +9,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // padding around the mate locus, per side, as a fraction of its width
-export const OFFSCREEN_MATE_NAV_GROW = 0.2
+const OFFSCREEN_MATE_NAV_GROW = 0.2
 
 // the narrowest window a mark navigates to, so a small anchor framed exactly
 // does not land the row at sequence zoom with nothing around it

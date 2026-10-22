@@ -17,8 +17,6 @@ export type SyntenyTrackInit =
   | string
   | ({ trackId: string } & Record<string, unknown>)
 
-// Sub-pixel width fade: 'auto' turns on once the view is dense enough to tangle.
-
 /**
  * The launch keys `LinearSyntenyView` writes code for — things to DO rather
  * than state to hold, plus the names that mean something here other than what

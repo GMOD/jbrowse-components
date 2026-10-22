@@ -53,7 +53,7 @@ const MARKER_COLOR_HIDDEN = packAbgr(0, 0, 0, 0)
 
 // I/D/N indel colors for the active scheme (strand recolors N/D purple). Both
 // schemes always define I/D/N, so these are unconditional.
-export function buildIndelColors(field: string) {
+function buildIndelColors(field: string) {
   const { cigarColors } =
     field === 'strand' ? colorSchemes.strand : colorSchemes.default
   return {
@@ -80,7 +80,7 @@ export function computeSyntenyColors({
   trackColor,
   valueColor,
   opacity,
-  drawLocationMarkers,
+  axisGrid,
   groundColor,
   namePosition,
   attributeRanges,
@@ -102,7 +102,7 @@ export function computeSyntenyColors({
   // `axis.grid`, a color decision since the geometry always carries the ticks.
   // A tick is the ruler continued through its ribbon, so no scheme paints it,
   // but it goes where its ribbon is filtered out or hidden.
-  drawLocationMarkers?: boolean
+  axisGrid?: boolean
   // The band the ticks are drawn onto, which is what they have to contrast
   // against — see `bandGroundColor`.
   groundColor: string
@@ -135,10 +135,8 @@ export function computeSyntenyColors({
         : cssColorToABGR(valueColor),
   })
   const { I: colorI, D: colorD, N: colorN } = buildIndelColors(field)
-  const marker = drawLocationMarkers
-    ? markerColor(groundColor)
-    : MARKER_COLOR_HIDDEN
-  const passes = drawLocationMarkers
+  const marker = axisGrid ? markerColor(groundColor) : MARKER_COLOR_HIDDEN
+  const passes = axisGrid
     ? comparativeFilter(filter, featureData, filterExtras)
     : undefined
   const out = new Uint32Array(instanceCount)

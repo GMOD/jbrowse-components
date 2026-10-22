@@ -91,7 +91,8 @@ export default function configSchemaF() {
       },
       /**
        * #slot sort
-       * The row order, with `length` the default so big syntenic blocks cluster at the top; a string is the `type`.
+       * The row order, with `length` the default so big syntenic blocks
+       * cluster at the top; a string is the `field`.
        */
       sort: lgvSyntenySortConfigSchema,
     },
