@@ -18,6 +18,10 @@
     "apt": "gffread",
     "conda": "gffread"
   },
+  "hmmer": {
+    "apt": "hmmer",
+    "conda": "hmmer"
+  },
   "htslib": {
     "apt": "tabix",
     "conda": "htslib"

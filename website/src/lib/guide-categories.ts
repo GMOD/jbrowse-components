@@ -166,6 +166,7 @@ export const TUTORIAL_ORDER = [
   'protein_variants_tp53',
   'protein_variants_braf',
   'gene_prediction_review',
+  'protein_domains',
   'gene_density',
   'organelle_map',
   'alu_age',

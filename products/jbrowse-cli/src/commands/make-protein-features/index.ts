@@ -122,10 +122,11 @@ export async function run(args?: string[]) {
   }
   if (rows.length === 0) {
     throw new Error(
-      `No protein features in ${calls} matched a transcript in ${annotation}` +
-        (unmatched.size > 0
+      `No protein features in ${calls} matched a transcript in ${annotation}${
+        unmatched.size > 0
           ? `; protein names such as ${[...unmatched].slice(0, 3).join(', ')} match no transcript ID, protein_id or CDS ID`
-          : ''),
+          : ''
+      }`,
     )
   }
   rows.sort((a, b) =>
