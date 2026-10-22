@@ -293,6 +293,7 @@ describe('getConf slot-value type narrowing', () => {
       {
         facet: facetSchema,
         blob: { type: 'frozen', defaultValue: { present: 1 } },
+        rules: types.array(facetSchema),
       },
       { baseConfiguration: pathBase },
     )
@@ -329,6 +330,8 @@ describe('getConf slot-value type narrowing', () => {
         readConfObject(model.configuration, ['facets', 'field'])
         // @ts-expect-error -- 'sizes' is not a slot on the inner sub-schema
         getConf(model, ['facet', 'inner', 'sizes'])
+        // @ts-expect-error -- a list of sub-schemas has no members to name
+        setConf(model, ['rules', 'field'], 'x')
         // a frozen slot's JSON is not the schema's to check
         getConf(model, ['blob', 'present'])
       }

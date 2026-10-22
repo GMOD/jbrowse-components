@@ -248,16 +248,21 @@ type SubSchemaSlotPath<SCHEMA> =
             ?
                 | readonly [K, ConfigurationSlotName<D[K]>]
                 | readonly [K, ...SubSchemaSlotPath<D[K]>]
-            : D[K] extends IAnyType | { type: 'frozen' | 'maybeFrozen' }
-              ? readonly [K, ...string[]]
-              : never
+            : D[K] extends
+                  | IArrayType<any>
+                  | IOptionalIType<IArrayType<any>, any>
+              ? never
+              : D[K] extends IAnyType | { type: 'frozen' | 'maybeFrozen' }
+                ? readonly [K, ...string[]]
+                : never
         }[keyof D & string]
     : readonly string[]
 
 /**
  * The array paths a read may take into `SCHEMA`, checked segment by segment
- * through sub-schemas. A pluggable union, a collection or a `frozen` slot keeps
- * an unchecked tail. A one-segment path stays unchecked, since a generic class
+ * through sub-schemas. A pluggable union, a map or a `frozen` slot keeps an
+ * unchecked tail; a list of sub-schemas has none, since `setConf` walks only
+ * sub-schemas and a list is written whole. A one-segment path stays unchecked, since a generic class
  * body with `SCHEMA` unresolved reads a slot that way (`FastaAdapterBase`).
  */
 export type ConfigurationSlotPath<SCHEMA> =
