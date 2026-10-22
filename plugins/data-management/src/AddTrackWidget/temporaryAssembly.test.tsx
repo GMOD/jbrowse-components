@@ -1,5 +1,11 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
 
+import { summarizeBulkInput } from '../BulkAddTracksWorkflow/preview.ts'
+import {
+  resolveTrackNames,
+  submitBulkTracks,
+} from '../BulkAddTracksWorkflow/util.ts'
+import { doPasteConfigSubmit } from './components/doPasteConfigSubmit.ts'
 import { doSubmit } from './components/doSubmit.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
@@ -85,4 +91,41 @@ test('an ordinary assembly still goes to a session list', () => {
   doSubmit({ model: widget })
 
   expect(session.sessionTracks).toHaveLength(1)
+})
+
+test('a pasted config on a synthesized assembly leaves no session entry', async () => {
+  const { session, view, widget } = readVsRefPanel()
+
+  await doPasteConfigSubmit({
+    model: widget,
+    jsonText: JSON.stringify({
+      trackId: 'pasted',
+      name: 'pasted',
+      type: 'FeatureTrack',
+      assemblyNames: ['readvsref'],
+      adapter: { type: 'FromConfigAdapter', features: [] },
+    }),
+  })
+
+  expect(session.sessionTracks).toHaveLength(0)
+  expect(view.tracks.map(t => t.configuration.trackId)).toEqual(['pasted'])
+  expect(takeContractReports()).toEqual([])
+})
+
+test('a bulk add on a synthesized assembly leaves no session entry', async () => {
+  const { session, view, widget } = readVsRefPanel()
+  const { rows } = summarizeBulkInput({
+    locations: [{ uri: 'bar.bam', locationType: 'UriLocation' }],
+    model: widget,
+    assembly: 'readvsref',
+  })
+
+  await submitBulkTracks({
+    model: widget,
+    named: resolveTrackNames({ rows, customNames: {}, stripExtensions: false }),
+  })
+
+  expect(session.sessionTracks).toHaveLength(0)
+  expect(view.tracks).toHaveLength(1)
+  expect(takeContractReports()).toEqual([])
 })

@@ -272,10 +272,12 @@ export {
 export { addAndShowTrack } from './addAndShowTrack.ts'
 export {
   addTrackFromWidget,
+  addTracksFromWidget,
   containerDisplaysAssembly,
   finishAddTrack,
   type AddTrackWidgetSelf,
   type AddTrackWorkflowModel,
+  type WidgetTrackConf,
 } from './addTrackFromWidget.ts'
 export { namesTemporaryAssembly } from './temporaryAssembly.ts'
 export { makeTrackId } from './makeTrackId.ts'

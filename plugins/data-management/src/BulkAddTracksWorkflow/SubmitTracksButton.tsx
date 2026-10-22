@@ -34,7 +34,7 @@ const SubmitTracksButton = observer(function SubmitTracksButton({
       onClick={() => {
         void (async () => {
           try {
-            await submitBulkTracks({ model, named: okNamed, assembly })
+            await submitBulkTracks({ model, named: okNamed })
           } catch (e) {
             getNotificationSink(model).notifyError(`${e}`, e)
           }

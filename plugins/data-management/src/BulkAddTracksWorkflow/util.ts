@@ -1,14 +1,11 @@
 import {
-  containerDisplaysAssembly,
-  finishAddTrack,
+  addTracksFromWidget,
   getSession,
-  isSessionWithPublishTrackConf,
   isUriLocation,
   makeTrackId,
   pluralize,
 } from '@jbrowse/core/util'
 import { stripFileExtension } from '@jbrowse/core/util/tracks'
-import { transaction } from 'mobx'
 
 import {
   isBlockedHttpUrl,
@@ -157,76 +154,28 @@ export function locationWarnings(locations: FileLocation[]): string[] {
 }
 
 /**
- * Add each preview row as a session track under the name it resolved to, then
- * show the new tracks if the open view is on the chosen assembly and close the
- * widget.
+ * Add each preview row under the name it resolved to.
+ *
+ * Ids are minted here rather than with the preview rows: a timestamp held in
+ * component state is pinned for the life of the mounted widget, so a second
+ * submit (after one that failed partway, say) would re-mint the ids of the
+ * tracks already added and publishTrackConf would silently hand back those.
  */
 export async function submitBulkTracks({
   model,
   named,
-  assembly,
 }: {
   model: AddTrackModel
   named: NamedRow[]
-  assembly: string
 }) {
-  const session = getSession(model)
-  if (!isSessionWithPublishTrackConf(session)) {
-    // the other two submit paths (doSubmit, doPasteConfigSubmit) throw the same
-    // way; the button catches it and shows an error rather than no-oping
-    throw new Error("Can't add tracks to this session")
-  }
-  const { trackContainer } = model
-  const showInView = containerDisplaysAssembly(
-    trackContainer,
-    [assembly],
-    session.assemblyManager,
-  )
-  // Ids are minted here rather than with the preview rows: the preview is
-  // rebuilt on every keystroke, but a timestamp held in component state is
-  // pinned for the life of the mounted widget, so a second submit (after one
-  // that failed partway, say) would re-mint the ids of the tracks already
-  // added and publishTrackConf would silently hand back those instead.
   const timestamp = Date.now()
-  let added = 0
-  // the shows follow the transaction rather than sitting in it: each display's
-  // state model may still be a dynamic import away
-  const toShow: string[] = []
-  // adding a batch one track at a time otherwise re-renders the track
-  // selector once per file, which is the whole point of this workflow
-  transaction(() => {
-    for (const [index, { row, name }] of named.entries()) {
-      const conf = {
-        ...row.conf,
-        name,
-        trackId: makeTrackId({ name, timestamp, index }),
-      }
-      // publishTrackConf returns undefined for an invalid config, having already
-      // surfaced its own error; showing it would only add a second, vaguer
-      // "could not resolve identifier" snackbar on top (see
-      // doPasteConfigSubmit, which makes the same check)
-      if (session.publishTrackConf(conf)) {
-        added++
-        if (showInView) {
-          toShow.push(conf.trackId)
-        }
-      }
-    }
-    // Only on a batch that landed something. Finishing dismisses the widget and
-    // clears the form, so doing it when every config was rejected would throw
-    // away the list the user assembled — the expensive part of this workflow —
-    // behind the snackbars explaining why it failed, with nothing to retry from.
-    if (added > 0) {
-      finishAddTrack(model, session)
-    }
-  })
-  for (const trackId of toShow) {
-    await trackContainer?.launchTrack(trackId)
-  }
-  if (added > 0 && !showInView) {
-    session.notify(
-      `Added ${added} ${pluralize(added, 'track')} to the session that ${pluralize(added, 'was', 'were')} not displayed because assembly "${assembly}" is not open in this view`,
-      'warning',
-    )
-  }
+  await addTracksFromWidget({
+    model,
+    session: getSession(model),
+    confs: named.map(({ row, name }, index) => ({
+      ...row.conf,
+      name,
+      trackId: makeTrackId({ name, timestamp, index }),
+    })),
+  }).shown
 }

@@ -1,3 +1,5 @@
+import { transaction } from 'mobx'
+
 import { coarseStripHTML } from './coarseStripHTML.ts'
 import { namesTemporaryAssembly } from './temporaryAssembly.ts'
 import { isSameAssemblyName } from './tracks.ts'
@@ -75,35 +77,119 @@ export function finishAddTrack(
   }
 }
 
+export type WidgetTrackConf = Parameters<
+  SessionWithPublishTrackConf['publishTrackConf']
+>[0] & {
+  trackId: string
+  name?: string
+  assemblyNames?: (string | undefined)[]
+}
+
+function describeTracks(confs: WidgetTrackConf[]) {
+  const [first] = confs
+  return confs.length === 1 && first
+    ? `track "${coarseStripHTML(first.name ?? first.trackId)}"`
+    : `${confs.length} tracks`
+}
+
+function notDisplayedMessage(confs: WidgetTrackConf[]) {
+  const one = confs.length === 1
+  const assemblies = [
+    ...new Set(confs.flatMap(c => c.assemblyNames ?? []).filter(a => !!a)),
+  ]
+  const which = assemblies.length
+    ? `assembly "${assemblies.join('", "')}"`
+    : 'an assembly'
+  return `Added ${describeTracks(confs)} to the session, but ${one ? 'it was' : 'they were'} not displayed because ${one ? 'it uses' : 'they use'} ${which}, which is not open in this view. Open a view for that assembly and use its track selector to display ${one ? 'it' : 'them'}.`
+}
+
 /**
- * Add one track config from an add-track workflow, reveal it, and dismiss the
+ * Add track configs from an add-track workflow, reveal them, and dismiss the
  * widget — the tail every workflow shares, so all of them decide "show vs.
- * warn vs. dismiss" the same way.
+ * warn vs. dismiss" the same way:
  *
- * Three things a workflow doing this by hand has got wrong:
+ * - The target is `model.trackContainer`, not `model.view`, which is the wrong
+ *   list when the widget was opened from a synteny level's track selector.
+ * - A track whose assembly the container doesn't display is added and named in
+ *   a warning, rather than shown as nothing.
+ * - The widget is dismissed only when at least one config landed; one that
+ *   `publishTrackConf` rejected has already surfaced its own error.
+ * - **A track on an assembly the view synthesized takes neither session list.**
+ *   That assembly goes back when the view closes, so a list entry would outlive
+ *   it in every saved session (ADR-084). The config rides on the track as
+ *   `launchTrack`'s `inlineConf` instead.
  *
- * - It shows the track in `model.view`, which is the wrong list when the widget
- *   was opened from a synteny level's track selector. `trackContainer` is the
- *   target.
- * - It shows a track whose assembly the container doesn't display, which is
- *   silently nothing on screen. Say so instead.
- * - It dismisses the widget even when `publishTrackConf` rejected the config,
- *   wiping the form behind the error snackbar.
- *
- * **A track on an assembly the view synthesized takes neither destination.** The
- * widget reads its assembly off the containing view and offers no choice of one
- * outside it (`setAssembly` lists `session.assemblyNames`, which excludes the
- * temporary ones), so a user opening a file in a read-vs-ref panel arrives here
- * naming an assembly that goes back when that view closes — and a session list
- * would keep the config, once per file, in the snapshot they save and share.
- * That is ADR-084's leak reached through the widget rather than through a
- * launcher, so it takes ADR-084's answer: the config rides on the track as
- * `showTrack`'s `inlineConf`, works for the life of the view, and goes out with
- * it. The container is the one this assembly came from, so it displays it.
- *
- * Returns the added config, or undefined when `publishTrackConf` rejected it — it
- * has already surfaced its own error, and a second, vaguer snackbar on top of
- * that helps nobody.
+ * The publishes run in one transaction, so a batch re-renders the track
+ * selector once. The shows follow in order, each awaiting its display's state
+ * model; `shown` settles when the last one has opened.
+ */
+export function addTracksFromWidget({
+  model,
+  session,
+  confs,
+}: {
+  model: AddTrackWidgetSelf
+  session: AbstractSessionModel
+  confs: WidgetTrackConf[]
+}) {
+  if (!isSessionWithPublishTrackConf(session)) {
+    throw new Error("Can't add tracks to this session")
+  }
+  const { trackContainer } = model
+  const added: WidgetTrackConf[] = []
+  const toShow: { conf: WidgetTrackConf; inline: boolean }[] = []
+  const notDisplayed: WidgetTrackConf[] = []
+  const viewClosed: WidgetTrackConf[] = []
+  transaction(() => {
+    for (const conf of confs) {
+      if (namesTemporaryAssembly(session, conf)) {
+        if (trackContainer) {
+          added.push(conf)
+          toShow.push({ conf, inline: true })
+        } else {
+          viewClosed.push(conf)
+        }
+      } else if (session.publishTrackConf(conf)) {
+        added.push(conf)
+        if (
+          containerDisplaysAssembly(
+            trackContainer,
+            conf.assemblyNames,
+            session.assemblyManager,
+          )
+        ) {
+          toShow.push({ conf, inline: false })
+        } else {
+          notDisplayed.push(conf)
+        }
+      }
+    }
+  })
+  if (viewClosed.length) {
+    session.notify(
+      `Could not add ${describeTracks(viewClosed)}: the view ${viewClosed.length === 1 ? 'it was' : 'they were'} being added to has closed, and ${viewClosed.length === 1 ? 'it uses' : 'they use'} an assembly that only that view had.`,
+      'warning',
+    )
+  }
+  if (notDisplayed.length) {
+    session.notify(notDisplayedMessage(notDisplayed), 'warning')
+  }
+  if (added.length) {
+    finishAddTrack(model, session)
+  }
+  const shown = (async () => {
+    for (const { conf, inline } of toShow) {
+      await (inline
+        ? trackContainer?.launchTrack(conf.trackId, {}, {}, conf)
+        : trackContainer?.launchTrack(conf.trackId))
+    }
+  })()
+  return { added, shown }
+}
+
+/**
+ * `addTracksFromWidget` for one config. Returns the config, or undefined when
+ * it was not added.
  */
 export function addTrackFromWidget({
   model,
@@ -112,51 +198,7 @@ export function addTrackFromWidget({
 }: {
   model: AddTrackWidgetSelf
   session: AbstractSessionModel
-  conf: Parameters<SessionWithPublishTrackConf['publishTrackConf']>[0] & {
-    trackId: string
-    name?: string
-    assemblyNames?: (string | undefined)[]
-  }
+  conf: WidgetTrackConf
 }) {
-  if (!isSessionWithPublishTrackConf(session)) {
-    throw new Error("Can't add tracks to this session")
-  }
-  const { trackContainer } = model
-  if (namesTemporaryAssembly(session, conf)) {
-    if (!trackContainer) {
-      session.notify(
-        `Could not add "${coarseStripHTML(conf.name ?? conf.trackId)}": the view it was being added to has closed, and it uses an assembly that only that view had.`,
-        'warning',
-      )
-      return undefined
-    }
-    void trackContainer.launchTrack(conf.trackId, {}, {}, conf)
-    finishAddTrack(model, session)
-    return conf
-  }
-  const added = session.publishTrackConf(conf)
-  if (!added) {
-    return undefined
-  }
-  if (
-    containerDisplaysAssembly(
-      trackContainer,
-      conf.assemblyNames,
-      session.assemblyManager,
-    )
-  ) {
-    void trackContainer?.launchTrack(conf.trackId)
-  } else {
-    const assemblies = conf.assemblyNames?.filter(a => !!a) ?? []
-    session.notify(
-      `Added track "${coarseStripHTML(conf.name ?? conf.trackId)}" to the session, but it was not displayed because it uses ${
-        assemblies.length
-          ? `assembly "${assemblies.join('", "')}"`
-          : 'an assembly'
-      }, which is not open in this view. Open a view for that assembly and use its track selector to display it.`,
-      'warning',
-    )
-  }
-  finishAddTrack(model, session)
-  return added
+  return addTracksFromWidget({ model, session, confs: [conf] }).added[0]
 }
