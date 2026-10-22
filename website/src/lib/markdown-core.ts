@@ -18,6 +18,7 @@ import remarkAutolinkTypes from './remark-autolink-types.ts'
 import remarkCodeBase from './remark-code-base.ts'
 import remarkConfigCliTabs from './remark-config-cli-tabs.ts'
 import remarkCustomHeadingId from './remark-custom-heading-id.ts'
+import remarkDocCards from './remark-doc-cards.ts'
 import remarkDocList from './remark-doc-list.ts'
 import remarkFigure from './remark-figure.ts'
 import remarkRelatedGuides from './remark-related-guides.ts'
@@ -54,6 +55,7 @@ export function createRenderMarkdown({
     .use(remarkFigure, { base: baseUrl })
     .use(remarkVideo, { base: baseUrl })
     .use(remarkDocList)
+    .use(remarkDocCards)
     .use(remarkSpecExample)
     .use(remarkCodeBase)
     .use(remarkAutolinkTypes)

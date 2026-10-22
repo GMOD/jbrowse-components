@@ -5,6 +5,11 @@ import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 
 import { TUTORIAL_NO_THUMB } from '../src/lib/guide-categories.ts'
+import {
+  GUIDE_THUMB_OVERRIDES,
+  type ThumbSpec,
+  guideThumbSpec,
+} from '../src/lib/guide-thumbs.ts'
 
 // Regenerates the tutorial landing-page card thumbnails
 // (static/img/tutorial-thumbs/<key>.webp) from the same figure PNGs the
@@ -31,23 +36,6 @@ import { TUTORIAL_NO_THUMB } from '../src/lib/guide-categories.ts'
 // What this script still fails on is structural and cannot be recomputed: a
 // spec whose page was renamed, a tutorial with no card, a spec naming a source
 // figure that does not exist.
-
-interface ThumbSpec {
-  // Source figure under static/img (the PNG the tutorial embeds).
-  src: string
-  // Vertical slice of the source to frame, as [top, bottom] fractions of its
-  // height (full width kept). Omit to cover-crop the whole figure. Fractions,
-  // not pixels, so a re-rendered figure of the same layout stays framed.
-  band?: [number, number]
-  // Horizontal slice, as [left, right] fractions of width (full height kept).
-  // Use to frame a clean column of a wide figure, e.g. past a label gutter or a
-  // baked-in region marker. Composes with `band`.
-  xband?: [number, number]
-  // Cover-crop anchor when the framed region isn't already 5:3. 'top' keeps the
-  // header, 'left' keeps row labels. Default 'top'.
-  position?: 'top' | 'left' | 'center'
-  quality?: number
-}
 
 const THUMB_SPECS: Record<string, ThumbSpec> = {
   quickstart_web: {
@@ -716,26 +704,58 @@ if (uncarded.length > 0) {
   )
 }
 
+const guideSlugs = new Set(await mdSlugs(join(docsDir, 'user_guides')))
+const guideOrphans = Object.keys(GUIDE_THUMB_OVERRIDES).filter(
+  k => !guideSlugs.has(k),
+)
+if (guideOrphans.length > 0) {
+  problems.push(
+    `✗ no docs/user_guides page for GUIDE_THUMB_OVERRIDES: ${guideOrphans.join(', ')}`,
+  )
+}
+
 if (problems.length > 0) {
   console.error(problems.join('\n'))
   process.exit(1)
 }
 
-for (const [key, spec] of Object.entries(THUMB_SPECS)) {
-  managed.add(`${key}.webp`)
-  const out = join(thumbDir, `${key}.webp`)
-  const next = await render(spec)
-  const prev = await readFile(out).catch(() => undefined)
-  if (prev && prev.equals(next)) {
-    console.log(`≈ ${key} (unchanged)`)
-    continue
+async function writeThumbs(
+  dir: string,
+  specs: [string, ThumbSpec][],
+  managed: Set<string>,
+) {
+  for (const [key, spec] of specs) {
+    managed.add(`${key}.webp`)
+    const out = join(dir, `${key}.webp`)
+    const next = await render(spec)
+    const prev = await readFile(out).catch(() => undefined)
+    if (prev && prev.equals(next)) {
+      console.log(`≈ ${key} (unchanged)`)
+      continue
+    }
+    await writeFile(out, next)
+    console.log(`✓ ${key} (${prev ? 'updated' : 'created'})`)
   }
-  await writeFile(out, next)
-  console.log(`✓ ${key} (${prev ? 'updated' : 'created'})`)
+  for (const file of await readdir(dir)) {
+    if (file.endsWith('.webp') && !managed.has(file)) {
+      console.log(`· ${file} (unmanaged — hand-made, add a spec to manage it)`)
+    }
+  }
 }
 
-for (const file of await readdir(thumbDir)) {
-  if (file.endsWith('.webp') && !managed.has(file)) {
-    console.log(`· ${file} (unmanaged — hand-made, add a spec to manage it)`)
+await writeThumbs(thumbDir, Object.entries(THUMB_SPECS), managed)
+
+const guideDir = join(imgDir, 'guide-thumbs')
+await mkdir(guideDir, { recursive: true })
+const guideSpecs: [string, ThumbSpec][] = []
+for (const slug of guideSlugs) {
+  const body = await readFile(
+    join(docsDir, 'user_guides', `${slug}.md`),
+    'utf8',
+  )
+  const spec = guideThumbSpec(slug, body)
+  if (spec) {
+    guideSpecs.push([slug, spec])
   }
 }
+await writeThumbs(guideDir, guideSpecs, new Set())

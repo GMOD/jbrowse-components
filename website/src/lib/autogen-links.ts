@@ -110,6 +110,12 @@ export function ensureAutogenIndex(docs: AutogenDoc[]): void {
         normalizeDocUrl(docUrl(d.id)),
         label ? `${label}: ${d.data.title}` : d.data.title,
       )
+      cardByUrl.set(normalizeDocUrl(docUrl(d.id)), {
+        title: d.data.title,
+        description: d.data.description,
+        id: d.id,
+        body: d.body ?? '',
+      })
     }
     for (const d of docs) {
       const dir = topDir(d.id)
@@ -210,8 +216,22 @@ export function docsInCategory(dir: string, category: string): DocListEntry[] {
 
 export function backlinksFor(autogenId: string): GuideRef[] {
   return [...(backlinks.get(autogenId) ?? [])].sort(
-    (a, b) => kindRank(a.kind) - kindRank(b.kind) || a.title.localeCompare(b.title),
+    (a, b) =>
+      kindRank(a.kind) - kindRank(b.kind) || a.title.localeCompare(b.title),
   )
+}
+
+export interface DocCard {
+  title: string
+  description?: string
+  id: string
+  body: string
+}
+
+const cardByUrl = new Map<string, DocCard>()
+
+export function cardForUrl(url: string): DocCard | undefined {
+  return cardByUrl.get(normalizeDocUrl(url))
 }
 
 // Resolves a link href (as written in markdown source: a trailing slash and/or

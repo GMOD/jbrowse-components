@@ -63,6 +63,7 @@ const developerGuides = guide('developer_guides', DEVELOPER_CATEGORIES)
 function buildTocSection(
   { urlDir, categories, pages }: Guide,
   headingLevel = '##',
+  cards = false,
 ): string[] {
   const lines: string[] = []
   for (const cat of categories) {
@@ -88,6 +89,9 @@ function buildTocSection(
       continue
     }
     lines.push(`${headingLevel} ${cat}`, '')
+    if (cards) {
+      lines.push('<!-- doccards -->', '')
+    }
     for (const e of entries) {
       lines.push(`- [](/docs/${urlDir}/${e.slug})`)
     }
@@ -162,7 +166,7 @@ function buildUserGuide(): string {
     '',
     // tutorials/ is deliberately not part of this guide: its pages all share one
     // `guide_category` and get their own subgrouped section below.
-    ...buildTocSection(userGuides),
+    ...buildTocSection(userGuides, '##', true),
     ...buildTutorialSection(),
   ]
   return lines.join('\n')

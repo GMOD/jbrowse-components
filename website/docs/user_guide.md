@@ -15,6 +15,8 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ## General usage
 
+<!-- doccards -->
+
 - [](/docs/user_guides/basic_usage)
 - [](/docs/user_guides/connections)
 - [](/docs/user_guides/edit_plot)
@@ -24,6 +26,8 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/user_guides/hub_url)
 
 ## Track types
+
+<!-- doccards -->
 
 - [](/docs/user_guides/alignments_track)
 - [](/docs/user_guides/gc_content_track)
@@ -39,6 +43,8 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ## Views
 
+<!-- doccards -->
+
 - [](/docs/user_guides/circular_view)
 - [](/docs/user_guides/dotplot_view)
 - [](/docs/user_guides/graph_genome_view)
@@ -49,12 +55,16 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ## Sequence tools
 
+<!-- doccards -->
+
 - [](/docs/user_guides/blat)
 - [](/docs/user_guides/consensus_sequence)
 - [](/docs/user_guides/feature_sequence)
 - [](/docs/user_guides/sequence_search)
 
 ## Analysis
+
+<!-- doccards -->
 
 - [](/docs/user_guides/clustering)
 - [](/docs/user_guides/sv_visualization)
