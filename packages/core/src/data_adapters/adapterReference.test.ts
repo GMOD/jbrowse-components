@@ -1,12 +1,14 @@
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from '../configuration/configurationSchema.ts'
 import AdapterType from '../pluggableElementTypes/AdapterType.ts'
+import CoreGetInfo from '../rpc/methods/CoreGetInfo.ts'
 import CoreGetRefNames from '../rpc/methods/CoreGetRefNames.ts'
 import { ObservableCreate } from '../util/rxjs.ts'
 import SimpleFeature from '../util/simpleFeature.ts'
 import { BaseFeatureDataAdapter } from './BaseAdapter/index.ts'
 import {
   READS_REFERENCE,
+  cachedAdapterCount,
   clearAdapterCache,
   getAdapter,
 } from './dataAdapterCache.ts'
@@ -163,6 +165,17 @@ test('CoreGetRefNames on a cold cache resolves a scan adapter for its genome', a
       sequenceAdapter: sequenceA,
     }),
   ).resolves.toEqual(['ctgA'])
+})
+
+test("CoreGetInfo reads the header through the track's own instance", async () => {
+  await resolve(reading, sequenceA)
+  const before = cachedAdapterCount()
+  await new CoreGetInfo(pluginManager).invoke({
+    sessionId: 'test',
+    adapterConfig: reading,
+    sequenceAdapter: sequenceA,
+  })
+  expect(cachedAdapterCount()).toBe(before)
 })
 
 test('a type that does not read the reference stays one instance across genomes, as a synteny adapter needs', async () => {

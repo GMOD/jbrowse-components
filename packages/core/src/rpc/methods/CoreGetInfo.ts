@@ -8,9 +8,13 @@ export default class CoreGetInfo extends RpcMethodType<'CoreGetInfo'> {
   name = 'CoreGetInfo' as const
 
   async execute(args: RpcExecuteArgs<'CoreGetInfo'>) {
-    const pm = this.pluginManager
-    const { sessionId, adapterConfig } = args
-    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
+    const { sessionId, adapterConfig, sequenceAdapter } = args
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+      sequenceAdapter,
+    )
     return isFeatureAdapter(dataAdapter) ? dataAdapter.getHeader(args) : null
   }
 }
