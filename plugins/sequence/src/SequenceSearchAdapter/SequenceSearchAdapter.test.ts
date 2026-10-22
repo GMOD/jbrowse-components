@@ -135,10 +135,40 @@ test('empty search (the default) yields nothing', async () => {
   expect(await search('AAAGAATTCAAA')).toHaveLength(0)
 })
 
-test('matching is non-overlapping (plain global regex, unlike CRISPR/motif)', async () => {
-  // AA in AAAA matches at 0 and 2, not 0/1/2 — matchAll advances past each hit
-  const feats = await search('AAAA', { search: 'AA', searchReverse: false })
-  expect(feats.map(f => f.get('start'))).toEqual([0, 2])
+test('overlapping hits are all reported, as CRISPR and motif scans report them', async () => {
+  const feats = await search('CAGCAGCAGCAG', {
+    search: 'CAGCAG',
+    searchReverse: false,
+  })
+  expect(feats.map(f => f.get('start'))).toEqual([0, 3, 6])
+})
+
+test('overlapping hits on the minus strand are all reported', async () => {
+  // CTGCTG on the plus strand is CAGCAG read off the minus strand
+  const feats = await search('CTGCTGCTGCTG', {
+    search: 'CAGCAG',
+    searchForward: false,
+  })
+  expect(feats.map(f => f.get('start')).sort((a, b) => a - b)).toEqual([
+    0, 3, 6,
+  ])
+})
+
+test('a pattern matching no bases yields no zero-width features', async () => {
+  const feats = await search('ACGTAAC', { search: 'A*', searchReverse: false })
+  expect(feats.map(f => [f.get('start'), f.get('end')])).toEqual([
+    [0, 1],
+    [4, 6],
+    [5, 6],
+  ])
+})
+
+test('a user capture group keeps its number', async () => {
+  const feats = await search('AAGCGCAA', {
+    search: '(GC)\\1',
+    searchReverse: false,
+  })
+  expect(feats.map(f => f.get('start'))).toEqual([2])
 })
 
 test('hits outside the queried window are filtered out', async () => {
