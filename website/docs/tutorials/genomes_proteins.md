@@ -262,7 +262,7 @@ each protein view then lights the residue it codes for.
 
 <Figure src="/img/protein/tp53_scan_alphamissense.png" caption="TP53 at codon 248 with the Funk 2025 CRISPR scan and AlphaMissense, above the p53 dimer on DNA (3KMD) colored by the scan's mean per codon on the left and by AlphaMissense on the right." />
 
-<Figure src="/img/protein/tp53_y220c.png" caption="TP53 with every missense change of a CRISPR scan around codon 220, above the p53 surface at residue 220 in wild type (2XWR), Y220C (2J1X) and Y220C bound to rezatapopt (9S9O), all three from one camera." />
+<Figure src="/img/protein/tp53_y220c.png" caption="TP53 with every missense change of a CRISPR scan around codon 220, above the p53 surface at residue 220 in wild type (2XWR), Y220C (2J1X) and Y220C bound to rezatapopt (9S9O), all from one camera." />
 
 <Figure src="/img/protein/brca1_m1775r_pocket.png" caption="BRCA1 with saturation genome editing scores and ClinVar records at codon 1775, above 1T15 with the BACH1 peptide and 1N5O, the M1775R crystal, with that peptide superposed from 1T15." />
 
@@ -270,7 +270,7 @@ each protein view then lights the residue it codes for.
 
 <Figure src="/img/protein/tp53_r273h.png" caption="TP53 with a saturation genome editing score track, the alignment's domains and two protein views: 5MG7 and 7B49, both bound to DNA. R273H is labelled in every view." />
 
-<Figure src="/img/protein/kras_g12c.png" caption="KRAS at codon 12 with its six single-base missense changes, above the KRAS surface at residue 12 in wild type (4OBE), G12C (4LDJ) and G12C bound to sotorasib (6OIM), all three from one camera, with switch II colored." />
+<Figure src="/img/protein/kras_g12c.png" caption="KRAS at codon 12 with its single-base missense changes, above the KRAS surface at residue 12 in wild type (4OBE), G12C (4LDJ) and G12C bound to sotorasib (6OIM), all from one camera, with switch II colored." />
 
 <Figure src="/img/protein/ccr5_delta32.png" caption="CCR5 with the 1000 Genomes 30x reads of a Δ32/Δ32, a Δ32/+ and a +/+ sample over the 32-base deletion, above the codons the shifted frame reads, then CCR5 bound by HIV gp120, drawn green (6MEO), beside CCR5 alone, drawn only to the last residue the frameshift spares." />
 
@@ -331,7 +331,7 @@ The approach is described in
   signalling. _Nat Rev Immunol_ 2016.
 
 [^constructs]:
-    Three of these crystals carry engineered mutations. In the TP53 figure, 2J1X
+    Some of these crystals carry engineered mutations. In the TP53 figure, 2J1X
     and 9S9O carry the stabilizing M133L, V203A, N239Y and N268D, none of them
     in the pocket. In the KRAS figure, 6OIM carries C51S, C80L and C118S, which
     remove the construct's other cysteines a covalent drug could react with.

@@ -29,8 +29,10 @@ CCR5's 32 bases already come out as a hole through the transcript.
 
 **A haplotype sequence and its CIGAR**, from a VCF and a phasing. Standard
 tools already do it: `bcftools consensus -H 1` writes the haplotype, `minimap2`
-aligns it back. `demos/ccr5/` is one built that way, and the tutorial that
-walks those two commands is the feature's specification in prose.
+aligns it back. `demos/ccr5/` holds a Δ32 allele built by hand instead
+(`build_ccr5_delta32.py` cuts the 32 bases out and writes a two-block PAF); the
+tutorial draft that walks the two commands is the feature's specification in
+prose.
 
 **A CDS re-derived on that sequence.** The only new logic, and small: walk the
 transcript through the alignment onto the alt sequence, translate, end the CDS

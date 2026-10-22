@@ -46,7 +46,7 @@ together.
   axis and turns the E46K layer to put Lys80 on the wild type's pixel.
 - Builders for both (superposition, pocket aim, in-plane fit) are
   machine-local in `/var/tmp/hero2/bin/`, beside the prototype shots.
-- The nine older specs in `protein_variants.ts`.
+- The older specs in `protein_variants.ts`.
 - Protein3d 1.25.0 (released and live in the store 2026-10-22): a mark is a
   layer in the mark display's spelling,
   `{ site, mark: 'spheres' | 'sticks' | 'cartoon', encoding: { color: { value } } }`,

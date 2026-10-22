@@ -43,9 +43,9 @@ needs the phase read first.
 Opening, to follow `website/docs/tutorials/CLAUDE.md`:
 
 > A 32-base deletion in _CCR5_ (rs333, Δ32) shifts the reading frame and stops
-> the receptor 137 codons early, and carriers resist HIV strains that enter
-> through it. A phased VCF says who carries it; the sequence of the carrier's
-> chromosome says what it does. We:
+> the receptor early. People with two copies resist the R5 strains of HIV,
+> which enter cells through it. A phased VCF says who carries it; the sequence
+> of the carrier's chromosome says what it does. We:
 >
 > - cut the carrier's haplotype out of a phased VCF with `bcftools consensus`
 > - align it back to hg38 with `minimap2`
@@ -65,9 +65,9 @@ the 2020 VCFs are empty; use the 2022 panel.
 
 ### Steps
 
-Cut the region out of the panel (the commands below ran with a node tabix
-reader because this machine's bcftools has no https; `bcftools view -r` over the
-URL is the reader's one-liner and needs a check on a normal install):
+Cut the region out of the panel. `bcftools view -r` reads the remote panel
+directly (checked with bcftools 1.24) and leaves its `.tbi` in the working
+directory:
 
 ```bash
 URL=https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr3.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
