@@ -304,11 +304,19 @@
           "displayId": "volvox_mouse_inheritance_painting-LinearMultiRowFeatureDisplay",
           "rows": "sample",
           "height": 400,
-          "color": {
-            "value": "jexl:'rgb('+get(feature,'itemRgb')+')'",
-            "scale": "identity",
-            "domain": ["rgb(227,26,28)", "rgb(31,120,180)", "rgb(170,170,170)"],
-            "labels": ["Maternal", "Paternal", "Unknown"]
+          "encoding": {
+            "color": {
+              "value": "jexl:'rgb('+get(feature,'itemRgb')+')'",
+              "scale": {
+                "type": "identity",
+                "domain": [
+                  "rgb(227,26,28)",
+                  "rgb(31,120,180)",
+                  "rgb(170,170,170)"
+                ],
+                "names": ["Maternal", "Paternal", "Unknown"]
+              }
+            }
           }
         }
       ]
@@ -355,8 +363,10 @@
             "kept": ["offspring10", "dad", "mom", "offspring03", "offspring07"]
           },
           "rowColor": {
-            "domain": ["mom", "offspring03"],
-            "range": ["#222222", "#bbbbbb"]
+            "scale": {
+              "domain": ["mom", "offspring03"],
+              "range": ["#222222", "#bbbbbb"]
+            }
           },
           "rowGroups": [{ "match": "^(mom|dad)$", "group": "Parents" }],
           "facet": "group"
@@ -486,8 +496,8 @@
           "type": "LinearPileupDisplay",
           "displayId": "volvox_cram_pileup_pileup",
           "height": 400,
-          "color": {
-            "field": "mapq"
+          "encoding": {
+            "color": "mapq"
           }
         }
       ]
@@ -601,8 +611,8 @@
           "type": "LinearAlignmentsDisplay",
           "height": 600,
           "displayId": "volvox_alignments_alignments",
-          "color": {
-            "field": "mapq"
+          "encoding": {
+            "color": "mapq"
           }
         }
       ]
@@ -1100,7 +1110,7 @@
       "displays": [
         {
           "type": "LinearWiggleDisplay",
-          "color": "#C8B414"
+          "encoding": { "color": { "value": "#C8B414" } }
         }
       ]
     },
@@ -1489,7 +1499,11 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "gff3tabix_genes_jexl_color_linear",
-          "color": "jexl:feature.type=='CDS'?'#d62728':feature.type=='exon'?'#2ca02c':'#1f77b4'"
+          "encoding": {
+            "color": {
+              "value": "jexl:feature.type=='CDS'?'#d62728':feature.type=='exon'?'#2ca02c':'#1f77b4'"
+            }
+          }
         }
       ]
     },
@@ -1519,7 +1533,9 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "gff3tabix_genes_jexl_color_and_label_linear",
-          "color": "jexl:feature.strand==1?'#1f77b4':'#d62728'",
+          "encoding": {
+            "color": { "value": "jexl:feature.strand==1?'#1f77b4':'#d62728'" }
+          },
           "labels": {
             "name": "jexl:feature.name+' ['+feature.type+']'"
           }
@@ -1549,7 +1565,7 @@
         }
       },
       "displayDefaults": {
-        "color": "#6a3d9a"
+        "encoding": { "color": { "value": "#6a3d9a" } }
       }
     },
     {
@@ -1575,7 +1591,9 @@
         }
       },
       "displayDefaults": {
-        "color": "jexl:feature.strand==1?'#1f77b4':'#d62728'",
+        "encoding": {
+          "color": { "value": "jexl:feature.strand==1?'#1f77b4':'#d62728'" }
+        },
         "labels": {
           "name": "jexl:feature.name+' ['+feature.type+']'"
         }
@@ -1604,7 +1622,7 @@
         }
       },
       "displayDefaults": {
-        "color": "#1f78b4"
+        "encoding": { "color": { "value": "#1f78b4" } }
       }
     },
     {
@@ -2034,7 +2052,9 @@
           "type": "LinearVariantDisplay",
           "maxFeatureScreenDensity": 0.0006,
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
-          "color": "jexl:feature.type=='SNV'?'green':'purple'"
+          "encoding": {
+            "color": { "value": "jexl:feature.type=='SNV'?'green':'purple'" }
+          }
         }
       ]
     },
@@ -2261,7 +2281,10 @@
             {
               "mark": "link",
               "encoding": {
-                "size": { "field": "score", "scale": "log", "range": [1, 8] }
+                "strokeWidth": {
+                  "field": "score",
+                  "scale": { "type": "log", "range": [1, 8] }
+                }
               }
             },
             { "mark": "text", "encoding": { "text": "score" } }
@@ -2720,7 +2743,7 @@
               "mark": "link",
               "encoding": {
                 "color": { "value": "#a65628" },
-                "size": 3
+                "strokeWidth": 3
               },
               "transform": [{ "type": "mate" }]
             }
@@ -2750,7 +2773,7 @@
               "mark": "link",
               "encoding": {
                 "color": { "value": "#a65628" },
-                "size": 3
+                "strokeWidth": 3
               },
               "transform": [{ "type": "mate" }]
             }
@@ -3026,7 +3049,9 @@
           "type": "LinearVariantDisplay",
           "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
           "filter": ["jexl:feature.start<8000"],
-          "color": "jexl:feature.start>5000?'darkgreen':'red'"
+          "encoding": {
+            "color": { "value": "jexl:feature.start>5000?'darkgreen':'red'" }
+          }
         }
       ]
     },

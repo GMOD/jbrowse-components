@@ -50,15 +50,15 @@ adapter.
   them **on the main thread, in a getter that feeds the key** — `auto` is a
   preference, and the two are separate types so the resolution cannot drift back
   into the adapter.
-- **`colorBy` is not in the key.** Colors are recomputed on the main thread from
-  the geometry already in hand.
+- **`encoding.color` is not in the key.** Colors are recomputed on the main
+  thread from the geometry already in hand.
 
 ## What color an alignment takes
 
 ![How a synteny color mode resolves](diagrams/synteny-color.svg)
 
-One module serves both views. The `color` object's fields are a closed list
-plus one open arm:
+One module serves both views. The `encoding.color` object's fields are a closed
+list plus one open arm:
 
 - **No field** paints matches in the match color (and the dotplot's flat point
   color); **strand** splits forward from reverse.

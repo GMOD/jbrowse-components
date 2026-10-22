@@ -285,10 +285,10 @@ awk -F'\t' -v OFS='\t' '
 
 The config below loads the regtools file built from this page's BAM as a feature
 track. In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the
-`link` mark is the shape drawn for each junction, `size` scales with read count,
-`color` is a color scale on the known-junction flag against RefSeq, and `filter`
-drops records. `columnNames` names the extra columns so the color scale can read
-them:
+`link` mark is the shape drawn for each junction, `strokeWidth` scales with read
+count, `color` is a color scale on the known-junction flag against RefSeq, and
+`filter` drops records. `columnNames` names the extra columns so the color scale
+can read them:
 
 ```json addtrack loc=chr11:49,220,500-49,231,500
 {
@@ -325,14 +325,19 @@ them:
         {
           "mark": "link",
           "encoding": {
-            "size": { "field": "score", "scale": "log", "range": [1, 8] },
+            "strokeWidth": {
+              "field": "score",
+              "scale": { "type": "log", "range": [1, 8] }
+            },
             "color": {
               "field": "known_junction",
-              "scale": "categorical",
-              "domain": ["1", "0"],
-              "range": ["#377eb8", "#e41a1c"],
-              "labels": ["annotated", "novel"],
-              "title": "RefSeq"
+              "scale": {
+                "type": "ordinal",
+                "domain": ["1", "0"],
+                "range": ["#377eb8", "#e41a1c"],
+                "names": ["annotated", "novel"]
+              },
+              "legend": { "title": "RefSeq" }
             }
           }
         },
@@ -346,8 +351,8 @@ them:
 The `filter` applies the sashimi menu's read-support floor to the whole-library
 counts in the file and keeps the canonical motifs, which drops the duplicate
 that wrong-strand reads give a junction on the opposite strand. The color's
-`domain` lists the `known_junction` values as strings because the adapter reads
-extra columns as text.
+`scale.domain` lists the `known_junction` values as strings because the adapter
+reads extra columns as text.
 
 **Advanced → Edit plot...** in the track menu edits the same marks, colors and
 filter on an open track.
@@ -362,9 +367,9 @@ To load the other tables:
 
 - For the STAR file, the `columnNames` end in `motif` and `annotated`, and the
   color's `field` is `annotated`.
-- For the portcullis file, the color's `field` is `canonical_ss`, its `domain`
-  `["C", "S", "N"]`, and its `labels` canonical, semi-canonical and
-  non-canonical, with a third color in `range`.
+- For the portcullis file, the color's `field` is `canonical_ss`, its
+  `scale.domain` `["C", "S", "N"]`, and its `scale.names` canonical,
+  semi-canonical and non-canonical, with a third color in `scale.range`.
 
 ## See also
 

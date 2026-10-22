@@ -215,8 +215,10 @@ table's `lineage` column through `domain` to `range`. The config also sets:
       },
       "rowColor": {
         "field": "lineage",
-        "domain": ["taurine", "indicine", "gaur", "bison", "yak"],
-        "range": ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#D55E00"]
+        "scale": {
+          "domain": ["taurine", "indicine", "gaur", "bison", "yak"],
+          "range": ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#D55E00"]
+        }
       }
     }
   ]

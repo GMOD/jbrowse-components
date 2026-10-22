@@ -119,8 +119,8 @@ deletion that removes an exon reads as HIGH the same way a stop-gained SNV does.
 
 <Figure caption="1000 Genomes genotypes colored by SnpEff consequence impact." src="/img/variants/consequence_impact_1000g.png" />
 
-To have the track load already colored this way, set the display's `color` to
-`{ "field": "impact" }`: see
+To have the track load already colored this way, set the display's
+`encoding.color` to `"impact"`: see
 [coloring cells by the variant](/docs/config_guides/variant_track#coloring-cells-by-the-variant).
 
 ## Coloring by SV type
@@ -149,8 +149,8 @@ result as each VCF record's `svType` field.
 
 <Figure caption="The SV callset colored by SV type, pale for a het and full for a hom." src="/img/multisv_svtype.png" />
 
-A track loads already colored by SV type with `color` set to
-`{ "field": "svType" }`: see
+A track loads already colored by SV type with `encoding.color` set to
+`"svType"`: see
 [coloring cells by the variant](/docs/config_guides/variant_track#coloring-cells-by-the-variant).
 
 ## Coloring by any field

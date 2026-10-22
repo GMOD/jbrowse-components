@@ -21,7 +21,7 @@ that bite while editing are `plugins/variants/src/CLAUDE.md`.
 ![Which variant display a VCF lands in](diagrams/variants-displays.svg)
 
 - **`LinearVariantDisplay`** draws the records themselves, one layout row each,
-  colored through the standard `color` jexl slot.
+  colored through the standard `encoding.color` jexl slot.
 - **`LinearMultiSampleVariantDisplay`** draws one row per sample — or per
   haplotype in phased mode. Under `variantLayout: 'genomic'` each record's cells
   sit at its genomic span, with the variant lane and the insertion glyphs; under

@@ -122,22 +122,24 @@ its `domain` with a color in its `range`.
         ]
       },
       "rowColor": {
-        "domain": [
-          "SINE",
-          "LINE",
-          "LTR",
-          "DNA",
-          "Simple_repeat",
-          "Low_complexity"
-        ],
-        "range": [
-          "#e41a1c",
-          "#377eb8",
-          "#4daf4a",
-          "#984ea3",
-          "#ff7f00",
-          "#a65628"
-        ]
+        "scale": {
+          "domain": [
+            "SINE",
+            "LINE",
+            "LTR",
+            "DNA",
+            "Simple_repeat",
+            "Low_complexity"
+          ],
+          "range": [
+            "#e41a1c",
+            "#377eb8",
+            "#4daf4a",
+            "#984ea3",
+            "#ff7f00",
+            "#a65628"
+          ]
+        }
       },
       "showRowSeparators": true
     }

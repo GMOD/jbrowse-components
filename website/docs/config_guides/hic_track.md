@@ -38,8 +38,10 @@ shows what each does to the picture:
   "assemblyNames": ["hg19"],
   "displayDefaults": {
     "selectedNormalization": "KR",
-    "color": { "scale": "log", "scheme": "viridis" },
-    "showLegend": true
+    "encoding": {
+      "color": { "scale": { "type": "log", "scheme": "viridis" } }
+    },
+    "legend": { "show": true }
   }
 }
 ```
@@ -52,12 +54,12 @@ shows what each does to the picture:
 - **[`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias)** is
   a signed offset from the zoom-derived binsize, so the choice survives zooming:
   negative is finer, positive coarser
-- **[`color.domainMax`](/docs/config/hiccolor/#slot-domainmax)** pins the count
-  the color scale saturates at. Unset, it follows the loaded counts, so two
-  tracks given the same number share one scale
-- **[`color.field`](/docs/config/hiccolor/#slot-field)** is `observed`, the
-  counts, or `observed/expected`, each count over the file's expected count at
-  its distance, drawn diverging around 1
+- **[`encoding.color.scale.domainMax`](/docs/config/hiccolor/#slot-domainmax)**
+  pins the count the color scale saturates at. Unset, it follows the loaded
+  counts, so two tracks given the same number share one scale
+- **[`encoding.color.field`](/docs/config/hiccolor/#slot-field)** is `observed`,
+  the counts, or `observed/expected`, each count over the file's expected count
+  at its distance, drawn diverging around 1
   ([compartments](/docs/user_guides/hic_track#compartments-and-subcompartments))
 
 ## Comparing two conditions
@@ -82,7 +84,7 @@ GM12878:
       "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic"
     }
   },
-  "displayDefaults": { "color": "observed/control" }
+  "displayDefaults": { "encoding": { "color": "observed/control" } }
 }
 ```
 
@@ -95,8 +97,8 @@ already loaded
 BEDPE loop calls load as a `VariantTrack` with a
 [mark display](/docs/config_guides/mark_display) drawing one `link` per call: a
 `mate` step reads each record's other end, `x2` names the fields holding it,
-`size` is the stroke in pixels and `color` the stroke color. A `filter` step
-keeps the high-scoring calls, drawn here in dark red as thin arcs:
+`strokeWidth` is the stroke in pixels and `color` the stroke color. A `filter`
+step keeps the high-scoring calls, drawn here in dark red as thin arcs:
 
 ```json addtrack
 {
@@ -111,7 +113,7 @@ keeps the high-scoring calls, drawn here in dark red as thin arcs:
       "marks": [
         {
           "mark": "link",
-          "encoding": { "color": { "value": "#8b1a1a" }, "size": 1 },
+          "encoding": { "color": { "value": "#8b1a1a" }, "strokeWidth": 1 },
           "transform": [
             { "type": "mate" },
             { "type": "filter", "expr": "jexl:get(feature,'score')>=500" }
@@ -123,9 +125,9 @@ keeps the high-scoring calls, drawn here in dark red as thin arcs:
 }
 ```
 
-A `size` bound to a field strokes each loop by its score instead, through a
-linear or log scale into a range of pixels: [](/docs/config_guides/mark_display)
-§"Links".
+A `strokeWidth` bound to a field strokes each loop by its score instead, through
+a linear or log scale into a range of pixels:
+[](/docs/config_guides/mark_display) §"Links".
 
 ## Compartments and subcompartments
 

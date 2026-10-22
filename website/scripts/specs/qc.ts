@@ -83,8 +83,8 @@ const panel = (loc: string) => ({
     gnomadCoverageTrack(),
     {
       trackId: 'na12878_qc_reads',
-      color: { field: 'mapq' },
-      showLegend: true,
+      encoding: { color: 'mapq' },
+      legend: { show: true },
       pileup: {
         // At the default height the lane hits "Max layout height reached" and
         // crops the pileup.
@@ -143,8 +143,8 @@ export const qcSpecs: ScreenshotSpec[] = [
             gnomadCoverageTrack(90, 'none'),
             {
               trackId: 'na12878_qc_reads',
-              color: { field: 'mapq' },
-              showLegend: true,
+              encoding: { color: 'mapq' },
+              legend: { show: true },
               forceLoad: true,
               scales: { y: { domainQuantile: 0.99 } },
               // A smaller featureHeight at 464 bp/px reaches the sparse tail of
@@ -261,8 +261,8 @@ export const qcSpecs: ScreenshotSpec[] = [
             mappabilityTrack,
             {
               trackId: 'na12878_qc_reads',
-              color: { field: 'mapq' },
-              showLegend: true,
+              encoding: { color: 'mapq' },
+              legend: { show: true },
               forceLoad: true,
               scales: { y: { domainQuantile: 0.99 } },
               height: 260,
@@ -325,7 +325,7 @@ export const qcSpecs: ScreenshotSpec[] = [
       views: [
         {
           type: 'LinearSyntenyView',
-          color: { field: 'strand' },
+          encoding: { color: 'strand', opacity: 0.5 },
           // Straight ribbons over this block blend into a wash; a curve gives
           // each of the three chains its own waist.
           mark: { interpolate: 'bump' },
@@ -333,7 +333,6 @@ export const qcSpecs: ScreenshotSpec[] = [
           // over the segdup.
           cigarMode: 'matches',
           filter: [{ field: 'length', gte: 10000 }],
-          opacity: 0.5,
           levelHeights: [300],
           tracks: [['hg38_hs1_synteny']],
           views: [

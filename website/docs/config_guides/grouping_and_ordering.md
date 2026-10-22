@@ -43,9 +43,13 @@ from the same list:
     "field": "gene_biotype",
     "sort": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
   },
-  "color": {
-    "field": "gene_biotype",
-    "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
+  "encoding": {
+    "color": {
+      "field": "gene_biotype",
+      "scale": {
+        "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
+      }
+    }
   }
 }
 ```
@@ -112,9 +116,9 @@ a drag back into `sort`.
 
 `MultiWaySyntenyDisplay` draws one lane per assembly rather than one section per
 field value, so there is no `facet` — its `rows` is the lane arrangement, and
-`rows.sort` lists assembly names. It composes with `ribbonColor`, which paints
-each ribbon by a field — here, the relative strand between the two lanes a
-ribbon joins:
+`rows.sort` lists assembly names. It composes with `ribbons.encoding.color`,
+which paints each ribbon by a field — here, the relative strand between the two
+lanes a ribbon joins:
 
 ```json addtrack
 {
@@ -159,7 +163,7 @@ ribbon joins:
       "rows": {
         "sort": ["peach", "cacao", "poplar", "citrus", "arabidopsis", "tomato"]
       },
-      "ribbonColor": { "field": "strand" }
+      "ribbons": { "encoding": { "color": "strand" } }
     }
   ]
 }

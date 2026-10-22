@@ -29,7 +29,7 @@ either, through `displayDefaults`.
 ## Display options
 
 The axis is one object, [`scales.y`](/docs/config/valuescale), the color is one
-object, [`color`](/docs/config/linearwiggledisplay/#slot-color), and
+object, [`encoding.color`](/docs/config/linearwiggledisplay/#slot-color), and
 [`rows`](/docs/config/linearwiggledisplay/#slot-rows) decides the layout; all
 three are [`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots and
 all three go through `displayDefaults`.
@@ -71,27 +71,27 @@ track menu's **Y axis...** panel writes this list.
 
 ## Colors
 
-`color` is a CSS color string, or an object naming the field it reads and the
-scale it reads through:
+`encoding.color` is a constant `{ "value": … }`, or a `scale` the score reads
+through:
 
-| the picture                         | the value                                                                              |
-| ----------------------------------- | -------------------------------------------------------------------------------------- |
-| one solid color                     | `"#8b0000"`                                                                            |
-| a color each side of a cut          | `{ "field": "score", "scale": "threshold", "domain": [5], "range": ["#aaa", "#f00"] }` |
-| a ramp, which density fades through | `{ "field": "score", "scale": "linear", "scheme": "viridis" }`                         |
+| the picture                         | the value                                                                        |
+| ----------------------------------- | -------------------------------------------------------------------------------- |
+| one solid color                     | `{ "value": "#8b0000" }`                                                         |
+| a color each side of a cut          | `{ "scale": { "type": "threshold", "domain": [5], "range": ["#aaa", "#f00"] } }` |
+| a ramp, which density fades through | `{ "scale": { "type": "linear", "scheme": "viridis" } }`                         |
 
-A threshold with an empty `domain` cuts at
+A threshold with an empty `scale.domain` cuts at
 [`origin`](/docs/config/linearwiggledisplay/#slot-origin), the value the bars
-also grow from. A ramp takes a named `scheme` or a `range` of CSS stops, runs
-straight across the y domain unless `domainMid` places its middle stop, and with
-one color runs from white to it. The
+also grow from. A ramp takes a named `scale.scheme` or a `scale.range` of CSS
+stops, runs straight across the y domain unless `scale.domainMid` places its
+middle stop, and with one color runs from white to it. The
 [cookbook](/docs/cookbook#quantitative-wiggle-tracks) has worked recipes.
 
-`color` reads `score` alone. A color per source is the row's:
+`encoding.color` reads `score` alone. A color per source is the row's:
 [`rowColor`](/docs/config/linearwiggledisplay/#slot-rowcolor) names each
-source's color as `domain`/`range` pairs, and several sources sharing one plot
-box with no `color` set take palette colors by name unprompted, except under
-`span`, where the score ramp is the whole color.
+source's color as `scale.domain`/`scale.range` pairs, and several sources
+sharing one plot box with no `encoding.color` set take palette colors by name
+unprompted, except under `span`, where the score ramp is the whole color.
 
 ## Adapters
 

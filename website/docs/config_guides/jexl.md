@@ -9,7 +9,8 @@ plain properties (`feature.strand`). When an expression outgrows one line,
 register your own function from a small plugin and call it like a built-in.
 
 A callback is a [Jexl](https://github.com/TomFrost/Jexl) expression in a slot
-that takes one, `"color": "jexl:feature.strand==-1?'red':'blue'"`. The
+that takes one, such as `encoding.color`'s
+`"value": "jexl:feature.strand==-1?'red':'blue'"`. The
 [config pages](/docs/config_guide) list _callback args_ under each such slot,
 and a config writing a callback anywhere else fails to load, naming the slot. A
 [`featureField`](/docs/config_guides/slot_types#featurefield) slot, such as a
@@ -41,10 +42,10 @@ per row
 `feature.start` and `get(feature,'start')` are equivalent; `get()` also works on
 older JBrowse releases. What `feature` is depends on the callback:
 
-| Callback                                                               | `feature` is                    | Property form | `get()` form |
-| ---------------------------------------------------------------------- | ------------------------------- | ------------- | ------------ |
-| Color, label, tooltip, filter (`color`, `name`, `mouseover`, `filter`) | a `SimpleFeature`               | yes           | yes          |
-| [`formatDetails`](/docs/config_guides/customizing_feature_details)     | a plain object from the session | yes           | **no**       |
+| Callback                                                                              | `feature` is                    | Property form | `get()` form |
+| ------------------------------------------------------------------------------------- | ------------------------------- | ------------- | ------------ |
+| Color, label, tooltip, filter (`encoding.color.value`, `name`, `mouseover`, `filter`) | a `SimpleFeature`               | yes           | yes          |
+| [`formatDetails`](/docs/config_guides/customizing_feature_details)                    | a plain object from the session | yes           | **no**       |
 
 In JavaScript plugin code a `SimpleFeature` handed to your own function is the
 real object, read with `feature.get('start')`.

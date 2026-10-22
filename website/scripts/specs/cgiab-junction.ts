@@ -156,7 +156,7 @@ export const junctionScaffold = (
         type: 'LinearSyntenyView',
         mark: { interpolate: 'bump' },
         levelHeights: [150],
-        opacity: 0.35,
+        encoding: { opacity: 0.35 },
         offscreen: { show: false },
         tracks: [[PIF]],
         views: [
@@ -169,8 +169,8 @@ export const junctionScaffold = (
                 ...reads,
                 unit: 'chain',
                 facet: 'split',
-                color: { field: 'pairOrientation' },
-                showLegend: true,
+                encoding: { color: 'pairOrientation' },
+                legend: { show: true },
                 pileup: { readHeight: 2 },
                 readConnections: { show: true, height: 70 },
                 height: 690,
@@ -233,7 +233,7 @@ export const scaffoldOverview = (
         levelHeights: [200, 200],
         // a cutoff above 155 kb drops the last chr13 block before the junction
         filter: [{ field: 'length', gte: 100000 }],
-        opacity: 0.35,
+        encoding: { opacity: 0.35 },
         offscreen: { show: false },
         tracks: [PIF],
         views: [

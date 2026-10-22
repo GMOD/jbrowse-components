@@ -115,8 +115,8 @@ values, `source` alone on the quantitative display (`QuantitativeRows`) and
 The host is typed on `RowArrangement`, so the mixin never reaches for `field`,
 which stays the display's own. `rowColor` is
 display-kit's `RowColor` on every row display, one categorical channel whose
-`field` names a row attribute, `name` by default, with `domain`/`range` pairing
-that field's values with colors (ADR-160). **Shared code reads the mixin's API,
+`field` names a row attribute, `name` by default, with
+`scale.domain`/`scale.range` pairing that field's values with colors (ADR-160). **Shared code reads the mixin's API,
 never a config member behind it**: `rowSort`, `rowTree`, `rowTreeProvenance`,
 `rowFocus`, `resolvedRowColors`, `rowArrangementIsCustom`, `rowOrderWillDropTree`,
 `setRowOrder`, `setRowFocus`, `resetRowArrangement`.
@@ -154,8 +154,8 @@ hook's name throws at `create`:
   and the edit diff falls back to the sample's entry.
 - `sharesPanel` — false by default; a wiggle overlay of several subtracks.
 - `rowColorPaintsMarks` — true by default; false where something else colors
-  the marks: multi-row's `color` setting or itemRgb, wiggle's gradient or
-  declared `color`, variants' genotypes.
+  the marks: multi-row's `encoding.color` setting or itemRgb, wiggle's
+  gradient or declared `encoding.color`, variants' genotypes.
 - `unlistedRowsSort` — `source` by default; multi-row's discovered values sort.
 - `rowOrder` — `rows.sort` by default; MAF leads with a drawn tree's leaves.
 - `rowBanding` — none by default; the variant displays' `facet`, and the
@@ -181,9 +181,10 @@ d3's ordinal way over the rows in source order (`rowColorDealRows`), so no
 reorder, focus or relabel recolors a row and a tables export deals the same
 (ADR-239). Values the config declares for the field (`rowColorDeclaredValues`,
 the multi-row display's `rowGroups` groups) take their turns first, loaded or
-not, so a later region moves no color. Listed values take their `range` color,
-the rest first seen first from tableau10 less its grey and then re-lit laps of it (`rowPaletteColorAt`),
-and a set `unknown` stands in for the palette. A name deal skips a row carrying
+not, so a later region moves no color. Listed values take their `scale.range`
+color, the rest first seen first from tableau10 less its grey and then re-lit
+laps of it (`rowPaletteColorAt`), and a set `scale.unknown` stands in for the
+palette. A name deal skips a row carrying
 its own color; an attribute deal skips the empty value, so a row with none
 takes a color only from a `''` pair (ggplot's `na.value`, not a category); an
 attribute no row carries deals nothing. A multi-row `rowGroups` entry only
@@ -201,9 +202,9 @@ one entry per value some row carries with a color, in deal order (pairs first,
 then first seen over the rows in source order, so a focus never re-ranks or drops
 one); the empty value has none, even under a `''` pair. Past
 `MAX_LEGEND_ITEMS` it stops and adds one colorless "+N more", which
-`FloatingLegend` leaves inert. A set `unknown` adds one trailing "Other" in that
-color for the rows that took it; `unknown: ''` adds nothing. The scale declares
-`focusesRows`, and the mixin's `focusLegendEntry` answers it: a click focuses
+`FloatingLegend` leaves inert. A set `scale.unknown` adds one trailing "Other"
+in that color for the rows that took it; a `scale.unknown` of `''` adds
+nothing. The scale declares `focusesRows`, and the mixin's `focusLegendEntry` answers it: a click focuses
 the rows `rowColorKeyValue` lists under the entry, out of `editableSources`, so
 a second click reaches the rows the first hid. Every other scale's entries name
 colors and stay inert. Wiggle drops the key in an overlay painting a score
@@ -231,8 +232,8 @@ What else the mixin owns:
 - **The dialog shows the `rowColor` object and submits it**
   (`applyRowEdits(rows, rowColor)`, ADR-209): "Color rows by" None, Each row
   or an attribute, on every row display. Each row and an attribute hold their
-  picks and an Other swatch, the `unknown`: Auto, None, or a color, with None
-  hidden where it equals Auto. An attribute's picks are its value table, each
+  picks and an Other swatch, the `scale.unknown`: Auto, None, or a color, with
+  None hidden where it equals Auto. An attribute's picks are its value table, each
   value with its color and row count in the key's order; Each row's are the
   row list's swatches, which show every row's color under any choice and edit
   only there, as the bulk color button does; the bulk editor's `rowColor`

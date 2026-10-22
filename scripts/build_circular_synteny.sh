@@ -159,7 +159,7 @@ density = {
         'displayId': f'{pair}_gene_density-LinearWiggleDisplay',
         'mark': 'span',
         'aggregate': 'mean',
-        'color': {'field': 'score', 'scale': 'threshold', 'range': ['#e01e26', '#d95f02']},
+        'encoding': {'color': {'scale': {'type': 'threshold', 'range': ['#e01e26', '#d95f02']}}},
         'height': 40,
     }],
 }

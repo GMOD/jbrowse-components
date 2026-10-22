@@ -164,14 +164,26 @@ export type ReadFilterSnapshot = {
   connections?: Record<string, unknown>
 } & Partial<Record<ReadCategoryKey, 'only' | 'exclude' | null>>
 
+export interface ColorScaleObject {
+  type?: string
+  domain?: unknown[]
+  range?: string[]
+  names?: string[]
+  scheme?: string
+  reverse?: boolean
+  unknown?: string
+  invalid?: string
+}
+
+/** A color channel as written; a bare string is the field. */
 export interface ColorObject {
   value?: string
   field?: string
-  domain?: string[]
-  range?: string[]
-  scheme?: string
-  scale?: unknown
+  scale?: ColorScaleObject
+  legend?: { title?: string; descending?: boolean }
 }
+
+export type ColorChannel = string | ColorObject
 
 /**
  * The settings the named modifiers write. Every other setting is a
@@ -184,7 +196,6 @@ export interface DisplaySnapshot {
   displayMode?: 'normal' | 'compact' | 'superCompact'
   heightMode?: (typeof HEIGHT_MODES)[number]
   growMaxHeight?: number
-  baseColor?: { field: string }
   modifications?: { unmodified?: 'hidden' | 'calls' | 'all' }
   sort?:
     | string
@@ -194,7 +205,10 @@ export interface DisplaySnapshot {
         refName: string
         within?: number
       }
-  pileup?: { readHeight?: number }
+  pileup?: {
+    readHeight?: number
+    bases?: { show?: boolean; encoding?: { color?: string } }
+  }
   readConnections?: {
     show?: boolean
     mark?: 'link' | 'rule'
@@ -202,7 +216,8 @@ export interface DisplaySnapshot {
   }
   sashimi?: { show?: boolean; placement?: 'up' | 'down' | 'auto' }
   filter?: ReadFilterSnapshot | string[]
-  color?: string | ColorObject
+  encoding?: { color?: ColorChannel }
+  legend?: { show?: boolean }
   variantLayout?: 'genomic' | 'columns'
 }
 
@@ -222,24 +237,24 @@ function readFilterOf(r: DisplaySettings): ReadFilterSnapshot {
   return filter && !Array.isArray(filter) ? filter : {}
 }
 
-function definedMembers(color: object) {
-  return Object.fromEntries(
-    Object.entries(color)
-      .filter(([, v]) => v !== undefined)
-      .map(([k, v]) => [k, Array.isArray(v) ? [...v] : v]),
-  )
+function setColor(r: DisplaySettings, color: ColorChannel) {
+  r.snap.encoding = { ...r.snap.encoding, color }
 }
 
 // display-kit's `colorForField`, as the Color by menu picks a field over a
-// color a JSON modifier may have started: its key names and colors stay only
-// while the field is the one they were written for.
+// color a JSON modifier may have started: its scale and key stay only while
+// the field is the one they were written for.
 function colorByField(r: DisplaySettings, field: string) {
-  const current: ColorObject =
-    typeof r.snap.color === 'object' ? r.snap.color : {}
-  r.snap.color =
-    field === current.field
-      ? definedMembers(current)
-      : definedMembers({ value: current.value, field })
+  const written = r.snap.encoding?.color
+  const current = typeof written === 'string' ? { field: written } : written
+  setColor(
+    r,
+    field === current?.field
+      ? structuredClone(written!)
+      : current?.value === undefined
+        ? field
+        : { value: current.value, field },
+  )
 }
 
 // Aliases for the displays a track type has beyond its default, with any
@@ -496,16 +511,23 @@ const modifiers: Record<string, Modifier> = {
     on: ['alignments'],
     apply: (r, v) => {
       const value = parseEnum('baseColor', v, BASE_COLORS)
-      r.snap.baseColor = {
-        field: value === 'methylation' ? 'modifications' : value,
-      }
+      mergeSettings(settingsOf(r), {
+        pileup: {
+          bases: {
+            show: true,
+            encoding: {
+              color: value === 'methylation' ? 'modifications' : value,
+            },
+          },
+        },
+      })
       if (value === 'methylation') {
         r.snap.modifications = { unmodified: 'all' }
       }
     },
   },
   // a constant, a read field on alignments, or `strand` on a canvas display;
-  // any other field is `color.field=tags.HP`
+  // any other field is `encoding.color.field=tags.HP`
   color: {
     on: ALL_CATEGORIES,
     byCategory: true,
@@ -516,7 +538,7 @@ const modifiers: Record<string, Modifier> = {
         invalidModifierValue(
           'color',
           value,
-          `a CSS color or a field name; a field of that name is color.field=${value === 'tag' ? 'tags.<TAG>' : '<name>'}`,
+          `a CSS color or a field name; a field of that name is encoding.color.field=${value === 'tag' ? 'tags.<TAG>' : '<name>'}`,
         )
       } else if (v2 !== undefined) {
         throw new Error(strayValueMessage('color', 1, [v2]))
@@ -536,10 +558,11 @@ const modifiers: Record<string, Modifier> = {
         } else if (ALIGNMENTS_COLOR_FIELD_SET.has(value)) {
           colorByField(r, value)
         } else {
-          r.snap.color = value
+          setColor(r, { value })
         }
       } else if (category === 'hic') {
-        // `memberWrites` writes it as `color.scheme`, over the track's own color
+        // `memberWrites` writes it as `encoding.color.scale.scheme`, over the
+        // track's own color
         if (!(COLOR_SCHEMES as readonly string[]).includes(value)) {
           invalidModifierValue(
             'color',
@@ -553,7 +576,7 @@ const modifiers: Record<string, Modifier> = {
       ) {
         colorByField(r, 'strand')
       } else {
-        r.snap.color = value
+        setColor(r, { value })
       }
     },
   },
@@ -669,16 +692,16 @@ export function checkModifiers(opts: string[]) {
 }
 
 /**
- * A track's member writes: each `color.field=…` modifier, and a hic track's
- * `color:<scheme>`, which names one member of the color object the track
- * already configures.
+ * A track's member writes: each `encoding.color.field=…` modifier, and a hic
+ * track's `color:<scheme>`, which names one member of the color channel the
+ * track already configures.
  */
 export function memberWrites(category: Category | undefined, opts: string[]) {
   return opts.flatMap(opt =>
     isMemberWrite(opt)
       ? [opt]
       : category === 'hic' && opt.startsWith('color:')
-        ? [`color.scheme=${opt.slice('color:'.length)}`]
+        ? [`encoding.color.scale.scheme=${opt.slice('color:'.length)}`]
         : [],
   )
 }

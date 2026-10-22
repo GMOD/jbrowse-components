@@ -268,10 +268,10 @@ awk -F'\t' -v OFS='\t' -v B=250000 '
 bedGraphToBigWig pi_ratio_In2Lt.bedgraph dm6.chrom.sizes pi_ratio_In2Lt.bw
 ```
 
-In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `color` is a
-color scale: a `field` mapped through a `domain` to a `range` of colors. Here a
-`threshold` scale colors each bin by its side of zero, and `scales.y` pins the y
-scale to ±1.5:
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
+`encoding.color` is a color scale: the score mapped through `scale.domain` to a
+`scale.range` of colors. Here a `threshold` scale colors each bin by its side of
+zero, and `scales.y` pins the y scale to ±1.5:
 
 ```json addtrack
 {
@@ -284,13 +284,16 @@ scale to ±1.5:
     "uri": "https://jbrowse.org/demos/popgen/pi_ratio_In2Lt.bw"
   },
   "displayDefaults": {
-    "color": {
-      "field": "score",
-      "scale": "threshold",
-      "domain": [0],
-      "range": ["#e66100", "#1f78b4"],
-      "labels": ["inverted lower", "inverted higher"],
-      "title": "π, In(2L)t vs standard"
+    "encoding": {
+      "color": {
+        "scale": {
+          "type": "threshold",
+          "domain": [0],
+          "range": ["#e66100", "#1f78b4"],
+          "names": ["inverted lower", "inverted higher"]
+        },
+        "legend": { "title": "π, In(2L)t vs standard" }
+      }
     },
     "scales": {
       "y": { "domainMin": -1.5, "domainMax": 1.5, "title": "log2 ratio" }
@@ -299,8 +302,8 @@ scale to ±1.5:
 }
 ```
 
-**Advanced → Edit plot...** in the track menu shows `color` and `scales` as text
-and applies edits live.
+**Advanced → Edit plot...** in the track menu shows `encoding` and `scales` as
+text and applies edits live.
 
 ## Reading the Cyp6g1 sweep in Tajima's D and π
 

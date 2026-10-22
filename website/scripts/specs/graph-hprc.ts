@@ -71,7 +71,7 @@ function hprcSegmentsLane(domain: { start: number; end: number }) {
     type: 'LinearBasicDisplay',
     showLabels: 'none',
     heightMode: 'grow',
-    color: referencePositionColor(domain),
+    encoding: { color: { value: referencePositionColor(domain) } },
   }
 }
 
@@ -162,14 +162,18 @@ function cytobandLane() {
     trackId: 'hg38_cytobands_ucsc',
     displayMode: 'collapsed',
     showLabels: 'none',
-    color:
-      "jexl:get(feature,'gieStain')=='acen' ? 'rgb(190,50,50)' : " +
-      "get(feature,'gieStain')=='gvar' ? 'rgb(120,120,200)' : " +
-      "get(feature,'gieStain')=='stalk' ? 'rgb(100,160,100)' : " +
-      "get(feature,'gieStain')=='gneg' ? 'rgb(235,235,235)' : " +
-      "get(feature,'gieStain')=='gpos25' ? 'rgb(190,190,190)' : " +
-      "get(feature,'gieStain')=='gpos50' ? 'rgb(150,150,150)' : " +
-      "get(feature,'gieStain')=='gpos75' ? 'rgb(110,110,110)' : 'rgb(70,70,70)'",
+    encoding: {
+      color: {
+        value:
+          "jexl:get(feature,'gieStain')=='acen' ? 'rgb(190,50,50)' : " +
+          "get(feature,'gieStain')=='gvar' ? 'rgb(120,120,200)' : " +
+          "get(feature,'gieStain')=='stalk' ? 'rgb(100,160,100)' : " +
+          "get(feature,'gieStain')=='gneg' ? 'rgb(235,235,235)' : " +
+          "get(feature,'gieStain')=='gpos25' ? 'rgb(190,190,190)' : " +
+          "get(feature,'gieStain')=='gpos50' ? 'rgb(150,150,150)' : " +
+          "get(feature,'gieStain')=='gpos75' ? 'rgb(110,110,110)' : 'rgb(70,70,70)'",
+      },
+    },
     height: 30,
   }
 }

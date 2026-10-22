@@ -143,8 +143,8 @@ Two entries in the track config matter here:
   type
 - the `MultiWaySyntenyDisplay` entry sets up the
   [lanes view](#every-accession-in-columbia-coordinates): `rows.sort` orders the
-  lanes, and `ribbonColor` is a color scale on the bands, mapping the `syri`
-  field through a `domain` of the six types
+  lanes, and `ribbons.encoding.color` is a color scale on the bands, mapping the
+  `syri` field through a `scale.domain` of the six types
 
 ```json addtrack
 {
@@ -161,9 +161,15 @@ Two entries in the track config matter here:
     {
       "type": "MultiWaySyntenyDisplay",
       "rows": { "sort": ["Ler", "Cvi", "Eri", "Kyo", "Sha"] },
-      "ribbonColor": {
-        "field": "syri",
-        "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
+      "ribbons": {
+        "encoding": {
+          "color": {
+            "field": "syri",
+            "scale": {
+              "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
+            }
+          }
+        }
       }
     }
   ]
@@ -187,12 +193,16 @@ Open the first 6 Mb of chromosome 4 in both accessions and pick **syri** under
           { "assembly": "Ler", "loc": "Chr4:1-6,000,000" }
         ],
         "tracks": [["syri_pangenome"]],
-        "color": {
-          "field": "syri",
-          "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
+        "encoding": {
+          "color": {
+            "field": "syri",
+            "scale": {
+              "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
+            }
+          },
+          "opacity": 0.9
         },
         "mark": { "interpolate": "bump" },
-        "opacity": 0.9,
         "render": { "antialias": false },
         "collapseEmptyRows": true,
         "levelHeights": [260]
@@ -230,12 +240,16 @@ between the two genomes it joins:
           { "assembly": "Sha" }
         ],
         "tracks": ["syri_pangenome"],
-        "color": {
-          "field": "syri",
-          "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
+        "encoding": {
+          "color": {
+            "field": "syri",
+            "scale": {
+              "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
+            }
+          },
+          "opacity": 0.9
         },
         "mark": { "interpolate": "bump" },
-        "opacity": 0.9,
         "render": { "antialias": false },
         "collapseEmptyRows": true,
         "levelHeights": [150, 150, 150, 150, 150]
@@ -289,7 +303,13 @@ orders them:
         "field": "query",
         "sort": ["Ler", "Cvi", "Eri", "Kyo", "Sha"]
       },
-      "color": { "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"] }
+      "encoding": {
+        "color": {
+          "scale": {
+            "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
+          }
+        }
+      }
     }
   ]
 }

@@ -189,7 +189,7 @@ Load `trio.hapibd.bed.gz` as a `FeatureTrack` with a
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
 one row per value of the `parenthap` field and `rows.sort` orders them, while
 each block takes its BED `itemRgb` color.
-[`showLegend`](/docs/config/linearmultirowfeaturedisplay/#slot-showlegend) is
+[`legend.show`](/docs/config/linearmultirowfeaturedisplay/#slot-showlegend) is
 off because the row labels already name the four categories:
 
 ```json addtrack
@@ -210,7 +210,7 @@ off because the row labels already name the four categories:
         "field": "parenthap",
         "sort": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"]
       },
-      "showLegend": false
+      "legend": { "show": false }
     }
   ]
 }

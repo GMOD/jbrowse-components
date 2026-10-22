@@ -6,7 +6,7 @@
       "filter": [{ "field": "length", "gte": 500000 }],
       "mark": { "interpolate": "bump" },
       "autoDiagonalize": true,
-      "color": { "field": "query" },
+      "encoding": { "color": "query" },
       "alpha": 0.4,
       "levelHeights": [300, 300],
       "views": [

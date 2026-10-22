@@ -134,10 +134,11 @@ builds one from your own BigWigs:
     "mark": "span",
     "origin": 2,
     "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
-    "color": {
-      "field": "score",
-      "range": ["#2166ac", "#b2182b"],
-      "title": "Copy number"
+    "encoding": {
+      "color": {
+        "scale": { "range": ["#2166ac", "#b2182b"] },
+        "legend": { "title": "Copy number" }
+      }
     }
   }
 }
@@ -145,8 +146,8 @@ builds one from your own BigWigs:
 
 Navigate to `chr1:25,200,000-25,400,000`, the genotype figure's window. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, the copy-number
-track's `mark` is the shape drawn, `scales.y` its y scale and `color` a color
-scale on `score`.
+track's `mark` is the shape drawn, `scales.y` its y scale and `encoding.color` a
+color scale on the score.
 
 ## Sorting the cohort by genotype at the RHD deletion
 

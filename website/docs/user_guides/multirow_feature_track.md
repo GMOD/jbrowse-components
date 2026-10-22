@@ -88,8 +88,8 @@ is thousands of rows rather than twenty.
 The final `[0]` selects class; swap it for `[1]` to split by family.
 
 The multi-row display isn't the track's default, so it needs an explicit
-`displays` entry rather than the `displayDefaults` shorthand (whose `color`
-would also reach the default display).
+`displays` entry rather than the `displayDefaults` shorthand (whose
+`encoding.color` would also reach the default display).
 
 ## Preparing the file
 
@@ -112,21 +112,21 @@ extra field works by name.
 Four sources of color, in precedence order:
 
 - [`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) gives a
-  color per row as pairs, the row values in `domain` and their colors in
-  `range`, or with a `field` a color per value of a row attribute such as its
-  `rowGroups` group. Use it when the row identity is the signal (one color per
-  population, per treatment arm).
-- [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) is a per-
-  feature fill: a CSS color, or a field whose values each take a color through a
-  scale — a color per value, a color per interval between cut points, or a
-  gradient — with a key naming them.
+  color per row as pairs, the row values in `scale.domain` and their colors in
+  `scale.range`, or with a `field` a color per value of a row attribute such as
+  its `rowGroups` group. Use it when the row identity is the signal (one color
+  per population, per treatment arm).
+- [`encoding.color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) is a
+  per-feature fill: a CSS color as its `value`, or a field whose values each
+  take a color through a scale — a color per value, a color per interval between
+  cut points, or a gradient — with a key naming them.
 - `itemRgb` is honored automatically. A BED9 that already has per-feature colors
   (ChromHMM state colors, for one) paints correctly with no color configuration.
 - Otherwise each row is auto-assigned a distinct color from a categorical
   palette.
 
 Binning a numeric column onto a diverging scale is the common case, e.g. segment
-mean copy number, with `labels` naming each interval in the key:
+mean copy number, with `scale.names` naming each interval in the key:
 
 ```json addtrack
 {
@@ -140,19 +140,23 @@ mean copy number, with `labels` naming each interval in the key:
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "tcga_brca_cnv-LinearMultiRowFeatureDisplay",
       "rows": "sample",
-      "color": {
-        "field": "segmean",
-        "scale": "threshold",
-        "domain": [-1, -0.3, 0.3, 1],
-        "range": ["#2166ac", "#92c5de", "#f7f7f7", "#f4a582", "#b2182b"],
-        "labels": [
-          "Deep loss (log2 < -1)",
-          "Loss",
-          "Balanced",
-          "Gain",
-          "Amplification (log2 > 1)"
-        ],
-        "title": "Copy number (log2)"
+      "encoding": {
+        "color": {
+          "field": "segmean",
+          "scale": {
+            "type": "threshold",
+            "domain": [-1, -0.3, 0.3, 1],
+            "range": ["#2166ac", "#92c5de", "#f7f7f7", "#f4a582", "#b2182b"],
+            "names": [
+              "Deep loss (log2 < -1)",
+              "Loss",
+              "Balanced",
+              "Gain",
+              "Amplification (log2 > 1)"
+            ]
+          },
+          "legend": { "title": "Copy number (log2)" }
+        }
       }
     }
   ]
@@ -164,9 +168,10 @@ mean copy number, with `labels` naming each interval in the key:
 **Show... → Legend** keys the colors actually present, and the **Categories**
 submenu beside it hides individual categories, so you can drop the states or
 classes you aren't reading and leave the rest painted. The submenu counts what
-is hidden and offers **Show all categories** to put them back. `color.domain`
-sets the order those rows read in — the values it lists first, the rest sorted —
-the same rule `rows.sort` orders the track's rows by.
+is hidden and offers **Show all categories** to put them back.
+`encoding.color.scale.domain` sets the order those rows read in — the values it
+lists first, the rest sorted — the same rule `rows.sort` orders the track's rows
+by.
 
 You can also pick a color for single rows under **Color rows by → Each row** in
 **Edit colors/arrangement...**, which writes each as a `rowColor` entry and
@@ -220,8 +225,10 @@ A group takes its color from `rowColor`:
   "facet": "group",
   "rowColor": {
     "field": "group",
-    "domain": ["Wolf", "Coyote"],
-    "range": ["rgb(27,120,55)", "rgb(224,130,20)"]
+    "scale": {
+      "domain": ["Wolf", "Coyote"],
+      "range": ["rgb(27,120,55)", "rgb(224,130,20)"]
+    }
   }
 }
 ```
@@ -239,8 +246,9 @@ A row that
 its name or by an attribute such as its group draws a bar of that color at the
 left of its label, so a row can be found by color. A row with no value of that
 attribute, such as one no `rowGroups` entry matches, takes no color unless
-`domain` pairs `""` with one. On a track colored per feature (an `itemRgb`
-painting, a jexl `color` slot) the bar is the only place a row's color shows.
+`scale.domain` pairs `""` with one. On a track colored per feature (an `itemRgb`
+painting, a jexl `encoding.color`) the bar is the only place a row's color
+shows.
 
 <Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="1104 tumors clustered by copy-number profile around ERBB2, with the dendrogram beside them." />
 

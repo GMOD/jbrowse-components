@@ -297,8 +297,8 @@ config = {
         'displays': [{
             'type': 'MultiWaySyntenyDisplay',
             'displayId': 'ecoli_orthologs-MultiWaySyntenyDisplay',
-            'color': {'field': 'cluster'},
-            'showLegend': False,
+            'encoding': {'color': 'cluster'},
+            'legend': {'show': False},
             'height': math.ceil(len(order) * LANE_PITCH / 10) * 10,
         }],
     }],

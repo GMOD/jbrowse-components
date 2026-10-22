@@ -267,7 +267,7 @@ so the bands take a while to draw:
         "coord": { "ratio": 1 },
         "autoDiagonalize": true,
         "collapseEmptyRows": true,
-        "opacity": 0.15
+        "encoding": { "opacity": 0.15 }
       }
     ]
   }
@@ -282,9 +282,9 @@ We'll open tauschii over wheat from **Add → Linear synteny view**, with
 `wheat_orthogroups` between them. Then:
 
 - Navigate the wheat row to `4A`.
-- Pick **Query** in the palette button menu. The palette sets the links'
-  `color`, a color scale from a field to colors, and **Query** paints each link
-  by its tauschii chromosome.
+- Pick **Query** in the palette button menu. The palette sets the view's
+  `encoding.color`, a color scale from a field to colors, and **Query** paints
+  each link by its tauschii chromosome.
 
 <Figure caption="Aegilops tauschii's D-genome chromosomes over wheat 4A. Color by → Query gives each chromosome its own color." src="/img/orthofinder_synteny/wheat_4a.png" />
 

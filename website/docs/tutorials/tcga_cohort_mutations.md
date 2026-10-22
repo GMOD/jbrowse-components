@@ -119,7 +119,7 @@ the multi-sample matrix display:
       "type": "LinearMultiSampleVariantDisplay",
       "variantLayout": "columns",
       "height": 1010,
-      "color": { "field": "impact" }
+      "encoding": { "color": "impact" }
     }
   ]
 }
@@ -130,9 +130,10 @@ The track config sets three things:
 - [`variantLayout: 'columns'`](/docs/user_guides/multivariant_track#matrix-best-for-snpindel-patterns)
   uses one column per mutation, so a gene's mutations pack together however far
   apart they sit, with a connector band from each column to its position
-- [`color`](/docs/config/linearmultisamplevariantdisplay/#slot-color) is a color
-  scale, and its `field` set to `impact` colors each cell by its VEP impact tier
-  from `CSQ`, the same as **Color by... → Consequence impact** in the track menu
+- [`encoding.color`](/docs/config/linearmultisamplevariantdisplay/#slot-color)
+  is a color scale, and its `field` set to `impact` colors each cell by its VEP
+  impact tier from `CSQ`, the same as **Color by... → Consequence impact** in
+  the track menu
 - [`samplesTsvLocation`](/docs/config/vcftabixadapter/#slot-samplestsvlocation)
   makes the clinical columns available to facet and color rows by
 
@@ -174,7 +175,7 @@ keys.
       "variantLayout": "columns",
       "height": 450,
       "lineZoneHeight": 130,
-      "color": { "field": "impact" },
+      "encoding": { "color": "impact" },
       "facet": { "field": "histology", "sort": ["ductal", "lobular"] },
       "rowColor": "histology"
     }
@@ -224,7 +225,7 @@ band first in `sort`:
       "variantLayout": "columns",
       "height": 450,
       "lineZoneHeight": 130,
-      "color": { "field": "impact" },
+      "encoding": { "color": "impact" },
       "facet": {
         "field": "subtype",
         "sort": ["HR+/HER2-", "HER2+", "triple-negative"]

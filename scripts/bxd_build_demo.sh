@@ -89,7 +89,7 @@ jq '{ "4": ["black", "rgb(30,30,30)"], "3": ["grey", "rgb(150,150,160)"],
   | group_by(-.value)
   | map($class[.[0].value | floor | tostring] + [map(.sample_name) | join("|")])
   | { rowGroups: map({ match: ("^(" + .[2] + ")$"), group: .[0] }),
-      rowColor: { field: "group", domain: map(.[0]), range: map(.[1]) } }' \
+      rowColor: { field: "group", scale: { domain: map(.[0]), range: map(.[1]) } } }' \
   coat_color_values.json > coatColor.json
 
 # ── config.json: mm10 from jbrowse.org, the scan + the painting local ─────────
@@ -157,10 +157,14 @@ cat > "$APP"/config.json <<'JSON'
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "bxd_chromosome_painting_mm10-LinearMultiRowFeatureDisplay",
           "rows": "sample",
-          "color": {
-            "scale": "identity",
-            "domain": ["rgb(65,105,225)", "rgb(220,60,50)", "rgb(150,150,150)"],
-            "labels": ["B (C57BL/6J)", "D (DBA/2J)", "H (heterozygous)"]
+          "encoding": {
+            "color": {
+              "scale": {
+                "type": "identity",
+                "domain": ["rgb(65,105,225)", "rgb(220,60,50)", "rgb(150,150,150)"],
+                "names": ["B (C57BL/6J)", "D (DBA/2J)", "H (heterozygous)"]
+              }
+            }
           }
         }
       ]

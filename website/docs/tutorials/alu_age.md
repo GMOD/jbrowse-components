@@ -85,12 +85,12 @@ The track reads any BED-like file, bgzipped and tabix-indexed, with a `#` header
 line naming the columns; a mark refers to a column by name. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, `encoding` maps
 columns to a mark's channels, and `color` is a color scale from a `field`
-through a `domain` to a `range`. The track below lists three marks:
+through `scale.domain` to `scale.range`. The track below lists three marks:
 
 - **Per-copy bars** (below `maxBpPerPx`): a `bar` per copy with `milliDiv` as
   the height. A `formula` step writes the first four characters of the name into
   `lineage` (AluJ, AluS, AluY: oldest to youngest, and AluY is still inserting),
-  and the categorical `domain` fixes the legend order
+  and the ordinal `scale.domain` fixes the legend order
 - **Copies per bin** (past `minBpPerPx`): every Alu copy counted per bin, in
   grey
 - **AluY per bin**: the same count behind a `filter` for AluY, in red
@@ -122,10 +122,12 @@ through a `domain` to a `range`. The track below lists three marks:
             "y": "milliDiv",
             "color": {
               "field": "lineage",
-              "scale": "categorical",
-              "domain": ["AluJ", "AluS", "AluY", "FLAM", "FRAM"],
-              "range": ["#4575b4", "#fdae61", "#d73027", "#8c8c8c", "#8c8c8c"],
-              "title": "Alu lineage"
+              "scale": {
+                "type": "ordinal",
+                "domain": ["AluJ", "AluS", "AluY", "FLAM", "FRAM"],
+                "range": ["#4575b4", "#fdae61", "#d73027", "#8c8c8c", "#8c8c8c"]
+              },
+              "legend": { "title": "Alu lineage" }
             }
           },
           "maxBpPerPx": 100
@@ -249,11 +251,13 @@ and key names live. The config below sets them in the track:
             "y": "youngLog2",
             "color": {
               "field": "youngLog2",
-              "scale": "threshold",
-              "domain": [0],
-              "range": ["#4575b4", "#d73027"],
-              "labels": ["below the genome-wide share", "above it"],
-              "title": "AluY share"
+              "scale": {
+                "type": "threshold",
+                "domain": [0],
+                "range": ["#4575b4", "#d73027"],
+                "names": ["below the genome-wide share", "above it"]
+              },
+              "legend": { "title": "AluY share" }
             }
           }
         }

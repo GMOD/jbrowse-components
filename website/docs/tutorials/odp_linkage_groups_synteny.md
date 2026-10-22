@@ -184,7 +184,7 @@ We'll open the jellyfish-against-sponge table as a dotplot, then:
 
 As a session, the same dotplot with the sponge's unplaced scaffolds left off its
 axis. In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the
-session's `color` is a color scale, a `field` mapped to colors:
+session's `encoding.color` is a color scale, a `field` mapped to colors:
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
@@ -199,7 +199,7 @@ session's `color` is a color scale, a `field` mapped to colors:
           { "assembly": "EMU", "displayedRegionNames": ["EMU*"] }
         ],
         "tracks": ["RES_EMU"],
-        "color": { "field": "gene_group" },
+        "encoding": { "color": "gene_group" },
         "autoDiagonalize": true,
         "lineWidth": 4,
         "height": 860
@@ -225,11 +225,12 @@ and the session below sets what the figure needs.
 odp tests each pair of chromosomes for more shared orthologs than chance
 (Fisher's exact test, corrected for the number of pairs, in the `break_FET`
 column). Like the paper's figure, the stack draws orthologs on a chromosome pair
-under 0.05 at opacity 0.8 and the rest at 0.15. That is an `opacity` scale,
-which maps the `break_FET` field, cut at 0.05, to a `range` of two opacities.
+under 0.05 at opacity 0.8 and the rest at 0.15. That is an `encoding.opacity`
+scale, which maps the `break_FET` field, cut at 0.05, to a `scale.range` of two
+opacities.
 
-Each setting in the session has a menu route except `render` and the `opacity`
-mapping:
+Each setting in the session has a menu route except `render` and the
+`encoding.opacity` mapping:
 
 - `autoDiagonalize` sorts each row against its neighbour, working outward from
   `diagonalizeAnchorRow`. Rows count from 0, so 2 is the jellyfish, where each
@@ -240,8 +241,8 @@ mapping:
 - `mark` is **Curved lines** on the sliders button.
 - `render.antialias` turns off the fade a whole-genome view applies to sub-pixel
   ribbons, since their colors are what the figure shows. It has no menu item.
-- `opacity` is the scale above. **Opacity** on the sliders button scales both
-  opacities together; the mapping itself has no menu item.
+- `encoding.opacity` is the scale above. **Opacity** on the sliders button
+  scales both opacities together; the mapping itself has no menu item.
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
@@ -266,18 +267,22 @@ mapping:
           ["BFL_EMU"],
           ["EMU_CLAa"]
         ],
-        "color": { "field": "gene_group" },
+        "encoding": {
+          "color": "gene_group",
+          "opacity": {
+            "field": "break_FET",
+            "scale": {
+              "type": "threshold",
+              "domain": [0.05],
+              "range": [0.8, 0.15]
+            }
+          }
+        },
         "filter": [{ "field": "gene_group", "valid": true }],
         "autoDiagonalize": true,
         "diagonalizeAnchorRow": 2,
         "mark": { "interpolate": "bump" },
         "render": { "antialias": false },
-        "opacity": {
-          "field": "break_FET",
-          "scale": "threshold",
-          "domain": [0.05],
-          "range": [0.8, 0.15]
-        },
         "levelHeights": [130, 130, 130, 130, 130],
         "collapseEmptyRows": true
       }

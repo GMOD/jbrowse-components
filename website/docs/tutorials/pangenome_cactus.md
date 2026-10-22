@@ -220,13 +220,14 @@ in a row per assembly the track lists.
   "tracks": ["ecoli_cactus_ava"],
   "filter": [{ "field": "length", "gte": 10000 }],
   "levelHeights": [110, 110, 110, 110],
-  "color": { "field": "strand" }
+  "encoding": { "color": "strand" }
 }
 ```
 
-In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `color` is a
-color scale that maps each ribbon's `strand` to red where the two strains run
-the same way and blue where one is inverted against the other.
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
+`encoding.color` is a color scale that maps each ribbon's `strand` to red where
+the two strains run the same way and blue where one is inverted against the
+other.
 
 <Figure caption="The Minigraph-Cactus graph's halSynteny projection, the strains stacked and colored by strand." src="/img/pangenome_cactus/synteny.png" />
 

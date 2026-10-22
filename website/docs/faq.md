@@ -136,17 +136,17 @@ session without editing config.json.
 ### How do I change the color of a track
 
 The track menu's **Color** entry picks one and saves it with your session. In
-config, set `color` in the track's `displayDefaults`; in a URL, in its
+config, set `encoding.color` in the track's `displayDefaults`; in a URL, in its
 `displaySnapshot`. [](/docs/cookbook#colors)
 
 ### How do I color features by an attribute (color callback)
 
-Set `color` to an object naming the attribute, `"color": { "field": "type" }`,
+Set `encoding.color` to the attribute's name, `"encoding": { "color": "type" }`,
 which paints each value a different color and draws a key saying which is which.
 [](/docs/cookbook#colors) has the chosen-color, binned and gradient forms. Logic
 no single field states takes a [Jexl](https://github.com/TomFrost/Jexl)
-expression,
-`"color": "jexl:feature.score > 500 && feature.type == 'exon' ? 'red' : 'grey'"`;
+expression as the `value`,
+`"color": { "value": "jexl:feature.score > 500 && feature.type == 'exon' ? 'red' : 'grey'" }`;
 see [](/docs/config_guides/jexl), and
 [](/docs/config_guides/customizing_feature_colors/) for adding a function of
 your own when an expression gets unwieldy.

@@ -57,8 +57,8 @@
         "facet": {
           "field": "strand"
         },
-        "color": {
-          "field": "type"
+        "encoding": {
+          "color": "type"
         },
         "height": 250
       }

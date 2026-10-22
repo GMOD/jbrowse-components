@@ -37,7 +37,7 @@ function flySynteny(
     collapseEmptyRows: !genes,
     levelHeights: [360],
     mark: { interpolate: 'linear' },
-    color: { field: 'strand' },
+    encoding: { color: 'strand' },
     // Shown, a few hundred chrUn_NW_ mate marks cover the band.
     offscreen: { show: false },
     ...extra,
@@ -82,7 +82,7 @@ export const agentSyntenySpecs: ScreenshotSpec[] = [
             { assembly: MAU, displayedRegionNames: ARMS },
           ],
           tracks: [PIF],
-          color: { field: 'strand' },
+          encoding: { color: 'strand' },
           axis: { labels: false },
           height: 760,
         },

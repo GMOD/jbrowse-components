@@ -71,11 +71,19 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "bxd_chromosome_painting_mm10-LinearMultiRowFeatureDisplay",
           "rows": "sample",
-          "color": {
-            "scale": "identity",
-            "domain": ["rgb(65,105,225)", "rgb(220,60,50)", "rgb(150,150,150)"],
-            "labels": ["B (C57BL/6J)", "D (DBA/2J)", "H (heterozygous)"],
-            "title": "Genotype"
+          "encoding": {
+            "color": {
+              "scale": {
+                "type": "identity",
+                "domain": [
+                  "rgb(65,105,225)",
+                  "rgb(220,60,50)",
+                  "rgb(150,150,150)"
+                ],
+                "names": ["B (C57BL/6J)", "D (DBA/2J)", "H (heterozygous)"]
+              },
+              "legend": { "title": "Genotype" }
+            }
           },
           "height": 700,
           "rowGroups": [
@@ -98,13 +106,15 @@
           ],
           "rowColor": {
             "field": "group",
-            "domain": ["black", "grey", "brown", "dilute brown"],
-            "range": [
-              "rgb(30,30,30)",
-              "rgb(150,150,160)",
-              "rgb(130,80,40)",
-              "rgb(210,175,130)"
-            ]
+            "scale": {
+              "domain": ["black", "grey", "brown", "dilute brown"],
+              "range": [
+                "rgb(30,30,30)",
+                "rgb(150,150,160)",
+                "rgb(130,80,40)",
+                "rgb(210,175,130)"
+              ]
+            }
           },
           "facet": "group"
         }

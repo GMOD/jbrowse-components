@@ -20,7 +20,7 @@ The read connections have **one table saying what a slot MEANS**, and the
 color follows: `ARC_SLOT_CATEGORY` (`shaders/palettes.ts`) →
 `arcSlotCategory(slot, colorField)` → `palette.readCategoryColors[category]`
 (`readCategoryColorsOf`, built once per palette over `declaredReadCategoryColors`)
-→ the color `color` declares for the category.
+→ the color `encoding.color` declares for the category.
 
 A split-read arc's four slots (`features/arcs/arcSplitCategory.ts`) are not read
 categories. `arcCategoryColor` resolves three of them through their pair twin's

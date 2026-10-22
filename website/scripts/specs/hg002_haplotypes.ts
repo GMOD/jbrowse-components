@@ -48,8 +48,8 @@ function geneLane(hap: 'MAT' | 'PAT', extra: Record<string, unknown> = {}) {
   return {
     trackId: `hg002_genes_${hap.toLowerCase()}`,
     geneGlyphMode: 'longestCoding',
-    color: STRAND_COLOR,
-    showLegend: false,
+    encoding: { color: STRAND_COLOR },
+    legend: { show: false },
     ...extra,
   }
 }
@@ -74,7 +74,7 @@ const LANDMARK_FILTER = `jexl:${LANDMARK_GENES.map(
 
 // Strand as color: at 9 Mb across 1400 px GATA4 and BLK are 11-13 px, too
 // narrow for an arrow. The same red-forward / blue-reverse scheme as the
-// ribbons, and `showLegend: false` keeps keys off the ribbons.
+// ribbons, and `legend.show: false` keeps keys off the ribbons.
 const STRAND_COLOR = { field: 'strand' }
 
 function landmarkLane(hap: 'MAT' | 'PAT') {
@@ -82,8 +82,8 @@ function landmarkLane(hap: 'MAT' | 'PAT') {
     trackId: `hg002_landmarks_${hap.toLowerCase()}`,
     geneGlyphMode: 'longestCoding',
     filter: [LANDMARK_FILTER],
-    color: STRAND_COLOR,
-    showLegend: false,
+    encoding: { color: STRAND_COLOR },
+    legend: { show: false },
     height: 60,
   }
 }
@@ -114,7 +114,7 @@ function haplotypeSession(
     views: [
       {
         type: 'LinearSyntenyView',
-        color: { field: 'strand' },
+        encoding: { color: 'strand' },
         mark: { interpolate: 'bump' },
         tracks: [['hg002v1.2_mat_vs_pat']],
         ...viewProps,
@@ -251,14 +251,14 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
           displayName: 'T2T-HG002 v1.2 maternal (x) vs paternal (y)',
           // Strand color is the only signal off the diagonal: the 493 inverted
           // chains draw as blue ticks.
-          color: { field: 'strand' },
+          encoding: { color: 'strand' },
           views: WHOLE_GENOME_AXES,
           tracks: ['hg002v1.2_mat_vs_pat'],
         },
         {
           type: 'DotplotView',
           displayName: 'chr8 maternal (x) vs paternal (y)',
-          color: { field: 'strand' },
+          encoding: { color: 'strand' },
           views: [
             { assembly: 'hg002v1.2', displayedRegionNames: ['chr8_MATERNAL'] },
             { assembly: 'hg002v1.2', displayedRegionNames: ['chr8_PATERNAL'] },

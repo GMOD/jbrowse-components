@@ -107,12 +107,16 @@ right-clicking a point pins it as the index
           "y": "score",
           "color": {
             "field": "r2",
-            "scale": "threshold",
-            "domain": [0.2, 0.4, 0.6, 0.8],
-            "range": ["#357ebd", "#46b8da", "#5cb85c", "#eea236", "#d43f3a"],
-            "title": "r² to index SNP",
-            "descending": true,
-            "missingLabel": "No LD data"
+            "scale": {
+              "type": "threshold",
+              "domain": [0.2, 0.4, 0.6, 0.8],
+              "range": ["#357ebd", "#46b8da", "#5cb85c", "#eea236", "#d43f3a"]
+            },
+            "legend": {
+              "title": "r² to index SNP",
+              "descending": true,
+              "missingLabel": "No LD data"
+            }
           }
         }
       },
@@ -126,10 +130,12 @@ right-clicking a point pins it as the index
           "color": { "value": "#c951c9" },
           "shape": {
             "field": "ld_role",
-            "domain": ["index"],
-            "range": ["diamond"],
-            "labels": ["Index SNP"],
-            "title": ""
+            "scale": {
+              "domain": ["index"],
+              "range": ["diamond"],
+              "names": ["Index SNP"]
+            },
+            "legend": { "title": "" }
           }
         }
       }
@@ -153,13 +159,13 @@ types**), and its point mark chooses what it reads:
 - `encoding.color: { "field": "population" }` — gives each distinct value of a
   column a different color and draws a key of the values met. A value takes the
   same color in every region and session. Its
-  [`domain`](/docs/config/markcolor/#slot-domain) is the order those values
-  take, in the key and in the colors: the values it lists come first, in that
-  order, and the rest follow sorted, and `range` hands them colors.
+  [`scale.domain`](/docs/config/markcolor/#slot-domain) is the order those
+  values take, in the key and in the colors: the values it lists come first, in
+  that order, and the rest follow sorted, and `scale.range` hands them colors.
 
 The track menu's **Edit marks...** edits both, and `encoding.size` is the point
 diameter in px. A point stands at the middle of its window; `"mark": "rule"`
-draws the window across its extent, `encoding.size` px thick.
+draws the window across its extent, `encoding.strokeWidth` px thick.
 
 ```json addtrack
 {
@@ -174,7 +180,7 @@ draws the window across its extent, `encoding.size` px thick.
       "marks": [
         {
           "mark": "point",
-          "encoding": { "y": "fst", "color": { "field": "population" } }
+          "encoding": { "y": "fst", "color": "population" }
         }
       ],
       "scales": { "y": { "rules": [0.25] } }

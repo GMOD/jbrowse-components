@@ -557,17 +557,18 @@ print('over the element the collection medians %.2f copies; %d of %d dogs '
       % (statistics.median(over), sum(v >= 2.5 for v in over), len(over),
          100 * sum(v >= 2.5 for v in over) / len(over)))
 
-# The display's identity color names this palette in its `domain` and `labels`,
-# because the BED carries a color per feature and nothing to key a category
-# off. Nothing checks the two agree, and they have drifted before (the painting
-# was recolored and the key was not), so print the block to paste rather than
-# leaving it to be remembered.
+# The display's identity color names this palette in its `scale.domain` and
+# `scale.names`, because the BED carries a color per feature and nothing to key
+# a category off. Nothing checks the two agree, and they have drifted before
+# (the painting was recolored and the key was not), so print the block to paste
+# rather than leaving it to be remembered.
 print()
-print('color for the copy-number displays, paste into the track config:')
+print('encoding.color for the copy-number displays, paste into the track config:')
 painted = sorted({min(CN_CAP, r[3]) for r in rows})
-print(json.dumps({'scale': 'identity', 'title': 'Copy number',
-                  'domain': ['rgb(%s)' % cn_color(cn) for cn in painted],
-                  'labels': [cn_label(cn) for cn in painted]}, indent=2))
+print(json.dumps({'scale': {'type': 'identity',
+                            'domain': ['rgb(%s)' % cn_color(cn) for cn in painted],
+                            'names': [cn_label(cn) for cn in painted]},
+                  'legend': {'title': 'Copy number'}}, indent=2))
 PY
 
 bgzip -f dog10k_cyp1a2_cohort_cn.bed

@@ -165,6 +165,10 @@ describe('a track whose display no translating modifier targets', () => {
     expect(
       buildDisplaySnapshot('other', ['height:200', 'force', 'color:strand'])
         .snap,
-    ).toEqual({ height: 200, forceLoad: true, color: 'strand' })
+    ).toEqual({
+      height: 200,
+      forceLoad: true,
+      encoding: { color: { value: 'strand' } },
+    })
   })
 })

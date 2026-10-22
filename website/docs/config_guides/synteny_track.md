@@ -405,16 +405,16 @@ start opens that circle from the track, and as a view it is:
   "displayedRegionNames": ["chr1", "chr2", "chr3"],
   "tracks": ["hg38_vs_mm39"],
   "autoDiagonalize": true,
-  "color": { "field": "query" }
+  "encoding": { "color": "query" }
 }
 ```
 
 A `displayedRegionNames` list is resolved against each assembly in turn, which
 keeps a few named chromosomes of both genomes on the circle instead of every
 unplaced contig of either; `{ "mm39": ["chr1", "chr2"] }` restricts one genome
-and leaves the other whole. `color`, `opacity` and `filter` are the linear
-synteny view's settings; `{ "field": "query" }` paints each ribbon in its
-first-genome chromosome's ideogram color.
+and leaves the other whole. `encoding.color`, `encoding.opacity` and `filter`
+are the linear synteny view's settings; `"color": "query"` paints each ribbon in
+its first-genome chromosome's ideogram color.
 
 ## See also
 

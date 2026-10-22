@@ -111,9 +111,12 @@ const EXEMPT = new Map([
   // superseded by render.antialias, and marked deprecated at its
   // declaration; documenting it would advertise the form we want retired
   ['fadeThinAlignments', 'deprecated in favour of render.antialias'],
-  // an older spelling of `color.domain` that the synteny view's preProcessSnapshot
-  // converts; the page teaches `color`
-  ['colorDomain', 'an older spelling of color.domain, converted on load'],
+  // an older spelling of `encoding.color.scale.domain` that the synteny view's
+  // preProcessSnapshot converts; the page teaches `encoding.color`
+  [
+    'colorDomain',
+    'an older spelling of encoding.color.scale.domain, converted on load',
+  ],
   // BreakpointSplitView passes the retired toggle through so an old session
   // opens quietly; the overlay draws every link the panel does not (ADR-238)
   [

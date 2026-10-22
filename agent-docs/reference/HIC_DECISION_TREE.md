@@ -91,7 +91,7 @@ the cast. The hover index inverts what is there instead.
 
 ![How a contact count becomes a color](diagrams/hic-color.svg)
 
-| `color` slots | saturates at |
+| `encoding.color.scale` slots | saturates at |
 | --- | --- |
 | `domainMax` set | that number, the same at every zoom |
 | `domainQuantile` below 1 (default 0.95) | that quantile of the loaded counts |
@@ -99,7 +99,7 @@ the cast. The hover index inverts what is there instead.
 
 **Contact counts are heavily skewed**, so saturating at the true max leaves
 everything off-diagonal at the bottom of the ramp. The 95th percentile is the
-default for that reason, and the `scale` slot's `log` spreads the low end on its
+default for that reason, and a `scale.type` of `log` spreads the low end on its
 own.
 
 **That percentile is an exact order statistic, taken by selection rather than by

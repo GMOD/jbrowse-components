@@ -72,7 +72,11 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "grch38_cytobands-LinearBasicDisplay",
-          "color": "jexl:{gneg:'rgb(227,227,227)',gpos25:'rgb(142,142,142)',gpos50:'rgb(85,85,85)',gpos75:'rgb(57,57,57)',gpos100:'rgb(0,0,0)',gvar:'rgb(0,0,0)',stalk:'rgb(127,127,127)',acen:'#800'}[get(feature,'gieStain')] || 'black'",
+          "encoding": {
+            "color": {
+              "value": "jexl:{gneg:'rgb(227,227,227)',gpos25:'rgb(142,142,142)',gpos50:'rgb(85,85,85)',gpos75:'rgb(57,57,57)',gpos100:'rgb(0,0,0)',gvar:'rgb(0,0,0)',stalk:'rgb(127,127,127)',acen:'#800'}[get(feature,'gieStain')] || 'black'"
+            }
+          },
           "height": 50
         }
       ]
@@ -124,13 +128,17 @@
         "labels": {
           "name": "jexl:'CN '+get(feature,'total_copy_number')+' ('+get(feature,'hap1_copy_number')+'|'+get(feature,'hap2_copy_number')+')'"
         },
-        "color": {
-          "field": "total_copy_number",
-          "scale": "threshold",
-          "domain": ["1", "2", "3", "4"],
-          "range": ["#2166ac", "#92c5de", "#e0e0e0", "#f4a582", "#b2182b"],
-          "labels": ["CN 0", "CN 1", "CN 2", "CN 3", "CN 4+"],
-          "title": "Copy number"
+        "encoding": {
+          "color": {
+            "field": "total_copy_number",
+            "scale": {
+              "type": "threshold",
+              "domain": ["1", "2", "3", "4"],
+              "range": ["#2166ac", "#92c5de", "#e0e0e0", "#f4a582", "#b2182b"],
+              "names": ["CN 0", "CN 1", "CN 2", "CN 3", "CN 4+"]
+            },
+            "legend": { "title": "Copy number" }
+          }
         }
       }
     },
@@ -255,7 +263,7 @@
           "type": "LinearWiggleDisplay",
           "displayId": "HG008-T_bicseq2-LinearWiggleDisplay",
           "mark": "line",
-          "color": "#0068d1",
+          "encoding": { "color": { "value": "#0068d1" } },
           "scales": {
             "y": { "domainMin": -2, "domainMax": 1.5, "grid": true }
           },
@@ -379,19 +387,29 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "hg008_subclonal_cnv-LinearMultiRowFeatureDisplay",
           "rows": "clone",
-          "color": {
-            "field": "cn",
-            "scale": "threshold",
-            "domain": ["1", "2", "3", "4"],
-            "range": ["#2166ac", "#92c5de", "#e0e0e0", "#f4a582", "#b2182b"],
-            "labels": [
-              "CNVkit CN 0",
-              "CNVkit CN 1",
-              "CNVkit CN 2",
-              "CNVkit CN 3",
-              "CNVkit CN 4+"
-            ],
-            "title": "Copy number"
+          "encoding": {
+            "color": {
+              "field": "cn",
+              "scale": {
+                "type": "threshold",
+                "domain": ["1", "2", "3", "4"],
+                "range": [
+                  "#2166ac",
+                  "#92c5de",
+                  "#e0e0e0",
+                  "#f4a582",
+                  "#b2182b"
+                ],
+                "names": [
+                  "CNVkit CN 0",
+                  "CNVkit CN 1",
+                  "CNVkit CN 2",
+                  "CNVkit CN 3",
+                  "CNVkit CN 4+"
+                ]
+              },
+              "legend": { "title": "Copy number" }
+            }
           }
         }
       ],
@@ -415,13 +433,21 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "hg008_wakhan_haplotype-LinearMultiRowFeatureDisplay",
           "rows": "haplotype",
-          "color": {
-            "field": "copynumber_state",
-            "scale": "threshold",
-            "domain": ["0.5", "1.5"],
-            "range": ["#2166ac", "#bdbdbd", "#f4a582"],
-            "labels": ["Haplotype lost (0)", "One copy", "Two or more copies"],
-            "title": "Copy number per haplotype"
+          "encoding": {
+            "color": {
+              "field": "copynumber_state",
+              "scale": {
+                "type": "threshold",
+                "domain": ["0.5", "1.5"],
+                "range": ["#2166ac", "#bdbdbd", "#f4a582"],
+                "names": [
+                  "Haplotype lost (0)",
+                  "One copy",
+                  "Two or more copies"
+                ]
+              },
+              "legend": { "title": "Copy number per haplotype" }
+            }
           }
         }
       ]

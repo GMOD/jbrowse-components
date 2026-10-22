@@ -60,11 +60,10 @@
         ],
         "tracks": ["hs1ToMm39.over.chain.pif"],
         "autoDiagonalize": true,
-        "color": { "field": "query" },
+        "encoding": { "color": "query", "opacity": 0.4 },
         "filter": [{ "field": "length", "gte": 500000 }],
         "levelHeights": [500],
-        "mark": { "interpolate": "bump" },
-        "opacity": 0.4
+        "mark": { "interpolate": "bump" }
       }
     ]
   },

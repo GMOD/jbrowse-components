@@ -125,7 +125,7 @@ and a theme. Every recipe below changes one piece of it.
       "assemblyNames": ["volvox"],
       "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
       "displayDefaults": {
-        "color": { "field": "strand" },
+        "encoding": { "color": "strand" },
         "height": 200,
         "mouseover": "jexl:feature.name"
       }
@@ -138,7 +138,7 @@ and a theme. Every recipe below changes one piece of it.
       "adapter": { "type": "BamAdapter", "uri": "volvox-sorted.bam" },
       "displayDefaults": {
         "heightMode": "fit",
-        "color": { "field": "mapq" },
+        "encoding": { "color": "mapq" },
         "filter": { "flagExclude": 1540, "flagInclude": 0 }
       }
     },
@@ -149,7 +149,7 @@ and a theme. Every recipe below changes one piece of it.
       "assemblyNames": ["volvox"],
       "adapter": { "type": "BigWigAdapter", "uri": "volvox_microarray.bw" },
       "displayDefaults": {
-        "color": "#C8B414",
+        "encoding": { "color": { "value": "#C8B414" } },
         "scales": { "y": { "type": "log", "domainMin": 0 } }
       }
     },
@@ -160,7 +160,9 @@ and a theme. Every recipe below changes one piece of it.
       "assemblyNames": ["volvox"],
       "adapter": { "type": "VcfTabixAdapter", "uri": "volvox.filtered.vcf.gz" },
       "displayDefaults": {
-        "color": "jexl:feature.type=='SNV'?'green':'purple'",
+        "encoding": {
+          "color": { "value": "jexl:feature.type=='SNV'?'green':'purple'" }
+        },
         "filter": ["jexl:feature.INFO.AF[0] > 0.05"]
       }
     }
@@ -184,10 +186,10 @@ and a theme. Every recipe below changes one piece of it.
 
 ## Colors
 
-`color` is a CSS color, or an object that paints each feature by one of its
-fields and draws a key saying what each color means. This is the object **Color
-by... → Strand** writes, so forward stays red everywhere in the app, synteny
-ribbons included:
+`encoding.color` is a CSS color as `{ "value": … }`, or a field that paints each
+feature by its value and draws a key saying what each color means. This is the
+setting **Color by... → Strand** writes, so forward stays red everywhere in the
+app, synteny ribbons included:
 
 ```json addtrack
 {
@@ -197,7 +199,7 @@ ribbons included:
   "assemblyNames": ["volvox"],
   "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
   "displayDefaults": {
-    "color": { "field": "strand" }
+    "encoding": { "color": "strand" }
   }
 }
 ```
@@ -207,20 +209,20 @@ ribbons included:
 `field` names any attribute the track has. On a gene track a transcript's parts
 paint in the transcript's value, or the gene's where the transcript has none.
 
-| Recipe                        | `color`                                                                                    |
-| ----------------------------- | ------------------------------------------------------------------------------------------ |
-| Solid color                   | `"#6a3d9a"`                                                                                |
-| A color per value             | `{ "field": "type" }`                                                                      |
-| Chosen colors for some values | `{ "field": "type", "domain": ["CDS", "exon"], "range": ["#d62728", "#2ca02c"] }`          |
-| Bins of a number              | `{ "field": "score", "scale": "threshold", "domain": [7.3], "range": ["#0068d1", "red"] }` |
-| A gradient along a number     | `{ "field": "score", "scheme": "viridis" }`                                                |
-| BED file's own colors         | leave `color` unset                                                                        |
-| Anything else                 | a `jexl:` expression over `feature` returning a color                                      |
+| Recipe                        | `encoding.color`                                                                                       |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Solid color                   | `{ "value": "#6a3d9a" }`                                                                               |
+| A color per value             | `"type"`                                                                                               |
+| Chosen colors for some values | `{ "field": "type", "scale": { "domain": ["CDS", "exon"], "range": ["#d62728", "#2ca02c"] } }`         |
+| Bins of a number              | `{ "field": "score", "scale": { "type": "threshold", "domain": [7.3], "range": ["#0068d1", "red"] } }` |
+| A gradient along a number     | `{ "field": "score", "scale": { "scheme": "viridis" } }`                                               |
+| BED file's own colors         | leave `encoding.color` unset                                                                           |
+| Anything else                 | a `value` holding a `jexl:` expression over `feature` returning a color                                |
 
-`score` paints a gradient unless `scale` is set, and any other field a color per
-value; `domainMin` and `domainMax` pin a gradient's ends, which otherwise follow
-the loaded features. `labels` names the `domain` values in the key and `title`
-heads it:
+`score` paints a gradient unless `scale.type` is set, and any other field a
+color per value; `scale.domainMin` and `scale.domainMax` pin a gradient's ends,
+which otherwise follow the loaded features. `scale.names` names the
+`scale.domain` values in the key and `legend.title` heads it:
 
 ```json addtrack
 {
@@ -230,32 +232,36 @@ heads it:
   "assemblyNames": ["hg38"],
   "adapter": { "type": "BedTabixAdapter", "uri": "rmsk.bed.gz" },
   "displayDefaults": {
-    "color": {
-      "field": "repClass",
-      "domain": [
-        "SINE",
-        "LINE",
-        "LTR",
-        "DNA",
-        "Simple_repeat",
-        "Low_complexity"
-      ],
-      "range": [
-        "#e41a1c",
-        "#377eb8",
-        "#4daf4a",
-        "#984ea3",
-        "#ff7f00",
-        "#a65628"
-      ],
-      "labels": [
-        "SINE",
-        "LINE",
-        "LTR",
-        "DNA",
-        "Simple repeat",
-        "Low complexity"
-      ]
+    "encoding": {
+      "color": {
+        "field": "repClass",
+        "scale": {
+          "domain": [
+            "SINE",
+            "LINE",
+            "LTR",
+            "DNA",
+            "Simple_repeat",
+            "Low_complexity"
+          ],
+          "range": [
+            "#e41a1c",
+            "#377eb8",
+            "#4daf4a",
+            "#984ea3",
+            "#ff7f00",
+            "#a65628"
+          ],
+          "names": [
+            "SINE",
+            "LINE",
+            "LTR",
+            "DNA",
+            "Simple repeat",
+            "Low complexity"
+          ]
+        }
+      }
     }
   }
 }
@@ -347,7 +353,7 @@ pass every `jexl:` expression, on variant tracks too:
   "adapter": { "type": "BamAdapter", "uri": "volvox-sorted.bam" },
   "displayDefaults": {
     "height": 400,
-    "color": { "field": "mapq" },
+    "encoding": { "color": "mapq" },
     "pileup": { "softClips": { "show": true } },
     "facet": { "field": "tags.HP", "sort": ["2", "1"] },
     "filter": {
@@ -359,12 +365,13 @@ pass every `jexl:` expression, on variant tracks too:
 }
 ```
 
-- `color`'s field also takes `strand`, `pairOrientation`, `insertSize` and
-  `tags.XX`; a string is one color for every read, and `domain` with `range`
-  recolors one level:
-  `{ "field": "pairOrientation", "domain": ["RR"], "range": ["#d95f02"] }`
-- `baseColor` draws a per-base layer over the reads, whatever `color` fills them
-  with: `"modifications"`, `"bisulfite"`, `"baseQuality"` or `"base"`
+- `encoding.color`'s field also takes `strand`, `pairOrientation`, `insertSize`
+  and `tags.XX`; a `value` is one color for every read, and `scale.domain` with
+  `scale.range` recolors one level:
+  `{ "field": "pairOrientation", "scale": { "domain": ["RR"], "range": ["#d95f02"] } }`
+- `pileup.bases` draws a per-base layer over the reads, whatever
+  `encoding.color` fills them with; its own `encoding.color` names
+  `"modifications"`, `"bisulfite"`, `"baseQuality"` or `"base"`
 - `facet` also takes `strand`, `firstOfPairStrand`, `pairOrientation`, `split`,
   `pairing`, `mapq`, or any read field; `sort` pins which haplotype (or other
   value) stacks first — the same slot
@@ -377,8 +384,8 @@ pass every `jexl:` expression, on variant tracks too:
 
 ## Quantitative (wiggle) tracks
 
-A string in `color` paints every bar; left alone, a wiggle cuts at its `origin`
-and paints the two sides apart.
+A `value` in `encoding.color` paints every bar; left alone, a wiggle cuts at its
+`origin` and paints the two sides apart.
 [`mark`](/docs/config/linearwiggledisplay/#slot-mark) picks `bar`, `line`,
 `point`, or `span`.
 
@@ -390,7 +397,7 @@ and paints the two sides apart.
   "assemblyNames": ["volvox"],
   "adapter": { "type": "BigWigAdapter", "uri": "volvox_microarray.bw" },
   "displayDefaults": {
-    "color": "#C8B414",
+    "encoding": { "color": { "value": "#C8B414" } },
     "scales": { "y": { "type": "log", "domainMin": 0 } }
   }
 }
@@ -436,10 +443,10 @@ Past a handful of samples, generate `subadapters` from your samplesheet
 
 ## Variant tracks
 
-`color` and `filter` work as on a feature track, and VCF `INFO` fields are the
-usual thing to branch on. The `svType` field reads a record's structural-variant
-class off its symbolic ALT or `INFO/SVTYPE`, and paints each class a separate
-color under a key:
+`encoding.color` and `filter` work as on a feature track, and VCF `INFO` fields
+are the usual thing to branch on. The `svType` field reads a record's
+structural-variant class off its symbolic ALT or `INFO/SVTYPE`, and paints each
+class a separate color under a key:
 
 ```json addtrack
 {
@@ -449,7 +456,7 @@ color under a key:
   "assemblyNames": ["volvox"],
   "adapter": { "type": "VcfTabixAdapter", "uri": "volvox.dup.vcf.gz" },
   "displayDefaults": {
-    "color": { "field": "svType" },
+    "encoding": { "color": "svType" },
     "filter": ["jexl:feature.INFO.AF[0] > 0.05"]
   }
 }
@@ -501,18 +508,18 @@ has a worked config).
 
 A handful of setting names recur across track types. `field` names a feature
 field. Over a field's categories, `facet.sort`, `rows.sort` and a color's
-`domain` list the values that lead, in order, and the rest follow after them; a
-color's `range` gives the listed values their colors, as ggplot2's `breaks` with
-named `values` would. A threshold color reads `domain` as its cut points, one
-fewer than the colors in `range`, and a gradient pins its ends with `domainMin`
-and `domainMax`.
+`scale.domain` list the values that lead, in order, and the rest follow after
+them; a color's `scale.range` gives the listed values their colors, as ggplot2's
+`breaks` with named `values` would. A threshold color reads `scale.domain` as
+its cut points, one fewer than the colors in `scale.range`, and a gradient pins
+its ends with `scale.domainMin` and `scale.domainMax`.
 
-| Setting    | What it does                                                                                                                                 | Track types                                                                          |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `color`    | a CSS color, or `{ "field", "domain", "range" }` painting by a field, with a key ([Colors](#colors))                                         | feature, variant, alignments, quantitative, synteny, mark display (`encoding.color`) |
-| `facet`    | one labelled section per value of a field; `sort` stacks the listed values first                                                             | feature, variant, alignments, synteny, mark display                                  |
-| `rows`     | one row per source or sample; `sort` puts the listed rows first                                                                              | quantitative, multi-row feature, multi-sample variant, MAF, mark display             |
-| `scales.y` | the value axis: `type`, `domainMin`/`domainMax`, `domainQuantile`, `autoscaleGroup`, and the guides `rules`, `grid`, `title`, `minimalTicks` | quantitative, alignments coverage, synteny, mark display, GWAS                       |
+| Setting          | What it does                                                                                                                                 | Track types                                                                  |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `encoding.color` | a CSS color as `{ "value" }`, or `{ "field", "scale": { "domain", "range" } }` painting by a field, with a key ([Colors](#colors))           | feature, variant, alignments, quantitative, synteny, mark display (per mark) |
+| `facet`          | one labelled section per value of a field; `sort` stacks the listed values first                                                             | feature, variant, alignments, synteny, mark display                          |
+| `rows`           | one row per source or sample; `sort` puts the listed rows first                                                                              | quantitative, multi-row feature, multi-sample variant, MAF, mark display     |
+| `scales.y`       | the value axis: `type`, `domainMin`/`domainMax`, `domainQuantile`, `autoscaleGroup`, and the guides `rules`, `grid`, `title`, `minimalTicks` | quantitative, alignments coverage, synteny, mark display, GWAS               |
 
 A `scales.y` object works the same way on each of those track types. This one
 captions an alignments track's coverage band, rules it at every tick and draws a

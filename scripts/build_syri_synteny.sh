@@ -157,7 +157,7 @@ config = {
                     'type': 'MultiWaySyntenyDisplay',
                     'displayId': 'syri_pangenome-MultiWaySyntenyDisplay',
                     'rows': {'domain': names[1:]},
-                    'ribbonColor': {'field': 'syri', 'domain': syri_types},
+                    'ribbons': {'encoding': {'color': {'field': 'syri', 'scale': {'domain': syri_types}}}},
                 }
             ],
         },
@@ -177,7 +177,7 @@ config = {
                     'displayId': f'syri_regions_on_{reference}-LinearMultiRowFeatureDisplay',
                     'rows': {'field': 'query', 'domain': names[1:]},
                     # the key in plotsr's order; the blocks keep their itemRgb
-                    'color': {'domain': syri_types},
+                    'encoding': {'color': {'scale': {'domain': syri_types}}},
                 }
             ],
         },

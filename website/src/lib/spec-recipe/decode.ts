@@ -82,7 +82,9 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 // alignments, MAF and multi-sample variant displays (`coverage`, `sashimi`,
 // `variants`, ...), to one entry per member under its dotted path,
 // `coverage.show`, and so are the junction and connection objects of the
-// alignments display's `filter`, `filter.junctions.minReads`.
+// alignments display's `filter`, `filter.junctions.minReads`. An `encoding`
+// object, the display's or a band's, gives one entry per channel,
+// `encoding.color` and `readConnections.encoding.color`.
 export function specTrackSettings(entry: SpecTrackEntry): [string, unknown][] {
   if (typeof entry === 'string') {
     return []
@@ -106,13 +108,34 @@ export function flatSettings(settings: Record<string, unknown>) {
 }
 
 function settingEntries(key: string, value: unknown): [string, unknown][] {
-  return BAND_OBJECTS.has(key) && isPlainObject(value)
+  return key === 'encoding' && isPlainObject(value)
+    ? channelEntries(key, value)
+    : BAND_OBJECTS.has(key) && isPlainObject(value)
     ? bandEntries(key, value)
     : key === 'filter' && isPlainObject(value)
       ? filterEntries(value)
       : key === 'filter' && Array.isArray(value)
         ? [['filter.expressions', value]]
         : [[key, value]]
+}
+
+function channelEntries(
+  prefix: string,
+  encoding: Record<string, unknown>,
+): [string, unknown][] {
+  return Object.entries(encoding).map(([channel, value]) => [
+    `${prefix}.${channel}`,
+    value,
+  ])
+}
+
+/** A view's settings as the per-field walk reads them: one per channel. */
+export function viewSettingEntries(view: Record<string, unknown>) {
+  return Object.entries(view).flatMap(([key, value]): [string, unknown][] =>
+    key === 'encoding' && isPlainObject(value)
+      ? channelEntries(key, value)
+      : [[key, value]],
+  )
 }
 
 // The members a feature display's `filter` holds, each a row of its own in
@@ -190,6 +213,8 @@ const BAND_OBJECTS = new Set([
   'conservation',
   'variants',
   'alignments',
+  'legend',
+  'ribbons',
 ])
 
 // A band's `show` and `mark` are one radio on the read connections ("None",
@@ -216,8 +241,10 @@ function bandEntries(
         ]
   return [
     ...drawn,
-    ...Object.entries(rest).map(
-      ([member, value]) => [`${band}.${member}`, value] as [string, unknown],
+    ...Object.entries(rest).flatMap(([member, value]): [string, unknown][] =>
+      member === 'encoding' && isPlainObject(value)
+        ? channelEntries(`${band}.encoding`, value)
+        : [[`${band}.${member}`, value]],
     ),
   ]
 }

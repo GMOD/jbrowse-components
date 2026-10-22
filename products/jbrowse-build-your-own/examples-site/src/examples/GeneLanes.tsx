@@ -78,9 +78,9 @@ const GeneLanes = observer(function GeneLanes() {
             {
               type: 'MultiWaySyntenyDisplay',
               displayId: 'orthologs-MultiWaySyntenyDisplay',
-              color: { field: 'cluster' },
+              encoding: { color: 'cluster' },
               height: 330,
-              showLegend: false,
+              legend: { show: false },
             },
           ],
         },

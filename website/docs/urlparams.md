@@ -421,18 +421,19 @@ A `tracks` entry is a trackId string, or an object with initial display state:
 ```
 
 - `displaySnapshot` takes anything the display's menu offers: `type` to pick a
-  display, `height`, `color` (a CSS color or a `jexl:` expression), `scales.y`
-  on a quantitative track ([](/docs/config/valuescale)), `forceLoad` to render
-  past the "too much data" gate
-  ([](/docs/config/baselineardisplay/#slot-forceload)).
+  display, `height`, `encoding.color` (a field, or a `value` holding a CSS color
+  or a `jexl:` expression), `scales.y` on a quantitative track
+  ([](/docs/config/valuescale)), `forceLoad` to render past the "too much data"
+  gate ([](/docs/config/baselineardisplay/#slot-forceload)).
 - `trackSnapshot` sets track state such as `pinned: true`.
 - Any other key on the object is a display setting, so
   `{ "trackId": "my_bam_track", "type": "LinearAlignmentsDisplay", "height": 300 }`
   is the shorthand for the nested form. Use the explicit form when you also pass
   `trackSnapshot`.
 - `modifiers` takes the [jb2export](/docs/jbrowse-img) command line's track
-  options, such as `["color:strand", "sort:base", "color.field=tags.HP"]`. A
-  linear genome view applies them over the entry's other settings once it has
+  options, such as
+  `["color:strand", "sort:base", "encoding.color.field=tags.HP"]`. A linear
+  genome view applies them over the entry's other settings once it has
   navigated, so `sort:` pivots at the view's center.
 
 ### Linear genome view
@@ -519,7 +520,7 @@ split-read junctions:
           "displaySnapshot": {
             "height": 250,
             "pileup": { "softClips": { "show": true } },
-            "color": { "field": "pairOrientation" }
+            "encoding": { "color": "pairOrientation" }
           }
         }
       ]
@@ -530,8 +531,9 @@ split-read junctions:
 
 #### Live example: feature track color
 
-`color` on a feature track's display takes a CSS color, or a `jexl:` expression
-such as `"jexl:get(feature,'type')=='gene'?'blue':'gray'"` to color per feature:
+`encoding.color` on a feature track's display takes a `value` holding a CSS
+color, or a `jexl:` expression such as
+`"jexl:get(feature,'type')=='gene'?'blue':'gray'"` to color per feature:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -544,7 +546,7 @@ such as `"jexl:get(feature,'type')=='gene'?'blue':'gray'"` to color per feature:
         {
           "trackId": "gff3tabix_genes",
           "displaySnapshot": {
-            "color": "green"
+            "encoding": { "color": { "value": "green" } }
           }
         }
       ]
@@ -795,9 +797,8 @@ strand, with curved ribbons and stronger opacity:
     {
       "type": "LinearSyntenyView",
       "tracks": ["volvox_fake_synteny"],
-      "color": { "field": "strand" },
+      "encoding": { "color": "strand", "opacity": 0.8 },
       "mark": { "interpolate": "bump" },
-      "opacity": 0.8,
       "views": [
         { "loc": "ctgA:1-30000", "assembly": "volvox" },
         { "loc": "ctgA:1000-31000", "assembly": "volvox" }
@@ -807,7 +808,8 @@ strand, with curved ribbons and stronger opacity:
 }
 ```
 
-The v4 spellings `colorBy` and `alpha` still open, as `color` and `opacity`.
+The v4 spellings `colorBy` and `alpha` still open, as `encoding.color` and
+`encoding.opacity`.
 
 <!-- SPEC_KEYS LinearSyntenyView START -->
 

@@ -213,10 +213,10 @@ mode.
 A mode whose number a track does not have leaves every ribbon the default color.
 
 A text column's label takes a distinct color the first time the view meets it,
-and keeps that color as other labels arrive. The view's `color.domain` lists
-labels that take the palette in order and lead the legend, the rest sorted after
-them, so a session can put an ancestral linkage group's names in the order a
-reader expects and fix each one's color.
+and keeps that color as other labels arrive. The view's
+`encoding.color.scale.domain` lists labels that take the palette in order and
+lead the legend, the rest sorted after them, so a session can put an ancestral
+linkage group's names in the order a reader expects and fix each one's color.
 
 **Track colors**, offered once a view has more than one track, lists each track
 with the swatch it draws in under Distinct color per track. Pick a color there

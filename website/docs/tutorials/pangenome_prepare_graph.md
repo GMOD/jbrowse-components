@@ -297,20 +297,24 @@ indexed against K12.
     "uri": "graph"
   },
   "displayDefaults": {
-    "color": {
-      "field": "sampleCount",
-      "scale": "linear",
-      "domainMin": 1,
-      "range": ["#e31a1c", "#bdbdbd"],
-      "title": "Haplotypes"
+    "encoding": {
+      "color": {
+        "field": "sampleCount",
+        "scale": {
+          "type": "linear",
+          "domainMin": 1,
+          "range": ["#e31a1c", "#bdbdbd"]
+        },
+        "legend": { "title": "Haplotypes" }
+      }
     }
   }
 }
 ```
 
-The `color` block is a color scale that maps the `sampleCount` field linearly
-from `domainMin` onto the two colors of `range`. The count is per haplotype
-(`HG002.1`), so a diploid sample's two copies count separately.
+The `encoding.color` block is a color scale that maps the `sampleCount` field
+linearly from `scale.domainMin` onto the two colors of `scale.range`. The count
+is per haplotype (`HG002.1`), so a diploid sample's two copies count separately.
 
 ## Indexing haplotype walks with gfa-to-tabix {#haplotype-walks-tabix}
 

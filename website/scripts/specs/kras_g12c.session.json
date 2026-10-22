@@ -21,7 +21,7 @@
             "trackId": "kras-codon12",
             "type": "LinearBasicDisplay",
             "height": 150,
-            "color": "jexl:get(feature,'color')"
+            "encoding": { "color": { "value": "jexl:get(feature,'color')" } }
           }
         ]
       }

@@ -63,7 +63,7 @@ function hprcSegmentsLane(domain: { start: number; end: number }) {
     type: 'LinearBasicDisplay',
     showLabels: 'none',
     height: 100,
-    color: referencePositionColor(domain),
+    encoding: { color: { value: referencePositionColor(domain) } },
   }
 }
 

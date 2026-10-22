@@ -38,7 +38,10 @@ const tracks = [
             mark: 'bar',
             encoding: {
               y: 'score',
-              color: { field: 'score', scale: 'linear', scheme: 'viridis' },
+              color: {
+                field: 'score',
+                scale: { type: 'linear', scheme: 'viridis' },
+              },
             },
           },
         ],

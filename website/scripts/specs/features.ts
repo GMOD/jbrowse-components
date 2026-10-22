@@ -117,9 +117,13 @@ export const GENE_CHANNEL_SPEC_JSON = `{
     "field": "gene_biotype",
     "sort": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
   },
-  "color": {
-    "field": "gene_biotype",
-    "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
+  "encoding": {
+    "color": {
+      "field": "gene_biotype",
+      "scale": {
+        "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
+      }
+    }
   }
 }`
 
@@ -261,7 +265,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
         {
           ...GROUPING_TRACK,
           facet: 'strand',
-          color: { field: 'strand' },
+          encoding: { color: 'strand' },
           height: 310,
         },
       ],

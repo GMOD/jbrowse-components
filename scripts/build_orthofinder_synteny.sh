@@ -830,7 +830,7 @@ print(json.dumps({
         "displayName": f"{' - '.join(names)} (OrthoFinder orthogroups)",
           "views": [{"assembly": n} for n in names],
           "tracks": [track],
-          "color": { "field": "reference" },
+          "encoding": {"color": "reference"},
           "autoDiagonalize": True,
           # one bp/px down the whole stack, so a row's drawn length is its
           # genome size and the size differences between the genomes (which

@@ -16,7 +16,7 @@ export default function TrackShorthand() {
           trackId: 'duplications',
           uri: `${base}/volvox.dup.vcf.gz`,
           name: 'Duplications',
-          displayDefaults: { color: 'purple' },
+          displayDefaults: { encoding: { color: { value: 'purple' } } },
         },
       ]}
       view={{

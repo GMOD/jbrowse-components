@@ -36,11 +36,11 @@ test('the circular view holds the filter rows in its view menu', () => {
 })
 
 test('the color radios sit in the circular view menu and the comparative headers', () => {
-  const color = { field: 'strand' }
-  expect(stepPaths('color', color, 'CircularView')).toEqual([
+  const color = 'strand'
+  expect(stepPaths('encoding.color', color, 'CircularView')).toEqual([
     'View menu → Color by... → Strand',
   ])
-  expect(stepPaths('color', color, 'DotplotView')).toEqual([
+  expect(stepPaths('encoding.color', color, 'DotplotView')).toEqual([
     'Dotplot header → palette button → Strand',
   ])
 })

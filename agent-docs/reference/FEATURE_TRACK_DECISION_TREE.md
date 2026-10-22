@@ -110,8 +110,8 @@ group's regions cut out.
 One rule: **an unset slot means nothing asked, so the file gets to speak; any
 set value wins.** Unset is `undefined` rather than a concrete default, so every
 real color stays expressible. A UTR reads `utrColor` only when that slot is set
-and otherwise falls through to `color`, which is what makes the rule hold for a
-whole transcript rather than for its coding part.
+and otherwise falls through to `encoding.color`, which is what makes the rule
+hold for a whole transcript rather than for its coding part.
 
 Color-by-frame is applied last, over whatever fill was resolved. Outlines,
 connectors and strand arrows take the theme's secondary text color, alpha
@@ -141,9 +141,10 @@ included, unless a slot overrides them.
   a gene shares its row with: a strand arrow is 8px of layout width the worker
   never sees, so two genes 4px apart in bp stacked anyway and a 145px track
   landed on `bodies` with every name gone (ADR-092).
-- **A UTR read as a separate color broke its own rule**: with a `color` set on a
-  BED12 track the exon took it and the UTR took the file's `itemRgb`, so the
-  config beat the file at one end of a gene and lost at the other.
+- **A UTR read as a separate color broke its own rule**: with an
+  `encoding.color` set on a BED12 track the exon took it and the UTR took the
+  file's `itemRgb`, so the config beat the file at one end of a gene and lost
+  at the other.
 
 ## What transfers
 

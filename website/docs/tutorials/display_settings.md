@@ -52,8 +52,8 @@ Open the track's menu from the track label, then:
 - Drag the bottom edge of the track down to about 250px, so the deeper stack of
   paired rows fits.
 
-**Advanced → Edit plot...** is a second route to the `color` and `unit`: it
-shows them as text and applies edits live.
+**Advanced → Edit plot...** is a second route to the `encoding.color` and
+`unit`: it shows them as text and applies edits live.
 
 <Figure caption="The volvox-sv (cram) track as a pileup, reads viewed as pairs and colored by insert size and orientation." src="/img/display_settings_url_snapshot.png" />
 
@@ -76,7 +76,7 @@ the id of the track you edited:
         "displayId": "volvox_sv_cram-LinearAlignmentsDisplay",
         "height": 250,
         "unit": "chain",
-        "color": { "field": "insertSizeAndOrientation" }
+        "encoding": { "color": { "field": "insertSizeAndOrientation" } }
       }
     ]
   }
@@ -95,11 +95,11 @@ reopening the file restores every setting.
 
 </details>
 
-`height`, `unit` and `color` are the setting names in both apps. In
-[grammar-of-graphics](/docs/config_guides/mark_display) terms, `color` is a
-color scale, a field mapped to colors, and `unit` is the observation unit, a
-read or a chain. The [config schema docs](/docs/config_guide) list the names and
-values each display takes (e.g. [](/docs/config/linearalignmentsdisplay),
+`height`, `unit` and `encoding.color` are the setting names in both apps. In
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, `encoding.color`
+is a color scale, a field mapped to colors, and `unit` is the observation unit,
+a read or a chain. The [config schema docs](/docs/config_guide) list the names
+and values each display takes (e.g. [](/docs/config/linearalignmentsdisplay),
 [](/docs/config/linearwiggledisplay)).
 
 Reading the JSON back finds the key for any setting on any track: change it in
@@ -120,7 +120,7 @@ track's `displayDefaults` apply every time the track loads, and in a served
   "displayDefaults": {
     "height": 250,
     "unit": "chain",
-    "color": { "field": "insertSizeAndOrientation" }
+    "encoding": { "color": "insertSizeAndOrientation" }
   }
 }
 ```
@@ -133,9 +133,10 @@ forms.
 
 A session value overrides a track's `displayDefaults` one key at a time. The
 volvox config ships a gene track, `gff3tabix_genes_shorthand_jexl`, whose
-`displayDefaults` set `color`, a jexl expression that draws plus-strand features
-blue and minus-strand ones red, and `labels`, which names each feature with its
-type in brackets. This session sets `color` on that track and nothing else:
+`displayDefaults` set `encoding.color`, a jexl expression that draws plus-strand
+features blue and minus-strand ones red, and `labels`, which names each feature
+with its type in brackets. This session sets `encoding.color` on that track and
+nothing else:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -147,7 +148,7 @@ type in brackets. This session sets `color` on that track and nothing else:
       "tracks": [
         {
           "trackId": "gff3tabix_genes_shorthand_jexl",
-          "color": "#8c8c8c"
+          "encoding": { "color": { "value": "#8c8c8c" } }
         }
       ]
     }
@@ -155,8 +156,8 @@ type in brackets. This session sets `color` on that track and nothing else:
 }
 ```
 
-The session's `color` replaces the config's, so the features draw grey, and
-their labels still read `seg04 [match]` from `displayDefaults`.[^snapshot]
+The session's `encoding.color` replaces the config's, so the features draw grey,
+and their labels still read `seg04 [match]` from `displayDefaults`.[^snapshot]
 
 ## Where each route keeps a setting (link, session file or config)
 
@@ -188,7 +189,7 @@ view: {
       type: 'LinearAlignmentsDisplay',
       height: 250,
       unit: 'chain',
-      color: { field: 'insertSizeAndOrientation' },
+      encoding: { color: 'insertSizeAndOrientation' },
     },
   ],
 }

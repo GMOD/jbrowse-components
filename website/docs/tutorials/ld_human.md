@@ -106,7 +106,7 @@ in an hg38 session:
   },
   "displayDefaults": {
     "variantLayout": "genomic",
-    "showLegend": true,
+    "legend": { "show": true },
     "height": 360
   }
 }
@@ -114,9 +114,9 @@ in an hg38 session:
 
 The block is the lactase-persistence sweep
 ([Bersaglieri et al. 2004](https://doi.org/10.1086/421051)). In
-[grammar-of-graphics](/docs/config_guides/mark_display) terms, `color` is a
-color scale, and [`color.field`](/docs/config/ldcolor/#slot-field) sets its
-input to r² or D' (a second LD measure). This table has both.
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, `encoding.color`
+is a color scale, and [`encoding.color.field`](/docs/config/ldcolor/#slot-field)
+sets its input to r² or D' (a second LD measure). This table has both.
 
 ## Cutting the LCT region out of the 1000 Genomes VCF
 
