@@ -55,7 +55,8 @@ The view's gridlines stop at the anchor, the one lane they fit.
 - Click a ribbon to open its details; click empty canvas to clear the outline.
 - **Show... → Ribbons across gaps** joins a gene to the next lane that places it
   when the lane between places nothing. Off, a sparse lane mid-stack cuts every
-  chain running through it.
+  chain running through it. A track whose ribbons all join the anchor does not
+  offer it.
 
 ## Choosing and ordering lanes
 
@@ -63,15 +64,15 @@ The **Lanes** submenu in the track menu holds the stack's controls:
 
 - **Choose lanes...** picks which genomes draw, with a filter box for long
   lists.
-- `rows.sort` in the display config pins the lanes it names to the top, in that
-  order; the rest follow densest-first, so the order holds across a pan.
-- Drag a lane label to move that lane.
 - **Order lanes by structure** stacks each lane beside the one whose insertions
   and deletions against the anchor are most alike.
 - **Freeze lanes** keeps every lane where it is as you pan and zoom. While
   frozen, drag a lane to slide it.
 
-[Grouping and ordering](/docs/config_guides/grouping_and_ordering#multiway-synteny)
+Drag a lane label to move that lane. In the display config, `rows.sort` pins the
+lanes it names to the top, in that order, and the rest follow densest-first, so
+the order holds across a pan;
+[grouping and ordering](/docs/config_guides/grouping_and_ordering#multiway-synteny)
 has the `rows` config.
 
 ## Where a lane draws
@@ -86,13 +87,16 @@ offers it:
   names after `also at`.
 - **Flip lane** turns the lane the other way on the same chromosome, for a lane
   whose blocks split about evenly between the two orientations.
-- **Let the lane choose where it draws** and **Let the lane choose its
-  orientation** undo the two pins.
+- **Let the lane choose where it draws (pinned to ⟨chromosome⟩)** undoes either
+  **Show** item.
+- **Let the lane choose its orientation (pinned on ⟨chromosome⟩)** undoes a
+  flip.
 
 ## The lane header menu
 
 The ⋮ on a lane header, or a right-click on its name, opens the lane menu. The
-same items sit under **Lanes → Lane menus** in the track menu.
+**Lanes** submenu in the track menu also lists every lane by name, each with the
+same items.
 
 - **Open ⟨genome⟩ at the matching region** opens that genome in a separate
   linear genome view, with its gene track.
@@ -107,8 +111,8 @@ with a row per genome:
 
 - **Launch → Linear synteny view (visible region)** in the track menu offers a
   row to every genome that aligns to the window.
-- Drag-select a region on the scale bar and pick **Launch → Linear synteny
-  view**. The dialog lists a row per genome, with arrows to reorder them.
+- **Launch → Linear synteny view** appears once you drag-select a region on the
+  scale bar. The dialog lists a row per genome, with arrows to reorder them.
 
 ## See also
 

@@ -233,9 +233,6 @@ the graph around _HSPA1A_. Then:
 
 <Figure caption="HSPA1A with the deconstructed callset, one row per assembly, the allele inventory and the graph track. The graph draws the insertion as the charcoal loop." src="/img/pangenome/bovine_bola.png" />
 
-The yak row has the reference allele, and Leonard et al. built no yak assembly,
-so their result does not cover it.
-
 ## Published variants in the callset
 
 Each locus below is a structural variant a paper reported in one of these breeds
@@ -246,7 +243,7 @@ or species. The rows without it are the control.
 Angus cattle are born without horns. Medugorac et al. (2012) traced the Celtic
 form of polledness to a 202 bp duplication and insertion on chromosome 1, which
 OMIA, the Online Mendelian Inheritance in Animals database, curates as OMIA
-000483-9913.
+000483-9913.[^friesian]
 
 [`build_omia_cattle_variants.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_omia_cattle_variants.sh)
 writes `omia_cattle_variants.gff3.gz` from OMIA's nightly database dump. It
@@ -279,10 +276,6 @@ Then open `chr1:2,428,800-2,429,800`. The figure shades
 allele.
 
 <Figure caption="The POLLED locus with OMIA's record of the Celtic polled allele above the callset." src="/img/pangenome/bovine_polled.png" />
-
-OMIA also records the Friesian polled allele, an 80 kb duplication 200 kb
-further along, which Holstein cattle have. The panel has no Holstein, and the
-callset holds nothing that size there.
 
 ### A repeat upstream of KIT in white-headed cattle
 
@@ -364,3 +357,7 @@ that pass through it.
   Taurine pangenome uncovers a segmental duplication upstream of KIT associated
   with depigmentation in white-headed cattle. Genome Research.
   2025;35(4):1041-1052. https://doi.org/10.1101/gr.279064.124
+
+[^friesian]:
+    OMIA also records the Friesian polled allele, a larger duplication further
+    along, which Holstein cattle have. The panel has no Holstein.
