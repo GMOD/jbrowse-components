@@ -30,7 +30,7 @@ global.fetch = (async (input: RequestInfo | URL) => {
 
 const volvox = path.join(__dirname, '..', 'data', 'volvox')
 
-async function launched(modifiers: string[]) {
+async function launched(entry: { trackId: string } & Record<string, unknown>) {
   const model = await createViewStateAsync({
     config: {
       assemblies: [
@@ -68,6 +68,22 @@ async function launched(modifiers: string[]) {
             },
           ],
         },
+        {
+          type: 'FeatureTrack',
+          trackId: 'genes',
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'BedTabixAdapter',
+            bedGzLocation: {
+              localPath: path.join(volvox, 'volvox-bed12.bed.gz'),
+            },
+            index: {
+              location: {
+                localPath: path.join(volvox, 'volvox-bed12.bed.gz.tbi'),
+              },
+            },
+          },
+        },
       ],
       configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
     },
@@ -75,7 +91,7 @@ async function launched(modifiers: string[]) {
   const view = model.session.addView('LinearGenomeView', {
     assembly: 'volvox',
     loc: 'ctgA:1000-6000',
-    tracks: [{ trackId: 'reads', height: 120, modifiers }],
+    tracks: [entry],
   }) as LinearGenomeViewModel
   view.setWidth(800)
   await when(() => view.tracks.length > 0 && view.pendingLaunch === undefined, {
@@ -91,16 +107,22 @@ async function launched(modifiers: string[]) {
         (view.tracks[0]!.displays[0] as { configuration: object })
           .configuration,
       ) as Record<string, unknown>,
+    messages: () =>
+      model.session.snackbarMessages.map((m: { message: string }) => m.message),
   }
 }
 
 test('modifiers write over the entry, and sort at the navigated center', async () => {
-  const { display } = await launched([
-    'height:150',
-    'color:strand',
-    'sort:base',
-    'filterTag:RG:lane3',
-  ])
+  const { display } = await launched({
+    trackId: 'reads',
+    height: 120,
+    modifiers: [
+      'height:150',
+      'color:strand',
+      'sort:base',
+      'filterTag:RG:lane3',
+    ],
+  })
   expect(display()).toMatchObject({
     height: 150,
     sort: { field: 'base', refName: 'ctgA' },
@@ -115,9 +137,43 @@ test('modifiers write over the entry, and sort at the navigated center', async (
   expect(Math.abs(pos - 3500)).toBeLessThan(10)
 }, 60000)
 
+test("a modifier writes the members it names over the entry's own", async () => {
+  const { display } = await launched({
+    trackId: 'reads',
+    filter: { flagExclude: 3844, tags: [{ tag: 'SA', value: '1' }] },
+    modifiers: ['mapq:20', 'filterTag:RG:lane3'],
+  })
+  expect(display().filter).toMatchObject({
+    flagExclude: 3844,
+    minMapq: 20,
+    tags: [
+      { tag: 'SA', value: '1' },
+      { tag: 'RG', value: 'lane3' },
+    ],
+  })
+}, 60000)
+
+test("the entry's display type picks what a modifier writes", async () => {
+  const { view, messages } = await launched({
+    trackId: 'genes',
+    type: 'LinearMarkDisplay',
+    modifiers: ['featureHeight:compact'],
+  })
+  expect(view.tracks[0]!.displays[0]).toMatchObject({
+    type: 'LinearMarkDisplay',
+  })
+  expect(messages()).toContainEqual(
+    expect.stringContaining('"featureHeight" has no effect'),
+  )
+}, 60000)
+
 test('a bad modifier is reported, and the track still opens', async () => {
   const error = jest.spyOn(console, 'error').mockImplementation(() => {})
-  const { display, session } = await launched(['height:150', 'mapq:x'])
+  const { display, messages } = await launched({
+    trackId: 'reads',
+    height: 120,
+    modifiers: ['height:150', 'mapq:x'],
+  })
   expect(error).toHaveBeenCalledWith(
     expect.objectContaining({
       message: 'Invalid mapq value "x". Expected a number.',
@@ -125,7 +181,19 @@ test('a bad modifier is reported, and the track still opens', async () => {
   )
   error.mockRestore()
   expect(display()).toMatchObject({ height: 120 })
-  expect(
-    session.snackbarMessages.map((m: { message: string }) => m.message),
-  ).toContainEqual(expect.stringContaining('Invalid mapq value "x"'))
+  expect(messages()).toContainEqual(
+    expect.stringContaining('Invalid mapq value "x"'),
+  )
+}, 60000)
+
+test('a display the track cannot open as leaves it opening with its own', async () => {
+  const error = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const { view } = await launched({
+    trackId: 'reads',
+    modifiers: ['display:Nonexistent'],
+  })
+  error.mockRestore()
+  expect(view.tracks[0]!.displays[0]).toMatchObject({
+    type: 'LinearAlignmentsDisplay',
+  })
 }, 60000)

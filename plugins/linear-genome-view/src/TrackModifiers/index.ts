@@ -6,6 +6,7 @@ import {
   displayCategory,
   memberPatch,
   memberWrites,
+  mergeSettings,
   requestedDisplayType,
 } from '@jbrowse/launch-args/displaySettings'
 import {
@@ -60,22 +61,27 @@ function displayCategoryOf(
   pluginManager: PluginManager,
   conf: { type: string },
   modifiers: string[],
+  displayType?: string,
 ): Category {
   return displayCategory(
     trackDisplayType(
       pluginManager,
       conf,
       'LinearGenomeView',
-      requestedDisplayType(modifiers),
+      requestedDisplayType(modifiers) ?? displayType,
     ),
   )
 }
 
-/** `displayCategoryOf` for a track the session holds. */
+/**
+ * `displayCategoryOf` for a track the session holds; `displayType` is the
+ * display the caller opens it as when no `display:` modifier names one.
+ */
 export function trackCategory(
   session: { getTrackById: (trackId: string) => unknown },
   trackId: string,
   modifiers: string[],
+  displayType?: string,
 ): Category {
   const conf = session.getTrackById(trackId)
   return conf
@@ -83,6 +89,7 @@ export function trackCategory(
         getEnv(session).pluginManager,
         (isStateTreeNode(conf) ? getSnapshot(conf) : conf) as { type: string },
         modifiers,
+        displayType,
       )
     : 'other'
 }
@@ -210,10 +217,13 @@ export async function launchTrackWithModifiers(
     snap.sort = at
   }
   adjust?.(launch.settings)
-  const opened = await view.launchTrack(trackId, trackSnapshot, {
-    ...displaySnapshot,
-    ...launchSnapshot(launch),
-  })
+  // a modifier writing an object (`filter`, `pileup`) writes the members it
+  // names over the entry's own
+  const launched = mergeSettings(
+    structuredClone(displaySnapshot),
+    launchSnapshot(launch),
+  )
+  const opened = await view.launchTrack(trackId, trackSnapshot, launched)
   if (!opened) {
     return undefined
   }
@@ -222,8 +232,7 @@ export async function launchTrackWithModifiers(
   const drawnFilter = readFilter && readFilterAsDrawn(opened, readFilter)
   return {
     trackId,
-    ...displaySnapshot,
-    ...launchSnapshot(launch),
+    ...launched,
     ...(drawnFilter ? { filter: drawnFilter } : {}),
     ...members,
   }
@@ -231,8 +240,8 @@ export async function launchTrackWithModifiers(
 
 /**
  * Open a session spec's track entry in a navigated `view`, its `modifiers`
- * written over its display settings. A modifier that fails goes to the
- * session's snackbar, and the track opens with its own settings.
+ * written over its display settings. When a modifier or the open fails, the
+ * session's snackbar says why and the track opens with its own settings.
  */
 export async function launchTrackInit(
   view: ModifierView & IAnyStateTreeNode,
@@ -245,12 +254,18 @@ export async function launchTrackInit(
     return
   }
   const session = getSession(view)
+  const { type } = displaySnapshot
   const notes: string[] = []
   try {
     await launchTrackWithModifiers(
       view,
       trackId,
-      trackCategory(session, trackId, modifiers),
+      trackCategory(
+        session,
+        trackId,
+        modifiers,
+        typeof type === 'string' ? type : undefined,
+      ),
       modifiers,
       {
         trackSnapshot,
@@ -261,9 +276,11 @@ export async function launchTrackInit(
   } catch (e) {
     console.error(e)
     session.notifyError(`"${trackId}" ${modifiers.join(' ')}: ${e}`, e)
-    if (!view.tracks.some(t => t.configuration.trackId === trackId)) {
-      await view.launchTrack(trackId, trackSnapshot, displaySnapshot)
-    }
+  }
+  // launchTrack reports its own failure, such as a display:
+  // the track cannot open as
+  if (!view.tracks.some(t => t.configuration.trackId === trackId)) {
+    await view.launchTrack(trackId, trackSnapshot, displaySnapshot)
   }
   if (notes.length) {
     session.notify(notes.join('; '), 'warning')

@@ -34,6 +34,8 @@ export type Category =
   | 'hic'
   | 'other'
 
+export { mergeSettings }
+
 export const ALL_CATEGORIES = [
   'alignments',
   'wiggle',

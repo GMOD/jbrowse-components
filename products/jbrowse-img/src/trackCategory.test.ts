@@ -1,11 +1,11 @@
+/**
+ * @jest-environment jsdom
+ */
 import { getEnv } from '@jbrowse/core/util'
 import {
   buildDisplaySnapshot,
   categorizedDisplayTypes,
 } from '@jbrowse/launch-args/displaySettings'
-/**
- * @jest-environment jsdom
- */
 import { trackCategory } from '@jbrowse/plugin-linear-genome-view'
 import { createViewStateAsync } from '@jbrowse/react-app2'
 
