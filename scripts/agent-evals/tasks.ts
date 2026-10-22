@@ -371,10 +371,10 @@ export const TASKS: EvalTask[] = [
   {
     name: 'color-by-strand',
     prompt: 'Color the features on the gene track by strand.',
-    solution: `return jb.trackModel('gff3tabix_genes').applyDisplaySettings({ color: { field: 'strand' } })`,
+    solution: `return jb.trackModel('gff3tabix_genes').applyDisplaySettings({ encoding: { color: 'strand' } })`,
     grade: `
       const t = ${shownTrack('gff3tabix_genes')}
-      const color = t && jb.readConfObject(t.activeDisplay.configuration, 'color')
+      const color = t && jb.readConfObject(t.activeDisplay.configuration, ['encoding', 'color'])
       return { pass: color?.field === 'strand', detail: { color } }`,
   },
   {
@@ -556,12 +556,12 @@ export const TASKS: EvalTask[] = [
       const atSnrpn = regions.some(r => r.refName.replace(/^chr/, '') === '15' && r.start < 24962000 && r.end > 24948000)
       const track = view.tracks.find(t => JSON.stringify(jb.mst.getSnapshot(t.configuration)).includes('HG002_SNRPN_5mC_haplotagged.bam'))
       const conf = track?.activeDisplay.configuration
-      const baseColor = conf && jb.readConfObject(conf, ['baseColor', 'field'])
+      const bases = conf && jb.readConfObject(conf, ['pileup', 'bases', 'encoding', 'color', 'field'])
       const facet = conf && jb.readConfObject(conf, 'facet')
       const facetField = typeof facet === 'string' ? facet : facet?.field
       return {
-        pass: atSnrpn && baseColor === 'modifications' && /\\bHP$/.test(facetField ?? ''),
-        detail: { regions, track: track?.configuration.trackId, baseColor, facet },
+        pass: atSnrpn && bases === 'modifications' && /\\bHP$/.test(facetField ?? ''),
+        detail: { regions, track: track?.configuration.trackId, bases, facet },
       }`,
   },
   {
@@ -580,10 +580,10 @@ export const TASKS: EvalTask[] = [
       const hg38Regions = hg38 ? await jb.visibleRegions(hg38.id) : []
       const atTnnt3 = hg38Regions.some(r => r.refName.replace(/^chr/, '') === '11' && r.start < 1938706 && r.end > 1919568)
       const synteny = view.syntenyTracks().length > 0
-      const field = typeof view.color === 'string' ? view.color : view.color?.field
+      const field = view.colorSetting?.field
       return {
         pass: Boolean(hs1) && atTnnt3 && synteny && field === 'strand',
-        detail: { rows, hg38Regions, tracks: view.syntenyTracks().map(t => t.configuration.trackId), color: view.color },
+        detail: { rows, hg38Regions, tracks: view.syntenyTracks().map(t => t.configuration.trackId), color: view.colorSetting },
       }`,
   },
 ]
