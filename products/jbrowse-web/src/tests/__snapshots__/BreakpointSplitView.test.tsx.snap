@@ -9,7 +9,7 @@ exports[`breakpoint split view 1`] = `
   <path
     d="M 408.99312656000257 92.5 C 454.0241920797007 92.5 358.3876146955563 486.5 403.4186802152544 486.5"
     data-testid="r1"
-    stroke="#ff0000"
+    stroke="#af4d19"
     stroke-opacity="0.8"
     stroke-width="1"
   />
@@ -22,7 +22,7 @@ exports[`breakpoint split view 1`] = `
   <path
     d="M 658.4186802152544 486.5 C 746.2499583902679 486.5 319.1618483849891 68.5 406.99312656000257 68.5"
     data-testid="r1"
-    stroke="#ff0000"
+    stroke="#af4d19"
     stroke-opacity="0.8"
     stroke-width="1"
   />
@@ -39,16 +39,16 @@ exports[`breakpoint split view 2`] = `
 <g
   data-testid="pacbio_vcf-loaded"
   fill="none"
-  stroke="#2e7d32"
+  stroke="#0068d1"
   stroke-width="5"
 >
   <path
-    d="M 388.99312656000257 315 L 408.99312656000257 315 L 403.4186802152544 664 L 423.4186802152544 664"
+    d="M 388.99312656000257 315 L 408.99312656000257 315 C 454.0241920797007 315 358.3876146955563 664 403.4186802152544 664 L 423.4186802152544 664"
     data-testid="r2"
     stroke-width="5"
   />
   <path
-    d="M 388.99312656000257 315 L 408.99312656000257 315 L 403.4186802152544 664 L 423.4186802152544 664"
+    d="M 388.99312656000257 315 L 408.99312656000257 315 C 454.0241920797007 315 358.3876146955563 664 403.4186802152544 664 L 423.4186802152544 664"
     pointer-events="stroke"
     stroke="transparent"
     stroke-width="10"
