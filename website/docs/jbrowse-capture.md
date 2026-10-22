@@ -33,9 +33,12 @@ npx @jbrowse/capture --genome hg38 --loc EGFR \
   --track ncbiRefSeqCurated height:200 --view axis.grid=false -o egfr.png
 ```
 
-- **After a `--track`:** the settings every display takes: `height:200`,
-  `force:true`, a whole setting as `path=value`, or a JSON object. A display's
-  own modifiers (`color:`, `sort:`) are jb2export's, and capture refuses them.
+- **After a `--track`:** jb2export's track modifiers (`height:200`, `arcs:up`,
+  `display:marks`), a whole setting as `path=value`, or a JSON object. Capture
+  refuses the few that need the opened track: `color:` and `featureHeight:`,
+  which write a different setting on each display, `sort:`, `filterTag:` and
+  member writes such as `color.field=tags.HP`. jb2export and Desktop apply
+  those.
 - **`--view`:** view settings by their session-spec names, as `path=value` or
   JSON.
 - **Settings ride in a session spec**: with any present, the URL opens the same

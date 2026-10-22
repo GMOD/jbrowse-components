@@ -1,8 +1,10 @@
 import {
   DEFAULT_SHARE_URL,
+  launchTrackWithModifiers,
   loadSessionSpec,
   parseSessionSnapshotUrl,
   parseSessionSpecUrl,
+  trackCategory,
 } from '@jbrowse/app-core'
 import {
   SHARE_PREFIX,
@@ -10,8 +12,9 @@ import {
   readSessionFromDynamo,
   shareEndpoint,
 } from '@jbrowse/core/util'
+import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
 import { resolveTrackId } from '@jbrowse/launch-args/trackIds'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { decodeSessionFromUrl } from '@jbrowse/product-core'
 
 import type {
@@ -20,9 +23,11 @@ import type {
   LinearLaunchPlanJson,
 } from '../../../electron/ipc/channelTypes.ts'
 import type { JBrowseConfig, JBrowseConfigInput } from './types.ts'
-import type { ParsedSessionSnapshotUrl } from '@jbrowse/app-core'
+import type { ModifierView, ParsedSessionSnapshotUrl } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { SettleableView } from '@jbrowse/core/util/whenViewSettled'
 
 // Turns a JBrowse Web link into a Desktop session. Web resolves these out of its
 // address bar; Desktop gets the same result by parsing the link, loading the
@@ -253,13 +258,12 @@ async function launchLinearPlan(
   }
   // a file's trackId is exact; a --track token gets jb2export's leniency
   const fileIds = new Set(plan.tracks.map(t => t.trackId))
-  const resolve = (id: string) =>
-    fileIds.has(id) ? id : resolveTrackId(config?.tracks ?? [], id, assembly)
-  const show = plan.show.map(entry =>
-    typeof entry === 'string'
-      ? resolve(entry)
-      : { ...entry, trackId: resolve(entry.trackId) },
-  )
+  const show = plan.show.map(({ trackId, modifiers }) => ({
+    trackId: fileIds.has(trackId)
+      ? trackId
+      : resolveTrackId(config?.tracks ?? [], trackId, assembly),
+    modifiers,
+  }))
   const pluginManager = await createPluginManager(config)
   await loadSessionSpec(
     {
@@ -273,11 +277,53 @@ async function launchLinearPlan(
           type: 'LinearGenomeView',
           assembly,
           ...(plan.loc ? { loc: plan.loc } : {}),
-          tracks: show,
+          ...(show.length ? { showHitTrack: false } : {}),
         },
       ],
     },
     pluginManager,
   )
+  const session = pluginManager.rootModel?.session
+  if (session && show.length) {
+    const view = session.views.at(-1) as
+      | (ModifierView & SettleableView)
+      | undefined
+    if (view) {
+      void showPlanTracks(session, view, show)
+    }
+  }
   return pluginManager
+}
+
+/**
+ * Open a plan's tracks once its view has navigated, since `sort:` pivots on
+ * the view's center: in the background, because a view navigates only once
+ * the app it is in has drawn it.
+ */
+async function showPlanTracks(
+  session: AbstractSessionModel,
+  view: ModifierView & SettleableView,
+  show: { trackId: string; modifiers: string[] }[],
+) {
+  if (!(await whenViewSettled(view, () => !isAlive(view)))) {
+    return
+  }
+  const notes: string[] = []
+  for (const { trackId, modifiers } of show) {
+    try {
+      await launchTrackWithModifiers(
+        view,
+        trackId,
+        trackCategory(session, trackId, modifiers),
+        modifiers,
+        { warn: message => notes.push(message) },
+      )
+    } catch (e) {
+      console.error(e)
+      session.notifyError(`${e}`, e)
+    }
+  }
+  if (notes.length) {
+    session.notify(notes.join('; '), 'warning')
+  }
 }

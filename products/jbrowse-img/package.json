@@ -39,7 +39,7 @@
     "@emotion/react": "^11.14.0",
     "@gmod/vcf": "^7.4.0",
     "@jbrowse/alignments-core": "workspace:^",
-    "@jbrowse/cigar-utils": "workspace:^",
+    "@jbrowse/app-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",
     "@jbrowse/launch-args": "workspace:^",

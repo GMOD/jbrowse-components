@@ -34,27 +34,29 @@ test('bare files: the genome file is the assembly, the rest are tracks', () => {
     bamLocation: { localPath: '/work/reads.bam' },
   })
   expect(p.show).toEqual([
-    { trackId: 'reads.bam', height: 200 },
-    'calls.vcf.gz',
+    { trackId: 'reads.bam', modifiers: ['height:200'] },
+    { trackId: 'calls.vcf.gz', modifiers: [] },
   ])
   expect(p.unapplied).toEqual([])
 })
 
-test('a track carries the settings every track type takes; the rest are reported', () => {
+test('a track carries its modifiers for the app to apply', () => {
   const p = plan(
     '--genome hg38 r.bam force:true showLegend=true color:strand color.field=strand --track genes height:80',
   )
   expect(p.show).toEqual([
-    { trackId: 'r.bam', forceLoad: true, showLegend: true },
-    { trackId: 'genes', height: 80 },
+    {
+      trackId: 'r.bam',
+      modifiers: [
+        'force:true',
+        'showLegend=true',
+        'color:strand',
+        'color.field=strand',
+      ],
+    },
+    { trackId: 'genes', modifiers: ['height:80'] },
   ])
-  expect(p.unapplied).toEqual([
-    'r.bam color:strand',
-    'r.bam color.field=strand',
-  ])
-  expect(() => plan('ref.fa r.bam height:tall')).toThrow(
-    'Invalid height value "tall". Expected a number.',
-  )
+  expect(p.unapplied).toEqual([])
 })
 
 test('paths resolve against the launch directory, URLs stay as they are', () => {
@@ -77,7 +79,7 @@ test('--genome names a hosted config; tracks wait for its assembly name', () => 
   expect(p.assembly).toBeUndefined()
   expect(p.assemblyName).toBeUndefined()
   expect(p.tracks[0]).not.toHaveProperty('assemblyNames')
-  expect(p.show).toEqual(['tumor.bam', 'hg38-ncbiRefSeq'])
+  expect(p.show.map(t => t.trackId)).toEqual(['tumor.bam', 'hg38-ncbiRefSeq'])
 })
 
 test('a value a single-value flag cannot use is reported, not dropped', () => {
@@ -124,7 +126,10 @@ test('--fasta keeps its aliases: and cytobands: modifiers', () => {
 })
 
 test('two files with one basename both open', () => {
-  expect(plan('ref.fa t/s.bam n/s.bam').show).toEqual(['s.bam', 's.bam-2'])
+  expect(plan('ref.fa t/s.bam n/s.bam').show.map(t => t.trackId)).toEqual([
+    's.bam',
+    's.bam-2',
+  ])
 })
 
 test('a plan with no genome, or a second one in a linear view, says so', () => {
@@ -146,7 +151,7 @@ test('--chromSizes is a genome', () => {
   expect(plan('--chromSizes a.sizes r.bam')).toMatchObject({
     type: 'LinearGenomeView',
     assemblyName: 'a',
-    show: ['r.bam'],
+    show: [{ trackId: 'r.bam', modifiers: [] }],
   })
 })
 

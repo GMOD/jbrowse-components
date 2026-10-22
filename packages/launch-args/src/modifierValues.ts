@@ -1,11 +1,3 @@
-import {
-  applySlotWrite,
-  isMemberWrite,
-  isSlotPathOption,
-  mergeSettings,
-  slotWrite,
-} from './slotPath.ts'
-
 // One rule for every modifier value, so the grammar reads the same whatever the
 // track type: a value that isn't one of the things the modifier accepts is an
 // error. jb2export writes a figure and exits, so a warning about a typo scrolls
@@ -68,38 +60,4 @@ export function parseJsonModifier(token: string): Record<string, unknown> {
   } catch (e) {
     throw new Error(`Invalid JSON track option: ${token}`, { cause: e })
   }
-}
-
-/** The colon modifiers that write the same setting on every track type. */
-export const sharedModifiers: Record<
-  string,
-  (val: string) => Record<string, unknown>
-> = {
-  height: val => ({ height: parseNum('height', val) }),
-  force: val => ({ forceLoad: parseBool('force', val) }),
-}
-
-/**
- * A track's display settings from the modifiers that mean the same on every
- * track type: a JSON object, a whole-setting `path=value` write, `height:` and
- * `force:`. `rest` is the others in order: the colon modifiers whose setting
- * depends on the display (`color:`, `featureHeight:`, `sort:`) and the member
- * writes (`color.field=`), which merge into the track's configured value.
- */
-export function trackSettings(modifiers: string[]) {
-  const settings: Record<string, unknown> = {}
-  const rest: string[] = []
-  for (const mod of modifiers) {
-    const name = mod.split(':')[0] ?? ''
-    if (mod.startsWith('{')) {
-      mergeSettings(settings, parseJsonModifier(mod))
-    } else if (isSlotPathOption(mod) && !isMemberWrite(mod)) {
-      applySlotWrite(settings, slotWrite(mod))
-    } else if (Object.hasOwn(sharedModifiers, name)) {
-      Object.assign(settings, sharedModifiers[name]!(mod.split(':')[1] ?? ''))
-    } else {
-      rest.push(mod)
-    }
-  }
-  return { settings, rest }
 }

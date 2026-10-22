@@ -21,7 +21,8 @@
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./trackIds": "./src/trackIds.ts"
+    "./trackIds": "./src/trackIds.ts",
+    "./displaySettings": "./src/displaySettings.ts"
   },
   "files": [
     "esm"
@@ -35,7 +36,8 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "@jbrowse/add-track-core": "workspace:^"
+    "@jbrowse/add-track-core": "workspace:^",
+    "@jbrowse/cigar-utils": "workspace:^"
   },
   "devDependencies": {
     "@jbrowse/core": "workspace:^"
@@ -46,7 +48,8 @@
     "types": "esm/index.d.ts",
     "exports": {
       ".": "./esm/index.js",
-      "./trackIds": "./esm/trackIds.js"
+      "./trackIds": "./esm/trackIds.js",
+      "./displaySettings": "./esm/displaySettings.js"
     }
   },
   "sideEffects": false

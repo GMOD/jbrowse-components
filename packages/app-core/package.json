@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
+    "@jbrowse/launch-args": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.9.0",
     "@jbrowse/product-core": "workspace:^",
     "@mui/icons-material": "^9.5.0",

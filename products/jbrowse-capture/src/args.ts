@@ -1,14 +1,16 @@
 import {
   FILE_FLAG,
   isDataFile,
+  isMemberWrite,
   parseArgv,
   standardizeArgv,
   trackFlags,
-  trackSettings,
   viewSettings,
 } from '@jbrowse/launch-args'
+import { buildDisplaySnapshot } from '@jbrowse/launch-args/displaySettings'
 
-import type { Entry, ShowTrack } from '@jbrowse/launch-args'
+import type { SpecTrack } from './url.ts'
+import type { Entry } from '@jbrowse/launch-args'
 
 export interface ParsedArgs {
   command: 'capture' | 'batch' | 'url' | 'list'
@@ -17,7 +19,7 @@ export interface ParsedArgs {
   assembly?: string
   loc?: string
   /** `--track`'s, each a trackId or a trackId with the display settings its modifiers write */
-  tracks: ShowTrack[]
+  tracks: SpecTrack[]
   /** settings `--view` writes on the view, as a session spec's view holds them */
   view: Record<string, unknown>
   spec?: string
@@ -152,14 +154,33 @@ function checkFlag(command: ParsedArgs['command'], [key, values]: Entry) {
   return flag
 }
 
-function captureTrack(trackId: string, modifiers: string[]): ShowTrack {
-  const { settings, rest } = trackSettings(modifiers)
-  if (rest.length) {
+// these read the track as the page opened it: its configured value, or the
+// view's center
+const AFTER_OPEN = /^(sort|filterTag):/
+
+function captureTrack(trackId: string, modifiers: string[]): SpecTrack {
+  const afterOpen = modifiers.filter(
+    mod => isMemberWrite(mod) || AFTER_OPEN.test(mod),
+  )
+  if (afterOpen.length) {
     throw new Error(
-      `--track ${trackId} ${rest.join(' ')}: jb2capture writes the settings every display takes (height:, force:, a whole setting as path=value, JSON); a display's own modifiers are jb2export's`,
+      `--track ${trackId} ${afterOpen.join(' ')}: jb2capture opens a track in one step, so it cannot write a member over the configured setting, add to the configured tags, or sort at the view's center; jb2export and JBrowse Desktop can`,
     )
   }
-  return Object.keys(settings).length ? { ...settings, trackId } : trackId
+  let settings
+  try {
+    settings = buildDisplaySnapshot(undefined, modifiers)
+  } catch (e) {
+    throw new Error(
+      `--track ${trackId}: ${e instanceof Error ? e.message : e}`,
+      {
+        cause: e,
+      },
+    )
+  }
+  const { snap, displayType } = settings
+  const entry = { ...snap, ...(displayType ? { type: displayType } : {}) }
+  return Object.keys(entry).length ? { ...entry, trackId } : trackId
 }
 
 function listArgs(tokens: string[]) {

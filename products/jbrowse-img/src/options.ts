@@ -255,7 +255,7 @@ export function getString(rest: Record<string, unknown>, key: string) {
 // warns and is treated as false, so a typo (`--refseq ture`) or a loose value
 // (`--refseq 0`, which the old `!!str` wrongly made truthy) is visible instead
 // of silently on. Track modifiers ask the same question but THROW on an
-// unusable value (parseBool in applyTrackOpts.ts): the flags here are view
+// unusable value (launch-args' parseBool): the flags here are view
 // cosmetics, a modifier changes what the image shows.
 export function getBooleanValue(value: unknown, label: string) {
   const result =

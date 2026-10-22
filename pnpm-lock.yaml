@@ -335,6 +335,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
+      '@jbrowse/launch-args':
+        specifier: workspace:^
+        version: link:../launch-args
       '@jbrowse/mobx-state-tree':
         specifier: ^6.9.0
         version: 6.9.0(mobx@7.1.0)
@@ -605,6 +608,9 @@ importers:
       '@jbrowse/add-track-core':
         specifier: workspace:^
         version: link:../add-track-core
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../cigar-utils
     devDependencies:
       '@jbrowse/core':
         specifier: workspace:^
@@ -2570,9 +2576,9 @@ importers:
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
-      '@jbrowse/cigar-utils':
+      '@jbrowse/app-core':
         specifier: workspace:^
-        version: link:../../packages/cigar-utils
+        version: link:../../packages/app-core
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core

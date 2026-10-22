@@ -1,3 +1,4 @@
+import { trackCategory, writeMembers } from '@jbrowse/app-core'
 import { retainAdapterSession } from '@jbrowse/core/data_adapters/adapterSessionRefcount'
 import { getEnv } from '@jbrowse/core/util'
 import { openTracks } from '@jbrowse/core/util/openViews'
@@ -11,6 +12,7 @@ import {
   resolveTrackId,
   trackType,
 } from '@jbrowse/launch-args'
+import { memberWrites } from '@jbrowse/launch-args/displaySettings'
 import { addDisposer, destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg as renderBreakpointToSvg } from '@jbrowse/plugin-breakpoint-split-view'
 import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
@@ -24,12 +26,7 @@ import { createViewStateAsync } from '@jbrowse/react-app2'
 import { createCanvas, loadImage } from '@napi-rs/canvas'
 import { autorun } from 'mobx'
 
-import {
-  applyDisplayOpts,
-  trackCategory,
-  memberWrites,
-  writeMembers,
-} from './applyTrackOpts.ts'
+import { applyDisplayOpts } from './applyTrackOpts.ts'
 import { breakpointInit, breakpointPanelsFromSpec } from './breakpointInit.ts'
 import { dotplotInit, syntenyInit } from './comparativeInit.ts'
 import { readsJoiningRegions } from './joinedReads.ts'

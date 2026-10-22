@@ -3,7 +3,8 @@ import { genomeConfigUrl } from '@jbrowse/launch-args'
 import { savedSessionParam, sessionSpecParam } from './session.ts'
 import { version } from './version.ts'
 
-import type { ShowTrack } from '@jbrowse/launch-args'
+/** A session spec's track entry: a trackId, or one beside display settings. */
+export type SpecTrack = string | ({ trackId: string } & Record<string, unknown>)
 
 // the release this package shipped with; `latest/` trails a major behind
 // during a beta
@@ -41,7 +42,7 @@ export interface JBrowseUrlOptions {
    * Tracks from the config to open: a trackId, or a trackId beside the display
    * settings to write, `{ trackId, height: 200 }`.
    */
-  tracks?: ShowTrack[]
+  tracks?: SpecTrack[]
   /** Settings to write on the view, as a session spec's view holds them: `{ axis: { grid: false } }`. */
   view?: Record<string, unknown>
   /** A session spec, for what the fields above cannot say, such as several views. */
@@ -96,7 +97,7 @@ const hasSettings = (view: object | undefined) =>
   !!view && Object.keys(view).length > 0
 
 /** The trackId a track entry opens. */
-export const trackIdOf = (track: ShowTrack) =>
+export const trackIdOf = (track: SpecTrack) =>
   typeof track === 'string' ? track : track.trackId
 
 /**

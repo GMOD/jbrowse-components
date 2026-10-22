@@ -13,7 +13,7 @@ import { enableStaticRendering } from 'mobx-react'
 
 import { applyDisplayOpts } from './applyTrackOpts.ts'
 
-import type { ReadFilterSnapshot } from './applyTrackOpts.ts'
+import type { ReadFilterSnapshot } from '@jbrowse/launch-args/displaySettings'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 enableStaticRendering(true)

@@ -1,4 +1,4 @@
-import { buildDisplaySnapshot, memberWrites } from './applyTrackOpts.ts'
+import { buildDisplaySnapshot, memberWrites } from './displaySettings.ts'
 
 // buildDisplaySnapshot turns a track's modifier list into a declarative display
 // snapshot (passed to showTrack), instead of a sequence of setter actions.

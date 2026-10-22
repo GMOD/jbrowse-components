@@ -1,14 +1,14 @@
 /**
  * @jest-environment jsdom
  */
+import { trackCategory } from '@jbrowse/app-core'
 import { getEnv } from '@jbrowse/core/util'
-import { createViewStateAsync } from '@jbrowse/react-app2'
-
 import {
   buildDisplaySnapshot,
   categorizedDisplayTypes,
-  trackCategory,
-} from './applyTrackOpts.ts'
+} from '@jbrowse/launch-args/displaySettings'
+import { createViewStateAsync } from '@jbrowse/react-app2'
+
 import { trackTypes } from './makeConfigs.ts'
 import { readData } from './readData.ts'
 

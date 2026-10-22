@@ -139,7 +139,7 @@ describe('data files on the command line', () => {
       plan: {
         assemblyName: 'ref.fa',
         loc: 'chr1:1-100',
-        show: ['reads.bam'],
+        show: [{ trackId: 'reads.bam', modifiers: [] }],
         tracks: [
           { adapter: { bamLocation: { localPath: '/home/me/reads.bam' } } },
         ],
@@ -150,7 +150,10 @@ describe('data files on the command line', () => {
   test('a config.json beside data files is the config they open on', () => {
     expect(target('proj/config.json', 'reads.bam')).toMatchObject({
       type: 'plan',
-      plan: { config: '/home/me/proj/config.json', show: ['reads.bam'] },
+      plan: {
+        config: '/home/me/proj/config.json',
+        show: [{ trackId: 'reads.bam', modifiers: [] }],
+      },
     })
     // alone, it opens as it always has
     expect(target('proj/config.json')).toEqual({
@@ -171,7 +174,10 @@ describe('data files on the command line', () => {
       target('--no-sandbox', 'ref.fa', '--enable-logging', 'reads.bam'),
     ).toMatchObject({
       type: 'plan',
-      plan: { assemblyName: 'ref.fa', show: ['reads.bam'] },
+      plan: {
+        assemblyName: 'ref.fa',
+        show: [{ trackId: 'reads.bam', modifiers: [] }],
+      },
     })
     expect(target('--renderer', 'webgl')).toBeUndefined()
   })
@@ -179,7 +185,10 @@ describe('data files on the command line', () => {
   test('--config keeps its value, path or URL', () => {
     expect(target('--config', 'proj/config.json', 'reads.bam')).toMatchObject({
       type: 'plan',
-      plan: { config: '/home/me/proj/config.json', show: ['reads.bam'] },
+      plan: {
+        config: '/home/me/proj/config.json',
+        show: [{ trackId: 'reads.bam', modifiers: [] }],
+      },
     })
     expect(target('--config', 'https://h.org/config.json')).toMatchObject({
       type: 'plan',
@@ -193,7 +202,7 @@ describe('data files on the command line', () => {
     ).toMatchObject({
       type: 'plan',
       plan: {
-        show: ['r.bam'],
+        show: [{ trackId: 'r.bam', modifiers: [] }],
         unapplied: ['--width 1400', '--multiwig a.bw,b.bw'],
       },
     })
@@ -205,7 +214,10 @@ describe('data files on the command line', () => {
       target('ref.fa', '--opacity', '0.3', 'height:100', 'reads.bam'),
     ).toMatchObject({
       type: 'plan',
-      plan: { show: ['reads.bam'], unapplied: ['--opacity 0.3 height:100'] },
+      plan: {
+        show: [{ trackId: 'reads.bam', modifiers: [] }],
+        unapplied: ['--opacity 0.3 height:100'],
+      },
     })
     expect(target('--tracks', 't.json')).toBeUndefined()
     expect(target('--width', '1400', 'foo.json')).toMatchObject({

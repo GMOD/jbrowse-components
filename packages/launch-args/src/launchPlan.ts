@@ -17,7 +17,6 @@ import {
 import { genomeConfigUrl } from './genome.ts'
 import { FILE_FLAG, isUrl, locValue, splitModifier } from './parseArgv.ts'
 import { viewSettings } from './slotPath.ts'
-import { trackSettings } from './trackSettings.ts'
 
 import type { Assembly, Track } from './fileInput.ts'
 import type { Entry } from './parseArgv.ts'
@@ -70,9 +69,8 @@ export interface LinearLaunchPlan extends PlanBase {
    */
   tracks: Track[]
   /**
-   * The tracks to show, files' and `--track`'s, in command-line order, as a
-   * session spec's view lists them: a trackId, or a trackId with the display
-   * settings its modifiers write on every track type (`trackSettings`)
+   * The tracks to show, files' and `--track`'s, in command-line order, each
+   * with the modifiers the app applies once it knows the track's display
    */
   show: ShowTrack[]
 }
@@ -88,10 +86,9 @@ export interface ComparativeLaunchPlan extends PlanBase {
   tracks: Track[]
 }
 
-export type ShowTrack = string | ({ trackId: string } & Record<string, unknown>)
-
-function showTrack(trackId: string, settings: Record<string, unknown>) {
-  return Object.keys(settings).length ? { ...settings, trackId } : trackId
+export interface ShowTrack {
+  trackId: string
+  modifiers: string[]
 }
 
 export const launchFlags: ReadonlySet<string> = new Set([
@@ -108,8 +105,6 @@ export const launchFlags: ReadonlySet<string> = new Set([
   ...syntenyFlags,
 ])
 
-// consumed while building the config, so they reach the view as config
-const BUILD_MODIFIERS = new Set(['name', 'index'])
 const PATH_MODIFIERS = new Set(['index', 'aliases', 'cytobands'])
 
 function isTrackFlag(key: string) {
@@ -299,18 +294,12 @@ function linearPlan(
       if (!first) {
         throw new Error('--track requires a trackId')
       }
-      const { settings, rest } = trackSettings(mods)
-      show.push(showTrack(first, settings))
-      unapplied.push(...rest.map(mod => `${first} ${mod}`))
+      show.push({ trackId: first, modifiers: mods })
     } else if (isTrackFlag(key)) {
       const track = fileTrack(key, entry[1], assemblyName)
       track.trackId = uniqueId(used, track.trackId)
       tracks.push(track)
-      const { settings, rest } = trackSettings(
-        mods.filter(mod => !BUILD_MODIFIERS.has(modifierName(mod))),
-      )
-      show.push(showTrack(track.trackId, settings))
-      unapplied.push(...rest.map(mod => `${track.trackId} ${mod}`))
+      show.push({ trackId: track.trackId, modifiers: mods })
     } else {
       unapplied.push(...mods.map(extra => `--${key} ${extra}`))
     }

@@ -107,7 +107,7 @@ export interface LinearLaunchPlanJson {
   loc?: string
   view: Record<string, unknown>
   tracks: TrackJson[]
-  show: (string | TrackJson)[]
+  show: { trackId: string; modifiers: string[] }[]
   unapplied: string[]
 }
 

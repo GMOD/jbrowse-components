@@ -196,9 +196,38 @@ test('a track takes the settings every display takes, as Desktop writes them', (
   expect(parseArgs(['--track', 'a']).tracks).toEqual(['a'])
 })
 
-test('a display-specific modifier names jb2export, which applies it', () => {
+test('a modifier writing one setting on every display it applies to is written', () => {
+  expect(
+    parseArgs([
+      '--track',
+      'reads',
+      'arcs:up',
+      'mapq:20',
+      'heightMode:fit:200',
+      '--track',
+      'genes',
+      'display:marks',
+    ]).tracks,
+  ).toEqual([
+    {
+      trackId: 'reads',
+      readConnections: { show: true, mark: 'arc', placement: 'up' },
+      filter: { minMapq: 20 },
+      heightMode: 'fit',
+      height: 200,
+    },
+    { trackId: 'genes', type: 'LinearMarkDisplay' },
+  ])
+})
+
+test('a modifier that needs the opened track names the apps that apply it', () => {
   expect(() => parseArgs(['--track', 'reads', 'color:strand'])).toThrow(
-    "--track reads color:strand: jb2capture writes the settings every display takes (height:, force:, a whole setting as path=value, JSON); a display's own modifiers are jb2export's",
+    '--track reads: track option "color:" writes a different setting on each kind of track',
+  )
+  expect(() =>
+    parseArgs(['--track', 'reads', 'sort:base', 'color.field=tags.HP']),
+  ).toThrow(
+    '--track reads sort:base color.field=tags.HP: jb2capture opens a track in one step',
   )
 })
 

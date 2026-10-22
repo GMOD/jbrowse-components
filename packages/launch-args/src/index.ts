@@ -38,9 +38,7 @@ export {
   parseJsonModifier,
   parseNum,
   parseStr,
-  sharedModifiers,
-  trackSettings,
-} from './trackSettings.ts'
+} from './modifierValues.ts'
 export {
   resolveTrackId,
   trackMatches,
