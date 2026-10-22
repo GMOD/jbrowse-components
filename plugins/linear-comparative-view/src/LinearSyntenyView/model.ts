@@ -1446,7 +1446,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             { name: 'ComparativeViewSameScale' },
           ),
         )
-        doAfterAttach(self)
+        doAfterAttach(self as LinearSyntenyViewModel)
       },
     }))
 

@@ -6,6 +6,7 @@ import { plotColorOf } from '../plotColorLine.ts'
 import type { ResolvedWiggleColor } from '../../shared/wiggleColor.ts'
 import type { Source } from '../../util.ts'
 import type { Plot } from '@jbrowse/core/configuration'
+import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
@@ -21,6 +22,8 @@ export default observer(function WiggleSetColorDialog({
     discoveredRows: readonly unknown[]
     applyPlot: (draft: Plot) => void
     openPlotDialog: () => void
+    parkedColor?: ColorSlots
+    parkColor: (name: string, written: ColorSlots, next: unknown) => void
   }
   handleClose: () => void
 }) {
@@ -44,9 +47,9 @@ export default observer(function WiggleSetColorDialog({
               mode: line.mode,
               reason: line.reason,
               onSubmit: next => {
-                model.applyPlot({
-                  color: edit(next),
-                })
+                const color = edit(next)
+                model.parkColor('color', model.colorSetting, color)
+                model.applyPlot({ color })
               },
             }
       }

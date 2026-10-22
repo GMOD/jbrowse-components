@@ -51,6 +51,7 @@ const CellColorFieldDialog = observer(function CellColorFieldDialog({
     colorSetting: { scale: string | undefined; domain: readonly string[] }
     writtenColor: ColorSlots
     parkedColor?: ColorSlots
+    parkColor: (name: string, written: ColorSlots, next: unknown) => void
     fetchAdapterMetadata: () => Promise<unknown>
     applyPlot: (draft: Plot) => void
   }
@@ -81,14 +82,14 @@ const CellColorFieldDialog = observer(function CellColorFieldDialog({
         handleClose()
       }}
       onSubmit={() => {
-        model.applyPlot({
-          color: cellColorOfField(
-            model.writtenColor,
-            trimmed,
-            parsed ?? [],
-            model.parkedColor,
-          ),
-        })
+        const color = cellColorOfField(
+          model.writtenColor,
+          trimmed,
+          parsed ?? [],
+          model.parkedColor,
+        )
+        model.parkColor('color', model.writtenColor, color)
+        model.applyPlot({ color })
         handleClose()
       }}
     >

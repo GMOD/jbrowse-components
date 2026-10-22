@@ -28,6 +28,7 @@ function makeModel() {
     applyPlot(_draft: Plot) {},
     pickDefaultColor() {},
     pickSolidColor() {},
+    parkColor() {},
     // Mirrors the display: the layer is the `baseColor` field, its settings
     // the `modifications` slot, which outlives a switch to another layer.
     layerType: undefined as BaseLayerType | undefined,

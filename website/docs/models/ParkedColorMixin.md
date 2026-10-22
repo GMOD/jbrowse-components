@@ -7,7 +7,7 @@ sidebar_label: Mixin -> ParkedColorMixin
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/ParkedColorMixin.ts).
 
-The field the last write took off a color object, with its domain, range and key names, so picking that field again gives them back (`colorForField`). A written field always paints, so the field a write leaves, for Default, Solid color or another field, is display state rather than config. `slot` names the color object and `writtenOf` reads it as written; any action on the model moving its field parks the field it leaves, in that same action, whichever menu, dialog or Edit plot made it. A display with two color objects composes it once for each
+The field the last write took off a color object, with its domain, range and key names, so picking that field again gives them back (`colorForField`). A written field always paints, so the field a write leaves, for Default, Solid color or another field, is display state rather than config. Each writer parks before it writes, so no reader sees the field gone unparked
 
 ## Properties
 
@@ -35,4 +35,4 @@ The field the last write took off a color object, with its domain, range and key
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-parkcolor">**parkColor**</span><br><code>(name: string, color: ColorSlots) =&gt; void</code> |  |
+| <span id="action-parkcolor">**parkColor**</span><br><code>(name: string, written: ColorSlots, next: unknown) =&gt; void</code> | Hold `written`'s field and its members under `name` where `next`, the write about to replace it, names another field; a string `next` is a constant. |

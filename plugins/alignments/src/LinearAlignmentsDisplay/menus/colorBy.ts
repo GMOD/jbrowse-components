@@ -39,6 +39,7 @@ interface ColorByModel {
   colorEncoding: AlignmentsColorEncoding
   writtenColor: ColorSlots
   parkedColor?: ColorSlots
+  parkColor: (name: string, written: ColorSlots, next: unknown) => void
   colorByField: (field: string) => void
   pickDefaultColor: () => void
   pickSolidColor: () => void
@@ -178,14 +179,14 @@ function tagItem(model: AnyColorByModel): MenuItem {
           initialTag: colorBy.tag,
           colorScale: tagColorScaleOf(model),
           onSubmit: (tag: string, scale: TagColorScale | undefined) => {
-            model.applyPlot({
-              color: tagColorFor(
-                model.writtenColor,
-                tag,
-                scale ?? 'categorical',
-                model.parkedColor,
-              ),
-            })
+            const color = tagColorFor(
+              model.writtenColor,
+              tag,
+              scale ?? 'categorical',
+              model.parkedColor,
+            )
+            model.parkColor('color', model.writtenColor, color)
+            model.applyPlot({ color })
           },
           handleClose,
         },

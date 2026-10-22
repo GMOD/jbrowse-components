@@ -1670,7 +1670,11 @@ export default function baseStateModelFactory(
        * plot button shows.
        */
       applyGroupBy(field: string | undefined, colorByGroup: boolean) {
-        self.applyPlot(self.groupByPlot(field, colorByGroup))
+        const plot = self.groupByPlot(field, colorByGroup)
+        if (plot.color) {
+          self.parkColor('color', self.writtenColor, plot.color)
+        }
+        self.applyPlot(plot)
       },
       /**
        * #action

@@ -51,13 +51,7 @@ function solidColorOf({ value }: ColorSlots): string | undefined {
  */
 export default function ColorWritesMixin() {
   return types
-    .compose(
-      'ColorWritesMixin',
-      ParkedColorMixin('color', (self: object) =>
-        writtenColorOf(host(self).configuration.color),
-      ),
-      types.model({}),
-    )
+    .compose('ColorWritesMixin', ParkedColorMixin(), types.model({}))
     .views(self => ({
       /**
        * #getter
@@ -70,7 +64,9 @@ export default function ColorWritesMixin() {
     }))
     .actions(self => {
       function write(next: ColorSlots) {
-        if (!compareStructural(next, self.writtenColor)) {
+        const written = self.writtenColor
+        if (!compareStructural(next, written)) {
+          self.parkColor('color', written, next)
           setConf(host(self), 'color', next)
         }
       }

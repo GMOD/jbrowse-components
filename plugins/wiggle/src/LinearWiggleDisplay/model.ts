@@ -12,7 +12,6 @@ import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { thresholdLabels } from '@jbrowse/core/util/thresholdScale'
-import { writtenColorOf } from '@jbrowse/display-kit/ColorWritesMixin'
 import LegendMixin, {
   legendCheckboxItem,
 } from '@jbrowse/display-kit/LegendMixin'
@@ -176,11 +175,7 @@ export default function stateModelFactory(
       WiggleCommonMixin(),
       StoredHoverMixin<WiggleHoveredFeature>(),
       LegendMixin(),
-      ParkedColorMixin(
-        'color',
-        (self: { configuration: { color: AnyConfigurationModel } }) =>
-          writtenColorOf(self.configuration.color),
-      ),
+      ParkedColorMixin(),
       TreeSidebarMixin<Source>(),
       ContextMenuMixin<ContextMenuAnchor & { hit: WiggleContextInfo }>(),
       types.model({

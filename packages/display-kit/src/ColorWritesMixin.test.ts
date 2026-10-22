@@ -13,12 +13,6 @@ import {
   colorTitleSlot,
 } from './colorConfigSchema.ts'
 
-import type {
-  IAnyModelType,
-  Instance,
-  SnapshotIn,
-} from '@jbrowse/mobx-state-tree'
-
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
 
@@ -49,28 +43,8 @@ const Display = types.compose(
   ColorWritesMixin(),
 )
 
-// ParkedColorMixin installs its reaction on attach, so a test model hangs
-// under a root as a display or view does
-function attached<T extends IAnyModelType>(
-  Type: T,
-  snapshot: SnapshotIn<T>,
-  env?: object,
-): Instance<T> {
-  const root = types
-    .model({ child: types.maybe(Type) })
-    .actions(self => ({
-      attach(child: SnapshotIn<T>) {
-        self.child = child as never
-      },
-    }))
-    .create({} as never, env)
-  root.attach(snapshot)
-  return root.child as Instance<T>
-}
-
 function display(color?: unknown) {
-  return attached(
-    Display,
+  return Display.create(
     { configuration: color === undefined ? {} : { color } },
     { pluginManager },
   )
@@ -152,8 +126,7 @@ const StrandDefaultDisplay = types.compose(
 
 // LGVSyntenyColor maps `strand` while its snapshot names no field
 test('an implied field reads as written and keeps its range on a re-pick', () => {
-  const d = attached(
-    StrandDefaultDisplay,
+  const d = StrandDefaultDisplay.create(
     { configuration: { color: { range: ['red', 'blue'] } } },
     { pluginManager },
   )

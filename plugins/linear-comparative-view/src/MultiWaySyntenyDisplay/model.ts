@@ -43,7 +43,6 @@ import ColorWritesMixin, {
 } from '@jbrowse/display-kit/ColorWritesMixin'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
-import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
@@ -254,7 +253,6 @@ import type {
 } from './multiwayRenderTypes.ts'
 import type { AssemblyDescription } from '@jbrowse/core/PluginManager'
 import type {
-  AnyConfigurationModel,
   AnyTrackConfig,
   TrackConfigEntry,
 } from '@jbrowse/core/configuration'
@@ -365,11 +363,6 @@ export function stateModelFactory(
       GlobalFetchMixin(),
       LegendMixin(),
       ColorWritesMixin(),
-      ParkedColorMixin(
-        'ribbonColor',
-        (self: { configuration: { ribbonColor: AnyConfigurationModel } }) =>
-          writtenColorOf(self.configuration.ribbonColor),
-      ),
       LodTierInfoMixin(),
       types.model({
         /** #property */
@@ -578,17 +571,12 @@ export function stateModelFactory(
             setConf(self, 'hideUnlabelled', false)
           }
           const written = writtenColorOf(self.configuration.ribbonColor)
-          setConf(
-            self,
-            'ribbonColor',
+          const next =
             field === ''
               ? colorForValue(written, undefined)
-              : colorForField(
-                  written,
-                  field,
-                  self.parkedColorOf('ribbonColor'),
-                ),
-          )
+              : colorForField(written, field, self.parkedColorOf('ribbonColor'))
+          self.parkColor('ribbonColor', written, next)
+          setConf(self, 'ribbonColor', next)
           self.seenAttributeRanges = {}
           observeRibbonFeatures(self.fetchedFeatures?.features ?? [])
           for (const { links } of self.laneLinks.held?.values() ?? []) {
@@ -2359,11 +2347,10 @@ export function stateModelFactory(
        * Paint every ribbon `value`, undefined returning to the strand colors.
        */
       setRibbonColorValue(value: string | undefined) {
-        setConf(
-          self,
-          'ribbonColor',
-          colorForValue(writtenColorOf(self.configuration.ribbonColor), value),
-        )
+        const written = writtenColorOf(self.configuration.ribbonColor)
+        const next = colorForValue(written, value)
+        self.parkColor('ribbonColor', written, next)
+        setConf(self, 'ribbonColor', next)
       },
       /**
        * #action

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every color object is in one of three states: unset (the display's default, its `impliedField` where its schema declares one), a constant `value`, or a `field`, which always paints. `scale: 'none'` goes. The field a write leaves is display state (`ParkedColorMixin`), parked by an action middleware in the write's own batch, so Default and back restores its domain, range and names and refetches nothing. Every Color by block offers Solid color...; the radio that unset paints is ticked by unset, the implied field's own radio where there is one, so LGVSynteny's Normal and the ribbons' Default go. LGVSyntenyColor's `field: 'strand'` default and the circular view's `query` default become implied fields. Builds ADR-240 amendment 4"
+summary: "Every color object is in one of three states: unset (the display's default, its `impliedField` where its schema declares one), a constant `value`, or a `field`, which always paints. `scale: 'none'` goes. The field a write leaves is display state (`ParkedColorMixin`), parked by each writer before it writes, so Default and back restores its domain, range and names and refetches nothing. Every Color by block offers Solid color...; the radio that unset paints is ticked by unset, the implied field's own radio where there is one, so LGVSynteny's Normal and the ribbons' Default go. LGVSyntenyColor's `field: 'strand'` default and the circular view's `query` default become implied fields. Builds ADR-240 amendment 4"
 ---
 
 # ADR-241: A color object is unset, a value or a field
@@ -34,14 +34,14 @@ only `none` could spell.
   color: alignments and LGVSynteny, the dotplot, linear synteny and circular
   views, the multi-way ribbons, beside the feature, variant, chord and gene
   blocks that had it.
-- **The field a write leaves is display state.** `ParkedColorMixin(slot,
-  writtenOf)` keeps it in `parkedColors`, keyed by color object, and
-  `colorForField(current, field, parked)` gives its members back. An action
-  middleware compares the written object across the model's outermost action,
-  in one MobX batch with it, so every write path parks alike (menus, Group by,
-  the Tag and field dialogs, Edit plot) and no observer sees the field gone
-  unparked. A reaction parked a batch late, and the variant cells dropped their
-  payload in between.
+- **The field a write leaves is display state.** `ParkedColorMixin` keeps it
+  in `parkedColors`, keyed by color object, and `colorForField(current, field,
+  parked)` gives its members back. Each writer that moves a field calls
+  `parkColor(name, written, next)` before it writes: the Color by menus, the
+  synteny views, the ribbons, Group by, the Tag and field dialogs and wiggle's
+  swatch. Parking first means no observer sees the field gone unparked; a
+  reaction parked a batch late, and the variant cells dropped their payload in
+  between.
 - **Readers of the parked field:** the variant cells and the canvas worker
   still read its values (`keptField`, the `rpcProps` color field), so Default
   and back refetches nothing; the Attribute dialog opens on it.
@@ -56,7 +56,7 @@ only `none` could spell.
 | Default writes the display's plain color as `value` | Each display would need its own "plain color", and LGVSynteny's is a theme color a constant would freeze |
 | An explicit `field: ''` meaning no field | Leans on `''` against unset, which `stripDefault` erases |
 | Parking in a reaction | Fires after the write's batch; the variant cells' settings autorun dropped the payload in between |
-| Parking explicitly in each writer | Five writers bypass the menus through `applyPlot`; one middleware covers them |
+| An action middleware comparing the written object across each action | Covered Edit plot too, but needed guards for lifecycle hooks, snapshot applies and MST running middleware outside the action's batch, and read two snapshots on every display action |
 
 ## Consequences
 
@@ -65,7 +65,7 @@ only `none` could spell.
   channel step moves it to the missing-value scale member; then `value` and
   `field` never share an object.
 - A beta session holding `scale: 'none'` fails to load its color; no lift.
-- A write from outside the display's own actions parks nothing: the config
+- A write that no writer above makes parks nothing: Edit plot, the config
   editor, `applyConfSettings` (a session spec, share link or agent bag) and a
   second display of the same track. Its way back starts from the field's
   defaults, and the canvas and variant fetch keys move with it.

@@ -174,9 +174,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
   return types
     .compose(
       SyntenyFilterMixin(),
-      ParkedColorMixin('color', (self: { color: AnyConfigurationModel }) =>
-        writtenOf(self.color),
-      ),
+      ParkedColorMixin(),
       types.model({
         /**
          * #property
@@ -562,11 +560,12 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
          */
         setColorField(field: string) {
           const written = writtenOf(self.color)
-          self.color = cast(
+          const next =
             field === ''
               ? colorForValue(written, undefined)
-              : colorForField(written, field, self.parkedColor),
-          )
+              : colorForField(written, field, self.parkedColor)
+          self.parkColor('color', written, next)
+          self.color = cast(next)
           forgetSeenRanges()
         },
         /**
@@ -575,7 +574,10 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
          * default.
          */
         setColorValue(value: string | undefined) {
-          self.color = cast(colorForValue(writtenOf(self.color), value))
+          const written = writtenOf(self.color)
+          const next = colorForValue(written, value)
+          self.parkColor('color', written, next)
+          self.color = cast(next)
         },
         /**
          * #action
