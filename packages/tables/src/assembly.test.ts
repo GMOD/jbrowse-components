@@ -136,6 +136,39 @@ test('features and the sequence read under an alias, and the regions list the se
   })
 })
 
+test('an assembly whose sequence is a chrom.sizes or a plain FASTA lists its contigs', async () => {
+  const sequenceOf = (adapter: Record<string, unknown>) => ({
+    name: 'volvox',
+    sequence: {
+      type: 'ReferenceSequenceTrack',
+      trackId: 'volvox-refseq',
+      adapter,
+    },
+  })
+  const expected = {
+    refName: ['ctgA', 'ctgB'],
+    canonical: ['ctgA', 'ctgB'],
+    start: [0, 0],
+    end: [50001, 6079],
+  }
+  expect(
+    await engine.regions({
+      assembly: sequenceOf({
+        type: 'ChromSizesAdapter',
+        chromSizesLocation: volvox('volvox.chrom.sizes'),
+      }),
+    }),
+  ).toEqual(expected)
+  expect(
+    await engine.regions({
+      assembly: sequenceOf({
+        type: 'UnindexedFastaAdapter',
+        fastaLocation: volvox('volvox.fa'),
+      }),
+    }),
+  ).toEqual(expected)
+})
+
 const CALLS_VCF = `##fileformat=VCFv4.3
 ##FILTER=<ID=PASS,Description="All filters passed">
 ##FILTER=<ID=Too_low_VAF,Description="Low VAF">
