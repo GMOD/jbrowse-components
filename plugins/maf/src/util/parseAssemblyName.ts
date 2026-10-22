@@ -35,19 +35,13 @@ function splitPanSn(token: string): ParsedAssemblyName | undefined {
 }
 
 /**
- * A bare RefSeq/INSDC accession's trailing `.<digits>` is its version, which the
- * dot rules below read as assembly `NC_000001` plus chromosome `11` — colliding
- * with the file's real chromosome 11 under one `.tai` key, breaking the
- * ascending binary search over it, and leaving a query for the accession itself
- * resolving nothing.
- *
- * Only the underscore form, deliberately: `LL_NNNNNN.V` is fixed by the
- * accession spec and no assembly name has that shape, while bare GenBank
- * (`CM000663.2`) is indistinguishable from a sample id carrying an Ensembl
- * chromosome number (`NA12878.1`). Prefixed accessions (`hg38.GL000009.2`) need
- * none of this.
+ * A bare RefSeq (`NC_000001.11`) or GenBank (`CM000663.2`, `AE014134.6`,
+ * `JAHKSE010000001.1`) accession's trailing `.<digits>` is its version, not a
+ * chromosome. GenBank's letter-digit shapes (1+5, 2+6, 2+8, 4-6 letters + 8-10
+ * digits) are none a sample id takes (`NA12878` and `HG00438` are 2+5).
  */
-const VERSIONED_ACCESSION_REGEX = /^[A-Z]{2,3}_\d{4,}\.\d+$/
+const VERSIONED_ACCESSION_REGEX =
+  /^(?:[A-Z]{2,3}_\d{4,}|[A-Z]\d{5}|[A-Z]{2}\d{6}|[A-Z]{2}\d{8}|[A-Z]{4,6}\d{8,10})\.\d+$/
 
 /**
  * Split a MAF `genome.sequence` source token when no sample set is configured

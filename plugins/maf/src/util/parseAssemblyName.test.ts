@@ -193,19 +193,29 @@ describe('bare versioned accessions', () => {
     })
   })
 
-  // Only the underscore form is recognised. `NA12878.1` has exactly the shape
-  // of a bare GenBank accession and is exactly as likely to be a sample id
-  // carrying an Ensembl chromosome number, so guessing there would break a real
-  // naming scheme to fix a rarer one.
+  test('a GenBank accession is the whole sequence name', () => {
+    for (const accession of [
+      'CM000663.2',
+      'AE014134.6',
+      'U00096.3',
+      'MN908947.3',
+      'JAHKSE010000001.1',
+    ]) {
+      expect(parseAssemblyAndChr(accession)).toEqual({
+        assemblyName: accession,
+        chr: '',
+      })
+    }
+  })
+
   test('a sample id with an Ensembl chromosome is untouched', () => {
-    expect(parseAssemblyAndChr('NA12878.1')).toEqual({
-      assemblyName: 'NA12878',
-      chr: '1',
-    })
-    expect(parseAssemblyAndChr('CM000663.2')).toEqual({
-      assemblyName: 'CM000663',
-      chr: '2',
-    })
+    for (const [token, assemblyName, chr] of [
+      ['NA12878.1', 'NA12878', '1'],
+      ['HG00438.2', 'HG00438', '2'],
+      ['HG002.1', 'HG002', '1'],
+    ]) {
+      expect(parseAssemblyAndChr(token!)).toEqual({ assemblyName, chr })
+    }
   })
 
   test('an underscore-bearing assembly name is untouched', () => {

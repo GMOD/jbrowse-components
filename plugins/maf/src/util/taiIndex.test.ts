@@ -144,11 +144,10 @@ describe('parseTaiIndex', () => {
   })
 
   test('a bare versioned accession keys on the whole accession', () => {
-    // `NC_000001.11` split as assembly `NC_000001` + chr `11` collided with the
-    // file's real chromosome 11, interleaving two chromosomes' offsets under one
-    // key and breaking the ascending binary search over it.
     const index = parseTaiIndex('NC_000001.11\t0\t0\nNC_000011.10\t0\t5000\n')
     expect([...index.keys()]).toEqual(['NC_000001.11', 'NC_000011.10'])
+    const genbank = parseTaiIndex('CM000663.2\t0\t0\nCM000664.2\t0\t5000\n')
+    expect([...genbank.keys()]).toEqual(['CM000663.2', 'CM000664.2'])
   })
 })
 
