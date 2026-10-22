@@ -721,6 +721,7 @@ jobs:
           pnpm build
           node scripts/check-llms.ts
           node scripts/check-duplicate-ids.ts
+          node scripts/check-unsized-svgs.ts
           # Loads the built pages in headless Chrome and asserts the cascade
           # layers and the string-emitted widgets (Config/CLI tabs,
           # admonitions, recipe dialogs) actually render styled. No network,

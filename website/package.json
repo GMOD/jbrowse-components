@@ -32,6 +32,7 @@
     "check-llms": "node scripts/check-llms.ts",
     "check-fence-langs": "node scripts/check-fence-langs.ts",
     "check-dupe-ids": "node scripts/check-duplicate-ids.ts",
+    "check-unsized-svgs": "node scripts/check-unsized-svgs.ts",
     "check-widget-styles": "node scripts/check-widget-styles.ts",
     "check-reference-citations": "node scripts/check-reference-citations.ts",
     "snapshot": "node scripts/snapshot.ts",
