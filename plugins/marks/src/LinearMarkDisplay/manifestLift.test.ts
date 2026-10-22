@@ -71,13 +71,15 @@ const EVERY_SPELLING: Record<string, unknown> = {
       encoding: {
         color: {
           field: 'score',
-          scale: 'linear',
-          range: ['white', 'red'],
-          domainMin: 0,
-          domainMax: 10,
-          reverse: true,
+          scale: {
+            type: 'linear',
+            range: ['white', 'red'],
+            domainMin: 0,
+            domainMax: 10,
+            reverse: true,
+          },
         },
-        shape: { field: 'svtype', domain: [1, 2] },
+        shape: { field: 'svtype', scale: { domain: [1, 2] } },
       },
       transform: [{ type: 'bin', step: 1000, as: ['from', 'to'] }],
     },

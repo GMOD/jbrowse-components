@@ -84,7 +84,7 @@ it('writes a channel through, inferring the scale a field implies', () => {
           mark: 'bar',
           encoding: {
             y: 'score',
-            color: { field: 'strand', scale: 'categorical' },
+            color: { field: 'strand', scale: { type: 'ordinal' } },
           },
         },
       ],
@@ -219,8 +219,8 @@ describe('a color or shape typed into its picker', () => {
     expect(screen.queryByTestId('mark-plot-error')).toBeNull()
     fireEvent.click(apply())
     expect(written.mock.calls[0]![0].marks[0].encoding).toMatchObject({
-      color: { field: 'INFO.DP', scale: 'categorical' },
-      shape: { field: 'score', scale: 'categorical' },
+      color: { field: 'INFO.DP', scale: { type: 'ordinal' } },
+      shape: { field: 'score', scale: { type: 'ordinal' } },
     })
   })
 
@@ -231,7 +231,10 @@ describe('a color or shape typed into its picker', () => {
           mark: 'bar',
           encoding: {
             y: 'score',
-            color: { field: 'score', scale: 'log', scheme: 'viridis' },
+            color: {
+              field: 'score',
+              scale: { type: 'log', scheme: 'viridis' },
+            },
           },
         },
       ],
@@ -247,8 +250,7 @@ describe('a color or shape typed into its picker', () => {
     fireEvent.click(apply())
     expect(written.mock.calls[0]![0].marks[0].encoding.color).toEqual({
       field: 'reads',
-      scale: 'log',
-      scheme: 'viridis',
+      scale: { type: 'log', scheme: 'viridis' },
     })
   })
 })
@@ -258,7 +260,10 @@ describe('a scale beside its field', () => {
     marks: [
       {
         mark: 'bar',
-        encoding: { y: 'score', color: { field: 'score', scale: 'linear' } },
+        encoding: {
+          y: 'score',
+          color: { field: 'score', scale: { type: 'linear' } },
+        },
       },
     ],
   }
@@ -273,13 +278,7 @@ describe('a scale beside its field', () => {
     const options = [...screen.getByTestId('scale-color').children].map(
       o => (o as HTMLOptionElement).value,
     )
-    expect(options).toEqual([
-      'categorical',
-      'linear',
-      'log',
-      'symlog',
-      'threshold',
-    ])
+    expect(options).toEqual(['ordinal', 'linear', 'log', 'symlog', 'threshold'])
   })
 
   it('names a ramp its stops and pins its ends', () => {
@@ -293,14 +292,12 @@ describe('a scale beside its field', () => {
     fireEvent.click(apply())
     expect(written.mock.calls[0]![0].marks[0].encoding.color).toEqual({
       field: 'score',
-      scale: 'linear',
-      scheme: 'magma',
-      domainMin: 0,
+      scale: { type: 'linear', scheme: 'magma', domainMin: 0 },
     })
     expect(channel('color')).toBeTruthy()
   })
 
-  // A ramp's stops and ends say nothing under a categorical scale, and the rule
+  // A ramp's stops and ends say nothing under an ordinal scale, and the rule
   // list would report them, so the kind change drops what it cannot paint.
   it('drops the ramp members when the kind stops painting them', () => {
     const { apply, written } = setup({
@@ -309,32 +306,35 @@ describe('a scale beside its field', () => {
           mark: 'bar',
           encoding: {
             y: 'score',
-            color: { field: 'score', scale: 'linear', scheme: 'viridis' },
+            color: {
+              field: 'score',
+              scale: { type: 'linear', scheme: 'viridis' },
+            },
           },
         },
       ],
     })
     fireEvent.change(screen.getByTestId('scale-color'), {
-      target: { value: 'categorical' },
+      target: { value: 'ordinal' },
     })
     expect(screen.queryByTestId('scheme-color')).toBeNull()
     fireEvent.click(apply())
     expect(written.mock.calls[0]![0].marks[0].encoding.color).toEqual({
       field: 'score',
-      scale: 'categorical',
+      scale: { type: 'ordinal' },
     })
   })
 
   // The members the row does not show keep the picker above read-only, so the
   // form still cannot drop a palette it never displayed.
-  it("edits a categorical color's values, colors and key names in place", () => {
+  it("edits an ordinal color's values, colors and key names in place", () => {
     const { apply, written, writes } = setup({
       marks: [
         {
           mark: 'bar',
           encoding: {
             y: 'score',
-            color: { field: 'x', scale: 'categorical', range: ['red'] },
+            color: { field: 'x', scale: { type: 'ordinal', range: ['red'] } },
           },
         },
       ],
@@ -344,10 +344,10 @@ describe('a scale beside its field', () => {
     fireEvent.change(screen.getByTestId('domain-color'), {
       target: { value: 'a, b' },
     })
-    fireEvent.change(screen.getByTestId('labels-color'), {
+    fireEvent.change(screen.getByTestId('names-color'), {
       target: { value: 'first,' },
     })
-    expect(screen.getByTestId('labels-color')).toHaveValue('first,')
+    expect(screen.getByTestId('names-color')).toHaveValue('first,')
     fireEvent.click(apply())
     expect(written).toHaveBeenCalledWith(
       writes({
@@ -358,10 +358,12 @@ describe('a scale beside its field', () => {
               y: 'score',
               color: {
                 field: 'x',
-                scale: 'categorical',
-                range: ['red'],
-                domain: ['a', 'b'],
-                labels: ['first'],
+                scale: {
+                  type: 'ordinal',
+                  range: ['red'],
+                  domain: ['a', 'b'],
+                  names: ['first'],
+                },
               },
             },
           },
@@ -377,7 +379,7 @@ describe('a scale beside its field', () => {
           mark: 'bar',
           encoding: {
             y: 'score',
-            color: { field: 'score', scale: 'threshold' },
+            color: { field: 'score', scale: { type: 'threshold' } },
           },
         },
       ],
@@ -398,9 +400,11 @@ describe('a scale beside its field', () => {
               y: 'score',
               color: {
                 field: 'score',
-                scale: 'threshold',
-                domain: ['0.5', '0.9'],
-                range: ['blue', 'grey', 'red'],
+                scale: {
+                  type: 'threshold',
+                  domain: ['0.5', '0.9'],
+                  range: ['blue', 'grey', 'red'],
+                },
               },
             },
           },
@@ -412,23 +416,25 @@ describe('a scale beside its field', () => {
   it("offers a link's width its own ramps, and no color's stops", () => {
     const { apply, written } = setup({
       marks: [
-        { mark: 'link', encoding: { size: { field: 'score', scale: 'log' } } },
+        {
+          mark: 'link',
+          encoding: { strokeWidth: { field: 'score', scale: { type: 'log' } } },
+        },
       ],
     })
-    const options = [...screen.getByTestId('scale-size').children].map(
+    const options = [...screen.getByTestId('scale-strokeWidth').children].map(
       o => (o as HTMLOptionElement).value,
     )
     expect(options).toEqual(['linear', 'log'])
-    expect(screen.queryByTestId('scheme-size')).toBeNull()
-    fireEvent.change(screen.getByTestId('domainMax-size'), {
+    expect(screen.queryByTestId('scheme-strokeWidth')).toBeNull()
+    fireEvent.change(screen.getByTestId('domainMax-strokeWidth'), {
       target: { value: '100' },
     })
     expect(apply()).toBeEnabled()
     fireEvent.click(apply())
-    expect(written.mock.calls[0]![0].marks[0].encoding.size).toEqual({
+    expect(written.mock.calls[0]![0].marks[0].encoding.strokeWidth).toEqual({
       field: 'score',
-      scale: 'log',
-      domainMax: 100,
+      scale: { type: 'log', domainMax: 100 },
     })
   })
 })

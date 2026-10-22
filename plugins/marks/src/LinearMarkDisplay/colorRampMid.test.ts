@@ -18,9 +18,11 @@ test('a diverging ramp widened by a region keeps its table and its middle', () =
           y: 'score',
           color: {
             field: 'score',
-            scale: 'linear',
-            range: ['blue', 'white', 'red'],
-            domainMid: 0,
+            scale: {
+              type: 'linear',
+              range: ['blue', 'white', 'red'],
+              domainMid: 0,
+            },
           },
         },
       },

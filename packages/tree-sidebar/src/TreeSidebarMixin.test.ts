@@ -721,3 +721,17 @@ describe('a dialog submit of the row colors', () => {
     expect(getSnapshot(display.configuration)).toBe(before)
   })
 })
+
+// Hosted jb2hubs configs still write the rowColor pairs flat
+// (`hubtools/src/repeatClassDisplay.ts`); the deprecated lift reads them as
+// the channel's `scale`, so the repeat classes keep their colors.
+test('a hosted hub flat rowColor loads as the scale of the channel', () => {
+  const display = makeDisplay({
+    rowColor: { field: 'group', domain: ['a'], range: ['#f00'], unknown: '' },
+  })
+  expect(getSnapshot(display.configuration.rowColor)).toEqual({
+    field: 'group',
+    scale: { domain: ['a'], range: ['#f00'], unknown: '' },
+  })
+  expect(pairedColorsOf(display.rowColorSetting.scale).get('a')).toBe('#f00')
+})

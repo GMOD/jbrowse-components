@@ -2,6 +2,7 @@ import { setConf } from '@jbrowse/core/configuration'
 import { categoricalValueColor } from '@jbrowse/core/ui/colors'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { isThreshold } from '@jbrowse/render-core/marks'
 
 import { findMarkHit } from './findMarkHit.ts'
@@ -46,7 +47,7 @@ function editColor(
   slot:
     | 'value'
     | 'field'
-    | 'scale'
+    | 'type'
     | 'domain'
     | 'range'
     | 'domainMin'
@@ -54,7 +55,12 @@ function editColor(
     | 'unknown',
   value: unknown,
 ) {
-  setConf(display.conf.marks[0]!, ['encoding', 'color', slot], value)
+  const mark = display.conf.marks[0]!
+  if (slot === 'value' || slot === 'field') {
+    setConf(mark, ['encoding', 'color', slot], value)
+  } else {
+    setConf(mark, ['encoding', 'color', 'scale', slot], value)
+  }
 }
 
 test('a constant color crosses as the default and paints from the main thread', () => {
@@ -73,7 +79,7 @@ test('a constant color crosses as the default and paints from the main thread', 
   expect(layerOf(display).color).toBe(cssColorToABGR('green'))
 
   editColor(display, 'field', 'score')
-  editColor(display, 'scale', 'linear')
+  editColor(display, 'type', 'linear')
 
   expect(JSON.stringify(display.rpcProps())).toBe(before)
   expect(layerOf(display).colorValue).toBe(layerOf(display).y)
@@ -83,13 +89,16 @@ test('a categorical color crosses as its field, and its domain and range repaint
   const display = loaded([
     {
       mark: 'bar',
-      encoding: { y: 'score', color: { field: 'type', scale: 'categorical' } },
+      encoding: {
+        y: 'score',
+        color: { field: 'type', scale: { type: 'ordinal' } },
+      },
     },
   ])
   const [request] = display.layerRequests
   expect(request!.encoding.color).toEqual({
     field: 'type',
-    scale: 'categorical',
+    scale: 'ordinal',
   })
   expect(request!.lanes).toContain('colorKey')
   expect(request!.lanes).not.toContain('color')
@@ -122,7 +131,10 @@ test('unknown repaints the categories the domain leaves out, fetching nothing', 
       mark: 'bar',
       encoding: {
         y: 'score',
-        color: { field: 'type', domain: ['gene'], range: ['purple'] },
+        color: {
+          field: 'type',
+          scale: { domain: ['gene'], range: ['purple'] },
+        },
       },
     },
   ])
@@ -142,7 +154,7 @@ test('categories the hash puts on one color each take their own, and keep it as 
         mark: 'bar',
         encoding: {
           y: 'score',
-          color: { field: 'biotype', scale: 'categorical' },
+          color: { field: 'biotype', scale: { type: 'ordinal' } },
         },
       },
     ],
@@ -183,9 +195,7 @@ test('a threshold over the plotted field ships no color lane and is not a fetch 
         y: 'score',
         color: {
           field: 'score',
-          scale: 'threshold',
-          domain: [5],
-          range: ['blue', 'red'],
+          scale: { type: 'threshold', domain: [5], range: ['blue', 'red'] },
         },
       },
     },
@@ -222,7 +232,7 @@ test('a ramp over the plotted field takes its extent off the values and its ends
       mark: 'point',
       encoding: {
         y: 'score',
-        color: { field: 'score', scale: 'linear', domainMin: 0 },
+        color: { field: 'score', scale: { type: 'linear', domainMin: 0 } },
       },
     },
   ])
@@ -246,12 +256,15 @@ test('a symlog ramp repaints the loaded values and hands the shapes its scale', 
   const display = loaded([
     {
       mark: 'bar',
-      encoding: { y: 'score', color: { field: 'depth', scale: 'linear' } },
+      encoding: {
+        y: 'score',
+        color: { field: 'depth', scale: { type: 'linear' } },
+      },
     },
   ])
   const before = JSON.stringify(display.rpcProps())
 
-  editColor(display, 'scale', 'symlog')
+  editColor(display, 'type', 'symlog')
 
   expect(JSON.stringify(display.rpcProps())).toBe(before)
   expect(layerOf(display).scale).toMatchObject({
@@ -272,7 +285,7 @@ test('a color over another field crosses as its field and reads the values that 
       mark: 'bar',
       encoding: {
         y: 'score',
-        color: { field: 'depth', scale: 'threshold', domain: [4] },
+        color: { field: 'depth', scale: { type: 'threshold', domain: [4] } },
       },
     },
   ])
@@ -291,7 +304,7 @@ test('a color over another field crosses as its field and reads the values that 
   })
   const before = JSON.stringify(display.rpcProps())
 
-  editColor(display, 'scale', 'log')
+  editColor(display, 'type', 'log')
   editColor(display, 'domainMin', 1)
 
   expect(JSON.stringify(display.rpcProps())).toBe(before)
@@ -309,7 +322,7 @@ test('a span colored by the depth its coverage step writes reads the raw values'
       {
         mark: 'span',
         transform: [{ type: 'coverage' }],
-        encoding: { color: { field: 'coverage', scale: 'linear' } },
+        encoding: { color: { field: 'coverage', scale: { type: 'linear' } } },
       },
     ],
   }).createDisplay()
@@ -352,9 +365,7 @@ test('a text colored by the field it stands at paints through the scale the bars
         text: 'type',
         color: {
           field: 'score',
-          scale: 'threshold',
-          domain: [5],
-          range: ['blue', 'red'],
+          scale: { type: 'threshold', domain: [5], range: ['blue', 'red'] },
         },
       },
     },
@@ -394,7 +405,7 @@ test('a text ramp with open ends follows the domain the regions union', () => {
       mark: 'text',
       encoding: {
         text: 'type',
-        color: { field: 'depth', scale: 'linear' },
+        color: { field: 'depth', scale: { type: 'linear' } },
       },
     },
   ])
@@ -408,13 +419,16 @@ test('a region holding keys under a ramp still draws them, and a constant clears
   const display = loaded([
     {
       mark: 'bar',
-      encoding: { y: 'score', color: { field: 'type', scale: 'categorical' } },
+      encoding: {
+        y: 'score',
+        color: { field: 'type', scale: { type: 'ordinal' } },
+      },
     },
   ])
   const keys = colorLane(display)
 
   editColor(display, 'field', 'depth')
-  editColor(display, 'scale', 'linear')
+  editColor(display, 'type', 'linear')
 
   expect(colorLane(display)).toEqual(keys)
   expect(layerOf(display).colorKey).toBeUndefined()
@@ -434,13 +448,13 @@ test('a region holding another field’s numbers paints them through a ramp over
       mark: 'point',
       encoding: {
         y: 'score',
-        color: { field: 'depth', scale: 'threshold', domain: [4] },
+        color: { field: 'depth', scale: { type: 'threshold', domain: [4] } },
       },
     },
   ])
 
   editColor(display, 'field', 'type')
-  editColor(display, 'scale', 'categorical')
+  editColor(display, 'type', 'ordinal')
   editColor(display, 'domain', [])
 
   const region = display.rpcDataMap.get(0)!
@@ -459,13 +473,16 @@ test('a region holding no color paints the default while a categorical refetch i
   const display = loaded([
     {
       mark: 'bar',
-      encoding: { y: 'score', color: { field: 'score', scale: 'linear' } },
+      encoding: {
+        y: 'score',
+        color: { field: 'score', scale: { type: 'linear' } },
+      },
     },
   ])
   expect(layerOf(display).color).toBeUndefined()
 
   editColor(display, 'field', 'type')
-  editColor(display, 'scale', 'categorical')
+  editColor(display, 'type', 'ordinal')
 
   expect(layerOf(display).color).toBe(cssColorToABGR(DEFAULT_MARK_COLOR))
   expect(layerOf(display).scale).toBeUndefined()
@@ -481,7 +498,10 @@ test('regions holding different kinds of color data each paint through what they
       marks: [
         {
           mark: 'bar',
-          encoding: { y: 'score', color: { field: 'depth', scale: 'linear' } },
+          encoding: {
+            y: 'score',
+            color: { field: 'depth', scale: { type: 'linear' } },
+          },
         },
       ],
     },
@@ -491,7 +511,7 @@ test('regions holding different kinds of color data each paint through what they
   display.setRpcData(1, workerResult(display, SCORES), REGION_B)
 
   editColor(display, 'field', 'type')
-  editColor(display, 'scale', 'categorical')
+  editColor(display, 'type', 'ordinal')
   display.setRpcData(0, workerResult(display, SCORES), REGION)
 
   const { renderState } = display
@@ -518,7 +538,10 @@ test('a region still holding an earlier color shapes neither the scale nor the k
           mark: 'bar',
           encoding: {
             y: 'score',
-            color: { field: 'depth', scale: 'threshold', domain: [4] },
+            color: {
+              field: 'depth',
+              scale: { type: 'threshold', domain: [4] },
+            },
           },
         },
       ],
@@ -559,7 +582,7 @@ test('keys read for another categorical field are held, and leave the key to the
           mark: 'bar',
           encoding: {
             y: 'score',
-            color: { field: 'type', scale: 'categorical' },
+            color: { field: 'type', scale: { type: 'ordinal' } },
           },
         },
       ],
@@ -584,7 +607,10 @@ test('a held region read for another field takes none of its missing-value flags
   const display = loaded([
     {
       mark: 'bar',
-      encoding: { y: 'score', color: { field: 'gc', scale: 'linear' } },
+      encoding: {
+        y: 'score',
+        color: { field: 'gc', scale: { type: 'linear' } },
+      },
     },
   ])
   expect(layerOf(display).scale).toMatchObject({ missing: true })
@@ -601,7 +627,10 @@ test('a hover on a held region says so, and a landed one does not', () => {
   const display = loaded([
     {
       mark: 'bar',
-      encoding: { y: 'score', color: { field: 'depth', scale: 'linear' } },
+      encoding: {
+        y: 'score',
+        color: { field: 'depth', scale: { type: 'linear' } },
+      },
     },
   ])
   const hitAnywhere = () => {
@@ -639,7 +668,7 @@ test('the render state says which marks color by their own y', () => {
       mark: 'line',
       encoding: {
         y: 'score',
-        color: { field: 'score', scale: 'threshold', domain: [5] },
+        color: { field: 'score', scale: { type: 'threshold', domain: [5] } },
       },
     },
   ])
@@ -647,4 +676,56 @@ test('the render state says which marks color by their own y', () => {
 
   editColor(display, 'field', 'depth')
   expect(display.renderState.colorsFromY).toEqual([false])
+})
+
+// Hosted jb2hubs configs still write a mark's color flat
+// (`hubtools/src/alfaPopulations.ts`); the deprecated lift reads it as the
+// channel, so the population colors still paint.
+test("a hosted hub's flat categorical color loads as the ordinal channel", () => {
+  const display = loaded([
+    {
+      mark: 'bar',
+      encoding: {
+        y: 'score',
+        color: {
+          field: 'type',
+          scale: 'categorical',
+          domain: ['a', 'b'],
+          range: ['#ff0000', '#0000ff'],
+        },
+      },
+    },
+  ])
+  expect(getSnapshot(display.conf.marks[0]!.encoding.color)).toEqual({
+    field: 'type',
+    scale: {
+      type: 'ordinal',
+      domain: ['a', 'b'],
+      range: ['#ff0000', '#0000ff'],
+    },
+  })
+  expect(display.layerRequests[0]!.encoding.color).toEqual({
+    field: 'type',
+    scale: 'ordinal',
+  })
+})
+
+// A key's names and the rows it lists are the legend's; the worker paints
+// without them, so editing one refetches nothing.
+test("a color's legend.values and scale.names edit the key without a fetch", () => {
+  const display = loaded([
+    {
+      mark: 'bar',
+      encoding: {
+        y: 'score',
+        color: { field: 'type', scale: { domain: ['a'] } },
+      },
+    },
+  ])
+  const fetched = display.rpcProps()
+  const { color } = display.conf.marks[0]!.encoding
+  setConf(color, ['scale', 'names'], ['First'])
+  setConf(color, ['legend', 'values'], ['a'])
+  setConf(color, ['legend', 'missingLabel'], 'none')
+  expect(display.rpcProps()).toEqual(fetched)
 })

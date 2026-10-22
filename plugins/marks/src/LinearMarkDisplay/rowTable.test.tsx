@@ -24,7 +24,7 @@ const BARS = [
     mark: 'bar',
     encoding: {
       y: 'score',
-      color: { field: 'tissue', scale: 'categorical' },
+      color: { field: 'tissue', scale: { type: 'ordinal' } },
     },
   },
 ]

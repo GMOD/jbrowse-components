@@ -32,11 +32,16 @@ describe('editChannels', () => {
     expect(editChannels('bar')).toContain('y')
   })
 
-  it('offers a point its shape and a link its size field, and a point its size number', () => {
+  it('offers a point its shape and size, and a stroked mark its strokeWidth', () => {
     expect(editChannels('point')).toContain('shape')
     expect(editChannels('point')).toContain('size')
-    expect(editChannels('link')).toContain('size')
+    expect(editChannels('point')).not.toContain('strokeWidth')
+    expect(editChannels('link')).toContain('strokeWidth')
+    expect(editChannels('rule')).toContain('strokeWidth')
+    expect(editChannels('line')).toContain('strokeWidth')
+    expect(editChannels('link')).not.toContain('size')
     expect(editChannels('bar')).not.toContain('size')
+    expect(editChannels('bar')).not.toContain('strokeWidth')
     expect(editChannels('link')).not.toContain('shape')
   })
 })
@@ -51,7 +56,7 @@ describe('channelEdit', () => {
 
   it('reads a field out of a channel object', () => {
     const mark = {
-      encoding: { color: { field: 'strand', scale: 'categorical' } },
+      encoding: { color: { field: 'strand', scale: { type: 'ordinal' } } },
     }
     expect(channelEdit(mark as MarkSnapshot, 'color')).toEqual({
       value: 'strand',
@@ -76,13 +81,25 @@ describe('channelEdit', () => {
   it('holds a field whose scale pins ends and lists colors', () => {
     const ramp = {
       encoding: {
-        color: { field: 'score', scale: 'linear', domainMin: 0, range: ['a'] },
+        color: {
+          field: 'score',
+          scale: { type: 'linear', domainMin: 0, range: ['a'] },
+        },
       },
     }
     expect(channelEdit(ramp as MarkSnapshot, 'color')).toEqual({
       value: 'score',
       beyond: false,
     })
+  })
+
+  it('is beyond the picker for a scale or key member no control shows', () => {
+    const flat = { encoding: { color: { field: 'score', scale: 'log' } } }
+    expect(channelEdit(flat as DraftMark, 'color').beyond).toBe(true)
+    const keyed = {
+      encoding: { color: { field: 'type', legend: { orient: 'left' } } },
+    }
+    expect(channelEdit(keyed, 'color').beyond).toBe(true)
   })
 
   it('is beyond the picker for a far foot naming its own sequence', () => {
@@ -100,12 +117,12 @@ describe('withChannel', () => {
     })
   })
 
-  it('gives a numeric color field a linear scale and a text one categorical', () => {
+  it('gives a numeric color field a linear scale and a text one ordinal', () => {
     expect(withChannel({}, 'color', 'score', FIELDS).encoding).toEqual({
-      color: { field: 'score', scale: 'linear' },
+      color: { field: 'score', scale: { type: 'linear' } },
     })
     expect(withChannel({}, 'color', 'strand', FIELDS).encoding).toEqual({
-      color: { field: 'strand', scale: 'categorical' },
+      color: { field: 'strand', scale: { type: 'ordinal' } },
     })
   })
 
@@ -125,7 +142,7 @@ describe('withChannel', () => {
   it('writes a jexl expression as a field, as a config file reads one', () => {
     const expr = 'jexl:feature.score > 5 ? "red" : "blue"'
     expect(withChannel({}, 'color', expr, FIELDS).encoding).toEqual({
-      color: { field: expr, scale: 'categorical' },
+      color: { field: expr, scale: { type: 'ordinal' } },
     })
   })
 
@@ -152,18 +169,18 @@ describe('withChannel', () => {
   it('writes a value no scan saw and no constant spells as a field', () => {
     for (const field of ['tags.HP', 'scor', 'currentcolor']) {
       expect(withChannel({}, 'color', field, FIELDS).encoding).toEqual({
-        color: { field, scale: 'categorical' },
+        color: { field, scale: { type: 'ordinal' } },
       })
     }
     expect(withChannel({}, 'shape', 'rhombus', FIELDS).encoding).toEqual({
-      shape: { field: 'rhombus', scale: 'categorical' },
+      shape: { field: 'rhombus', scale: { type: 'ordinal' } },
     })
   })
 
   it('reads a scanned field as a field even where it spells a color', () => {
     const fields = { numeric: [], categorical: ['tan'] }
     expect(withChannel({}, 'color', 'tan', fields).encoding).toEqual({
-      color: { field: 'tan', scale: 'categorical' },
+      color: { field: 'tan', scale: { type: 'ordinal' } },
     })
   })
 
@@ -174,9 +191,9 @@ describe('withChannel', () => {
     ).toEqual({ color: { field: 'jexl:get(feature,"hp")' } })
   })
 
-  it('reads a shape through categorical, the one scale it has', () => {
+  it('reads a shape through ordinal, the one scale it has', () => {
     expect(withChannel({}, 'shape', 'score', FIELDS).encoding).toEqual({
-      shape: { field: 'score', scale: 'categorical' },
+      shape: { field: 'score', scale: { type: 'ordinal' } },
     })
   })
 
@@ -185,10 +202,12 @@ describe('withChannel', () => {
       encoding: {
         color: {
           field: 'score',
-          scale: 'log',
-          scheme: 'viridis',
-          domainMin: 1,
-          reverse: true,
+          scale: {
+            type: 'log',
+            scheme: 'viridis',
+            domainMin: 1,
+            reverse: true,
+          },
         },
       },
     }
@@ -204,7 +223,7 @@ describe('withChannel', () => {
 
     it('takes the scale a field the scan types the other way implies', () => {
       expect(withChannel(ramp, 'color', 'strand', FIELDS).encoding).toEqual({
-        color: { field: 'strand', scale: 'categorical' },
+        color: { field: 'strand', scale: { type: 'ordinal' } },
       })
     })
 
@@ -223,14 +242,18 @@ describe('withChannel', () => {
   it("keeps a width's scale when its field changes", () => {
     const width = {
       mark: 'link' as const,
-      encoding: { size: { field: 'score', scale: 'log', domainMax: 9 } },
+      encoding: {
+        strokeWidth: { field: 'score', scale: { type: 'log', domainMax: 9 } },
+      },
     }
-    expect(withChannel(width, 'size', 'count', FIELDS).encoding).toEqual({
-      size: { field: 'count', scale: 'log', domainMax: 9 },
-    })
+    expect(withChannel(width, 'strokeWidth', 'count', FIELDS).encoding).toEqual(
+      {
+        strokeWidth: { field: 'count', scale: { type: 'log', domainMax: 9 } },
+      },
+    )
     expect(
-      withChannel({ mark: 'link' }, 'size', 'count', FIELDS).encoding,
-    ).toEqual({ size: 'count' })
+      withChannel({ mark: 'link' }, 'strokeWidth', 'count', FIELDS).encoding,
+    ).toEqual({ strokeWidth: 'count' })
   })
 
   it('reads and writes a size typed as a number as the constant px', () => {
@@ -238,9 +261,15 @@ describe('withChannel', () => {
     expect(point.encoding).toEqual({ size: 7 })
     expect(channelEdit(point, 'size')).toEqual({ value: '7', beyond: false })
     expect(
+      withChannel({ mark: 'rule' }, 'strokeWidth', '3', FIELDS).encoding,
+    ).toEqual({ strokeWidth: 3 })
+    expect(
       channelEdit(
-        { mark: 'link', encoding: { size: { value: 3, field: 'score' } } },
-        'size',
+        {
+          mark: 'link',
+          encoding: { strokeWidth: { value: 3, field: 'score' } },
+        },
+        'strokeWidth',
       ),
     ).toEqual({ value: 'score', beyond: false })
   })
@@ -334,7 +363,10 @@ describe('markSummary', () => {
   it('names a channel the picker cannot show without pretending to read it', () => {
     const ramp = {
       mark: 'bar',
-      encoding: { y: 'score', color: { field: 'x', range: ['red', 'blue'] } },
+      encoding: {
+        y: 'score',
+        color: { field: 'x', scale: { range: ['red', 'blue'] } },
+      },
     }
     expect(markSummary(ramp as MarkSnapshot)).toBe('bar · y score · color x')
   })
@@ -342,7 +374,9 @@ describe('markSummary', () => {
 
 describe('the scale beside a field', () => {
   const ramp = {
-    encoding: { color: { field: 'score', scale: 'linear', scheme: 'viridis' } },
+    encoding: {
+      color: { field: 'score', scale: { type: 'linear', scheme: 'viridis' } },
+    },
   }
 
   it('reads the kind a field is read through, and nothing for a constant', () => {
@@ -355,7 +389,7 @@ describe('the scale beside a field', () => {
   it('shows the scale an unscaled field paints through: score a ramp', () => {
     const unscaled = (field: string) => ({ encoding: { color: { field } } })
     expect(channelScale(unscaled('score'), 'color')).toBe('linear')
-    expect(channelScale(unscaled('svtype'), 'color')).toBe('categorical')
+    expect(channelScale(unscaled('svtype'), 'color')).toBe('ordinal')
   })
 
   it('reads a member as text, and an unset one as empty', () => {
@@ -363,60 +397,58 @@ describe('the scale beside a field', () => {
     expect(scaleMember(ramp, 'color', 'domainMin')).toBe('')
   })
 
-  // A ramp's members mean nothing under a categorical scale, and the rule list
+  // A ramp's members mean nothing under an ordinal scale, and the rule list
   // would report them, so changing the kind drops what the new one cannot use.
   it('drops the members a new kind does not paint', () => {
-    expect(
-      withChannelScale(ramp, 'color', 'categorical').encoding!.color,
-    ).toEqual({ field: 'score', scale: 'categorical' })
+    expect(withChannelScale(ramp, 'color', 'ordinal').encoding!.color).toEqual({
+      field: 'score',
+      scale: { type: 'ordinal' },
+    })
   })
 
-  it("keeps a categorical color's unknown only while it stays categorical", () => {
+  it("keeps an ordinal color's unknown only while it stays ordinal", () => {
     const other = {
       encoding: {
-        color: { field: 'type', domain: ['a'], unknown: 'grey' },
+        color: { field: 'type', scale: { domain: ['a'], unknown: 'grey' } },
       },
     }
     expect(
-      withChannelScale(other, 'color', 'categorical').encoding!.color,
-    ).toMatchObject({ unknown: 'grey' })
+      withChannelScale(other, 'color', 'ordinal').encoding!.color,
+    ).toMatchObject({ scale: { unknown: 'grey' } })
     expect(
       withChannelScale(other, 'color', 'linear').encoding!.color,
-    ).not.toHaveProperty('unknown')
+    ).not.toHaveProperty('scale.unknown')
   })
 
   it('keeps the ramp members when one ramp becomes another', () => {
     expect(withChannelScale(ramp, 'color', 'log').encoding!.color).toEqual({
       field: 'score',
-      scale: 'log',
-      scheme: 'viridis',
+      scale: { type: 'log', scheme: 'viridis' },
     })
     const stops = withListMember(ramp, 'color', 'range', 'white, red')
     expect(withChannelScale(stops, 'color', 'log').encoding!.color).toEqual({
       field: 'score',
-      scale: 'log',
-      scheme: 'viridis',
-      range: ['white', 'red'],
+      scale: { type: 'log', scheme: 'viridis', range: ['white', 'red'] },
     })
-    expect(
-      withChannelScale(stops, 'color', 'categorical').encoding!.color,
-    ).toEqual({ field: 'score', scale: 'categorical' })
+    expect(withChannelScale(stops, 'color', 'ordinal').encoding!.color).toEqual(
+      { field: 'score', scale: { type: 'ordinal' } },
+    )
   })
 
   it('writes an end as a number and a reverse as a boolean', () => {
     expect(
       withScaleMember(ramp, 'color', 'domainMin', '0').encoding!.color,
-    ).toMatchObject({ domainMin: 0 })
+    ).toMatchObject({ scale: { domainMin: 0 } })
     expect(
       withScaleMember(ramp, 'color', 'reverse', 'true').encoding!.color,
-    ).toMatchObject({ reverse: true })
+    ).toMatchObject({ scale: { reverse: true } })
   })
 
   it('clears a member an empty value names, so an end autoscales again', () => {
     const pinned = withScaleMember(ramp, 'color', 'domainMax', '50')
     expect(
       withScaleMember(pinned, 'color', 'domainMax', '').encoding!.color,
-    ).not.toHaveProperty('domainMax')
+    ).not.toHaveProperty('scale.domainMax')
   })
 
   it('leaves a ramp within the picker rather than beyond it', () => {
@@ -426,9 +458,11 @@ describe('the scale beside a field', () => {
     })
   })
 
-  it('edits a domain, a range and the labels beside the field', () => {
+  it('edits a domain and a range beside the field', () => {
     const listed = {
-      encoding: { color: { field: 'x', scale: 'categorical', range: ['red'] } },
+      encoding: {
+        color: { field: 'x', scale: { type: 'ordinal', range: ['red'] } },
+      },
     }
     expect(channelEdit(listed, 'color').beyond).toBe(false)
     expect(listMember(listed, 'color', 'range')).toBe('red')
@@ -440,19 +474,32 @@ describe('the scale beside a field', () => {
     )
     expect(cut.encoding?.color).toEqual({
       field: 'x',
-      scale: 'threshold',
-      domain: ['0.5', '0.9'],
+      scale: { type: 'threshold', domain: ['0.5', '0.9'] },
     })
     expect(withListMember(cut, 'color', 'domain', ' ').encoding?.color).toEqual(
-      { field: 'x', scale: 'threshold' },
+      { field: 'x', scale: { type: 'threshold' } },
     )
   })
 
   it("keeps a key's title across a change of scale", () => {
     const titled = withScaleMember(ramp, 'color', 'title', 'Score')
+    expect(titled.encoding?.color).toMatchObject({ legend: { title: 'Score' } })
     expect(
-      withChannelScale(titled, 'color', 'categorical').encoding?.color,
-    ).toEqual({ field: 'score', scale: 'categorical', title: 'Score' })
+      withChannelScale(titled, 'color', 'ordinal').encoding?.color,
+    ).toEqual({
+      field: 'score',
+      scale: { type: 'ordinal' },
+      legend: { title: 'Score' },
+    })
+  })
+
+  // An unset member and a part left empty are no member, so a cleared key
+  // writes the channel the config would snapshot.
+  it('drops a part its last member leaves empty', () => {
+    const titled = withScaleMember(ramp, 'color', 'title', 'Score')
+    expect(
+      withScaleMember(titled, 'color', 'title', '').encoding?.color,
+    ).toEqual(ramp.encoding.color)
   })
 })
 
@@ -461,37 +508,41 @@ describe('the scale beside a field', () => {
 describe('the scale beside a width', () => {
   const width = {
     mark: 'link' as const,
-    encoding: { size: { field: 'score', scale: 'linear', domainMin: 1 } },
+    encoding: {
+      strokeWidth: { field: 'score', scale: { type: 'linear', domainMin: 1 } },
+    },
   }
 
   it("offers a width's two ramps", () => {
+    expect(channelScales('strokeWidth')).toEqual(['linear', 'log'])
     expect(channelScales('size')).toEqual(['linear', 'log'])
   })
 
   it('reads a shorthand width as a field on the preset ramp, which a kind change keeps', () => {
-    const shorthand = { mark: 'link' as const, encoding: { size: 'score' } }
-    expect(channelScale(shorthand, 'size')).toBe('linear')
-    expect(withChannelScale(shorthand, 'size', 'log').encoding!.size).toEqual({
-      field: 'score',
-      scale: 'log',
-    })
+    const shorthand = {
+      mark: 'link' as const,
+      encoding: { strokeWidth: 'score' },
+    }
+    expect(channelScale(shorthand, 'strokeWidth')).toBe('linear')
+    expect(
+      withChannelScale(shorthand, 'strokeWidth', 'log').encoding!.strokeWidth,
+    ).toEqual({ field: 'score', scale: { type: 'log' } })
   })
 
   it('keeps the ends and the widths when one width ramp becomes the other', () => {
-    expect(withChannelScale(width, 'size', 'log').encoding!.size).toEqual({
+    expect(
+      withChannelScale(width, 'strokeWidth', 'log').encoding!.strokeWidth,
+    ).toEqual({ field: 'score', scale: { type: 'log', domainMin: 1 } })
+    const widths = withListMember(width, 'strokeWidth', 'range', '1, 9')
+    expect(widths.encoding!.strokeWidth).toEqual({
       field: 'score',
-      scale: 'log',
-      domainMin: 1,
+      scale: { type: 'linear', domainMin: 1, range: [1, 9] },
     })
-    const widths = {
-      mark: 'link' as const,
-      encoding: { size: { ...width.encoding.size, range: ['1', '9'] } },
-    }
-    expect(withChannelScale(widths, 'size', 'log').encoding!.size).toEqual({
+    expect(
+      withChannelScale(widths, 'strokeWidth', 'log').encoding!.strokeWidth,
+    ).toEqual({
       field: 'score',
-      scale: 'log',
-      domainMin: 1,
-      range: ['1', '9'],
+      scale: { type: 'log', domainMin: 1, range: [1, 9] },
     })
   })
 })
@@ -505,31 +556,31 @@ test('a channel shaping its key stays in the form, and each key member round-tri
       y: 'score',
       color: {
         field: 'r2',
-        scale: 'threshold',
-        domain: ['0.5'],
-        range: ['blue', 'red'],
-        descending: true,
-        missingLabel: 'No LD data',
+        scale: { type: 'threshold', domain: ['0.5'], range: ['blue', 'red'] },
+        legend: { descending: true, missingLabel: 'No LD data' },
       },
       shape: {
         field: 'ld_role',
-        breaks: ['index'],
-        labels: ['Index SNP'],
-        title: '',
+        scale: { names: ['Index SNP'] },
+        legend: { values: ['index'], title: '' },
       },
     },
   }
   expect(channelEdit(mark, 'color').beyond).toBe(false)
   expect(channelEdit(mark, 'shape').beyond).toBe(false)
   expect(scaleMember(mark, 'color', 'descending')).toBe('true')
-  expect(listMember(mark, 'shape', 'breaks')).toBe('index')
+  expect(listMember(mark, 'shape', 'values')).toBe('index')
+  expect(listMember(mark, 'shape', 'names')).toBe('Index SNP')
   expect(
     withScaleMember(mark, 'color', 'descending', '').encoding?.color,
-  ).not.toHaveProperty('descending')
+  ).not.toHaveProperty('legend.descending')
   expect(
     withScaleMember(mark, 'color', 'missingLabel', 'unjoined').encoding?.color,
-  ).toMatchObject({ missingLabel: 'unjoined' })
+  ).toMatchObject({ legend: { missingLabel: 'unjoined' } })
   expect(
-    withChannelScale(mark, 'color', 'categorical').encoding?.color,
-  ).toMatchObject({ missingLabel: 'No LD data' })
+    withListMember(mark, 'shape', 'values', 'index, other').encoding?.shape,
+  ).toMatchObject({ legend: { values: ['index', 'other'], title: '' } })
+  expect(
+    withChannelScale(mark, 'color', 'ordinal').encoding?.color,
+  ).toMatchObject({ legend: { missingLabel: 'No LD data' } })
 })

@@ -147,7 +147,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
       mark: 'bar',
       encoding: {
         y: 'score',
-        color: { field: 'strand', scale: 'categorical', domain: [1, -1] },
+        color: { field: 'strand', scale: { type: 'ordinal', domain: [1, -1] } },
       },
     },
     {
@@ -164,10 +164,12 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
       encoding: {
         color: {
           field: 'score',
-          scale: 'log',
-          domainMin: 1,
-          domainMax: 1000,
-          range: ['white', 'red'],
+          scale: {
+            type: 'log',
+            domainMin: 1,
+            domainMax: 1000,
+            range: ['white', 'red'],
+          },
         },
       },
     },
@@ -183,7 +185,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
           x2: 'end',
           y: 'score',
           row: undefined,
-          color: { field: 'strand', scale: 'categorical' },
+          color: { field: 'strand', scale: 'ordinal' },
         },
         lanes: ['y', 'row', 'colorKey'],
       },
@@ -558,7 +560,10 @@ test('an unpinned ramp domain is the union of the loaded regions extremes', () =
   const { createDisplay } = createTestEnvironment([
     {
       mark: 'bar',
-      encoding: { y: 'score', color: { field: 'score', scale: 'linear' } },
+      encoding: {
+        y: 'score',
+        color: { field: 'score', scale: { type: 'linear' } },
+      },
     },
   ])
   const { display } = createDisplay()
@@ -580,9 +585,7 @@ test('a pinned ramp domain is every region s, whatever they hold', () => {
         y: 'score',
         color: {
           field: 'score',
-          scale: 'linear',
-          domainMin: 0,
-          domainMax: 100,
+          scale: { type: 'linear', domainMin: 0, domainMax: 100 },
         },
       },
     },
@@ -906,16 +909,20 @@ test('a key an encoding channel does not declare is named as the config loads', 
 // the worker throw for every mark.
 test.each([
   [
-    { field: 'score', scale: 'linear', range: ['magma'] },
+    { field: 'score', scale: { type: 'linear', range: ['magma'] } },
     undefined,
     '"magma" is not a color',
   ],
   [
-    { field: 'score', scale: 'linear', scheme: 'rainbow' },
+    { field: 'score', scale: { type: 'linear', scheme: 'rainbow' } },
     undefined,
     '(ColorScheme | undefined)',
   ],
-  [undefined, { field: 'svtype', range: ['star', 'triangle-down'] }, '"star"'],
+  [
+    undefined,
+    { field: 'svtype', scale: { range: ['star', 'triangle-down'] } },
+    '"star"',
+  ],
   [undefined, { value: 'triangl' }, '"triangl"'],
 ])(
   'a color %j or shape %j naming nothing the display paints fails the load',
@@ -1036,16 +1043,14 @@ test('a color ramp pins the end it names, and a domain beside it is named as unr
         y: 'score',
         color: {
           field: 'score',
-          scale: 'linear',
-          domainMin: 0,
-          domain: ['0', '10'],
+          scale: { type: 'linear', domainMin: 0, domain: ['0', '10'] },
         },
       },
     },
   ]).createDisplay()
   expect(display.notices).toEqual([
     expect.stringMatching(
-      /^mark 0 encoding.color.domain: a linear, log or symlog scale reads no domain/,
+      /^mark 0 encoding.color.scale.domain: a linear, log or symlog scale reads no domain/,
     ),
   ])
   // a color over the plotted field is the display's own, not a fetch input
@@ -1512,7 +1517,10 @@ test('a mark outside its zoom range leaves the shared domain and the legend', ()
     { mark: 'bar', encoding: { y: 'score' }, maxBpPerPx: 4 },
     {
       mark: 'bar',
-      encoding: { y: 'count', color: { field: 'type', scale: 'categorical' } },
+      encoding: {
+        y: 'count',
+        color: { field: 'type', scale: { type: 'ordinal' } },
+      },
       minBpPerPx: 4,
     },
   ])
@@ -1548,7 +1556,10 @@ test('the legend reads the scale table the worker resolved', () => {
   const { createDisplay } = createTestEnvironment([
     {
       mark: 'bar',
-      encoding: { y: 'score', color: { field: 'type', scale: 'categorical' } },
+      encoding: {
+        y: 'score',
+        color: { field: 'type', scale: { type: 'ordinal' } },
+      },
     },
   ])
   const { display } = createDisplay()
@@ -1590,7 +1601,11 @@ test("the color's title heads its key, and a write retitles it without a fetch",
       mark: 'point',
       encoding: {
         y: 'score',
-        color: { field: 'score', scale: 'linear', title: 'Mapping quality' },
+        color: {
+          field: 'score',
+          scale: { type: 'linear' },
+          legend: { title: 'Mapping quality' },
+        },
       },
     },
   ])
@@ -1604,9 +1619,9 @@ test("the color's title heads its key, and a write retitles it without a fetch",
   expect(heading()).toEqual(['Mapping quality'])
   const fetched = display.rpcProps()
   const { color } = display.conf.marks[0]!.encoding
-  setConf(color, 'title', '')
+  setConf(color, ['legend', 'title'], '')
   expect(heading()).toEqual([undefined])
-  setConf(color, 'title', undefined)
+  setConf(color, ['legend', 'title'], undefined)
   expect(heading()).toEqual(['score'])
   expect(display.rpcProps()).toEqual(fetched)
 })
@@ -1629,14 +1644,14 @@ test('two marks coloring by one field through one range share a key', () => {
       mark: 'bar',
       encoding: {
         y: 'score',
-        color: { field: 'strand', scale: 'categorical' },
+        color: { field: 'strand', scale: { type: 'ordinal' } },
       },
     },
     {
       mark: 'bar',
       encoding: {
         y: 'score',
-        color: { field: 'strand', scale: 'categorical' },
+        color: { field: 'strand', scale: { type: 'ordinal' } },
       },
     },
   ]
@@ -1690,8 +1705,8 @@ test('a shape scale over the field the color classifies folds into one key', () 
       mark: 'point',
       encoding: {
         y: 'score',
-        color: { field: 'strand', scale: 'categorical' },
-        shape: { field: 'strand', scale: 'categorical' },
+        color: { field: 'strand', scale: { type: 'ordinal' } },
+        shape: { field: 'strand', scale: { type: 'ordinal' } },
       },
     },
   ])
@@ -1759,9 +1774,11 @@ test("a shape scale reaches the worker beside the color, and its key draws the s
         color: { value: 'red' },
         shape: {
           field: 'strand',
-          scale: 'categorical',
-          domain: [1, -1],
-          range: ['triangle-down', 'diamond'],
+          scale: {
+            type: 'ordinal',
+            domain: [1, -1],
+            range: ['triangle-down', 'diamond'],
+          },
         },
       },
     },
@@ -1769,7 +1786,7 @@ test("a shape scale reaches the worker beside the color, and its key draws the s
   const { display } = createDisplay()
   expect(display.rpcProps().layers[0]?.encoding.shape).toEqual({
     field: 'strand',
-    scale: 'categorical',
+    scale: 'ordinal',
     domain: ['1', '-1'],
     range: ['triangle-down', 'diamond'],
   })
@@ -1904,7 +1921,7 @@ test('a hovered point lights as a ring around its glyph', () => {
 // than circling its middle.
 test('a hovered rule lights a ring along its whole length', () => {
   const { createDisplay } = createTestEnvironment([
-    { mark: 'rule', encoding: { y: 'score', size: 2 } },
+    { mark: 'rule', encoding: { y: 'score', strokeWidth: 2 } },
   ])
   const { display } = createDisplay()
   const [layer] = result([{ y: [5] }]).layers
@@ -2189,7 +2206,11 @@ test("a point mark's size is its own, the axis insets by the largest, and the me
   const { createDisplay } = createTestEnvironment([
     { mark: 'point', encoding: { y: 'score' } },
     { mark: 'point', encoding: { y: 'other', size: 10 } },
-    { mark: 'bar', encoding: { y: 'score', size: 9 }, maxBpPerPx: 0.001 },
+    {
+      mark: 'rule',
+      encoding: { y: 'score', strokeWidth: 9 },
+      maxBpPerPx: 0.001,
+    },
   ])
   const { display } = createDisplay()
   display.setRpcData(
@@ -2500,7 +2521,7 @@ test('a hidden section leaves the key and the axis the way it leaves the plot', 
         mark: 'bar',
         encoding: {
           y: 'score',
-          color: { field: 'type', scale: 'categorical' },
+          color: { field: 'type', scale: { type: 'ordinal' } },
         },
       },
     ],
@@ -2556,7 +2577,7 @@ test("a threshold key keeps the no-value row another region paints after a hidde
         mark: 'bar',
         encoding: {
           y: 'score',
-          color: { field: 'pip', scale: 'threshold', domain: [0.5] },
+          color: { field: 'pip', scale: { type: 'threshold', domain: [0.5] } },
         },
       },
     ],
@@ -2611,7 +2632,7 @@ test("a span ramp's key drops the no-value row with the section that painted it"
     [
       {
         mark: 'span',
-        encoding: { color: { field: 'score', scale: 'linear' } },
+        encoding: { color: { field: 'score', scale: { type: 'linear' } } },
       },
     ],
     REGION,
@@ -2652,7 +2673,7 @@ test("a key over the facet's field follows the sections' order", () => {
         mark: 'bar',
         encoding: {
           y: 'score',
-          color: { field: 'sample', scale: 'categorical' },
+          color: { field: 'sample', scale: { type: 'ordinal' } },
         },
       },
     ],
@@ -2748,22 +2769,22 @@ test('a color or shape naming a field other than score and no scale reads it cat
       mark: 'bar',
       encoding: {
         y: 'score',
-        color: { field: 'svlen', range: ['white', 'red'] },
+        color: { field: 'svlen', scale: { range: ['white', 'red'] } },
       },
     },
   ])
   const { display } = createDisplay()
   expect(display.encodings[0]!.color).toMatchObject({
     field: 'source',
-    scale: 'categorical',
+    scale: 'ordinal',
   })
   expect(display.encodings[0]!.shape).toMatchObject({
     field: 'type',
-    scale: 'categorical',
+    scale: 'ordinal',
   })
   expect(display.encodings[1]!.color).toEqual({
     field: 'svlen',
-    scale: 'categorical',
+    scale: 'ordinal',
   })
   expect(display.markColors[1]).toMatchObject({
     kind: 'categories',
@@ -2947,7 +2968,7 @@ const LINK = {
   mark: 'link',
   encoding: {
     x2: { chrom: 'mate.refName', pos: 'mate.start' },
-    size: { field: 'score', scale: 'log', range: [1, 8] },
+    strokeWidth: { field: 'score', scale: { type: 'log', range: [1, 8] } },
     color: { value: 'red' },
   },
   transform: [{ type: 'mate' }],
@@ -2988,7 +3009,7 @@ function linkLayer(
   }
 }
 
-test('a link mark sends its far foot as a locus, its size as a scale, and asks for the lanes both need', () => {
+test('a link mark sends its far foot as a locus, its stroke width as the size scale, and asks for the lanes both need', () => {
   const { display } = createTestEnvironment([LINK]).createDisplay()
   expect(display.hasLinkMark).toBe(true)
   expect(display.rpcProps().layers[0]).toMatchObject({
@@ -3003,7 +3024,7 @@ test('a link mark sends its far foot as a locus, its size as a scale, and asks f
   // unwritten, a link strokes at its own 2 px rather than a point's diameter
   expect(display.markSizes).toEqual([2])
   const plain = createTestEnvironment([
-    { mark: 'link', encoding: { x2: 'mate.start', size: 3 } },
+    { mark: 'link', encoding: { x2: 'mate.start', strokeWidth: 3 } },
   ]).createDisplay().display
   expect(plain.rpcProps().layers[0]).toMatchObject({
     encoding: { x2: 'mate.start' },
@@ -3227,15 +3248,14 @@ test('a color s labels name its key rows and its hover without crossing the wire
         y: 'score',
         color: {
           field: 'svtype',
-          domain: ['DEL', 'DUP'],
-          labels: ['Loss', 'Gain'],
+          scale: { domain: ['DEL', 'DUP'], names: ['Loss', 'Gain'] },
         },
       },
     },
   ]).createDisplay()
   expect(display.encodings[0]!.color).toEqual({
     field: 'svtype',
-    scale: 'categorical',
+    scale: 'ordinal',
   })
   display.setRpcData(
     0,
@@ -3270,10 +3290,10 @@ test('a color on score paints a ramp, as the feature display s does', () => {
   ]).createDisplay()
   expect(
     display.markColors.map(c => (c.kind === 'constant' ? c.kind : c.encoding)),
-  ).toMatchObject([{ scale: 'linear' }, { scale: 'categorical' }])
+  ).toMatchObject([{ scale: 'linear' }, { scale: 'ordinal' }])
   expect(display.encodings[1]!.color).toEqual({
     field: 'svtype',
-    scale: 'categorical',
+    scale: 'ordinal',
   })
 })
 
@@ -3326,7 +3346,7 @@ test('a mark s size and color default by its type, and a text mark knows whether
     '#0068d1',
     '#0068d1',
     '#0068d1',
-    { field: 'type', scale: 'categorical' },
+    { field: 'type', scale: 'ordinal' },
   ])
   expect(display.markColors[4]).toEqual({
     kind: 'constant',

@@ -32,10 +32,10 @@ const MEMBER_LABELS: Partial<Record<ScaleMember, string>> = {
 
 // What each list is, in the words of the scale it belongs to.
 function listLabel(channel: EditChannel, scale: string, member: ListMember) {
-  if (member === 'labels') {
+  if (member === 'names') {
     return scale === 'threshold' ? 'interval names' : 'key names'
   }
-  if (member === 'breaks') {
+  if (member === 'values') {
     return 'values the key lists'
   }
   if (member === 'domain') {
@@ -43,25 +43,25 @@ function listLabel(channel: EditChannel, scale: string, member: ListMember) {
   }
   return channel === 'shape'
     ? 'shapes'
-    : channel === 'size'
+    : channel === 'size' || channel === 'strokeWidth'
       ? 'px at low, high'
       : 'colors'
 }
 
-// Which lists a scale reads: a categorical or threshold color its values or
+// Which lists a scale reads: an ordinal or threshold color its values or
 // cuts, their colors and their names; a shape its values, shapes and names;
-// a categorical key the values it lists; a width ramp its two px ends; a
-// color ramp its stops.
+// an ordinal key the values it lists; a width ramp its two px ends; a color
+// ramp its stops.
 function listsOf(channel: EditChannel, scale: string): ListMember[] {
-  if (channel === 'size') {
+  if (channel === 'size' || channel === 'strokeWidth') {
     return ['range']
   }
   if (isRampScale(scale)) {
     return channel === 'color' ? ['range'] : []
   }
   return scale === 'threshold'
-    ? ['domain', 'range', 'labels']
-    : ['domain', 'range', 'labels', 'breaks']
+    ? ['domain', 'range', 'names']
+    : ['domain', 'range', 'names', 'values']
 }
 
 const MemberField = observer(function MemberField({
@@ -119,7 +119,7 @@ const ListField = observer(function ListField({
 
 /**
  * The scale a channel's field is read through, beside the field itself: the
- * kind; for a categorical or threshold scale its values or cut points, their
+ * kind; for an ordinal or threshold scale its values or cut points, their
  * colors and their names in the key; for a ramp the stops it samples, the
  * ends that pin it, its middle and how an open end follows the data; and the
  * key's title. A list is comma-separated text, and emptying one returns it to
@@ -251,7 +251,7 @@ const MarkScaleRow = observer(function MarkScaleRow({
           label="key lists the highest first"
         />
       ) : null}
-      {channel === 'color' && scale === 'categorical' ? (
+      {channel === 'color' && scale === 'ordinal' ? (
         <MemberField
           mark={mark}
           channel={channel}
