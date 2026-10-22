@@ -4,7 +4,7 @@
 // relative path only.
 import { numberReaderOf, readerOf, selectRows } from './featureTable.ts'
 import { fieldReader, isPlainFieldRef } from './fieldReader.ts'
-import { groupKey, sortByStart } from './stepTables.ts'
+import { groupKey, groupedStartOrder } from './stepTables.ts'
 import { DEFAULT_WINDOW_FRAME } from './windowStep.ts'
 
 import type { FeatureTable } from './featureTable.ts'
@@ -56,35 +56,6 @@ function seriesOf(
     series[i] = s
   }
   return { series, count }
-}
-
-// The rows grouped by series, each series in start order, and where each
-// series begins.
-function seriesOrder(starts: Float64Array, series: Uint32Array, count: number) {
-  const n = series.length
-  const first = new Uint32Array(count + 1)
-  for (let i = 0; i < n; i++) {
-    first[series[i]! + 1]!++
-  }
-  for (let s = 0; s < count; s++) {
-    first[s + 1]! += first[s]!
-  }
-  const order = new Uint32Array(n)
-  const next = first.slice(0, count)
-  for (let i = 0; i < n; i++) {
-    order[next[series[i]!]!++] = i
-  }
-  for (let s = 0; s < count; s++) {
-    const rows = order.subarray(first[s], first[s + 1])
-    let sorted = true
-    for (let k = 1; k < rows.length && sorted; k++) {
-      sorted = starts[rows[k]!]! >= starts[rows[k - 1]!]!
-    }
-    if (!sorted) {
-      sortByStart(rows, starts)
-    }
-  }
-  return { order, first }
 }
 
 // The bases a window's frame spans at the median row: each row's frame runs
@@ -148,7 +119,7 @@ export function pathSeries(
     const s = readStart(i)
     starts[i] = Number.isNaN(s) ? Infinity : s
   }
-  const { order, first } = seriesOrder(starts, series, count)
+  const { order, first } = groupedStartOrder(series, count, starts)
   const ordered = new Uint32Array(n)
   for (let k = 0; k < n; k++) {
     ordered[k] = series[order[k]!]!

@@ -5,8 +5,8 @@ import { numberReaderOf, readerOf, withColumns } from './featureTable.ts'
 import { isPlainFieldRef } from './fieldReader.ts'
 import {
   groupRows,
+  groupedStartOrder,
   isWeighted,
-  sortByStart,
   stepNumberReader,
   stepReader,
 } from './stepTables.ts'
@@ -28,35 +28,14 @@ function windowOrder(
   groups: number,
 ) {
   const n = table.length
-  const groupStart = new Uint32Array(groups + 1)
-  for (let i = 0; i < n; i++) {
-    groupStart[groupOf[i]! + 1]!++
-  }
-  for (let g = 0; g < groups; g++) {
-    groupStart[g + 1]! += groupStart[g]!
-  }
-  const order = new Uint32Array(n)
-  const next = groupStart.slice(0, groups)
-  for (let i = 0; i < n; i++) {
-    order[next[groupOf[i]!]!++] = i
-  }
   const readStart = numberReaderOf(table.column('start'))
   const starts = new Float64Array(n)
   for (let i = 0; i < n; i++) {
     const s = readStart(i)
     starts[i] = Number.isNaN(s) ? Infinity : s
   }
-  for (let g = 0; g < groups; g++) {
-    const rows = order.subarray(groupStart[g], groupStart[g + 1])
-    let sorted = true
-    for (let k = 1; k < rows.length && sorted; k++) {
-      sorted = starts[rows[k]!]! >= starts[rows[k - 1]!]!
-    }
-    if (!sorted) {
-      sortByStart(rows, starts)
-    }
-  }
-  return { order, groupStart }
+  const { order, first } = groupedStartOrder(groupOf, groups, starts)
+  return { order, groupStart: first }
 }
 
 // The rows `[first, last]` of a group of `m` around its row `j`, empty where

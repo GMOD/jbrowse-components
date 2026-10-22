@@ -365,6 +365,39 @@ export class OpSums {
   }
 }
 
+// The rows grouped, groups in index order, each group's rows in start order;
+// and where each group's rows begin, `first[groups]` closing the last.
+export function groupedStartOrder(
+  groupOf: Uint32Array,
+  groups: number,
+  starts: Float64Array,
+) {
+  const n = groupOf.length
+  const first = new Uint32Array(groups + 1)
+  for (let i = 0; i < n; i++) {
+    first[groupOf[i]! + 1]!++
+  }
+  for (let g = 0; g < groups; g++) {
+    first[g + 1]! += first[g]!
+  }
+  const order = new Uint32Array(n)
+  const next = first.slice(0, groups)
+  for (let i = 0; i < n; i++) {
+    order[next[groupOf[i]!]!++] = i
+  }
+  for (let g = 0; g < groups; g++) {
+    const rows = order.subarray(first[g], first[g + 1])
+    let sorted = true
+    for (let k = 1; k < rows.length && sorted; k++) {
+      sorted = starts[rows[k]!]! >= starts[rows[k - 1]!]!
+    }
+    if (!sorted) {
+      sortByStart(rows, starts)
+    }
+  }
+  return { order, first }
+}
+
 // Rows in start order, ties in the order they came: a start and a row packed
 // into one double and sorted without a comparator, which leaves the typed
 // sort's fast path only where the packing could not be exact.
