@@ -602,11 +602,18 @@ function scalesOf(scales: Record<string, unknown>) {
   return isRecord(y) ? { y: scaleEndsOf(name => y[name]) } : {}
 }
 
-// A written channel's member by path, a bare string being its field.
-function channelMember(written: unknown, path: readonly string[]): unknown {
+// A written channel's member by path, a bare string being its field. A
+// member its schema does not declare reads as unset, as the display reads it.
+function channelMember(
+  written: unknown,
+  slot: SlotEntry,
+  path: readonly string[],
+): unknown {
   let at: unknown = typeof written === 'string' ? { field: written } : written
+  let entry: SlotEntry | undefined = slot
   for (const key of path) {
-    at = isRecord(at) ? at[key] : undefined
+    entry = entry?.subSlots?.find(s => s.name === key)
+    at = entry && isRecord(at) ? at[key] : undefined
   }
   return at
 }
@@ -624,8 +631,8 @@ function checkChannels(
       withImpliedField(
         colorSlotsOf(path =>
           path.length === 1 && path[0] === 'field'
-            ? (channelMember(written, path) ?? slot.fieldDefault)
-            : channelMember(written, path),
+            ? (channelMember(written, slot, path) ?? slot.fieldDefault)
+            : channelMember(written, slot, path),
         ),
         slot.impliedField,
       ),
