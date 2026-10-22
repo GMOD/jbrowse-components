@@ -173,34 +173,65 @@ export class MafTabixBlockReader {
       ref = firstSlot
     }
     const refSampleId = ref === -1 ? undefined : rows.nameAt(ref)
-    const [refFrom, refTo] =
-      ref !== -1 ? [this.from[ref]!, this.to[ref]!] : [firstFrom, firstTo]
+    const refFrom = ref === -1 ? firstFrom : this.from[ref]!
+    const refTo = ref === -1 ? firstTo : this.to[ref]!
     // The first entry is the row the line's coordinates state. maf2bed places
     // a `-` one at forward coordinates and keeps its text as written, so the
     // whole block turns over here.
-    const flip = firstFrom !== -1 && firstStrand === -1
-    const range = (from: number, to: number) =>
-      flip
-        ? ([revcom(text.slice(from, to)), 0, to - from] as const)
-        : ([text, from, to] as const)
+    if (firstFrom !== -1 && firstStrand === -1) {
+      this.emitFlipped(sink, id, start, end, text, refFrom, refTo, refSampleId)
+      return
+    }
     if (refFrom !== -1) {
-      sink.startBlock(id, start, end, ...range(refFrom, refTo), refSampleId)
+      sink.startBlock(id, start, end, text, refFrom, refTo, refSampleId)
     } else {
       sink.startBlock(id, start, end, '', 0, 0, undefined)
     }
     const order = rows.order()
     for (let j = 0; j < rows.count; j++) {
       const slot = order[j]!
-      const from = this.from[slot]!
-      const to = this.to[slot]!
-      const srcSize = this.srcSize[slot]!
-      const srcStart = this.srcStart[slot]!
       sink.addRow(
         rows.nameAt(slot),
-        ...range(from, to),
+        text,
+        this.from[slot]!,
+        this.to[slot]!,
         this.chr[slot]!,
-        flip ? srcSize - srcStart - alignedBases(text, from, to) : srcStart,
-        flip ? -this.strand[slot]! : this.strand[slot]!,
+        this.srcStart[slot]!,
+        this.strand[slot]!,
+        this.srcSize[slot],
+        undefined,
+      )
+    }
+  }
+
+  private emitFlipped(
+    sink: MafBlockSink,
+    id: string,
+    start: number,
+    end: number,
+    text: string,
+    refFrom: number,
+    refTo: number,
+    refSampleId: string | undefined,
+  ) {
+    const { rows } = this
+    const ref = revcom(text.slice(refFrom, refTo))
+    sink.startBlock(id, start, end, ref, 0, ref.length, refSampleId)
+    const order = rows.order()
+    for (let j = 0; j < rows.count; j++) {
+      const slot = order[j]!
+      const from = this.from[slot]!
+      const to = this.to[slot]!
+      const seq = revcom(text.slice(from, to))
+      const srcSize = this.srcSize[slot]!
+      sink.addRow(
+        rows.nameAt(slot),
+        seq,
+        0,
+        seq.length,
+        this.chr[slot]!,
+        srcSize - this.srcStart[slot]! - alignedBases(text, from, to),
+        -this.strand[slot]!,
         srcSize,
         undefined,
       )
