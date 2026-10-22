@@ -3,6 +3,7 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 
 import BulkAddTracksWorkflow from './BulkAddTracksWorkflow.tsx'
+import { bulkInput } from './bulkInput.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -293,7 +294,7 @@ test('a submit clears the collected input', () => {
 
   // the input lives on the widget model, so finishing resets it along with the
   // rest of the form rather than leaving a list that re-adds on a second click
-  expect(model.bulk.text).toBe('')
+  expect(bulkInput(model).form.text).toBe('')
   expect(getByRole('button', { name: 'Add 0 tracks' })).toBeTruthy()
 })
 

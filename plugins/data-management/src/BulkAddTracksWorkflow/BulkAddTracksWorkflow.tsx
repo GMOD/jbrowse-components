@@ -9,6 +9,7 @@ import LocationInput from './LocationInput.tsx'
 import PreviewMessages from './PreviewMessages.tsx'
 import SubmitTracksButton from './SubmitTracksButton.tsx'
 import TrackPreviewTable from './TrackPreviewTable.tsx'
+import { bulkInput } from './bulkInput.ts'
 import { bulkLocations } from './bulkLocations.ts'
 import { customNames } from './customNames.ts'
 import { summarizeBulkInput } from './preview.ts'
@@ -42,7 +43,8 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   // one, and setAssembly is reactive via observer.
   const assembly = model.assembly ?? ''
   const names = customNames(model)
-  const { stripExtensions } = model.bulk
+  const bulk = bulkInput(model)
+  const { stripExtensions } = bulk.form
 
   const { rows, skippedCount, needsSetupCount, orphanIndexCount, warnings } =
     summarizeBulkInput({ locations, model, assembly })
@@ -103,7 +105,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
           <LabeledCheckbox
             checked={stripExtensions}
             onChange={val => {
-              model.updateBulkInput({ stripExtensions: val })
+              bulk.update({ stripExtensions: val })
             }}
             label="Strip file extensions from track names"
           />

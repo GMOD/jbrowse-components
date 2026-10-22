@@ -275,6 +275,7 @@ export {
   addTracksFromWidget,
   containerDisplaysAssembly,
   finishAddTrack,
+  workflowForm,
   type AddTrackWidgetSelf,
   type AddTrackWorkflowModel,
   type WidgetTrackConf,

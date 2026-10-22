@@ -24,14 +24,19 @@ export default class AddTrackWorkflow extends PluggableElementBase {
 
   category: AddTrackWorkflowCategory
 
-  stateModel: IAnyModelType
+  /**
+   * @deprecated The widget never instantiated it. A workflow keeps its form on
+   * the widget model with `workflowForm` from `@jbrowse/core/util`.
+   */
+  stateModel?: IAnyModelType
 
   constructor(stuff: {
     name: string
     displayName?: string
     category?: AddTrackWorkflowCategory
     ReactComponent: AddTrackWorkflowComponentType
-    stateModel: IAnyModelType
+    /** @deprecated unused; see the field */
+    stateModel?: IAnyModelType
   }) {
     super(stuff)
     this.ReactComponent = stuff.ReactComponent

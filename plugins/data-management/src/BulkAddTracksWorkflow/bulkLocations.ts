@@ -1,22 +1,21 @@
+import { bulkInput } from './bulkInput.ts'
 import { locationId } from './pairLocations.ts'
 import { parseUrlList } from './util.ts'
 
-import type { AddTrackModel, BulkInputMode } from '../AddTrackWidget/model.ts'
+import type { InputMode } from './bulkInput.ts'
+import type { AddTrackWorkflowModel } from '@jbrowse/core/util'
 import type { FileLocation } from '@jbrowse/core/util/types'
-
-export type InputMode = BulkInputMode
 
 /**
  * The bulk input (mode plus remote-URL text or dropped local files) as the
  * resolved, deduped location list, with the edits the form makes to it.
  *
- * Reads and writes the widget model rather than component state, so the list
- * survives the drawer unmounting the workflow — see `BulkInputState`. Removal
- * rewrites the underlying input rather than tracking a separate "removed"
- * overlay, so the input always reflects what will be added.
+ * Removal rewrites the underlying input rather than tracking a separate
+ * "removed" overlay, so the input always reflects what will be added.
  */
-export function bulkLocations(model: AddTrackModel) {
-  const { mode, text, localLocations } = model.bulk
+export function bulkLocations(model: AddTrackWorkflowModel) {
+  const input = bulkInput(model)
+  const { mode, text, localLocations } = input.form
 
   // Dedupe by location id so a URL pasted twice — or the same file dropped
   // twice — collapses to one row rather than adding the track twice.
@@ -32,35 +31,34 @@ export function bulkLocations(model: AddTrackModel) {
     locations,
 
     setMode(arg: InputMode) {
-      model.updateBulkInput({ mode: arg })
+      input.update({ mode: arg })
     },
     setText(arg: string) {
-      model.updateBulkInput({ text: arg })
+      input.update({ text: arg })
     },
     addLocalLocations(arg: FileLocation[]) {
-      model.updateBulkInput({
-        localLocations: [...model.bulk.localLocations, ...arg],
+      input.update({
+        localLocations: [...bulkInput(model).form.localLocations, ...arg],
       })
     },
     clearLocalLocations() {
-      model.updateBulkInput({ localLocations: [] })
+      input.update({ localLocations: [] })
     },
 
-    // Rewrites the input itself, reading the model rather than the list
-    // captured at render, so a second removal in the same tick can't drop the
-    // first.
+    // Reads the model rather than the list captured at render, so a second
+    // removal in the same tick can't drop the first.
     removeLocations(ids: Set<string>) {
-      const bulk = model.bulk
-      if (bulk.mode === 'remote') {
-        model.updateBulkInput({
-          text: parseUrlList(bulk.text)
+      const current = bulkInput(model).form
+      if (current.mode === 'remote') {
+        input.update({
+          text: parseUrlList(current.text)
             .map(locationId)
             .filter(id => !ids.has(id))
             .join('\n'),
         })
       } else {
-        model.updateBulkInput({
-          localLocations: bulk.localLocations.filter(
+        input.update({
+          localLocations: current.localLocations.filter(
             loc => !ids.has(locationId(loc)),
           ),
         })

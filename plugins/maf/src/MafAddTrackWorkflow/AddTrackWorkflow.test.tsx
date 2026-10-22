@@ -1,4 +1,5 @@
 import { fireEvent, render } from '@testing-library/react'
+import { action, observable } from 'mobx'
 
 import MultiMAFWidget from './AddTrackWorkflow.tsx'
 
@@ -24,10 +25,17 @@ jest.mock('@jbrowse/core/ui', () => ({
   AssemblySelector: () => null,
 }))
 
-const model = {
-  assembly: 'hg38',
-  setAssembly: () => {},
-} as unknown as AddTrackWorkflowModel
+const model = observable(
+  {
+    assembly: 'hg38',
+    setAssembly: () => {},
+    workflowForms: {},
+    setWorkflowForm(key: string, form: object) {
+      this.workflowForms = { ...this.workflowForms, [key]: form }
+    },
+  },
+  { setWorkflowForm: action },
+) as unknown as AddTrackWorkflowModel
 
 function typeUrl(input: HTMLElement, uri: string) {
   fireEvent.change(input, { target: { value: uri } })

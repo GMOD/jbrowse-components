@@ -2255,6 +2255,7 @@
         "addOrReplaceView",
         "addTrackFromWidget",
         "addTrackTypeGuesser",
+        "addTracksFromWidget",
         "aesDecrypt",
         "aesEncrypt",
         "animationAllowed",
@@ -2540,7 +2541,8 @@
         "wheelZoomAccum",
         "withAbortCheck",
         "withFeatureDetails",
-        "withProgress"
+        "withProgress",
+        "workflowForm"
       ],
       "worker": "real"
     },

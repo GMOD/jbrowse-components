@@ -6,6 +6,7 @@ import {
   getNotificationSink,
   getSession,
   resolveSelectedIds,
+  workflowForm,
 } from '@jbrowse/core/util'
 import { nanoid } from '@jbrowse/core/util/nanoid'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -34,6 +35,7 @@ import {
   sessionGuessers,
   stackKind,
 } from './util.ts'
+import { MULTI_ROW_WORKFLOW } from './workflowName.ts'
 
 import type { Member, Refusal, StackKind } from './util.ts'
 import type { AddTrackWorkflowModel } from '@jbrowse/core/util'
@@ -61,6 +63,22 @@ interface TrackRow {
 
 function memberToRow(member: Member): TrackRow {
   return { id: nanoid(), name: member.name, member }
+}
+
+interface MultiRowForm {
+  inputMode: 'paste' | 'upload'
+  inputVal: string
+  tracks: TrackRow[]
+  refusals: Refusal[]
+  trackName: string
+}
+
+const initialForm: MultiRowForm = {
+  inputMode: 'paste',
+  inputVal: '',
+  tracks: [],
+  refusals: [],
+  trackName: 'Multi-row track',
 }
 
 const KIND_LABEL: Record<StackKind, string> = {
@@ -108,11 +126,10 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
   model: AddTrackWorkflowModel
 }) {
   const { classes } = useStyles()
-  const [inputMode, setInputMode] = useState<'paste' | 'upload'>('paste')
-  const [inputVal, setInputVal] = useState('')
-  const [tracks, setTracks] = useState<TrackRow[]>([])
-  const [refusals, setRefusals] = useState<Refusal[]>([])
-  const [trackName, setTrackName] = useState('Multi-row track')
+  const { form, update } = workflowForm(model, MULTI_ROW_WORKFLOW, initialForm)
+  const { inputMode, inputVal, tracks, refusals, trackName } = form
+  const currentTracks = () =>
+    workflowForm(model, MULTI_ROW_WORKFLOW, initialForm).form.tracks
   const guessers = sessionGuessers(model)
   const [selection, setSelection] = useState<GridRowSelectionModel>(() => ({
     type: 'include',
@@ -121,8 +138,10 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
 
   function addClassified(classified: (Member | Refusal)[]) {
     const added = partition(classified)
-    setTracks(prev => [...prev, ...added.members.map(memberToRow)])
-    setRefusals(added.refusals)
+    update({
+      tracks: [...currentTracks(), ...added.members.map(memberToRow)],
+      refusals: added.refusals,
+    })
   }
 
   // resolve here so the header "select all" (an exclude-type model) counts
@@ -149,7 +168,7 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
       className={classes.paper}
       onDragEnter={event => {
         if (event.dataTransfer.types.includes('Files')) {
-          setInputMode('upload')
+          update({ inputMode: 'upload' })
         }
       }}
     >
@@ -161,7 +180,7 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
         value={inputMode}
         onChange={(_event, val) => {
           if (val) {
-            setInputMode(val)
+            update({ inputMode: val })
           }
         }}
       >
@@ -179,7 +198,7 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
             helperText={PASTE_HELP}
             variant="outlined"
             onChange={event => {
-              setInputVal(event.target.value)
+              update({ inputVal: event.target.value })
             }}
           />
           <Button
@@ -189,7 +208,7 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
               addClassified(
                 parseItems(inputVal).map(item => classifyItem(item, guessers)),
               )
-              setInputVal('')
+              update({ inputVal: '' })
             }}
           >
             Add tracks
@@ -206,7 +225,9 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
             startIcon={<DeleteIcon />}
             disabled={selectedIds.size === 0}
             onClick={() => {
-              setTracks(prev => prev.filter(t => !selectedIds.has(t.id)))
+              update({
+                tracks: currentTracks().filter(t => !selectedIds.has(t.id)),
+              })
               setSelection({ type: 'include', ids: new Set() })
             }}
           >
@@ -236,11 +257,11 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
               checkboxSelection
               disableRowSelectionOnClick
               processRowUpdate={newRow => {
-                setTracks(prev =>
-                  prev.map(t =>
+                update({
+                  tracks: currentTracks().map(t =>
                     t.id === newRow.id ? { ...t, name: newRow.name } : t,
                   ),
-                )
+                })
                 return newRow
               }}
               onProcessRowUpdateError={e => {
@@ -271,7 +292,7 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
         value={trackName}
         label="Track name"
         onChange={event => {
-          setTrackName(event.target.value)
+          update({ trackName: event.target.value })
         }}
       />
       <AssemblySelector

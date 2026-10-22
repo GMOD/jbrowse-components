@@ -22,6 +22,7 @@ import {
   isFtpUrl,
   isRelativeUrl as isRelativeUrlString,
 } from './urlWarnings.ts'
+import { DEFAULT_WORKFLOW } from './workflowNames.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TrackContainer } from '@jbrowse/core/util'
@@ -56,28 +57,8 @@ export interface DraftTrackConfig extends Record<string, unknown> {
   adapter: Record<string, unknown>
 }
 
-export type BulkInputMode = 'remote' | 'local'
-
-/**
- * What the bulk workflow has collected so far. It lives here rather than in
- * that component's `useState` because the drawer unmounts a widget the moment
- * anything else is shown in it — which discarded the list of URLs the user had
- * assembled, the expensive part of that workflow, while the single-track form
- * beside it survived the same trip. `clearData` covers it for the same reason
- * it covers the rest.
- */
-export interface BulkInputState {
-  mode: BulkInputMode
-  text: string
-  localLocations: FileLocation[]
-  /** names typed over the automatic ones, by row id */
-  customNames: Record<string, string>
-  stripExtensions: boolean
-}
-
 // A factory (not a shared const) so each model instance — and each clearData
-// call — gets its own fresh mixinData/bulk object rather than aliasing one
-// shared reference.
+// call — gets its own fresh objects rather than aliasing one shared reference.
 function createVolatileState() {
   return {
     trackData: undefined as FileLocation | undefined,
@@ -99,13 +80,7 @@ function createVolatileState() {
     // you did not type looking like one you did. Cleared the moment you set an
     // index yourself.
     detectedIndexName: undefined as string | undefined,
-    bulk: {
-      mode: 'remote',
-      text: '',
-      localLocations: [],
-      customNames: {},
-      stripExtensions: false,
-    } as BulkInputState,
+    workflowForms: {} as Record<string, object | undefined>,
   }
 }
 
@@ -141,6 +116,14 @@ export default function f(pluginManager: PluginManager) {
        */
       trackContainerId: types.maybe(types.string),
     })
+    .volatile(() => ({
+      /**
+       * #volatile
+       * The workflow on screen. Outside `createVolatileState`, so it outlives
+       * `clearData`: a user adding several GWAS tracks keeps the GWAS form.
+       */
+      workflowName: DEFAULT_WORKFLOW,
+    }))
     .volatile(() => createVolatileState())
     .views(self => ({
       /**
@@ -163,12 +146,16 @@ export default function f(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Patch the bulk workflow's collected input. A patch rather than a setter
-       * per field: the bulk form edits several of these together (removing a
-       * row rewrites the input *and* forgets that row's rename).
+       * Store one workflow's form; `workflowForm` in core reads and patches it.
        */
-      updateBulkInput(patch: Partial<BulkInputState>) {
-        self.bulk = { ...self.bulk, ...patch }
+      setWorkflowForm(key: string, form: object) {
+        self.workflowForms = { ...self.workflowForms, [key]: form }
+      },
+      /**
+       * #action
+       */
+      setWorkflowName(name: string) {
+        self.workflowName = name
       },
       /**
        * #action

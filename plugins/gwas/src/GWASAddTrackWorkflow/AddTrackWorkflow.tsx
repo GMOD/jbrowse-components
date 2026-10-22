@@ -1,7 +1,12 @@
 import { useState } from 'react'
 
 import { AssemblySelector, ErrorMessage, FileSelector } from '@jbrowse/core/ui'
-import { addTrackFromWidget, getSession, makeTrackId } from '@jbrowse/core/util'
+import {
+  addTrackFromWidget,
+  getSession,
+  makeTrackId,
+  workflowForm,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getRoot } from '@jbrowse/mobx-state-tree'
 import { Button, Divider, Paper, TextField, Typography } from '@mui/material'
@@ -14,12 +19,29 @@ import {
 } from '../GWASAdapter/configSchema.ts'
 import { isTabixLocation } from './ldAdapterConfig.ts'
 import { buildGwasTrackConfig, canSubmit, requiredIndexes } from './util.ts'
+import { GWAS_WORKFLOW } from './workflowName.ts'
 
 import type {
   AbstractRootModel,
   AddTrackWorkflowModel,
 } from '@jbrowse/core/util'
 import type { FileLocation } from '@jbrowse/core/util/types'
+
+interface GwasForm {
+  gwasLocation?: FileLocation
+  gwasIndexLocation?: FileLocation
+  scoreColumn: string
+  scoreTransform: string
+  ldLocation?: FileLocation
+  ldIndexLocation?: FileLocation
+  trackName: string
+}
+
+const initialForm: GwasForm = {
+  scoreColumn: DEFAULT_SCORE_COLUMN,
+  scoreTransform: DEFAULT_SCORE_TRANSFORM,
+  trackName: 'GWAS track',
+}
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -47,13 +69,16 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
   const { classes } = useStyles()
   const session = getSession(model)
   const rootModel = getRoot<AbstractRootModel>(model)
-  const [gwasLocation, setGwasLocation] = useState<FileLocation>()
-  const [gwasIndexLocation, setGwasIndexLocation] = useState<FileLocation>()
-  const [scoreColumn, setScoreColumn] = useState(DEFAULT_SCORE_COLUMN)
-  const [scoreTransform, setScoreTransform] = useState(DEFAULT_SCORE_TRANSFORM)
-  const [ldLocation, setLdLocation] = useState<FileLocation>()
-  const [ldIndexLocation, setLdIndexLocation] = useState<FileLocation>()
-  const [trackName, setTrackName] = useState('GWAS track')
+  const { form, update } = workflowForm(model, GWAS_WORKFLOW, initialForm)
+  const {
+    gwasLocation,
+    gwasIndexLocation,
+    scoreColumn,
+    scoreTransform,
+    ldLocation,
+    ldIndexLocation,
+    trackName,
+  } = form
   const [error, setError] = useState<unknown>()
 
   const { assembly } = model
@@ -102,19 +127,27 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
           name="GWAS file (bgzipped BED, e.g. .bed.gz)"
           location={gwasLocation}
           rootModel={rootModel}
-          setLocation={setGwasLocation}
+          setLocation={loc => {
+            update({ gwasLocation: loc })
+          }}
         />
         <FileSelector
           name={indexLabel('GWAS', required.gwas)}
           location={gwasIndexLocation}
           rootModel={rootModel}
-          setLocation={setGwasIndexLocation}
+          setLocation={loc => {
+            update({ gwasIndexLocation: loc })
+          }}
         />
         <ScoreColumnFields
           scoreColumn={scoreColumn}
-          setScoreColumn={setScoreColumn}
+          setScoreColumn={arg => {
+            update({ scoreColumn: arg })
+          }}
           scoreTransform={scoreTransform}
-          setScoreTransform={setScoreTransform}
+          setScoreTransform={arg => {
+            update({ scoreTransform: arg })
+          }}
         />
       </div>
 
@@ -128,14 +161,18 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
           name="PLINK LD table (.ld or .vcor, bgzipped or not)"
           location={ldLocation}
           rootModel={rootModel}
-          setLocation={setLdLocation}
+          setLocation={loc => {
+            update({ ldLocation: loc })
+          }}
         />
         {ldIsTabix ? (
           <FileSelector
             name={indexLabel('LD', required.ld)}
             location={ldIndexLocation}
             rootModel={rootModel}
-            setLocation={setLdIndexLocation}
+            setLocation={loc => {
+              update({ ldIndexLocation: loc })
+            }}
           />
         ) : null}
       </div>
@@ -145,7 +182,7 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
           label="Track name"
           value={trackName}
           onChange={e => {
-            setTrackName(e.target.value)
+            update({ trackName: e.target.value })
           }}
           fullWidth
         />

@@ -58,6 +58,33 @@ export interface AddTrackWidgetSelf extends IStateTreeNode {
 export interface AddTrackWorkflowModel extends AddTrackWidgetSelf {
   assembly: string | undefined
   setAssembly: (arg: string) => void
+  /** each workflow's form, by key; read and written through `workflowForm` */
+  workflowForms: Record<string, object | undefined>
+  setWorkflowForm: (key: string, form: object) => void
+}
+
+/**
+ * A workflow's form fields, held on the widget model rather than in component
+ * state. The drawer unmounts a widget whenever anything else is shown in it,
+ * which discarded a form kept in `useState`; the model survives that, and its
+ * `clearData` resets every form after an add or when the widget is reopened
+ * for another view.
+ *
+ * `update` merges a patch over the form as it stands when called, so two
+ * updates from one handler don't drop each other.
+ */
+export function workflowForm<T extends object>(
+  model: AddTrackWorkflowModel,
+  key: string,
+  initial: T,
+) {
+  const read = () => ({ ...initial, ...model.workflowForms[key] })
+  return {
+    form: read(),
+    update(patch: Partial<T>) {
+      model.setWorkflowForm(key, { ...read(), ...patch })
+    },
+  }
 }
 
 /**

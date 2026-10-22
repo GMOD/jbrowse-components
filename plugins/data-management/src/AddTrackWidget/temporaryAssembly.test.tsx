@@ -108,7 +108,11 @@ test('a pasted config on a synthesized assembly leaves no session entry', async 
   })
 
   expect(session.sessionTracks).toHaveLength(0)
-  expect(view.tracks.map(t => t.configuration.trackId)).toEqual(['pasted'])
+  expect(
+    view.tracks.map(
+      (t: { configuration: { trackId: string } }) => t.configuration.trackId,
+    ),
+  ).toEqual(['pasted'])
   expect(takeContractReports()).toEqual([])
 })
 

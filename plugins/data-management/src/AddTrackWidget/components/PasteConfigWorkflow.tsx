@@ -1,10 +1,12 @@
 import { useState } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
+import { workflowForm } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { PASTE_JSON_WORKFLOW } from '../workflowNames.ts'
 import { doPasteConfigSubmit } from './doPasteConfigSubmit.ts'
 
 import type { AddTrackModel } from '../model.ts'
@@ -23,7 +25,9 @@ const useStyles = makeStyles()({
 const PasteConfigAddTrackWorkflow = observer(
   function PasteConfigAddTrackWorkflow({ model }: { model: AddTrackModel }) {
     const { classes } = useStyles()
-    const [val, setVal] = useState('')
+    const { form, update } = workflowForm(model, PASTE_JSON_WORKFLOW, {
+      jsonText: '',
+    })
     const [error, setError] = useState<unknown>()
 
     return (
@@ -32,12 +36,12 @@ const PasteConfigAddTrackWorkflow = observer(
         <TextField
           multiline
           rows={10}
-          value={val}
+          value={form.jsonText}
           placeholder="Paste track config or array of track configs in JSON format"
           variant="outlined"
           className={classes.textbox}
           onChange={event => {
-            setVal(event.target.value)
+            update({ jsonText: event.target.value })
           }}
         />
         <Button
@@ -47,7 +51,7 @@ const PasteConfigAddTrackWorkflow = observer(
             void (async () => {
               try {
                 setError(undefined)
-                await doPasteConfigSubmit({ model, jsonText: val })
+                await doPasteConfigSubmit({ model, jsonText: form.jsonText })
               } catch (e) {
                 console.error(e)
                 setError(e)

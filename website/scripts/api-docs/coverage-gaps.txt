@@ -50,14 +50,13 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1332)
+# model members with no description (1333)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
 AddTrackModel.altTrackName
 AddTrackModel.altTrackType
 AddTrackModel.assembly
-AddTrackModel.bulk
 AddTrackModel.clearData
 AddTrackModel.detectedIndexName
 AddTrackModel.getTrackConfig
@@ -74,6 +73,7 @@ AddTrackModel.setTextIndexingConf
 AddTrackModel.setTrackData
 AddTrackModel.setTrackName
 AddTrackModel.setTrackType
+AddTrackModel.setWorkflowName
 AddTrackModel.textIndexTrack
 AddTrackModel.textIndexingConf
 AddTrackModel.trackAdapter
@@ -84,6 +84,7 @@ AddTrackModel.trackType
 AddTrackModel.uris
 AddTrackModel.view
 AddTrackModel.warningMessage
+AddTrackModel.workflowForms
 AddTrackModel.wrongProtocol
 AppCoreJBrowseModel.addAssemblyConf
 AppCoreJBrowseModel.addInternetAccountConf

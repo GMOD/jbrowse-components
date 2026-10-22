@@ -1,7 +1,12 @@
 import { useState } from 'react'
 
 import { AssemblySelector, ErrorMessage, FileSelector } from '@jbrowse/core/ui'
-import { addTrackFromWidget, getSession, makeTrackId } from '@jbrowse/core/util'
+import {
+  addTrackFromWidget,
+  getSession,
+  makeTrackId,
+  workflowForm,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getRoot } from '@jbrowse/mobx-state-tree'
 import { Button, Paper, TextField } from '@mui/material'
@@ -9,6 +14,7 @@ import { observer } from 'mobx-react'
 
 import RadioSelector from './RadioSelector.tsx'
 import { buildAdapterConfig, parseSampleNames } from './buildAdapterConfig.ts'
+import { MAF_WORKFLOW } from './workflowName.ts'
 
 import type {
   AdapterTypeOptions,
@@ -19,6 +25,25 @@ import type {
   AddTrackWorkflowModel,
   FileLocation,
 } from '@jbrowse/core/util'
+
+interface MafForm {
+  samples: string
+  loc?: FileLocation
+  indexLoc?: FileLocation
+  nhLoc?: FileLocation
+  summaryLoc?: FileLocation
+  framesLoc?: FileLocation
+  trackName: string
+  fileTypeChoice: AdapterTypeOptions
+  indexTypeChoice: IndexTypeOptions
+}
+
+const initialForm: MafForm = {
+  samples: '',
+  trackName: 'MAF track',
+  fileTypeChoice: 'BigMafAdapter',
+  indexTypeChoice: 'TBI',
+}
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -61,18 +86,19 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  const [samples, setSamples] = useState('')
-  const [loc, setLoc] = useState<FileLocation>()
-  const [indexLoc, setIndexLoc] = useState<FileLocation>()
-  const [nhLoc, setNhLoc] = useState<FileLocation>()
-  const [summaryLoc, setSummaryLoc] = useState<FileLocation>()
-  const [framesLoc, setFramesLoc] = useState<FileLocation>()
+  const { form, update } = workflowForm(model, MAF_WORKFLOW, initialForm)
+  const {
+    samples,
+    loc,
+    indexLoc,
+    nhLoc,
+    summaryLoc,
+    framesLoc,
+    trackName,
+    fileTypeChoice,
+    indexTypeChoice,
+  } = form
   const [error, setError] = useState<unknown>()
-  const [trackName, setTrackName] = useState('MAF track')
-  const [fileTypeChoice, setFileTypeChoice] =
-    useState<AdapterTypeOptions>('BigMafAdapter')
-  const [indexTypeChoice, setIndexTypeChoice] =
-    useState<IndexTypeOptions>('TBI')
 
   const rootModel = getRoot<AbstractRootModel>(model)
 
@@ -120,9 +146,11 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
           ]}
           getOptionLabel={value => fileTypeLabel[value]}
           onChange={value => {
-            setFileTypeChoice(value)
-            setIndexLoc(undefined)
-            setSummaryLoc(undefined)
+            update({
+              fileTypeChoice: value,
+              indexLoc: undefined,
+              summaryLoc: undefined,
+            })
           }}
         />
         <FileSelector
@@ -130,7 +158,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
           name={dataFileName[fileTypeChoice]}
           rootModel={rootModel}
           setLocation={arg => {
-            setLoc(arg)
+            update({ loc: arg })
           }}
         />
         {fileTypeChoice === 'BigMafAdapter' ? (
@@ -139,7 +167,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
             name="Path to bigMafSummary (.bb, optional — enables cheap zoom-out rendering)"
             rootModel={rootModel}
             setLocation={arg => {
-              setSummaryLoc(arg)
+              update({ summaryLoc: arg })
             }}
           />
         ) : fileTypeChoice === 'MafTabixAdapter' ? (
@@ -149,7 +177,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
               value={indexTypeChoice}
               options={['TBI', 'CSI']}
               onChange={value => {
-                setIndexTypeChoice(value)
+                update({ indexTypeChoice: value })
               }}
             />
             <FileSelector
@@ -157,7 +185,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
               name="Path to MAF tabix index (optional — the sibling index is assumed)"
               rootModel={rootModel}
               setLocation={arg => {
-                setIndexLoc(arg)
+                update({ indexLoc: arg })
               }}
             />
             {/* Without this the track has no zoom-out view at all: a tabix MAF
@@ -169,7 +197,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
               name={SUMMARY_BED_LABEL}
               rootModel={rootModel}
               setLocation={arg => {
-                setSummaryLoc(arg)
+                update({ summaryLoc: arg })
               }}
             />
           </>
@@ -184,7 +212,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
               name={`Path to ${fileTypeChoice === 'BgzipTaffyAdapter' ? 'TAF' : 'MAF'}.gz.tai (taffy index, optional — the sibling .tai is assumed)`}
               rootModel={rootModel}
               setLocation={arg => {
-                setIndexLoc(arg)
+                update({ indexLoc: arg })
               }}
             />
             {/* The .tai bounds a read to the span on screen, which is why this
@@ -196,7 +224,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
               name={SUMMARY_BED_LABEL}
               rootModel={rootModel}
               setLocation={arg => {
-                setSummaryLoc(arg)
+                update({ summaryLoc: arg })
               }}
             />
           </>
@@ -214,7 +242,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
           name="Path to CDS frames (UCSC multiz<N>wayFrames.bb, optional — enables the CDS overlay and codon view)"
           rootModel={rootModel}
           setLocation={arg => {
-            setFramesLoc(arg)
+            update({ framesLoc: arg })
           }}
         />
         <FileSelector
@@ -222,7 +250,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
           name="Path to newick tree (.nh)"
           rootModel={rootModel}
           setLocation={arg => {
-            setNhLoc(arg)
+            update({ nhLoc: arg })
           }}
         />
         <TextField
@@ -230,7 +258,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
           rows={10}
           value={samples}
           onChange={event => {
-            setSamples(event.target.value)
+            update({ samples: event.target.value })
           }}
           helperText="Sample names (optional — taken from the .nh tree, or auto-detected from the file, when left blank)"
           placeholder="Enter sample names from the MAF file, one per line, or JSON formatted array of samples"
@@ -242,7 +270,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
         value={trackName}
         helperText="Track name"
         onChange={event => {
-          setTrackName(event.target.value)
+          update({ trackName: event.target.value })
         }}
       />
       <AssemblySelector

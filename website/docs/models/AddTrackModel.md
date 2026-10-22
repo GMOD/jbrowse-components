@@ -26,6 +26,7 @@ list for adding several tracks at once.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="volatile-workflowname">**workflowName**</span><br><code>string</code> | The workflow on screen. Outside `createVolatileState`, so it outlives `clearData`: a user adding several GWAS tracks keeps the GWAS form. |
 | <span id="volatile-trackdata">**trackData**</span><br><code>FileLocation &#124; undefined</code> |  |
 | <span id="volatile-indextrackdata">**indexTrackData**</span><br><code>FileLocation &#124; undefined</code> |  |
 | <span id="volatile-altassemblyname">**altAssemblyName**</span><br><code>string</code> |  |
@@ -36,7 +37,7 @@ list for adding several tracks at once.
 | <span id="volatile-textindexingconf">**textIndexingConf**</span><br><code>IndexingAttr &#124; undefined</code> |  |
 | <span id="volatile-mixindata">**mixinData**</span><br><code>Record&lt;string, unknown&gt;</code> |  |
 | <span id="volatile-detectedindexname">**detectedIndexName**</span><br><code>string &#124; undefined</code> |  |
-| <span id="volatile-bulk">**bulk**</span><br><code>BulkInputState</code> |  |
+| <span id="volatile-workflowforms">**workflowForms**</span><br><code>Record&lt;string, object &#124; undefined&gt;</code> |  |
 
 ## Getters
 
@@ -70,7 +71,8 @@ list for adding several tracks at once.
 | Member | Description |
 | --- | --- |
 | <span id="action-setmixindata">**setMixinData**</span><br><code>(arg: Record&lt;string, unknown&gt;) =&gt; void</code> |  |
-| <span id="action-updatebulkinput">**updateBulkInput**</span><br><code>(patch: Partial&lt;BulkInputState&gt;) =&gt; void</code> | Patch the bulk workflow's collected input. A patch rather than a setter per field: the bulk form edits several of these together (removing a row rewrites the input *and* forgets that row's rename). |
+| <span id="action-setworkflowform">**setWorkflowForm**</span><br><code>(key: string, form: object) =&gt; void</code> | Store one workflow's form; `workflowForm` in core reads and patches it. |
+| <span id="action-setworkflowname">**setWorkflowName**</span><br><code>(name: string) =&gt; void</code> |  |
 | <span id="action-setadapterhint">**setAdapterHint**</span><br><code>(obj: string) =&gt; void</code> |  |
 | <span id="action-settextindexingconf">**setTextIndexingConf**</span><br><code>(conf: IndexingAttr) =&gt; void</code> |  |
 | <span id="action-settextindextrack">**setTextIndexTrack**</span><br><code>(flag: boolean) =&gt; void</code> |  |

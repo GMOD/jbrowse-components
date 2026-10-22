@@ -16,7 +16,8 @@ The multi-row workflow is the whole registration:
 import { lazy } from 'react'
 
 import { AddTrackWorkflowType } from '@jbrowse/core/pluggableElementTypes'
-import { types } from '@jbrowse/mobx-state-tree'
+
+import { MULTI_ROW_WORKFLOW } from './workflowName.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -24,10 +25,9 @@ export default function MultiWiggleAddTrackWorkflowF(pm: PluginManager) {
   pm.addAddTrackWorkflowType(
     () =>
       new AddTrackWorkflowType({
-        name: 'Multi-row track',
+        name: MULTI_ROW_WORKFLOW,
         displayName: 'Add multi-row track',
         ReactComponent: lazy(() => import('./AddTrackWorkflow.tsx')),
-        stateModel: types.model({}),
       }),
   )
 }
@@ -35,8 +35,6 @@ export default function MultiWiggleAddTrackWorkflowF(pm: PluginManager) {
 
 - **`ReactComponent`** is the form rendered inside the "Add track" widget,
   lazily imported so the form's code only loads when a user picks this workflow
-- **`stateModel`** is the workflow's own state; an empty `types.model({})` is
-  fine when the form holds everything it needs in React state
 - **`category`** groups the workflow in the dropdown under "General" or
   "Specialized track types". An omitted `category` means `'specialized'`, which
   fits a workflow targeting one data type, as the multi-wiggle one does; pass
@@ -47,6 +45,17 @@ model, and **`switchWorkflow(name)`** moves the user to another workflow by name
 — what the built-in file/URL form uses to hand off to the bulk one. A component
 typed for `model` alone still compiles, since the extra prop is assignable, so
 nothing points this out at the call site.
+
+Type `model` as `AddTrackWorkflowModel` from `@jbrowse/core/util`, and use two
+helpers from the same module:
+
+- **`workflowForm(model, name, initial)`** holds the form's fields on the widget
+  model and returns `{ form, update }`. The drawer unmounts the widget whenever
+  it shows another one, which loses anything kept in `useState`; the model keeps
+  it, and resets it after an add
+- **`addTrackFromWidget({ model, session, conf })`** adds the track, shows it in
+  the view the widget was opened from, and closes the widget.
+  `addTracksFromWidget` takes a list of configs
 
 Call `MultiWiggleAddTrackWorkflowF(pm)` from your plugin's `install()`, the same
 as any other pluggable element.

@@ -1,11 +1,17 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { fireEvent, render, waitFor, within } from '@testing-library/react'
 
+import { DefaultAddTrackWorkflow } from '../index.ts'
 import AddTrackWidget from './AddTrackWidget.tsx'
 import ConfirmTrack from './ConfirmTrack.tsx'
 import TextIndexingConfig from './TextIndexingConfig.tsx'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
+
+// the widget type's loader preloads it; rendering the component directly does not
+beforeAll(async () => {
+  await DefaultAddTrackWorkflow.preload()
+})
 
 function getSession() {
   const session = createTestSession()
@@ -184,6 +190,23 @@ test('can switch from the default workflow to the bulk workflow via the link', a
   // back to the default workflow instead of opening the bulk one
   fireEvent.click(getByText('Add multiple tracks at once'))
   expect(await findByText(/Paste a list of file URLs/)).toBeTruthy()
+})
+
+// the drawer unmounts a widget whenever it shows another one
+test('the chosen workflow and its input survive the widget unmounting', async () => {
+  const { model } = getSession()
+  const first = render(<AddTrackWidget model={model} />)
+  fireEvent.click(first.getByText('Add multiple tracks at once'))
+  fireEvent.change(await first.findByLabelText(/File URLs/), {
+    target: { value: 'https://x.com/a.bam' },
+  })
+  first.unmount()
+
+  const { findByLabelText } = render(<AddTrackWidget model={model} />)
+  expect(await findByLabelText(/File URLs/)).toHaveProperty(
+    'value',
+    'https://x.com/a.bam',
+  )
 })
 
 test('synteny add-track component seeds query/target assemblies into the config', async () => {
