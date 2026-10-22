@@ -223,3 +223,22 @@ describe('getFeatures answers the MafFeatures the old parse did', () => {
     expect(twice['mm10~2']!.context).toBeUndefined()
   })
 })
+
+test('a minus-strand reference block turns over to the forward strand', async () => {
+  const [feature] = await firstValueFrom(
+    adapterOver([
+      [
+        'a score=1',
+        's hg38.chr1 100 4 - 5000 AACG',
+        's mm10.chr9 7 3 + 800 A-CG',
+      ],
+    ])
+      .getFeatures(region)
+      .pipe(toArray()),
+  )
+  expect(feature!.get('seq')).toBe('CGTT')
+  expect(feature!.get('alignments')).toMatchObject({
+    hg38: { seq: 'CGTT', strand: 1, srcStart: 5000 - 100 - 4 },
+    mm10: { seq: 'CG-T', strand: -1, srcStart: 800 - 7 - 3 },
+  })
+})

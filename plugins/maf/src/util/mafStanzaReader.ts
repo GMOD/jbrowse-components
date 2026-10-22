@@ -31,7 +31,7 @@ export class MafStanzaReader implements MafLineTarget {
   private chr: string[] = []
   private srcStart: number[] = []
   private strand: number[] = []
-  private srcSize: (number | undefined)[] = []
+  private srcSize: number[] = []
   private rowContext: (AlignmentContext | undefined)[] = []
   private emptyRecord: EmptyRecord[] = []
   private lastRowId = new Map<string, string>()
@@ -90,7 +90,7 @@ export class MafStanzaReader implements MafLineTarget {
     chr: string,
     srcStart: number,
     strand: number,
-    srcSize: number | undefined,
+    srcSize: number,
     seq: string,
   ) {
     const { rows } = this
@@ -133,6 +133,9 @@ export class MafStanzaReader implements MafLineTarget {
     for (const line of stanza.split(';')) {
       this.line(line)
     }
+    if (this.refStrand === -1) {
+      this.flip()
+    }
     this.emit(sink, id, start, end)
   }
 
@@ -165,10 +168,8 @@ export class MafStanzaReader implements MafLineTarget {
     const { rows, empties } = this
     for (let slot = 0; slot < rows.count; slot++) {
       const seq = this.seq[slot]!
-      const srcSize = this.srcSize[slot]
-      if (srcSize !== undefined) {
-        this.srcStart[slot] = srcSize - this.srcStart[slot]! - alignedBases(seq)
-      }
+      this.srcStart[slot] =
+        this.srcSize[slot]! - this.srcStart[slot]! - alignedBases(seq)
       this.seq[slot] = revcom(seq)
       this.strand[slot] = -this.strand[slot]!
       const context = this.rowContext[slot]

@@ -1,3 +1,5 @@
+import { revcom } from '@jbrowse/core/util'
+
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { RecordSlots } from '../util/recordSlots.ts'
 import { freeRowId } from '../util/sampleCopies.ts'
@@ -10,7 +12,7 @@ interface Token {
   chr: string
 }
 
-const MINUS = 45
+const DASH = 45
 const ZERO = 48
 
 // `parseInt(text.slice(from, to), 10)` without the slice where the field is a
@@ -111,6 +113,7 @@ export class MafTabixBlockReader {
     let firstFrom = -1
     let firstTo = -1
     let firstSlot = -1
+    let firstStrand = 1
     for (let from = 0, k = 0, l = text.length; from < l; k++) {
       let to = text.indexOf(',', from)
       if (to === -1) {
@@ -142,12 +145,13 @@ export class MafTabixBlockReader {
           this.to[slot] = to
           this.chr[slot] = token.chr
           this.srcStart[slot] = parseDecimal(text, c0 + 1, c1)
-          this.strand[slot] = text.charCodeAt(c2 + 1) === MINUS ? -1 : 1
+          this.strand[slot] = text.charCodeAt(c2 + 1) === DASH ? -1 : 1
           this.srcSize[slot] = parseDecimal(text, c3 + 1, c4)
           if (from === 0) {
             firstFrom = c4 + 1
             firstTo = to
             firstSlot = slot
+            firstStrand = this.strand[slot]
           }
         } else if (
           from === 0 &&
@@ -155,6 +159,7 @@ export class MafTabixBlockReader {
         ) {
           firstFrom = c4 + 1
           firstTo = to
+          firstStrand = text.charCodeAt(c2 + 1) === DASH ? -1 : 1
         }
       }
       from = to + 1
@@ -168,33 +173,35 @@ export class MafTabixBlockReader {
       ref = firstSlot
     }
     const refSampleId = ref === -1 ? undefined : rows.nameAt(ref)
-    if (ref !== -1) {
-      sink.startBlock(
-        id,
-        start,
-        end,
-        text,
-        this.from[ref]!,
-        this.to[ref]!,
-        refSampleId,
-      )
-    } else if (firstFrom !== -1) {
-      sink.startBlock(id, start, end, text, firstFrom, firstTo, undefined)
+    const [refFrom, refTo] =
+      ref !== -1 ? [this.from[ref]!, this.to[ref]!] : [firstFrom, firstTo]
+    // The first entry is the row the line's coordinates state. maf2bed places
+    // a `-` one at forward coordinates and keeps its text as written, so the
+    // whole block turns over here.
+    const flip = firstFrom !== -1 && firstStrand === -1
+    const range = (from: number, to: number) =>
+      flip
+        ? ([revcom(text.slice(from, to)), 0, to - from] as const)
+        : ([text, from, to] as const)
+    if (refFrom !== -1) {
+      sink.startBlock(id, start, end, ...range(refFrom, refTo), refSampleId)
     } else {
       sink.startBlock(id, start, end, '', 0, 0, undefined)
     }
     const order = rows.order()
     for (let j = 0; j < rows.count; j++) {
       const slot = order[j]!
+      const from = this.from[slot]!
+      const to = this.to[slot]!
+      const srcSize = this.srcSize[slot]!
+      const srcStart = this.srcStart[slot]!
       sink.addRow(
         rows.nameAt(slot),
-        text,
-        this.from[slot]!,
-        this.to[slot]!,
+        ...range(from, to),
         this.chr[slot]!,
-        this.srcStart[slot]!,
-        this.strand[slot]!,
-        this.srcSize[slot],
+        flip ? srcSize - srcStart - alignedBases(text, from, to) : srcStart,
+        flip ? -this.strand[slot]! : this.strand[slot]!,
+        srcSize,
         undefined,
       )
     }
@@ -203,4 +210,14 @@ export class MafTabixBlockReader {
   reportUnmatched() {
     this.resolver.reportUnmatched()
   }
+}
+
+function alignedBases(text: string, from: number, to: number) {
+  let n = 0
+  for (let i = from; i < to; i++) {
+    if (text.charCodeAt(i) !== DASH) {
+      n++
+    }
+  }
+  return n
 }
