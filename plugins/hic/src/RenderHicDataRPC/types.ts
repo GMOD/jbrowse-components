@@ -20,7 +20,7 @@ export interface RenderHicDataArgs {
 export interface HicContactItem {
   bin1: number
   bin2: number
-  counts: number
+  value: number
   region1Idx: number
   region2Idx: number
 }

@@ -600,7 +600,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #action
        */
-      setActiveNormalization(f: string) {
+      setSelectedNormalization(f: string) {
         setConf(self, 'selectedNormalization', f)
       },
       /**

@@ -43,7 +43,7 @@ interface HicMenuSelf extends ColorRangeHost, IStateTreeNode {
   setShowResolutionControls: (f: boolean) => void
   setHeightMode: (mode: TriangleHeightMode) => void
   setColorScheme: (scheme: ColorSchemeName) => void
-  setActiveNormalization: (s: string) => void
+  setSelectedNormalization: (s: string) => void
   stepResolution: (delta: number) => void
   resetResolutionBias: () => void
 }
@@ -187,7 +187,7 @@ function normalizationMenuItems(self: HicMenuSelf): MenuItem[] {
             })),
             appliedNormalization,
             norm => {
-              self.setActiveNormalization(norm)
+              self.setSelectedNormalization(norm)
             },
           ),
         },

@@ -41,7 +41,7 @@ function baseSelf() {
     setShowResolutionControls: jest.fn(),
     setHeightMode: jest.fn(),
     setColorScheme: jest.fn(),
-    setActiveNormalization: jest.fn(),
+    setSelectedNormalization: jest.fn(),
     stepResolution: jest.fn(),
     resetResolutionBias: jest.fn(),
   }

@@ -124,7 +124,7 @@ describe('hitTest inverts what the renderer drew', () => {
         bin2,
         region1Idx: 0,
         region2Idx: 0,
-        counts: i + 1,
+        value: i + 1,
       })
     })
   })
@@ -155,5 +155,5 @@ test('the hover is the contact under the pointer, and none once the load is canc
 // transform and not the lookup.
 test('the same cells resolve from data space', () => {
   const data = makeData([{ bin1: 2, bin2: 5 }], 64)
-  expect(findContactAt(data, 2 * W + W / 2, 5 * W + W / 2)?.counts).toBe(1)
+  expect(findContactAt(data, 2 * W + W / 2, 5 * W + W / 2)?.value).toBe(1)
 })

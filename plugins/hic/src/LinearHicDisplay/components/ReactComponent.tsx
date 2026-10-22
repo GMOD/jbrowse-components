@@ -106,7 +106,7 @@ const HicPointer = observer(function HicPointer({
           locus1={formatLocus(rpcData, item.region1Idx, item.bin1)}
           locus2={formatLocus(rpcData, item.region2Idx, item.bin2)}
           label={model.valueLabel}
-          value={formatScore(item.counts)}
+          value={formatScore(item.value)}
           x={mouseState.clientX}
           y={mouseState.clientY}
         />

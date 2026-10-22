@@ -246,6 +246,6 @@ export function findContactAt(
         bin2,
         region1Idx: regionX,
         region2Idx: regionY,
-        counts: getInstanceCount(instances, idx),
+        value: getInstanceCount(instances, idx),
       }
 }

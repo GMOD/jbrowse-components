@@ -167,7 +167,7 @@ describe('bins survive the float32 round trip through the packed positions', () 
         bin2,
         region1Idx: 0,
         region2Idx: 0,
-        counts,
+        value: counts,
       })
     }
   })

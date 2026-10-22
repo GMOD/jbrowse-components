@@ -155,7 +155,7 @@ describe('reversed hic regions', () => {
         bin2: MULTI[i]!.bin2,
         region1Idx: MULTI[i]!.region1Idx,
         region2Idx: MULTI[i]!.region2Idx,
-        counts: MULTI[i]!.counts,
+        value: MULTI[i]!.counts,
       })
     }
   })

@@ -105,14 +105,14 @@ describe('contact lookup table', () => {
     const d = makeData(contacts, { binBase: [base], span })
     expect(d.numContacts).toBe((span * (span + 1)) / 2)
     for (let i = 0; i < d.numContacts; i++) {
-      // counts is unique per contact, so this pins the exact index, not just a
+      // value is unique per contact, so this pins the exact index, not just a
       // cell with matching coordinates
       expect(hoverCenter(d, i)).toEqual({
         bin1: contacts[i]!.bin1,
         bin2: contacts[i]!.bin2,
         region1Idx: 0,
         region2Idx: 0,
-        counts: i + 1,
+        value: i + 1,
       })
     }
   })
@@ -146,7 +146,7 @@ describe('contact lookup table', () => {
     expect(hoverCenter(d, 0)).toMatchObject({ region1Idx: 0, region2Idx: 0 })
     expect(hoverCenter(d, 1)).toMatchObject({ region1Idx: 1, region2Idx: 1 })
     expect(hoverCenter(d, 2)).toMatchObject({ region1Idx: 0, region2Idx: 1 })
-    expect(new Set([0, 1, 2].map(i => hoverCenter(d, i)!.counts)).size).toBe(3)
+    expect(new Set([0, 1, 2].map(i => hoverCenter(d, i)!.value)).size).toBe(3)
   })
 
   test('a reversed region hovers back to the bins it was packed from', () => {
@@ -169,7 +169,7 @@ describe('contact lookup table', () => {
         bin2: contacts[i]!.bin2,
         region1Idx: 0,
         region2Idx: 0,
-        counts: i + 1,
+        value: i + 1,
       })
     }
   })
@@ -192,7 +192,7 @@ describe('contact lookup table', () => {
         bin2,
         region1Idx: r1,
         region2Idx: r2,
-        counts: i + 1,
+        value: i + 1,
       })
     })
   })
@@ -209,7 +209,7 @@ describe('contact lookup table', () => {
     // one cell along the x axis from a contact that does exist
     const ux = getInstancePosition(d.instances, 0, 0) + W + W / 2
     const uy = getInstancePosition(d.instances, 0, 1) + W / 2
-    expect(hit.counts).toBe(1)
+    expect(hit.value).toBe(1)
     expect(findContactAt(d, ux, uy)).toBeUndefined()
   })
 
@@ -218,6 +218,6 @@ describe('contact lookup table', () => {
       binBase: [7],
       span: 4,
     })
-    expect(hoverCenter(d, 0)).toMatchObject({ bin1: 7, bin2: 7, counts: 1 })
+    expect(hoverCenter(d, 0)).toMatchObject({ bin1: 7, bin2: 7, value: 1 })
   })
 })

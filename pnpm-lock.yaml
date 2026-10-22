@@ -1589,9 +1589,6 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.9.0
         version: 6.9.0(mobx@7.1.0)
-      '@jbrowse/plugin-linear-genome-view':
-        specifier: workspace:^
-        version: link:../linear-genome-view
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
@@ -1620,6 +1617,9 @@ importers:
       '@jbrowse/display-test-utils':
         specifier: workspace:^
         version: link:../../packages/display-test-utils
+      '@jbrowse/plugin-linear-genome-view':
+        specifier: workspace:^
+        version: link:../linear-genome-view
 
   plugins/jobs-management:
     dependencies:
