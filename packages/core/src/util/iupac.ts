@@ -1,3 +1,5 @@
+import { revcom } from './seqUtils.ts'
+
 // IUPAC nucleotide ambiguity codes → character classes, for turning a motif like
 // "NGG" or "GGTNACC" into a regex
 const IUPAC_CODES: Record<string, string> = {
@@ -18,24 +20,6 @@ const IUPAC_CODES: Record<string, string> = {
   N: '[ACGT]',
 }
 
-const IUPAC_COMPLEMENT: Record<string, string> = {
-  A: 'T',
-  T: 'A',
-  C: 'G',
-  G: 'C',
-  R: 'Y',
-  Y: 'R',
-  S: 'S',
-  W: 'W',
-  K: 'M',
-  M: 'K',
-  B: 'V',
-  V: 'B',
-  D: 'H',
-  H: 'D',
-  N: 'N',
-}
-
 export const IUPAC_MOTIF_REGEX = /^[ACGTRYSWKMBDHVN]+$/
 
 export function iupacToRegex(motif: string) {
@@ -49,11 +33,7 @@ export function iupacToRegex(motif: string) {
 // reverse-complement a motif in IUPAC space, so a minus-strand match can be
 // found directly on the plus-strand sequence
 export function reverseComplementIupac(motif: string) {
-  let out = ''
-  for (const c of motif.toUpperCase()) {
-    out = (IUPAC_COMPLEMENT[c] ?? c) + out
-  }
-  return out
+  return revcom(motif.toUpperCase())
 }
 
 // A motif that reads the same on both strands (most restriction sites) matches

@@ -14,19 +14,11 @@ export const SV_SYMBOLIC_ALLELES = [
 
 /**
  * #api
- * parseBreakend, honoring its `Breakend | undefined` signature. ALT strings are
- * user data and malformed breakends do occur; @gmod/vcf <=7.0.10 throws on them
- * instead of returning undefined, which would otherwise fail a whole render or
- * feature-parse pass over one bad allele. Use this everywhere rather than
- * importing parseBreakend directly; it can become a plain re-export once the
- * upstream fix ships.
+ * parseBreakend, which returns undefined for a malformed breakend. Kept under
+ * this name for plugins written when @gmod/vcf <=7.0.10 threw instead.
  */
 export function safeParseBreakend(alt: string) {
-  try {
-    return parseBreakend(alt)
-  } catch {
-    return undefined
-  }
+  return parseBreakend(alt)
 }
 
 /**
