@@ -6,11 +6,15 @@ import ColorWritesMixin from './ColorWritesMixin.ts'
 import {
   COLOR_SCALES,
   colorChannelOptions,
-  colorChannelSlots,
   colorDomainSlot,
-  colorLabelsSlot,
+  colorFieldSlot,
+  colorLegendOptions,
+  colorNamesSlot,
   colorRangeSlot,
+  colorScaleOptions,
+  colorScaleTypeSlot,
   colorTitleSlot,
+  encodingOptions,
 } from './colorConfigSchema.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
@@ -20,42 +24,59 @@ const TestColor = ConfigurationSchema(
   'TestWritesColor',
   {
     value: { type: 'maybeColor' },
-    ...colorChannelSlots({
-      scales: COLOR_SCALES,
-      scaleName: 'TestWritesColorScale',
-      field: 'field',
-      fieldType: 'featureField',
-    }),
-    ...colorDomainSlot({}),
-    ...colorRangeSlot({}),
-    ...colorLabelsSlot,
-    ...colorTitleSlot,
+    ...colorFieldSlot({ field: 'field', fieldType: 'featureField' }),
+    scale: ConfigurationSchema(
+      'TestWritesColorScale',
+      {
+        ...colorScaleTypeSlot({
+          scales: COLOR_SCALES,
+          scaleName: 'TestWritesColorScaleType',
+        }),
+        ...colorDomainSlot({}),
+        ...colorRangeSlot({}),
+        ...colorNamesSlot,
+      },
+      colorScaleOptions('encoding.color.scale'),
+    ),
+    legend: ConfigurationSchema(
+      'TestWritesColorLegend',
+      { ...colorTitleSlot },
+      colorLegendOptions,
+    ),
   },
-  colorChannelOptions('color'),
+  colorChannelOptions('encoding.color'),
 )
 
-const Display = types.compose(
-  types.model({
-    configuration: ConfigurationSchema('TestWritesDisplay', {
-      color: TestColor,
+function displayOf(color: ReturnType<typeof ConfigurationSchema>) {
+  return types.compose(
+    types.model({
+      configuration: ConfigurationSchema('TestWritesDisplay', {
+        encoding: ConfigurationSchema(
+          'TestWritesEncoding',
+          { color },
+          encodingOptions,
+        ),
+      }),
     }),
-  }),
-  ColorWritesMixin(),
-)
+    ColorWritesMixin(),
+  )
+}
+
+const Display = displayOf(TestColor)
 
 function display(color?: unknown) {
   return Display.create(
-    { configuration: color === undefined ? {} : { color } },
+    { configuration: color === undefined ? {} : { encoding: { color } } },
     { pluginManager },
   )
 }
 
 function colorOf(d: ReturnType<typeof display>) {
-  return getSnapshot(d.configuration.color)
+  return getSnapshot(d.configuration.encoding.color)
 }
 
 test('a new field keeps only the constant', () => {
-  const d = display({ value: 'red', field: 'type', domain: ['gene'] })
+  const d = display({ value: 'red', field: 'type', scale: { domain: ['gene'] } })
   d.colorByField('source')
   expect(colorOf(d)).toEqual({ value: 'red', field: 'source' })
 })
@@ -63,9 +84,8 @@ test('a new field keeps only the constant', () => {
 test("the way back parks the field, and re-picking it keeps the key's names", () => {
   const d = display({
     field: 'type',
-    domain: ['gene', 'mRNA'],
-    labels: ['Gene', 'Transcript'],
-    title: 'Feature type',
+    scale: { domain: ['gene', 'mRNA'], names: ['Gene', 'Transcript'] },
+    legend: { title: 'Feature type' },
   })
   d.colorByField('')
   expect(colorOf(d)).toEqual({})
@@ -73,73 +93,76 @@ test("the way back parks the field, and re-picking it keeps the key's names", ()
   d.colorByField('type')
   expect(colorOf(d)).toEqual({
     field: 'type',
-    domain: ['gene', 'mRNA'],
-    labels: ['Gene', 'Transcript'],
-    title: 'Feature type',
+    scale: { domain: ['gene', 'mRNA'], names: ['Gene', 'Transcript'] },
+    legend: { title: 'Feature type' },
   })
 })
 
 test('a solid color parks the field, and undefined clears the color', () => {
-  const d = display({ field: 'type', domain: ['gene'] })
+  const d = display({ field: 'type', scale: { domain: ['gene'] } })
   d.setColorValue('steelblue')
   expect(colorOf(d)).toEqual({ value: 'steelblue' })
   d.setColorValue(undefined)
   expect(colorOf(d)).toEqual({})
   d.colorByField('type')
-  expect(colorOf(d)).toEqual({ field: 'type', domain: ['gene'] })
+  expect(colorOf(d)).toEqual({ field: 'type', scale: { domain: ['gene'] } })
 })
 
 // Every color tier keys on the object's arrays, so a write of the same
 // object would re-bake for nothing.
 test('a pick of what already paints writes nothing', () => {
-  const d = display({ field: 'type', domain: ['gene'] })
+  const d = display({ field: 'type', scale: { domain: ['gene'] } })
   const patches: unknown[] = []
   onPatch(d, patch => patches.push(patch))
   d.colorByField('type')
   d.colorByField('type')
+  const solid = display({ value: 'red' })
+  onPatch(solid, patch => patches.push(patch))
+  solid.setColorValue('red')
   expect(patches).toEqual([])
 })
 
-test('an unwritten color object takes its first field', () => {
+test('an unwritten color channel takes its first field', () => {
   const d = display()
   d.colorByField('strand')
   expect(colorOf(d)).toEqual({ field: 'strand' })
 })
 
-const StrandDefaultDisplay = types.compose(
-  types.model({
-    configuration: ConfigurationSchema('TestStrandDefaultDisplay', {
-      color: ConfigurationSchema(
-        'TestStrandDefaultColor',
-        {},
-        {
-          baseConfiguration: TestColor,
-          ...colorChannelOptions('color', undefined, {
-            impliedField: 'strand',
-          }),
-        },
-      ),
-    }),
-  }),
-  ColorWritesMixin(),
+const StrandDefaultDisplay = displayOf(
+  ConfigurationSchema(
+    'TestStrandDefaultColor',
+    {},
+    {
+      baseConfiguration: TestColor,
+      ...colorChannelOptions('encoding.color', undefined, {
+        impliedField: 'strand',
+      }),
+    },
+  ),
 )
 
 // LGVSyntenyColor maps `strand` while its snapshot names no field
 test('an implied field reads as written and keeps its range on a re-pick', () => {
   const d = StrandDefaultDisplay.create(
-    { configuration: { color: { range: ['red', 'blue'] } } },
+    { configuration: { encoding: { color: { scale: { range: ['red', 'blue'] } } } } },
     { pluginManager },
   )
   const patches: unknown[] = []
   onPatch(d, patch => patches.push(patch))
   d.colorByField('strand')
   expect(patches).toEqual([])
-  expect(d.writtenColor).toEqual({ field: 'strand', range: ['red', 'blue'] })
+  expect(d.writtenColor).toEqual({
+    field: 'strand',
+    scale: { range: ['red', 'blue'] },
+  })
 
   d.colorByField('mapq')
   expect(d.writtenColor).toEqual({ field: 'mapq' })
   d.colorByField('strand')
-  expect(d.writtenColor).toEqual({ field: 'strand', range: ['red', 'blue'] })
+  expect(d.writtenColor).toEqual({
+    field: 'strand',
+    scale: { range: ['red', 'blue'] },
+  })
 })
 
 test('Default clears the constant and the field together', () => {
@@ -157,16 +180,20 @@ test('Solid color paints the constant kept beside a painting field, and opens th
     },
   }))
   const kept = WithPicker.create(
-    { configuration: { color: { value: 'red', field: 'type' } } },
+    { configuration: { encoding: { color: { value: 'red', field: 'type' } } } },
     { pluginManager },
   )
   kept.pickSolidColor()
-  expect(getSnapshot(kept.configuration.color)).toEqual({ value: 'red' })
+  expect(getSnapshot(kept.configuration.encoding.color)).toEqual({
+    value: 'red',
+  })
   const none = WithPicker.create(
-    { configuration: { color: { field: 'type' } } },
+    { configuration: { encoding: { color: { field: 'type' } } } },
     { pluginManager },
   )
   none.pickSolidColor()
-  expect(getSnapshot(none.configuration.color)).toEqual({ field: 'type' })
+  expect(getSnapshot(none.configuration.encoding.color)).toEqual({
+    field: 'type',
+  })
   expect(opened).toEqual(['picker', 'picker'])
 })

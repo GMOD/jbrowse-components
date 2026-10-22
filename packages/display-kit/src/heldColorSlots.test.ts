@@ -20,7 +20,7 @@ function session(trackIds: string[][]) {
   })
 }
 
-const biotype = { field: 'biotype', scale: 'categorical' as const }
+const biotype = { field: 'biotype', scale: 'ordinal' as const }
 
 test('every track coloring by one field deals into one set of slots', () => {
   const s = session([['genes'], ['genes', 'orthologs']])

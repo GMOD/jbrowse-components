@@ -4,8 +4,7 @@ import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { legendConfigSchema } from './legendConfigSchema.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
@@ -15,9 +14,7 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
  * declared as `legendConfigSchema` or `hiddenLegendConfigSchema`.
  */
 export interface LegendConfHost {
-  configuration: AnyConfigurationModel & {
-    legend: Instance<typeof legendConfigSchema>
-  }
+  configuration: ConfigModelForFields<{ legend: typeof legendConfigSchema }>
 }
 
 // The mixin's own `self` is the model it declares, so it cannot see the

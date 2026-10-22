@@ -5,6 +5,11 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import LegendMixin from './LegendMixin.ts'
 
+import {
+  hiddenLegendConfigSchema,
+  legendConfigSchema,
+} from './legendConfigSchema.ts'
+
 import type { LegendConfHost } from './LegendMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -31,11 +36,7 @@ function makeSession({
   colorScalesIn?: (palette: JBrowsePalette) => ColorScale[]
 }) {
   const configSchema = ConfigurationSchema('TestLegendDisplay', {
-    showLegend: {
-      type: 'boolean',
-      description: 'show the legend',
-      defaultValue,
-    },
+    legend: defaultValue ? legendConfigSchema : hiddenLegendConfigSchema,
   })
   const Base = types
     .compose(
@@ -98,7 +99,7 @@ describe.each([true, false])('with default %p', defaultValue => {
     for (const value of [true, false]) {
       const { display } = makeSession({
         defaultValue,
-        configuration: { showLegend: value },
+        configuration: { legend: { show: value } },
       })
       expect(display.showLegend).toBe(value)
     }

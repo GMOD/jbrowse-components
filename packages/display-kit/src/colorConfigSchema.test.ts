@@ -6,20 +6,24 @@ import { compareStructural } from 'mobx'
 import {
   COLOR_SCALES,
   colorChannelOptions,
-  colorChannelSlots,
+  colorConfigSchema,
   colorDomainEndsSlots,
   colorDomainSlot,
   colorEncodingOf,
+  colorFieldSlot,
   colorForField,
   colorForScheme,
   colorForValue,
-  parkedColorOf,
   colorRampSlots,
   colorRangeSlot,
-  colorConfigSchema,
+  colorScaleOptions,
+  colorScaleTypeSlot,
   colorSettingOf,
+  colorSnapshotOf,
   dealRowColors,
+  definedColor,
   paintedColorEncoding,
+  parkedColorOf,
 } from './colorConfigSchema.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
@@ -29,22 +33,29 @@ const TestColor = ConfigurationSchema(
   'TestColor',
   {
     value: { type: 'color', defaultValue: 'red' },
-    ...colorChannelSlots({
-      scales: COLOR_SCALES,
-      scaleName: 'TestColorScale',
-      field: 'field',
-      fieldType: 'featureField',
-    }),
-    ...colorDomainSlot({}),
-    ...colorDomainEndsSlots,
-    ...colorRangeSlot({}),
-    ...colorRampSlots,
+    ...colorFieldSlot({ field: 'field', fieldType: 'featureField' }),
+    scale: ConfigurationSchema(
+      'TestColorScale',
+      {
+        ...colorScaleTypeSlot({
+          scales: COLOR_SCALES,
+          scaleName: 'TestColorScaleType',
+        }),
+        ...colorDomainSlot({}),
+        ...colorDomainEndsSlots,
+        ...colorRangeSlot({}),
+        ...colorRampSlots,
+      },
+      colorScaleOptions('color.scale'),
+    ),
   },
   colorChannelOptions('color'),
 )
 
 function encodingOf(snapshot: Record<string, unknown>) {
-  return colorEncodingOf(TestColor.create(snapshot, { pluginManager }))
+  return colorEncodingOf(
+    colorSettingOf(TestColor.create(snapshot, { pluginManager })),
+  )
 }
 
 const WRITTEN = {
@@ -60,11 +71,11 @@ const WRITTEN = {
 // A fetch key compares the encoding structurally, and `{ a: 1, b: undefined }`
 // is not `{ a: 1 }`, so a scale whose keys followed what a config happened to
 // write would refetch on a write that paints the same.
-test.each(['categorical', 'threshold', 'linear', 'log'])(
+test.each(['ordinal', 'threshold', 'linear', 'log'])(
   'a %s scale answers one fixed set of keys whatever is written',
-  scale => {
-    const bare = encodingOf({ field: 'score', scale })
-    const full = encodingOf({ field: 'score', scale, ...WRITTEN })
+  type => {
+    const bare = encodingOf({ field: 'score', scale: { type } })
+    const full = encodingOf({ field: 'score', scale: { type, ...WRITTEN } })
     expect(typeof bare).toBe('object')
     expect(Object.keys(bare).sort()).toEqual(Object.keys(full).sort())
   },
@@ -73,21 +84,25 @@ test.each(['categorical', 'threshold', 'linear', 'log'])(
 test('an unset member and one written at its default are one key', () => {
   expect(
     compareStructural(
-      encodingOf({ field: 'score', scale: 'linear' }),
+      encodingOf({ field: 'score', scale: { type: 'linear' } }),
       encodingOf({
         field: 'score',
-        scale: 'linear',
-        domain: [],
-        range: [],
-        reverse: false,
-        domainMin: undefined,
+        scale: {
+          type: 'linear',
+          domain: [],
+          range: [],
+          reverse: false,
+          domainMin: undefined,
+        },
       }),
     ),
   ).toBe(true)
 })
 
 test('each scale carries the members it reads under the config names', () => {
-  expect(encodingOf({ field: 'score', scale: 'log', ...WRITTEN })).toEqual({
+  expect(
+    encodingOf({ field: 'score', scale: { type: 'log', ...WRITTEN } }),
+  ).toEqual({
     field: 'score',
     scale: 'log',
     domainMin: 0,
@@ -97,15 +112,17 @@ test('each scale carries the members it reads under the config names', () => {
     scheme: 'viridis',
     reverse: true,
   })
-  expect(encodingOf({ field: 'pip', scale: 'threshold', ...WRITTEN })).toEqual({
+  expect(
+    encodingOf({ field: 'pip', scale: { type: 'threshold', ...WRITTEN } }),
+  ).toEqual({
     field: 'pip',
     scale: 'threshold',
     domain: ['1', '2'],
     range: ['white', 'red'],
   })
-  expect(encodingOf({ field: 'strand', ...WRITTEN })).toEqual({
+  expect(encodingOf({ field: 'strand', scale: WRITTEN })).toEqual({
     field: 'strand',
-    scale: 'categorical',
+    scale: 'ordinal',
     domain: ['1', '2'],
     range: ['white', 'red'],
   })
@@ -117,18 +134,21 @@ test('each scale carries the members it reads under the config names', () => {
 // The scale follows `field` and the display's own default alone: a written
 // range used to make an unset scale linear, so emptying it flipped the key.
 test('the scale is never read off which output member is written', () => {
-  const scaleOf = (snapshot: Record<string, unknown>) => {
-    const encoding = encodingOf({ field: 'score', ...snapshot })
+  const scaleOf = (scale: Record<string, unknown>) => {
+    const encoding = encodingOf({ field: 'score', scale })
     return typeof encoding === 'object' ? encoding.scale : 'none'
   }
-  expect(scaleOf({ range: ['white', 'red'] })).toBe('categorical')
-  expect(scaleOf({ range: [] })).toBe('categorical')
-  expect(scaleOf({ scheme: 'viridis' })).toBe('categorical')
+  expect(scaleOf({ range: ['white', 'red'] })).toBe('ordinal')
+  expect(scaleOf({ range: [] })).toBe('ordinal')
+  expect(scaleOf({ scheme: 'viridis' })).toBe('ordinal')
 })
 
 test('a threshold writing cuts and no range spreads its scheme, else leaves the display its colors', () => {
-  const rangeOf = (snapshot: Record<string, unknown>) => {
-    const encoding = encodingOf({ field: 'x', scale: 'threshold', ...snapshot })
+  const rangeOf = (scale: Record<string, unknown>) => {
+    const encoding = encodingOf({
+      field: 'x',
+      scale: { type: 'threshold', ...scale },
+    })
     return typeof encoding === 'object' && 'range' in encoding
       ? encoding.range
       : undefined
@@ -148,10 +168,18 @@ test('a field name written as the constant is refused with the field spelling', 
   const create = (value: string) =>
     colorConfigSchema.create({ value }, { pluginManager })
   expect(() => create('pairOrientation')).toThrow(
-    'To color by the field, write color: { "field": "pairOrientation" }',
+    'To color by the field, write encoding.color: { "field": "pairOrientation" }',
   )
   expect(() => create("jexl:get(feature,'score')>1?'red':'blue'")).not.toThrow()
   expect(() => create('255,0,0')).not.toThrow()
+})
+
+test('a bare string is the field, and a color written as one is refused with the constant spelling', () => {
+  const color = colorConfigSchema.create('gene_biotype', { pluginManager })
+  expect(colorSettingOf(color).field).toBe('gene_biotype')
+  expect(() => colorConfigSchema.create('red', { pluginManager })).toThrow(
+    'write encoding.color: { "value": "red" }',
+  )
 })
 
 describe('colorSettingOf', () => {
@@ -160,37 +188,43 @@ describe('colorSettingOf', () => {
       {
         value: 'jexl:get(feature,"rgb")',
         field: 'score',
-        domainQuantile: 0.9,
-        labels: ['low'],
-        title: 'Score',
+        scale: { domainQuantile: 0.9, names: ['low'] },
+        legend: { title: 'Score' },
       },
       { pluginManager },
     )
     expect(colorSettingOf(color)).toStrictEqual({
       value: 'jexl:get(feature,"rgb")',
       field: 'score',
-      scale: undefined,
-      domain: [],
-      range: [],
-      scheme: undefined,
-      reverse: undefined,
-      domainMin: undefined,
-      domainMax: undefined,
-      domainMid: undefined,
-      domainQuantile: 0.9,
-      unknown: undefined,
+      scale: {
+        type: undefined,
+        domain: [],
+        range: [],
+        scheme: undefined,
+        reverse: undefined,
+        domainMin: undefined,
+        domainMax: undefined,
+        domainMid: undefined,
+        domainQuantile: 0.9,
+        unknown: undefined,
+      },
+      legend: {},
+    })
+    expect(colorSnapshotOf(color)).toMatchObject({
+      scale: { names: ['low'] },
+      legend: { title: 'Score' },
     })
   })
 
   it('reads only the members the schema declares', () => {
     const setting = colorSettingOf(
-      TestColor.create({ field: 'score', ...WRITTEN }, { pluginManager }),
+      TestColor.create({ field: 'score', scale: WRITTEN }, { pluginManager }),
     )
     expect(setting).toStrictEqual({
       value: 'red',
       field: 'score',
-      scale: undefined,
-      ...WRITTEN,
+      scale: { type: undefined, ...WRITTEN },
+      legend: {},
     })
   })
 })
@@ -199,26 +233,22 @@ describe('colorForField', () => {
   const tag = {
     value: 'grey',
     field: 'tags.HP',
-    scale: 'categorical',
-    domain: ['1', '2'],
-    range: ['red', 'blue'],
+    scale: { type: 'ordinal', domain: ['1', '2'], range: ['red', 'blue'] },
   }
 
-  test('the constant drops the field and its members', () => {
+  test('the constant drops the field and its scale', () => {
     expect(colorForField(tag, '')).toEqual({ value: 'grey' })
     expect(parkedColorOf(tag)).toEqual({
       field: 'tags.HP',
-      scale: 'categorical',
-      domain: ['1', '2'],
-      range: ['red', 'blue'],
+      scale: { type: 'ordinal', domain: ['1', '2'], range: ['red', 'blue'] },
     })
   })
 
-  test('the field already named keeps its members and a declared scale', () => {
+  test('the field already named keeps its scale', () => {
     expect(colorForField(tag, 'tags.HP')).toEqual(tag)
   })
 
-  test('the parked field takes its members back beside the constant', () => {
+  test('the parked field takes its scale back beside the constant', () => {
     const parked = parkedColorOf(tag)
     expect(colorForField({ value: 'pink' }, 'tags.HP', parked)).toEqual({
       ...tag,
@@ -238,35 +268,56 @@ describe('colorForField', () => {
   })
 
   test('copies the lists rather than handing the same arrays back', () => {
-    expect(colorForField(tag, 'tags.HP').domain).not.toBe(tag.domain)
+    expect(colorForField(tag, 'tags.HP').scale?.domain).not.toBe(
+      tag.scale.domain,
+    )
   })
+
+  test('a fieldless identity scale goes with the field it never had', () => {
+    expect(colorForField({ scale: { type: 'identity' } }, '')).toEqual({})
+  })
+})
+
+// A write compares against the snapshot, which omits an all-default part, so a
+// pick that leaves `scale: {}` behind would write, park and re-bake for nothing.
+test('a defined color drops unset members and empty parts', () => {
+  expect(
+    definedColor({
+      field: 'x',
+      value: undefined,
+      scale: { domain: undefined },
+      legend: {},
+    }),
+  ).toEqual({ field: 'x' })
 })
 
 describe('colorForScheme', () => {
   it('names the ramp and drops what would turn or replace it', () => {
     expect(
       colorForScheme(
-        { field: 'identity', reverse: true, range: ['red', 'blue'] },
+        { field: 'identity', scale: { reverse: true, range: ['red', 'blue'] } },
         'magma',
         'viridis',
       ),
-    ).toEqual({ field: 'identity', scheme: 'magma' })
+    ).toEqual({ field: 'identity', scale: { scheme: 'magma' } })
   })
 
   it('leaves the default ramp unset', () => {
     expect(
-      colorForScheme({ scheme: 'magma', scale: 'log' }, 'viridis', 'viridis'),
-    ).toEqual({
-      scale: 'log',
-    })
+      colorForScheme(
+        { scale: { scheme: 'magma', type: 'log' } },
+        'viridis',
+        'viridis',
+      ),
+    ).toEqual({ scale: { type: 'log' } })
   })
 })
 
 describe('colorForValue', () => {
   test('paints the value and drops the field, which would paint over it', () => {
-    expect(colorForValue({ field: 'type', domain: ['gene'] }, 'red')).toEqual({
-      value: 'red',
-    })
+    expect(
+      colorForValue({ field: 'type', scale: { domain: ['gene'] } }, 'red'),
+    ).toEqual({ value: 'red' })
   })
 
   test('undefined returns to the features own color', () => {
@@ -342,14 +393,14 @@ describe('paintedColorEncoding', () => {
     expect(
       paintedColorEncoding({
         field: 'impact',
-        scale: 'categorical',
+        scale: 'ordinal',
         domain: ['HIGH'],
         range: ['red'],
-        labels: ['Loss of function'],
+        names: ['Loss of function'],
       }),
     ).toEqual({
       field: 'impact',
-      scale: 'categorical',
+      scale: 'ordinal',
       domain: ['HIGH'],
       range: ['red'],
     })
