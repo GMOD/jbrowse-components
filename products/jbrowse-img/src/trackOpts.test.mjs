@@ -33,7 +33,9 @@ test('a JSON modifier merges into the display snapshot', async () => {
     fasta,
     loc: 'ctgA:1-2000',
     noRasterize: true,
-    trackList: [['bam', [bam, '{"color":{"field":"strand"}}', 'force:true']]],
+    trackList: [
+      ['bam', [bam, '{"encoding":{"color":"strand"}}', 'force:true']],
+    ],
   })
   assert.ok(svg.includes('<svg'), 'output should be SVG')
 })

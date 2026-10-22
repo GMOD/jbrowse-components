@@ -70,9 +70,9 @@ test('a good render after a failed one is unaffected', async () => {
 })
 
 // The canvas-based feature and variant displays take a CSS color or a jexl in
-// LinearCanvasBaseDisplay's `color` slot. `color:` used to write a `colorBy`
-// object neither of them has, which was dropped as an unknown MST key, so the
-// modifier did nothing at all on these track types. Colors reach the SVG
+// LinearCanvasBaseDisplay's `encoding.color.value`. `color:` used to write a
+// `colorBy` object neither of them has, which was dropped as an unknown MST key,
+// so the modifier did nothing at all on these track types. Colors reach the SVG
 // resolved to rgb(), so assert on that rather than the CSS name.
 const fillCounts = svg => {
   const counts = {}
@@ -142,9 +142,9 @@ test('color:strand splits a feature track by strand', async () => {
 // A color field on a feature track: one stable color per distinct
 // value of the attribute, via the same randomColor jexl the display's own
 // "Color by attribute" dialog writes.
-test('color.field=<name> gives each attribute value its own color', async () => {
+test('encoding.color.field=<name> gives each attribute value its own color', async () => {
   const plain = fillCounts(await renderGff())
-  const byType = fillCounts(await renderGff('color.field=type'))
+  const byType = fillCounts(await renderGff('encoding.color.field=type'))
   assert.equal(
     plain[GOLDENROD],
     134,

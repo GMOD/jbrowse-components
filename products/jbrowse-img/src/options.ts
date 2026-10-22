@@ -107,7 +107,7 @@ const optionDefs: OptionDef[] = [
   {
     name: 'view',
     description:
-      'Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump opacity=0.3 for a synteny view',
+      'Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view',
   },
   {
     name: 'out',
@@ -210,7 +210,7 @@ const comparativeExamples: [string, string][] = [
     'Multi-way (3+) synteny: repeat the assembly flag, put each alignment between the pair it compares',
   ],
   [
-    'synteny --fasta a.fa --paf a_b.paf --fasta b.fa --view mark.interpolate=bump color.field=query filter.0.field=length filter.0.gte=10000 --out out.svg',
+    'synteny --fasta a.fa --paf a_b.paf --fasta b.fa --view mark.interpolate=bump encoding.color.field=query filter.0.field=length filter.0.gte=10000 --out out.svg',
     'Curved ribbons colored by query chromosome, alignments under 10 kb hidden',
   ],
   [

@@ -277,7 +277,7 @@ other:
 
 ```bash
 jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
-  --bam https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam facet=tags.HP color.field=tags.HP height:400 \
+  --bam https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam facet=tags.HP encoding.color.field=tags.HP height:400 \
   --loc 1:63,005,675-63,007,432 --width 1200 --out alignments_haplotype.png
 ```
 
@@ -287,15 +287,15 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 modified-base (`MM`/`ML`) BAM/CRAM: methylated cytosines red, unmethylated blue.
 This COLO829 nanopore CRAM (hg38, streamed from the ONT open-data S3) with the
 UCSC CpG-island BED on top shows methylated flanks and unmethylated island
-cores, read against the annotated island boundaries. `showLegend=true` draws the
-color key. The app leaves the legend off because a reader can open the track
+cores, read against the annotated island boundaries. `legend.show=true` draws
+the color key. The app leaves the legend off because a reader can open the track
 menu, so add it to any export whose coloring is not the default.
 
 <!-- jb2export: methylation -->
 
 ```bash
 jb2export https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz aliases:https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz index:https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz.csi \
-  --bam https://jbrowse.org/demos/ont/COLO829_tumor.ht.chr20_18.5Mb.bam baseColor:methylation showLegend=true height:350 \
+  --bam https://jbrowse.org/demos/ont/COLO829_tumor.ht.chr20_18.5Mb.bam baseColor:methylation legend.show=true height:350 \
   --loc chr20:18,503,000-18,509,000 --width 1200 --out methylation.png
 ```
 
@@ -338,7 +338,7 @@ HG00151 (long reads streamed from the 1000G-ONT S3):
 
 ```bash
 jb2export --genome hg38 \
-  --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:down unit=chain color.field=pairOrientation facet=split coverage.height=80 height:560 \
+  --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:down unit=chain encoding.color.field=pairOrientation facet=split coverage.height=80 height:560 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
 
@@ -430,15 +430,15 @@ options):
 
 ```bash
 ## color by splice strand (XS tag), sort by haplotype (HP tag)
-jb2export --fasta ref.fa --bam reads.bam color.field=tags.XS sort:tag:HP --loc chr1:1-10000
+jb2export --fasta ref.fa --bam reads.bam encoding.color.field=tags.XS sort:tag:HP --loc chr1:1-10000
 
 ## color by base modifications (MM/ML tags) in super-compact layout
 jb2export --fasta ref.fa --bam reads.bam baseColor:modifications featureHeight:super-compact \
   --loc chr1:1-10000
 
 ## methylation over reads tinted by haplotype, in two quiet colors
-jb2export --fasta ref.fa --bam reads.bam color.field=tags.HP color.domain=1,2 color.range=#d9c9a3,#b7c4b1 \
-  baseColor:methylation showLegend=true --loc chr1:1-10000
+jb2export --fasta ref.fa --bam reads.bam encoding.color.field=tags.HP encoding.color.scale.domain=1,2 encoding.color.scale.range=#d9c9a3,#b7c4b1 \
+  baseColor:methylation legend.show=true --loc chr1:1-10000
 
 ## color by insert size + orientation to highlight structural variants
 jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc chr1:1-10000
@@ -447,7 +447,7 @@ jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc ch
 ## sized by readConnections.height. With readConnections.placement=up it overlays
 ## the coverage band instead, sized by coverage.height.
 jb2export --fasta ref.fa --bam reads.bam arcs:cloud readConnections.height=300 \
-  readConnections.lineWidth=2 height:600 --loc chr1:1-50000
+  readConnections.encoding.strokeWidth.value=2 height:600 --loc chr1:1-50000
 
 ## view as pairs / link supplementary alignments: mates and split segments of one
 ## read share a row, joined by a connecting line. pileup.showConnectors=true is
@@ -574,7 +574,7 @@ jb2export --genome hg19 --track hg19-ncbiRefSeqCurated \
 
 `color:viridis` on a `--hic` track names the ramp the counts run across, any
 [scheme HicColor takes](https://jbrowse.org/jb2/docs/config/hiccolor/#slot-scheme),
-and `color.scale=log` places them on it by their log2.
+and `encoding.color.scale.type=log` places them on it by their log2.
 
 ### Gene tracks and the reference sequence
 
@@ -718,36 +718,37 @@ Layout & sizing:
 
 Settings written as slots, spelled as the display spells them:
 
-| Write                                    | Description                                                                                                                                                |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `facet=strand`                           | Group reads into in-track stacked sections: `strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `svSignal`, `mapq`, `tags.HP` |
-| `unit=chain`                             | What one row stands for: a `read`, or its mate and split segments chained                                                                                  |
-| `showLegend=true`                        | Draw the color key. Off by default in the app, where the reader can open the track menu instead                                                            |
-| `pileup.softClips.show=true`             | Show soft-clipped bases                                                                                                                                    |
-| `coverage.show=false`                    | Hide the coverage subtrack                                                                                                                                 |
-| `pileup.show=false`                      | Hide the pileup; with `coverage.height`, a coverage-only view                                                                                              |
-| `coverage.height=200`                    | Height of the coverage subtrack, and of `arcs:up` arcs drawn over it                                                                                       |
-| `readConnections.height=120`             | Height of the arcs' or read cloud's band, under `arcs:down` and `arcs:cloud`, or `arcs:up` with `coverage.show=false`                                      |
-| `readConnections.lineWidth=2`            | Stroke width for read-connection arcs and lines                                                                                                            |
-| `sashimi.height=120`                     | Height of the sashimi arc band                                                                                                                             |
-| `filter.junctions.minReads=3`            | Minimum reads a splice junction needs before its arc is drawn                                                                                              |
-| `readConnections.color.field=insertSize` | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `pairOrientation`)                                                                 |
-| `pileup.maxLayoutHeight=4000`            | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                                                          |
+| Write                                             | Description                                                                                                                                                |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `facet=strand`                                    | Group reads into in-track stacked sections: `strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `svSignal`, `mapq`, `tags.HP` |
+| `unit=chain`                                      | What one row stands for: a `read`, or its mate and split segments chained                                                                                  |
+| `legend.show=true`                                | Draw the color key. Off by default in the app, where the reader can open the track menu instead                                                            |
+| `pileup.softClips.show=true`                      | Show soft-clipped bases                                                                                                                                    |
+| `coverage.show=false`                             | Hide the coverage subtrack                                                                                                                                 |
+| `pileup.show=false`                               | Hide the pileup; with `coverage.height`, a coverage-only view                                                                                              |
+| `coverage.height=200`                             | Height of the coverage subtrack, and of `arcs:up` arcs drawn over it                                                                                       |
+| `readConnections.height=120`                      | Height of the arcs' or read cloud's band, under `arcs:down` and `arcs:cloud`, or `arcs:up` with `coverage.show=false`                                      |
+| `readConnections.encoding.strokeWidth.value=2`    | Stroke width for read-connection arcs and lines                                                                                                            |
+| `sashimi.height=120`                              | Height of the sashimi arc band                                                                                                                             |
+| `filter.junctions.minReads=3`                     | Minimum reads a splice junction needs before its arc is drawn                                                                                              |
+| `readConnections.encoding.color.field=insertSize` | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `pairOrientation`)                                                                 |
+| `pileup.maxLayoutHeight=4000`                     | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                                                          |
 
-Available `color:` fields, except `tags.<TAG>`, which is a `color.field=` write.
-Anything else is a CSS color, painting every read with it:
+Available `color:` fields, except `tags.<TAG>`, which is an
+`encoding.color.field=` write. Anything else is a CSS color, painting every read
+with it:
 
-| Field                      | Description                                    |
-| -------------------------- | ---------------------------------------------- |
-| `strand`                   | Forward/reverse strand                         |
-| `firstOfPairStrand`        | Strand of the first read in the pair           |
-| `mapq`                     | MAPQ                                           |
-| `insertSize`               | Paired-end insert size                         |
-| `pairOrientation`          | Paired-end orientation                         |
-| `insertSizeAndOrientation` | Combined insert size + orientation             |
-| `mateRefName`              | Reference the mate maps to                     |
-| `mateAssembly`             | Assembly the mate maps to, for synteny reads   |
-| `tags.<TAG>`               | Color by any BAM tag, as `color.field=tags.HP` |
+| Field                      | Description                                             |
+| -------------------------- | ------------------------------------------------------- |
+| `strand`                   | Forward/reverse strand                                  |
+| `firstOfPairStrand`        | Strand of the first read in the pair                    |
+| `mapq`                     | MAPQ                                                    |
+| `insertSize`               | Paired-end insert size                                  |
+| `pairOrientation`          | Paired-end orientation                                  |
+| `insertSizeAndOrientation` | Combined insert size + orientation                      |
+| `mateRefName`              | Reference the mate maps to                              |
+| `mateAssembly`             | Assembly the mate maps to, for synteny reads            |
+| `tags.<TAG>`               | Color by any BAM tag, as `encoding.color.field=tags.HP` |
 
 Available `baseColor:` fields:
 
@@ -764,7 +765,7 @@ Available `baseColor:` fields:
 Feature and VCF tracks share one display base, so every modifier below applies
 to both. `facet=<field>` stacks the track into one labelled section per value:
 `strand`, an attribute, or a dotted path such as `INFO.SVTYPE`.
-`color.field=<attribute>` colors by one.
+`encoding.color.field=<attribute>` colors by one.
 
 | Modifier                            | Example                 | Description                                                                                                                                                                                                       |
 | ----------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -803,28 +804,32 @@ A modifier written `slot.path=value` sets that slot of the track's display, so
 you can set any setting in the
 [config docs](https://jbrowse.org/jb2/docs/config/) without a dedicated
 modifier. Paths nest with dots, and a path into a setting, such as
-`color.domain`, changes that one member and keeps the rest of what the track's
-config or a named modifier gave the setting, in whatever order the modifiers
-come:
+`encoding.color.scale.domain`, changes that one member and keeps the rest of
+what the track's config or a named modifier gave the setting, in whatever order
+the modifiers come:
 
 ```bash
 ## a numeric tag on a color ramp
-jb2export --fasta ref.fa --bam reads.bam color.field=tags.NM color.scale=linear \
-  color.range=white,darkred --loc chr1:1-10000 --out out.svg
+jb2export --fasta ref.fa --bam reads.bam encoding.color.field=tags.NM \
+  encoding.color.scale.type=linear encoding.color.scale.range=white,darkred \
+  --loc chr1:1-10000 --out out.svg
 
 ## haplotype in two declared colors, methylation over it, a log coverage axis
-jb2export --fasta ref.fa --bam reads.bam color.field=tags.HP color.domain=1,2 \
-  color.range=#d9c9a3,#b7c4b1 baseColor:methylation scales.y.type=log \
+jb2export --fasta ref.fa --bam reads.bam encoding.color.field=tags.HP \
+  encoding.color.scale.domain=1,2 encoding.color.scale.range=#d9c9a3,#b7c4b1 \
+  baseColor:methylation scales.y.type=log \
   --loc chr1:1-10000 --out out.svg
 ```
 
 - `true` and `false` are booleans and a number is a number
-- a comma makes a list, and a trailing comma a list of one: `color.range=tan,`
-- a digit segment indexes a list, so `color.range.0=tan` changes the first color
-  of a range and `marks.1.encoding.color.value=red` the second mark of a
-  declared plot, whereas `color.range=tan,teal` sets the whole range. An index
-  has to be one the list already reaches, so fill `0` before `1`. A list written
-  from nothing reads better as one JSON modifier than as a path per member
+- a comma makes a list, and a trailing comma a list of one:
+  `encoding.color.scale.range=tan,`
+- a digit segment indexes a list, so `encoding.color.scale.range.0=tan` changes
+  the first color of a range and `marks.1.encoding.color.value=red` the second
+  mark of a declared plot, whereas `encoding.color.scale.range=tan,teal` sets
+  the whole range. An index has to be one the list already reaches, so fill `0`
+  before `1`. A list written from nothing reads better as one JSON modifier than
+  as a path per member
 - a `jexl:` item keeps the commas inside brackets and quotes, so
   `filter=jexl:get(feature,'score')>5,` is a list of one filter, and a location
   keeps the commas grouping its digits, so
@@ -870,9 +875,9 @@ jb2export ref.fa genes.gff.gz display:marks height:160 \
 **A path changes one mark of a list, where the JSON states the list whole.** A
 track whose config already declares the plot takes
 `marks.1.encoding.color.value=red` to repaint its second mark and leave the rest
-alone, the way `color.domain=` edits one member of a color object. `marks.2`
-before anything has written `marks.0` and `marks.1` is an error, because a list
-cannot have holes.
+alone, the way `encoding.color.scale.domain=` edits one member of a color
+channel. `marks.2` before anything has written `marks.0` and `marks.1` is an
+error, because a list cannot have holes.
 
 A mark the display cannot draw as declared, such as a bar naming no `y` or a `y`
 the data does not have, fails the export with the rule the display reports, and
@@ -881,14 +886,15 @@ jb2export writes no image of an empty plot.
 ### Raw display settings (JSON)
 
 A modifier that starts with `{` is parsed as JSON. A JSON key sets its whole
-setting, as a session spec does, so writing a `color` object here replaces the
-one in the track's config. JSON is the readable way to write a list of objects
-such as `marks`, and the only way to write a value a path cannot, such as a
-color that contains commas. Use compact JSON (a single shell token, no spaces):
+setting, as a session spec does, so writing an `encoding` object here replaces
+the one in the track's config. JSON is the readable way to write a list of
+objects such as `marks`, and the only way to write a value a path cannot, such
+as a color that contains commas. Use compact JSON (a single shell token, no
+spaces):
 
 ```bash
-jb2export --fasta ref.fa --bam reads.bam '{"color":{"range":["rgb(217,201,163)"]}}' \
-  color.field=tags.HP --loc chr1:1-10000 --out out.svg
+jb2export --fasta ref.fa --bam reads.bam '{"encoding":{"color":{"scale":{"range":["rgb(217,201,163)"]}}}}' \
+  encoding.color.field=tags.HP --loc chr1:1-10000 --out out.svg
 ```
 
 ## Comparative views
@@ -984,8 +990,8 @@ go on `--view`:
 | -------------------------------------------- | --------------------------------------------------------------- |
 | `autoDiagonalize=true`                       | Reorders each lower assembly's chromosomes for least overlap    |
 | `filter.0.field=length filter.0.gte=500000`  | Hides alignments shorter than 500 kb, the main declutter option |
-| `color.field=query`                          | Tints each ribbon by its query chromosome                       |
-| `opacity=0.4`                                | Ribbon opacity (0–1); lower values reveal overlap density       |
+| `encoding.color.field=query`                 | Tints each ribbon by its query chromosome                       |
+| `encoding.opacity=0.4`                       | Ribbon opacity (0–1); lower values reveal overlap density       |
 | `mark.interpolate=bump`                      | Curved ribbons instead of straight trapezoids                   |
 | `levelHeights=300` or `levelHeights=300,200` | Pixel height of every level, or of each level in turn           |
 | `cigarMode=matches`                          | CIGAR indels drawn see-through; `off` draws one solid block     |
@@ -1030,7 +1036,7 @@ the alignment PAF from S3):
 jb2export synteny --chromSizes data/comparative/peach.chrom.sizes \
   --paf https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf.gz \
   --chromSizes data/comparative/grape.chrom.sizes \
-  --view autoDiagonalize=true color.field=query opacity=0.4 levelHeights=350 mark.interpolate=bump \
+  --view autoDiagonalize=true encoding.color.field=query encoding.opacity=0.4 levelHeights=350 mark.interpolate=bump \
   --width 1400 --out grape_peach_synteny.png
 ```
 
@@ -1048,7 +1054,7 @@ the web, so the example reproduces with only the public chain:
 jb2export synteny --chromSizes data/comparative/hs1.chrom.sizes \
   --chain https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz \
   --chromSizes data/comparative/mm39.chrom.sizes \
-  --view filter.0.field=length filter.0.gte=500000 autoDiagonalize=true color.field=query opacity=0.4 levelHeights=350 mark.interpolate=bump cigarMode=matches \
+  --view filter.0.field=length filter.0.gte=500000 autoDiagonalize=true encoding.color.field=query encoding.opacity=0.4 levelHeights=350 mark.interpolate=bump cigarMode=matches \
   --width 1400 --out hs1_mm39_synteny.png
 ```
 
@@ -1068,7 +1074,7 @@ jb2export synteny --chromSizes data/comparative/hg38.chrom.sizes \
   --chromSizes data/comparative/hs1.chrom.sizes \
   --chain https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz \
   --chromSizes data/comparative/mm39.chrom.sizes \
-  --view filter.0.field=length filter.0.gte=500000 autoDiagonalize=true color.field=query opacity=0.4 levelHeights=300 mark.interpolate=bump cigarMode=matches \
+  --view filter.0.field=length filter.0.gte=500000 autoDiagonalize=true encoding.color.field=query encoding.opacity=0.4 levelHeights=300 mark.interpolate=bump cigarMode=matches \
   --width 1400 --out hg38_hs1_mm39_synteny.png
 ```
 
@@ -1435,7 +1441,7 @@ Options:
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
   --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
-  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump opacity=0.3 for a synteny view
+  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
@@ -1484,7 +1490,7 @@ Options:
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
   --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
-  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump opacity=0.3 for a synteny view
+  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
@@ -1505,7 +1511,7 @@ Examples:
       Linear synteny of a region in each assembly (loc: rides on the assembly flag)
   jb2export synteny --chromSizes a.sizes --paf a_b.paf --chromSizes b.sizes --chain b_c.chain --chromSizes c.sizes --out out.svg
       Multi-way (3+) synteny: repeat the assembly flag, put each alignment between the pair it compares
-  jb2export synteny --fasta a.fa --paf a_b.paf --fasta b.fa --view mark.interpolate=bump color.field=query filter.0.field=length filter.0.gte=10000 --out out.svg
+  jb2export synteny --fasta a.fa --paf a_b.paf --fasta b.fa --view mark.interpolate=bump encoding.color.field=query filter.0.field=length filter.0.gte=10000 --out out.svg
       Curved ribbons colored by query chromosome, alignments under 10 kb hidden
   jb2export synteny --config jbrowse.json --spec spec.json --out out.svg
       N-way synteny from a config + session-spec JSON (see urlparams.md)
@@ -1523,7 +1529,7 @@ Options:
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
   --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
-  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump opacity=0.3 for a synteny view
+  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
@@ -1544,7 +1550,7 @@ Examples:
       Linear synteny of a region in each assembly (loc: rides on the assembly flag)
   jb2export synteny --chromSizes a.sizes --paf a_b.paf --chromSizes b.sizes --chain b_c.chain --chromSizes c.sizes --out out.svg
       Multi-way (3+) synteny: repeat the assembly flag, put each alignment between the pair it compares
-  jb2export synteny --fasta a.fa --paf a_b.paf --fasta b.fa --view mark.interpolate=bump color.field=query filter.0.field=length filter.0.gte=10000 --out out.svg
+  jb2export synteny --fasta a.fa --paf a_b.paf --fasta b.fa --view mark.interpolate=bump encoding.color.field=query filter.0.field=length filter.0.gte=10000 --out out.svg
       Curved ribbons colored by query chromosome, alignments under 10 kb hidden
   jb2export synteny --config jbrowse.json --spec spec.json --out out.svg
       N-way synteny from a config + session-spec JSON (see urlparams.md)
@@ -1562,7 +1568,7 @@ Options:
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
   --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
-  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump opacity=0.3 for a synteny view
+  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
@@ -1591,7 +1597,7 @@ Options:
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
   --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
-  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump opacity=0.3 for a synteny view
+  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
@@ -1650,7 +1656,7 @@ Options:
   --genome          Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
   --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
-  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump opacity=0.3 for a synteny view
+  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]

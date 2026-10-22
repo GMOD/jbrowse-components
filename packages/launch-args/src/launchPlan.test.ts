@@ -42,16 +42,16 @@ test('bare files: the genome file is the assembly, the rest are tracks', () => {
 
 test('a track carries its modifiers for the app to apply', () => {
   const p = plan(
-    '--genome hg38 r.bam force:true showLegend=true color:strand color.field=strand --track genes height:80',
+    '--genome hg38 r.bam force:true legend.show=true color:strand encoding.color.field=strand --track genes height:80',
   )
   expect(p.show).toEqual([
     {
       trackId: 'r.bam',
       modifiers: [
         'force:true',
-        'showLegend=true',
+        'legend.show=true',
         'color:strand',
-        'color.field=strand',
+        'encoding.color.field=strand',
       ],
     },
     { trackId: 'genes', modifiers: ['height:80'] },

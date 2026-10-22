@@ -67,10 +67,10 @@ export type AssertDisplaySettingsMatchPlugins = [
 // upstream fails the build instead of going dead. The config slots read
 // through differently named getters, which `keyof` the instance misses.
 type ConfigSlotKey =
-  | 'color'
+  | 'encoding'
+  | 'legend'
   | 'forceLoad'
   | 'modifications'
-  | 'baseColor'
   | 'filter'
   | 'sort'
   | 'pileup'

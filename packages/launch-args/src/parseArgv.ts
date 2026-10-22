@@ -45,10 +45,11 @@ export function isDataFile(token: string) {
  *   `value`. A bare `-` is stdin, so it is a value.
  * - The token after a flag is its value, except after a flag in `booleans`,
  *   which takes only `true` or `false`.
- * - Later tokens are the entry's modifiers (`height:100`, `color.field=tags.HP`,
- *   `{"json":1}`), until a token that names a data file, which opens a
- *   {@link FILE_FLAG} entry of its own. So `--loc chr1:1-100 reads.bam` keeps
- *   both, and `reads.bam height:100` gives the file its modifier.
+ * - Later tokens are the entry's modifiers (`height:100`,
+ *   `encoding.color.field=tags.HP`, `{"json":1}`), until a token that names a
+ *   data file, which opens a {@link FILE_FLAG} entry of its own. So
+ *   `--loc chr1:1-100 reads.bam` keeps both, and `reads.bam height:100` gives
+ *   the file its modifier.
  * - A bare token before any flag that is not a data file throws; it used to be
  *   dropped without a word.
  */
