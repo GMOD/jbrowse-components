@@ -429,8 +429,8 @@ await test('renderRegion comparative without a second assembly throws', async ()
   } catch (error) {
     message = error.message
   }
-  if (!/second assembly/.test(message)) {
-    throw new Error(`Expected a "second assembly" error, got: ${message}`)
+  if (!/compares two genomes, and this command line names one/.test(message)) {
+    throw new Error(`Expected a missing second genome error, got: ${message}`)
   }
 })
 
