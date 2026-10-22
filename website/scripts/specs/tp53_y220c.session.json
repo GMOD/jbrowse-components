@@ -1558,8 +1558,12 @@
       "marks": [
         {
           "site": "A:402",
-          "style": "spheres",
-          "color": "#f28e2b"
+          "mark": "spheres",
+          "encoding": {
+            "color": {
+              "value": "#f28e2b"
+            }
+          }
         }
       ],
       "displayName": "Y220C with rezatapopt (PDB 9S9O)",

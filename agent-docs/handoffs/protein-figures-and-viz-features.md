@@ -47,6 +47,12 @@ together.
 - Builders for both (superposition, pocket aim, in-plane fit) are
   machine-local in `/var/tmp/hero2/bin/`, beside the prototype shots.
 - The nine older specs in `protein_variants.ts`.
+- Protein3d 1.25.0: a mark is a layer in the mark display's spelling,
+  `{ site, mark: 'spheres' | 'sticks' | 'cartoon', encoding: { color: { value } } }`,
+  and a site can name a whole chain (`G:*`); CCR5 draws gp120 that way.
+  Distances take the same `encoding`. The older `style` and string `color`
+  are gone, and the builders in `/var/tmp/hero2/bin/` emit the new spelling
+  through `encoding.py`.
 - Protein3d 1.24.0: `protein-view-ready` waits for a color field's values and
   the paint that follows (1.23.0 flipped it 20–40 s early for `track`,
   `alphaMissense` and `clinvar`, and a capture showed Mol*'s chain colors under

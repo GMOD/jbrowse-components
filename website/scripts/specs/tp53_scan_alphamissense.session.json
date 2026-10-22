@@ -55,7 +55,7 @@
         "scale": "threshold",
         "domain": [0],
         "range": ["#4f8fc6", "#c51b1b"],
-        "labels": ["p53 works (score \u2264 0)", "p53 broken (score > 0)"]
+        "labels": ["p53 works (score ≤ 0)", "p53 broken (score > 0)"]
       },
       "structures": [
         {
@@ -150,8 +150,12 @@
       "marks": [
         {
           "site": "A:248",
-          "style": "spheres",
-          "color": "#d1007a"
+          "mark": "spheres",
+          "encoding": {
+            "color": {
+              "value": "#d1007a"
+            }
+          }
         }
       ],
       "surface": {
@@ -269,8 +273,12 @@
       "marks": [
         {
           "site": "A:248",
-          "style": "spheres",
-          "color": "#d1007a"
+          "mark": "spheres",
+          "encoding": {
+            "color": {
+              "value": "#d1007a"
+            }
+          }
         }
       ],
       "surface": {

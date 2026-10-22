@@ -15,7 +15,8 @@ function ccr5Session() {
 
 // The reads stream from the 1000 Genomes 30x CRAMs on the public S3 bucket:
 // HG00137 is Δ32/Δ32, HG00101 Δ32/+ and HG00096 +/+ in the 2022 phased panel.
-// Δ32 keeps residues 1-184, so the session colors 185 on.
+// Δ32 keeps residues 1-184, so the session colors 185 on; gp120 (chain G) is
+// a cartoon mark of its own color.
 const PANELS = ['protein-CCR5-6meo', 'protein-CCR5-4mbs'] as const
 
 export const proteinCcr5Delta32Specs: ScreenshotSpec[] = [
@@ -68,6 +69,7 @@ export const proteinCcr5Delta32Specs: ScreenshotSpec[] = [
         entries: [
           { label: 'Lost in Δ32', color: '#d1007a' },
           { label: 'Kept in Δ32', color: '#b9c2cf' },
+          { label: 'HIV gp120', color: '#2e9e6b' },
         ],
         anchor: {
           selector: `[data-testid="view-container-${PANELS[0]}"] [data-testid="protein-view-molstar"]`,
@@ -76,16 +78,6 @@ export const proteinCcr5Delta32Specs: ScreenshotSpec[] = [
         },
         dx: 110,
         dy: 70,
-      },
-      {
-        type: 'text',
-        text: 'HIV gp120',
-        fontSize: 24,
-        maxWidth: 300,
-        leader: true,
-        anchor: { residue: 'G:250', view: 1 },
-        dx: 120,
-        dy: -40,
       },
       {
         type: 'text',

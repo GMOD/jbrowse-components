@@ -413,7 +413,11 @@
         {
           "a": "A:46@NZ",
           "b": "A:80@NZ",
-          "color": "#111111"
+          "encoding": {
+            "color": {
+              "value": "#111111"
+            }
+          }
         }
       ],
       "structures": [

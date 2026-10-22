@@ -236,13 +236,21 @@
       "marks": [
         {
           "site": "A:1775",
-          "style": "spheres",
-          "color": "#d1007a"
+          "mark": "spheres",
+          "encoding": {
+            "color": {
+              "value": "#d1007a"
+            }
+          }
         },
         {
           "site": "B:11",
-          "style": "sticks",
-          "color": "#f28e2b"
+          "mark": "sticks",
+          "encoding": {
+            "color": {
+              "value": "#f28e2b"
+            }
+          }
         }
       ],
       "surface": {
@@ -444,13 +452,21 @@
       "marks": [
         {
           "site": "A:1775",
-          "style": "spheres",
-          "color": "#d1007a"
+          "mark": "spheres",
+          "encoding": {
+            "color": {
+              "value": "#d1007a"
+            }
+          }
         },
         {
           "site": "B:11",
-          "style": "sticks",
-          "color": "#f28e2b"
+          "mark": "sticks",
+          "encoding": {
+            "color": {
+              "value": "#f28e2b"
+            }
+          }
         }
       ],
       "surface": {

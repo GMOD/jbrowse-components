@@ -444,8 +444,12 @@
         {
           "site": "B:11",
           "structure": 0,
-          "style": "sticks",
-          "color": "#f28e2b"
+          "mark": "sticks",
+          "encoding": {
+            "color": {
+              "value": "#f28e2b"
+            }
+          }
         }
       ],
       "silhouettes": true
@@ -870,8 +874,12 @@
         {
           "site": "B:11",
           "structure": 1,
-          "style": "sticks",
-          "color": "#f28e2b"
+          "mark": "sticks",
+          "encoding": {
+            "color": {
+              "value": "#f28e2b"
+            }
+          }
         }
       ],
       "silhouettes": true

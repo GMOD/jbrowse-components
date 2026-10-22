@@ -775,8 +775,12 @@
       "marks": [
         {
           "site": "A:303",
-          "style": "spheres",
-          "color": "#f28e2b"
+          "mark": "spheres",
+          "encoding": {
+            "color": {
+              "value": "#f28e2b"
+            }
+          }
         }
       ],
       "structures": [

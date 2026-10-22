@@ -406,12 +406,22 @@
       },
       "silhouettes": true,
       "occlusion": true,
-      "marks": [],
+      "marks": [
+        {
+          "site": "G:*",
+          "mark": "cartoon",
+          "encoding": {
+            "color": {
+              "value": "#2e9e6b"
+            }
+          }
+        }
+      ],
       "structures": [
         {
           "pdbId": "6meo",
           "assembly": "deposited",
-          "chains": ["B", "G"],
+          "chains": ["B"],
           "feature": {
             "uniqueId": "NM_001394783.1",
             "type": "mRNA",
@@ -815,8 +825,12 @@
       "marks": [
         {
           "site": "A:1101",
-          "style": "spheres",
-          "color": "#f28e2b"
+          "mark": "spheres",
+          "encoding": {
+            "color": {
+              "value": "#f28e2b"
+            }
+          }
         }
       ],
       "structures": [
