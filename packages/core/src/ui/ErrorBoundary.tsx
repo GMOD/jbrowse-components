@@ -51,6 +51,9 @@ class ErrorBoundary extends Component<Props, State> {
     this.state = { error: undefined }
   }
 
+  // No getDerivedStateFromError, despite React's dev warning: it renders the
+  // fallback before componentDidCatch, so a fallback that throws would skip
+  // onError, whose marker has to exist first (66f9eb513e).
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
     // guarded: this is the last boundary in some trees, and a throw from the
