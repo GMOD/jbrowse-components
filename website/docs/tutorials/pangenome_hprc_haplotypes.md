@@ -36,25 +36,15 @@ lane as a deletion.
 - the GraphGenomeView plugin, for the `GraphTrack` below. In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store); the HPRC
   page's launches and the hosted config already load it
-- for
-  [Whole-genome synteny from a GFA's walks](#whole-genome-synteny-from-a-gfas-walks):
-  `python3` and the [JBrowse CLI](/docs/cli) for `make-pif`
-
-<!-- TUTORIAL_INSTALL jbrowse-cli START -->
-
-```bash
-npm install -g @jbrowse/cli
-```
-
-<!-- TUTORIAL_INSTALL jbrowse-cli END -->
 
 ## The data
 
 You don't need these files to follow the page: the HPRC launches read the hosted
-tabix indexes. The [build script](#reproduce-it-end-to-end) takes these files
-from [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) by URL to
-rebuild those indexes. The config under _Configuring the haplotype lanes track_
-is the one to adapt for your own graph.
+tabix indexes, built from these files of
+[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710).
+[Reproduce it end to end](#reproduce-it-end-to-end) names the build. The config
+under _Configuring the haplotype lanes track_ is the one to adapt for your own
+graph.
 
 | What it is                                            | File                                                                                                                                                                                |
 | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -173,46 +163,13 @@ limits of the graph and the VCF behind them.
 - **Near-identical gene copies share one path**, so a lane at RHD / RHCE or
   CYP2D6 cannot show how many copies a haplotype has.
 
-## Whole-genome synteny from a GFA's walks
-
-A GFA that records each haplotype's walk converts to PAF against the reference
-walk, one record per stretch of shared nodes, for a whole-genome synteny view.
-
-Convert the walks you want:
-
-<!-- from: scripts/build_hprc_multiway_synteny.sh -->
-
-```bash
-curl -fO https://raw.githubusercontent.com/cmdcolin/gfa-to-pairwise-paf/v1.0.0/gfa_to_pairwise_paf.py
-# --contig-lengths: each assembly's .fai, since walks omit contig lengths
-gzip -dc graph.gfa.gz | python3 gfa_to_pairwise_paf.py --reference GRCh38#0 \
-  --queries HG01109#1,HG00099#1 --contig-lengths contigs.fai > graph.paf
-```
-
-Index the PAF for JBrowse:
-
-<!-- from: scripts/build_hprc_multiway_synteny.sh -->
-
-```bash
-jbrowse make-pif graph.paf --csi --out graph.pif.gz
-```
-
 ## Reproduce it end to end
 
-The HPRC build runs that conversion on the release graph. It:
-
-1. downloads the release graph
-2. converts the haplotypes' walks against GRCh38's and indexes the PAF
-3. fetches each haplotype's contig lengths and CAT genes
-4. writes a `config.json` with one assembly per haplotype
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_multiway_synteny.sh
-bash build_hprc_multiway_synteny.sh
-```
-
-[Its output is hosted](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/hprc_multiway/config.json)
-and opens at the CFH deletion, one lane per haplotype under GRCh38.
+[Indexing haplotype walks](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-tabix)
+builds the walk files the lanes read, with one command on the release's GFA, and
+[README.txt](https://jbrowse.org/demos/hprc/README.txt) beside the hosted files
+records their provenance. The same page converts the walks to PAF for a
+whole-genome synteny view.
 
 ## See also
 

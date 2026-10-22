@@ -16,6 +16,7 @@ puts them on tracks. We run it on HPRC release 2, and:
 - open the track as a graph and as a row of segments
 - check the index against the graph
 - add two optional layers: haplotypes per segment, and haplotype routes
+- convert the haplotype routes to PAF for a whole-genome synteny view
 
 :::caution Experimental
 
@@ -34,8 +35,10 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - [`minigraph`](https://github.com/lh3/minigraph), for each assembly's path
   through the graph
 - [`vg`](https://github.com/vgteam/vg), for a plain GFA's bubbles
+- for [the walks as PAF](#walks-as-paf): `python3` and the
+  [JBrowse CLI](/docs/cli) for `make-pif`
 
-<!-- TUTORIAL_INSTALL htslib,bcftools,gfa-to-tabix,gfatools,minigraph,vg START -->
+<!-- TUTORIAL_INSTALL htslib,bcftools,gfa-to-tabix,gfatools,minigraph,vg,jbrowse-cli START -->
 
 ```bash
 # Debian/Ubuntu
@@ -45,9 +48,10 @@ conda install -c bioconda -c conda-forge htslib bcftools gfatools minigraph \
   vg
 # any platform
 cargo install gfa-to-tabix
+npm install -g @jbrowse/cli
 ```
 
-<!-- TUTORIAL_INSTALL htslib,bcftools,gfa-to-tabix,gfatools,minigraph,vg END -->
+<!-- TUTORIAL_INSTALL htslib,bcftools,gfa-to-tabix,gfatools,minigraph,vg,jbrowse-cli END -->
 
 ## Download the data
 
@@ -449,6 +453,35 @@ same for any set of haplotypes, because the browser downloads every haplotype's
 rows and drops the unwanted ones by name. `walkStepBudget` caps the walk steps a
 window keeps, counting only the haplotypes the track draws, so fewer haplotypes
 draw a wider window.
+
+## Whole-genome synteny from the walks, as PAF {#walks-as-paf}
+
+The walk files serve one window at a time. For a whole-genome synteny view, a
+GFA's walks also convert to PAF against the reference walk, one record per
+stretch of nodes the two walks share. Convert the walks you want:
+
+<!-- from: scripts/build_hprc_multiway_synteny.sh -->
+
+```bash
+curl -fO https://raw.githubusercontent.com/cmdcolin/gfa-to-pairwise-paf/v1.0.0/gfa_to_pairwise_paf.py
+# --contig-lengths: each assembly's .fai, since walks omit contig lengths
+gzip -dc graph.gfa.gz | python3 gfa_to_pairwise_paf.py --reference GRCh38#0 \
+  --queries HG01109#1,HG00099#1 --contig-lengths contigs.fai > graph.paf
+```
+
+Index the PAF for JBrowse:
+
+<!-- from: scripts/build_hprc_multiway_synteny.sh -->
+
+```bash
+jbrowse make-pif graph.paf --csi --out graph.pif.gz
+```
+
+[`build_hprc_multiway_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_multiway_synteny.sh)
+runs both on the release graph for eight haplotypes, with each haplotype's
+contig lengths and CAT genes, and
+[its output is hosted](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/hprc_multiway/config.json),
+one lane per haplotype under GRCh38.
 
 ## Reproduce it end to end
 
