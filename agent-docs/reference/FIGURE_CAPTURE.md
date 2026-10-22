@@ -7,11 +7,11 @@ kind: operations
 
 # Capturing a figure
 
-Four ways a committed web PNG disagrees with what you meant, all in
+Five ways a committed web PNG disagrees with what you meant, all in
 `website/scripts/generate-screenshots.ts` and the browser-test suite rather than
 the app: a callout resolves somewhere unintended, the capture lands before the
-data arrived, the capture path returns something the renderer never drew, or
-every WebGL draw runs on the CPU. **A figure that looks wrong is a harness bug
+data arrived, the capture path returns something the renderer never drew, every
+WebGL draw runs on the CPU, or the app that drew it was built from older source. **A figure that looks wrong is a harness bug
 until the render is ruled out.** The desktop figures come from a separate
 selenium harness over the packaged Electron app ("Desktop figures").
 
@@ -70,6 +70,27 @@ To regenerate a slow figure use `--headed` (or `xvfb-run`); capture geometry is
 unaffected. Don't raise timeouts first. `tcga/cohort_cnv_genome.png` is the only
 GPU-rendered committed figure, and switching the default would rewrite every PNG
 once.
+
+## A build older than the checkout draws the old app
+
+`build/` is replaced in place, so a build from last week looks exactly like one
+from this minute. `postbuild` stamps `build/build-info.json` with the commit it
+came from (`products/jbrowse-web/scripts/writeBuildStamp.ts`), and the
+generator compares that against HEAD before it captures anything, printing
+`FIGURES CAPTURED AGAINST A STALE APP BUILD` with the commits that landed in
+between.
+
+- The run reports and keeps going, since a docs-only figure run is right to
+  capture against whatever is built. `--strict-build` stops it instead.
+- The loud version of the bug fails the spec: a build from 2026-10-20 answered
+  a session written against the renamed alignments `sort` key with
+  "AlignmentsSort takes type, pos, refName, tag and within, not field". The
+  quiet version draws the old behavior and commits it.
+- `--port <n>` proxies to a server this run did not start, so the report is
+  `NO BUILD PROVENANCE` unless that server serves a stamped build. A
+  `pnpm start` dev server serves the current source and needs no rebuild.
+- An edit under `products/jbrowse-web/test_data` leaves the build current: the
+  capture server serves test_data from the checkout, not from `build/`.
 
 ## Desktop figures
 

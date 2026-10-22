@@ -47,6 +47,8 @@ const { values } = parseArgs({
     // the changed-file list, one path per line, instead of asking git, which
     // gets a shallow CI checkout's diff wrong
     'changed-from': { type: 'string' },
+    // stop before capturing anything when the app build is behind the checkout
+    'strict-build': { type: 'boolean', default: false },
   },
 })
 
@@ -69,6 +71,9 @@ const { headed, filter, exact, force, check, firefox, affected, cover, since } =
 export { headed, exact, check, firefox, affected, cover, since }
 // the changed-file list --affected reads instead of asking git
 export const changedFrom = values['changed-from']
+// A stale build is reported, not refused: a docs-only figure run is right to
+// capture against whatever is built. A run that means to publish passes this.
+export const strictBuild = values['strict-build']
 export const filterTokens = parseFilterTokens(filter)
 // A filtered run names its specs, so it means them. The diff gate keeps a sweep
 // from rewriting the corpus over antialiasing jitter, but on a named spec it
@@ -137,6 +142,8 @@ Options:
       --port <n>          Proxy to an app server already running on this port
                           instead of serving products/jbrowse-web/build
       --localport <n>     Port to serve/proxy on (default: ${DEFAULT_LOCAL_PORT})
+      --strict-build      Exit before capturing if the app build is behind the
+                          checkout, which the run otherwise only reports
 
 Examples:
   pnpm generate-screenshots

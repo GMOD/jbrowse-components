@@ -12,16 +12,18 @@ import fs from 'node:fs'
 
 import { createTestServer } from '@jbrowse/browser-test-utils'
 
+import { collectStalenessFacts, stalenessReport } from './build-staleness.ts'
 import {
   buildPath,
   check,
   externalPort,
   repoRoot,
   servePort,
+  strictBuild,
   testDataRoot,
 } from './screenshot-options.ts'
 import { runPool } from './screenshot-pool.ts'
-import { printSummary } from './screenshot-report.ts'
+import { printSummary, recordBuildStaleness } from './screenshot-report.ts'
 import { selectSpecsToRender } from './screenshot-select.ts'
 
 import type { ScreenshotSpec } from './screenshot-specs.ts'
@@ -78,6 +80,23 @@ async function startServerIfNeeded(specs: ScreenshotSpec[]) {
   return server
 }
 
+// Whether the app on the other end of that server holds the source in this
+// checkout. Only worth asking once a server exists, which is exactly when a
+// spec renders in the app.
+async function reportBuildStaleness() {
+  const report = stalenessReport(
+    await collectStalenessFacts({ buildPath, repoRoot, externalPort }),
+  )
+  if (!report) {
+    return
+  }
+  recordBuildStaleness(report)
+  if (strictBuild) {
+    console.error('--strict-build: capturing nothing against this build')
+    process.exit(1)
+  }
+}
+
 async function main() {
   // undefined is "nothing to do", which a --affected run on a docs-only change
   // answers with exit 0
@@ -89,6 +108,9 @@ async function main() {
     buildWorkspaceEsm()
   }
   const server = await startServerIfNeeded(specs)
+  if (server) {
+    await reportBuildStaleness()
+  }
 
   // A compose spec stacks other specs' committed PNGs, so it runs after them,
   // and --check, which commits nothing, skips it.

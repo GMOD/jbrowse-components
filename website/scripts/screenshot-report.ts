@@ -23,6 +23,7 @@ import { type RunReport, runReportPath } from './screenshot-run-report.ts'
 import { specs } from './screenshot-specs.ts'
 import { visibleTooltipText } from './tooltips.ts'
 
+import type { StalenessReport } from './build-staleness.ts'
 import type { CommitResult } from './image-pipeline.ts'
 import type { Page } from 'puppeteer'
 
@@ -95,6 +96,16 @@ export async function recordTooltip(page: Page, name: string) {
 const tooltipExpected = new Set(
   specs.filter(s => 'tooltip' in s && s.tooltip === 'expect').map(s => s.name),
 )
+
+// How old the app the figures came from is, printed twice on purpose: once
+// before a sweep that runs for half an hour, so it can be stopped and the build
+// redone, and again at the end, where the rest of the run's reports are read.
+let staleBuild: StalenessReport | undefined
+
+export function recordBuildStaleness(report: StalenessReport) {
+  staleBuild = report
+  printReport(report.title, report.lines)
+}
 
 // Print a titled, ===-barred block of lines to stderr (failure/flaky summaries).
 function printReport(title: string, lines: string[]) {
@@ -219,6 +230,9 @@ export function printSummary(totals: RunTotals) {
         ({ name, error }) => `\n• ${name}\n  ${error.replaceAll('\n', '\n  ')}`,
       ),
     )
+  }
+  if (staleBuild) {
+    printReport(staleBuild.title, staleBuild.lines)
   }
   printUnpublished(
     changed.flatMap(({ result }) =>
