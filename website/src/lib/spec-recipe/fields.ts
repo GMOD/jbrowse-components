@@ -2104,12 +2104,6 @@ export const viewFields: Record<string, FieldRecipe> = {
           path: `Drag the bar at the bottom edge of the view to resize it (${value}px here).`,
         }
       : undefined,
-  showIntraviewLinks: (value, { viewType }) =>
-    typeof value === 'boolean' && viewType === 'BreakpointSplitView'
-      ? {
-          path: `View menu → Show... → Intra-view links (${value ? 'checked' : 'unchecked'})`,
-        }
-      : undefined,
   // a synteny view's predicate list: the bounds its sliders write, and the
   // `valid` test "Hide unlabelled rows" writes
   filter: (value, { viewType }) => {

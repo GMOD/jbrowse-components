@@ -11,13 +11,17 @@ import {
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 
+import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { buildColorPaletteFromPalette } from '../../LinearAlignmentsDisplay/components/alignmentComponentUtils.ts'
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { connectorColorShift } from '../arcs/arcColors.ts'
 import { classifyPair, groupReadsByName } from './compute.ts'
 import { resolveConnectors } from './computeOverlay.ts'
+import { connectorStyler } from './connectorStyle.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcColorField } from '../../shared/types.ts'
@@ -892,5 +896,63 @@ describe('groupReadsByName', () => {
     expect(
       groupReadsByName(new Map([[0, named(['r1', 'r1'])]])).get('r1'),
     ).toHaveLength(2)
+  })
+})
+
+// The breakpoint split view draws its curves between panels through this, so
+// a junction there takes the color and key label its arc takes in the panel.
+describe('connectorStyler', () => {
+  const colors = buildColorPaletteFromPalette(resolvePalette())
+  const styleOf = connectorStyler({ colors, colorField: 'pairOrientation' })
+  const split = makeData({
+    names: ['r', 'r'],
+    flags: [0, SAM_FLAG_SUPPLEMENTARY],
+    strands: [1, 1],
+    positions: [
+      [100, 200],
+      [300, 400],
+    ],
+    orientations: [0, 0],
+    ys: [0, 0],
+  })
+
+  it('a deletion-type split paints the split-read gold its arc does', () => {
+    expect(
+      styleOf(makeEntry(split, 0), makeEntry(split, 1), true, false),
+    ).toEqual({
+      color: rgb255(colors.readCategoryColors.splitDeletion),
+      label: 'Split read (deletion-type)',
+    })
+  })
+
+  it('the same split across chromosomes paints inter-chromosomal', () => {
+    expect(
+      styleOf(makeEntry(split, 0), makeEntry(split, 1), true, true),
+    ).toEqual({
+      color: rgb255(colors.readCategoryColors.interchrom),
+      label: 'Split alignment (interchromosomal)',
+    })
+  })
+
+  it('a pair takes its orientation color and label', () => {
+    const data = makeData({
+      names: ['r', 'r'],
+      flags: [SAM_FLAG_PAIRED, SAM_FLAG_PAIRED],
+      strands: [-1, -1],
+      positions: [
+        [100, 200],
+        [300, 400],
+      ],
+      orientations: [3, 3],
+      ys: [0, 0],
+    })
+    const { color, label } = styleOf(
+      makeEntry(data, 0),
+      makeEntry(data, 1),
+      false,
+      false,
+    )
+    expect(color).toBe(rgb255(colors.readCategoryColors.pairRR))
+    expect(label).toMatch(/^RR/)
   })
 })

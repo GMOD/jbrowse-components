@@ -26416,9 +26416,6 @@
         "minimized": {
           "type": "boolean"
         },
-        "showIntraviewLinks": {
-          "type": "boolean"
-        },
         "linkViews": {
           "type": "boolean"
         },
@@ -26437,6 +26434,10 @@
         },
         "launch": {},
         "height": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "showIntraviewLinks": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }

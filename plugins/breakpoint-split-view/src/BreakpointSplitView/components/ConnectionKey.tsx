@@ -1,12 +1,12 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import SvgColorLegend from '@jbrowse/core/ui/SvgColorLegend'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { useConnectionKeyRows } from './connectionStyle.ts'
-import { connectionKeyEntries } from './overlayUtils.tsx'
+import { drawnConnectionKey } from './overlayUtils.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
-import type { ConnectionKind } from '@jbrowse/alignments-core'
+import type { connectionKeyRows } from './connectionStyle.ts'
 
 const useStyles = makeStyles()({
   key: {
@@ -37,7 +37,7 @@ const ConnectionKey = observer(function ConnectionKey({
   model: BreakpointViewModel
 }) {
   const { classes } = useStyles()
-  const rows = useConnectionKeyRows(connectionKeyEntries(model))
+  const rows = drawnConnectionKey(model, usePalette())
   return rows.length > 0 ? (
     <div className={classes.key} data-testid="connection-key">
       {rows.map(({ key, color, label }) => (
@@ -51,17 +51,17 @@ const ConnectionKey = observer(function ConnectionKey({
 })
 
 export function SvgConnectionKey({
-  kinds,
+  rows,
   canvasWidth,
 }: {
-  kinds: ConnectionKind[]
+  rows: ReturnType<typeof connectionKeyRows>
   canvasWidth: number
 }) {
   return (
     <SvgColorLegend
       canvasWidth={canvasWidth}
       testid="connection-key"
-      entries={useConnectionKeyRows(kinds)}
+      entries={rows}
     />
   )
 }

@@ -1,6 +1,5 @@
 import { Fragment } from 'react'
 
-import { CONNECTION_LABELS } from '@jbrowse/alignments-core'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
   assembleLocString,
@@ -14,13 +13,15 @@ import { observer } from 'mobx-react'
 import { readIdOf } from '../readChains.ts'
 import { computeOverlayRect } from '../util.ts'
 import BreakpointTooltip from './BreakpointTooltip.tsx'
+import { connectionKeyRows } from './connectionStyle.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
 import type { ReadEntry } from '../readChains.ts'
 import type { LayoutRecord, OverlayLevel, OverlayMatch } from '../types.ts'
 import type { OverlayTrack } from '../util.ts'
-import type { ConnectionKind } from '@jbrowse/alignments-core'
+import type { StyledConnection } from './connectionStyle.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
@@ -289,27 +290,25 @@ export const OverlayPaths = observer(function OverlayPaths({
   )
 })
 
-const KIND_ORDER = Object.keys(CONNECTION_LABELS) as ConnectionKind[]
-
-// The kinds the overlay's alignment connectors draw, in CONNECTION_LABELS
-// order.
-export function connectionKeyEntries(
+// The overlay's key: each drawn alignment connector's color and label in
+// `theme`, one row per color.
+export function drawnConnectionKey(
   model: BreakpointViewModel,
+  theme: JBrowsePalette,
   trackIds = model.overlayTracks.map(t => t.configuration.trackId),
 ) {
-  const kinds = new Set<ConnectionKind>()
+  const styled: StyledConnection[] = []
   for (const trackId of trackIds) {
     if (
       !model.getMatchedTracks(trackId).some(t => t.displays[0]?.regionTooLarge)
     ) {
-      for (const { kind } of model.drawnConnectionsByTrack.get(trackId) ?? []) {
-        kinds.add(kind)
+      const styleOf = model.connectionStylerIn(trackId, theme)
+      for (const drawn of model.drawnConnectionsByTrack.get(trackId) ?? []) {
+        styled.push({ kind: drawn.kind, ...styleOf(drawn) })
       }
     }
   }
-  return [...kinds].sort(
-    (a, b) => KIND_ORDER.indexOf(a) - KIND_ORDER.indexOf(b),
-  )
+  return connectionKeyRows(styled)
 }
 
 export interface HighlightRect {
@@ -327,10 +326,9 @@ export interface HighlightRect {
 // The whole chunk rather than the hovered connector's two ends: a multi-hop
 // rearrangement opens one panel per segment of the route, so a chain routinely
 // runs across three or four of them and the chain is what the hover is asking
-// about. It also picks up the segments no connector is drawn for — an intra-view
-// junction the pileup links itself (`linksReads`), or one dropped with
-// showIntraviewLinks off — which would otherwise leave a visible gap in the
-// middle of the highlighted read.
+// about. It also picks up the segments no connector is drawn for, an intra-view
+// junction the pileup links itself (`linksReads`), which would otherwise leave
+// a visible gap in the middle of the highlighted read.
 export function chainHighlightRects({
   entries,
   entryLayouts,

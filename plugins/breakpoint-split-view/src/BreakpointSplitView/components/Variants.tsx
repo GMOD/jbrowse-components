@@ -22,6 +22,7 @@ import type {
   OverlayProps,
   PathSpec,
 } from './overlayUtils.tsx'
+import type { Feature } from '@jbrowse/core/util'
 import type { JunctionEnd } from '@jbrowse/sv-core'
 
 // The far end of a junction whose own record the fetch didn't return has no row
@@ -41,26 +42,33 @@ const Variants = observer(function Variants(props: OverlayProps) {
       stroke={DEFAULT_MARK_COLOR}
       strokeWidth={5}
       hoverStrokeWidth={10}
-      render={ctx => variantPaths(ctx, props.model.showIntraviewLinks)}
+      render={variantPaths}
     />
   )
 })
 
 export default Variants
 
-export function variantPaths(
-  {
-    session,
-    match,
-    views,
-    tracks,
-    layouts,
-    getX,
-    getY,
-    assemblies,
-  }: OverlayContext,
-  showIntraviewLinks: boolean,
-) {
+// A record whose own glyph reaches its mate end, a symbolic DEL, DUP or INV,
+// already draws the junction in its row.
+function spansMate(feature: Feature, mate: JunctionEnd) {
+  return (
+    feature.get('refName') === mate.refName &&
+    feature.get('start') <= mate.pos &&
+    mate.pos <= feature.get('end')
+  )
+}
+
+export function variantPaths({
+  session,
+  match,
+  views,
+  tracks,
+  layouts,
+  getX,
+  getY,
+  assemblies,
+}: OverlayContext) {
   if (match.kind !== 'variant') {
     return []
   }
@@ -101,7 +109,7 @@ export function variantPaths(
       findFeatureViewLevel(views, assemblies, mateEnd.refName, mateEnd.pos)
     if (
       farLevel === undefined ||
-      (!showIntraviewLinks && farLevel === near.level) ||
+      (farLevel === near.level && spansMate(near.feature, mateEnd)) ||
       isLevelPairMinimized(tracks, near.level, farLevel)
     ) {
       return []

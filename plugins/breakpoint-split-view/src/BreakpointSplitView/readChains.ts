@@ -20,6 +20,7 @@ import type {
   ReadIdentity,
   ReadNames,
 } from '@jbrowse/alignments-core'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 export interface OverlayReadArrays
   extends ConnectionReadArrays, ReadIdentity, ReadNames {
@@ -37,7 +38,17 @@ export interface ReadSource {
     displayedRegionIndex: number,
     idx: number,
   ) => LayoutRecord | undefined
+  /** how the display's own connectors paint a connection, in `theme` */
+  connectorStylerIn: (theme: JBrowsePalette) => ConnectorStyler
 }
+
+/** A connection's color and key label, as the display that holds `e1` paints it. */
+export type ConnectorStyler = (
+  e1: ReadEntry,
+  e2: ReadEntry,
+  isSplit: boolean,
+  crossesChromosomes: boolean,
+) => { color: string; label: string }
 
 export interface ReadEntry {
   level: number
@@ -187,19 +198,17 @@ export interface DrawnConnection extends ClassifiedConnection {
   c2: LayoutRecord
 }
 
-// The alignment connectors the overlay draws, each classified: a read laid out
-// in no row draws nothing, the pileup links an intra-view junction itself, and
-// showIntraviewLinks off drops the rest of them.
+// The alignment connectors the overlay draws, each classified: every link the
+// panels do not draw themselves. A read laid out in no row has no end to draw
+// to, and a pileup that links its own reads already draws the ones inside it.
 export function* drawnConnections({
   chains,
   entryLayouts,
   rows,
-  showIntraviewLinks,
 }: {
   chains: ReadChain[]
   entryLayouts: ReadonlyMap<ReadEntry, LayoutRecord>
   rows: ConnectorRow[]
-  showIntraviewLinks: boolean
 }): Generator<DrawnConnection> {
   for (const [chainIndex, { connections }] of chains.entries()) {
     for (const connection of connections) {
@@ -210,8 +219,7 @@ export function* drawnConnections({
         !c1 ||
         !c2 ||
         isLevelPairMinimized(rows, e1.level, e2.level) ||
-        (e1.level === e2.level &&
-          (!showIntraviewLinks || rows[e1.level]?.linksReads))
+        (e1.level === e2.level && rows[e1.level]?.linksReads)
       ) {
         continue
       }

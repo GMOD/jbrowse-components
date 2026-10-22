@@ -87,7 +87,7 @@ test('a setting that moves nothing leaves the hover alone', async () => {
   const view = await setup()
   view.setHoveredOverlay(hit)
 
-  view.setShowIntraviewLinks(!view.showIntraviewLinks)
+  view.setInteractiveOverlay(!view.interactiveOverlay)
 
   expect(view.hoveredOverlay).toEqual(hit)
 })

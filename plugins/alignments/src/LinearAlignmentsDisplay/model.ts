@@ -71,6 +71,7 @@ import {
   resolveConnectorsByGroup,
 } from '../features/linkedReads/computeOverlay.ts'
 import { buildConnectorFeeds } from '../features/linkedReads/connectorFeed.ts'
+import { connectorStyler } from '../features/linkedReads/connectorStyle.ts'
 import { buildSashimiBandFeeds } from '../features/sashimi/bandFeed.ts'
 import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../features/sashimi/junctions.ts'
@@ -2333,6 +2334,21 @@ export default function stateModelFactory(
                 }),
               ]),
             )
+          },
+
+          /**
+           * #method
+           * How this display's connectors paint a connection between two
+           * reads, in `theme`. The breakpoint split view draws its curves
+           * between panels through it, so they agree with the arcs and
+           * connectors inside each panel.
+           */
+          connectorStylerIn(theme: JBrowsePalette) {
+            return connectorStyler({
+              colors: self.colorPaletteIn(theme),
+              colorField: self.readConnectionsColorField,
+              labels: self.declaredReadLabels.categories,
+            })
           },
 
           /**

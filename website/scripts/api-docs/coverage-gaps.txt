@@ -50,7 +50,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1336)
+# model members with no description (1335)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -273,7 +273,6 @@ BreakpointSplitView.setLinkViews
 BreakpointSplitView.setMatchedTrackFeatures
 BreakpointSplitView.setScrollZoom
 BreakpointSplitView.setShowHeader
-BreakpointSplitView.setShowIntraviewLinks
 BreakpointSplitView.setViews
 BreakpointSplitView.setWidth
 BreakpointSplitView.squareView

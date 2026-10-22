@@ -1,44 +1,25 @@
-import {
-  colorInterchrom,
-  colorLongInsert,
-  colorSplitReadInversion,
-} from '@jbrowse/core/ui/palette'
+import { alpha } from '@jbrowse/core/ui/palette'
 
-import {
-  connectionColor,
-  connectionKeyRows,
-  connectionLabel,
-} from './connectionStyle.ts'
+import { CONNECTION_ALPHA, connectionKeyRows } from './connectionStyle.ts'
 
-const alignmentFill = { pairRL: 'rl', pairRR: 'rr', pairLL: 'll' }
-
-test('evidence the pileup fades draws in long-insert red', () => {
-  expect(connectionColor('pairLR', alignmentFill)).toBe(colorLongInsert)
-  expect(connectionColor('readPair', alignmentFill)).toBe(colorLongInsert)
-  expect(connectionColor('splitDeletion', alignmentFill)).toBe(colorLongInsert)
-  expect(connectionColor('pairRR', alignmentFill)).toBe('rr')
-  expect(connectionColor('splitInversion', alignmentFill)).toBe(
-    colorSplitReadInversion,
-  )
-  expect(connectionColor('interchrom', alignmentFill)).toBe(colorInterchrom)
-})
-
-test('labels say what reaches this view', () => {
-  expect(connectionLabel('pairLR')).toBe('LR - Not a proper pair')
-  expect(connectionLabel('interchrom')).toBe('Inter-chromosomal')
-  expect(connectionLabel('splitDeletion')).toBe('Split alignment (same strand)')
-})
-
-test('the key has one row per color', () => {
+test('the key has one row per color, its labels joined once each', () => {
   const rows = connectionKeyRows([
-    'pairLR',
-    'splitDeletion',
-    'interchrom',
-    'pairRR',
+    { kind: 'interchrom', color: '#800080', label: 'Inter-chromosomal' },
+    { kind: 'pairRR', color: '#008080', label: 'RR pair' },
+    { kind: 'splitDeletion', color: '#008080', label: 'RR split' },
+    { kind: 'pairRR', color: '#008080', label: 'RR pair' },
   ])
-  expect(rows.map(r => r.labels)).toEqual([
-    ['LR - Not a proper pair', 'Split alignment (same strand)'],
-    ['Inter-chromosomal'],
-    ['RR - Both mates reverse strand'],
+  expect(rows.map(r => r.label)).toEqual([
+    'RR pair / RR split',
+    'Inter-chromosomal',
   ])
+  expect(rows[0]!.color).toBe(alpha('#008080', CONNECTION_ALPHA))
+})
+
+test('rows follow the connection kinds order, by the first kind of each', () => {
+  const rows = connectionKeyRows([
+    { kind: 'interchrom', color: 'a', label: 'A' },
+    { kind: 'readPair', color: 'b', label: 'B' },
+  ])
+  expect(rows.map(r => r.label)).toEqual(['B', 'A'])
 })

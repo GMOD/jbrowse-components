@@ -809,7 +809,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       views: [
         {
           type: 'BreakpointSplitView',
-          showIntraviewLinks: false,
           views: [
             {
               assembly: 'hg19',

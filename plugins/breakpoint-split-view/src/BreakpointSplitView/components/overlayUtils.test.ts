@@ -122,7 +122,6 @@ describe('drawnConnections', () => {
   const rows: ConnectorRow[] = [{ ...row, linksReads: true }, row]
   const kinds = (
     pairs: [ReadEntry, ReadEntry][],
-    showIntraviewLinks = true,
     isSplit = true,
     drawnRows = rows,
   ) =>
@@ -136,7 +135,6 @@ describe('drawnConnections', () => {
           pairs.flat().map(e => [e, [0, 0, 0, 0] as LayoutRecord]),
         ),
         rows: drawnRows,
-        showIntraviewLinks,
       }),
     ].map(c => c.kind)
 
@@ -149,21 +147,17 @@ describe('drawnConnections', () => {
     ).toEqual(['splitInversion', 'splitDeletion'])
   })
 
-  test('drops what the pileup links itself, and intra-view links when they are off', () => {
+  test('drops an intra-view link only where the pileup links its own reads', () => {
     expect(kinds([[entry('chr1', 1, 0), entry('chr1', 1, 0)]])).toEqual([])
     expect(kinds([[entry('chr1', 1, 1), entry('chr1', 1, 1)]])).toEqual([
       'splitDeletion',
     ])
-    expect(kinds([[entry('chr1', 1, 1), entry('chr1', 1, 1)]], false)).toEqual(
-      [],
-    )
   })
 
   test('a mate link takes its pair orientation, or inter-chromosomal ahead of it', () => {
     expect(
       kinds(
         [[entry('chr1', 1, 0, PAIR_DIRECTION_NUM.RL), entry('chr1', -1, 1)]],
-        true,
         false,
       ),
     ).toEqual(['pairRL'])
@@ -175,7 +169,6 @@ describe('drawnConnections', () => {
             entry('chr2', -1, 1, PAIR_DIRECTION_NUM.LR, 1),
           ],
         ],
-        true,
         false,
       ),
     ).toEqual(['interchrom'])
@@ -183,7 +176,7 @@ describe('drawnConnections', () => {
 
   test('a connection touching a minimized row is not drawn', () => {
     expect(
-      kinds([[entry('chr1', 1, 0), entry('chr2', 1, 1)]], true, true, [
+      kinds([[entry('chr1', 1, 0), entry('chr2', 1, 1)]], true, [
         rows[0]!,
         { ...row, minimized: true },
       ]),
@@ -200,7 +193,6 @@ describe('drawnConnections', () => {
         ],
         entryLayouts: new Map([[e1, [0, 0, 0, 0] as LayoutRecord]]),
         rows,
-        showIntraviewLinks: true,
       }),
     ]).toEqual([])
   })

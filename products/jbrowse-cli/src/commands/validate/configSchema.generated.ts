@@ -27502,9 +27502,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "minimized": {
           "type": "boolean"
         },
-        "showIntraviewLinks": {
-          "type": "boolean"
-        },
         "linkViews": {
           "type": "boolean"
         },
@@ -27523,6 +27520,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "launch": {},
         "height": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "showIntraviewLinks": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }

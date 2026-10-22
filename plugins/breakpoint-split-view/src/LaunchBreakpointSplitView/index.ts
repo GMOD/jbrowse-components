@@ -5,7 +5,7 @@ import type { AbstractViewContainer } from '@jbrowse/core/util'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // The args are a view object: every BreakpointSplitView snapshot property
-// (showIntraviewLinks, interactiveOverlay, linkViews, showHeader, ...) beside
+// (interactiveOverlay, linkViews, showHeader, ...) beside
 // the declarative `views` the commands declare, minus the ones a launch never
 // writes — `type` is fixed and `init`/`launch` are the partition's own blob.
 // `id` stays, so a session spec can pin the created view's id. Deriving from

@@ -44,19 +44,21 @@ test('a launch key written on the view object opens the panels', async () => {
 test('a declared property lands natively, named nowhere in the launch path', async () => {
   const view = await open({
     views: PANELS,
-    showIntraviewLinks: false,
     linkViews: true,
     interactiveOverlay: false,
   })
-  expect(view.showIntraviewLinks).toBe(false)
   expect(view.linkViews).toBe(true)
   expect(view.interactiveOverlay).toBe(false)
 })
 
-// v4 sized the whole view with `height`, which nothing has read since the
-// panels came to size themselves; a saved session carrying it opens quietly.
-test('v4 `height` is dropped without a warning', async () => {
-  const view = await open({ views: PANELS, height: 900 })
+// A saved session carrying v4's whole-view `height` or the retired
+// `showIntraviewLinks` opens quietly.
+test('a retired setting is dropped without a warning', async () => {
+  const view = await open({
+    views: PANELS,
+    height: 900,
+    showIntraviewLinks: false,
+  })
   expect(view.views).toHaveLength(2)
   expect(warnings()).toEqual([])
 })

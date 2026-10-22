@@ -67,6 +67,7 @@ import type {
 import type { OverlayTrack } from './util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature, StatusChannel } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
@@ -109,12 +110,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         type: types.literal('BreakpointSplitView'),
-        /**
-         * #property
-         * draw the links whose two ends fall in the same panel, as well as the
-         * ones that cross between panels
-         */
-        showIntraviewLinks: types.stripDefault(types.boolean, true),
         /**
          * #property
          * sync scroll and zoom across the panels, so panning one pans them all
@@ -471,6 +466,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
+       * Each drawn connection's color and key label in `theme`, as the
+       * alignments display in the row of its first end paints it, so a curve
+       * between panels agrees with the arcs and connectors inside them.
+       */
+      connectionStylerIn(trackId: string, theme: JBrowsePalette) {
+        const stylers = this.readSources(trackId).map(s =>
+          s?.connectorStylerIn(theme),
+        )
+        return ({ connection: { e1, e2, isSplit } }: DrawnConnection) =>
+          stylers[e1.level]!(e1, e2, isSplit, e1.refName !== e2.refName)
+      },
+
+      /**
+       * #method
        * Per-render precompute for an overlay track. Resolves an OverlayLevel of
        * geometry per view level, then returns getX/getY closures for converting
        * feature layout records to SVG coordinates.
@@ -660,7 +669,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 chains: match.chains,
                 entryLayouts: match.layouts,
                 rows: this.connectorRows(trackId),
-                showIntraviewLinks: self.showIntraviewLinks,
               }),
             ])
           }
@@ -690,13 +698,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setInteractiveOverlay(arg: boolean) {
         self.interactiveOverlay = arg
-      },
-
-      /**
-       * #action
-       */
-      setShowIntraviewLinks(arg: boolean) {
-        self.showIntraviewLinks = arg
       },
 
       /**
@@ -976,14 +977,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               keepMenuOpen: false,
               onClick: () => {
                 self.setShowHeader(!self.showHeader)
-              },
-            },
-            {
-              label: 'Intra-view links',
-              type: 'checkbox',
-              checked: self.showIntraviewLinks,
-              onClick: () => {
-                self.setShowIntraviewLinks(!self.showIntraviewLinks)
               },
             },
           ]),

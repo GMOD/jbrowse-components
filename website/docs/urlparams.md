@@ -919,7 +919,6 @@ every setting the view's menu offers:
 | [`linkViews`](/docs/models/breakpointsplitview#property-linkviews) | sync scroll and zoom across the panels, so panning one pans them all |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 | [`showHeader`](/docs/models/breakpointsplitview#property-showheader) | show the view's own header bar, above the panels' own |
-| [`showIntraviewLinks`](/docs/models/breakpointsplitview#property-showintraviewlinks) | draw the links whose two ends fall in the same panel, as well as the ones that cross between panels |
 
 <!-- SPEC_KEYS BreakpointSplitView END -->
 

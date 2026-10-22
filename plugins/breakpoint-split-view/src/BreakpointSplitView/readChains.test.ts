@@ -70,6 +70,7 @@ function row(refName: string, reads: Read[]): ReadSource {
       const r = reads[idx]!
       return [r.start, 0, r.end, 5]
     },
+    connectorStylerIn: () => () => ({ color: 'red', label: '' }),
   }
 }
 

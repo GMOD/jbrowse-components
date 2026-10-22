@@ -41,16 +41,48 @@ function context(reversed = false) {
   } as unknown as OverlayContext
 }
 
-test('a junction inside one row follows "Intra-view links"', () => {
-  expect(variantPaths(context(), true)).toHaveLength(1)
-  expect(variantPaths(context(), false)).toHaveLength(0)
+function oneRowContext(feature: SimpleFeature, layout: number[]) {
+  return {
+    ...context(),
+    match: {
+      kind: 'variant',
+      layoutMatches: [[{ feature, level: 0, layout }]],
+    },
+  } as unknown as OverlayContext
+}
+
+// The overlay draws what the panel does not: a symbolic call's glyph runs to
+// its END, so inside one row the glyph is the link.
+test('a call whose glyph reaches its mate end draws no curve in its row', () => {
+  const spanning = new SimpleFeature({
+    uniqueId: 'del-span',
+    refName: 'chr1',
+    start: 99,
+    end: 500,
+    ALT: ['<DEL>'],
+    INFO: { END: [500] },
+  })
+  expect(variantPaths(oneRowContext(spanning, [99, 10, 500, 20]))).toEqual([])
+})
+
+test('a breakend whose mate lies in the same row is drawn', () => {
+  const breakend = new SimpleFeature({
+    uniqueId: 'bnd',
+    refName: 'chr1',
+    start: 99,
+    end: 100,
+    ALT: ['N[chr1:500['],
+  })
+  expect(variantPaths(oneRowContext(breakend, [99, 10, 100, 20]))).toHaveLength(
+    1,
+  )
 })
 
 // A deletion's start keeps the sequence to its left, so its tick points left
 // on a forward row and right on a reversed one.
 test('a tick takes the orientation of the region its end is placed in', () => {
-  const forward = variantPaths(context(false), true)[0]!.path
-  const reversed = variantPaths(context(true), true)[0]!.path
+  const forward = variantPaths(context(false))[0]!.path
+  const reversed = variantPaths(context(true))[0]!.path
   expect(forward.startsWith('M 79 20')).toBe(true)
   expect(reversed.startsWith('M 119 20')).toBe(true)
 })
@@ -87,11 +119,11 @@ function pathYs(path: string) {
 // The labels hang under the glyph, so a connector meeting the box's middle ran
 // through them: the line leaves a breakend at the box edge facing its mate.
 test('a connector to a row below leaves from under the labels', () => {
-  const [path] = variantPaths(twoRowContext(0), true)
+  const [path] = variantPaths(twoRowContext(0))
   expect(pathYs(path!.path).slice(0, 2)).toEqual([40, 40])
 })
 
 test('a connector to a row above leaves from the glyph top', () => {
-  const [path] = variantPaths(twoRowContext(1), true)
+  const [path] = variantPaths(twoRowContext(1))
   expect(pathYs(path!.path).slice(0, 2)).toEqual([110, 110])
 })

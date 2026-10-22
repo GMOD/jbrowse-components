@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { LEGEND_ROW_HEIGHT } from '@jbrowse/core/ui/SvgColorLegend'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { getSession, max } from '@jbrowse/core/util'
 import {
   SVGStackedRow,
@@ -19,8 +20,7 @@ import {
 
 import { SvgConnectionKey } from '../components/ConnectionKey.tsx'
 import Overlay from '../components/Overlay.tsx'
-import { connectionKeyRows } from '../components/connectionStyle.ts'
-import { connectionKeyEntries } from '../components/overlayUtils.tsx'
+import { drawnConnectionKey } from '../components/overlayUtils.tsx'
 import { getTrackOffsets } from './util.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
@@ -126,9 +126,13 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     .filter(id =>
       rowTracks.some(r => r.tracks.some(t => t.configuration.trackId === id)),
     )
-  const keyKinds = connectionKeyEntries(model, overlayTrackIds)
-  const keyRows = connectionKeyRows(keyKinds).length
-  const keyBand = keyRows > 0 ? keyRows * LEGEND_ROW_HEIGHT + 4 : 0
+  const keyRows = drawnConnectionKey(
+    model,
+    resolvePalette({ configTheme: theme }),
+    overlayTrackIds,
+  )
+  const keyBand =
+    keyRows.length > 0 ? keyRows.length * LEGEND_ROW_HEIGHT + 4 : 0
   let y = keyBand
   const rows = views.map((view, idx) => {
     const top = y
@@ -158,10 +162,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     children: (
       <>
         {keyBand > 0 ? (
-          <SvgConnectionKey
-            kinds={keyKinds}
-            canvasWidth={w + exportMargin + 4}
-          />
+          <SvgConnectionKey rows={keyRows} canvasWidth={w + exportMargin + 4} />
         ) : null}
         {rows.map(({ view, top }, idx) => (
           <SVGStackedRow

@@ -95,9 +95,17 @@ export interface OverlayTrack extends IStateTreeNode {
 export function readSourceOf(
   display: OverlayDisplay | undefined,
 ): ReadSource | undefined {
-  const { readArraysByGroup, loadedRegions, readLayoutRecord } = display ?? {}
-  return readArraysByGroup && loadedRegions && readLayoutRecord
-    ? { readArraysByGroup, loadedRegions, readLayoutRecord }
+  const {
+    readArraysByGroup,
+    loadedRegions,
+    readLayoutRecord,
+    connectorStylerIn,
+  } = display ?? {}
+  return readArraysByGroup &&
+    loadedRegions &&
+    readLayoutRecord &&
+    connectorStylerIn
+    ? { readArraysByGroup, loadedRegions, readLayoutRecord, connectorStylerIn }
     : undefined
 }
 

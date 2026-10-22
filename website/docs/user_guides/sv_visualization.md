@@ -330,17 +330,17 @@ homology the junction formed on. For a translocation, open the
 
 The breakpoint split view opens synchronized panels side by side, each centered
 on one breakpoint locus. Splines connect the reads that span the junction across
-the panels, and the variant call is drawn as a colored line with feet indicating
-directionality. The header bar accepts location searches in either panel.
+the panels, and the variant call is drawn as a blue curve with feet over the
+side each end keeps. The header bar accepts location searches in either panel.
 
-A spline between chromosomes takes the inter-chromosomal color. Within one
-chromosome, an inverted split alignment is magenta and a pair with an aberrant
-orientation takes its pair color (green LL, blue RR, teal RL). Every other
-spline is red: each one the view draws is a pair the aligner did not call proper
-or a split read, and the view does not measure insert size. The right end of the
-header, and the top of an SVG export, list the colors the view is drawing.
+A spline takes the color its arc takes in the alignments track, so the track's
+**Color by... → Arc color** setting recolors both. The right end of the header,
+and the top of an SVG export, list the colors the view is drawing.
 
-<Figure caption="Breakpoint split view for a translocation. Splines join reads spanning the junction, and the green line with feet is the variant call." src="/img/breakpoint_split_view.png" />
+Inside one panel, a call whose glyph already spans both of its ends gets no
+curve, and neither do the reads of an alignments track that links its own reads.
+
+<Figure caption="Breakpoint split view for a translocation. Splines join reads spanning the junction, and the blue curve with feet is the variant call." src="/img/breakpoint_split_view.png" />
 
 Hovering a spline shades the reads it joins, every segment of the read in every
 panel it visits, and every other spline of the same read thickens alongside it.

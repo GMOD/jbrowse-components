@@ -28,9 +28,9 @@ export interface BreakpointSplitViewInitView {
  * LinearGenomeView snapshot MST restores, one without it is a recipe this
  * view's own autorun opens.
  *
- * A plain display setting does not belong here: `showIntraviewLinks`,
- * `linkViews`, `interactiveOverlay` and `showHeader` are declared on the model,
- * and the partition leaves them on the snapshot.
+ * A plain display setting does not belong here: `linkViews`,
+ * `interactiveOverlay` and `showHeader` are declared on the model, and the
+ * partition leaves them on the snapshot.
  *
  * #launchKeys BreakpointSplitView — the URL parameters page renders this
  * interface as the view's launch-key table.
