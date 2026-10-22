@@ -88,7 +88,7 @@ test('stepping finer doubles the resolution', () => {
 })
 
 const PLOTS = [
-  ['xyplot', 'XY plot'],
+  ['xyplot', 'Bar plot'],
   ['density', 'Density'],
 ] as const
 
@@ -130,12 +130,12 @@ test('several sources drill through the layout to the plot', () => {
 
 test('every layout offers every plot, overlapping density included', () => {
   const [multirow, overlapping] = rowsOf(plotMenu(2).item)
-  expect(labelsOf(multirow)).toEqual(['XY plot', 'Density'])
-  expect(labelsOf(overlapping)).toEqual(['XY plot', 'Density'])
+  expect(labelsOf(multirow)).toEqual(['Bar plot', 'Density'])
+  expect(labelsOf(overlapping)).toEqual(['Bar plot', 'Density'])
 })
 
 test('one source meets the plots flat, with no layout to drill through', () => {
-  expect(labelsOf(plotMenu(1).item)).toEqual(['XY plot', 'Density'])
+  expect(labelsOf(plotMenu(1).item)).toEqual(['Bar plot', 'Density'])
 })
 
 test('a faceted display keeps the groups when its sources drop to one', () => {
@@ -144,10 +144,10 @@ test('a faceted display keeps the groups when its sources drop to one', () => {
 
 test('the checked leaf is the pair, not the plot alone', () => {
   // renderingType 'xyplot' with the facet off: checked under Overlapping only,
-  // where a plot-alone value would tick XY plot in both groups
+  // where a plot-alone value would tick Bar plot in both groups
   const [multirow, overlapping] = rowsOf(plotMenu(2).item)
   expect(checkedIn(multirow)).toEqual([])
-  expect(checkedIn(overlapping)).toEqual(['XY plot'])
+  expect(checkedIn(overlapping)).toEqual(['Bar plot'])
 })
 
 test('one leaf writes both axes in one action', () => {

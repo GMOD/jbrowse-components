@@ -131,6 +131,15 @@ test('with both ends set, 0 and clipping grey out and say why', () => {
   screen.getByText(/Both ends are set/)
 })
 
+test('signed log says what it keeps that log does not', () => {
+  const { display } = open()
+  const hint = 'Like log, but keeps 0 and negative values'
+  expect(screen.queryByText(hint)).toBeNull()
+  fireEvent.click(screen.getByRole('radio', { name: 'Signed log' }))
+  expect(display.scaleType).toBe('symlog')
+  screen.getByText(hint)
+})
+
 test('a log axis has no 0 to include', () => {
   open({ configuration: { scales: { y: { type: 'log' } } } })
   expect(box('Include 0').disabled).toBe(true)

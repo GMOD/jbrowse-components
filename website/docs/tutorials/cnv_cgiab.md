@@ -298,8 +298,8 @@ We'll load the depth as points, the **Scatter** plot type:
 }
 ```
 
-To compare the depth with the callsets, draw it with **Plot type → XY plot** and
-a fixed axis from **Y axis... → Range**, so a halving reads as a level. Open
+To compare the depth with the callsets, draw it with **Plot type → Bar plot**
+and a fixed axis from **Y axis... → Range**, so a halving reads as a level. Open
 `chr9:21,850,000-23,050,000`, around _CDKN2A_, with the depth above the four CNV
 callsets:
 

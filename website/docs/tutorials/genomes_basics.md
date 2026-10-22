@@ -123,7 +123,7 @@ The Layered H3K4Me3 and H3K27Ac tracks each hold several cell lines and open
 with all of them in one plot box, UCSC's layered arrangement. Their names
 include hg19 from ENCODE3's release, but the config points at the hg38 files.
 
-**Plot type → Multi-row → XY plot** in the track menu gives each cell line a
+**Plot type → Multi-row → Bar plot** in the track menu gives each cell line a
 row.
 
 <Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53's promoter. Left: the Plot type menu over the overlaid marks. Right: a row per cell line." />

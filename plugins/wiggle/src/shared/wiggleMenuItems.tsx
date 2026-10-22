@@ -47,7 +47,7 @@ const leafKey = (layout: string, rendering: string) => `${layout}:${rendering}`
 // The plot and the layout, picked in one click: a group per layout, the same
 // five plots inside each. Flat five plots plus a "One row per source" checkbox
 // is the same two facts in two controls, which taxes the first choice —
-// "multi-row XY plot" is one thought — to untax later ones.
+// "multi-row bar plot" is one thought — to untax later ones.
 //
 // Ten leaves, where the pre-ADR-143 menu had nine: it omitted overlapping
 // density, which the merged display draws (one density plot, no left axis —

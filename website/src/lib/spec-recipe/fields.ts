@@ -755,7 +755,7 @@ const SCORE_MENUS: Record<string, string> = {
 const SCALE_TYPES: Record<string, string> = {
   linear: 'Linear',
   log: 'Log',
-  symlog: 'Symlog',
+  symlog: 'Signed log',
 }
 
 const checked = (on: boolean) => (on ? 'checked' : 'unchecked')

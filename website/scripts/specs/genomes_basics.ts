@@ -57,7 +57,7 @@ const H3K27AC_ROWS = { ...H3K27AC_OVERLAY, rows: 'source' }
 
 // Written out, not imported: check-menu-labels resolves each segment against
 // the app's literals, and an import would make that check vacuous.
-const PLOT_TYPE_PATH = ['Plot type', 'Multi-row', 'XY plot']
+const PLOT_TYPE_PATH = ['Plot type', 'Multi-row', 'Bar plot']
 
 const GNOMAD_PLOF = "feature.annot == 'pLoF'"
 

@@ -5,7 +5,7 @@ guide_category: Track types
 ---
 
 BigWig and BedGraph files store genome-wide quantitative signals (read depth,
-ChIP-seq enrichment, conservation scores). JBrowse renders them as an XY plot, a
+ChIP-seq enrichment, conservation scores). JBrowse renders them as a bar plot, a
 density heatmap, a line, or a scatter plot, switchable from the track menu's
 **Plot type** submenu. One track draws one signal or a whole cohort of them.
 
@@ -15,13 +15,13 @@ The track menu's **Plot type** submenu (backed by the display's
 [`mark`](/docs/config/linearwiggledisplay/#slot-mark) and its
 [`interpolate`](/docs/config/wigglemark/#slot-interpolate)) offers these styles:
 
-- XY plot - filled bar chart
+- Bar plot - filled bars
 - Density - a heatmap row, compact for many signals at once
 - Line (step) - the tops of the bars as a stepped line
 - Line (interpolated) - midpoint to midpoint, smoother for sparse signals
 - Scatter - individual points, for sparse data
 
-<Figure caption="One BigWig in every plot type: XY plot, Density, Line (step), Line (interpolated) and Scatter." src="/img/bigwig_line.png" />
+<Figure caption="One BigWig in every plot type: Bar plot, Density, Line (step), Line (interpolated) and Scatter." src="/img/bigwig_line.png" />
 
 ## Score options
 
@@ -38,7 +38,8 @@ end and a non-linear scale, such as **Y axis (190 – auto, log)...**, so the
 setting shows without opening it. On an alignments track the row is **Coverage
 axis...**, and on a density plot, which maps score to color, **Score range...**.
 
-- **Scale** - linear, log or symlog; symlog admits zero and negative scores.
+- **Scale** - linear, log or signed log; signed log keeps zero and negative
+  scores.
 - **Min** and **Max** pin either end of the axis
   ([`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin)); a
   field left empty follows the data in view, and the values in view are shown
@@ -74,7 +75,7 @@ Zoomed out, JBrowse reads precomputed summary bins from a BigWig, and
 drawn: **Minimum**, **Maximum** or **Mean**, which write
 [`y`](/docs/config/linearwiggledisplay/#slot-y) as `minScore`, `maxScore` or
 `score`. **Show min and max** draws the bin's min to max around it
-([`extent`](/docs/config/linearwiggledisplay/#slot-extent)): an XY plot nests
+([`extent`](/docs/config/linearwiggledisplay/#slot-extent)): a bar plot nests
 the darker bar inside the lighter min-to-max range, and a line plot fills min to
 max as a translucent band behind the line, stepped or interpolated to match it.
 Density mode draws no min and max, since it maps score to color. Where the

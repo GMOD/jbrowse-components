@@ -3,7 +3,7 @@
 // radios derive from it, each value one of the five renderings the shaders
 // draw, which a config spells as a `mark` object.
 export const WIGGLE_RENDERINGS = [
-  ['xyplot', 'XY plot'],
+  ['xyplot', 'Bar plot'],
   ['density', 'Density'],
   ['line', 'Line (step)'],
   ['linecenter', 'Line (interpolated)'],

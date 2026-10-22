@@ -32,7 +32,7 @@ const useStyles = makeStyles()(theme => ({
 const SCALE_TYPE_LABELS: Record<(typeof VALUE_SCALE_TYPES)[number], string> = {
   linear: 'Linear',
   log: 'Log',
-  symlog: 'Symlog',
+  symlog: 'Signed log',
 }
 
 // A density plot maps score to color and rules no band, so it has no 0 to
@@ -77,6 +77,11 @@ const AxisEditor = observer(function AxisEditor({
             />
           ))}
         </RadioGroup>
+        {scaleType === 'symlog' ? (
+          <FormHelperText>
+            Like log, but keeps 0 and negative values
+          </FormHelperText>
+        ) : null}
       </Section>
       <Section title="Range">
         <RangeFields display={display} />

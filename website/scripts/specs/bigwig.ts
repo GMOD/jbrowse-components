@@ -49,7 +49,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     name: 'bigwig_line',
     url: sessionSpec(VOLVOX, {
       sessionTracks: [
-        wigModeTrack('xyplot', 'XY plot'),
+        wigModeTrack('xyplot', 'Bar plot'),
         wigModeTrack('density', 'Density'),
         wigModeTrack('line', 'Line (step)'),
         wigModeTrack('linecenter', 'Line (interpolated)'),
@@ -312,7 +312,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Plot type', 'Multi-row', 'XY plot']),
+      ...menuCascade(['Plot type', 'Multi-row', 'Bar plot']),
     ],
     annotations: [{ type: 'box', anchor: { text: 'Plot type' } }],
   },
