@@ -54,10 +54,10 @@ them is refused.
 
 ## Conservation and per-row identity
 
-The **Show... → Conservation (% identity)** band plots, at each reference base,
-the fraction of aligned species whose base matches the reference, a quick read
-of which regions are conserved versus divergent. It is computed from the
-alignment itself, so no extra files are needed.
+The **Show... → Conservation** band plots, at each reference base, the fraction
+of aligned species whose base matches the reference, a quick read of which
+regions are conserved versus divergent. It is computed from the alignment
+itself, so no extra files are needed.
 
 The **Color by...** menu breaks the same signal out per species, so you can see
 _which_ genomes diverge in a region:
@@ -65,7 +65,8 @@ _which_ genomes diverge in a region:
 - **Mismatches (SNPs vs reference)**, the default, is the per-base coloring
   described above.
 - **Every base** colors matching bases by base too, so the whole alignment reads
-  as sequence.
+  as sequence. Zoomed in, a letter marks every cell its base colors, in the case
+  the file gives it; UCSC alignments lowercase soft-masked repeats.
 - **Identity to reference** shades each row on a red→grey→blue ramp (red
   divergent, blue conserved), a heatmap; its **Color scheme** submenu picks
   another ramp.
@@ -85,10 +86,9 @@ over 70 to 100%, where they differ; `scheme`, `reverse` and `domainMid` change
 the ramp itself. The source-chromosome colors below take a `range`, one color
 per rank.
 
-The heatmap and the X-Y plot draw only while you are zoomed out past base level,
-where individual bases are no longer legible, and zooming in swaps them back for
-the ordinary base coloring; uncheck **Show... → Bases when zoomed in** to keep
-the plot on at every zoom level.
+The heatmap and the X-Y plot draw only while you are zoomed out past base level.
+Zooming in to base level swaps them back for the base coloring, since a single
+base's identity is just whether it matches.
 
 The heatmap works on large alignments: with all ~470 species of the UCSC hg38
 470-way shown at once, the heatmap gives a per-base conservation view across the

@@ -166,36 +166,6 @@ const HPRC_MAF_TRACK = pageTrack(
 // window blank: every record here nests under one parent (LV==0).
 const HPRC_PGBI_ALLELES = ['jexl:alleleLength(feature)>=50']
 
-// Drops `ce11`: under mismatch coloring the reference row draws as a solid
-// grey band. Names follow test_data/ce11.26way.nh.
-const CE11_26WAY_NON_REFERENCE = [
-  'caePb3',
-  'caeRem4',
-  'cb4',
-  'caeJap4',
-  'caeSp111',
-  'caeAng2',
-  'caeSp51',
-  'hetBac1',
-  'strRat2',
-  'panRed1',
-  'ancCey1',
-  'necAme1',
-  'haeCon2',
-  'ascSuu1',
-  'priExs1',
-  'priPac3',
-  'melHap1',
-  'melInc2',
-  'burXyl1',
-  'dirImm1',
-  'loaLoa1',
-  'oncVol1',
-  'bruMal2',
-  'triSpi1',
-  'triSui1',
-]
-
 export const mafSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
@@ -216,7 +186,6 @@ export const mafSpecs: ScreenshotSpec[] = [
               trackId: 'ce11.26way',
               rowHeight: 8,
               alignments: { rowProportion: 0.9 },
-              rows: { kept: CE11_26WAY_NON_REFERENCE },
             },
           ],
         },
@@ -299,7 +268,6 @@ export const mafSpecs: ScreenshotSpec[] = [
               rowHeight: 8,
               alignments: { rowProportion: 0.9 },
               color: 'chromosome',
-              rows: { kept: CE11_26WAY_NON_REFERENCE },
             },
           ],
         },
@@ -322,8 +290,9 @@ export const mafSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           // At 470 rows a whole-gene window reads as a wall; keep it to a few
-          // exons.
-          loc: '12:6,536,700-6,537,400',
+          // exons, wide enough that a base is under a pixel and identity
+          // draws rather than yielding to the bases.
+          loc: '12:6,536,350-6,537,750',
           trackLabels: 'offset',
           tracks: [
             {
@@ -337,7 +306,6 @@ export const mafSpecs: ScreenshotSpec[] = [
               // this height.
               height: 600,
               color: 'identity',
-              rowIdentityAutoZoom: false,
             },
           ],
         },
