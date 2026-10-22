@@ -96,7 +96,7 @@ function region(): MultiRowRegionData {
     featureNames: Array.from({ length: n }, () => ''),
     featureIds: Array.from({ length: n }, (_, k) => `f${k}`),
     usedItemRgb: false,
-    rowsFieldCandidates: [],
+    fieldNames: [],
     rowsFieldCandidateValues: [],
     legendCandidates: [],
     resolvedRowsField: 'sample',

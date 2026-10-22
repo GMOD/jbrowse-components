@@ -74,6 +74,7 @@ import {
   answeredRowsField,
   effectiveRowsField,
   clusterCandidates,
+  colorFieldCandidates,
   rowsFieldCandidates,
   rowCountsByField,
   pinnedRowsField,
@@ -331,6 +332,13 @@ export default function stateModelFactory(
        */
       get rowsFieldCandidates(): string[] {
         return rowsFieldCandidates(self)
+      },
+      /**
+       * #getter
+       * The attribute names Color by offers beside its Strand preset.
+       */
+      get colorFieldCandidates(): string[] {
+        return colorFieldCandidates(self)
       },
       /**
        * #getter

@@ -115,8 +115,9 @@ describe('a color field on the multi-row display', () => {
   })
 
   // `score` and `strand` name no row, so the row menu leaves them out, but a
-  // ramp over the score is what the picture is about.
-  it('clusters on score where the color names it', () => {
+  // ramp over the score is what the picture is about. Color by lists the
+  // score, and strand under its own preset.
+  it('offers score to Color by and clusters on it where the color names it', () => {
     const d = createTestEnvironment({
       displayConfig: { rows: 'sample', color: { field: 'score' } },
     }).createDisplay().display
@@ -124,7 +125,7 @@ describe('a color field on the multi-row display', () => {
       0,
       packMultiRowFeatures({
         features: SEGMENTS.map(
-          (f, i) => new SimpleFeature({ ...f.toJSON(), score: i }),
+          (f, i) => new SimpleFeature({ ...f.toJSON(), score: i, strand: 1 }),
         ),
         rowsField: 'sample',
         colorConfig: { value: undefined, field: 'score' },
@@ -133,6 +134,8 @@ describe('a color field on the multi-row display', () => {
       ctgA,
     )
     expect(d.rowsFieldCandidates).not.toContain('score')
+    expect(d.colorFieldCandidates).toContain('score')
+    expect(d.colorFieldCandidates).not.toContain('strand')
     expect(d.clusterCandidates).toContain('score')
     expect(d.effectiveClusterField).toBe('score')
   })

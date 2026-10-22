@@ -62,7 +62,7 @@ function regionData(resolvedRowsField: string) {
     featureNames: ['L1HS'],
     featureIds: ['f1'],
     usedItemRgb: false,
-    rowsFieldCandidates: ['repClass', 'repFamily'],
+    fieldNames: ['repClass', 'repFamily'],
     rowsFieldCandidateValues: [],
     legendCandidates: [],
     resolvedRowsField,
@@ -79,7 +79,7 @@ function emptyRegionData() {
     featureRowValueIndex: new Uint32Array(0),
     featureNames: [],
     featureIds: [],
-    rowsFieldCandidates: [],
+    fieldNames: [],
     rowsFieldCandidateValues: [],
   }
 }

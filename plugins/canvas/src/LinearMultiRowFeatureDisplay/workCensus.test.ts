@@ -28,7 +28,7 @@ function regionData(): MultiRowRegionData {
     featureNames: ROWS,
     featureIds: ROWS.map((_, i) => `f${i}`),
     usedItemRgb: false,
-    rowsFieldCandidates: ['sample'],
+    fieldNames: ['sample'],
     rowsFieldCandidateValues: [],
     legendCandidates: [],
     resolvedRowsField: 'sample',

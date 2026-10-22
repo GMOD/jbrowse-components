@@ -34,7 +34,7 @@ function painted(): MultiRowRegionData {
     featureNames: ['EUR'],
     featureIds: ['f0'],
     usedItemRgb: true,
-    rowsFieldCandidates: [],
+    fieldNames: [],
     rowsFieldCandidateValues: [],
     legendCandidates: [],
     resolvedRowsField: 'name',

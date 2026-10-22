@@ -38,6 +38,7 @@ function makeSelf(
     // absent condition.
     effectiveRowsField: 'name',
     rowsFieldCandidates: [] as string[],
+    colorFieldCandidates: [] as string[],
     clusterCandidates: [] as string[],
     rowCountsByField: new Map<string, RowCountByField>(),
     setRowsField: () => {},
@@ -118,11 +119,11 @@ function checkedLabel(items: MenuItem[]) {
 }
 
 describe('multi-row track menu', () => {
-  it('colors by each attribute the features carry, keeping a painting field none carries', () => {
+  it('colors by strand and each attribute the features carry, keeping a painting field none carries', () => {
     const picked: string[] = []
     const items = buildMultiRowTrackMenuItems(
       makeSelf({
-        rowsFieldCandidates: ['name', 'type'],
+        colorFieldCandidates: ['name', 'type'],
         colorField: 'score',
         colorByMode: 'attribute',
         colorByField: field => {
@@ -133,6 +134,7 @@ describe('multi-row track menu', () => {
     const rows = subMenuOf(items, 'Color by...')
     expect(labels(rows)).toEqual([
       'Default',
+      'Strand',
       'name',
       'type',
       'score',
@@ -405,7 +407,7 @@ describe('multi-row track menu', () => {
         featureNames: [],
         featureIds: [],
         usedItemRgb: false,
-        rowsFieldCandidates: [],
+        fieldNames: [],
         rowsFieldCandidateValues: [],
         legendCandidates: [],
         resolvedRowsField: 'name',

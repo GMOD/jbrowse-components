@@ -26,7 +26,7 @@ const region = regionData({
   featureNames: ['TssA', 'Quies', 'TssA', 'Quies'],
   featureIds: ['f1', 'f2', 'f3', 'f4'],
   usedItemRgb: false,
-  rowsFieldCandidates: [],
+  fieldNames: [],
   rowsFieldCandidateValues: [],
   resolvedRowsField: 'name',
 })
@@ -331,7 +331,7 @@ function statesRegion(n: number) {
     featureNames: Array.from({ length: n }, (_, i) => `state${i}`),
     featureIds: Array.from({ length: n }, (_, i) => `f${i}`),
     usedItemRgb: false,
-    rowsFieldCandidates: [],
+    fieldNames: [],
     rowsFieldCandidateValues: [],
     resolvedRowsField: 'name',
   })
@@ -358,7 +358,7 @@ test('too many distinct labels is treated as non-categorical', () => {
     featureNames: Array.from({ length: n }, (_, i) => `gene${i}`),
     featureIds: Array.from({ length: n }, (_, i) => `f${i}`),
     usedItemRgb: false,
-    rowsFieldCandidates: [],
+    fieldNames: [],
     rowsFieldCandidateValues: [],
     resolvedRowsField: 'name',
   })
@@ -382,7 +382,7 @@ test('a candidate list truncated at the cap still reads non-categorical', () => 
     featureNames: Array.from({ length: n }, (_, i) => `gene${i}`),
     featureIds: Array.from({ length: n }, (_, i) => `f${i}`),
     usedItemRgb: false,
-    rowsFieldCandidates: [],
+    fieldNames: [],
     rowsFieldCandidateValues: [],
     resolvedRowsField: 'name',
   })

@@ -24,7 +24,7 @@ function regionData(): MultiRowRegionData {
     featureNames: ['segA', 'segB'],
     featureIds: ['feat1', 'insertion'],
     usedItemRgb: false,
-    rowsFieldCandidates: [],
+    fieldNames: [],
     rowsFieldCandidateValues: [],
     legendCandidates: [],
     resolvedRowsField: 'name',

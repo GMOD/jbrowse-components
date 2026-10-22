@@ -15,7 +15,7 @@ function region(rowsFieldCandidateValues: RowsFieldCandidateValues[]) {
     featureNames: [],
     featureIds: [],
     usedItemRgb: false,
-    rowsFieldCandidates: rowsFieldCandidateValues.map(c => c.field),
+    fieldNames: rowsFieldCandidateValues.map(c => c.field),
     rowsFieldCandidateValues,
     legendCandidates: [],
     resolvedRowsField: 'name',

@@ -81,7 +81,7 @@ function regionData(
     featureNames: blocks.map(b => b.row),
     featureIds: blocks.map((_, i) => `f${i}`),
     usedItemRgb,
-    rowsFieldCandidates: ['clade', 'sample'],
+    fieldNames: ['clade', 'sample'],
     rowsFieldCandidateValues: [],
     legendCandidates: [],
     resolvedRowsField: field,

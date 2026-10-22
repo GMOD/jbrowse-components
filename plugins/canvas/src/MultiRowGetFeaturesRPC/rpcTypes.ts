@@ -48,7 +48,8 @@ export interface MultiRowRegionData {
   featureNames: string[]
   featureIds: string[]
   usedItemRgb: boolean
-  rowsFieldCandidates: string[]
+  // the attribute names a sample of the region's features carry
+  fieldNames: string[]
   rowsFieldCandidateValues: RowsFieldCandidateValues[]
   legendCandidates: LegendCandidate[]
   resolvedRowsField: string

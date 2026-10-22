@@ -36,7 +36,7 @@ const region: MultiRowRegionData = {
   featureNames: ['a', 'b', 'c'],
   featureIds: ['f1', 'f2', 'f3'],
   usedItemRgb: false,
-  rowsFieldCandidates: [],
+  fieldNames: [],
   rowsFieldCandidateValues: [],
   legendCandidates: [],
   resolvedRowsField: 'name',

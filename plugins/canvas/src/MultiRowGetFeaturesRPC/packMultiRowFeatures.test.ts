@@ -422,7 +422,7 @@ test('collects the attribute names a reader could partition on', () => {
     colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
-  expect(r.rowsFieldCandidates).toEqual(['itemRgb', 'sample'])
+  expect(r.fieldNames).toEqual(['itemRgb', 'sample'])
 })
 
 test('unions the names over the head of the list, not just the first feature', () => {
@@ -435,7 +435,7 @@ test('unions the names over the head of the list, not just the first feature', (
     colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
-  expect(r.rowsFieldCandidates).toEqual(['clade', 'sample'])
+  expect(r.fieldNames).toEqual(['clade', 'sample'])
 })
 
 test('offers the source a stacked track stamps on each feature', () => {
@@ -448,7 +448,7 @@ test('offers the source a stacked track stamps on each feature', () => {
     colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
-  expect(r.rowsFieldCandidates).toEqual(['source'])
+  expect(r.fieldNames).toEqual(['source'])
   expect(r.rowValues).toEqual(['peaks_a', 'peaks_b'])
 })
 
@@ -462,8 +462,8 @@ test('samples the head rather than every feature', () => {
     colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
-  expect(r.rowsFieldCandidates).toContain('col0')
-  expect(r.rowsFieldCandidates).not.toContain('col400')
+  expect(r.fieldNames).toContain('col0')
+  expect(r.fieldNames).not.toContain('col400')
 })
 
 describe('the distinct values per partition candidate', () => {

@@ -4,6 +4,7 @@ import { undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import { checkboxItem, radioItems, withHint } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
+import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
   colorByMenuItem,
@@ -54,6 +55,7 @@ interface MultiRowMenuSelf
   hiddenCategorySet: ReadonlySet<string>
   effectiveRowsField: string
   rowsFieldCandidates: string[]
+  colorFieldCandidates: string[]
   rowCountsByField: ReadonlyMap<string, RowCountByField>
   setRowsField: (field: string) => void
   facet?: FacetSetting
@@ -160,26 +162,34 @@ function rowsFieldMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   ]
 }
 
-// A radio per attribute the loaded features carry, the painting field kept
-// among them while no feature carries it.
+// Strand, as the feature display offers it, then a radio per attribute the
+// loaded features carry, the painting field kept among them while no feature
+// carries it.
 function colorByMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   const current = self.colorField
+  const candidates = self.colorFieldCandidates
   const fields =
-    current === undefined || self.rowsFieldCandidates.includes(current)
-      ? self.rowsFieldCandidates
-      : [...self.rowsFieldCandidates, current]
+    current === undefined ||
+    current === STRAND_FIELD ||
+    candidates.includes(current)
+      ? candidates
+      : [...candidates, current]
   return [
     colorByMenuItem({
       blocks: [
         {
-          rows: colorFieldRows(
-            self,
-            fields.map(field => ({
+          rows: colorFieldRows(self, [
+            {
+              label: 'Strand',
+              field: STRAND_FIELD,
+              checked: self.colorByMode === 'strand',
+            },
+            ...fields.map(field => ({
               label: field,
               field,
               checked: current === field,
             })),
-          ),
+          ]),
         },
       ],
     }),

@@ -78,36 +78,41 @@ export function collectLegendCandidates({
   return collector.candidates
 }
 
-const NON_ROW_FIELD_TAGS = new Set([
+const NON_ATTRIBUTE_TAGS = new Set([
   'start',
   'end',
   'refName',
   'uniqueId',
   'subfeatures',
   'parentId',
-  'strand',
-  'score',
-  'phase',
 ])
 
-const ROWS_FIELD_CANDIDATE_SAMPLE = 20
+// Values a block paints by, never names a row stands for.
+const NON_ROW_FIELDS = new Set(['strand', 'score', 'phase'])
+
+const FIELD_NAME_SAMPLE = 20
 
 /**
  * Enumerates attributes through `toJSON`, not `tags()`: `tags` is
  * `SimpleFeature`'s, and the `Feature` interface an adapter may implement
  * carries only the serializer.
  */
-function collectRowsFieldCandidates(features: Feature[]) {
+function collectFieldNames(features: Feature[]) {
   const names = new Set<string>()
-  const n = Math.min(features.length, ROWS_FIELD_CANDIDATE_SAMPLE)
+  const n = Math.min(features.length, FIELD_NAME_SAMPLE)
   for (let i = 0; i < n; i++) {
     for (const tag of Object.keys(features[i]!.toJSON())) {
-      if (!NON_ROW_FIELD_TAGS.has(tag)) {
+      if (!NON_ATTRIBUTE_TAGS.has(tag)) {
         names.add(tag)
       }
     }
   }
   return [...names].sort()
+}
+
+/** The attribute names "One row per..." offers. */
+export function rowsFieldCandidatesOf(fieldNames: readonly string[]) {
+  return fieldNames.filter(name => !NON_ROW_FIELDS.has(name))
 }
 
 export const MAX_COUNTED_ROW_VALUES = 200
@@ -250,7 +255,8 @@ export function packMultiRowFeatures({
     ? createColorValueCollector(colorConfig.field, jexl)
     : undefined
   const rectColorValues = new Uint32Array(colorValues ? n : 0)
-  const rowsFieldCandidates = collectRowsFieldCandidates(features)
+  const fieldNames = collectFieldNames(features)
+  const rowsFieldCandidates = rowsFieldCandidatesOf(fieldNames)
   const resolvedRowsField = resolveRowsField(rowsField, rowsFieldCandidates)
   const candidateValues = createCandidateValueCounter(rowsFieldCandidates)
   const featureRowValue = makeFeatureValueResolver(resolvedRowsField, jexl)
@@ -295,7 +301,7 @@ export function packMultiRowFeatures({
     featureNames,
     featureIds,
     usedItemRgb,
-    rowsFieldCandidates,
+    fieldNames,
     rowsFieldCandidateValues: candidateValues.result(),
     resolvedRowsField,
     legendCandidates: collectLegendCandidates({

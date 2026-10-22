@@ -70,7 +70,7 @@ function makeRegionData(start = 1100, end = 1200): MultiRowGetFeaturesResult {
     featureNames: ['feat'],
     featureIds: ['f0'],
     usedItemRgb: false,
-    rowsFieldCandidates: [],
+    fieldNames: [],
     rowsFieldCandidateValues: [],
     legendCandidates: [],
     resolvedRowsField: 'name',

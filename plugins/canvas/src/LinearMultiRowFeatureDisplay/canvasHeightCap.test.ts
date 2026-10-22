@@ -15,7 +15,7 @@ function rowsOnly(n: number): MultiRowRegionData {
     featureNames: [],
     featureIds: [],
     usedItemRgb: false,
-    rowsFieldCandidates: [],
+    fieldNames: [],
     rowsFieldCandidateValues: [],
     legendCandidates: [],
     resolvedRowsField: 'name',

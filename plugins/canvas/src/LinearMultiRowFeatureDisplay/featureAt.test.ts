@@ -48,7 +48,7 @@ function region(feats: Feat[], opts?: { usedItemRgb?: boolean }) {
     featureNames: feats.map(f => f.name ?? ''),
     featureIds: feats.map((f, i) => f.id ?? `f${i}`),
     usedItemRgb: opts?.usedItemRgb ?? false,
-    rowsFieldCandidates: [],
+    fieldNames: [],
     rowsFieldCandidateValues: [],
     resolvedRowsField: 'name',
   }
@@ -241,7 +241,7 @@ describe('featureAt', () => {
         featureNames: featureRows.map(() => ''),
         featureIds: featureRows.map(r => `f${r}`),
         usedItemRgb: false,
-        rowsFieldCandidates: [],
+        fieldNames: [],
         rowsFieldCandidateValues: [],
         legendCandidates: [],
         resolvedRowsField: 'name',

@@ -1,10 +1,12 @@
 import { isCallbackValue } from '@jbrowse/core/configuration'
+import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 
 import {
   AUTO_ROWS_FIELD,
   MAX_COUNTED_ROW_VALUES,
   resolveRowsField,
+  rowsFieldCandidatesOf,
 } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 
 import type { WorkerColor } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -57,23 +59,35 @@ export function pinnedRowsField(self: PinSlice) {
  * The attribute names the loaded features carry, unioned across regions since
  * two regions can be served by adapters that saw different optional columns.
  */
-export function rowsFieldCandidates(self: RowsFieldSlice) {
+function fieldNames(self: RowsFieldSlice) {
   const names = new Set<string>()
   for (const data of self.rpcDataMap.values()) {
-    for (const name of data.rowsFieldCandidates) {
+    for (const name of data.fieldNames) {
       names.add(name)
     }
   }
   return [...names].sort()
 }
 
+export function rowsFieldCandidates(self: RowsFieldSlice) {
+  return rowsFieldCandidatesOf(fieldNames(self))
+}
+
 /**
- * The attributes the rows can cluster on: the row candidates, and the color
- * field wherever a region shipped a value for it. `score` and `strand` name no
- * row, but a ramp over one is what the picture is about.
+ * The attributes Color by lists, `score` among them; strand has its own
+ * preset.
+ */
+export function colorFieldCandidates(self: RowsFieldSlice) {
+  return fieldNames(self).filter(name => name !== STRAND_FIELD)
+}
+
+/**
+ * The attributes the rows can cluster on: the Color by candidates, and the
+ * color field wherever a region shipped a value for it, which takes in strand
+ * and a `jexl:` field.
  */
 export function clusterCandidates(self: RowsFieldSlice) {
-  const names = new Set(rowsFieldCandidates(self))
+  const names = new Set(colorFieldCandidates(self))
   for (const { colorValues } of self.rpcDataMap.values()) {
     if (
       colorValues &&

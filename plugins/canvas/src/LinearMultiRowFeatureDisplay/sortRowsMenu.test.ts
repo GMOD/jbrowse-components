@@ -23,7 +23,7 @@ function regionData(rowValues: string[]): MultiRowRegionData {
     featureNames: [],
     featureIds: [],
     usedItemRgb: false,
-    rowsFieldCandidates: [],
+    fieldNames: [],
     rowsFieldCandidateValues: [],
     legendCandidates: [],
     resolvedRowsField: 'name',

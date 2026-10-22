@@ -16,7 +16,7 @@ function regionData(): MultiRowRegionData {
     featureNames: ['segA', 'segB'],
     featureIds: ['a', 'b'],
     usedItemRgb: false,
-    rowsFieldCandidates: [],
+    fieldNames: [],
     rowsFieldCandidateValues: [],
     resolvedRowsField: 'name',
   }
@@ -135,7 +135,7 @@ describe('encodeInputs', () => {
       featureNames: ['segA', 'segB', 'segC', 'segD'],
       featureIds: ['a', 'b', 'c', 'd'],
       usedItemRgb: false,
-      rowsFieldCandidates: [],
+      fieldNames: [],
       rowsFieldCandidateValues: [],
       resolvedRowsField: 'name',
     }

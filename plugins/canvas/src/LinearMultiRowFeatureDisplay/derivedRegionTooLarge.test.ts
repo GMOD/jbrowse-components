@@ -16,7 +16,7 @@ function emptyRegionData(): MultiRowRegionData {
     featureNames: [],
     featureIds: [],
     usedItemRgb: false,
-    rowsFieldCandidates: [],
+    fieldNames: [],
     rowsFieldCandidateValues: [],
     legendCandidates: [],
     resolvedRowsField: 'name',

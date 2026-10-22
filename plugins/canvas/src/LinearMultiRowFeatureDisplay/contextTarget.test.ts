@@ -24,7 +24,7 @@ function region(): MultiRowRegionData {
     featureNames: ['top', 'bottom'],
     featureIds: ['f0', 'f1'],
     usedItemRgb: false,
-    rowsFieldCandidates: [],
+    fieldNames: [],
     rowsFieldCandidateValues: [],
     legendCandidates: [],
     resolvedRowsField: 'name',

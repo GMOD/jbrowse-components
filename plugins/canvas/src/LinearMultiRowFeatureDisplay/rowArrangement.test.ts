@@ -10,7 +10,7 @@ import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTyp
 // invalidation onto.
 function regionData(
   rowValues: string[],
-  rowsFieldCandidates: string[] = [],
+  fieldNames: string[] = [],
   resolvedRowsField = 'name',
 ): MultiRowRegionData {
   return {
@@ -23,7 +23,7 @@ function regionData(
     featureNames: [],
     featureIds: [],
     usedItemRgb: false,
-    rowsFieldCandidates,
+    fieldNames,
     rowsFieldCandidateValues: [],
     legendCandidates: [],
     resolvedRowsField,
