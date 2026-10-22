@@ -411,6 +411,18 @@ describe('Arc color menu visibility', () => {
     display.setDrawnReadConnections('cloud')
     expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(true)
   })
+
+  // The connectors over the pileup paint the same field, so the row that
+  // changes it stays while they draw with the band off.
+  test('shown for the connectors with the band off', () => {
+    const display = createDisplay()
+    display.setDrawnReadConnections('off')
+    display.setShowConnectors(true)
+    expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(true)
+    display.setShowConnectors(false)
+    display.setUnit('chain')
+    expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(true)
+  })
 })
 
 describe('arc color follows the reads unless it names its own field', () => {

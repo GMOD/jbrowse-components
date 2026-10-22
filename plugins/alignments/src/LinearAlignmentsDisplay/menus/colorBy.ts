@@ -74,10 +74,10 @@ interface ColorByMenuOptions {
   // The MM/ML modification submenu plus reference-based bisulfite.
   includeModifications?: boolean
   colorOptions?: ColorFieldOption[]
-  // Read-connection arc coloring lives here rather than in the Read connections
+  // Read-connection coloring lives here rather than in the Read connections
   // menu — it's a rare setting and colors belong together. Omitted (like every
-  // other section here) when no overlay (arcs or read cloud) is active, since
-  // both share this coloring — the caller passes `undefined` in that case.
+  // other section here) when nothing paints it: no arcs, read cloud or
+  // connectors. The caller passes `undefined` in that case.
   arcColor?: {
     own: ArcColorField | ''
     setField: (field: ArcColorField | '') => void
@@ -223,7 +223,7 @@ function arcColorItem(
     label: 'Arc color',
     type: 'subMenu',
     helpText:
-      'How paired-end arcs and the read cloud overlay are colored by insert size and/or pair orientation, to surface structural-variant signal (deletions, inversions, duplications, insertions).',
+      'How the paired-end arcs, the read cloud and the connectors over the pileup are colored by insert size and/or pair orientation, to surface structural-variant signal (deletions, inversions, duplications, insertions).',
     subMenu: radioItems(
       [
         { value: '', label: SAME_AS_READS_LABEL, helpText: SAME_AS_READS_HELP },

@@ -3578,8 +3578,11 @@ export default function stateModelFactory(
               includeTagOption: true,
               includePairedEnd: true,
               includeModifications: true,
+              // Offered wherever a connection paints this field: the arcs,
+              // the read cloud, and the connectors over the pileup.
               arcColor:
-                self.drawnReadConnections === 'off'
+                self.drawnReadConnections === 'off' &&
+                self.bezierArcScope === 'none'
                   ? undefined
                   : {
                       own: getConf(self, ['readConnections', 'color', 'field']),
