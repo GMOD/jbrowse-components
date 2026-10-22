@@ -92,7 +92,7 @@ export function computeDotplotColors({
   // the view's `filter`; a segment of an alignment it rejects paints at zero
   // alpha
   filter?: { predicates: readonly FieldPredicate[]; extras?: FilterExtras }
-  // what the view's `color` declares over a field's own scale
+  // what the view's `encoding.color.scale` declares over a field's own scale
   paint?: SyntenyColorPaint
   // the view's `opacityFade`
   opacity?: SyntenyOpacitySnapshot

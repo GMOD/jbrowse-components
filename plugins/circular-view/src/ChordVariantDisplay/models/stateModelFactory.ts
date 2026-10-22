@@ -199,10 +199,10 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
-       * the `color` object as written
+       * `encoding.color` as written
        */
       get colorSetting(): ColorSetting {
-        return colorSnapshotOf(self.configuration.color)
+        return colorSnapshotOf(self.configuration.encoding.color)
       },
       /**
        * #getter
@@ -215,7 +215,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       /**
        * #getter
        * each drawn record's color: its field's value through the scale, or
-       * the `value` the color object answers for it
+       * the `value` the color channel answers for it
        */
       get chordStrokes(): Map<Feature, string> {
         const features = self.drawnFeatures ?? []
@@ -226,7 +226,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
             features.map(f => [f, field.color(field.key(read(f)))]),
           )
         }
-        const { color } = self.configuration
+        const { color } = self.configuration.encoding
         return new Map(
           features.map(feature => [
             feature,
@@ -436,7 +436,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #method
-       * a key swatch for `color`, faded as the chords draw it
+       * a key swatch for `encoding.color`, faded as the chords draw it
        */
       swatchColor(color: string) {
         return abgrToCssRgba(
@@ -470,8 +470,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
             id: 'color',
             field,
             title:
-              withPreset(self.colorSetting, CATEGORICAL_FIELD_PRESETS).title ??
-              field.field,
+              withPreset(self.colorSetting, CATEGORICAL_FIELD_PRESETS).legend
+                .title ?? field.field,
           },
         ).map(scale => ({
           ...scale,

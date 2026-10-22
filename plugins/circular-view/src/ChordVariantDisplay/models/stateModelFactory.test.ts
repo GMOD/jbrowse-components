@@ -126,7 +126,7 @@ test('a constant color keys as one row, a field as the values it paints', async 
   expect(display.legendColor).toBe(DEFAULT_SWATCH)
   expect(display.colorScales).toEqual([])
 
-  setConf(display, 'color', { field: 'svType' })
+  setConf(display, ['encoding', 'color'], 'svType')
   setConf(display, 'opacity', 0.45)
   const [feature] = display.chordLanes.features
   expect(display.chordStrokes.get(feature)).toBe('#e41a1c')
@@ -141,11 +141,9 @@ test('a constant color keys as one row, a field as the values it paints', async 
     ['Inversion', `rgba(255,127,0,${115 / 255})`],
   ])
 
-  setConf(display, 'color', {
+  setConf(display, ['encoding', 'color'], {
     field: 'svType',
-    domain: ['DEL'],
-    range: ['#aa0000'],
-    unknown: '#cccccc',
+    scale: { domain: ['DEL'], range: ['#aa0000'], unknown: '#cccccc' },
   })
   const [listed]: ColorScale[] = display.colorScales
   expect(

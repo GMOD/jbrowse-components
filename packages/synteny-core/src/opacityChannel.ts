@@ -16,34 +16,37 @@ import type { SyntenyOpacitySnapshot } from './syntenyOpacityConfigSchema.ts'
 
 /**
  * The opacity channel, read the way the color channel is (`colorFunctions`):
- * the view's `opacity` object plus a fetch's lanes in, a per-feature answer
+ * the view's `encoding.opacity` plus a fetch's lanes in, a per-feature answer
  * out. Two numbers come out of it, because opacity is drawn in two places.
  *
  * The LEVEL is a shader uniform every alignment is multiplied by: the
- * constant `value`, or under a field the most opaque its `range` reaches.
+ * constant `value`, or under a field the most opaque its `scale.range`
+ * reaches.
  * Dragging the slider moves only the uniform, so it recolors nothing.
  *
  * The FADE is each feature's share of that level, baked into the alpha byte
  * of its packed color by the color pass. A field mapped through
- * `range: [0.15, 0.8]` draws a feature at 0.15 as level 0.8 times fade
+ * `scale.range: [0.15, 0.8]` draws a feature at 0.15 as level 0.8 times fade
  * 0.1875.
  *
  * Example, an odp ortholog table whose rows carry Fisher's exact test p-value
  * for their chromosome pair:
- * `{ field: 'break_FET', scale: 'threshold', domain: [0.05], range: [0.8, 0.15] }`
+ * `{ field: 'break_FET', scale: { type: 'threshold', domain: [0.05], range: [0.8, 0.15] } }`
  * draws rows under 0.05 at 0.8 and the rest at 0.15.
  */
 
-/** A number column's opacities at `domainMin` and `domainMax` where `range` names none. */
+/** A number column's opacities at `domainMin` and `domainMax` where `scale.range` names none. */
 export const DEFAULT_NUMERIC_OPACITY_RANGE = [0.3, 1] as const
 
-/** Whether `opacity` reads a field, rather than drawing its constant. */
+/** Whether `encoding.opacity` reads a field, rather than drawing its constant. */
 export function opacityMapsField(setting: SyntenyOpacitySnapshot) {
   return !!setting.field
 }
 
 function rangeOf(setting: SyntenyOpacitySnapshot, numeric: boolean) {
-  const written = (setting.range ?? []).map(Number).filter(Number.isFinite)
+  const written = (setting.scale?.range ?? [])
+    .map(Number)
+    .filter(Number.isFinite)
   return written.length === 0 && numeric
     ? [...DEFAULT_NUMERIC_OPACITY_RANGE]
     : written
@@ -71,7 +74,7 @@ export function opacityLevel(
 
 /**
  * #api
- * `range` rescaled so the mapping's most opaque end equals `value`,
+ * `scale.range` rescaled so the mapping's most opaque end equals `value`,
  * keeping each entry's share of it. A threshold or a text column with no
  * range written draws every bin at the level, so it gets one `value` per bin
  * rather than the number column's default fade.
@@ -91,8 +94,8 @@ export function opacityRangeAt(
 }
 
 function binCount(setting: SyntenyOpacitySnapshot) {
-  const domain = setting.domain ?? []
-  return setting.scale === 'threshold'
+  const domain = setting.scale?.domain ?? []
+  return setting.scale?.type === 'threshold'
     ? thresholdCuts(domain).length + 1
     : Math.max(1, domain.length)
 }
@@ -103,7 +106,7 @@ function isNumericField(
 ) {
   const observed = setting.field ? ranges?.[setting.field] : undefined
   return (
-    setting.scale !== 'threshold' &&
+    setting.scale?.type !== 'threshold' &&
     (observed === undefined || !isAttributeLabels(observed))
   )
 }
@@ -111,7 +114,7 @@ function isNumericField(
 /**
  * #api
  * Each feature's fade, 0 to 1, as a share of `opacityLevel`; undefined while
- * `opacity` draws its constant. A feature with no value for the field draws
+ * `encoding.opacity` draws its constant. A feature with no value for the field draws
  * at the level.
  *
  * `viewRanges` is the domain a number column fades across, the view's
@@ -141,8 +144,8 @@ export function createOpacityFunction({
     opacity === undefined ? 1 : clamp01(opacity / level)
   const values = attributes[attributeOf(field)]
 
-  if (setting.scale === 'threshold') {
-    const cuts = thresholdCuts(setting.domain ?? []).map(Math.fround)
+  if (setting.scale?.type === 'threshold') {
+    const cuts = thresholdCuts(setting.scale.domain ?? []).map(Math.fround)
     const range = rangeOf(setting, false)
     return index => {
       const bin = thresholdIndex(values?.[index], cuts)
@@ -153,7 +156,7 @@ export function createOpacityFunction({
   const fetched = fetchRanges[field]
   if (fetched && isAttributeLabels(fetched)) {
     const range = rangeOf(setting, false)
-    const domain = setting.domain ?? []
+    const domain = setting.scale?.domain ?? []
     const lut = Float32Array.from(fetched.labels, label => {
       const i = domain.indexOf(label)
       return i < 0 ? 1 : share(range[i])
@@ -167,9 +170,9 @@ export function createOpacityFunction({
   // a measurement in bins (`mapq`) has no ramp of its own, so a linear fade
   // over it spans the values seen
   const mode = resolveNumericMode(field, viewRanges, {
-    scale: 'linear',
-    domainMin: setting.domainMin,
-    domainMax: setting.domainMax,
+    type: 'linear',
+    domainMin: setting.scale?.domainMin,
+    domainMax: setting.scale?.domainMax,
   })
   if (mode?.scale !== 'linear') {
     return undefined
@@ -186,8 +189,8 @@ export function createOpacityFunction({
 
 /**
  * #api
- * The part of `opacity` the color pass reads: undefined for the constant,
- * else the mapping with `range` as shares of its most opaque entry, so a
+ * The part of `encoding.opacity` the color pass reads: undefined for the
+ * constant, else the mapping with `scale.range` as shares of its most opaque entry, so a
  * mapping scaled alike at both ends answers the same.
  */
 export function opacityFadeOf(
@@ -196,13 +199,16 @@ export function opacityFadeOf(
   if (!opacityMapsField(setting)) {
     return undefined
   }
-  const range = (setting.range ?? []).map(Number).filter(Number.isFinite)
+  const range = (setting.scale?.range ?? []).map(Number).filter(Number.isFinite)
   const top = range.length > 0 ? Math.max(...range) : 0
   const { value: _value, ...mapping } = setting
   return {
     ...mapping,
-    domain: [...(setting.domain ?? [])],
-    range: top > 0 ? range.map(n => String(n / top)) : [],
+    scale: {
+      ...setting.scale,
+      domain: [...(setting.scale?.domain ?? [])],
+      range: top > 0 ? range.map(n => String(n / top)) : [],
+    },
   }
 }
 

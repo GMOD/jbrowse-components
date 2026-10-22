@@ -107,7 +107,7 @@ test('a written linear scale runs mapq along a ramp over the values seen', () =>
   const mode = ramp(
     'mapq',
     { mappingQual: { min: 0, max: 60 } },
-    { scale: 'linear' },
+    { type: 'linear' },
   )
   expect(mode.attribute).toBe('mappingQual')
   expect(rampNorm(mode, 30)).toBe(0.5)
@@ -117,7 +117,7 @@ test('a threshold bins a column at the cuts, spreading its scheme', () => {
   const mode = resolveNumericMode(
     'goc',
     { goc: { min: 0, max: 100 } },
-    { scale: 'threshold', domain: ['50', '75'], scheme: 'viridis' },
+    { type: 'threshold', domain: ['50', '75'], scheme: 'viridis' },
   )
   expect(mode).toMatchObject({ scale: 'threshold', cuts: [50, 75] })
   const colors = mode?.scale === 'threshold' ? mode.colors : []
@@ -219,7 +219,8 @@ describe('a declared ramp', () => {
       ramp('dnds').stops,
     )
     expect(
-      ramp('dnds', {}, paint({ field: 'dnds', reverse: false })).stops,
+      ramp('dnds', {}, paint({ field: 'dnds', scale: { reverse: false } }))
+        .stops,
     ).toEqual(ramp('dnds').stops.toReversed())
   })
 
@@ -259,14 +260,14 @@ describe('a declared ramp', () => {
 
 describe('strand', () => {
   test("paints the universal preset's colors, unnamed", () => {
-    const [forward, reverse] = UNIVERSAL_FIELD_PRESETS.strand.range
+    const [forward, reverse] = UNIVERSAL_FIELD_PRESETS.strand.scale.range
     expect(strandLevels({})).toEqual([
       { value: '1', color: forward, label: undefined },
       { value: '-1', color: reverse, label: undefined },
     ])
   })
 
-  test('takes range in domain order and labels as names', () => {
+  test('takes range in domain order and names as names', () => {
     expect(
       strandLevels({ domain: ['-1', '1'], range: ['black', 'gold'] }, [
         'Reverse',

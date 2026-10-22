@@ -134,8 +134,7 @@ test("a field's unknown paints the values its domain leaves out one row, Other",
 test('the gene color config carries unknown to the field it paints through', () => {
   const conf = geneColorConfigSchema.create({
     field: 'cluster',
-    domain: ['rbcL'],
-    unknown: '#cccccc',
+    scale: { domain: ['rbcL'], unknown: '#cccccc' },
   })
   const field = colorFieldOf(colorEncodingOf(colorSnapshotOf(conf)))
   expect(field?.color('psbA')).toBe('#cccccc')
@@ -162,7 +161,7 @@ test("color's title and labels head and name the field's key", () => {
 })
 
 test('the ribbon key is the strand pair, in the genes’ strand colors', () => {
-  const [forward, reverse] = UNIVERSAL_FIELD_PRESETS.strand.range
+  const [forward, reverse] = UNIVERSAL_FIELD_PRESETS.strand.scale.range
   expect(ribbonColorKey('strand')).toEqual([
     expect.objectContaining({
       label: 'Same orientation as lane above',
@@ -181,12 +180,12 @@ test('the strand key names the genome each lane is read against', () => {
   ).toEqual(['Same orientation as hg38', 'Inverted vs hg38'])
 })
 
-test('the strand key takes the colors range writes and the names labels gives', () => {
+test('the strand key takes the colors range writes and the names it gives', () => {
   expect(
     ribbonColorKey(
       'strand',
       {},
-      { paint: { range: ['gold', 'black'] }, labels: ['Kept', 'Flipped'] },
+      { paint: { range: ['gold', 'black'] }, names: ['Kept', 'Flipped'] },
     ),
   ).toEqual([
     { value: 'same', label: 'Kept', color: 'gold' },
@@ -296,12 +295,12 @@ test('an attribute ribbon mode keys a row per label', () => {
   expect(many[30]).toEqual({ value: '', label: '+3 more' })
 })
 
-test("ribbonColor's title and labels head and name the ribbons' key", () => {
+test("the ribbon color's title and names head and name the ribbons' key", () => {
   const ranges = {
     group: { labels: ['C1', 'B1'], colors: {}, domain: ['C1'] },
   }
   const [scale] = ribbonColorScales('group', ranges, {
-    labels: ['Core'],
+    names: ['Core'],
     title: 'Gene family',
   })
   expect(scale?.title).toBe('Gene family')

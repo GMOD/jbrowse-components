@@ -95,13 +95,13 @@ export function ribbonColorKey(
   {
     hideUnlabelled = false,
     slotColor,
-    labels,
+    names,
     against = 'lane above',
     paint = {},
   }: RibbonKeyOptions = {},
 ): CategoricalEntry[] {
   if (field === 'strand') {
-    const [same, inverted] = strandLevels(paint, labels)
+    const [same, inverted] = strandLevels(paint, names)
     return [
       {
         value: 'same',
@@ -122,7 +122,7 @@ export function ribbonColorKey(
     attributeRanges,
     hideUnlabelled,
     missingColor: slotColor,
-    labels,
+    names,
   })
   return swatch?.kind === 'chips'
     ? swatch.chips.map(({ color, label, values, missing }) => ({
@@ -138,10 +138,11 @@ export function ribbonColorKey(
 interface RibbonKeyOptions {
   hideUnlabelled?: boolean
   slotColor?: string
-  labels?: readonly string[]
+  /** `scale.names`, what the key names each domain value */
+  names?: readonly string[]
   /** what each ribbon's lower lane is read against; the lane above when unset */
   against?: string
-  /** what `ribbonColor` declares over a field's own scale */
+  /** what `ribbons.encoding.color.scale` declares over a field's own scale */
   paint?: SyntenyColorPaint
 }
 
@@ -161,14 +162,14 @@ export function ribbonColorScales(
     descending?: boolean
   } = {},
 ): ColorScale[] {
-  const { paint, labels } = keyOptions
+  const { paint, names } = keyOptions
   const numeric = resolveNumericMode(field, attributeRanges, paint)
   if (numeric && numeric.attribute in attributeRanges) {
     const label = colorByShortLabel(field)
     const [key, ...noValue] = colorByScales(field, {
       attributeRanges,
       paint,
-      labels,
+      names,
       descending,
     })
     return [

@@ -10,7 +10,8 @@ import {
   colorForValue,
   colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { cast, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
+import { compareStructural } from 'mobx'
 
 import { SyntenyFilterMixin } from './SyntenyFilterMixin.ts'
 import { DEFAULT_RIBBON_CSS } from './colorFunctions.ts'
@@ -22,10 +23,8 @@ import {
   resolveCategoricalMode,
 } from './colorRamps.ts'
 import { paintedField } from './syntenyColorBy.ts'
-import {
-  SYNTENY_VIEW_FIELDS,
-  syntenyColorConfigSchema,
-} from './syntenyColorConfigSchema.ts'
+import { SYNTENY_VIEW_FIELDS } from './syntenyColorConfigSchema.ts'
+import { syntenyEncodingConfigSchema } from './syntenyEncodingConfigSchema.ts'
 import { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 
 import type { CigarOpMask, ColorChip } from './colorLegend.ts'
@@ -35,6 +34,7 @@ import type { SyntenyColorSnapshot } from './syntenyColorConfigSchema.ts'
 import type { ColorableTrack } from './trackColors.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 const STRUCTURAL_FIELDS: ReadonlySet<string> = new Set(SYNTENY_VIEW_FIELDS)
@@ -178,21 +178,23 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       types.model({
         /**
          * #property
-         * The color every track in the view paints with, a
-         * [](/docs/config/syntenycolor) object: `{ field: "strand" }`,
-         * `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`,
-         * a measurement (`identity`, `mapq`, `dnds`) or a column the
-         * tracks declare, with `domain` ordering a text column's labels,
-         * `range` coloring them and `labels` naming them in the key, `range` or
-         * `scheme`, `reverse` and pinned ends reshaping a ramp, and
-         * `scale: 'threshold'` binning a number at `domain`'s cuts; a color
-         * string paints every alignment. Unset, the view's default
+         * The channels every track in the view paints with, a
+         * [](/docs/config/syntenyencoding) object. Its `color` is a
+         * [](/docs/config/syntenycolor) channel: `"strand"`, `"query"`,
+         * `"reference"`, `"track"`, a measurement (`identity`, `mapq`,
+         * `dnds`) or a column the tracks declare, with `scale.domain`
+         * ordering a text column's labels, `scale.range` coloring them and
+         * `scale.names` naming them in the key, `scale.range` or
+         * `scale.scheme`, `scale.reverse` and pinned ends reshaping a ramp,
+         * and `scale.type: 'threshold'` binning a number at `scale.domain`'s
+         * cuts; `{ value }` paints every alignment. Unset, the view's default
          * paints: `query` on the circular view, the default scheme elsewhere.
+         * Its `opacity` is a [](/docs/config/syntenyopacity) channel.
          */
-        color: types.stripDefault(syntenyColorConfigSchema, {}),
+        encoding: types.stripDefault(syntenyEncodingConfigSchema, {}),
         /**
          * #property
-         * trackId -> explicit color under `color: { field: 'track' }`. Absent
+         * trackId -> explicit color under `encoding.color: 'track'`. Absent
          * means the track takes an automatic slot from the palette.
          */
         trackColors: types.map(types.string),
@@ -296,33 +298,33 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       },
       /**
        * #getter
-       * The `color` object as its snapshot holds it, with the view's default
+       * `encoding.color` as its snapshot holds it, with the view's default
        * field where it names neither a field nor a constant.
        */
       get colorSetting(): SyntenyColorSnapshot {
-        return withImpliedField(colorSnapshotOf(self.color), implied)
+        return withImpliedField(colorSnapshotOf(self.encoding.color), implied)
       },
       /**
        * #getter
-       * The field the view paints while `color` names neither a field nor a
-       * constant, '' for its default scheme.
+       * The field the view paints while `encoding.color` names neither a
+       * field nor a constant, '' for its default scheme.
        */
       get impliedColorField(): string {
         return defaultColorField
       },
       /**
        * #getter
-       * What `color` declares over a field's own scale: `scale`, `domain`,
-       * `range` or `scheme` for its colors, `reverse`, and a ramp's pinned
-       * ends and middle. Read from these slots alone, so a key-only edit repaints
-       * nothing.
+       * What `encoding.color.scale` declares over a field's own scale: its
+       * `type`, `domain`, `range` or `scheme` for its colors, `reverse`, and
+       * a ramp's pinned ends and middle. Read from these slots alone, so a
+       * key-only edit repaints nothing.
        */
       get colorPaint(): SyntenyColorPaint {
-        return colorPaintOf(self.color)
+        return colorPaintOf(self.encoding.color)
       },
       /**
        * #getter
-       * `color.value`: the color every alignment paints under the default
+       * `encoding.color.value`: the color every alignment paints under the default
        * mode in place of the view's own scheme, or undefined for that scheme.
        */
       get colorValue(): string | undefined {
@@ -330,18 +332,20 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       },
       /**
        * #getter
-       * `color.domain`, the order a text column's labels take. Read from that
-       * slot alone, so a key-only edit (`title`, `labels`) recolors nothing.
+       * `encoding.color.scale.domain`, the order a text column's labels
+       * take. Read from that slot alone, so a key-only edit (`legend.title`,
+       * `scale.names`) recolors nothing.
        */
       get colorDomain(): readonly string[] {
-        return readConfObject(self.color, 'domain')
+        return readConfObject(self.encoding.color.scale, 'domain')
       },
       /**
        * #getter
-       * `color.range`, the colors a text column's labels take in domain order
+       * `encoding.color.scale.range`, the colors a text column's labels take
+       * in domain order
        */
       get colorRange(): readonly string[] {
-        return readConfObject(self.color, 'range')
+        return readConfObject(self.encoding.color.scale, 'range')
       },
       /**
        * #getter
@@ -401,7 +405,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
     .views(self => ({
       /**
        * #getter
-       * trackId -> the color it draws in under `color: { field: 'track' }`.
+       * trackId -> the color it draws in under `encoding.color: 'track'`.
        * Assigned across the whole view rather than per display, so an automatic slot
        * can't duplicate a color pinned on a sibling.
        */
@@ -410,7 +414,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       },
       /**
        * #getter
-       * The field `color` paints by, `''` for the default color.
+       * The field `encoding.color` paints by, `''` for the default color.
        */
       get colorField(): string {
         return paintedField(self.colorSetting)
@@ -453,7 +457,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       /**
        * #getter
        * Legend rows naming the overlaid tracks — one per track with its palette
-       * color, however many levels it is on, and only under `color: { field: 'track' }`,
+       * color, however many levels it is on, and only under `encoding.color: 'track'`,
        * since every other mode has a fixed legend.
        */
       get colorLegendChips(): ColorChip[] {
@@ -481,7 +485,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
           return []
         }
         const field = self.colorField
-        const { labels, title } = self.colorSetting
+        const { scale, legend } = self.colorSetting
         const textColumn =
           isColumnField(field) &&
           resolveCategoricalMode(field, self.attributeRanges) !== undefined
@@ -494,9 +498,9 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
           attributeRanges: self.attributeRanges,
           alpha: self.legendAlpha(),
           hideUnlabelled: self.hideUnlabelled,
-          labels,
-          title,
-          descending: readConfObject(self.color, 'descending'),
+          names: scale?.names,
+          title: legend?.title,
+          descending: legend?.descending,
           paint: self.colorPaint,
         }).map(scale =>
           scale.kind === 'categorical' && scale.id === field && textColumn
@@ -512,6 +516,14 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       function forgetSeenRanges() {
         if (Object.keys(self.seenAttributeRanges).length > 0) {
           self.seenAttributeRanges = {}
+        }
+      }
+      // a pick of what already paints writes nothing, so nothing keyed on the
+      // channel's arrays recomputes
+      function writeColor(written: ColorSlots, next: ColorSlots) {
+        if (!compareStructural(next, written)) {
+          self.parkColor('color', written, next)
+          self.encoding.setSubschema('color', next)
         }
       }
       return {
@@ -554,18 +566,17 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
         },
         /**
          * #action
-         * Set the field the view paints by over the `color` object, `''`
+         * Set the field the view paints by over `encoding.color`, `''`
          * unsetting it for the view's default, and rescale the ramp, which is
          * the only way back from a domain one outlying window widened.
          */
         setColorField(field: string) {
-          const written = writtenOf(self.color)
+          const written = writtenOf(self.encoding.color)
           const next =
             field === ''
               ? colorForValue(written, undefined)
               : colorForField(written, field, self.parkedColor)
-          self.parkColor('color', written, next)
-          self.color = cast(next)
+          writeColor(written, next)
           forgetSeenRanges()
         },
         /**
@@ -574,10 +585,8 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
          * default.
          */
         setColorValue(value: string | undefined) {
-          const written = writtenOf(self.color)
-          const next = colorForValue(written, value)
-          self.parkColor('color', written, next)
-          self.color = cast(next)
+          const written = writtenOf(self.encoding.color)
+          writeColor(written, colorForValue(written, value))
         },
         /**
          * #action
@@ -607,11 +616,15 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
          * fetches found them in.
          */
         setColorDomain(domain: string[]) {
-          self.color = cast({ ...writtenColorOf(self.color), domain })
+          const written = writtenColorOf(self.encoding.color)
+          self.encoding.setSubschema('color', {
+            ...written,
+            scale: { ...written.scale, domain },
+          })
         },
         /**
          * #action
-         * Pin one track's color under `color: { field: 'track' }`, or release it back to
+         * Pin one track's color under `encoding.color: 'track'`, or release it back to
          * an automatic palette slot.
          */
         setTrackColor(trackId: string, value: string | undefined) {

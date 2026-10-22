@@ -73,7 +73,7 @@ function memo<K, V>(map: Map<K, V>, key: K, make: () => V) {
 
 /**
  * `encoding` is `geneColorEncoding`; `utrColor` is the slot as written;
- * `held`, where a categorical field deals its colors.
+ * `held`, where an ordinal field deals its colors.
  */
 export function geneColors(
   conf: MultiWaySyntenyDisplayConfig,
@@ -121,11 +121,12 @@ export function geneColors(
   }
   const value = typeof encoding === 'string' ? encoding : featureDefaultColor
   const constant = isJexl(value) ? undefined : painted(value)
+  const { color } = conf.encoding
   return {
     fill: feature =>
       constant ??
       memo(byFeature, feature.id(), () =>
-        painted(String(readConfObject(conf, ['color', 'value'], { feature }))),
+        painted(String(readConfObject(color, 'value', { feature }))),
       ),
     utr,
   }

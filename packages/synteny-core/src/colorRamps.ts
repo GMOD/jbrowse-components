@@ -16,14 +16,17 @@ import { SCALE_TYPE_LINEAR, rampMidNorm } from '@jbrowse/render-core/scoreScale'
 
 import { SYNTENY_VIEW_FIELDS } from './syntenyColorConfigSchema.ts'
 
-import type { syntenyColorSlots } from './syntenyColorConfigSchema.ts'
+import type {
+  SyntenyColorScale,
+  syntenyColorScaleSlots,
+} from './syntenyColorConfigSchema.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 
 // How the synteny, dotplot, circular and multi-way views paint a number: a
-// ramp or a threshold's bins, read off the color object through the presets
-// and the resolver every display's color object goes through.
+// ramp or a threshold's bins, read off the color channel through the presets
+// and the resolver every display's color channel goes through.
 
 /**
  * #api
@@ -63,11 +66,11 @@ function formatOf(field: string) {
 }
 
 /**
- * The members of a color object a paint reads: all but the key's names,
- * heading and direction, so renaming a key repaints nothing.
+ * The members of a color channel's `scale` a paint reads: all but the key's
+ * names, so renaming a key repaints nothing.
  */
 export interface SyntenyColorPaint {
-  scale?: string
+  type?: SyntenyColorScale
   domain?: readonly string[]
   range?: readonly string[]
   scheme?: ColorSchemeName
@@ -77,22 +80,25 @@ export interface SyntenyColorPaint {
   domainMid?: number
 }
 
-/** A comparative color object: the synteny views' `color`, a ribbon's `ribbonColor`. */
-type SyntenyColorConfig = ConfigModelForFields<
-  ReturnType<typeof syntenyColorSlots>
->
+/**
+ * A comparative color channel: the synteny views' `encoding.color`, the
+ * ribbons' `ribbons.encoding.color`.
+ */
+interface SyntenyColorConfig {
+  scale: ConfigModelForFields<ReturnType<typeof syntenyColorScaleSlots>>
+}
 
 /** Read off the paint's own slots, so a key-only edit repaints nothing. */
-export function colorPaintOf(color: SyntenyColorConfig): SyntenyColorPaint {
+export function colorPaintOf({ scale }: SyntenyColorConfig): SyntenyColorPaint {
   return {
-    scale: readConfObject(color, 'scale'),
-    domain: readConfObject(color, 'domain'),
-    range: readConfObject(color, 'range'),
-    scheme: readConfObject(color, 'scheme'),
-    reverse: readConfObject(color, 'reverse'),
-    domainMin: readConfObject(color, 'domainMin'),
-    domainMax: readConfObject(color, 'domainMax'),
-    domainMid: readConfObject(color, 'domainMid'),
+    type: readConfObject(scale, 'type'),
+    domain: readConfObject(scale, 'domain'),
+    range: readConfObject(scale, 'range'),
+    scheme: readConfObject(scale, 'scheme'),
+    reverse: readConfObject(scale, 'reverse'),
+    domainMin: readConfObject(scale, 'domainMin'),
+    domainMax: readConfObject(scale, 'domainMax'),
+    domainMid: readConfObject(scale, 'domainMid'),
   }
 }
 
@@ -167,9 +173,9 @@ export interface AttributeLabels {
   colors: Record<string, string>
   /** some row carried no label, so the unlabelled grey was painted */
   missing?: boolean
-  /** the view's declared `color.domain`, which orders the labels and colors them */
+  /** the view's declared `encoding.color.scale.domain`, which orders the labels and colors them */
   domain?: readonly string[]
-  /** the view's declared `color.range`, the colors the domain takes in order */
+  /** the view's declared `encoding.color.scale.range`, the colors the domain takes in order */
   palette?: readonly string[]
   /** `labels` in first-seen order, where a declared domain sorted them */
   seen?: readonly string[]
@@ -223,19 +229,19 @@ const STRANDS = ['1', '-1'] as const
 /**
  * #api
  * Each strand's color under `paint`, forward then reverse: the universal
- * strand preset's, or `range`'s in `domain` order where the color object
- * writes them, and the name `labels` gives it, if any.
+ * strand preset's, or `range`'s in `domain` order where the channel writes
+ * them, and the name `names` gives it, if any.
  */
 export function strandLevels(
   { domain = [], range = [] }: SyntenyColorPaint,
-  labels: readonly string[] = [],
+  names: readonly string[] = [],
 ) {
-  const filled = withPreset(
-    { field: 'strand', scale: 'categorical', domain, range },
+  const { scale } = withPreset(
+    { field: 'strand', scale: { type: 'ordinal', domain, range } },
     SYNTENY_FIELD_PRESETS,
   )
-  const color = categoricalColorScale(filled.domain, filled.range)
-  const named = keyNames(filled.domain, labels)
+  const color = categoricalColorScale(scale.domain, scale.range)
+  const named = keyNames(scale.domain, names)
   return STRANDS.map(value => ({
     value,
     color: color(value),
@@ -248,7 +254,7 @@ export function strandLevels(
  * How a numeric field paints under `paint`: a preset measurement through its
  * preset, and a column a track declares on a viridis ramp over the span seen,
  * labelled with the actual numbers, the honest reading when nothing declares
- * what the column's range is supposed to be. A written `scale` names a ramp
+ * what the column's range is supposed to be. A written `scale.type` names a ramp
  * or a threshold's bins either way. Undefined for the constant, a structural
  * field and a text column.
  */
@@ -266,18 +272,17 @@ export function resolveNumericMode(
   if (!measure && observed && isAttributeLabels(observed)) {
     return undefined
   }
-  const written =
-    paint.scale === 'linear' || paint.scale === 'threshold'
-      ? paint.scale
-      : undefined
   const encoding = colorEncodingOf(
     {
-      ...paint,
       value: undefined,
       field,
-      scale: written ?? (measure ? undefined : 'linear'),
-      domain: paint.domain ?? [],
-      range: paint.range ?? [],
+      scale: {
+        ...paint,
+        type: paint.type ?? (measure ? undefined : 'linear'),
+        domain: paint.domain ?? [],
+        range: paint.range ?? [],
+      },
+      legend: {},
     },
     SYNTENY_FIELD_PRESETS,
   )

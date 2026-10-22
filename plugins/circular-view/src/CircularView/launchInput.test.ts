@@ -122,7 +122,7 @@ describe('the track entries discriminator', () => {
   })
 
   test('an object naming a trackId is a recipe too', async () => {
-    const entry = { trackId: 'sv', color: 'red' }
+    const entry = { trackId: 'sv', encoding: { color: { value: 'red' } } }
     const view = await open({ assembly: 'volvox', tracks: [entry] })
     expect(view.launch).toEqual({ assembly: 'volvox', tracks: [entry] })
     expect(view.tracks).toHaveLength(0)

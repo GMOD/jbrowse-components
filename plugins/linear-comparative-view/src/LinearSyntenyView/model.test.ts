@@ -86,7 +86,7 @@ describe('LinearSyntenyViewInit type', () => {
       overdrawPx: 500,
       cigarMode: 'matches',
       data: { resolution: 'coarse' },
-      opacity: { value: 0.4 },
+      encoding: { opacity: { value: 0.4 } },
     }
     expect(init.cigarMode).toBe('matches')
   })

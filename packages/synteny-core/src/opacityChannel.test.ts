@@ -63,7 +63,7 @@ describe('a number field', () => {
   })
 
   test('a written range is the opacities themselves, the level its top', () => {
-    const setting = { field: 'identity', range: ['0.1', '0.4'] }
+    const setting = { field: 'identity', scale: { range: ['0.1', '0.4'] } }
     expect(opacityLevel(setting, 0.2)).toBe(0.4)
     const fade = fadeOf(setting, attributes)
     expect(fade(0) * 0.4).toBeCloseTo(0.1)
@@ -71,7 +71,7 @@ describe('a number field', () => {
   })
 
   test('a one-entry range draws every value at that opacity', () => {
-    const setting = { field: 'identity', range: ['0.5'] }
+    const setting = { field: 'identity', scale: { range: ['0.5'] } }
     expect(opacityLevel(setting, 0.2)).toBe(0.5)
     const fade = fadeOf(setting, attributes)
     expect(fade(0)).toBe(1)
@@ -80,7 +80,7 @@ describe('a number field', () => {
 
   test('pinned ends clamp the values past them', () => {
     const fade = fadeOf(
-      { field: 'identity', domainMin: 0.9, domainMax: 1 },
+      { field: 'identity', scale: { domainMin: 0.9, domainMax: 1 } },
       { identity: new Float32Array([0.5, 0.95]) },
     )
     expect(fade(0)).toBeCloseTo(0.3)
@@ -113,9 +113,7 @@ describe('a number field', () => {
 test('a threshold takes one opacity per interval, a value on a cut the one above', () => {
   const setting = {
     field: 'break_FET',
-    scale: 'threshold',
-    domain: ['0.05'],
-    range: ['0.8', '0.15'],
+    scale: { type: 'threshold', domain: ['0.05'], range: ['0.8', '0.15'] },
   } as const
   expect(opacityLevel(setting, 0.2)).toBe(0.8)
   const fade = fadeOf(setting, {
@@ -131,9 +129,7 @@ test('a float32 value on a cut that float32 rounds down is still at the cut', ()
   const fade = fadeOf(
     {
       field: 'identity',
-      scale: 'threshold',
-      domain: ['0.7'],
-      range: ['0.2', '1'],
+      scale: { type: 'threshold', domain: ['0.7'], range: ['0.2', '1'] },
     },
     { identity: new Float32Array([0.7, 0.69]) },
   )
@@ -144,7 +140,7 @@ test('a float32 value on a cut that float32 rounds down is still at the cut', ()
 test('a text column takes the opacity its label is listed with, opaque unlisted', () => {
   const labels = { labels: ['yes', 'no', 'maybe'], colors: {} }
   const fade = fadeOf(
-    { field: 'sig', domain: ['yes', 'no'], range: ['1', '0.2'] },
+    { field: 'sig', scale: { domain: ['yes', 'no'], range: ['1', '0.2'] } },
     { sig: new Float32Array([0, 1, 2, Number.NaN]) },
     { sig: labels },
   )
@@ -156,14 +152,16 @@ test('a text column takes the opacity its label is listed with, opaque unlisted'
 
 // the slider scales a field's range at both ends, which has to recolor nothing
 test('a range scaled alike at both ends hands the color pass the same fade', () => {
-  expect(opacityFadeOf({ field: 'identity', range: ['0.1', '0.5'] })).toEqual(
-    opacityFadeOf({ field: 'identity', range: ['0.2', '1'] }),
+  expect(
+    opacityFadeOf({ field: 'identity', scale: { range: ['0.1', '0.5'] } }),
+  ).toEqual(
+    opacityFadeOf({ field: 'identity', scale: { range: ['0.2', '1'] } }),
   )
   expect(opacityFadeOf({ value: 0.3 })).toBeUndefined()
 })
 
 test('a text column with no range keeps every label at the new level', () => {
-  const setting = { field: 'kind', domain: ['a', 'b'] }
+  const setting = { field: 'kind', scale: { domain: ['a', 'b'] } }
   const ranges = { kind: { labels: ['a', 'b'], colors: {} } }
   expect(opacityRangeAt(setting, 0.6, ranges)).toEqual(['0.6', '0.6'])
 })

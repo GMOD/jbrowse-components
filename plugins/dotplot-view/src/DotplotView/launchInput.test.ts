@@ -47,12 +47,11 @@ test('a launch key written on the view object reaches the launch state', async (
 test('any declared property lands natively, named nowhere in the launch path', async () => {
   const view = await open({
     views: AXES,
-    opacity: 0.55,
+    encoding: { color: 'query', opacity: 0.55 },
     drawCigar: false,
     lineWidth: 3,
     coord: { ratio: 1 },
     data: { resolution: 'coarse' },
-    color: { field: 'query' },
     filter: [{ field: 'length', gte: 1000 }],
   })
   expect(view.opacityLevel).toBe(0.55)
@@ -82,7 +81,7 @@ describe('the v4 nested form', () => {
 
   test('a declared property nested inside it lands', async () => {
     const view = await open({
-      init: { views: AXES, color: { field: 'dnds' } },
+      init: { views: AXES, encoding: { color: 'dnds' } },
     })
     expect(view.colorField).toBe('dnds')
     expect(warnings()).toEqual([DEPRECATED])
@@ -92,8 +91,8 @@ describe('the v4 nested form', () => {
     expect(
       (
         await open({
-          init: { color: { field: 'dnds' } },
-          color: { field: 'strand' },
+          init: { encoding: { color: 'dnds' } },
+          encoding: { color: 'strand' },
         })
       ).colorField,
     ).toBe('strand')

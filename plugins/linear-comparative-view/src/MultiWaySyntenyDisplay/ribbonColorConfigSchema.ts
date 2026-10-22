@@ -3,8 +3,18 @@ import {
   MEASURE_FIELD_PRESETS,
   withImpliedField,
 } from '@jbrowse/core/util/colorScale'
-import { colorChannelOptions } from '@jbrowse/display-kit/colorConfigSchema'
-import { paintedField, syntenyColorSlots } from '@jbrowse/synteny-core'
+import {
+  colorChannelOptions,
+  colorFieldSlot,
+  colorLegendOptions,
+  colorScaleOptions,
+  encodingOptions,
+} from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  paintedField,
+  syntenyColorLegendSlots,
+  syntenyColorScaleSlots,
+} from '@jbrowse/synteny-core'
 
 import type { SyntenyColorSnapshot } from '@jbrowse/synteny-core'
 
@@ -14,43 +24,67 @@ export const RIBBON_IMPLIED_FIELD = 'strand'
 /** Every ribbon's color under no field, and an unlabelled pair's under one. */
 export const RIBBON_GREY = 'rgba(130,130,130,0.3)'
 
-/** The ribbon color object as it paints: the constant, and the field mapped. */
+/**
+ * The ribbon color channel as it paints: the field mapped, and the color of
+ * every ribbon under no field or of a pair with no value under one.
+ */
 export function paintedRibbonColor(setting: SyntenyColorSnapshot) {
   const color = withImpliedField(setting, RIBBON_IMPLIED_FIELD)
-  return { value: color.value ?? RIBBON_GREY, field: paintedField(color) }
+  const field = paintedField(color)
+  return {
+    value: (field ? color.scale?.unknown : color.value) ?? RIBBON_GREY,
+    field,
+  }
 }
 
 /**
  * #config RibbonColor
  * #category display
- * The multi-way synteny display's `ribbonColor` setting: one color for every
- * ribbon, or a field each ribbon carries: the record's strand (the default,
- * while the setting names neither a field nor a color), a measurement
- * through its preset (`identity`, `mapq`, `dnds`, `syntenicDepth`), or a column the table
- * declares in `attributeColumns`, through the same slots as the synteny
- * view's [SyntenyColor](../syntenycolor). A string is the constant.
+ * The multi-way synteny display's `ribbons.encoding.color`: one color for
+ * every ribbon, or a field each ribbon carries: the record's strand (the
+ * default, while the channel names neither a field nor a color), a
+ * measurement through its preset (`identity`, `mapq`, `dnds`,
+ * `syntenicDepth`), or a column the table declares in `attributeColumns`,
+ * through the same slots as the synteny view's
+ * [SyntenyColor](../syntenycolor). A string is the field.
  *
  * #example
  * ```js
- * { type: 'MultiWaySyntenyDisplay', ribbonColor: 'rgba(130,130,130,0.3)' }
+ * {
+ *   type: 'MultiWaySyntenyDisplay',
+ *   ribbons: { encoding: { color: { value: 'rgba(130,130,130,0.3)' } } },
+ * }
  * ```
  * ```js
- * { type: 'MultiWaySyntenyDisplay', ribbonColor: { field: 'strand' } }
+ * { type: 'MultiWaySyntenyDisplay', ribbons: { encoding: { color: 'strand' } } }
  * ```
  * ```js
  * {
  *   type: 'MultiWaySyntenyDisplay',
- *   ribbonColor: {
- *     field: 'strand',
- *     range: ['#1b9e77', '#d95f02'],
- *     labels: ['Kept', 'Inverted'],
+ *   ribbons: {
+ *     encoding: {
+ *       color: {
+ *         field: 'strand',
+ *         scale: {
+ *           range: ['#1b9e77', '#d95f02'],
+ *           names: ['Kept', 'Inverted'],
+ *         },
+ *       },
+ *     },
  *   },
  * }
  * ```
  * ```js
  * {
  *   type: 'MultiWaySyntenyDisplay',
- *   ribbonColor: { field: 'group', domain: ['core', 'shell'] },
+ *   ribbons: {
+ *     encoding: {
+ *       color: {
+ *         field: 'group',
+ *         scale: { domain: ['core', 'shell'], unknown: 'lightgrey' },
+ *       },
+ *     },
+ *   },
  * }
  * ```
  */
@@ -59,21 +93,84 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot value
-     * The color of every ribbon under the `none` scale, and of a pair
-     * with no value under a field.
+     * The color of every ribbon while no field paints.
      */
     value: {
       type: 'maybeColor',
       description:
-        'the color of the ribbons connecting adjacent lanes; unset with no field, the ribbons are colored by strand, and a field paints rgba(130,130,130,0.3) where a pair has no value',
+        'the color of the ribbons connecting adjacent lanes; unset with no field, the ribbons are colored by strand',
     },
-    ...syntenyColorSlots({
-      scaleName: 'RibbonColorScale',
+    ...colorFieldSlot({
+      fieldType: 'string',
       field:
         "field to color each ribbon by: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity and dnds paint their preset ramps, mapq its bins and syntenicDepth one-to-one against shared orthologs, as the synteny view's do; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it)",
     }),
+    /**
+     * #slot scale
+     * How the field's values map to colors, Vega-Lite's scale object.
+     */
+    scale: ConfigurationSchema(
+      'RibbonColorScale',
+      {
+        ...syntenyColorScaleSlots('RibbonColorScaleType'),
+        /**
+         * #slot unknown
+         * The color of a pair with no value for the field; its alpha is
+         * every ribbon's under the field.
+         */
+        unknown: {
+          type: 'maybeColor',
+          description:
+            'the color of a pair with no value for the field, whose alpha every ribbon takes; unset, rgba(130,130,130,0.3)',
+        },
+      },
+      colorScaleOptions('ribbons.encoding.color.scale'),
+    ),
+    /**
+     * #slot legend
+     * The key this channel draws.
+     */
+    legend: ConfigurationSchema(
+      'RibbonColorLegend',
+      syntenyColorLegendSlots,
+      colorLegendOptions,
+    ),
   },
-  colorChannelOptions('ribbonColor', MEASURE_FIELD_PRESETS, {
+  colorChannelOptions('ribbons.encoding.color', MEASURE_FIELD_PRESETS, {
     impliedField: RIBBON_IMPLIED_FIELD,
   }),
+)
+
+/**
+ * #config MultiWayRibbons
+ * #category display
+ * The multi-way synteny display's `ribbons`: the bands joining each gene's
+ * placements in adjacent lanes.
+ *
+ * #example
+ * ```js
+ * { type: 'MultiWaySyntenyDisplay', ribbons: { encoding: { color: 'identity' } } }
+ * ```
+ */
+export const ribbonsConfigSchema = ConfigurationSchema(
+  'MultiWayRibbons',
+  {
+    /**
+     * #slot encoding
+     * The channels each ribbon paints through.
+     */
+    encoding: ConfigurationSchema(
+      'MultiWayRibbonsEncoding',
+      {
+        /**
+         * #slot color
+         * `{ value }` paints every ribbon; `"strand"` the record's strand,
+         * `"identity"` a preset ramp and `"group"` a declared column.
+         */
+        color: ribbonColorConfigSchema,
+      },
+      encodingOptions,
+    ),
+  },
+  { closed: true, plot: true },
 )

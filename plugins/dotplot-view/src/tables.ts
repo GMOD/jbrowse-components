@@ -37,13 +37,13 @@ export interface DotplotTablesArgs {
   /** the vertical axis, the adapter's target side unless it names an assembly */
   y: AxisArgs
   /**
-   * The view's settings, as a `DotplotView` snapshot writes them: `color`,
-   * `opacity`, `filter` (a list of field predicates), `drawCigar` and
-   * `lineWidth`.
+   * The view's settings, as a `DotplotView` snapshot writes them:
+   * `encoding` (`color`, a field such as `'strand'` or the color channel's
+   * slots, and `opacity`, a number or the opacity channel), `filter` (a list
+   * of field predicates), `drawCigar` and `lineWidth`.
    */
   view?: {
-    color?: ColorArg
-    opacity?: OpacityArg
+    encoding?: { color?: ColorArg; opacity?: OpacityArg }
     filter?: FilterArg
     drawCigar?: boolean
     lineWidth?: number
@@ -60,13 +60,13 @@ const OP_NAMES: Record<number, string> = {
  * #api
  * A dotplot as the display fetches, lays out and colors it, as tables:
  * `alignments`, each block with its span on each axis, its strand, name and
- * measurements, in the color the view's `color` paints it; `segments`, the
+ * measurements, in the color the view's `encoding.color` paints it; `segments`, the
  * lines the plot draws in paint order, one per block, or one per CIGAR step
  * where a block is wide enough on screen for its CIGAR to show, each from
  * (`xStart`, `yStart`) to (`xEnd`, `yEnd`) in genomic coordinates on the
  * axis's region named by `xRegion` and `yRegion`; `legend`, the key; and
- * `config`, the view's settings with their defaults filled, `color` and
- * `opacity` as config objects.
+ * `config`, the view's settings with their defaults filled, `encoding.color` and
+ * `encoding.opacity` as config objects.
  * `skipped` counts the blocks neither axis places. For a host that draws
  * them itself, such as R through V8.
  */
@@ -92,8 +92,8 @@ export async function dotplotTables(
   })
   const { skippedHRefNames, skippedVRefNames, ...rpcData } = value
   const settings = viewColorSettings({
-    color: view.color,
-    opacity: view.opacity,
+    color: view.encoding?.color,
+    opacity: view.encoding?.opacity,
     defaultOpacity: DEFAULT_ALPHA,
     attributeRanges: rpcData.attributeRanges,
   })

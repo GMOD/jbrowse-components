@@ -37,6 +37,7 @@ import {
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
 import { isNamedFeatureHost } from '@jbrowse/display-kit/floatingLabelHost'
+import { hiddenLegendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import {
   addDisposer,
   cast,
@@ -287,7 +288,7 @@ async function applyInit(
  *   type: 'CircularView',
  *   assembly: 'hg38',
  *   displayedRegionNames: ['chr1', 'chr2', 'chr3'],
- *   tracks: [{ trackId: 'my-sv-vcf', color: 'red' }],
+ *   tracks: [{ trackId: 'my-sv-vcf', encoding: { color: { value: 'red' } } }],
  * }
  * ```
  * `assembly` also takes a list, for a synteny ribbon plot: each
@@ -382,9 +383,10 @@ function stateModelFactory(pluginManager: PluginManager) {
         disableImportForm: types.stripDefault(types.boolean, false),
         /**
          * #property
-         * a key naming each track's ring, chords or ribbons in the corner
+         * the key naming each track's ring, chords or ribbons in the corner,
+         * a [](/docs/config/hiddenlegend) object: `{ show: true }` draws it
          */
-        showLegend: types.stripDefault(types.boolean, false),
+        legend: types.stripDefault(hiddenLegendConfigSchema, {}),
 
         /**
          * #property
@@ -474,6 +476,13 @@ function stateModelFactory(pluginManager: PluginManager) {
       chordPass: ChordPass.create({}),
     }))
     .views(self => ({
+      /**
+       * #getter
+       * `legend.show`: whether the key draws
+       */
+      get showLegend(): boolean {
+        return readConfObject(self.legend, 'show')
+      },
       /**
        * #getter
        * the tracks this view holds itself, for the census
@@ -1202,7 +1211,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setShowLegend(flag: boolean) {
-        self.showLegend = flag
+        self.legend.setSlot('show', flag)
       },
       /**
        * #action

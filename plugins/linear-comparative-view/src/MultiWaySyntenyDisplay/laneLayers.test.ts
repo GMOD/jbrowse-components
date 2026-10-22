@@ -582,9 +582,7 @@ describe('a template layer', () => {
       y: 'score',
       color: {
         field: 'score',
-        scale: 'threshold',
-        domain: ['2'],
-        range: ['blue', 'red'],
+        scale: { type: 'threshold', domain: ['2'], range: ['blue', 'red'] },
       },
     })
     await when(() => display.laneLayerCells.cells.size > 0, { timeout: 5000 })
@@ -605,9 +603,7 @@ describe('a template layer', () => {
       y: 'score',
       color: {
         field: 'score',
-        scale: 'threshold',
-        domain: ['3'],
-        range: ['blue', 'red'],
+        scale: { type: 'threshold', domain: ['3'], range: ['blue', 'red'] },
       },
     })
 
@@ -623,7 +619,7 @@ describe('a template layer', () => {
 
     setConf(display.configuration.laneLayers[0]!.marks[0]!, 'encoding', {
       y: 'score',
-      color: { field: 'score', scale: 'linear', domainMin: 0 },
+      color: { field: 'score', scale: { type: 'linear', domainMin: 0 } },
     })
 
     expect(display.laneLayersFetchSpecs.map(spec => spec.key)).toEqual(keys)
@@ -661,7 +657,7 @@ describe('a template layer', () => {
     })
     setConf(display.configuration.laneLayers[0]!.marks[0]!, 'encoding', {
       y: 'score',
-      color: { field: 'depth', scale: 'linear' },
+      color: { field: 'depth', scale: { type: 'linear' } },
     })
     await when(
       () =>
@@ -672,7 +668,7 @@ describe('a template layer', () => {
 
     setConf(display.configuration.laneLayers[0]!.marks[0]!, 'encoding', {
       y: 'score',
-      color: { field: 'gc', scale: 'linear' },
+      color: { field: 'gc', scale: { type: 'linear' } },
     })
 
     const { layers, cells } = display.laneLayerCells
