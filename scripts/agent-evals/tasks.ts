@@ -1207,6 +1207,50 @@ TASKS.push(
   },
 )
 
+// A JBrowse warning (too much data, an error) fills full-width rows with this
+// background, so a figure carrying one shows a track that never drew
+const FIGURE_CHECK = `
+import sys
+from PIL import Image
+im = Image.open(sys.argv[1]).convert('RGB')
+w, h = im.size
+xs = range(0, w, 10)
+banner = sum(1 for y in range(h) if sum(1 for x in xs if im.getpixel((x, y)) == (255, 244, 229)) > 0.6 * len(xs))
+ink = sum(1 for y in range(0, h, 10) for x in xs if im.getpixel((x, y)) != (255, 255, 255)) / (len(xs) * len(range(0, h, 10)))
+print(w, h, banner, round(ink, 3))
+`
+
+function checkFigure({ work }: { work: string }): Verdict {
+  const file = path.join(work, 'brca1.png')
+  if (!fs.existsSync(file)) {
+    return { pass: false, detail: { files: fs.readdirSync(work) } }
+  }
+  try {
+    const [width, height, bannerRows, ink] = execFileSync(
+      'python3',
+      ['-I', '-c', FIGURE_CHECK, file],
+      { encoding: 'utf8' },
+    )
+      .trim()
+      .split(' ')
+      .map(Number)
+    return {
+      pass: width! >= 1000 && bannerRows! < 5 && ink! > 0.05,
+      detail: { width, height, bannerRows, ink },
+    }
+  } catch (e) {
+    return { pass: false, detail: { unreadable: String(e).slice(0, 200) } }
+  }
+}
+
+TASKS.push({
+  name: 'ob-capture-figure',
+  outside: true,
+  prompt:
+    'Make a PNG figure, WORK/brca1.png, of BRCA1 on hg38 showing RefSeq genes, ClinVar variants and phyloP conservation, with every track fully drawn. The hosted genomes on genomes.jbrowse.org and the @jbrowse/capture CLI (npx @jbrowse/capture) are available.',
+  check: checkFigure,
+})
+
 TASKS.push({
   name: 'ob-build-site',
   outside: true,
