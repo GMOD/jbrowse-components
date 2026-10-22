@@ -74,7 +74,6 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
 
 import { ChordPass } from '../chords/chordPass.ts'
-import { buildChordAxis } from '../chords/chordStage.ts'
 import { partnerShares } from '../chords/partnerShares.ts'
 import { samePointerTarget } from '../chords/shapes.ts'
 import { calloutGutterPx } from '../rings/ringCallouts.ts'
@@ -91,9 +90,8 @@ import {
 } from './fitLayout.ts'
 import { circularLaunchKeys } from './launchKeys.ts'
 import { ideogramBand } from './rulerLabels.ts'
-import { calculateStaticSlices, gapUnitsAfter } from './slices.ts'
+import { buildChordAxis, gapUnitsAfter, layoutSlices } from './slices.ts'
 
-import type { ChordAxis } from '../chords/chordStage.ts'
 import type { PaintRun } from '../chords/ideogramPaint.ts'
 import type { PartnerSpan } from '../chords/partnerShares.ts'
 import type {
@@ -102,6 +100,7 @@ import type {
   PointerTarget,
 } from '../chords/shapes.ts'
 import type { FitInput, FitLayout } from './fitLayout.ts'
+import type { ChordAxis, PolarScale } from './slices.ts'
 import type { CircularViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
@@ -1175,7 +1174,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * the polar stage's scale from the unrolled axis to radians: per base,
        * and per gap between slices
        */
-      get chordScale() {
+      get chordScale(): PolarScale {
         return {
           radiansPerBp: 1 / self.bpPerRadian,
           gapRadians: self.effectiveSpacingPx / self.radiusPx,
@@ -1209,17 +1208,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get staticSlices() {
-        // spelled out rather than handing over `self`, because the gap between
-        // slices has to be the same one `circumferencePx` charged for — passing
-        // the node let the layout read the declared `spacingPx` while the
-        // circumference used the capped one, and the slices then did not close
-        // the ring they were laid out on
-        return calculateStaticSlices({
-          elidedRegions: self.elidedRegions,
-          bpPerRadian: self.bpPerRadian,
-          spacingPx: self.effectiveSpacingPx,
-          radiusPx: self.radiusPx,
-        })
+        return layoutSlices(self.elidedRegions, this.chordScale, this.chordAxis)
       },
       /**
        * #method

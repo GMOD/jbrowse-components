@@ -32,6 +32,7 @@ import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { axisX } from '../../CircularView/slices.ts'
 import {
   BaseChordDisplay,
   installChordFetch,
@@ -39,7 +40,7 @@ import {
 import { getEndpoint } from '../../chords/chordGeometry.ts'
 import { hitChord } from '../../chords/chordHit.ts'
 import { chordLabel } from '../../chords/chordLabel.ts'
-import { axisX, chordEndsAt } from '../../chords/chordStage.ts'
+import { chordEndsAt } from '../../chords/chordStage.ts'
 import { DIMMED_OPACITY } from '../../chords/shaders/chordStage.generated.ts'
 import { CHORD_DEFAULT_COLOR } from './chordColorConfigSchema.ts'
 

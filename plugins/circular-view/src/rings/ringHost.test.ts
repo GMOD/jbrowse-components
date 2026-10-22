@@ -2,7 +2,7 @@ import { MockHal } from '@jbrowse/render-core/hal'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
-import { calculateStaticSlices } from '../CircularView/slices.ts'
+import { layoutSlices } from '../CircularView/slices.ts'
 import {
   MAX_RINGS_RADIUS_FRACTION,
   RingHost,
@@ -38,8 +38,8 @@ const region = (refName: string, end: number) => ({
 
 // three drawn slices with an elided run of two tiny contigs between the
 // second and third, at 10 bp per radian and a 5 px gap on a 100 px radius
-const slices = calculateStaticSlices({
-  elidedRegions: [
+const slices = layoutSlices(
+  [
     region('ctgA', 100),
     region('ctgB', 50),
     {
@@ -52,10 +52,8 @@ const slices = calculateStaticSlices({
     },
     region('ctgE', 30),
   ],
-  bpPerRadian: 10,
-  spacingPx: 5,
-  radiusPx: 100,
-})
+  { radiansPerBp: 1 / 10, gapRadians: 5 / 100 },
+)
 
 test('the strip lays one block per slice at the slice arc, and an elided run counts its regions', () => {
   const blocks = stripBlocks(slices, 100)

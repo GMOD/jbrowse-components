@@ -27,31 +27,37 @@ export interface SliceNonElidedRegion {
 export type SliceRegion = SliceNonElidedRegion | SliceElidedRegion
 
 /**
- * Angle (radians) of a genomic position within a slice/block. Elided regions
- * collapse to their midpoint since individual positions aren't resolvable.
- *
- * A `reversed` region runs the other way around the circle: its first base is
- * at the slice's END angle. That is what lays the second genome of a two-genome
- * circle out as a mirror of the first, so the ribbons between them run parallel
- * instead of through the center — see `mirrorRegionsForCircle`.
+ * A base's offset in bp into its slice: counted backwards through a reversed
+ * slice, and at the middle of an elided one, where no base can be told apart.
  */
-export function bpToRadians(
-  block: {
-    startRadians: number
-    endRadians: number
-    bpPerRadian: number
-    region:
-      | { elided: true }
-      | { elided?: false; start: number; reversed?: boolean }
+function offsetInSlice(
+  slice: {
+    elided: boolean
+    widthBp: number
+    start?: number
+    reversed?: boolean
   },
   bp: number,
 ) {
-  const { region, startRadians, endRadians, bpPerRadian } = block
-  if (region.elided) {
-    return (startRadians + endRadians) / 2
+  if (slice.elided || slice.start === undefined) {
+    return slice.widthBp / 2
   }
-  const offset = (bp - region.start) / bpPerRadian
-  return region.reversed ? endRadians - offset : startRadians + offset
+  const offset = bp - slice.start
+  return slice.reversed ? slice.widthBp - offset : offset
+}
+
+/**
+ * The angle of a base in a slice. A `reversed` region's first base sits at
+ * the slice's end angle, which lays the second genome of a two-genome circle
+ * out as a mirror of the first (`mirrorRegionsForCircle`).
+ */
+export function bpToRadians(
+  slice: Pick<Slice, 'startRadians' | 'bpPerRadian' | 'region'>,
+  bp: number,
+) {
+  return (
+    slice.startRadians + offsetInSlice(slice.region, bp) / slice.bpPerRadian
+  )
 }
 
 function elidedKey(regions: Region[]) {
@@ -117,20 +123,78 @@ export function gapUnitsAfter(regions: readonly SliceRegion[]) {
       )
 }
 
-export function calculateStaticSlices(self: {
-  elidedRegions: readonly SliceRegion[]
-  bpPerRadian: number
-  spacingPx: number
-  radiusPx: number
-}) {
-  const slices: Slice[] = []
-  let currentRadianOffset = 0
-  const { bpPerRadian, spacingPx, radiusPx, elidedRegions } = self
-  const units = gapUnitsAfter(elidedRegions)
-  elidedRegions.forEach((region, i) => {
-    slices.push(new Slice(self, region, currentRadianOffset))
-    currentRadianOffset +=
-      region.widthBp / bpPerRadian + (units[i]! * spacingPx) / radiusPx
+/**
+ * One slice of the circle on the unrolled genome axis: every slice's bases laid
+ * end to end, with no gaps. Nothing here moves with a zoom or a rotation, only
+ * with the regions and which of them are elided.
+ */
+export interface AxisSlice {
+  index: number
+  /** the inter-slice gaps before this slice, a genome boundary counting several */
+  gaps: number
+  cumBp: number
+  widthBp: number
+  start: number
+  reversed: boolean
+  elided: boolean
+}
+
+export interface ChordAxis {
+  slices: readonly AxisSlice[]
+  /** keyed by `sliceKey`; an elided slice answers to each region it swallowed */
+  byKey: ReadonlyMap<string, AxisSlice>
+}
+
+/** The circle's angular scale: radians per base, and per gap between slices. */
+export interface PolarScale {
+  radiansPerBp: number
+  gapRadians: number
+}
+
+export function sliceKey(assemblyName: string, refName: string) {
+  return `${assemblyName}\u0000${refName}`
+}
+
+export function buildChordAxis(regions: readonly SliceRegion[]): ChordAxis {
+  const slices: AxisSlice[] = []
+  const byKey = new Map<string, AxisSlice>()
+  const units = gapUnitsAfter(regions)
+  let cumBp = 0
+  let gaps = 0
+  for (const region of regions) {
+    const slice: AxisSlice = {
+      index: slices.length,
+      gaps,
+      cumBp,
+      widthBp: region.widthBp,
+      start: region.elided ? 0 : region.start,
+      reversed: !region.elided && !!region.reversed,
+      elided: region.elided,
+    }
+    slices.push(slice)
+    for (const r of region.elided ? region.regions : [region]) {
+      byKey.set(sliceKey(r.assemblyName, r.refName), slice)
+    }
+    cumBp += region.widthBp
+    gaps += units[slice.index]!
+  }
+  return { slices, byKey }
+}
+
+/** A base's place on the unrolled axis. */
+export function axisX(slice: AxisSlice, bp: number) {
+  return slice.cumBp + offsetInSlice(slice, bp)
+}
+
+/** The slices at one scale: each axis slice's span, turned into angles. */
+export function layoutSlices(
+  regions: readonly SliceRegion[],
+  { radiansPerBp, gapRadians }: PolarScale,
+  axis = buildChordAxis(regions),
+) {
+  const view = { bpPerRadian: 1 / radiansPerBp }
+  return regions.map((region, i) => {
+    const { cumBp, gaps } = axis.slices[i]!
+    return new Slice(view, region, cumBp * radiansPerBp + gaps * gapRadians)
   })
-  return slices
 }

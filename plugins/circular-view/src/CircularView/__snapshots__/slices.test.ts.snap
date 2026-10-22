@@ -4,8 +4,10 @@ exports[`one slice 1`] = `
 Slice {
   "bpPerRadian": 1591.5494309189535,
   "endRadians": 6.283185307179586,
-  "key": "toast:1..10000",
+  "key": "{wow}toast:1..10000",
   "region": {
+    "assemblyName": "wow",
+    "elided": false,
     "end": 10000,
     "refName": "toast",
     "start": 0,
@@ -66,6 +68,7 @@ exports[`volvox 1`] = `
     "key": "{volvox}ctgA:1..50001",
     "region": {
       "assemblyName": "volvox",
+      "elided": false,
       "end": 50001,
       "refName": "ctgA",
       "start": 0,
@@ -79,6 +82,7 @@ exports[`volvox 1`] = `
     "key": "{volvox}ctgB:1..6079",
     "region": {
       "assemblyName": "volvox",
+      "elided": false,
       "end": 6079,
       "refName": "ctgB",
       "start": 0,

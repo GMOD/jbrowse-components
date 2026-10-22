@@ -1,11 +1,24 @@
-import { bpToRadians, calculateStaticSlices } from './slices.ts'
+import { bpToRadians, layoutSlices } from './slices.ts'
+
+import type { SliceRegion } from './slices.ts'
+
+function region(start: number, end: number, reversed = false): SliceRegion {
+  return {
+    elided: false,
+    widthBp: end - start,
+    start,
+    end,
+    refName: 'r',
+    assemblyName: 'a',
+    reversed,
+  }
+}
 
 test('bpToRadians maps position linearly within a non-elided block', () => {
   const block = {
     startRadians: 2,
-    endRadians: 4,
     bpPerRadian: 100,
-    region: { elided: false as const, start: 1000 },
+    region: region(1000, 1200),
   }
   expect(bpToRadians(block, 1000)).toBe(2)
   expect(bpToRadians(block, 1100)).toBe(3)
@@ -18,9 +31,8 @@ test('bpToRadians maps position linearly within a non-elided block', () => {
 test('bpToRadians runs a reversed block from its end angle', () => {
   const block = {
     startRadians: 2,
-    endRadians: 4,
     bpPerRadian: 100,
-    region: { elided: false as const, start: 1000, reversed: true },
+    region: region(1000, 1200, true),
   }
   expect(bpToRadians(block, 1000)).toBe(4)
   expect(bpToRadians(block, 1100)).toBe(3)
@@ -30,16 +42,28 @@ test('bpToRadians runs a reversed block from its end angle', () => {
 test('bpToRadians collapses an elided block to its midpoint', () => {
   const block = {
     startRadians: 1,
-    endRadians: 3,
     bpPerRadian: 100,
-    region: { elided: true as const },
+    region: {
+      elided: true as const,
+      widthBp: 200,
+      regions: [{ assemblyName: 'a', refName: 'r', start: 0, end: 200 }],
+    },
   }
   expect(bpToRadians(block, 999)).toBe(2)
 })
 
 test('one slice', () => {
   const view = {
-    elidedRegions: [{ refName: 'toast', start: 0, end: 10000, widthBp: 10000 }],
+    elidedRegions: [
+      {
+        elided: false,
+        assemblyName: 'wow',
+        refName: 'toast',
+        start: 0,
+        end: 10000,
+        widthBp: 10000,
+      },
+    ] satisfies SliceRegion[],
     spacingPx: 5,
     radiusPx: 1000,
     totalBp: 10000,
@@ -47,9 +71,10 @@ test('one slice', () => {
     pxPerRadian: 1000,
   }
 
-  const slices = calculateStaticSlices(
-    view as unknown as Parameters<typeof calculateStaticSlices>[0],
-  )
+  const slices = layoutSlices(view.elidedRegions, {
+    radiansPerBp: 1 / view.bpPerRadian,
+    gapRadians: view.spacingPx / view.radiusPx,
+  })
   expect(slices.length).toBe(1)
   const [slice] = slices
   expect(slice).toMatchSnapshot()
@@ -77,7 +102,7 @@ test('two slices', () => {
           { assemblyName: 'wow', refName: 'tiny2', start: 0, end: 5000 },
         ],
       },
-    ],
+    ] satisfies SliceRegion[],
     spacingPx: 5,
     radiusPx: 1000,
     pxPerRadian: 1000,
@@ -85,9 +110,10 @@ test('two slices', () => {
     bpPerRadian: 20000 / (2 * Math.PI),
   }
 
-  const slices = calculateStaticSlices(
-    view as unknown as Parameters<typeof calculateStaticSlices>[0],
-  )
+  const slices = layoutSlices(view.elidedRegions, {
+    radiansPerBp: 1 / view.bpPerRadian,
+    gapRadians: view.spacingPx / view.radiusPx,
+  })
   expect(slices.length).toBe(2)
   expect(slices).toMatchSnapshot()
 })
@@ -97,6 +123,7 @@ test('volvox', () => {
   const view = {
     elidedRegions: [
       {
+        elided: false,
         refName: 'ctgA',
         start: 0,
         end: 50001,
@@ -104,13 +131,14 @@ test('volvox', () => {
         widthBp: 50001,
       },
       {
+        elided: false,
         refName: 'ctgB',
         start: 0,
         end: 6079,
         assemblyName: 'volvox',
         widthBp: 6079,
       },
-    ],
+    ] satisfies SliceRegion[],
     spacingPx: 5,
     radiusPx: 1000,
     pxPerRadian: 1000,
@@ -118,9 +146,10 @@ test('volvox', () => {
     bpPerRadian: totalBp / (2 * Math.PI),
   }
 
-  const slices = calculateStaticSlices(
-    view as unknown as Parameters<typeof calculateStaticSlices>[0],
-  )
+  const slices = layoutSlices(view.elidedRegions, {
+    radiansPerBp: 1 / view.bpPerRadian,
+    gapRadians: view.spacingPx / view.radiusPx,
+  })
   expect(slices.length).toBe(2)
   expect(slices).toMatchSnapshot()
 })

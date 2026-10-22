@@ -24,17 +24,13 @@ import {
   renameRegionsForAdapter,
 } from '@jbrowse/synteny-core'
 
+import { axisX, sliceKey } from '../../CircularView/slices.ts'
 import {
   BaseChordDisplay,
   installChordFetch,
 } from '../../chords/BaseChordDisplay.ts'
 import { ribbonHitTest } from '../../chords/chordHit.ts'
-import {
-  axisX,
-  ribbonAnglesAt,
-  ribbonFadeAt,
-  sliceKey,
-} from '../../chords/chordStage.ts'
+import { ribbonAnglesAt, ribbonFadeAt } from '../../chords/chordStage.ts'
 import { dedupeRibbons } from '../../chords/dedupeRibbons.ts'
 import { paintRuns } from '../../chords/ideogramPaint.ts'
 import { ribbonLabel } from '../../chords/ribbonLabel.ts'

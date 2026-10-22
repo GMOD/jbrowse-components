@@ -1,22 +1,20 @@
 import { assemblyArcs, labelsRunAlongArcs } from './rulerLabels.ts'
-import { calculateStaticSlices } from './slices.ts'
+import { layoutSlices } from './slices.ts'
 
 import type { Slice } from './slices.ts'
 
 function slices(
   regions: { assemblyName: string; refName: string; widthBp: number }[],
 ) {
-  return calculateStaticSlices({
-    elidedRegions: regions.map(r => ({
+  return layoutSlices(
+    regions.map(r => ({
       ...r,
       elided: false as const,
       start: 0,
       end: r.widthBp,
     })),
-    bpPerRadian: 1000,
-    spacingPx: 0,
-    radiusPx: 100,
-  })
+    { radiansPerBp: 1 / 1000, gapRadians: 0 },
+  )
 }
 
 // 100px radius and 1000 bp per radian: a 1000 bp slice is a 100px arc, which

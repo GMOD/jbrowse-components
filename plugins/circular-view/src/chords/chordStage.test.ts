@@ -1,12 +1,15 @@
-import { bpToRadians, calculateStaticSlices } from '../CircularView/slices.ts'
 import {
   axisX,
+  bpToRadians,
   buildChordAxis,
+  layoutSlices,
+  sliceKey,
+} from '../CircularView/slices.ts'
+import {
   chordEndsAt,
   footRadians,
   ribbonAnglesAt,
   ribbonFadeAt,
-  sliceKey,
   widenedSpan,
 } from './chordStage.ts'
 import { DIMMED_OPACITY } from './shaders/chordStage.generated.ts'
@@ -51,11 +54,9 @@ const regions: SliceRegion[] = [
 const radiusPx = 1000
 const bpPerRadian = 1000
 const spacingPx = 20
-const slices = calculateStaticSlices({
-  elidedRegions: regions,
-  bpPerRadian,
-  spacingPx,
-  radiusPx,
+const slices = layoutSlices(regions, {
+  radiansPerBp: 1 / bpPerRadian,
+  gapRadians: spacingPx / radiusPx,
 })
 const axis = buildChordAxis(regions)
 const stage: ChordStage = {

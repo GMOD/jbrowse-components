@@ -1,4 +1,3 @@
-import { gapUnitsAfter } from '../CircularView/slices.ts'
 import { MIN_RIBBON_END_PX } from './shaders/chordStage.generated.ts'
 import {
   chordIsSpeck,
@@ -6,83 +5,7 @@ import {
   ribbonThinFade,
 } from './shaders/chordStage.js.generated.ts'
 
-import type { SliceRegion } from '../CircularView/slices.ts'
 import type { Feature } from '@jbrowse/core/util'
-
-/**
- * One slice of the circle on the unrolled genome axis: every slice's bases laid
- * end to end, with no gaps. Nothing here moves with a zoom or a rotation, only
- * with the regions and which of them are elided.
- */
-export interface AxisSlice {
-  index: number
-  /** the inter-slice gaps before this slice, a genome boundary counting several */
-  gaps: number
-  cumBp: number
-  widthBp: number
-  start: number
-  reversed: boolean
-  elided: boolean
-}
-
-export interface ChordAxis {
-  slices: readonly AxisSlice[]
-  /** keyed by `sliceKey`; an elided slice answers to each region it swallowed */
-  byKey: ReadonlyMap<string, AxisSlice>
-}
-
-export function sliceKey(assemblyName: string, refName: string) {
-  return `${assemblyName}\u0000${refName}`
-}
-
-export function buildChordAxis(regions: readonly SliceRegion[]): ChordAxis {
-  const slices: AxisSlice[] = []
-  const byKey = new Map<string, AxisSlice>()
-  const units = gapUnitsAfter(regions)
-  let cumBp = 0
-  let gaps = 0
-  for (const region of regions) {
-    const slice: AxisSlice = region.elided
-      ? {
-          index: slices.length,
-          gaps,
-          cumBp,
-          widthBp: region.widthBp,
-          start: 0,
-          reversed: false,
-          elided: true,
-        }
-      : {
-          index: slices.length,
-          gaps,
-          cumBp,
-          widthBp: region.widthBp,
-          start: region.start,
-          reversed: !!region.reversed,
-          elided: false,
-        }
-    slices.push(slice)
-    for (const r of region.elided ? region.regions : [region]) {
-      byKey.set(sliceKey(r.assemblyName, r.refName), slice)
-    }
-    cumBp += region.widthBp
-    gaps += units[slice.index]!
-  }
-  return { slices, byKey }
-}
-
-/**
- * A base's place on the unrolled axis: counted backwards through a reversed
- * slice, and at the middle of an elided one, where no base can be told apart.
- */
-export function axisX(slice: AxisSlice, bp: number) {
-  const offset = bp - slice.start
-  return slice.elided
-    ? slice.cumBp + slice.widthBp / 2
-    : slice.reversed
-      ? slice.cumBp + slice.widthBp - offset
-      : slice.cumBp + offset
-}
 
 /**
  * The polar stage as the marks across the circle read it: the scale from the

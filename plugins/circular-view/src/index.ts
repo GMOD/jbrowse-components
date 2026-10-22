@@ -52,7 +52,7 @@ export type { CircularViewCommands } from './CircularView/types.ts'
 export type { FitInput, FitLayout } from './CircularView/fitLayout.ts'
 export type { ChordCell, ChordLayerFrame } from './chords/chordMarks.ts'
 export type { ChordBackend, ChordPassView } from './chords/chordPass.ts'
-export type { AxisSlice, ChordAxis } from './chords/chordStage.ts'
+export type { AxisSlice, ChordAxis, PolarScale } from './CircularView/slices.ts'
 export type { PaintRun } from './chords/ideogramPaint.ts'
 export type { PartnerShare } from './chords/partnerShares.ts'
 export type {
