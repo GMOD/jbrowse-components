@@ -348,7 +348,7 @@ pass every `jexl:` expression, on variant tracks too:
   "displayDefaults": {
     "height": 400,
     "color": { "field": "mapq" },
-    "pileup": { "showSoftClipping": true },
+    "pileup": { "softClips": { "show": true } },
     "facet": { "field": "tags.HP", "sort": ["2", "1"] },
     "filter": {
       "flagExclude": 1540,

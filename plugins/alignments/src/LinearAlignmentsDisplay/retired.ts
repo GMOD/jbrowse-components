@@ -152,7 +152,7 @@ function rendererSlotsOf(renderers: unknown): DisplayEntry {
       ? { fadeLowBaseQuality: mismatchAlpha }
       : {}),
     ...(hideMismatches !== undefined
-      ? { showMismatches: !hideMismatches }
+      ? { mismatches: { show: !hideMismatches } }
       : {}),
   }
   return Object.keys(slots).length > 0 ? { pileup: slots } : {}
@@ -209,7 +209,7 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   featureHeight: v => ({ pileup: { readHeight: v } }),
   maxHeight: v => ({ pileup: { maxLayoutHeight: v } }),
   hideSmallIndels: () => ({}),
-  hideMismatches: v => ({ pileup: { showMismatches: !v } }),
+  hideMismatches: v => ({ pileup: { mismatches: { show: !v } } }),
   mismatchAlpha: v => ({ pileup: { fadeLowBaseQuality: v } }),
   hideLargeIndels: () => ({}),
   minSubfeatureWidth: () => ({}),
@@ -275,12 +275,16 @@ const INSTANCE_SLOTS: Record<string, (value: unknown) => DisplayEntry> = {
   filterBySetting: wholeFilterOf,
   sortedBy: sortSlot,
   trackMaxHeight: value => ({ pileup: { maxLayoutHeight: value } }),
-  hideMismatchesSetting: value => ({ pileup: { showMismatches: !value } }),
+  hideMismatchesSetting: value => ({
+    pileup: { mismatches: { show: !value } },
+  }),
   // the read cloud's "Show singletons" and "Show proper pairs"
   drawSingletons: value =>
     value === false ? { filter: { alone: 'exclude' } } : {},
   drawProperPairs: value =>
-    value === false ? { readConnections: { showOrdinaryPairs: false } } : {},
+    value === false
+      ? { readConnections: { ordinaryPairs: { show: false } } }
+      : {},
 }
 
 // The pre-4.x display was a container whose track-menu settings sat on these

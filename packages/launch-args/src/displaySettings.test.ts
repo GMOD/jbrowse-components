@@ -106,20 +106,20 @@ describe('alignments modifiers', () => {
 
   test('a band modifier keeps the members a JSON modifier wrote', () => {
     const { snap } = buildDisplaySnapshot('alignments', [
-      '{"pileup":{"showSoftClipping":true},"readConnections":{"height":100},"sashimi":{"showCounts":true}}',
+      '{"pileup":{"softClips":{"show":true}},"readConnections":{"height":100},"sashimi":{"labels":{"show":true}}}',
       'featureHeight:4',
       'arcs:down',
       'sashimi:auto',
     ])
     expect(snap).toMatchObject({
-      pileup: { showSoftClipping: true, readHeight: 4 },
+      pileup: { softClips: { show: true }, readHeight: 4 },
       readConnections: {
         height: 100,
         show: true,
         mark: 'arc',
         placement: 'down',
       },
-      sashimi: { showCounts: true, show: true, placement: 'auto' },
+      sashimi: { labels: { show: true }, show: true, placement: 'auto' },
     })
   })
 

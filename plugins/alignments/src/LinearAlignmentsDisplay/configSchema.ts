@@ -68,7 +68,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     height: 400,
  *     unit: 'chain',
  *     color: { field: 'pairOrientation' },
- *     pileup: { showSoftClipping: true },
+ *     pileup: { softClips: { show: true } },
  *     readConnections: { show: true },
  *   },
  * }
@@ -86,7 +86,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   adapter: { type: 'BamAdapter', uri: 'https://example.com/rnaseq.bam' },
  *   displayDefaults: {
  *     coverage: { height: 80 },
- *     sashimi: { placement: 'auto', showCounts: true },
+ *     sashimi: { placement: 'auto', labels: { show: true } },
  *     filter: { junctions: { minReads: 5, nonCanonical: 'exclude' } },
  *   },
  * }
@@ -129,7 +129,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot sashimi
        * The splice-junction arcs, drawn in the coverage band: `show`,
-       * `height`, `placement` and `showCounts`; `filter.junctions` filters the
+       * `height`, `placement` and `labels`; `filter.junctions` filters the
        * junctions drawn.
        */
       sashimi: sashimiConfigSchema,

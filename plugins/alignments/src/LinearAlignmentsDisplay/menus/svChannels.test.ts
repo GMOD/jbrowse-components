@@ -58,8 +58,8 @@ test('leaving the arrangement unsets what it wrote', () => {
   clickRow(display)
   const conf = display.configuration
   expect(getSnapshot(conf.readConnections)).not.toHaveProperty('show')
-  expect(getSnapshot(conf.readConnections)).not.toHaveProperty(
-    'showOrdinaryPairs',
+  expect(getSnapshot(conf.readConnections.ordinaryPairs)).not.toHaveProperty(
+    'show',
   )
   expect(getSnapshot(conf.pileup)).not.toHaveProperty('show')
 })
@@ -78,7 +78,11 @@ test('the round trip leaves the read color and the placement alone', () => {
 const ON = {
   pileup: { show: false },
   facet: { field: 'pairOrientation' },
-  readConnections: { show: true, mark: 'arc', showOrdinaryPairs: false },
+  readConnections: {
+    show: true,
+    mark: 'arc',
+    ordinaryPairs: { show: false },
+  },
 } as const
 
 test('the preset reads as itself', () => {
@@ -103,10 +107,10 @@ test.each([
     },
   ],
   [
-    'readConnections.showOrdinaryPairs',
+    'readConnections.ordinaryPairs.show',
     {
       ...ON,
-      readConnections: { ...ON.readConnections, showOrdinaryPairs: true },
+      readConnections: { ...ON.readConnections, ordinaryPairs: { show: true } },
     },
   ],
 ])('changing %s alone leaves the arrangement', (_name, settings) => {

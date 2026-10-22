@@ -685,7 +685,7 @@ export function ecoliOneVsAllUrl(levelHeight: number) {
                 facet: { field: 'mateAssembly', hidden: ['K12'] },
                 pileup: {
                   // at 3.2kb/px the SNPs, each at a 1px floor, paint a solid wall
-                  showMismatches: false,
+                  mismatches: { show: false },
                   // the gaps are the information; a 7px bar hides them
                   readHeight: 20,
                 },

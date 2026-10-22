@@ -30,7 +30,11 @@ export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
 export const SV_CHANNELS_ON = {
   pileup: { show: false },
   facet: { field: 'pairOrientation' },
-  readConnections: { show: true, mark: 'arc', showOrdinaryPairs: false },
+  readConnections: {
+    show: true,
+    mark: 'arc',
+    ordinaryPairs: { show: false },
+  },
 } as const
 
 // Leaving the arrangement UNSETS what it wrote rather than asserting a state:
@@ -42,7 +46,7 @@ export const SV_CHANNELS_ON = {
 export const SV_CHANNELS_OFF = {
   pileup: { show: null },
   facet: null,
-  readConnections: { show: null, showOrdinaryPairs: null },
+  readConnections: { show: null, ordinaryPairs: { show: null } },
 } as const
 
 /**
@@ -58,7 +62,7 @@ export function isSvChannelsActive(settings: Record<string, unknown>) {
       on.facet.field &&
     member(readConnections, 'show') === on.readConnections.show &&
     member(readConnections, 'mark') === on.readConnections.mark &&
-    member(readConnections, 'showOrdinaryPairs') ===
-      on.readConnections.showOrdinaryPairs
+    member(member(readConnections, 'ordinaryPairs'), 'show') ===
+      on.readConnections.ordinaryPairs.show
   )
 }

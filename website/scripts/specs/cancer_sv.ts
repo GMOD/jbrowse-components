@@ -103,7 +103,7 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
     trackId: TUMOUR,
     ...DEEP_ONT,
     pileup: {
-      showSoftClipping: true,
+      softClips: { show: true },
       // At 1px the rows fuse into a grey slab with white streaks.
       readHeight: 2,
     },
@@ -189,7 +189,7 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
           {
             trackId: 'reads_vs_der3',
             pileup: {
-              showSoftClipping: true,
+              softClips: { show: true },
               // 43 reads overlap this window (29 span all four junctions). At a
               // pitch of featureHeight + 1 they need 387 of the 425 px under
               // the coverage band; at 11 the pileup ran onto a scrollbar.
@@ -246,13 +246,13 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         {
           trackId: TUMOUR,
           ...DEEP_ONT,
-          pileup: { showSoftClipping: true, readHeight: 2 },
+          pileup: { softClips: { show: true }, readHeight: 2 },
           height: 470,
         },
         {
           trackId: NORMAL,
           ...DEEP_ONT,
-          pileup: { showSoftClipping: true, readHeight: 2 },
+          pileup: { softClips: { show: true }, readHeight: 2 },
           height: 215,
         },
       ],
@@ -295,7 +295,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               {
                 trackId: TUMOUR,
                 ...DEEP_ONT,
-                pileup: { ...SUPER_COMPACT, showSoftClipping: true },
+                pileup: { ...SUPER_COMPACT, softClips: { show: true } },
                 height: 160,
               },
             ],

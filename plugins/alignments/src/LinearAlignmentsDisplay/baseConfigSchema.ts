@@ -137,7 +137,7 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
     /**
      * #slot coverage
      * The coverage histogram band: `show`, `height` (default 45),
-     * `showInterbaseIndicators` and `minAlleleFraction`, a flat floor
+     * `interbase` and `minAlleleFraction`, a flat floor
      * on each allele segment's share of its position's depth, distinct from
      * `pileup.fadeLowFrequency`.
      */
@@ -152,7 +152,7 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * #slot readConnections
      * The connections between mates and split segments: `show` (default
      * off), `mark` (`arc` or `cloud`), `height`, `placement`, `lineWidth`,
-     * `color` and `showOrdinaryPairs`; `filter.connections` filters the
+     * `color` and `ordinaryPairs`; `filter.connections` filters the
      * connections drawn.
      */
     readConnections: readConnectionsConfigSchema,

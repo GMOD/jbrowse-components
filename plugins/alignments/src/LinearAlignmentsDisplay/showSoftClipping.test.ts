@@ -43,13 +43,13 @@ describe('alignments showSoftClipping', () => {
   it('is off unless the track config says otherwise', () => {
     expect(createDisplay().display.showSoftClipping).toBe(false)
     expect(
-      createDisplay({ pileup: { showSoftClipping: true } }).display
+      createDisplay({ pileup: { softClips: { show: true } } }).display
         .showSoftClipping,
     ).toBe(true)
   })
 
   it('setShowSoftClipping writes the slot both ways', () => {
-    const { display } = createDisplay({ pileup: { showSoftClipping: true } })
+    const { display } = createDisplay({ pileup: { softClips: { show: true } } })
     display.setShowSoftClipping(false)
     expect(display.showSoftClipping).toBe(false)
     display.setShowSoftClipping(true)
@@ -164,7 +164,7 @@ describe('alignments sashimi.showCounts (sashimi arc counts)', () => {
   })
 
   it('setShowSashimiCounts writes the slot both ways', () => {
-    const { display } = createDisplay({ sashimi: { showCounts: true } })
+    const { display } = createDisplay({ sashimi: { labels: { show: true } } })
     display.setShowSashimiCounts(false)
     expect(display.showSashimiCounts).toBe(false)
     display.setShowSashimiCounts(true)

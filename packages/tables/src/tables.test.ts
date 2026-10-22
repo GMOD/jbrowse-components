@@ -371,11 +371,11 @@ test('a band the display hides leaves its tables empty', async () => {
   expect(noPileup.coverage.depth).toEqual(shown.coverage.depth)
 })
 
-test('pileup.showMismatches off drops what the display drops: mismatches, insertions and deletions, not skips or clips', async () => {
+test('pileup.mismatches.show off drops what the display drops: mismatches, insertions and deletions, not skips or clips', async () => {
   const shown = await engine.alignments(LONG_READS)
   const hidden = await engine.alignments({
     ...LONG_READS,
-    display: { pileup: { showMismatches: false } },
+    display: { pileup: { mismatches: { show: false } } },
   })
   expect(shown.mismatches.position.length).toBeGreaterThan(0)
   expect(shown.insertions.position.length).toBeGreaterThan(0)
@@ -388,7 +388,7 @@ test('pileup.showMismatches off drops what the display drops: mismatches, insert
   const spliced = await engine.alignments(SPLICED)
   const splicedHidden = await engine.alignments({
     ...SPLICED,
-    display: { pileup: { showMismatches: false } },
+    display: { pileup: { mismatches: { show: false } } },
   })
   const skips = (gaps: typeof spliced.gaps) =>
     Object.fromEntries(
@@ -855,11 +855,11 @@ test('the glyph hands R the splice line’s fade at the read height, and the siz
   expect(fadeFloor).toBeLessThan(1)
 })
 
-test('the display’s pileup.showSoftClipping lays reads out by their clipped extent', async () => {
+test('the display’s pileup.softClips.show lays reads out by their clipped extent', async () => {
   const plain = await engine.alignments(PAIRED_INVERSION)
   const clipped = await engine.alignments({
     ...PAIRED_INVERSION,
-    display: { pileup: { showSoftClipping: true } },
+    display: { pileup: { softClips: { show: true } } },
   })
   expect(clipped.reads.start).toEqual(plain.reads.start)
   expect(clipped.reads.row).not.toEqual(plain.reads.row)
@@ -895,7 +895,9 @@ test('read connections come back as the display’s band draws them', async () =
 
   const abnormal = await engine.alignments({
     ...PAIRED_INVERSION,
-    display: { readConnections: { show: true, showOrdinaryPairs: false } },
+    display: {
+      readConnections: { show: true, ordinaryPairs: { show: false } },
+    },
   })
   expect(abnormal.arcs.category).not.toContain('normalInsert')
   expect(abnormal.arcs.start).toHaveLength(

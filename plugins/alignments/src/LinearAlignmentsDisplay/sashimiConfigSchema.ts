@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { SASHIMI_PLACEMENTS } from './constants.ts'
+import { sashimiLabelsConfigSchema } from './sashimiLabelsConfigSchema.ts'
 
 /**
  * #config Sashimi
@@ -15,7 +16,7 @@ import { SASHIMI_PLACEMENTS } from './constants.ts'
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   sashimi: { placement: 'auto', showCounts: true },
+ *   sashimi: { placement: 'auto', labels: { show: true } },
  *   filter: { junctions: { minReads: 5, nonCanonical: 'exclude' } },
  * }
  * ```
@@ -51,13 +52,10 @@ export const sashimiConfigSchema = ConfigurationSchema(
         'where the arcs draw: up over the coverage histogram, down in a strip below it, or auto, which sends a junction down where it would cross another. Without the coverage band every arc draws down',
     },
     /**
-     * #slot
+     * #slot labels
+     * The read count on each arc: `show`.
      */
-    showCounts: {
-      type: 'boolean',
-      defaultValue: false,
-      description: 'draw the supporting-read count on each arc',
-    },
+    labels: sashimiLabelsConfigSchema,
   },
   { closed: true, plot: true },
 )

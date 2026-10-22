@@ -1097,6 +1097,13 @@ const checkbox = (label: string, note?: string): FieldRecipe => {
       : undefined
 }
 
+// A band's layer, `{ show }`, whose checkbox is its `show`.
+const layerCheckbox = (label: string, note?: string): FieldRecipe => {
+  const step = checkbox(label, note)
+  return (value, context) =>
+    step((value as { show?: unknown } | undefined)?.show, context)
+}
+
 // `filter`, or v4's `filterBy`, carries every read filter, and only the read
 // categories have a click path worth writing: the flag masks and tag filters
 // are typed into the dialog rather than picked off a menu, so a figure setting
@@ -1782,7 +1789,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     SASHIMI_PLACEMENT,
   ),
   readConnections: fromTable('Read connections', READ_CONNECTIONS),
-  'pileup.showSoftClipping': checkbox(
+  'pileup.softClips': layerCheckbox(
     'Show... → Soft clipping',
     'Reveals clipped bases — the signal that a read spans a breakpoint.',
   ),
@@ -1823,7 +1830,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   // Same label in the same submenu on both displays that have the slot: the
   // alignments "Show..." menu (menus/reads.ts) and LGVSyntenyDisplay's trimmed
   // copy of it (LGVSyntenyDisplay/menus.ts), so one path serves both.
-  'pileup.showMismatches': checkbox(
+  'pileup.mismatches': layerCheckbox(
     'Show... → Mismatches',
     'Per-base differences read from the CIGAR (and cs tag, on synteny tracks). Worth unchecking when zoomed out far enough that each one is sub-pixel and they paint over the block structure.',
   ),
@@ -1852,7 +1859,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   showForward: checkbox('Show... → Forward'),
   showReverse: checkbox('Show... → Reverse'),
   showTranslation: checkbox('Show... → Translation'),
-  'sashimi.showCounts': checkbox('Sashimi arcs → Show read counts'),
+  'sashimi.labels': layerCheckbox('Sashimi arcs → Show read counts'),
   // A peer of the two above, in the submenu the arcs own (menus/sashimi.ts),
   // and shown only while the arcs are.
   'filter.junctions.nonCanonical': value =>
@@ -1866,7 +1873,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Read connections → Arc placement',
     READ_CONNECTIONS_PLACEMENT,
   ),
-  'readConnections.showOrdinaryPairs': checkbox(
+  'readConnections.ordinaryPairs': layerCheckbox(
     'Read connections → Show ordinary pairs',
     'Unchecked, the band keeps only the pairs that carry a category — an abnormal insert size or orientation, or a split junction — which on deep coverage is the difference between a readable band and a solid mass.',
   ),

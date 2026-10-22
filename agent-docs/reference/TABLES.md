@@ -89,9 +89,9 @@ every call; `read` indexes `reads` within one call, and a read's `name` is
 shared by its mates and supplementary segments. The coverage band's tables
 stop at the region's ends: the worker counts depth wherever its reads reach,
 which past the region is a partial count. A band or mark the display's
-`show` members hide (`coverage.show`, `pileup.show`, `pileup.showMismatches`,
-`coverage.showInterbaseIndicators`, `sashimi.show`) comes back as empty
-tables. `pileup.showMismatches: false` empties `mismatches` and `insertions`
+`show` members hide (`coverage.show`, `pileup.show`, `pileup.mismatches.show`,
+`coverage.interbase.show`, `sashimi.show`) comes back as empty
+tables. `pileup.mismatches.show: false` empties `mismatches` and `insertions`
 and drops the deletions from `gaps`, as the display's marks do; the skips
 and `clips` stay.
 `@jbrowse/tables` composes them (`createTablesEngine`) and adds
@@ -220,7 +220,7 @@ A setting the table cannot serve is refused with an error:
 - `spanLimit` and `byteLimit` apply to the regions' sum.
 - `warnings` names each setting the layout drops without an error, such as
   a column sort with no `pos`, a sort across contigs or held by no region
-  with reads, a sort or `pileup.showSoftClipping` under `unit: 'chain'`,
+  with reads, a sort or `pileup.softClips` under `unit: 'chain'`,
   and `collapseSections` on a faceted display.
 
 Beside the reads come the marks the display draws on them, each as the
@@ -258,7 +258,7 @@ histogram comes back the same way, as `interbaseCoverage` (each position's
 insertions, soft clips and hard clips stacked in that order, `from` and `to`
 in reads), with `indicators` (the positions whose events pass the display's
 share of the local depth, and the most common `type` there). The display
-draws neither while `settings.showInterbaseIndicators` is false.
+draws neither while `settings.coverage.interbase.show` is false.
 
 **`alignmentMarkAlpha` draws a mark as the pileup does at a host's zoom.**
 A host's px per bp depends on its figure, so the host calls it once per

@@ -4069,8 +4069,16 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             },
             {
-              "name": "showInterbaseIndicators",
-              "type": "boolean"
+              "name": "interbase",
+              "type": "CoverageInterbaseConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "CoverageInterbase",
+              "writes": "members"
             },
             {
               "name": "minAlleleFraction",
@@ -4097,16 +4105,28 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             },
             {
-              "name": "showMismatches",
-              "type": "boolean"
+              "name": "mismatches",
+              "type": "PileupMismatchesConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "PileupMismatches",
+              "writes": "members"
             },
             {
-              "name": "showSoftClipping",
-              "type": "boolean"
-            },
-            {
-              "name": "showOutline",
-              "type": "(boolean | undefined)"
+              "name": "softClips",
+              "type": "PileupSoftClipsConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "PileupSoftClips",
+              "writes": "members"
             },
             {
               "name": "showConnectors",
@@ -4161,8 +4181,16 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             },
             {
-              "name": "showOrdinaryPairs",
-              "type": "(boolean | undefined)"
+              "name": "ordinaryPairs",
+              "type": "ReadConnectionsOrdinaryPairsConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "(boolean | undefined)"
+                }
+              ],
+              "schema": "ReadConnectionsOrdinaryPairs",
+              "writes": "members"
             }
           ],
           "schema": "ReadConnections",
@@ -4228,8 +4256,16 @@ export const configManifest: ConfigManifest = {
               "type": "SashimiPlacement"
             },
             {
-              "name": "showCounts",
-              "type": "boolean"
+              "name": "labels",
+              "type": "SashimiLabelsConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "SashimiLabels",
+              "writes": "members"
             }
           ],
           "schema": "Sashimi",
@@ -4875,8 +4911,16 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             },
             {
-              "name": "showInterbaseIndicators",
-              "type": "boolean"
+              "name": "interbase",
+              "type": "CoverageInterbaseConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "CoverageInterbase",
+              "writes": "members"
             },
             {
               "name": "minAlleleFraction",
@@ -4903,16 +4947,28 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             },
             {
-              "name": "showMismatches",
-              "type": "boolean"
+              "name": "mismatches",
+              "type": "PileupMismatchesConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "PileupMismatches",
+              "writes": "members"
             },
             {
-              "name": "showSoftClipping",
-              "type": "boolean"
-            },
-            {
-              "name": "showOutline",
-              "type": "(boolean | undefined)"
+              "name": "softClips",
+              "type": "PileupSoftClipsConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "PileupSoftClips",
+              "writes": "members"
             },
             {
               "name": "showConnectors",
@@ -4967,8 +5023,16 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             },
             {
-              "name": "showOrdinaryPairs",
-              "type": "(boolean | undefined)"
+              "name": "ordinaryPairs",
+              "type": "ReadConnectionsOrdinaryPairsConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "(boolean | undefined)"
+                }
+              ],
+              "schema": "ReadConnectionsOrdinaryPairs",
+              "writes": "members"
             }
           ],
           "schema": "ReadConnections",
@@ -6967,8 +7031,16 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             },
             {
-              "name": "showInterbaseIndicators",
-              "type": "boolean"
+              "name": "interbase",
+              "type": "CoverageInterbaseConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "CoverageInterbase",
+              "writes": "members"
             },
             {
               "name": "minAlleleFraction",

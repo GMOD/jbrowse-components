@@ -61,7 +61,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get showInterbaseIndicators(): boolean {
-      return getConf(self, ['coverage', 'showInterbaseIndicators'])
+      return getConf(self, ['coverage', 'interbase', 'show'])
     },
     /**
      * #getter
@@ -222,7 +222,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setShowInterbaseIndicators(arg: boolean) {
-      setConf(self, ['coverage', 'showInterbaseIndicators'], arg)
+      setConf(self, ['coverage', 'interbase', 'show'], arg)
     },
     /**
      * #action

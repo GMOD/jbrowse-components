@@ -192,7 +192,7 @@ const readEvidence = ({
               ...illuminaPairs.readConnections,
               show: true,
               mark: 'cloud',
-              showOrdinaryPairs: true,
+              ordinaryPairs: { show: true },
               height: 200,
             },
             height: 215,

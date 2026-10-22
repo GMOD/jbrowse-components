@@ -6,6 +6,7 @@ import {
   READ_CONNECTIONS_MARKS,
   READ_CONNECTIONS_PLACEMENTS,
 } from './constants.ts'
+import { readConnectionsOrdinaryPairsConfigSchema } from './readConnectionsOrdinaryPairsConfigSchema.ts'
 
 /**
  * #config ReadConnections
@@ -30,7 +31,7 @@ import {
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   readConnections: { show: true, showOrdinaryPairs: false },
+ *   readConnections: { show: true, ordinaryPairs: { show: false } },
  *   filter: { connections: { interchrom: 'only' } },
  * }
  * ```
@@ -51,7 +52,7 @@ export const readConnectionsConfigSchema = ConfigurationSchema(
      * The two share one band and differ in shape, y scale and one cut: an arc
      * rises with the span between its ends, and the cloud draws a flat line
      * at |TLEN| on a log scale and leaves the pairs of modal insert size out
-     * unless `showOrdinaryPairs` keeps them.
+     * unless `ordinaryPairs.show` keeps them.
      */
     mark: {
       type: 'stringEnum',
@@ -100,15 +101,10 @@ export const readConnectionsConfigSchema = ConfigurationSchema(
      */
     color: alignmentsArcColorConfigSchema,
     /**
-     * #slot
-     * Unset, the mark decides: arcs draw ordinary pairs as context and the
-     * cloud leaves them out.
+     * #slot ordinaryPairs
+     * The pairs that carry no category, drawn as context: `show`.
      */
-    showOrdinaryPairs: {
-      type: 'maybeBoolean',
-      description:
-        'draw the ordinary pairs beside the ones carrying a category: concordant pairs as arcs, pairs of modal insert size in the cloud; unset follows the mark',
-    },
+    ordinaryPairs: readConnectionsOrdinaryPairsConfigSchema,
   },
   { closed: true, plot: true },
 )

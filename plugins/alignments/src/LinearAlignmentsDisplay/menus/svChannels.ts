@@ -30,7 +30,7 @@ export function svChannelsActive(model: SvChannelsModel) {
     readConnections: {
       show: model.showReadConnections,
       mark: model.readConnectionsMark,
-      showOrdinaryPairs: model.showOrdinaryPairs,
+      ordinaryPairs: { show: model.showOrdinaryPairs },
     },
   })
 }

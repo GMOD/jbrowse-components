@@ -145,7 +145,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get showInterbaseIndicators(): boolean {
-      return getConf(self, ['coverage', 'showInterbaseIndicators'])
+      return getConf(self, ['coverage', 'interbase', 'show'])
     },
     /** #getter */
     get coverageMinAlleleFraction(): number {
@@ -171,11 +171,11 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get showMismatches(): boolean {
-      return getConf(self, ['pileup', 'showMismatches'])
+      return getConf(self, ['pileup', 'mismatches', 'show'])
     },
     /** #getter */
     get showSoftClipping(): boolean {
-      return getConf(self, ['pileup', 'showSoftClipping'])
+      return getConf(self, ['pileup', 'softClips', 'show'])
     },
     /** #getter */
     get showConnectors(): boolean {
@@ -223,7 +223,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /** #getter */
     get showSashimiCounts(): boolean {
       const conf = readsConfOf(self.configuration)
-      return conf ? readConfObject(conf, ['sashimi', 'showCounts']) : false
+      return conf ? readConfObject(conf, ['sashimi', 'labels', 'show']) : false
     },
     /** #getter */
     get junctionFilter(): JunctionFilter {
@@ -278,7 +278,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get showOrdinaryPairs(): boolean {
       return ordinaryPairsShown(
-        getConf(self, ['readConnections', 'showOrdinaryPairs']),
+        getConf(self, ['readConnections', 'ordinaryPairs', 'show']),
         this.readConnectionsMark === 'cloud',
       )
     },
@@ -519,7 +519,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setShowInterbaseIndicators(show: boolean) {
-      setConf(self, ['coverage', 'showInterbaseIndicators'], show)
+      setConf(self, ['coverage', 'interbase', 'show'], show)
     },
 
     /**
@@ -540,14 +540,14 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setShowMismatches(show: boolean) {
-      setConf(self, ['pileup', 'showMismatches'], show)
+      setConf(self, ['pileup', 'mismatches', 'show'], show)
     },
 
     /**
      * #action
      */
     setShowSoftClipping(value: boolean) {
-      setConf(self, ['pileup', 'showSoftClipping'], value)
+      setConf(self, ['pileup', 'softClips', 'show'], value)
     },
 
     /**
@@ -586,7 +586,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setShowSashimiCounts(show: boolean) {
-      setConf(requireReadsConf(self), ['sashimi', 'showCounts'], show)
+      setConf(requireReadsConf(self), ['sashimi', 'labels', 'show'], show)
     },
 
     /**
@@ -638,7 +638,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setShowOrdinaryPairs(show?: boolean) {
-      setConf(self, ['readConnections', 'showOrdinaryPairs'], show)
+      setConf(self, ['readConnections', 'ordinaryPairs', 'show'], show)
     },
 
     /**

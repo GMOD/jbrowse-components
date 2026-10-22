@@ -158,7 +158,7 @@ test('lifts the released *Setting spelling, which wins over the bare one', () =>
   ).toEqual({
     color: { field: 'insertSizeAndOrientation' },
     filter: expect.objectContaining({ flagInclude: 0, flagExclude: 1540 }),
-    pileup: { maxLayoutHeight: 900, showMismatches: false },
+    pileup: { maxLayoutHeight: 900, mismatches: { show: false } },
   })
 })
 
@@ -168,7 +168,7 @@ test("the read cloud's hidden singletons and proper pairs lift", () => {
     retiredState.lift({ drawSingletons: false, drawProperPairs: false }),
   ).toEqual({
     filter: { alone: 'exclude' },
-    readConnections: { showOrdinaryPairs: false },
+    readConnections: { ordinaryPairs: { show: false } },
   })
   expect(
     retiredState.lift({ drawSingletons: true, drawProperPairs: true }),

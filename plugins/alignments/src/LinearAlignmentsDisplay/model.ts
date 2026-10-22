@@ -2136,11 +2136,11 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Whether each read draws its outline: in a chain, where the outline
+         * shows which segments are one molecule.
          */
         get showOutline() {
-          return (
-            getConf(self, ['pileup', 'showOutline']) ?? self.unit === 'chain'
-          )
+          return self.unit === 'chain'
         },
 
         /**

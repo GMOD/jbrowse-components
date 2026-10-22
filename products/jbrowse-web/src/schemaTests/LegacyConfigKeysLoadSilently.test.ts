@@ -307,7 +307,7 @@ test.each([
   ['LinearSNPCoverageDisplay', ['scales', 'y', 'domainMin'], 0],
   ['LinearSNPCoverageDisplay', ['scales', 'y', 'domainMax'], 100],
   ['LinearReadArcsDisplay', ['readConnections', 'lineWidth'], 1],
-  ['LinearReadCloudDisplay', ['pileup', 'showMismatches'], false],
+  ['LinearReadCloudDisplay', ['pileup', 'mismatches', 'show'], false],
   ['MultiLinearVariantDisplay', 'showRowLabels', true],
   ['MultiLinearVariantDisplay', 'referenceDrawingMode', 'draw'],
   ['LinearVariantMatrixDisplay', 'showRowLabels', false],

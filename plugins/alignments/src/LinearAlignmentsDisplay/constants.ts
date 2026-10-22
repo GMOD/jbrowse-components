@@ -22,7 +22,7 @@ export type AlignmentsUnit = (typeof ALIGNMENTS_UNITS)[number]
 
 // The two marks the read-connection band draws (`readConnections.mark`): 'arc'
 // rises with the span between its ends, and 'cloud' draws a flat line at
-// Y=|tlen|, the modal pairs left out unless `showOrdinaryPairs` keeps them.
+// Y=|tlen|, the modal pairs left out unless `ordinaryPairs.show` keeps them.
 // Both color by `readConnections.color`. They share one band and the cloud
 // repurposes its Y axis, so they are one choice rather than two switches.
 export const READ_CONNECTIONS_MARKS = ['arc', 'cloud'] as const

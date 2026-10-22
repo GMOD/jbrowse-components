@@ -195,7 +195,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'volvox-long-reads-sv-bam',
-          pileup: { showSoftClipping: true },
+          pileup: { softClips: { show: true } },
         },
       ],
     }),
@@ -557,7 +557,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           // featureSpacing is derived from readHeight, not a config slot, so
           // the display drops one added here
-          sashimi: { showCounts: true, placement: 'auto' },
+          sashimi: { labels: { show: true }, placement: 'auto' },
           pileup: { readHeight: 1 },
           scales: { y: { type: 'log' } },
         },

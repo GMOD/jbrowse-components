@@ -596,7 +596,7 @@ export const svSpecs: ScreenshotSpec[] = [
               readConnections: {
                 show: true,
                 placement: 'down',
-                showOrdinaryPairs: false,
+                ordinaryPairs: { show: false },
                 height: 90,
               },
               coverage: { height: 60 },

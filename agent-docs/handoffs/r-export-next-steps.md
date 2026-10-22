@@ -103,7 +103,7 @@ Still open:
 - Curved ribbons follow the display's Bezier in y as well as x.
 - Insertions draw as `insertionGlyph.slang` sizes them, and indels fade by
   size below a pixel on top of the frequency fade.
-- Junction counts show only under `sashimi.showCounts`, and letters at the
+- Junction counts show only under `sashimi.labels.show`, and letters at the
   display's 6.5 px a base.
 - A feature file's contig of unknown length ends at its last record; other
   readers take the length the file states, which a multi-wiggle now reports

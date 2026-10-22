@@ -6724,6 +6724,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "CoverageInterbase": {
+      "title": "CoverageInterbase",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the insertion and clip count bars and their indicator triangles.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "CoverageBand": {
       "title": "CoverageBand",
       "type": "object",
@@ -6749,14 +6770,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "showInterbaseIndicators": {
-          "description": "draw the insertion and clip count bars and their indicator triangles.",
-          "default": true,
+        "interbase": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/CoverageInterbase"
           }
         },
         "minAlleleFraction": {
@@ -6767,6 +6786,48 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "type": "number"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "PileupMismatches": {
+      "title": "PileupMismatches",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the mismatched bases, insertion markers and deletion bars.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "PileupSoftClips": {
+      "title": "PileupSoftClips",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the soft-clipped ends of each read.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
           }
         }
       },
@@ -6810,33 +6871,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "showMismatches": {
-          "description": "draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. The line joining a spliced read across its introns draws either way, since it shows the exon blocks are one read (PILEUP_MARKS).",
-          "default": true,
+        "mismatches": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/PileupMismatches"
           }
         },
-        "showSoftClipping": {
-          "description": "draw the soft-clipped ends of each read.",
-          "default": false,
+        "softClips": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
-          }
-        },
-        "showOutline": {
-          "description": "draw an outline around each read; unset follows the unit.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/PileupSoftClips"
           }
         },
         "showConnectors": {
@@ -6893,6 +6941,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "insertSize",
               "pairOrientation"
             ]
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "ReadConnectionsOrdinaryPairs": {
+      "title": "ReadConnectionsOrdinaryPairs",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the ordinary pairs beside the ones carrying a category; unset follows the mark.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
           }
         }
       },
@@ -6970,13 +7038,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/AlignmentsArcColor"
           }
         },
-        "showOrdinaryPairs": {
-          "description": "draw the ordinary pairs beside the ones carrying a category: concordant pairs as arcs, pairs of modal insert size in the cloud; unset follows the mark.",
+        "ordinaryPairs": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/ReadConnectionsOrdinaryPairs"
           }
         }
       },
@@ -7100,6 +7167,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "SashimiLabels": {
+      "title": "SashimiLabels",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the supporting-read count on each arc.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "Sashimi": {
       "title": "Sashimi",
       "type": "object",
@@ -7139,14 +7227,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             ]
           }
         },
-        "showCounts": {
-          "description": "draw the supporting-read count on each arc.",
-          "default": false,
+        "labels": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/SashimiLabels"
           }
         }
       },
@@ -8312,14 +8398,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "showInterbaseIndicators": {
-          "description": "draw the insertion and clip count bars and their indicator triangles.",
-          "default": true,
+        "interbase": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/CoverageInterbase"
           }
         },
         "minAlleleFraction": {

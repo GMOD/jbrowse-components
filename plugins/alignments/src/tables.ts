@@ -900,7 +900,7 @@ function readConnectionTables(
               ),
             },
             showOrdinaryPairs: ordinaryPairsShown(
-              readConfObject(band, 'showOrdinaryPairs'),
+              readConfObject(band, ['ordinaryPairs', 'show']),
               cloud,
             ),
           },
@@ -1296,7 +1296,8 @@ export async function alignmentTables(
   const featureHeight: number = readConfObject(conf, ['pileup', 'readHeight'])
   const softClippingAsked: boolean = readConfObject(conf, [
     'pileup',
-    'showSoftClipping',
+    'softClips',
+    'show',
   ])
   const showSoftClipping = !chain && softClippingAsked
   const facetNode = conf.facet
@@ -1575,7 +1576,7 @@ export async function alignmentTables(
 }
 
 /**
- * What the layout drops of the display's `sort`, `showSoftClipping` and
+ * What the layout drops of the display's `sort`, `pileup.softClips` and
  * `collapseSections` without saying so, in words a host can show: a column
  * sort with no `pos`, a sort the regions' contigs or reads leave nowhere to
  * apply, under `unit: 'chain'` any sort or soft clipping, as chains lay out
@@ -1618,7 +1619,7 @@ function layoutWarnings({
     }
     if (softClippingAsked) {
       warnings.add(
-        `under unit 'chain' the reads lay out by chain, so showSoftClipping is dropped`,
+        `under unit 'chain' the reads lay out by chain, so pileup.softClips is dropped`,
       )
     }
     return [...warnings]
@@ -1711,12 +1712,17 @@ function composingBands(conf: DisplayConf) {
 }
 
 /**
- * The tables each band member turns off with it, as the display then draws
- * none of them.
+ * The tables each band's or layer's `show` turns off with it, as the display
+ * then draws none of them.
  */
-const BAND_TABLES = {
-  pileup: {
-    show: [
+const BAND_TABLES: readonly {
+  band: 'pileup' | 'coverage' | 'sashimi'
+  layer?: 'mismatches' | 'interbase'
+  tables: readonly string[]
+}[] = [
+  {
+    band: 'pileup',
+    tables: [
       'reads',
       'mismatches',
       'gaps',
@@ -1727,24 +1733,39 @@ const BAND_TABLES = {
       'chains',
       'overlaps',
     ],
-    showMismatches: ['mismatches', 'insertions'],
   },
-  coverage: {
-    show: [
+  { band: 'pileup', layer: 'mismatches', tables: ['mismatches', 'insertions'] },
+  {
+    band: 'coverage',
+    tables: [
       'coverage',
       'alleleCoverage',
       'modificationCoverage',
       'interbaseCoverage',
       'indicators',
     ],
-    showInterbaseIndicators: ['interbaseCoverage', 'indicators'],
   },
-  sashimi: { show: ['junctions'] },
-} as const
+  {
+    band: 'coverage',
+    layer: 'interbase',
+    tables: ['interbaseCoverage', 'indicators'],
+  },
+  { band: 'sashimi', tables: ['junctions'] },
+]
+
+function shown(
+  bands: ReturnType<typeof composingBands>,
+  band: (typeof BAND_TABLES)[number]['band'],
+  layer?: string,
+) {
+  const part = bands[band]
+  const node = layer ? (part[layer] as Record<string, unknown>) : part
+  return node.show === true
+}
 
 /**
  * The tables, each of a band the display does not draw left empty. Under
- * `pileup.showMismatches: false` the display drops the deletions and keeps
+ * `pileup.mismatches.show: false` the display drops the deletions and keeps
  * the skips, which join a spliced read's blocks, so `gaps` keeps its skips.
  */
 function drawnBands<
@@ -1753,10 +1774,8 @@ function drawnBands<
   },
 >(bands: ReturnType<typeof composingBands>, tables: T) {
   const hidden = new Set<string>(
-    Object.entries(BAND_TABLES).flatMap(([band, members]) =>
-      Object.entries(members).flatMap(([member, names]) =>
-        bands[band as keyof typeof BAND_TABLES][member] ? [] : names,
-      ),
+    BAND_TABLES.flatMap(({ band, layer, tables }) =>
+      shown(bands, band, layer) ? [] : tables,
     ),
   )
   const drawn = Object.fromEntries(
@@ -1767,7 +1786,7 @@ function drawnBands<
         : table,
     ]),
   ) as T
-  return bands.pileup.showMismatches
+  return shown(bands, 'pileup', 'mismatches')
     ? drawn
     : {
         ...drawn,

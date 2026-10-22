@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { coverageInterbaseConfigSchema } from './coverageInterbaseConfigSchema.ts'
+
 /**
  * #config CoverageBand
  * #category display
@@ -36,14 +38,10 @@ export const coverageBandConfigSchema = ConfigurationSchema(
       description: 'height of the coverage band in pixels',
     },
     /**
-     * #slot
+     * #slot interbase
+     * The insertion and clip marks between bases: `show`.
      */
-    showInterbaseIndicators: {
-      type: 'boolean',
-      defaultValue: true,
-      description:
-        'draw the insertion and clip count bars and their indicator triangles',
-    },
+    interbase: coverageInterbaseConfigSchema,
     /**
      * #slot
      * A color rule, beside the pileup's `fadeLowFrequency`, which fades its

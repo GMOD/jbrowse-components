@@ -13,7 +13,7 @@ draws, its `filter.connections`: two connection categories, each `only`,
 inter-chromosomal breakpoint must gather. Every part that draws connections
 reads it: the arcs, the read cloud, the connectors over the pileup
 (`pileup.showConnectors`) and the tables engine's arcs. Which pairs are
-ordinary is each mark's own test, so `readConnections.showOrdinaryPairs`
+ordinary is each mark's own test, so `readConnections.ordinaryPairs`
 sits with the band.
 
 ## Config slots

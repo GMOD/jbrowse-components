@@ -1,5 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { pileupMismatchesConfigSchema } from './pileupMismatchesConfigSchema.ts'
+import { pileupSoftClipsConfigSchema } from './pileupSoftClipsConfigSchema.ts'
+
 /**
  * #config Pileup
  * #category display
@@ -10,7 +13,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   pileup: { readHeight: 3, showSoftClipping: true },
+ *   pileup: { readHeight: 3, softClips: { show: true } },
  * }
  * ```
  */
@@ -47,31 +50,15 @@ export const pileupConfigSchema = ConfigurationSchema(
       advanced: true,
     },
     /**
-     * #slot
+     * #slot mismatches
+     * How reads differ from the reference: `show`.
      */
-    showMismatches: {
-      type: 'boolean',
-      defaultValue: true,
-      description:
-        'draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. The line joining a spliced read across its introns draws either way, since it shows the exon blocks are one read (PILEUP_MARKS)',
-    },
+    mismatches: pileupMismatchesConfigSchema,
     /**
-     * #slot
+     * #slot softClips
+     * The soft-clipped ends of each read: `show`.
      */
-    showSoftClipping: {
-      type: 'boolean',
-      defaultValue: false,
-      description: 'draw the soft-clipped ends of each read',
-    },
-    /**
-     * #slot
-     * Unset, the outline follows the unit: drawn under `unit: 'chain'`.
-     */
-    showOutline: {
-      type: 'maybeBoolean',
-      description: 'draw an outline around each read; unset follows the unit',
-      advanced: true,
-    },
+    softClips: pileupSoftClipsConfigSchema,
     /**
      * #slot
      */
