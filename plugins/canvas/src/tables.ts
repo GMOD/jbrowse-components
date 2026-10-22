@@ -1007,10 +1007,14 @@ export async function featureAttributeTables(
       walk(child)
     }
   }
-  for (const feature of await adapter.getFeaturesInMultipleRegionsArray(
-    regions.map(r => ({ assemblyName: '', ...r })),
-    {},
-  )) {
+  const features =
+    ids.length || subfeatureIds.length
+      ? await adapter.getFeaturesInMultipleRegionsArray(
+          regions.map(r => ({ assemblyName: '', ...r })),
+          {},
+        )
+      : []
+  for (const feature of features) {
     walk(feature)
   }
   const autoSql = adapter as {

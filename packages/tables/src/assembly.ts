@@ -149,7 +149,7 @@ async function spellingIn(
     listed.has(name) ? name : (byCanonical.get(canonical(name)) ?? name)
 }
 
-interface AssemblyArgs {
+export interface AssemblyArgs {
   adapterConfig?: Record<string, unknown>
   sequenceAdapter?: Record<string, unknown>
   region?: TablesRegion

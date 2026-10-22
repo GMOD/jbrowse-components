@@ -38,7 +38,7 @@ import { assemblyResolver, renameRegions } from './assembly.ts'
 import { engineCache } from './cache.ts'
 import { contigNamesOf, fileRegions } from './fileRegions.ts'
 
-import type { AssemblyConfig, TablesRegion } from './assembly.ts'
+import type { AssemblyArgs, AssemblyConfig, TablesRegion } from './assembly.ts'
 import type { AlignmentTablesArgs } from '@jbrowse/plugin-alignments/tables'
 import type { FeatureTablesArgs } from '@jbrowse/plugin-canvas/tables'
 import type { ContigTablesArgs } from '@jbrowse/plugin-comparative-adapters/tables'
@@ -103,6 +103,16 @@ interface RowLimit {
   rowLimit?: number
 }
 
+function regionsOf({
+  region,
+  regions,
+}: {
+  region?: TablesRegion
+  regions?: TablesRegion[]
+}) {
+  return regions ?? (region ? [region] : [])
+}
+
 /** The longest column of each table in `result`, a table being an object of arrays. */
 function tableRows(result: object, path = ''): [string, number][] {
   return Object.entries(result).flatMap(([name, value]) => {
@@ -119,8 +129,11 @@ function tableRows(result: object, path = ''): [string, number][] {
 }
 
 function refuseOverRows(result: object, rowLimit: number | undefined) {
+  if (rowLimit === undefined) {
+    return
+  }
   for (const [name, rows] of tableRows(result)) {
-    if (rowLimit !== undefined && rows > rowLimit) {
+    if (rows > rowLimit) {
       throw new Error(
         `the file gives ${rows} rows of ${name}, over the ${rowLimit}-row limit for a read with no region; pass a region`,
       )
@@ -145,27 +158,25 @@ const LISTED_CONTIGS = 20
  */
 async function missingContigs(
   pluginManager: PluginManager,
-  {
-    adapterConfig,
-    sequenceAdapter,
-    region,
-    regions = region ? [region] : [],
-  }: RegionArgs,
+  { adapterConfig, sequenceAdapter, ...args }: RegionArgs,
 ) {
+  const regions = regionsOf(args)
+  if (regions.length === 0) {
+    return []
+  }
   const names = await contigNamesOf(
     pluginManager,
     adapterConfig,
     sequenceAdapter,
   )
+  const has = new Set(names)
   const listed = names.slice(0, LISTED_CONTIGS).join(', ')
   const more =
     names.length > LISTED_CONTIGS
       ? `, and ${names.length - LISTED_CONTIGS} more`
       : ''
   return regions.map(({ refName, originalRefName = refName }) =>
-    names.length === 0 ||
-    names.includes(refName) ||
-    names.includes(originalRefName)
+    has.size === 0 || has.has(refName) || has.has(originalRefName)
       ? ''
       : `${refName} is not a contig of this file, whose contigs are ${listed}${more}`,
   )
@@ -182,23 +193,17 @@ async function featureAndRecordTables(
   args: FeatureTablesArgs,
 ) {
   const features = await featureTables(pluginManager, args)
-  const regions = args.regions ?? (args.region ? [args.region] : [])
+  const regions = regionsOf(args)
   const vcf = VCF_ADAPTER_TYPES.includes(String(args.adapterConfig.type))
   return {
     ...features,
-    ...(vcf
-      ? {
-          attributes: {},
-          subfeatureAttributes: {},
-          attributeFields: { key: [], type: [], number: [], description: [] },
-        }
-      : await featureAttributeTables(pluginManager, {
-          adapterConfig: args.adapterConfig,
-          sequenceAdapter: args.sequenceAdapter,
-          regions,
-          ids: features.features.id,
-          subfeatureIds: features.subfeatures.id,
-        })),
+    ...(await featureAttributeTables(pluginManager, {
+      adapterConfig: args.adapterConfig,
+      sequenceAdapter: args.sequenceAdapter,
+      regions,
+      ids: vcf ? [] : features.features.id,
+      subfeatureIds: vcf ? [] : features.subfeatures.id,
+    })),
     vcf: vcf
       ? await variantRecordTables(pluginManager, {
           adapterConfig: args.adapterConfig,
@@ -243,7 +248,7 @@ export function createTablesEngine() {
     <A extends unknown[], R>(f: (...args: A) => Promise<R>) =>
     (...args: A) =>
       cache.within(() => f(...args))
-  const named = async <A extends RegionArgs>({
+  const named = async <A extends AssemblyArgs>({
     assembly,
     ...args
   }: WithAssembly<A>) =>
@@ -255,10 +260,12 @@ export function createTablesEngine() {
     table: (pm: PluginManager, args: A) => Promise<T>,
   ) => {
     const args = (await named(given as WithAssembly<A>)) as A
-    const missing = await missingContigs(pluginManager, args)
-    const regions = args.regions ?? (args.region ? [args.region] : [])
-    const tables = await table(pluginManager, args)
+    const [missing, tables] = await Promise.all([
+      missingContigs(pluginManager, args),
+      table(pluginManager, args),
+    ])
     refuseOverRows(tables, rowLimit)
+    const regions = regionsOf(args)
     return {
       ...tables,
       missingContig: missing.find(m => m !== '') ?? '',
@@ -321,16 +328,13 @@ export function createTablesEngine() {
       multiwayTables(pluginManager, args),
     ),
     sequence: trimmed(
-      async ({
-        assembly,
-        ...args
-      }: WithAssembly<{
-        sequenceAdapter?: Record<string, unknown>
-        region: TablesRegion
-      }>) => {
-        const { sequenceAdapter, region } = assembly
-          ? await renameRegions(pluginManager, args, await assemblyOf(assembly))
-          : args
+      async (
+        args: WithAssembly<{
+          sequenceAdapter?: Record<string, unknown>
+          region: TablesRegion
+        }>,
+      ) => {
+        const { sequenceAdapter, region } = await named(args)
         if (!sequenceAdapter) {
           throw new Error(
             'a sequence reads through a sequenceAdapter, or an assembly with a sequence',
