@@ -1,6 +1,6 @@
 ---
 title: Synteny from an ortholog table (grape, peach, cacao)
-sidebar_label: Synteny (ortholog tables)
+sidebar_label: Synteny (MCScan blocks)
 description: Stack N genomes from a jcvi MCScan .blocks file
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
