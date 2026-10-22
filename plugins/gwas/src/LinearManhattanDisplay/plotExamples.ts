@@ -7,6 +7,10 @@ export const MANHATTAN_PLOT_EXAMPLES: PlotExample[] = [
     description: 'the axis from 0 to 20',
   },
   {
+    plot: '{ "scales": { "y": { "rules": [{ "value": 7.3, "label": "p = 5e-8" }] } } }',
+    description: 'a genome-wide significance line',
+  },
+  {
     plot: '{ "scales": null }',
     description: 'the axis following the data',
   },
