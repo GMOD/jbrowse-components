@@ -29,7 +29,6 @@ export function toWire(value: unknown) {
 }
 
 const NA_INT = -(2 ** 31)
-const INT_MAX = 2 ** 31 - 1
 // R's NA_real_: a NaN whose low word is 1954
 const NA_REAL_LOW = 1954
 const NA_REAL_HIGH = 0x7ff00000
@@ -60,7 +59,8 @@ class ByteSink {
 
 function encode(value: unknown, bytes: ByteSink): unknown {
   if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
-    return column(Array.from(value as unknown as ArrayLike<number>), bytes)
+    const values = value as unknown as ArrayLike<number>
+    return values.length ? numbers(values, bytes) : []
   }
   if (Array.isArray(value)) {
     return column(value, bytes)
@@ -115,13 +115,12 @@ function column(values: readonly unknown[], bytes: ByteSink): unknown {
       return numbers(values as (number | null)[], bytes)
     }
     case 'boolean': {
-      return {
-        $lgl: bytes.add(
-          Int32Array.from(values, v =>
-            isNull(v) ? NA_INT : v === true ? 1 : 0,
-          ),
-        ),
+      const out = new Int32Array(values.length)
+      for (let i = 0; i < values.length; i++) {
+        const v = values[i]
+        out[i] = isNull(v) ? NA_INT : v === true ? 1 : 0
       }
+      return { $lgl: bytes.add(out) }
     }
     case 'string': {
       return strings(values as (string | null)[], bytes)
@@ -135,26 +134,37 @@ function column(values: readonly unknown[], bytes: ByteSink): unknown {
   }
 }
 
-function numbers(values: readonly (number | null)[], bytes: ByteSink) {
-  const whole = values.every(
-    v => isNull(v) || (Number.isInteger(v) && Math.abs(v) <= INT_MAX),
-  )
-  if (whole) {
-    return {
-      $i32: bytes.add(Int32Array.from(values, v => (isNull(v) ? NA_INT : v))),
+function numbers(
+  values: ArrayLike<number | null | undefined>,
+  bytes: ByteSink,
+) {
+  const out = new Int32Array(values.length)
+  for (let i = 0; i < values.length; i++) {
+    const v = values[i]
+    if (isNull(v)) {
+      out[i] = NA_INT
+    } else if ((v | 0) === v && v !== NA_INT) {
+      out[i] = v
+    } else {
+      return { $f64: bytes.add(doubles(values)) }
     }
   }
+  return { $i32: bytes.add(out) }
+}
+
+function doubles(values: ArrayLike<number | null | undefined>) {
   const out = new Float64Array(values.length)
-  const words = new Uint32Array(out.buffer, out.byteOffset, out.length * 2)
-  values.forEach((v, i) => {
+  const words = new Uint32Array(out.buffer)
+  for (let i = 0; i < values.length; i++) {
+    const v = values[i]
     if (isNull(v) || !Number.isFinite(v)) {
       words[2 * i] = NA_REAL_LOW
       words[2 * i + 1] = NA_REAL_HIGH
     } else {
       out[i] = v
     }
-  })
-  return { $f64: bytes.add(out) }
+  }
+  return out
 }
 
 // Text crosses as codes where its values repeat at least twice on average, so
