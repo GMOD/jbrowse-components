@@ -86,6 +86,9 @@ try {
      return true`,
   )
   for (const task of tasks) {
+    if (!task.grade) {
+      continue
+    }
     const problems: string[] = []
     try {
       await stage(task.setup)

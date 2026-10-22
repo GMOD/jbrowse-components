@@ -8,6 +8,7 @@
 // `{ pass, detail? }`. A grader reads STATE, never the transcript: what is on
 // screen, what the data says, what the settings are.
 
+import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -17,7 +18,11 @@ export interface EvalTask {
   prompt: string
   // run_javascript body that stages state after the baseline, before the agent
   setup?: string
-  grade: string
+  // a run_javascript body graded in the page, or `check` instead
+  grade?: string
+  // Grades what the run left on disk, in the harness, for a task whose result
+  // is files rather than session state
+  check?: (run: { answer: string; work: string }) => Verdict
   // A run_javascript body that does the task, returning the answer when the
   // task asks for one. selfCheck.ts runs it to prove the grader passes a
   // correct end state and fails the baseline; no agent ever sees it.
@@ -38,6 +43,11 @@ export interface EvalTask {
   outside?: boolean
   // files from FIXTURES (fetchFixtures.sh downloads them) copied into WORK
   inputs?: string[]
+}
+
+export interface Verdict {
+  pass: boolean
+  detail: unknown
 }
 
 export type TaskSet = 'dev' | 'heldout' | 'tutorials' | 'outside' | 'all'
@@ -945,6 +955,180 @@ TASKS.push(
 // Outside tasks: real public data in local files, and steps no JBrowse tool
 // does. Each grader reads the session the agent left, or its answer.
 const ECOLI_K12 = 'NC_000913.3'
+// log2((K562 + 1) / (GM12878 + 1)) averaged over each window, from the inputs
+const RATIO_PROBES = [
+  {
+    loc: 'chr11:5,242,001-5,244,000',
+    start: 5242000,
+    end: 5244000,
+    expect: 4.18,
+    tol: 0.5,
+  },
+  {
+    loc: 'chr11:5,288,001-5,290,000',
+    start: 5288000,
+    end: 5290000,
+    expect: 3.75,
+    tol: 0.5,
+  },
+  {
+    loc: 'chr11:5,202,001-5,204,000',
+    start: 5202000,
+    end: 5204000,
+    expect: -0.21,
+    tol: 0.4,
+  },
+]
+
+function bigWigMean(file: string, probe: (typeof RATIO_PROBES)[number]) {
+  const out = path.join(
+    fs.mkdtempSync(path.join(os.tmpdir(), 'bigwig-mean-')),
+    'out.bedgraph',
+  )
+  try {
+    execFileSync(
+      'bigWigToBedGraph',
+      [file, out, '-chrom=chr11', `-start=${probe.start}`, `-end=${probe.end}`],
+      { stdio: 'ignore' },
+    )
+  } catch {
+    return Number.NaN
+  }
+  const bedGraph = fs.readFileSync(out, 'utf8')
+  fs.rmSync(path.dirname(out), { recursive: true })
+  let sum = 0
+  for (const line of bedGraph.trim().split('\n').filter(Boolean)) {
+    const [, start, end, score] = line.split('\t')
+    const from = Math.max(Number(start), probe.start)
+    const to = Math.min(Number(end), probe.end)
+    if (to > from) {
+      sum += (to - from) * Number(score)
+    }
+  }
+  return Math.round((sum / (probe.end - probe.start)) * 100) / 100
+}
+
+// Every relative file a site config names, and any local path, which no web
+// page can read; both must resolve inside the site folder
+function brokenFiles(config: unknown, site: string) {
+  const broken: string[] = []
+  const urls = new Set<string>()
+  const walk = (node: unknown, key: string) => {
+    if (typeof node === 'string') {
+      const file = key === 'uri' || key === 'chromSizes'
+      const remote = /^https?:\/\//.test(node)
+      if (
+        key === 'localPath' ||
+        (file &&
+          !remote &&
+          !fs.existsSync(path.resolve(site, node.split('?')[0]!)))
+      ) {
+        broken.push(node)
+      } else if (file && remote) {
+        urls.add(node)
+      }
+    } else if (node && typeof node === 'object') {
+      for (const [k, v] of Object.entries(node)) {
+        walk(v, Array.isArray(node) ? key : k)
+      }
+    }
+  }
+  walk(config, '')
+  for (const url of [...urls].slice(0, 30)) {
+    try {
+      execFileSync('curl', [
+        '-sfL',
+        '-r',
+        '0-0',
+        '-o',
+        '/dev/null',
+        '--max-time',
+        '20',
+        url,
+      ])
+    } catch {
+      broken.push(url)
+    }
+  }
+  return broken
+}
+
+function checkSite({ work }: { work: string }): Verdict {
+  const site = path.join(work, 'site')
+  const configPath = path.join(site, 'config.json')
+  if (
+    !fs.existsSync(path.join(site, 'index.html')) ||
+    !fs.existsSync(configPath)
+  ) {
+    return {
+      pass: false,
+      detail: { site: fs.existsSync(site) ? fs.readdirSync(site) : 'missing' },
+    }
+  }
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf8')) as {
+    assemblies?: unknown[]
+    assembly?: unknown
+    tracks?: { type?: string }[]
+    defaultSession?: unknown
+  }
+  const text = (x: unknown) => JSON.stringify(x)
+  const assemblies = [
+    ...(config.assemblies ?? []),
+    ...(config.assembly ? [config.assembly] : []),
+  ]
+  const hg38 = assemblies.some(a => /hg38|GRCh38/i.test(text(a)))
+  const tracks = config.tracks ?? []
+  const genes = tracks.some(t =>
+    /ncbiRefSeq|knownGene|refGene|ensGene|gencode/i.test(text(t)),
+  )
+  const k562 = tracks.some(t => text(t).includes('k562_h3k27ac.bw'))
+  const gm12878 = tracks.some(t => text(t).includes('gm12878_h3k27ac.bw'))
+  const ratioTrack = tracks.find(
+    t =>
+      /\.bw|\.bigwig/i.test(text(t)) &&
+      !/k562_h3k27ac\.bw|gm12878_h3k27ac\.bw/.test(text(t)),
+  )
+  const ratioUri = /"uri":"([^"]+\.(bw|bigwig))"/i.exec(
+    text(ratioTrack ?? {}),
+  )?.[1]
+  const ratioFile =
+    ratioUri && !/^https?:/.test(ratioUri)
+      ? path.resolve(site, ratioUri)
+      : undefined
+  const means =
+    ratioFile && fs.existsSync(ratioFile)
+      ? RATIO_PROBES.map(p => bigWigMean(ratioFile, p))
+      : []
+  const ratio =
+    means.length > 0 &&
+    means.every(
+      (m, i) => Math.abs(m - RATIO_PROBES[i]!.expect) <= RATIO_PROBES[i]!.tol,
+    )
+  const atGlobin = /chr11[:"]|"refName":"11"|\b11:5[,.]?[23]/.test(
+    text(config.defaultSession ?? ''),
+  )
+  const broken = brokenFiles(config, site)
+  return {
+    pass:
+      hg38 &&
+      genes &&
+      k562 &&
+      gm12878 &&
+      ratio &&
+      atGlobin &&
+      broken.length === 0,
+    detail: {
+      hg38,
+      genes,
+      k562,
+      gm12878,
+      ratioUri,
+      means,
+      atGlobin,
+      broken: broken.slice(0, 10),
+    },
+  }
+}
 const ECOLI_SAKAI = 'NC_002695.2'
 
 TASKS.push(
@@ -994,11 +1178,7 @@ TASKS.push(
     prompt:
       'WORK/k562_h3k27ac.bw and WORK/gm12878_h3k27ac.bw are ENCODE H3K27ac fold-change signal on hg38 over the beta-globin locus (ENCFF289IVJ and ENCFF469WVA). Make a bigWig of log2((K562 + 1) / (GM12878 + 1)), save it as WORK/ratio.bw, and show it on hg38 at the beta-globin locus.',
     grade: `
-      const probes = [
-        { loc: 'chr11:5,242,001-5,244,000', start: 5242000, end: 5244000, expect: 4.18, tol: 0.5 },
-        { loc: 'chr11:5,288,001-5,290,000', start: 5288000, end: 5290000, expect: 3.75, tol: 0.5 },
-        { loc: 'chr11:5,202,001-5,204,000', start: 5202000, end: 5204000, expect: -0.21, tol: 0.4 },
-      ]
+      const probes = ${JSON.stringify(RATIO_PROBES)}
       const out = []
       for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))) {
         for (const t of v.tracks.filter(t => JSON.stringify(jb.mst.getSnapshot(t.configuration)).includes('ratio.bw'))) {
@@ -1028,3 +1208,12 @@ TASKS.push(
     grade: `return { pass: /\\b291\\b/.test(answer), detail: { answer: answer.slice(0, 300) } }`,
   },
 )
+
+TASKS.push({
+  name: 'ob-build-site',
+  outside: true,
+  inputs: ['k562_h3k27ac.bw', 'gm12878_h3k27ac.bw'],
+  prompt:
+    'Build a standalone JBrowse Web site in WORK/site that I can send a collaborator: hg38 with RefSeq genes, the ENCODE H3K27ac tracks WORK/k562_h3k27ac.bw and WORK/gm12878_h3k27ac.bw, and a log2((K562 + 1) / (GM12878 + 1)) ratio track, opening at the beta-globin locus. Reusing the hosted hg38 genome and annotation configs on genomes.jbrowse.org (https://jbrowse.org/ucsc/hg38/config.json, listed on genomes.jbrowse.org) is fine.',
+  check: checkSite,
+})
