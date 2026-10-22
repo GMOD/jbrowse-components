@@ -1,4 +1,11 @@
 {
+  "plugins": [
+    {
+      "name": "Protein3d",
+      "storePlugin": "Protein3d",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-protein3d/latest/dist/jbrowse-plugin-protein3d.umd.production.min.js"
+    }
+  ],
   "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
   "assemblies": [
     {
@@ -26,7 +33,9 @@
         }
       },
       "circularRefNames": ["chrM"],
-      "geneticCodes": { "chrM": 2 }
+      "geneticCodes": {
+        "chrM": 2
+      }
     },
     {
       "name": "ccr5_delta32",

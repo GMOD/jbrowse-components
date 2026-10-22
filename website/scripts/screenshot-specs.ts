@@ -63,6 +63,7 @@ import { paperSvReadsSpecs } from './specs/paper-sv-reads.ts'
 import { paperSvSpecs } from './specs/paper-sv.ts'
 import { popgenSpecs } from './specs/popgen.ts'
 import { proteinBrca1M1775rSpecs } from './specs/protein_figure_brca1_m1775r.ts'
+import { proteinCcr5ComboSpecs } from './specs/protein_figure_ccr5_combo.ts'
 import { proteinCcr5Delta32Specs } from './specs/protein_figure_ccr5_delta32.ts'
 import { proteinCcr5GeneSpecs } from './specs/protein_figure_ccr5_gene.ts'
 import { proteinKrasG12cSpecs } from './specs/protein_figure_kras_g12c.ts'
@@ -108,6 +109,7 @@ export const specs: ScreenshotSpec[] = [
   ...proteinScanVsAlphaMissenseSpecs,
   ...proteinTp53Y220cSpecs,
   ...proteinKrasG12cSpecs,
+  ...proteinCcr5ComboSpecs,
   ...proteinCcr5Delta32Specs,
   ...proteinCcr5GeneSpecs,
   ...proteinBrca1M1775rSpecs,

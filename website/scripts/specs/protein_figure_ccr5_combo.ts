@@ -1,0 +1,89 @@
+import { deflateSync } from 'node:zlib'
+
+import { PARK_CURSOR } from '../screenshot-spec-types.ts'
+import { readSession } from './protein_variants.ts'
+
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// One session carrying the whole chain, so it needs one config holding hg38,
+// the Δ32 allele and the Protein3d plugin: demos/ccr5/config.json.
+//
+// The reads are legible at 216 bp and the gene needs 6.6 kb, so they cannot
+// share a view at any zoom; the two genome views are that, not a style. The
+// gene view's Δ32 lane carries the allele's own gene, so no reference-coordinate
+// codon track is needed to say the coding sequence ends early.
+const CCR5_CONFIG = 'https://jbrowse.org/demos/ccr5/config.json'
+
+const PANELS = ['protein-CCR5-6meo', 'protein-CCR5-v3'] as const
+
+function comboSession() {
+  const session = readSession('ccr5_delta32_combo.session.json')
+  return `?config=${CCR5_CONFIG}&session=encoded-${deflateSync(
+    JSON.stringify(session),
+  ).toString('base64url')}`
+}
+
+export const proteinCcr5ComboSpecs: ScreenshotSpec[] = [
+  {
+    mode: 'url',
+    name: 'protein/ccr5_delta32_combo',
+    url: comboSession(),
+    readySelector: `body${PANELS.map(
+      id =>
+        `:has([data-testid="view-container-${id}"] [data-testid="protein-view-ready"])`,
+    ).join('')}`,
+    readyTimeout: 300000,
+    hideSelectors: [
+      '.msp-viewport-controls',
+      '.msp-viewport-top-left-controls',
+      '.msp-background-tasks',
+      '.msp-highlight-info',
+      '[data-testid="header-alignment-quality"]',
+    ],
+    hideTooltip: true,
+    viewportWidth: 1800,
+    viewportHeight: 2180,
+    actions: [
+      { type: 'waitForAppSettled' },
+      PARK_CURSOR,
+      { type: 'delay', ms: 800 },
+    ],
+    annotations: [
+      ...(
+        [
+          ['A', 'lgv-CCR5'],
+          ['B', 'lgv-gene'],
+          ['C', PANELS[0]],
+          ['D', PANELS[1]],
+        ] as const
+      ).map(([text, id]) => ({
+        type: 'circle' as const,
+        text,
+        radius: 16,
+        anchor: {
+          selector: `[data-testid="view-container-${id}"]`,
+          alignX: 'left' as const,
+          alignY: 'top' as const,
+        },
+        dx: 18,
+        dy: 16,
+      })),
+      {
+        type: 'legend',
+        fontSize: 20,
+        entries: [
+          { label: 'Lost in Δ32', color: '#d1007a' },
+          { label: 'Kept in Δ32', color: '#b9c2cf' },
+          { label: 'HIV gp120', color: '#2e9e6b' },
+        ],
+        anchor: {
+          selector: `[data-testid="view-container-${PANELS[0]}"] [data-testid="protein-view-molstar"]`,
+          alignX: 'left',
+          alignY: 'top',
+        },
+        dx: 110,
+        dy: 70,
+      },
+    ],
+  },
+]

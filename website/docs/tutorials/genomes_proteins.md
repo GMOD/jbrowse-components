@@ -276,6 +276,8 @@ each protein view then lights the residue it codes for.
 
 <Figure src="/img/protein/ccr5_delta32_gene.png" caption="CCR5 on hg38 above the Δ32 allele as its own assembly, with the deletion drawn as the pinch between the two alignment blocks and the Δ32 coding sequence ending at its premature stop." />
 
+<Figure src="/img/protein/ccr5_delta32_combo.png" caption="The same locus in one session: the reads over the deletion, CCR5 on hg38 above the Δ32 allele as a lane, and the receptor drawn whole beside the part the frameshift spares." />
+
 <Figure src="/img/protein/apoe_e4.png" caption="APOE under a Manhattan plot of FinnGen Alzheimer's disease statistics, above the ortholog alignment and two protein views: the 1B68 crystal structure and its AlphaFold model colored by pLDDT." />
 
 <Figure src="/img/protein/f5_leiden.png" caption="F5 under a Manhattan plot of FinnGen venous thromboembolism statistics, with the alignment and two protein views: factor Va alone (7KXY) and bound to activated protein C (9MOV)." />
