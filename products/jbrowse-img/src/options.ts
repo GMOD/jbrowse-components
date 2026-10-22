@@ -447,13 +447,9 @@ const batchUnsupported = new Set([
   ...batchRefusedOptions,
 ])
 
-// the flags that take only true or false, so the tokenizer reads a data file
-// after one as a file of its own
-export const booleanOptions = new Set(
-  [...optionDefs, ...batchOptionDefs]
-    .filter(o => typeof o.default === 'boolean')
-    .map(o => o.name),
-)
+export const optionsWithBooleanDefaults = [...optionDefs, ...batchOptionDefs]
+  .filter(o => typeof o.default === 'boolean')
+  .map(o => o.name)
 
 export const knownOptions = new Set([
   ...optionDefs.map(o => o.name),

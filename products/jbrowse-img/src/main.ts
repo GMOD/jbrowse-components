@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 
 import {
+  exportBooleanFlags,
   isDataFile,
   parseArgv,
   standardizeArgv,
@@ -14,7 +15,6 @@ import {
   DEFAULT_WIDTH,
   batchDroppedOptions,
   batchOptionNames,
-  booleanOptions,
   buildBatchHelp,
   buildHelp,
   getBoolean,
@@ -73,7 +73,7 @@ async function main() {
     ) as { version: string }
     console.log(version)
   } else {
-    const parsed = parseArgv(args, { booleans: booleanOptions })
+    const parsed = parseArgv(args, { booleans: exportBooleanFlags })
     const { trackList, ...rest } = standardizeArgv(
       parsed,
       [...trackTypes, ...syntenyTrackTypes],

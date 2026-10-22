@@ -1,4 +1,8 @@
-import { parseArgv, standardizeArgv } from '@jbrowse/launch-args'
+import {
+  exportBooleanFlags,
+  parseArgv,
+  standardizeArgv,
+} from '@jbrowse/launch-args'
 
 import { syntenyTrackTypes, trackTypes } from './makeConfigs.ts'
 import {
@@ -15,6 +19,7 @@ import {
   getThemeName,
   getTrackLabels,
   knownOptions,
+  optionsWithBooleanDefaults,
 } from './options.ts'
 
 function parse(args: string) {
@@ -24,6 +29,12 @@ function parse(args: string) {
   )
   return rest
 }
+
+test("launch-args' boolean flags are the options with a boolean default", () => {
+  expect([...exportBooleanFlags].toSorted()).toEqual(
+    optionsWithBooleanDefaults.toSorted(),
+  )
+})
 
 test('coerces named options to their declared types', () => {
   const rest = parse('--width 800 --refseq --loc chr1:1-100')

@@ -118,6 +118,21 @@ export const launchFlags: ReadonlySet<string> = new Set([
   ...syntenyFlags,
 ])
 
+/**
+ * jb2export's flags that take only true or false, so a file after one is a
+ * file of its own. Desktop reads them to report one without taking the file.
+ */
+export const exportBooleanFlags: ReadonlySet<string> = new Set([
+  'noRasterize',
+  'defaultSession',
+  'showGridlines',
+  'refseq',
+  'passOnly',
+  'resume',
+  'manifest',
+  'dryRun',
+])
+
 const PATH_MODIFIERS = new Set(['index', 'aliases', 'cytobands'])
 
 function isTrackFlag(key: string) {

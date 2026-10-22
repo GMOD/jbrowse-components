@@ -226,6 +226,25 @@ describe('data files on the command line', () => {
     })
   })
 
+  test("jb2export's boolean flags leave the file after them", () => {
+    expect(target('ref.fa', '--refseq', 'reads.bam')).toMatchObject({
+      type: 'plan',
+      plan: {
+        show: [{ trackId: 'reads.bam', modifiers: [] }],
+        unapplied: ['--refseq'],
+      },
+    })
+    expect(
+      target('ref.fa', '--showGridlines', 'true', 'reads.bam'),
+    ).toMatchObject({
+      type: 'plan',
+      plan: {
+        show: [{ trackId: 'reads.bam', modifiers: [] }],
+        unapplied: ['--showGridlines true'],
+      },
+    })
+  })
+
   test('a file Desktop cannot open says so', () => {
     expect(target('notes.txt')).toEqual({
       type: 'invalid',

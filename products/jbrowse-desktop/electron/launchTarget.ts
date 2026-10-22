@@ -1,6 +1,7 @@
 import path from 'node:path'
 
 import {
+  exportBooleanFlags,
   isDataFile,
   isModifier,
   launchFlags,
@@ -171,7 +172,8 @@ const DESKTOP_FLAGS = new Map([
  * - Any other flag is one of jb2export's that Desktop does not take (`--width
  *   1400`, `--multiwig a.bw,b.bw`): it goes with its value and the modifiers
  *   after it, and is reported, so none of them reads as a file of its own or
- *   attaches to the entry before it.
+ *   attaches to the entry before it. A boolean one (`--refseq`) takes only
+ *   `true` or `false`.
  * - A bare config.json is the config the files open on, so `jbrowse-desktop
  *   project/config.json reads.bam` reads as `--config`.
  */
@@ -201,7 +203,10 @@ function launchArgs(args: readonly string[]) {
       }
     } else if (arg.startsWith('--') && !name.includes('-')) {
       const given = [arg]
-      if (takesNext) {
+      if (
+        takesNext &&
+        (!exportBooleanFlags.has(name) || next === 'true' || next === 'false')
+      ) {
         given.push(next)
         i++
       }
