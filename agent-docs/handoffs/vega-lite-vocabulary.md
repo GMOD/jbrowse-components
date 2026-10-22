@@ -93,7 +93,27 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
        quantile (ADR-240's table amended: no slot type holds `{ quantile }`,
        and `scale.quantile` reads as d3's `type: 'quantile'`). A bare string
        inside `encoding` is a field, as on the mark display.
-       **Pass A claimed 2026-10-22.**
+       **Pass A built 2026-10-22, not yet landed.** Every display's color is
+       `encoding.color: { value, field, scale: {…}, legend: {…} }`, read
+       nested with no converter; `showLegend` is a display-wide
+       `legend.show`; `ordinal` and `names` replace `categorical` and
+       `labels` in config and code; a missing value's color is
+       `scale.invalid` (Vega-Lite's word), `scale.unknown` keeps d3's
+       "not in the domain"; `baseColor` is `pileup.bases`,
+       `readConnections` has its own `encoding` with `strokeWidth`, the
+       ribbons a `ribbons.encoding.color` part, the synteny views'
+       color and opacity sit under the view's `encoding`, and stroked
+       marks take `strokeWidth`. Deprecated lifts in display-kit's
+       `retiredSettings.ts` (`liftFlatColor`) cover what hosted jb2hubs
+       configs write. To land: rerun autogen; check each old
+       ConfigSlotDefaults path's value against its new path, then `-u`;
+       `pnpm verify --full` and the website typecheck; confirm
+       jbrowse-img's `configuredDisplay.test.ts`; a cold review; rebase.
+       Then file ADR-242 for the channel object (or amend ADR-240's
+       Surface to `ordinal`/`invalid`), and respell jb2hubs, ggjbrowse
+       and the graph plugin's `LinearGraphDisplay`. Open: a synteny
+       view's bare `encoding.color: 'grey'` reads as a field instead of
+       being refused (`comparativeTables.ts` `viewColorSettings`).
      - Step 0 landed as
        [ADR-241](../architecture-decision-records/adr-241-a-color-object-is-unset-a-value-or-a-field.md):
        a color object is unset, a `value` or a `field`, and the field a write
