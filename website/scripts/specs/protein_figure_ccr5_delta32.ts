@@ -15,8 +15,11 @@ function ccr5Session() {
 
 // The reads stream from the 1000 Genomes 30x CRAMs on the public S3 bucket:
 // HG00137 is Δ32/Δ32, HG00101 Δ32/+ and HG00096 +/+ in the 2022 phased panel.
-// The read tracks are tall because a short track packs the reads carrying the
-// deletion out of sight. Δ32 keeps residues 1-184, so the session colors 185
+// The read tracks are tall and sorted on a base inside the deletion, since a
+// short unsorted track packs the reads carrying it out of sight. The two
+// structure panels take their own angles: B is turned so the kept and lost
+// halves sit side by side (in this crystal 182 residues are kept and 129
+// lost), and C so the crown stays visible. Δ32 keeps residues 1-184, so the session colors 185
 // on; gp120 (chain G) is a cartoon mark of its own color, and its V3 crown
 // (310-315) sticks of a brighter one.
 const PANELS = ['protein-CCR5-6meo', 'protein-CCR5-v3'] as const
@@ -98,13 +101,23 @@ export const proteinCcr5Delta32Specs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
+        text: 'Helices 5-7 and the tail',
+        fontSize: 24,
+        maxWidth: 340,
+        leader: true,
+        anchor: { residue: 'B:250', view: 1 },
+        dx: 150,
+        dy: 120,
+      },
+      {
+        type: 'text',
         text: 'V3 crown',
         fontSize: 24,
         maxWidth: 300,
         leader: true,
         anchor: { residue: 'G:313', view: 2 },
-        dx: 150,
-        dy: -120,
+        dx: 170,
+        dy: -150,
       },
     ],
   },

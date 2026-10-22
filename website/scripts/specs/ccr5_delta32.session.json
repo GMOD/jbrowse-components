@@ -16,15 +16,30 @@
           },
           {
             "trackId": "ccr5-HG00137",
-            "height": 160
+            "height": 160,
+            "sort": {
+              "field": "base",
+              "pos": 46373468,
+              "refName": "chr3"
+            }
           },
           {
             "trackId": "ccr5-HG00101",
-            "height": 160
+            "height": 160,
+            "sort": {
+              "field": "base",
+              "pos": 46373468,
+              "refName": "chr3"
+            }
           },
           {
             "trackId": "ccr5-HG00096",
-            "height": 160
+            "height": 160,
+            "sort": {
+              "field": "base",
+              "pos": 46373468,
+              "refName": "chr3"
+            }
           },
           {
             "trackId": "ccr5-frameshift",
@@ -405,8 +420,8 @@
         "title": "CCR5"
       },
       "camera": {
-        "position": [62.079, 153.082, 238.121],
-        "target": [147.11, 156.181, 153.504],
+        "position": [174.543, 107.208, 42.352],
+        "target": [153.07, 149.193, 159.194],
         "up": [-0.4028, 0.8353, -0.3742],
         "mode": "orthographic"
       },
@@ -1256,7 +1271,7 @@
       "refName": "chr3",
       "start": 46373452,
       "end": 46373484,
-      "color": "rgba(209,0,122,0.16)",
+      "color": "rgba(209,0,122,0.07)",
       "label": "Δ32"
     }
   ],
