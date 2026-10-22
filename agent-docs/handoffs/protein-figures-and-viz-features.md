@@ -117,6 +117,14 @@ blinded ideator given only a capability sheet, a landscape survey):
    beside a consequence. Allele frequency went too, since its interesting
    form is by population ([[no-race-or-ancestry-framed-figures]]), and so did
    ClinVar, which draws the deletion as a green "benign" bar here.
+   Panel C now draws only residues 1-184, through Protein3d 1.26.0's
+   structure `filter` (`[{ field: 'residue', lte: 184 }]`, ADR-238's predicate
+   vocabulary), so gp120 reaches into the gap where the rest of the receptor
+   would be. `protein/ccr5_delta32_gene` is the same locus as a synteny view
+   over `demos/ccr5/`: the Δ32 allele is its own assembly, the deletion is the
+   pinch between the PAF's two blocks, and the allele's own CDS ends at its
+   premature stop. The design that generalises it is
+   `ideas/waiting-on-a-call/a-variant-haplotype-is-a-lane.md`.
    Unbuilt ideas on the same footing: a population-constraint track whose
    depleted stretch lands on an interface, RNA-seq junctions proving an exon
    skip with the skipped residues on the fold, tumor reads at KRAS codon 12,

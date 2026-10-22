@@ -1,0 +1,41 @@
+{
+  "name": "CCR5 Δ32",
+  "views": [
+    {
+      "id": "synteny-CCR5",
+      "type": "LinearSyntenyView",
+      "displayName": "CCR5: hg38 above, the Δ32 allele below",
+      "mark": {
+        "interpolate": "bump"
+      },
+      "cigarMode": "full",
+      "tracks": [["ccr5_hg38_to_delta32"]],
+      "views": [
+        {
+          "id": "lgv-hg38",
+          "assembly": "hg38",
+          "loc": "chr3:46370246-46376906",
+          "hideHeaderOverview": true,
+          "tracks": [
+            {
+              "trackId": "ccr5_hg38_gene",
+              "height": 150
+            }
+          ]
+        },
+        {
+          "id": "lgv-delta32",
+          "assembly": "ccr5_delta32",
+          "loc": "chr3_delta32:2246-8874",
+          "hideHeaderOverview": true,
+          "tracks": [
+            {
+              "trackId": "ccr5_delta32_gene",
+              "height": 150
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

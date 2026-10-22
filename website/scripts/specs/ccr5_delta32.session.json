@@ -469,7 +469,7 @@
     {
       "id": "protein-CCR5-v3",
       "type": "ProteinView",
-      "displayName": "gp120's V3 crown in the helix bundle (PDB 6MEO)",
+      "displayName": "What Δ32 leaves: residues 1-184 (PDB 6MEO)",
       "height": 780,
       "zoomToBaseLevel": false,
       "showAlignment": false,
@@ -836,8 +836,8 @@
         "title": "CCR5"
       },
       "camera": {
-        "position": [126.78, 146.731, 197.735],
-        "target": [159.376, 147.919, 165.299],
+        "position": [174.543, 107.208, 42.352],
+        "target": [153.07, 149.193, 159.194],
         "up": [-0.4028, 0.8353, -0.3742],
         "mode": "orthographic"
       },
@@ -850,60 +850,6 @@
           "encoding": {
             "color": {
               "value": "#2e9e6b"
-            }
-          }
-        },
-        {
-          "site": "G:310",
-          "mark": "sticks",
-          "encoding": {
-            "color": {
-              "value": "#13c08a"
-            }
-          }
-        },
-        {
-          "site": "G:311",
-          "mark": "sticks",
-          "encoding": {
-            "color": {
-              "value": "#13c08a"
-            }
-          }
-        },
-        {
-          "site": "G:312",
-          "mark": "sticks",
-          "encoding": {
-            "color": {
-              "value": "#13c08a"
-            }
-          }
-        },
-        {
-          "site": "G:313",
-          "mark": "sticks",
-          "encoding": {
-            "color": {
-              "value": "#13c08a"
-            }
-          }
-        },
-        {
-          "site": "G:314",
-          "mark": "sticks",
-          "encoding": {
-            "color": {
-              "value": "#13c08a"
-            }
-          }
-        },
-        {
-          "site": "G:315",
-          "mark": "sticks",
-          "encoding": {
-            "color": {
-              "value": "#13c08a"
             }
           }
         }
@@ -932,7 +878,13 @@
             ]
           },
           "userProvidedTranscriptSequence": "MDYQVSSPIYDINYYTSEPCQKINVKQIAARLLPPLYSLVFIFGFVGNMLVILILINCKRLKSMTDIYLLNLAISDLFFLLTVPFWAHYAAAQWDFGNTMCQLLTGLYFIGFFSGIFFIILLTIDRYLAVVHAVFALKARTVTFGVVTSVITWVVAVFASLPGIIFTRSQKEGLHYTCSSHFPYSQYQFWKNFQTLKIVILGLVLPLLVMVICYSGILKTLLRCRNEKKRHRAVRLIFTIMIVYFLFWAPYNIVLLLNTFQEFFGLNNCSSSNRLDQAMQVTETLGMTHCCINPIIYAFVGEKFRNYLLVFFQKHIAKRFCKCCSIFQQEAPERASSVYTRSTGEQEISVGL",
-          "connectedViewId": "lgv-CCR5"
+          "connectedViewId": "lgv-CCR5",
+          "filter": [
+            {
+              "field": "residue",
+              "lte": 184
+            }
+          ]
         }
       ]
     }

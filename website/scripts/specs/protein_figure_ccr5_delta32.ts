@@ -17,9 +17,10 @@ function ccr5Session() {
 // HG00137 is Δ32/Δ32, HG00101 Δ32/+ and HG00096 +/+ in the 2022 phased panel.
 // The read tracks are tall and sorted on a base inside the deletion, since a
 // short unsorted track packs the reads carrying it out of sight. The two
-// structure panels take their own angles: B is turned so the kept and lost
-// halves sit side by side (in this crystal 182 residues are kept and 129
-// lost), and C so the crown stays visible. Δ32 keeps residues 1-184, so the session colors 185
+// structure panels share one angle: B is turned so the kept and lost halves
+// sit side by side (in this crystal 182 residues are kept and 129 lost), and
+// C draws only what the frameshift spares, through Protein3d 1.26.0's
+// structure filter, so gp120 reaches into the gap where the rest would be. Δ32 keeps residues 1-184, so the session colors 185
 // on; gp120 (chain G) is a cartoon mark of its own color, and its V3 crown
 // (310-315) sticks of a brighter one.
 const PANELS = ['protein-CCR5-6meo', 'protein-CCR5-v3'] as const
@@ -121,13 +122,13 @@ export const proteinCcr5Delta32Specs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'V3 crown',
-        fontSize: 24,
-        maxWidth: 300,
+        text: 'Nothing left to bind',
+        fontSize: 26,
+        maxWidth: 360,
         leader: true,
         anchor: { residue: 'G:313', view: 2 },
-        dx: 170,
-        dy: -150,
+        dx: 150,
+        dy: -170,
       },
     ],
   },
