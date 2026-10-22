@@ -51,14 +51,6 @@ const Row = Base1DView.volatile(() => ({
     get coarseDynamicBlocks() {
       return self.heldBlocks ?? self.dynamicBlocks.contentBlocks
     },
-    get displayedRegionsOrientation() {
-      const first = !!self.displayedRegions[0]?.reversed
-      return self.displayedRegions.every(r => !!r.reversed === first)
-        ? first
-          ? 'reversed'
-          : 'forward'
-        : 'mixed'
-    },
   }))
   .actions(self => ({
     holdCoarseBlocks() {
@@ -66,14 +58,6 @@ const Row = Base1DView.volatile(() => ({
     },
     releaseCoarseBlocks() {
       self.heldBlocks = undefined
-    },
-    horizontallyFlip() {
-      self.setDisplayedRegions(
-        [...self.displayedRegions]
-          .reverse()
-          .map(region => ({ ...region, reversed: !region.reversed })),
-      )
-      self.scrollTo(self.displayedRegionsTotalPx - self.offsetPx - self.width)
     },
     // the one LGV action the settled pass reaches, since the rung below the
     // spread navigates rather than positions
@@ -172,7 +156,6 @@ const Host = types
   .model('TestSyntenyFollowHost', {})
   .volatile(() => ({
     followSynteny: true,
-    followMatchOrientation: true,
     ratio: undefined as 1 | undefined,
     followReport: EMPTY_FOLLOW_REPORT,
     followAnchorIndex: 0,
@@ -188,9 +171,6 @@ const Host = types
     },
     setSameScale(arg: boolean) {
       self.ratio = arg ? 1 : undefined
-    },
-    setFollowMatchOrientation(arg: boolean) {
-      self.followMatchOrientation = arg
     },
     setFollowReport(report: Partial<FollowReport>) {
       self.followReport = { ...self.followReport, ...report }
@@ -873,159 +853,24 @@ test('a spread refused mid-drag goes onto the contig that is widest now', async 
   expect(shown(rows[1]!)).toEqual(['chr9'])
 })
 
-const reversedOf = (view: ReturnType<typeof row>) =>
-  !!view.dynamicBlocks.contentBlocks[0]?.reversed
-
-describe('orientation', () => {
-  const inverted = {
-    refName: 'chr1',
-    start: 300_000,
-    end: 700_000,
-    mateRefName: 'chr1',
-    mateStart: 300_000,
-    mateEnd: 700_000,
-    strand: -1,
-  }
+test('inside an inverted alignment the row keeps its orientation', async () => {
+  const { rows, host } = twoRows([
+    display([
+      {
+        refName: 'chr1',
+        start: 300_000,
+        end: 700_000,
+        mateRefName: 'chr1',
+        mateStart: 300_000,
+        mateEnd: 700_000,
+        strand: -1,
+      },
+    ]),
+  ])
   const settle = () => new Promise(resolve => setTimeout(resolve, 0))
-
-  test('inside an inverted alignment the row is turned round, once', async () => {
-    const { rows, host } = twoRows([display([inverted])])
-    place(rows[0]!, 400_000, 600_000)
-    installSyntenyFollow(host)
-    await settle()
-    expect(reversedOf(rows[1]!)).toBe(true)
-    // the user's own flip stands until the decision changes
-    rows[1]!.horizontallyFlip()
-    place(rows[0]!, 410_000, 610_000)
-    await settle()
-    expect(reversedOf(rows[1]!)).toBe(false)
-  })
-
-  test('a reversed anchor inside an inverted alignment wants a forward row', async () => {
-    const { rows, host } = twoRows([display([inverted])])
-    rows[0]!.horizontallyFlip()
-    place(rows[0]!, 400_000, 600_000)
-    installSyntenyFollow(host)
-    await settle()
-    expect(reversedOf(rows[1]!)).toBe(false)
-  })
-
-  test('a window over nearly all inverted ribbons is turned round, a mixed one is not', async () => {
-    const ortholog = (start: number, strand: number) => ({
-      refName: 'chr1',
-      start,
-      end: start + 10_000,
-      mateRefName: 'chr1',
-      mateStart: start,
-      mateEnd: start + 10_000,
-      strand,
-    })
-    const mostly = twoRows([
-      display(
-        Array.from({ length: 20 }, (_, i) =>
-          ortholog(i * 40_000, i === 0 ? 1 : -1),
-        ),
-      ),
-    ])
-    place(mostly.rows[0]!, 0, CONTIG)
-    installSyntenyFollow(mostly.host)
-    await settle()
-    expect(reversedOf(mostly.rows[1]!)).toBe(true)
-
-    const mixed = twoRows([
-      display(
-        Array.from({ length: 20 }, (_, i) =>
-          ortholog(i * 40_000, i % 2 ? 1 : -1),
-        ),
-      ),
-    ])
-    place(mixed.rows[0]!, 0, CONTIG)
-    installSyntenyFollow(mixed.host)
-    await settle()
-    expect(reversedOf(mixed.rows[1]!)).toBe(false)
-  })
-
-  test('off, nothing turns', async () => {
-    const { rows, host } = twoRows([display([inverted])])
-    host.setFollowMatchOrientation(false)
-    place(rows[0]!, 400_000, 600_000)
-    installSyntenyFollow(host)
-    await settle()
-    expect(reversedOf(rows[1]!)).toBe(false)
-  })
-
-  test('turning it on turns the row round without waiting for a pan', async () => {
-    const { rows, host } = twoRows([display([inverted])])
-    host.setFollowMatchOrientation(false)
-    place(rows[0]!, 400_000, 600_000)
-    installSyntenyFollow(host)
-    await settle()
-    expect(reversedOf(rows[1]!)).toBe(false)
-
-    host.setFollowMatchOrientation(true)
-    await settle()
-    expect(reversedOf(rows[1]!)).toBe(true)
-  })
-
-  test('a row navigated onto another contig lands turned round', async () => {
-    const onChr2 = { ...inverted, refName: 'chr2', mateRefName: 'chr2' }
-    const { rows, host } = twoRows([display([onChr2])])
-    // the row displays ONE contig, so the span's own contig is out of reach of
-    // navTo and the follow takes navToLocString's region replacement
-    rows[1]!.setDisplayedRegions([
-      { refName: 'chr1', start: 0, end: CONTIG, assemblyName: 'b' },
-    ])
-    place(rows[0]!, 1_400_000, 1_600_000)
-    installSyntenyFollow(host)
-    await settle()
-    expect(shown(rows[1]!)).toEqual(['chr2'])
-    expect(reversedOf(rows[1]!)).toBe(true)
-  })
-
-  test('a row with one region reversed by hand is left alone', async () => {
-    const { rows, host } = twoRows([display([inverted])])
-    rows[1]!.setDisplayedRegions(
-      rows[1]!.displayedRegions.map((r, i) =>
-        i === 3 ? { ...r, reversed: true } : { ...r },
-      ),
-    )
-    place(rows[0]!, 400_000, 600_000)
-    installSyntenyFollow(host)
-    await settle()
-    // the follow really did place it — the assertion below is that it declined
-    // to turn it, not that it never got there
-    expect(shown(rows[1]!)).toEqual(['chr1'])
-    // flipping a mixed row flips every region at once, which is a bigger edit
-    // than the follow is entitled to make
-    expect(rows[1]!.displayedRegions.map(r => !!r.reversed)).toEqual(
-      Array.from({ length: CONTIGS }, (_, i) => i === 3),
-    )
-  })
-
-  test('the vote is over the contig that places the row, not every contig under the window', async () => {
-    const ribbon = (mateRefName: string, start: number, strand: number) => ({
-      refName: 'chr1',
-      start,
-      end: start + 20_000,
-      mateRefName,
-      mateStart: start,
-      mateEnd: start + 20_000,
-      strand,
-    })
-    // chr5 takes the row, on 200kb of inverted alignment; chr6's forward 160kb
-    // is on a contig the row is not placed on
-    const { rows, host } = twoRows([
-      display([
-        ...Array.from({ length: 10 }, (_, i) => ribbon('chr5', i * 40_000, -1)),
-        ...Array.from({ length: 8 }, (_, i) =>
-          ribbon('chr6', 400_000 + i * 40_000, 1),
-        ),
-      ]),
-    ])
-    place(rows[0]!, 0, CONTIG)
-    installSyntenyFollow(host)
-    await settle()
-    expect(shown(rows[1]!)).toEqual(['chr5'])
-    expect(reversedOf(rows[1]!)).toBe(true)
-  })
+  place(rows[0]!, 400_000, 600_000)
+  installSyntenyFollow(host)
+  await settle()
+  expect(shown(rows[1]!)).toEqual(['chr1'])
+  expect(rows[1]!.displayedRegions.some(r => r.reversed)).toBe(false)
 })

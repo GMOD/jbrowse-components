@@ -37,10 +37,7 @@ import type { FollowAnchorHost, FollowReport } from './followHost.ts'
 import type { FollowLevelState } from './followLevelStates.ts'
 import type { FollowStep } from './planFollowStep.ts'
 import type { Region } from '@jbrowse/core/util'
-import type {
-  LinearGenomeViewModel,
-  RegionsOrientation,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface FollowLevel {
   linearSyntenyDisplays: LinearSyntenyDisplayModel[]
@@ -55,7 +52,6 @@ export interface FollowPair {
 }
 
 export interface SyntenyFollowHost extends FollowAnchorHost {
-  followMatchOrientation: boolean
   ratio: 1 | undefined
   followPairs: FollowPair[]
   setFollowReport: (report: Partial<FollowReport>) => void
@@ -117,9 +113,6 @@ interface FollowWork {
   // absent for a carried level, whose windows are this pass's own placement
   staying?: { view: LinearGenomeViewModel; windows: FollowWindow[] }
   movingMinWidthBp: number
-  // read in the plan, so the checkbox wakes the pass
-  matchOrientation: boolean
-  stayingOrientation: RegionsOrientation
   seq: number
   generation: number
 }
@@ -270,8 +263,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     step,
     staying,
     movingMinWidthBp,
-    matchOrientation,
-    stayingOrientation,
     seq,
     generation,
   }: FollowWork) {
@@ -342,16 +333,13 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         }
       }
     }
-    // after the navigation, whose locstring fallback lands the row forward
-    orient(state, step, matchOrientation, stayingOrientation, movingView)
   }
 
   // Rung 3's placement: one `moveTo` across the union, leaving the row's regions
-  // alone, and no pick or orientation key, since no one block places the row.
+  // alone, and no pick, since no one block places the row.
   function executeSpread({ level, movingView, spans }: SpreadWork) {
     const state = levelStates.get(level)
     state.pick = undefined
-    state.orientedKey = undefined
     const placed = self.holdFollowAnchor(() =>
       positionViewOnSpans(movingView, spans, spreadFloor()),
     )
@@ -372,44 +360,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         .catch((e: unknown) => {
           reportError(level, e)
         })
-    }
-  }
-
-  /**
-   * Turn the moving row round when the alignment placing it runs the other
-   * way, once per decision, so a row flipped by hand afterwards stands until the
-   * decision changes. A mixed window or a mixed row decides nothing.
-   */
-  function orient(
-    state: FollowLevelState,
-    step: FollowStep,
-    matchOrientation: boolean,
-    stayingOrientation: RegionsOrientation,
-    movingView: LinearGenomeViewModel,
-  ) {
-    if (!matchOrientation) {
-      // dropped while off, so switching back on re-asserts
-      state.orientedKey = undefined
-      return
-    }
-    if (step.wantReversed === undefined) {
-      return
-    }
-    const decision = step.envelope?.refName ?? step.feat.id
-    const key = `${decision}|${step.wantReversed}|${stayingOrientation}`
-    if (key === state.orientedKey) {
-      return
-    }
-    const movingOrientation = movingView.displayedRegionsOrientation
-    // not recorded, so a row that stops being mixed is decided then
-    if (stayingOrientation === 'mixed' || movingOrientation === 'mixed') {
-      return
-    }
-    state.orientedKey = key
-    const stayingReversed = stayingOrientation === 'reversed'
-    const movingReversed = movingOrientation === 'reversed'
-    if (movingReversed !== (stayingReversed !== step.wantReversed)) {
-      movingView.horizontallyFlip()
     }
   }
 
@@ -555,8 +505,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   function planLevel(pair: FollowPair, placed: PlacedWindows): FollowPlan {
     const { level, stayingView, movingView, toMate, mateAssembly } = pair
     const state = levelStates.facing(level, toMate)
-    // read unconditionally, so the checkbox is a dependency whatever the rung
-    const matchOrientation = self.followMatchOrientation
     // bumped for every level visited, so a level that holds also drops what is
     // in flight
     const seq = ++state.seq
@@ -625,8 +573,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         step,
         staying: carried ? undefined : { view: stayingView, windows },
         movingMinWidthBp: movingView.minBpPerPx * movingView.width,
-        matchOrientation,
-        stayingOrientation: stayingView.displayedRegionsOrientation,
         seq,
         generation: levelStates.generation,
       },

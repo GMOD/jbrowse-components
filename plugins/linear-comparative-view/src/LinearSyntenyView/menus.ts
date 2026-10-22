@@ -44,9 +44,7 @@ interface NavigationModel extends FollowHost {
   squareView: () => void
   showAllRegionsAcrossRows: (sameScale: boolean) => void
   ratio: 1 | undefined
-  followMatchOrientation: boolean
   setFollowSynteny: (flag: boolean) => void
-  setFollowMatchOrientation: (arg: boolean) => void
 }
 
 // `keepMenuOpen: false`: the click re-frames every row, and a radio would
@@ -72,8 +70,7 @@ const SHOW_ALL_REGIONS_MODES = [
  * in.
  */
 export function navigationMenuItems(model: NavigationModel): MenuItem[] {
-  const { ratio, followSynteny, followAnchorIndex, followMatchOrientation } =
-    model
+  const { ratio, followSynteny, followAnchorIndex } = model
   return [
     {
       label: 'Square view - average bp per pixel',
@@ -110,16 +107,6 @@ export function navigationMenuItems(model: NavigationModel): MenuItem[] {
                   model.setFollowAnchorIndex(Number(idx))
                 },
               ),
-              { type: 'subHeader', label: 'Orientation' },
-              {
-                type: 'checkbox',
-                label:
-                  'Flip rows to match the anchor - inside inverted alignments',
-                checked: followMatchOrientation,
-                onClick: () => {
-                  model.setFollowMatchOrientation(!followMatchOrientation)
-                },
-              },
             ] satisfies MenuItem[])
           : []),
       ],

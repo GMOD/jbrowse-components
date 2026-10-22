@@ -31,15 +31,6 @@ export const syntenyNavigationConfigSchema = ConfigurationSchema(
       defaultValue: 0,
       description: 'the genome row, counted from the top, the others follow',
     },
-    /**
-     * #slot
-     */
-    matchOrientation: {
-      type: 'boolean',
-      defaultValue: false,
-      description:
-        "while following, flip a row whose placing alignment runs the other way from the anchor's, so the two pan in the same direction",
-    },
   },
   { closed: true },
 )

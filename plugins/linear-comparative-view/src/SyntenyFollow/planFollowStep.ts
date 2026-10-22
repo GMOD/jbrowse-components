@@ -1,6 +1,5 @@
 import { getFeatureAtIndex } from '../LinearSyntenyDisplay/model.ts'
-import { NEARLY_ALL, preferIncumbent } from '../syntenyHysteresis.ts'
-import { followReverseShare } from './followReverseShare.ts'
+import { preferIncumbent } from '../syntenyHysteresis.ts'
 import { followWindowMapping } from './followWindowMapping.ts'
 import { pickFollowFeature } from './pickFollowFeature.ts'
 import { windowInsideFeat } from './windowInsideFeat.ts'
@@ -26,19 +25,6 @@ export interface FollowStep {
   windowInsideFeat: boolean
   // undefined when the window is inside one alignment
   envelope: ResolvedSpan | undefined
-  // undefined for a mixed window, which leaves the row's orientation alone
-  wantReversed: boolean | undefined
-}
-
-function wantReversedFor(share: number | undefined) {
-  if (share === undefined) {
-    return undefined
-  }
-  return share >= NEARLY_ALL
-    ? true
-    : share <= 1 - NEARLY_ALL
-      ? false
-      : undefined
 }
 
 interface FollowPick extends FollowCandidate {
@@ -124,18 +110,5 @@ export function planFollowStep({
     hasCigar: data.hasCigar,
     windowInsideFeat: inside,
     envelope,
-    // voted over the contig the row is placed on
-    wantReversed: inside
-      ? feat.strand === -1
-      : wantReversedFor(
-          followReverseShare({
-            data,
-            window,
-            toMate,
-            mateAssembly,
-            targetRefName:
-              envelope?.refName ?? (toMate ? feat.mate.refName : feat.refName),
-          }),
-        ),
   }
 }

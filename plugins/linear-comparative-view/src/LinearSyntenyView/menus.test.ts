@@ -19,7 +19,6 @@ describe('navigationMenuItems', () => {
       ratio: 1 | undefined
       followSynteny: boolean
       followAnchorIndex: number
-      followMatchOrientation: boolean
     }> = {},
   ) {
     const calls: unknown[] = []
@@ -28,7 +27,6 @@ describe('navigationMenuItems', () => {
       ratio: undefined,
       followSynteny: false,
       followAnchorIndex: 0,
-      followMatchOrientation: false,
       ...state,
       squareView: () => calls.push('square'),
       showAllRegionsAcrossRows: (sameScale: boolean) => {
@@ -36,7 +34,6 @@ describe('navigationMenuItems', () => {
       },
       setFollowSynteny: flag => calls.push(flag),
       setFollowAnchorIndex: idx => calls.push(idx),
-      setFollowMatchOrientation: arg => calls.push(['orient', arg]),
     })
     return { items, calls, follow: subMenuOf(items, 'Follow') }
   }
@@ -74,19 +71,7 @@ describe('navigationMenuItems', () => {
       follow.flatMap(i =>
         i.type === 'subHeader' && 'label' in i ? [i.label] : [],
       ),
-    ).toEqual(['Anchor row', 'Orientation'])
-  })
-
-  test('the orientation toggle is only offered while following, and flips its own state', () => {
-    const label = 'Flip rows to match the anchor - inside inverted alignments'
-    expect(labelled(build().follow, label)).toBeUndefined()
-    const { follow, calls } = build({
-      followSynteny: true,
-      followMatchOrientation: true,
-    })
-    expect(labelled(follow, label)?.checked).toBe(true)
-    labelled(follow, label)?.onClick?.()
-    expect(calls).toEqual([['orient', false]])
+    ).toEqual(['Anchor row'])
   })
 
   test('the three zoom commands lead the menu, unheaded', () => {

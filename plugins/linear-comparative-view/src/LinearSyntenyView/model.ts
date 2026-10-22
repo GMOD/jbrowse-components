@@ -299,29 +299,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get followAnchorIndex(): number {
         return readConfObject(self.navigation, 'anchor')
       },
-      /**
-       * #getter
-       * `navigation.matchOrientation`
-       */
-      get followMatchOrientation(): boolean {
-        return readConfObject(self.navigation, 'matchOrientation')
-      },
     }))
     .actions(self => ({
       /**
        * #action
        * Rewrite members of `navigation`, keeping the rest.
        */
-      setNavigation(members: {
-        follow?: boolean
-        anchor?: number
-        matchOrientation?: boolean
-      }) {
+      setNavigation(members: { follow?: boolean; anchor?: number }) {
         const now = getSnapshot(self.navigation) as Record<string, unknown>
         const was = {
           follow: self.followSynteny,
           anchor: self.followAnchorIndex,
-          matchOrientation: self.followMatchOrientation,
         }
         if (
           Object.entries(members).some(
@@ -918,12 +906,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.diagonalizeAnchorRow = lastRow - self.diagonalizeAnchorRow
       },
 
-      /**
-       * #action
-       */
-      setFollowMatchOrientation(arg: boolean) {
-        self.setNavigation({ matchOrientation: arg })
-      },
       /**
        * #action
        */

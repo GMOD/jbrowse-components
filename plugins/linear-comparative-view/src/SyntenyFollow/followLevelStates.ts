@@ -68,8 +68,6 @@ export interface FollowLevelState {
   spreadTargets?: ReadonlyMap<string, string>
   // the last navigation as from>to, so a repeat can be refused
   lastNav?: string
-  // the orientation decision the row was last flipped for
-  orientedKey?: string
 }
 
 /**

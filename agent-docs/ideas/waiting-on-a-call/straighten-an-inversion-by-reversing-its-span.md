@@ -59,12 +59,8 @@ reversed region.
 
 ## Caveats
 
-- A straightened row reads as mixed orientation, which the follow already
-  declines to re-orient. The follow's fallback navigation replaces the list with
-  one forward contig, so moving to another contig drops the split.
-- The follow's "flip rows to match the anchor inside inverted alignments" uses
-  the whole-row flip; with this primitive it could reverse the block's span
-  instead, and zooming out would keep straight flanks.
+- The follow's fallback navigation replaces the list with one forward contig,
+  so moving to another contig drops the split.
 - Nested or off-screen inversions need the block's full mate extent from the
   record, not the visible window's slice.
 - The row's locstring becomes three regions, so share links get longer.

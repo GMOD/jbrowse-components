@@ -9,7 +9,7 @@
 // snaps between paralogous loci while the anchor moves smoothly.
 const SWITCH_MARGIN = 1.5
 
-// A vote past this share in either direction turns a row or a lane round;
+// A vote past this share in either direction turns a lane round;
 // anything between is a window showing both orientations, and flipping it
 // would hide half.
 export const NEARLY_ALL = 0.9

@@ -476,61 +476,13 @@ reset and flicker.
 `followReport.unaligned` is the different answer: nothing covers the window, so
 the rows hold. Without the flag a held row and a dead follow look identical.
 
-## Orientation is matched once per decision, and only when opted in
+## The follow never turns a row round
 
-`navigation.matchOrientation` (off by default) lets the exact pass turn the moving
-row round so it pans the same way as the anchor: inside one alignment by that
-block's strand, wider than one by `followReverseShare`'s vote and only past
-`NEARLY_ALL` (90%) either way. The vote weighs records by `voteEvidence`, as the
-contig vote does, so on a gene table one long reverse gene cannot turn a row
-that ten forward orthologs hold. A mixed window decides nothing —
-the crossing ribbons are the picture of a rearrangement, and flipping would hide
-half of it. Rung 3 carries no strand and never flips.
-
-**The vote is over the contig the row is PLACED ON**, `followAxes`' insistence
-applied to a third scan: rung 2 reaches several of the mate's contigs and puts
-the row on exactly one of them, so forward blocks to a contig it is not on would
-dilute below `NEARLY_ALL` a row whose own contig is inverted throughout.
-
-It stays a **separate settle-only scan**, not folded into
-`followWindowsMapping`'s loop, which visits the same blocks: the two run on
-different clocks, so the fold moves work from the rare caller into the per-frame
-one — costed at +15ms/s to save 7ms/s and declined.
-
-**Applied once per key, not once per settle.** `orientedKey` is whatever placed
-the row — the block id, or the contig the envelope answered on — the wanted
-orientation, and the staying row's orientation, the anchor's one level out; the
-same key does not flip again. That is what lets a reader flip a followed row by
-hand without the row's Flip item taking the anchor: their flip disagrees with
-the key's answer and stands until the decision changes. The wanted state is
-relative — a reversed anchor inside an inverted block wants a forward mate.
-
-**The checkbox is read in `planLevel`, unconditionally, or it is not a
-dependency of the pass at all.** `orient` runs past the autorun's first `await`
-_and_ inside its `untracked`, so a flag read there wakes nothing. The key is
-**dropped while the mode is off**, so switching it back on re-asserts over a row
-turned round by hand in the meantime.
-
-**It orients AFTER the navigation, which can undo it.** The fallback in
-`navToResolvedSpan` replaces `displayedRegions` from a bare locstring, which
-names no orientation, so a row flipped first would land the wrong way round with
-the decision already recorded against it. The re-guard after that `await` is the
-ordinary latest-wins one; the pass that supersedes this one orients instead, and
-the backstop's no-await path is what terminates it.
-
-**Orientation is a fact about the ROW, so it is read off
-`displayedRegionsOrientation` and not off the leftmost block.**
-`horizontallyFlip` reverses every region at once, so the only orientation it can
-answer is the row-wide one. A row with a single region reversed has none —
-`mixed` — and both sides decline on `mixed` without recording the key, the
-policy a mixed window already gets; read off blocks, it reported whichever
-region the window was over, and the follow turned every OTHER region round to
-agree.
-
-`horizontallyFlip` replaces `displayedRegions` and so wakes the pass; the bp
-window is unchanged, the replan carries the same key, and `alreadyShowing`
-compares bp, so it converges in one wake. The frame pass reads nothing of this:
-`spanBounds` already min/maxes offsets over a reversed row.
+The follow moves a row and leaves its orientation alone, so inside an inverted
+alignment the row pans opposite the anchor and the crossing ribbons show the
+inversion. Flipping a row hides half of a rearrangement, so the view dropped
+`navigation.matchOrientation`, an opt-in that flipped the row to pan with the
+anchor. A hand flip (`horizontallyFlip`) stands, and does not take the anchor.
 
 ## Block coordinates are `start <= end`, with direction in `strands`
 

@@ -31,10 +31,9 @@ spelling, not a new house word. That means no new `min*`, `max*`, `show*` or
 - `data.resolution` on the comparative views and the LGVSynteny and
   multi-way displays, which replaced `lodMode`.
 - The chord displays' `mark.depth`, which replaced `bezierRadiusRatio`.
-- The linear synteny view's `navigation` (`follow`, `anchor`,
-  `matchOrientation`), which replaced `followSynteny`, `followAnchorIndex`
-  and `followMatchOrientation`. `diagonalizeAnchorRow` stays apart: a gesture
-  takes the follow anchor, and only the reorder dialog sets this one.
+- The linear synteny view's `navigation` (`follow`, `anchor`), which replaced
+  `followSynteny` and `followAnchorIndex`. `diagonalizeAnchorRow` stays apart:
+  a gesture takes the follow anchor, and only the reorder dialog sets this one.
 - LGVSyntenyDisplay's self lane as a `facet.hidden` entry, which replaced
   `hideSelfAlignments`.
 - Wiggle's `mark` as Vega-Lite's mark object, `{ type, interpolate }`, a bare
