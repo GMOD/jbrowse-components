@@ -599,7 +599,6 @@ Draw HPRC haplotypes as lanes in assembly coordinates, aligned to each other by 
 
 Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc_haplotypes/
 
-- https://jbrowse.org/demos/hprc_multiway/config.json
 - https://jbrowse.org/pangenome/hprc-grch38/config.json
 - https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
 
@@ -636,6 +635,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_mouse/
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.segs.bed.gz
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.links.bed.gz
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.segs.bed.gz
+- https://jbrowse.org/ucsc/mm39/config-staging.json
 
 ## Pangenome (hosting your own graph)
 
@@ -645,6 +645,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_prepare_graph/
 
 - https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/hprc.json
 - https://jbrowse.org/demos/hprc/config.json
+- https://jbrowse.org/demos/hprc_multiway/config.json
 - https://jbrowse.org/pangenome/hprc-grch38/config.json
 
 ## CNV across a population (1000 Genomes)

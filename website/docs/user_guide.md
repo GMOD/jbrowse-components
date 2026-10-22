@@ -43,6 +43,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/user_guides/dotplot_view)
 - [](/docs/user_guides/graph_genome_view)
 - [](/docs/user_guides/linear_synteny_view)
+- [](/docs/user_guides/multiway_synteny_display)
 - [](/docs/user_guides/spreadsheet_view)
 - [](/docs/user_guides/sv_inspector_view)
 
