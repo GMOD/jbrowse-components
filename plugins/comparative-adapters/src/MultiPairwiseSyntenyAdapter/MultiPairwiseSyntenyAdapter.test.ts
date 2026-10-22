@@ -415,7 +415,7 @@ describe('MultiPairwiseSyntenyAdapter', () => {
       tiered
         .getFeatures(
           { assemblyName: 'anchor', refName: 'ctgA', start: 0, end: 30000 },
-          { lodMode: 'coarse' },
+          { lodTier: 'coarse' },
         )
         .pipe(toArray()),
     )

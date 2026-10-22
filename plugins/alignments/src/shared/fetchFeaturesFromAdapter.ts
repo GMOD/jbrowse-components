@@ -24,7 +24,7 @@ export async function fetchFeaturesFromAdapter({
   sequenceAdapter,
   region,
   filterBy,
-  lodMode,
+  lodTier,
   statusCallback,
   signal,
 }: {
@@ -36,7 +36,7 @@ export async function fetchFeaturesFromAdapter({
   filterBy?: ReadFilter
   // Which detail tier a tiered adapter should serve. Only the synteny displays
   // set it (a PIF has a coarse no-CIGAR tier); read adapters ignore it.
-  lodMode?: LodTier
+  lodTier?: LodTier
   // Required key, nullable value, on purpose: a caller with no status channel
   // has to say `statusCallback: undefined` rather than leave the property out,
   // so forwarding one is a decision instead of something to remember. And
@@ -59,7 +59,7 @@ export async function fetchFeaturesFromAdapter({
   const fetchOpts: BaseOptions & { filterBy?: ReadFilter } = {
     signal,
     filterBy,
-    lodMode,
+    lodTier,
     statusCallback,
   }
   const featuresArray = await firstValueFrom(

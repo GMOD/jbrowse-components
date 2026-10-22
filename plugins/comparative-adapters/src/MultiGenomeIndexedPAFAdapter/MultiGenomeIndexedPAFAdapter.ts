@@ -121,7 +121,7 @@ export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase
 
       const coarse = resolveCoarseTier({
         hasCoarseTier: await this.pif.hasCoarseTier(opts),
-        lodMode: opts.lodMode,
+        lodTier: opts.lodTier,
       })
       const meta = await this.pif.meta(opts)
       // The anchor is the PAF query side of some records and the target side of

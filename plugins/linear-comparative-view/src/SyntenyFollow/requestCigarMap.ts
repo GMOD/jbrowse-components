@@ -38,7 +38,7 @@ export async function requestCigarMap({
         },
       ],
       featureId: feat.id,
-      lodMode: feat.lodTier,
+      lodTier: feat.lodTier,
     },
   )
 }

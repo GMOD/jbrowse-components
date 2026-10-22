@@ -108,7 +108,7 @@ export async function executeSyntenyFeaturesAndPositions({
   targetView,
   signal,
   cigarMode = 'full',
-  lodMode,
+  lodTier,
   statusCallback,
 }: {
   pluginManager: PluginManager
@@ -122,7 +122,7 @@ export async function executeSyntenyFeaturesAndPositions({
   targetView: SyntenyTargetViewSnap
   signal?: AbortSignal
   cigarMode?: CigarMode
-  lodMode?: LodTier
+  lodTier?: LodTier
   statusCallback?: StatusCallback
 }) {
   const dataAdapter = await getFeatureAdapterOrThrow({
@@ -155,7 +155,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const queryFetchOpts: ComparativeOptions = {
     signal,
     bpPerPx: v1.bpPerPx,
-    lodMode,
+    lodTier,
     statusCallback,
     // the assembly on the other side of this band; a multi-genome adapter
     // (MultiGenomePAFAdapter) uses it to keep only this pair's records
@@ -164,7 +164,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const targetFetchOpts: ComparativeOptions = {
     signal,
     bpPerPx: v2.bpPerPx,
-    lodMode,
+    lodTier,
     targetAssemblyName: v1.displayedRegions[0]?.assemblyName,
   }
   const [allFeatures, targetAxisFeatures] = await Promise.all([
@@ -705,7 +705,7 @@ export async function executeSyntenyFeaturesAndPositions({
     offscreenMates: offscreenMates.finish(),
     targetOffscreenMates: targetOffscreenMates.finish(),
     targetQueried: targetAxisFeatures !== undefined,
-    lodTier: lodMode ?? 'fine',
+    lodTier: lodTier ?? 'fine',
   }
 
   // colorBy lives on the main thread; the worker emits geometry +

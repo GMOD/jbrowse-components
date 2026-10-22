@@ -9,7 +9,7 @@ import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 /**
  * The lookup, plus the window to walk once the alignment is in hand.
  *
- * The inherited `lodMode` carries a second meaning here that it does not carry
+ * The inherited `lodTier` carries a second meaning here that it does not carry
  * for the map: it is the tier whose alignment strings decide whether there is
  * an answer at all — a CIGAR, or the coarse tier's fold of one.
  */

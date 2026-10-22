@@ -117,7 +117,7 @@ export function doAfterAttach(
         queryView,
         targetView,
         cigarMode,
-        lodMode: lodTier,
+        lodTier,
       })
 
       // AND BACK AGAIN, which the inbound rename above does not do for us. A

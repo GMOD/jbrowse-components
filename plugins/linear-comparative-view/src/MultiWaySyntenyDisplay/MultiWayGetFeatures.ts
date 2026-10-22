@@ -52,7 +52,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
         haplotypes?: string[]
         opts?: Pick<
           ComparativeOptions,
-          | 'lodMode'
+          | 'lodTier'
           | 'mateShape'
           | 'targetAssemblyName'
           | 'queryAssemblyName'

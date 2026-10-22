@@ -13,7 +13,7 @@ interface GetFeatureDetailsArgs {
   // The detail tier the pileup was fetched at. Feature ids are only comparable
   // within one tier (a tiered PIF adapter numbers its coarse and fine rows from
   // different file offsets), so the lookup has to ask for the same one.
-  lodMode?: LodTier
+  lodTier?: LodTier
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
@@ -29,7 +29,7 @@ export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRename
   name = 'GetPileupFeatureDetails' as const
 
   async execute(args: RpcExecuteArgs<'GetPileupFeatureDetails'>) {
-    const { regions, featureId, lodMode, signal, statusCallback } = args
+    const { regions, featureId, lodTier, signal, statusCallback } = args
 
     const region = regions[0]!
 
@@ -44,7 +44,7 @@ export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRename
     // clicking a read started an uncancellable, silent read.
     const features =
       (await dataAdapter?.getFeaturesArray(region, {
-        lodMode,
+        lodTier,
         signal,
         statusCallback,
       })) ?? []

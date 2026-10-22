@@ -1226,12 +1226,12 @@ describe('the level-of-detail tier', () => {
     // the anchor's own gene fetch carries no opts at all
     const opts = (call: { args: Record<string, unknown> }) =>
       (call.args.opts ?? {}) as {
-        lodMode?: string
+        lodTier?: string
         targetAssemblyName?: string
       }
     await until(() => calls.some(c => c.name === 'MultiWayGetFeatures'))
     expect(
-      opts(calls.find(c => c.name === 'MultiWayGetFeatures')!).lodMode,
+      opts(calls.find(c => c.name === 'MultiWayGetFeatures')!).lodTier,
     ).toBe('coarse')
     await when(() => display.lodTierInfo !== undefined, { timeout: 5000 })
     expect(calls.filter(c => c.name === 'CoreGetInfo')).toHaveLength(1)
@@ -1257,7 +1257,7 @@ describe('the level-of-detail tier', () => {
           opts(c).targetAssemblyName === 'volvox_ins',
       )
     await until(() => linkCall() !== undefined)
-    expect(opts(linkCall()!).lodMode).toBe('coarse')
+    expect(opts(linkCall()!).lodTier).toBe('coarse')
   })
 
   test('the ortholog fetch asks for the merged blocks', async () => {
@@ -1276,7 +1276,7 @@ describe('the level-of-detail tier', () => {
     ])
     await until(() => calls.some(c => c.name === 'MultiWayGetFeatures'))
     const { args } = calls.find(c => c.name === 'MultiWayGetFeatures')!
-    expect(args.opts).toEqual({ mateShape: 'grouped', lodMode: 'fine' })
+    expect(args.opts).toEqual({ mateShape: 'grouped', lodTier: 'fine' })
     expect(args.regions).toEqual([
       { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
     ])

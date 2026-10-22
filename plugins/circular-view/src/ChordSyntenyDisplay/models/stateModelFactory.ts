@@ -668,7 +668,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
                 ctx.callRpc('CoreGetFeatures', {
                   adapterConfig,
                   regions: regionsOfOne,
-                  opts: { lodMode: 'coarse' },
+                  opts: { lodTier: 'coarse' },
                 }),
               ),
             )

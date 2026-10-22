@@ -20,7 +20,7 @@ export interface FetchFeatureDetailsSelf {
         assemblyName: string
         start: number
         end: number
-        lodMode: LodTier | undefined
+        lodTier: LodTier | undefined
       }
     | undefined
 }
@@ -70,7 +70,7 @@ export async function fetchFeatureDetails(
       // the details silently never came. Recorded rather than read live because
       // a tier flip is a `zoomFetchArgs` move: the held regions keep drawing
       // until the refetch lands, at the tier they were fetched at.
-      lodMode: info.lodMode,
+      lodTier: info.lodTier,
     },
   )
   if (!feature) {
@@ -100,7 +100,7 @@ export interface FetchFeaturesSelf {
   // than in `rpcProps()` because they swing with zoom. The foundation stamps the
   // same object beside each region it loads, so a region fetched under one bin
   // or tier is not read back under another.
-  zoomFetchArgs: () => Pick<RenderAlignmentDataArgs, 'perBaseBinBp' | 'lodMode'>
+  zoomFetchArgs: () => Pick<RenderAlignmentDataArgs, 'perBaseBinBp' | 'lodTier'>
 }
 
 export function fetchFeaturesForRegion(

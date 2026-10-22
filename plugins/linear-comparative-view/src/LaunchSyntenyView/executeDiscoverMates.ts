@@ -64,7 +64,7 @@ export async function executeDiscoverMates({
   const features = await dataAdapter.getFeaturesInMultipleRegionsArray(
     regions,
     {
-      lodMode: lodTier,
+      lodTier,
       signal,
       statusCallback,
     },

@@ -25,7 +25,7 @@ function mockAdapter(features: SimpleFeature[]) {
   return getFeaturesArray
 }
 
-function run(args: { featureId: string; lodMode?: 'fine' | 'coarse' }) {
+function run(args: { featureId: string; lodTier?: 'fine' | 'coarse' }) {
   return new GetFeatureDetails(new PluginManager()).invoke({
     sessionId: 'sess',
     adapterConfig: { type: 'PairwiseIndexedPAFAdapter' },
@@ -44,9 +44,9 @@ function feature(uniqueId: string) {
 // looked up against fine-tier ids and silently never found.
 test('the requested tier reaches the adapter', async () => {
   const getFeaturesArray = mockAdapter([feature('123')])
-  const { feature: found } = await run({ featureId: '123', lodMode: 'coarse' })
+  const { feature: found } = await run({ featureId: '123', lodTier: 'coarse' })
 
-  expect(getFeaturesArray).toHaveBeenCalledWith(region, { lodMode: 'coarse' })
+  expect(getFeaturesArray).toHaveBeenCalledWith(region, { lodTier: 'coarse' })
   expect(found?.uniqueId).toBe('123')
 })
 
@@ -56,7 +56,7 @@ test('no tier asks for none', async () => {
   const getFeaturesArray = mockAdapter([feature('123')])
   await run({ featureId: '123' })
 
-  expect(getFeaturesArray).toHaveBeenCalledWith(region, { lodMode: undefined })
+  expect(getFeaturesArray).toHaveBeenCalledWith(region, { lodTier: undefined })
 })
 
 // The query is a whole region, not a single feature, so everything overlapping

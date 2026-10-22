@@ -59,7 +59,7 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   // rather than an `rpcProps()` field, like `perBaseBinBp` below: it swings
   // with zoom, and the display declares it in its `zoomFetchArgs`, so a tier
   // flip refetches the regions on screen and leaves the rest alone.
-  lodMode?: LodTier
+  lodTier?: LodTier
   /**
    * `subPixelBinBp` off the display's debounced zoom: genomic bp one per-base
    * cell stands for, and so the stride the two per-base color modes sample the
@@ -522,5 +522,5 @@ export interface GroupedAlignmentsResult {
    * tiered adapter numbers its coarse and fine rows from different file
    * offsets, and the region on screen may predate a tier flip.
    */
-  lodMode?: LodTier
+  lodTier?: LodTier
 }

@@ -104,7 +104,7 @@ export async function executeDotplotFeaturesAndPositions({
   hViewSnap,
   vViewSnap,
   signal,
-  lodMode,
+  lodTier,
   statusCallback,
 }: {
   pluginManager: PluginManager
@@ -114,7 +114,7 @@ export async function executeDotplotFeaturesAndPositions({
   hViewSnap: BpIndexViewSnap
   vViewSnap: BpIndexViewSnap
   signal?: AbortSignal
-  lodMode?: LodTier
+  lodTier?: LodTier
   statusCallback?: StatusCallback
 }) {
   const dataAdapter = await getFeatureAdapterOrThrow({
@@ -126,7 +126,7 @@ export async function executeDotplotFeaturesAndPositions({
   const fetchOpts: ComparativeOptions = {
     signal,
     bpPerPx: hViewSnap.bpPerPx,
-    lodMode,
+    lodTier,
     statusCallback,
     // The assembly on the vertical axis. A multi-genome adapter
     // (MCScanBlocksAdapter, MultiGenomePAFAdapter) draws N-1 pairs from one

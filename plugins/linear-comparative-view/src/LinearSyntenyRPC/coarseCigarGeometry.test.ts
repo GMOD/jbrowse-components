@@ -56,7 +56,7 @@ function coarseRow(id: string, coarseCigar?: string): Feature {
   })
 }
 
-async function run(features: Feature[], lodMode?: 'fine' | 'coarse') {
+async function run(features: Feature[], lodTier?: 'fine' | 'coarse') {
   jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
     getFeaturesInMultipleRegionsArray: jest.fn(async () => features),
   } as never)
@@ -66,7 +66,7 @@ async function run(features: Feature[], lodMode?: 'fine' | 'coarse') {
     adapterConfig: { type: 'PairwiseIndexedPAFAdapter' },
     queryView,
     targetView,
-    lodMode,
+    lodTier,
   })
   return value
 }

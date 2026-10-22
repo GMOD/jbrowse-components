@@ -15,7 +15,7 @@ import type { Region } from '@jbrowse/core/util'
  *   band's fetch queries (`executeSyntenyFeaturesAndPositions` is single-axis).
  *   So both directions of a resolve look the feature up the same way; only what
  *   is done with it differs.
- * - `lodMode` is the tier the block was fetched at, because ids are only
+ * - `lodTier` is the tier the block was fetched at, because ids are only
  *   comparable within one — a tiered PIF numbers its coarse and fine rows from
  *   different file offsets, so a lookup at the wrong tier misses rather than
  *   answering wrongly.
@@ -24,7 +24,7 @@ export interface AlignmentLookupArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
   featureId: string
-  lodMode?: LodTier
+  lodTier?: LodTier
 }
 
 /**
@@ -51,7 +51,7 @@ export async function findAlignmentById(
     adapterConfig,
     regions,
     featureId,
-    lodMode,
+    lodTier,
     signal,
     statusCallback,
   } = args
@@ -66,7 +66,7 @@ export async function findAlignmentById(
   })
   const features =
     (await dataAdapter?.getFeaturesArray(region, {
-      lodMode,
+      lodTier,
       signal,
       statusCallback,
     })) ?? []

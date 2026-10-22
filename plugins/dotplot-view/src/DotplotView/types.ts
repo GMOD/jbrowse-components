@@ -69,7 +69,7 @@ export interface DotplotViewCommands extends SyntenyViewSharedCommands {
 /**
  * What a `DotplotView` can be launched with: the commands above, plus ANY
  * declared property of the view — `color`, `alpha`, `drawCigar`, `lineWidth`,
- * `coord`, `lodMode`, `height`, and whatever the model grows next,
+ * `coord`, `data`, `height`, and whatever the model grows next,
  * each in its own type. None of them is listed anywhere: the type comes off the
  * state model, so declaring a property is the whole of making it authorable.
  * Each stays documented once, on the property.

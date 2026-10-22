@@ -78,7 +78,7 @@ function fetchPhases(
           ...(haplotypes === undefined ? {} : { haplotypes }),
           opts: {
             mateShape: 'grouped',
-            lodMode: lodTier,
+            lodTier,
           },
         },
       )
@@ -164,7 +164,7 @@ async function fetchLanePairBatch(
               queryAssemblyName: spec.assemblyName,
               targetAssemblyName: spec.lowerAssembly,
             })),
-            lodMode: first!.lodTier,
+            lodTier: first!.lodTier,
           },
         })
         for (const feature of features) {
@@ -467,7 +467,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
           opts: {
             ...(spec.onAnchor ? { queryAssemblyName: spec.assemblyName } : {}),
             targetAssemblyName: spec.lowerAssembly,
-            lodMode: spec.lodTier,
+            lodTier: spec.lodTier,
           },
         },
       )
@@ -491,7 +491,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       const { features } = await ctx.callRpc('MultiWayGetFeatures', {
         adapterConfig: self.adapterConfig,
         regions: await laneRegions(getSession(self), spec.lane, spec.regions),
-        opts: { mateShape: 'grouped', lodMode: spec.lodTier },
+        opts: { mateShape: 'grouped', lodTier: spec.lodTier },
       })
       return { key: spec.key, features }
     },

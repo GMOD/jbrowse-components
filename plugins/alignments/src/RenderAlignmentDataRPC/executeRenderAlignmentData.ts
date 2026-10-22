@@ -259,7 +259,7 @@ export async function executeRenderAlignmentData({
     baseLayer,
     sortTag,
     facet,
-    lodMode,
+    lodTier,
     showSoftClipping = false,
     showCoverage = true,
     junctions = true,
@@ -292,7 +292,7 @@ export async function executeRenderAlignmentData({
     sequenceAdapter,
     region,
     filterBy,
-    lodMode,
+    lodTier,
     statusCallback,
     signal,
   })
@@ -430,7 +430,7 @@ export async function executeRenderAlignmentData({
   }
 
   return rpcResult(
-    { groups, bytes, lodMode },
+    { groups, bytes, lodTier },
     collectGroupedTransferables(groups),
   )
 }

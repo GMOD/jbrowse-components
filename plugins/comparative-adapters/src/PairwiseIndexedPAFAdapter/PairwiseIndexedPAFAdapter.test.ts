@@ -232,7 +232,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
   // resolveLodTier's, on the main thread, so it lands in the fetch cache key.
   describe('LOD prefix selection', () => {
     const cases = [
-      // [name, flip, hasCoarseTier, lodMode, expected]
+      // [name, flip, hasCoarseTier, lodTier, expected]
       ['target perspective, fine tier', false, true, 'fine', 't'],
       ['query perspective, fine tier', true, true, 'fine', 'q'],
       ['target perspective, coarse tier', false, true, 'coarse', 'T'],
@@ -247,9 +247,9 @@ describe('PairwiseIndexedPAFAdapter', () => {
       ],
       ['query side degrades to fine too', true, false, 'coarse', 'q'],
     ] as const
-    for (const [name, flip, hasCoarseTier, lodMode, expected] of cases) {
+    for (const [name, flip, hasCoarseTier, lodTier, expected] of cases) {
       it(name, () => {
-        expect(pickPifPrefix({ flip, hasCoarseTier, lodMode })).toBe(expected)
+        expect(pickPifPrefix({ flip, hasCoarseTier, lodTier })).toBe(expected)
       })
     }
 
@@ -267,7 +267,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
               end: 60000,
               assemblyName: 'volvox',
             },
-            { lodMode: 'coarse' },
+            { lodTier: 'coarse' },
           )
           .pipe(toArray()),
       )
@@ -282,7 +282,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         adapter
           .getFeatures(
             { refName: 'ctgA', start: 0, end: 60000, assemblyName: 'volvox' },
-            { lodMode: 'fine' },
+            { lodTier: 'fine' },
           )
           .pipe(toArray()),
       )
@@ -296,7 +296,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         adapter
           .getFeatures(
             { refName: 'ctgA', start: 0, end: 60000, assemblyName: 'volvox' },
-            { lodMode: 'coarse' },
+            { lodTier: 'coarse' },
           )
           .pipe(toArray()),
       )
@@ -322,7 +322,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
               end: 60000,
               assemblyName: 'volvox_ins',
             },
-            { lodMode: 'coarse' },
+            { lodTier: 'coarse' },
           )
           .pipe(toArray()),
       )
@@ -334,13 +334,13 @@ describe('PairwiseIndexedPAFAdapter', () => {
     // selection by uniqueId across the refetch a tier switch causes
     it('the two tiers give one alignment the same id, and its two perspectives different ones', async () => {
       const adapter = makeAdapter(pifInsCoarsePath, ['volvox_ins', 'volvox'])
-      const idFor = async (assemblyName: string, lodMode: 'fine' | 'coarse') =>
+      const idFor = async (assemblyName: string, lodTier: 'fine' | 'coarse') =>
         (
           await firstValueFrom(
             adapter
               .getFeatures(
                 { refName: 'ctgA', start: 0, end: 60000, assemblyName },
-                { lodMode },
+                { lodTier },
               )
               .pipe(toArray()),
           )

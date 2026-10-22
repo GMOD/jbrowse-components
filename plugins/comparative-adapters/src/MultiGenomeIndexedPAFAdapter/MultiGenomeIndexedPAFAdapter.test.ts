@@ -293,7 +293,7 @@ test('the coarse tier serves the same one-vs-all set without CIGARs', async () =
   const fa = await feats(
     makeAdapter(['grape', 'peach', 'cacao']),
     { refName: 'chr1', start: 0, end: 2000, assemblyName: 'grape' },
-    { lodMode: 'coarse' },
+    { lodTier: 'coarse' },
   )
   // same one-vs-all set as the fine tier (peach, cacao, paralog), but coarse
   // rows carry no CIGAR
@@ -360,17 +360,17 @@ const grapeChr1 = {
   assemblyName: 'grape',
 }
 
-test('an explicit coarse lodMode reads the coarse tier', async () => {
+test('an explicit coarse lodTier reads the coarse tier', async () => {
   const fa = await feats(makeAdapter(['grape', 'peach']), grapeChr1, {
-    lodMode: 'coarse',
+    lodTier: 'coarse',
   })
   expect(fa.length).toBeGreaterThan(0)
   expect(tiersOf(fa)).toEqual(new Set(['coarse']))
 })
 
-test('an explicit fine lodMode holds the fine tier however far out the view is', async () => {
+test('an explicit fine lodTier holds the fine tier however far out the view is', async () => {
   const fa = await feats(makeAdapter(['grape', 'peach']), grapeChr1, {
-    lodMode: 'fine',
+    lodTier: 'fine',
     bpPerPx: 1e9,
   })
 
@@ -379,7 +379,7 @@ test('an explicit fine lodMode holds the fine tier however far out the view is',
 })
 
 // a direct getFeatures call (feature-by-id lookup, text search) states no tier
-test('no stated lodMode stays on the fine tier', async () => {
+test('no stated lodTier stays on the fine tier', async () => {
   const fa = await feats(makeAdapter(['grape', 'peach']), grapeChr1)
   expect(fa.length).toBeGreaterThan(0)
   expect(tiersOf(fa)).toEqual(new Set(['fine']))
@@ -391,7 +391,7 @@ test('asking for coarse on a file with no coarse tier still returns features', a
   const fa = await feats(
     makeDiploidAdapter(),
     { refName: 'chr1', start: 0, end: 2000, assemblyName: 'grape' },
-    { lodMode: 'coarse' },
+    { lodTier: 'coarse' },
   )
   expect(fa.length).toBeGreaterThan(0)
   expect(tiersOf(fa)).toEqual(new Set(['fine']))

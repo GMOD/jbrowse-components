@@ -112,7 +112,7 @@ export function doAfterAttach(
           ...vViewSnap,
           displayedRegions: await rename(vViewSnap.displayedRegions),
         },
-        lodMode: lodTier,
+        lodTier,
       })
       // Skipped features are only worth warning about when the refName is
       // genuinely absent from the assembly. An axis restricted to a subset of

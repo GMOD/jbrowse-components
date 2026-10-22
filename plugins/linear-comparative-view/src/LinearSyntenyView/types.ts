@@ -97,7 +97,7 @@ export interface LinearSyntenyViewCommands extends SyntenyViewSharedCommands {
  * `defaultSession` view, a share link, all one shape.
  *
  * The commands above plus every declared property of the view (`color`,
- * `cigarMode`, `mark`, `opacity`, `lodMode`, and whatever the model
+ * `cigarMode`, `mark`, `opacity`, `data`, and whatever the model
  * grows next), each in
  * its own type. None of them is listed anywhere: the type comes off the state
  * model, so declaring a property is the whole of making it authorable.

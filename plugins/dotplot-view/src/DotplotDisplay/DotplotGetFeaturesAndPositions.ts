@@ -11,7 +11,7 @@ export interface DotplotGetFeaturesAndPositionsArgs {
   regions: Region[]
   hViewSnap: BpIndexViewSnap
   vViewSnap: BpIndexViewSnap
-  lodMode?: LodTier
+  lodTier?: LodTier
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

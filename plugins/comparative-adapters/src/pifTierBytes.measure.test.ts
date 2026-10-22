@@ -120,7 +120,7 @@ maybe('bytes over the wire, coarse vs fine, at whole-genome zoom', async () => {
     : refNames
 
   const out: Record<string, unknown>[] = []
-  for (const lodMode of ['coarse', 'fine'] as const) {
+  for (const lodTier of ['coarse', 'fine'] as const) {
     clearCache()
     reset()
     const adapter = makeAdapter(base)
@@ -136,7 +136,7 @@ maybe('bytes over the wire, coarse vs fine, at whole-genome zoom', async () => {
               end: 300_000_000,
               assemblyName: ASSEMBLIES[0]!,
             },
-            { lodMode },
+            { lodTier },
           )
           .pipe(toArray()),
       )
@@ -145,7 +145,7 @@ maybe('bytes over the wire, coarse vs fine, at whole-genome zoom', async () => {
     const ms = performance.now() - t0
     const { dataBytes, indexBytes, requests } = stats()
     out.push({
-      lodMode,
+      lodTier,
       dataBytes,
       data: fmt(dataBytes),
       indexBytes,

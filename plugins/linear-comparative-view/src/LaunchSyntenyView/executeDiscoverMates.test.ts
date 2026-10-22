@@ -133,5 +133,5 @@ test('the resolved tier is the one the adapter is asked for', async () => {
     -1,
   )! as [Region[], BaseOptions]
   expect(regions).toEqual([region])
-  expect(opts.lodMode).toBe('coarse')
+  expect(opts.lodTier).toBe('coarse')
 })

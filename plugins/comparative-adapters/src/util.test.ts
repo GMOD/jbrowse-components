@@ -116,13 +116,13 @@ describe('parseBed', () => {
 // resolveLodTier on the main thread, where it can reach the fetch cache key.
 describe('resolveCoarseTier', () => {
   test('reads the coarse tier when asked for it', () => {
-    expect(resolveCoarseTier({ hasCoarseTier: true, lodMode: 'coarse' })).toBe(
+    expect(resolveCoarseTier({ hasCoarseTier: true, lodTier: 'coarse' })).toBe(
       true,
     )
   })
 
   test('reads the fine tier when asked for it', () => {
-    expect(resolveCoarseTier({ hasCoarseTier: true, lodMode: 'fine' })).toBe(
+    expect(resolveCoarseTier({ hasCoarseTier: true, lodTier: 'fine' })).toBe(
       false,
     )
   })
@@ -135,7 +135,7 @@ describe('resolveCoarseTier', () => {
   // a file made without a coarse tier has no T/Q rows to read, so asking for
   // one must degrade rather than query prefixes that return nothing
   test('coarse degrades to fine when the file has no coarse tier', () => {
-    expect(resolveCoarseTier({ hasCoarseTier: false, lodMode: 'coarse' })).toBe(
+    expect(resolveCoarseTier({ hasCoarseTier: false, lodTier: 'coarse' })).toBe(
       false,
     )
   })

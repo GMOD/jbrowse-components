@@ -19,14 +19,14 @@ import type { ComparativeOptions } from '@jbrowse/synteny-core'
 export function pickPifPrefix({
   flip,
   hasCoarseTier,
-  lodMode,
+  lodTier,
 }: {
   flip: boolean
   hasCoarseTier: boolean
-  lodMode?: LodTier
+  lodTier?: LodTier
 }) {
   const fineLetter = flip ? 'q' : 't'
-  return resolveCoarseTier({ hasCoarseTier, lodMode })
+  return resolveCoarseTier({ hasCoarseTier, lodTier })
     ? fineLetter.toUpperCase()
     : fineLetter
 }
@@ -98,7 +98,7 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
         const letter = pickPifPrefix({
           flip,
           hasCoarseTier,
-          lodMode: opts.lodMode,
+          lodTier: opts.lodTier,
         })
 
         const mateAssemblyName = this.mateAssemblyName(side)

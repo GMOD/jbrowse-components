@@ -2169,7 +2169,7 @@ export default function stateModelFactory(
           return hit && region
             ? {
                 ...readInfo(hit, region, featureId),
-                lodMode: self.rpcDataMap.get(hit.displayedRegionIndex)?.lodMode,
+                lodTier: self.rpcDataMap.get(hit.displayedRegionIndex)?.lodTier,
               }
             : undefined
         },
@@ -2958,7 +2958,7 @@ export default function stateModelFactory(
          * block, after the getters it reads, like `rpcProps`.
          */
         zoomFetchArgs() {
-          return { perBaseBinBp: self.perBaseBinBp, lodMode: self.lodTier }
+          return { perBaseBinBp: self.perBaseBinBp, lodTier: self.lodTier }
         },
       }))
       .views(self => ({

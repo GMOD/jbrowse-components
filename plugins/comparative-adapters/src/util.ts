@@ -1142,15 +1142,15 @@ export function markReciprocalDuplicates(sides: AlignedSide[]) {
 //
 // The zoom-based `auto` decision is deliberately NOT here: it is resolved on the
 // main thread by `resolveLodTier`, where it can reach the fetch cache key. See
-// BaseOptions.lodMode. Shared by the two indexed PIF adapters.
+// BaseOptions.lodTier. Shared by the two indexed PIF adapters.
 export function resolveCoarseTier({
   hasCoarseTier,
-  lodMode,
+  lodTier,
 }: {
   hasCoarseTier: boolean
-  lodMode?: LodTier
+  lodTier?: LodTier
 }) {
-  return hasCoarseTier && lodMode === 'coarse'
+  return hasCoarseTier && lodTier === 'coarse'
 }
 
 /**
