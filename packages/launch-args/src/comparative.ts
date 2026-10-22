@@ -128,7 +128,9 @@ const GENOME_TAKES = new Set(['loc', 'aliases', 'cytobands'])
 /**
  * The genomes and comparisons of a comparative view, in command-line order.
  *
- * - Each genome opens a row, with its `loc:`, `aliases:` and `cytobands:`.
+ * - Each genome opens a row, with its `loc:`, `aliases:` and `cytobands:`,
+ *   named after its file; two files of one name throw, and one file twice is
+ *   a self-comparison.
  * - A comparison file binds to the gap between the genome before it and the
  *   next one; a trailing one, written after both, clamps to the last gap.
  * - A comparison takes `name:`; any other modifier, on it or on a genome,
@@ -136,6 +138,7 @@ const GENOME_TAKES = new Set(['loc', 'aliases', 'cytobands'])
  */
 export function buildComparative(entries: Entry[]): ComparativeData {
   const assemblies: Assembly[] = []
+  const genomeFiles = new Map<string, string>()
   const locs: (string | undefined)[] = []
   const comparisons: { entry: Entry; before: number }[] = []
   for (const entry of entries) {
@@ -157,6 +160,13 @@ export function buildComparative(entries: Entry[]): ComparativeData {
           `${label} takes loc:, aliases: and cytobands:, not ${extra.join(' ')}`,
         )
       }
+      const sameName = genomeFiles.get(assembly.name)
+      if (sameName !== undefined && sameName !== file) {
+        throw new Error(
+          `${sameName} and ${file} are both named ${assembly.name}, and a genome takes its file's name; rename or link one of them`,
+        )
+      }
+      genomeFiles.set(assembly.name, file ?? '')
       assemblies.push(assembly)
       locs.push(modifierValue(mods, 'loc'))
     } else if (role === 'synteny') {

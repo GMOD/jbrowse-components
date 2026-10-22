@@ -94,6 +94,22 @@ describe('buildComparative', () => {
     expect(() => buildComparative(noFile)).toThrow(/requires a file/)
   })
 
+  test('two genome files of one name throw, naming both', () => {
+    expect(() => buildComparative(entries('x/ref.fa a.paf y/ref.fa'))).toThrow(
+      'x/ref.fa and y/ref.fa are both named ref.fa',
+    )
+    expect(() =>
+      buildComparative(entries('--chromSizes a.sizes a.chrom.sizes')),
+    ).toThrow(/a\.sizes and a\.chrom\.sizes are both named a/)
+  })
+
+  test('one genome file twice is a self-comparison', () => {
+    expect(
+      buildComparative(entries('a.fa a_a.paf a.fa')).syntenyTracks[0]
+        ?.assemblyNames,
+    ).toEqual(['a.fa', 'a.fa'])
+  })
+
   test('an MCScan file cannot be placed from the command line', () => {
     expect(() => buildComparative(entries('a.fa a_b.anchors b.fa'))).toThrow(
       /cannot place/,
