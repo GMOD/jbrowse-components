@@ -55,24 +55,19 @@ export default function MatrixRampMixin<F extends string>(
        * #getter
        * The `color` object under the painted field's preset, with an unset
        * `reverse` turning round a scheme dark at its low end, since an
-       * unpainted cell is the page behind the matrix. The preset's ramp
-       * members fill whichever continuous scale is written: `withPreset`
-       * drops a preset whose scale differs, which would leave the Log toggle
-       * painting no field's scheme.
+       * unpainted cell is the page behind the matrix. The preset's scheme
+       * fills whichever continuous scale is written: `withPreset` drops a
+       * preset whose scale differs, which would leave the Log toggle painting
+       * no field's scheme.
        */
       get colorEncoding(): MatrixColorEncoding<F> {
         const field = self.paintedColorField
         const written = colorSettingOf(confNode(self).configuration.color)
-        const preset = presets[field]
         return matrixColorEncodingOf(
           {
             ...written,
             field,
-            scheme: written.scheme ?? preset.scheme,
-            reverse: written.reverse ?? preset.reverse,
-            domainMin: written.domainMin ?? preset.domainMin,
-            domainMax: written.domainMax ?? preset.domainMax,
-            domainMid: written.domainMid ?? preset.domainMid,
+            scheme: written.scheme ?? presets[field].scheme,
           },
           presets,
         ) as MatrixColorEncoding<F>
@@ -93,6 +88,8 @@ export default function MatrixRampMixin<F extends string>(
       },
       /**
        * #getter
+       * `color.reverse`, or where unset whether the scheme runs dark at its
+       * low end.
        */
       get colorReverse(): boolean {
         return !!self.colorEncoding.reverse

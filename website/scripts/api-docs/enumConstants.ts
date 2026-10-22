@@ -35,7 +35,7 @@ const index = new Map<string, string[] | null>()
 
 // The same idea for a lone string constant used as a slot's `defaultValue`, e.g.
 //
-//   defaultValue: DEFAULT_HIC_COLOR_SCHEME
+//   defaultValue: DEFAULT_SCORE_COLUMN
 //
 // A slot default is written that way for the same reason as the enum spreads
 // above — the runtime default and the schema default are one fact — and the

@@ -5,7 +5,7 @@ import { TrackOverlayPortal } from './trackOverlay/TrackOverlayPortal.tsx'
 // Lifts an SVG legend / chrome above the inter-region padding masks: a
 // full-track, pointer-events:none <svg> portaled into the TrackContainer overlay
 // node (see TrackOverlayPortal). The SVG counterpart to the HTML overlays
-// (FloatingLegend, HicOverlayPanel) — used where the same legend
+// (FloatingLegend) — used where the same legend
 // markup is also drawn by an SVG-export path, so it must stay <svg>.
 //
 // Children draw in <svg> user space; the wrapping <svg> stays pointer-events:none

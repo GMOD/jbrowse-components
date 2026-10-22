@@ -157,8 +157,10 @@ per section reserving an arc band, on the side each mode's axis had, captioned
   `display-ui`, which is why `measureLegendText` imports its own leaf rather
   than the `@jbrowse/core/util` barrel — the barrel reaches `add-track-core`,
   and `display-ui`'s import-graph guards refuse to follow it.
-- `LegendMixin`'s `legendTop` stays for what a display draws in the corner
+- `LegendMixin`'s `legendTop` stayed for what a display drew in the corner
   itself (Hi-C's resolution box); the chrome adds its own captions on top.
+  Amended 2026-10-22: the box went, the legend title naming the binsize in
+  its place, and `legendTop` with it.
 - `WiggleFamilySvgFrame` no longer reads `ticks` or `showCrossHatches` off the
   model, and has no hatch slot: the shell rules every display's hatches.
 - The export shell's children grew by one, which moved the `useId` the

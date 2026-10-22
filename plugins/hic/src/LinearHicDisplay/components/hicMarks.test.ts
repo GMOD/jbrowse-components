@@ -10,11 +10,13 @@ import {
 
 import { packTestInstances } from '../../testInstances.ts'
 import { HIC_MARKS } from './hicMarks.ts'
+import { GLSL_FRAGMENT } from './shaders/hic.glsl.generated.ts'
 import {
   INSTANCE_STRIDE_BYTES,
   UNIFORM_OFFSET_F32 as U,
   UNIFORM_OFFSET_I32 as UI,
 } from './shaders/hic.iface.generated.ts'
+import { WGSL_SOURCE } from './shaders/hic.wgsl.generated.ts'
 
 import type {
   HicRenderState,
@@ -106,7 +108,11 @@ describe('the hic mark list', () => {
   it('writes the uniform block for one frame', () => {
     const { hal } = render(
       makeData(),
-      makeRenderState({ viewOffsetX: 400, scaleType: SCALE_TYPE_LOG }),
+      makeRenderState({
+        viewOffsetX: 400,
+        scaleType: SCALE_TYPE_LOG,
+        midNorm: 0.25,
+      }),
     )
 
     const f32 = hal.getLastUniformsF32()!
@@ -120,6 +126,16 @@ describe('the hic mark list', () => {
     expect(f32[U.viewScale]).toBe(1)
     expect(f32[U.viewOffsetX]).toBe(400)
     expect(i32[UI.scaleType]).toBe(SCALE_TYPE_LOG)
+    expect(f32[U.rampMidNorm]).toBe(0.25)
+  })
+
+  // The painter's `rampMidT` read below, held on the emitted fragment too
+  it.each([
+    ['WGSL', WGSL_SOURCE],
+    ['GLSL', GLSL_FRAGMENT],
+  ])('%s reads the ramp through its middle', (_name, src) => {
+    expect(src).toMatch(/rampMidT_0\(normalizeScore_0\(/)
+    expect(src).toMatch(/u_0\.rampMidNorm_0\)/)
   })
 
   it('renders the frame lifecycle in order', () => {
@@ -283,6 +299,20 @@ describe('the hic painter', () => {
     )
 
     expect(ctx.fillRect).toHaveBeenCalledTimes(3)
+  })
+
+  // a middle at 0.25 reads a count halfway up the domain two thirds of the
+  // way along the ramp, as a count two thirds up reads it with no middle
+  it('reads the ramp through its middle', () => {
+    const halfway = paint(
+      makeData({ positions: [0, 0], counts: [50] }),
+      makeRenderState({ midNorm: 0.25 }),
+    )
+    const twoThirds = paint(makeData({ positions: [0, 0], counts: [200 / 3] }))
+    const centred = paint(makeData({ positions: [0, 0], counts: [50] }))
+
+    expect(halfway.fillStyle).toBe(twoThirds.fillStyle)
+    expect(halfway.fillStyle).not.toBe(centred.fillStyle)
   })
 
   it('maps counts differently under a log scale', () => {

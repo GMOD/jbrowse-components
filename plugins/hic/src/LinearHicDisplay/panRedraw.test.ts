@@ -1,3 +1,4 @@
+import { setConf } from '@jbrowse/core/configuration'
 import { waitFor } from '@testing-library/react'
 
 import { createTestEnvironment } from './testEnv.ts'
@@ -19,7 +20,7 @@ function makeHicResult(args: RenderHicDataArgs): HicDataResult {
     numContacts: 0,
     maxScore: 0,
     quantileScore: 0,
-    quantile: 0.95,
+    quantile: args.quantile,
     binWidth: args.resolution / Math.SQRT2,
     originBp: args.originBp,
     resolution: args.resolution,
@@ -84,6 +85,28 @@ test('a pan inside the loaded blocks redraws without a refetch', async () => {
   jest.advanceTimersByTime(1100)
   await jest.runAllTimersAsync()
   expect(contactCalls(mockRpcCall).length).toBe(calls)
+})
+
+// The quantile rides beside the request: an edit reselects over the loaded
+// matrix, and only the next fetch the view causes asks the worker for it.
+test('a percentile edit refetches nothing, and the next fetch asks for it', async () => {
+  const { display, view, mockRpcCall } = await loadedDisplay()
+  const calls = contactCalls(mockRpcCall).length
+
+  setConf(display, ['color', 'domainQuantile'], 0.5)
+  jest.advanceTimersByTime(1100)
+  await jest.runAllTimersAsync()
+  expect(contactCalls(mockRpcCall).length).toBe(calls)
+  expect(display.dataCurrent).toBe(true)
+
+  view.zoomTo(5000)
+  jest.advanceTimersByTime(1100)
+  await jest.runAllTimersAsync()
+  await waitFor(() => {
+    expect(display.dataCurrent).toBe(true)
+  })
+  const last = contactCalls(mockRpcCall).at(-1)![2] as RenderHicDataArgs
+  expect(last.quantile).toBe(0.5)
 })
 
 test('a zoom moves the signature and refetches', async () => {

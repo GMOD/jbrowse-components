@@ -1220,7 +1220,7 @@ function renderInlineDefault(node: ts.Expression): string | undefined {
     return `'${node.text}'`
   }
   // A bare identifier that names a known string constant renders as its value —
-  // a reader of `defaultValue: DEFAULT_HIC_COLOR_SCHEME` wants `'juicebox'`.
+  // a reader of `defaultValue: DEFAULT_SCORE_COLUMN` wants `'neg_log_pvalue'`.
   // Unresolvable or ambiguous names keep printing the identifier, which is what
   // non-string references (defaultFilterFlags, Number.MIN_VALUE) still do.
   const scalarConst = ts.isIdentifier(node)

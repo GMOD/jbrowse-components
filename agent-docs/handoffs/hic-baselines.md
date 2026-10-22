@@ -33,19 +33,22 @@ mechanism, a cold read of the surface):
 3. The quantile is a per-call argument, not a fetch key: the worker answers for
    the q at issue, the main thread reselects only after an edit (~84 ms at
    4.5M; a worker quantile table sorts ~460 ms on every fetch and is inexact).
-4. A shared matrix ramp mixin for LD and Hi-C. Hi-C's `scheme` and `reverse`
-   lose their defaults so a field preset can set them (`withPreset` fills only
-   unwritten members); `domainMid` and `unknown` reach the shader, Canvas2D,
-   SVG and legend. `count` draws unchanged.
-5. `@gmod/hic`: an indexed walk of the raw and normalized expected sections
-   with their chromosome factors, `sumCounts` (read and dropped today), the
-   applied normalization per region pair, and a validity mask so a masked bin
-   is not a zero bin (`hicFile.ts` drops both alike).
+4. A shared matrix ramp mixin for LD and Hi-C (`MatrixRampMixin`). Hi-C's
+   `scheme` loses its default so a field preset sets it, and the mixin fills
+   it whichever continuous scale is written. `domainMid` reaches the shader,
+   Canvas2D, SVG and legend. `unknown` waits for a ratio field, where an
+   absent bin first means something.
+5. `@gmod/hic` 2.1.0: `getExpectedValues(normalization, region1, region2,
+   binsize)`, checked against straw's `oe` (`test/observedExpected.test.ts`).
+   Still owed for step 7: a validity mask, so a masked bin is not a zero
+   bin (`hicFile.ts` drops both alike).
 6. `observed/expected`: the expected vector matches each pair's *applied*
    normalization (a chromosome lacking SCALE otherwise blanks or divides raw
    by SCALE); reads cover each pair's distance window, not a prefix; hover
    prints observed, expected and the ratio; rewrite the user guide's
-   compartments section, which says JBrowse cannot draw O/E.
+   compartments section, which says JBrowse cannot draw O/E. A preset's
+   fixed ratio domain needs a way back to following the data: `maybeNumber`
+   takes no `null`, and unset falls back to the preset.
 7. `observed/control`: a `control` sub-adapter on `HicAdapter` (GWAS
    `ldAdapter` is the precedent); refName aliasing, a chromosome-size check and
    the intersection of binsizes and normalizations; an outer join by row
