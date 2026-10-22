@@ -1,6 +1,6 @@
 ---
 name: launch-args
-description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --genome, --view (view settings by their session-spec names), format-family track flags, batch --sites, genome modifiers in place of --aliases/--cytobands, jb2capture on the shared grammar (track settings, --view, data files refused), jb2export's read filter through the launch snapshot, Desktop opening synteny and dotplot views in jb2export's comparative grammar. Open: display-specific modifiers in Desktop and capture (both take height:, force:, slot writes and JSON), what of img's write path can still leave its live view, comparative views on hosted genomes."
+description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --genome, --view (view settings by their session-spec names), format-family track flags, batch --sites, genome modifiers in place of --aliases/--cytobands, jb2capture on the shared grammar (track settings, --view, data files refused), jb2export's read filter through the launch snapshot, Desktop opening synteny and dotplot views in jb2export's comparative grammar, every track modifier in Desktop and the display-independent ones in capture. Open: what of img's write path can still leave its live view, capture's color:/featureHeight:/sort:/filterTag:/member writes, comparative views on hosted genomes."
 ---
 
 # Launch arguments: one grammar for img, capture and Desktop
@@ -19,23 +19,30 @@ packages is released, so breaking changes are fine.
     the format-family track flags, and `genomeAssembly` (a genome file with its
     `aliases:`/`cytobands:`)
   - `slotPath.ts`: `path=value` writes, and `viewSettings` for `--view`
-  - `trackSettings.ts`: the modifier-value parsers both apps use, and
-    `trackSettings`, the settings a track's modifiers write on every display
-    type (`height:`, `force:`, whole-setting slot writes, JSON), which Desktop
-    puts on the spec's track entries
+  - `modifierValues.ts`: the modifier-value parsers
+  - `displaySettings.ts` (the `./displaySettings` subpath, node-free, no
+    plugin imports): the track modifier table, `buildDisplaySnapshot`,
+    `memberWrites` and the display-category table. jb2export's
+    `applyTrackOpts.ts` asserts its copied lists against the plugins'
   - `comparative.ts`: the comparative grammar both apps run
     (`buildComparative`, `syntenyTrack` and its query/target table)
   - `launchPlan.ts` (Desktop's plan), `genome.ts` (`--genome` URLs),
     `trackIds.ts` (`--track` lookup, node-free, the `./trackIds` subpath)
+- app-core `TrackModifiers/`: the view side. `launchTrackWithModifiers`
+  (jb2export) opens a track with its modifiers; `launchSnapshot` and
+  `afterOpen` split the same work around a session spec's own open (Desktop).
 - Desktop: `electron/launchTarget.ts` (`findLaunchTarget`),
   `electron/electron.ts` (single-instance lock data, open-file),
-  `src/components/StartScreen/launchFromLink.ts` (`launchFromPlan`).
+  `src/components/StartScreen/launchFromLink.ts` (`launchFromPlan`). The plan
+  lists each track's raw modifiers. The renderer writes `launchSnapshot` into
+  the view's `tracks`, so the view's own launch opens them and the ready
+  marker waits on it; once the view settles, `afterOpen` applies `sort:`,
+  `filterTag:` and member writes.
 - jb2capture: `args.ts` tokenizes with `parseArgv`/`standardizeArgv`, writes
-  `--track id height:200` through `trackSettings` and `--view` through
-  `viewSettings`; `url.ts` sends either as a one-view session spec and keeps
-  the URL parameters otherwise. `resolveTrackId` runs against the config
-  capture already fetches. Display-specific modifiers throw there, naming
-  jb2export.
+  `--track` modifiers through `buildDisplaySnapshot` with no category and
+  `--view` through `viewSettings`; `url.ts` sends either as a one-view
+  session spec and keeps the URL parameters otherwise. `resolveTrackId` runs
+  against the config capture already fetches.
 - jb2export: `readData.ts` builds the genome with `genomeAssembly` and tracks
   with `fileTrack`; `addLaunchView` in `renderRegion.ts` writes `--view` over
   every view it opens.
@@ -80,18 +87,12 @@ packages is released, so breaking changes are fine.
 
 ## Next, in order
 
-1. **Display-specific modifiers in Desktop, then capture.** Desktop applies `trackSettings`
-   and reports `color:`, `featureHeight:`, the read filters, `sort:` and member
-   writes as not applied. Run img's translator (`buildDisplaySnapshot`) in
-   Desktop's renderer, where `launchFromPlan` has the plugin manager (for
-   `trackDisplayType`), and have the plan carry each track's modifiers instead
-   of `unapplied` strings. The read filter needs no merge of its own: the
-   alignments `filter` is a config namespace, so a spec entry's `filter` merges
-   into the configured one member by member. Only `filterTag:`'s `tags` (a
-   list, written whole) and member writes into a channel (`color.field=`) need
-   the configured value, which img reads after the open. Capture has no plugin
-   manager in node, so its route is the same translator inside the page, or a
-   spec key the app resolves.
+1. **Capture's remaining modifiers.** Capture has no plugin manager in node,
+   so it refuses `color:` and `featureHeight:` (each writes a different
+   setting per display) and `sort:`, `filterTag:` and member writes (they
+   read the opened track). ADR-238's layout and channel steps give the first
+   two one spelling across displays; the other three need the open in the
+   page, or a spec key the app resolves.
 2. **img renders through `loadSessionSpec`**: mostly declined. A spec track
    entry and `applyDisplayOpts` already meet at `view.launchTrack(trackId, {},
    snapshot)`, and the read filter rides in on that snapshot. What stays:

@@ -55,7 +55,7 @@ export type AssertDisplaySettingsMatchPlugins = [
       : false
   >,
   AssertTrue<
-    Required<ReadFilterSnapshot>[ReadCategoryKey] extends CategoryFilter
+    NonNullable<ReadFilterSnapshot[ReadCategoryKey]> extends CategoryFilter
       ? true
       : false
   >,

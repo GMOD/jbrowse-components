@@ -10,17 +10,18 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 // this exercises the link->config->spec wiring around it, so it stands in.
 // (jest only allows a `mock`-prefixed binding inside a hoisted module factory.)
 const mockLoadSessionSpec = jest.fn()
-const mockLaunchTrack = jest.fn()
+const mockAfterOpen = jest.fn()
 jest.mock('@jbrowse/app-core', () => ({
   ...jest.requireActual<object>('@jbrowse/app-core'),
   // called lazily: the factory is hoisted above the binding it closes over
   loadSessionSpec: (...args: unknown[]) => mockLoadSessionSpec(...args),
-  launchTrackWithModifiers: (...args: unknown[]) => mockLaunchTrack(...args),
-  trackCategory: () => 'alignments',
+  afterOpen: (...args: unknown[]) => mockAfterOpen(...args),
+  displayCategoryOf: () => 'alignments',
 }))
 // the stand-in view below is a plain object, which no MST node check accepts
 jest.mock('@jbrowse/mobx-state-tree', () => ({
   ...jest.requireActual<object>('@jbrowse/mobx-state-tree'),
+  addDisposer: () => undefined,
   isAlive: () => true,
 }))
 
@@ -43,7 +44,7 @@ const resolvedConfigUrl =
 
 beforeEach(() => {
   mockLoadSessionSpec.mockReset()
-  mockLaunchTrack.mockReset()
+  mockAfterOpen.mockReset()
   trustPlugins.mockReset()
 })
 
@@ -453,7 +454,7 @@ describe('a command-line plan', () => {
             type: 'LinearGenomeView',
             assembly: 'ref.fa',
             loc: 'ctgA:1-100',
-            showHitTrack: false,
+            tracks: [{ trackId: 'reads.bam' }],
           },
         ],
       },
@@ -474,13 +475,11 @@ describe('a command-line plan', () => {
       fetchConfig: jest.fn().mockResolvedValue(hosted),
       createPluginManager: jest.fn().mockResolvedValue(withSession),
     }
-    mockLaunchTrack.mockImplementation(
-      (_view: unknown, trackId: string, _category: string, mods: string[]) => {
-        if (mods.includes('arcs:up')) {
-          throw new Error(`${trackId} failed`)
-        }
-      },
-    )
+    mockAfterOpen.mockImplementation((_view: unknown, trackId: string) => {
+      if (trackId === 'volvox-genes') {
+        throw new Error(`${trackId} failed`)
+      }
+    })
     await launchFromPlan(
       {
         type: 'LinearGenomeView',
@@ -488,9 +487,10 @@ describe('a command-line plan', () => {
         tracks: [bam],
         view: {},
         show: [
-          { trackId: 'reads.bam', modifiers: ['color:strand'] },
+          { trackId: 'reads.bam', modifiers: ['height:200', 'sort:base'] },
           // jb2export's --track shorthand: the assembly prefix left off
-          { trackId: 'genes', modifiers: ['arcs:up'] },
+          { trackId: 'genes', modifiers: ['color.field=type', 'arcs:up'] },
+          { trackId: 'genes', modifiers: ['height:80'] },
         ],
         unapplied: [],
       },
@@ -500,6 +500,7 @@ describe('a command-line plan', () => {
       'https://jbrowse.org/ucsc/hg38/config.json',
     )
     expect(d.createPluginManager).toHaveBeenCalledWith(hosted)
+    // the settings ride in on the view's own launch
     expect(mockLoadSessionSpec).toHaveBeenCalledWith(
       expect.objectContaining({
         sessionTracks: [{ ...bam, assemblyNames: ['volvox'] }],
@@ -507,18 +508,25 @@ describe('a command-line plan', () => {
           {
             type: 'LinearGenomeView',
             assembly: 'volvox',
-            showHitTrack: false,
+            tracks: [
+              { trackId: 'reads.bam', height: 200 },
+              {
+                trackId: 'volvox-genes',
+                readConnections: { show: true, mark: 'arc', placement: 'up' },
+              },
+              { trackId: 'volvox-genes', height: 80 },
+            ],
           },
         ],
       }),
       withSession,
     )
-    // the tracks open once the view has navigated, in command-line order,
-    // and one that fails is reported without stopping the next
+    // what needs the opened track follows once the view has navigated, and
+    // one that fails is reported without stopping the next
     await new Promise(resolve => setTimeout(resolve, 0))
-    expect(mockLaunchTrack.mock.calls.map(call => call.slice(1, 4))).toEqual([
-      ['reads.bam', 'alignments', ['color:strand']],
-      ['volvox-genes', 'alignments', ['arcs:up']],
+    expect(mockAfterOpen.mock.calls.map(call => call[1])).toEqual([
+      'reads.bam',
+      'volvox-genes',
     ])
     expect(session.notifyError).toHaveBeenCalledWith(
       'Error: volvox-genes failed',
@@ -580,6 +588,7 @@ describe('a command-line plan', () => {
             type: 'LinearGenomeView',
             assembly: 'ref.fa',
             axis: { grid: false },
+            tracks: [],
           },
         ],
       }),

@@ -292,12 +292,11 @@ describe('alignments settings a static export cannot reach any other way', () =>
     expect(() => buildDisplaySnapshot('alignments', ['mapq:high'])).toThrow()
   })
 
-  // `all` is the absent filter, so it stores nothing — which is what lets a
-  // script pass a category through from a variable that may be empty.
-  test('a category set to all stores nothing', () => {
-    expect(
-      buildDisplaySnapshot('alignments', ['alone:all']).snap.filter,
-    ).toEqual({})
+  // `all` resets to the absent filter, which lets a script pass a category
+  // through from a variable that may be empty
+  test('a category set to all resets it, in a form JSON keeps', () => {
+    const { filter } = buildDisplaySnapshot('alignments', ['alone:all']).snap
+    expect(JSON.parse(JSON.stringify(filter))).toEqual({ alone: null })
   })
 
   test('an unknown category value names the three that work', () => {

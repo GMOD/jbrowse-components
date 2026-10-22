@@ -160,7 +160,7 @@ export type ReadFilterSnapshot = {
   tags?: { tag: string; value?: string }[]
   junctions?: Record<string, unknown>
   connections?: Record<string, unknown>
-} & Partial<Record<ReadCategoryKey, 'only' | 'exclude'>>
+} & Partial<Record<ReadCategoryKey, 'only' | 'exclude' | null>>
 
 export interface ColorObject {
   value?: string
@@ -315,8 +315,9 @@ function settingsOf(result: DisplaySettings) {
   return result.snap as Record<string, unknown>
 }
 
-// `all` stores nothing, which makes a category scriptable from a variable
-// that may be empty.
+// `all` resets the category to unfiltered, which makes a category scriptable
+// from a variable that may be empty. `null`, not `undefined`, so the reset
+// survives a session spec's JSON.
 function readCategoryModifiers(): Record<string, Modifier> {
   return Object.fromEntries(
     READ_CATEGORY_KEYS.map(key => [
@@ -327,7 +328,7 @@ function readCategoryModifiers(): Record<string, Modifier> {
           const choice = parseEnum(key, v, ['all', 'only', 'exclude'] as const)
           r.snap.filter = {
             ...readFilterOf(r),
-            [key]: choice === 'all' ? undefined : choice,
+            [key]: choice === 'all' ? null : choice,
           }
         },
       } satisfies Modifier,

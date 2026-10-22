@@ -1,10 +1,13 @@
 import {
   DEFAULT_SHARE_URL,
-  launchTrackWithModifiers,
+  afterOpen,
+  displayCategoryOf,
+  launchSnapshot,
   loadSessionSpec,
+  modifierLaunch,
   parseSessionSnapshotUrl,
   parseSessionSpecUrl,
-  trackCategory,
+  waitsForOpen,
 } from '@jbrowse/app-core'
 import {
   SHARE_PREFIX,
@@ -14,8 +17,9 @@ import {
 } from '@jbrowse/core/util'
 import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
 import { resolveTrackId } from '@jbrowse/launch-args/trackIds'
-import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
+import { addDisposer, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { decodeSessionFromUrl } from '@jbrowse/product-core'
+import { observable, runInAction } from 'mobx'
 
 import type {
   ComparativeLaunchPlanJson,
@@ -23,11 +27,16 @@ import type {
   LinearLaunchPlanJson,
 } from '../../../electron/ipc/channelTypes.ts'
 import type { JBrowseConfig, JBrowseConfigInput } from './types.ts'
-import type { ModifierView, ParsedSessionSnapshotUrl } from '@jbrowse/app-core'
+import type {
+  ModifierLaunch,
+  ModifierView,
+  ParsedSessionSnapshotUrl,
+} from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { SettleableView } from '@jbrowse/core/util/whenViewSettled'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // Turns a JBrowse Web link into a Desktop session. Web resolves these out of its
 // address bar; Desktop gets the same result by parsing the link, loading the
@@ -257,14 +266,27 @@ async function launchLinearPlan(
     )
   }
   // a file's trackId is exact; a --track token gets jb2export's leniency
+  const confs = new Map(
+    [...(config?.tracks ?? []), ...plan.tracks].map(t => [
+      t.trackId,
+      t as TrackConf,
+    ]),
+  )
   const fileIds = new Set(plan.tracks.map(t => t.trackId))
-  const show = plan.show.map(({ trackId, modifiers }) => ({
-    trackId: fileIds.has(trackId)
-      ? trackId
-      : resolveTrackId(config?.tracks ?? [], trackId, assembly),
-    modifiers,
-  }))
   const pluginManager = await createPluginManager(config)
+  const notes: string[] = []
+  const launches = plan.show.map(({ trackId: token, modifiers }) => {
+    const trackId = fileIds.has(token)
+      ? token
+      : resolveTrackId(config?.tracks ?? [], token, assembly)
+    const conf = confs.get(trackId)
+    const launch = modifierLaunch(
+      conf ? displayCategoryOf(pluginManager, conf, modifiers) : 'other',
+      modifiers,
+      message => notes.push(message),
+    )
+    return { trackId, launch }
+  })
   await loadSessionSpec(
     {
       sessionAssemblies: plan.assembly ? [plan.assembly] : [],
@@ -277,53 +299,62 @@ async function launchLinearPlan(
           type: 'LinearGenomeView',
           assembly,
           ...(plan.loc ? { loc: plan.loc } : {}),
-          ...(show.length ? { showHitTrack: false } : {}),
+          tracks: launches.map(({ trackId, launch }) => ({
+            ...launchSnapshot(launch),
+            trackId,
+          })),
         },
       ],
     },
     pluginManager,
   )
   const session = pluginManager.rootModel?.session
-  if (session && show.length) {
-    const view = session.views.at(-1) as
-      | (ModifierView & SettleableView)
-      | undefined
-    if (view) {
-      void showPlanTracks(session, view, show)
-    }
+  const waiting = launches.filter(({ launch }) => waitsForOpen(launch))
+  const view = waiting.length
+    ? (session?.views.at(-1) as
+        | (ModifierView & SettleableView & IAnyStateTreeNode)
+        | undefined)
+    : undefined
+  if (session && view) {
+    void finishPlanTracks(session, view, waiting, notes)
+  } else if (session && notes.length) {
+    session.notify(notes.join('; '), 'warning')
   }
   return pluginManager
 }
 
+type TrackConf = { trackId: string; type: string } & Record<string, unknown>
+
 /**
- * Open a plan's tracks once its view has navigated, since `sort:` pivots on
- * the view's center: in the background, because a view navigates only once
- * the app it is in has drawn it.
+ * The modifiers that need a track open in a navigated view: `sort:`, which
+ * pivots on the view's center, `filterTag:`'s tags and member writes, which
+ * add to the configured value. The view navigates only once the app has drawn
+ * it, so this runs after `launchFromPlan` returns; the displays are still
+ * loading when it lands.
  */
-async function showPlanTracks(
+async function finishPlanTracks(
   session: AbstractSessionModel,
-  view: ModifierView & SettleableView,
-  show: { trackId: string; modifiers: string[] }[],
+  view: ModifierView & SettleableView & IAnyStateTreeNode,
+  waiting: { trackId: string; launch: ModifierLaunch }[],
+  notes: string[],
 ) {
-  if (!(await whenViewSettled(view, () => !isAlive(view)))) {
-    return
-  }
-  const notes: string[] = []
-  for (const { trackId, modifiers } of show) {
-    try {
-      await launchTrackWithModifiers(
-        view,
-        trackId,
-        trackCategory(session, trackId, modifiers),
-        modifiers,
-        { warn: message => notes.push(message) },
-      )
-    } catch (e) {
-      console.error(e)
-      session.notifyError(`${e}`, e)
+  const gone = observable.box(false)
+  addDisposer(view, () => {
+    runInAction(() => {
+      gone.set(true)
+    })
+  })
+  if (await whenViewSettled(view, () => gone.get())) {
+    for (const { trackId, launch } of waiting) {
+      try {
+        afterOpen(view, trackId, launch, message => notes.push(message))
+      } catch (e) {
+        console.error(e)
+        session.notifyError(`${e}`, e)
+      }
     }
   }
-  if (notes.length) {
+  if (notes.length && isAlive(view)) {
     session.notify(notes.join('; '), 'warning')
   }
 }
