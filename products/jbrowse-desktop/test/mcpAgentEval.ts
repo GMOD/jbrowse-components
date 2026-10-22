@@ -32,7 +32,8 @@
 //
 // Usage: node test/mcpAgentEval.ts [--model sonnet|opus|haiku] [--filter name]
 //        [--runs N] [--out dir] [--client code|desktop] [--attach]
-//        [--set dev|heldout|all] [--server path/to/mcpServer.js]
+//        [--set dev|heldout|tutorials|outside|all] [--tasks a,b]
+//        [--server path/to/mcpServer.js]
 //
 // `--server` measures another stdio server against the same app: the
 // instructions, the tool descriptions and the docs all live in that one file,
@@ -390,7 +391,10 @@ fs.writeFileSync(
   }),
 )
 
-const tasks = selectTasks(taskSet, filter, 'desktop')
+const only = flag('tasks', '').split(',').filter(Boolean)
+const tasks = selectTasks(taskSet, filter, 'desktop').filter(
+  t => only.length === 0 || only.includes(t.name),
+)
 const metrics: RunMetrics[] = []
 const session = await openVolvox(attach)
 const briefing = (
@@ -437,7 +441,9 @@ try {
         if (counted.usd === 0 && counted.tokensOut === 0) {
           refusal = counted.answer || 'no result event'
         }
-        verdict = await grade(session.client, task.grade, counted.answer)
+        verdict = task.check
+          ? task.check({ answer: counted.answer, work: cwd })
+          : await grade(session.client, task.grade!, counted.answer)
       } catch (e) {
         verdict = { pass: false, detail: { harnessError: `${e}` } }
       }

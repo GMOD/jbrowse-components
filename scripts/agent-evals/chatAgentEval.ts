@@ -429,6 +429,7 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
   const outBefore = stats.outputTokens
   let answer = ''
   let error = ''
+  const work = stageWork(task)
   try {
     await page.goto(`${bridge.url}?config=${await configFor(task)}`)
     await bridge.waitForPage(90_000, before)
@@ -454,7 +455,7 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
       'textarea[aria-label="Message input"]',
       { timeout: 45_000 },
     )
-    await input!.type(task.prompt.replaceAll('WORK', stageWork(task)))
+    await input!.type(task.prompt.replaceAll('WORK', work))
     await page.click('button[aria-label="Send message"]')
     const sentAt = Date.now()
     const profileTimer = profileStalls
@@ -491,11 +492,15 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
   }
   let verdict: { pass: boolean; detail: unknown }
   try {
-    const graded = (await evaluateLive(task.grade, 60_000, answer)) as {
-      pass?: boolean
-      detail?: unknown
-    } | null
-    verdict = { pass: graded?.pass === true, detail: graded?.detail }
+    if (task.check) {
+      verdict = task.check({ answer, work })
+    } else {
+      const graded = (await evaluateLive(task.grade!, 60_000, answer)) as {
+        pass?: boolean
+        detail?: unknown
+      } | null
+      verdict = { pass: graded?.pass === true, detail: graded?.detail }
+    }
   } catch (e) {
     verdict = {
       pass: false,

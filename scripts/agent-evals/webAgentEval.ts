@@ -28,7 +28,7 @@ import readline from 'node:readline'
 import { fileURLToPath } from 'node:url'
 
 import { servePageBridge } from './pageBridge.ts'
-import { BASELINE_SPEC, selectTasks } from './tasks.ts'
+import { BASELINE_SPEC, selectTasks, stageWork } from './tasks.ts'
 
 import type { EvalTask, TaskSet } from './tasks.ts'
 
@@ -91,7 +91,9 @@ function claudeChrome(
   systemPrompt: string,
   cwd: string,
   maxTurns: number,
+  outside: boolean,
 ) {
+  const shellTools = 'Bash,Read,Write,Edit,Glob,Grep,WebSearch,WebFetch'
   const events: StreamEvent[] = []
   const child = spawn(
     'claude',
@@ -105,9 +107,9 @@ function claudeChrome(
       'stream-json',
       '--verbose',
       '--allowedTools',
-      'mcp__claude-in-chrome,ToolSearch',
+      `mcp__claude-in-chrome,ToolSearch${outside ? `,${shellTools}` : ''}`,
       '--disallowedTools',
-      'Bash,Read,Write,Edit,Glob,Grep,WebSearch,WebFetch,Task,TodoWrite',
+      `Task,TodoWrite${outside ? '' : `,${shellTools}`}`,
       '--append-system-prompt',
       systemPrompt,
       '--max-turns',
@@ -214,8 +216,8 @@ if (!deviceId) {
 const guide = withGuide
   ? `\n\n# Reference for the jb library\n${fs.readFileSync(path.join(repoRoot, 'website/docs/agents_live_model.md'), 'utf8')}`
   : ''
-const systemPromptFor = (appUrl: string) =>
-  `You are driving JBrowse Web, a genome browser, through the Claude in Chrome tools. The JBrowse tab is already open at ${appUrl} in the only connected browser, whose deviceId is ${deviceId}: call select_browser with it before the first browser action and do not ask which browser to use. The page exposes a helper library on window.jb; evaluate jb.help for the contract, then orient with jb.sessionSummary(). javascript_tool returns the last expression of the code you pass. Do the task, verify the result, then reply with one line. Do not ask questions; do not open other sites.${guide}`
+const systemPromptFor = (appUrl: string, outside: boolean) =>
+  `You are driving JBrowse Web, a genome browser, through the Claude in Chrome tools. The JBrowse tab is already open at ${appUrl} in the only connected browser, whose deviceId is ${deviceId}: call select_browser with it before the first browser action and do not ask which browser to use. The page exposes a helper library on window.jb; evaluate jb.help for the contract, then orient with jb.sessionSummary(). javascript_tool returns the last expression of the code you pass. Do the task, verify the result, then reply with one line. Do not ask questions; ${outside ? 'you also have a shell and file tools, so keep every file you make in your working directory. JBrowse Web in the browser cannot read local file paths.' : 'do not open other sites.'}${guide}`
 
 // The tab the agent drove is reloaded at the config so every task starts from
 // the same page; a tab the agent left on another origin has no bridge to
@@ -270,7 +272,10 @@ interface RunMetrics {
   usd: number
 }
 
-const tasks = selectTasks(taskSet, filter, 'web')
+const only = flag('tasks', '').split(',').filter(Boolean)
+const tasks = selectTasks(taskSet, filter, 'web').filter(
+  t => only.length === 0 || only.includes(t.name),
+)
 const metrics: RunMetrics[] = []
 try {
   for (const task of tasks) {
@@ -279,23 +284,28 @@ try {
       if (task.setup) {
         await evaluateLive(task.setup, 120_000)
       }
-      const prompt = task.prompt.replaceAll(
-        'DATA',
-        bridge.url.replace(/\/$/, ''),
-      )
+      const work = stageWork(task)
+      const prompt = task.prompt
+        .replaceAll('DATA', bridge.url.replace(/\/$/, ''))
+        .replaceAll('WORK', work)
       const events = await claudeChrome(
         prompt,
-        systemPromptFor(appUrlFor(task)),
-        cwd,
+        systemPromptFor(appUrlFor(task), task.outside === true),
+        work,
         40,
+        task.outside === true,
       )
       const counted = count(events)
       let verdict: { pass: boolean; detail: unknown }
       try {
-        const graded = (await bridge.evaluate(task.grade, {
-          answer: counted.answer,
-        })) as { pass?: boolean; detail?: unknown } | null
-        verdict = { pass: graded?.pass === true, detail: graded?.detail }
+        if (task.check) {
+          verdict = task.check({ answer: counted.answer, work })
+        } else {
+          const graded = (await bridge.evaluate(task.grade!, {
+            answer: counted.answer,
+          })) as { pass?: boolean; detail?: unknown } | null
+          verdict = { pass: graded?.pass === true, detail: graded?.detail }
+        }
       } catch (e) {
         verdict = {
           pass: false,
