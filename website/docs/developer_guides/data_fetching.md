@@ -143,14 +143,14 @@ guard around the whole batch:
 <!-- include: plugins/maf/src/LinearMafDisplay/fetchMafData.ts#rawFetchRegions -->
 
 ```ts
-// The CDS-frame annotation overlay (when configured) fetches in the same
+// The CDS frames (when configured) fetch in the same
 // signal-guarded pass as the main data so the two share staleness
 // book-keeping; the two RPCs run concurrently.
 //
 // Concurrently, and each is itself a per-region fan-out, so they get a
 // slot apiece rather than the shared callback: two fan-outs writing one
 // status field directly is last-writer-wins between them, and the
-// annotation branch's rows are a small fraction of the alignment's.
+// frames branch's rows are a small fraction of the alignment's.
 const slot = createStatusFanOut(ctx.statusCallback)
 const scope = refusalScope(ctx)
 const [results, frames] = await Promise.all([
@@ -161,7 +161,7 @@ const [results, frames] = await Promise.all([
       scope.guard(() => call(region, regionCtx, displayedRegionIndex)),
   ).then(landed),
   withFrames
-    ? fetchAnnotationData(self, regions, {
+    ? fetchFramesData(self, regions, {
         ...scope.ctx,
         statusCallback: slot(),
       })

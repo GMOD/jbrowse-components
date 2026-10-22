@@ -1,73 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { DEFAULTS } from './displayDefaults.ts'
-
-/**
- * #config MafInversions
- * #category display
- * The MAF display's `alignments.inversions` part: a diagonal hatch over each
- * block a species aligns on the other strand from the rest of its blocks on
- * that source chromosome.
- */
-const mafInversionsConfigSchema = ConfigurationSchema(
-  'MafInversions',
-  {
-    /**
-     * #slot
-     */
-    show: {
-      type: 'boolean',
-      defaultValue: false,
-      description: 'hatch strand-flipped (inverted) alignment blocks',
-    },
-  },
-  { closed: true, plot: true },
-)
-
-/**
- * #config MafFrames
- * #category display
- * The MAF display's `alignments.frames` part: each species' CDS reading
- * frames from the MAF adapter's `framesAdapter` (UCSC `mafFrames`), as a
- * strip over its row. No effect without one.
- */
-const mafFramesConfigSchema = ConfigurationSchema(
-  'MafFrames',
-  {
-    /**
-     * #slot
-     */
-    show: {
-      type: 'boolean',
-      defaultValue: false,
-      description: "draw each species' CDS reading frames over its row",
-    },
-  },
-  { closed: true, plot: true },
-)
-
-/**
- * #config MafReferenceRow
- * #category display
- * The MAF display's `alignments.reference` part: the reference species' own
- * row, which every other row is scored against. Off by default, since under
- * every color but `base` it draws one constant color; the FASTA export keeps
- * it either way.
- */
-const mafReferenceRowConfigSchema = ConfigurationSchema(
-  'MafReferenceRow',
-  {
-    /**
-     * #slot
-     */
-    show: {
-      type: 'boolean',
-      defaultValue: false,
-      description: 'give the reference species a row of its own',
-    },
-  },
-  { closed: true, plot: true },
-)
+import { mafPartConfigSchema } from './mafPartConfigSchema.ts'
 
 /**
  * #config MafAlignments
@@ -106,16 +40,25 @@ export const mafAlignmentsConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot inversions
+     * `show` hatches each block a species aligns on the other strand from the
+     * rest of its blocks on that source chromosome.
      */
-    inversions: mafInversionsConfigSchema,
+    inversions: mafPartConfigSchema,
     /**
      * #slot frames
+     * `show` draws each species' CDS reading frames from the MAF adapter's
+     * `framesAdapter` (UCSC `mafFrames`) as a strip over its row; no effect
+     * without one.
      */
-    frames: mafFramesConfigSchema,
+    frames: mafPartConfigSchema,
     /**
      * #slot reference
+     * `show` gives the reference species, which every other row is scored
+     * against, a row of its own. Off by default, since under every color but
+     * `base` that row draws one constant color; the FASTA export keeps it
+     * either way.
      */
-    reference: mafReferenceRowConfigSchema,
+    reference: mafPartConfigSchema,
   },
   { closed: true, plot: true },
 )

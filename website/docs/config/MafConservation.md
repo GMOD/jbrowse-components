@@ -26,4 +26,4 @@ A setting written to it names members one by one: a member left out stays as it 
 | --- | --- |
 | <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | draw the conservation band |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>40</code> | height of the conservation band in pixels |
-| <span id="slot-unit">**unit**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) = <code>'base'</code> | `codon` reads frames off the MAF adapter's `annotationAdapter`. |
+| <span id="slot-unit">**unit**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) = <code>'base'</code> | `codon` reads frames off the MAF adapter's `framesAdapter`. |

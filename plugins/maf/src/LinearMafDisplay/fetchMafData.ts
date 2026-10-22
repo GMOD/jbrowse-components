@@ -149,7 +149,7 @@ async function callMafRegions<R extends SampleSet>(
   ) => Promise<R | RegionTooLargeResult>,
 ): Promise<MafBatch<R> | RegionTooLargeResult> {
   // #region rawFetchRegions
-  // The CDS-frame frames strip (when configured) fetches in the same
+  // The CDS frames (when configured) fetch in the same
   // signal-guarded pass as the main data so the two share staleness
   // book-keeping; the two RPCs run concurrently.
   //

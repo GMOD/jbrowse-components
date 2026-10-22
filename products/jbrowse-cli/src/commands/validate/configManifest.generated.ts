@@ -1105,9 +1105,12 @@ export const configManifest: ConfigManifest = {
           "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
-          "name": "annotationAdapter",
+          "name": "framesAdapter",
           "type": "(frozen | undefined)"
         }
+      ],
+      "legacyKeys": [
+        "annotationAdapter"
       ],
       "shorthandKeys": [
         "uri",
@@ -1146,9 +1149,12 @@ export const configManifest: ConfigManifest = {
           "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
-          "name": "annotationAdapter",
+          "name": "framesAdapter",
           "type": "(frozen | undefined)"
         }
+      ],
+      "legacyKeys": [
+        "annotationAdapter"
       ],
       "shorthandKeys": [
         "uri",
@@ -1183,9 +1189,12 @@ export const configManifest: ConfigManifest = {
           "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
-          "name": "annotationAdapter",
+          "name": "framesAdapter",
           "type": "(frozen | undefined)"
         }
+      ],
+      "legacyKeys": [
+        "annotationAdapter"
       ],
       "shorthandKeys": [
         "uri",
@@ -1240,9 +1249,12 @@ export const configManifest: ConfigManifest = {
           "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
-          "name": "annotationAdapter",
+          "name": "framesAdapter",
           "type": "(frozen | undefined)"
         }
+      ],
+      "legacyKeys": [
+        "annotationAdapter"
       ],
       "shorthandKeys": [
         "uri",
@@ -6980,20 +6992,40 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             },
             {
-              "name": "showAllLetters",
-              "type": "boolean"
+              "name": "inversions",
+              "type": "MafPartConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "MafPart",
+              "writes": "members"
             },
             {
-              "name": "showAsUpperCase",
-              "type": "boolean"
+              "name": "frames",
+              "type": "MafPartConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "MafPart",
+              "writes": "members"
             },
             {
-              "name": "showInversions",
-              "type": "boolean"
-            },
-            {
-              "name": "showAnnotations",
-              "type": "boolean"
+              "name": "reference",
+              "type": "MafPartConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "MafPart",
+              "writes": "members"
             }
           ],
           "schema": "MafAlignments",
@@ -7096,14 +7128,6 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "MafConservation",
           "writes": "members"
-        },
-        {
-          "name": "rowIdentityAutoZoom",
-          "type": "boolean"
-        },
-        {
-          "name": "showReferenceRow",
-          "type": "boolean"
         }
       ],
       "legacyKeys": [
@@ -7119,7 +7143,9 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
-        "mouseover"
+        "mouseover",
+        "showAllLetters",
+        "showAsUpperCase"
       ],
       "stateModelProps": [
         "id",

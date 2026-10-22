@@ -59,11 +59,9 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearMafDisplay",
 | <span id="slot-rowcolor">**rowColor**</span><br>[RowColor](../rowcolor) | A color per species row, drawn as the bar beside its label, over the color the adapter's `samples` entry gives it.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ rowColor: { domain: ['mm10'], range: ['#f28e2b'] } }</code></pre></dialog></span> |
 | <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Show the color key for the active row rendering: codon-change categories, source-chromosome ranks, the identity ramp and the CDS frame swatches. In `bases` mode nothing draws, since there is nothing to key. |
 | <span id="slot-coverage">**coverage**</span><br>[CoverageBand](../coverageband) | The coverage band: `show`, `height`, `showInterbaseIndicators` and `minAlleleFraction`, as the alignments display spells it. |
-| <span id="slot-alignments">**alignments**</span><br>[MafAlignments](../mafalignments) | The per-species rows, which take the height the bands above them leave: `show`, `rowProportion`, `showAllLetters`, `showAsUpperCase`, `showInversions` and `showAnnotations`. |
+| <span id="slot-alignments">**alignments**</span><br>[MafAlignments](../mafalignments) | The per-species rows, which take the height the bands above them leave: `show`, `rowProportion`, and the `inversions`, `frames` and `reference` parts. |
 | <span id="slot-scales">**scales**</span><br>[ValueScale](../valuescale) | The coverage band's value scale, spelled as the alignments display's: `symlogConstant` 1 makes symlog `log(depth+1)`. |
 | <span id="slot-conservation">**conservation**</span><br>[MafConservation](../mafconservation) | The band of identity to the reference: `show` (default off), `height` and `unit`, `base` or `codon`. |
-| <span id="slot-rowidentityautozoom">**rowIdentityAutoZoom**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>DEFAULTS.rowIdentityAutoZoom</code> | When true (the default), identity, as `color` or as `y`, draws only while zoomed out, and zooming in to base level swaps it back for the bases (UCSC `wigMaf` behavior). When false identity draws at every zoom. |
-| <span id="slot-showreferencerow">**showReferenceRow**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>DEFAULTS.showReferenceRow</code> | Draw the reference species as a separate row. Under mismatch coloring every cell in it matches by definition, so UCSC omits it. The row the worker named as the reference (`refSampleId`) is the one dropped.<br><br>The row hides everywhere the row set reaches, including the FASTA "View subsequences" downloads and the per-species navigation menus. The other rows are still scored against the reference sequence. |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>DEFAULTS.height</code> | display height in pixels, the bands above the rows included; the rows divide what is left while row height fits, however many there are |
 | <span id="slot-rowheight">**rowHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them |
 | <span id="slot-showtree">**showTree**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | show the species tree sidebar |
@@ -85,5 +83,5 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `mouseover` | ignored |
 | `jexlFilters` | moved into a current slot |
 | `rowProportion` | moved into a current slot |
-| `showAllLetters` | moved into a current slot |
-| `showAsUpperCase` | moved into a current slot |
+| `showAllLetters` | ignored |
+| `showAsUpperCase` | ignored |

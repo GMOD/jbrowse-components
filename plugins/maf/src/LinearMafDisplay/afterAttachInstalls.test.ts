@@ -15,7 +15,7 @@ test('the placed-rows observer tracks the store and the row order', () => {
       'SampleRowsConfigurationSchema.domain',
       'LinearMafDisplay.sourcesVolatile',
       'SampleRowsConfigurationSchema.kept',
-      'MafReferenceRowConfigurationSchema.show',
+      'MafPartConfigurationSchema.show',
       'LinearMafDisplay.loadedRegions',
     ]),
   )

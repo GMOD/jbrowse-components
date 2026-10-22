@@ -3114,8 +3114,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FileLocation"
           }
         },
-        "annotationAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+        "framesAdapter": {
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying each species' CDS reading frames for the frames strip, the codon view and the codon conservation band; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
@@ -3135,6 +3135,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhUri": {
           "description": "Shorthand the adapter's snapshot normalizer expands."
+        },
+        "annotationAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -3229,8 +3233,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FileLocation"
           }
         },
-        "annotationAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+        "framesAdapter": {
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying each species' CDS reading frames for the frames strip, the codon view and the codon conservation band; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
@@ -3250,6 +3254,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhUri": {
           "description": "Shorthand the adapter's snapshot normalizer expands."
+        },
+        "annotationAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -3330,8 +3338,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FileLocation"
           }
         },
-        "annotationAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+        "framesAdapter": {
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying each species' CDS reading frames for the frames strip, the codon view and the codon conservation band; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
@@ -3351,6 +3359,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhUri": {
           "description": "Shorthand the adapter's snapshot normalizer expands."
+        },
+        "annotationAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -3448,8 +3460,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FileLocation"
           }
         },
-        "annotationAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+        "framesAdapter": {
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying each species' CDS reading frames for the frames strip, the codon view and the codon conservation band; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
@@ -3473,6 +3485,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhUri": {
           "description": "Shorthand the adapter's snapshot normalizer expands."
+        },
+        "annotationAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -13090,6 +13106,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "MafPart": {
+      "title": "MafPart",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw this part.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "MafAlignments": {
       "title": "MafAlignments",
       "type": "object",
@@ -13115,44 +13152,28 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "showAllLetters": {
-          "description": "draw every base's letter, not only the mismatches'.",
-          "default": false,
+        "inversions": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/MafPart"
           }
         },
-        "showAsUpperCase": {
-          "description": "uppercase all base letters.",
-          "default": true,
+        "frames": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/MafPart"
           }
         },
-        "showInversions": {
-          "description": "hatch strand-flipped (inverted) alignment blocks.",
-          "default": false,
+        "reference": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
-          }
-        },
-        "showAnnotations": {
-          "description": "show the per-species CDS reading-frame overlay.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/MafPart"
           }
         }
       },
@@ -13361,26 +13382,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/MafConservation"
-          }
-        },
-        "rowIdentityAutoZoom": {
-          "description": "show the bases instead of the identity plot once zoomed in to base level (UCSC wigMaf); false draws identity at every zoom.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showReferenceRow": {
-          "description": "give the reference species a row of its own.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
           }
         },
         "maxFeatureScreenDensity": {
@@ -18110,12 +18111,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "conservation": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/conservation"
-            },
-            "rowIdentityAutoZoom": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowIdentityAutoZoom"
-            },
-            "showReferenceRow": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showReferenceRow"
             },
             "maxFeatureScreenDensity": {
               "anyOf": [
