@@ -172,12 +172,9 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
 
 - **ggjbrowse:** respell its R lists and re-pin its engine (memory
   `a-config-rename-reaches-ggjbrowse`). Its synteny and dotplot lists are
-  respelled up to `data.resolution`. The multi-way export's `pins` is now a
-  list of `{ lane, refName, at }` and `{ lane, refName, flipped }` records,
-  and `lane_choice` in `R/multiway.R` still sends a lane-keyed map, which the
-  engine rejects by name; respell it with the next engine pin. Its `rows` and
-  `facet` lists still write `domain` (`R/multiway.R`, `scripts/gallery.R`, two
-  tutorials, two testthat files).
+  respelled up to `data.resolution`, and its multi-way `pins` are records.
+  Its `rows` and `facet` lists still write `domain` (`R/multiway.R`,
+  `scripts/gallery.R`, two tutorials, two testthat files).
 - **jb2hubs:** `hubtools/src/repeatClassDisplay.ts` and
   `website/src/components/geneOrderStar.ts` write `rows.domain`. Display-kit's
   `retiredOrderSpelling` lifts it to `sort` until they write `sort` and the
