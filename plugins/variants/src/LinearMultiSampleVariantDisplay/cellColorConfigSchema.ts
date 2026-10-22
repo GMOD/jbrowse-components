@@ -11,7 +11,6 @@ import {
   colorScaleTypeSlot,
   colorTitleSlot,
   colorUnknownSlot,
-  encodingOptions,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**

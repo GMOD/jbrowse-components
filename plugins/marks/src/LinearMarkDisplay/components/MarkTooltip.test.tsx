@@ -60,9 +60,7 @@ async function tooltip(model: Partial<MarkTooltipModel>) {
 test('a point reads its shape scale, naming the category the plot drew', async () => {
   const box = await tooltip({
     hoveredFeature: { ...HIT, y: 7, glyph: SHAPE_CODES['triangle-down'] },
-    encodings: [
-      { y: 'score', shape: { field: 'svtype', scale: 'ordinal' } },
-    ],
+    encodings: [{ y: 'score', shape: { field: 'svtype', scale: 'ordinal' } }],
     markTypes: ['point'],
     legendSections: [
       {

@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
+import { readConfObject, setConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -1211,7 +1211,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setShowLegend(flag: boolean) {
-        self.legend.setSlot('show', flag)
+        setConf(self.legend, 'show', flag)
       },
       /**
        * #action
@@ -1731,7 +1731,9 @@ function stateModelFactory(pluginManager: PluginManager) {
   }).preProcessSnapshot(liftSyntenyViewSettings)
 }
 
-export type CircularViewStateModel = ReturnType<typeof stateModelFactory>
+export interface CircularViewStateModel extends ReturnType<
+  typeof stateModelFactory
+> {}
 
 // #region registry
 declare module '@jbrowse/core/PluginManager' {

@@ -3,7 +3,6 @@ import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import {
   colorScaleOptions,
   colorScaleTypeSlot,
-  encodingOptions,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 

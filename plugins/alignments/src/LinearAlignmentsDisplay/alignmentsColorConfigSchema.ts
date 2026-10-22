@@ -12,7 +12,6 @@ import {
   colorScaleOptions,
   colorScaleTypeSlot,
   colorTitleSlot,
-  encodingOptions,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import {

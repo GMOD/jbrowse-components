@@ -1,8 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import {
-  colorChannelOptions,
-  encodingOptions,
-} from '@jbrowse/display-kit/colorConfigSchema'
+import { colorChannelOptions } from '@jbrowse/display-kit/colorConfigSchema'
 import {
   ALIGNMENTS_FIELD_PRESETS,
   alignmentsColorConfigSchema,

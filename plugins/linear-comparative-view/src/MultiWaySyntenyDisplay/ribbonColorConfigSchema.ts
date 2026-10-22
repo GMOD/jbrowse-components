@@ -8,7 +8,6 @@ import {
   colorFieldSlot,
   colorLegendOptions,
   colorScaleOptions,
-  encodingOptions,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import {
   paintedField,

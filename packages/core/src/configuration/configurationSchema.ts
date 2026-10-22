@@ -28,8 +28,8 @@ import {
 } from './snapshotPreprocess.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { IsAny } from '../util/types/isAny.ts'
 import type { FieldPresets } from '../util/colorScale.ts'
+import type { IsAny } from '../util/types/isAny.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { ConfigurationSchemaRequirement } from './requirements.ts'
 import type {

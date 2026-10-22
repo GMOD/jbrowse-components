@@ -307,12 +307,14 @@ export function withPreset<C extends ColorSlots>(
 ): C {
   const field = color.field ?? ''
   const preset = presetOf(presets, field)
-  if (!field || (color.scale?.type ?? preset.scale.type) !== preset.scale.type) {
+  if (
+    !field ||
+    (color.scale?.type ?? preset.scale.type) !== preset.scale.type
+  ) {
     return color
   }
   const ownDomain = !preset.scale.domain || unwritten(color.scale?.domain)
-  const named =
-    preset.scale.type === 'ordinal' ? ['range', 'names'] : ['names']
+  const named = preset.scale.type === 'ordinal' ? ['range', 'names'] : ['names']
   const scale = unwrittenOf(
     preset.scale,
     color.scale,

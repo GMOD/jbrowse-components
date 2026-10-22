@@ -342,7 +342,7 @@ test('the track legend lists a track on several levels once', () => {
 // color.
 describe('the color channel', () => {
   const view = (color: unknown) =>
-    TrackColorsMixin().create({ encoding: { color } } as never)
+    TrackColorsMixin().create({ encoding: { color } })
 
   it('reads the structural fields as their modes', () => {
     for (const field of ['strand', 'query', 'target', 'reference', 'track']) {

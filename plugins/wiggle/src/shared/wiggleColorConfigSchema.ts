@@ -9,7 +9,6 @@ import {
   colorScaleOptions,
   colorScaleTypeSlot,
   colorTitleSlot,
-  encodingOptions,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import type { FieldPresets } from '@jbrowse/core/util/colorScale'

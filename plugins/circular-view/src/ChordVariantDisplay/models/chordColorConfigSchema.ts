@@ -11,7 +11,6 @@ import {
   colorScaleTypeSlot,
   colorTitleSlot,
   colorUnknownSlot,
-  encodingOptions,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 export const CHORD_DEFAULT_COLOR = 'rgb(255,133,0)'

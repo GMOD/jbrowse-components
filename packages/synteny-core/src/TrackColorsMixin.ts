@@ -1,4 +1,4 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { readConfObject, setConf } from '@jbrowse/core/configuration'
 import { coarseStripHTML, getSession } from '@jbrowse/core/util'
 import { withImpliedField } from '@jbrowse/core/util/colorScale'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
@@ -523,7 +523,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       function writeColor(written: ColorSlots, next: ColorSlots) {
         if (!compareStructural(next, written)) {
           self.parkColor('color', written, next)
-          self.encoding.setSubschema('color', next)
+          setConf(self.encoding, 'color', next)
         }
       }
       return {
@@ -617,7 +617,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
          */
         setColorDomain(domain: string[]) {
           const written = writtenColorOf(self.encoding.color)
-          self.encoding.setSubschema('color', {
+          setConf(self.encoding, 'color', {
             ...written,
             scale: { ...written.scale, domain },
           })

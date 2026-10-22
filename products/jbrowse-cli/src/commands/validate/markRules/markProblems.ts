@@ -369,7 +369,7 @@ function shapeNameProblems(shape: unknown): OwnProblem[] {
 }
 
 function typeReads(spec: MarkSpec, channel: MarkChannel) {
-  return (spec.channels as readonly MarkChannel[]).includes(channel)
+  return spec.channels.includes(channel)
 }
 
 function drawTogether(a: MarkSnapshot, b: MarkSnapshot) {

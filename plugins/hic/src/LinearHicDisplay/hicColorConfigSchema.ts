@@ -6,7 +6,6 @@ import {
   colorRampSlots,
   colorScaleOptions,
   colorTitleSlot,
-  encodingOptions,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 

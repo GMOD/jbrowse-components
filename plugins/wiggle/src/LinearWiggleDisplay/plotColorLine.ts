@@ -87,7 +87,7 @@ export function plotColorEdit(
   }
   const scaleWritten =
     written.value === undefined && wiggleColorWritten(written)
-  const { scale = {}, legend = {} }: ColorSlots =
+  const { scale, legend }: ColorSlots =
     scaleWritten || !parked ? written : { ...written, ...parked }
   return definedColor({
     scale: {

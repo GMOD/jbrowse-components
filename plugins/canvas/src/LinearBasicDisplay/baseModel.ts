@@ -102,7 +102,7 @@ import {
   createMembershipMemo,
   featureIdsTouchingBlocks,
 } from './layoutQueries.ts'
-import { colorOf, facetOf, plotJexlProblems } from './plotProblems.ts'
+import { facetOf, plotJexlProblems } from './plotProblems.ts'
 import { scanGroupByCandidates } from './scanGroupByCandidates.ts'
 import { labelVisibility, modeCanShowDescription } from './showLabelsMode.ts'
 import {

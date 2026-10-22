@@ -36,9 +36,11 @@ describe('a pick of what already paints writes nothing', () => {
     const display = createDisplay({
       encoding: { color: { field: 'tags.HP' } },
     })
-    expect(patchesOf(display, () => display.colorByField('tags.HP'))).toEqual(
-      [],
-    )
+    expect(
+      patchesOf(display, () => {
+        display.colorByField('tags.HP')
+      }),
+    ).toEqual([])
   })
 
   test('colorByField of a field with a written scale', () => {
@@ -47,9 +49,11 @@ describe('a pick of what already paints writes nothing', () => {
         color: { field: 'tags.HP', scale: { domain: ['1'], range: ['red'] } },
       },
     })
-    expect(patchesOf(display, () => display.colorByField('tags.HP'))).toEqual(
-      [],
-    )
+    expect(
+      patchesOf(display, () => {
+        display.colorByField('tags.HP')
+      }),
+    ).toEqual([])
   })
 
   test('setColorValue of the painting constant', () => {
@@ -57,7 +61,9 @@ describe('a pick of what already paints writes nothing', () => {
       encoding: { color: { value: 'steelblue' } },
     })
     expect(
-      patchesOf(display, () => display.setColorValue('steelblue')),
+      patchesOf(display, () => {
+        display.setColorValue('steelblue')
+      }),
     ).toEqual([])
   })
 
@@ -66,7 +72,9 @@ describe('a pick of what already paints writes nothing', () => {
       pileup: { bases: { show: true, encoding: { color: 'baseQuality' } } },
     })
     expect(
-      patchesOf(display, () => display.setBaseLayer({ type: 'baseQuality' })),
+      patchesOf(display, () => {
+        display.setBaseLayer({ type: 'baseQuality' })
+      }),
     ).toEqual([])
   })
 })

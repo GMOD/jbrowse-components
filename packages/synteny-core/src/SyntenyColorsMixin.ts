@@ -1,4 +1,4 @@
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
@@ -142,7 +142,8 @@ export function SyntenyColorsMixin({
        */
       setOpacity(value: number) {
         const setting = self.opacitySetting
-        self.encoding.setSubschema(
+        setConf(
+          self.encoding,
           'opacity',
           opacityMapsField(setting)
             ? {
@@ -162,7 +163,8 @@ export function SyntenyColorsMixin({
        */
       setOpacityField(field: string) {
         const level = self.opacityLevel
-        self.encoding.setSubschema(
+        setConf(
+          self.encoding,
           'opacity',
           field
             ? {

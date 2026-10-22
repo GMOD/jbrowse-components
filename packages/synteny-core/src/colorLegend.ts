@@ -193,7 +193,7 @@ function thresholdChips(
     mode.cuts,
     mode.colors,
     {},
-    scale.names as readonly string[],
+    scale.names,
   ).map(({ color, label }) => ({ color, label }))
   return legend.descending ? chips.toReversed() : chips
 }

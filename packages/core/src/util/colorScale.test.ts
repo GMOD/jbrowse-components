@@ -5,7 +5,11 @@ import {
   withPreset,
 } from './colorScale.ts'
 
-import type { ColorScaleSlots, ColorSlots, RampScaleName } from './colorScale.ts'
+import type {
+  ColorScaleSlots,
+  ColorSlots,
+  RampScaleName,
+} from './colorScale.ts'
 import type { ColorScaleTable, ContinuousRef } from './markEncodingTypes.ts'
 
 type RampTable = Extract<ColorScaleTable, { kind: 'ramp' }>
@@ -33,7 +37,11 @@ test("a field's scale comes from the table's own keys, then its *", () => {
 
 const LD = {
   r2: {
-    scale: { type: 'threshold', domain: ['0.2', '0.8'], range: ['a', 'b', 'c'] },
+    scale: {
+      type: 'threshold',
+      domain: ['0.2', '0.8'],
+      range: ['a', 'b', 'c'],
+    },
   },
 } as const
 
@@ -163,9 +171,9 @@ test('a ramp reads no domain, and its ends in either order are named', () => {
   expect(rules(scaled({ type: 'linear', domain: ['0'] }))).toEqual([
     'ramp-domain',
   ])
-  expect(
-    rules(scaled({ type: 'log', domainMin: 10, domainMax: 1 })),
-  ).toEqual(['domain-ends'])
+  expect(rules(scaled({ type: 'log', domainMin: 10, domainMax: 1 }))).toEqual([
+    'domain-ends',
+  ])
 })
 
 test('a ramp of one color is named, since it paints every value alike', () => {
@@ -231,9 +239,7 @@ test('unknown with no domain paints every value, and outside an ordinal scale no
     'unknown-scale',
   ])
   expect(rules({ scale: { unknown: 'grey' } })).toEqual(['unknown-scale'])
-  expect(
-    rules(scaled({ domain: ['a'], unknown: 'grey' }, 'type')),
-  ).toEqual([])
+  expect(rules(scaled({ domain: ['a'], unknown: 'grey' }, 'type'))).toEqual([])
   expect(
     colorProblems(scaled({ unknown: 'grey' }, 'strand'), {
       strand: { scale: { type: 'ordinal', domain: ['1', '-1'] } },

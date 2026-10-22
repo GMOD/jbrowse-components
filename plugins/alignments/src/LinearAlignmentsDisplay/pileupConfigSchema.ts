@@ -1,6 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import { pileupBasesConfigSchema } from './pileupBasesConfigSchema.ts'
 import { pileupMismatchesConfigSchema } from './pileupMismatchesConfigSchema.ts'
 import { pileupSoftClipsConfigSchema } from './pileupSoftClipsConfigSchema.ts'
 
