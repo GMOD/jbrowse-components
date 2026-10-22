@@ -5,12 +5,15 @@ import path from 'node:path'
 import {
   buildEnumConstantIndex,
   enumConstantValues,
+  literalConstantValue,
   numericConstantValue,
   scalarConstantValue,
   slotFieldConstantPairs,
   slotFieldFactoryPairs,
 } from './enumConstants.ts'
 import { parseSourceFileSyntactic } from './util.ts'
+
+import type * as ts from 'typescript'
 
 // The index is module-level and additive, so every constant used here carries a
 // suffix unique to this file rather than being reset between tests.
@@ -398,5 +401,70 @@ describe('slotFieldFactoryPairs', () => {
       ),
     ])
     expect(slotFieldFactoryPairs('ambigFactory_T15', new Map())).toBeUndefined()
+  })
+})
+
+describe('literalConstantValue', () => {
+  // a reference parsed the way the config generator parses a slot's default
+  const reference = (text: string) =>
+    (sourceFile(`ref-${text}.ts`, text).statements[0] as ts.ExpressionStatement)
+      .expression
+
+  test('reads a constant object member, through the constants it names', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'literal.ts',
+        `const CANONICAL_T16 = { field: 'tag', tags: ['MANE Select', 'RefSeq Select'] } as const
+         export const GLYPH_DEFAULTS_T16: Settings = {
+           subParts: 'CDS,UTR',
+           impliedUTRs: true,
+           field: CANONICAL_T16.field,
+           tags: [...CANONICAL_T16.tags, 'extra'],
+           color: computeColor(),
+         }`,
+      ),
+    ])
+    expect(literalConstantValue(reference('GLYPH_DEFAULTS_T16.subParts'))).toBe(
+      "'CDS,UTR'",
+    )
+    expect(
+      literalConstantValue(reference('GLYPH_DEFAULTS_T16.impliedUTRs')),
+    ).toBe('true')
+    expect(literalConstantValue(reference('GLYPH_DEFAULTS_T16.field'))).toBe(
+      "'tag'",
+    )
+    expect(literalConstantValue(reference('GLYPH_DEFAULTS_T16.tags'))).toBe(
+      "['MANE Select', 'RefSeq Select', 'extra']",
+    )
+    // a member that isn't a literal, and so the object as a whole
+    expect(
+      literalConstantValue(reference('GLYPH_DEFAULTS_T16.color')),
+    ).toBeUndefined()
+    expect(
+      literalConstantValue(reference('GLYPH_DEFAULTS_T16')),
+    ).toBeUndefined()
+  })
+
+  test('one name written with and without `as const` is one value', () => {
+    buildEnumConstantIndex([
+      sourceFile('lit-a.ts', `const FIELDS_T17 = ['start', 'end'] as const`),
+      sourceFile(
+        'lit-b.ts',
+        `const FIELDS_T17: [string, string] = ['start', 'end']`,
+      ),
+    ])
+    expect(literalConstantValue(reference('FIELDS_T17'))).toBe(
+      "['start', 'end']",
+    )
+  })
+
+  test('a name defined twice with different values is dropped', () => {
+    buildEnumConstantIndex([
+      sourceFile('lit-c.ts', `const AMBIG_LIT_T18 = { height: 300 }`),
+      sourceFile('lit-d.ts', `const AMBIG_LIT_T18 = { height: 200 }`),
+    ])
+    expect(
+      literalConstantValue(reference('AMBIG_LIT_T18.height')),
+    ).toBeUndefined()
   })
 })

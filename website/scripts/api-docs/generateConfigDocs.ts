@@ -22,6 +22,7 @@ import {
 } from './agentText.ts'
 import {
   enumConstantValues,
+  literalConstantValue,
   numericConstantValue,
   scalarConstantValue,
   slotSpreadPairs,
@@ -1181,7 +1182,7 @@ function applySlotProperty(
   } else if (key === 'defaultValue') {
     const inline = renderInlineDefault(node)
     if (inline === undefined) {
-      meta.defaultCode = node.getText()
+      meta.defaultCode = literalConstantValue(node) ?? node.getText()
     } else {
       meta.defaultValue = inline
     }
@@ -1278,6 +1279,13 @@ function renderInlineDefault(node: ts.Expression): string | undefined {
   }
   if (ts.isPrefixUnaryExpression(node) && ts.isNumericLiteral(node.operand)) {
     return `${ts.tokenToString(node.operator)}${node.operand.text}`
+  }
+  // Any other literal a name or a constant's member holds:
+  // `GENE_GLYPH_DEFAULTS.subParts` reads as its string. A long one goes to the
+  // code block, which reads it the same way.
+  const literal = literalConstantValue(node)
+  if (literal !== undefined) {
+    return literal.length <= MAX_INLINE_DEFAULT ? literal : undefined
   }
   if (isScalar) {
     return node.getText()

@@ -56,6 +56,24 @@ const scalarIndex = new Map<string, string | null>()
 // name of the number instead of the number.
 const numericIndex = new Map<string, string | null>()
 
+// And for any literal a default names, or a member of a constant object:
+//
+//   defaultValue: GENE_GLYPH_DEFAULTS.subParts
+//   defaultValue: DEFAULT_BIN_AS
+//
+// rendered the way an inline default is, so the Default cell shows
+// `['start', 'end']` where it printed the name. A literal may itself name
+// another constant (`field: DEFAULT_CANONICAL_TRANSCRIPTS.field`, a spread of
+// one's list), so each constant's initializer is kept and read on lookup, once
+// every file has been seen. Same conflict rule: a name whose initializers
+// differ is dropped.
+interface ConstantSource {
+  node: ts.Expression
+  sf: ts.SourceFile
+  text: string
+}
+const constantSources = new Map<string, ConstantSource | null>()
+
 // And the same idea one level up: a constant holding a whole *group* of slots,
 // spread into a schema's slot table:
 //
@@ -352,6 +370,111 @@ function substituteParams(
   return out
 }
 
+function recordConstantSource(
+  name: string,
+  node: ts.Expression,
+  sf: ts.SourceFile,
+) {
+  const text = node.getText(sf)
+  const prior = constantSources.get(name)
+  if (prior === undefined) {
+    constantSources.set(name, { node, sf, text })
+  } else if (prior?.text !== text) {
+    constantSources.set(name, null)
+  }
+}
+
+// The initializer a `NAME` or `NAME.member` reference reads, as written.
+function referencedSource(
+  reference: ts.Expression,
+): ConstantSource | undefined {
+  if (ts.isIdentifier(reference)) {
+    return constantSources.get(reference.text) ?? undefined
+  }
+  if (!ts.isPropertyAccessExpression(reference)) {
+    return undefined
+  }
+  const owner = referencedSource(reference.expression)
+  const object = owner && unwrapAssertion(owner.node)
+  const member =
+    object && ts.isObjectLiteralExpression(object)
+      ? object.properties.find(
+          (prop): prop is ts.PropertyAssignment =>
+            ts.isPropertyAssignment(prop) &&
+            prop.name.getText(owner.sf) === reference.name.text,
+        )
+      : undefined
+  return member && owner
+    ? {
+        node: member.initializer,
+        sf: owner.sf,
+        text: member.initializer.getText(owner.sf),
+      }
+    : undefined
+}
+
+function unwrapAssertion(node: ts.Expression) {
+  return ts.isAsExpression(node) || ts.isSatisfiesExpression(node)
+    ? node.expression
+    : node
+}
+
+// A literal's source in the inline-default spelling: strings single-quoted,
+// arrays and objects on one line, a named constant read through. Undefined for
+// anything holding a non-literal, and past a few references deep.
+function literalText(
+  node: ts.Expression,
+  sf: ts.SourceFile,
+  depth = 0,
+): string | undefined {
+  const value = unwrapAssertion(node)
+  if (depth > 4) {
+    return undefined
+  }
+  if (ts.isStringLiteralLike(value)) {
+    return `'${value.text}'`
+  }
+  if (
+    value.kind === ts.SyntaxKind.TrueKeyword ||
+    value.kind === ts.SyntaxKind.FalseKeyword ||
+    value.kind === ts.SyntaxKind.NullKeyword
+  ) {
+    return value.getText(sf)
+  }
+  const numeric = numericLiteralText(value, sf)
+  if (numeric !== undefined) {
+    return numeric
+  }
+  if (ts.isIdentifier(value) || ts.isPropertyAccessExpression(value)) {
+    const source = referencedSource(value)
+    return source && literalText(source.node, source.sf, depth + 1)
+  }
+  if (ts.isArrayLiteralExpression(value)) {
+    const items = value.elements.map(e =>
+      ts.isSpreadElement(e)
+        ? literalText(e.expression, sf, depth + 1)?.replace(/^\[(.*)\]$/, '$1')
+        : literalText(e, sf, depth),
+    )
+    return items.every(i => i !== undefined)
+      ? `[${items.filter(Boolean).join(', ')}]`
+      : undefined
+  }
+  if (ts.isObjectLiteralExpression(value)) {
+    const entries = value.properties.map(prop => {
+      const member = ts.isPropertyAssignment(prop)
+        ? literalText(prop.initializer, sf, depth)
+        : undefined
+      return member === undefined
+        ? undefined
+        : `${prop.name!.getText(sf)}: ${member}`
+    })
+    return entries.every(e => e !== undefined)
+      ? `{ ${entries.join(', ')} }`
+      : undefined
+  }
+  return undefined
+}
+
 function stringsOf(node: ts.Expression): string[] | undefined {
   if (!ts.isArrayLiteralExpression(node)) {
     return undefined
@@ -515,9 +638,10 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
     // Cheap prefilter. `function` is in it for the slot-table factories, whose
     // files hold nothing else — `treeSidebarConfigSchemaFields.ts` has no
     // top-level `const` at all, so a const-only guard skipped the file and the
-    // factory arm below would never have run.
+    // factory arm below would never have run. A `:` admits a typed const,
+    // `const DEFAULT_BIN_AS: readonly [string, string] = ...`.
     if (
-      !/\bconst\s+[A-Za-z_$][\w$]*\s*=/.test(sf.text) &&
+      !/\bconst\s+[A-Za-z_$][\w$]*\s*[:=]/.test(sf.text) &&
       !/\bfunction\s+[A-Za-z_$][\w$]*\s*\(/.test(sf.text)
     ) {
       continue
@@ -536,6 +660,7 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
             const name = decl.name.text
             // `as const` wraps the literal in an assertion expression
             const value = ts.isAsExpression(init) ? init.expression : init
+            recordConstantSource(name, value, sf)
             const direct = stringsOf(value)
             const numeric = numericLiteralText(value, sf)
             const parts = slotFieldParts(value, sf)
@@ -618,6 +743,12 @@ export function scalarConstantValue(name: string) {
  */
 export function numericConstantValue(name: string) {
   return numericIndex.get(name) ?? undefined
+}
+// `NAME` or `NAME.member`'s literal, read through any constants it names.
+export function literalConstantValue(reference: ts.Expression) {
+  return ts.isIdentifier(reference) || ts.isPropertyAccessExpression(reference)
+    ? literalText(reference, reference.getSourceFile())
+    : undefined
 }
 
 /**

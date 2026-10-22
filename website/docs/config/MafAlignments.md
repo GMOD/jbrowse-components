@@ -27,8 +27,8 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>DEFAULTS.showAlignments</code> | When off, only the bands above the rows render. |
-| <span id="slot-rowproportion">**rowProportion**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>DEFAULTS.rowProportion</code> | fraction of the row height each glyph fills |
+| <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | When off, only the bands above the rows render. |
+| <span id="slot-rowproportion">**rowProportion**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.8</code> | fraction of the row height each glyph fills |
 | <span id="slot-inversions">**inversions**</span><br>[MafPart](../mafpart) | `show` hatches each block a species aligns on the other strand from the rest of its blocks on that source chromosome. |
 | <span id="slot-frames">**frames**</span><br>[MafPart](../mafpart) | `show` draws each species' CDS reading frames from the MAF adapter's `framesAdapter` (UCSC `mafFrames`) as a strip over its row; no effect without one. |
 | <span id="slot-reference">**reference**</span><br>[MafReferenceRow](../mafreferencerow) | `show` gives the reference species, which every other row is scored against, a row of its own; on by default. |
