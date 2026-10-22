@@ -524,13 +524,15 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * What the key's names are names of: the painting field and its scale,
-       * or the constant or expression every feature is painted by. A name
-       * means nothing outside the key that offered it.
+       * What the key's names are names of: the painting field and the scale
+       * it paints through, or the constant or expression every feature is
+       * painted by. A name means nothing outside the key that offered it.
        */
       get legendKeySpace(): string {
-        const { scale = '', value = '' } = self.colorSetting
-        return [self.colorField ?? '', scale, value].join('\t')
+        const encoding = self.colorEncoding
+        return typeof encoding === 'object'
+          ? `${encoding.field}\t${encoding.scale}`
+          : `\t\t${self.colorSetting.value ?? ''}`
       },
     }))
     .views(self => ({

@@ -34,11 +34,13 @@ describe('the hidden categories follow the key that named them', () => {
     expect(toSolid.activeHiddenCategories).toEqual([])
   })
 
-  it('stay through a palette edit and a repartition', () => {
+  it('stay through a palette edit, a kept fallback color, the scale it already had, and a repartition', () => {
     const d = display()
     setConf(d, 'color', {
       ...readConfObject(d.configuration, 'color'),
       range: ['green', 'blue'],
+      value: '#888',
+      scale: 'categorical',
     })
     d.setRowsField('clade')
     expect(d.activeHiddenCategories).toEqual(['Enh'])
