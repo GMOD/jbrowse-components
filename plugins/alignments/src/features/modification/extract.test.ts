@@ -302,6 +302,49 @@ describe('the fill view honours the modification-type filter', () => {
     expect(fill(['h'])).toEqual([])
   })
 
+  // The by-type and calls views pick one winner per position too. An unticked
+  // type leaves before that pick, so CpG2, where the hidden 5hmC outscores
+  // 5mC, still draws its 5mC call.
+  function runMarks(colorBy: ColorBy) {
+    const out: ModificationEntry[] = []
+    extractModifications(
+      makeMethFeature(),
+      0,
+      100,
+      1,
+      { start: 100, end: 120 },
+      colorBy,
+      new Set<string>(),
+      new Map<string, ModificationType>(),
+      out,
+    )
+    return out
+  }
+
+  test('by-type: a cytosine 5hmC won still draws its 5mC call', () => {
+    const out = runMarks({
+      type: 'modifications',
+      modifications: { threshold: 5, shownModifications: ['m'] },
+    })
+    expect(out.map(m => [m.position, m.modType])).toEqual([
+      [100, 'm'],
+      [104, 'm'],
+      [106, 'm'],
+    ])
+    expect(out[1]!.prob).toBeCloseTo(20.5 / 256, 5)
+  })
+
+  test('calls: a cytosine 5hmC won reads 5mC-or-not', () => {
+    const out = runMarks({
+      type: 'modifications',
+      modifications: { unmodified: 'calls', shownModifications: ['m'] },
+    })
+    expect(out.map(m => m.position)).toEqual([100, 102, 104, 106])
+    const cpg2 = out.find(m => m.position === 104)!
+    expect(cpg2.noMod).toBe(true)
+    expect(cpg2.prob).toBeCloseTo(1 - 20.5 / 256, 5)
+  })
+
   test('an empty allow-list is the default: every type draws', () => {
     const all = runFill(makeMethFeature(), {
       type: 'modifications',

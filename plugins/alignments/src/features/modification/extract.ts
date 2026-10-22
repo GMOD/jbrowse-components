@@ -153,14 +153,20 @@ export function extractModifications(
   //
   // A read declaring nothing but 5mC/5hmC — the ordinary methylation modBAM —
   // filters to an empty list and skips the walk, exactly as it did before.
-  const drawn = fillUnmarked
-    ? modifications.filter(m => !isMethylationFillType(m.type))
-    : modifications
+  //
+  // Unticked types leave before the per-position max, so a hidden type never
+  // outscores a shown one, as in extractMethylation.
+  const mods = colorBy.modifications
+  const drawn = modifications.filter(
+    m =>
+      isModificationTypeVisible(mods, m.type) &&
+      !(fillUnmarked && isMethylationFillType(m.type)),
+  )
   if (drawn.length > 0) {
     const modStrand = strand === -1 ? -1 : 1
     const modThreshold =
-      (colorBy.modifications?.threshold ?? DEFAULT_MODIFICATION_THRESHOLD) / 100
-    const twoColor = paintsUnmodifiedCalls(colorBy.modifications)
+      (mods?.threshold ?? DEFAULT_MODIFICATION_THRESHOLD) / 100
+    const twoColor = paintsUnmodifiedCalls(mods)
     forEachMaxProbMod(
       drawn,
       getModProbabilityBytes(feature),
@@ -172,10 +178,7 @@ export function extractModifications(
         // unmethylated color (with prob = 1-prob = the unmodified confidence);
         // default mode hides calls below the threshold and always paints the mod
         // color at full prob. `isMeth` unifies both without an intermediate alloc.
-        if (
-          isModificationTypeVisible(colorBy.modifications, type) &&
-          (twoColor || prob >= modThreshold)
-        ) {
+        if (twoColor || prob >= modThreshold) {
           const isMeth = !twoColor || prob > 0.5
           modificationsData.push({
             readIndex,
