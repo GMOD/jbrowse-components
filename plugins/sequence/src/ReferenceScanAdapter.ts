@@ -25,36 +25,22 @@ export interface ScanWindow {
 }
 
 /**
- * The shared spine of the adapters that find features by scanning the reference
- * — sequence patterns, motif and restriction sites, CRISPR guides. A subclass
- * says how far past the query one of its hits can reach (`scanPadding`) and what
- * to make of the residues (`scan`); the window arithmetic lives here once.
+ * The base of the adapters that find features by scanning the reference:
+ * sequence search, motif sites, CRISPR guides. A subclass gives `scanPadding`
+ * (how far a hit reaches past the query) and `scan`, and reports every hit it
+ * finds; `emit` drops one whose extent was not fetched, or that lies outside
+ * the query, where the neighbouring block reports it.
  *
- * That arithmetic is the reason this is a base class rather than three similar
- * methods. Two hazards recur in every scan and each has been got wrong
- * independently in more than one of these adapters:
- *
- * - a hit whose full extent was never fetched is not trustworthy, because the
- *   sequence its placement depends on was not read
- * - a hit outside the query belongs to the neighbouring block, which pads its
- *   own fetch and reports it there
- *
- * `emit` applies both, so a subclass reports every hit it finds and never
- * repeats the bookkeeping.
- *
- * A subclass's registration declares `READS_REFERENCE` itself: the
- * capability lives on the adapter type, not the class, so it is not inherited,
- * and a scan registered without it answers every genome from the first one's
- * sequence.
+ * A subclass's registration declares `READS_REFERENCE` itself: the capability
+ * lives on the adapter type, so it is not inherited, and a scan registered
+ * without it answers every genome from the first one's sequence.
  */
 export abstract class ReferenceScanAdapter<
   CONF extends AnyConfigurationModel = AnyConfigurationModel,
 > extends BaseFeatureDataAdapter<CONF> {
   public async configure() {
-    // path form because CONF is unresolved here, so the slot-name overload has
-    // nothing to check the literal against. getSequenceSubAdapter takes
-    // `unknown`, and an absent slot resolves from the assembly, which is the
-    // wanted behaviour anyway.
+    // path form, since CONF is unresolved here; an absent slot resolves from
+    // the assembly
     const configured: unknown = this.getConf(['sequenceAdapter'])
     return getSequenceSubAdapter(this, configured)
   }
@@ -80,8 +66,7 @@ export abstract class ReferenceScanAdapter<
           { ...query, start: windowStart, end: query.end + pad },
           opts,
         )) ?? ''
-      // getSequence clamps to the contig end, so the window can come back
-      // shorter than it was asked for; anchor on what actually arrived
+      // getSequence clamps to the contig end, so anchor on what arrived
       const windowEnd = windowStart + residues.length
       this.scan({
         query,

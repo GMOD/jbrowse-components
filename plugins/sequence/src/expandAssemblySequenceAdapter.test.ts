@@ -3,9 +3,8 @@ import { expandAssemblySequenceAdapter } from '@jbrowse/core/assemblyManager/ass
 
 import ThisPlugin from './index.ts'
 
-// exercises the real Core-guessAdapterForLocation guesser this plugin registers,
-// so the assembly `sequence: { adapter: { uri } }` shorthand resolves to the
-// right ReferenceSequenceTrack adapter without any adapter-type table in a host
+// core guesses the type from the `uri`; this plugin's adapter types expand the
+// shorthand into their location slots
 function expand(sequence: unknown) {
   const pluginManager = new PluginManager([new ThisPlugin()])
   pluginManager.createPluggableElements()

@@ -13,27 +13,19 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 /**
- * Everything IndexedFastaAdapter and BgzipFastaAdapter share, which is
- * everything but which `@gmod/indexedfasta` reader to construct and from which
- * `fileLocation` slots.
- *
- * Generic over CONF rather than fixed to the indexed schema so each concrete
- * adapter reads its own slots through its own config type — bgzip has a
- * `gziLocation` the plain indexed one does not, and typing the base to either
- * schema forces the other's reads back to `any`.
+ * IndexedFastaAdapter and BgzipFastaAdapter differ only in the reader
+ * `setupPre` constructs. Generic over CONF so each concrete adapter type-checks
+ * its own slots, bgzip's `gziLocation` included.
  */
 export abstract class FastaAdapterBase<
   CONF extends AnyConfigurationModel,
 > extends BaseSequenceAdapter<CONF> {
   abstract setupPre(): Promise<{ fasta: IndexedFasta }>
 
-  // No `label`: the concrete readers narrate their own downloads.
   setup = cachedSetup({ setup: () => this.setupPre() })
 
-  // @gmod/indexedfasta does its own reads, so the phase can't be handed the URL
-  // by the fetch: it comes off the config the filehandle was opened from. Path
-  // form because CONF is unresolved here — see getHeader below; both schemas
-  // declare the slot
+  // path-form getConf, since CONF is unresolved here; both schemas declare the
+  // slots it reads
   private sizesPhase() {
     return downloadPhase(
       'Downloading chromosome sizes',
@@ -50,9 +42,6 @@ export abstract class FastaAdapterBase<
 
   public async getRegions(opts?: BaseOptions) {
     const { fasta } = await this.setup()
-    // the .fai is read lazily by @gmod/indexedfasta on first use, so the wait an
-    // assembly load spends here is that download. It exposes no byte callback,
-    // so this is an indeterminate phase label rather than a bar
     return refSizesToRegions(
       await updateStatus(this.sizesPhase(), opts?.statusCallback, () =>
         fasta.getSequenceSizes(),
@@ -61,9 +50,6 @@ export abstract class FastaAdapterBase<
   }
 
   public async getHeader() {
-    // path form because CONF is unresolved here, so the slot-name overload has
-    // nothing to check the literal against. Both schemas declare the slot; the
-    // value goes straight into a FileLocation parameter
     return readOptionalMetadata(
       this.getConf(['metadataLocation']),
       this.pluginManager,
@@ -71,22 +57,9 @@ export abstract class FastaAdapterBase<
   }
 
   /**
-   * Asks the reader for exactly the region requested. **Do not reintroduce a
-   * sequence cache here** — this used to round every request out to a 128kb
-   * chunk and memoize it in a 200-entry LRU, and it was measured a loss.
-   *
-   * The reuse it was providing already exists one layer down:
-   * `RemoteFileWithRangeCache` caches the raw bytes it fetched, module-wide
-   * across every adapter instance, with in-flight dedup and a 15-minute idle
-   * sweep, and every URI location goes through it (an internet account's
-   * `openLocation` returns one too). Measured over 100 pan steps of a reference
-   * sequence track at 1bp/px on a 30Mb contig, both come to a single read, and
-   * the range cache's whole contribution was 0.3ms of skipped decode — 0.003ms
-   * per step. What it cost was real: up to ~51MB of decoded sequence retained per
-   * adapter instance with no expiry (quick-lru holds 2x maxSize), and 300
-   * scattered 200bp lookups reading 22.9MB instead of 0.06MB, 3x slower. It also
-   * lost on contiguous 100kb walks — CRAM's per-slice reference fetch — because
-   * requests that straddle a chunk boundary fetch two.
+   * No sequence cache here: `RemoteFileWithRangeCache` already reuses the
+   * bytes across every adapter, and a 128kb-chunk LRU in this spot measured
+   * slower on scattered and contiguous reads while holding ~51MB per adapter.
    */
   public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
     return sequenceFeatures(

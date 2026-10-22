@@ -21,8 +21,6 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
   // No `label`: `initChromSizes` narrates its own download.
   setup = cachedSetup({ setup: opts => this.setupPre(opts) })
 
-  // @gmod/twobit does its own reads, so the phase can't be handed the URL by
-  // the fetch: it comes off the config the filehandle was opened from
   private sizesPhase() {
     return downloadPhase(
       'Downloading chromosome sizes',
@@ -33,8 +31,7 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
   private async initChromSizes(opts?: BaseOptions) {
     const conf = this.getConf('chromSizesLocation')
     if (conf) {
-      // fetchAndMaybeUnzipText rather than readFile('utf8') so the read reports
-      // byte progress (readFile's utf8 path takes res.text(), which can't)
+      // not readFile('utf8'), which reports no byte progress
       return parseChromSizes(
         await fetchAndMaybeUnzipText(
           openLocation(conf, this.pluginManager),
@@ -68,8 +65,6 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
 
   public async getRegions(opts?: BaseOptions) {
     const { chromSizesData, twobit } = await this.setup(opts)
-    // without a chrom.sizes sidecar the sizes come from the 2bit's own header +
-    // per-sequence records, which is the wait an assembly load sits in here
     return refSizesToRegions(
       chromSizesData ??
         (await updateStatus(this.sizesPhase(), opts?.statusCallback, () =>
@@ -78,11 +73,6 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
     )
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param param -
-   * @returns Observable of Feature objects in the region
-   */
   public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
     return sequenceFeatures(
       region,

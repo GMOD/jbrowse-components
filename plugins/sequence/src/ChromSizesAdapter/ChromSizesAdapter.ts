@@ -16,16 +16,13 @@ export default class ChromSizesAdapter
   extends BaseAdapter
   implements RegionsAdapter
 {
-  // the map of refSeq to length. No `label`: `fetchAndMaybeUnzipText` narrates
-  // the download from the inside, and phases nest.
+  // No `label`: `fetchAndMaybeUnzipText` narrates the download itself.
   setup = cachedSetup({ setup: opts => this.setupPre(opts) })
 
   async setupPre(opts?: BaseOptions) {
     const pm = this.pluginManager
     const file = openLocation(this.getConf('chromSizesLocation'), pm)
-    // fetchAndMaybeUnzipText rather than readFile('utf8') so the read reports
-    // byte progress (readFile's utf8 path takes res.text(), which can't) and so
-    // a gzipped chrom.sizes works
+    // not readFile('utf8'), which reports no byte progress and won't gunzip
     const data = await fetchAndMaybeUnzipText(
       file,
       opts,

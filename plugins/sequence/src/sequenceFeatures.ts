@@ -7,13 +7,9 @@ import type { Feature } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 /**
- * The residues behind a sequence adapter. `@gmod/indexedfasta` and
- * `@gmod/twobit` already have this shape; UnindexedFastaAdapter wraps its
- * in-memory map in it.
- *
- * `undefined` from either method means the file has no such refName, which is
- * not an error — an assembly's sequence file legitimately lacks contigs the
- * rest of the session knows about, and the adapter answers with no feature.
+ * The residues behind a sequence adapter, the shape `@gmod/indexedfasta` and
+ * `@gmod/twobit` already have. `undefined` means the file lacks the refName,
+ * which is not an error: the adapter answers with no feature.
  */
 export interface SequenceSource {
   getSequenceSize: (refName: string) => Promise<number | undefined>
@@ -25,15 +21,9 @@ export interface SequenceSource {
 }
 
 /**
- * The single feature a sequence adapter emits for a region, shared by all of
- * them.
- *
- * The clamp to the contig length is why this is written once rather than three
- * times. Regions routinely run past the end of a contig — a scan adapter pads
- * its window by 10kb, a block sits at the edge of the last contig — and the file
- * answers with fewer residues than were asked for. The feature has to report the
- * end it actually got: consumers anchor the residues at `start` and take the
- * extent from `end`, so an unclamped feature claims bases it does not carry.
+ * The one feature a sequence adapter emits for a region, its `end` clamped to
+ * the contig: consumers anchor the residues at `start` and take the extent
+ * from `end`, so an unclamped `end` would count bases `seq` lacks.
  */
 export function sequenceFeatures(
   { refName, start, end }: NoAssemblyRegion,
@@ -42,9 +32,7 @@ export function sequenceFeatures(
 ) {
   const { statusCallback, signal } = opts ?? {}
   return ObservableCreate<Feature>(async observer => {
-    // outside the updateStatus below because setup owns its own phase labels —
-    // an unindexed FASTA downloads and parses the whole file here — and a
-    // 'Downloading sequence' wrapper would clobber them
+    // outside updateStatus, whose label would clobber setup's own phases
     const source = await setup()
     await updateStatus(
       'Downloading sequence',

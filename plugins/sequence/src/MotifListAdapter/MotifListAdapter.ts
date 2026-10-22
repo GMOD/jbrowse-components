@@ -30,9 +30,8 @@ interface MotifPass {
 }
 
 export default class MotifListAdapter extends ReferenceScanAdapter<MotifListAdapterConfig> {
-  // the config is fixed for an adapter instance (dataAdapterCache), so a
-  // pasted REBASE set of a few hundred enzymes is parsed and compiled once
-  // rather than once per block
+  // the config is fixed for an adapter instance (dataAdapterCache), so this
+  // parses and compiles a pasted REBASE set once, not on every block
   private passesCache?: MotifPass[]
 
   private get passes() {

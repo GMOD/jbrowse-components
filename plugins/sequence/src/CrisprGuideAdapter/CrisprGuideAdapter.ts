@@ -15,17 +15,13 @@ const ACGT_ONLY = /^[acgt]+$/i
 
 export default class CrisprGuideAdapter extends ReferenceScanAdapter<CrisprGuideAdapterConfig> {
   protected scanPadding() {
-    // a guide's protospacer reaches guideLength+PAM beyond the PAM match, so pad
-    // by that much to catch guides whose PAM lies just outside the query
     return this.getConf('guideLength') + this.getConf('pam').length
   }
 
   protected scan({ query, residues, windowStart, emit }: ScanWindow) {
     const pam = this.getConf('pam')
-    // The panel validates this, a hand-written config does not, and every way of
-    // getting it wrong fails quietly or worse: an empty PAM makes `(?=())` match
-    // at every offset (a guide on every base of both strands), and a non-IUPAC
-    // letter passes through iupacToRegex verbatim to match nothing at all.
+    // A hand-written config skips the panel's check. Unchecked, an empty PAM
+    // puts a guide on every base and a non-IUPAC letter matches nothing.
     if (!IUPAC_MOTIF_REGEX.test(pam)) {
       throw new Error(
         `Invalid PAM "${pam}": expected IUPAC nucleotide codes, e.g. NGG`,
@@ -64,26 +60,17 @@ export default class CrisprGuideAdapter extends ReferenceScanAdapter<CrisprGuide
         const pamPlus = residues.slice(rel(pamStart), rel(pamEnd))
         const guideRaw = strand === 1 ? protoPlus : revcom(protoPlus)
         const pamRaw = strand === 1 ? pamPlus : revcom(pamPlus)
-        // A protospacer reaching into an assembly gap is not a guide. The PAM
-        // itself cannot match an N — iupacToRegex maps the code N to [ACGT] —
-        // but nothing constrains the protospacer, so every gap edge otherwise
-        // yields a wall of guides made mostly of N.
+        // the PAM cannot match an assembly gap's N, but the protospacer can
         if (!ACGT_ONLY.test(guideRaw)) {
           continue
         }
-        // Lowercase residues are the reference's own soft-masking: this
-        // protospacer lies in a repeat, which is the one specificity signal the
-        // sequence carries for free. Report it, rather than leaving it to
-        // survive only as the letter case of `guideSeq` — a guide is copied out
-        // of here into an order form, so the sequence itself is normalized.
+        // lowercase is the reference's soft-masking: the guide lies in a
+        // repeat. Reported as a field, since guideSeq is uppercased for
+        // copying into an order form.
         const softMasked = guideRaw !== guideRaw.toUpperCase()
         const guideSeq = guideRaw.toUpperCase()
         const pamSeq = pamRaw.toUpperCase()
         const { gcPercent, hasPolyT } = guideQuality(guideSeq)
-        // Sequence-level triage, applied here rather than left to the viewer: a
-        // PAM occurs every ~8bp of genome, so an unfiltered track is a solid
-        // wall that the display's density guard hides at anything but the
-        // tightest zoom. NOT a specificity/off-target score.
         if (
           gcPercent < minGcPercent ||
           gcPercent > maxGcPercent ||
