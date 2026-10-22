@@ -6,9 +6,10 @@ import { regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
-import { connectorParamsOf } from '../renderers/connectorMarks.ts'
+import { arcBandState } from '../renderers/arcMarks.ts'
+import { connectorBandState } from '../renderers/connectorMarks.ts'
 import { sectionRenderState } from '../renderers/rendererTypes.ts'
-import { sashimiBandsOf } from '../renderers/sashimiMarks.ts'
+import { sashimiBandState } from '../renderers/sashimiMarks.ts'
 import { resolveArcBandHover } from './arcHitTest.ts'
 import { resolveConnectorHover } from './connectorHitTest.ts'
 import {
@@ -121,16 +122,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     // read the section's real offsets rather than standing in for a missing one.
     const result: MarkHitResult =
       arc ??
-      (picked && resolved
+      (picked && sec && resolved
         ? performHitTest(canvasX, canvasY, resolved, {
             // The render state the marks draw by, with the hovered section's
             // offsets in place — the frame `coverageTopOffset` puts the cursor
             // in, and the pileup top its rows are counted from.
-            state: {
-              ...renderState,
-              pileupTopOffset: picked.section.topOffset,
-              coverageTopOffset: picked.coverageTopOffset,
-            },
+            state: sectionRenderState(renderState, sec),
             overPileup: onPileupBand(
               picked.section,
               canvasY,
@@ -191,10 +188,13 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     if (!feeds || feeds.size === 0) {
       return undefined
     }
-    const hover = resolveConnectorHover(canvasX, canvasY, feeds, sec, {
-      ...sectionRenderState(renderState, sec),
-      connector: connectorParamsOf(renderState, sec),
-    })
+    const hover = resolveConnectorHover(
+      canvasX,
+      canvasY,
+      feeds,
+      sec,
+      connectorBandState(renderState, sec),
+    )
     return hover ? { type: 'connector', ...hover } : undefined
   }
 
@@ -211,10 +211,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     if (!feeds || feeds.size === 0) {
       return undefined
     }
-    const hover = resolveSashimiHover(canvasX, canvasY, feeds, {
-      ...renderState,
-      sashimi: sashimiBandsOf(renderState, sec),
-    })
+    const hover = resolveSashimiHover(
+      canvasX,
+      canvasY,
+      feeds,
+      sashimiBandState(renderState, sec),
+    )
     return hover
       ? {
           type: 'sashimi',
@@ -247,15 +249,15 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     if (model.drawnReadConnections === 'off' || !view.initialized) {
       return undefined
     }
-    const { arcBand } = sec
-    if (!arcBand) {
+    const bandState = arcBandState(renderState, sec)
+    if (!bandState) {
       return undefined
     }
     const hover = resolveArcBandHover(
       canvasX,
       canvasY,
       model.arcFeedsByGroup.get(section.groupKey) ?? new Map(),
-      { ...renderState, arcBand },
+      bandState,
       model.renderBlocks,
     )
     if (!hover) {

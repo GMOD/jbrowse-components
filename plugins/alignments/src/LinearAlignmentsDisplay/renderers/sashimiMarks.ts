@@ -15,6 +15,7 @@ import {
   SASHIMI_APEX_CLEARANCE_PX,
   sashimiLabelSpanPx,
 } from '../../features/sashimi/computeOverlay.ts'
+import { sectionRenderState } from './rendererTypes.ts'
 
 import type {
   SashimiBandFeed,
@@ -42,6 +43,17 @@ export interface SashimiBandState extends RenderState {
  * into its top margin; down arcs hang from the top of the strip the layout
  * reserved, short of its bottom by the room a count label needs past an apex.
  */
+/** The state the sashimi marks draw and hit-test a section's bands by. */
+export function sashimiBandState(
+  state: RenderState,
+  sec: SectionRender,
+): SashimiBandState {
+  return {
+    ...sectionRenderState(state, sec),
+    sashimi: sashimiBandsOf(state, sec),
+  }
+}
+
 export function sashimiBandsOf(
   state: RenderState,
   sec: SectionRender,

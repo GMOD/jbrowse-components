@@ -12,8 +12,9 @@ import {
   ARC_CLIPPED_MARKS,
   ARC_LINK_MARKS,
   ARC_MARKER_MARK,
+  arcBandState,
 } from './arcMarks.ts'
-import { CONNECTOR_MARK, connectorParamsOf } from './connectorMarks.ts'
+import { CONNECTOR_MARK, connectorBandState } from './connectorMarks.ts'
 import {
   ALIGNMENTS_COVERAGE_MARKS,
   coverageRegionOf,
@@ -21,7 +22,7 @@ import {
 } from './coverageMarks.ts'
 import { PILEUP_MARKS } from './pileupMarks.ts'
 import { sectionRegionKey, sectionRenderState } from './rendererTypes.ts'
-import { SASHIMI_MARKS, sashimiBandsOf } from './sashimiMarks.ts'
+import { SASHIMI_MARKS, sashimiBandState } from './sashimiMarks.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
@@ -281,10 +282,7 @@ function paintConnectorBands(
     if (!feeds || feeds.size === 0 || sec.connectorClipHeight <= 0) {
       return
     }
-    const bandState = {
-      ...sectionRenderState(state, sec),
-      connector: connectorParamsOf(state, sec),
-    }
+    const bandState = connectorBandState(state, sec)
     withClip(
       ctx,
       0,
@@ -319,10 +317,7 @@ function paintSashimiBands(
     if (!feeds || feeds.size === 0) {
       return
     }
-    const bandState = {
-      ...sectionRenderState(state, sec),
-      sashimi: sashimiBandsOf(state, sec),
-    }
+    const bandState = sashimiBandState(state, sec)
     SASHIMI_SIDES.forEach((side, m) => {
       const band = bandState.sashimi[side]
       if (band) {
@@ -353,12 +348,17 @@ function paintArcBands(
 ) {
   const { canvasWidth, canvasHeight } = state
   state.sections.forEach((sec, s) => {
-    const band = sec.arcBand
+    const bandState = arcBandState(state, sec)
     const feeds = sectionFeeds[s]
-    if (!band || !feeds || feeds.size === 0 || band.height <= 0) {
+    if (
+      !bandState ||
+      !feeds ||
+      feeds.size === 0 ||
+      bandState.arcBand.height <= 0
+    ) {
       return
     }
-    const bandState = { ...sectionRenderState(state, sec), arcBand: band }
+    const band = bandState.arcBand
     withClip(ctx, 0, band.top, canvasWidth, band.height, () => {
       for (const mark of ARC_LINK_MARKS) {
         for (const [regionIdx, feed] of feeds) {

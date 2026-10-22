@@ -186,12 +186,9 @@ import {
   presentMapqs,
 } from './qualitySpans.ts'
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
-import { connectorParamsOf } from './renderers/connectorMarks.ts'
-import {
-  sectionRenderState,
-  shouldDrawOverlaps,
-} from './renderers/rendererTypes.ts'
-import { sashimiBandsOf, sashimiLabels } from './renderers/sashimiMarks.ts'
+import { connectorBandState } from './renderers/connectorMarks.ts'
+import { shouldDrawOverlaps } from './renderers/rendererTypes.ts'
+import { sashimiBandState, sashimiLabels } from './renderers/sashimiMarks.ts'
 import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
 import {
   belowCoverageBandsGeometry,
@@ -2692,10 +2689,12 @@ export default function stateModelFactory(
                 : self.sashimiFeedsByGroup.get(groupKey)
             const highlight =
               feeds && groupKey !== undefined
-                ? selectedSashimiHighlight(id, groupKey, feeds, {
-                    ...state,
-                    sashimi: sashimiBandsOf(state, sec),
-                  })
+                ? selectedSashimiHighlight(
+                    id,
+                    groupKey,
+                    feeds,
+                    sashimiBandState(state, sec),
+                  )
                 : undefined
             if (highlight) {
               return highlight
@@ -2723,10 +2722,12 @@ export default function stateModelFactory(
                 ? undefined
                 : self.connectorFeedsByGroup.get(groupKey)
             const highlight = feeds
-              ? selectedConnectorHighlight(selected, feeds, sec, {
-                  ...sectionRenderState(state, sec),
-                  connector: connectorParamsOf(state, sec),
-                })
+              ? selectedConnectorHighlight(
+                  selected,
+                  feeds,
+                  sec,
+                  connectorBandState(state, sec),
+                )
               : undefined
             if (highlight) {
               return highlight

@@ -23,11 +23,12 @@ import {
   ARC_CLIPPED_MARKS,
   ARC_LINK_MARKS,
   ARC_MARKER_MARK,
+  arcBandState,
 } from './arcMarks.ts'
 import {
   CONNECTOR_MARK,
   EMPTY_CONNECTOR_FEED,
-  connectorParamsOf,
+  connectorBandState,
 } from './connectorMarks.ts'
 import {
   ALIGNMENTS_COVERAGE_MARKS,
@@ -43,14 +44,12 @@ import {
   writePileupPalette,
 } from './pileupUniforms.ts'
 import { sectionRegionKey, sectionRenderState } from './rendererTypes.ts'
-import { SASHIMI_MARKS, sashimiBandsOf } from './sashimiMarks.ts'
+import { SASHIMI_MARKS, sashimiBandState } from './sashimiMarks.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
 import type { ConnectorFeed } from '../../features/linkedReads/connectorFeed.ts'
 import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
-import type { ArcBandState } from './arcMarks.ts'
-import type { ConnectorBandState } from './connectorMarks.ts'
 import type { PileupUniformViews } from './pileupUniforms.ts'
 import type {
   AlignmentsRenderingBackend,
@@ -58,7 +57,6 @@ import type {
   RenderBlock,
   RenderState,
 } from './rendererTypes.ts'
-import type { SashimiBandState } from './sashimiMarks.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { CanvasScale } from '@jbrowse/render-core/canvas2dUtils'
 import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
@@ -452,18 +450,15 @@ export class GpuAlignmentsRenderer
   ) {
     const { canvasWidth, canvasHeight } = state
     state.sections.forEach((sec, s) => {
-      const band = sec.arcBand
+      const bandState = arcBandState(state, sec)
       const feeds = this.sectionFeeds[s]
-      if (!band || !feeds || feeds.size === 0) {
+      if (!bandState || !feeds || feeds.size === 0) {
         return
       }
+      const band = bandState.arcBand
       const strip = devicePxBand(band.top, band.height, scale.y, bufH)
       if (strip.height <= 0) {
         return
-      }
-      const bandState: ArcBandState = {
-        ...sectionRenderState(state, sec),
-        arcBand: band,
       }
       for (const mark of ARC_LINK_MARKS) {
         for (const [regionIdx, feed] of feeds) {
@@ -535,10 +530,7 @@ export class GpuAlignmentsRenderer
       if (!feeds || feeds.size === 0) {
         return
       }
-      const bandState: SashimiBandState = {
-        ...sectionRenderState(state, sec),
-        sashimi: sashimiBandsOf(state, sec),
-      }
+      const bandState = sashimiBandState(state, sec)
       SASHIMI_SIDES.forEach((side, m) => {
         const band = bandState.sashimi[side]
         const strip = band
@@ -592,10 +584,7 @@ export class GpuAlignmentsRenderer
       if (strip.height <= 0) {
         return
       }
-      const bandState: ConnectorBandState = {
-        ...sectionRenderState(state, sec),
-        connector: connectorParamsOf(state, sec),
-      }
+      const bandState = connectorBandState(state, sec)
       for (const [regionIdx, feed] of feeds) {
         const block = canvasWideBlock(regionIdx, canvasWidth)
         const clip = clipBlock(block, canvasWidth, canvasHeight, scale)

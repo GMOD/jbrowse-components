@@ -9,14 +9,28 @@ import {
   ARC_WIDTH_MAX_SCALE,
   arcStrokeScale,
 } from '../../features/arcs/arcLineWidth.ts'
+import { sectionRenderState } from './rendererTypes.ts'
 
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
-import type { ArcBand, RenderState } from './rendererTypes.ts'
+import type { ArcBand, RenderState, SectionRender } from './rendererTypes.ts'
 import type { LinkParams, Mark, PointParams } from '@jbrowse/render-core/marks'
 
 /** A section's render state with the band its marks draw in. */
 export interface ArcBandState extends RenderState {
   arcBand: ArcBand
+}
+
+/**
+ * The state the arc band's marks draw and hit-test a section's band by, or
+ * `undefined` for a section that reserves no band.
+ */
+export function arcBandState(
+  state: RenderState,
+  sec: SectionRender,
+): ArcBandState | undefined {
+  return sec.arcBand
+    ? { ...sectionRenderState(state, sec), arcBand: sec.arcBand }
+    : undefined
 }
 
 /** The read cloud's endpoint square, in CSS px. */

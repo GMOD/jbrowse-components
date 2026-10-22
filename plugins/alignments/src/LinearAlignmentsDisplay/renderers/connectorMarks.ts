@@ -2,6 +2,7 @@ import { connectorMark, defineMark } from '@jbrowse/render-core/marks'
 import { HIDDEN_SEGMENT_DASH } from '@jbrowse/sv-core'
 
 import { connectorArrowPx } from '../../features/linkedReads/connectorFeed.ts'
+import { sectionRenderState } from './rendererTypes.ts'
 
 import type { ConnectorFeed } from '../../features/linkedReads/connectorFeed.ts'
 import type { RenderState, SectionRender } from './rendererTypes.ts'
@@ -26,6 +27,17 @@ export function connectorParamsOf(
     rowPitchPx: state.featureHeight + state.featureSpacing,
     arrowPx: connectorArrowPx(state.featureHeight),
     strokeDash: DASH,
+  }
+}
+
+/** The state the connector mark draws and hit-tests a section's band by. */
+export function connectorBandState(
+  state: RenderState,
+  sec: SectionRender,
+): ConnectorBandState {
+  return {
+    ...sectionRenderState(state, sec),
+    connector: connectorParamsOf(state, sec),
   }
 }
 
