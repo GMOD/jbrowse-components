@@ -154,7 +154,7 @@ function numbers(
 
 function doubles(values: ArrayLike<number | null | undefined>) {
   const out = new Float64Array(values.length)
-  const words = new Uint32Array(out.buffer)
+  const words = new Uint32Array(out.buffer, out.byteOffset, out.length * 2)
   for (let i = 0; i < values.length; i++) {
     const v = values[i]
     if (isNull(v) || !Number.isFinite(v)) {
