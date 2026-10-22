@@ -52,6 +52,17 @@ test('synteny renders two assemblies via a PAF', async () => {
   assert.ok(svg.includes('<image'), 'synteny should rasterize a ribbon layer')
 })
 
+test('with no subcommand, a comparison file renders a synteny view', async () => {
+  const svg = await renderRegion({
+    argv: [
+      ['fasta', [volvoxFasta]],
+      ['paf', [paf]],
+      ['fasta', [fasta2]],
+    ],
+  })
+  assert.ok(svg.includes('<image'), 'synteny should rasterize a ribbon layer')
+})
+
 test('three-assembly synteny renders from interleaved CLI args', async () => {
   const svg = await renderRegion({
     mode: 'synteny',

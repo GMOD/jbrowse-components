@@ -319,6 +319,17 @@ describe('resolveMode', () => {
     expect(resolveMode(undefined, undefined)).toBe('linear')
   })
 
+  it('opens a synteny view for a second genome or a comparison file', () => {
+    expect(resolveMode(undefined, undefined, true)).toBe('synteny')
+    expect(resolveMode('dotplot', undefined, true)).toBe('dotplot')
+  })
+
+  it('refuses a second genome on lgv rather than dropping it', () => {
+    expect(() => resolveMode('linear', undefined, true)).toThrow(
+      /a linear view opens one genome/,
+    )
+  })
+
   it('reads the mode off the spec when no subcommand was typed', () => {
     expect(resolveMode(undefined, { type: 'DotplotView' })).toBe('dotplot')
   })

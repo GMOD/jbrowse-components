@@ -8,6 +8,7 @@ import {
 import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
 import {
   comparativeRole,
+  hasComparativeArgs,
   resolveTrackId,
   trackType,
 } from '@jbrowse/launch-args'
@@ -876,9 +877,12 @@ function warnLinearOnlyOptions(mode: ViewMode, opts: Opts) {
 // and when both are present they have to agree — `jb2export dotplot --spec
 // synteny.json` used to render the flags-built dotplot and ignore the spec
 // entirely, and `jb2export lgv --spec x.json` ignored it whatever it held.
+// With neither, a second genome or a comparison file means a synteny view, as
+// Desktop opens the same command line.
 export function resolveMode(
   mode: ViewMode | undefined,
   spec: ViewSpec | undefined,
+  comparative = false,
 ) {
   if (spec) {
     const specsMode = specMode(spec)
@@ -888,8 +892,12 @@ export function resolveMode(
       )
     }
     return specsMode
+  } else if (mode === 'linear' && comparative) {
+    throw new Error(
+      'a linear view opens one genome, and this command line has a second genome or a comparison file; drop "lgv" to render a synteny view',
+    )
   } else {
-    return mode ?? 'linear'
+    return mode ?? (comparative ? 'synteny' : 'linear')
   }
 }
 
@@ -928,7 +936,7 @@ export async function renderRegionReport(
   const spec = opts.spec ? parseSpec(opts.spec) : undefined
   // before the model is built, so a subcommand that cannot draw the --spec is
   // reported rather than left to fail against a view it never asked for
-  const mode = resolveMode(opts.mode, spec)
+  const mode = resolveMode(opts.mode, spec, hasComparativeArgs(opts.argv ?? []))
   warnLinearOnlyOptions(mode, opts)
   const model = await createModel(data)
   // Set the theme on the session up front: worker-side label/feature colors
