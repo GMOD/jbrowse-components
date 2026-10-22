@@ -22,7 +22,7 @@ import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
@@ -45,7 +45,6 @@ import {
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import { reaction } from 'mobx'
 
 import { copyItem } from '../shared/copyMenuItem.ts'
 import { featureColorViews } from '../shared/featureColorViews.ts'
@@ -156,6 +155,13 @@ export default function stateModelFactory(
          * category's color drop out of both render paths and the hit test.
          */
         hiddenCategories: types.array(types.string),
+        /**
+         * #property
+         * The `legendKeySpace` the hidden categories were picked in; they
+         * apply only while it still holds. Unset in a session saved before it
+         * existed, which keeps its hides.
+         */
+        hiddenKeySpace: types.maybe(types.string),
       }),
     )
     .views(self => ({
@@ -518,22 +524,37 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * The single place "is this category hidden?" is answered, so a change to
-       * how a label is matched cannot reach some legends and miss the rest.
-       */
-      get hiddenCategorySet(): ReadonlySet<string> {
-        return new Set(self.hiddenCategories)
-      },
-      /**
-       * #getter
        * What the key's names are names of: the painting field and its scale,
-       * or the constant or expression every feature is painted by. The hidden
-       * categories clear when it moves, since a name means nothing outside
-       * the key that offered it.
+       * or the constant or expression every feature is painted by. A name
+       * means nothing outside the key that offered it.
        */
       get legendKeySpace(): string {
         const { scale = '', value = '' } = self.colorSetting
         return [self.colorField ?? '', scale, value].join('\t')
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The hidden categories, while the key they were picked in still holds.
+       * Derived rather than cleared on a change, so an undo or a reload that
+       * restores the key restores its hides with it.
+       */
+      get activeHiddenCategories(): readonly string[] {
+        return self.hiddenKeySpace === undefined ||
+          self.hiddenKeySpace === self.legendKeySpace
+          ? self.hiddenCategories
+          : []
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The single place "is this category hidden?" is answered, so a change to
+       * how a label is matched cannot reach some legends and miss the rest.
+       */
+      get hiddenCategorySet(): ReadonlySet<string> {
+        return new Set(self.activeHiddenCategories)
       },
     }))
     .views(self => ({
@@ -565,7 +586,7 @@ export default function stateModelFactory(
       // Identity-stable, in color order: the encode keys on it, and the legend
       // it is read off recomputes on every recolor and region arrival.
       const hiddenColors = stableIdentityComputed(() => {
-        if (!self.hiddenCategories.length) {
+        if (!self.activeHiddenCategories.length) {
           return new Set<number>()
         }
         const hidden = self.hiddenCategorySet
@@ -896,20 +917,20 @@ export default function stateModelFactory(
          * refetch: a row any of whose names is hidden shows again.
          */
         toggleCategory(values: readonly string[]) {
-          const hidden = self.hiddenCategorySet
-          if (values.some(v => hidden.has(v))) {
-            self.hiddenCategories.replace(
-              self.hiddenCategories.filter(v => !values.includes(v)),
-            )
-          } else {
-            self.hiddenCategories.push(...values)
-          }
+          const active = self.activeHiddenCategories
+          self.hiddenCategories.replace(
+            values.some(v => self.hiddenCategorySet.has(v))
+              ? active.filter(v => !values.includes(v))
+              : [...active, ...values],
+          )
+          self.hiddenKeySpace = self.legendKeySpace
         },
         /**
          * #action
          */
         setHiddenCategories(labels: string[]) {
           self.hiddenCategories.replace(labels)
+          self.hiddenKeySpace = self.legendKeySpace
         },
         /**
          * #action
@@ -1075,15 +1096,6 @@ export default function stateModelFactory(
             void self.rowTable
           },
           { name: 'MultiRowHitIndexes' },
-        )
-        addDisposer(
-          self,
-          reaction(
-            () => self.legendKeySpace,
-            () => {
-              self.setHiddenCategories([])
-            },
-          ),
         )
         setupTreeSidebarAutoruns(self, {
           name: 'MultiRowFeature',

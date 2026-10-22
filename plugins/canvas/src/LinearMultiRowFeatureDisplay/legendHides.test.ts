@@ -1,4 +1,6 @@
 import { readConfObject, setConf } from '@jbrowse/core/configuration'
+import { applySnapshot, getSnapshot } from '@jbrowse/mobx-state-tree'
+import { runInAction } from 'mobx'
 
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -13,23 +15,23 @@ function display() {
 }
 
 // A hidden category is a name the key offered, so it outlives what leaves the
-// key's names alone and clears with anything that renames them: a hide of
+// key's names alone and lapses with anything that renames them: a hide of
 // `1` under one field would otherwise hide `1` under the next.
 describe('the hidden categories follow the key that named them', () => {
-  it('clear when Color by moves to another field', () => {
+  it('lapse when Color by moves to another field', () => {
     const d = display()
     d.colorByField('strand')
-    expect(d.hiddenCategories).toEqual([])
+    expect(d.activeHiddenCategories).toEqual([])
   })
 
-  it('clear when Default or a solid color takes over from the field', () => {
+  it('lapse when Default or a solid color takes over from the field', () => {
     const toDefault = display()
     toDefault.pickDefaultColor()
-    expect(toDefault.hiddenCategories).toEqual([])
+    expect(toDefault.activeHiddenCategories).toEqual([])
 
     const toSolid = display()
     toSolid.setColorValue('#888')
-    expect(toSolid.hiddenCategories).toEqual([])
+    expect(toSolid.activeHiddenCategories).toEqual([])
   })
 
   it('stay through a palette edit and a repartition', () => {
@@ -39,6 +41,35 @@ describe('the hidden categories follow the key that named them', () => {
       range: ['green', 'blue'],
     })
     d.setRowsField('clade')
+    expect(d.activeHiddenCategories).toEqual(['Enh'])
+  })
+
+  it('come back with an undo that restores the key and the display together', () => {
+    const d = display()
+    const before = getSnapshot(d)
+    const color = readConfObject(d.configuration, 'color')
+    d.colorByField('strand')
+    expect(d.activeHiddenCategories).toEqual([])
+    runInAction(() => {
+      setConf(d, 'color', color)
+      applySnapshot(d, before)
+    })
+    expect(d.activeHiddenCategories).toEqual(['Enh'])
+  })
+
+  it('stay lapsed when an undo restores the display but not the key', () => {
+    const d = display()
+    const before = getSnapshot(d)
+    d.colorByField('strand')
+    applySnapshot(d, before)
     expect(d.hiddenCategories).toEqual(['Enh'])
+    expect(d.activeHiddenCategories).toEqual([])
+  })
+
+  it('a hide picked under the new key starts from none', () => {
+    const d = display()
+    d.colorByField('strand')
+    d.toggleCategory(['+'])
+    expect(d.activeHiddenCategories).toEqual(['+'])
   })
 })

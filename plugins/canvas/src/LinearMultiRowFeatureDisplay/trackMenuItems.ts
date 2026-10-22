@@ -51,7 +51,7 @@ interface MultiRowMenuSelf
   // Reads "has a key at all", not "one is drawn right now": a configured key
   // waiting on its first fetch still owns the toggle.
   hasLegendKey: boolean
-  hiddenCategories: readonly string[]
+  activeHiddenCategories: readonly string[]
   hiddenCategorySet: ReadonlySet<string>
   effectiveRowsField: string
   rowsFieldCandidates: string[]
@@ -96,7 +96,7 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
 function multiRowNarrowings(self: MultiRowMenuSelf): Reversibles {
   return {
     hiddenCategories: {
-      count: self.hiddenCategories.length,
+      count: self.activeHiddenCategories.length,
       label: () => 'Show all categories',
       clear: () => {
         self.setHiddenCategories([])
@@ -110,7 +110,7 @@ function multiRowNarrowings(self: MultiRowMenuSelf): Reversibles {
 // `hiddenCategories` stays in the session and re-applies when the count drops
 // back, so without this the hiding would have no visible cause and no way out.
 function categoriesMenuItems(self: MultiRowMenuSelf): MenuItem[] {
-  const hidden = self.hiddenCategories.length
+  const hidden = self.activeHiddenCategories.length
   const hiddenSet = self.hiddenCategorySet
   const toggles = self.colorLegend.map(entry =>
     checkboxItem(entry.label, !entryHidden(entry, hiddenSet), () => {

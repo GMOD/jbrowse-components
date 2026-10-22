@@ -3647,7 +3647,8 @@ export const configManifest: ConfigManifest = {
         "clusterRegion",
         "sortRowsBy",
         "configuration",
-        "hiddenCategories"
+        "hiddenCategories",
+        "hiddenKeySpace"
       ]
     },
     "LinearAlignmentsDisplay": {

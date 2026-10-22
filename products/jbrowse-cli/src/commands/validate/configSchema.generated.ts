@@ -22440,6 +22440,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "string"
           }
         },
+        "hiddenKeySpace": {
+          "type": "string"
+        },
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."

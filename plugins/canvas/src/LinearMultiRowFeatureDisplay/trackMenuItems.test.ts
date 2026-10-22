@@ -33,7 +33,7 @@ function makeSelf(
     effectiveRowHeight: 14,
     colorLegend: [],
     rowColorKey: [],
-    hiddenCategories: [],
+    activeHiddenCategories: [] as string[],
     // Nothing loaded by default, which is the "One row per..." item's own
     // absent condition.
     effectiveRowsField: 'name',
@@ -81,11 +81,11 @@ function makeSelf(
     pickSolidColor: () => {},
     ...overrides,
   }
-  // Derived rather than defaulted, so a case overriding `hiddenCategories` or
+  // Derived rather than defaulted, so a case overriding `activeHiddenCategories` or
   // either legend cannot leave the derivation behind disagreeing with it.
   return {
     ...self,
-    hiddenCategorySet: new Set(self.hiddenCategories),
+    hiddenCategorySet: new Set(self.activeHiddenCategories),
     hasLegendKey: self.colorLegend.length > 0 || self.rowColorKey.length > 0,
   }
 }
@@ -257,7 +257,7 @@ describe('multi-row track menu', () => {
           { label: 'promoter', values: ['promoter'], color: 1 },
           { label: 'quiescent', values: ['quiescent'], color: 2 },
         ],
-        hiddenCategories: ['quiescent'],
+        activeHiddenCategories: ['quiescent'],
       }),
     )
 
@@ -273,7 +273,7 @@ describe('multi-row track menu', () => {
     // from a user who has already hidden something — and the hidden set stays
     // in the session and re-applies later.
     const items = buildMultiRowTrackMenuItems(
-      makeSelf({ colorLegend: [], hiddenCategories: ['quiescent'] }),
+      makeSelf({ colorLegend: [], activeHiddenCategories: ['quiescent'] }),
     )
 
     expect(labels(subMenuOf(items, 'Categories (1 hidden)'))).toEqual([
