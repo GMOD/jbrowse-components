@@ -7484,7 +7484,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "default": "rgba(255,133,0,0.32)",
+          "default": "rgb(255,133,0)",
           "$ref": "#/$defs/CssColorOrJexl",
           "type": "string"
         },
@@ -7495,7 +7495,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS color or jexl callback for every chord.",
-              "default": "rgba(255,133,0,0.32)",
+              "default": "rgb(255,133,0)",
               "if": {
                 "type": "null"
               },
@@ -7641,7 +7641,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "opacity": {
           "description": "the alpha every resting chord draws at, over its color's own.",
-          "default": 1,
+          "default": 0.32,
           "if": {
             "type": "null"
           },

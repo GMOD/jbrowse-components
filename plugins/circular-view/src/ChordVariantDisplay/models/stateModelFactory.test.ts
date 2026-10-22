@@ -27,6 +27,9 @@ function sliceFor(
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
+// the default chord color under the default 0.32 opacity, as a byte
+const DEFAULT_SWATCH = `rgba(255,133,0,${82 / 255})`
+
 function addConf(
   session: ReturnType<typeof createTestSession>,
   assemblies = ['volvox'],
@@ -120,7 +123,7 @@ test('a constant color keys as one row, a field as the values it paints', async 
       mate: { refName: 'ctgB', start: 6000, end: 6100 },
     },
   ])
-  expect(display.legendColor).toBe('rgba(255,133,0,0.32)')
+  expect(display.legendColor).toBe(DEFAULT_SWATCH)
   expect(display.colorScales).toEqual([])
 
   setConf(display, 'color', { field: 'svType' })
@@ -390,12 +393,12 @@ test('the track menu picks the chord color through Color by', async () => {
     scale: 'none',
     value: '#123456',
   })
-  expect(display.legendColor).toBe('#123456')
+  expect(display.legendColor).toBe(`rgba(18,52,86,${82 / 255})`)
   expect(ticked(colorByRows(display))).toEqual(['Solid color...'])
 
   clickRow(colorByRows(display), 'Default')
   expect(display.writtenColor).toEqual({ field: 'svType', scale: 'none' })
-  expect(display.legendColor).toBe('rgba(255,133,0,0.32)')
+  expect(display.legendColor).toBe(DEFAULT_SWATCH)
   expect(ticked(colorByRows(display))).toEqual(['Default'])
 }, 20000)
 

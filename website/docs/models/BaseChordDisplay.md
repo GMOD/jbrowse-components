@@ -58,6 +58,10 @@ From [BaseDisplay](../basedisplay): <span id="volatile-error">[`error`](../based
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-hoveredfeatureid">**hoveredFeatureId**</span><br><code>string &#124; undefined</code> | the feature under the pointer, which the view hit-tests for every chord display at once |
 | <span id="getter-figurestage">**figureStage**</span><br><code>ChordStage</code> | the polar stage on the unrotated figure, which the view's SVG turns: what the export, the highlight paths and the hit tests are placed on |
+| <span id="getter-drawnlanes">**drawnLanes**</span><br><code>{ count: number; features: readonly Feature[]; }</code> | Overridable hook: the drawn records, one per lane, in paint order |
+| <span id="getter-laneindexbyid">**laneIndexById**</span><br><code>ReadonlyMap&lt;string, number&gt;</code> | each drawn record's lane, by id |
+| <span id="getter-drawncount">**drawnCount**</span><br><code>number</code> | how many lanes the canvas draws, a chord under a pixel included |
+| <span id="getter-shapes">**shapes**</span><br><code>Shape[]</code> | every drawn shape, as the export draws it |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>16 inherited getters from one model</summary>
@@ -71,6 +75,11 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="method-shapeat">**shapeAt**</span><br><code>(_i: number) =&gt; Shape &#124; undefined</code> | Overridable hook: lane `i` as the SVG side draws it, on the unrotated figure; undefined where it draws nothing |
+| <span id="method-laneat">**laneAt**</span><br><code>(_x: number, _y: number) =&gt; number &#124; undefined</code> | Overridable hook: the topmost lane under a point on the unrotated figure |
+| <span id="method-shapefor">**shapeFor**</span><br><code>(featureId: string) =&gt; Shape &#124; undefined</code> | the shape a drawn record's id names, undefined where none draws |
+| <span id="method-shapepathfor">**shapePathFor**</span><br><code>(feature: Feature) =&gt; string &#124; undefined</code> | a drawn feature's outline as an SVG path on the unrotated figure, for anything that has to find a shape on screen without a DOM node |
+| <span id="method-hitat">**hitAt**</span><br><code>(dx: number, dy: number) =&gt; Feature &#124; undefined</code> | the record drawn under a point CSS px from the circle's centre in the screen frame |
 | <span id="method-assemblyof">**assemblyOf**</span><br><code>(assemblyName: string &#124; undefined) =&gt; string &#124; undefined</code> | the assembly on the circle a feature names, in whatever spelling the adapter wrote. A feature that names none, as a VCF record does not, is on the track's first assembly. |
 | <span id="method-canonicalrefname">**canonicalRefName**</span><br><code>(assemblyName: string, refName: string) =&gt; string</code> | a refName as the adapter wrote it, in the assembly's canonical spelling |
 | <span id="method-axisslice">**axisSlice**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(assemblyName: string &#124; undefined, refName: string) =&gt; AxisSlic…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(assemblyName: string &#124; undefined, refName: string) =&gt; AxisSlice &#124; undefined</code></pre></dialog></span> | the slice of the unrolled axis that one end of a feature falls in |

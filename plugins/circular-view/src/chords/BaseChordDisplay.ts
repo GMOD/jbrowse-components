@@ -236,6 +236,7 @@ export function BaseChordDisplay() {
       },
       /**
        * #getter
+       * how many lanes the canvas draws, a chord under a pixel included
        */
       get drawnCount() {
         return self.drawnLanes.count

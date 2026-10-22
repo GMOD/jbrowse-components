@@ -25,7 +25,7 @@ A setting written to it replaces it whole, since its members are alternatives: a
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-value">**value**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(255,133,0,0.32)'</code> | A CSS color, or a jexl callback over `feature` returning one, for every chord.<br>_callback args:_ `feature` |
+| <span id="slot-value">**value**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgb(255,133,0)'</code> | A CSS color, or a jexl callback over `feature` returning one, for every chord.<br>_callback args:_ `feature` |
 | <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | a record field, svType say, or a jexl expression over feature, whose values each paint one range color with a key |
 | <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) | none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field |
 | <span id="slot-domain">**domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | the values that take the range first, in order; under threshold, the ascending cut points, a value on a cut taking the interval above it |

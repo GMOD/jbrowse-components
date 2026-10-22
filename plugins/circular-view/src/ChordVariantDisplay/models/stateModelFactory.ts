@@ -6,7 +6,11 @@ import {
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { getEnv, getSession, openFeatureWidget } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
-import { cssColorToABGR, scaleAbgrAlpha } from '@jbrowse/core/util/colorBits'
+import {
+  abgrToCssRgba,
+  cssColorToABGR,
+  scaleAbgrAlpha,
+} from '@jbrowse/core/util/colorBits'
 import {
   CATEGORICAL_FIELD_PRESETS,
   withPreset,
@@ -429,7 +433,9 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         const { value } = self.colorSetting
         return self.paintedColorField || value === undefined || isJexl(value)
           ? undefined
-          : value
+          : abgrToCssRgba(
+              scaleAbgrAlpha(cssColorToABGR(value), self.shapeAlpha),
+            )
       },
       /**
        * #getter
@@ -471,6 +477,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
+       * the test id on the chord paths' group, on screen and in the export
        */
       get shapesTestId() {
         return 'structuralVariantChordRenderer'

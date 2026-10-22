@@ -428,6 +428,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
+       * the ribbon lanes
        */
       get drawnLanes() {
         return this.ribbonLanes
@@ -626,6 +627,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
     .views(() => ({
       /**
        * #getter
+       * the test id on the ribbon paths' group, on screen and in the export
        */
       get shapesTestId() {
         return 'syntenyRibbonRenderer'

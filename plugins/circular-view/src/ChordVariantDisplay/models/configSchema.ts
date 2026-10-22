@@ -108,7 +108,7 @@ function configSchemaF(_pluginManager: PluginManager) {
         type: 'number',
         description:
           "the alpha every resting chord draws at, over its color's own",
-        defaultValue: 1,
+        defaultValue: 0.32,
       },
       /**
        * #slot

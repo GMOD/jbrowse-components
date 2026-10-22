@@ -10,7 +10,7 @@ import {
   colorUnknownSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
-export const CHORD_DEFAULT_COLOR = 'rgba(255,133,0,0.32)'
+export const CHORD_DEFAULT_COLOR = 'rgb(255,133,0)'
 
 /**
  * #config ChordColor

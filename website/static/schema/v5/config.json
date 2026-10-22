@@ -7250,7 +7250,7 @@
       "anyOf": [
         {
           "description": "Shorthand for `{ \"value\": ... }`.",
-          "default": "rgba(255,133,0,0.32)",
+          "default": "rgb(255,133,0)",
           "$ref": "#/$defs/CssColorOrJexl",
           "type": "string"
         },
@@ -7261,7 +7261,7 @@
           "properties": {
             "value": {
               "description": "CSS color or jexl callback for every chord.",
-              "default": "rgba(255,133,0,0.32)",
+              "default": "rgb(255,133,0)",
               "if": {
                 "type": "null"
               },
@@ -7403,7 +7403,7 @@
         },
         "opacity": {
           "description": "the alpha every resting chord draws at, over its color's own.",
-          "default": 1,
+          "default": 0.32,
           "if": {
             "type": "null"
           },
