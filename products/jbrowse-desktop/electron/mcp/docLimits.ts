@@ -71,6 +71,11 @@ export const DOC_TOPICS = {
     summary:
       "Plotting a track's features as ggplot2 does, with LinearMarkDisplay: marks, encodings, transform steps, scales, facets and rows, each with its ggplot2 and Vega-Lite name",
   },
+  tutorials: {
+    file: 'products/jbrowse-desktop/electron/mcp/docs/tutorials.generated.md',
+    summary:
+      'Every website tutorial with its page and the data files it loads (BAM, CRAM, bigWig, VCF, PAF, hosted configs), for reproducing one; generated from the tutorial pages',
+  },
   automating: {
     file: 'website/docs/automating.md',
     summary:

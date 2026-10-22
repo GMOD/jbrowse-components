@@ -11,6 +11,7 @@ import urlparams from '../../../../website/docs/urlparams.md'
 import { DOC_TOPICS, OMITTED_SECTIONS, SPLIT_TOPICS } from './docLimits.ts'
 import { searchDocs } from './docSearch.ts'
 import { readDocSection, withoutSections } from './docSections.ts'
+import tutorials from './docs/tutorials.generated.md'
 import typePages from './docs/typeDocs.generated.json'
 import { lookupTypeDoc, typeIndex } from './typeDocs.ts'
 
@@ -27,6 +28,7 @@ const TOPIC_TEXT: Record<DocTopic, string> = {
   'hosted-data': hostedData,
   'session-spec': urlparams,
   plots,
+  tutorials,
   automating,
 }
 

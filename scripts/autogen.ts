@@ -144,6 +144,12 @@ const GENERATORS: Generator[] = [
   },
   // Writes one file under website/src/lib and reads no doc.
   { name: 'live links', argv: web('gen-live-links.ts'), independent: true },
+  // The tutorials topic of Desktop's MCP docs tool; reads the tutorial pages.
+  {
+    name: 'agent tutorial index',
+    argv: web('gen-agent-tutorial-index.ts'),
+    independent: true,
+  },
   {
     // spec-recipe-unmapped.txt, and recipe-path-labels.ts when an exemption
     // there has stopped covering anything.
