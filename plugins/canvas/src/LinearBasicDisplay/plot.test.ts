@@ -13,7 +13,7 @@ function display() {
 test('an untouched display declares no plot setting', () => {
   const d = display()
   expect(d.plotKeys).toEqual(
-    expect.arrayContaining(['facet', 'color', 'filter']),
+    expect.arrayContaining(['facet', 'encoding', 'filter', 'legend']),
   )
   expect(d.plot).toEqual({})
 })
@@ -23,9 +23,9 @@ test('facet, color and filter read back as the box shows them', () => {
   expect(
     d.applyDisplaySettings({
       facet: { field: 'subtrack', sort: ['key5', 'key2', 'key3'] },
-      color: { field: 'subtrack', range: ['red'] },
+      encoding: { color: { field: 'subtrack', scale: { range: ['red'] } } },
     }),
-  ).toMatchObject({ applied: ['facet', 'color'], failed: [] })
+  ).toMatchObject({ applied: ['facet', 'encoding'], failed: [] })
   d.setFilter(["jexl:feature.type == 'gene'"])
   expect(d.facet).toEqual({
     field: 'subtrack',
@@ -34,14 +34,12 @@ test('facet, color and filter read back as the box shows them', () => {
   expect(d.colorSetting).toMatchObject({
     value: undefined,
     field: 'subtrack',
-    scale: undefined,
-    domain: [],
-    range: ['red'],
+    scale: { type: undefined, domain: [], range: ['red'] },
   })
   expect(d.colorByAttribute).toBe('subtrack')
   expect(d.plot).toEqual({
     facet: { field: 'subtrack', sort: ['key5', 'key2', 'key3'] },
-    color: { field: 'subtrack', range: ['red'] },
+    encoding: { color: { field: 'subtrack', scale: { range: ['red'] } } },
     filter: ["jexl:feature.type == 'gene'"],
   })
   expect(getConf(d, 'facet')).toEqual({
@@ -62,27 +60,41 @@ test("a plot's filter list writes the expressions and keeps the gene category", 
   expect(d.plot).toEqual({ filter: ['jexl:feature.score > 5'] })
 })
 
-test('a string is the one-value form: the facet field, or the constant color', () => {
+test('a string is the one-value form of a field, on the facet and the color alike', () => {
   const d = display()
-  d.applyDisplaySettings({ facet: 'strand', color: 'red' })
+  d.applyDisplaySettings({ facet: 'strand', encoding: { color: 'source' } })
   expect(d.facet).toEqual({ field: 'strand', sort: [] })
+  expect(d.colorSetting).toMatchObject({ value: undefined, field: 'source' })
+  expect(d.colorByMode).toBe('attribute')
+  expect(d.plot).toEqual({ facet: 'strand', encoding: { color: 'source' } })
+})
+
+test('a bare CSS color is refused as a field, and the constant is { value }', () => {
+  const d = display()
+  expect(d.applyDisplaySettings({ encoding: { color: 'red' } })).toMatchObject({
+    applied: [],
+    failed: [{ key: 'encoding', error: expect.stringContaining('"value"') }],
+  })
+  d.applyDisplaySettings({ encoding: { color: { value: 'red' } } })
   expect(d.colorSetting).toMatchObject({ value: 'red', field: '' })
   expect(d.colorByMode).toBe('solid')
-  expect(d.plot).toEqual({ facet: 'strand', color: 'red' })
+  expect(d.plot).toEqual({ encoding: { color: { value: 'red' } } })
 })
 
 test('strand is a field on both channels, painting its own colors', () => {
   const d = display()
-  d.applyDisplaySettings({ facet: 'strand', color: { field: 'strand' } })
+  d.applyDisplaySettings({ facet: 'strand', encoding: { color: 'strand' } })
   expect(d.colorByMode).toBe('strand')
   expect(d.categoricalColorField?.color('1')).toBe('tomato')
   expect(d.categoricalColorField?.color('-1')).toBe('cornflowerblue')
-  expect(d.plot).toEqual({ facet: 'strand', color: { field: 'strand' } })
+  expect(d.plot).toEqual({ facet: 'strand', encoding: { color: 'strand' } })
 })
 
 test('strand takes a range like any other field', () => {
   const d = display()
-  const plot = { color: { field: 'strand', range: ['red', 'blue'] } }
+  const plot = {
+    encoding: { color: { field: 'strand', scale: { range: ['red', 'blue'] } } },
+  }
   expect(d.plotProblems(plot)).toEqual([])
   d.applyPlot(plot)
   expect(d.categoricalColorField?.domain).toEqual(['1', '-1', '0'])
@@ -92,20 +104,20 @@ test('strand takes a range like any other field', () => {
 
 test('a channel object replaces the setting whole, and null clears it', () => {
   const d = display()
-  d.applyPlot({ color: { field: 'source', range: ['red'] } })
-  d.applyPlot({ color: 'red' })
+  d.applyPlot({
+    encoding: { color: { field: 'source', scale: { range: ['red'] } } },
+  })
+  d.applyPlot({ encoding: { color: { value: 'red' } } })
   expect(d.colorSetting).toMatchObject({
     value: 'red',
     field: '',
-    scale: undefined,
-    domain: [],
-    range: [],
+    scale: { type: undefined, domain: [], range: [] },
   })
-  d.applyPlot({ facet: 'strand', color: { field: 'type' } })
-  d.applyPlot({ color: null })
+  d.applyPlot({ facet: 'strand', encoding: { color: 'type' } })
+  d.applyPlot({ encoding: { color: null } })
   expect(d.facet).toMatchObject({ field: 'strand' })
   expect(d.colorSetting).toMatchObject({ value: undefined, field: '' })
-  expect(d.plot.color).toBeUndefined()
+  expect(d.plot.encoding).toBeUndefined()
   d.applyPlot({ facet: { field: 'biotype', sort: ['b', 'a'] } })
   d.applyPlot({ facet: { field: 'biotype' } })
   expect(d.plot.facet).toBe('biotype')
@@ -113,17 +125,17 @@ test('a channel object replaces the setting whole, and null clears it', () => {
 
 test('a domain or range that is not a list is refused, and the display keeps what it had', () => {
   const d = display()
-  d.applyDisplaySettings({ color: { field: 'source' } })
+  d.applyDisplaySettings({ encoding: { color: 'source' } })
   const refused = {
-    color: { field: 'source', range: 'red' },
+    encoding: { color: { field: 'source', scale: { range: 'red' } } },
     facet: { field: 'source', sort: 'a' },
   }
   expect(d.applyDisplaySettings(refused)).toMatchObject({
     applied: [],
-    failed: [{ key: 'color' }, { key: 'facet' }],
+    failed: [{ key: 'encoding' }, { key: 'facet' }],
   })
   expect(() => d.plotProblems(refused)).toThrow()
-  expect(d.plot.color).toEqual({ field: 'source' })
+  expect(d.plot.encoding).toEqual({ color: 'source' })
   expect(d.facet).toBeUndefined()
 })
 
@@ -131,19 +143,19 @@ test('an expression that does not compile is a problem, named by setting', () =>
   const d = display()
   expect(
     d.plotProblems({
-      color: 'jexl:feature.type ==',
+      encoding: { color: { value: 'jexl:feature.type ==' } },
       filter: ['jexl:feature.score >'],
     }),
   ).toEqual([
-    expect.stringMatching(/^color: /),
+    expect.stringMatching(/^encoding\.color: /),
     expect.stringMatching(/^filter: /),
   ])
-  expect(d.plotProblems({ color: { field: 'jexl:feature.type ==' } })).toEqual([
-    expect.stringMatching(/^color: /),
-  ])
+  expect(
+    d.plotProblems({ encoding: { color: 'jexl:feature.type ==' } }),
+  ).toEqual([expect.stringMatching(/^encoding\.color: /)])
   expect(
     d.plotProblems({
-      color: { field: 'jexl:feature.type' },
+      encoding: { color: 'jexl:feature.type' },
       filter: ['jexl:feature.score > 5'],
     }),
   ).toEqual([])
@@ -152,12 +164,17 @@ test('an expression that does not compile is a problem, named by setting', () =>
 test('an applied draft says in the corner what Edit plot said of it', () => {
   const d = display()
   const draft = {
-    color: { field: 'score', scale: 'linear', domainMin: 10, domainMax: 0 },
+    encoding: {
+      color: {
+        field: 'score',
+        scale: { type: 'linear', domainMin: 10, domainMax: 0 },
+      },
+    },
     filter: ['jexl:feature.score >'],
   }
   const said = d.plotProblems(draft)
   expect(said).toEqual([
-    expect.stringMatching(/^color\.domainMax: /),
+    expect.stringMatching(/^encoding\.color\.scale\.domainMax: /),
     expect.stringMatching(/^filter: /),
   ])
   d.applyPlot(draft)
@@ -192,19 +209,25 @@ describe('the Group by dialog applies a plot', () => {
     const d = display()
     d.applyDisplaySettings({
       facet: 'biotype',
-      color: { field: 'biotype', range: ['red', 'blue'] },
+      encoding: {
+        color: { field: 'biotype', scale: { range: ['red', 'blue'] } },
+      },
     })
     d.applyGroupBy('biotype', true)
-    expect(d.plot.color).toEqual({
-      field: 'biotype',
-      range: ['red', 'blue'],
+    expect(d.plot.encoding).toEqual({
+      color: { field: 'biotype', scale: { range: ['red', 'blue'] } },
     })
   })
 
   it('brings back the order and range Solid color parked', () => {
     const d = display()
     d.applyPlot({
-      color: { field: 'biotype', domain: ['lncRNA'], range: ['red'] },
+      encoding: {
+        color: {
+          field: 'biotype',
+          scale: { domain: ['lncRNA'], range: ['red'] },
+        },
+      },
     })
     d.setColorValue('purple')
     d.applyGroupBy('biotype', true)
@@ -219,16 +242,19 @@ describe('the Group by dialog applies a plot', () => {
       d.applyPlot({ facet: { field: 'biotype', sort: ['b'] } })
     }
     viaDialog.applyGroupBy('biotype', true)
-    viaText.applyPlot({ color: { field: 'biotype' } })
+    viaText.applyPlot({ encoding: { color: 'biotype' } })
     expect(viaDialog.plot).toEqual(viaText.plot)
-    expect(viaText.plot.color).toEqual({ field: 'biotype' })
+    expect(viaText.plot.encoding).toEqual({ color: 'biotype' })
   })
 
   it("parks a color that was the grouping's own when unticked, and leaves any other", () => {
     const d = display()
     d.applyGroupBy('strand', true)
-    expect(d.groupByPlot(undefined, false)).toEqual({ facet: null, color: {} })
-    d.applyDisplaySettings({ color: 'purple' })
+    expect(d.groupByPlot(undefined, false)).toEqual({
+      facet: null,
+      encoding: { color: {} },
+    })
+    d.applyDisplaySettings({ encoding: { color: { value: 'purple' } } })
     expect(d.groupByPlot(undefined, false)).toEqual({ facet: null })
   })
 
@@ -238,7 +264,9 @@ describe('the Group by dialog applies a plot', () => {
     for (const d of [viaDialog, viaText]) {
       d.setColorValue('purple')
       d.applyGroupBy('biotype', true)
-      expect(d.plot.color).toEqual({ value: 'purple', field: 'biotype' })
+      expect(d.plot.encoding).toEqual({
+        color: { value: 'purple', field: 'biotype' },
+      })
     }
     viaDialog.applyGroupBy(undefined, false)
     viaText.applyPlot({
@@ -253,7 +281,9 @@ describe('the Group by dialog applies a plot', () => {
   it('leaves a threshold color alone, ticked on its own field or unticked on another', () => {
     const d = display()
     d.applyDisplaySettings({
-      color: { field: 'dif', scale: 'threshold', domain: ['0'] },
+      encoding: {
+        color: { field: 'dif', scale: { type: 'threshold', domain: ['0'] } },
+      },
     })
     expect(d.groupByPlot('dif', true)).toEqual({
       facet: { field: 'dif' },
@@ -268,12 +298,17 @@ describe('the Group by dialog applies a plot', () => {
 test('Solid color parks the field, its order and range for the way back', () => {
   const d = display()
   d.applyPlot({
-    color: { field: 'biotype', domain: ['lncRNA'], range: ['red'] },
+    encoding: {
+      color: {
+        field: 'biotype',
+        scale: { domain: ['lncRNA'], range: ['red'] },
+      },
+    },
   })
   d.setColorValue('purple')
   expect(d.colorByMode).toBe('solid')
   expect(d.categoricalColorField).toBeUndefined()
-  expect(d.plot.color).toBe('purple')
+  expect(d.plot.encoding).toEqual({ color: { value: 'purple' } })
   expect(d.parkedColor).toMatchObject({ field: 'biotype' })
   expect(d.colorByAttribute).toBe('biotype')
   d.colorByField('biotype')

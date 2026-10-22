@@ -1,5 +1,8 @@
+import PluginManager from '@jbrowse/core/PluginManager'
+import { fullConfSnapshot } from '@jbrowse/core/configuration'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
+import configSchemaFactory from '../LinearBasicDisplay/configSchema.ts'
 import {
   GENE_GLYPH_DEFAULTS,
   isDisplayMode,
@@ -93,16 +96,48 @@ describe('pickDisplayConfig', () => {
     expect(picked.subParts).toBe('CDS')
     expect(picked.impliedUTRs).toBe(GENE_GLYPH_DEFAULTS.impliedUTRs)
   })
+
+  describe('reads encoding.color off a display node', () => {
+    const pluginManager = new PluginManager([])
+    pluginManager.createPluggableElements()
+    pluginManager.configure()
+    const schema = configSchemaFactory(pluginManager)
+    const workerColor = (encoding: Record<string, unknown>) =>
+      pickDisplayConfig(
+        fullConfSnapshot(
+          schema.create(
+            { displayId: 'test', type: 'LinearBasicDisplay', encoding },
+            { pluginManager },
+          ),
+        ),
+      ).color
+
+    it('sends the worker the constant and the field', () => {
+      const value = "jexl:get(feature,'type')=='SNV'?'green':'purple'"
+      expect(workerColor({ color: { value, field: 'type' } })).toEqual({
+        value,
+        field: 'type',
+      })
+    })
+
+    it('sends itemRgbOn under an identity scale', () => {
+      expect(workerColor({ color: { scale: { type: 'identity' } } })).toEqual({
+        value: undefined,
+        field: '',
+        itemRgbOn: true,
+      })
+    })
+  })
 })
 
 describe('workerColorOf', () => {
   it('turns itemRgbOn on only under an identity scale', () => {
-    expect(workerColorOf({ scale: 'identity' })).toEqual({
+    expect(workerColorOf({ scale: { type: 'identity' } })).toEqual({
       value: undefined,
       field: '',
       itemRgbOn: true,
     })
-    expect(workerColorOf({ scale: 'categorical', field: 'x' })).toEqual({
+    expect(workerColorOf({ scale: { type: 'ordinal' }, field: 'x' })).toEqual({
       value: undefined,
       field: 'x',
     })
