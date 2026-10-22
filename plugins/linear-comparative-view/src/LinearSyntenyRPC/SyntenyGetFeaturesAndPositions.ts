@@ -1,32 +1,21 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
-import type { CigarMode } from '../LinearSyntenyView/cigarModes.ts'
 import type {
-  SyntenyQueryViewSnap,
   SyntenyRpcResult,
-  SyntenyTargetViewSnap,
+  executeSyntenyFeaturesAndPositions,
 } from './executeSyntenyFeaturesAndPositions.ts'
-import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type {
+  RpcCallContext,
+  RpcExecuteArgs,
+} from '@jbrowse/core/rpc/RpcRegistry'
 
-export interface SyntenyGetFeaturesAndPositionsArgs {
-  adapterConfig: Record<string, unknown>
-  // The two adjacent genome views this synteny level connects, with refNames
-  // already renamed into the adapter's namespace on the main thread.
-  queryView: SyntenyQueryViewSnap
-  targetView: SyntenyTargetViewSnap
-  // no color: the worker emits per-instance kind/featureIdx descriptors and
-  // the display recomputes colors on the main thread, so a color-scheme change
-  // never reaches this RPC (see computeSyntenyColors).
-  //
-  // No `drawLocationMarkers` either, and for the same reason: the ticks are
-  // always emitted and the toggle paints them transparent on the color lane. It
-  // used to be here, which meant switching a purely visual grid on re-downloaded
-  // and re-parsed the whole track to arrive at the identical features.
-  // `cigarMode` stays, because it gates the CIGAR parse.
-  cigarMode?: CigarMode
-  lodMode?: LodTier
-}
+// No color: the worker emits per-instance kinds and the display colors them on
+// the main thread, so neither a color change nor the location-marker toggle
+// reaches this RPC. `cigarMode` does, because it gates the CIGAR parse.
+export type SyntenyGetFeaturesAndPositionsArgs = Omit<
+  Parameters<typeof executeSyntenyFeaturesAndPositions>[0],
+  'pluginManager' | keyof RpcCallContext
+>
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
