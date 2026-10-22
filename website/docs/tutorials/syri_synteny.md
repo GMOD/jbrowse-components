@@ -339,7 +339,7 @@ those two accessions, so it has the type SyRI gave that pair.
 
 The
 [Arabidopsis pangenome page](https://genomes.jbrowse.org/pangenomes/arabidopsis/)
-has SyRI regions for 26 1001 Genomes Plus accessions on TAIR10. Type a gene or
+has SyRI regions for the 1001 Genomes Plus accessions on TAIR10. Type a gene or
 region there, and the page draws a map of that window with one row per
 structural form, a group of accessions with the same alleles at every
 structural-variant site in the window, beside its share of the accessions. The

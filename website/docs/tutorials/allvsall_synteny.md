@@ -277,10 +277,10 @@ reading strain by strain:
    base.
 
 The figure below shows K-12's phenylacetate (paa) operon, where some strains
-stop at the shaded edge and NCTC86 runs through, with a track of the pangenome
-graph's segments, built with minigraph in the
-[E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli), above the
-sections.
+stop at the shaded edge and NCTC86 runs through, with a track of the segments of
+a minigraph graph of the same strains above the sections. The
+[E. coli pangenome](/docs/tutorials/pangenome_ecoli) build script writes that
+graph beside its pggb one.
 
 <Figure caption="Above, K-12 against every other sample in the file, grouped by mate assembly. Below, the same window as a graph." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 

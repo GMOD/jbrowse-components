@@ -328,6 +328,13 @@ python3 symbols_to_blocks.py --anchor human -o primates.blocks \
 annotations need, for genes named by locus tag and genes renamed between
 releases.
 
+### From odp
+
+[`rbh_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/rbh_to_blocks.py)
+converts an [odp](https://github.com/conchoecia/odp) `.rbh` table, and passes
+named columns such as `gene_group` and `color` through as attributes to color
+by. [](/docs/tutorials/odp_linkage_groups_synteny) runs it.
+
 ### From reciprocal best BLAST hits
 
 Reduce each direction of an all-vs-all `blastp` or DIAMOND run (`-outfmt 6`) to
