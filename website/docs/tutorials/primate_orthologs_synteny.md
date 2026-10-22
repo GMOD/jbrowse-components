@@ -249,7 +249,7 @@ ortholog group, named by its gene symbol, to a color:
 In a linear genome view on human, the track draws a lane per primate under the
 human axis, each in that genome's coordinates. Each lane's header names the
 chromosome and span, with `[rev]` where the lane runs against human
-([lane headers](/docs/tutorials/multiway_synteny_grape_peach_cacao#what-a-lane-header-shows)).
+([lane headers](/docs/user_guides/multiway_synteny_display#reading-a-lane-header)).
 The ribbons color by strand by default (**Color by... → Strand**, under
 **Ribbons** on the track menu): each ribbon shows whether its two lanes agree in
 orientation. The session below opens the _TP53_ neighbourhood:

@@ -306,9 +306,9 @@ band, and pick **Reference** in the palette button menu.
 
 Open human at `2:176,090,000-176,290,000`, the _HOXD_ cluster of body-axis
 patterning genes, with the human gene track and the orthogroups track on the
-[multi-way synteny display](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates).
-A lane (one horizontal strip per genome) for each of chicken, frog, gar and
-zebrafish draws under it.
+[multi-way synteny display](/docs/user_guides/multiway_synteny_display). A lane
+(one horizontal strip per genome) for each of chicken, frog, gar and zebrafish
+draws under it.
 
 <Figure caption="The human HOXD cluster over four vertebrate lanes from one orthogroups track, each lane with its genome's genes." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
 
@@ -329,8 +329,8 @@ each ribbon by the melanogaster arm it leaves.
 ### Gene order in one 3L window across the flies
 
 Open melanogaster at `3L:5,789,000-5,931,000` with the
-[multi-way synteny display](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates),
-which draws a lane per fly. Every fly keeps this window's melanogaster genes.
+[multi-way synteny display](/docs/user_guides/multiway_synteny_display), which
+draws a lane per fly. Every fly keeps this window's melanogaster genes.
 
 <Figure caption="Melanogaster 3L over four Drosophila lanes from one orthogroups track." src="/img/multiway_synteny/drosophila_lanes.png" />
 
@@ -432,8 +432,8 @@ Open the `grasses` config and stack the five grasses as for
 ### A rice window against four grasses
 
 Open the same five grasses as a
-[multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates),
-under the rice gene track:
+[multi-way synteny track](/docs/user_guides/multiway_synteny_display), under the
+rice gene track:
 
 ```json session config=https://jbrowse.org/demos/orthofinder_grasses/config.json
 {

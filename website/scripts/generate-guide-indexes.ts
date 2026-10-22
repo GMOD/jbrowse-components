@@ -9,6 +9,7 @@ import {
   CONFIG_CATEGORIES,
   DEVELOPER_CATEGORIES,
   TUTORIAL_CATEGORIES,
+  TUTORIAL_EXTRA_DOCS,
   TUTORIAL_FALLBACK,
   TUTORIAL_ORDER,
   TUTORIAL_SUBCATEGORIES,
@@ -63,6 +64,7 @@ const developerGuides = guide('developer_guides', DEVELOPER_CATEGORIES)
 function buildTocSection(
   { urlDir, categories, pages }: Guide,
   headingLevel = '##',
+  cards = false,
 ): string[] {
   const lines: string[] = []
   for (const cat of categories) {
@@ -88,6 +90,9 @@ function buildTocSection(
       continue
     }
     lines.push(`${headingLevel} ${cat}`, '')
+    if (cards) {
+      lines.push('<!-- doccards -->', '')
+    }
     for (const e of entries) {
       lines.push(`- [](/docs/${urlDir}/${e.slug})`)
     }
@@ -106,16 +111,27 @@ function buildTutorialSection(): string[] {
     const i = TUTORIAL_ORDER.indexOf(slug)
     return i === -1 ? TUTORIAL_ORDER.length : i
   }
+  const extras = pagesIn(docsDir)
+    .filter(({ slug }) => slug in TUTORIAL_EXTRA_DOCS)
+    .map(({ slug, title }) => ({
+      slug,
+      title,
+      url: `/docs/${slug}`,
+      category: TUTORIAL_EXTRA_DOCS[slug]!,
+      subcategory: undefined,
+    }))
   const entries = pagesIn(dir)
     .filter(({ fm }) => fm.guide_category === 'Tutorials')
     .map(({ slug, title, fm }) => ({
       slug,
       title,
+      url: `/docs/tutorials/${slug}`,
       category: TUTORIAL_CATEGORIES.includes(fm.tutorial_category ?? '')
         ? fm.tutorial_category!
         : TUTORIAL_FALLBACK,
       subcategory: fm.tutorial_subcategory,
     }))
+    .concat(extras)
     .sort(
       (a, b) =>
         rank(a.slug) - rank(b.slug) || a.title.localeCompare(b.title, 'en'),
@@ -136,7 +152,7 @@ function buildTutorialSection(): string[] {
             lines.push(`#### ${sub}`, '')
           }
           for (const e of inSub) {
-            lines.push(`- [](/docs/tutorials/${e.slug})`)
+            lines.push(`- [](${e.url})`)
           }
           lines.push('')
         }
@@ -150,7 +166,7 @@ function buildUserGuide(): string {
   const lines: string[] = [
     '---',
     'title: User guide',
-    'sidebar_label: Overview',
+    'sidebar_label: All user guides',
     'description:',
     '  Index of the guides for driving JBrowse, covering track types, views, and the',
     '  rest of the app.',
@@ -162,7 +178,7 @@ function buildUserGuide(): string {
     '',
     // tutorials/ is deliberately not part of this guide: its pages all share one
     // `guide_category` and get their own subgrouped section below.
-    ...buildTocSection(userGuides),
+    ...buildTocSection(userGuides, '##', true),
     ...buildTutorialSection(),
   ]
   return lines.join('\n')
@@ -172,7 +188,7 @@ function buildConfigGuide(): string {
   const lines: string[] = [
     '---',
     'title: Config guide',
-    'sidebar_label: Overview',
+    'sidebar_label: All config guides',
     'description:',
     '  Index of the guides for configuring JBrowse, covering assemblies, tracks,',
     '  callbacks, and deployment, on the web, the desktop and the CLI.',
@@ -191,7 +207,7 @@ function buildConfigGuide(): string {
 function buildDeveloperGuide(): string {
   const preamble = `---
 title: Developer guide
-sidebar_label: Overview
+sidebar_label: All developer guides
 description:
   How JBrowse 2 is packaged and structured, and how to write plugins and
   pluggable elements.

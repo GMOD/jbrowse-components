@@ -100,44 +100,28 @@ opens the same map.
 ## What the graph and the page do not show {#limits}
 
 The examples are loci where at least one launch draws something readable. At
-other loci, a picture that looks simple or empty is often one of the cases
-below. We measured each on HPRC release 2.1 in October 2026.
+other loci, a picture that looks simple or empty is often one of these cases:
 
 - **Near-identical duplications draw as a single thread.** The graph puts the
   copies at RHD / RHCE and CYP2D6 on one path, so those examples offer no
-  **Graph** launch. SMN1 / SMN2, SRGAP2 and the 8p23.1 beta-defensin cluster are
-  not examples at all: the graph over each is a thread, and no launch showed
-  their copy number. A gene-level graph is the better tool for that question.
+  **Graph** launch, and SMN1 / SMN2, SRGAP2 and the 8p23.1 beta-defensin cluster
+  are not examples at all. A gene-level graph answers copy-number questions
+  there.
 - **The graph does not align every haplotype everywhere.** A haplotype the graph
-  does not align across a window gets no lane, and the page counts them: "116
-  haplotypes are not aligned at any of them and have no lane" at FLNA / EMD,
-  where those are the haplotypes without an X chromosome. Elsewhere the sequence
-  exists in the assembly and the graph leaves it out. At NPHP1 most haplotypes
-  are aligned at only some of the window's sites, so the map's commonest row
-  reads "not aligned".
-- **The VCF has no record for the largest events.** HPRC removes every site with
-  an allele over 100 kb from the VCF and keeps the smaller sites nested inside
-  it. The **Variants** launch therefore cannot show UGT2B17's 117 kb deletion,
-  which many haplotypes have. AMY1, GYPA / GYPB, PRSS1 / PRSS2, UGT2B17 and
-  NPHP1 offer no **Variants** launch, because the matrix over each is blank. The
-  page's table restores those sites from the release's unfiltered VCF, so the
-  table can name a deletion the **Variants** launch does not draw.
-- **The Structure column is a summary.** A size is rounded to two figures, and a
-  state fewer than 5 haplotypes have is folded into the commonest one. At a
-  complex locus a row reads "14 size changes, largest a 10 kb deletion", which
-  says little, and at the HLA / MHC example the page lists the commonest 8 forms
-  of dozens. Two rows can have the same words for changes at different sites:
-  PRSS1 / PRSS2 has more than one row reading "20 kb insertion".
-- **A size in the table can be wrong where sites nest.** A restored site's size
-  is what the sites inside it leave unexplained. That subtraction checked out
-  for 92.5% of the cases we could test and gave a size the haplotype does not
-  have in 189, most of them at 8p23.1.
-- **Only the examples are checked.** We looked at every launch of every example.
-  A gene or region you type can still land where the graph is a thread or the
-  VCF is blank, and the page will offer the launch anyway.
+  does not align across a window gets no lane, and the page counts them. At FLNA
+  / EMD those are the haplotypes without an X chromosome; elsewhere the sequence
+  exists in the assembly and the graph leaves it out.
+- **The VCF has no record for the largest events.** HPRC drops the biggest sites
+  from the VCF and keeps the smaller sites nested inside them, so the
+  **Variants** launch cannot show the UGT2B17 deletion. The page's table
+  restores those sites from the release's unfiltered VCF and summarises each
+  form in its Structure column.
+- **Only the examples are checked.** A gene or region you type can still land
+  where the graph is a thread or the VCF is blank, and the page will offer the
+  launch anyway.
 - **No single launch shows the whole locus.** The graph shows which sequence
   exists, the VCF which haplotypes have it, and the lanes how a few haplotypes
-  are arranged. A locus needs more than one of them.
+  are arranged.
 
 ## Overview of chr1 with one node per variant region {#a-chromosome-and-back}
 

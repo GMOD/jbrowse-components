@@ -1,6 +1,6 @@
 ---
 title: Capturing a JBrowse view from a script
-sidebar_label: Screenshots
+sidebar_label: Rendering an image
 description:
   Render a view to an image from the command line, or drive the real app with
   Puppeteer, and know when it has actually finished drawing

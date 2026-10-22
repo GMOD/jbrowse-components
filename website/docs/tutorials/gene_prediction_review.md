@@ -220,6 +220,7 @@ chr22  50012765  50018574  g14001.t1:split          0  -
 - [](/docs/agents_capture)
 - [](/docs/config_guides/file_types)
 - [](/docs/tutorials/rnaseq)
+- [](/docs/tutorials/protein_domains)
 
 ## Citations
 

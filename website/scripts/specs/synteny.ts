@@ -1400,30 +1400,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
   },
 
   // built by scripts/build_t2t_apes_cactus_multiway.sh
-  {
-    mode: 'url',
-    name: 'multiway_synteny/t2t_apes_cactus_tp53',
-    url: sessionSpec(T2T_APES_CACTUS_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr17:7,400,000-7,700,000',
-          tracks: [
-            'hg38-ncbiRefSeq',
-            {
-              trackId: 't2t_apes_cactus',
-              height: 600,
-            },
-          ],
-        },
-      ],
-    }),
-    readySelector: displaySettled('multiway-synteny-display'),
-    readyTimeout: 240000,
-    viewportHeight: 1000,
-  },
-
   // The window stays clear of the segmental duplication near 34.6 Mb, whose
   // copies widen the orangutan lanes' frames.
   {

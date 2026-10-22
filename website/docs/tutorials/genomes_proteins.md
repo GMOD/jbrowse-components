@@ -310,6 +310,7 @@ The approach is described in
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/tutorials/tp53_structures)
 - [](/docs/tutorials/protein_variants_sickle_cell)
+- [](/docs/tutorials/protein_domains)
 
 ## External links
 

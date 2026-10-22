@@ -56,3 +56,19 @@ test('a menu path inside a fence, or past See also, is not an instruction', () =
   const tail = page('## See also\n\n- **Color by... → Modifications**')
   expect(unshownSettings(tail)).toEqual([])
 })
+
+test('a menu path wrapped across two lines is found once, on its first line', () => {
+  const text = page(
+    '## Color\n\nThe reads stay grey until **Color by... →\nModifications** paints them.\n\nMore text.',
+  )
+  expect(unshownSettings(text)).toEqual([
+    { line: 7, path: 'Color by... → Modifications' },
+  ])
+})
+
+test("a path in the opening's list, before any heading, is not counted", () => {
+  const text = page(
+    'We:\n\n- color the reads with **Color by... → Modifications**\n\n## Then\n\ntext',
+  )
+  expect(unshownSettings(text)).toEqual([])
+})

@@ -274,3 +274,5 @@ so most figures have an "Open this view in JBrowse" link.
 - [](/docs/config_guides/default_session), the session object in full
 - [](/docs/urlparams), the same session expressed in a link
 - [](/docs/cli), the commands that write the file for you
+- [](/docs/agents_authoring), an agent writing, validating and rendering the
+  file from a shell

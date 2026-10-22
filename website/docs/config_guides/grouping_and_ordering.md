@@ -175,8 +175,8 @@ Unlisted assemblies still get a lane — they stack below the named ones,
 densest-first, so a ribbon chain through them is cut as late as possible.
 [The synteny track guide](/docs/config_guides/synteny_track#three-or-more-genomes)
 covers the adapter side, and
-[the grape/peach/cacao tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#ordering-the-lanes)
-works through picking the lane order itself.
+[the multi-way synteny display guide](/docs/user_guides/multiway_synteny_display#choosing-and-ordering-lanes)
+the lane controls in the app.
 
 ## Row-partitioned tracks
 

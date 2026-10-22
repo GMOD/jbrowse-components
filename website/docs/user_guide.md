@@ -1,6 +1,6 @@
 ---
 title: User guide
-sidebar_label: Overview
+sidebar_label: All user guides
 description:
   Index of the guides for driving JBrowse, covering track types, views, and the
   rest of the app.
@@ -15,6 +15,8 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ## General usage
 
+<!-- doccards -->
+
 - [](/docs/user_guides/basic_usage)
 - [](/docs/user_guides/connections)
 - [](/docs/user_guides/edit_plot)
@@ -24,6 +26,8 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/user_guides/hub_url)
 
 ## Track types
+
+<!-- doccards -->
 
 - [](/docs/user_guides/alignments_track)
 - [](/docs/user_guides/gc_content_track)
@@ -39,14 +43,19 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ## Views
 
+<!-- doccards -->
+
 - [](/docs/user_guides/circular_view)
 - [](/docs/user_guides/dotplot_view)
 - [](/docs/user_guides/graph_genome_view)
 - [](/docs/user_guides/linear_synteny_view)
+- [](/docs/user_guides/multiway_synteny_display)
 - [](/docs/user_guides/spreadsheet_view)
 - [](/docs/user_guides/sv_inspector_view)
 
 ## Sequence tools
+
+<!-- doccards -->
 
 - [](/docs/user_guides/blat)
 - [](/docs/user_guides/consensus_sequence)
@@ -55,10 +64,18 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ## Analysis
 
+<!-- doccards -->
+
 - [](/docs/user_guides/clustering)
 - [](/docs/user_guides/sv_visualization)
 
 ## Tutorials
+
+### Getting started
+
+- [](/docs/quickstart_web)
+- [](/docs/quickstart_desktop)
+- [](/docs/tutorials/giab_hg002_reads)
 
 ### genomes.jbrowse.org
 
@@ -92,17 +109,22 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ### Pangenomes
 
+#### Building a graph
+
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/pangenome_cactus)
 - [](/docs/tutorials/pangenome_prepare_graph)
-- [](/docs/tutorials/pangenome_mouse)
-- [](/docs/tutorials/pangenome_cattle)
 
 #### HPRC release 2
 
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_hprc_haplotypes)
 - [](/docs/tutorials/pangenome_hprc_repeats)
+
+#### Mouse and cattle
+
+- [](/docs/tutorials/pangenome_mouse)
+- [](/docs/tutorials/pangenome_cattle)
 
 ### Structural variation
 
@@ -163,6 +185,7 @@ How to drive JBrowse once it is running. New here? Start with the
 ### Genes & annotation
 
 - [](/docs/tutorials/gene_prediction_review)
+- [](/docs/tutorials/protein_domains)
 - [](/docs/tutorials/gene_density)
 - [](/docs/tutorials/organelle_map)
 
@@ -173,6 +196,7 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ### Configuration & embedding
 
+- [](/docs/cookbook)
 - [](/docs/tutorials/display_settings)
 - [](/docs/tutorials/embed_linear_genome_view)
 - [](/docs/tutorials/cli_desktop)
@@ -180,3 +204,4 @@ How to drive JBrowse once it is running. New here? Start with the
 ### Automation
 
 - [](/docs/tutorials/agent_synteny)
+- [](/docs/agents)

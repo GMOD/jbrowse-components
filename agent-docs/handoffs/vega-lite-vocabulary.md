@@ -150,6 +150,9 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    The same pass moves each band's layer thresholds into its layers'
    `filter` (ADR-238 "Layers inside a part"): `coverage.alleles`,
    `coverage.interbase`, the modification layer.
+   **ADR-240 steps 3a and 3b claimed 2026-10-22**: the alignments and
+   LGVSynteny `filter` as one predicate list, with amendment 1's merge by
+   field.
 3. **Legends, with step 1**: Vega-Lite gives each channel its own `legend`,
    so `legend.show` on the channel takes over every display's `showLegend`.
 4. **Wiggle's `resolution` and Hi-C's `resolutionBias`** under `data`, each

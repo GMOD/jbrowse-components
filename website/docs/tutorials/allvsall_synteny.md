@@ -277,10 +277,10 @@ reading strain by strain:
    base.
 
 The figure below shows K-12's phenylacetate (paa) operon, where some strains
-stop at the shaded edge and NCTC86 runs through, with a track of the pangenome
-graph's segments, built with minigraph in the
-[E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli), above the
-sections.
+stop at the shaded edge and NCTC86 runs through, with a track of the segments of
+a minigraph graph of the same strains above the sections. The
+[E. coli pangenome](/docs/tutorials/pangenome_ecoli) build script writes that
+graph beside its pggb one.
 
 <Figure caption="Above, K-12 against every other sample in the file, grouped by mate assembly. Below, the same window as a graph." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
@@ -345,9 +345,8 @@ applies edits live.
 
 A strain with no alignment to the backbone is a white gap on the K-12 axis.
 **Display types → Multi-way synteny display** redraws each lane in the
-coordinates of the strain it shows, one ribbon per PAF record. The
-[ortholog-table tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
-has a figure of the display.
+coordinates of the strain it shows, one ribbon per PAF record
+([multi-way synteny display](/docs/user_guides/multiway_synteny_display)).
 
 ### Launching a stacked view at one locus
 

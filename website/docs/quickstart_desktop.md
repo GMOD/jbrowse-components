@@ -254,6 +254,17 @@ WebGL is also unavailable. The flag takes effect only when Desktop is not
 already running. `--mcp` runs the server an AI agent uses to drive Desktop:
 [](/docs/agents).
 
+## With an AI agent
+
+- Desktop runs an MCP server, so Claude Desktop, Claude Code or another MCP
+  client can open genomes, add tracks, read feature data and take screenshots in
+  the app you have open.
+- **Help → Connect an AI agent...** shows the client config and the Claude Code
+  command for this install, each with a copy button. [](/docs/agents) has the
+  rest.
+- An agent with a shell can also write the config and session files Desktop
+  opens: [](/docs/agents_authoring).
+
 ## See also
 
 - [](/docs/user_guide)

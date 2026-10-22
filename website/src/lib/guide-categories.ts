@@ -76,6 +76,14 @@ export const TUTORIAL_CATEGORIES = [
 
 export const TUTORIAL_FALLBACK = 'More tutorials'
 
+// Root-level docs the tutorial indexes also list, with their section.
+export const TUTORIAL_EXTRA_DOCS: Record<string, string> = {
+  quickstart_web: 'Getting started',
+  quickstart_desktop: 'Getting started',
+  cookbook: 'Configuration & embedding',
+  agents: 'Automation',
+}
+
 // Ordered `tutorial_subcategory` values per category. A page in one of these
 // categories without a subcategory draws above the subsections.
 export const TUTORIAL_SUBCATEGORIES: Record<string, string[]> = {
@@ -83,7 +91,7 @@ export const TUTORIAL_SUBCATEGORIES: Record<string, string[]> = {
     'Whole-genome alignments',
     'Ortholog tables',
   ],
-  Pangenomes: ['HPRC release 2'],
+  Pangenomes: ['Building a graph', 'HPRC release 2', 'Mouse and cattle'],
   'Transcriptomics & proteins': ['Variants on protein structures'],
   'Population genomics': ['Dog10K'],
 }
@@ -98,6 +106,7 @@ export const TUTORIAL_ORDER = [
   'repeatmasker_classes',
   'quickstart_web',
   'quickstart_desktop',
+  'giab_hg002_reads',
   'synteny_visualization',
   'hg002_haplotypes',
   'hg38_vertebrates_synteny',
@@ -115,10 +124,10 @@ export const TUTORIAL_ORDER = [
   'homoeolog_synteny',
   'pangenome_ecoli',
   'pangenome_cactus',
-  'pangenome_prepare_graph',
   'pangenome_hprc',
   'pangenome_hprc_haplotypes',
   'pangenome_hprc_repeats',
+  'pangenome_prepare_graph',
   'pangenome_mouse',
   'pangenome_cattle',
   'population_cnv',
@@ -157,6 +166,7 @@ export const TUTORIAL_ORDER = [
   'protein_variants_tp53',
   'protein_variants_braf',
   'gene_prediction_review',
+  'protein_domains',
   'gene_density',
   'organelle_map',
   'alu_age',

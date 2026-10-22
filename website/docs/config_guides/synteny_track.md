@@ -235,13 +235,13 @@ single haplotype (`grape#1`):
 
 ## Three or more genomes
 
-`MCScanBlocksAdapter` and the two multi-genome PAF adapters pair with
-`MultiWaySyntenyDisplay` as well as with the two-way linear synteny view above —
-it draws one lane per assembly, each in the local coordinates of that assembly,
-with ribbons connecting orthologs between adjacent lanes rather than anchoring
-every assembly against one reference. The display's lane order, coloring and the
-rest of its config are covered in
-[grouping and lane order](/docs/config_guides/grouping_and_ordering#multiway-synteny).
+`MCScanBlocksAdapter`, the two multi-genome PAF adapters and
+`MultiPairwiseSyntenyAdapter` draw in the two-way linear synteny view and in
+`MultiWaySyntenyDisplay`, one lane per assembly under a linear genome view. The
+[multi-way synteny display guide](/docs/user_guides/multiway_synteny_display)
+says which lanes each adapter's ribbons join, and
+[grouping and lane order](/docs/config_guides/grouping_and_ordering#multiway-synteny)
+has the display's `rows` config.
 
 ## Building a table for MCScanBlocksAdapter
 
@@ -308,6 +308,32 @@ python3 compara_to_blocks.py Compara.116.protein_default.homologies.tsv.gz \
 way the scored table above names `score`. For a partner species the export
 lacks, the script writes no table and exits without an error, so check each
 `--species` name against the `homology_species` column in the file.
+
+### From gene symbols
+
+NCBI's RefSeq pipelines name a gene after its ortholog, so for RefSeq
+annotations the table is a join on each GFF3's gene names, with no alignment.
+[`symbols_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/symbols_to_blocks.py)
+writes the table and a BED per genome, and prints the column order:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/symbols_to_blocks.py
+# --anchor names the genome whose genes are the rows
+python3 symbols_to_blocks.py --anchor human -o primates.blocks \
+  human=human.gff.gz chimp=chimp.gff.gz macaque=macaque.gff.gz
+```
+
+[](/docs/tutorials/primate_orthologs_synteny) runs it on eukaryotic annotations.
+[](/docs/tutorials/ecoli_orthologs_synteny) adds the flags bacterial (PGAP)
+annotations need, for genes named by locus tag and genes renamed between
+releases.
+
+### From odp
+
+[`rbh_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/rbh_to_blocks.py)
+converts an [odp](https://github.com/conchoecia/odp) `.rbh` table, and passes
+named columns such as `gene_group` and `color` through as attributes to color
+by. [](/docs/tutorials/odp_linkage_groups_synteny) runs it.
 
 ### From reciprocal best BLAST hits
 

@@ -15,4 +15,4 @@ and Ctrl+Y (Cmd on macOS).
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-history">**history**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>history: types.optional(TimeTraveller, { targetPath: '../sessio…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>history: types.optional(TimeTraveller, { targetPath: '../session' })</code></pre></dialog></span> | used for undo/redo |
+| <span id="property-history">**history**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>history: types.optional(TimeTraveller, { targetPath: '../sessio…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>history: types.optional(<a href="../timetraveller">TimeTraveller</a>, { targetPath: '../session' })</code></pre></dialog></span> | used for undo/redo |

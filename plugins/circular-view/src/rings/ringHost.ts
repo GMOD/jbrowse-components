@@ -326,6 +326,9 @@ export const RingPass = types
 export interface RingPassModel extends Instance<typeof RingPass> {}
 
 /**
+ * #stateModel RingHost
+ * #internal a volatile of the circular view's; tagged so a member typed as one
+ * prints its name
  * The circular view's strip axis and its rings. A `RegionHost` a linear
  * display lays its regions out against — the circumference unrolled into a
  * strip, one block per slice — and the owner of the canvases that resample

@@ -260,7 +260,7 @@ every such key, and the no-value key, one color instead, `''` the no-value grey.
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 
 // type signature
-(field: string, { domain, range, labels, held, unknown, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; held?: HeldSlots | undefined; unknown?: string | undefined; }) => CategoricalField
+(field: string, { domain, range, labels, held, unknown }?: { domain?: readonly string[]; range?: readonly string[]; labels?: readonly string[]; held?: HeldSlots; unknown?: string; }) => CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -755,7 +755,7 @@ groups rows groups within a section.
 import { facetLayers } from '@jbrowse/core/util/featureTransforms'
 
 // type signature
-(input: readonly Feature[] | FeatureTable, facet: FacetSpec, layers: readonly { transform?: readonly TransformStep[] | undefined; row?: string | undefined; }[], jexl?: JexlInstance | undefined) => { layers: FacetedLayer[]; sections: FacetSection[]; }
+(input: readonly Feature[] | FeatureTable, facet: FacetSpec, layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef; }[], jexl?: JexlInstance | undefined) => { layers: FacetedLayer[]; sections: FacetSection[]; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -929,7 +929,6 @@ import { getConf } from '@jbrowse/core/configuration'
 
 // type signature
 (model: { configuration: AnyConfigurationModel; }) => AnyConfigurationSnapshot
-<CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(model: { configuration: CONFMODEL; }, slotPath: SLOT, args?: Record<string, unknown>) => SLOT extends string ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT> : ConfigurationSlotPathValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -1244,7 +1243,7 @@ synchronous `addOrReplaceView` requires it loaded already.
 import { launchOrReplaceView } from '@jbrowse/core/util'
 
 // type signature
-(args: { session: AbstractViewContainer; typeName: string; initialState?: Record<string, unknown> | undefined; replacing?: AbstractViewModel | undefined; }) => Promise<AbstractViewModel>
+(args: { session: AbstractViewContainer; typeName: string; initialState?: Record<string, unknown>; replacing?: AbstractViewModel; }) => Promise<AbstractViewModel>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -1268,7 +1267,7 @@ steps that follow it read the rows already in section order.
 import { layerTables } from '@jbrowse/core/util/featureTransforms'
 
 // type signature
-(input: readonly Feature[] | FeatureTable, request: { transform?: readonly TransformStep[] | undefined; facet?: FacetSpec | undefined; layers: readonly { transform?: readonly TransformStep[] | undefined; row?: string | undefined; }[]; }, jexl?: JexlInstance | undefined) => { layers: { table: FeatureTable; row: string | Uint32Array<ArrayBufferLike> | undefined; }[]; sections: FacetSection[] | undefined; }
+(input: readonly Feature[] | FeatureTable, request: { transform?: readonly TransformStep[]; facet?: FacetSpec; layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef; }[]; }, jexl?: JexlInstance | undefined) => { layers: { table: FeatureTable; row: string | Uint32Array<ArrayBufferLike> | undefined; }[]; sections: FacetSection[] | undefined; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -1540,7 +1539,7 @@ lengths needs; it defaults to the first place `alt` appears.
 import { parseSvAlt } from '@jbrowse/core/util/svAlt'
 
 // type signature
-(feature: Feature, alt?: string | undefined, alleleIndex?: number) => { mateRefName: string; matePos: number; mateDirection?: number | undefined; joinDirection?: number | undefined; } | undefined
+(feature: Feature, alt?: string | undefined, alleleIndex?: number) => { mateRefName: string; matePos: number; mateDirection?: number; joinDirection?: number; } | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -1764,7 +1763,7 @@ painted.
 import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
 
 // type signature
-(id: string, met: { missing?: boolean | undefined; notNumber?: boolean | undefined; }) => CategoricalScale[]
+(id: string, met: { missing?: boolean; notNumber?: boolean; }) => CategoricalScale[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -1795,7 +1794,7 @@ widened domain with no table baked again.
 import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
 
 // type signature
-(table: {…}, extent: [number, number]) => {…}
+(table: Extract<ColorScaleTable, { kind: 'ramp'; }>, extent: [number, number]) => Extract<ColorScaleTable, { kind: 'ramp'; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -1815,7 +1814,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 // type signature
 (confObject: AnyConfigurationModel) => AnyConfigurationSnapshot
-<CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(confObject: CONFMODEL, slotPath?: SLOT, args?: Record<string, unknown>) => SLOT extends string ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT> : ConfigurationSlotPathValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/readConfObject.ts)
@@ -2315,7 +2313,7 @@ its length against REF, else takes its `SVTYPE`'s class.
 import { svClassOfAlt } from '@jbrowse/core/util/svAlt'
 
 // type signature
-(alt: string, { ref, info, alleleIndex, }?: { ref?: string | undefined; info?: Record<string, unknown> | undefined; alleleIndex?: number | undefined; }) => string
+(alt: string, { ref, info, alleleIndex }?: { ref?: string; info?: Record<string, unknown>; alleleIndex?: number; }) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -2375,7 +2373,7 @@ its interval.
 import { thresholdField } from '@jbrowse/core/util/thresholdScale'
 
 // type signature
-(field: string, { domain, range, labels: names, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; }) => CategoricalField
+(field: string, { domain, range, labels: names }?: { domain?: readonly string[]; range?: readonly string[]; labels?: readonly string[]; }) => CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -2407,7 +2405,7 @@ in the order `thresholdField` sorts them.
 import { thresholdKeyEntries } from '@jbrowse/core/util/thresholdScale'
 
 // type signature
-(cuts: readonly number[], range: readonly string[] | undefined, met: { missing?: boolean | undefined; notNumber?: boolean | undefined; }, names?: readonly string[]) => { value: string; label: string; color: string; missing?: true | undefined; }[]
+(cuts: readonly number[], range: readonly string[] | undefined, met: { missing?: boolean; notNumber?: boolean; }, names?: readonly string[]) => { value: string; label: string; color: string; missing?: true | undefined; }[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)

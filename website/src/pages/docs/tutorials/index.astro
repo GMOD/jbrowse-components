@@ -7,6 +7,7 @@ import { baseUrl } from '../../../lib/base-url.ts'
 import { entrySlug } from '../../../lib/docs-sidebar.ts'
 import {
   TUTORIAL_CATEGORIES,
+  TUTORIAL_EXTRA_DOCS,
   TUTORIAL_FALLBACK,
   TUTORIAL_NO_THUMB,
   TUTORIAL_ORDER,
@@ -16,13 +17,7 @@ import {
 const CATEGORY_ORDER = new Set(TUTORIAL_CATEGORIES)
 const FALLBACK = TUTORIAL_FALLBACK
 
-// Docs outside tutorials/ that this page also shows, with their section.
-const EXTRA_DOCS = new Map([
-  ['quickstart_web', 'Getting started'],
-  ['quickstart_desktop', 'Getting started'],
-  ['cookbook', 'Configuration & embedding'],
-  ['agents', 'Automation'],
-])
+const EXTRA_DOCS = new Map(Object.entries(TUTORIAL_EXTRA_DOCS))
 
 const rank = (key: string) => {
   const i = TUTORIAL_ORDER.indexOf(key)
@@ -158,41 +153,37 @@ const HAS_THUMB = new Set(
               </a>
             </h3>
           )}
-          <div class="tut-grid">
+          <div class="doc-cards">
             {sub.items.map(tutorial => (
-              <div class="tut-card">
-                <a
-                  class="tut-card-head"
-                  href={tutorial.href}
-                  target={tutorial.external ? '_blank' : undefined}
-                  rel={tutorial.external ? 'noopener' : undefined}
-                >
-                  {HAS_THUMB.has(tutorial.key) ? (
-                    <img
-                      class="tut-thumb"
-                      src={`${baseUrl}/img/tutorial-thumbs/${tutorial.key}.webp`}
-                      loading="lazy"
-                      decoding="async"
-                      alt={`Preview of ${tutorial.title}`}
-                    />
-                  ) : (
-                    <span class="tut-thumb tut-thumb-empty">
-                      {tutorial.key === 'cli_desktop'
-                        ? '$ jbrowse'
-                        : 'JBrowse 2'}
-                    </span>
-                  )}
-                  <span class="tut-card-body">
-                    <span class="tut-card-title">
-                      {tutorial.title}
-                      {tutorial.external && <span class="tut-ext"> ↗</span>}
-                    </span>
-                    {tutorial.description && (
-                      <span class="tut-card-desc">{tutorial.description}</span>
-                    )}
+              <a
+                class="doc-card"
+                href={tutorial.href}
+                target={tutorial.external ? '_blank' : undefined}
+                rel={tutorial.external ? 'noopener' : undefined}
+              >
+                {HAS_THUMB.has(tutorial.key) ? (
+                  <img
+                    class="doc-card-thumb"
+                    src={`${baseUrl}/img/tutorial-thumbs/${tutorial.key}.webp`}
+                    loading="lazy"
+                    decoding="async"
+                    alt={`Preview of ${tutorial.title}`}
+                  />
+                ) : (
+                  <span class="doc-card-thumb doc-card-thumb-empty">
+                    {tutorial.key === 'cli_desktop' ? '$ jbrowse' : 'JBrowse 2'}
                   </span>
-                </a>
-              </div>
+                )}
+                <span class="doc-card-body">
+                  <span class="doc-card-title">
+                    {tutorial.title}
+                    {tutorial.external && <span class="doc-card-ext"> ↗</span>}
+                  </span>
+                  {tutorial.description && (
+                    <span class="doc-card-desc">{tutorial.description}</span>
+                  )}
+                </span>
+              </a>
             ))}
           </div>
         </>
@@ -237,79 +228,5 @@ const HAS_THUMB = new Set(
   .tut-subheading:hover .tut-anchor,
   .tut-anchor:focus {
     opacity: 1;
-  }
-  .tut-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: 1rem;
-  }
-  .tut-card {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--color-border);
-    border-radius: var(--card-radius);
-    overflow: hidden;
-    background: var(--color-surface);
-    text-decoration: none;
-    color: inherit;
-  }
-  .tut-card:hover,
-  .tut-card:focus-within {
-    border-color: var(--card-hover-border);
-    box-shadow: var(--card-hover-shadow);
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .tut-card {
-      transition: 150ms ease;
-      transition-property: border-color, box-shadow, transform;
-    }
-    .tut-card:hover,
-    .tut-card:focus-within {
-      transform: translateY(-2px);
-    }
-  }
-  .tut-thumb {
-    width: 100%;
-    aspect-ratio: 5 / 3;
-    object-fit: cover;
-    object-position: top;
-    display: block;
-    border-bottom: 1px solid var(--color-border);
-    background: #fff;
-  }
-  .tut-thumb-empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 1.1rem;
-    color: var(--color-text-muted);
-    background: var(--color-blockquote-bg);
-  }
-  .tut-card-head {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    text-decoration: none;
-    color: inherit;
-  }
-  .tut-card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    padding: 0.7rem 0.8rem 0.85rem;
-  }
-  .tut-card-title {
-    font-weight: 600;
-    line-height: 1.3;
-  }
-  .tut-ext {
-    color: var(--color-text-muted);
-    font-weight: 400;
-  }
-  .tut-card-desc {
-    font-size: 0.85rem;
-    line-height: 1.4;
-    color: var(--color-text-muted);
   }
 </style>

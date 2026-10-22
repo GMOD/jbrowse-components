@@ -240,6 +240,11 @@ async function main() {
       names: configGaps.adapterNoTrackType,
     },
     {
+      title: 'model members whose type prints as an expanded model',
+      fix: 'tag that model #stateModel (#internal keeps it off the site), or give the member a written type that names it',
+      names: modelGaps.unnamedModelTypes,
+    },
+    {
       title: '#stateModel tags attached to a declaration that builds no model',
       fix: 'move the #stateModel JSDoc back onto its factory — a declaration in between takes the tag, and every inherited member row silently disappears',
       names: modelGaps.misattached,

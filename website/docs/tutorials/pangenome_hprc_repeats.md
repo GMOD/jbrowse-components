@@ -22,8 +22,8 @@ haplotype:
 - at _ABCA7_, measure an intronic VNTR and set PacBio's read-based TRGT
   genotypes on the same bars
 - find the samples where the assemblies and the reads disagree
-- at amylase, count _AMY1_ gene copies and check them against Yilmaz et al.
-  (2024)
+- at amylase, count _AMY1_ gene copies against Yilmaz et al. (2024), and stack
+  one haplotype per structure, each aligned to the next
 
 :::caution Experimental
 
@@ -451,49 +451,11 @@ Yilmaz et al. (2024) name each structure by its _AMY1_ count:
 | 94 kb longer          | 5             | H5        |
 | 188 kb longer         | 7             | H7        |
 
-## Reproduce it end to end
+### Each haplotype aligned to the next {#amylase-stack}
 
-PacBio publishes TRGT's calls for a subset of HPRC samples as a TRGTdb, most of
-which have a call at _ABCA7_, and the build turns that locus into the VCF this
-page loads, without re-genotyping anything. It:
-
-1. downloads the TRGTdb and the repeat catalogue
-2. reads the locus's alleles and every sample's calls out of the database
-3. writes one VCF record: each allele's sequence as an ALT, and per sample the
-   genotype, each allele's length (`AL`) and the reads spanning it (`SD`)
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_abca7_trgt.sh
-bash build_hprc_abca7_trgt.sh
-```
-
-The TRGTdb is a directory of Parquet tables, and DuckDB reads a locus's calls
-straight out of it:
-
-<!-- from: scripts/build_hprc_abca7_trgt.sh -->
-
-```bash
-# every sample's allele numbers and spanning-read counts at one locus
-duckdb -json -c "
-  select regexp_extract(filename, 'sample\.(.*)\.pq', 1) as sample,
-    allele_number, spanning_reads
-  from read_parquet('hprc_100.tdb/sample.*.pq', filename = true)
-  where LocusID = (select LocusID from read_parquet('hprc_100.tdb/locus.pq')
-    where chrom = 'chr19' and start = 1049407)"
-```
-
-The amylase build draws haplotypes as a synteny stack, each aligned to the row
-under it. It works in four steps, and the commands below run each one on any
-`gfa-to-tabix --walks` file and any bgzipped, indexed assembly:
-
-1. Read from the walk file where each haplotype crosses two single-copy windows,
-   one either side of the array. The distance between the two is that
-   haplotype's span across the locus, and the spans fall into the published
-   structures.
-2. Pick one haplotype per structure and fetch only the locus from its assembly.
-3. Count each haplotype's gene copies, and align it to its neighbour in the
-   stack, so a band can match copies GRCh38 lacks.
-4. Shift each alignment back onto the whole contig's coordinates.
+Walk rows count copies; a synteny stack shows which copy of one haplotype
+matches which copy of its neighbour. The commands below run on any
+`gfa-to-tabix --walks` file and any bgzipped, indexed assembly.
 
 Fetch the script that reads a window's walks, then the walk reader it imports:
 
@@ -505,8 +467,10 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 npm install @jbrowse/graph-walks @gmod/tabix generic-filehandle2
 ```
 
-Get where every haplotype's walk crosses a window, one line per walk with its
-contig coordinates:
+Where a haplotype's walk crosses a single-copy window on either side of the
+array gives its span across the locus, and the span sorts it into one of the
+structures above. Get where every walk crosses one window, one line per walk
+with its contig coordinates:
 
 ```bash
 # the walk file is a path or a URL, with its .tbi beside it
@@ -538,13 +502,6 @@ Align two haplotypes to draw them as synteny:
 # --secondary=no keeps the primary chain; the secondary ones are paralogous
 # copies aligning to each other
 minimap2 -c --eqx -x asm20 --secondary=no HG00232.1.fa NA18608.2.fa > adjacent.paf
-```
-
-The whole build, for four of the amylase haplotypes above and hg38:
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_amylase_haplotypes.sh
-bash build_amylase_haplotypes.sh
 ```
 
 The session below opens the script's `config.json`; point `config=` at your
@@ -595,6 +552,54 @@ copy:
 ```
 
 <Figure caption="Haplotypes from the fewest AMY1 copies at the top to the most at the bottom, each aligned to the row below by minimap2." src="/img/multiway_synteny/hprc_amylase_stack.png" />
+
+## Reproduce it end to end
+
+PacBio publishes TRGT's calls for a subset of HPRC samples as a TRGTdb, most of
+which have a call at _ABCA7_, and the build turns that locus into the VCF this
+page loads, without re-genotyping anything. It:
+
+1. downloads the TRGTdb and the repeat catalogue
+2. reads the locus's alleles and every sample's calls out of the database
+3. writes one VCF record: each allele's sequence as an ALT, and per sample the
+   genotype, each allele's length (`AL`) and the reads spanning it (`SD`)
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_abca7_trgt.sh
+bash build_hprc_abca7_trgt.sh
+```
+
+The TRGTdb is a directory of Parquet tables, and DuckDB reads a locus's calls
+straight out of it:
+
+<!-- from: scripts/build_hprc_abca7_trgt.sh -->
+
+```bash
+# every sample's allele numbers and spanning-read counts at one locus
+duckdb -json -c "
+  select regexp_extract(filename, 'sample\.(.*)\.pq', 1) as sample,
+    allele_number, spanning_reads
+  from read_parquet('hprc_100.tdb/sample.*.pq', filename = true)
+  where LocusID = (select LocusID from read_parquet('hprc_100.tdb/locus.pq')
+    where chrom = 'chr19' and start = 1049407)"
+```
+
+The amylase build runs the commands under
+[Each haplotype aligned to the next](#amylase-stack) for the haplotypes in that
+session and hg38. It:
+
+1. reads where each haplotype's walk crosses a single-copy window on either side
+   of the array, which gives its span and so its structure
+2. picks one haplotype per structure and fetches only the locus from its
+   assembly
+3. counts each haplotype's gene copies, and aligns it to its neighbour in the
+   stack
+4. shifts each alignment back onto the whole contig's coordinates
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_amylase_haplotypes.sh
+bash build_amylase_haplotypes.sh
+```
 
 ## See also
 

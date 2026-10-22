@@ -1,14 +1,21 @@
 ---
 title: Using JBrowse with AI agents
-sidebar_label: Overview
+sidebar_label: Connecting an agent
 description:
-  Set up Claude Desktop, Claude Code or the Claude in Chrome extension to drive
-  JBrowse, what to ask it, and what to watch for
+  The two ways an AI agent works with JBrowse, and how to connect Claude
+  Desktop, Claude Code or the Claude in Chrome extension to the running app
 ---
 
-JBrowse Desktop runs an MCP server, and JBrowse Web publishes a helper library
-on `window`, so an AI agent can open genomes, add tracks, read the data and
-screenshot the result in the app you already have open.
+An AI agent works with JBrowse in two ways:
+
+- **Driving the open app.** JBrowse Desktop runs an MCP server, and JBrowse Web
+  publishes a helper library on `window`, so an agent can open genomes, add
+  tracks, read the data and screenshot the result in the app you already have
+  open. The sections below set that up.
+- **Writing the config from a shell.** An agent such as Claude Code writes a
+  `config.json` or session spec, validates it, and renders it with
+  `@jbrowse/img` or `@jbrowse/capture`, with no app running.
+  [](/docs/agents_authoring) covers that loop.
 
 ## What it looks like
 
@@ -134,4 +141,5 @@ settled without drawing. Everything else is the model itself.
   config.
 - Inside Desktop the same three are `docs` topics, so an agent never needs this
   site.
-- [](/docs/agents_capture) is screenshots from a script, outside any agent.
+- [](/docs/agents_authoring) and [](/docs/agents_capture) are the shell route:
+  write a config, then render it.

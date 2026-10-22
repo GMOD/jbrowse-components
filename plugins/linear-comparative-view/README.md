@@ -24,7 +24,7 @@ defaults filled. Positions are genomic on each lane, and px across the view's
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, anchor: anchorArgs, pins, hidden, display, }: MultiWayTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, anchor: anchorArgs, pins, hidden, display, }: MultiWayTablesArgs) => Promise<{ field: string; tickInterval: number; rowsVsAnchor: boolean; config: Record<…>; assemblyNames: string[]; legend: {…}; legendTitle: string; ramps: {…}[]; ribbons: {…}; alignments: {…}; blocks: {…}; lanes: { lane: number[]; assembly: string[]; label: string[]; anchor: boolean[]; chrom: (string | null)[]; flipped: boolean[]; bpPerPx: number[]; alsoOn: string[]; }; segments: { lane: number[]; chrom: string[]; start: number[]; end: number[]; x1: number[]; x2: number[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/multiwayTables.ts)
@@ -42,7 +42,7 @@ for, so a painted ribbon always has an overlay to hover.
 
 ```js
 // type signature
-({…}: { level: ModelInstanceTypeProps<…> & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & { pickFeatureAt(x: number, y: number): SyntenyPickResult | undefined; } & { showOffscreenMateContig(hit: OffscreenMateHit): void; startRenderingBackend(backend: SyntenyRenderingBackend): void; afterAttach(): void; } & IStateTreeNode<…>; children?: ReactNode; }) => Element
+({ level, children, }: { level: LinearSyntenyViewHelper; children?: ReactNode; }) => Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyViewHelper/SyntenyLevel.tsx)
@@ -65,7 +65,7 @@ to a `TrackStack`:
 
 ```js
 // type signature
-({…}: { view: ModelInstanceTypeProps<…> & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & { afterAttach(): void; } & IStateTreeNode<…>; renderRow?: ((row: ModelInstanceTypeProps<…> & any & IStateTreeNode<…>, index: number) => ReactNode) | undefined; style?: CSSProperties | undefined; }) => Element
+({ view, renderRow, style, }: { view: LinearSyntenyView; renderRow?: ((row: ModelInstanceTypeProps<any> & any, index: number) => ReactNode) | undefined; style?: CSSProperties | undefined; }) => Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/SyntenyStack.tsx)
@@ -92,7 +92,7 @@ and `targetRegion`.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, query, target, view }: SyntenyTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, query, target, view }: SyntenyTablesArgs) => Promise<{ config: {…}; field: string; alpha: number; fadeThin: boolean; assemblyNames: string[]; hasCigar: boolean; legend: {…}; legendTitle: string; ramps: {…}[]; alignments: {…}; ribbons: {…}; offscreen: {…}; offscreenContigs: {…}; offscreenStrip: { marks: {…}; labels: { label: string[]; x: number[]; y: number[]; color: string[]; alpha: number[]; halo: string[]; axis: ("query" | "target")[]; }; fontPx: number; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/tables.ts)

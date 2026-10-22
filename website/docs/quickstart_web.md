@@ -9,7 +9,8 @@ download JBrowse, add an assembly and tracks, and serve the result as a folder
 of files on a web server. The same folder opens in
 [JBrowse Desktop](/docs/quickstart_desktop) with no server
 ([](/docs/tutorials/cli_desktop)), and [](/docs/embedded_components) puts a view
-in your own web app.
+in your own web app. An AI agent with a shell, such as Claude Code, can run
+these steps for you: [](/docs/agents_authoring).
 
 ## Four commands
 

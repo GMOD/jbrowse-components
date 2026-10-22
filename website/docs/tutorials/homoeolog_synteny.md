@@ -18,9 +18,6 @@ that hybridized to make it, so most of its genes exist three times. We:
 - load the pair table as a synteny track
 - draw oat against itself in a dotplot, coloring each pair by dS
 
-The two subgenomes from closely related ancestors should pair at a lower dS than
-either does with the third.
-
 ## Prerequisites
 
 - a JBrowse to open the files in: [Desktop](/docs/quickstart_desktop) takes a
@@ -197,8 +194,8 @@ subgenome pair, the numbers behind the picture below.
 
 **Color by value → ds** <!-- menu-path-ok --> on the palette button paints each
 pair by its dS. Oat's A and D subgenomes descend from closely related diploid
-_Avena_ species and its C subgenome from a more distant one, so A-D pairs should
-come out at a lower dS than A-C or C-D pairs.
+_Avena_ species and its C subgenome from a more distant one, so A-D pairs are
+the control: they diverged most recently.
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the dotplot's
 `encoding.color` is a color scale, here the `ds` field mapped to a ramp. The
@@ -258,9 +255,7 @@ color means one dS wherever the view goes; the menu has no field for them:
 
 <Figure caption="Oat against itself over groups 4, 5 and 7, each homoeolog pair colored by dS on a pinned ramp." src="/img/homoeolog_synteny/oat_ds.png" links="Open this view=homoeolog_synteny/oat_ds" />
 
-With **dN/dS** chosen on the palette button, almost every pair draws below 1 on
-the ramp. A ratio over 1 between copies this recently separated rests on few
-substitutions.
+**dN/dS** on the palette button colors each pair by the ratio instead.
 
 ## Reproduce it end to end
 

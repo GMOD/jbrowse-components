@@ -146,7 +146,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-rpcprops">**rpcProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { normalization: string; field: "observed" &#124; "observed/co…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { normalization: string; field: "observed" &#124; "observed/control" &#124; "observed/expected"; }</code></pre></dialog></span> | The settings that refetch. The binsize is zoom-derived and the quantile reselects on the main thread, so both ride as call arguments. |
+| <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { normalization: string; field: HicColorField; }</code> | The settings that refetch. The binsize is zoom-derived and the quantile reselects on the main thread, so both ride as call arguments. |
 | <span id="method-hittest">**hitTest**</span><br><code>(mouseX: number, mouseY: number) =&gt; HicContactItem &#124; undefined</code> | The contact under a display-px point, through the inverse of the transform the matrix was drawn with. |
 | <span id="method-hoverhitat">**hoverHitAt**</span><br><code>(mouseX: number, mouseY: number) =&gt; HicContactItem &#124; undefined</code> | No contact while the matrix loads: a global display replaces its whole frame, so the cells it holds are on their way out. |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |

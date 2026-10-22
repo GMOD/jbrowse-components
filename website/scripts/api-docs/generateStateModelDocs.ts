@@ -16,6 +16,7 @@ import {
   assertUniquePages,
   codeCell,
   collectTransitive,
+  configNodeName,
   docPage,
   exampleCell,
   exampleSection,
@@ -302,7 +303,12 @@ function memberAnchor(def: MemberKind, name: string) {
 // properties and two `size` ones, from LayoutTab, LayoutPanel and LayoutNode —
 // and repeating the anchor renders duplicate ids, which the website build
 // fails on.
-function memberRow(def: MemberKind, m: Member, seen: Set<string>) {
+function memberRow(
+  def: MemberKind,
+  m: Member,
+  seen: Set<string>,
+  link: TypeLinker,
+) {
   const description = [proseCell(m.docs), exampleCell(m.examples)]
     .filter(Boolean)
     .join('<br>')
@@ -311,7 +317,7 @@ function memberRow(def: MemberKind, m: Member, seen: Set<string>) {
     ? `**${m.name}**`
     : `<span id="${anchor}">**${m.name}**</span>`
   seen.add(anchor)
-  return `| ${named}<br>${codeCell(def.memberCode(m))} | ${description} |`
+  return `| ${named}<br>${codeCell(def.memberCode(m), link)} | ${description} |`
 }
 
 // What one ancestor contributes to a kind: each name, linked to its row on the
@@ -348,9 +354,10 @@ function kindSection(
   def: MemberKind,
   ownMembers: Member[],
   inherited: InheritedGroup[],
+  link: TypeLinker,
 ) {
   const seen = new Set<string>()
-  const rows = ownMembers.map(m => memberRow(def, m, seen))
+  const rows = ownMembers.map(m => memberRow(def, m, seen, link))
   const lines = inherited
     .map(g => inheritedLine(def, g, seen))
     .filter(l => l.count > 0)
@@ -389,6 +396,7 @@ function renderModel(
   model: ModelWithHeader,
   ancestors: ModelWithHeader[],
   configNames: Set<string>,
+  link: TypeLinker,
 ): string {
   const { header, filename } = model
   const inherited = collectInheritedMembers(model.members, ancestors)
@@ -411,7 +419,9 @@ function renderModel(
     own > 0 &&
       inherited.length &&
       'Each section ends with the members a composed model contributes, linked to the page that documents them.',
-    ...MEMBER_KINDS.map(k => kindSection(k, model.members[k.key], inherited)),
+    ...MEMBER_KINDS.map(k =>
+      kindSection(k, model.members[k.key], inherited, link),
+    ),
   )
 
   const category = stateModelCategory(header.name, header.category)
@@ -533,6 +543,45 @@ export function resolvedProperties(
   ]
 }
 
+type TypeLinker = (html: string) => string
+
+// A signature names another model, or a config node as `<schema>Config`, where
+// the generator printed a name in place of the expanded type (`printedTypes`),
+// and a property's source names the models it holds. Each name links to its
+// page. Quoted strings stay text, so `types.literal('LinearWiggleDisplay')`
+// links nothing.
+function typeLinker(modelNames: string[], configNames: Set<string>) {
+  // A written annotation names a node by the codebase's aliases for it
+  // (`LinearGenomeViewModel`, `BaseAssemblyConfigModel`); a page name, added
+  // last, wins over an alias that happens to spell it.
+  const pages = new Map([
+    ...[...configNames].flatMap(name => {
+      const page = `../../config/${slugify(name, { lower: true })}`
+      const node = configNodeName(name)
+      return [
+        [`${node}Model`, page],
+        [node, page],
+      ] as const
+    }),
+    ...modelNames.flatMap(name => {
+      const page = `../${slugify(name, { lower: true })}`
+      return [
+        [`${name}Model`, page],
+        [name, page],
+      ] as const
+    }),
+  ])
+  const token = new RegExp(
+    `(["'\`])(?:(?!\\1)[^\\\\]|\\\\.)*\\1|\\b(?:${[...pages.keys()].join('|')})\\b`,
+    'g',
+  )
+  return (html: string) =>
+    html.replace(token, word => {
+      const page = pages.get(word)
+      return page ? `<a href="${page}">${word}</a>` : word
+    })
+}
+
 // Properties every pluggable element declares the same way, which a docstring
 // could only restate.
 const SELF_EVIDENT = new Set(['id', 'type', 'configuration'])
@@ -557,11 +606,15 @@ export function writeModelDocs(
     bySlug: mapByKey(withHeader, m => m.header.id),
   }
   const agentPages: Record<string, { category: string; text: string }> = {}
+  const link = typeLinker(
+    withHeader.map(m => m.header.name),
+    configNames,
+  )
   for (const model of withHeader) {
     const ancestors = collectAncestors(model, index)
     writePage(
       `${dir}/${model.header.name}.md`,
-      renderModel(model, ancestors, configNames),
+      renderModel(model, ancestors, configNames, link),
     )
     agentPages[model.header.name] = renderAgentModel(
       model,
@@ -603,6 +656,18 @@ export function writeModelDocs(
             member =>
               !member.docs.trim() &&
               !(k.key === 'properties' && SELF_EVIDENT.has(member.name)),
+          )
+          .map(member => `${m.header.name}.${member.name}`),
+      ),
+    ),
+    // A member whose cell still prints a model's expansion: the model has no
+    // `#stateModel` tag for `printedTypes` to name it by, or the member is typed
+    // as a partial `typeof self`.
+    unnamedModelTypes: withHeader.flatMap(m =>
+      MEMBER_KINDS.flatMap(k =>
+        m.members[k.key]
+          .filter(member =>
+            k.memberCode(member).includes('ModelInstanceTypeProps<'),
           )
           .map(member => `${m.header.name}.${member.name}`),
       ),

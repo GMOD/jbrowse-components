@@ -1,6 +1,6 @@
 ---
 title: Config guide
-sidebar_label: Overview
+sidebar_label: All config guides
 description:
   Index of the guides for configuring JBrowse, covering assemblies, tracks,
   callbacks, and deployment, on the web, the desktop and the CLI.

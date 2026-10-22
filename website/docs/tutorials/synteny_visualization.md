@@ -79,9 +79,10 @@ minimap2 -c -x asm20 --eqx hpylori_j99.fa.gz hpylori_26695.fa.gz > 26695_vs_j99.
   reads the PAF's divergence tag or match counts.
 
 JBrowse also loads [MUMmer](https://github.com/mummer4/mummer) `.delta` and UCSC
-`.chain` files directly, and
-[paftools.js](https://github.com/lh3/minimap2/blob/master/misc/paftools.js) has
-`delta2paf` and `chain2paf` for converting them.
+`.chain` files directly. To convert them to PAF instead,
+[paftools.js](https://github.com/lh3/minimap2/blob/master/misc/paftools.js)
+`delta2paf` reads a `.delta`, and
+[chain2paf](https://github.com/AndreaGuarracino/chain2paf) reads a `.chain`.
 
 ## Loading the assemblies and the alignment
 

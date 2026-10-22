@@ -55,7 +55,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | Member | Description |
 | --- | --- |
 | <span id="getter-sequencedata">**sequenceData**</span><br><code>ReadonlyMap&lt;number, SequenceRegionData&gt;</code> | The fetched sequence, keyed by displayedRegionIndex — the foundation's per-region store, narrowed. |
-| <span id="getter-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; { rubberbandClickMenuItems(clickOffset: BpOffset): MenuItem[]; highlightMenuItems(_highlight: HighlightType): MenuItem[]; } &amp; { flyTo: (centerBp: number, windowWidthBp: number) =&gt; void; flyToCenter(coord: number, refName: string, displayedRegionIndex?: number &#124; undefined): void; flyToFit(centerBp: number, fitWidthBp: number): void; } &amp; { afterCreate(): void; afterAttach(): void; } &amp; IStateTreeNode&lt;…&gt;</code></pre></dialog></span> |  |
+| <span id="getter-view">**view**</span><br><code><a href="../lineargenomeview">LinearGenomeView</a></code> |  |
 | <span id="getter-showforward">**showForward**</span><br><code>boolean</code> |  |
 | <span id="getter-showreverse">**showReverse**</span><br><code>boolean</code> |  |
 | <span id="getter-showtranslation">**showTranslation**</span><br><code>boolean</code> |  |
@@ -119,7 +119,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-toggleshowforward">**toggleShowForward**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-toggleshowreverse">**toggleShowReverse**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-toggleshowtranslation">**toggleShowTranslation**</span><br><code>() =&gt; void</code> |  |
-| <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(backend: PerRegionRenderingBackend&lt;SequenceCells, SequenceRend…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(backend: PerRegionRenderingBackend&lt;SequenceCells, SequenceRenderState, RenderBlock, SequenceCells&gt;) =&gt; void</code></pre></dialog></span> |  |
+| <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(backend: PerRegionRenderingBackend&lt;SequenceCells, SequenceRend…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(backend: PerRegionRenderingBackend&lt;SequenceCells, SequenceRenderState&gt;) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-fetchneeded">**fetchNeeded**</span><br><code>(needed: IndexedRegion[]) =&gt; Promise&lt;void&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>

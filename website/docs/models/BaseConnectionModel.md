@@ -41,6 +41,6 @@ Holds the tracks a connection has loaded. Each connection type overrides
 | --- | --- |
 | <span id="action-connect">**connect**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | no-op hook; concrete connections (UCSC/JB2 track hubs, etc.) override this to fetch and populate their `tracks`. Returns a promise so `afterAttach` can clear the loading flag once the fetch settles. |
 | <span id="action-setloading">**setLoading**</span><br><code>(loading: boolean) =&gt; void</code> |  |
-| <span id="action-addtrackconf">**addTrackConf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackConf: TrackConf) =&gt; PluggableConfigNode &amp; IStateTreeNode&lt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackConf: TrackConf) =&gt; PluggableConfigNode &amp; IStateTreeNode&lt;PluggableConfigSchemaType&gt;</code></pre></dialog></span> |  |
+| <span id="action-addtrackconf">**addTrackConf**</span><br><code>(trackConf: TrackConf) =&gt; PluggableConfigNode</code> |  |
 | <span id="action-addtrackconfs">**addTrackConfs**</span><br><code>(trackConfs: TrackConf[]) =&gt; void</code> |  |
 | <span id="action-settrackconfs">**setTrackConfs**</span><br><code>(trackConfs: TrackConf[]) =&gt; void</code> |  |

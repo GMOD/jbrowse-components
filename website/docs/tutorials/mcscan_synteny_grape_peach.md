@@ -123,6 +123,8 @@ files:
 <!-- from: scripts/build_grape_peach_anchors.sh -->
 
 ```bash
+# --key=transcript_id names each mRNA by Ensembl's transcript id, which the CDS
+# FASTA uses too; an NCBI GFF3 needs --key=ID instead
 python -m jcvi.formats.gff bed --type=mRNA --key=transcript_id \
   --primary_only grape.gff3.gz -o grape.bed
 python -m jcvi.formats.gff bed --type=mRNA --key=transcript_id \

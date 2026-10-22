@@ -203,6 +203,7 @@ the inversion.
 
 ## See also
 
+- [](/docs/tutorials/giab_hg002_reads)
 - [](/docs/tutorials/homoeolog_synteny)
 - [](/docs/tutorials/methylation)
 - [](/docs/tutorials/synteny_visualization)

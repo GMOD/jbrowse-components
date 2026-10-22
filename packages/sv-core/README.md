@@ -87,7 +87,7 @@ cannot be found.
 
 ```js
 // type signature
-({ feature, session, assemblyName, }: { feature: Feature; session: AssemblyHost; assemblyName: string; }) => Promise<…>
+({ feature, session, assemblyName, }: { feature: Feature; session: AssemblyHost; assemblyName: string; }) => Promise<{ assembly: Assembly; coverage: { pos: number; refName: string; mateRefName: string; matePos: number; }; region: BasicRegion; mateRegion: BasicRegion; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -99,7 +99,7 @@ through `junctionEnds`; a record with no other end spans the feature's extent.
 
 ```js
 // type signature
-({…}: { feature: Feature; assembly: ModelInstanceTypeProps<…> & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & { isCircularRefName(refName: string): boolean; getRefNamePosition(refName: string): number | undefined; getAliasesForRefName(refName: string): string[]; getRefNameMapForAdapter(adapterConf: AdapterConf, options: BaseOptions): Promise<…>; getRefNameMismatch(adapterCacheKey: string): RefNameMismatch | undefined; } & IStateTreeNode<…>; }) => { pos: number; refName: string; mateRefName: string; matePos: number; }
+({ feature, assembly, }: { feature: Feature; assembly: Assembly; }) => { pos: number; refName: string; mateRefName: string; matePos: number; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -111,7 +111,7 @@ never a circle, whose tracks have displays a linear panel cannot draw.
 
 ```js
 // type signature
-(view?: {…} | undefined) => (ModelInstanceTypeProps<…> & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & { flyTo: (centerBp: number, windowWidthBp: number) => void; flyToCenter(coord: number, refName: string, displayedRegionIndex?: number | undefined): void; flyToFit(centerBp: number, fitWidthBp: number): void; } & { afterCreate(): void; afterAttach(): void; } & IStateTreeNode<…>) | undefined
+(view?: { type: string; } | undefined) => LinearGenomeView | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)

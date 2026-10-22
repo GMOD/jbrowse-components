@@ -178,7 +178,7 @@ writes the same object:
 }
 ```
 
-<Figure caption="Group by... → Tag... opens a dialog for the tag name, which reports the values it finds in view." src="/img/alignments/haplotype_groupby.png" />
+<Figure caption="Group by... → Tag... over GIAB HG002 nanopore reads opens a dialog for the tag name, which reports the values it finds in view." src="/img/alignments/haplotype_groupby.png" />
 
 Each section has a label chip that controls the section's height:
 
@@ -203,7 +203,7 @@ view. They are not saved to a session or a shared link, and changing the
 grouping dimension clears them, since a section name means nothing under a
 different dimension.
 
-<Figure caption="Reads grouped and colored by the HP tag, one tinted section per haplotype." src="/img/alignments/haplotype.png" />
+<Figure caption="GIAB HG002 nanopore reads grouped and colored by the HP tag, one tinted section per haplotype." src="/img/alignments/haplotype.png" />
 
 Grouping by `HP` is also how to check that a heterozygous variant's supporting
 reads sit on one haplotype; see
@@ -224,7 +224,7 @@ Grouping by strand also works as a check on the reads. A position colored in one
 band and not the other comes from one strand alone, the signature of a
 basecalling error; a position that disagrees in both bands is a real variant.
 
-<Figure caption="Nanopore reads grouped by strand, each band's coverage from that strand's reads alone. The left box disagrees in the reverse band only, the right box in both." src="/img/alignments/strand_split_coverage.png" />
+<Figure caption="GIAB HG002 nanopore reads grouped by strand, each band's coverage from that strand's reads alone. The left box disagrees in the reverse band only, the right box in both." src="/img/alignments/strand_split_coverage.png" />
 
 **Track menu → Read connections → SV channels (pairs by orientation)** groups by
 pair orientation, drops the pileup and turns the arcs on together, so each
@@ -282,14 +282,14 @@ reads at that base.
 
 Insertions larger than 10bp also draw a purple rectangle in the pileup.
 
-<Figure caption="A large insertion across nanopore, PacBio and Illumina reads, drawn as purple insertion marks." src="/img/insertion.png" />
+<Figure caption="A large insertion across GIAB HG002 nanopore, PacBio and Illumina reads, drawn as purple insertion marks." src="/img/insertion.png" />
 
 ## Soft clipping
 
 Bases at a read's end that don't align are **soft-clipped** (kept in the read)
-or **hard-clipped** (dropped). Soft-clipped bases are hidden by default; **Show
-soft clipping** in the track menu reveals them. Clusters of them often mark a
-structural-variant breakpoint.
+or **hard-clipped** (dropped). Soft-clipped bases are hidden by default;
+**Show... → Soft clipping** in the track menu reveals them. Clusters of them
+often mark a structural-variant breakpoint.
 
 A read with no `SEQ` field (secondary reads among them) has no clipped bases to
 draw, so its clip indicator appears black.
@@ -430,6 +430,7 @@ read visits one locus repeatedly.
 ## See also
 
 - [](/docs/user_guides/consensus_sequence)
+- [](/docs/tutorials/giab_hg002_reads)
 - [Structural variant visualization](/docs/user_guides/sv_visualization)
 - [SV inspector](/docs/user_guides/sv_inspector_view)
 - [](/docs/user_guides/variant_track)

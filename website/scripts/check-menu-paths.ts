@@ -30,6 +30,7 @@ import { readFileSync } from 'node:fs'
 
 import { docFiles, reportProblems } from './check-utils.ts'
 import { docRelative, docsDir } from './paths.ts'
+import { unwrapBold } from './unwrap-bold.ts'
 
 const GENERATED_PREFIXES = ['config/', 'models/', 'api/']
 const SUPPRESS = '<!-- menu-path-ok -->'
@@ -70,23 +71,19 @@ for (const file of docFiles(docsDir)) {
     continue
   }
   let inFence = false
-  readFileSync(file, 'utf8')
-    .split('\n')
-    .forEach((line, i) => {
-      if (line.startsWith('```')) {
-        inFence = !inFence
-        return
-      }
-      if (inFence || line.includes(SUPPRESS)) {
-        return
-      }
-      const rule = RULES.find(r => r.re.test(line))
-      if (rule) {
-        errorLines.push(
-          `  ${rel}:${i + 1} (${rule.what})\n      ${line.trim()}`,
-        )
-      }
-    })
+  unwrapBold(readFileSync(file, 'utf8')).forEach(({ line: i, text: line }) => {
+    if (line.startsWith('```')) {
+      inFence = !inFence
+      return
+    }
+    if (inFence || line.includes(SUPPRESS)) {
+      return
+    }
+    const rule = RULES.find(r => r.re.test(line))
+    if (rule) {
+      errorLines.push(`  ${rel}:${i + 1} (${rule.what})\n      ${line.trim()}`)
+    }
+  })
 }
 
 reportProblems(

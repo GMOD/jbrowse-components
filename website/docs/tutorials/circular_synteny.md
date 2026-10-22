@@ -118,8 +118,7 @@ query is the genome it lifts to, so for hg38ToMm39 that is mouse:
     "type": "PairwiseIndexedPAFAdapter",
     "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz",
     "csi": true,
-    "queryAssembly": "mm39",
-    "targetAssembly": "hg38"
+    "assemblyNames": ["mm39", "hg38"]
   }
 }
 ```
@@ -389,17 +388,11 @@ and so twists. A tooltip gives its span in each genome and its strand.
 
 ## Your own pair of genomes
 
-The script takes any UCSC pair by name. A pair of your own needs the files the
-script writes:
-
-- an alignment as a sorted, tabix-indexed PIF. jbrowse.org's copy of a UCSC
-  liftOver chain opens as is with `"csi": true` beside its URL, and a pair with
-  no hosted chain goes through the `make-pif` commands above. The synteny
-  track's `assemblyNames` is `[query, target]` either way
-- both assemblies declared in the config, from a hub entry or the `addassembly`
-  blocks above (`jbrowse add-assembly genome.fa`)
-- one bigWig per ring, naming the ring's assembly; for a ring that covers both
-  genomes, one bigWig with prefixed contigs and an alias per assembly as above
+The script takes any UCSC pair by name. A pair with no hosted chain goes through
+the `make-pif` commands under
+[The chain as an indexed alignment](#the-chain-as-an-indexed-alignment), and
+each ring takes one bigWig per assembly, or one bigWig with prefixed contigs and
+an alias per assembly as in [Gene density as a ring](#gene-density-as-a-ring).
 
 ## Reproduce it end to end
 

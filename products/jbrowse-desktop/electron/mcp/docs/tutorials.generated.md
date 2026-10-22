@@ -307,6 +307,19 @@ Page: https://jbrowse.org/jb2/docs/tutorials/genomes_synteny/
 - https://jbrowse.org/ucsc/mm39/config-staging.json
 - https://jbrowse.org/ucsc/panTro6/config.json
 
+## Inspecting phased reads (GIAB HG002)
+
+Open GIAB HG002 nanopore, PacBio and Illumina reads on hg19, group and color them by the HP haplotype tag, compare one insertion across three platforms, and split coverage by strand to tell a variant from an artifact
+
+Page: https://jbrowse.org/jb2/docs/tutorials/giab_hg002_reads/
+
+- https://jbrowse.org/code/jb2/main/test_data/config_demo.json
+- https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam
+- https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam.bai
+- https://jbrowse.org/demos/hg002/HG002.Sequel.15kb.chr1_insertion.bam
+- https://jbrowse.org/demos/hg002/HG002.Sequel.15kb.chr1_insertion.bam.bai
+- https://jbrowse.org/genomes/hg19/giab/HG002_SVs_Tier1_v0.6.vcf.gz
+
 ## Comparing one genome's two haplotypes (T2T-HG002)
 
 Load T2T-HG002 v1.2 and the Q100 project's own maternal-to-paternal chain, plot one haplotype against the other genome-wide, and look at the 8p23.1 inversion in a linear synteny view
@@ -586,7 +599,6 @@ Draw HPRC haplotypes as lanes in assembly coordinates, aligned to each other by 
 
 Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc_haplotypes/
 
-- https://jbrowse.org/demos/hprc_multiway/config.json
 - https://jbrowse.org/pangenome/hprc-grch38/config.json
 - https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
 
@@ -623,6 +635,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_mouse/
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.segs.bed.gz
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.links.bed.gz
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.segs.bed.gz
+- https://jbrowse.org/ucsc/mm39/config-staging.json
 
 ## Pangenome (hosting your own graph)
 
@@ -632,6 +645,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_prepare_graph/
 
 - https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/hprc.json
 - https://jbrowse.org/demos/hprc/config.json
+- https://jbrowse.org/demos/hprc_multiway/config.json
 - https://jbrowse.org/pangenome/hprc-grch38/config.json
 
 ## CNV across a population (1000 Genomes)
@@ -683,6 +697,17 @@ Page: https://jbrowse.org/jb2/docs/tutorials/primate_orthologs_synteny/
 - https://jbrowse.org/demos/primate_orthologs/config.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 - https://jbrowse.org/hubs/genark/GCF/028/858/775/GCF_028858775.2/config.json
+
+## Protein domains on gene models
+
+Call Pfam domains on a genome's proteins, place each domain on the exons that encode it, and draw the domains under the genes, one row per isoform
+
+Page: https://jbrowse.org/jb2/docs/tutorials/protein_domains/
+
+- https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/254/395/GCF_003254395.2_Amel_HAv3.1/GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz
+- https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/254/395/GCF_003254395.2_Amel_HAv3.1/GCF_003254395.2_Amel_HAv3.1_genomic.gff.gz
+- https://jbrowse.org/demos/protein_domains/pfam.bed.gz
+- https://jbrowse.org/hubs/genark/GCF/003/254/395/GCF_003254395.2/config.json
 
 ## Variants on protein structures part 6: BRAF V600 in the activation loop
 

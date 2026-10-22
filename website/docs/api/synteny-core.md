@@ -220,7 +220,7 @@ whose label lists a text column's values index.
 
 ```js
 // type signature
-({ setting, attributes, viewRanges, fetchRanges, }: { setting: SyntenyOpacitySnapshot; attributes: Record<string, Float32Array<ArrayBufferLike>>; viewRanges: Record<string, AttributeRange>; fetchRanges: Record<string, AttributeRange>; }) => ((index: number) => number) | undefined
+({ setting, attributes, viewRanges, fetchRanges }: { setting: SyntenyOpacitySnapshot; attributes: Record<string, Float32Array>; viewRanges: Record<string, AttributeRange>; fetchRanges: Record<string, AttributeRange>; }) => ((index: number) => number) | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/opacityChannel.ts)

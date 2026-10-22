@@ -1394,5 +1394,9 @@ plugins/gccontent/src/GCContentTrack/index.ts window
 # adapters whose #example defaulted to FeatureTrack (0)
 # fix: add #trackType to the adapter’s #config JSDoc
 
+# model members whose type prints as an expanded model (1)
+# fix: tag that model #stateModel (#internal keeps it off the site), or give the member a written type that names it
+BaseDisplay.renderingProps
+
 # #stateModel tags attached to a declaration that builds no model (0)
 # fix: move the #stateModel JSDoc back onto its factory — a declaration in between takes the tag, and every inherited member row silently disappears

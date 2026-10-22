@@ -87,6 +87,7 @@ minimumReleaseAgeExclude:
   # every electron major bump break those jobs for a day.
   - 'electron-chromedriver'
   - 'generic-filehandle2'
+  - 'g2p_mapper'
   - '@jbrowse/mobx-state-tree'
   - '@jbrowse/jexl'
   - '@jbrowse/quick-lru'

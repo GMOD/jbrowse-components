@@ -188,7 +188,7 @@ At the _atp_ operon (the ATP synthase genes) on K-12, the track draws a lane per
 genome under the K-12 axis. Each lane is drawn in its genome's coordinates, and
 its header names the strain, contig and span shown, with `[rev]` where the lane
 runs against K-12
-([lane headers](/docs/tutorials/multiway_synteny_grape_peach_cacao#what-a-lane-header-shows)).
+([lane headers](/docs/user_guides/multiway_synteny_display#reading-a-lane-header)).
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the display's
 `encoding.color` is a color scale, here the `cluster` field mapped to colors:
 

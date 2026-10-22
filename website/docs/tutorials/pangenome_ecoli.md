@@ -5,6 +5,7 @@ description:
   projections plus the graph itself in JBrowse
 guide_category: Tutorials
 tutorial_category: Pangenomes
+tutorial_subcategory: Building a graph
 ---
 
 A pangenome graph stores the sequence several genomes share once, as a path

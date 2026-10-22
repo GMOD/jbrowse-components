@@ -80,8 +80,8 @@ The agent runs this aligner command:
 <!-- from: scripts/build_fly_agent_synteny.sh -->
 
 ```bash
-## The largest chromosome measures 2.4% divergence (de:f), past asm10's 1%.
-## --cs writes the difference string the index below carries.
+# asm20: the two species diverge past the 1% asm10 allows
+# --cs: writes the difference string the index below carries
 minimap2 -t 8 -cx asm20 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
 ```
 
@@ -152,13 +152,13 @@ split by strand, at mapping quality (MAPQ) 30 or better:
 ```bash
 awk -F'\t' '
 BEGIN {
-  ## the arm each RefSeq accession is, from the chromAlias files
+  # the arm each RefSeq accession is, from the chromAlias files
   split("NC_052520.2 2L NC_052521.2 2R NC_052522.2 3L NC_052523.2 3R NC_052524.2 4 NC_052525.2 X", a, " ")
   split("NC_046667.1 2L NC_046668.1 2R NC_046669.1 3L NC_046670.1 3R NC_046671.1 4 NC_046672.1 X", b, " ")
   for (i = 1; i in a; i += 2) q[a[i]] = a[i+1]
   for (i = 1; i in b; i += 2) t[b[i]] = b[i+1]
 }
-## $12 is MAPQ, $5 the strand, $4-$3 the aligned length on the query
+# $12 is MAPQ, $5 the strand, $4-$3 the aligned length on the query
 $12 >= 30 && ($1 in q) && ($6 in t) && q[$1] == t[$6] {
   aligned[q[$1]] += $4 - $3
   if ($5 == "-") reverse[q[$1]] += $4 - $3

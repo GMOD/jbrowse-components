@@ -23,7 +23,7 @@ places. For a host that draws them itself, such as R through V8.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, x, y, view }: DotplotTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, x, y, view }: DotplotTablesArgs) => Promise<{ config: {…}; field: string; alpha: number; assemblyNames: string[]; skipped: {…}; legend: {…}; legendTitle: string; ramps: {…}[]; alignments: {…}; segments: { alignment: number[]; op: string[]; xRegion: number[]; xChrom: string[]; xStart: number[]; xEnd: number[]; yRegion: number[]; yChrom: string[]; yStart: number[]; yEnd: number[]; color: string[]; alpha: number[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/tables.ts)

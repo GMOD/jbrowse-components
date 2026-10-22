@@ -61,9 +61,6 @@ ratchet's backlog. What follows is what no check sees.
   copy. oxfmt picks the emphasis marker.
 - A menu path in prose spells the app's label, ellipsis included:
   `**Color by... → Modifications**`. A caption keeps the path bare.
-- **A bold menu path stays on one source line.** oxfmt wraps at 80 columns, and
-  the menu-path, figure-action and unshown-setting checks cannot see a split
-  path.
 - `Add track` (FAB menu) and `Add track...` (track hamburger) are both real
   labels.
 

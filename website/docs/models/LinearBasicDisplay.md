@@ -89,7 +89,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-conf">**conf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;Config…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;ConfigurationSchemaType&lt;…&gt;&gt;</code></pre></dialog></span> | The config typed off this display's own schema, reclaiming its slots for direct reads the way `configuration` above does for `getConf`. |
+| <span id="getter-conf">**conf**</span><br><code><a href="../../config/linearbasicdisplay">LinearBasicDisplayConfig</a></code> | The config typed off this display's own schema, reclaiming its slots for direct reads the way `configuration` above does for `getConf`. |
 | <span id="getter-subfeaturelabels">**subfeatureLabels**</span><br><code>"auto" &#124; "below" &#124; "none" &#124; "overlay"</code> |  |
 | <span id="getter-effectivesubfeaturelabels">**effectiveSubfeatureLabels**</span><br><code>"auto" &#124; "below" &#124; "none" &#124; "overlay"</code> |  |
 | <span id="getter-showchevrons">**showChevrons**</span><br><code>boolean</code> |  |

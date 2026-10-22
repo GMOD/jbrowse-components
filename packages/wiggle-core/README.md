@@ -106,7 +106,7 @@ stored extremes, anything else `score`, the bins' mean.
 
 ```js
 // type signature
-(data: { featureScores: Float32Array<ArrayBufferLike>; featureMinScores: Float32Array<ArrayBufferLike>; featureMaxScores: Float32Array<ArrayBufferLike>; }, field: string) => Float32Array<ArrayBufferLike>
+(data: { featureScores: Float32Array; featureMinScores: Float32Array; featureMaxScores: Float32Array; }, field: string) => Float32Array<ArrayBufferLike>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)

@@ -2,12 +2,14 @@ import { GENERATED_NOTICE } from '../check-utils.ts'
 import {
   categoryLabel,
   collectTransitive,
+  dropNodeTails,
   elideSignature,
   exampleSection,
   filterUnseenByName,
   lastTaggedLine,
   markdownTable,
   markerBlockNames,
+  nameTypes,
   overviewSection,
   parseTaggedComment,
   removeComments,
@@ -436,10 +438,17 @@ describe('elideSignature', () => {
     )
   })
 
-  test('collapses generic arguments from the inside out', () => {
+  test('collapses generic arguments and objects from the inside out', () => {
     const sig = `IConfigurationReference<ConfigurationSchemaType<{ readonly featureHeight: { readonly type: "maybeNumber"; readonly description: "${'x'.repeat(200)}" } }>>`
     expect(elideSignature(sig, 180)).toBe(
-      'IConfigurationReference<ConfigurationSchemaType<…>>',
+      'IConfigurationReference<ConfigurationSchemaType<{ readonly featureHeight: {…} }>>',
+    )
+  })
+
+  test('keeps the keys of an object a generic holds', () => {
+    const sig = `() => Promise<{ tables: { ${'x'.repeat(100)}: number }; legend: { ${'y'.repeat(200)}: string } }>`
+    expect(elideSignature(sig, 180)).toBe(
+      '() => Promise<{ tables: {…}; legend: {…} }>',
     )
   })
 
@@ -490,6 +499,78 @@ describe('elideSignature', () => {
   test('reads past a bracket inside a string literal', () => {
     const sig = `(a: "<" | ">", b: Map<string, ${'x'.repeat(200)}>) => void`
     expect(elideSignature(sig, 180)).toBe('(a: "<" | ">", b: Map<…>) => void')
+  })
+})
+
+describe('dropNodeTails', () => {
+  test('drops the MST holder off a node', () => {
+    expect(
+      dropNodeTails(
+        '(conf: X) => PluggableConfigNode & IStateTreeNode<PluggableConfigSchemaType>',
+      ),
+    ).toBe('(conf: X) => PluggableConfigNode')
+  })
+
+  test('drops the parentheses a bare type no longer needs', () => {
+    expect(
+      dropNodeTails(
+        '(IMSTArray<ISimpleType<string>> & IStateTreeNode<IArrayType<ISimpleType<string>>>) | undefined',
+      ),
+    ).toBe('IMSTArray<ISimpleType<string>> | undefined')
+  })
+
+  test('keeps parentheses that still group something', () => {
+    expect(
+      dropNodeTails('(A & { b: number; } & IStateTreeNode<IModelType<{}>>)[]'),
+    ).toBe('(A & { b: number; })[]')
+  })
+
+  test('leaves a standalone IStateTreeNode alone', () => {
+    const sig = '(self: IStateTreeNode<IAnyType>) => void'
+    expect(dropNodeTails(sig)).toBe(sig)
+  })
+})
+
+describe('nameTypes', () => {
+  const view = {
+    name: 'LinearGenomeView',
+    body: 'ModelInstanceTypeProps<{ id: string; }> & { readonly bpPerPx: number; }',
+    isModel: true,
+  }
+  const config = {
+    name: 'BaseAssemblyConfig',
+    body: 'ConfigNodeProps<{ name: string; }> & ConfigNodeActions & ConfigNodeBrand<ConfigurationSchemaType<{ name: string; }>>',
+    isModel: false,
+  }
+  const node = (holder: string) => `IStateTreeNode<${holder}<{ id: string; }>>`
+
+  test('names a model whatever MST type holds it', () => {
+    expect(
+      nameTypes(
+        [view],
+        `(${view.body} & ${node('IModelType')}) | (${view.body} & ${node('IOptionalIType')})`,
+      ),
+    ).toBe('LinearGenomeView | LinearGenomeView')
+  })
+
+  test('keeps the members a node adds to a model', () => {
+    expect(
+      nameTypes(
+        [view],
+        `(${view.body} & { readonly width: number; } & ${node('IOptionalIType')})[]`,
+      ),
+    ).toBe('(LinearGenomeView & { readonly width: number; })[]')
+  })
+
+  test('leaves a prefix of a model that is not followed by its node alone', () => {
+    const sig = `${view.body} & { pickAt(): void; }`
+    expect(nameTypes([view], sig)).toBe(sig)
+  })
+
+  test('names a config node, which has no node tail', () => {
+    expect(nameTypes([config], `(name: string) => (${config.body})[]`)).toBe(
+      '(name: string) => BaseAssemblyConfig[]',
+    )
   })
 })
 

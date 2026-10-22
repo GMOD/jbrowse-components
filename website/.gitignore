@@ -25,6 +25,7 @@ static/pagefind/
 # stale the next time its source moves. figure-store.ts's isDerivedFigure is the
 # half of this rule the store reads; these lines are the half git reads.
 static/img/tutorial-thumbs/
+static/img/guide-thumbs/
 static/img/screenshot.webp
 static/img/desktop-available-genomes.webp
 

@@ -169,37 +169,6 @@ const { title, description, toggleLabel, navLabel, mdHref } = Astro.props
     transform: rotate(45deg);
   }
 
-  /* A summary that is itself a page link (a category with an `overview` page):
-     the summary supplies the padding + caret, so the inner link is plain text
-     that fills the row. The caret still toggles — clicking it, or the padding
-     around the label, opens the category without leaving the page — and the
-     underline on hover is what distinguishes these headers from the two that
-     have no page of their own and are pure toggles. */
-  .sidebar :global(summary > .summary-link) {
-    display: block;
-    flex: 1;
-    padding: 0;
-    color: inherit;
-    font-weight: inherit;
-    border-radius: 0;
-    /* Cancel the hanging indent every other sidebar link carries: here the row's
-       first line starts after the caret, and a -1em pull puts the label on top
-       of it — which reads as the category having lost its disclosure arrow. */
-    text-indent: 0;
-  }
-  .sidebar :global(summary > .summary-link:hover) {
-    background: none;
-    color: var(--color-navy);
-    text-decoration: underline;
-  }
-  .sidebar :global(summary > .summary-link.active) {
-    background: none;
-    border-left: none;
-    padding-left: 0;
-    color: var(--color-sidebar-active-text);
-    font-weight: 600;
-  }
-
   @media (max-width: 768px) {
     .sidebar-layout {
       flex-direction: column;

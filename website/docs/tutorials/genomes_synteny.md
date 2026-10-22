@@ -132,7 +132,7 @@ menu:
 
 <Figure src="/img/genomes_synteny/star_lanes.png" caption="hg38 at TNNT3 over genomes from chimp to platypus, ribbons colored by strand." />
 
-[Reading the stack](/docs/tutorials/hg38_vertebrates_synteny#reading-the-stack)
+[The multi-way synteny display guide](/docs/user_guides/multiway_synteny_display)
 covers the lane labels, `[rev]`, the ribbons and the lane menus.
 
 ## Choosing which mouse strains become lanes at Nnt
@@ -175,6 +175,7 @@ each. On hg38 at
 - [](/docs/tutorials/synteny_visualization)
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/allvsall_synteny)
+- [](/docs/tutorials/pangenome_mouse)
 - [](/docs/tutorials/agent_synteny)
 - [](/docs/tutorials/genomes_proteins)
 - [](/docs/user_guides/linear_synteny_view)
