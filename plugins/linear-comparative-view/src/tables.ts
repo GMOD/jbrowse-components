@@ -3,6 +3,7 @@ import { lowerBoundOf } from '@jbrowse/core/util/fieldPredicate'
 import { measureText } from '@jbrowse/core/util/measureText'
 import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 import {
+  DEFAULT_RIBBON_COLOR,
   FADE_AUTO_MIN_FEATURES,
   attributeColumns,
   axisNamePosition,
@@ -54,6 +55,7 @@ import type {
   FilterArg,
   OpacityArg,
   RefNamePosition,
+  RibbonInterpolation,
 } from '@jbrowse/synteny-core'
 
 export { registerComparativeAdapters }
@@ -71,14 +73,17 @@ export interface SyntenyTablesArgs {
    * `color` (a CSS color, or the color object's slots such as
    * `{ field: 'strand' }`), `opacity` (a number, or the opacity object),
    * `filter` (a list of field predicates), `cigarMode` (`full`, `matches` or `off`),
-   * `axis` (`grid` draws the location markers), `render` (`antialias`: `true`, `false`, or unset to follow the data) and
-   * the level's `height` in px, which the thin-ribbon fade measures against.
+   * `mark` (`interpolate`: `linear` or `bump`), `axis` (`grid` draws the
+   * location markers), `render` (`antialias`: `true`, `false`, or unset to
+   * follow the data) and the level's `height` in px, which the thin-ribbon
+   * fade measures against.
    */
   view?: {
     color?: ColorArg
     opacity?: OpacityArg
     filter?: FilterArg
     cigarMode?: 'full' | 'matches' | 'off'
+    mark?: { interpolate?: RibbonInterpolation }
     axis?: { grid?: boolean }
     render?: { antialias?: boolean }
     height?: number
@@ -337,6 +342,7 @@ export async function syntenyTables(
   const config = {
     filter: view.filter ?? [],
     cigarMode: view.cigarMode ?? 'full',
+    mark: { interpolate: view.mark?.interpolate ?? 'linear' },
     axis: { grid: view.axis?.grid ?? false },
     render: { antialias: view.render?.antialias },
     height: view.height ?? DEFAULT_LEVEL_HEIGHT,
@@ -400,7 +406,10 @@ export async function syntenyTables(
   const featureColor = createComparativeColorFunction({
     ...colorArgs,
     data: featureData,
-    defaultColor: cssColorToABGR(settings.valueColor ?? '#f00'),
+    defaultColor:
+      settings.valueColor === undefined
+        ? DEFAULT_RIBBON_COLOR
+        : cssColorToABGR(settings.valueColor),
   })
 
   const n = featureData.featureIds.length
@@ -416,6 +425,7 @@ export async function syntenyTables(
         )
       : mode
   const level = settings.level
+  const curves = config.mark.interpolate === 'bump'
 
   const named = (dict: readonly string[], ids: ArrayLike<number>) =>
     Array.from(ids, id => dict[id]!)
@@ -480,7 +490,7 @@ export async function syntenyTables(
     corners.sx2 = c2 / q.bpPerPx
     corners.sx3 = c3 / t.bpPerPx
     corners.sx4 = c4 / t.bpPerPx
-    const thin = marker || ribbonMaxPerpWidth(corners, height, false) < 1
+    const thin = marker || ribbonMaxPerpWidth(corners, height, curves) < 1
     const { color, alpha } = unpack(packed)
     const fade = marker
       ? 1

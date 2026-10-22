@@ -24,6 +24,7 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
   expect(t.config).toMatchObject({
     filter: [],
     cigarMode: 'full',
+    mark: { interpolate: 'linear' },
     axis: { grid: false },
     render: {},
     height: 100,
