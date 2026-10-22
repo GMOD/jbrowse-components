@@ -5360,7 +5360,23 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "interpolate",
-                      "type": "LineInterpolation"
+                      "type": "(MarkInterpolation | undefined)"
+                    },
+                    {
+                      "name": "height",
+                      "type": "MarkHeightConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "band",
+                          "type": "number"
+                        }
+                      ],
+                      "schema": "MarkHeight",
+                      "writes": "members"
+                    },
+                    {
+                      "name": "gapBp",
+                      "type": "(number | undefined)"
                     }
                   ],
                   "schema": "MarkDef",
@@ -5368,18 +5384,6 @@ export const configManifest: ConfigManifest = {
                   "shorthand": {
                     "string": "type"
                   }
-                },
-                {
-                  "name": "gapBp",
-                  "type": "(number | undefined)"
-                },
-                {
-                  "name": "linkShape",
-                  "type": "LinkShape"
-                },
-                {
-                  "name": "rowProportion",
-                  "type": "number"
                 },
                 {
                   "name": "encoding",
@@ -7293,7 +7297,23 @@ export const configManifest: ConfigManifest = {
                 },
                 {
                   "name": "interpolate",
-                  "type": "LineInterpolation"
+                  "type": "(MarkInterpolation | undefined)"
+                },
+                {
+                  "name": "height",
+                  "type": "MarkHeightConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "band",
+                      "type": "number"
+                    }
+                  ],
+                  "schema": "MarkHeight",
+                  "writes": "members"
+                },
+                {
+                  "name": "gapBp",
+                  "type": "(number | undefined)"
                 }
               ],
               "schema": "MarkDef",
@@ -7301,18 +7321,6 @@ export const configManifest: ConfigManifest = {
               "shorthand": {
                 "string": "type"
               }
-            },
-            {
-              "name": "gapBp",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "linkShape",
-              "type": "LinkShape"
-            },
-            {
-              "name": "rowProportion",
-              "type": "number"
             },
             {
               "name": "encoding",
@@ -7839,7 +7847,23 @@ export const configManifest: ConfigManifest = {
                 },
                 {
                   "name": "interpolate",
-                  "type": "LineInterpolation"
+                  "type": "(MarkInterpolation | undefined)"
+                },
+                {
+                  "name": "height",
+                  "type": "MarkHeightConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "band",
+                      "type": "number"
+                    }
+                  ],
+                  "schema": "MarkHeight",
+                  "writes": "members"
+                },
+                {
+                  "name": "gapBp",
+                  "type": "(number | undefined)"
                 }
               ],
               "schema": "MarkDef",
@@ -7847,18 +7871,6 @@ export const configManifest: ConfigManifest = {
               "shorthand": {
                 "string": "type"
               }
-            },
-            {
-              "name": "gapBp",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "linkShape",
-              "type": "LinkShape"
-            },
-            {
-              "name": "rowProportion",
-              "type": "number"
             },
             {
               "name": "encoding",

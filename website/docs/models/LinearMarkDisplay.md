@@ -88,7 +88,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-textmarkentries">**textMarkEntries**</span><br><code>TextMarkEntry[]</code> | Each mark as the text layer places it: the entry with whether it names a `y` and whether its color is written, a constant or a scale. Its own getter so a slot only a label reads never remakes the mark list. |
 | <span id="getter-markview">**markView**</span><br><code>MarkView</code> | The marks at the view's zoom: whether each draws, inside its `minBpPerPx`..`maxBpPerPx` range where 0 is no bound. |
 | <span id="getter-marksizes">**markSizes**</span><br><code>number[]</code> | Each mark's `encoding.size` number in px, its type's default where none is written, and 0 for a bar, span or text, which draw none. |
-| <span id="getter-markrowproportions">**markRowProportions**</span><br><code>number[]</code> | Each mark's `rowProportion`, which a span alone reads. |
+| <span id="getter-markrowproportions">**markRowProportions**</span><br><code>number[]</code> | Each mark's `mark.height.band`, which a span alone reads. |
 | <span id="getter-rowproportion">**rowProportion**</span><br><code>number &#124; undefined</code> | The proportion the Row height dialog shows: the first span's, or undefined where no mark is a span, so the dialog asks for none. |
 | <span id="getter-haslinkmark">**hasLinkMark**</span><br><code>boolean</code> | Whether any mark is a link, whose feet place through the view's regions rather than the block's own range. |
 | <span id="getter-pointsize">**pointSize**</span><br><code>number</code> | The size the Point size menu shows: the first point mark's, or the default where no mark is a point. |
@@ -225,7 +225,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | Member | Description |
 | --- | --- |
 | <span id="action-setsourcelisting">**setSourceListing**</span><br><code>(read: AdapterRead&lt;RowSourceListing &#124; null&gt;) =&gt; void</code> |  |
-| <span id="action-setrowproportion">**setRowProportion**</span><br><code>(n: number) =&gt; void</code> | Write every span mark's `rowProportion`. |
+| <span id="action-setrowproportion">**setRowProportion**</span><br><code>(n: number) =&gt; void</code> | Write every span mark's `mark.height.band`. |
 | <span id="action-setfittoheight">**setFitToHeight**</span><br><code>() =&gt; void</code> | Fit the rows to the plot. The `height` getter is the slot itself, so nothing needs seeding on the way in. |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(hit: MarkHitInfo) =&gt; void</code> | Open the feature widget on the read, the bin or the run a hit drew, inside its facet section, through `selectEncodedFeature`. |
 | <span id="action-setrpcdata">**setRpcData**</span><br><code>(idx: number, data: EncodedLayersResult, region: Region) =&gt; void</code> | Stage a region as fetched, with this display's payload layout. |

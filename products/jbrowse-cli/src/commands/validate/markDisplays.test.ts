@@ -141,14 +141,14 @@ describe('a marks list in a config file', () => {
     expect(found([{ mark: 'span', encoding: { size: 8 } }])).toEqual([
       `warning unread-size ${DISPLAY}.marks[0].encoding.size`,
     ])
-    expect(found([{ mark: 'span', linkShape: 'arc' }])).toEqual([
-      `warning unread-link-shape ${DISPLAY}.marks[0].linkShape`,
-    ])
     expect(found([{ mark: { type: 'span', interpolate: 'linear' } }])).toEqual([
-      `warning unread-interpolate ${DISPLAY}.marks[0].mark.interpolate`,
+      `warning unread-mark-member ${DISPLAY}.marks[0].mark.interpolate`,
     ])
-    expect(found([{ mark: 'span', gapBp: 5000 }])).toEqual([
-      `warning unread-gap ${DISPLAY}.marks[0].gapBp`,
+    expect(found([{ mark: { type: 'span', gapBp: 5000 } }])).toEqual([
+      `warning unread-mark-member ${DISPLAY}.marks[0].mark.gapBp`,
+    ])
+    expect(found([{ mark: { type: 'link', interpolate: 'step' } }])).toEqual([
+      `warning mark-interpolate ${DISPLAY}.marks[0].mark.interpolate`,
     ])
     expect(
       found([
@@ -166,11 +166,16 @@ describe('a marks list in a config file', () => {
       ]),
     ).toEqual([`warning window-frame ${DISPLAY}.marks[0].transform[0].frame`])
     expect(
-      found([{ mark: 'bar', rowProportion: 0.8, encoding: { y: 'score' } }]),
-    ).toEqual([
-      `warning unread-row-proportion ${DISPLAY}.marks[0].rowProportion`,
-    ])
-    expect(found([{ mark: 'span', rowProportion: 0.8 }])).toEqual([])
+      found([
+        {
+          mark: { type: 'bar', height: { band: 0.8 } },
+          encoding: { y: 'score' },
+        },
+      ]),
+    ).toEqual([`warning unread-mark-member ${DISPLAY}.marks[0].mark.height`])
+    expect(found([{ mark: { type: 'span', height: { band: 0.8 } } }])).toEqual(
+      [],
+    )
     expect(
       found([
         {
@@ -182,8 +187,7 @@ describe('a marks list in a config file', () => {
     expect(
       found([
         {
-          mark: 'link',
-          linkShape: 'arc',
+          mark: { type: 'link', interpolate: 'arc' },
           encoding: {
             x2: { chrom: 'mate.refName', pos: 'mate.start' },
             size: 3,
@@ -659,8 +663,7 @@ describe('a mark display drawing its default plot', () => {
     expect(
       found([
         {
-          mark: 'span',
-          linkShape: 'dome',
+          mark: { type: 'span', height: { band: 1 } },
           encoding: { y: '', text: 'name', shape: {}, size: {} },
         },
       ]),

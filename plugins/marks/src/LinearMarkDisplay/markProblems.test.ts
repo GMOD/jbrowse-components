@@ -214,7 +214,7 @@ test('a size on a mark that draws no shape waits unread, and a point or a rule r
   ).toEqual([])
 })
 
-test('an interpolate on a mark that draws no line waits unread', () => {
+test('an interpolate on a mark that joins nothing waits unread', () => {
   expect(
     found([
       {
@@ -222,7 +222,10 @@ test('an interpolate on a mark that draws no line waits unread', () => {
         encoding: { y: 'score' },
       },
     ]),
-  ).toEqual(['warning unread-interpolate mark 0 mark.interpolate'])
+  ).toEqual(['warning unread-mark-member mark 0 mark.interpolate'])
+  expect(found([{ mark: { type: 'span', interpolate: 'arc' } }])).toEqual([
+    'warning unread-mark-member mark 0 mark.interpolate',
+  ])
   expect(
     found([
       {
@@ -231,15 +234,28 @@ test('an interpolate on a mark that draws no line waits unread', () => {
       },
     ]),
   ).toEqual([])
+  expect(found([{ mark: { type: 'link', interpolate: 'arc' } }])).toEqual([])
+  expect(found([{ mark: { type: 'link', interpolate: 'linear' } }])).toEqual([])
   expect(found([{ mark: 'line', encoding: { y: 'score' } }])).toEqual([])
+})
+
+test("an interpolate the mark's type does not draw is named with what it draws instead", () => {
+  const problems = problemsOf([
+    { mark: { type: 'line', interpolate: 'dome' }, encoding: { y: 'score' } },
+    { mark: { type: 'link', interpolate: 'step' } },
+  ])
+  expect(problems.map(problemText)).toEqual([
+    'mark 0 mark.interpolate: a line interpolates step or linear, so dome draws as step',
+    'mark 1 mark.interpolate: a link interpolates dome, arc or linear, so step draws as dome',
+  ])
 })
 
 test('a gapBp on a mark that draws no line waits unread', () => {
   expect(
-    found([{ mark: 'point', encoding: { y: 'score' }, gapBp: 5000 }]),
-  ).toEqual(['warning unread-gap mark 0 gapBp'])
+    found([{ mark: { type: 'point', gapBp: 5000 }, encoding: { y: 'score' } }]),
+  ).toEqual(['warning unread-mark-member mark 0 mark.gapBp'])
   expect(
-    found([{ mark: 'line', encoding: { y: 'score' }, gapBp: 5000 }]),
+    found([{ mark: { type: 'line', gapBp: 5000 }, encoding: { y: 'score' } }]),
   ).toEqual([])
 })
 
@@ -270,18 +286,21 @@ test("a window's frame is two whole row offsets or null, in order", () => {
   }
 })
 
-test('a rowProportion on a mark that draws no span waits unread', () => {
+test('a height on a mark that draws no span waits unread, unless it is the default', () => {
   expect(
-    found([{ mark: 'bar', encoding: { y: 'score' }, rowProportion: 0.8 }]),
-  ).toEqual(['warning unread-row-proportion mark 0 rowProportion'])
-  expect(found([{ mark: 'span', rowProportion: 0.8 }])).toEqual([])
-})
-
-test('a linkShape on a mark that draws no link waits unread', () => {
-  expect(found([{ mark: 'span', linkShape: 'arc' }])).toEqual([
-    'warning unread-link-shape mark 0 linkShape',
-  ])
-  expect(found([{ mark: 'link', linkShape: 'arc' }])).toEqual([])
+    found([
+      {
+        mark: { type: 'bar', height: { band: 0.8 } },
+        encoding: { y: 'score' },
+      },
+    ]),
+  ).toEqual(['warning unread-mark-member mark 0 mark.height'])
+  expect(
+    found([
+      { mark: { type: 'bar', height: { band: 1 } }, encoding: { y: 'score' } },
+    ]),
+  ).toEqual([])
+  expect(found([{ mark: { type: 'span', height: { band: 0.8 } } }])).toEqual([])
 })
 
 test('a valued mark beside a packed span is told it stands in the first row, unless they never draw together or a facet bands them', () => {
@@ -1031,8 +1050,7 @@ test('a field spelling a color in any CSS syntax is a constant written bare', ()
 
 test('a slot written at its default reads as unwritten, as the display sees it', () => {
   const written = {
-    mark: 'span',
-    linkShape: 'dome',
+    mark: { type: 'span', height: { band: 1 } },
     encoding: {
       y: '',
       x: 'start',

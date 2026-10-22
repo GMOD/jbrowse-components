@@ -70,7 +70,7 @@ one.
 | a line through the values | `geom_step()`, `geom_line()` | `"mark": { "type": "line", "interpolate": "step-after" }` or `"linear"` | `"mark": { "type": "line", "interpolate": "step" }` or `"linear"`, `encoding.size` its width |
 | a band across the plot, with no value | `geom_rect()` with no y | `"mark": "rect"` over `x` and `x2` alone | `"mark": "span"` |
 | a heatmap strip, its color the value | `geom_tile(aes(fill = score))` | `"mark": "rect"` with a quantitative `color` | `"mark": "span"` with a color scale over the field |
-| a band thinner than its row | `geom_tile(height = 0.8)` | `"mark": {"type": "rect", "height": {"band": 0.8}}` | `"mark": "span"`, `"rowProportion": 0.8` |
+| a band thinner than its row | `geom_tile(height = 0.8)` | `"mark": {"type": "rect", "height": {"band": 0.8}}` | `"mark": {"type": "span", "height": {"band": 0.8}}` |
 | the field a mark plots | `aes(y = score)` | `"y": {"field": "score"}` | `"encoding": {"y": "score"}` |
 | a value computed on the way in | `mutate()` before the plot | `{"calculate": …, "as": …}` | `{"type": "formula", "expr": …, "as": …}` |
 | a color per category | `aes(fill = strand)` | `"color": {"field": "strand", "type": "nominal"}` | `"color": {"field": "strand", "scale": "categorical"}` |
@@ -430,9 +430,10 @@ paints each interval by its value, and a diverging `range` with `domainMid`
 fades through the middle color at that value, which is how a signed signal reads
 white at zero.
 
-`rowProportion` is the fraction of its band a span fills, centred, 1 by default.
-It sits on the mark, so two spans over the same rows can differ, one drawn thick
-at `0.8` and one thin at `0.3`.
+`"mark": { "type": "span", "height": { "band": 0.8 } }` fills that fraction of
+its band, centred, where an unwritten `band` fills all of it. It sits on the
+mark, so two spans over the same rows can differ, one drawn thick at `0.8` and
+one thin at `0.3`.
 
 ## Labels
 
@@ -556,15 +557,16 @@ out to add more: a color by type, a stroke by score, a shape:
 ```
 
 The apex of a link is its half-width, clamped to the band under
-`linkShape: "dome"` (the default) and a true semicircle under `"arc"`; a `y`
-puts it at a value on the display's axis instead, so a link plotted by its score
-rises to it. `"line"` draws a straight segment between the two ends, on the
-baseline or at the `y` value. A pair wider than three screens straightens into a
-leg rising from each end, and a mate the view does not show draws a short stem
-at the end it does. Where the `mate` step read a direction for an end, as it
-does from a breakend `ALT`, the link draws a short foot there, lying over the
-side of the junction the rearranged sequence keeps. A link answers a hover and a
-click along its stroke, and the SVG export writes it as a path.
+`"mark": { "type": "link", "interpolate": "dome" }` (the default) and a true
+semicircle under `"arc"`; a `y` puts it at a value on the display's axis
+instead, so a link plotted by its score rises to it. `"linear"` draws a straight
+segment between the two ends, on the baseline or at the `y` value. A pair wider
+than three screens straightens into a leg rising from each end, and a mate the
+view does not show draws a short stem at the end it does. Where the `mate` step
+read a direction for an end, as it does from a breakend `ALT`, the link draws a
+short foot there, lying over the side of the junction the rearranged sequence
+keeps. A link answers a hover and a click along its stroke, and the SVG export
+writes it as a path.
 
 A `text` mark naming no `y` labels the link on its two ends: each label sits
 just inside the apex of its curve, or just over it where the curve is too small
@@ -680,7 +682,7 @@ The rows divide the plot between them by default, so every row shows.
 scroll: a wheel over the rows or the scrollbar at the right reaches them, and
 shift+wheel resizes them. `0`, the default, fits them to the plot again, and
 **Row height → Squeeze to fit view** writes it. The menu's Normal and Compact
-presets also set every span's `rowProportion`, so the rows stand apart.
+presets also set every span's `mark.height.band`, so the rows stand apart.
 
 The display's [`rowColor`](/docs/config/linearmarkdisplay/#slot-rowcolor) paints
 the bar beside each row's label and leaves the marks' colors unchanged.
@@ -930,9 +932,8 @@ each reported under its id:
 | `unwritten-y` | error | A `y` naming a field that no `aggregate` or `coverage` step before it writes. |
 | `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span` or a size field on a point. |
 | `unread-size` | warning | An `encoding.size` on a mark that draws no point, rule or line and strokes no link. |
-| `unread-link-shape` | warning | A `linkShape` on a mark that draws no link. |
-| `unread-interpolate` | warning | An `interpolate` on a mark that draws no line. |
-| `unread-row-proportion` | warning | A `rowProportion` on a mark that draws no span. |
+| `unread-mark-member` | warning | A `mark` member its type does not read: an `interpolate` off a line or a link, a `height` off a span, a `gapBp` off a line. |
+| `mark-interpolate` | warning | An `interpolate` the mark's type does not draw, such as `dome` on a line, which then draws its default. |
 | `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |
 | `threshold-no-cuts` | warning | A threshold color naming no cut, so every value paints one color. |
 | `threshold-cut-count` | warning | A threshold color naming more cuts than it paints, so a value past the eighth takes the ninth color. |
@@ -947,7 +948,6 @@ each reported under its id:
 | `unknown-domain` | warning | A categorical color's `unknown` with no `domain`, so it paints every value. |
 | `unknown-scale` | warning | An `unknown` on a color painting through no categorical scale, so nothing reads it. |
 | `window-frame` | warning | A `window`'s `frame` other than two whole row offsets or `null`, the first not past the second, so the step reads its default. |
-| `unread-gap` | warning | A `gapBp` on a mark that draws no line. |
 | `step-pair` | warning | A `bin`'s `as` or `fields`, or a `pileup`'s `fields`, naming other than two fields, so the step reads its defaults. |
 | `bin-field-and-fields` | warning | A `bin` naming a `field` beside the `fields` it cuts at the bin edges, which leaves the `field` unread. |
 | `unread-weight` | warning | A `weight` on a `min` or a `max`, where it has no effect. |

@@ -35,7 +35,11 @@ spelling, not a new house word. That means no new `min*`, `max*`, `show*` or
   name lifting to the type; the chord displays' `mark` is a plot setting
   beside it.
 - The mark display's `marks[].mark` as the same object (`MarkDef`), so the
-  two displays spell a mark alike (ADR-216).
+  two displays spell a mark alike (ADR-216). The members one mark type reads
+  moved inside it: a link's `linkShape` is `mark.interpolate` (`dome`, `arc`,
+  `linear`), a span's `rowProportion` is `mark.height: { band }`, and a line's
+  `gapBp` is `mark.gapBp`. render-core's link params still say `linkShape`
+  and `line`; `markEntryOf` maps the one word onto them.
 - MAF's `alignments.inversions`, `.frames` and `.reference` as `{ show }`
   parts, which replaced `showInversions`, `showAnnotations` and the top-level
   `showReferenceRow`. `rowIdentityAutoZoom`, `showAllLetters` and
@@ -91,10 +95,6 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
      `bridgeSkippedLanes` is Vega-Lite's `mark.invalid: 'filter'`, which
      joins a path across a missing value, and `false` breaks the path there
      as d3's `defined` does. A bridged ribbon also draws at `BRIDGE_ALPHA`.
-   - The mark display's `marks.linkShape` (`dome arc line`) has no planned
-     spelling yet; see ADR-238's note on `interpolate`. It, `gapBp` and
-     `rowProportion` are still entry members beside `mark`, where
-     Vega-Lite would put them in the mark object.
 
 ## Writers to update after each landing
 

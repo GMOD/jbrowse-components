@@ -28,15 +28,33 @@ export const MARK_TYPES = [
 export type MarkType = (typeof MARK_TYPES)[number]
 export const DEFAULT_MARK_TYPE: MarkType = 'bar'
 
+/**
+ * How a line or a link joins its ends. Which of them each type draws, its
+ * default first, is `MARK_SPECS`' `interpolations`.
+ */
+export const MARK_INTERPOLATIONS = ['step', 'linear', 'dome', 'arc'] as const
+export type MarkInterpolation = (typeof MARK_INTERPOLATIONS)[number]
+
 /** How a line joins its values: held across each span, or centre to centre. */
-export const LINE_INTERPOLATIONS = ['step', 'linear'] as const
-export type LineInterpolation = (typeof LINE_INTERPOLATIONS)[number]
+export type LineInterpolation = Extract<MarkInterpolation, 'step' | 'linear'>
 export const DEFAULT_LINE_INTERPOLATE: LineInterpolation = 'step'
+
+/** The members of a `mark` object one type alone reads, beside its `type`. */
+export const MARK_MEMBERS = ['interpolate', 'height', 'gapBp'] as const
+export type MarkMember = (typeof MARK_MEMBERS)[number]
+
+/** The fraction of its band a span fills where its `mark.height.band` is left unwritten. */
+export const DEFAULT_HEIGHT_BAND = 1
 
 /** A `marks` entry's `mark` as a snapshot holds it: the object, or its type alone. */
 export type MarkDefSnapshot =
   | MarkType
-  | { type?: MarkType; interpolate?: LineInterpolation }
+  | {
+      type?: MarkType
+      interpolate?: MarkInterpolation
+      height?: { band?: number }
+      gapBp?: number
+    }
 
 /** The type a `marks` entry draws, whichever way its `mark` is written. */
 export function markTypeOf(entry: { mark?: MarkDefSnapshot }): MarkType {
@@ -44,12 +62,10 @@ export function markTypeOf(entry: { mark?: MarkDefSnapshot }): MarkType {
   return (typeof mark === 'string' ? mark : mark?.type) ?? DEFAULT_MARK_TYPE
 }
 
-/** How a `marks` entry's line joins its values, unset where the config leaves it. */
-export function markInterpolateOf(entry: {
-  mark?: MarkDefSnapshot
-}): LineInterpolation | undefined {
+/** A `marks` entry's `mark` as an object, `{}` where the type alone is written. */
+export function markDefOf(entry: { mark?: MarkDefSnapshot }) {
   const { mark } = entry
-  return typeof mark === 'string' ? undefined : mark?.interpolate
+  return typeof mark === 'object' ? mark : {}
 }
 /** The diameter a point draws at, and a rule's thickness, where its `size` is left unwritten. */
 export const DEFAULT_POINT_DIAMETER_PX = 4
@@ -57,14 +73,8 @@ export const DEFAULT_POINT_DIAMETER_PX = 4
 /** The width a line strokes at where its `size` is left unwritten. */
 export const DEFAULT_LINE_WIDTH_PX = 1
 
-export const LINK_SHAPES = ['dome', 'arc', 'line'] as const
-export type LinkShape = (typeof LINK_SHAPES)[number]
-export const DEFAULT_LINK_SHAPE: LinkShape = 'dome'
 /** The stroke a link draws at where its `size` is left unwritten. */
 export const DEFAULT_LINK_STROKE_PX = 2
-
-/** The fraction of its row a span fills where its `rowProportion` is left unwritten. */
-export const DEFAULT_ROW_PROPORTION = 1
 
 /** The cuts a threshold color paints, render-core's `MAX_COLOR_CUTS`. */
 export const MAX_THRESHOLD_CUTS = 8

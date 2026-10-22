@@ -142,10 +142,10 @@ function spanProportionUniform(display: LinearMarkDisplayModel, i: number) {
   return hal.getLastUniformsF32()![spanShader.UNIFORM_OFFSET_F32.rowProportion]
 }
 
-test('each span reads its own rowProportion, and setRowProportion writes every span', () => {
+test('each span reads its own height band, and setRowProportion writes every span', () => {
   const display = loaded(PINNED, [
-    { mark: 'span', rowProportion: 0.75 },
-    { mark: 'span', rowProportion: 0.25 },
+    { mark: { type: 'span', height: { band: 0.75 } } },
+    { mark: { type: 'span', height: { band: 0.25 } } },
   ])
   expect(spanProportionUniform(display, 0)).toBe(0.75)
   expect(spanProportionUniform(display, 1)).toBe(0.25)

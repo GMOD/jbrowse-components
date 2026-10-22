@@ -402,10 +402,10 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Each mark's `rowProportion`, which a span alone reads.
+         * Each mark's `mark.height.band`, which a span alone reads.
          */
         get markRowProportions(): number[] {
-          return self.conf.marks.map(m => m.rowProportion)
+          return self.conf.marks.map(m => m.mark.height.band)
         },
         /**
          * #getter
@@ -413,8 +413,8 @@ export function stateModelFactory(
          * undefined where no mark is a span, so the dialog asks for none.
          */
         get rowProportion(): number | undefined {
-          return self.conf.marks.find(m => m.mark.type === 'span')
-            ?.rowProportion
+          return self.conf.marks.find(m => m.mark.type === 'span')?.mark.height
+            .band
         },
         /**
          * #getter
@@ -1546,12 +1546,12 @@ export function stateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * Write every span mark's `rowProportion`.
+         * Write every span mark's `mark.height.band`.
          */
         setRowProportion(n: number) {
           for (const mark of self.conf.marks) {
             if (mark.mark.type === 'span') {
-              setConf(mark, 'rowProportion', n)
+              setConf(mark, ['mark', 'height', 'band'], n)
             }
           }
         },

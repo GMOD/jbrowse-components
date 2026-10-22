@@ -134,7 +134,7 @@ channels.
     `linear`, `step` and `monotone` are Vega-Lite's. `bump` is d3's
     `curveBump`, the cubic with both control points at mid height that the
     synteny ribbons draw. `arc`, and the mark display's default `dome`, are
-    ours, for its `linkShape`. Vega's `linkpath` transform calls the same
+    ours, a link's `mark.interpolate` there. Vega's `linkpath` transform calls the same
     family `shape` (`line arc curve diagonal orthogonal`).
   - The chord displays' `mark.depth` replaces `bezierRadiusRatio`, flipped so
     a larger value curves more: 1 runs an antipodal chord through the center.

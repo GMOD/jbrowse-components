@@ -21,14 +21,7 @@ import { markFacetSchema } from './markFacetConfigSchema.ts'
 import { markLocusSchema } from './markLocusConfigSchema.ts'
 import { markSizeSchema } from './markSizeConfigSchema.ts'
 import { markTransformStep } from './markTransformConfigSchema.ts'
-import {
-  DEFAULT_LINK_SHAPE,
-  DEFAULT_ROW_PROPORTION,
-  DEFAULT_TEXT_FIELD,
-  LINK_SHAPES,
-  MARK_TYPES,
-  markTypeOf,
-} from './markVocabulary.ts'
+import { DEFAULT_TEXT_FIELD, MARK_TYPES, markTypeOf } from './markVocabulary.ts'
 
 import type { MarkDefSnapshot } from './markVocabulary.ts'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
@@ -279,46 +272,11 @@ const markSchema = ConfigurationSchema(
     /**
      * #slot marks.mark
      * What the mark draws, a [](/docs/config/markdef) object or its `type`
-     * alone: `bar`, `point`, `rule`, `line`, `span`, `text` or `link`.
+     * alone: `bar`, `point`, `rule`, `line`, `span`, `text` or `link`, with
+     * the members one type reads, a line's or a link's `interpolate`, a
+     * span's `height` and a line's `gapBp`.
      */
     mark: markDefSchema,
-    /**
-     * #slot marks.gapBp
-     * The stretch in bp a `linear` line breaks across rather than bridge:
-     * where the next value's middle lies further on than this. Unset, a
-     * `window` step in front sets it to the bases its frame spans at the
-     * median row, so a moving average breaks where no data reached, and with
-     * none the line runs unbroken. Read by a line alone.
-     */
-    gapBp: {
-      type: 'maybeNumber',
-      description: 'bp a line breaks across; unset follows a window step',
-    },
-    /**
-     * #slot marks.linkShape
-     * The shape of a link mark: `dome` is a half-ellipse whose apex is the pair's
-     * half-width clamped to the band, `arc` a true semicircle that may leave
-     * it, and `line` a straight segment between the feet, on the baseline or
-     * at the `y` value. A dome or arc wider than three view widths becomes a
-     * circle whose legs rise from each foot.
-     */
-    linkShape: {
-      type: 'stringEnum',
-      model: types.enumeration('LinkShape', [...LINK_SHAPES]),
-      defaultValue: DEFAULT_LINK_SHAPE,
-      description: 'dome, arc or line',
-    },
-    /**
-     * #slot marks.rowProportion
-     * The fraction of its row's height a span fills, centred in the row, so
-     * below 1 the rows stand apart. Read by a span alone; the track menu's
-     * Row height presets write every span's.
-     */
-    rowProportion: {
-      type: 'number',
-      defaultValue: DEFAULT_ROW_PROPORTION,
-      description: 'fraction of its row a span fills',
-    },
     /**
      * #slot marks.encoding
      * The feature field each of the mark's channels reads. Every channel has

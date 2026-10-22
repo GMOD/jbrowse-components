@@ -12,8 +12,7 @@ test('a link standing at a y folds into the axis whichever side its far foot lie
   const { display, view } = createTestEnvironment({
     marks: [
       {
-        mark: 'link',
-        linkShape: 'line',
+        mark: { type: 'link', interpolate: 'linear' },
         encoding: { y: 'score', x2: { chrom: 'chrom2', pos: 'start2' } },
       },
     ],

@@ -10,7 +10,13 @@ import { binStepWidth } from './autoBin.ts'
 import { markShapeScale } from './configSchema.ts'
 import { colorLanesOf, markColorOf, wireColorOf } from './markColor.ts'
 import { zoomInRange } from './markList.ts'
-import { MARK_SPECS, markLanes, plotsValue, readsValue } from './markSpecs.ts'
+import {
+  MARK_SPECS,
+  interpolationOf,
+  markLanes,
+  plotsValue,
+  readsValue,
+} from './markSpecs.ts'
 import {
   DEFAULT_BIN_AS,
   DEFAULT_BIN_FIELD,
@@ -277,14 +283,22 @@ export function markEntryOf(
   channels: StepChannels,
 ): MarkEntry {
   const valued = marksValue(mark, channels)
+  const { type } = mark.mark
+  // The one `interpolate`, as the link and the line shapes each name it.
+  const interpolate = interpolationOf(type, mark.mark.interpolate)
   return {
-    type: mark.mark.type,
+    type,
     minBpPerPx: mark.minBpPerPx,
     maxBpPerPx: mark.maxBpPerPx,
-    placed: !readsValue(mark.mark.type) || valued,
+    placed: !readsValue(type) || valued,
     valued,
-    linkShape: mark.linkShape,
-    interpolate: mark.mark.interpolate,
+    linkShape:
+      interpolate === 'linear'
+        ? 'line'
+        : interpolate === 'arc'
+          ? 'arc'
+          : 'dome',
+    interpolate: interpolate === 'linear' ? 'linear' : 'step',
   }
 }
 
@@ -328,7 +342,7 @@ function specOfMark(mark: MarkConfig): MarkSpec {
 function pathOf(mark: MarkConfig, color: ColorSource): PathSpec {
   return {
     ...(color.kind === 'categories' ? { by: color.encoding.field } : {}),
-    ...(mark.gapBp === undefined ? {} : { gapBp: mark.gapBp }),
+    ...(mark.mark.gapBp === undefined ? {} : { gapBp: mark.mark.gapBp }),
   }
 }
 

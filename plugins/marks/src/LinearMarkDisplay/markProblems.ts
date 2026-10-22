@@ -17,16 +17,15 @@ import {
   DEFAULT_AGGREGATE_OP,
   DEFAULT_BIN_AS,
   DEFAULT_BIN_FIELD,
-  DEFAULT_LINE_INTERPOLATE,
-  DEFAULT_ROW_PROPORTION,
-  DEFAULT_LINK_SHAPE,
+  DEFAULT_HEIGHT_BAND,
   DEFAULT_PILEUP_FIELDS,
   DEFAULT_TEXT_FIELD,
   DEFAULT_WINDOW_FRAME,
   DEFAULT_X2,
   isWindowFrame,
   MAX_THRESHOLD_CUTS,
-  markInterpolateOf,
+  MARK_MEMBERS,
+  markDefOf,
   markTypeOf,
 } from './markVocabulary.ts'
 import { stepChannels } from './stepChannels.ts'
@@ -35,8 +34,8 @@ import type { ColorSlots, ScaleEnds } from './markRuleFacts.ts'
 import type { MarkChannel, MarkSpec } from './markSpecs.ts'
 import type {
   AggregateOpName,
-  LinkShape,
   MarkDefSnapshot,
+  MarkMember,
 } from './markVocabulary.ts'
 
 /**
@@ -58,12 +57,10 @@ export const MARK_RULES = {
   'unread-channel': 'warning',
   /** An `encoding.size` on a mark that draws no point, rule or line and strokes no link. */
   'unread-size': 'warning',
-  /** A `linkShape` on a mark that draws no link. */
-  'unread-link-shape': 'warning',
-  /** An `interpolate` on a mark that draws no line. */
-  'unread-interpolate': 'warning',
-  /** A `rowProportion` on a mark that draws no span. */
-  'unread-row-proportion': 'warning',
+  /** A `mark` member its type does not read: an `interpolate` off a line or a link, a `height` off a span, a `gapBp` off a line. */
+  'unread-mark-member': 'warning',
+  /** An `interpolate` the mark's type does not draw, such as `dome` on a line, which then draws its default. */
+  'mark-interpolate': 'warning',
   /** Threshold cuts that repeat, leaving an interval no value falls in. */
   'threshold-cuts': 'warning',
   /** A threshold color naming no cut, so every value paints one color. */
@@ -98,8 +95,6 @@ export const MARK_RULES = {
   'bin-width': 'error',
   /** A `window`'s `frame` other than two whole row offsets or `null`, the first not past the second, so the step reads its default. */
   'window-frame': 'warning',
-  /** A `gapBp` on a mark that draws no line. */
-  'unread-gap': 'warning',
   /** A `bin`'s `as` or `fields`, or a `pileup`'s `fields`, naming other than two fields, so the step reads its defaults. */
   'step-pair': 'warning',
   /** A `bin` naming a `field` beside the `fields` it cuts at the bin edges, which leaves the `field` unread. */
@@ -210,9 +205,6 @@ export interface ScalesSnapshot {
  */
 export type MarkSnapshot = {
   mark?: MarkDefSnapshot
-  linkShape?: LinkShape
-  gapBp?: number
-  rowProportion?: number
   minBpPerPx?: number
   maxBpPerPx?: number
   encoding?: {
@@ -679,52 +671,35 @@ function ownProblems(
       ),
     )
   }
-  if (
-    mark.linkShape !== undefined &&
-    mark.linkShape !== DEFAULT_LINK_SHAPE &&
-    type !== 'link'
-  ) {
-    problems.push(
-      found(
-        'unread-link-shape',
-        'linkShape',
-        `a ${type} draws no link, so it reads no linkShape`,
-      ),
-    )
+  const def = markDefOf(mark)
+  const band = def.height?.band
+  const writes: Record<MarkMember, boolean> = {
+    interpolate: def.interpolate !== undefined,
+    height: band !== undefined && band !== DEFAULT_HEIGHT_BAND,
+    gapBp: def.gapBp !== undefined,
   }
-  const interpolate = markInterpolateOf(mark)
+  for (const member of MARK_MEMBERS) {
+    if (writes[member] && !spec.members?.includes(member)) {
+      problems.push(
+        found(
+          'unread-mark-member',
+          `mark.${member}`,
+          `a ${type} reads no mark.${member}`,
+        ),
+      )
+    }
+  }
+  const drawn = spec.interpolations
   if (
-    interpolate !== undefined &&
-    interpolate !== DEFAULT_LINE_INTERPOLATE &&
-    type !== 'line'
+    def.interpolate !== undefined &&
+    drawn &&
+    !drawn.includes(def.interpolate)
   ) {
     problems.push(
       found(
-        'unread-interpolate',
+        'mark-interpolate',
         'mark.interpolate',
-        `a ${type} draws no line, so it reads no interpolate`,
-      ),
-    )
-  }
-  if (mark.gapBp !== undefined && type !== 'line') {
-    problems.push(
-      found(
-        'unread-gap',
-        'gapBp',
-        `a ${type} draws no line, so it reads no gapBp`,
-      ),
-    )
-  }
-  if (
-    mark.rowProportion !== undefined &&
-    mark.rowProportion !== DEFAULT_ROW_PROPORTION &&
-    type !== 'span'
-  ) {
-    problems.push(
-      found(
-        'unread-row-proportion',
-        'rowProportion',
-        `a ${type} draws no span, so it reads no rowProportion`,
+        `a ${type} interpolates ${drawn.slice(0, -1).join(', ')} or ${drawn.at(-1)}, so ${def.interpolate} draws as ${drawn[0]}`,
       ),
     )
   }

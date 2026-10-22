@@ -36,9 +36,8 @@ test('only a mark with a far foot reaches the other end a mate step found', () =
 test('a line asks for its series, split by a categorical color, and a stated gap', () => {
   const overlay = markLayerRequest(
     markOf({
-      mark: 'line',
+      mark: { type: 'line', gapBp: 20000 },
       encoding: { y: 'score', color: { field: 'source' } },
-      gapBp: 20000,
     }),
     {},
     1,

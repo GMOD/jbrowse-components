@@ -18,7 +18,7 @@ import { DEFAULT_LINE_INTERPOLATE } from './markVocabulary.ts'
 import type { MarkType } from './configSchema.ts'
 import type { HeldColor } from './markColor.ts'
 import type { MarkSpec } from './markSpecs.ts'
-import type { LineInterpolation, LinkShape } from './markVocabulary.ts'
+import type { LineInterpolation } from './markVocabulary.ts'
 import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter/zoomRange'
 import type {
   CoreGetEncodedLayersArgs,
@@ -157,8 +157,8 @@ export interface MarkEntry {
   placed: boolean
   /** Whether the mark names a `y` to stand at; a text or link without one stands by its band. */
   valued: boolean
-  /** How a link naming no `y` rises. */
-  linkShape: LinkShape
+  /** How a link rises, in the link shape's words. */
+  linkShape: LinkParams['linkShape']
   /** How a line joins its values; `step` when absent. */
   interpolate?: LineInterpolation
 }

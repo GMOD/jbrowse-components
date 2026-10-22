@@ -5,7 +5,11 @@ import {
   DEFAULT_POINT_DIAMETER_PX,
 } from './markVocabulary.ts'
 
-import type { MarkType } from './markVocabulary.ts'
+import type {
+  MarkInterpolation,
+  MarkMember,
+  MarkType,
+} from './markVocabulary.ts'
 
 /** An encoding channel a mark reads, besides `x` and `x2`. */
 export type MarkChannel = 'y' | 'row' | 'color' | 'shape' | 'text' | 'size'
@@ -60,6 +64,10 @@ export interface MarkSpec {
    * the series each one belongs to.
    */
   readonly path?: boolean
+  /** The `mark` members the type reads beside its `type`. */
+  readonly members?: readonly MarkMember[]
+  /** The `interpolate` values the type draws, its default first. */
+  readonly interpolations?: readonly MarkInterpolation[]
 }
 
 /**
@@ -99,11 +107,14 @@ export const MARK_SPECS = {
     size: 'constant',
     defaultSizePx: DEFAULT_LINE_WIDTH_PX,
     path: true,
+    members: ['interpolate', 'gapBp'],
+    interpolations: ['step', 'linear'],
   },
   span: {
     channels: ['row', 'color'],
     value: 'none',
     hit: 'rows',
+    members: ['height'],
   },
   text: {
     channels: ['y', 'row', 'color', 'text'],
@@ -117,6 +128,8 @@ export const MARK_SPECS = {
     farFoot: true,
     size: 'channel',
     defaultSizePx: DEFAULT_LINK_STROKE_PX,
+    members: ['interpolate'],
+    interpolations: ['dome', 'arc', 'linear'],
   },
 } as const satisfies Record<MarkType, MarkSpec>
 
@@ -140,6 +153,21 @@ export function plotsValue(type: MarkType) {
  */
 export function markSizePx(type: MarkType, written: number | undefined) {
   return written ?? specOf(type).defaultSizePx ?? 0
+}
+
+/**
+ * The `interpolate` a mark type draws for the one its config writes: that one
+ * where the type draws it, else the type's default; none for a type that
+ * joins nothing.
+ */
+export function interpolationOf(
+  type: MarkType,
+  written: MarkInterpolation | undefined,
+) {
+  const drawn = specOf(type).interpolations
+  return written !== undefined && drawn?.includes(written)
+    ? written
+    : drawn?.[0]
 }
 
 /** Whether a mark type answers a hover through the hit index the worker builds. */

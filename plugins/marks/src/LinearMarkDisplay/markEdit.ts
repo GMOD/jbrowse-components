@@ -11,7 +11,7 @@ import { MARK_SPECS } from './markSpecs.ts'
 import {
   MARK_COLOR_SCALES,
   SIZE_SCALES,
-  markInterpolateOf,
+  markDefOf,
   markTypeOf,
 } from './markVocabulary.ts'
 
@@ -433,10 +433,16 @@ export function withoutChannel(
   return { ...mark, encoding }
 }
 
-/** A mark's type changed, keeping every channel so nothing is lost silently. */
+/**
+ * A mark's type changed, keeping every channel and `mark` member so nothing is
+ * lost silently.
+ */
 export function withMarkType(mark: DraftMark, type: MarkType): DraftMark {
-  const interpolate = markInterpolateOf(mark)
-  return { ...mark, mark: interpolate ? { type, interpolate } : type }
+  const { type: _type, ...members } = markDefOf(mark)
+  return {
+    ...mark,
+    mark: Object.keys(members).length > 0 ? { ...members, type } : type,
+  }
 }
 
 /** A line's `interpolate` written into its mark object. */
@@ -444,7 +450,10 @@ export function withInterpolate(
   mark: DraftMark,
   interpolate: LineInterpolation,
 ): DraftMark {
-  return { ...mark, mark: { type: markTypeOf(mark), interpolate } }
+  return {
+    ...mark,
+    mark: { ...markDefOf(mark), type: markTypeOf(mark), interpolate },
+  }
 }
 
 /**

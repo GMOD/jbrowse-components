@@ -9096,6 +9096,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "MarkHeight": {
+      "title": "MarkHeight",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "band": {
+          "description": "fraction of its band a span fills.",
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "MarkDef": {
       "title": "MarkDef",
       "anyOf": [
@@ -9137,16 +9158,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "interpolate": {
-              "description": "step or linear, for a line.",
-              "default": "step",
+              "description": "step or linear for a line, dome, arc or linear for a link; unset is step or dome.",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
                   "step",
-                  "linear"
+                  "linear",
+                  "dome",
+                  "arc"
                 ]
+              }
+            },
+            "height": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/MarkHeight"
+              }
+            },
+            "gapBp": {
+              "description": "bp a line breaks across; unset follows a window step.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
               }
             }
           },
@@ -10428,39 +10467,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/MarkDef"
-          }
-        },
-        "gapBp": {
-          "description": "bp a line breaks across; unset follows a window step.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "linkShape": {
-          "description": "dome, arc or line.",
-          "default": "dome",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "dome",
-              "arc",
-              "line"
-            ]
-          }
-        },
-        "rowProportion": {
-          "description": "fraction of its row a span fills.",
-          "default": 1,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
           }
         },
         "encoding": {

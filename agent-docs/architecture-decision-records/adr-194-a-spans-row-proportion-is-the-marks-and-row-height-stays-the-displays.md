@@ -7,7 +7,12 @@ summary: "On the mark display, `rowProportion` moves from a display slot onto th
 
 ## Status
 
-Accepted (2026-09-28). Follows `9b74cc729e`, which gave the mark display
+Accepted (2026-09-28). Amended 2026-10-22: the slot moved inside the mark
+object as `marks[].mark.height.band`, Vega-Lite's own spelling, beside the
+link's and the line's `interpolate` and the line's `gapBp`, and the
+`unread-*` rules for the three became one, `unread-mark-member`.
+
+Follows `9b74cc729e`, which gave the mark display
 `RowHeightMixin`'s `rowHeight` and a display-level `rowProportion`. Colin asked
 whether the two fit the display's grammar vocabulary: `marks[].encoding`,
 `transform`, `facet`, `rows` and `scales`.

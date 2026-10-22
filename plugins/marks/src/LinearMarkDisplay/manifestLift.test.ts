@@ -82,8 +82,7 @@ const EVERY_SPELLING: Record<string, unknown> = {
       transform: [{ type: 'bin', step: 1000, as: ['from', 'to'] }],
     },
     {
-      mark: 'link',
-      linkShape: 'arc',
+      mark: { type: 'link', interpolate: 'arc' },
       encoding: {
         x2: { chrom: 'mate.refName', pos: 'mate.start' },
         size: {
