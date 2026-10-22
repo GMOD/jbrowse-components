@@ -1795,7 +1795,7 @@ widened domain with no table baked again.
 import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
 
 // type signature
-(table: {…}, extent: [number, number]) => { kind: "ramp"; field: string; scale: "linear" | "log" | "symlog"; domain: [number, number]; pinned: [boolean, boolean]; domainMid?: number | undefined; range?: string[] | undefined; scheme?: "blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "redyellowblue" | "viridis" | undefined; reverse?: boolean | undefined; extent: [number, number]; quantile?: number | undefined; lut: Uint8Array<…>; missing?: boolean | undefined; notNumber?: boolean | undefined; }
+(table: {…}, extent: [number, number]) => {…}
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
