@@ -207,15 +207,18 @@ test('MultiWaySyntenyDisplay seeds the lane chain where the anchor lane draws', 
     const refName = assembly.getCanonicalRefName2(group.anchor.refName)
     const a = view.bpToPx({ refName, coord: group.anchor.start })!
     const b = view.bpToPx({ refName, coord: group.anchor.end })!
-    const x1 = a.offsetPx - view.offsetPx
-    const x2 = b.offsetPx - view.offsetPx
+    // in stack px, against the origin the lanes are laid out at, which the
+    // settle after the zoom has yet to restamp
+    const origin = display.renderOriginPx
+    const x1 = a.offsetPx - origin
+    const x2 = b.offsetPx - origin
     // The span the anchor lane's own ribbons are drawn at.
     expect(display.anchorSpans.get(group.key)).toEqual(
       x1 < x2 ? [x1, x2] : [x2, x1],
     )
     // ...and the seed is its center, which is what every lane lines up on.
     expect(
-      display.anchorAbsXAt(view.bpPerPx).get(group.key)!.x - view.offsetPx,
+      display.anchorAbsXAt(view.bpPerPx).get(group.key)!.x - origin,
     ).toBeCloseTo((x1 + x2) / 2, 9)
   }
 
