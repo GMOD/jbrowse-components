@@ -18,9 +18,9 @@ import type { VariantLegendInputs } from './variantLegend.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 
-const IMPACT = { field: IMPACT_FIELD, scale: 'categorical' as const }
-const SV_TYPE = { field: SV_TYPE_FIELD, scale: 'categorical' as const }
-const PHASE_SET = { field: PHASE_SET_FIELD, scale: 'categorical' as const }
+const IMPACT = { field: IMPACT_FIELD, scale: 'ordinal' as const }
+const SV_TYPE = { field: SV_TYPE_FIELD, scale: 'ordinal' as const }
+const PHASE_SET = { field: PHASE_SET_FIELD, scale: 'ordinal' as const }
 
 // Every scale these build is categorical; the narrowing is what the type asks.
 function entriesOf(scale: ColorScale | undefined) {
@@ -133,7 +133,7 @@ describe('getVariantColorScales', () => {
         shadeByDosage: false,
         colorTitle: 'Effect',
       }),
-      color: { ...IMPACT, domain: ['HIGH'], labels: ['Loss of function'] },
+      color: { ...IMPACT, domain: ['HIGH'], names: ['Loss of function'] },
     })
     expect(sections[0]!.title).toBe('Effect')
     expect(entriesOf(sections[0])!.map(i => i.label)).toEqual([
@@ -160,7 +160,7 @@ describe('getVariantColorScales', () => {
         paintedDomain: ['Pathogenic', '', 'Benign'],
         shadeByDosage: false,
       }),
-      color: { field: 'INFO.CLNSIG', scale: 'categorical' },
+      color: { field: 'INFO.CLNSIG', scale: 'ordinal' },
     })
     expect(section!.title).toBe('INFO.CLNSIG')
     const entries = entriesOf(section)!
@@ -220,7 +220,7 @@ describe('getVariantColorScales', () => {
     expect(
       labelsOf(
         { paintedDomain: Array.from({ length: 60 }, (_, i) => `${i}`) },
-        { field: 'INFO.DP', scale: 'categorical' },
+        { field: 'INFO.DP', scale: 'ordinal' },
       ),
     ).toEqual(['Homozygous reference'])
   })
@@ -229,7 +229,7 @@ describe('getVariantColorScales', () => {
     expect(
       labelsOf(
         { paintedDomain: ['Pathogenic'] },
-        { field: 'INFO.CLNSIG', scale: 'categorical' },
+        { field: 'INFO.CLNSIG', scale: 'ordinal' },
       ),
     ).toEqual(['Pathogenic', DOSAGE_NOTE, 'Homozygous reference'])
   })
@@ -240,7 +240,7 @@ describe('getVariantColorScales', () => {
         { paintedDomain: ['Pathogenic'], shadeByDosage: false },
         {
           field: 'INFO.CLNSIG',
-          scale: 'categorical',
+          scale: 'ordinal',
           domain: ['Pathogenic'],
           range: [REFERENCE_COLOR],
         },
@@ -259,7 +259,7 @@ describe('getVariantColorScales', () => {
       },
       {
         field: 'INFO.T',
-        scale: 'categorical',
+        scale: 'ordinal',
         domain: values,
         range: values.map((_, i) => `rgb(${i * 10},0,0)`),
       },
@@ -272,7 +272,7 @@ describe('getVariantColorScales', () => {
       ...inputs({ paintedDomain: ['b', 'a', 'c'], hasNoCall: true }),
       color: {
         field: 'INFO.T',
-        scale: 'categorical',
+        scale: 'ordinal',
         domain: ['a', 'b', 'c'],
         range: ['#a00', '#a00', '#00a'],
       },

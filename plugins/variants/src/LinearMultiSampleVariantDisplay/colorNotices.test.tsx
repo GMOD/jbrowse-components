@@ -5,11 +5,15 @@ import { createTestEnvironment as createMatrixTestEnvironment } from './matrix/t
 import { createTestEnvironment } from './testEnv.ts'
 
 const MISFIT_THRESHOLD = {
-  color: {
-    field: 'INFO.DP',
-    scale: 'threshold',
-    domain: ['10', '20'],
-    range: ['red', 'blue'],
+  encoding: {
+    color: {
+      field: 'INFO.DP',
+      scale: {
+        type: 'threshold',
+        domain: ['10', '20'],
+        range: ['red', 'blue'],
+      },
+    },
   },
 }
 
@@ -23,7 +27,9 @@ test.each([
       displayConfig: MISFIT_THRESHOLD,
     }).createDisplay()
     expect(display.notices).toEqual([
-      expect.stringMatching(/^color\.range: 2 threshold cuts make 3 intervals/),
+      expect.stringMatching(
+        /^encoding\.color\.scale\.range: 2 threshold cuts make 3 intervals/,
+      ),
     ])
     render(<VariantDisplayComponent model={display} />)
     expect(await screen.findByText('1 config problem')).toBeTruthy()

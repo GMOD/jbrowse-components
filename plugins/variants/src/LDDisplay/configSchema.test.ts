@@ -13,6 +13,8 @@ import { LD_FIELD_PRESETS } from './ldColorConfigSchema.ts'
 const slots = () =>
   Object.keys(getConfigurationSchemaDefinition(ldTrackDisplayConfigSchema())!)
 
+const COLOR = ['encoding', 'color'] as const
+
 function make(snap: Record<string, unknown> = {}) {
   return ldTrackDisplayConfigSchema().create({
     type: 'LDTrackDisplay',
@@ -23,7 +25,7 @@ function make(snap: Record<string, unknown> = {}) {
 
 test('keeps what its mixins read, and its identifier', () => {
   expect(slots()).toEqual(
-    expect.arrayContaining(['height', 'showLegend', 'heightMode']),
+    expect.arrayContaining(['height', 'legend', 'heightMode']),
   )
   expect(make().displayId).toBe('ld-test')
 })
@@ -36,19 +38,22 @@ test.each(['mouseover', 'fetchSizeLimit', 'forceLoad'])(
   },
 )
 
-describe('color', () => {
-  test('a bare string names the field, as every color object reads one', () => {
-    expect(readConfObject(make({ color: 'dprime' }), ['color', 'field'])).toBe(
-      'dprime',
-    )
+describe('encoding.color', () => {
+  test('a bare string names the field, as every color channel reads one', () => {
+    expect(
+      readConfObject(make({ encoding: { color: 'dprime' } }), [
+        ...COLOR,
+        'field',
+      ]),
+    ).toBe('dprime')
   })
 
   test('unset, it maps r2 through a linear ramp with no scheme written', () => {
     const conf = make()
-    expect(readConfObject(conf, ['color', 'field'])).toBe('r2')
-    expect(readConfObject(conf, ['color', 'scale'])).toBeUndefined()
-    expect(readConfObject(conf, ['color', 'scheme'])).toBeUndefined()
-    expect(readConfObject(conf, ['color', 'reverse'])).toBeUndefined()
+    expect(readConfObject(conf, [...COLOR, 'field'])).toBe('r2')
+    expect(readConfObject(conf, [...COLOR, 'scale', 'type'])).toBeUndefined()
+    expect(readConfObject(conf, [...COLOR, 'scale', 'scheme'])).toBeUndefined()
+    expect(readConfObject(conf, [...COLOR, 'scale', 'reverse'])).toBeUndefined()
   })
 
   test.each([
@@ -56,19 +61,27 @@ describe('color', () => {
     ['dprime', 'blues', "D'"],
   ])('%s presets a linear %s ramp keyed %s', (field, scheme, title) => {
     expect(fieldScaleOf(LD_FIELD_PRESETS, field)).toBe('linear')
-    expect(presetOf(LD_FIELD_PRESETS, field)).toMatchObject({ scheme, title })
+    expect(presetOf(LD_FIELD_PRESETS, field)).toMatchObject({
+      scale: { scheme },
+      legend: { title },
+    })
   })
 
   test.each([
-    { scheme: 'viridis', domainMax: 0.8 },
-    { field: 'dprime', scheme: 'magma', reverse: false, domainMin: 0.2 },
+    { scale: { scheme: 'viridis', domainMax: 0.8 } },
+    {
+      field: 'dprime',
+      scale: { scheme: 'magma', reverse: false, domainMin: 0.2 },
+    },
   ])('a config written today reads back unchanged: %j', color => {
-    expect(plotOf(make({ color }))).toEqual({ color })
+    expect(plotOf(make({ encoding: { color } }))).toEqual({
+      encoding: { color },
+    })
   })
 
   test('a field alone reads back as its shorthand', () => {
-    expect(plotOf(make({ color: { field: 'dprime' } }))).toEqual({
-      color: 'dprime',
+    expect(plotOf(make({ encoding: { color: { field: 'dprime' } } }))).toEqual({
+      encoding: { color: 'dprime' },
     })
   })
 
@@ -77,15 +90,19 @@ describe('color', () => {
   })
 
   test('maps r2 and dprime and nothing else', () => {
-    expect(() => make({ color: { field: 'score' } })).toThrow()
+    expect(() => make({ encoding: { color: { field: 'score' } } })).toThrow()
   })
 
   test('a write refuses a member it does not declare', () => {
     expect(() =>
-      refusingUndeclaredKeys(() => make({ color: { domainQuantile: 0.95 } })),
+      refusingUndeclaredKeys(() =>
+        make({ encoding: { color: { scale: { domainQuantile: 0.95 } } } }),
+      ),
     ).toThrow(/domainQuantile/)
     expect(() =>
-      refusingUndeclaredKeys(() => make({ color: { value: 'red' } })),
+      refusingUndeclaredKeys(() =>
+        make({ encoding: { color: { value: 'red' } } }),
+      ),
     ).toThrow(/value/)
   })
 })
@@ -110,18 +127,37 @@ describe('showLabels', () => {
 
 // `ldMetric` shipped on LDTrackDisplay from v4.1.1 to v4.3.0.
 describe('the v4 ldMetric', () => {
-  test('lifts into color.field', () => {
+  test('lifts into encoding.color.field', () => {
     const conf = make({ ldMetric: 'dprime' })
-    expect(readConfObject(conf, ['color', 'field'])).toBe('dprime')
+    expect(readConfObject(conf, [...COLOR, 'field'])).toBe('dprime')
     expect(getSnapshot(conf)).not.toHaveProperty('ldMetric')
   })
 
   test('lands beside a color the entry writes, which wins', () => {
-    const conf = make({ ldMetric: 'dprime', color: { scheme: 'viridis' } })
-    expect(plotOf(conf)).toEqual({
-      color: { field: 'dprime', scheme: 'viridis' },
+    const conf = make({
+      ldMetric: 'dprime',
+      encoding: { color: { scale: { scheme: 'viridis' } } },
     })
-    const written = make({ ldMetric: 'dprime', color: { field: 'r2' } })
-    expect(readConfObject(written, ['color', 'field'])).toBe('r2')
+    expect(plotOf(conf)).toEqual({
+      encoding: { color: { field: 'dprime', scale: { scheme: 'viridis' } } },
+    })
+    const written = make({
+      ldMetric: 'dprime',
+      encoding: { color: { field: 'r2' } },
+    })
+    expect(readConfObject(written, [...COLOR, 'field'])).toBe('r2')
+  })
+})
+
+// `showLegend` shipped on LDTrackDisplay through v4.3.0, default off.
+describe('the v4 showLegend', () => {
+  test('lifts into legend.show', () => {
+    const conf = make({ showLegend: true })
+    expect(readConfObject(conf, ['legend', 'show'])).toBe(true)
+    expect(getSnapshot(conf)).not.toHaveProperty('showLegend')
+  })
+
+  test('the legend is off unset', () => {
+    expect(readConfObject(make(), ['legend', 'show'])).toBe(false)
   })
 })

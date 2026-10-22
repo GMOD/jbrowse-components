@@ -5,8 +5,9 @@ import { altDosageByte, isNoCall } from './getPhasedColor.ts'
 /**
  * One genotype's fill in allele-count mode, through the shared composition rule
  * (`shared/cellFill.ts`): the alt hue shaded by the fraction of CALLED
- * alleles that are non-reference, as `altDosageByte` carries it. A `color`
- * hue repaints the alt cells on the main thread (`paintCellColors`).
+ * alleles that are non-reference, as `altDosageByte` carries it. An
+ * `encoding.color` hue repaints the alt cells on the main thread
+ * (`paintCellColors`).
  *
  * Which alt is not on the hue here. `1/2` and `0/2` are different dosages of
  * one nominal, and a wholly uncalled genotype is the no-call category rather

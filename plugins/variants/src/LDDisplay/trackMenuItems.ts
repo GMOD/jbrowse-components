@@ -32,9 +32,9 @@ export interface LDMenuSelf extends IStateTreeNode {
   setVariantLayout: (arg: 'genomic' | 'columns') => void
 }
 
-// The radios write `color.field`, which of the file's columns to draw, and a
-// file that lacks one says so on the disabled row rather than serving zeros
-// under its name.
+// The radios write `encoding.color.field`, which of the file's columns to
+// draw, and a file that lacks one says so on the disabled row rather than
+// serving zeros under its name.
 function metricMenuItem(self: LDMenuSelf): MenuItem {
   return makeRadioSubMenu({
     label: 'LD metric',

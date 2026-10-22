@@ -81,9 +81,9 @@ describe('what the worker reads', () => {
   })
 
   test('a field without its scale, so recoloring it refetches nothing', () => {
-    const categorical = read({
+    const ordinal = read({
       field: 'INFO.AF',
-      scale: 'categorical',
+      scale: 'ordinal',
       domain: ['0.1'],
       range: ['#aa0000'],
     })
@@ -92,10 +92,10 @@ describe('what the worker reads', () => {
       scale: 'threshold',
       domain: ['0.01'],
     })
-    expect(categorical).toEqual({ field: 'INFO.AF' })
-    expect(sameHueRead(categorical, threshold)).toBe(true)
-    expect(sameHueRead(categorical, { field: 'INFO.DP' })).toBe(false)
-    expect(sameHueRead(categorical, undefined)).toBe(false)
+    expect(ordinal).toEqual({ field: 'INFO.AF' })
+    expect(sameHueRead(ordinal, threshold)).toBe(true)
+    expect(sameHueRead(ordinal, { field: 'INFO.DP' })).toBe(false)
+    expect(sameHueRead(ordinal, undefined)).toBe(false)
   })
 
   test('the field kept for the way back, so returning to it refetches nothing', () => {
@@ -107,7 +107,7 @@ describe('what the worker reads', () => {
   })
 
   test('the phaseSet preset is a flag, and only in phased mode', () => {
-    const field = { field: PHASE_SET_FIELD, scale: 'categorical' as const }
+    const field = { field: PHASE_SET_FIELD, scale: 'ordinal' as const }
     expect(reader(field, 'haplotype')).toEqual({ byPhaseSet: true })
     expect(reader(field)).toEqual({ byPhaseSet: false })
     expect(cellHueOf(field)).toEqual({ read: { field: PHASE_SET_FIELD } })
@@ -123,7 +123,7 @@ test('a jexl callback paints the color it returns', () => {
 })
 
 test('the impact preset paints the tier a record answers, Unannotated where it has none', () => {
-  const encoding = { field: IMPACT_FIELD, scale: 'categorical' as const }
+  const encoding = { field: IMPACT_FIELD, scale: 'ordinal' as const }
   const moderate = new SimpleFeature({
     uniqueId: 'm',
     refName: 'chr1',
@@ -138,7 +138,7 @@ test('the impact preset paints the tier a record answers, Unannotated where it h
 })
 
 test('svType paints the class colors, and a record with no class the alt hue', () => {
-  const encoding = { field: SV_TYPE_FIELD, scale: 'categorical' as const }
+  const encoding = { field: SV_TYPE_FIELD, scale: 'ordinal' as const }
   const del = new SimpleFeature({
     uniqueId: 'd',
     refName: 'chr1',
@@ -152,7 +152,7 @@ test('svType paints the class colors, and a record with no class the alt hue', (
 })
 
 describe('a record field', () => {
-  const clnsig = { field: 'INFO.CLNSIG', scale: 'categorical' as const }
+  const clnsig = { field: 'INFO.CLNSIG', scale: 'ordinal' as const }
 
   test('keys each variant by its value', () => {
     expect(key(clnsig)(variant({ CLNSIG: ['Pathogenic'] }))).toBe('Pathogenic')
@@ -216,7 +216,7 @@ describe('a record field', () => {
     const values = ['TEC', 'snRNA', 'protein_coding']
     const hues = (order: string[]) => {
       const cellHue = cellHueOf(
-        { field: 'INFO.BIOTYPE', scale: 'categorical' },
+        { field: 'INFO.BIOTYPE', scale: 'ordinal' },
         undefined,
         new Map(),
       )
@@ -229,9 +229,7 @@ describe('a record field', () => {
 
   test('reads a jexl expression as the field', () => {
     expect(
-      key({ field: "jexl:get(feature,'REF')", scale: 'categorical' })(
-        variant({}),
-      ),
+      key({ field: "jexl:get(feature,'REF')", scale: 'ordinal' })(variant({})),
     ).toBe('A')
   })
 })

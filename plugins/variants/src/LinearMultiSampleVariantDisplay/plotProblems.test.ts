@@ -4,20 +4,27 @@ import { createTestEnvironment } from './testEnv.ts'
 const DRAFTS = [
   [
     'cuts out of order',
-    { color: { field: 'INFO.DP', scale: 'threshold', domain: ['5', '1'] } },
-    /^color\.domain: threshold cuts are distinct numbers/,
+    {
+      encoding: {
+        color: {
+          field: 'INFO.DP',
+          scale: { type: 'threshold', domain: ['5', '1'] },
+        },
+      },
+    },
+    /^encoding\.color\.scale\.domain: threshold cuts are distinct numbers/,
   ],
   [
     'a range short of its cuts',
     {
-      color: {
-        field: 'INFO.DP',
-        scale: 'threshold',
-        domain: ['1', '5'],
-        range: ['red'],
+      encoding: {
+        color: {
+          field: 'INFO.DP',
+          scale: { type: 'threshold', domain: ['1', '5'], range: ['red'] },
+        },
       },
     },
-    /^color\.range: 2 threshold cuts make 3 intervals/,
+    /^encoding\.color\.scale\.range: 2 threshold cuts make 3 intervals/,
   ],
 ] as const
 

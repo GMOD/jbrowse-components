@@ -120,10 +120,10 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #action
-       * `color.field`, the statistic the cells are, which refetches.
+       * `encoding.color.field`, the statistic the cells are, which refetches.
        */
       setLDMetric(metric: LDMetric) {
-        setConf(self, ['color', 'field'], metric)
+        setConf(self, ['encoding', 'color', 'field'], metric)
       },
       /**
        * #action
@@ -162,10 +162,10 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #getter
-       * `color.field`, the statistic the fetch asks the file for.
+       * `encoding.color.field`, the statistic the fetch asks the file for.
        */
       get colorField(): LDMetric {
-        return getConf(self, ['color', 'field'])
+        return getConf(self, ['encoding', 'color', 'field'])
       },
       /**
        * #getter

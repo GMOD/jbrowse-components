@@ -20,7 +20,7 @@ export function cellHueField(encoding: ColorEncoding | undefined) {
 }
 
 /**
- * The categorical or threshold field a record field paints through, dealing
+ * The ordinal or threshold field a record field paints through, dealing
  * its colors into `held`, or undefined for a preset or a constant. A record
  * with no value keeps the default alt hue, and `unknown: ''`, no color from
  * the setting, paints the values `domain` leaves out that hue too.
@@ -34,7 +34,7 @@ export function recordHueField(
     ? undefined
     : colorFieldOf(
         typeof encoding === 'object' &&
-          encoding.scale === 'categorical' &&
+          encoding.scale === 'ordinal' &&
           encoding.unknown === ''
           ? { ...encoding, unknown: ALT_HUE }
           : encoding,
@@ -77,7 +77,7 @@ export interface CellHue {
 }
 
 /**
- * The hue a `color` encoding paints. `keptField` is the field the display
+ * The hue an `encoding.color` paints. `keptField` is the field the display
  * parked (`ParkedColorMixin`): its values are read while a constant or the
  * genotype colors paint, so returning to it refetches nothing. A phase set is
  * the exception, since reading it paints it.
