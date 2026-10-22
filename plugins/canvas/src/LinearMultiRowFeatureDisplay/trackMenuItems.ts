@@ -85,10 +85,10 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   return [
     ...treeSidebarShowMenuItems(self),
     showRowLabelsMenuItem(self),
+    showRowSeparatorsMenuItem(self),
     // Gated on both keys: the row-group key ordinarily draws on a track whose
     // `colorLegend` is empty, and gating on `colorLegend` alone leaves a user
     // who dismissed the group key with no item to bring it back.
-    showRowSeparatorsMenuItem(self),
     ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
   ]
 }

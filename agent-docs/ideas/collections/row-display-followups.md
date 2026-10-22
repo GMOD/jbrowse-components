@@ -1,6 +1,6 @@
 ---
 name: row-display-followups
-description: What the 2026-08-25 pass over the four row displays (multi-row features, multi-wiggle, MAF, the two multi-sample variant displays) left unbuilt — MAF row separators, a metadata filter dialog, two multi-row product calls and the row-model loose ends — with what each one costs and what already exists to build it from.
+description: What the 2026-08-25 pass over the four row displays (multi-row features, multi-wiggle, MAF, the two multi-sample variant displays) left unbuilt — MAF row separators, a metadata filter dialog, a multi-row product call and the row-model loose ends — with what each one costs and what already exists to build it from.
 ---
 
 # Row display follow-ups
@@ -23,9 +23,10 @@ which a name set cannot carry — a session would reopen with the rows narrowed
 and no way to widen the criterion. That wants a `rowFilter` member beside
 `rows.kept`, resolved into the name set on read.
 
-**Two multi-row items the 2026-09-01 review left as product decisions.** A jexl
+**A multi-row item the 2026-09-01 review left as a product decision.** A jexl
 "Filter by..." on the multi-row painting (LinearBasicDisplay has it on the same
-data) and a per-feature "Color by..." menu are new UI.
+data) is new UI. ADR-238's predicate list would spell it, and a legend hide
+kept in config with it; the hide is session state until then.
 
 **Row-model loose ends (2026-09-24).** None reached by a shipped config:
 
