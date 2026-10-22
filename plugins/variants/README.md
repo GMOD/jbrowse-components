@@ -39,7 +39,7 @@ record, a record calling no genotype included:
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, ids, }: { adapterConfig: Record<…>; sequenceAdapter?: Record<…> | undefined; regions: { refName: string; start: number; end: number; }[]; ids: readonly string[]; }) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, ids, }: {…}) => Promise<{ samples: {…}; format: Record<string, unknown[]>; formatFields: { key: string[]; number: string[]; type: string[]; description: string[]; }; annotations: { [x: string]: number[] | string[] | (string | null)[]; key: string[]; }; annotationFields: { key: string[]; field: string[]; }; info: Record<string, unknown[]>; infoFields: { key: string[]; number: string[]; type: string[]; description: string[]; }; records: { ref: string[]; alt: string[]; filter: (string | null)[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)
@@ -67,7 +67,7 @@ itself, such as R through V8. The adapters must be registered on `pluginManager`
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, regions, display, byteLimit, }: VariantTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, regions, display, byteLimit, }: VariantTablesArgs) => Promise<{ cells: {…}; rows: {…}; legend: {…}; ramps: {…}[]; rowLegend: {…}; rowLegendTitle: string; bands: {…}; config: Record<…>; warnings: string[]; annotations: {…}; annotationFields: {…}; info: Record<…>; infoFields: {…}; variants: { start: number[]; end: number[]; id: string[]; name: string[]; ref: string[]; alt: string[]; type: string[]; color: string[]; filter: (string | null)[]; region: number[]; key: number[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)

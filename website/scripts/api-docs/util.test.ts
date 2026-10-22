@@ -438,10 +438,17 @@ describe('elideSignature', () => {
     )
   })
 
-  test('collapses generic arguments from the inside out', () => {
+  test('collapses generic arguments and objects from the inside out', () => {
     const sig = `IConfigurationReference<ConfigurationSchemaType<{ readonly featureHeight: { readonly type: "maybeNumber"; readonly description: "${'x'.repeat(200)}" } }>>`
     expect(elideSignature(sig, 180)).toBe(
-      'IConfigurationReference<ConfigurationSchemaType<…>>',
+      'IConfigurationReference<ConfigurationSchemaType<{ readonly featureHeight: {…} }>>',
+    )
+  })
+
+  test('keeps the keys of an object a generic holds', () => {
+    const sig = `() => Promise<{ tables: { ${'x'.repeat(100)}: number }; legend: { ${'y'.repeat(200)}: string } }>`
+    expect(elideSignature(sig, 180)).toBe(
+      '() => Promise<{ tables: {…}; legend: {…} }>',
     )
   })
 

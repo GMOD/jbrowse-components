@@ -309,7 +309,7 @@ the synchronous `addOrReplaceView` requires it loaded already.
 import { launchOrReplaceView } from '@jbrowse/core/util'
 
 // type signature
-(args: { session: AbstractViewContainer; typeName: string; initialState?: Record<string, unknown> | undefined; replacing?: AbstractViewModel | undefined; }) => Promise<AbstractViewModel>
+(args: { session: AbstractViewContainer; typeName: string; initialState?: Record<string, unknown>; replacing?: AbstractViewModel; }) => Promise<AbstractViewModel>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)

@@ -24,7 +24,7 @@ adapters must be registered on `pluginManager` (`registerWiggleAdapters`).
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, region, regions, display, bpPerPx, trackType, }: WiggleTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, region, regions, display, bpPerPx, trackType, }: WiggleTablesArgs) => Promise<{ bins: {…}; marks: {…}; sources: {…}; rules: { value: number[]; color: string[]; label: string[]; }; ramps: { offset: number[]; color: string[]; opacity: number[]; minLabel: string; maxLabel: string; id: string; title: string; }[]; domain: [number, number]; scaleType: string; symlogConstant: number; rendering: "density" | "line" | "linecenter" | "scatter" | "xyplot"; origin: number; rowLayout: boolean; height: number; config: Record<string, unknown>; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/tables.ts)

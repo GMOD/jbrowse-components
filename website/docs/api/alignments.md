@@ -31,7 +31,7 @@ three takes the pileup config's default when left out.
 
 ```js
 // type signature
-({…}: { pxPerBp: number; featureHeight?: number | undefined; fadeLowFrequency?: boolean | undefined; fadeLowBaseQuality?: boolean | undefined; insertions?: { length: MarkColumn; fade: MarkColumn; } | undefined; deletions?: { length: MarkColumn; fade: MarkColumn; } | undefined; mismatches?: { fade: MarkColumn; quality?: MarkColumn | undefined; } | undefined; clips?: { fade: MarkColumn; } | undefined; }) => { insertions: { widthPx: number[]; alpha: number[]; }; deletions: { alpha: number[]; }; mismatches: { alpha: number[]; }; clips: { alpha: number[]; }; }
+({ pxPerBp, featureHeight, fadeLowFrequency, fadeLowBaseQuality, insertions, deletions, mismatches, clips, }: { pxPerBp: number; featureHeight?: number | undefined; fadeLowFrequency?: boolean | undefined; fadeLowBaseQuality?: boolean | undefined; insertions?: {…} | undefined; deletions?: {…} | undefined; mismatches?: { fade: MarkColumn; quality?: MarkColumn | undefined; } | undefined; clips?: { fade: MarkColumn; } | undefined; }) => { insertions: { widthPx: number[]; alpha: number[]; }; deletions: { alpha: number[]; }; mismatches: { alpha: number[]; }; clips: { alpha: number[]; }; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/tables.ts)
@@ -56,7 +56,7 @@ through V8. The adapters must be registered on `pluginManager`
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, regions, display, refNames, byteLimit, spanLimit, }: AlignmentTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, regions, display, refNames, byteLimit, spanLimit, }: AlignmentTablesArgs) => Promise<{…}>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/tables.ts)

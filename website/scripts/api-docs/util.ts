@@ -1010,6 +1010,118 @@ function describeSymbol(
 // A member of an object literal whose type is written elsewhere, as in
 // `.volatile((): State => ({ x: undefined }))`, reads as that written type
 // rather than its initializer's `undefined`.
+// The checker prints an alias's expansion wherever the alias is generic or
+// resolves through one: `setViews(views: SnapshotIn<LinearGenomeViewModel>[])`
+// printed as `LaunchSnapshotIn<IModelType<…>, …>[]`. Each parameter and return
+// type the source writes reads as written where the checker's print of it is
+// an MST expansion, or too long for a cell and longer than what the author
+// wrote. A union of string literals stays at any length, since it lists the
+// values a caller passes, such as `setUnit`'s `"chain" | "read"`. A
+// `typeof` query names nothing a reader can look up, so it never replaces a
+// print that isn't an expansion.
+const writtenPrinter = ts.createPrinter({ removeComments: true })
+
+const MST_EXPANSION =
+  /ModelInstanceTypeProps|IModelType|ModelCreationType|ModelSnapshotType|IOptionalIType|ISimpleType|IMSTArray|ExtractCFromProps/
+
+const LITERAL_UNION =
+  /^(?:"(?:[^"\\]|\\.)*"|undefined)(?: \| (?:"(?:[^"\\]|\\.)*"|undefined))+$/
+
+function writtenSignature(
+  checker: ts.TypeChecker,
+  named: PrintedType[],
+  decl: ts.Declaration,
+  type: ts.Type,
+) {
+  // a tuple written across lines prints as `[ A, B ]`
+  const print = (node: ts.Node) =>
+    writtenPrinter
+      .printNode(ts.EmitHint.Unspecified, node, decl.getSourceFile())
+      .replace(/\[\s+/g, '[')
+      .replace(/\s+\]/g, ']')
+  const part = (node: ts.TypeNode | undefined, inferred: ts.Type) => {
+    const printed = dropNodeTails(
+      nameTypes(
+        named,
+        checker.typeToString(
+          inferred,
+          undefined,
+          ts.TypeFormatFlags.NoTruncation,
+        ),
+      ),
+    )
+    const written = node && print(node)
+    const better =
+      !!written &&
+      (MST_EXPANSION.test(printed) ||
+        (!hasTypeQuery(node) &&
+          !LITERAL_UNION.test(printed) &&
+          printed.length > MAX_INLINE_CELL_CODE &&
+          written.length < printed.length))
+    return { text: better ? written : printed, written: better }
+  }
+  if (ts.isGetAccessorDeclaration(decl)) {
+    const value = part(decl.type, type)
+    return value.written ? value.text : undefined
+  }
+  const fn = writtenFunction(decl)
+  const signature = fn && checker.getSignatureFromDeclaration(fn)
+  if (!fn || !signature) {
+    return undefined
+  }
+  const parameters = fn.parameters.map(p => ({
+    p,
+    type: part(p.type, checker.getTypeAtLocation(p)),
+  }))
+  const returns = part(fn.type, signature.getReturnType())
+  if (!returns.written && !parameters.some(({ type }) => type.written)) {
+    return undefined
+  }
+  const typeParameters = fn.typeParameters
+    ? `<${fn.typeParameters.map(print).join(', ')}>`
+    : ''
+  const list = parameters.map(
+    ({ p, type }) =>
+      `${p.dotDotDotToken ? '...' : ''}${bindingName(p.name)}${p.questionToken || p.initializer ? '?' : ''}: ${type.text}`,
+  )
+  return `${typeParameters}(${list.join(', ')}) => ${returns.text}`
+}
+
+function hasTypeQuery(node: ts.Node): boolean {
+  return ts.isTypeQueryNode(node) || !!ts.forEachChild(node, hasTypeQuery)
+}
+
+// A parameter's name as the checker prints it: a destructuring pattern
+// without its defaults.
+function bindingName(name: ts.BindingName): string {
+  if (ts.isIdentifier(name)) {
+    return name.text
+  }
+  const elements = name.elements.map(e =>
+    ts.isOmittedExpression(e)
+      ? ''
+      : `${e.dotDotDotToken ? '...' : ''}${e.propertyName ? `${e.propertyName.getText()}: ` : ''}${bindingName(e.name)}`,
+  )
+  return ts.isObjectBindingPattern(name)
+    ? `{ ${elements.join(', ')} }`
+    : `[${elements.join(', ')}]`
+}
+
+// The function a member or `#api` declaration is: a method, a function, or a
+// property or const holding an arrow or function expression.
+function writtenFunction(decl: ts.Declaration) {
+  if (ts.isMethodDeclaration(decl) || ts.isFunctionDeclaration(decl)) {
+    return decl
+  }
+  const init =
+    ts.isPropertyAssignment(decl) || ts.isVariableDeclaration(decl)
+      ? decl.initializer
+      : undefined
+  return init && (ts.isArrowFunction(init) || ts.isFunctionExpression(init))
+    ? init
+    : undefined
+}
+
 function declaredType(
   checker: ts.TypeChecker,
   symbol: ts.Symbol,
@@ -1029,6 +1141,10 @@ function typeSignature(
   decl: ts.Declaration,
 ) {
   const type = declaredType(checker, symbol, decl)
+  const written = writtenSignature(checker, named, decl, type)
+  if (written) {
+    return shortenSignature(written)
+  }
   const overloads = type.getCallSignatures()
   // An overloaded function prints as one object type of call signatures, which
   // elision then collapses whole. One arrow per line reads as what it is.
@@ -1321,7 +1437,7 @@ export function sortUnionMembers(sig: string) {
 // opens, not the row.
 const MAX_SIGNATURE = 600
 
-// Collapse `<...>` / `{...}` groups from the inside out until the string fits,
+// Collapse `<...>` and `{...}` groups from the inside out until the string fits,
 // in one left-to-right pass. A stack of partial results reaches every group in
 // post-order — innermost first, leftmost among those — which is exactly the
 // order a repeated "find the innermost group, elide it, rescan" loop reaches
@@ -1343,43 +1459,54 @@ function closingQuote(sig: string, from: number) {
   return Math.min(i, sig.length - 1)
 }
 
-function elideGroups(sig: string, open: string, close: string, max: number) {
+const CLOSER: Record<string, string> = { '<': '>', '{': '}' }
+
+function elideGroups(sig: string, max: number) {
   let length = sig.length
-  const enclosing: string[] = []
+  const enclosing: { before: string; open: string }[] = []
   let out = ''
   for (let i = 0; i < sig.length; i++) {
     const c = sig[i]!
+    const top = enclosing.at(-1)
     if (c === '"') {
       const end = closingQuote(sig, i)
       out += sig.slice(i, end + 1)
       i = end
-    } else if (c === open) {
-      enclosing.push(out)
+    } else if (CLOSER[c]) {
+      enclosing.push({ before: out, open: c })
       out = ''
     } else if (
-      c === close &&
-      enclosing.length &&
-      !(close === '>' && sig[i - 1] === '=')
+      top &&
+      c === CLOSER[top.open] &&
+      !(c === '>' && sig[i - 1] === '=')
     ) {
       const inner = out
-      out = enclosing.pop()!
-      // `<T, U>(a: T) => U` binds the names its parameters use, and a group
-      // that is the whole type leaves nothing to read.
-      const isTypeParameterList = close === '>' && sig[i + 1] === '('
+      enclosing.pop()
+      out = top.before
+      // `<T, U>(a: T) => U` binds the names its parameters use, as `({ a, b
+      // }: T)` names a parameter's fields, and a group that is the whole type
+      // leaves nothing to read.
+      const isTypeParameterList = c === '>' && sig[i + 1] === '('
+      const isBindingPattern = c === '}' && sig[i + 1] === ':'
       const isWholeType = out === '' && i === sig.length - 1
-      if (length > max && !isTypeParameterList && !isWholeType) {
+      if (
+        length > max &&
+        !isTypeParameterList &&
+        !isBindingPattern &&
+        !isWholeType
+      ) {
         length -= inner.length - 1
-        out += `${open}…${close}`
+        out += `${top.open}…${c}`
       } else {
         // once it fits, every enclosing group is emitted whole
-        out += `${open}${inner}${close}`
+        out += `${top.open}${inner}${c}`
       }
     } else {
       out += c
     }
   }
-  while (enclosing.length) {
-    out = `${enclosing.pop()!}${open}${out}`
+  for (const { before, open } of enclosing.reverse()) {
+    out = `${before}${open}${out}`
   }
   return out
 }
@@ -1409,24 +1536,20 @@ function topLevelUnion(sig: string) {
 }
 
 // Shorten an over-long type structurally, never by cutting characters: the point
-// is that what is printed still reads as a type. Generic arguments collapse from
-// the inside out first — `FC<{ model: ModelInstanceTypeProps<Record<string,
-// any>> }>` loses the `Record` before the object — then inline object types, then
-// a top-level union drops its trailing alternatives. Each stage stops as soon as
-// the type fits, so it gives up the least specific detail it can.
+// is that what is printed still reads as a type. Generic arguments and inline
+// object types collapse together from the inside out, so `Promise<{ tables:
+// {…}; legend: {…} }>` keeps its keys where collapsing every generic first left
+// `Promise<…>`. Then a top-level union drops its trailing alternatives. Each
+// stage stops as soon as the type fits, so it gives up the least specific
+// detail it can.
 //
-// A type that resists all three is left alone. An honest long signature beats a
+// A type that resists both is left alone. An honest long signature beats a
 // mangled short one: truncating this one at a fixed width once ate a function's
 // entire return type, leaving it ending mid-parameter.
 export function elideSignature(sig: string, max = MAX_SIGNATURE) {
   let out = sig.replace(/\s+/g, ' ')
-  for (const [open, close] of [
-    ['<', '>'],
-    ['{', '}'],
-  ] as const) {
-    if (out.length > max) {
-      out = elideGroups(out, open, close, max)
-    }
+  if (out.length > max) {
+    out = elideGroups(out, max)
   }
   if (out.length > max) {
     const parts = topLevelUnion(out)

@@ -551,17 +551,25 @@ type TypeLinker = (html: string) => string
 // page. Quoted strings stay text, so `types.literal('LinearWiggleDisplay')`
 // links nothing.
 function typeLinker(modelNames: string[], configNames: Set<string>) {
+  // A written annotation names a node by the codebase's aliases for it
+  // (`LinearGenomeViewModel`, `BaseAssemblyConfigModel`); a page name, added
+  // last, wins over an alias that happens to spell it.
   const pages = new Map([
-    ...[...configNames].map(
-      name =>
-        [
-          configNodeName(name),
-          `../../config/${slugify(name, { lower: true })}`,
-        ] as const,
-    ),
-    ...modelNames.map(
-      name => [name, `../${slugify(name, { lower: true })}`] as const,
-    ),
+    ...[...configNames].flatMap(name => {
+      const page = `../../config/${slugify(name, { lower: true })}`
+      const node = configNodeName(name)
+      return [
+        [`${node}Model`, page],
+        [node, page],
+      ] as const
+    }),
+    ...modelNames.flatMap(name => {
+      const page = `../${slugify(name, { lower: true })}`
+      return [
+        [`${name}Model`, page],
+        [name, page],
+      ] as const
+    }),
   ])
   const token = new RegExp(
     `(["'\`])(?:(?!\\1)[^\\\\]|\\\\.)*\\1|\\b(?:${[...pages.keys()].join('|')})\\b`,

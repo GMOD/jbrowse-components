@@ -119,7 +119,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-toggleshowforward">**toggleShowForward**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-toggleshowreverse">**toggleShowReverse**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-toggleshowtranslation">**toggleShowTranslation**</span><br><code>() =&gt; void</code> |  |
-| <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(backend: PerRegionRenderingBackend&lt;SequenceCells, SequenceRend…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(backend: PerRegionRenderingBackend&lt;SequenceCells, SequenceRenderState, RenderBlock, SequenceCells&gt;) =&gt; void</code></pre></dialog></span> |  |
+| <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(backend: PerRegionRenderingBackend&lt;SequenceCells, SequenceRend…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(backend: PerRegionRenderingBackend&lt;SequenceCells, SequenceRenderState&gt;) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-fetchneeded">**fetchNeeded**</span><br><code>(needed: IndexedRegion[]) =&gt; Promise&lt;void&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
