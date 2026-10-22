@@ -1017,7 +1017,8 @@
         "clearAdapterCache",
         "freeAdapterResources",
         "getAdapter",
-        "keepAdapters"
+        "keepAdapters",
+        "withAdapterId"
       ],
       "worker": "real"
     },

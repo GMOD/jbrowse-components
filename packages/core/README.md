@@ -2496,6 +2496,22 @@ the rows it has. The rows come out grouped, each group in `start` order, so a
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+### withAdapterId
+
+`conf` with an `adapterId` hashed from all of it. Code that builds an inline
+config (a FromConfigAdapter's `features`) calls this: `adapterConfigCacheKey`
+hashes only a prefix, so two such configs differing past it would share an
+adapter.
+
+```js
+import { withAdapterId } from '@jbrowse/core/data_adapters/dataAdapterCache'
+
+// type signature
+<T extends Record<string, unknown>>(conf: T) => T & { adapterId: string; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/dataAdapterCache.ts)
+
 ### withColumns
 
 The table's rows with `written` beside them, in the order `rows` names where it

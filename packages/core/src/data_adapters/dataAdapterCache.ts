@@ -14,6 +14,17 @@ export function adapterConfigCacheKey(conf: Record<string, unknown> = {}) {
 
 /**
  * #api
+ * `conf` with an `adapterId` hashed from all of it. Code that builds an inline
+ * config (a FromConfigAdapter's `features`) calls this: `adapterConfigCacheKey`
+ * hashes only a prefix, so two such configs differing past it would share an
+ * adapter.
+ */
+export function withAdapterId<T extends Record<string, unknown>>(conf: T) {
+  return { ...conf, adapterId: idMaker(conf, Infinity) }
+}
+
+/**
+ * #api
  * The `adapterCapabilities` entry of an adapter that reads the reference
  * sequence of the assembly it is displayed against: BAM and SAM for mismatches
  * without an MD tag, CRAM to rebuild bases, GC content and the reference scans

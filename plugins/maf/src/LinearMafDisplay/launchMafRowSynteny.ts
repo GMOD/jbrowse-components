@@ -1,3 +1,4 @@
+import { withAdapterId } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { assembleLocString } from '@jbrowse/core/util'
 import { annotationTrackIds } from '@jbrowse/core/util/tracks'
 
@@ -103,7 +104,10 @@ export async function launchMafRowSynteny({
           trackId: `${model.id}-${assemblyName}-maf-synteny`,
           name: `${refAssembly} vs ${sampleLabel} (MAF, ${refLoc})`,
           assemblyNames: [refAssembly, assemblyName],
-          adapter: { type: 'FromConfigAdapter', features: synteny.features },
+          adapter: withAdapterId({
+            type: 'FromConfigAdapter',
+            features: synteny.features,
+          }),
         },
       ],
     ],

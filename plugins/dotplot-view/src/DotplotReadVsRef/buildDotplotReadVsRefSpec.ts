@@ -3,6 +3,7 @@ import {
   buildSyntheticAssembly,
 } from '@jbrowse/alignments-core'
 import { buildReadVsRefFeatures } from '@jbrowse/cigar-utils'
+import { withAdapterId } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { gatherOverlaps, sum } from '@jbrowse/core/util'
 
 import type { SyntheticAssembly } from '@jbrowse/alignments-core'
@@ -115,10 +116,10 @@ export function buildDotplotReadVsRefSpec({
           configuration: {
             type: 'SyntenyTrack',
             assemblyNames,
-            adapter: {
+            adapter: withAdapterId({
               type: 'FromConfigAdapter',
               features,
-            },
+            }),
             trackId: syntenyTrackId,
             name: syntenyTrackName,
           },

@@ -1,4 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { withAdapterId } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import {
   getEnv,
   isSessionModelWithWidgets,
@@ -168,7 +169,7 @@ export async function addResultTrack({
   const trackId = `${trackIdPrefix}-${Date.now()}`
   const resultTrack = trackConf ?? {
     type: 'FeatureTrack',
-    adapter: { type: 'FromConfigAdapter', features },
+    adapter: withAdapterId({ type: 'FromConfigAdapter', features }),
   }
   session.addSessionTrackConf({
     ...resultTrack,

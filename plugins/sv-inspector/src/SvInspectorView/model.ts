@@ -1,3 +1,4 @@
+import { withAdapterId } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { clamp, getSession, isFeature } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
@@ -288,10 +289,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               type: 'VariantTrack',
               trackId,
               name: 'features from tabular data',
-              adapter: {
+              adapter: withAdapterId({
                 type: 'FromConfigAdapter',
                 features: this.allFeatures,
-              },
+              }),
               assemblyNames: [assemblyName],
               displays: [
                 {

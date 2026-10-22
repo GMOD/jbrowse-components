@@ -3,6 +3,7 @@ import {
   buildSyntheticAssembly,
 } from '@jbrowse/alignments-core'
 import { buildReadVsRefFeatures } from '@jbrowse/cigar-utils'
+import { withAdapterId } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { gatherOverlaps } from '@jbrowse/core/util'
 
 import { buildSequenceTrack } from '../syntenyLaunchSequenceTrack.ts'
@@ -129,10 +130,10 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
               configuration: {
                 type: 'SyntenyTrack',
                 assemblyNames: [trackAssembly, readAssembly],
-                adapter: {
+                adapter: withAdapterId({
                   type: 'FromConfigAdapter',
                   features: configFeatureStore,
-                },
+                }),
                 trackId: syntenyTrackId,
                 name: syntenyTrackName,
               },
