@@ -33,6 +33,7 @@ import {
   extractWithComment,
   getAllFiles,
   sourceCorpus,
+  unreadableSignature,
 } from './util.ts'
 
 import type { ApiGroup } from './generateApiDocs.ts'
@@ -240,9 +241,17 @@ async function main() {
       names: configGaps.adapterNoTrackType,
     },
     {
-      title: 'model members whose type prints as an expanded model',
-      fix: 'tag that model #stateModel (#internal keeps it off the site), or give the member a written type that names it',
-      names: modelGaps.unnamedModelTypes,
+      title:
+        'model members and #api exports whose type prints as MST internals or collapses to nothing',
+      fix: 'tag the model it names #stateModel (#internal keeps it off the site), or write the type it should read as',
+      names: [
+        ...modelGaps.unreadableTypes,
+        ...Object.values(api).flatMap(group =>
+          group.exports
+            .filter(e => unreadableSignature(e.signature))
+            .map(e => `api:${group.id}.${e.name}`),
+        ),
+      ],
     },
     {
       title: '#stateModel tags attached to a declaration that builds no model',

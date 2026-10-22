@@ -1024,6 +1024,19 @@ const writtenPrinter = ts.createPrinter({ removeComments: true })
 const MST_EXPANSION =
   /ModelInstanceTypeProps|IModelType|ModelCreationType|ModelSnapshotType|IOptionalIType|ISimpleType|IMSTArray|ExtractCFromProps/
 
+// A whole type, or a function's whole return, that elision collapsed to its
+// outer name: `Promise<{…}>`, `Record<…>`.
+const COLLAPSED = /(?:^|=> )[\w.]+<(?:…|\{…\})>(?: \| undefined)?$/
+
+// A rendered signature a reader cannot use: one line of it prints an MST
+// expansion, or collapses to nothing. `IStateTreeNode` alone is not one, since
+// an API can take it (`runLazyAfterAttach<Self extends IStateTreeNode>`).
+export function unreadableSignature(sig: string) {
+  return sig
+    .split('\n')
+    .some(line => MST_EXPANSION.test(line) || COLLAPSED.test(line))
+}
+
 const LITERAL_UNION =
   /^(?:"(?:[^"\\]|\\.)*"|undefined)(?: \| (?:"(?:[^"\\]|\\.)*"|undefined))+$/
 
