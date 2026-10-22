@@ -106,7 +106,7 @@ function AlignmentsSvgBody({
         <GroupLabelBoxes
           sections={screenSections.map(s => ({
             key: s.groupKey,
-            label: s.label,
+            label: model.groupChipLabel(s.label),
             top: s.coverageTop,
             height: s.height,
           }))}
