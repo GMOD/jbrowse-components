@@ -136,10 +136,16 @@ test('a key spells each color as the reads do, whatever CSS the config wrote', a
   const hex = /^#[0-9a-f]{6}$/
   for (const color of [
     { field: 'tags.RG' },
-    { field: 'strand', range: ['hsl(120, 100%, 25%)', 'RGB(0, 0, 255)'] },
-    { field: 'strand', range: ['#FF0000', '#0000FF'] },
+    {
+      field: 'strand',
+      scale: { range: ['hsl(120, 100%, 25%)', 'RGB(0, 0, 255)'] },
+    },
+    { field: 'strand', scale: { range: ['#FF0000', '#0000FF'] } },
   ]) {
-    const t = await engine.alignments({ ...READ_GROUPS, display: { color } })
+    const t = await engine.alignments({
+      ...READ_GROUPS,
+      display: { encoding: { color } },
+    })
     const painted = new Set(t.reads.color)
     expect(t.legend.color.length).toBeGreaterThan(1)
     for (const c of [...t.legend.color, ...painted]) {
@@ -160,7 +166,7 @@ test('reads paint as the display\u2019s color object paints them, with its key',
 
   const strand = await engine.alignments({
     ...BAM,
-    display: { color: { field: 'strand' } },
+    display: { encoding: { color: { field: 'strand' } } },
   })
   const painted = (t: typeof strand, s: number) =>
     new Set(t.reads.color.filter((_, i) => t.reads.strand[i] === s))
@@ -181,7 +187,13 @@ test('reads paint as the display\u2019s color object paints them, with its key',
   const written = await engine.alignments({
     ...BAM,
     display: {
-      color: { field: 'strand', range: ['#ff0000', '#0000ff'], title: 'Mine' },
+      encoding: {
+        color: {
+          field: 'strand',
+          scale: { range: ['#ff0000', '#0000ff'] },
+          legend: { title: 'Mine' },
+        },
+      },
     },
   })
   expect([...painted(written, 1)]).toEqual(['#ff0000'])
@@ -191,7 +203,7 @@ test('reads paint as the display\u2019s color object paints them, with its key',
   // a threshold key lists every bin, reads in it or not, highest first
   const mapq = await engine.alignments({
     ...BAM,
-    display: { color: { field: 'mapq' } },
+    display: { encoding: { color: { field: 'mapq' } } },
   })
   expect(mapq.legendTitle).toBe('Mapping quality')
   expect(mapq.legend.label[0]).toMatch(/^MAPQ 30\+/)
@@ -207,8 +219,15 @@ test('a ramp keys a color bar: a linear MAPQ, under the color title, and base qu
   const t = await engine.alignments({
     ...BAM,
     display: {
-      color: { field: 'mapq', scale: 'linear', domainMin: 0, domainMax: 30 },
-      baseColor: { field: 'baseQuality' },
+      encoding: {
+        color: {
+          field: 'mapq',
+          scale: { type: 'linear', domainMin: 0, domainMax: 30 },
+        },
+      },
+      pileup: {
+        bases: { show: true, encoding: { color: { field: 'baseQuality' } } },
+      },
     },
   })
   expect(t.ramps.map(r => r.title)).toEqual(['Base quality', 'Mapping quality'])
@@ -224,7 +243,11 @@ test('a ramp keys a color bar: a linear MAPQ, under the color title, and base qu
 test('per-base quality paints each aligned base on its read through the ramp', async () => {
   const t = await engine.alignments({
     ...METHYLATED,
-    display: { baseColor: { field: 'baseQuality' } },
+    display: {
+      pileup: {
+        bases: { show: true, encoding: { color: { field: 'baseQuality' } } },
+      },
+    },
   })
   const q = t.qualities
   expect(q.position.length).toBeGreaterThan(1000)
@@ -408,7 +431,11 @@ test('base modifications paint under the modifications layer, keyed with the rea
   expect(plain.modifications.position.length).toBe(0)
   const { reads, modifications, legend } = await engine.alignments({
     ...METHYLATED,
-    display: { baseColor: { field: 'modifications' } },
+    display: {
+      pileup: {
+        bases: { show: true, encoding: { color: { field: 'modifications' } } },
+      },
+    },
   })
   const n = modifications.position.length
   expect(n).toBeGreaterThan(100)
@@ -432,7 +459,9 @@ test('base modifications paint under the modifications layer, keyed with the rea
   const calls = await engine.alignments({
     ...METHYLATED,
     display: {
-      baseColor: { field: 'modifications' },
+      pileup: {
+        bases: { show: true, encoding: { color: { field: 'modifications' } } },
+      },
       modifications: { unmodified: 'calls' },
     },
   })
@@ -459,7 +488,9 @@ test('the coverage band\u2019s stacks are the worker\u2019s: alleles, and modifi
   const { modificationCoverage } = await engine.alignments({
     ...METHYLATED,
     display: {
-      baseColor: { field: 'modifications' },
+      pileup: {
+        bases: { show: true, encoding: { color: { field: 'modifications' } } },
+      },
       modifications: { unmodified: 'calls' },
     },
   })
@@ -653,19 +684,19 @@ test('the display’s facet object splits the reads into sections, each laid out
 })
 
 test('sections share one color scale, so a read paints as it does unfaceted', async () => {
-  const color = { field: 'tags.NM', scale: 'linear' }
+  const color = { field: 'tags.NM', scale: { type: 'linear' } }
   const key = (t: { reads: { name: string[]; start: number[] } }, i: number) =>
     `${t.reads.name[i]} ${t.reads.start[i]}`
   const whole = await engine.alignments({
     ...PAIRED_INVERSION,
-    display: { color },
+    display: { encoding: { color } },
   })
   const colorOf = new Map(
     whole.reads.name.map((_, i) => [key(whole, i), whole.reads.color[i]]),
   )
   const faceted = await engine.alignments({
     ...PAIRED_INVERSION,
-    display: { color, facet: { field: 'tags.NM' } },
+    display: { encoding: { color }, facet: { field: 'tags.NM' } },
   })
   expect(faceted.sections.label.length).toBeGreaterThan(2)
   expect(new Set(faceted.reads.color).size).toBeGreaterThan(4)
@@ -678,7 +709,7 @@ test('a key over the facet’s own field lists its values as the sections stack'
   const t = await engine.alignments({
     ...READ_GROUPS,
     display: {
-      color: { field: 'tags.RG' },
+      encoding: { color: { field: 'tags.RG' } },
       facet: { field: 'tags.RG', sort: ['5', '4'] },
     },
   })
@@ -826,11 +857,11 @@ test('a chain over split reads paints a read by its strand against its chain’s
   }
   const chained = await engine.alignments({
     ...both,
-    display: { unit: 'chain', color: { field: 'strand' } },
+    display: { unit: 'chain', encoding: { color: { field: 'strand' } } },
   })
   const split = await engine.alignments({
     ...both,
-    display: { color: { field: 'strand' } },
+    display: { encoding: { color: { field: 'strand' } } },
   })
   expect(chained.chains.start.length).toBeGreaterThan(0)
   expect(chained.reads.start).toEqual(split.reads.start)
@@ -928,7 +959,12 @@ test('read connections come back as the display’s band draws them', async () =
 test('an arc’s stroke widens with the reads behind it, as the band strokes it', async () => {
   const { arcs } = await engine.alignments({
     ...LONG_READS,
-    display: { readConnections: { show: true, lineWidth: 2 } },
+    display: {
+      readConnections: {
+        show: true,
+        encoding: { strokeWidth: { field: 'reads', scale: { range: [2, 8] } } },
+      },
+    },
   })
   const widthAt = new Map(arcs.support.map((s, i) => [s, arcs.width[i]!]))
   expect(widthAt.get(1)).toBe(2)
@@ -1002,7 +1038,11 @@ test('a modifications layer mutes every base, and the base key goes empty', asyn
   for (const field of ['modifications', 'bisulfite']) {
     const t = await engine.alignments({
       ...METHYLATED,
-      display: { baseColor: { field } },
+      display: {
+        pileup: {
+          bases: { show: true, encoding: { color: { field } } },
+        },
+      },
     })
     expect(t.mismatches.color.length).toBeGreaterThan(0)
     expect(new Set(t.mismatches.color)).toEqual(new Set([muted]))
@@ -1071,11 +1111,11 @@ test('config is the display’s resolved config, the slots the call set and the 
     ...BAM,
     display: {
       filter: { junctions: { minReads: 5 } },
-      color: { field: 'strand' },
+      encoding: { color: { field: 'strand' } },
     },
   })
   expect(t.config.filter).toMatchObject({ junctions: { minReads: 5 } })
-  expect((t.config.color as { field: string }).field).toBe('strand')
+  expect(t.config.encoding).toMatchObject({ color: { field: 'strand' } })
   expect(t.config.coverage).toMatchObject({ height: 45, show: true })
   const display = { height: 150 }
   const others = [

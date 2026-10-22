@@ -418,24 +418,27 @@ describe('validateConfig', () => {
   })
 
   it('reports a per-base layer naming none of its four variables', () => {
-    const withLayer = (baseColor: unknown) => {
+    const withLayer = (color: unknown) => {
       const config = baseConfig()
       config.tracks[0] = {
         ...config.tracks[0]!,
         // @ts-expect-error the base config's track carries no displays
         displays: [
-          { type: 'LinearAlignmentsDisplay', displayId: 'd', baseColor },
+          {
+            type: 'LinearAlignmentsDisplay',
+            displayId: 'd',
+            pileup: { bases: { show: true, encoding: { color } } },
+          },
         ],
       }
       return config
     }
+    const at = 'tracks[0].displays[0].pileup.bases.encoding.color'
     expect(validateConfig(withLayer('modifications')).problems).toEqual([])
     expect(
       errorsOf(withLayer({ field: 'methylation' })).map(e => e.where),
-    ).toEqual(['tracks[0].displays[0].baseColor.field'])
-    expect(errorsOf(withLayer('methylation')).map(e => e.where)).toEqual([
-      'tracks[0].displays[0].baseColor',
-    ])
+    ).toEqual([`${at}.field`])
+    expect(errorsOf(withLayer('methylation')).map(e => e.where)).toEqual([at])
   })
 
   function sessionDisplay(display: Record<string, unknown>) {
@@ -458,7 +461,7 @@ describe('validateConfig', () => {
   // Which rules apply is the display's own default scale, read off its
   // schema's fieldPresets through the manifest.
   describe('a color object its display cannot paint as written', () => {
-    const where = 'tracks[0].displays[0].color'
+    const where = 'tracks[0].displays[0].encoding.color'
     const onTrack = (track: Record<string, unknown>) => {
       const config = baseConfig()
       return { ...config, tracks: [{ ...config.tracks[0], ...track }] }
@@ -466,7 +469,7 @@ describe('validateConfig', () => {
     const found = (track: Record<string, unknown>) =>
       warningsOf(onTrack(track)).map(p => `${p.rule} ${p.where}`)
     const display = (type: string, color: Record<string, unknown>) => ({
-      displays: [{ type, color }],
+      displays: [{ type, encoding: { color } }],
     })
 
     it('reads an explicit scale', () => {
@@ -474,12 +477,10 @@ describe('validateConfig', () => {
         found(
           display('LinearAlignmentsDisplay', {
             field: 'tags.XS',
-            scale: 'linear',
-            domainMin: 10,
-            domainMax: 1,
+            scale: { type: 'linear', domainMin: 10, domainMax: 1 },
           }),
         ),
-      ).toEqual([`domain-ends ${where}.domainMax`])
+      ).toEqual([`domain-ends ${where}.scale.domainMax`])
     })
 
     it("reads Hi-C's count preset, which no config writes", () => {
@@ -487,18 +488,20 @@ describe('validateConfig', () => {
         found({
           type: 'HicTrack',
           adapter: { type: 'HicAdapter', uri: 'contacts.hic' },
-          ...display('LinearHicDisplay', { domainMin: 10, domainMax: 1 }),
+          ...display('LinearHicDisplay', {
+            scale: { domainMin: 10, domainMax: 1 },
+          }),
         }),
-      ).toEqual([`domain-ends ${where}.domainMax`])
+      ).toEqual([`domain-ends ${where}.scale.domainMax`])
     })
 
     it("reads a field's default scale where none is written", () => {
-      const cuts = { domain: ['2', '1'] }
+      const cuts = { scale: { domain: ['2', '1'] } }
       expect(
         found(
           display('LinearAlignmentsDisplay', { field: 'insertSize', ...cuts }),
         ),
-      ).toEqual([`threshold-cuts ${where}.domain`])
+      ).toEqual([`threshold-cuts ${where}.scale.domain`])
       expect(
         found(
           display('LinearAlignmentsDisplay', { field: 'tags.HP', ...cuts }),
@@ -506,14 +509,14 @@ describe('validateConfig', () => {
       ).toEqual([])
       expect(
         found(display('LGVSyntenyDisplay', { field: 'insertSize', ...cuts })),
-      ).toEqual([`threshold-cuts ${where}.domain`])
+      ).toEqual([`threshold-cuts ${where}.scale.domain`])
       expect(
         found({
           type: 'QuantitativeTrack',
           adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
-          ...display('LinearWiggleDisplay', { field: 'score', ...cuts }),
+          ...display('LinearWiggleDisplay', cuts),
         }),
-      ).toEqual([`threshold-cuts ${where}.domain`])
+      ).toEqual([`threshold-cuts ${where}.scale.domain`])
     })
 
     // The pos/neg pair is score cut at the origin, so cuts written with no
@@ -526,10 +529,12 @@ describe('validateConfig', () => {
           adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
           ...display('LinearWiggleDisplay', color),
         })
-      expect(wiggle({ domain: ['2', '1'] })).toEqual([
-        `threshold-cuts ${where}.domain`,
+      expect(wiggle({ scale: { domain: ['2', '1'] } })).toEqual([
+        `threshold-cuts ${where}.scale.domain`,
       ])
-      expect(wiggle({ value: 'red', domain: ['2', '1'] })).toEqual([])
+      expect(wiggle({ value: 'red', scale: { domain: ['2', '1'] } })).toEqual(
+        [],
+      )
     })
 
     it("checks a feature track's threshold color", () => {
@@ -538,15 +543,17 @@ describe('validateConfig', () => {
         adapter: { type: 'Gff3TabixAdapter', uri: 'x.gff3.gz' },
         ...display('LinearBasicDisplay', {
           field: 'dif',
-          scale: 'threshold',
-          domain: ['0.3', '-0.3'],
-          range: ['blue', 'red'],
+          scale: {
+            type: 'threshold',
+            domain: ['0.3', '-0.3'],
+            range: ['blue', 'red'],
+          },
         }),
       }
       expect(errorsOf(onTrack(track))).toEqual([])
       expect(found(track)).toEqual([
-        `threshold-cuts ${where}.domain`,
-        `threshold-range ${where}.range`,
+        `threshold-cuts ${where}.scale.domain`,
+        `threshold-range ${where}.scale.range`,
       ])
     })
 
@@ -554,10 +561,14 @@ describe('validateConfig', () => {
       expect(
         found({
           displayDefaults: {
-            color: { field: 'insertSize', domain: ['2', '1'] },
+            encoding: {
+              color: { field: 'insertSize', scale: { domain: ['2', '1'] } },
+            },
           },
         }),
-      ).toEqual(['threshold-cuts tracks[0].displayDefaults.color.domain'])
+      ).toEqual([
+        'threshold-cuts tracks[0].displayDefaults.encoding.color.scale.domain',
+      ])
     })
 
     it('checks displayDefaults only against the displays its value reaches', () => {
@@ -566,10 +577,14 @@ describe('validateConfig', () => {
           type: 'FeatureTrack',
           adapter: { type: 'BigBedAdapter', uri: 'rmsk.bb' },
           displayDefaults: {
-            color: {
-              field: 'class',
-              domain: ['LINE', 'SINE'],
-              range: ['#1b9e77', '#d95f02'],
+            encoding: {
+              color: {
+                field: 'class',
+                scale: {
+                  domain: ['LINE', 'SINE'],
+                  range: ['#1b9e77', '#d95f02'],
+                },
+              },
             },
           },
         }),
@@ -588,12 +603,16 @@ describe('validateConfig', () => {
               uri: 'reads.bam',
               assemblyNames,
               displayDefaults: {
-                color: { field: 'insertSize', domain: ['2', '1'] },
+                encoding: {
+                  color: { field: 'insertSize', scale: { domain: ['2', '1'] } },
+                },
               },
             },
           ],
         }).map(p => `${p.rule} ${p.where}`),
-      ).toEqual(['threshold-cuts tracks[0].displayDefaults.color.domain'])
+      ).toEqual([
+        'threshold-cuts tracks[0].displayDefaults.encoding.color.scale.domain',
+      ])
     })
 
     it("checks scales.y's ends by the color ramp's rule, once on a mark display", () => {
@@ -627,29 +646,28 @@ describe('validateConfig', () => {
       ])
     })
 
-    it('checks labels and domainQuantile as the display does', () => {
+    it('checks scale.names and scale.domainQuantile as the display does', () => {
       expect(
         found(
           display('LinearAlignmentsDisplay', {
             field: 'tags.XS',
-            scale: 'linear',
-            domainQuantile: 99,
+            scale: { type: 'linear', domainQuantile: 99 },
           }),
         ),
-      ).toEqual([`domain-quantile ${where}.domainQuantile`])
+      ).toEqual([`domain-quantile ${where}.scale.domainQuantile`])
       expect(
         found(
           display('LinearAlignmentsDisplay', {
             field: 'strand',
-            labels: ['+', '-', '?'],
+            scale: { names: ['+', '-', '?'] },
           }),
         ),
-      ).toEqual([`labels-domain ${where}.labels`])
+      ).toEqual([`names-domain ${where}.scale.names`])
       expect(
         found(
           display('LinearAlignmentsDisplay', {
             field: 'strand',
-            labels: ['+', '-'],
+            scale: { names: ['+', '-'] },
           }),
         ),
       ).toEqual([])
@@ -657,7 +675,7 @@ describe('validateConfig', () => {
         found(
           display('LinearAlignmentsDisplay', {
             field: 'insertSize',
-            labels: ['Short', 'Ok', 'Long'],
+            scale: { names: ['Short', 'Ok', 'Long'] },
           }),
         ),
       ).toEqual([])
@@ -669,10 +687,7 @@ describe('validateConfig', () => {
           type: 'QuantitativeTrack',
           adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
           ...display('LinearWiggleDisplay', {
-            field: 'score',
-            scale: 'linear',
-            domainMin: 10,
-            domainMax: 1,
+            scale: { type: 'linear', domainMin: 10, domainMax: 1 },
           }),
         }),
       ).toEqual([])

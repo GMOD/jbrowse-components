@@ -190,7 +190,7 @@ describe('a marks list in a config file', () => {
           mark: { type: 'link', interpolate: 'arc' },
           encoding: {
             x2: { chrom: 'mate.refName', pos: 'mate.start' },
-            size: 3,
+            strokeWidth: 3,
           },
         },
       ]),
@@ -485,8 +485,13 @@ describe('a marks list in a config file', () => {
       },
     ]
     const cuts = (domain: unknown[]) =>
-      found(colored('point', { field: 'pip', scale: 'threshold', domain }))
-    const domain = `${DISPLAY}.marks[0].encoding.color.domain`
+      found(
+        colored('point', {
+          field: 'pip',
+          scale: { type: 'threshold', domain },
+        }),
+      )
+    const domain = `${DISPLAY}.marks[0].encoding.color.scale.domain`
     expect(cuts([0.1, 0.5])).toEqual([])
     expect(cuts(['0.1', '0.5'])).toEqual([])
     expect(cuts([0.5, 0.1])).toEqual([`warning threshold-cuts ${domain}`])
@@ -498,51 +503,66 @@ describe('a marks list in a config file', () => {
       found(
         colored('point', {
           field: 'pip',
-          scale: 'threshold',
-          domain: [0.1, 0.5],
-          range: ['red', 'blue'],
+          scale: {
+            type: 'threshold',
+            domain: [0.1, 0.5],
+            range: ['red', 'blue'],
+          },
         }),
       ),
     ).toEqual([
-      `warning threshold-range ${DISPLAY}.marks[0].encoding.color.range`,
+      `warning threshold-range ${DISPLAY}.marks[0].encoding.color.scale.range`,
     ])
-    const ramp = { field: 'score', scale: 'linear', range: ['white', 'red'] }
-    const color = `${DISPLAY}.marks[0].encoding.color`
+    const rampScale = { type: 'linear', range: ['white', 'red'] }
+    const ramp = { field: 'score', scale: rampScale }
+    const rampWith = (scale: Record<string, unknown>) => ({
+      field: 'score',
+      scale: { ...rampScale, ...scale },
+    })
+    const color = `${DISPLAY}.marks[0].encoding.color.scale`
     expect(
-      found(colored('bar', { ...ramp, domainMin: 0, domainMax: 10 })),
+      found(colored('bar', rampWith({ domainMin: 0, domainMax: 10 }))),
     ).toEqual([])
-    expect(found(colored('bar', { ...ramp, domainMin: 0 }))).toEqual([])
-    expect(found(colored('bar', { ...ramp, domain: [0, 10] }))).toEqual([
+    expect(found(colored('bar', rampWith({ domainMin: 0 })))).toEqual([])
+    expect(found(colored('bar', rampWith({ domain: [0, 10] })))).toEqual([
       `warning ramp-domain ${domain}`,
     ])
-    expect(found(colored('bar', { ...ramp, range: ['red'] }))).toEqual([
+    expect(found(colored('bar', rampWith({ range: ['red'] })))).toEqual([
       `warning ramp-range ${color}.range`,
     ])
     expect(
-      found(colored('bar', { ...ramp, domainMin: 10, domainMax: 0 })),
+      found(colored('bar', rampWith({ domainMin: 10, domainMax: 0 }))),
     ).toEqual([`warning domain-ends ${color}.domainMax`])
-    expect(found(colored('bar', { ...ramp, domainQuantile: 99 }))).toEqual([
+    expect(found(colored('bar', rampWith({ domainQuantile: 99 })))).toEqual([
       `warning domain-quantile ${color}.domainQuantile`,
     ])
     expect(
-      found(colored('bar', { ...ramp, scale: 'log', domainMin: 0 })),
+      found(colored('bar', rampWith({ type: 'log', domainMin: 0 }))),
     ).toEqual([`warning log-floor ${color}.domainMin`])
     expect(found(colored('span', ramp))).toEqual([])
     expect(
       found([{ mark: 'text', encoding: { text: 'name', color: ramp } }]),
     ).toEqual([])
     expect(
-      found(colored('bar', { field: 'type', domain: ['a'], labels: ['A'] })),
+      found(
+        colored('bar', {
+          field: 'type',
+          scale: { domain: ['a'], names: ['A'] },
+        }),
+      ),
     ).toEqual([])
-    expect(found(colored('bar', { field: 'type', labels: ['A'] }))).toEqual([
-      `warning labels-domain ${color}.labels`,
-    ])
-    expect(found(colored('bar', { field: 'type', unknown: 'grey' }))).toEqual([
-      `warning unknown-domain ${color}.unknown`,
-    ])
+    expect(
+      found(colored('bar', { field: 'type', scale: { names: ['A'] } })),
+    ).toEqual([`warning names-domain ${color}.names`])
+    expect(
+      found(colored('bar', { field: 'type', scale: { unknown: 'grey' } })),
+    ).toEqual([`warning unknown-domain ${color}.unknown`])
     expect(
       found(
-        colored('bar', { field: 'type', scale: 'linear', unknown: 'grey' }),
+        colored('bar', {
+          field: 'type',
+          scale: { type: 'linear', unknown: 'grey' },
+        }),
       ),
     ).toEqual([`warning unknown-scale ${color}.unknown`])
     expect(found(colored('span', { value: 'red' }))).toEqual([])
@@ -582,12 +602,12 @@ describe('a marks list in a config file', () => {
           mark: 'bar',
           encoding: {
             y: 'score',
-            color: { field: 'score', scale: 'threshold' },
+            color: { field: 'score', scale: { type: 'threshold' } },
           },
         },
       ]),
     ).toEqual([
-      `warning threshold-no-cuts ${DISPLAY}.marks[0].encoding.color.domain`,
+      `warning threshold-no-cuts ${DISPLAY}.marks[0].encoding.color.scale.domain`,
     ])
   })
 
@@ -595,7 +615,10 @@ describe('a marks list in a config file', () => {
     const config = configOf([
       {
         mark: 'point',
-        encoding: { y: 'score', color: { field: 'r2', scale: 'threshold' } },
+        encoding: {
+          y: 'score',
+          color: { field: 'r2', scale: { type: 'threshold' } },
+        },
       },
     ])
     const track = (config.tracks as Record<string, unknown>[])[0]!
@@ -610,7 +633,7 @@ describe('a marks list in a config file', () => {
       ],
     })
     expect(problemsOf(config).map(p => `${p.rule} ${p.where}`)).toEqual([
-      `threshold-no-cuts ${DISPLAY}.marks[0].encoding.color.domain`,
+      `threshold-no-cuts ${DISPLAY}.marks[0].encoding.color.scale.domain`,
     ])
   })
 
@@ -810,7 +833,7 @@ describe('the lift a file takes before the rules read it', () => {
             },
             {
               encoding: {
-                color: { field: 'score', domain: [0, 10] },
+                color: { field: 'score', scale: { domain: [0, 10] } },
               },
             },
           ],
@@ -827,7 +850,11 @@ describe('the lift a file takes before the rules read it', () => {
           },
           transform: [{ type: 'coverage', as: 'depth' }],
         },
-        { encoding: { color: { field: 'score', domain: ['0', '10'] } } },
+        {
+          encoding: {
+            color: { field: 'score', scale: { domain: ['0', '10'] } },
+          },
+        },
       ],
     })
   })

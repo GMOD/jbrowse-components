@@ -82,7 +82,7 @@ export async function run(args?: string[]) {
     color: {
       type: 'string',
       description:
-        'Track color: a plain CSS color or a jexl callback. Merged into displayDefaults',
+        'Track color: a plain CSS color or a jexl callback. Merged into displayDefaults as encoding.color.value',
     },
     height: {
       type: 'string',
@@ -92,7 +92,7 @@ export async function run(args?: string[]) {
     displayDefaults: {
       type: 'string',
       description:
-        'Inline JSON merged into the track displayDefaults (labels, color, filter, etc.)',
+        'Inline JSON merged into the track displayDefaults (labels, encoding, filter, etc.)',
     },
     multiwig: {
       type: 'string',
