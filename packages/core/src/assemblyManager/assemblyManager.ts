@@ -282,9 +282,11 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        * read) or undefined once they are all loaded.
        */
       loadingAssembly(asmNames: string[]) {
+        // an unknown name is skipped: find() would hand back its undefined,
+        // which reads as "all loaded" ahead of one still loading
         return asmNames
           .map(name => this.get(name))
-          .find(asm => !asm?.initialized)
+          .find(asm => asm !== undefined && !asm.initialized)
       },
 
       /**

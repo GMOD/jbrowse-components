@@ -81,16 +81,23 @@ export default abstract class LazyStateModelElement extends PluggableElementBase
         `${this.group} type ${this.name} has neither a state model nor a loader`,
       )
     }
-    this.stateModelPromise ??= this.stateModelLoader().then(loaded => {
-      let stateModel = loaded
-      for (const extend of this.pendingStateModelExtensions) {
-        stateModel = extend(stateModel)
-      }
-      this.pendingStateModelExtensions = []
-      this.loadedStateModel = stateModel
-      this.onStateModelLoaded?.()
-      return this.stateModel
-    })
+    this.stateModelPromise ??= this.stateModelLoader().then(
+      loaded => {
+        let stateModel = loaded
+        for (const extend of this.pendingStateModelExtensions) {
+          stateModel = extend(stateModel)
+        }
+        this.pendingStateModelExtensions = []
+        this.loadedStateModel = stateModel
+        this.onStateModelLoaded?.()
+        return this.stateModel
+      },
+      (e: unknown) => {
+        // forgotten, so the next launch retries rather than replaying this
+        this.stateModelPromise = undefined
+        throw e
+      },
+    )
     return this.stateModelPromise
   }
 
