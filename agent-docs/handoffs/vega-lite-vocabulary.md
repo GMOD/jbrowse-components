@@ -173,9 +173,10 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
 
 - **ggjbrowse:** respell its R lists and re-pin its engine (memory
   `a-config-rename-reaches-ggjbrowse`). Its synteny and dotplot lists are
-  respelled up to `data.resolution`, and its multi-way `pins` are records.
-  Its `rows` and `facet` lists still write `domain` (`R/multiway.R`,
-  its gallery script, two tutorials, two testthat files).
+  respelled up to `data.resolution`, its multi-way `pins` are records, and
+  its `rows` and `facet` lists write `sort`. Its published `dog10k_lof` page
+  still shows `domain` until a re-knit, which waits on the Dog10K callset
+  host's certificate.
 - **jb2hubs:** `hubtools/src/repeatClassDisplay.ts` and
   its website's `geneOrderStar.ts` write `rows.domain`. Display-kit's
   `retiredOrderSpelling` lifts it to `sort` until they write `sort` and the
