@@ -75,7 +75,8 @@ const tracks = [
     assemblyNames: ['volvox'],
     adapter: { type: 'MultiWiggleAdapter', bigWigs: ['a.bw', 'b.bw'] },
   },
-  // what the hosted jb2hubs configs carry for a UCSC overlaid multiWig
+  // what the hosted jb2hubs configs carry for a UCSC overlaid multiWig, and
+  // v4.3.0's overlaid plot
   {
     type: 'MultiQuantitativeTrack',
     trackId: 'layered',
@@ -83,7 +84,7 @@ const tracks = [
     assemblyNames: ['volvox'],
     adapter: { type: 'MultiWiggleAdapter', bigWigs: ['a.bw', 'b.bw'] },
     displays: [
-      { type: 'MultiLinearWiggleDisplay', defaultRendering: 'multixyplot' },
+      { type: 'MultiLinearWiggleDisplay', defaultRendering: 'xyplot' },
     ],
   },
   {

@@ -12859,10 +12859,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "aggregate": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
         "defaultRendering": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -15253,9 +15249,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
-            "aggregate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
-            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -17077,9 +17070,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
-            "aggregate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
-            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -17485,9 +17475,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
-            "aggregate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
-            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -17787,9 +17774,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
-            },
-            "aggregate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"

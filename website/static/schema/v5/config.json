@@ -12409,10 +12409,6 @@
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "aggregate": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
         "defaultRendering": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -14752,9 +14748,6 @@
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
-            "aggregate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
-            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -16535,9 +16528,6 @@
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
-            "aggregate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
-            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -16935,9 +16925,6 @@
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
-            "aggregate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
-            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -17229,9 +17216,6 @@
             },
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
-            },
-            "aggregate": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"

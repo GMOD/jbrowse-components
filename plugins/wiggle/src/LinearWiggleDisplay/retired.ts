@@ -18,17 +18,13 @@ import type {
 const isRecord = (v: unknown): v is DisplayEntry =>
   !!v && typeof v === 'object' && !Array.isArray(v)
 
-// v4.3.0's multi-wiggle renderings, each a plot and a layout at once, and the
-// `multixyplot` the hosted jb2hubs configs carry on a UCSC overlay multiWig.
-// jb2hubs writes `xyplot` now, so that entry goes once the hosted configs are
-// synced from it.
+// v4.3.0's multi-wiggle renderings, each a plot and a layout at once
 const MULTI_RENDERINGS: Record<string, readonly [string, string]> = {
   multirowxy: ['xyplot', 'source'],
   multirowdensity: ['density', 'source'],
   multirowline: ['line', 'source'],
   multiline: ['line', ''],
   xyplot: ['xyplot', ''],
-  multixyplot: ['xyplot', ''],
 }
 
 /**
@@ -110,18 +106,6 @@ function summaryOf(mode: unknown) {
         }
 }
 
-// The beta `aggregate`, kept while hosted hub configs carry it (jb2hubs wrote
-// it, `whiskers` included); it goes once they re-sync.
-function aggregateOf(aggregate: unknown) {
-  return aggregate === 'whiskers'
-    ? { y: 'score', extent: 'min-max' }
-    : aggregate === 'min'
-      ? { y: 'minScore' }
-      : aggregate === 'max'
-        ? { y: 'maxScore' }
-        : {}
-}
-
 // What a v4 menu wrote on the display instance, and a beta's arrangement.
 const V4_RENDERERS = ['XYPlotRenderer', 'LinePlotRenderer', 'DensityRenderer']
 
@@ -148,7 +132,6 @@ export const retiredConfigSpellings = {
     }
   },
   summaryScoreMode: summaryOf,
-  aggregate: aggregateOf,
 }
 
 // `rendererTypeNameState` is the plot a reader picked, which on a multi

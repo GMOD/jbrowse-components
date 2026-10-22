@@ -128,6 +128,5 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `inverted` | ignored |
 | `renderers` | moved into a current slot |
 | `summaryScoreMode` | moved into a current slot |
-| `aggregate` | moved into a current slot |
 | `defaultRendering` | moved into a current slot |
 | `lineWidth` | moved into a current slot |

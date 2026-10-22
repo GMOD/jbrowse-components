@@ -6670,7 +6670,6 @@ export const configManifest: ConfigManifest = {
         "inverted",
         "renderers",
         "summaryScoreMode",
-        "aggregate",
         "defaultRendering",
         "lineWidth"
       ],

@@ -6,7 +6,6 @@ test.each([
   ['multirowline', 'line', 'source'],
   ['multiline', 'line', ''],
   ['xyplot', 'xyplot', ''],
-  ['multixyplot', 'xyplot', ''],
 ])('the multi display’s %s is %s with rows %j', (old, plot, rows) => {
   expect(foldMultiWiggleRendering({ defaultRendering: old })).toEqual({
     defaultRendering: plot,
