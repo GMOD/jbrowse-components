@@ -50,17 +50,6 @@ export type {
   ParsedSessionSpec,
   ViewSpec,
 } from './SessionSpec/index.ts'
-export {
-  afterOpen,
-  displayCategoryOf,
-  launchSnapshot,
-  launchTrackWithModifiers,
-  modifierLaunch,
-  trackCategory,
-  waitsForOpen,
-  writeMembers,
-} from './TrackModifiers/index.ts'
-export type { ModifierLaunch, ModifierView } from './TrackModifiers/index.ts'
 export type { SessionModelFactory } from './sessionModelFactory.ts'
 // URL params, for the two products that own their page (web, desktop). An
 // embedded product must not rewrite its host's URL — see queryParams.ts

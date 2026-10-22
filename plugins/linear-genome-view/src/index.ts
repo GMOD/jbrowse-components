@@ -114,6 +114,13 @@ export type { SearchBoxPrefs } from './LinearGenomeView/components/useSearchBoxP
 export { normalizeTrackInit } from '@jbrowse/core/util/tracks'
 export { applyInitHighlights } from './LinearGenomeView/afterAttach.ts'
 export {
+  launchTrackInit,
+  launchTrackWithModifiers,
+  trackCategory,
+  writeMembers,
+} from './TrackModifiers/index.ts'
+export type { ModifierView } from './TrackModifiers/index.ts'
+export {
   MultiLevelRubberband,
   multiLevelRowClickMenuItems,
   multiLevelRowMenuItems,

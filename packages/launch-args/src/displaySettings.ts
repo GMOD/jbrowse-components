@@ -604,6 +604,39 @@ export function buildDisplaySnapshot(
 }
 
 /**
+ * Throws for a modifier no kind of track takes: an unknown name, a malformed
+ * slot write, or a value each display it applies to refuses. An app that
+ * applies the modifiers only once the track is open checks them first, so the
+ * command line fails rather than the open.
+ */
+export function checkModifiers(opts: string[]) {
+  for (const opt of opts) {
+    if (isMemberWrite(opt)) {
+      slotWrite(opt)
+      continue
+    }
+    let refusal: unknown
+    const taken = ALL_CATEGORIES.some(category => {
+      let applies = true
+      try {
+        buildDisplaySnapshot(category, [opt], () => {
+          applies = false
+        })
+        return applies
+      } catch (e) {
+        refusal ??= e
+        return false
+      }
+    })
+    if (!taken) {
+      throw refusal instanceof Error
+        ? refusal
+        : new Error(`track option "${opt}" applies to no kind of track`)
+    }
+  }
+}
+
+/**
  * A track's member writes: each `color.field=…` modifier, and a hic track's
  * `color:<scheme>`, which names one member of the color object the track
  * already configures.

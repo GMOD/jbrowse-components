@@ -1,6 +1,6 @@
 ---
 name: launch-args
-description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --genome, --view (view settings by their session-spec names), format-family track flags, batch --sites, genome modifiers in place of --aliases/--cytobands, jb2capture on the shared grammar (track settings, --view, data files refused), jb2export's read filter through the launch snapshot, Desktop opening synteny and dotplot views in jb2export's comparative grammar, every track modifier in Desktop and the display-independent ones in capture. Open: what of img's write path can still leave its live view, capture's color:/featureHeight:/sort:/filterTag:/member writes, comparative views on hosted genomes."
+description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --genome, --view (view settings by their session-spec names), format-family track flags, batch --sites, genome modifiers in place of --aliases/--cytobands, jb2capture on the shared grammar (track settings, --view, data files refused), jb2export's read filter through the launch snapshot, Desktop opening synteny and dotplot views in jb2export's comparative grammar, every track modifier in Desktop and capture through a session spec track entry's `modifiers`. Open: what of img's write path can still leave its live view, comparative views on hosted genomes."
 ---
 
 # Launch arguments: one grammar for img, capture and Desktop
@@ -28,21 +28,23 @@ packages is released, so breaking changes are fine.
     (`buildComparative`, `syntenyTrack` and its query/target table)
   - `launchPlan.ts` (Desktop's plan), `genome.ts` (`--genome` URLs),
     `trackIds.ts` (`--track` lookup, node-free, the `./trackIds` subpath)
-- app-core `TrackModifiers/`: the view side. `launchTrackWithModifiers`
-  (jb2export) opens a track with its modifiers; `launchSnapshot` and
-  `afterOpen` split the same work around a session spec's own open (Desktop).
+- the linear-genome-view plugin's `TrackModifiers/`: the view side.
+  `launchTrackWithModifiers` (jb2export) opens a track with its modifiers;
+  `launchTrackInit` opens a session spec track entry, applying its
+  `modifiers` after the view navigates. The LGV's init and a synteny view's
+  rows call it, so the ready marker waits on every modifier.
+- `checkModifiers` (displaySettings) refuses a modifier no kind of track
+  takes, so a bad one stops Desktop's plan and capture at the command line.
 - Desktop: `electron/launchTarget.ts` (`findLaunchTarget`),
   `electron/electron.ts` (single-instance lock data, open-file),
   `src/components/StartScreen/launchFromLink.ts` (`launchFromPlan`). The plan
-  lists each track's raw modifiers. The renderer writes `launchSnapshot` into
-  the view's `tracks`, so the view's own launch opens them and the ready
-  marker waits on it; once the view settles, `afterOpen` applies `sort:`,
-  `filterTag:` and member writes.
+  lists each track's raw modifiers, and the renderer writes them into the
+  view's `tracks` as `{ trackId, modifiers }`.
 - jb2capture: `args.ts` tokenizes with `parseArgv`/`standardizeArgv`, writes
-  `--track` modifiers through `buildDisplaySnapshot` with no category and
-  `--view` through `viewSettings`; `url.ts` sends either as a one-view
-  session spec and keeps the URL parameters otherwise. `resolveTrackId` runs
-  against the config capture already fetches.
+  `--track` modifiers as `{ trackId, modifiers }` and `--view` through
+  `viewSettings`; `url.ts` sends either as a one-view session spec and keeps
+  the URL parameters otherwise. `resolveTrackId` runs against the config
+  capture already fetches.
 - jb2export: `readData.ts` builds the genome with `genomeAssembly` and tracks
   with `fileTrack`; `addLaunchView` in `renderRegion.ts` writes `--view` over
   every view it opens.
@@ -66,7 +68,8 @@ packages is released, so breaking changes are fine.
 
 - **jb2capture drives the released instance of its own version**, so a spec key
   renamed on main fails against the instance a published capture loads until
-  both ship together.
+  both ship together. A release before `modifiers` (2026-10-22) drops a
+  track's modifiers; test capture against a build of main with `--instance`.
 - **jb2capture cannot open data files.** file:// fails for workers, and a
   loopback server hits Chrome's local-network-access checks; it refuses a bare
   file or a track-file flag naming jb2export and Desktop.
@@ -87,13 +90,7 @@ packages is released, so breaking changes are fine.
 
 ## Next, in order
 
-1. **Capture's remaining modifiers.** Capture has no plugin manager in node,
-   so it refuses `color:` and `featureHeight:` (each writes a different
-   setting per display) and `sort:`, `filterTag:` and member writes (they
-   read the opened track). ADR-238's layout and channel steps give the first
-   two one spelling across displays; the other three need the open in the
-   page, or a spec key the app resolves.
-2. **img renders through `loadSessionSpec`**: mostly declined. A spec track
+1. **img renders through `loadSessionSpec`**: mostly declined. A spec track
    entry and `applyDisplayOpts` already meet at `view.launchTrack(trackId, {},
    snapshot)`, and the read filter rides in on that snapshot. What stays:
    - `loadSessionSpec` itself: its `setSession` replaces the session a
@@ -109,7 +106,7 @@ packages is released, so breaking changes are fine.
      (links, alt counts, manifest).
    - Breakpoint panels still write `filterTag:` over the configured tags,
      where a linear view adds to them.
-3. **Comparative views on hosted genomes.** Desktop and jb2export stack
+2. **Comparative views on hosted genomes.** Desktop and jb2export stack
    genomes built from files only; `--genome hg38 --genome mm39 --chain ...`
    (or a `--config` holding both) has no grammar yet, and jb2export reaches a
    config's comparison tracks only through `--spec`.

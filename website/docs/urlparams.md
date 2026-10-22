@@ -430,6 +430,10 @@ A `tracks` entry is a trackId string, or an object with initial display state:
   `{ "trackId": "my_bam_track", "type": "LinearAlignmentsDisplay", "height": 300 }`
   is the shorthand for the nested form. Use the explicit form when you also pass
   `trackSnapshot`.
+- `modifiers` takes the [jb2export](/docs/jbrowse-img) command line's track
+  options, such as `["color:strand", "sort:base", "color.field=tags.HP"]`. A
+  linear genome view applies them over the entry's other settings once it has
+  navigated, so `sort:` pivots at the view's center.
 
 ### Linear genome view
 

@@ -10,7 +10,7 @@ import { snapshotSettings } from '@jbrowse/core/util/withLaunchInput'
 import { getEnv, isAlive } from '@jbrowse/mobx-state-tree'
 import {
   applyInitHighlights,
-  normalizeTrackInit,
+  launchTrackInit,
   SearchResultsNotFoundError,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -198,9 +198,7 @@ async function applyInitViewLocsAndTracks(
         await self.holdFollowAnchor(() => placeRow(self, view, viewInit))
         if (viewInit.tracks) {
           for (const track of viewInit.tracks) {
-            const { trackId, trackSnapshot, displaySnapshot } =
-              normalizeTrackInit(track)
-            await view.launchTrack(trackId, trackSnapshot, displaySnapshot)
+            await launchTrackInit(view, track)
           }
         }
         // AFTER navigation, and applied here rather than by the row's own LGV

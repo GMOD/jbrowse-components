@@ -166,6 +166,10 @@ export type TrackInit =
       // `{ trackId, displaySnapshot: { showLabels: 'name' } }`.
       trackSnapshot?: Record<string, unknown>
       displaySnapshot?: Record<string, unknown>
+      // the command line's track options (`color:strand`, `sort:base`,
+      // `color.field=type`), which a linear genome view applies over the
+      // display settings once it has navigated
+      modifiers?: string[]
       [key: string]: unknown
     }
 ```

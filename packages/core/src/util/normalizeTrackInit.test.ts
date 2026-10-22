@@ -5,6 +5,7 @@ test('bare string', () => {
     trackId: 't1',
     trackSnapshot: {},
     displaySnapshot: {},
+    modifiers: [],
   })
 })
 
@@ -19,6 +20,7 @@ test('inline display props fold into the display snapshot', () => {
     trackId: 't1',
     trackSnapshot: {},
     displaySnapshot: { type: 'LinearBasicDisplay', showDescriptions: false },
+    modifiers: [],
   })
 })
 
@@ -32,6 +34,7 @@ test('legacy nested displaySnapshot still works', () => {
     trackId: 't1',
     trackSnapshot: {},
     displaySnapshot: { type: 'LinearBasicDisplay', showDescriptions: false },
+    modifiers: [],
   })
 })
 
@@ -46,6 +49,7 @@ test('explicit displaySnapshot wins over an inline key of the same name', () => 
     trackId: 't1',
     trackSnapshot: {},
     displaySnapshot: { height: 100 },
+    modifiers: [],
   })
 })
 
@@ -60,5 +64,21 @@ test('trackSnapshot escape hatch is kept separate from display props', () => {
     trackId: 't1',
     trackSnapshot: { foo: 1 },
     displaySnapshot: { height: 50 },
+    modifiers: [],
+  })
+})
+
+test('modifiers stay out of the display snapshot', () => {
+  expect(
+    normalizeTrackInit({
+      trackId: 't1',
+      height: 50,
+      modifiers: ['color:strand', 'sort:base'],
+    }),
+  ).toEqual({
+    trackId: 't1',
+    trackSnapshot: {},
+    displaySnapshot: { height: 50 },
+    modifiers: ['color:strand', 'sort:base'],
   })
 })

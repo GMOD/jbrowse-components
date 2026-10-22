@@ -9,9 +9,11 @@ import {
   normalizeTrackInit,
   warmTrackDisplayGeneric,
 } from '@jbrowse/core/util/tracks'
+import { requestedDisplayType } from '@jbrowse/launch-args/displaySettings'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked, when } from 'mobx'
 
+import { launchTrackInit } from '../TrackModifiers/index.ts'
 import { SearchResultsNotFoundError } from '../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
@@ -161,8 +163,7 @@ async function navigateInit(
 // display's state model first when it is registered lazily
 async function showInitTracks(self: LinearGenomeViewModel, init: InitState) {
   for (const t of asArray(init.tracks)) {
-    const { trackId, trackSnapshot, displaySnapshot } = normalizeTrackInit(t)
-    await self.launchTrack(trackId, trackSnapshot, displaySnapshot)
+    await launchTrackInit(self, t)
   }
 }
 
@@ -271,8 +272,15 @@ function setupInitWarmup(self: LinearGenomeViewModel) {
             }
           }
           for (const t of tracks) {
-            const { trackId, displaySnapshot } = normalizeTrackInit(t)
-            warmTrackDisplayGeneric(self, trackId, displaySnapshot, assembly)
+            const { trackId, displaySnapshot, modifiers } =
+              normalizeTrackInit(t)
+            const type = requestedDisplayType(modifiers)
+            warmTrackDisplayGeneric(
+              self,
+              trackId,
+              type ? { ...displaySnapshot, type } : displaySnapshot,
+              assembly,
+            )
           }
         })
       },

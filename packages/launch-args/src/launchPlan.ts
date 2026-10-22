@@ -7,6 +7,7 @@ import {
   stackedViews,
   syntenyFlags,
 } from './comparative.ts'
+import { checkModifiers } from './displaySettings.ts'
 import {
   fileAdapter,
   fileTrack,
@@ -89,6 +90,18 @@ export interface ComparativeLaunchPlan extends PlanBase {
 export interface ShowTrack {
   trackId: string
   modifiers: string[]
+}
+
+// the app applies modifiers once the track is open, so a bad one fails here
+function showTrack(trackId: string, modifiers: string[]): ShowTrack {
+  try {
+    checkModifiers(modifiers)
+  } catch (e) {
+    throw new Error(`${trackId}: ${e instanceof Error ? e.message : e}`, {
+      cause: e,
+    })
+  }
+  return { trackId, modifiers }
 }
 
 export const launchFlags: ReadonlySet<string> = new Set([
@@ -294,12 +307,12 @@ function linearPlan(
       if (!first) {
         throw new Error('--track requires a trackId')
       }
-      show.push({ trackId: first, modifiers: mods })
+      show.push(showTrack(first, mods))
     } else if (isTrackFlag(key)) {
       const track = fileTrack(key, entry[1], assemblyName)
       track.trackId = uniqueId(used, track.trackId)
       tracks.push(track)
-      show.push({ trackId: track.trackId, modifiers: mods })
+      show.push(showTrack(track.trackId, mods))
     } else {
       unapplied.push(...mods.map(extra => `--${key} ${extra}`))
     }

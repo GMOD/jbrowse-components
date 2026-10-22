@@ -286,7 +286,14 @@ async function applyInit(
   self.beginAutoDiagonalize(reorder)
   self.setDisplayedRegions(drawn)
   for (const t of init.tracks ?? []) {
-    const { trackId, trackSnapshot, displaySnapshot } = normalizeTrackInit(t)
+    const { trackId, trackSnapshot, displaySnapshot, modifiers } =
+      normalizeTrackInit(t)
+    if (modifiers.length) {
+      session.notify(
+        `"${trackId}" ${modifiers.join(' ')}: track options apply in a linear genome view, not a circular one`,
+        'warning',
+      )
+    }
     await self.launchTrack(trackId, trackSnapshot, displaySnapshot)
   }
   // after the tracks, whose ribbon fetch the reorder waits on and orders from;

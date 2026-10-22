@@ -27,6 +27,7 @@
     "@jbrowse/display-kit": "file:./packed/jbrowse-display-kit.tgz",
     "@jbrowse/display-ui": "file:./packed/jbrowse-display-ui.tgz",
     "@jbrowse/embedded-core": "file:./packed/jbrowse-embedded-core.tgz",
+    "@jbrowse/launch-args": "file:./packed/jbrowse-launch-args.tgz",
     "@jbrowse/ld-core": "file:./packed/jbrowse-ld-core.tgz",
     "@jbrowse/modifications-utils": "file:./packed/jbrowse-modifications-utils.tgz",
     "@jbrowse/plugin-alignments": "file:./packed/jbrowse-plugin-alignments.tgz",

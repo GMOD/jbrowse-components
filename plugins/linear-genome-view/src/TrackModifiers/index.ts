@@ -1,6 +1,6 @@
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
-import { trackDisplayType } from '@jbrowse/core/util/tracks'
+import { normalizeTrackInit, trackDisplayType } from '@jbrowse/core/util/tracks'
 import {
   buildDisplaySnapshot,
   displayCategory,
@@ -16,11 +16,13 @@ import {
 } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type {
   Category,
   DisplaySettings,
   ReadFilterSnapshot,
 } from '@jbrowse/launch-args/displaySettings'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /** The linear view a command line's tracks open in, as these helpers read it. */
 export interface ModifierView {
@@ -54,7 +56,7 @@ export interface ModifierView {
  * display picker so it follows `display:` and the adapter rather than a list
  * of track types.
  */
-export function displayCategoryOf(
+function displayCategoryOf(
   pluginManager: PluginManager,
   conf: { type: string },
   modifiers: string[],
@@ -85,32 +87,19 @@ export function trackCategory(
     : 'other'
 }
 
-function lastSessionError(view: ModifierView) {
-  try {
-    const { snackbarMessages } = getSession(view) as unknown as {
-      snackbarMessages: { message: string; level?: string }[]
-    }
-    return snackbarMessages.findLast(m => m.level === 'error')?.message
-  } catch {
-    return undefined
-  }
-}
-
 const consoleWarn = (message: string) => {
   console.warn(`Warning: ${message}`)
 }
 
-/**
- * A track's modifiers split at the open: the settings it opens with, and the
- * member writes that wait for the opened display.
- */
-export interface ModifierLaunch {
+// a track's modifiers split at the open: the settings it opens with, and the
+// member writes that wait for the opened display
+interface ModifierLaunch {
   category: Category
   settings: DisplaySettings
   members: string[]
 }
 
-export function modifierLaunch(
+function modifierLaunch(
   category: Category,
   modifiers: string[],
   warn = consoleWarn,
@@ -131,13 +120,10 @@ function readFilterOf({ category, settings }: ModifierLaunch) {
     : undefined
 }
 
-/**
- * The display snapshot a track opens with. It merges `filter` into the
- * configured one member by member, except `tags`, a list it replaces: a
- * `filterTag:` is one more condition on the track's own, so `afterOpen` adds
- * the tags.
- */
-export function launchSnapshot(launch: ModifierLaunch) {
+// the display snapshot a track opens with. It merges `filter` into the
+// configured one member by member, except `tags`, a list it replaces: a
+// `filterTag:` adds to the track's own tags, which `finishOpen` reads once open
+function launchSnapshot(launch: ModifierLaunch) {
   const { snap, displayType } = launch.settings
   const { tags, ...launchFilter } = readFilterOf(launch) ?? {}
   return {
@@ -145,15 +131,6 @@ export function launchSnapshot(launch: ModifierLaunch) {
     ...(tags ? { filter: launchFilter } : {}),
     ...(displayType ? { type: displayType } : {}),
   }
-}
-
-/** Whether a track's launch has anything left for `afterOpen` to do. */
-export function waitsForOpen(launch: ModifierLaunch) {
-  return (
-    !!launch.settings.sort ||
-    !!readFilterOf(launch)?.tags ||
-    launch.members.length > 0
-  )
 }
 
 // the pivot is the base under the view's center, which a view has only once
@@ -200,30 +177,10 @@ function finishOpen(
   return writeMembers(view, trackId, launch.members)
 }
 
-/**
- * What waits for a track opened with `launchSnapshot` to be open in `view`:
- * the center-line sort, the tags `filterTag:` adds to the configured ones,
- * and the member writes.
- */
-export function afterOpen(
-  view: ModifierView,
-  trackId: string,
-  launch: ModifierLaunch,
-  warn = consoleWarn,
-) {
-  const opened = view.tracks.find(t => t.configuration.trackId === trackId)
-  if (!opened) {
-    throw new Error(`"${trackId}" is not open, so its modifiers cannot apply`)
-  }
-  const { sort } = launch.settings
-  const at = sort && centerSort(view, trackId, sort.field, warn)
-  if (at) {
-    view.showTrack(trackId, {}, { sort: at })
-  }
-  finishOpen(view, trackId, launch, opened)
-}
-
 interface LaunchOptions {
+  /** the track entry's own display settings, which the modifiers write over */
+  displaySnapshot?: Record<string, unknown>
+  trackSnapshot?: Record<string, unknown>
   /** changes the settings after the center-line sort resolves, before the open */
   adjust?: (settings: DisplaySettings) => void
   warn?: (message: string) => void
@@ -231,14 +188,20 @@ interface LaunchOptions {
 
 /**
  * Open `trackId` in `view` with its command-line modifiers applied, and return
- * the session-spec track entry that reopens it as drawn.
+ * the session-spec track entry that reopens it as drawn, or undefined when the
+ * open fails, which `launchTrack` reports to the session.
  */
 export async function launchTrackWithModifiers(
   view: ModifierView,
   trackId: string,
   category: Category,
   modifiers: string[],
-  { adjust, warn = consoleWarn }: LaunchOptions = {},
+  {
+    displaySnapshot = {},
+    trackSnapshot = {},
+    adjust,
+    warn = consoleWarn,
+  }: LaunchOptions = {},
 ) {
   const launch = modifierLaunch(category, modifiers, warn)
   const { snap, sort } = launch.settings
@@ -247,23 +210,63 @@ export async function launchTrackWithModifiers(
     snap.sort = at
   }
   adjust?.(launch.settings)
-  const opened = await view.launchTrack(trackId, {}, launchSnapshot(launch))
-  // launchTrack says why it failed only to the session's snackbar
+  const opened = await view.launchTrack(trackId, trackSnapshot, {
+    ...displaySnapshot,
+    ...launchSnapshot(launch),
+  })
   if (!opened) {
-    const reason = lastSessionError(view)
-    const { displayType } = launch.settings
-    throw new Error(
-      `Failed to open track "${trackId}"${displayType ? ` with display "${displayType}"` : ''}${reason ? `: ${reason}` : ''}`,
-    )
+    return undefined
   }
   const members = finishOpen(view, trackId, launch, opened)
   const readFilter = readFilterOf(launch)
   const drawnFilter = readFilter && readFilterAsDrawn(opened, readFilter)
   return {
     trackId,
+    ...displaySnapshot,
     ...launchSnapshot(launch),
     ...(drawnFilter ? { filter: drawnFilter } : {}),
     ...members,
+  }
+}
+
+/**
+ * Open a session spec's track entry in a navigated `view`, its `modifiers`
+ * written over its display settings. A modifier that fails goes to the
+ * session's snackbar, and the track opens with its own settings.
+ */
+export async function launchTrackInit(
+  view: ModifierView & IAnyStateTreeNode,
+  t: TrackInit,
+) {
+  const { trackId, trackSnapshot, displaySnapshot, modifiers } =
+    normalizeTrackInit(t)
+  if (modifiers.length === 0) {
+    await view.launchTrack(trackId, trackSnapshot, displaySnapshot)
+    return
+  }
+  const session = getSession(view)
+  const notes: string[] = []
+  try {
+    await launchTrackWithModifiers(
+      view,
+      trackId,
+      trackCategory(session, trackId, modifiers),
+      modifiers,
+      {
+        trackSnapshot,
+        displaySnapshot,
+        warn: message => notes.push(message),
+      },
+    )
+  } catch (e) {
+    console.error(e)
+    session.notifyError(`"${trackId}" ${modifiers.join(' ')}: ${e}`, e)
+    if (!view.tracks.some(t => t.configuration.trackId === trackId)) {
+      await view.launchTrack(trackId, trackSnapshot, displaySnapshot)
+    }
+  }
+  if (notes.length) {
+    session.notify(notes.join('; '), 'warning')
   }
 }
 

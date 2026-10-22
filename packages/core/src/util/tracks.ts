@@ -1099,6 +1099,10 @@ export type TrackInit =
       // `{ trackId, displaySnapshot: { showLabels: 'name' } }`.
       trackSnapshot?: Record<string, unknown>
       displaySnapshot?: Record<string, unknown>
+      // the command line's track options (`color:strand`, `sort:base`,
+      // `color.field=type`), which a linear genome view applies over the
+      // display settings once it has navigated
+      modifiers?: string[]
       [key: string]: unknown
     }
 // #endregion
@@ -1115,13 +1119,24 @@ export type TrackInit =
 // force-load a track with `{ trackId, forceLoad: true }`.
 export function normalizeTrackInit(t: TrackInit) {
   if (typeof t === 'string') {
-    return { trackId: t, trackSnapshot: {}, displaySnapshot: {} }
+    return {
+      trackId: t,
+      trackSnapshot: {},
+      displaySnapshot: {},
+      modifiers: [] as string[],
+    }
   } else {
-    const { trackId, trackSnapshot, displaySnapshot, ...rest } = t
+    const { trackId, trackSnapshot, displaySnapshot, modifiers, ...rest } = t
     return {
       trackId,
       trackSnapshot: trackSnapshot ?? {},
       displaySnapshot: { ...rest, ...displaySnapshot },
+      modifiers:
+        modifiers === undefined
+          ? []
+          : Array.isArray(modifiers)
+            ? modifiers
+            : [modifiers as string],
     }
   }
 }

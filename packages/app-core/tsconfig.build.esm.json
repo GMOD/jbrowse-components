@@ -2,7 +2,6 @@
   "extends": "../../tsconfig.base.esm.json",
   "references": [
     { "path": "../core/tsconfig.build.esm.json" },
-    { "path": "../launch-args/tsconfig.build.esm.json" },
     { "path": "../product-core/tsconfig.build.esm.json" }
   ]
 }

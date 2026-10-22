@@ -1,4 +1,3 @@
-import { trackCategory, writeMembers } from '@jbrowse/app-core'
 import { retainAdapterSession } from '@jbrowse/core/data_adapters/adapterSessionRefcount'
 import { getEnv } from '@jbrowse/core/util'
 import { openTracks } from '@jbrowse/core/util/openViews'
@@ -21,6 +20,8 @@ import { renderToSvg as renderSyntenyToSvg } from '@jbrowse/plugin-linear-compar
 import {
   fetchResults,
   renderToSvg as renderLinearToSvg,
+  trackCategory,
+  writeMembers,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createViewStateAsync } from '@jbrowse/react-app2'
 import { createCanvas, loadImage } from '@napi-rs/canvas'

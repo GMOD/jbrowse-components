@@ -1,4 +1,8 @@
-import { buildDisplaySnapshot, memberWrites } from './displaySettings.ts'
+import {
+  buildDisplaySnapshot,
+  checkModifiers,
+  memberWrites,
+} from './displaySettings.ts'
 
 // buildDisplaySnapshot turns a track's modifier list into a declarative display
 // snapshot (passed to showTrack), instead of a sequence of setter actions.
@@ -636,4 +640,27 @@ test('index: is a recognized no-op, not an unknown-option warning', () => {
   expect(snap).toEqual({ height: 100 })
   expect(warn).not.toHaveBeenCalled()
   warn.mockRestore()
+})
+
+test('checkModifiers refuses only what no kind of track takes', () => {
+  expect(() => {
+    checkModifiers([
+      'color:strand',
+      'featureHeight:compact',
+      'sort:base',
+      'filterTag:RG',
+      'color.field=type',
+      'arcs:up',
+      'name:x',
+    ])
+  }).not.toThrow()
+  for (const [modifier, refusal] of [
+    ['height:abc', /height value "abc"/],
+    ['mapq:x', /mapq value "x"/],
+    ['bogus:1', /unknown track option/],
+  ] as const) {
+    expect(() => {
+      checkModifiers([modifier])
+    }).toThrow(refusal)
+  }
 })

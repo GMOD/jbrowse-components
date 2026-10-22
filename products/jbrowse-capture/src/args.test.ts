@@ -169,7 +169,7 @@ test('an image path belongs to a batch entry, and concurrency to a batch', () =>
   )
 })
 
-test('a track takes the settings every display takes, as Desktop writes them', () => {
+test('a track carries its modifiers for the page to apply', () => {
   const args = parseArgs([
     '--genome',
     'hg38',
@@ -189,46 +189,26 @@ test('a track takes the settings every display takes, as Desktop writes them', (
     'egfr.png',
   ])
   expect(args.tracks).toEqual([
-    { trackId: 'hg38-ncbiRefSeqCurated', height: 200, forceLoad: true },
-    { trackId: 'hg38-gc', height: 50 },
+    { trackId: 'hg38-ncbiRefSeqCurated', modifiers: ['height:200', 'force'] },
+    { trackId: 'hg38-gc', modifiers: ['{"height":50}'] },
   ])
   expect(args.view).toEqual({ axis: { grid: false }, trackLabels: 'offset' })
   expect(parseArgs(['--track', 'a']).tracks).toEqual(['a'])
 })
 
-test('a modifier writing one setting on every display it applies to is written', () => {
-  expect(
-    parseArgs([
-      '--track',
-      'reads',
-      'arcs:up',
-      'mapq:20',
-      'heightMode:fit:200',
-      'spliced:all',
-      '--track',
-      'genes',
-      'display:marks',
-    ]).tracks,
-  ).toEqual([
-    {
-      trackId: 'reads',
-      readConnections: { show: true, mark: 'arc', placement: 'up' },
-      filter: { minMapq: 20, spliced: null },
-      heightMode: 'fit',
-      height: 200,
-    },
-    { trackId: 'genes', type: 'LinearMarkDisplay' },
+test('every modifier reaches the page, and a bad one fails at the command line', () => {
+  const modifiers = [
+    'color:strand',
+    'featureHeight:compact',
+    'sort:base',
+    'filterTag:RG',
+    'color.field=tags.HP',
+  ]
+  expect(parseArgs(['--track', 'reads', ...modifiers]).tracks).toEqual([
+    { trackId: 'reads', modifiers },
   ])
-})
-
-test('a modifier that needs the opened track names the apps that apply it', () => {
-  expect(() => parseArgs(['--track', 'reads', 'color:strand'])).toThrow(
-    '--track reads: track option "color:" writes a different setting on each kind of track',
-  )
-  expect(() =>
-    parseArgs(['--track', 'reads', 'sort:base', 'color.field=tags.HP']),
-  ).toThrow(
-    '--track reads sort:base color.field=tags.HP: jb2capture opens a track in one step',
+  expect(() => parseArgs(['--track', 'reads', 'height:abc'])).toThrow(
+    '--track reads: Invalid height value "abc"',
   )
 })
 
