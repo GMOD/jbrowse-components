@@ -60,7 +60,6 @@ import type {
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { CanvasScale } from '@jbrowse/render-core/canvas2dUtils'
 import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
-import type { InstancePass } from '@jbrowse/render-core/instancePass'
 import type { MarkPlan } from '@jbrowse/render-core/marks'
 
 export { PALETTE_UNIFORM_FIELDS } from './pileupUniforms.ts'
@@ -88,26 +87,13 @@ interface UploadedRegion {
   connectors: ConnectorFeed | undefined
 }
 
-/**
- * The pileup band's passes, in `PILEUP_MARKS` order — each mark's own, which
- * is also its upload, because an `InstancePass` carries the packer that fills
- * it.
- */
-export const PILEUP_PASSES: InstancePass<PileupDataResult>[] = PILEUP_MARKS.map(
-  m => m.pass,
-)
-
-export const ARC_PASSES: InstancePass<ArcBandFeed>[] = ARC_BAND_MARKS.map(
-  m => m.pass,
-)
-
 // Everything the HAL compiles, derived from the four mark lists, so that
 // registering a pass is not a fourth wiring point a new mark can be missed
 // from. `drawPass` on an unregistered id draws nothing and throws nothing.
 export const ALIGNMENTS_PASSES: PipelineDescriptor[] = [
-  ...PILEUP_PASSES,
+  ...PILEUP_MARKS.map(m => m.pass),
   ...ALIGNMENTS_COVERAGE_MARKS.map(m => m.pass),
-  ...ARC_PASSES,
+  ...ARC_BAND_MARKS.map(m => m.pass),
   ...SASHIMI_MARKS.map(m => m.pass),
   CONNECTOR_MARK.pass,
 ]
@@ -222,7 +208,7 @@ export class GpuAlignmentsRenderer
    * - the two per-read color arrays the color tier rebakes
    *   (`overlayReadFillColors` / `overlayReadColorCategories`) → the read pass.
    *   Same shape as `syntenyInstanceCache`'s geometry/color split.
-   * - the band's feed → `ARC_PASSES`. The feeds are rebuilt for every
+   * - the band's feed → `ARC_BAND_MARKS`' passes. The feeds are rebuilt for every
    *   arc-tier setting (`minInterchromSupport` is a live slider), so without
    *   this each tick repacked all eighteen pileup and coverage passes for a
    *   change confined to the band.

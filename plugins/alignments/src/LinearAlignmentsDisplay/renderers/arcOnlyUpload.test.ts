@@ -10,11 +10,11 @@ import { READ_MARK } from '../../features/read/mark.ts'
 import { makeTestPalette } from '../testUtils.ts'
 import {
   ALIGNMENTS_PASSES,
-  ARC_PASSES,
   GpuAlignmentsRenderer,
-  PILEUP_PASSES,
 } from './GpuAlignmentsRenderer.ts'
+import { ARC_BAND_MARKS } from './arcMarks.ts'
 import { ALIGNMENTS_COVERAGE_MARKS } from './coverageMarks.ts'
+import { PILEUP_MARKS } from './pileupMarks.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
@@ -37,7 +37,7 @@ import type { AlignmentsSources } from './rendererTypes.ts'
 
 const START = 10_000
 
-const ARC_PASS_IDS = ARC_PASSES.map(pass => pass.id)
+const ARC_PASS_IDS = ARC_BAND_MARKS.map(m => m.pass.id)
 
 function oneArc(x2: number): ArcBandFeed {
   const arcs = {
@@ -197,7 +197,7 @@ describe('a new layout run still rebuilds the whole region', () => {
     expect(hal.callsOf('deleteRegion')).toHaveLength(1)
     expect(new Set(uploadedPasses(hal))).toEqual(
       new Set([
-        ...PILEUP_PASSES.map(pass => pass.id),
+        ...PILEUP_MARKS.map(m => m.pass.id),
         // the clip strip draws off the depth bars' buffer and uploads none
         ...ALIGNMENTS_COVERAGE_MARKS.filter(m => !m.bufferOf).map(
           m => m.pass.id,

@@ -20,12 +20,14 @@ import {
 import { makeTestPalette } from '../testUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { ColorPalette } from '../../shaders/colors.ts'
+import type {
+  CoverageUploadData,
+  ReadUploadData,
+} from '../../shared/uploadTypes.ts'
 import type {
   AlignmentsRenderingBackend,
   AlignmentsSources,
-  ColorPalette,
-  CoverageUploadData,
-  ReadUploadData,
   RenderState,
   SectionRender,
 } from '../renderers/rendererTypes.ts'

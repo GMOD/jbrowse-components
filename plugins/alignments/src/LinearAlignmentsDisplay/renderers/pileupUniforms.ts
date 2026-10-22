@@ -8,9 +8,9 @@ import * as readShader from '../../shaders/slang/read.generated.ts'
 import { READ_COLOR_CATEGORY } from '../colorUtils.ts'
 import { shouldOutlineReads } from './rendererTypes.ts'
 
-import type { PaletteColorKey } from '../../shaders/colors.ts'
+import type { PaletteColorKey, RGBColor } from '../../shaders/colors.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
-import type { RGBColor, RenderState } from './rendererTypes.ts'
+import type { RenderState } from './rendererTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 

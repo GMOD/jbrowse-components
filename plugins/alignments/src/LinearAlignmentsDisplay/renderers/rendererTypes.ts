@@ -17,15 +17,6 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
 import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
-export type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
-export { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
-export type {
-  CigarUploadData,
-  CoverageUploadData,
-  ModCoverageUploadData,
-  ReadUploadData,
-} from '../../shared/uploadTypes.ts'
-
 export interface RenderState {
   scrollTop: number
   featureHeight: number

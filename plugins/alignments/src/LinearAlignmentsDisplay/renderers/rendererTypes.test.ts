@@ -1,8 +1,5 @@
-import {
-  computeArcBand,
-  interbaseRangeEnds,
-  pileupCellWidth,
-} from './rendererTypes.ts'
+import { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
+import { computeArcBand, pileupCellWidth } from './rendererTypes.ts'
 
 import type { ArcBandInput, RenderState } from './rendererTypes.ts'
 

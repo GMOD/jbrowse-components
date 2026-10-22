@@ -213,6 +213,7 @@ import type { ConnectorFeed } from '../features/linkedReads/connectorFeed.ts'
 import type { ConnectorStyler } from '../features/linkedReads/connectorStyle.ts'
 import type { SashimiBandFeed } from '../features/sashimi/bandFeed.ts'
 import type { LaneJunction } from '../features/sashimi/supportingReads.ts'
+import type { ColorPalette } from '../shaders/colors.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
 import type { DeclaredReadLabels } from '../shared/alignmentsColor.ts'
 import type { ReadSlot } from '../shared/readSlot.ts'
@@ -236,7 +237,6 @@ import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { AlignmentsUnit } from './constants.ts'
 import type { AlignmentLane } from './lanes.ts'
 import type { QualitySpan } from './qualitySpans.ts'
-import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 import type {
   AlignmentsRenderingBackend,
   SectionSource,

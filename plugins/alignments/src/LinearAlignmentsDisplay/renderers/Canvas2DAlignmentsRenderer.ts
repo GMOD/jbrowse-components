@@ -61,7 +61,7 @@ export interface Canvas2DRegionMap {
  * calls this directly, so on-screen and SVG export share one builder. Section 0
  * keys equal the raw region index, so ungrouped is byte-identical.
  */
-export function buildAlignmentsRegionMap(
+function buildAlignmentsRegionMap(
   sources: AlignmentsSources,
 ): Canvas2DRegionMap {
   const regions = new Map<number, Canvas2DRegion>()

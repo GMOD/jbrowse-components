@@ -8,8 +8,6 @@ import {
 
 import type { AlignmentsRenderingBackend } from './rendererTypes.ts'
 
-export type { ColorPalette, RGBColor, RenderState } from './rendererTypes.ts'
-
 export function AlignmentsRenderer(canvas: HTMLCanvasElement) {
   return createRenderingBackend<AlignmentsRenderingBackend>(canvas, {
     passes: ALIGNMENTS_PASSES,
