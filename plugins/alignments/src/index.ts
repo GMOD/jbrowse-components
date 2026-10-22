@@ -96,6 +96,10 @@ export type {
 export type { ArcBandFeed } from './features/arcs/bandFeed.ts'
 export type { SashimiBandFeed } from './features/sashimi/bandFeed.ts'
 export type { ConnectorFeed } from './features/linkedReads/connectorFeed.ts'
+export type {
+  ConnectorStyle,
+  ConnectorStyler,
+} from './features/linkedReads/connectorStyle.ts'
 export type { SashimiLabel } from './LinearAlignmentsDisplay/renderers/sashimiMarks.ts'
 export type { LinkedPair } from './features/linkedReads/compute.ts'
 export type { BezierArcScope } from './features/linkedReads/computeOverlay.ts'

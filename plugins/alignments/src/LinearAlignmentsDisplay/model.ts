@@ -210,6 +210,7 @@ import type { ArcBandFeed } from '../features/arcs/bandFeed.ts'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
 import type { ConnectorFeed } from '../features/linkedReads/connectorFeed.ts'
+import type { ConnectorStyler } from '../features/linkedReads/connectorStyle.ts'
 import type { SashimiBandFeed } from '../features/sashimi/bandFeed.ts'
 import type { LaneJunction } from '../features/sashimi/supportingReads.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
@@ -2343,7 +2344,7 @@ export default function stateModelFactory(
            * between panels through it, so they agree with the arcs and
            * connectors inside each panel.
            */
-          connectorStylerIn(theme: JBrowsePalette) {
+          connectorStylerIn(theme: JBrowsePalette): ConnectorStyler {
             return connectorStyler({
               colors: self.colorPaletteIn(theme),
               colorField: self.readConnectionsColorField,

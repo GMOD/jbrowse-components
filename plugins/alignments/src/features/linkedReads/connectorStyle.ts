@@ -22,6 +22,13 @@ export interface ConnectorStyle {
   label: string
 }
 
+export type ConnectorStyler = (
+  e1: ReadEntry,
+  e2: ReadEntry,
+  isSplit: boolean,
+  crossesChromosomes: boolean,
+) => ConnectorStyle
+
 /**
  * The color and label a connector between two reads paints with: its arc
  * slot under `colorField`, through the palette and key the display's own
@@ -36,15 +43,10 @@ export function connectorStyler({
   colors: ColorPalette
   colorField: ArcColorField
   labels?: Partial<Record<SwatchCategory, string>>
-}) {
+}): ConnectorStyler {
   const palette = buildArcColorPalette(colors, colorField).map(c => rgb255(c))
   const shift = connectorColorShift(colorField)
-  return (
-    e1: ReadEntry,
-    e2: ReadEntry,
-    isSplit: boolean,
-    crossesChromosomes: boolean,
-  ): ConnectorStyle => {
+  return (e1, e2, isSplit, crossesChromosomes) => {
     const { colorType } = classifyPair(e1, e2, isSplit, crossesChromosomes)
     const slot = linkedReadColorSlot(colorType, shift)
     return {

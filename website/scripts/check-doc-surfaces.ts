@@ -114,6 +114,12 @@ const EXEMPT = new Map([
   // an older spelling of `color.domain` that the synteny view's preProcessSnapshot
   // converts; the page teaches `color`
   ['colorDomain', 'an older spelling of color.domain, converted on load'],
+  // BreakpointSplitView passes the retired toggle through so an old session
+  // opens quietly; the overlay draws every link the panel does not (ADR-238)
+  [
+    'showIntraviewLinks',
+    'retired, passed through so old sessions open quietly',
+  ],
 ])
 
 function buildProgram(files: string[]) {
