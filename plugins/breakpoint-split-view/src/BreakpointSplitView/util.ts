@@ -278,15 +278,11 @@ export function findFeatureViewLevel(
   return undefined
 }
 
-// The tracks open, by trackId, in every one of the given rows.
-export function tracksInEveryRow<
-  T extends { configuration: { trackId: string } },
->(rows: T[][]) {
+// The first row's entries whose key every other row holds too.
+export function inEveryRow<T>(rows: T[][], key: (t: T) => string) {
   const [first = [], ...rest] = rows
-  const others = rest.map(r => new Set(r.map(t => t.configuration.trackId)))
-  return first.filter(t =>
-    others.every(ids => ids.has(t.configuration.trackId)),
-  )
+  const others = rest.map(r => new Set(r.map(key)))
+  return first.filter(t => others.every(keys => keys.has(key(t))))
 }
 
 export function featureLayoutIn(track: OverlayTrack, f: Feature) {

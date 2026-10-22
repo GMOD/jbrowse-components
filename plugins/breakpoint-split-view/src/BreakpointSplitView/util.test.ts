@@ -9,7 +9,7 @@ import {
   overlayJexlFilters,
   makeOffscreenLayout,
   placeOnRow,
-  tracksInEveryRow,
+  inEveryRow,
 } from './util.ts'
 
 import type { LayoutRecord } from './types.ts'
@@ -259,8 +259,10 @@ test('placeOnRow reports the orientation of the region that placed the bp', () =
   expect(placeOnRow(layout, 'chr2', 10)).toBeUndefined()
 })
 
-describe('tracksInEveryRow', () => {
+describe('inEveryRow', () => {
   const t = (trackId: string) => ({ configuration: { trackId } })
+  const tracksInEveryRow = (rows: ReturnType<typeof t>[][]) =>
+    inEveryRow(rows, x => x.configuration.trackId)
 
   test('one row keeps all its tracks', () => {
     expect(tracksInEveryRow([[t('a'), t('b')]])).toEqual([t('a'), t('b')])

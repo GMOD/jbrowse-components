@@ -49,7 +49,7 @@ import {
   overlayKind,
   placeOnRow,
   readSourceOf,
-  tracksInEveryRow,
+  inEveryRow,
 } from './util.ts'
 import { getVariantJunctions } from './variantJunctions.ts'
 
@@ -350,8 +350,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       // through this getter is unchecked. A `display.notReady?.()` guard against
       // a method no display defines survived here for exactly that reason.
       get matchedTracks(): OverlayTrack[] {
-        return tracksInEveryRow(
+        return inEveryRow(
           self.views.map(view => view.tracks as OverlayTrack[]),
+          t => t.configuration.trackId,
         )
       },
 
