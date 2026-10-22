@@ -30,3 +30,20 @@ test('an auto-dismiss still removes its toast', () => {
     jest.useRealTimers()
   }
 })
+
+test('a toast dismissed and notified again lasts its own five seconds', () => {
+  jest.useFakeTimers()
+  try {
+    const model = SnackbarModel().create()
+    model.notify('saved', 'info')
+    jest.advanceTimersByTime(4000)
+    model.removeSnackbarMessage('saved')
+    model.notify('saved', 'info')
+    jest.advanceTimersByTime(1000)
+    expect(model.snackbarMessages).toHaveLength(1)
+    jest.advanceTimersByTime(4000)
+    expect(model.snackbarMessages).toHaveLength(0)
+  } finally {
+    jest.useRealTimers()
+  }
+})

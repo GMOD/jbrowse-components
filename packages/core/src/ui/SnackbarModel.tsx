@@ -47,9 +47,11 @@ export default function SnackbarModel() {
     .actions(self => {
       // A pending auto-dismiss would otherwise fire on a destroyed session, and
       // in node keeps the process alive for its five seconds.
-      const dismissTimers = new Set<ReturnType<typeof setTimeout>>()
+      // keyed by message, as removal is: an identical toast notified again
+      // restarts the clock rather than vanishing on the first one's timer
+      const dismissTimers = new Map<string, ReturnType<typeof setTimeout>>()
       addDisposer(self, () => {
-        for (const timer of dismissTimers) {
+        for (const timer of dismissTimers.values()) {
           clearTimeout(timer)
         }
       })
@@ -72,11 +74,14 @@ export default function SnackbarModel() {
           // until acted on or dismissed (5s is too short to read and click the
           // action, and warning/error already persist).
           if ((level === 'info' || level === 'success') && !actions?.length) {
-            const timer = setTimeout(() => {
-              dismissTimers.delete(timer)
-              this.removeSnackbarMessage(message)
-            }, 5000)
-            dismissTimers.add(timer)
+            clearTimeout(dismissTimers.get(message))
+            dismissTimers.set(
+              message,
+              setTimeout(() => {
+                dismissTimers.delete(message)
+                this.removeSnackbarMessage(message)
+              }, 5000),
+            )
           }
         },
 
