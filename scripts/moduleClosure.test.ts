@@ -28,11 +28,11 @@ import { closure } from './moduleClosure.ts'
 // own header promises this check: it exists so `RpcRegistry.ts` can name
 // CoreGetEncodedLayers' wire shape without pulling render-core's graph through
 // it, and every leaf that reaches the registry pays for an edge added here.
-// Its four are itself, `BaseAdapter/zoomRange.ts`, which is a module for one
+// Its five are itself, `BaseAdapter/zoomRange.ts`, which is a module for one
 // interface for this reason — `types.ts` beside it carries the status and
-// abort graph through `BaseOptions` — `colorSchemes.ts`, a module for one list
-// for the same reason, and the import-free `stepOutputs.ts`, which holds the
-// aggregate op list.
+// abort graph through `BaseOptions` — `colorSchemes.ts` and `shapeNameList.ts`,
+// modules for one list each for the same reason, and the import-free
+// `stepOutputs.ts`, which holds the aggregate op list.
 
 const root = join(__dirname, '..')
 
@@ -80,13 +80,13 @@ const CEILINGS = [
   { entry: 'packages/core/src/ui/MenuTypes.ts', runtime: 5, types: 10 },
   // 7 runtime / 8 type
   { entry: 'packages/core/src/ui/menuItems.ts', runtime: 12, types: 15 },
+  // 1 runtime / 9 type
+  { entry: 'packages/core/src/ui/legendSpec.ts', runtime: 5, types: 9 },
   // 1 runtime / 5 type
-  { entry: 'packages/core/src/ui/legendSpec.ts', runtime: 5, types: 8 },
-  // 1 runtime / 3 type
   {
     entry: 'packages/core/src/util/markEncodingTypes.ts',
     runtime: 5,
-    types: 4,
+    types: 5,
   },
   // No headroom: `jbrowse validate` carries a copy of every file here
   // (scripts/generateMarkRules.ts), so an edge added to the rule list is a
