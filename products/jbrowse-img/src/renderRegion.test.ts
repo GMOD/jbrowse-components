@@ -2,8 +2,9 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-import { standardizeArgv } from '@jbrowse/launch-args'
+import { parseArgv, standardizeArgv } from '@jbrowse/launch-args'
 
+import { syntenyTrackTypes, trackTypes } from './makeConfigs.ts'
 import { readData } from './readData.ts'
 import { renderRegion, resolveMode } from './renderRegion.ts'
 
@@ -100,6 +101,21 @@ describe('readData', () => {
     expect(result.openTracks).toEqual([
       { trackId: 'reads.bam', opts: ['name:Reads'] },
       { trackId: 'calls.vcf.gz', opts: [] },
+    ])
+  })
+
+  test('bare genome and comparison files stack a comparative view', () => {
+    const argv = parseArgv('a.fa loc:I a_b.paf b.fa reads.bam'.split(' '))
+    const { trackList } = standardizeArgv(argv, [
+      ...trackTypes,
+      ...syntenyTrackTypes,
+    ])
+    const result = readData({ argv, trackList })
+    expect(result.assemblies.map(a => a.name)).toEqual(['a.fa', 'b.fa'])
+    expect(result.assemblyLocs).toEqual(['I', undefined])
+    expect(result.tracks.map(t => [t.type, t.assemblyNames])).toEqual([
+      ['SyntenyTrack', ['a.fa', 'b.fa']],
+      ['AlignmentsTrack', ['a.fa']],
     ])
   })
 

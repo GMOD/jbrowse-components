@@ -78,7 +78,7 @@ export interface Opts {
   // The raw parsed CLI entries, in argv order. Comparative modes (dotplot /
   // synteny) build their stacked assemblies + per-level synteny tracks from this
   // — each --fasta/--chromSizes opens an assembly, each synteny file binds to the
-  // gap it sits in. See comparativeArgs.ts.
+  // gap it sits in. See @jbrowse/launch-args comparative.ts.
   argv?: Entry[]
   // `--view`'s settings, written over the view's own: a session spec's view
   // object, as `viewSettings` reads them off the command line

@@ -67,7 +67,7 @@ test('three-assembly synteny renders from interleaved CLI args', async () => {
   assert.ok(svg.includes('<image'), 'synteny should rasterize ribbon layers')
 })
 
-test('comparative mode without a second assembly throws', async () => {
+test('comparative mode without a second genome throws', async () => {
   await assert.rejects(
     renderRegion({
       mode: 'dotplot',
@@ -76,7 +76,7 @@ test('comparative mode without a second assembly throws', async () => {
         ['paf', [paf]],
       ],
     }),
-    /second assembly/,
+    /compares two genomes, and this command line names one/,
   )
 })
 

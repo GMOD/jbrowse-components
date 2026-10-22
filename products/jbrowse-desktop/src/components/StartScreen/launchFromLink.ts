@@ -14,7 +14,11 @@ import { resolveTrackId } from '@jbrowse/launch-args/trackIds'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { decodeSessionFromUrl } from '@jbrowse/product-core'
 
-import type { LaunchPlanJson } from '../../../electron/ipc/channelTypes.ts'
+import type {
+  ComparativeLaunchPlanJson,
+  LaunchPlanJson,
+  LinearLaunchPlanJson,
+} from '../../../electron/ipc/channelTypes.ts'
 import type { JBrowseConfig, JBrowseConfigInput } from './types.ts'
 import type { ParsedSessionSnapshotUrl } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -173,14 +177,58 @@ export interface LaunchFromPlanDeps {
   readConfigFile: (path: string) => Promise<JBrowseConfigInput>
 }
 
+function reportUnapplied(pluginManager: PluginManager, unapplied: string[]) {
+  if (unapplied.length) {
+    pluginManager.rootModel?.session?.notify(
+      `JBrowse Desktop did not apply these command-line arguments: ${unapplied.join(', ')}`,
+      'warning',
+    )
+  }
+}
+
 /**
  * Turns a command line's plan into a session: the config it names, fetched
- * through the same plugin-trust gate a linked one passes, then one linear view
- * of the plan's genome, files and tracks. A hosted config's genome is only
- * known once it is fetched, so its name is filled in here.
+ * through the same plugin-trust gate a linked one passes, then one view of the
+ * plan's genomes, files and tracks. A hosted config's genome is only known once
+ * it is fetched, so its name is filled in here.
  */
 export async function launchFromPlan(
   plan: LaunchPlanJson,
+  deps: LaunchFromPlanDeps,
+) {
+  const pluginManager =
+    plan.type === 'LinearGenomeView'
+      ? await launchLinearPlan(plan, deps)
+      : await launchComparativePlan(plan, deps)
+  reportUnapplied(pluginManager, plan.unapplied)
+  return pluginManager
+}
+
+// every genome comes from a file, so no config is fetched
+async function launchComparativePlan(
+  plan: ComparativeLaunchPlanJson,
+  { createPluginManager }: LaunchFromPlanDeps,
+) {
+  const pluginManager = await createPluginManager(undefined)
+  const view = {
+    ...plan.view,
+    type: plan.type,
+    views: plan.views,
+    tracks: plan.tracks.map(track => track.trackId),
+  }
+  await loadSessionSpec(
+    {
+      sessionAssemblies: plan.assemblies,
+      sessionTracks: plan.tracks,
+      views: [view],
+    },
+    pluginManager,
+  )
+  return pluginManager
+}
+
+async function launchLinearPlan(
+  plan: LinearLaunchPlanJson,
   { fetchConfig, createPluginManager, readConfigFile }: LaunchFromPlanDeps,
 ) {
   const config = plan.config
@@ -231,11 +279,5 @@ export async function launchFromPlan(
     },
     pluginManager,
   )
-  if (plan.unapplied.length) {
-    pluginManager.rootModel?.session?.notify(
-      `JBrowse Desktop did not apply these command-line arguments: ${plan.unapplied.join(', ')}`,
-      'warning',
-    )
-  }
   return pluginManager
 }

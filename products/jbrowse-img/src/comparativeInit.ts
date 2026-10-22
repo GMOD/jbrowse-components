@@ -1,3 +1,5 @@
+import { stackedViews } from '@jbrowse/launch-args'
+
 import { pairSyntenyTrackIds, stackSyntenyTrackIds } from './syntenyTracks.ts'
 
 import type { Config } from './types.ts'
@@ -11,12 +13,8 @@ import type { LinearSyntenyViewInit } from '@jbrowse/plugin-linear-comparative-v
 // Jest's CJS transform can't load — this one is pure, so the snapshot shape is
 // unit-testable.
 
-// One sub-view per assembly in [query, target, …] order: the first
-// --fasta/--chromSizes is the query (top in synteny, x-axis in dotplot).
-// Comparative views render adjacent assembly pairs as stacked levels, so this
-// supports an arbitrary number of assemblies (a-vs-b is the common case). Each
-// assembly's optional location comes from data.assemblyLocs (its `loc:`
-// modifier); the rest show their whole genome.
+// One row per assembly, the first --fasta/--chromSizes on top (a dotplot's x
+// axis), each at its `loc:` or whole.
 export function comparativeViews(data: Config) {
   const { assemblies, assemblyLocs = [] } = data
   if (assemblies.length < 2) {
@@ -24,11 +22,7 @@ export function comparativeViews(data: Config) {
       'comparative mode requires at least two assemblies (repeat --fasta or --chromSizes)',
     )
   }
-  return assemblies.map((asm, i) =>
-    assemblyLocs[i]
-      ? { assembly: asm.name, loc: assemblyLocs[i] }
-      : { assembly: asm.name },
-  )
+  return stackedViews({ assemblies, locs: assemblyLocs })
 }
 
 // Dotplot is pairwise (x vs y), so it takes only the first two assemblies even

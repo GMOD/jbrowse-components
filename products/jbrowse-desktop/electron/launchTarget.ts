@@ -5,6 +5,7 @@ import {
   isModifier,
   launchFlags,
   launchPlan,
+  launchViewType,
   parseArgv,
 } from '@jbrowse/launch-args'
 
@@ -243,16 +244,18 @@ export function findLaunchTarget(
     const url = protocolArgs.map(parseProtocolUrl).find(Boolean)
     return url ? { type: 'link', url } : undefined
   }
-  const { kept, ignored } = launchArgs(args)
+  const { kept: all, ignored } = launchArgs(args)
+  const viewType = all[0] === undefined ? undefined : launchViewType(all[0])
+  const kept = viewType ? all.slice(1) : all
   const session = kept.find(a => !isFlag(a) && hasSessionExtension(a))
-  if (usesLaunchGrammar(args)) {
+  if (viewType || usesLaunchGrammar(args)) {
     try {
       if (session) {
         throw new Error(
           `${session} is a saved session, which opens on its own; a genome, data files and --loc open a new one`,
         )
       }
-      const plan = launchPlan(parseArgv(kept), cwd)
+      const plan = launchPlan(parseArgv(kept), cwd, viewType)
       return {
         type: 'plan',
         plan: asPlanJson({

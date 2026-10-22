@@ -5,14 +5,16 @@ import { expandAssemblySequence } from '@jbrowse/core/assemblyManager/assemblyCo
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 import {
   FILE_FLAG,
+  buildComparative,
+  comparativeRole,
   fileAdapter,
   fileTrack,
   genomeAssembly,
+  hasComparativeArgs,
   isSequenceAdapter,
   modifierValue,
 } from '@jbrowse/launch-args'
 
-import { buildComparative, hasComparativeArgs } from './comparativeArgs.ts'
 import { makeMultiWiggleTrackConfig, syntenyTrackTypes } from './makeConfigs.ts'
 import { STDIN_ARG, readTextInput } from './util.ts'
 
@@ -139,8 +141,9 @@ export function readData(
 ) {
   // the genome a linear view opens on: --fasta (a library caller passes it bare),
   // or a bare genome file
+  const comparative = hasComparativeArgs(argv)
   const genome: Entry | undefined =
-    argv.find(([key]) => key === 'fasta') ??
+    argv.find(([key]) => key === 'fasta' || key === 'chromSizes') ??
     (fasta ? ['fasta', [fasta]] : undefined) ??
     trackList.find(
       ([key, [file]]) =>
@@ -204,9 +207,13 @@ export function readData(
     // --config/--genome and the CLI assembly flags are alternatives, not
     // additive: the config's assemblies would win, dropping the genome file and
     // every comparison file that binds to it
-    if (genome || hasComparativeArgs(argv)) {
+    if (genome) {
       throw new Error(
-        `${genome?.[1][0] ?? '--chromSizes'} is a genome, and the config (--config or --genome) names its own; pass one or the other, and --assembly <name> to choose among the config's`,
+        `${genome[1][0]} is a genome, and the config (--config or --genome) names its own; pass one or the other, and --assembly <name> to choose among the config's`,
+      )
+    } else if (comparative) {
+      throw new Error(
+        "a comparison file sits between two genome files, and the config (--config or --genome) names its own genomes; pass genome files, or a --spec naming the config's comparison tracks",
       )
     }
     if (asm) {
@@ -222,7 +229,7 @@ export function readData(
   // else build the assemblies from CLI args: a comparative view's stacked
   // assemblies + per-level synteny tracks (--fasta/--chromSizes/--paf/…), or a
   // single linear assembly from the genome (trackId 'refseq' for --refseq).
-  else if (hasComparativeArgs(argv)) {
+  else if (comparative) {
     const comparative = buildComparative(argv)
     configData.assemblies = comparative.assemblies
     configData.assembly = comparative.assemblies[0]!
@@ -262,14 +269,18 @@ export function readData(
     configData.tracks.push(track)
   }
 
-  // Regular (non-synteny) tracks attach to the primary assembly; synteny tracks
-  // are built per-level in buildComparative above. Each one is recorded in
-  // `openTracks` under the id it actually got, so the renderer opens exactly
-  // what was built instead of recomputing the id from the filename.
+  // Other tracks attach to the primary assembly; the genomes and comparisons
+  // went into buildComparative above. Each one is recorded in `openTracks`
+  // under the id it actually got, so the renderer opens exactly what was built
+  // instead of recomputing the id from the filename.
   const openTracks: OpenTrack[] = []
   for (const [type, opts] of trackList) {
     const [file, ...rest] = opts
-    if (!syntenyTrackTypes.includes(type) && genome?.[1] !== opts) {
+    const consumed =
+      opts === genome?.[1] ||
+      syntenyTrackTypes.includes(type) ||
+      (comparative && !!comparativeRole([type, opts]))
+    if (!consumed) {
       if (!file) {
         throw new Error(`--${type} requires a file argument`)
       }

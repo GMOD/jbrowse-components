@@ -239,6 +239,61 @@ describe('data files on the command line', () => {
     })
   })
 
+  test("jb2export's comparative command line opens a synteny view", () => {
+    expect(
+      target(
+        '--fasta',
+        'a.fa',
+        'loc:chr1',
+        '--paf',
+        'a_b.paf',
+        '--fasta',
+        'b.fa',
+        '--view',
+        'mark.interpolate=bump',
+        '--width',
+        '1400',
+      ),
+    ).toMatchObject({
+      type: 'plan',
+      plan: {
+        type: 'LinearSyntenyView',
+        views: [{ assembly: 'a.fa', loc: 'chr1' }, { assembly: 'b.fa' }],
+        tracks: [{ trackId: 'a_b.paf', assemblyNames: ['a.fa', 'b.fa'] }],
+        view: { mark: { interpolate: 'bump' } },
+        unapplied: ['--width 1400'],
+      },
+    })
+    expect(target('a.fa', 'a_b.paf', 'b.fa')).toMatchObject({
+      type: 'plan',
+      plan: { type: 'LinearSyntenyView' },
+    })
+  })
+
+  test('a leading subcommand word picks the view, as in jb2export', () => {
+    expect(
+      target('dotplot', '--chromSizes', 'a.sizes', '--chromSizes', 'b.sizes'),
+    ).toMatchObject({
+      type: 'plan',
+      plan: {
+        type: 'DotplotView',
+        views: [{ assembly: 'a' }, { assembly: 'b' }],
+      },
+    })
+    expect(target('lgv', 'ref.fa')).toMatchObject({
+      type: 'plan',
+      plan: { type: 'LinearGenomeView' },
+    })
+    expect(target('synteny', 'a.fa')).toEqual({
+      type: 'invalid',
+      message: expect.stringMatching(/two genomes or more/) as string,
+    })
+    expect(target('lgv', 'a.fa', 'b.fa')).toEqual({
+      type: 'invalid',
+      message: expect.stringMatching(/b\.fa is a genome/) as string,
+    })
+  })
+
   test('a link never becomes a plan, so it never names a local file', () => {
     expect(
       target(toProtocolUrl(webUrl), '/etc/ref.fa', '/etc/secret.bam'),

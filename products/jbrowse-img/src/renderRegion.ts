@@ -6,7 +6,11 @@ import {
   viewDisplayNames,
 } from '@jbrowse/core/util/tracks'
 import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
-import { resolveTrackId, trackType } from '@jbrowse/launch-args'
+import {
+  comparativeRole,
+  resolveTrackId,
+  trackType,
+} from '@jbrowse/launch-args'
 import { addDisposer, destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg as renderBreakpointToSvg } from '@jbrowse/plugin-breakpoint-split-view'
 import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
@@ -29,7 +33,6 @@ import {
 import { breakpointInit, breakpointPanelsFromSpec } from './breakpointInit.ts'
 import { dotplotInit, syntenyInit } from './comparativeInit.ts'
 import { readsJoiningRegions } from './joinedReads.ts'
-import { syntenyTrackTypes } from './makeConfigs.ts'
 import { modeDescriptors, subcommandForViewType } from './modes.ts'
 import { DEFAULT_FONT_FAMILY, DEFAULT_WIDTH } from './options.ts'
 import { readData } from './readData.ts'
@@ -835,8 +838,8 @@ function fileTrackFlags({ trackList }: Opts) {
   return [
     ...new Set(
       (trackList ?? [])
-        .map(([type]) => type)
-        .filter(type => !syntenyTrackTypes.includes(type)),
+        .filter(entry => !comparativeRole(entry))
+        .map(([type]) => type),
     ),
   ].map(type => `--${type}`)
 }

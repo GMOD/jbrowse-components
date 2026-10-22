@@ -203,6 +203,27 @@ jbrowse-desktop myproject/config.json extra.bw --loc chr1:1-100,000
   such as `color:strand` for now, and jb2export's image flags such as `--width`,
   and names what it skipped once the session opens.
 
+### Opening genomes side by side
+
+Two genomes or more open a
+[linear synteny view](/docs/user_guides/linear_synteny_view), with the
+comparison files between them, as `jb2export synteny` draws them:
+
+```sh
+jbrowse-desktop a.fa loc:chr1 a_vs_b.paf b.fa --view mark.interpolate=bump
+jbrowse-desktop --chromSizes hs1.chrom.sizes --chain hs1ToMm39.over.chain.gz --chromSizes mm39.chrom.sizes
+jbrowse-desktop dotplot a.fa b.fa a_vs_b.paf
+```
+
+- Each genome is a row, in command-line order, at its `loc:` or whole.
+- A comparison file sits between the genome before it and the one after; one
+  written after both goes in the last gap. JBrowse types a `.paf`, `.chain`,
+  `.delta`, `.pif.gz` or MashMap `.out` by its name, and `--paf`, `--chain`,
+  `--delta` and `--blasttab` set the type.
+- `dotplot` as the first word opens a [dotplot](/docs/user_guides/dotplot_view)
+  of two genomes instead. `synteny` and `lgv` are accepted too, so a jb2export
+  command line opens unchanged.
+
 ### Opening a session, config or link
 
 A session (`.jbrowse`) or config (`config.json`) alone opens as itself. Relative

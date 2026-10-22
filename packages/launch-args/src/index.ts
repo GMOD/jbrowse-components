@@ -48,10 +48,26 @@ export {
   trackType,
 } from './trackIds.ts'
 export {
+  type ComparativeData,
+  type SyntenyFlag,
+  buildComparative,
+  comparativeRole,
+  hasComparativeArgs,
+  stackedViews,
+  syntenyFlagAdapters,
+  syntenyFlags,
+  syntenyTrack,
+} from './comparative.ts'
+export {
+  type ComparativeLaunchPlan,
   type LaunchPlan,
+  type LaunchViewType,
+  type LinearLaunchPlan,
   type ShowTrack,
   launchFlags,
   launchPlan,
+  launchViewType,
+  launchViewTypes,
 } from './launchPlan.ts'
 export {
   type Entry,

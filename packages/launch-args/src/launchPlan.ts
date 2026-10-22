@@ -1,6 +1,13 @@
 import path from 'node:path'
 
 import {
+  buildComparative,
+  comparativeRole,
+  hasComparativeArgs,
+  stackedViews,
+  syntenyFlags,
+} from './comparative.ts'
+import {
   fileAdapter,
   fileTrack,
   genomeAssembly,
@@ -16,11 +23,40 @@ import type { Assembly, Track } from './fileInput.ts'
 import type { Entry } from './parseArgv.ts'
 
 /**
- * What a command line asks a JBrowse app to open: a genome, the files and
- * tracks to show on it, and where. Plain JSON, so it can cross from the process
- * that read the files to the one that draws them.
+ * The views jb2export's subcommand words name, which Desktop takes as its
+ * first argument too.
  */
-export interface LaunchPlan {
+export const launchViewTypes = {
+  lgv: 'LinearGenomeView',
+  synteny: 'LinearSyntenyView',
+  dotplot: 'DotplotView',
+} as const
+
+export type LaunchViewType =
+  (typeof launchViewTypes)[keyof typeof launchViewTypes]
+
+export function launchViewType(word: string): LaunchViewType | undefined {
+  return Object.hasOwn(launchViewTypes, word)
+    ? launchViewTypes[word as keyof typeof launchViewTypes]
+    : undefined
+}
+
+/**
+ * What a command line asks a JBrowse app to open: genomes, the files and
+ * tracks to show on them, and where. Plain JSON, so it can cross from the
+ * process that read the files to the one that draws them.
+ */
+export type LaunchPlan = LinearLaunchPlan | ComparativeLaunchPlan
+
+interface PlanBase {
+  /** settings `--view` writes on the view, as a session spec's view holds them */
+  view: Record<string, unknown>
+  /** modifiers this plan does not carry into the view, for the app to report */
+  unapplied: string[]
+}
+
+export interface LinearLaunchPlan extends PlanBase {
+  type: 'LinearGenomeView'
   /** a config.json path or URL to load first: `--genome`'s hosted one, or `--config` */
   config?: string
   /** a genome built from a file, which no config then supplies */
@@ -28,8 +64,6 @@ export interface LaunchPlan {
   /** the genome the view opens on; undefined leaves it to the config's first */
   assemblyName?: string
   loc?: string
-  /** settings `--view` writes on the view, as a session spec's view holds them */
-  view: Record<string, unknown>
   /**
    * Tracks built from files. Without `assemblyNames` when the genome is the
    * config's, which only the app that fetches it can name.
@@ -41,8 +75,17 @@ export interface LaunchPlan {
    * settings its modifiers write on every track type (`trackSettings`)
    */
   show: ShowTrack[]
-  /** modifiers this plan does not carry into the view, for the app to report */
-  unapplied: string[]
+}
+
+/** A synteny view or dotplot of genomes built from files. */
+export interface ComparativeLaunchPlan extends PlanBase {
+  type: 'LinearSyntenyView' | 'DotplotView'
+  /** top row first, which is a dotplot's x axis */
+  assemblies: Assembly[]
+  /** one row per genome, as a session spec's comparative view lists them */
+  views: { assembly: string; loc?: string }[]
+  /** the comparison files' tracks, each between the genomes it compares */
+  tracks: Track[]
 }
 
 export type ShowTrack = string | ({ trackId: string } & Record<string, unknown>)
@@ -59,8 +102,10 @@ export const launchFlags: ReadonlySet<string> = new Set([
   'view',
   'track',
   'fasta',
+  'chromSizes',
   FILE_FLAG,
   ...trackFlags,
+  ...syntenyFlags,
 ])
 
 // consumed while building the config, so they reach the view as config
@@ -69,6 +114,15 @@ const PATH_MODIFIERS = new Set(['index', 'aliases', 'cytobands'])
 
 function isTrackFlag(key: string) {
   return key === FILE_FLAG || (trackFlags as string[]).includes(key)
+}
+
+function takesFile(key: string) {
+  return (
+    isTrackFlag(key) ||
+    key === 'fasta' ||
+    key === 'chromSizes' ||
+    (syntenyFlags as string[]).includes(key)
+  )
 }
 
 function modifierName(mod: string) {
@@ -84,24 +138,98 @@ function uniqueId(used: Set<string>, base: string) {
   return id
 }
 
+function entryText([key, values]: Entry) {
+  return [...(key === FILE_FLAG ? [] : [`--${key}`]), ...values].join(' ')
+}
+
 /**
  * The plan a command line describes, with every local path resolved against
  * `cwd`: the directory the command ran in, which is not the app's own once a
  * second launch hands its arguments to a running one.
+ *
+ * `viewType` is the view a subcommand word named. Without one, a second genome
+ * or a comparison file opens a synteny view, and anything else a linear one.
  */
-export function launchPlan(entries: Entry[], cwd: string): LaunchPlan {
+export function launchPlan(
+  entries: Entry[],
+  cwd: string,
+  viewType?: LaunchViewType,
+): LaunchPlan {
   const abs = (file: string) => (isUrl(file) ? file : path.resolve(cwd, file))
   const absMod = (mod: string) =>
     PATH_MODIFIERS.has(modifierName(mod))
       ? `${modifierName(mod)}:${abs(mod.slice(mod.indexOf(':') + 1))}`
       : mod
-  const given = (key: string) => {
-    const found = entries.filter(([k]) => k === key)
-    if (found.length > 1) {
-      throw new Error(`--${key} is given more than once`)
+  const resolved = entries.map(([key, values]): Entry => {
+    const [file, ...mods] = values
+    if (!takesFile(key)) {
+      return [key, values]
+    } else if (!file) {
+      throw new Error(`--${key} requires a file argument`)
+    } else {
+      return [key, [abs(file), ...mods.map(absMod)]]
     }
-    return found[0]?.[1]
+  })
+  const type =
+    viewType ??
+    (hasComparativeArgs(resolved) ? 'LinearSyntenyView' : 'LinearGenomeView')
+  return type === 'LinearGenomeView'
+    ? linearPlan(resolved, abs)
+    : comparativePlan(resolved, type)
+}
+
+function givenOnce(entries: Entry[], key: string) {
+  const found = entries.filter(([k]) => k === key)
+  if (found.length > 1) {
+    throw new Error(`--${key} is given more than once`)
   }
+  return found[0]?.[1]
+}
+
+const VIEW_NAMES = {
+  LinearSyntenyView: 'A synteny view',
+  DotplotView: 'A dotplot',
+}
+
+function comparativePlan(
+  entries: Entry[],
+  type: ComparativeLaunchPlan['type'],
+): ComparativeLaunchPlan {
+  const viewName = VIEW_NAMES[type]
+  const hosted = entries.find(([key]) => key === 'genome' || key === 'config')
+  if (hosted) {
+    throw new Error(
+      `${viewName} opens on genome files, one per row, and --${hosted[0]} names a config; pass FASTA, 2bit or .chrom.sizes files`,
+    )
+  }
+  const data = buildComparative(entries)
+  const count = data.assemblies.length
+  if (type === 'DotplotView' ? count !== 2 : count < 2) {
+    throw new Error(
+      `${viewName} compares ${type === 'DotplotView' ? 'two genomes' : 'two genomes or more'}, and this command line names ${count}`,
+    )
+  }
+  const used = new Set<string>()
+  for (const track of data.syntenyTracks) {
+    track.trackId = uniqueId(used, track.trackId)
+  }
+  return {
+    type,
+    assemblies: data.assemblies,
+    views: stackedViews(data),
+    tracks: data.syntenyTracks,
+    view: viewSettings(givenOnce(entries, 'view') ?? []),
+    unapplied: entries
+      .filter(entry => !comparativeRole(entry) && entry[0] !== 'view')
+      .map(entryText),
+  }
+}
+
+function linearPlan(
+  resolved: Entry[],
+  abs: (file: string) => string,
+): LinearLaunchPlan {
+  const given = (key: string) => givenOnce(resolved, key)
   const one = (key: string) => given(key)?.[0]
 
   const genome = one('genome')
@@ -119,23 +247,21 @@ export function launchPlan(entries: Entry[], cwd: string): LaunchPlan {
       ? abs(config)
       : undefined
 
-  const resolved = entries.map(([key, values]): Entry => {
-    const [file, ...mods] = values
-    if (!isTrackFlag(key) && key !== 'fasta') {
-      return [key, values]
-    } else if (!file) {
-      throw new Error(`--${key} requires a file argument`)
-    } else {
-      return [key, [abs(file), ...mods.map(absMod)]]
-    }
-  })
+  const comparison = resolved.find(
+    entry => comparativeRole(entry) === 'synteny',
+  )
   const [genomeFile, otherGenome] = resolved.filter(
     ([key, [file = '']]) =>
       key === 'fasta' ||
+      key === 'chromSizes' ||
       (key === FILE_FLAG && isSequenceAdapter(fileAdapter(file))),
   )
   const genomePath = genomeFile?.[1][0]
-  if (otherGenome) {
+  if (comparison) {
+    throw new Error(
+      `${comparison[1][0]} compares two genomes, which a linear view does not show; open it in a synteny view`,
+    )
+  } else if (otherGenome) {
     throw new Error(
       `${otherGenome[1][0]} is a genome, and this view already has one; open one genome per view`,
     )
@@ -192,6 +318,7 @@ export function launchPlan(entries: Entry[], cwd: string): LaunchPlan {
 
   const loc = given('loc')
   return {
+    type: 'LinearGenomeView',
     config: configRef,
     assembly,
     assemblyName,

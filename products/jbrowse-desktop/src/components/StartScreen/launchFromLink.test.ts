@@ -422,6 +422,7 @@ describe('a command-line plan', () => {
     const assembly = { name: 'ref.fa', sequence: {} }
     await launchFromPlan(
       {
+        type: 'LinearGenomeView',
         assembly,
         assemblyName: 'ref.fa',
         loc: 'ctgA:1-100',
@@ -459,6 +460,7 @@ describe('a command-line plan', () => {
     const d = { ...deps(), fetchConfig: jest.fn().mockResolvedValue(hosted) }
     await launchFromPlan(
       {
+        type: 'LinearGenomeView',
         config: 'https://jbrowse.org/ucsc/hg38/config.json',
         tracks: [bam],
         // jb2export's --track shorthand: the assembly prefix left off
@@ -497,6 +499,7 @@ describe('a command-line plan', () => {
     await expect(
       launchFromPlan(
         {
+          type: 'LinearGenomeView',
           config: '/proj/config.json',
           tracks: [],
           view: {},
@@ -512,6 +515,7 @@ describe('a command-line plan', () => {
     const d = deps()
     await launchFromPlan(
       {
+        type: 'LinearGenomeView',
         config: '/proj/config.json',
         view: {},
         tracks: [],
@@ -528,6 +532,7 @@ describe('a command-line plan', () => {
     const d = deps()
     await launchFromPlan(
       {
+        type: 'LinearGenomeView',
         assembly: { name: 'ref.fa', sequence: {} },
         assemblyName: 'ref.fa',
         view: { axis: { grid: false } },
@@ -556,6 +561,7 @@ describe('a command-line plan', () => {
     await expect(
       launchFromPlan(
         {
+          type: 'LinearGenomeView',
           config: '/proj/config.json',
           assemblyName: 'asm.json',
           view: {},
@@ -570,6 +576,47 @@ describe('a command-line plan', () => {
     )
   })
 
+  test('a synteny plan opens one view of its genome rows', async () => {
+    const d = deps()
+    const assemblies = [
+      { name: 'a.fa', sequence: {} },
+      { name: 'b.fa', sequence: {} },
+    ]
+    const paf = {
+      trackId: 'a_b.paf',
+      type: 'SyntenyTrack',
+      assemblyNames: ['a.fa', 'b.fa'],
+    }
+    await launchFromPlan(
+      {
+        type: 'LinearSyntenyView',
+        assemblies,
+        views: [{ assembly: 'a.fa', loc: 'chr1' }, { assembly: 'b.fa' }],
+        view: { mark: { interpolate: 'bump' } },
+        tracks: [paf],
+        unapplied: [],
+      },
+      d,
+    )
+    expect(d.fetchConfig).not.toHaveBeenCalled()
+    expect(d.createPluginManager).toHaveBeenCalledWith(undefined)
+    expect(mockLoadSessionSpec).toHaveBeenCalledWith(
+      {
+        sessionAssemblies: assemblies,
+        sessionTracks: [paf],
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            mark: { interpolate: 'bump' },
+            views: [{ assembly: 'a.fa', loc: 'chr1' }, { assembly: 'b.fa' }],
+            tracks: ['a_b.paf'],
+          },
+        ],
+      },
+      pluginManager,
+    )
+  })
+
   test('names the settings it did not apply', async () => {
     const notify = jest.fn()
     const d = {
@@ -580,6 +627,7 @@ describe('a command-line plan', () => {
     }
     await launchFromPlan(
       {
+        type: 'LinearGenomeView',
         assembly: { name: 'ref.fa', sequence: {} },
         assemblyName: 'ref.fa',
         tracks: [],

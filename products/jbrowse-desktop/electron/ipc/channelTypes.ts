@@ -88,19 +88,35 @@ export type LaunchTarget =
  * import-free; launchTarget.ts assigns one to the other, which fails the build
  * if they drift.
  */
-export interface LaunchPlanJson {
+export type LaunchPlanJson = LinearLaunchPlanJson | ComparativeLaunchPlanJson
+
+type AssemblyJson = {
+  name: string
+  sequence: Record<string, unknown>
+  refNameAliases?: Record<string, unknown>
+  cytobands?: Record<string, unknown>
+}
+
+type TrackJson = { trackId: string } & Record<string, unknown>
+
+export interface LinearLaunchPlanJson {
+  type: 'LinearGenomeView'
   config?: string
-  assembly?: {
-    name: string
-    sequence: Record<string, unknown>
-    refNameAliases?: Record<string, unknown>
-    cytobands?: Record<string, unknown>
-  }
+  assembly?: AssemblyJson
   assemblyName?: string
   loc?: string
   view: Record<string, unknown>
-  tracks: ({ trackId: string } & Record<string, unknown>)[]
-  show: (string | ({ trackId: string } & Record<string, unknown>))[]
+  tracks: TrackJson[]
+  show: (string | TrackJson)[]
+  unapplied: string[]
+}
+
+export interface ComparativeLaunchPlanJson {
+  type: 'LinearSyntenyView' | 'DotplotView'
+  assemblies: AssemblyJson[]
+  views: { assembly: string; loc?: string }[]
+  view: Record<string, unknown>
+  tracks: TrackJson[]
   unapplied: string[]
 }
 

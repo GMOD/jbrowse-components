@@ -9,6 +9,7 @@ export const HELP_TEXT = `JBrowse 2 desktop
 Usage: jbrowse-desktop [options] [file | jbrowse://open?url=<JBrowse Web link>]
        jbrowse-desktop <genome file> [data files...] [--loc <location>]
        jbrowse-desktop --genome <name> [data files...] [--track <id>...]
+       jbrowse-desktop [synteny | dotplot] <genome> <comparison> <genome>...
 
   file          Path to a session (.jbrowse) or configuration (config.json)
                 file to open on launch
@@ -29,6 +30,14 @@ Opening data (the same arguments jb2export takes):
   --track <id>       A track from the genome's or config's own list
   --bam, --cram, --vcf, --gff, --bigwig, --bigbed, --bed, --hic <file>
                      A file of that type, whatever its name says
+
+Comparing genomes (as jb2export synteny and dotplot take them):
+  A second genome opens a synteny view, a row per genome in order, each at its
+  loc:<region> or whole. A comparison file (.paf, .chain, .delta, or --paf,
+  --chain, --delta, --blasttab <file>) sits between the two genomes it
+  compares: a.fa loc:chr1 a_b.paf b.fa
+  dotplot ...          As the first word, a dotplot of two genomes instead
+  --chromSizes <file>  A genome of names and lengths, no sequence
 
 Options:
   --renderer <mode>  Force a rendering backend: "webgl" or "canvas" instead of

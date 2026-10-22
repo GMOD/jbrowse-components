@@ -1,6 +1,6 @@
 ---
 name: launch-args
-description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --genome, --view (view settings by their session-spec names), format-family track flags, batch --sites, genome modifiers in place of --aliases/--cytobands, jb2capture on the shared grammar (track settings, --view, data files refused), jb2export's read filter through the launch snapshot. Open: display-specific modifiers in Desktop and capture (both take height:, force:, slot writes and JSON), what of img's write path can still leave its live view, comparative views from Desktop."
+description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --genome, --view (view settings by their session-spec names), format-family track flags, batch --sites, genome modifiers in place of --aliases/--cytobands, jb2capture on the shared grammar (track settings, --view, data files refused), jb2export's read filter through the launch snapshot, Desktop opening synteny and dotplot views in jb2export's comparative grammar. Open: display-specific modifiers in Desktop and capture (both take height:, force:, slot writes and JSON), what of img's write path can still leave its live view, comparative views on hosted genomes."
 ---
 
 # Launch arguments: one grammar for img, capture and Desktop
@@ -23,6 +23,8 @@ packages is released, so breaking changes are fine.
     `trackSettings`, the settings a track's modifiers write on every display
     type (`height:`, `force:`, whole-setting slot writes, JSON), which Desktop
     puts on the spec's track entries
+  - `comparative.ts`: the comparative grammar both apps run
+    (`buildComparative`, `syntenyTrack` and its query/target table)
   - `launchPlan.ts` (Desktop's plan), `genome.ts` (`--genome` URLs),
     `trackIds.ts` (`--track` lookup, node-free, the `./trackIds` subpath)
 - Desktop: `electron/launchTarget.ts` (`findLaunchTarget`),
@@ -106,6 +108,28 @@ packages is released, so breaking changes are fine.
      (links, alt counts, manifest).
    - Breakpoint panels still write `filterTag:` over the configured tags,
      where a linear view adds to them.
-3. **Comparative views from Desktop's command line** (`--fasta` twice, `--paf`):
-   jb2export's `comparativeArgs.ts` has the grammar; Desktop's plan builds one
-   linear view.
+3. **Comparative views on hosted genomes.** Desktop and jb2export stack
+   genomes built from files only; `--genome hg38 --genome mm39 --chain ...`
+   (or a `--config` holding both) has no grammar yet, and jb2export reaches a
+   config's comparison tracks only through `--spec`.
+
+## Comparative grammar decisions (2026-10-21)
+
+- Both apps run launch-args' `comparative.ts`, which replaces jb2export's
+  `comparativeArgs.ts` and `makeSyntenyTrackConfig`. The comparison
+  adapter comes from the format table (ADR-077); the query/target orientation
+  is a table keyed by adapter type.
+- With no subcommand word, a second genome or a comparison file opens a
+  synteny view. It stacks any number of genomes where a dotplot takes two, so
+  it draws every command line; `dotplot` (or `synteny`, `lgv`) as the first
+  word, jb2export's words, picks the view.
+- Bare files open one too: `a.fa a_b.paf b.fa` reads as the flagged form,
+  since the format table already types a FASTA as a genome and a `.paf` as a
+  SyntenyTrack. jb2export takes them the same way.
+- `LaunchPlan` is a union on `type`: `LinearLaunchPlan` (config, one
+  assembly, show) and `ComparativeLaunchPlan` (assemblies, `views` rows,
+  comparison tracks). Desktop reports a comparative plan's track files,
+  `--loc` and `--track` as not applied, and refuses `--genome`/`--config`.
+- A comparison file takes `name:` and throws on any other modifier. An
+  MCScan file throws, since it needs each genome's BED.
+- A lone `--chromSizes` opens a linear view in both apps.

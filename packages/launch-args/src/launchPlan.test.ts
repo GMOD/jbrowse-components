@@ -1,8 +1,16 @@
 import { launchPlan } from './launchPlan.ts'
 import { parseArgv } from './parseArgv.ts'
 
-const plan = (line: string, cwd = '/work') =>
+const anyPlan = (line: string, cwd = '/work') =>
   launchPlan(parseArgv(line.split(' ')), cwd)
+
+const plan = (line: string, cwd?: string) => {
+  const p = anyPlan(line, cwd)
+  if (p.type !== 'LinearGenomeView') {
+    throw new Error(`${line} opened a ${p.type}`)
+  }
+  return p
+}
 
 test('bare files: the genome file is the assembly, the rest are tracks', () => {
   const p = plan('ref.fa reads.bam height:200 calls.vcf.gz --loc chr1:1-100')
@@ -119,13 +127,91 @@ test('two files with one basename both open', () => {
   expect(plan('ref.fa t/s.bam n/s.bam').show).toEqual(['s.bam', 's.bam-2'])
 })
 
-test('a plan with no genome, or two, says so', () => {
+test('a plan with no genome, or a second one in a linear view, says so', () => {
   expect(() => plan('reads.bam')).toThrow(/Name a genome/)
   expect(() => plan('ref.fa --genome hg38')).toThrow(
     /ref\.fa is a genome, and --genome names one too/,
   )
   expect(() => plan('--genome hg38 --config c.json')).toThrow(/not both/)
   expect(() => plan('ref.fa --assembly hg38')).toThrow(/--assembly picks/)
-  expect(() => plan('ref.fa other.2bit')).toThrow(/other\.2bit is a genome/)
-  expect(() => plan('ref.fa --fasta other.fa')).toThrow(/other\.fa is a genome/)
+  const lgv = (line: string) =>
+    launchPlan(parseArgv(line.split(' ')), '/work', 'LinearGenomeView')
+  expect(() => lgv('ref.fa other.2bit')).toThrow(/other\.2bit is a genome/)
+  expect(() => lgv('ref.fa a_b.paf')).toThrow(
+    /a_b\.paf compares two genomes, which a linear view does not show/,
+  )
+})
+
+test('--chromSizes is a genome', () => {
+  expect(plan('--chromSizes a.sizes r.bam')).toMatchObject({
+    type: 'LinearGenomeView',
+    assemblyName: 'a',
+    show: ['r.bam'],
+  })
+})
+
+describe('comparative plans', () => {
+  test('a second genome opens a synteny view, comparisons between the rows', () => {
+    const p = anyPlan('a.fa loc:chr1 a_b.paf b.fa --view mark.interpolate=bump')
+    expect(p).toMatchObject({
+      type: 'LinearSyntenyView',
+      views: [{ assembly: 'a.fa', loc: 'chr1' }, { assembly: 'b.fa' }],
+      view: { mark: { interpolate: 'bump' } },
+      unapplied: [],
+    })
+    if (p.type === 'LinearGenomeView') {
+      throw new Error('a linear plan')
+    }
+    expect(p.assemblies.map(a => a.sequence.adapter)).toMatchObject([
+      { fastaLocation: { localPath: '/work/a.fa' } },
+      { fastaLocation: { localPath: '/work/b.fa' } },
+    ])
+    expect(p.tracks).toMatchObject([
+      {
+        trackId: 'a_b.paf',
+        assemblyNames: ['a.fa', 'b.fa'],
+        adapter: { pafLocation: { localPath: '/work/a_b.paf' } },
+      },
+    ])
+  })
+
+  test("jb2export's flags and subcommand words read the same", () => {
+    const line =
+      '--chromSizes x/a.sizes --chain a_b.chain --chromSizes b.sizes --chain a_b.chain --chromSizes c.sizes'
+    const p = launchPlan(parseArgv(line.split(' ')), '/w', 'LinearSyntenyView')
+    expect(p).toMatchObject({
+      views: [{ assembly: 'a' }, { assembly: 'b' }, { assembly: 'c' }],
+      tracks: [
+        { trackId: 'a_b.chain', assemblyNames: ['b', 'a'] },
+        { trackId: 'a_b.chain-2', assemblyNames: ['c', 'b'] },
+      ],
+    })
+    expect(
+      launchPlan(parseArgv(['a.fa', 'b.fa']), '/w', 'DotplotView').type,
+    ).toBe('DotplotView')
+  })
+
+  test('a dotplot takes two genomes, a synteny view two or more', () => {
+    const as = (type: 'DotplotView' | 'LinearSyntenyView', line: string) =>
+      launchPlan(parseArgv(line.split(' ')), '/w', type)
+    expect(() => as('DotplotView', 'a.fa b.fa c.fa')).toThrow(
+      'A dotplot compares two genomes, and this command line names 3',
+    )
+    expect(() => as('LinearSyntenyView', 'a.fa')).toThrow(
+      'A synteny view compares two genomes or more, and this command line names 1',
+    )
+    expect(() => anyPlan('a.fa a_b.paf')).toThrow(
+      /a_b\.paf compares two genomes/,
+    )
+  })
+
+  test('what a comparative view does not show is reported', () => {
+    expect(
+      anyPlan('a.fa b.fa reads.bam height:9 --loc chr1 --track genes')
+        .unapplied,
+    ).toEqual(['/work/reads.bam height:9', '--loc chr1', '--track genes'])
+    expect(() => anyPlan('--genome hg38 a.fa b.fa')).toThrow(
+      /A synteny view opens on genome files/,
+    )
+  })
 })
