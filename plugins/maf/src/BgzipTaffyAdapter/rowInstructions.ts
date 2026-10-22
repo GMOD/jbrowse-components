@@ -12,16 +12,9 @@
 
 import { parseStrand } from '../util/parseStrand.ts'
 
-interface RowInsert {
-  type: 'i'
-  row: number
-  sequenceName: string
-  start: number
-  strand: number
-  sequenceLength: number
-}
-interface RowSubstitute {
-  type: 's'
+/** `i` inserts a row; `s` replaces an existing row's coordinates. */
+interface RowCoordinates {
+  type: 'i' | 's'
   row: number
   sequenceName: string
   start: number
@@ -43,11 +36,10 @@ interface RowGapSubstring {
   gapSubstring: string
 }
 export type RowInstruction =
-  | RowInsert
+  | RowCoordinates
   | RowDelete
   | RowGap
   | RowGapSubstring
-  | RowSubstitute
 
 // Faithfully replicates change_s_coordinates_to_i from taffy/impl/tai.c
 // When starting from an indexed position:
@@ -58,20 +50,7 @@ export function filterFirstLineInstructions(
 ): RowInstruction[] {
   return instructions
     .filter(ins => ins.type === 'i' || ins.type === 's')
-    .map(ins => {
-      if (ins.type === 's') {
-        // Convert 's' to 'i'
-        return {
-          type: 'i' as const,
-          row: ins.row,
-          sequenceName: ins.sequenceName,
-          start: ins.start,
-          strand: ins.strand,
-          sequenceLength: ins.sequenceLength,
-        }
-      }
-      return ins
-    })
+    .map(ins => (ins.type === 's' ? { ...ins, type: 'i' as const } : ins))
 }
 
 /**

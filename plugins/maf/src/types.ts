@@ -58,7 +58,7 @@ export interface AlignmentRecord {
   srcStart: number
   /** The aligned sequence (including gaps as '-') */
   seq: string
-  /** +1/-1; from the `s` line strand field (not all adapters supply it) */
+  /** +1/-1; from the `s` line strand field */
   strand?: number
   /** Total source sequence length; from the `s` line srcSize field */
   srcSize?: number
