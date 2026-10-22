@@ -199,11 +199,10 @@ export interface MafCoverageResult {
  * min-of-interleaved-rounds is the number to quote. A mean-based harness read
  * 1.21-1.39x for the same change and is not a figure to repeat.
  *
- * The insertion loop takes the same fast arm, and it is the weaker half of the
- * change: worth ~1.05x over control where a *third* of reference columns are
- * gaps, and 1.00x at the 3-12% rates real alignments run at, since that loop
- * only executes on gap columns. It is there for symmetry with the depth loop
- * and because it is free once `uniformRows` exists — not because it pays.
+ * The insertion loop takes the same fast arm. Removing it measured 0.95-0.96x
+ * on the ce11 26-way shapes, 0.93-0.95x at one gap column in eight and
+ * 0.86-0.87x at one in three, against a control within 0.99-1.01x (ada, three
+ * runs).
  *
  * The other idea worth heading off is SWAR — reading the arena as `Uint32` and
  * classifying four columns at a time. A kernel doing just the depth and match
