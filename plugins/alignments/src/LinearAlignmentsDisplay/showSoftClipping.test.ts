@@ -157,7 +157,7 @@ describe('alignments pileup.fadeLowBaseQuality (fade by base quality)', () => {
   })
 })
 
-describe('alignments sashimi.showCounts (sashimi arc counts)', () => {
+describe('alignments sashimi.labels.show (sashimi arc counts)', () => {
   it('is off by default', () => {
     const { display } = createDisplay()
     expect(display.showSashimiCounts).toBe(false)

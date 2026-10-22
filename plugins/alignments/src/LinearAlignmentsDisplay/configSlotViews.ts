@@ -67,9 +67,8 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  *
  * **A getter that reads any OTHER model member does not belong here** — it
  * belongs in the chain, where `self` is the model so far. That is the line
- * between this file and model.ts, and it is why `collapseSections` (which reads
- * `canCollapseSections`) and `showOutline` (which reads `unit`) stayed
- * behind despite also being slot reads.
+ * between this file and model.ts, and it is why `collapseSections`, which reads
+ * `canCollapseSections`, stayed behind despite also being a slot read.
  */
 /**
  * What a config says beside the schema's rules that the reads cannot draw as
