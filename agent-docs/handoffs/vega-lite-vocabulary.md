@@ -138,7 +138,10 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
 
 - **ggjbrowse:** respell its R lists and re-pin its engine (memory
   `a-config-rename-reaches-ggjbrowse`). Its synteny and dotplot lists are
-  respelled up to `data.resolution`.
+  respelled up to `data.resolution`. The multi-way export's `pins` is now a
+  list of `{ lane, refName, at }` and `{ lane, refName, flipped }` records,
+  and `lane_choice` in `R/multiway.R` still sends a lane-keyed map, which the
+  engine rejects by name; respell it with the next engine pin.
 - **jbrowse-img:** its flags (`--minAlignmentLength`, `--drawCurves`) still
   carry the old names and write the new settings.
 - **The figure specs, tutorials and `demos/` configs:** `pnpm verify --full`

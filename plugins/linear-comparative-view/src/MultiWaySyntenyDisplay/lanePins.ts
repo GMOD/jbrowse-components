@@ -41,6 +41,28 @@ export function pinHolds(
   )
 }
 
+/** A session's pin list, or none for anything else a beta session held. */
+export function pinListOf(pins: unknown): readonly LanePin[] {
+  return Array.isArray(pins) ? (pins as LanePin[]) : []
+}
+
+/**
+ * The row `pin` belongs to: the one spelled as the pin is, else one the pin
+ * names by another spelling, since two spellings of an assembly can both be
+ * rows.
+ */
+export function pinnedRowOf(
+  pin: LanePin,
+  lanes: readonly string[],
+  anchor: string,
+  keyOf: KeyOf,
+) {
+  const holds = (name: string) => pinHolds(pin, name, anchor, keyOf)
+  return (
+    lanes.find(name => name === pin.lane && holds(name)) ?? lanes.find(holds)
+  )
+}
+
 /** The pins that hold under `anchor`, each naming its lane as `lanes` spell it. */
 export function pinsInForceOf(
   pins: readonly LanePin[],
@@ -49,7 +71,7 @@ export function pinsInForceOf(
   keyOf: KeyOf,
 ): LanePin[] {
   return pins.flatMap(pin => {
-    const lane = lanes.find(name => pinHolds(pin, name, anchor, keyOf))
+    const lane = pinnedRowOf(pin, lanes, anchor, keyOf)
     return lane === undefined ? [] : [{ ...pin, lane }]
   })
 }
@@ -68,13 +90,10 @@ export function flipPinOf(pins: readonly LanePin[], lane: string) {
 
 /** `pins` less those `replaced` picks, plus `pin`; empty is undefined */
 export function withPin(
-  pins: readonly LanePin[] | undefined,
+  pins: readonly LanePin[],
   replaced: (pin: LanePin) => boolean,
   pin: LanePin | undefined,
 ) {
-  const next = [
-    ...(pins ?? []).filter(p => !replaced(p)),
-    ...(pin ? [pin] : []),
-  ]
+  const next = [...pins.filter(p => !replaced(p)), ...(pin ? [pin] : [])]
   return next.length > 0 ? next : undefined
 }

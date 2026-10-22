@@ -129,7 +129,13 @@ import {
   shownFrame,
 } from './laneMotion.ts'
 import { lanePanelsForRegion } from './lanePanels.ts'
-import { isFlipPin, pinHolds, pinsInForceOf, withPin } from './lanePins.ts'
+import {
+  isFlipPin,
+  pinListOf,
+  pinnedRowOf,
+  pinsInForceOf,
+  withPin,
+} from './lanePins.ts'
 import {
   laneRowsOf,
   laneUniverseOf,
@@ -1066,7 +1072,7 @@ export function stateModelFactory(
        */
       get pinsInForce(): LanePin[] {
         return pinsInForceOf(
-          self.lanePins ?? [],
+          pinListOf(self.lanePins),
           this.rowAssemblies,
           self.anchorAssemblyName,
           self.laneKey,
@@ -1567,10 +1573,15 @@ export function stateModelFactory(
         pin: LanePin | undefined,
       ) {
         self.lanePins = withPin(
-          self.lanePins,
+          pinListOf(self.lanePins),
           p =>
             isFlipPin(p) === flip &&
-            pinHolds(p, assemblyName, self.anchorAssemblyName, self.laneKey),
+            pinnedRowOf(
+              p,
+              self.rowAssemblies,
+              self.anchorAssemblyName,
+              self.laneKey,
+            ) === assemblyName,
           pin,
         )
       }

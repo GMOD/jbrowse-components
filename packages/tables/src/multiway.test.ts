@@ -153,6 +153,13 @@ test('SyRI calls color their ribbons, and a lane unaligned on both sides opens n
     pins: [{ lane: 'Cvi', refName: 'Chr1', flipped: !t.lanes.flipped[2] }],
   })
   expect(flipped.lanes.flipped[2]).toBe(!t.lanes.flipped[2])
+
+  await expect(
+    engine.multiway({
+      ...SYRI,
+      pins: { Cvi: { refName: 'Chr2' } } as unknown as [],
+    }),
+  ).rejects.toThrow('pins is a list')
 })
 
 test('a gene table joins a gene across a lane that lacks it', async () => {

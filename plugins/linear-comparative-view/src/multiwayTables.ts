@@ -406,6 +406,11 @@ export async function multiwayTables(
     display,
   }: MultiWayTablesArgs,
 ) {
+  if (!Array.isArray(pins)) {
+    throw new TypeError(
+      'pins is a list of { lane, refName, at } and { lane, refName, flipped } records',
+    )
+  }
   const settings = readDisplay(display)
   const axis = comparativeAxis(anchorArgs, adapterConfig, 0)
   const anchor = axis.assemblyName
