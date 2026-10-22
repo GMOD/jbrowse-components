@@ -1394,12 +1394,14 @@ WorkspaceLayoutMixin.viewIds
 # members the structural pass cannot see (0)
 # fix: add #getter/#method/#action to the local declaration the shorthand returns
 
-# member tags in a file that documents no #stateModel (6)
+# member tags in a file that documents no #stateModel (8)
 # fix: give the file a #stateModel, reach the block from one via .views(name), or drop the tags
 plugins/gccontent/src/GCContentTrack/index.ts gcAdapter
 plugins/gccontent/src/GCContentTrack/index.ts gcMode
+plugins/gccontent/src/GCContentTrack/index.ts gcWindow
 plugins/gccontent/src/GCContentTrack/index.ts setGCContentParams
 plugins/gccontent/src/GCContentTrack/index.ts setGCMode
+plugins/gccontent/src/GCContentTrack/index.ts stepTilesWindow
 plugins/gccontent/src/GCContentTrack/index.ts windowDelta
 plugins/gccontent/src/GCContentTrack/index.ts windowSize
 

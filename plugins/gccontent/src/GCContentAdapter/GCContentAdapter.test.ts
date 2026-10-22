@@ -13,7 +13,7 @@ function makeAdapter(
   sequence: string,
   gcMode = 'content',
   windowSize = 10,
-  windowDelta = 10,
+  windowDelta?: number,
 ) {
   // Only the two methods used by GCContentAdapter need to exist; cast through
   // unknown so we don't have to stub the rest of BaseSequenceAdapter.
@@ -249,3 +249,66 @@ test.each([
     expect(features.length).toBe(arrays!.count)
   },
 )
+
+test('a window of Ns gets no bin, rather than a GC content of 0', async () => {
+  const seq = 'G'.repeat(20) + 'N'.repeat(30) + 'G'.repeat(20)
+  const features = await getFeatures(makeAdapter(seq), 0, 70)
+  expect(features.map(f => [f.get('start'), f.get('score')])).toEqual([
+    [0, 1],
+    [10, 1],
+    [50, 1],
+    [60, 1],
+  ])
+})
+
+test('skew has no bin over a window with no G or C', async () => {
+  const features = await getFeatures(
+    makeAdapter('A'.repeat(20) + 'G'.repeat(20), 'skew'),
+    0,
+    40,
+  )
+  expect(features.map(f => [f.get('start'), f.get('score')])).toEqual([
+    [20, 1],
+    [30, 1],
+  ])
+})
+
+test('an odd window scores exactly windowSize bases', async () => {
+  const features = await getFeatures(
+    makeAdapter(`GGA${'A'.repeat(30)}`, 'content', 3, 3),
+    0,
+    9,
+  )
+  expect(features[0]!.get('start')).toBe(0)
+  expect(features[0]!.get('end')).toBe(3)
+  expect(features[0]!.get('score')).toBeCloseTo(2 / 3)
+})
+
+test('an unset step tiles the windows', async () => {
+  const features = await getFeatures(
+    makeAdapter('A'.repeat(200), 'content', 50, undefined),
+    0,
+    200,
+  )
+  expect(features.map(f => [f.get('start'), f.get('end')])).toEqual([
+    [0, 50],
+    [50, 100],
+    [100, 150],
+    [150, 200],
+  ])
+})
+
+test.each([
+  ['wider than the window', 25],
+  ['zero', 0],
+])('a step %s is narrowed into the window', async (_label, windowDelta) => {
+  const features = await getFeatures(
+    makeAdapter('A'.repeat(100), 'content', 20, windowDelta),
+    0,
+    100,
+  )
+  const starts = features.map(f => f.get('start'))
+  const step = windowDelta === 0 ? 1 : 20
+  expect(starts.length).toBeGreaterThan(0)
+  expect(starts).toEqual(starts.map((_, i) => starts[0]! + i * step))
+})

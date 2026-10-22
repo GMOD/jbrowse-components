@@ -2979,7 +2979,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "windowDelta": {
-          "default": 100,
           "if": {
             "type": "null"
           },

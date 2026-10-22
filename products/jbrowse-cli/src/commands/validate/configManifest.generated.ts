@@ -1060,7 +1060,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "windowDelta",
-          "type": "number"
+          "type": "(number | undefined)"
         },
         {
           "name": "gcMode",

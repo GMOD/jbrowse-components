@@ -2886,7 +2886,6 @@
           }
         },
         "windowDelta": {
-          "default": 100,
           "if": {
             "type": "null"
           },

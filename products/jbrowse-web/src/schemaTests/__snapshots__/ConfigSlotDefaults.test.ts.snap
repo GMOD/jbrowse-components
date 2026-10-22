@@ -143,7 +143,7 @@ exports[`every registered schema slot default 1`] = `
   "adapter: GCContentAdapter": {
     "gcMode": "stringEnum = "content" of ["content","skew"]",
     "sequenceAdapter": "maybeFrozen = undefined",
-    "windowDelta": "number = 100",
+    "windowDelta": "maybeNumber = undefined",
     "windowSize": "number = 100",
   },
   "adapter: GWASAdapter": {

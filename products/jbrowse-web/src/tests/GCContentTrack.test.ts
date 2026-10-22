@@ -10,7 +10,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 jest.mock('../makeWorkerInstance', () => () => {})
 
 // "Add GC content track" spins up a standalone GCContentTrack session track
-// whose GCContentAdapter wraps the reference track's own sequence adapter.
+// whose GCContentAdapter reads the assembly's sequence, naming no adapter.
 function makeSession(
   displays: { id: string; type: string; configuration?: string }[],
 ) {
@@ -97,8 +97,9 @@ test('hierarchical track selector menu offers "Add GC content track" on refseq',
   }
   expect(findGCTrack(session)).toMatchObject({
     assemblyNames: ['volvox'],
-    adapter: { sequenceAdapter: { type: 'FromConfigSequenceAdapter' } },
+    adapter: { type: 'GCContentAdapter' },
   })
+  expect(findGCTrack(session).adapter).not.toHaveProperty('sequenceAdapter')
 })
 
 test('in-view track menu offers "Add GC content track" on refseq', async () => {
@@ -148,7 +149,7 @@ test('standalone GCContentTrack display does not double-wrap its adapter', async
   // wrapped in another one
   const { adapterConfig } = shown.displays[0]
   expect(adapterConfig.type).toBe('GCContentAdapter')
-  expect(adapterConfig.sequenceAdapter.type).toBe('FromConfigSequenceAdapter')
+  expect(adapterConfig.sequenceAdapter).toBeUndefined()
 })
 
 // The companion of the double-wrap case: a config-authored GCContentTrack may

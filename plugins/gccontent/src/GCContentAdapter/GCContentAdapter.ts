@@ -8,10 +8,26 @@ import {
 import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { resolveGCWindow } from './gcWindow.ts'
+
 import type { GCContentAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { RawFeatureArrays } from '@jbrowse/plugin-wiggle'
+
+const G = 1
+const C = 2
+const VALID = 4
+const BASE_CLASS = new Uint8Array(256).fill(VALID)
+for (const [letters, kind] of [
+  ['Nn', 0],
+  ['Gg', G | VALID],
+  ['Cc', C | VALID],
+] as const) {
+  for (const letter of letters) {
+    BASE_CLASS[letter.charCodeAt(0)] = kind
+  }
+}
 
 export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAdapterConfig> {
   // #region subAdapter
@@ -60,31 +76,23 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
   ): Promise<RawFeatureArrays> {
     const { statusCallback, signal } = opts ?? {}
     const sequenceAdapter = await this.configure()
-    const windowSize = this.getConf('windowSize')
-    const windowDelta = this.getConf('windowDelta')
-    const gcMode = this.getConf('gcMode')
-    const halfWindowSize = Math.ceil(windowSize / 2)
+    const { windowSize, windowDelta } = resolveGCWindow(
+      this.getConf('windowSize'),
+      this.getConf('windowDelta'),
+    )
+    const skew = this.getConf('gcMode') === 'skew'
+    // the window scored at position i is [i - leftHalf, i + rightHalf)
+    const leftHalf = windowSize >> 1
+    const rightHalf = windowSize - leftHalf
 
-    // windowSize 1 is a single-base window; wider windows are centered on the
-    // feature position, spanning [i - halfWindowSize, i + halfWindowSize)
-    const leftHalf = windowSize === 1 ? 0 : halfWindowSize
-    const rightHalf = windowSize === 1 ? 1 : halfWindowSize
-
-    // Snap the fetched region to a **windowDelta** grid. The scored positions
-    // are `qs + leftHalf + k * windowDelta`, so they are block-independent
-    // exactly when `qs` is constant mod windowDelta — the step, not the window
-    // width. Snapping to windowSize instead only looks right because the two
-    // default to the same 100: with windowSize 10 and windowDelta 3, two
-    // queries over the same span produced grids offset by (100 mod 3) and
-    // shared *no* sampling positions at all, so panning slid the whole curve.
-    // 0 is a multiple of every delta, so the clamp at the contig start stays on
-    // the same grid.
+    // Snapped to a windowDelta grid, the scored positions
+    // `qs + leftHalf + k * windowDelta` are the same whatever the query, so
+    // panning extends the curve instead of sliding it. 0 is on every grid.
     const qs = Math.max(
       0,
-      Math.floor((query.start - halfWindowSize) / windowDelta) * windowDelta,
+      Math.floor((query.start - leftHalf) / windowDelta) * windowDelta,
     )
-    const qe =
-      Math.ceil((query.end + halfWindowSize) / windowDelta) * windowDelta
+    const qe = Math.ceil((query.end + rightHalf) / windowDelta) * windowDelta
 
     const residues =
       (await sequenceAdapter.getSequence(
@@ -93,30 +101,23 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
       )) ?? ''
 
     return updateStatus('Calculating GC', statusCallback, async () => {
-      const count = Math.max(
+      const capacity = Math.max(
         0,
-        Math.floor((residues.length - leftHalf - rightHalf) / windowDelta) + 1,
+        Math.floor((residues.length - windowSize) / windowDelta) + 1,
       )
-      const starts = new Int32Array(count)
-      const ends = new Int32Array(count)
-      const scores = new Float32Array(count)
+      const starts = new Int32Array(capacity)
+      const ends = new Int32Array(capacity)
+      const scores = new Float32Array(capacity)
       let n = 0
 
-      // Monotonic two-pointer sliding window: lo/hi only advance, so each base
-      // is added once as it enters the window and removed once as it leaves,
-      // giving O(residues) regardless of window overlap.
-      let nc = 0
+      // lo and hi only advance, so each base enters and leaves the window
+      // once: O(residues) however much the windows overlap
       let ng = 0
-      let len = 0
+      let nc = 0
+      let valid = 0
       let lo = 0
       let hi = 0
       const breakpoint = createAbortBreakpoint(signal)
-      // The bound is exactly "the window [i - leftHalf, i + rightHalf) fits in
-      // what we fetched", spelled with the two halves rather than
-      // halfWindowSize. Written with halfWindowSize on both sides it dropped
-      // the last complete window of every fetch, and at windowSize 1 — where
-      // the window is [i, i+1) but halfWindowSize is still 1 — it never scored
-      // the first or last base of a contig at all.
       for (
         let i = leftHalf;
         i + rightHalf <= residues.length;
@@ -125,57 +126,35 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
         if (breakpoint.due()) {
           await breakpoint.yield()
         }
-
-        const winEnd = i + rightHalf
-        while (hi < winEnd) {
-          const letter = residues[hi++]
-          if (letter === 'c' || letter === 'C') {
-            nc++
-          } else if (letter === 'g' || letter === 'G') {
-            ng++
-          }
-          if (letter !== 'N' && letter !== 'n') {
-            len++
-          }
+        while (hi < i + rightHalf) {
+          const k = BASE_CLASS[residues.charCodeAt(hi++) & 255]!
+          ng += k & G
+          nc += (k & C) >> 1
+          valid += k >> 2
         }
-
-        const winStart = i - leftHalf
-        while (lo < winStart) {
-          const letter = residues[lo++]
-          if (letter === 'c' || letter === 'C') {
-            nc--
-          } else if (letter === 'g' || letter === 'G') {
-            ng--
-          }
-          if (letter !== 'N' && letter !== 'n') {
-            len--
-          }
+        while (lo < i - leftHalf) {
+          const k = BASE_CLASS[residues.charCodeAt(lo++) & 255]!
+          ng -= k & G
+          nc -= (k & C) >> 1
+          valid -= k >> 2
         }
-
-        const score =
-          gcMode === 'skew'
-            ? (ng - nc) / (ng + nc || 1)
-            : (ng + nc) / (len || 1)
-
-        // Center the emitted bin on the position it scores. The bin is one
-        // step wide so consecutive bins still tile exactly, but anchoring it
-        // at `pos` drew each score half a step to the right of the sequence it
-        // came from: at the defaults, the window [0,100) was painted over
-        // [50,150), a 50bp mis-registration against the features underneath.
-        // Clamped at 0 for the out-of-contract windowDelta > windowSize, where
-        // half a step can reach past the start of the first window.
-        const pos = qs + i
-        const binStart = Math.max(0, pos - Math.floor(windowDelta / 2))
-        starts[n] = binStart
-        ends[n] = binStart + windowDelta
-        scores[n] = score
-        n++
+        // a window of Ns has no GC fraction, and one with no G or C no skew:
+        // no bin, rather than a 0 the sequence never said
+        const denominator = skew ? ng + nc : valid
+        if (denominator > 0) {
+          // the middle windowDelta bases of the window, so bins tile
+          const binStart = qs + i - leftHalf + ((windowSize - windowDelta) >> 1)
+          starts[n] = binStart
+          ends[n] = binStart + windowDelta
+          scores[n] = (skew ? ng - nc : ng + nc) / denominator
+          n++
+        }
       }
 
       return {
-        starts,
-        ends,
-        scores,
+        starts: n < capacity ? starts.subarray(0, n) : starts,
+        ends: n < capacity ? ends.subarray(0, n) : ends,
+        scores: n < capacity ? scores.subarray(0, n) : scores,
         minScores: undefined,
         maxScores: undefined,
         count: n,

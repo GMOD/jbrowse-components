@@ -113,6 +113,16 @@ test('a step never outlives a window shrunk below it', async () => {
   expect(track.windowDelta).toBe(25)
 })
 
+test('an unset step follows the window, and a step equal to it stays unset', async () => {
+  const { track } = await createTrack()
+  track.setGCContentParams({ windowSize: 50 })
+  expect([track.windowSize, track.windowDelta]).toEqual([50, 50])
+  track.setGCContentParams({ windowDelta: 50 })
+  expect(track.stepTilesWindow).toBe(true)
+  track.setGCContentParams({ windowSize: 80 })
+  expect(track.windowDelta).toBe(80)
+})
+
 test('the track menu carries the GC parameters beside the plot', async () => {
   const { track } = await createTrack()
   const items = track.trackMenuItems() as MenuItem[]

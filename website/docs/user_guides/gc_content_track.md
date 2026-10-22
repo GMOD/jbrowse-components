@@ -20,10 +20,10 @@ straight off the reference sequence track:
 - From an open sequence track, the sequence display's track menu has the same
   **Add GC content track** item.
 
-Either route creates a `GCContentTrack` that wraps the assembly's existing
-sequence adapter in a `GCContentAdapter`, so it works for any assembly, whether
-its sequence is a 2bit, indexed FASTA, or bgzip-indexed FASTA. The adapter
-fetches no new data beyond the sequence the browser already reads.
+**Add GC content track** creates a `GCContentTrack` whose `GCContentAdapter`
+reads the sequence of the assembly it is shown against, so it works for any
+assembly, whether its sequence is a 2bit, indexed FASTA, or bgzip-indexed FASTA.
+The adapter fetches no new data beyond the sequence the browser already reads.
 
 <Figure caption="GC content (top) and GC skew (bottom) computed on the fly across the H. pylori chromosome." src="/img/gc_content.png" />
 
@@ -46,9 +46,13 @@ sliding-window settings, each with a reset button:
 
 - Window size is how many bases each point averages over. Larger windows smooth
   the signal and suppress local noise; smaller windows resolve finer structure.
-- Step size is the distance between successive windows. Making the step smaller
-  than the window size produces _overlapping_ windows, which gives a smoother,
-  more finely-sampled curve (at the cost of more points to compute).
+- Step size is the distance between successive windows. At its reset value the
+  step equals the window, so the windows tile and the step follows the window as
+  it changes. A smaller step produces _overlapping_ windows, which gives a
+  smoother, more finely-sampled curve at the cost of more points to compute.
+
+A window made entirely of `N` bases has no GC content, so the track draws
+nothing over an assembly gap.
 
 ## Display options
 

@@ -39,7 +39,7 @@ lane, a hub star's lanes on genomes the session lacks included:
   laneLayers: [
     {
       name: 'GC',
-      adapter: { type: 'GCContentAdapter', windowSize: 1000, windowDelta: 1000 },
+      adapter: { type: 'GCContentAdapter', windowSize: 1000 },
       marks: [{ mark: 'bar', encoding: { y: 'score' } }],
     },
   ],

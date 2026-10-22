@@ -10,14 +10,16 @@ import { toLocale } from '@jbrowse/core/util'
 import { bedGraphFormatOptions } from '@jbrowse/plugin-wiggle'
 import FunctionsIcon from '@mui/icons-material/Functions'
 
+import {
+  WINDOW_SIZE_DEFAULT,
+  resolveGCWindow,
+} from '../GCContentAdapter/gcWindow.ts'
 import configSchemaF from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-const WINDOW_SIZE_DEFAULT = 100
-const WINDOW_DELTA_DEFAULT = 100
 const formatBp = (n: number) => `${toLocale(n)} bp`
 
 export default function GCContentTrackF(pm: PluginManager) {
@@ -25,7 +27,7 @@ export default function GCContentTrackF(pm: PluginManager) {
     const configSchema = configSchemaF(pm)
     return new TrackType({
       name: 'GCContentTrack',
-      displayName: 'GCContent track',
+      displayName: 'GC content track',
       configSchema,
       stateModel: createBaseTrackModel(pm, 'GCContentTrack', configSchema)
         .views(self => ({
@@ -42,15 +44,32 @@ export default function GCContentTrackF(pm: PluginManager) {
           },
           /**
            * #getter
+           * The window and step the adapter scores with, resolved.
            */
-          get windowSize(): number {
-            return readConfObject(this.gcAdapter, 'windowSize')
+          get gcWindow() {
+            return resolveGCWindow(
+              readConfObject(this.gcAdapter, 'windowSize'),
+              readConfObject(this.gcAdapter, 'windowDelta'),
+            )
           },
           /**
            * #getter
            */
-          get windowDelta(): number {
-            return readConfObject(this.gcAdapter, 'windowDelta')
+          get windowSize() {
+            return this.gcWindow.windowSize
+          },
+          /**
+           * #getter
+           */
+          get windowDelta() {
+            return this.gcWindow.windowDelta
+          },
+          /**
+           * #getter
+           * Whether the step is unset, tiling the windows.
+           */
+          get stepTilesWindow() {
+            return readConfObject(this.gcAdapter, 'windowDelta') === undefined
           },
           /**
            * #getter
@@ -62,13 +81,13 @@ export default function GCContentTrackF(pm: PluginManager) {
         .actions(self => ({
           /**
            * #action
-           * Either parameter alone; the other keeps its value. A step wider
-           * than its window leaves gaps the scores say nothing about, so the
-           * step never passes the window, shrinking with it.
+           * Either parameter alone; the other keeps its value. A step at or
+           * past the window is written unset, so the windows tile and the
+           * step grows with the window again.
            */
           setGCContentParams({
             windowSize = self.windowSize,
-            windowDelta = self.windowDelta,
+            windowDelta = self.stepTilesWindow ? undefined : self.windowDelta,
           }: {
             windowSize?: number
             windowDelta?: number
@@ -77,7 +96,9 @@ export default function GCContentTrackF(pm: PluginManager) {
             setConf(
               self.gcAdapter,
               'windowDelta',
-              Math.min(windowDelta, windowSize),
+              windowDelta === undefined || windowDelta >= windowSize
+                ? undefined
+                : windowDelta,
             )
           },
           /**
@@ -137,13 +158,13 @@ export default function GCContentTrackF(pm: PluginManager) {
                       format: formatBp,
                       commitOnRelease: true,
                       getValue: () => self.windowDelta,
-                      isDefault: self.windowDelta === WINDOW_DELTA_DEFAULT,
+                      isDefault: self.stepTilesWindow,
                       onChange: windowDelta => {
                         self.setGCContentParams({ windowDelta })
                       },
                       onReset: () => {
                         self.setGCContentParams({
-                          windowDelta: WINDOW_DELTA_DEFAULT,
+                          windowDelta: self.windowSize,
                         })
                       },
                     }),

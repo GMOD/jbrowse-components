@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { WINDOW_SIZE_DEFAULT } from './gcWindow.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -44,17 +46,17 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
        */
       windowSize: {
         type: 'number',
-        defaultValue: 100,
+        defaultValue: WINDOW_SIZE_DEFAULT,
       },
       /**
        * #slot
-       * step in bp between successive windows. Equal to `windowSize` (the
-       * default) the windows tile without overlapping; smaller values overlap
-       * them, giving a denser, smoother signal for proportionally more work
+       * step in bp between successive windows. Unset, it equals `windowSize`
+       * and the windows tile; smaller values overlap them, giving a denser,
+       * smoother signal for proportionally more work. A step wider than the
+       * window narrows to it
        */
       windowDelta: {
-        type: 'number',
-        defaultValue: 100,
+        type: 'maybeNumber',
       },
       /**
        * #slot

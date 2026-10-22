@@ -2,7 +2,7 @@
   "name": "@jbrowse/plugin-gccontent",
   "version": "5.0.0-beta.17",
   "type": "module",
-  "description": "JBrowse 2 gccontent concepts",
+  "description": "JBrowse 2 GC content and GC skew tracks",
   "keywords": [
     "jbrowse",
     "jbrowse2"
