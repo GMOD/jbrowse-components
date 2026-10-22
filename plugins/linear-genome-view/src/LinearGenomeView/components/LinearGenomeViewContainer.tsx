@@ -140,7 +140,9 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
             .flatMap(t => t.displays)
             .map(d => d.hoveredFeature)
             .find(Boolean)
-          session.setHovered({ hoverPosition, hoverFeature })
+          // `viewId` lets a view paired with one linear view ignore another
+          // showing the same locus
+          session.setHovered({ hoverPosition, hoverFeature, viewId: model.id })
         }}
       >
         {/* Where the view says out loud that it moved. Its own observer, so a
