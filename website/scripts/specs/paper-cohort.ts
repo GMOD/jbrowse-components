@@ -91,11 +91,11 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
               filter: [
                 "jexl:svType(feature)=='DEL' && alleleLength(feature)>=5000",
               ],
-              color: { field: 'svType' },
+              encoding: { color: 'svType' },
               variants: { show: true },
               // The key would cover the lane's label at the window's right
               // edge; the paper's caption gives it instead
-              showLegend: false,
+              legend: { show: false },
               height: 300,
             },
             {

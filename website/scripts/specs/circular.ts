@@ -17,10 +17,8 @@ const LIFTOVER = 'hg38ToMm39_liftover'
 const DENSITY_RING = {
   trackId: 'hg38ToMm39_gene_density',
   mark: 'span',
-  color: {
-    field: 'score',
-    scale: 'linear',
-    range: ['#ffffff', '#d95f02'],
+  encoding: {
+    color: { scale: { type: 'linear', range: ['#ffffff', '#d95f02'] } },
   },
   height: 40,
 }
@@ -169,7 +167,7 @@ export const circularSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'circular_synteny/color_by_strand',
     url: circularSyntenyView(CHROMOSOMES, [LIFTOVER], {
-      color: { field: 'strand' },
+      encoding: { color: 'strand' },
       showLegend: true,
     }),
     ...circularSyntenyReady,
@@ -256,7 +254,7 @@ export const circularSpecs: ScreenshotSpec[] = [
           },
           height: 780,
           filter: [{ field: 'length', gte: 100000 }],
-          color: { field: 'strand' },
+          encoding: { color: 'strand' },
           showLegend: true,
           tracks: ['hg38ToPanTro6_liftover'],
         },
@@ -275,7 +273,7 @@ export const circularSpecs: ScreenshotSpec[] = [
           assembly: ['CO92', 'KIM'],
           height: 780,
           filter: [{ field: 'length', gte: 5000 }],
-          color: { field: 'strand' },
+          encoding: { color: 'strand' },
           showLegend: true,
           tracks: ['KIM_to_CO92'],
         },

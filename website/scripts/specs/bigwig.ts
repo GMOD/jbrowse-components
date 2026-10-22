@@ -189,7 +189,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hpylori_repl_origin',
               height: 50,
-              color: "jexl:get(feature,'color')",
+              encoding: { color: { value: "jexl:get(feature,'color')" } },
             },
             'gc_content_hpylori',
             'gc_skew_hpylori',

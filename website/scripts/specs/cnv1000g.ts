@@ -35,10 +35,11 @@ export const CN_HEATMAP_SETTINGS = {
   mark: 'span',
   origin: 2,
   scales: { y: { domainMin: 0, domainMax: 4 } },
-  color: {
-    field: 'score',
-    range: ['#2166ac', '#b2182b'],
-    title: 'Copy number',
+  encoding: {
+    color: {
+      scale: { range: ['#2166ac', '#b2182b'] },
+      legend: { title: 'Copy number' },
+    },
   },
 }
 

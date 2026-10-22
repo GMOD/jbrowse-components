@@ -221,7 +221,7 @@ export const mafSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ce11.26way',
               height: 470,
-              color: 'codon',
+              encoding: { color: 'codon' },
             },
           ],
         },
@@ -269,7 +269,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               rowHeight: 8,
               // The reference row draws one constant color under this color.
               alignments: { rowProportion: 0.9, reference: { show: false } },
-              color: 'chromosome',
+              encoding: { color: 'chromosome' },
             },
           ],
         },
@@ -307,7 +307,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               // rowHeight stays at its default 0, which fits every row into
               // this height.
               height: 600,
-              color: 'identity',
+              encoding: { color: 'identity' },
             },
           ],
         },
@@ -342,7 +342,7 @@ export const mafSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg38.multiz470way',
               height: 460,
-              color: 'codon',
+              encoding: { color: 'codon' },
               conservation: { show: true, unit: 'codon' },
               rows: { kept: HG38_470WAY_30 },
             },
