@@ -6,6 +6,15 @@ export interface ColumnSegment {
   bpPerPx: number
 }
 
+// A caller's `bpPerPx` is often itself a quotient, `span / columns`, so
+// `span / bpPerPx` can land a few ulps under the whole number it means:
+// 1000 bp over 228 columns gives 227.99999999999997. Snap that back before
+// flooring, or the last column, and a span starting on a column edge, slip
+// one column early.
+function columnFloor(x: number) {
+  return Math.floor(x + 1e-9 * Math.max(1, Math.abs(x)))
+}
+
 /**
  * A clustering matrix row's columns: one per `bpPerPx` of each region, the
  * regions end to end, as the view draws them.
@@ -17,7 +26,7 @@ export function columnSegments(
   const segments: ColumnSegment[] = []
   let width = 0
   for (const r of regions) {
-    const w = Math.max(0, Math.floor((r.end - r.start) / bpPerPx))
+    const w = Math.max(0, columnFloor((r.end - r.start) / bpPerPx))
     segments.push({ colOffset: width, width: w, regionStart: r.start, bpPerPx })
     width += w
   }
@@ -29,10 +38,6 @@ export function columnSegments(
  * first, empty for a span off it. Both edges floor, and a span narrower than a
  * column covers the column it starts in, so base-resolution data never bins to
  * an all-zero row.
- *
- * Divided by `bpPerPx` rather than multiplied by its reciprocal, which puts a
- * span starting on a column edge one column early (`49 * (1 / 49)` is just
- * under 1).
  */
 export function spanColumns(
   segment: ColumnSegment,
@@ -43,8 +48,8 @@ export function spanColumns(
   if (end <= regionStart) {
     return { startX: 0, endX: 0 }
   }
-  const startX = Math.max(0, Math.floor((start - regionStart) / bpPerPx))
-  const rawEndX = Math.floor((end - regionStart) / bpPerPx)
+  const startX = Math.max(0, columnFloor((start - regionStart) / bpPerPx))
+  const rawEndX = columnFloor((end - regionStart) / bpPerPx)
   return { startX, endX: Math.min(width, Math.max(rawEndX, startX + 1)) }
 }
 

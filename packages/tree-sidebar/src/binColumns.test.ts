@@ -80,3 +80,9 @@ test('a span far past the region fills to its last column', () => {
     binned([{ start: 0, end: 1 }], 0.05, [[0, 0, 120_000_000, 3]]),
   ).toEqual(Array.from({ length: 20 }, () => 3))
 })
+
+test('a bpPerPx that is span / columns keeps every column, and its edges', () => {
+  expect(columnSegments([{ start: 0, end: 1000 }], 1000 / 228).width).toBe(228)
+  const row = binned([{ start: 0, end: 6 }], 6 / 118, [[0, 3, 4, 1]])
+  expect(row.indexOf(1)).toBe(59)
+})
