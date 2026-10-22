@@ -33,6 +33,7 @@ import {
   scaleTypeCode,
 } from '@jbrowse/render-core/scoreScale'
 
+import { computeCountStats } from '../RenderHicDataRPC/countStats.ts'
 import { legendStops } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
 import {
@@ -240,8 +241,9 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #getter
        * The quantile "Emphasize faint contacts" saturates at: `colorQuantile`
-       * while it clips, else the one ticking it writes. The worker computes
-       * this one whichever is drawn, so the toggle refetches nothing.
+       * while it clips, else the one ticking it writes. Each fetch asks the
+       * worker for this one whichever is drawn, so the toggle reselects
+       * nothing.
        */
       get saturationQuantile(): number {
         return this.colorFollowsPercentile
@@ -284,6 +286,24 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
+       * The loaded counts' `saturationQuantile`: the worker's answer, or after
+       * an edit a selection over the loaded matrix, so a new percentile
+       * refetches nothing. The next fetch asks the worker for the new one.
+       */
+      get loadedQuantileScore(): number {
+        const data = self.rpcData
+        const q = self.saturationQuantile
+        return !data
+          ? 0
+          : data.quantile === q
+            ? data.quantileScore
+            : computeCountStats(data.instances, data.numContacts, q)
+                .quantileScore
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * The domain the counts are colored over, as every ramp spans one: a
        * pinned end holds, and an open one follows the loaded counts from 0,
        * the top at their `colorQuantile` below 1, else their maximum.
@@ -294,7 +314,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         const loadedMax = !data
           ? 0
           : self.colorFollowsPercentile
-            ? data.quantileScore
+            ? self.loadedQuantileScore
             : data.maxScore
         return rampDomain(domainMin, domainMax, [0, loadedMax])
       },
@@ -450,14 +470,12 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #method
-       * The settings that refetch. The binsize is zoom-derived, so it is passed
-       * as a separate argument.
+       * The settings that refetch. The binsize is zoom-derived and the
+       * quantile reselects on the main thread, so both ride as call
+       * arguments.
        */
-      rpcProps(): { normalization: string; quantile: number } {
-        return {
-          normalization: self.activeNormalization,
-          quantile: self.saturationQuantile,
-        }
+      rpcProps(): { normalization: string } {
+        return { normalization: self.activeNormalization }
       },
       /**
        * #method
@@ -662,6 +680,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
               axisBlocks,
               originBp,
               resolution,
+              quantile: self.saturationQuantile,
             }),
           commit: result => {
             self.setRpcData(result)

@@ -13,8 +13,8 @@ export interface RenderHicDataArgs {
   originBp: number
   resolution: number
   normalization: string
-  /** the quantile `quantileScore` answers, the color's `domainQuantile`; 0.95 unset */
-  quantile?: number
+  /** the quantile `quantileScore` answers */
+  quantile: number
 }
 
 export interface HicContactItem {
@@ -66,6 +66,8 @@ export interface HicDataResult {
    */
   maxScore: number
   quantileScore: number
+  /** the quantile `quantileScore` answers, echoed from the args */
+  quantile: number
   /** one bin in pre-rotation units: `resolution / √2` */
   binWidth: number
   originBp: number

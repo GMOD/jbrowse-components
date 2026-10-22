@@ -44,6 +44,7 @@ async function run(regions: Region[], records: TestContact[]) {
       originBp: 0,
       resolution: RES,
       normalization: 'KR',
+      quantile: 0.95,
     },
   })
   // executeRenderHicData returns rpcResult(...) cast to the result type

@@ -70,6 +70,7 @@ function makeData(
     numContacts: n,
     maxScore: n,
     quantileScore: n,
+    quantile: 0.95,
     binWidth: W,
     originBp: 0,
     resolution: 1000,

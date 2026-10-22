@@ -19,6 +19,7 @@ function makeHicResult(args: RenderHicDataArgs): HicDataResult {
     numContacts: 0,
     maxScore: 0,
     quantileScore: 0,
+    quantile: 0.95,
     binWidth: args.resolution / Math.SQRT2,
     originBp: args.originBp,
     resolution: args.resolution,

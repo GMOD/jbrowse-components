@@ -11,6 +11,7 @@ const DATA: HicDataResult = {
   numContacts: 1,
   maxScore: 400,
   quantileScore: 40,
+  quantile: 0.95,
   binWidth: 4,
   originBp: 0,
   resolution: 1000,

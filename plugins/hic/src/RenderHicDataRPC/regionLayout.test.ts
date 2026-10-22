@@ -40,6 +40,7 @@ async function run(
       originBp: 0,
       resolution: RES,
       normalization: 'KR',
+      quantile: 0.95,
     },
   })
   return (out as unknown as { value: HicDataResult }).value

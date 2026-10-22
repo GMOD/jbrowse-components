@@ -32,6 +32,7 @@ async function run(region: Region, records: TestContact[], res: number) {
       originBp: region.start,
       resolution: res,
       normalization: 'KR',
+      quantile: 0.95,
     },
   })
   return (out as unknown as { value: HicDataResult }).value

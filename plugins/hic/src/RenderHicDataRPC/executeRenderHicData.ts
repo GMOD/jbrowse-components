@@ -32,7 +32,7 @@ export async function executeRenderHicData({
     originBp,
     resolution,
     normalization,
-    quantile = 0.95,
+    quantile,
     signal,
     statusCallback,
   } = args
@@ -113,6 +113,7 @@ export async function executeRenderHicData({
       numContacts: at,
       maxScore,
       quantileScore,
+      quantile,
       binWidth: w,
       originBp,
       resolution,

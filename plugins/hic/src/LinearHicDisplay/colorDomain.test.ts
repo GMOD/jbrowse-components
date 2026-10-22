@@ -6,6 +6,7 @@ import {
   makeScoreNormalizer,
 } from '@jbrowse/render-core/scoreScale'
 
+import { packTestInstances } from '../testInstances.ts'
 import { MIN_VISIBLE_ALPHA } from './components/shaders/hic.consts.generated.ts'
 import { INSTANCE_STRIDE_WORDS } from './components/shaders/hic.iface.generated.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -24,6 +25,7 @@ const DATA: HicDataResult = {
   numContacts: 1,
   maxScore: 400,
   quantileScore: 40,
+  quantile: 0.95,
   binWidth: 4,
   originBp: 0,
   resolution: 1000,
@@ -64,13 +66,33 @@ test('with the percentile off an unset top is the largest count', () => {
 test('the percentile is the color domain quantile', () => {
   const display = loaded()
   expect(display.configuration.color.domainQuantile).toBe(0.95)
-  expect(display.rpcProps().quantile).toBe(0.95)
+  expect(display.saturationQuantile).toBe(0.95)
   display.setColorFollowsPercentile(false)
   expect(display.configuration.color.domainQuantile).toBe(1)
-  expect(display.rpcProps().quantile).toBe(0.95)
   expect(display.saturationQuantile).toBe(0.95)
   display.setColorFollowsPercentile(true)
   expect(display.configuration.color.domainQuantile).toBe(0.95)
+})
+
+test('a new percentile reselects the loaded counts and refetches nothing', () => {
+  const counts = Array.from({ length: 100 }, (_, i) => i + 1)
+  const { display } = createDisplay()
+  display.setRpcData({
+    ...DATA,
+    instances: packTestInstances(
+      counts.flatMap(() => [0, 0]),
+      counts,
+    ),
+    numContacts: counts.length,
+    maxScore: 100,
+    quantileScore: 95,
+    pairRuns: [{ region1Idx: 0, region2Idx: 0, start: 0, end: counts.length }],
+  })
+  const settings = structuredClone(display.settingsFetchInputs)
+  expect(display.colorDomain).toEqual([0, 95])
+  setConf(display, ['color', 'domainQuantile'], 0.5)
+  expect(display.colorDomain).toEqual([0, 50])
+  expect(display.settingsFetchInputs).toEqual(settings)
 })
 
 test('a pinned top holds whatever the loaded counts are', () => {

@@ -107,6 +107,13 @@ histogram.** The obvious cheaper estimate fails on exactly the property that
 made the percentile necessary: linear buckets over `[min, max]` drop nearly
 every value into the first one and collapse the answer toward zero.
 
+**The quantile rides beside the request, not in its key.** The worker selects
+for the quantile it was asked for, so a pan or zoom costs the main thread
+nothing. An edited percentile reselects over the loaded matrix on the main
+thread, tens of milliseconds at millions of contacts, and the next fetch asks
+the worker for the new one. A quantile table from the worker would sort on
+every fetch and still miss a percentile typed between its entries.
+
 **Both candidates are scored off the finite counts.** A tiny normalization
 divisor yields Infinity; reaching the saturation point, it turns every bin's
 color into NaN and makes the legend silently vanish.
