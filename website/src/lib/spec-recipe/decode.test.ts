@@ -54,3 +54,25 @@ test('a feature filter flattens member by member, its list shorthand included', 
     ['filter.expressions', ['jexl:feature.score > 5']],
   ])
 })
+
+// each channel is a step of its own, the display's and a band's alike
+test('an encoding flattens channel by channel, under the display or a band', () => {
+  const channels = {
+    encoding: { color: 'strand' },
+    legend: { show: false },
+    readConnections: { encoding: { color: 'insertSize' } },
+    pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
+  }
+  expect(flatSettings(channels)).toEqual([
+    ['encoding.color', 'strand'],
+    ['legend.show', false],
+    ['readConnections.encoding.color', 'insertSize'],
+    [
+      'pileup.bases',
+      { show: true, encoding: { color: 'modifications' } },
+    ],
+  ])
+  expect(nestedSettings(Object.fromEntries(flatSettings(channels)))).toEqual(
+    channels,
+  )
+})
