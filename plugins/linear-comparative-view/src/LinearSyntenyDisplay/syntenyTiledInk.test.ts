@@ -90,7 +90,6 @@ function render(
       yTop: 0,
       height: HEIGHT,
       alpha: DISPLAY_ALPHA,
-      minAlignmentLength: 0,
       hoveredFeatureId: 0,
       clickedFeatureId: 0,
       offsetPx0: 0,

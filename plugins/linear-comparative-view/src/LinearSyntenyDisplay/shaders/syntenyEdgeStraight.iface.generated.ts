@@ -22,13 +22,12 @@ export const UNIFORM_OFFSET_F32 = {
   panPx1: 5,
   bpPerPxInv1: 6,
   overdrawPx: 7,
-  minAlignmentLength: 8,
-  alpha: 9,
-  hoveredFeatureId: 10,
-  clickedFeatureId: 11,
-  yTop: 12,
-  fadeThinAlignments: 13,
-  devicePixelRatio: 14,
+  alpha: 8,
+  hoveredFeatureId: 9,
+  clickedFeatureId: 10,
+  yTop: 11,
+  fadeThinAlignments: 12,
+  devicePixelRatio: 13,
   ground: 16,
   ink: 20,
 } as const
@@ -42,7 +41,6 @@ export interface Uniforms {
   panPx1: number
   bpPerPxInv1: number
   overdrawPx: number
-  minAlignmentLength: number
   alpha: number
   hoveredFeatureId: number
   clickedFeatureId: number
@@ -63,13 +61,12 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[5] = uniforms.panPx1
   f32[6] = uniforms.bpPerPxInv1
   f32[7] = uniforms.overdrawPx
-  f32[8] = uniforms.minAlignmentLength
-  f32[9] = uniforms.alpha
-  f32[10] = uniforms.hoveredFeatureId
-  f32[11] = uniforms.clickedFeatureId
-  f32[12] = uniforms.yTop
-  f32[13] = uniforms.fadeThinAlignments
-  f32[14] = uniforms.devicePixelRatio
+  f32[8] = uniforms.alpha
+  f32[9] = uniforms.hoveredFeatureId
+  f32[10] = uniforms.clickedFeatureId
+  f32[11] = uniforms.yTop
+  f32[12] = uniforms.fadeThinAlignments
+  f32[13] = uniforms.devicePixelRatio
   f32[16] = uniforms.ground[0]
   f32[17] = uniforms.ground[1]
   f32[18] = uniforms.ground[2]
@@ -78,8 +75,8 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[22] = uniforms.ink[2]
 }
 
-export const INSTANCE_STRIDE_BYTES = 32
-export const INSTANCE_STRIDE_WORDS = 8
+export const INSTANCE_STRIDE_BYTES = 28
+export const INSTANCE_STRIDE_WORDS = 7
 
 // Word indices into a Float32Array view over the instance buffer.
 export const INSTANCE_OFFSET_F32 = {
@@ -88,8 +85,7 @@ export const INSTANCE_OFFSET_F32 = {
   bp3: 2,
   bp4: 3,
   featureId: 5,
-  alignmentLength: 6,
-  kind: 7,
+  kind: 6,
 } as const
 
 // Word indices into a Uint32Array view over the instance buffer.
@@ -104,8 +100,7 @@ export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
   { name: 'a_bp4', components: 1, type: 'float', offsetBytes: 12, integer: false },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 16, integer: true },
   { name: 'a_featureId', components: 1, type: 'float', offsetBytes: 20, integer: false },
-  { name: 'a_alignmentLength', components: 1, type: 'float', offsetBytes: 24, integer: false },
-  { name: 'a_kind', components: 1, type: 'float', offsetBytes: 28, integer: false },
+  { name: 'a_kind', components: 1, type: 'float', offsetBytes: 24, integer: false },
 ]
 
 export interface InstanceArrays {
@@ -115,7 +110,6 @@ export interface InstanceArrays {
   bp4: ArrayLike<number>
   color: ArrayLike<number>
   featureId: ArrayLike<number>
-  alignmentLength: ArrayLike<number>
   kind: ArrayLike<number>
 }
 
@@ -126,7 +120,7 @@ export function packInstances(
 ) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { bp1, bp2, bp3, bp4, color, featureId, alignmentLength, kind } = arrays
+  const { bp1, bp2, bp3, bp4, color, featureId, kind } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
     f32[o + 0] = bp1[i]!
@@ -135,8 +129,7 @@ export function packInstances(
     f32[o + 3] = bp4[i]!
     u32[o + 4] = color[i]!
     f32[o + 5] = featureId[i]!
-    f32[o + 6] = alignmentLength[i]!
-    f32[o + 7] = kind[i]!
+    f32[o + 6] = kind[i]!
   }
   return buf
 }
@@ -195,20 +188,11 @@ export function setInstanceFeatureId(f32: Float32Array, i: number, v: number) {
   f32[i * INSTANCE_STRIDE_WORDS + 5] = v
 }
 
-// Instance `i`'s `alignmentLength`.
-export function getInstanceAlignmentLength(f32: Float32Array, i: number) {
+// Instance `i`'s `kind`.
+export function getInstanceKind(f32: Float32Array, i: number) {
   return f32[i * INSTANCE_STRIDE_WORDS + 6]!
 }
 
-export function setInstanceAlignmentLength(f32: Float32Array, i: number, v: number) {
-  f32[i * INSTANCE_STRIDE_WORDS + 6] = v
-}
-
-// Instance `i`'s `kind`.
-export function getInstanceKind(f32: Float32Array, i: number) {
-  return f32[i * INSTANCE_STRIDE_WORDS + 7]!
-}
-
 export function setInstanceKind(f32: Float32Array, i: number, v: number) {
-  f32[i * INSTANCE_STRIDE_WORDS + 7] = v
+  f32[i * INSTANCE_STRIDE_WORDS + 6] = v
 }

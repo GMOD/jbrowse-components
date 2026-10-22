@@ -159,7 +159,6 @@ export function drawSyntenyTrack(
     yTop,
     height,
     alpha,
-    minAlignmentLength,
     hoveredFeatureId,
     clickedFeatureId,
     drawCurves,
@@ -171,9 +170,6 @@ export function drawSyntenyTrack(
   // clicked outline), so the width is set once for the pass.
   ctx.lineWidth = 1
   for (let i = 0; i < data.instanceCount; i++) {
-    if (data.alignmentLengths[i]! < minAlignmentLength) {
-      continue
-    }
     // Read before both tests below, which each need it: a marker keeps its own
     // alpha through the opacity slider (see isInstanceInvisible), and is culled
     // by its hull where a ribbon is culled per edge (see isRibbonCulled).

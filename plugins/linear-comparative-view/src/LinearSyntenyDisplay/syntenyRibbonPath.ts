@@ -304,9 +304,7 @@ const HULL_CULL_PAD_PX = 1
 // horizontal travel.
 //
 // Both tests are `spanOutsideBand`, the generated twin of the comparison
-// isCulled() makes in syntenyTypes.slang, so the two sides differ only in what
-// they pass it: the hull here runs at a tighter pad, and the minAlignmentLength
-// cull the shader folds in is applied per instance by the draw/pick callers.
+// isCulled() makes in syntenyTypes.slang; the hull here runs at a tighter pad.
 //
 // Travel (markers only): drop a tick that runs further horizontally between its
 // two ends than the view is wide. Also the shader's own, and asked per frame on

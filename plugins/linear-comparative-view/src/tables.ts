@@ -467,9 +467,6 @@ export async function syntenyTables(
     return { region: from.region, from: from.coord, to: to.coord }
   }
   for (let i = 0; i < instanceData.instanceCount; i++) {
-    if (instanceData.alignmentLengths[i]! < minLength) {
-      continue
-    }
     const kind = kinds[i]!
     const marker = kind === KIND_MARKER
     const packed = colors[i]!

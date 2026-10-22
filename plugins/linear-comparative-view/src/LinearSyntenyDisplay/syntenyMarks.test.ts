@@ -62,7 +62,6 @@ function makeParams(
     height: 100,
     alpha: 1,
     fadeThinAlignments: true,
-    minAlignmentLength: 0,
     hoveredFeatureId: 0,
     clickedFeatureId: 0,
     offsetPx0: 0,
@@ -231,16 +230,6 @@ describe('the ribbon painter, through the mark list', () => {
       makeState([[0, makeParams({ drawCurves: true })]]),
     )
     expect(pathOps.filter(op => op.startsWith('bezierCurveTo'))).toHaveLength(2)
-  })
-
-  test('a feature below minAlignmentLength draws nothing', () => {
-    const { pathOps } = paintFrame(
-      cellsFor([
-        [0, makeInstanceData(1, { alignmentLengths: new Float32Array([100]) })],
-      ]),
-      makeState([[0, makeParams({ minAlignmentLength: 500 })]]),
-    )
-    expect(fills(pathOps)).toBe(0)
   })
 
   test('a zero-alpha feature draws nothing', () => {

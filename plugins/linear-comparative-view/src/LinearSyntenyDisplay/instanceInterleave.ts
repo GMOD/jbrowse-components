@@ -43,7 +43,6 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     colors,
     kinds,
     instanceFeatureIdx,
-    alignmentLengths,
     instanceCount: n,
   } = data
   const buf = new ArrayBuffer(n * INSTANCE_STRIDE_BYTES)
@@ -66,7 +65,6 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     // agent-docs/ideas/collections/synteny-comparative.md §"Synteny featureId instance
     // ceiling".
     f[off + INSTANCE_OFFSET_F32.featureId] = instanceFeatureIdx[i]! + 1
-    f[off + INSTANCE_OFFSET_F32.alignmentLength] = alignmentLengths[i]!
     f[off + INSTANCE_OFFSET_F32.kind] = kinds[i]!
   }
   return buf
@@ -75,7 +73,7 @@ export function interleaveInstances(data: SyntenyInstanceData) {
 // How the renderer caches the buffer above and recolors it: a `color` or
 // `opacity` field change produces new `colors` over unchanged geometry, so
 // patching the single 4-byte color field per instance skips re-packing the
-// other 11 lanes. The GPU re-upload still happens (the HAL has no
+// other lanes. The GPU re-upload still happens (the HAL has no
 // partial-buffer update), but the dominant CPU interleave is avoided.
 //
 // Declared beside `interleaveInstances` because the offsets are the ones it

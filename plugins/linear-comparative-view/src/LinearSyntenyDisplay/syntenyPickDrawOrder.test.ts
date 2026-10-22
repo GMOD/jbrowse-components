@@ -55,7 +55,6 @@ function pickedFeatureAt(x: number) {
     height: 100,
     alpha: 1,
     fadeThinAlignments: true,
-    minAlignmentLength: 0,
     hoveredFeatureId: 0,
     clickedFeatureId: 0,
     offsetPx0: 0,

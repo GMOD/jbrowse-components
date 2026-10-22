@@ -56,7 +56,6 @@ function centerPixel(kind: number | SyntenyInstanceData, groundColor: string) {
       height: H,
       alpha: ALPHA,
       fadeThinAlignments: false,
-      minAlignmentLength: 0,
       hoveredFeatureId: 0,
       clickedFeatureId: 0,
       offsetPx0: 0,

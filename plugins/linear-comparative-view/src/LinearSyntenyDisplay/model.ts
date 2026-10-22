@@ -922,7 +922,6 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           height: this.height,
           alpha: view.opacityLevel,
           fadeThinAlignments: view.fadeThinAlignments,
-          minAlignmentLength: view.minLength,
           hoveredFeatureId: this.hoveredFeatureId,
           clickedFeatureId: this.clickedFeatureId,
           offsetPx0: v0.offsetPx,

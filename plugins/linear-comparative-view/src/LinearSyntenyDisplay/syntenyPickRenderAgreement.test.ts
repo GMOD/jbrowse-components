@@ -92,7 +92,6 @@ function makeParams(alpha = 1): SyntenyTrackRenderParams {
     height: HEIGHT,
     alpha,
     fadeThinAlignments: true,
-    minAlignmentLength: 0,
     hoveredFeatureId: 0,
     clickedFeatureId: 0,
     offsetPx0: 0,

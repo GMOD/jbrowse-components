@@ -46,12 +46,11 @@ public struct Instance {
   public float bp4               : ATTR3;
   public uint  color             : ATTR4;
   public float featureId         : ATTR5;
-  public float alignmentLength   : ATTR6;
   // Per-instance KIND tag (KIND_BASE/KIND_CIGAR_*/etc from syntenyKinds.ts).
   // The fill fragment uses it only for shading: CIGAR indel tiles get the
   // ground pre-blend in shadeFill and skip the density width-fade in fillFs.
   // The coverage/AA path is identical to BASE, so indels aren't aliased.
-  public float kind              : ATTR7;
+  public float kind              : ATTR6;
 };
 
 // First CIGAR kind, and the source of truth for the boundary: syntenyKinds.ts
@@ -83,7 +82,7 @@ public static const float KIND_BASE_TILE = 1.0;
 public bool isTileKind(float kind) { return abs(kind - KIND_BASE_TILE) < 0.5; }
 
 // Floor for the density-honest sub-pixel fade below (widthFade). Without a
-// floor, a whole-genome view with no minAlignmentLength filter (e.g. a raw
+// floor, a whole-genome view with no length filter (e.g. a raw
 // minimap2 PAF) is almost entirely sub-pixel-thin, so every ribbon fades
 // toward zero and overlap accumulation never catches up — the view goes
 // nearly blank instead of merely de-emphasized. Keeps a single thin ribbon
@@ -145,7 +144,6 @@ public struct Uniforms {
   public float  panPx1;
   public float  bpPerPxInv1;
   public float  overdrawPx;
-  public float  minAlignmentLength;
   public float  alpha;
   public float  hoveredFeatureId;
   public float  clickedFeatureId;
@@ -253,12 +251,7 @@ public bool markerTravelsTooFar(float topX, float bottomX, float w) {
   return abs(topX - bottomX) > w;
 }
 
-public bool isCulled(float4 c, float alignmentLength, float kind, Uniforms u) {
-  // No `minAlignmentLength > 0` guard needed: lengths are non-negative, so an
-  // unset (0) filter never matches.
-  if (alignmentLength < u.minAlignmentLength) {
-    return true;
-  }
+public bool isCulled(float4 c, float kind, Uniforms u) {
   float mOff = u.overdrawPx;
   float rW = u.resolution.x;
   // A MARKER IS CULLED HERE, ON ITS HULL. It is a 1px line between two points,
@@ -548,7 +541,7 @@ public bool fillVsBegin(Instance inst, Uniforms u, out FillVsOut o,
   o.localPos = float2(0.0);
   o.kind = inst.kind;
   c = computeCorners(inst, u);
-  if (isCulled(c, inst.alignmentLength, inst.kind, u)
+  if (isCulled(c, inst.kind, u)
       || isInstanceInvisible(o.color.a,
                              isMarkerKind(inst.kind) ? 1.0 : u.alpha)) {
     return false;

@@ -16,7 +16,6 @@ export interface SyntenyTrackRenderParams {
   alpha: number
   /** Fade sub-pixel-thin ribbons by on-screen width; off keeps full alpha. */
   fadeThinAlignments: boolean
-  minAlignmentLength: number
   hoveredFeatureId: number
   clickedFeatureId: number
   /** LGV pan offsets (CSS px). Both backends fold these into the same per-axis

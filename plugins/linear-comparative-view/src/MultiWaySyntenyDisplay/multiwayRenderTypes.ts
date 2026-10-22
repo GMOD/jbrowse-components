@@ -153,7 +153,6 @@ export function ribbonParams(
     height: layer.height,
     alpha: 1,
     fadeThinAlignments: false,
-    minAlignmentLength: 0,
     hoveredFeatureId: state.hoveredFeatureId,
     clickedFeatureId: state.clickedFeatureId,
     offsetPx0: -(top.offset + state.dragOffsetPx),

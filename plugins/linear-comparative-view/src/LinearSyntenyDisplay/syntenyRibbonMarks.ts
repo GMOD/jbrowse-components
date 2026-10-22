@@ -125,7 +125,6 @@ function writeRibbonUniforms(
     panPx1: t.panPx1,
     bpPerPxInv1: t.bpPerPxInv1,
     overdrawPx: p.overdrawPx,
-    minAlignmentLength: track.minAlignmentLength,
     alpha: track.alpha,
     hoveredFeatureId: track.hoveredFeatureId,
     clickedFeatureId: track.clickedFeatureId,

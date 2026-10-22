@@ -34,8 +34,7 @@ export function SyntenyFilterMixin() {
       },
       /**
        * #getter
-       * The lower bound on `length`, 0 for none: the cut the GPU applies as a
-       * uniform, which keeps a length slider drag off the color pass.
+       * The lower bound on `length`, 0 for none.
        */
       get minLength(): number {
         return lowerBoundOf(this.predicates, 'length') ?? 0

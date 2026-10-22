@@ -314,7 +314,7 @@ export function pickFeatureAtPoint(
     if (!params || data.instanceCount === 0) {
       continue
     }
-    const { yTop, height, minAlignmentLength, alpha } = params
+    const { yTop, height, alpha } = params
     if (y < yTop || y > yTop + height) {
       continue
     }
@@ -360,13 +360,9 @@ export function pickFeatureAtPoint(
     const { entryStart, entryEnd } = idx
     for (let ci = candidates.length - 1; ci >= 0; ci--) {
       const pos = candidates[ci]!
-      // Every per-feature question is asked of the entry's first instance: a
-      // body's tiles all carry their feature's length and its base color, which
-      // is the same pair the dropped full-span quad carried.
+      // Asked of the entry's first instance: a body's tiles all carry the base
+      // color the dropped full-span quad carried.
       const i = entryStart[pos]!
-      if (data.alignmentLengths[i]! < minAlignmentLength) {
-        continue
-      }
       if (isInstanceInvisible(data.colors[i]!, alpha)) {
         continue
       }

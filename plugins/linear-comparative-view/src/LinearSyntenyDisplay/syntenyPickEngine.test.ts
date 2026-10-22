@@ -48,7 +48,6 @@ function makeParams(
     height: 100,
     alpha: 1,
     fadeThinAlignments: true,
-    minAlignmentLength: 0,
     hoveredFeatureId: 0,
     clickedFeatureId: 0,
     offsetPx0: 0,
@@ -240,7 +239,7 @@ function bruteForcePick(
   x: number,
   y: number,
 ) {
-  const { height, minAlignmentLength, alpha } = params
+  const { height, alpha } = params
   if (y < params.yTop || y > params.yTop + height) {
     return undefined
   }
@@ -249,9 +248,6 @@ function bruteForcePick(
   const ctx = createGeometricPickCtx()
   // Descending, so the topmost (last drawn) wins — the order the engine walks.
   for (let i = data.instanceCount - 1; i >= 0; i--) {
-    if (data.alignmentLengths[i]! < minAlignmentLength) {
-      continue
-    }
     if (isInstanceInvisible(data.colors[i]!, alpha)) {
       continue
     }
@@ -316,8 +312,7 @@ function makeMixedData(seed: number, n: number): SyntenyInstanceData {
 test('the index answers exactly what a brute-force scan answers', () => {
   const data = makeMixedData(7, 400)
   // Zooms either side of 1 (so the same bp deltas land on both sides of the 1px
-  // cut), one-sided pans within and past the skew cap, a min-length filter, and
-  // a curve pass.
+  // cut), one-sided pans within and past the skew cap, and a curve pass.
   const cases: Partial<SyntenyTrackRenderParams>[] = [
     {},
     { bpPerPx0: 4, bpPerPx1: 4 },
@@ -326,7 +321,6 @@ test('the index answers exactly what a brute-force scan answers', () => {
     { offsetPx0: 40, offsetPx1: 0 },
     { offsetPx0: 400, offsetPx1: 0 },
     { offsetPx0: 120, offsetPx1: 120 },
-    { minAlignmentLength: 12000 },
     // either side of the visibility floor, which the opacity slider reaches:
     // 0.02 leaves the packed 0xff alpha above it, 0.005 puts every ribbon under
     { alpha: 0.02 },
