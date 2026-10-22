@@ -259,7 +259,11 @@ test('under a domain quantile each open end stops short of its tail', () => {
     },
     ['color'],
   )
-  expect(spiky.scale).toMatchObject({ domain: [11, 90], extent: [11, 90] })
+  expect(spiky.scale).toMatchObject({
+    domain: [11, 90],
+    extent: [11, 90],
+    extremes: [1, 10000],
+  })
   expect(colorLane(spiky.color)[0]).toBe(cssColorToABGR('black'))
   expect(colorLane(spiky.color)[89]).toBe(cssColorToABGR('white'))
   expect(colorLane(spiky.color)[99]).toBe(cssColorToABGR('white'))

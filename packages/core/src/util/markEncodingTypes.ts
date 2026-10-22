@@ -275,6 +275,11 @@ export type ColorScaleTable =
        * display re-measuring a subset of the instances clips it alike.
        */
       quantile?: number
+      /**
+       * Present with `quantile`: the unclipped extremes, which `extent` no
+       * longer is, so the key can print `≤`/`≥` at an end the data runs past.
+       */
+      extremes?: [number, number]
       lut: Uint8Array
       /**
        * Whether a feature with no value painted here, in the no-value grey:

@@ -127,7 +127,7 @@ export function featureColorViews(self: FeatureColorHost) {
       quantile < 1
         ? quantileExtent(weighed, weighed.length, quantile)
         : [min, max]
-    return { extent, missing, notNumber }
+    return { extent, extremes: [min, max] as const, missing, notNumber }
   })
   return {
     /**
@@ -329,7 +329,9 @@ export function featureColorViews(self: FeatureColorHost) {
               title: this.colorKeyTitle,
               domain: ramp.domain,
               stops: stopsFromRampLut(ramp.lut, RAMP_KEY_STOPS, ramp.midNorm),
-              extent: this.colorValueExtent,
+              // unclipped, unlike colorValueExtent under a domainQuantile, so
+              // the key marks an end the data runs past
+              extent: loaded.get().extremes,
             },
             ...rampGapScales(`${id}-gaps`, this.colorValueGaps),
           ]

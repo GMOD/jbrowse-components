@@ -154,6 +154,9 @@ function copyOf(scale: ScaleTable): ScaleTable {
         ...scale,
         domain: [scale.domain[0], scale.domain[1]],
         extent: [scale.extent[0], scale.extent[1]],
+        ...(scale.extremes
+          ? { extremes: [scale.extremes[0], scale.extremes[1]] }
+          : {}),
       }
     case 'categorical':
       return { ...scale, entries: [...scale.entries] }
@@ -206,6 +209,11 @@ function union(current: ScaleTable, next: ScaleTable) {
       // painting cannot disagree across a pan. A pinned end already agrees,
       // and the union still says whether the data runs past it.
       if (next.kind === 'ramp') {
+        if (current.extremes || next.extremes) {
+          const a = current.extremes ?? current.extent
+          const b = next.extremes ?? next.extent
+          current.extremes = [Math.min(a[0], b[0]), Math.max(a[1], b[1])]
+        }
         current.extent = [
           Math.min(current.extent[0], next.extent[0]),
           Math.max(current.extent[1], next.extent[1]),
@@ -538,7 +546,7 @@ export function markColorScales(
                 scale.domainMid,
               ),
             ),
-            extent: scale.extent,
+            extent: scale.extremes ?? scale.extent,
           },
           ...rampGapScales(`${id}-gaps`, scale).map(gaps => ({
             ...gaps,

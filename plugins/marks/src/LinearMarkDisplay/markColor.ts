@@ -189,7 +189,10 @@ function numberScaleTable(
     ...(color.reverse ? { reverse: true } : {}),
     extent,
     ...(domainQuantile !== undefined && domainQuantile < 1
-      ? { quantile: domainQuantile }
+      ? {
+          quantile: domainQuantile,
+          extremes: scaleExtent(values, count, color.scale),
+        }
       : {}),
     lut,
     ...met,

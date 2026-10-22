@@ -1091,7 +1091,10 @@ function rampScale(
     ...(reverse ? { reverse } : {}),
     extent,
     ...(domainQuantile !== undefined && domainQuantile < 1
-      ? { quantile: domainQuantile }
+      ? {
+          quantile: domainQuantile,
+          extremes: scaleExtent(values, count, rampEncoding.scale),
+        }
       : {}),
     lut,
     ...(met.missingMet ? { missing: true } : {}),

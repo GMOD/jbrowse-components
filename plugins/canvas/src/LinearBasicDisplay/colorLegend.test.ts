@@ -1,4 +1,5 @@
 import { setConf } from '@jbrowse/core/configuration'
+import { rampLabels } from '@jbrowse/core/ui/colorScale'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import {
   MISCONFIGURED_COLOR,
@@ -15,6 +16,7 @@ import {
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { RampScale } from '@jbrowse/core/ui/colorScale'
 
 describe('the color key', () => {
   it('is no scale while no field paints', () => {
@@ -506,6 +508,10 @@ describe('derived color key', () => {
       expect(display.colorScales[0]).toMatchObject({
         kind: 'ramp',
         domain: [1, 2],
+        extent: [1, 10000],
+      })
+      expect(rampLabels(display.colorScales[0] as RampScale)).toMatchObject({
+        maxLabel: '≥2',
       })
     })
 

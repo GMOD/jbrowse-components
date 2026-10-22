@@ -1,4 +1,4 @@
-import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
+import { legendSpecOf, rampLabels } from '@jbrowse/core/ui/colorScale'
 import { legendEntries } from '@jbrowse/core/ui/legendSpec'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
@@ -466,6 +466,21 @@ test('a key rebuilt over a widened extent hands back the same table', () => {
   expect(first).toBeDefined()
   expect(lutOf(regions)).toBe(first)
   expect(lutOf([...regions, divergingRegion([-1, 0.5])])).toBe(first)
+})
+
+// The open ends follow the clipped extent, so the key needs the unclipped
+// extremes, unioned over the regions, to mark that the data runs past them.
+test('a quantile-clipped ramp key marks the ends the data runs past', () => {
+  const spiky = (spike: number) =>
+    rampRegion([...Array.from({ length: 99 }, (_, i) => i + 1), spike], {
+      domainQuantile: 0.9,
+    })
+  const [key] = markColorScales(buildMarkLegend([spiky(1000), spiky(2000)]))
+  expect(key?.kind === 'ramp' && key.extent).toEqual([1, 2000])
+  expect(key?.kind === 'ramp' && rampLabels(key)).toMatchObject({
+    minLabel: expect.stringMatching(/^≤/),
+    maxLabel: expect.stringMatching(/^≥/),
+  })
 })
 
 function keyTitle(written: string | undefined, loaded: MarkRegionData) {
