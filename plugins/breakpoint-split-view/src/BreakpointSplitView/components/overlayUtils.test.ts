@@ -1,10 +1,7 @@
 import { PAIR_DIRECTION_NUM } from '@jbrowse/alignments-core'
 
-import {
-  buildBreakpointPath,
-  chainHighlightRects,
-  drawnConnections,
-} from './overlayUtils.tsx'
+import { drawnConnections } from '../readChains.ts'
+import { buildBreakpointPath, chainHighlightRects } from './overlayUtils.tsx'
 
 import type { ReadEntry } from '../readChains.ts'
 import type { ConnectorRow, LayoutRecord, OverlayLevel } from '../types.ts'

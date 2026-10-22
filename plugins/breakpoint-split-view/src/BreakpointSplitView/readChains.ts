@@ -1,4 +1,5 @@
 import {
+  classifyConnection,
   svSignalTier,
   flagsOf,
   isConcordantPairRead,
@@ -8,9 +9,12 @@ import {
   readNameAt,
 } from '@jbrowse/alignments-core'
 
-import type { LayoutRecord } from './types.ts'
+import { isLevelPairMinimized } from './util.ts'
+
+import type { ConnectorRow, LayoutRecord } from './types.ts'
 import type { RefNameCanonicalizer } from './util.ts'
 import type {
+  ClassifiedConnection,
   ConnectionReadArrays,
   ReadConnection,
   ReadIdentity,
@@ -173,4 +177,51 @@ export function layoutReadChains(
     }
   }
   return layouts
+}
+
+export interface DrawnConnection extends ClassifiedConnection {
+  connection: ReadConnection<ReadEntry>
+  /** the read chain it belongs to, so a hover can emphasize the whole route */
+  chainIndex: number
+  c1: LayoutRecord
+  c2: LayoutRecord
+}
+
+// The alignment connectors the overlay draws, each classified: a read laid out
+// in no row draws nothing, the pileup links an intra-view junction itself, and
+// showIntraviewLinks off drops the rest of them.
+export function* drawnConnections({
+  chains,
+  entryLayouts,
+  rows,
+  showIntraviewLinks,
+}: {
+  chains: ReadChain[]
+  entryLayouts: ReadonlyMap<ReadEntry, LayoutRecord>
+  rows: ConnectorRow[]
+  showIntraviewLinks: boolean
+}): Generator<DrawnConnection> {
+  for (const [chainIndex, { connections }] of chains.entries()) {
+    for (const connection of connections) {
+      const { e1, e2 } = connection
+      const c1 = entryLayouts.get(e1)
+      const c2 = entryLayouts.get(e2)
+      if (
+        !c1 ||
+        !c2 ||
+        isLevelPairMinimized(rows, e1.level, e2.level) ||
+        (e1.level === e2.level &&
+          (!showIntraviewLinks || rows[e1.level]?.linksReads))
+      ) {
+        continue
+      }
+      yield {
+        ...classifyConnection(connection),
+        connection,
+        chainIndex,
+        c1,
+        c2,
+      }
+    }
+  }
 }

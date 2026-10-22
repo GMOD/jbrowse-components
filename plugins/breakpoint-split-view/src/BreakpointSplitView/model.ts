@@ -31,7 +31,11 @@ import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
 
 import { breakpointSplitLaunchKeys } from './launchKeys.ts'
-import { buildReadChains, layoutReadChains } from './readChains.ts'
+import {
+  buildReadChains,
+  drawnConnections,
+  layoutReadChains,
+} from './readChains.ts'
 import {
   VIEW_DIVIDER_HEIGHT,
   calc,
@@ -49,7 +53,7 @@ import {
 } from './util.ts'
 import { getVariantJunctions } from './variantJunctions.ts'
 
-import type { ReadChain } from './readChains.ts'
+import type { DrawnConnection, ReadChain } from './readChains.ts'
 import type {
   BreakpointSplitViewCommands,
   BreakpointSplitViewInitView,
@@ -641,6 +645,28 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               self.views.map(view => view.staticBlocks.contentBlocks),
             ),
           })
+        }
+        return result
+      },
+
+      /**
+       * #getter
+       * The alignment connectors the overlay draws, classified, keyed by
+       * trackId: what the overlay paints and the connection key lists.
+       */
+      get drawnConnectionsByTrack(): Map<string, DrawnConnection[]> {
+        const result = new Map<string, DrawnConnection[]>()
+        for (const [trackId, match] of this.overlayMatches) {
+          if (match.kind === 'alignment') {
+            result.set(trackId, [
+              ...drawnConnections({
+                chains: match.chains,
+                entryLayouts: match.layouts,
+                rows: this.connectorRows(trackId),
+                showIntraviewLinks: self.showIntraviewLinks,
+              }),
+            ])
+          }
         }
         return result
       },

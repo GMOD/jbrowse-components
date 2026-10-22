@@ -349,3 +349,13 @@ export async function getBlockFeatures(
     ),
   )
 }
+
+// Only `minimized` is needed, so that's all this asks for — a caller with any
+// track-ish thing (including a test double) can use it.
+export function isLevelPairMinimized(
+  tracks: Pick<OverlayTrack, 'minimized'>[],
+  level1: number,
+  level2: number,
+) {
+  return !!(tracks[level1]?.minimized || tracks[level2]?.minimized)
+}

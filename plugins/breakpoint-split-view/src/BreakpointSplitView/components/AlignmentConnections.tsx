@@ -13,7 +13,6 @@ import {
   alignmentWidgetOpener,
   buildPairTooltip,
   chainHighlightRects,
-  drawnConnections,
   readTooltipLabel,
 } from './overlayUtils.tsx'
 
@@ -31,7 +30,6 @@ const AlignmentConnections = observer(function AlignmentConnections(
   props: OverlayProps,
 ) {
   const { model, trackId } = props
-  const { showIntraviewLinks } = model
   const connectionStyle = useConnectionStyle()
   return (
     <OverlayPaths
@@ -46,14 +44,9 @@ const AlignmentConnections = observer(function AlignmentConnections(
         }
         const { chains, layouts: entryLayouts } = match
         const rows = model.connectorRows(trackId)
-        return [
-          ...drawnConnections({
-            chains,
-            entryLayouts,
-            rows,
-            showIntraviewLinks,
-          }),
-        ].flatMap<PathSpec>(
+        return (
+          model.drawnConnectionsByTrack.get(trackId) ?? []
+        ).flatMap<PathSpec>(
           ({ connection, chainIndex, c1, c2, kind, bp1, s1, bp2, s2 }) => {
             const { e1, e2, isSplit, hiddenSegmentsBetween } = connection
             const end1 = getX(e1.level, e1.refName, bp1)

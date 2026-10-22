@@ -3,12 +3,15 @@ import { assembleLocString } from '@jbrowse/core/util'
 import { breakendTickPx, junctionEnds } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
-import { computeOverlayX, findFeatureViewLevel } from '../util.ts'
+import {
+  computeOverlayX,
+  findFeatureViewLevel,
+  isLevelPairMinimized,
+} from '../util.ts'
 import {
   OverlayPaths,
   buildBreakpointPath,
   buildPairTooltip,
-  isLevelPairMinimized,
   variantWidgetOpener,
 } from './overlayUtils.tsx'
 

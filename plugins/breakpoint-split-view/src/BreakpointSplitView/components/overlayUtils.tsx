@@ -1,6 +1,6 @@
 import { Fragment } from 'react'
 
-import { CONNECTION_LABELS, classifyConnection } from '@jbrowse/alignments-core'
+import { CONNECTION_LABELS } from '@jbrowse/alignments-core'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
   assembleLocString,
@@ -15,24 +15,13 @@ import { computeOverlayRect } from '../util.ts'
 import BreakpointTooltip from './BreakpointTooltip.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
-import type { ReadChain, ReadEntry } from '../readChains.ts'
-import type {
-  ConnectorRow,
-  LayoutRecord,
-  OverlayLevel,
-  OverlayMatch,
-} from '../types.ts'
+import type { ReadEntry } from '../readChains.ts'
+import type { LayoutRecord, OverlayLevel, OverlayMatch } from '../types.ts'
 import type { OverlayTrack } from '../util.ts'
-import type {
-  ClassifiedConnection,
-  ConnectionKind,
-  ReadConnection,
-} from '@jbrowse/alignments-core'
+import type { ConnectionKind } from '@jbrowse/alignments-core'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
-
-type MinimizableTrack = Pick<OverlayTrack, 'minimized'>
 
 export interface OverlayProps {
   model: BreakpointViewModel
@@ -288,63 +277,6 @@ export const OverlayPaths = observer(function OverlayPaths({
   )
 })
 
-// Only `minimized` is needed, so that's all this asks for — a caller with any
-// track-ish thing (including a test double) can use it.
-export function isLevelPairMinimized(
-  tracks: MinimizableTrack[],
-  level1: number,
-  level2: number,
-) {
-  return !!(tracks[level1]?.minimized || tracks[level2]?.minimized)
-}
-
-export interface DrawnConnection extends ClassifiedConnection {
-  connection: ReadConnection<ReadEntry>
-  /** the read chain it belongs to, so a hover can emphasize the whole route */
-  chainIndex: number
-  c1: LayoutRecord
-  c2: LayoutRecord
-}
-
-// The alignment connectors the overlay draws, each classified: a read laid out
-// in no row draws nothing, the pileup links an intra-view junction itself, and
-// showIntraviewLinks off drops the rest of them.
-export function* drawnConnections({
-  chains,
-  entryLayouts,
-  rows,
-  showIntraviewLinks,
-}: {
-  chains: ReadChain[]
-  entryLayouts: ReadonlyMap<ReadEntry, LayoutRecord>
-  rows: ConnectorRow[]
-  showIntraviewLinks: boolean
-}): Generator<DrawnConnection> {
-  for (const [chainIndex, { connections }] of chains.entries()) {
-    for (const connection of connections) {
-      const { e1, e2 } = connection
-      const c1 = entryLayouts.get(e1)
-      const c2 = entryLayouts.get(e2)
-      if (
-        !c1 ||
-        !c2 ||
-        isLevelPairMinimized(rows, e1.level, e2.level) ||
-        (e1.level === e2.level &&
-          (!showIntraviewLinks || rows[e1.level]?.linksReads))
-      ) {
-        continue
-      }
-      yield {
-        ...classifyConnection(connection),
-        connection,
-        chainIndex,
-        c1,
-        c2,
-      }
-    }
-  }
-}
-
 const KIND_ORDER = Object.keys(CONNECTION_LABELS) as ConnectionKind[]
 
 // The kinds the overlay's alignment connectors draw, in CONNECTION_LABELS
@@ -353,23 +285,14 @@ export function connectionKeyEntries(
   model: BreakpointViewModel,
   trackIds = model.overlayTracks.map(t => t.configuration.trackId),
 ) {
-  const { overlayMatches, showIntraviewLinks } = model
   const kinds = new Set<ConnectionKind>()
   for (const trackId of trackIds) {
-    const match = overlayMatches.get(trackId)
     if (
-      match?.kind !== 'alignment' ||
-      model.getMatchedTracks(trackId).some(t => t.displays[0]?.regionTooLarge)
+      !model.getMatchedTracks(trackId).some(t => t.displays[0]?.regionTooLarge)
     ) {
-      continue
-    }
-    for (const { kind } of drawnConnections({
-      chains: match.chains,
-      entryLayouts: match.layouts,
-      rows: model.connectorRows(trackId),
-      showIntraviewLinks,
-    })) {
-      kinds.add(kind)
+      for (const { kind } of model.drawnConnectionsByTrack.get(trackId) ?? []) {
+        kinds.add(kind)
+      }
     }
   }
   return [...kinds].sort(
@@ -405,7 +328,7 @@ export function chainHighlightRects({
 }: {
   entries: ReadEntry[]
   entryLayouts: ReadonlyMap<ReadEntry, LayoutRecord>
-  rows: MinimizableTrack[]
+  rows: Pick<OverlayTrack, 'minimized'>[]
   levels: OverlayLevel[]
   layouts: ViewLayout[]
 }) {
