@@ -20,34 +20,59 @@ function describeEnds(overhang: number) {
     : `${overhang > 0 ? "5'" : "3'"} overhang (${Math.abs(overhang)} bp)`
 }
 
-export default class MotifListAdapter extends ReferenceScanAdapter<MotifListAdapterConfig> {
-  // the list is a config string parsed identically for every block, and an
-  // adapter instance is cached per config (dataAdapterCache), so parsing it and
-  // compiling its regexes once per instance rather than once per block matters
-  // for a pasted REBASE set of a few hundred enzymes
-  private motifsCache?: ParsedMotif[]
+interface MotifPass {
+  motif: ParsedMotif
+  motifIdx: number
+  strand: 1 | 0 | -1
+  siteLength: number
+  // lookahead keeps overlapping hits: a site can start at every base
+  re: RegExp
+}
 
-  private get motifs() {
-    this.motifsCache ??= parseMotifList(this.getConf('motifs')).motifs
-    return this.motifsCache
+export default class MotifListAdapter extends ReferenceScanAdapter<MotifListAdapterConfig> {
+  // the config is fixed for an adapter instance (dataAdapterCache), so a
+  // pasted REBASE set of a few hundred enzymes is parsed and compiled once
+  // rather than once per block
+  private passesCache?: MotifPass[]
+
+  private get passes() {
+    this.passesCache ??= this.buildPasses()
+    return this.passesCache
+  }
+
+  private buildPasses() {
+    const searchForward = this.getConf('searchForward')
+    const searchReverse = this.getConf('searchReverse')
+    const { motifs } = parseMotifList(this.getConf('motifs'))
+    return motifs.flatMap((motif, motifIdx) => {
+      const pass = (pattern: string, strand: 1 | 0 | -1): MotifPass => ({
+        motif,
+        motifIdx,
+        strand,
+        siteLength: pattern.length,
+        re: new RegExp(`(?=(${iupacToRegex(pattern)}))`, 'gi'),
+      })
+      // a palindrome matches both strands at the same coordinates, so it is
+      // scanned once, unstranded, whatever the strand flags say
+      return isPalindromic(motif.site)
+        ? [pass(motif.site, 0)]
+        : [
+            ...(searchForward ? [pass(motif.site, 1)] : []),
+            ...(searchReverse
+              ? [pass(reverseComplementIupac(motif.site), -1)]
+              : []),
+          ]
+    })
   }
 
   protected scanPadding() {
     // a motif straddling the query edge is only found if its whole span was
     // fetched, so pad by the longest site
-    return Math.max(0, ...this.motifs.map(m => m.site.length))
+    return Math.max(0, ...this.passes.map(p => p.siteLength))
   }
 
   protected scan({ query, residues, windowStart, emit }: ScanWindow) {
-    const searchForward = this.getConf('searchForward')
-    const searchReverse = this.getConf('searchReverse')
-
-    const emitMotif = (
-      motif: ParsedMotif,
-      motifIdx: number,
-      pattern: string,
-      strand: 1 | 0 | -1,
-    ) => {
+    for (const { motif, motifIdx, strand, siteLength, re } of this.passes) {
       const { cutOffset: topOffset, site } = motif
       // '(n/m)' notation pins both cuts outright; a '^' pins only the top one,
       // whose mirror image is the bottom cut on a palindrome (strand 0) and
@@ -57,11 +82,9 @@ export default class MotifListAdapter extends ReferenceScanAdapter<MotifListAdap
         (strand === 0 && topOffset !== undefined
           ? site.length - topOffset
           : undefined)
-      // lookahead keeps overlapping hits: a site can start at every base
-      const re = new RegExp(`(?=(${iupacToRegex(pattern)}))`, 'gi')
       for (const match of residues.matchAll(re)) {
         const start = windowStart + match.index
-        const end = start + pattern.length
+        const end = start + siteLength
         // offsets are measured from the site's 5' end, which is the
         // high-coordinate end when the site was matched revcomp'd. A type IIS
         // offset runs past the site, landing the cut outside [start, end).
@@ -85,24 +108,6 @@ export default class MotifListAdapter extends ReferenceScanAdapter<MotifListAdap
             ? {}
             : { ends: describeEnds(bottomOffset - topOffset) }),
         })
-      }
-    }
-
-    for (const [motifIdx, motif] of this.motifs.entries()) {
-      const { site } = motif
-      if (isPalindromic(site)) {
-        // a palindrome matches both strands at the same coordinates, so scanning
-        // each strand would double every hit; emit it once, unstranded,
-        // regardless of the strand flags — there is no strand to choose between
-        // (which is what the config slots' docs promise)
-        emitMotif(motif, motifIdx, site, 0)
-      } else {
-        if (searchForward) {
-          emitMotif(motif, motifIdx, site, 1)
-        }
-        if (searchReverse) {
-          emitMotif(motif, motifIdx, reverseComplementIupac(site), -1)
-        }
       }
     }
   }
