@@ -109,6 +109,28 @@ describe('repartitioning', () => {
     expect(display.rowsField).toBe('')
   })
 
+  // The row table is as wide as the key space, so a field's names leaving
+  // with it is what keeps switches from widening it for good.
+  it('keys only the partitioning field’s names', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setRpcData(
+      0,
+      regionData(['a', 'b'], ['sample', 'clade'], 'sample'),
+      ctgA,
+    )
+    expect(display.rowKeys.names).toEqual(['a', 'b'])
+
+    display.setRowsField('clade')
+    display.setRpcData(
+      0,
+      regionData(['x', 'y'], ['sample', 'clade'], 'clade'),
+      ctgA,
+    )
+    expect(display.rowKeys.names).toEqual(['x', 'y'])
+    expect(display.encodeInputs.rowKeys).toBe(display.rowKeys)
+    expect(display.rowTable.slot).toHaveLength(2)
+  })
+
   // The arrangement and the row colors name rows by value, so under a new
   // partition they match nothing and come back with the field; the hidden
   // categories are the legend's, which a repartition leaves alone.

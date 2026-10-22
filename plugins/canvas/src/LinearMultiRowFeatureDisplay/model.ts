@@ -689,10 +689,18 @@ export default function stateModelFactory(
       },
     }))
     .views(self => {
-      const rowKeys = new RowKeys()
+      let keySpace = { field: '', rowKeys: new RowKeys() }
+      const currentRowKeys = () => {
+        const field = self.effectiveRowsField
+        if (keySpace.field !== field) {
+          keySpace = { field, rowKeys: new RowKeys() }
+        }
+        return keySpace.rowKeys
+      }
       // Every value a loaded region carries, and every row drawn, keyed; the
       // identity moves only when a name is first seen.
       const rowKeyNames = stableIdentityComputed(() => {
+        const rowKeys = currentRowKeys()
         for (const data of self.rpcDataMap.values()) {
           for (const value of data.rowValues) {
             rowKeys.keyOf(value)
@@ -712,10 +720,10 @@ export default function stateModelFactory(
          * #getter
          * The key each row name holds across every loaded region, assigned
          * at the name's first arrival and never moved; the instance buffers
-         * contain these.
+         * contain these. A new partitioning field is a new key space.
          */
         get rowKeys(): RowKeys {
-          return rowKeys
+          return currentRowKeys()
         },
         /**
          * #getter
@@ -725,7 +733,7 @@ export default function stateModelFactory(
          */
         get encodeInputs(): MultiRowEncodeInputs {
           return {
-            rowKeys,
+            rowKeys: currentRowKeys(),
             hiddenColors: self.hiddenColors,
             fieldPalette: self.fieldPalette,
           }
@@ -739,6 +747,7 @@ export default function stateModelFactory(
          */
         get rowTable(): RowTable {
           const keys = rowKeyNames.get().length
+          const rowKeys = currentRowKeys()
           const { order, colors } = tableInputs.get()
           const slot = new Uint32Array(keys).fill(HIDDEN_ROW)
           const color = new Uint32Array(keys)
