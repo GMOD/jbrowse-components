@@ -2,7 +2,9 @@ import { ensureAutogenIndex } from './autogen-links.ts'
 import remarkDocCards from './remark-doc-cards.ts'
 
 import type { ListItem, PhrasingContent, Root, RootContent } from 'mdast'
-import type { VFile } from 'vfile'
+import type { Transformer } from 'unified'
+
+type VFile = Parameters<Transformer<Root>>[1]
 
 ensureAutogenIndex([
   {
