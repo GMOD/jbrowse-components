@@ -1,39 +1,15 @@
 import { DASH } from '@jbrowse/core/util/alignedBytes'
 
 /**
- * The column index carrying each genomic offset in a block, shared by the two
- * base-cell painters (the GPU instance encoder and the Canvas2D fallback).
- *
- * Both painters walk genomic offsets in steps of `binBp` and look the column up
- * here, which is what lets one loop serve both zoom regimes: `binBp === 1`
- * visits every base, and larger steps sample the first base of each window
- * without walking the columns in between (turning a block pass from
- * O(columns x rows) into O(columns + samples x rows)). Built once per block and
- * reused across every row.
- *
- * Sampling rather than aggregating is deliberate. `encodeBinBp` keeps a window
- * under half a CSS pixel, so every column skipped here was already losing the
- * sub-pixel race for its pixel — the surviving cell was arbitrary either way,
- * and taking the window's first base keeps that unbiased. An "any mismatch
- * wins" rule would instead paint most windows as mismatches on a divergent
- * alignment.
- *
- * That reasoning does NOT carry over to the identity plot or the conservation
- * band, so don't reach for `binBp` there. Those paint a *mean* over the bases
- * under a pixel rather than one surviving base, and a mean needs its whole
- * sample: at 333bp/px `encodeBinBp` picks a 128bp window, which would average
- * about 2.6 bases per pixel instead of 333 and turn a smooth ramp into noise.
- * The identity encode walks every column once per region instead
- * (`buildIdentityRuns`).
- *
- * Both painters reading this is what keeps them showing the same *data*. It
- * does not make them pixel-identical — they never were, and measurably differ
- * on rect edges and antialiasing at every zoom.
- *
- * Reference-insertion columns (ref `-`) hold no genomic position and are
- * therefore absent, so neither painter needs a skip case; `refLen` is the
- * block's genomic extent. Insertion markers are drawn separately, from
- * positioned overlays.
+ * The column carrying each genomic offset in a block, which `buildMafChannels`
+ * reads to walk genomic offsets in steps of `binBp`: `binBp === 1` visits every
+ * base, and a larger step samples each window's first base without walking the
+ * columns between. Sampling suits the cells, whose window is under half a CSS
+ * pixel, so the surviving base was arbitrary anyway; "any mismatch wins" would
+ * paint most windows of a divergent alignment as mismatches. The identity plot
+ * and the conservation band bin by `binBp` too but average every base in the
+ * window rather than sample one, since a mean needs its whole sample.
+ * Reference-gap columns hold no genomic position and are absent.
  */
 export function buildColumnForGenomicOffset(
   refSeqBytes: Uint8Array,
@@ -41,27 +17,16 @@ export function buildColumnForGenomicOffset(
   return new ColumnMapper().build(refSeqBytes)
 }
 
-/** What both painters read: `colForGpos[g]` is the column of genomic offset
- *  `g`, for `g < refLen`. The array may be longer than `refLen`. */
+/** `colForGpos[g]` is the column of genomic offset `g`, for `g < refLen`. */
 export interface GenomicColumns {
   colForGpos: Uint32Array
   refLen: number
 }
 
 /**
- * `buildColumnForGenomicOffset` with the buffer reused across blocks.
- *
- * Real MAF is many small blocks — UCSC's ce11 26-way has a median block of 7bp
- * and tens of thousands per buffered region — and both painters build this map
- * once per block, so the standalone spelling allocates one short `Uint32Array`
- * per block per encode and per frame. The buffer only ever grows to the widest
- * block seen, and nothing outlives the block's own row loop, so one instance per
- * pass serves them all; reuse measured 2.4x over per-block allocation at that
- * block count.
- *
- * `colForGpos` is therefore longer than `refLen` after a wide block, which is
- * why `refLen` — not the array length — has always been the bound both painters
- * walk to.
+ * `buildColumnForGenomicOffset` with one buffer reused across blocks (2.4x
+ * over a buffer per block at ce11 26-way's median 7bp block). After a wide
+ * block `colForGpos` is longer than `refLen`, which is the bound to walk to.
  */
 export class ColumnMapper {
   private colForGpos = new Uint32Array(0)

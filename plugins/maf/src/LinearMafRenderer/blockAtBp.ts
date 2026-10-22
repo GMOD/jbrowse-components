@@ -17,19 +17,8 @@ export function blockIndexAtBp(
   blocks: readonly { startBp: number; endBp: number }[],
   bp: number,
 ): number {
-  // Last block starting at or before `bp`.
-  let lo = 0
-  let hi = blocks.length
-  while (lo < hi) {
-    const mid = (lo + hi) >>> 1
-    if (blocks[mid]!.startBp <= bp) {
-      lo = mid + 1
-    } else {
-      hi = mid
-    }
-  }
-  const idx = lo - 1
-  return idx >= 0 && bp < blocks[idx]!.endBp ? idx : -1
+  const i = firstBlockEndingAfter(blocks, bp)
+  return i < blocks.length && blocks[i]!.startBp <= bp ? i : -1
 }
 
 /**

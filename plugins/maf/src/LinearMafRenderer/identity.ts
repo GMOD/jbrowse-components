@@ -5,11 +5,15 @@ import {
   sameBase,
 } from '@jbrowse/core/util/alignedBytes'
 import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
-import { colorRampStops, sampleColorRamp } from '@jbrowse/core/util/colorRamp'
-import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
+import {
+  colorRampStops,
+  rampDomain,
+  sampleColorRamp,
+} from '@jbrowse/core/util/colorRamp'
 import {
   SCALE_TYPE_LINEAR,
   makeScoreNormalizer,
+  rampMidNorm,
 } from '@jbrowse/render-core/scoreScale'
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
@@ -39,9 +43,12 @@ const DEFAULT_IDENTITY_RAMP: IdentityRamp = MAF_FIELD_PRESETS.identity
 const MAX_KEY_STOPS = 9
 
 function identityScaleOf(ramp: IdentityRamp) {
-  const { domain, midNorm } = continuousColorScale(
-    { ...ramp, field: 'identity', scale: 'linear' },
-    [0, 1],
+  const domain = rampDomain(ramp.domainMin, ramp.domainMax, [0, 1])
+  const midNorm = rampMidNorm(
+    domain[0],
+    domain[1],
+    SCALE_TYPE_LINEAR,
+    ramp.domainMid,
   )
   const norm = makeScoreNormalizer(domain[0], domain[1], SCALE_TYPE_LINEAR, 1)
   const stops = colorRampStops(ramp)
@@ -84,10 +91,9 @@ const identityLuts = new Map<string, Uint32Array>()
 
 /**
  * The ramp's packed color at each hundredth of identity, the same array for
- * the same ramp, so a declaration read again re-encodes nothing. The domain
- * and the middle are `continuousColorScale`'s; the stops are sampled at each
- * hundredth rather than read off its 256-entry table, whose rounding would
- * move a third of the default ramp's entries by one.
+ * the same ramp, so a declaration read again re-encodes nothing. The stops
+ * are sampled at each hundredth rather than read off a 256-entry ramp table,
+ * whose rounding would move a third of the default ramp's entries by one.
  */
 export function identityLut(
   ramp: IdentityRamp = DEFAULT_IDENTITY_RAMP,
