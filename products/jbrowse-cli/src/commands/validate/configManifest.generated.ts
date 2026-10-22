@@ -5650,8 +5650,7 @@ export const configManifest: ConfigManifest = {
         "configuration",
         "hiddenLaneNames",
         "frozenLanes",
-        "lanePins",
-        "laneFlipPins"
+        "lanePins"
       ]
     },
     "LinearReferenceSequenceDisplay": {

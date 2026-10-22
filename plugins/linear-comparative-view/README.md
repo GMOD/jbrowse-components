@@ -24,7 +24,7 @@ defaults filled. Positions are genomic on each lane, and px across the view's
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, anchor: anchorArgs, pins, flips, display, }: MultiWayTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, anchor: anchorArgs, pins, hidden, display, }: MultiWayTablesArgs) => Promise<…>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/multiwayTables.ts)
