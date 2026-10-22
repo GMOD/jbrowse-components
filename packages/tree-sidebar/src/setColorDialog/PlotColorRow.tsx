@@ -23,12 +23,14 @@ const useStyles = makeStyles()(theme => ({
 const PlotColorRow = observer(function PlotColorRow({
   above,
   below,
+  cut,
   editable,
   reason,
   onChange,
 }: {
   above: string
   below: string
+  cut: number
   editable: boolean
   /** What paints instead, where two colors cannot say the picture. */
   reason?: string
@@ -65,7 +67,7 @@ const PlotColorRow = observer(function PlotColorRow({
         ))
       )}
       <Typography variant="body2" color="textSecondary">
-        {reason ?? 'above and below the baseline'}
+        {reason ?? `above and below ${cut}`}
       </Typography>
     </div>
   )

@@ -512,6 +512,7 @@ describe('the plot color line', () => {
   const PLOT = {
     above: '#b2182b',
     below: '#2166ac',
+    cut: 0,
     mode: 'edit' as const,
   }
 
@@ -535,6 +536,22 @@ describe('the plot color line', () => {
     fireEvent.click(screen.getByText('Submit'))
     expect(model.applyRowEdits).toHaveBeenCalled()
     expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  test('the line names where the color parts', () => {
+    render(
+      <SetColorDialog
+        model={fakeModel()}
+        handleClose={jest.fn()}
+        plotColor={{ ...PLOT, cut: 5, onSubmit: jest.fn() }}
+      />,
+    )
+
+    expect(
+      within(screen.getByTestId('plot-color-row')).getByText(
+        'above and below 5',
+      ),
+    ).toBeInTheDocument()
   })
 
   test('a picture two colors cannot say reads out beside its reason', () => {
@@ -586,6 +603,7 @@ test('showRows false drops the row choice, the grid and the bulk editor', () => 
       plotColor={{
         above: '#b2182b',
         below: '#2166ac',
+        cut: 0,
         mode: 'edit',
         onSubmit: jest.fn(),
       }}

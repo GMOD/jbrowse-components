@@ -40,6 +40,7 @@ export default observer(function WiggleSetColorDialog({
           : {
               above: line.above,
               below: line.below,
+              cut: line.cut,
               mode: line.mode,
               reason: line.reason,
               onSubmit: next => {

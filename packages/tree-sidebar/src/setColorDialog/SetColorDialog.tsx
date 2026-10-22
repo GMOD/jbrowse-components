@@ -75,6 +75,8 @@ export interface SetColorDialogProps<S extends RowSource> {
 export interface PlotColorControl {
   above: string
   below: string
+  /** Where the plot's color parts. */
+  cut: number
   // `read` shows the pair beside `reason` and offers no edit, for a picture two
   // colors cannot say.
   mode: 'edit' | 'read'
@@ -265,6 +267,7 @@ export default observer(function SetColorDialog<S extends RowSource>({
               <PlotColorRow
                 above={plotPair?.above ?? plotColor.above}
                 below={plotPair?.below ?? plotColor.below}
+                cut={plotColor.cut}
                 editable={plotColor.mode === 'edit'}
                 reason={plotColor.reason}
                 onChange={setPlotPair}
