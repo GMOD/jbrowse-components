@@ -52,7 +52,9 @@ export function openMateInLinearView({
   if (!mate || !host.assemblyManager.has(mate.assemblyName)) {
     return undefined
   }
-  const { assemblyName } = mate
+  const assemblyName =
+    host.assemblyManager.getCanonicalAssemblyName(mate.assemblyName) ??
+    mate.assemblyName
   return {
     assemblyName,
     open: async () => {
