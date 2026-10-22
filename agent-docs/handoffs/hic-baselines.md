@@ -41,7 +41,13 @@ How O/E works is in
    two small counts, and Juicebox stops there. ADR-238's
    `filter: [{ field: 'control', gte }]` would let a reader quiet the low-count
    speckle further; Hi-C has no `filter` slot yet.
-4. **A treatment-versus-control demo.** The figure compares two cell lines
+4. **Normalized counts against raw totals.** Observed/control scales by each
+   library's raw total. That holds for Juicer's KR and SCALE vectors, which
+   keep the matrix sum; a pipeline whose vectors balance rows to a sum of 1
+   leaves counts far below 1, where the pseudocount dominates. Check a
+   non-Juicer `.hic` (hictk, cooler's `hic` export) before trusting a
+   normalized comparison of one.
+5. **A treatment-versus-control demo.** The figure compares two cell lines
    (K562 over GM12878, `hic/observed_control`). Cohesin loss (Rao 2017,
    HCT116 RAD21-mAC with and without auxin) is the canonical lost-loops
    picture; check for a copy on a server with range support.

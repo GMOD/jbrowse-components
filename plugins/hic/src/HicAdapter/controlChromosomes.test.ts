@@ -26,8 +26,21 @@ test('a chromosome only the map holds is left unpaired', () => {
 // hg19 and hg38 share names; a ratio across them compares unrelated loci
 test('a control on another build is refused', () => {
   expect(() =>
-    controlChromosomes([chr('1', 249250621)], [chr('chr1', 248956422)]),
+    controlChromosomes(
+      [chr('1', 249250621), chr('2', 243199373)],
+      [chr('chr1', 248956422), chr('chr2', 242193529)],
+    ),
   ).toThrow(/another assembly: 1 is 249250621 bp/)
+})
+
+// hg19's chrM is two bases longer than b37's MT; the builds agree elsewhere
+test('one chromosome of another length goes unpaired', () => {
+  expect(
+    controlChromosomes(
+      [chr('chr1', 249250621), chr('chrM', 16571)],
+      [chr('1', 249250621), chr('MT', 16569)],
+    ),
+  ).toEqual(new Map([['chr1', '1']]))
 })
 
 test('a control sharing no chromosome is refused', () => {

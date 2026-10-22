@@ -144,9 +144,15 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     // A ratio compares the two at one binsize under one normalization, so
     // only what both files offer is offered.
     const theirs = await control.adapter.getHeader(opts)
+    const shared = resolutions.filter(r => theirs.resolutions.includes(r))
+    if (!shared.length) {
+      throw new Error(
+        `The map and its control share no binsize (map: ${resolutions.join(', ')}; control: ${theirs.resolutions.join(', ')})`,
+      )
+    }
     return {
       norms: norms.filter(n => theirs.norms.includes(n)),
-      resolutions: resolutions.filter(r => theirs.resolutions.includes(r)),
+      resolutions: shared,
       hasControl: true,
     }
   }
@@ -402,16 +408,17 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     }
   }
 
+  /** The library's total contacts, from its `ALL` map; undefined without one. */
+  public async totalContacts() {
+    return this.hic.getTotalContacts()
+  }
+
   /**
-   * The library's depth: its total contacts, or for a file with no `ALL` map
-   * the chromosome pair's own sum at this binsize, which the control's
-   * matching map compares against alike.
+   * The chromosome pair's contacts at this binsize, or undefined where the
+   * file has no matrix for the pair there. The parser answers a missing
+   * matrix with no records, which a join would read as all zeros.
    */
-  public async libraryDepth(chr1: string, chr2: string, resolution: number) {
-    const total = await this.hic.getTotalContacts()
-    if (total !== undefined) {
-      return total
-    }
+  public async pairSum(chr1: string, chr2: string, resolution: number) {
     const { chromosomes } = await this.setup({})
     const c1 = chromosomes.find(c => c.name === chr1)
     const c2 = chromosomes.find(c => c.name === chr2)
@@ -425,9 +432,9 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   public async binMask(
     normalization: string,
     chr: string,
-    start: number,
-    end: number,
+    [start, end]: readonly [number, number],
     resolution: number,
+    signal?: AbortSignal,
   ) {
     if (normalization === 'NONE') {
       return undefined
@@ -436,14 +443,20 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       normalization,
       chr,
       resolution,
+      { signal },
     )
-    return validBins(await vector?.getValues(start, end), end - start)
+    return validBins(
+      await vector?.getValues(start, end, { signal }),
+      end - start,
+    )
   }
 
   /**
    * One region pair in both files, under one normalization and joined on bin
    * pairs. The two must carry the same normalization for the ratio to mean
-   * anything, so a pair where they fell back apart reads both raw.
+   * anything, so a pair where they fell back apart reads both raw. A pair the
+   * control holds no matrix for comes back as the map's alone, which the
+   * worker leaves out, or paints as counts where no pair has a control.
    */
   private async fetchWithControl({
     control,
@@ -462,13 +475,25 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     signal?: AbortSignal
     onProgress: (current: number, total: number) => void
   }) {
-    const name1 = control.names.get(region1.refName)
-    const name2 = control.names.get(region2.refName)
-    if (name1 === undefined || name2 === undefined) {
-      return undefined
-    }
     const r1 = { chr: region1.refName, start: region1.start, end: region1.end }
     const r2 = { chr: region2.refName, start: region2.start, end: region2.end }
+    const name1 = control.names.get(region1.refName)
+    const name2 = control.names.get(region2.refName)
+    const [mySum, theirSum] = await Promise.all([
+      this.pairSum(r1.chr, r2.chr, resolution),
+      name1 !== undefined && name2 !== undefined
+        ? control.adapter.pairSum(name1, name2, resolution)
+        : undefined,
+    ])
+    if (!mySum) {
+      return undefined
+    }
+    if (!theirSum || name1 === undefined || name2 === undefined) {
+      return this.readPair(r1, r2, normalization, resolution, {
+        signal,
+        onProgress,
+      })
+    }
     const c1 = { ...r1, chr: name1 }
     const c2 = { ...r2, chr: name2 }
     const read = (norm: string) =>
@@ -485,33 +510,39 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       ;[mine, theirs] = await read('NONE')
     }
     if (!mine || !theirs) {
-      return undefined
+      return mine
     }
     const norm = mine.appliedNormalization
-    const [xLo, xHi] = binExtent(mine.records.bin1, theirs.records.bin1)
-    const [yLo, yHi] = binExtent(mine.records.bin2, theirs.records.bin2)
+    const x = binExtent(mine.records.bin1, theirs.records.bin1)
+    const y = binExtent(mine.records.bin2, theirs.records.bin2)
     const masksOf = async (
       file: HicAdapter,
       chr1: string,
       chr2: string,
-    ): Promise<AxisMasks> => ({
-      x: await file.binMask(norm, chr1, xLo, xHi, resolution),
-      y: await file.binMask(norm, chr2, yLo, yHi, resolution),
-    })
-    const [depth, controlDepth, myMasks, theirMasks] = await Promise.all([
-      this.libraryDepth(r1.chr, r2.chr, resolution),
-      control.adapter.libraryDepth(name1, name2, resolution),
+    ): Promise<AxisMasks> => {
+      const [xMask, yMask] = await Promise.all([
+        file.binMask(norm, chr1, x, resolution, signal),
+        file.binMask(norm, chr2, y, resolution, signal),
+      ])
+      return { x: xMask, y: yMask }
+    }
+    const [myTotal, theirTotal, myMasks, theirMasks] = await Promise.all([
+      this.totalContacts(),
+      control.adapter.totalContacts(),
       masksOf(this, r1.chr, r2.chr),
       masksOf(control.adapter, name1, name2),
     ])
-    if (!depth || !controlDepth) {
-      return undefined
-    }
+    // Library totals only where both files have one: one file's total over
+    // the other's pair sum would scale every cell by orders of magnitude.
+    // The pair sums keep a gain that spans a whole chromosome pair, as a
+    // translocation's does, out of the depth.
+    const [depth, controlDepth] =
+      myTotal && theirTotal ? [myTotal, theirTotal] : [mySum, theirSum]
     const joined = joinControl(mine.records, theirs.records, {
       observed: myMasks,
       control: theirMasks,
-      x0: xLo,
-      y0: yLo,
+      x0: x[0],
+      y0: y[0],
     })
     return {
       records: {

@@ -18,7 +18,14 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 const nameOf = (t: TrackConfigEntry) =>
   typeof t.name === 'string' ? t.name : t.trackId
 
-/** The other Hi-C tracks on `mine`'s assembly, each a control it can be compared with. */
+const adapterOf = (t: TrackConfigEntry): Record<string, unknown> =>
+  typeof t.adapter === 'object' && t.adapter !== null ? { ...t.adapter } : {}
+
+/**
+ * The other Hi-C tracks on `mine`'s assembly, each a control it can be
+ * compared with; a comparison is not offered, since its own control would ride
+ * along unread.
+ */
 export function comparableTracks(
   session: AbstractSessionModel,
   mine: TrackConfigEntry,
@@ -30,6 +37,7 @@ export function comparableTracks(
       t =>
         t.type === 'HicTrack' &&
         t.trackId !== mine.trackId &&
+        adapterOf(t).controlAdapter === undefined &&
         getConfAssemblyNamesOrNone(t).some(a =>
           assemblies.some(b =>
             isSameAssemblyName(a, b, session.assemblyManager),
@@ -53,12 +61,7 @@ export function comparisonTrackConf(
     trackId,
     name,
     assemblyNames: getConfAssemblyNamesOrNone(mine),
-    adapter: {
-      ...(typeof mine.adapter === 'object' && mine.adapter !== null
-        ? mine.adapter
-        : {}),
-      controlAdapter: other.adapter,
-    },
+    adapter: { ...adapterOf(mine), controlAdapter: adapterOf(other) },
     displays: [
       {
         type: 'LinearHicDisplay',
@@ -80,11 +83,11 @@ export default function HicCompareTrackMenuItemsF(
 ) {
   addExtraTrackMenuItems(pluginManager, ({ session, config, view }) => {
     const mine = toTrackConfigEntry(config)
-    const others =
-      mine.type === 'HicTrack' && isSessionWithAddSessionTrack(session)
-        ? comparableTracks(session, mine)
-        : []
-    return others.length && isSessionWithAddSessionTrack(session)
+    if (mine.type !== 'HicTrack' || !isSessionWithAddSessionTrack(session)) {
+      return undefined
+    }
+    const others = comparableTracks(session, mine)
+    return others.length
       ? {
           label: 'Compare with...',
           helpText:
