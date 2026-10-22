@@ -89,6 +89,23 @@ test('a range past the end of the file answers 416, as a server does', async () 
   expect(res.headers.get('content-range')).toBe('bytes */10')
 })
 
+test('a range survives a host’s own Headers, and the body is only its bytes', async () => {
+  const file = Uint8Array.from({ length: 100 }, (_, i) => i)
+  const asked: [number, number][] = []
+  installBareHostGlobals((_url, start, end) => {
+    asked.push([start, end])
+    return { status: 206, size: 100, bytes: file.subarray(start, end + 1) }
+  })
+  const res = await fetchShim('file:///x', {
+    headers: new Headers({ range: 'bytes=10-19' }),
+  })
+  expect(asked).toEqual([[10, 19]])
+  expect(res.headers.get('content-range')).toBe('bytes 10-19/100')
+  expect([...new Uint8Array(await res.arrayBuffer())]).toEqual([
+    ...file.subarray(10, 20),
+  ])
+})
+
 test('a file read whole weighs what it inflates to', () => {
   const tbi = readFileSync(
     path.resolve(

@@ -223,17 +223,29 @@ class URLShim {
   }
 }
 
+interface HeadersLike {
+  forEach(f: (value: string, name: string) => void): void
+}
+
 class HeadersShim {
   private map = new Map<string, string>()
   constructor(init?: unknown) {
-    const entries =
-      init instanceof HeadersShim
-        ? [...init.map]
-        : Array.isArray(init)
-          ? (init as [string, string][])
-          : Object.entries((init ?? {}) as Record<string, string>)
-    for (const [k, v] of entries) {
-      this.set(k, v)
+    if (Array.isArray(init)) {
+      for (const [k, v] of init as [string, string][]) {
+        this.set(k, v)
+      }
+    } else if (
+      typeof (init as Partial<HeadersLike> | undefined)?.forEach === 'function'
+    ) {
+      ;(init as HeadersLike).forEach((v, k) => {
+        this.set(k, v)
+      })
+    } else {
+      for (const [k, v] of Object.entries(
+        (init ?? {}) as Record<string, string>,
+      )) {
+        this.set(k, v)
+      }
     }
   }
   get(name: string) {
@@ -393,7 +405,8 @@ export async function fetchShim(
       },
       cancel: async () => {},
     },
-    arrayBuffer: async () => bytes.buffer,
+    arrayBuffer: async () =>
+      bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
     bytes: async () => bytes,
     text: async () => new TextDecoderShim().decode(bytes),
     json: async () => JSON.parse(new TextDecoderShim().decode(bytes)),
