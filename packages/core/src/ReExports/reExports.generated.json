@@ -4211,7 +4211,6 @@
         "IDENTITY_SCALE",
         "categoricalColorField",
         "colorChannelOptions",
-        "colorChannelSlots",
         "colorConfigSchema",
         "colorDescendingSlot",
         "colorDomainEndsSlots",
@@ -4219,18 +4218,24 @@
         "colorDomainSlot",
         "colorEncodingOf",
         "colorFieldOf",
+        "colorFieldSlot",
         "colorForField",
         "colorForScheme",
         "colorForValue",
-        "colorLabelsSlot",
+        "colorLegendOptions",
+        "colorNamesSlot",
         "colorRampSlots",
         "colorRangeSlot",
         "colorReverseSlot",
+        "colorScaleOptions",
+        "colorScaleTypeSlot",
         "colorSettingOf",
         "colorSnapshotOf",
         "colorTitleSlot",
         "colorUnknownSlot",
         "dealRowColors",
+        "definedColor",
+        "encodingOptions",
         "featureColorEncoding",
         "identityKeyEntries",
         "impliedFieldOf",
@@ -4629,6 +4634,14 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/legendConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "hiddenLegendConfigSchema",
+        "legendConfigSchema"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/legendHost": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -4640,8 +4653,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "default",
-        "legendCheckboxItem",
-        "legendMixinSlots"
+        "legendCheckboxItem"
       ],
       "worker": "real"
     },

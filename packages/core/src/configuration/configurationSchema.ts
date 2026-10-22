@@ -29,6 +29,7 @@ import {
 
 import type PluginManager from '../PluginManager.ts'
 import type { IsAny } from '../util/types/isAny.ts'
+import type { FieldPresets } from '../util/colorScale.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { ConfigurationSchemaRequirement } from './requirements.ts'
 import type {
@@ -140,10 +141,11 @@ export interface ConfigurationSchemaOptions<
    */
   retired?: Record<string, RetiredSpelling>
   /**
-   * A color object's defaults by `field`, `*` for any other: the scale while
-   * `scale` is unset, and the members that scale reads while unwritten.
+   * A color channel's defaults by `field`, `*` for any other: the scale while
+   * `scale.type` is unset, and the members that scale and its key read while
+   * unwritten (`FieldPreset`).
    */
-  fieldPresets?: Readonly<Record<string, { readonly scale: string }>>
+  fieldPresets?: FieldPresets<string>
   /**
    * The field a color object naming neither a field nor a constant maps
    * (`withImpliedField`).

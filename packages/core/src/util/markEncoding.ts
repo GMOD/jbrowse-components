@@ -837,12 +837,12 @@ export function encodeFeatures<L extends LaneName>(
         : new Float32Array(count)
       : undefined
   const colorKey =
-    declaredScale?.scale === 'categorical' && has('colorKey')
+    declaredScale?.scale === 'ordinal' && has('colorKey')
       ? new Uint32Array(count)
       : undefined
   const paintsColor = has('color') && !colorValue && !colorKey
   const unscaled =
-    paintsColor && declaredScale?.scale !== 'categorical' && !quantitative
+    paintsColor && declaredScale?.scale !== 'ordinal' && !quantitative
       ? unscaledColor(
           table,
           colorEncoding as string | ChannelReader<number>,
@@ -859,7 +859,7 @@ export function encodeFeatures<L extends LaneName>(
   let scale: ColorScaleTable | undefined
   let missingMet = false
   let notNumberMet = false
-  if (scaled?.scale === 'categorical' && categoryLane) {
+  if (scaled?.scale === 'ordinal' && categoryLane) {
     const colorField = categoricalField(scaled.field, {
       domain: scaled.domain?.map(String),
       range: scaled.range,

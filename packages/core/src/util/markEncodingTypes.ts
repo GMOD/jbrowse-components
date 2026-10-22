@@ -22,7 +22,7 @@ export type FieldRef = string
 
 /**
  * #api
- * A field bound to a categorical scale: each distinct value takes one entry
+ * A field bound to an ordinal scale: each distinct value takes one entry
  * of the channel's `range` — a color for `color`, a shape name for
  * `shape`. Every value derives its entry from itself (an integer takes the
  * slot it names, anything else hashes in), so every region agrees on a value
@@ -33,10 +33,10 @@ export type FieldRef = string
  */
 export interface CategoricalRef {
   field: FieldRef
-  scale: 'categorical'
+  scale: 'ordinal'
   domain?: (string | number)[]
   /** What a key names each `domain` value, one each in order. */
-  labels?: string[]
+  names?: string[]
   /**
    * The color every value `domain` leaves out paints, and a feature with no
    * value, as d3's `ordinal.unknown`; `''` is the no-value grey. Unset, each
@@ -58,7 +58,7 @@ export interface ThresholdRef {
   domain?: (string | number)[]
   range?: string[]
   /** What the key names each bin, one each from the lowest. */
-  labels?: string[]
+  names?: string[]
   /** The key lists the bins from the highest. */
   descending?: boolean
 }

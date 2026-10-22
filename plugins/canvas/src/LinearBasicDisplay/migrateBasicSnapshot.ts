@@ -48,7 +48,7 @@ export const basicRetired: Record<
   string,
   (value: unknown) => Record<string, unknown>
 > = {
-  color1: (color: unknown) => ({ color }),
+  color1: (value: unknown) => ({ encoding: { color: { value } } }),
   color2: (connectorColor: unknown) => ({ connectorColor }),
   color3: (utrColor: unknown) => ({ utrColor }),
   outline: (outlineColor: unknown) =>

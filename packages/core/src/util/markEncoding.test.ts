@@ -374,7 +374,7 @@ test('a scaled color stays a lane even where every feature takes one color', () 
   const same = features.map((_, i) => feature(i, { type: 'gene', score: 10 }))
   const categorical = encodeFeatures(
     same,
-    { color: { field: 'type', scale: 'categorical' } },
+    { color: { field: 'type', scale: 'ordinal' } },
     ['color'],
     { jexl },
   )
@@ -399,7 +399,7 @@ test('a scaled color stays a lane even where every feature takes one color', () 
 test('an unpinned categorical scale colors by value, so two regions agree, and names the missing row', () => {
   const r = encodeFeatures(
     features,
-    { color: { field: 'type', scale: 'categorical' } },
+    { color: { field: 'type', scale: 'ordinal' } },
     ALL,
     { jexl },
   )
@@ -420,7 +420,7 @@ test('an unpinned categorical scale colors by value, so two regions agree, and n
   )
   const other = encodeFeatures(
     [feature(9, { type: 'gene' }), feature(10, {})],
-    { color: { field: 'type', scale: 'categorical' } },
+    { color: { field: 'type', scale: 'ordinal' } },
     ALL,
     { jexl },
   )
@@ -443,7 +443,7 @@ test('a categorical domain pins the order and a palette the colors', () => {
     {
       color: {
         field: 'strand',
-        scale: 'categorical',
+        scale: 'ordinal',
         domain: [-1, 1],
         range: ['red', 'blue'],
       },
@@ -467,7 +467,7 @@ test('a categorical domain pins the order and a palette the colors', () => {
 test('strand brings its own order and colors where the encoding names none', () => {
   const r = encodeFeatures(
     features,
-    { color: { field: 'strand', scale: 'categorical' } },
+    { color: { field: 'strand', scale: 'ordinal' } },
     ALL,
     { jexl },
   )
@@ -485,7 +485,7 @@ test('strand brings its own order and colors where the encoding names none', () 
 
 test('two regions agree on a value the domain leaves out, whatever else each met', () => {
   const encoding = {
-    color: { field: 'type', scale: 'categorical' as const, domain: ['gene'] },
+    color: { field: 'type', scale: 'ordinal' as const, domain: ['gene'] },
   }
   const busy = encodeFeatures(
     [
@@ -518,7 +518,7 @@ test('the table lists the values met, the domain first and the rest in facet ord
   const labels = (domain?: string[]) => {
     const r = encodeFeatures(
       mixed,
-      { color: { field: 'type', scale: 'categorical', domain } },
+      { color: { field: 'type', scale: 'ordinal', domain } },
       ALL,
       { jexl },
     )
@@ -781,7 +781,7 @@ test('a threshold domain written as strings cuts at the numbers it names', () =>
 test('a categorical color resolves in the worker whatever lanes are named', () => {
   const r = encodeFeatures(
     features,
-    { color: { field: 'strand', scale: 'categorical' } },
+    { color: { field: 'strand', scale: 'ordinal' } },
     [...ALL, 'colorValue'],
     { jexl },
   )
@@ -829,7 +829,7 @@ const CODE: Record<ShapeName, number> = {
 test('an unpinned shape scale derives each shape from the value, so two regions agree', () => {
   const r = encodeFeatures(
     features,
-    { shape: { field: 'type', scale: 'categorical' } },
+    { shape: { field: 'type', scale: 'ordinal' } },
     ALL,
     { jexl },
   )
@@ -850,7 +850,7 @@ test('an unpinned shape scale derives each shape from the value, so two regions 
   expect(r.scale).toBeUndefined()
   const other = encodeFeatures(
     [feature(9, { type: 'exon' }), feature(10, {})],
-    { shape: { field: 'type', scale: 'categorical' } },
+    { shape: { field: 'type', scale: 'ordinal' } },
     ALL,
     { jexl },
   )
@@ -868,7 +868,7 @@ test('a pinned shape domain walks the range in order', () => {
     {
       shape: {
         field: 'strand',
-        scale: 'categorical',
+        scale: 'ordinal',
         domain: [1, -1],
         range: ['triangle-down', 'diamond'],
       },
@@ -903,7 +903,7 @@ test('a square draws where a constant or a range names it', () => {
     {
       shape: {
         field: 'strand',
-        scale: 'categorical',
+        scale: 'ordinal',
         domain: [1, -1],
         range: ['square', 'circle'],
       },
@@ -924,7 +924,7 @@ test('a value the shape domain leaves out takes a shape no listed value holds', 
     {
       shape: {
         field: 'type',
-        scale: 'categorical',
+        scale: 'ordinal',
         domain: ['gene'],
         range: ['diamond'],
       },
@@ -944,7 +944,7 @@ test('a range longer than its domain gives every unlisted value its spare shapes
     {
       shape: {
         field: 'type',
-        scale: 'categorical',
+        scale: 'ordinal',
         domain: ['cds'],
         range: ['triangle-down', 'circle'],
       },
@@ -962,8 +962,8 @@ test('color and shape scales over different fields resolve side by side', () => 
   const r = encodeFeatures(
     features,
     {
-      color: { field: 'type', scale: 'categorical', domain: ['gene', 'exon'] },
-      shape: { field: 'strand', scale: 'categorical', domain: [1, -1] },
+      color: { field: 'type', scale: 'ordinal', domain: ['gene', 'exon'] },
+      shape: { field: 'strand', scale: 'ordinal', domain: [1, -1] },
     },
     ALL,
     { jexl },
@@ -1084,7 +1084,7 @@ test('a caller whose channels are readers or field names needs no jexl instance'
 
 test('a categorical table says whether every key it met was a number', () => {
   const of = (field: string, list = features) =>
-    encodeFeatures(list, { color: { field, scale: 'categorical' } }, ALL, {
+    encodeFeatures(list, { color: { field, scale: 'ordinal' } }, ALL, {
       jexl,
     }).scale
 
@@ -1290,8 +1290,8 @@ test('a VCF missing value, `[undefined]`, files under the no-value row on every 
   const enc = encodeFeatures(
     feats,
     {
-      color: { field: 'INFO.X', scale: 'categorical' },
-      shape: { field: 'INFO.X', scale: 'categorical' },
+      color: { field: 'INFO.X', scale: 'ordinal' },
+      shape: { field: 'INFO.X', scale: 'ordinal' },
       text: 'INFO.X',
     },
     ['color', 'glyph', 'text'],
@@ -1367,7 +1367,7 @@ test('a lane read through its index, with rows skipped, names each instance by i
   )
   const r = encodeFeatures(
     table,
-    { y: 'score', color: { field: 'state', scale: 'categorical' } },
+    { y: 'score', color: { field: 'state', scale: 'ordinal' } },
     ['y', 'color'],
   )
   expect(r.count).toBe(3)
@@ -1419,7 +1419,7 @@ test('a categorical over a category column lists only the labels its placed rows
   )
   const r = encodeFeatures(
     table,
-    { color: { field: 'state', scale: 'categorical' } },
+    { color: { field: 'state', scale: 'ordinal' } },
     ['color'],
   )
   expect(r.skippedPosition).toBe(1)
@@ -1450,7 +1450,7 @@ test('a packed threshold compares in float32, so a float32 value at a cut takes 
 test('a colorKey lane names each instance by its entry and paints nothing', () => {
   const r = encodeFeatures(
     features,
-    { color: { field: 'type', scale: 'categorical' } },
+    { color: { field: 'type', scale: 'ordinal' } },
     ['colorKey'],
     { jexl },
   )
@@ -1488,7 +1488,7 @@ test('a colorKey lane over a category column indexes the entries its rows met', 
   )
   const r = encodeFeatures(
     table,
-    { color: { field: 'state', scale: 'categorical' } },
+    { color: { field: 'state', scale: 'ordinal' } },
     ['colorKey'],
   )
   const entries =

@@ -114,14 +114,14 @@ export function categoricalField(
   // a field with a vocabulary of its own reads it on every channel, a facet's
   // sections as well as a color's key
   const vocabulary = universalPresetOf(field)
-  const ownOrder = vocabulary?.domain ?? []
+  const ownOrder = vocabulary?.scale.domain ?? []
   const order = domain.length > 0 ? domain : ownOrder
   const [paired, colors] =
     range.length > 0 || !vocabulary
       ? [order, range]
-      : [ownOrder, vocabulary.range ?? []]
+      : [ownOrder, vocabulary.scale.range ?? []]
   const declared = keyNames(order, labels)
-  const own = vocabulary && keyNames(ownOrder, vocabulary.labels)
+  const own = vocabulary && keyNames(ownOrder, vocabulary.scale.names)
   const named = (key: string) => declared.get(key) ?? own?.get(key)
   const label = (key: string) =>
     named(key) ?? (key === '' ? NO_VALUE_LABEL : key)

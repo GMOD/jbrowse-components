@@ -456,6 +456,7 @@ export default [
   '@jbrowse/display-kit/installGlobalFetchAutorun',
   '@jbrowse/display-kit/installPerRegionFetchAutoruns',
   '@jbrowse/display-kit/KeyedFetchMixin',
+  '@jbrowse/display-kit/legendConfigSchema',
   '@jbrowse/display-kit/legendHost',
   '@jbrowse/display-kit/LegendMixin',
   '@jbrowse/display-kit/MarkSvgLayer',

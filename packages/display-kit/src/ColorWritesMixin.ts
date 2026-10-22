@@ -16,18 +16,20 @@ import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 
 /** The whole of what `ColorWritesMixin` needs a composing display to be. */
 export interface ColorWritesHost {
-  configuration: AnyConfigurationModel & { color: AnyConfigurationModel }
+  configuration: AnyConfigurationModel & {
+    encoding: AnyConfigurationModel & { color: AnyConfigurationModel }
+  }
   /** The display's picker for a constant, which Solid color... opens. */
   openSolidColorDialog?: () => void
 }
 
 // The mixin's own `self` is the model it declares, so it cannot see the
 // `configuration` the concrete display supplies; every display composing it
-// has a `color` object, so it is really there. `LegendMixin`'s idiom.
+// has an `encoding.color`, so it is really there. `LegendMixin`'s idiom.
 const host = (self: object) => self as ColorWritesHost
 
 /**
- * A `color` object as written: each slot its config sets, with the schema's
+ * A color channel as written: each slot its config sets, with the schema's
  * `impliedField` where it names neither a field nor a constant, since that
  * field paints while the snapshot names none (LGVSyntenyColor's `strand`).
  */
@@ -47,7 +49,7 @@ function solidColorOf({ value }: ColorSlots): string | undefined {
 /**
  * #stateModel ColorWritesMixin
  * #category display
- * #crossCuttingMixin The writes a display's `color` object takes from a menu row or a picker: the field it paints by (`colorByField`) and the constant every feature paints (`setColorValue`). Each rewrites the object as written, so what a pick leaves alone stays as it was, and a pick of what already paints writes nothing, since every color tier keys on the object's arrays. A pick away from a field parks it (`ParkedColorMixin`), so picking it again keeps its domain, range and key names. A dialog's Apply button writes the whole object through `applyPlot`, which rebuilds the display's config for the draft, too dear for a picker writing once per drag frame
+ * #crossCuttingMixin The writes a display's `encoding.color` channel takes from a menu row or a picker: the field it paints by (`colorByField`) and the constant every feature paints (`setColorValue`). Each rewrites the object as written, so what a pick leaves alone stays as it was, and a pick of what already paints writes nothing, since every color tier keys on the object's arrays. A pick away from a field parks it (`ParkedColorMixin`), so picking it again keeps its domain, range and key names. A dialog's Apply button writes the whole object through `applyPlot`, which rebuilds the display's config for the draft, too dear for a picker writing once per drag frame
  */
 export default function ColorWritesMixin() {
   return types
@@ -55,11 +57,11 @@ export default function ColorWritesMixin() {
     .views(self => ({
       /**
        * #getter
-       * The `color` object as these writes and an Apply button read it,
-       * `writtenColorOf`.
+       * The `encoding.color` channel as these writes and an Apply button
+       * read it, `writtenColorOf`.
        */
       get writtenColor(): ColorSlots {
-        return writtenColorOf(host(self).configuration.color)
+        return writtenColorOf(host(self).configuration.encoding.color)
       },
     }))
     .actions(self => {
@@ -67,7 +69,7 @@ export default function ColorWritesMixin() {
         const written = self.writtenColor
         if (!compareStructural(next, written)) {
           self.parkColor('color', written, next)
-          setConf(host(self), 'color', next)
+          setConf(host(self), ['encoding', 'color'], next)
         }
       }
       return {

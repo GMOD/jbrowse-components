@@ -106,10 +106,90 @@ export function liftRetiredRowState(
     ...(colored.length > 0
       ? {
           rowColor: {
-            domain: colored.map(r => r.key),
-            range: colored.map(r => r.color),
+            scale: {
+              domain: colored.map(r => r.key),
+              range: colored.map(r => r.color),
+            },
           },
         }
       : {}),
   }
+}
+
+// Where each member of a flat color object sits in a channel object.
+const FLAT_COLOR_MEMBERS: Readonly<
+  Record<string, readonly ['scale' | 'legend', string]>
+> = {
+  scale: ['scale', 'type'],
+  domain: ['scale', 'domain'],
+  range: ['scale', 'range'],
+  labels: ['scale', 'names'],
+  scheme: ['scale', 'scheme'],
+  reverse: ['scale', 'reverse'],
+  domainMin: ['scale', 'domainMin'],
+  domainMax: ['scale', 'domainMax'],
+  domainMid: ['scale', 'domainMid'],
+  domainQuantile: ['scale', 'domainQuantile'],
+  unknown: ['scale', 'unknown'],
+  title: ['legend', 'title'],
+  descending: ['legend', 'descending'],
+}
+
+/** Whether `color` is spelt flat, a scale member beside its `field`. */
+export function isFlatColor(color: unknown) {
+  return (
+    isRecord(color) &&
+    Object.entries(color).some(
+      ([key, value]) =>
+        key in FLAT_COLOR_MEMBERS && !(key === 'scale' && isRecord(value)),
+    )
+  )
+}
+
+/**
+ * @deprecated The color object as hosted jb2hubs configs still spell it,
+ * flat, before ADR-240's channel object, lifted to the channel: scale members
+ * under `scale`, `labels` as `scale.names`, `categorical` as `ordinal`, the
+ * key's under `legend`. `bare` is what a bare string meant where it was
+ * written. Goes once the hosted hub configs regenerate in the channel's
+ * spelling.
+ */
+export function liftFlatColor(
+  color: unknown,
+  bare: 'value' | 'field',
+): Snapshot {
+  if (typeof color === 'string') {
+    return { [bare]: color }
+  }
+  if (!isFlatColor(color)) {
+    return isRecord(color) ? color : {}
+  }
+  const out: Snapshot = {}
+  const parts: Record<'scale' | 'legend', Snapshot> = { scale: {}, legend: {} }
+  for (const [key, value] of Object.entries(color as Snapshot)) {
+    const at = FLAT_COLOR_MEMBERS[key]
+    if (!at) {
+      out[key] = value
+    } else if (value !== undefined) {
+      parts[at[0]][at[1]] =
+        key === 'scale' && value === 'categorical' ? 'ordinal' : value
+    }
+  }
+  for (const part of ['scale', 'legend'] as const) {
+    if (Object.keys(parts[part]).length > 0) {
+      out[part] = parts[part]
+    }
+  }
+  return out
+}
+
+/**
+ * @deprecated A display's `color` before `encoding.color`, which hosted
+ * jb2hubs configs still write, a bare string being the constant. Goes with
+ * `liftFlatColor`.
+ */
+export const retiredDisplayColor = {
+  color: (color: unknown) => ({
+    encoding: { color: liftFlatColor(color, 'value') },
+  }),
 }

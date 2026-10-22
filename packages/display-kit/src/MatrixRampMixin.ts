@@ -17,7 +17,12 @@ type RampScale = ContinuousRef['scale']
 
 /** A matrix field's ramp: every field names its scheme, so a cell is never unpainted by an unset one. */
 export type MatrixFieldPresets<F extends string> = Readonly<
-  Record<F, FieldPreset<RampScale> & { scheme: ColorSchemeName }>
+  Record<
+    F,
+    FieldPreset<RampScale> & {
+      scale: FieldPreset<RampScale>['scale'] & { scheme: ColorSchemeName }
+    }
+  >
 >
 
 export interface MatrixColorEncoding<F extends string> extends ContinuousRef {
@@ -25,15 +30,16 @@ export interface MatrixColorEncoding<F extends string> extends ContinuousRef {
   scheme: ColorSchemeName
 }
 
-// Every display composing this is a BaseDisplay whose schema has a `color`
-// object over the presets' fields, which the mixin's own `self` cannot see.
+// Every display composing this is a BaseDisplay whose schema has an
+// `encoding.color` over the presets' fields, which the mixin's own `self`
+// cannot see.
 const confNode = (self: object) =>
   self as { configuration: AnyConfigurationModel }
 
 /**
  * #stateModel MatrixRampMixin
  * #category display
- * #crossCuttingMixin A matrix display's `color` as it paints: the painted field through its preset's ramp (`colorEncoding`), that ramp's scheme, direction and 256-entry table (`colorScheme`, `colorReverse`, `colorRamp`), and the scheme pick (`setColorScheme`). A display that may paint a field other than the written one, because the file could not serve it, answers `paintedColorField`. The domain stays the display's: one follows the loaded values, another spans its statistic's fixed range
+ * #crossCuttingMixin A matrix display's `encoding.color` as it paints: the painted field through its preset's ramp (`colorEncoding`), that ramp's scheme, direction and 256-entry table (`colorScheme`, `colorReverse`, `colorRamp`), and the scheme pick (`setColorScheme`). A display that may paint a field other than the written one, because the file could not serve it, answers `paintedColorField`. The domain stays the display's: one follows the loaded values, another spans its statistic's fixed range
  */
 export default function MatrixRampMixin<F extends string>(
   presets: MatrixFieldPresets<F>,
@@ -47,14 +53,14 @@ export default function MatrixRampMixin<F extends string>(
        * unless the display overrides it with what the file served.
        */
       get paintedColorField(): F {
-        return getConf(confNode(self), ['color', 'field'])
+        return getConf(confNode(self), ['encoding', 'color', 'field'])
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * The `color` object under the painted field's preset, with an unset
-       * `reverse` turning round a scheme dark at its low end, since an
+       * The color channel under the painted field's preset, with an unset
+       * `scale.reverse` turning round a scheme dark at its low end, since an
        * unpainted cell is the page behind the matrix. The preset's scheme
        * fills whichever continuous scale is written: `withPreset` drops a
        * preset whose scale differs, which would leave the Log toggle painting
@@ -62,12 +68,17 @@ export default function MatrixRampMixin<F extends string>(
        */
       get colorEncoding(): MatrixColorEncoding<F> {
         const field = self.paintedColorField
-        const written = colorSettingOf(confNode(self).configuration.color)
+        const written = colorSettingOf(
+          confNode(self).configuration.encoding.color,
+        )
         return matrixColorEncodingOf(
           {
             ...written,
             field,
-            scheme: written.scheme ?? presets[field].scheme,
+            scale: {
+              ...written.scale,
+              scheme: written.scale.scheme ?? presets[field].scale.scheme,
+            },
           },
           presets,
         ) as MatrixColorEncoding<F>
@@ -88,7 +99,7 @@ export default function MatrixRampMixin<F extends string>(
       },
       /**
        * #getter
-       * `color.reverse`, or where unset whether the scheme runs dark at its
+       * `scale.reverse`, or where unset whether the scheme runs dark at its
        * low end.
        */
       get colorReverse(): boolean {
@@ -118,14 +129,14 @@ export default function MatrixRampMixin<F extends string>(
        */
       setColorScheme(scheme: ColorSchemeName) {
         const node = confNode(self)
-        const { color } = node.configuration
+        const { color } = node.configuration.encoding
         setConf(
           node,
-          'color',
+          ['encoding', 'color'],
           colorForScheme(
             getSnapshot<ColorSlots>(color),
             scheme,
-            presets[self.paintedColorField].scheme,
+            presets[self.paintedColorField].scale.scheme,
           ),
         )
       },

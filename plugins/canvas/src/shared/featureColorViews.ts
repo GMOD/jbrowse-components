@@ -35,7 +35,7 @@ import type {
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface FeatureColorHost {
-  conf: { color: Instance<typeof colorConfigSchema> }
+  conf: { encoding: { color: Instance<typeof colorConfigSchema> } }
   rpcDataMap: ReadonlyMap<
     number,
     {
@@ -56,10 +56,8 @@ const NO_EXTENT: [number, number] = [Infinity, -Infinity]
 // Enough to read the ramp's shape without the bar becoming a table of stops.
 const RAMP_KEY_STOPS = 8
 
-function featureColorSettingOf({
-  conf: { color },
-}: FeatureColorHost): ColorSetting {
-  return colorSnapshotOf(color)
+function featureColorSettingOf({ conf }: FeatureColorHost): ColorSetting {
+  return colorSnapshotOf(conf.encoding.color)
 }
 
 // Each painted box's value, the region's own boxes where it ships their
@@ -144,15 +142,15 @@ export function featureColorViews(self: FeatureColorHost) {
      * The two members the worker reads, the rest being the main thread's.
      */
     get workerColor(): WorkerColor {
-      return workerColorOf(self.conf.color)
+      return workerColorOf(self.conf.encoding.color)
     },
 
     /**
      * #getter
      * `colorSetting` as it paints, through the one resolver every display's
-     * color object goes through: `color.value`, or a field through its
-     * scale, `score` a ramp and any other field categorical while `scale` is
-     * unset.
+     * color channel goes through: `encoding.color.value`, or a field through
+     * its scale, `score` a ramp and any other field ordinal while
+     * `scale.type` is unset.
      */
     get colorEncoding() {
       return encoding.get()
@@ -161,7 +159,7 @@ export function featureColorViews(self: FeatureColorHost) {
     /**
      * #getter
      * The field the color paints by, through any scale, or undefined while
-     * `color.value` paints.
+     * `encoding.color.value` paints.
      */
     get colorField(): string | undefined {
       const current = this.colorEncoding
@@ -170,11 +168,11 @@ export function featureColorViews(self: FeatureColorHost) {
 
     /**
      * #getter
-     * The constant `color.value` holds, painting or kept beside a field;
-     * undefined where it holds none or a `jexl:` expression.
+     * The constant `encoding.color.value` holds, painting or kept beside a
+     * field; undefined where it holds none or a `jexl:` expression.
      */
     get solidColor(): string | undefined {
-      const raw = self.conf.color.value
+      const raw = self.conf.encoding.color.value
       return raw !== undefined && !isJexl(raw) ? raw : undefined
     },
 
@@ -196,7 +194,7 @@ export function featureColorViews(self: FeatureColorHost) {
 
     /**
      * #getter
-     * The color channel's field while it paints through a categorical scale,
+     * The color channel's field while it paints through an ordinal scale,
      * which a facet on the same field shares.
      */
     get categoricalColorField() {
@@ -206,7 +204,7 @@ export function featureColorViews(self: FeatureColorHost) {
 
     /**
      * #getter
-     * The field the color channel paints through a categorical or threshold
+     * The field the color channel paints through an ordinal or threshold
      * scale, a threshold's values filed under their bins.
      */
     get paintedColorField() {
@@ -224,12 +222,12 @@ export function featureColorViews(self: FeatureColorHost) {
 
     /**
      * #getter
-     * The key's heading: the color's `title`, or its field's preset's, else
-     * the field.
+     * The key's heading: the channel's `legend.title`, or its field's
+     * preset's, else the field.
      */
     get colorKeyTitle(): string | undefined {
       return (
-        withPreset(this.colorSetting, FEATURE_FIELD_PRESETS).title ??
+        withPreset(this.colorSetting, FEATURE_FIELD_PRESETS).legend.title ??
         this.colorField
       )
     },

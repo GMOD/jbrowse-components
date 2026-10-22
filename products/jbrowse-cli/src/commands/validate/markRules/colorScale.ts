@@ -18,12 +18,11 @@ export function isRampScale(scale: unknown): scale is RampScaleName {
   return scale === 'linear' || scale === 'log' || scale === 'symlog'
 }
 
-/** How a color object maps its `field`. */
-export const COLOR_SCALES = [
-  'categorical',
-  ...RAMP_SCALES,
-  'threshold',
-] as const
+/**
+ * How a color object maps its `field`, Vega-Lite's scale types: `ordinal`
+ * hands each value a color of its own.
+ */
+export const COLOR_SCALES = ['ordinal', ...RAMP_SCALES, 'threshold'] as const
 
 /**
  * The scale that maps no field: each feature paints the color it carries, and
@@ -36,27 +35,57 @@ export type ColorScaleName =
   | (typeof COLOR_SCALES)[number]
   | typeof IDENTITY_SCALE
 
-/**
- * A field's defaults on a display: the scale it paints through while `scale`
- * is unset, and the members that scale reads while the config leaves them
- * unwritten, so a field with a vocabulary or ramp of its own is the color
- * object's defaults rather than a painter beside it.
- */
-export interface FieldPreset<S extends string = ColorScaleName> {
-  scale: S
-  /** The key a feature carrying no value files under. */
-  missing?: string
-  domain?: readonly string[]
-  range?: readonly string[]
-  labels?: readonly string[]
-  title?: string
+/** A channel's `scale` as written, Vega-Lite's scale object. */
+export interface ColorScaleSlots {
+  type?: string
+  domain?: readonly unknown[]
+  range?: readonly unknown[]
+  /** The key's name for each `domain` value, or each threshold interval. */
+  names?: readonly unknown[]
+  scheme?: string
+  reverse?: boolean
   domainMin?: number
   domainMax?: number
   domainMid?: number
-  scheme?: string
-  reverse?: boolean
+  domainQuantile?: number
+  unknown?: string
+}
+
+/** A channel's `legend` as written. */
+export interface ColorLegendSlots {
+  title?: string
   /** A threshold key's direction: its highest interval first. */
   descending?: boolean
+}
+
+/**
+ * A color channel as written, Vega-Lite's channel object: the constant
+ * `value`, or the `field` it maps through `scale`, with the key it draws.
+ */
+export interface ColorSlots {
+  value?: string
+  field?: string
+  scale?: ColorScaleSlots
+  legend?: ColorLegendSlots
+}
+
+/**
+ * A field's defaults on a display, a partial channel: the scale it paints
+ * through while `scale.type` is unset, and the members that scale and its key
+ * read while the config leaves them unwritten, so a field with a vocabulary
+ * or ramp of its own is the color object's defaults rather than a painter
+ * beside it.
+ */
+export interface FieldPreset<S extends string = ColorScaleName> {
+  scale: Omit<ColorScaleSlots, 'domain' | 'range' | 'names'> & {
+    type: S
+    domain?: readonly string[]
+    range?: readonly string[]
+    names?: readonly string[]
+  }
+  legend?: ColorLegendSlots
+  /** The key a feature carrying no value files under. */
+  missing?: string
 }
 
 /** Each field's preset, `*` for any other field. */
@@ -64,7 +93,7 @@ export type FieldPresets<S extends string = ColorScaleName> = Readonly<
   Record<string, FieldPreset<S>>
 >
 
-const CATEGORICAL_PRESET: FieldPreset<'categorical'> = { scale: 'categorical' }
+const ORDINAL_PRESET: FieldPreset<'ordinal'> = { scale: { type: 'ordinal' } }
 
 /**
  * The fields whose values have names, an order and colors of their own on
@@ -80,69 +109,75 @@ const CATEGORICAL_PRESET: FieldPreset<'categorical'> = { scale: 'categorical' }
  */
 export const UNIVERSAL_FIELD_PRESETS = {
   strand: {
-    scale: 'categorical',
+    scale: {
+      type: 'ordinal',
+      domain: ['1', '-1', '0'],
+      range: ['tomato', 'cornflowerblue', 'goldenrod'],
+      names: ['Forward strand', 'Reverse strand', 'No strand'],
+    },
     missing: '0',
-    domain: ['1', '-1', '0'],
-    range: ['tomato', 'cornflowerblue', 'goldenrod'],
-    labels: ['Forward strand', 'Reverse strand', 'No strand'],
   },
   svType: {
-    scale: 'categorical',
-    domain: ['DEL', 'DUP', 'INS', 'INV', 'CNV', 'TR', 'BND', 'CPX', 'OTHER'],
-    range: [
-      '#e41a1c',
-      '#377eb8',
-      '#800080',
-      '#ff7f00',
-      '#7e6148',
-      '#e7298a',
-      '#17becf',
-      '#66a61e',
-      '#000000',
-    ],
-    labels: [
-      'Deletion',
-      'Duplication',
-      'Insertion',
-      'Inversion',
-      'Copy-number variable',
-      'Tandem repeat',
-      'Breakend / translocation',
-      'Complex',
-      'Other / mixed',
-    ],
-    title: 'SV type',
+    scale: {
+      type: 'ordinal',
+      domain: ['DEL', 'DUP', 'INS', 'INV', 'CNV', 'TR', 'BND', 'CPX', 'OTHER'],
+      range: [
+        '#e41a1c',
+        '#377eb8',
+        '#800080',
+        '#ff7f00',
+        '#7e6148',
+        '#e7298a',
+        '#17becf',
+        '#66a61e',
+        '#000000',
+      ],
+      names: [
+        'Deletion',
+        'Duplication',
+        'Insertion',
+        'Inversion',
+        'Copy-number variable',
+        'Tandem repeat',
+        'Breakend / translocation',
+        'Complex',
+        'Other / mixed',
+      ],
+    },
+    legend: { title: 'SV type' },
   },
   impact: {
-    scale: 'categorical',
+    scale: {
+      type: 'ordinal',
+      domain: ['HIGH', 'MODERATE', 'LOW', 'MODIFIER', 'Unannotated'],
+      range: ['#d32f2f', '#f57c00', '#fbc02d', '#9e9e9e', '#607d8b'],
+    },
+    legend: { title: 'Consequence impact' },
     missing: 'Unannotated',
-    domain: ['HIGH', 'MODERATE', 'LOW', 'MODIFIER', 'Unannotated'],
-    range: ['#d32f2f', '#f57c00', '#fbc02d', '#9e9e9e', '#607d8b'],
-    title: 'Consequence impact',
   },
-} as const satisfies FieldPresets<'categorical'>
+} as const satisfies FieldPresets<'ordinal'>
 
 /** The universal preset of `field`, if it has one. */
 export function universalPresetOf(
   field: string,
-): FieldPreset<'categorical'> | undefined {
+): FieldPreset<'ordinal'> | undefined {
   return Object.hasOwn(UNIVERSAL_FIELD_PRESETS, field)
     ? UNIVERSAL_FIELD_PRESETS[field as keyof typeof UNIVERSAL_FIELD_PRESETS]
     : undefined
 }
 
-/** Every field categorical while `scale` is unset, with nothing preset. */
+/** Every field ordinal while `scale.type` is unset, with nothing preset. */
 export const CATEGORICAL_FIELD_PRESETS = {
-  '*': CATEGORICAL_PRESET,
+  '*': ORDINAL_PRESET,
 } as const satisfies FieldPresets
 
 /**
- * What a feature's field paints through while `scale` is unset: `score` a
- * ramp, any other field categories.
+ * What a feature's field paints through while `scale.type` is unset: `score`
+ * a ramp, any other field categories.
  */
 export const FEATURE_FIELD_PRESETS = {
-  score: { scale: 'linear' },
-  '*': CATEGORICAL_PRESET,
+  score: { scale: { type: 'linear' } },
+  '*': ORDINAL_PRESET,
 } as const satisfies FieldPresets
 
 /**
@@ -174,96 +209,121 @@ const MAPQ_BINS_ASCENDING = [...MAPQ_BINS].reverse()
  */
 export const MEASURE_FIELD_PRESETS = {
   mapq: {
-    scale: 'threshold',
-    domain: MAPQ_BINS_ASCENDING.slice(1).map(bin => bin.key),
-    scheme: 'cividis',
-    labels: MAPQ_BINS_ASCENDING.map(bin => bin.label),
-    title: 'Mapping quality',
-    descending: true,
+    scale: {
+      type: 'threshold',
+      domain: MAPQ_BINS_ASCENDING.slice(1).map(bin => bin.key),
+      scheme: 'cividis',
+      names: MAPQ_BINS_ASCENDING.map(bin => bin.label),
+    },
+    legend: { title: 'Mapping quality', descending: true },
   },
   identity: {
-    scale: 'linear',
-    domainMin: 0,
-    domainMax: 1,
-    scheme: 'redgreyblue',
-    title: 'Identity',
+    scale: {
+      type: 'linear',
+      domainMin: 0,
+      domainMax: 1,
+      scheme: 'redgreyblue',
+    },
+    legend: { title: 'Identity' },
   },
   dnds: {
-    scale: 'linear',
-    domainMin: 0,
-    domainMax: 2,
-    domainMid: 1,
-    scheme: 'redyellowblue',
-    reverse: true,
-    title: 'dN/dS',
+    scale: {
+      type: 'linear',
+      domainMin: 0,
+      domainMax: 2,
+      domainMid: 1,
+      scheme: 'redyellowblue',
+      reverse: true,
+    },
+    legend: { title: 'dN/dS' },
   },
   syntenicDepth: {
-    scale: 'threshold',
-    domain: ['2', '3'],
-    range: ['#bdbdbd', '#fdae6b', '#e6550d'],
-    labels: ['One-to-one', 'Shared by 2 genes', 'Shared by 3 or more'],
-    title: 'Syntenic depth',
+    scale: {
+      type: 'threshold',
+      domain: ['2', '3'],
+      range: ['#bdbdbd', '#fdae6b', '#e6550d'],
+      names: ['One-to-one', 'Shared by 2 genes', 'Shared by 3 or more'],
+    },
+    legend: { title: 'Syntenic depth' },
   },
 } as const satisfies FieldPresets<'linear' | 'threshold'>
 
 /**
  * A field's preset under `presets`: its own, else a universal one, else
- * `*`'s, else categorical.
+ * `*`'s, else ordinal.
  */
 export function presetOf<S extends string>(
   presets: FieldPresets<S>,
   field: string,
-): FieldPreset<S | 'categorical'> {
+): FieldPreset<S | 'ordinal'> {
   return (
     (Object.hasOwn(presets, field)
       ? presets[field]
-      : (universalPresetOf(field) ?? presets['*'])) ?? CATEGORICAL_PRESET
+      : (universalPresetOf(field) ?? presets['*'])) ?? ORDINAL_PRESET
   )
 }
 
-/** What a field paints through under `presets` while `scale` is unset. */
+/** What a field paints through under `presets` while `scale.type` is unset. */
 export function fieldScaleOf<S extends string>(
   presets: FieldPresets<S>,
   field: string,
-): S | 'categorical' {
-  return presetOf(presets, field).scale
+): S | 'ordinal' {
+  return presetOf(presets, field).scale.type
 }
 
 function unwritten(value: unknown) {
   return value === undefined || (Array.isArray(value) && value.length === 0)
 }
 
+function unwrittenOf<P extends object>(
+  preset: P,
+  written: object | undefined,
+  keep: (key: string) => boolean,
+): Partial<P> {
+  const own = new Map<string, unknown>(Object.entries(written ?? {}))
+  return Object.fromEntries(
+    Object.entries(preset).filter(
+      ([key]) => keep(key) && unwritten(own.get(key)),
+    ),
+  ) as Partial<P>
+}
+
 /**
- * A color object with its field's preset under it: each member the preset
- * names and the config leaves unwritten, an empty list counting as unwritten.
- * Only while the color paints through the preset's own scale, so the cuts of
- * a threshold preset never reach a field read through a ramp. A categorical
- * preset's `range` and `labels` name its `domain`'s values in order, and a
- * threshold preset's `labels` its intervals, so they fill only while `domain`
- * does too: a written order keeps each value's own color and name, and written
- * cuts keep the preset's palette and lose its interval names.
+ * A color object with its field's preset under it: each `scale` and `legend`
+ * member the preset names and the config leaves unwritten, an empty list
+ * counting as unwritten. Only while the color paints through the preset's own
+ * scale, so the cuts of a threshold preset never reach a field read through a
+ * ramp. An ordinal preset's `range` and `names` name its `domain`'s values in
+ * order, and a threshold preset's `names` its intervals, so they fill only
+ * while `domain` does too: a written order keeps each value's own color and
+ * name, and written cuts keep the preset's palette and lose its interval
+ * names.
  */
-export function withPreset<C extends { field?: string; scale?: string }>(
+export function withPreset<C extends ColorSlots>(
   color: C,
   presets: FieldPresets<string>,
 ): C {
   const field = color.field ?? ''
   const preset = presetOf(presets, field)
-  if (!field || (color.scale ?? preset.scale) !== preset.scale) {
+  if (!field || (color.scale?.type ?? preset.scale.type) !== preset.scale.type) {
     return color
   }
-  const written = new Map<string, unknown>(Object.entries(color))
-  const ownDomain = !preset.domain || unwritten(written.get('domain'))
+  const ownDomain = !preset.scale.domain || unwritten(color.scale?.domain)
   const named =
-    preset.scale === 'categorical' ? ['range', 'labels'] : ['labels']
-  const filled = Object.entries(preset).filter(
-    ([key]) =>
-      key !== 'scale' &&
-      key !== 'missing' &&
-      (ownDomain || !named.includes(key)) &&
-      unwritten(written.get(key)),
+    preset.scale.type === 'ordinal' ? ['range', 'names'] : ['names']
+  const scale = unwrittenOf(
+    preset.scale,
+    color.scale,
+    key => key !== 'type' && (ownDomain || !named.includes(key)),
   )
-  return filled.length > 0 ? { ...color, ...Object.fromEntries(filled) } : color
+  const legend = unwrittenOf(preset.legend ?? {}, color.legend, () => true)
+  return Object.keys(scale).length + Object.keys(legend).length > 0
+    ? {
+        ...color,
+        scale: { ...color.scale, ...scale },
+        legend: { ...color.legend, ...legend },
+      }
+    : color
 }
 
 /**
@@ -283,13 +343,13 @@ export function withImpliedField<C extends { value?: unknown; field?: string }>(
 
 /**
  * The scale a color object paints through: `none` while no `field` is
- * named, else its own `scale`, or `fieldScale` where that is unset.
+ * named, else its own `scale.type`, or `fieldScale` where that is unset.
  */
 export function paintedScale<S extends string, F extends string>(
-  { scale, field }: { scale: S | undefined; field: string },
+  { field, scale }: { field?: string; scale?: { type?: S } },
   fieldScale: F,
 ): S | F | 'none' {
-  return field ? (scale ?? fieldScale) : 'none'
+  return field ? (scale?.type ?? fieldScale) : 'none'
 }
 
 /** A combination of a scale's slots the display cannot draw as written. */
@@ -302,10 +362,10 @@ export interface ScaleProblem {
     | 'domain-ends'
     | 'domain-quantile'
     | 'log-floor'
-    | 'labels-domain'
+    | 'names-domain'
     | 'unknown-domain'
     | 'unknown-scale'
-  /** the slot to look at, relative to the scale's own object */
+  /** the slot to look at, relative to the object that holds the scale */
   slot: string
   message: string
 }
@@ -318,7 +378,7 @@ export interface ScaleEnds {
   domainMin?: number
   domainMax?: number
   domainQuantile?: number
-  /** the scale's kind, `scales.y.type` or a color's `scale`, where it bears on the ends */
+  /** the scale's kind, `scales.y.type` or a color's `scale.type`, where it bears on the ends */
   type?: string
 }
 
@@ -378,20 +438,6 @@ export function noticeLines(
   return problems.map(({ slot, message }) => `${setting}.${slot}: ${message}`)
 }
 
-/** The slots `colorProblems` reads, as a snapshot or a resolved setting holds them. */
-export interface ColorSlots {
-  value?: string
-  field?: string
-  scale?: string
-  domain?: readonly unknown[]
-  range?: readonly unknown[]
-  domainMin?: number
-  domainMax?: number
-  domainQuantile?: number
-  labels?: readonly unknown[]
-  unknown?: string
-}
-
 function numberOf(value: unknown) {
   return typeof value === 'number' ? value : undefined
 }
@@ -415,24 +461,33 @@ export function scaleEndsOf(member: (name: string) => unknown): ScaleEnds {
 }
 
 /**
- * The members `colorProblems` reads among the ones `member` reads, each of the
- * type it reads or unset, so a config snapshot and a config node answer alike.
+ * The members `colorProblems` reads among the ones `read` reads by path, each
+ * of the type it reads or unset, so a config snapshot and a config node
+ * answer alike.
  */
-export function colorSlotsOf(member: (name: string) => unknown): ColorSlots {
+export function colorSlotsOf(
+  read: (path: readonly string[]) => unknown,
+): ColorSlots {
+  const member = (name: string) => read(['scale', name])
   return {
-    ...scaleEndsOf(member),
-    value: stringOf(member('value')),
-    field: stringOf(member('field')) ?? '',
-    scale: stringOf(member('scale')),
-    domain: listOf(member('domain')),
-    range: listOf(member('range')),
-    labels: listOf(member('labels')),
-    unknown: stringOf(member('unknown')),
+    value: stringOf(read(['value'])),
+    field: stringOf(read(['field'])) ?? '',
+    scale: {
+      ...scaleEndsOf(member),
+      domain: listOf(member('domain')),
+      range: listOf(member('range')),
+      names: listOf(member('names')),
+      unknown: stringOf(member('unknown')),
+    },
   }
 }
 
 function pinned(entry: unknown) {
   return entry !== '' && Number.isFinite(Number(entry))
+}
+
+function underScale(problem: ScaleProblem): ScaleProblem {
+  return { ...problem, slot: `scale.${problem.slot}` }
 }
 
 /**
@@ -441,22 +496,19 @@ function pinned(entry: unknown) {
  * field's preset under it. A display shows these as a notice and draws what
  * it can. A threshold naming no cuts leaves its intervals to the display —
  * the alignments insert-size band samples its cuts, the wiggle plot cuts at
- * its origin — so its `labels` go uncounted.
+ * its origin — so its `names` go uncounted.
  */
 export function colorProblems(
   written: ColorSlots,
   presets: FieldPresets<string>,
 ): ScaleProblem[] {
   const color = withPreset(written, presets)
-  const { domain = [] } = color
-  const { range = [] } = written
+  const { domain = [], names = [] } = color.scale ?? {}
+  const { range = [], unknown } = written.scale ?? {}
   const scale =
-    color.scale === IDENTITY_SCALE
+    color.scale?.type === IDENTITY_SCALE
       ? IDENTITY_SCALE
-      : paintedScale(
-          { scale: color.scale, field: color.field ?? '' },
-          fieldScaleOf(presets, color.field ?? ''),
-        )
+      : paintedScale(color, fieldScaleOf(presets, color.field ?? ''))
   const problems: ScaleProblem[] = []
   if (scale === 'threshold') {
     if (
@@ -466,7 +518,7 @@ export function colorProblems(
     ) {
       problems.push({
         rule: 'threshold-cuts',
-        slot: 'domain',
+        slot: 'scale.domain',
         message:
           'threshold cuts are distinct numbers, read in ascending order, with the range running from the lowest interval; a repeated cut leaves an interval no value falls in',
       })
@@ -478,7 +530,7 @@ export function colorProblems(
     ) {
       problems.push({
         rule: 'threshold-range',
-        slot: 'range',
+        slot: 'scale.range',
         message: `${domain.length} threshold ${domain.length === 1 ? 'cut makes' : 'cuts make'} ${domain.length + 1} intervals, one color each, and range lists ${range.length}: a missing color comes from the default palette and an extra one is never read`,
       })
     }
@@ -487,75 +539,78 @@ export function colorProblems(
     if (domain.length > 0) {
       problems.push({
         rule: 'ramp-domain',
-        slot: 'domain',
+        slot: 'scale.domain',
         message:
-          "a linear, log or symlog scale reads no domain, which is a categorical scale's order and a threshold scale's cuts; a ramp's ends are domainMin and domainMax where the color has them",
+          "a linear, log or symlog scale reads no domain, which is an ordinal scale's order and a threshold scale's cuts; a ramp's ends are domainMin and domainMax where the color has them",
       })
     }
     if (range.length === 1) {
       problems.push({
         rule: 'ramp-range',
-        slot: 'range',
+        slot: 'scale.range',
         message:
           'a linear, log or symlog ramp runs between at least two colors, and one paints every value alike; a single color is value',
       })
     }
     problems.push(
-      ...scaleEndProblems({ ...color, type: scale }, { reverse: true }),
+      ...scaleEndProblems(
+        { ...color.scale, type: scale },
+        { reverse: true },
+      ).map(underScale),
     )
   }
-  if (written.unknown !== undefined) {
-    if (scale !== 'categorical') {
+  if (unknown !== undefined) {
+    if (scale !== 'ordinal') {
       problems.push({
         rule: 'unknown-scale',
-        slot: 'unknown',
+        slot: 'scale.unknown',
         message:
-          "unknown paints the values a categorical scale's domain leaves out, and this color paints through no categorical scale",
+          "unknown paints the values an ordinal scale's domain leaves out, and this color paints through no ordinal scale",
       })
     } else if (domain.length === 0) {
       problems.push({
         rule: 'unknown-domain',
-        slot: 'unknown',
+        slot: 'scale.unknown',
         message:
           'unknown paints every value domain leaves out, and with no domain that is every value; list the values that keep their own colors in domain',
       })
     }
   }
-  const { labels = [] } = color
   const named =
-    scale === 'categorical' || scale === IDENTITY_SCALE
+    scale === 'ordinal' || scale === IDENTITY_SCALE
       ? domain.length
       : scale === 'threshold'
         ? domain.length + 1
         : undefined
   const cutsFromData = scale === 'threshold' && domain.length === 0
   if (
-    labels.length > 0 &&
+    names.length > 0 &&
     !cutsFromData &&
-    (named === undefined || labels.length > named)
+    (named === undefined || names.length > named)
   ) {
     const what =
-      scale === 'categorical'
+      scale === 'ordinal'
         ? 'value'
         : scale === IDENTITY_SCALE
           ? 'color'
           : 'interval'
     problems.push({
-      rule: 'labels-domain',
-      slot: 'labels',
+      rule: 'names-domain',
+      slot: 'scale.names',
       message:
         named === undefined
-          ? "labels names a categorical scale's values, a threshold scale's intervals or an identity scale's colors, and this color paints none of them"
-          : `labels names one ${what} each, and ${labels.length} ${labels.length === 1 ? 'label names' : 'labels name'} ${named} ${named === 1 ? what : `${what}s`}: a label past them names nothing`,
+          ? "names gives the key's name for an ordinal scale's values, a threshold scale's intervals or an identity scale's colors, and this color paints none of them"
+          : `names gives one ${what} each its name in the key, and ${names.length} ${names.length === 1 ? 'name meets' : 'names meet'} ${named} ${named === 1 ? what : `${what}s`}: a name past them names nothing`,
     })
   }
   return problems
 }
 
-/** `colorProblems` as the lines a display's corner notice lists, under `color`. */
+/** `colorProblems` as the lines a display's corner notice lists, under `setting`. */
 export function colorNotices(
   color: ColorSlots,
   presets: FieldPresets<string>,
+  setting = 'encoding.color',
 ): string[] {
-  return noticeLines('color', colorProblems(color, presets))
+  return noticeLines(setting, colorProblems(color, presets))
 }

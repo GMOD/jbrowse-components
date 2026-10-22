@@ -1603,7 +1603,7 @@ export default function baseStateModelFactory(
         const groupColor = self.categoricalColorField?.field ?? ''
         const painted = self.colorField ?? ''
         const current = facetOf(self.facet, getConf(self, ['facet', 'hidden']))
-        const written = colorOf(self.plot.color)
+        const written = self.writtenColor
         const wasGroupColor =
           groupColor !== '' &&
           (groupColor === current?.field || groupColor === field)
@@ -1612,9 +1612,13 @@ export default function baseStateModelFactory(
           ...(colorByGroup && field
             ? field === painted
               ? {}
-              : { color: colorForField(written, field, self.parkedColor) }
+              : {
+                  encoding: {
+                    color: colorForField(written, field, self.parkedColor),
+                  },
+                }
             : wasGroupColor
-              ? { color: colorForField(written, '') }
+              ? { encoding: { color: colorForField(written, '') } }
               : {}),
         }
       },
@@ -1671,8 +1675,9 @@ export default function baseStateModelFactory(
        */
       applyGroupBy(field: string | undefined, colorByGroup: boolean) {
         const plot = self.groupByPlot(field, colorByGroup)
-        if (plot.color) {
-          self.parkColor('color', self.writtenColor, plot.color)
+        const { color } = (plot.encoding ?? {}) as { color?: unknown }
+        if (color) {
+          self.parkColor('color', self.writtenColor, color)
         }
         self.applyPlot(plot)
       },

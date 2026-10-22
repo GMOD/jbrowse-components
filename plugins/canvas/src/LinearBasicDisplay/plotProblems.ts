@@ -23,26 +23,23 @@ export function facetOf(
     : null
 }
 
-/** A plot's color as an object, its constant shorthand unfolded. */
+/** A plot's color channel as an object, its field shorthand unfolded. */
 export function colorOf(color: unknown): ColorSlots {
   return typeof color === 'string'
-    ? { value: color }
+    ? { field: color }
     : ((color as ColorSlots | undefined) ?? {})
 }
 
-function colorExpression(color: unknown) {
-  return typeof color === 'string'
-    ? color
-    : typeof color === 'object' && color !== null
-      ? (((color as Record<string, unknown>).field ??
-          (color as Record<string, unknown>).value) as string | undefined)
-      : undefined
+function colorExpression(encoding: unknown) {
+  const { color } = (encoding ?? {}) as { color?: unknown }
+  const { field, value } = colorOf(color)
+  return field ?? value
 }
 
 /** A draft's `jexl:` color or filter that does not compile, by setting. */
 export function plotJexlProblems(draft: Plot, jexl: JexlInstance) {
   const expressions = [
-    { setting: 'color', code: colorExpression(draft.color) },
+    { setting: 'encoding.color', code: colorExpression(draft.encoding) },
     ...filterExpressionsOf(draft.filter).map(code => ({
       setting: 'filter',
       code,
