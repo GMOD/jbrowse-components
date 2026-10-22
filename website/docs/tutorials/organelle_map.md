@@ -173,7 +173,7 @@ sequence's name and length in the middle:
       {
         "type": "CircularView",
         "assembly": "human_mito",
-        "showLegend": true,
+        "legend": { "show": true },
         "tracks": ["mito_genes"]
       }
     ]

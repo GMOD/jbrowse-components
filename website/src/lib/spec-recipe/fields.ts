@@ -2213,13 +2213,15 @@ export const viewFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  showLegend: (value, { viewType }) =>
-    typeof value === 'boolean' && viewType === 'CircularView'
+  legend: (value, { viewType }) => {
+    const { show } = asRecord(value) ?? {}
+    return typeof show === 'boolean' && viewType === 'CircularView'
       ? {
-          path: `View menu → Show legend (${checked(value)})`,
+          path: `View menu → Show legend (${checked(show)})`,
           note: 'Offered once the view has a track.',
         }
-      : undefined,
+      : undefined
+  },
   // a view's `axis` guide: `grid` carries the ruler's ticks across the
   // plot, `labels` numbers them
   axis: (value, { viewType }) => {

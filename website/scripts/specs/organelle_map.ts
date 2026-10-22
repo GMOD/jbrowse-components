@@ -18,7 +18,7 @@ export const organelleMapSpecs: ScreenshotSpec[] = [
           type: 'CircularView',
           assembly: 'human_mito',
           height: 780,
-          showLegend: true,
+          legend: { show: true },
           tracks: ['mito_genes'],
         },
       ],

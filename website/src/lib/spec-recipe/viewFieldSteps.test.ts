@@ -57,10 +57,10 @@ test('hiding unlabelled rows is a valid predicate the color menu writes', () => 
 })
 
 test('the legend toggle of the circular view is in its view menu', () => {
-  expect(stepPaths('showLegend', true, 'CircularView')).toEqual([
+  expect(stepPaths('legend', { show: true }, 'CircularView')).toEqual([
     'View menu → Show legend (checked)',
   ])
-  expect(stepPaths('showLegend', true, 'LinearSyntenyView')).toEqual([])
+  expect(stepPaths('legend', { show: true }, 'LinearSyntenyView')).toEqual([])
 })
 
 test('an axis grid names the menu each view keeps it in', () => {

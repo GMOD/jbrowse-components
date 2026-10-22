@@ -94,7 +94,7 @@ export const circularSpecs: ScreenshotSpec[] = [
           type: 'CircularView',
           assembly: 'hg19',
           height: 780,
-          showLegend: true,
+          legend: { show: true },
           tracks: [
             {
               trackId: 'ngmlr_cov',
@@ -168,7 +168,7 @@ export const circularSpecs: ScreenshotSpec[] = [
     name: 'circular_synteny/color_by_strand',
     url: circularSyntenyView(CHROMOSOMES, [LIFTOVER], {
       encoding: { color: 'strand' },
-      showLegend: true,
+      legend: { show: true },
     }),
     ...circularSyntenyReady,
   },
@@ -177,7 +177,7 @@ export const circularSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'circular_synteny/rings',
     url: circularSyntenyView(CHROMOSOMES, [DENSITY_RING, LIFTOVER], {
-      showLegend: true,
+      legend: { show: true },
     }),
     readySelector: displayPainted('circular-ring-canvas'),
     readyTimeout: 180000,
@@ -192,7 +192,7 @@ export const circularSpecs: ScreenshotSpec[] = [
       ['chr1', 'chr2', 'chrX'],
       [DENSITY_RING, LIFTOVER],
       {
-        showLegend: true,
+        legend: { show: true },
       },
     ),
     readySelector: displayPainted('circular-ring-canvas'),
@@ -208,7 +208,7 @@ export const circularSpecs: ScreenshotSpec[] = [
       ['chr1', 'chr2', 'chrX'],
       [DENSITY_RING, LIFTOVER],
       {
-        showLegend: true,
+        legend: { show: true },
       },
     ),
     readySelector: displayPainted('circular-ring-canvas'),
@@ -255,7 +255,7 @@ export const circularSpecs: ScreenshotSpec[] = [
           height: 780,
           filter: [{ field: 'length', gte: 100000 }],
           encoding: { color: 'strand' },
-          showLegend: true,
+          legend: { show: true },
           tracks: ['hg38ToPanTro6_liftover'],
         },
       ],
@@ -274,7 +274,7 @@ export const circularSpecs: ScreenshotSpec[] = [
           height: 780,
           filter: [{ field: 'length', gte: 5000 }],
           encoding: { color: 'strand' },
-          showLegend: true,
+          legend: { show: true },
           tracks: ['KIM_to_CO92'],
         },
       ],
