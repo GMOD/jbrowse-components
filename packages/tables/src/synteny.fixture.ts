@@ -77,9 +77,13 @@ export const SYRI: MultiWayTablesArgs = {
   },
   display: {
     rows: { sort: ['Ler', 'Cvi', 'Eri', 'Kyo', 'Sha'] },
-    ribbonColor: {
-      field: 'syri',
-      domain: ['SYN', 'INV', 'TRANS', 'INVTR', 'DUP', 'INVDP'],
+    ribbons: {
+      encoding: {
+        color: {
+          field: 'syri',
+          scale: { domain: ['SYN', 'INV', 'TRANS', 'INVTR', 'DUP', 'INVDP'] },
+        },
+      },
     },
   },
 }

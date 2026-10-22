@@ -105,12 +105,15 @@ test('the rows slot orders the lanes and keeps the ones it names', async () => {
 test('ribbons color by strand, keyed against the lane above', async () => {
   const t = await engine.multiway({
     ...ALL_VS_ALL,
-    display: { ribbonColor: { field: 'strand' }, drawCurves: true },
+    display: {
+      ribbons: { encoding: { color: { field: 'strand' } } },
+      drawCurves: true,
+    },
   })
   expect(t.config).toMatchObject({
     drawCurves: true,
     hideUnlabelled: false,
-    ribbonColor: { field: 'strand' },
+    ribbons: { encoding: { color: { field: 'strand' } } },
   })
   expect(t.legend.label).toEqual([
     'Same orientation as lane above',
@@ -165,7 +168,7 @@ test('SyRI calls color their ribbons, and a lane unaligned on both sides opens n
 test('a gene table joins a gene across a lane that lacks it', async () => {
   const t = await engine.multiway({
     ...GENE_BLOCKS,
-    display: { ribbonColor: { field: 'strand' } },
+    display: { ribbons: { encoding: { color: { field: 'strand' } } } },
   })
   expect(t.lanes.chrom).toEqual(['chr1', 'Pp1', 'Tc1'])
   expect(t.blocks.name.filter((_, i) => t.blocks.lane[i] === 1)).toEqual([
@@ -231,7 +234,10 @@ test('a lane reading backwards against the anchor flips, and its ribbons run str
       regions: [{ refName: 'chr1', start: 0, end: 10_000 }],
       width: 800,
     },
-    display: { ribbonColor: { field: 'strand' }, rows: { sort: ['B'] } },
+    display: {
+      ribbons: { encoding: { color: { field: 'strand' } } },
+      rows: { sort: ['B'] },
+    },
   })
   expect(t.assemblyNames).toEqual(['A', 'B'])
   expect(t.lanes.flipped).toEqual([false, true])

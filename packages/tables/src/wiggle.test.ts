@@ -127,11 +127,14 @@ test('density keys its ramp as the display does, and a bar plot keys none', asyn
 })
 
 test('a line takes the color of the band between the cuts its score is in', async () => {
-  const color = {
-    field: 'score',
-    scale: 'threshold',
-    domain: [-200, 200],
-    range: ['blue', 'grey', 'red'],
+  const encoding = {
+    color: {
+      scale: {
+        type: 'threshold',
+        domain: [-200, 200],
+        range: ['blue', 'grey', 'red'],
+      },
+    },
   }
   const bandOf = (score: number) =>
     score < -200 ? '#0000ff' : score < 200 ? '#808080' : '#ff0000'
@@ -139,7 +142,7 @@ test('a line takes the color of the band between the cuts its score is in', asyn
     const t = await engine.wiggle({
       ...SIGNED_BIGWIG,
       bpPerPx: 1000,
-      display: { mark, color, extent: 'none' },
+      display: { mark, encoding, extent: 'none' },
     })
     t.marks.score.forEach((score, i) => {
       if (!t.marks.band[i]) {
@@ -151,7 +154,7 @@ test('a line takes the color of the band between the cuts its score is in', asyn
   const line = await engine.wiggle({
     ...SIGNED_BIGWIG,
     bpPerPx: 1000,
-    display: { mark: 'line', color },
+    display: { mark: 'line', encoding },
   })
   const pieces = line.marks.band
     .map((b, i) => i)
@@ -232,9 +235,11 @@ describe('sources sharing one panel take the colors the display deals them', () 
   it("greys the sources rowColor's pairs leave out under its unknown", async () => {
     const { declared } = await colorsOf({
       rowColor: {
-        domain: ['posneg_rw2'],
-        range: ['#123456'],
-        unknown: '#cccccc',
+        scale: {
+          domain: ['posneg_rw2'],
+          range: ['#123456'],
+          unknown: '#cccccc',
+        },
       },
     })
     expect(declared).toEqual(['#cccccc', '#123456', '#cccccc'])
@@ -242,8 +247,8 @@ describe('sources sharing one panel take the colors the display deals them', () 
 
   it('deals nothing under None, nor over a declared color, nor while a gradient paints', async () => {
     for (const display of [
-      { rowColor: { unknown: '' } },
-      { color: 'darkgreen' },
+      { rowColor: { scale: { unknown: '' } } },
+      { encoding: { color: { value: 'darkgreen' } } },
       { mark: 'span' },
     ]) {
       expect((await colorsOf(display)).declared).toEqual(['', '', ''])
