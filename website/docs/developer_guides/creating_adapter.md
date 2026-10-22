@@ -307,7 +307,7 @@ exactly this.
 The options parameter is `BaseOptions` (from
 `@jbrowse/core/data_adapters/BaseAdapter`). `signal`, `headers` and
 `statusCallback` are the ones a typical adapter forwards; `topLevelOnly` and
-`lodMode` are requests an adapter may honour or ignore:
+`lodTier` are requests an adapter may honour or ignore:
 
 <!-- include: packages/core/src/data_adapters/BaseAdapter/types.ts#baseOptions -->
 

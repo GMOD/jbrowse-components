@@ -32,7 +32,7 @@ reorienter that reverses op order and reverse-complements the spelled-out bases.
 
 `resolveLodTier` (`packages/synteny-core/src/lodTier.ts`) is the only place
 `auto` becomes a tier. It must run in a display getter that feeds the fetch
-cache key, and `BaseOptions.lodMode` is typed `'fine' | 'coarse'` so it cannot
+cache key, and `BaseOptions.lodTier` is typed `'fine' | 'coarse'` so it cannot
 drift back. A decision made adapter-side from `bpPerPx` is invisible to the key:
 `bpPerPxBucketKey` is `floor(log2(bpPerPx))`, so zooming across a threshold
 inside a bucket changed no key and left coarse ribbons on screen while

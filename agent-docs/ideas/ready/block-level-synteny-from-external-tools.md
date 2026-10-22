@@ -72,16 +72,16 @@ minimap2* path, not an *import-our-PAF* path.
 Block data should **not** replace raw alignments — it's a coarser LOD tier:
 whole-genome / coarse `coarseBpPerPx` serves **block** pif; zoomed in serves
 **raw** minimap2 pif (full CIGAR detail). This is our existing multi-tier format
-pattern, and the legitimate home for the adapter-level `lodMode` already plumbed
-RFC→RPC. `lodMode` selects the tier; it is **distinct** from the renderer fade
-(deliberately kept `lodMode`-independent). Blocks kill the structural hairball at
+pattern, and the legitimate home for the adapter-level `lodTier` already plumbed
+RFC→RPC. `lodTier` selects the tier; it is **distinct** from the renderer fade
+(deliberately kept `lodTier`-independent). Blocks kill the structural hairball at
 overview; perpendicular fade keeps whatever raw alignments still render at
 intermediate zooms honest.
 
 ## Recommendation & open questions
 
 Route B first — a `make-pif --blocks` collinear-chaining pass emitting a
-block-level pif tier (no dependency, uses current data, fits `lodMode` tiering;
+block-level pif tier (no dependency, uses current data, fits `lodTier` tiering;
 A/B against raw alignments on grape/peach and hs1/mm39). ntSynt as the quality
 reference (and a Route-A importer later) for hard cross-species cases. Skip
 SyRI/plotsr for cross-species (a SyRI importer could still be a nice
