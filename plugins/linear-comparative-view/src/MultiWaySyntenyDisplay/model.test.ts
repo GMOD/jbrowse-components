@@ -787,6 +787,16 @@ test('ribbons color by strand until the setting names a field or a color', () =>
   expect(display.ribbonColor).toBe('red')
 })
 
+test('Hide unlabelled rows belongs to the field it was ticked under', () => {
+  const display = createDisplay()
+  display.setRibbonColorField('group')
+  display.setHideUnlabelled(true)
+  display.setRibbonColorField('group')
+  expect(display.hideUnlabelled).toBe(true)
+  display.setRibbonColorField('family')
+  expect(display.hideUnlabelled).toBe(false)
+})
+
 test('the drawing toggles write the slots the display reads back', () => {
   const display = createDisplay()
   expect(display.drawCurves).toBe(false)

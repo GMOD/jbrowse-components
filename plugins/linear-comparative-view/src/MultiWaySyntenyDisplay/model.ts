@@ -49,6 +49,7 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   colorFieldOf,
   colorForField,
+  colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
@@ -191,7 +192,10 @@ import {
   packedPx,
   ribbonPickState,
 } from './multiwayRenderTypes.ts'
-import { RIBBON_IMPLIED_FIELD } from './ribbonColorConfigSchema.ts'
+import {
+  RIBBON_IMPLIED_FIELD,
+  paintedRibbonColor,
+} from './ribbonColorConfigSchema.ts'
 import {
   laneFetchesFor,
   rowsReadAgainstAnchor,
@@ -588,6 +592,12 @@ export function stateModelFactory(
         },
         /** #action */
         setRibbonColorField(field: string) {
+          const { ribbonColor } = self.configuration
+          if (
+            field !== paintedRibbonColor(colorSnapshotOf(ribbonColor)).field
+          ) {
+            setConf(self, 'hideUnlabelled', false)
+          }
           setConf(
             self,
             'ribbonColor',
@@ -1221,16 +1231,17 @@ export function stateModelFactory(
       },
       /** #action */
       showLane(assemblyName: string) {
+        const choice = self.laneChoice ?? []
         const { kept, hidden } = withLaneShown(
           {
-            kept: self.laneChoice ?? [],
+            kept: choice,
             hidden: self.hiddenLanes,
             configured: self.configuredLanes,
           },
           assemblyName,
           self.laneKey,
         )
-        if (kept !== (self.laneChoice ?? [])) {
+        if (kept !== choice) {
           setConf(self, ['rows', 'kept'], kept)
         }
         self.hiddenLaneNames = hidden.length ? hidden : undefined
