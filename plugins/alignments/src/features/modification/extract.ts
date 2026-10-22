@@ -257,16 +257,16 @@ export function extractMethylation(
     return
   }
   const { start: regionStart, end: regionEnd } = region
-  const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
+  const { refStart, methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
     getMethBins(modData, mods?.cytosineContext)
 
   const methStrand = strand === -1 ? -1 : 1
-  const iStart = Math.max(0, regionStart - featureStart)
-  const iEnd = Math.min(modData.flen, regionEnd - featureStart)
+  const kStart = Math.max(0, regionStart - featureStart - refStart)
+  const kEnd = Math.min(methBins.length, regionEnd - featureStart - refStart)
 
-  for (let i = iStart; i < iEnd; i++) {
-    const hasMeth = showMeth && methBins[i]
-    const hasHydroxy = showHydroxy && hydroxyMethBins[i]
+  for (let k = kStart; k < kEnd; k++) {
+    const hasMeth = showMeth && methBins[k]
+    const hasHydroxy = showHydroxy && hydroxyMethBins[k]
     if (!hasMeth && !hasHydroxy) {
       continue
     }
@@ -277,8 +277,8 @@ export function extractMethylation(
     // unmethylated mark therefore painted an "unmethylated 5hmC" mark at nearly
     // every CpG, flooding the view. Instead pick the single most-likely state
     // per cytosine — 5mC, 5hmC, or unmodified — mirroring IGV's no-mod logic.
-    const mProb = hasMeth ? (methProbs[i] ?? 0) : 0
-    const hProb = hasHydroxy ? (hydroxyMethProbs[i] ?? 0) : 0
+    const mProb = hasMeth ? methProbs[k]! : 0
+    const hProb = hasHydroxy ? hydroxyMethProbs[k]! : 0
     const noModProb = Math.max(0, 1 - mProb - hProb)
 
     // Winner selection, allocation-free: pick 5hmC, then 5mC, else the no-mod
@@ -287,7 +287,7 @@ export function extractMethylation(
     const isMeth = !isHydroxy && mProb > noModProb
     modificationsData.push({
       readIndex,
-      position: i + featureStart,
+      position: featureStart + refStart + k,
       base: 'C',
       modType: isHydroxy ? 'h' : 'm',
       strand: methStrand,

@@ -48,12 +48,12 @@ describe('getMethBins CpG filtering', () => {
   test('forward strand: C not followed by G is skipped', () => {
     // seq AACAAA: C at index 2, next base A → not CpG
     const { methBins } = bins('AACAAA', 'C+m,0;', [200])
-    expect(methBins[2]).toBeUndefined()
+    expect(methBins[2]).toBe(0)
   })
 
   test('forward strand: C at last position (no next base) is skipped', () => {
     const { methBins } = bins('AAAC', 'C+m,0;', [200])
-    expect(methBins[3]).toBeUndefined()
+    expect(methBins[3]).toBe(0)
   })
 
   test('reverse strand: G preceded by C in read is stored', () => {
@@ -69,7 +69,7 @@ describe('getMethBins CpG filtering', () => {
   test('reverse strand: G not preceded by C in read is skipped', () => {
     // seq = TTAGTT → revcom = AACTAA: C at revcom index 2, next base T → not CpG
     const { methBins } = bins('TTAGTT', 'C+m,0;', [200], -1)
-    expect(Object.keys(methBins).length).toBe(0)
+    expect(methBins).not.toContain(1)
   })
 
   test('probability is stored correctly at CpG position', () => {
@@ -105,15 +105,15 @@ describe('getMethBins CpG filtering', () => {
   test('non-CpG modification types are ignored', () => {
     // 6mA modification (type 'a') should not populate methBins
     const { methBins, hydroxyMethBins } = bins('AAAGAA', 'A+a,0;', [200])
-    expect(Object.keys(methBins).length).toBe(0)
-    expect(Object.keys(hydroxyMethBins).length).toBe(0)
+    expect(methBins).not.toContain(1)
+    expect(hydroxyMethBins).not.toContain(1)
   })
 
   test('read with CpGs but no 5mC call does not invent unmethylated CpGs', () => {
     // 6mA-only read that happens to contain a CpG at index 2 must not be
     // painted as having an unmethylated cytosine — methylation was never called.
     const { methBins } = bins('AACGAA', 'A+a,0;', [200])
-    expect(Object.keys(methBins).length).toBe(0)
+    expect(methBins).not.toContain(1)
   })
 
   test('two CpGs on same forward strand read both stored', () => {
@@ -137,20 +137,20 @@ describe('getMethBins CpG filtering', () => {
     // uncalled CpG at index 6 must NOT be painted unmethylated.
     const { methBins } = bins('AACGATCGAA', 'C+m?,0;', [230])
     expect(methBins[2]).toBe(1)
-    expect(methBins[6]).toBeUndefined()
+    expect(methBins[6]).toBe(0)
   })
 
   test('CHG context: forward CHG site stored, dropped under default CpG', () => {
     // seq CAGAA: C@0 in CHG context (C,A,G). Methylation call at C@0.
     expect(bins('CAGAA', 'C+m,0;', [200], 1, '5M', 'CHG').methBins[0]).toBe(1)
     // same call under the default CpG context is not a CpG, so it is dropped
-    expect(bins('CAGAA', 'C+m,0;', [200]).methBins[0]).toBeUndefined()
+    expect(bins('CAGAA', 'C+m,0;', [200]).methBins[0]).toBe(0)
   })
 
   test('CHH context: forward CHH site stored', () => {
     // seq CATAA: C@0 in CHH context (C,A,T)
     expect(bins('CATAA', 'C+m,0;', [200], 1, '5M', 'CHH').methBins[0]).toBe(1)
-    expect(bins('CATAA', 'C+m,0;', [200]).methBins[0]).toBeUndefined()
+    expect(bins('CATAA', 'C+m,0;', [200]).methBins[0]).toBe(0)
   })
 
   test('CHG context on reverse strand', () => {
@@ -158,7 +158,7 @@ describe('getMethBins CpG filtering', () => {
     // index 2 (the G). Reading backwards+complement gives C,H,G → CHG match.
     expect(bins('CAGT', 'C+m,0;', [200], -1, '4M', 'CHG').methBins[2]).toBe(1)
     // under default CpG the backward neighbour is H (T after complement), not G
-    expect(bins('CAGT', 'C+m,0;', [200], -1).methBins[2]).toBeUndefined()
+    expect(bins('CAGT', 'C+m,0;', [200], -1).methBins[2]).toBe(0)
   })
 
   test('both-strand modBAM: the - MM group is binned as well as the + group', () => {

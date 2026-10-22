@@ -41,11 +41,24 @@ export function isMethylationFillType(type: string) {
   return type === 'm' || type === 'h'
 }
 
+export interface MethBins {
+  /** the read-relative reference offset that index 0 of each array holds */
+  refStart: number
+  /** 1 where a 5mC call or the unmethylated fill landed */
+  methBins: Uint8Array
+  hydroxyMethBins: Uint8Array
+  methProbs: Float32Array
+  hydroxyMethProbs: Float32Array
+}
+
 /**
  * #api
- * Bins per-read base modifications and their probabilities onto reference
- * positions, returning typed arrays for methylated/unmethylated calls. Only
- * cytosines in `context` are considered (default CpG); plants also use CHG/CHH.
+ * Bins per-read base modifications and their probabilities onto the reference
+ * offsets of `window` (the whole read without one), indexed from `refStart`.
+ * Only cytosines in `context` are considered (default CpG); plants also use
+ * CHG/CHH.
+ *
+ * Every ML probability is `(N + 0.5) / 256`, which float32 holds exactly.
  */
 export function getMethBins(
   {
@@ -58,12 +71,15 @@ export function getMethBins(
     window,
   }: ParsedModData,
   context: CytosineContext = 'CG',
-) {
+): MethBins {
   const isReverse = fstrand === -1
-  const methBins: number[] = []
-  const hydroxyMethBins: number[] = []
-  const methProbs: number[] = []
-  const hydroxyMethProbs: number[] = []
+  const lo = Math.max(0, window?.refStart ?? 0)
+  const hi = Math.max(lo, Math.min(flen, window?.refEnd ?? flen))
+  const size = hi - lo
+  const methBins = new Uint8Array(size)
+  const hydroxyMethBins = new Uint8Array(size)
+  const methProbs = new Float32Array(size)
+  const hydroxyMethProbs = new Float32Array(size)
 
   forEachModRefPos(
     modifications,
@@ -74,8 +90,8 @@ export function getMethBins(
       const isMeth = isMethylationFillType(type)
       if (
         isMeth &&
-        ref >= 0 &&
-        ref < flen &&
+        ref >= lo &&
+        ref < hi &&
         matchesCytosineContext(
           seq,
           positions[idx]!,
@@ -83,12 +99,13 @@ export function getMethBins(
           context,
         )
       ) {
+        const at = ref - lo
         if (type === 'm') {
-          methBins[ref] = 1
-          methProbs[ref] = prob
+          methBins[at] = 1
+          methProbs[at] = prob
         } else {
-          hydroxyMethBins[ref] = 1
-          hydroxyMethProbs[ref] = prob
+          hydroxyMethBins[at] = 1
+          hydroxyMethProbs[at] = prob
         }
       }
     },
@@ -113,8 +130,6 @@ export function getMethBins(
   // Scan the window's read sequence for every cytosine in `context` and mark any
   // not already detected from the MM tag as unmethylated (prob=0).
   if (fillUnmethylated) {
-    const lo = Math.max(0, window?.refStart ?? 0)
-    const hi = Math.min(flen, window?.refEnd ?? flen)
     let readPos = window?.opRead ?? 0
     let refPos = window?.opRef ?? 0
     for (
@@ -137,12 +152,11 @@ export function getMethBins(
           if (
             rf >= lo &&
             rf < hi &&
-            !methBins[rf] &&
+            !methBins[rf - lo] &&
             ((fillForward && matchesCytosineContext(seq, rp, false, context)) ||
               (fillReverse && matchesCytosineContext(seq, rp, true, context)))
           ) {
-            methBins[rf] = 1
-            methProbs[rf] = 0
+            methBins[rf - lo] = 1
           }
         }
         readPos += len
@@ -151,5 +165,11 @@ export function getMethBins(
     }
   }
 
-  return { methBins, hydroxyMethBins, methProbs, hydroxyMethProbs }
+  return {
+    refStart: lo,
+    methBins,
+    hydroxyMethBins,
+    methProbs,
+    hydroxyMethProbs,
+  }
 }

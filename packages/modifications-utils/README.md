@@ -10,13 +10,15 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
 ### getMethBins
 
-Bins per-read base modifications and their probabilities onto reference
-positions, returning typed arrays for methylated/unmethylated calls. Only
+Bins per-read base modifications and their probabilities onto the reference
+offsets of `window` (the whole read without one), indexed from `refStart`. Only
 cytosines in `context` are considered (default CpG); plants also use CHG/CHH.
+
+Every ML probability is `(N + 0.5) / 256`, which float32 holds exactly.
 
 ```js
 // type signature
-({ modifications, probabilities, cigarOps, seq, fstrand, flen, window, }: ParsedModData, context?: CytosineContext) => { methBins: number[]; hydroxyMethBins: number[]; methProbs: number[]; hydroxyMethProbs: number[]; }
+({ modifications, probabilities, cigarOps, seq, fstrand, flen, window, }: ParsedModData, context?: CytosineContext) => MethBins
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getMethBins.ts)
