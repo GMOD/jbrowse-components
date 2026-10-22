@@ -124,6 +124,26 @@ test('multi-column insertion emits one entry per row with the correct length', (
   ])
 })
 
+test('an insertion split across abutting blocks is one insertion', () => {
+  const blocks: TestWireBlock[] = [
+    block(0, 'ACGT-', [row(0, 'ACGTG')]),
+    block(4, '---ACGT', [row(0, 'CCAACGT')]),
+  ]
+  expect(computeMafCoverage(blocks, 0, 8).insertions).toEqual([
+    { position: 4, length: 4 },
+  ])
+})
+
+test('an insertion at a block end with no abutting block still lands', () => {
+  const blocks: TestWireBlock[] = [
+    block(0, 'ACGT-', [row(0, 'ACGTG')]),
+    block(9, 'ACGT', [row(0, 'ACGT')]),
+  ]
+  expect(computeMafCoverage(blocks, 0, 13).insertions).toEqual([
+    { position: 4, length: 1 },
+  ])
+})
+
 // A malformed file can ship a row shorter than the reference. Out of range a
 // typed array reads `undefined`, which is neither '-' nor ' ', so the missing
 // tail used to read as real bases: phantom depth, a mismatch against base code

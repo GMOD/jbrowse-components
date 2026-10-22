@@ -252,7 +252,7 @@ export function computeMafCoverage(
 
   // Per-row pending insertion length at the current refPos, keyed by sample
   // index. Flushed into `insertions` when a non-gap ref column closes the
-  // insertion run (or at block end). Tracks the actual run length so
+  // insertion run, or at a block end no block abuts. Tracks the run length so
   // multi-column insertions are emitted as a single entry, not N entries of
   // length 1.
   //
@@ -408,8 +408,9 @@ export function computeMafCoverage(
         refPos++
       }
     }
-    // Trailing insertion at block end (ref ends with `-` columns).
-    flushPending(refPos)
+    if (blockStartBp[block + 1] !== refPos) {
+      flushPending(refPos)
+    }
   }
 
   let maxDepth = 0

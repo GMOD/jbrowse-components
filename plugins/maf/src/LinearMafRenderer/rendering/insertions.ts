@@ -24,6 +24,7 @@ function placedInsertions(region: MafRegionData): Placed {
     const x: number[] = []
     const row: number[] = []
     const length: number[] = []
+    const lastOfRow = new Map<number, number>()
     for (const block of region.blocks) {
       if (blockHasRefGap(block)) {
         for (const r of block.rows) {
@@ -32,9 +33,15 @@ function placedInsertions(region: MafRegionData): Placed {
             r.alignmentBytes,
             block.startBp,
             (anchorBp, len) => {
-              x.push(anchorBp)
-              row.push(r.rowIndex)
-              length.push(len)
+              const last = lastOfRow.get(r.rowIndex)
+              if (last !== undefined && x[last] === anchorBp) {
+                length[last]! += len
+              } else {
+                lastOfRow.set(r.rowIndex, x.length)
+                x.push(anchorBp)
+                row.push(r.rowIndex)
+                length.push(len)
+              }
             },
           )
         }

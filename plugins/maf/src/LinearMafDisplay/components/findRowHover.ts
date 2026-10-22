@@ -186,30 +186,24 @@ function insertionHitInRow(
   }
   return nearest === -1
     ? undefined
-    : describeInsertion(
-        region,
-        rowIndex,
-        x[nearest]!,
-        length[nearest]!,
-        showAsUpperCase,
-      )
+    : describeInsertion(region, rowIndex, x[nearest]!, showAsUpperCase)
 }
 
+// An insertion split across abutting blocks is one insertion: the block
+// ending at the anchor and the block starting there each hold part of it.
 function describeInsertion(
   region: MafRegionData,
   rowIndex: number,
   anchor: number,
-  len: number,
   showAsUpperCase: boolean,
 ): InsertionHit | undefined {
+  const left = blockIndexAtBp(region.blocks, anchor - 1)
+  const right = blockIndexAtBp(region.blocks, anchor)
   let hit: InsertionHit | undefined
-  for (const i of [
-    blockIndexAtBp(region.blocks, anchor),
-    blockIndexAtBp(region.blocks, anchor - 1),
-  ]) {
+  for (const i of left === right ? [left] : [left, right]) {
     const block = region.blocks[i]
     const row = block?.rows.find(r => r.rowIndex === rowIndex)
-    if (!block || !row || hit) {
+    if (!block || !row) {
       continue
     }
     const aln = row.alignmentBytes
@@ -218,7 +212,7 @@ function describeInsertion(
       aln,
       block.startBp,
       (anchorBp, length, baseOffset, byteStart, byteEnd) => {
-        if (hit || anchorBp !== anchor || length !== len) {
+        if (anchorBp !== anchor) {
           return
         }
         let sequence = ''
@@ -230,14 +224,20 @@ function describeInsertion(
             )
           }
         }
-        hit = {
-          kind: 'insertion',
-          length,
-          sequence,
-          chr: row.chr,
-          pos: forwardPos(row, baseOffset),
-          strand: row.strand,
-        }
+        hit = hit
+          ? {
+              ...hit,
+              length: hit.length + length,
+              sequence: hit.sequence + sequence,
+            }
+          : {
+              kind: 'insertion',
+              length,
+              sequence,
+              chr: row.chr,
+              pos: forwardPos(row, baseOffset),
+              strand: row.strand,
+            }
       },
     )
   }

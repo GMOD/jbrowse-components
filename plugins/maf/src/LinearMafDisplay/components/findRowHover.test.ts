@@ -379,3 +379,35 @@ test('an insertion anchored at a block end hovers from past the block', () => {
   )
   expect(findRowHoverAtBp(r, at(104), 0, false, 0.1, 1, 20)).toBeUndefined()
 })
+
+test('an insertion split across abutting blocks hovers as one', () => {
+  const row = (alignment: string, srcStart: number) => ({
+    rowIndex: 0,
+    alignmentBytes: enc.encode(alignment),
+    chr: 'chrX',
+    srcStart,
+    strand: 1,
+  })
+  const r = region([
+    {
+      startBp: 100,
+      endBp: 102,
+      refSeqBytes: enc.encode('AA-'),
+      rows: [row('aac', 100)],
+      empties: [],
+    },
+    {
+      startBp: 102,
+      endBp: 104,
+      refSeqBytes: enc.encode('--AA'),
+      rows: [row('ggaa', 103)],
+      empties: [],
+    },
+  ])
+  expect(findRowHoverAtBp(r, at(102), 0, false, 0.1, 1, 20)).toMatchObject({
+    kind: 'insertion',
+    length: 3,
+    sequence: 'cgg',
+    pos: 102,
+  })
+})

@@ -130,3 +130,33 @@ test("zoomed out, each row keeps the longest of a bin's insertions", () => {
   })
   expect(merged(4)).toEqual({ x: [103, 102], row: [0, 1], length: [2, 1] })
 })
+
+test('an insertion split across abutting blocks is one marker', () => {
+  const rows = (alignment: string) => [
+    { rowIndex: 0, alignmentBytes: enc.encode(alignment) },
+  ]
+  const c = mafInsertionChannels(
+    {
+      blocks: [
+        {
+          startBp: 100,
+          endBp: 102,
+          refSeqBytes: enc.encode('AA-'),
+          rows: rows('aac'),
+          empties: [],
+        },
+        {
+          startBp: 102,
+          endBp: 104,
+          refSeqBytes: enc.encode('--AA'),
+          rows: rows('ggaa'),
+          empties: [],
+        },
+      ],
+      coverage: emptyMafCoverage(100),
+    },
+    PURPLE,
+    1,
+  )
+  expect([c.count, c.x[0], c.length[0]]).toEqual([1, 102, 3])
+})
