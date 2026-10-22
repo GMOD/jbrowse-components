@@ -70,8 +70,8 @@ export interface SyntenyTablesArgs {
   target: AxisArgs
   /**
    * The view's settings, as a `LinearSyntenyView` snapshot writes them:
-   * `color` (a CSS color, or the color object's slots such as
-   * `{ field: 'strand' }`), `opacity` (a number, or the opacity object),
+   * `encoding` (`color`, a field such as `'strand'` or the color channel's
+   * slots, and `opacity`, a number or the opacity channel),
    * `filter` (a list of field predicates), `cigarMode` (`full`, `matches` or `off`),
    * `mark` (`interpolate`: `linear` or `bump`), `axis` (`grid` draws the
    * location markers), `render` (`antialias`: `true`, `false`, or unset to
@@ -79,8 +79,7 @@ export interface SyntenyTablesArgs {
    * fade measures against.
    */
   view?: {
-    color?: ColorArg
-    opacity?: OpacityArg
+    encoding?: { color?: ColorArg; opacity?: OpacityArg }
     filter?: FilterArg
     cigarMode?: 'full' | 'matches' | 'off'
     mark?: { interpolate?: RibbonInterpolation }
@@ -318,7 +317,7 @@ function concatColumns<T extends Record<string, unknown[]>>(a: T, b: T) {
  * A pair of rows of a linear synteny view as the display fetches, lays out
  * and colors it, as tables: `alignments`, each alignment block the two rows
  * share, with its span on each, its strand, name and measurements, in the
- * color the view's `color` paints it; `ribbons`, what the band draws between
+ * color the view's `encoding.color` paints it; `ribbons`, what the band draws between
  * the rows in paint order, each a trapezoid from a span on the query row to
  * a span on the target row (`match` for the block, `insertion`, `deletion`
  * and `skip` for the CIGAR ops wide enough to draw, `marker` for a location
@@ -329,7 +328,7 @@ function concatColumns<T extends Record<string, unknown[]>>(a: T, b: T) {
  * contig and the line its hover prints, and `offscreenStrip`, the marks and
  * labels the strips along the band's edges paint, in px;
  * `legend` and `ramps`, the key; and `config`, the view's settings with
- * their defaults filled, `color` and `opacity` as config objects. For a host that draws
+ * their defaults filled, `encoding.color` and `encoding.opacity` as config objects. For a host that draws
  * them itself, such as R through V8. Positions are genomic, on the axis's
  * region named by `queryRegion` and `targetRegion`.
  */
@@ -371,8 +370,8 @@ export async function syntenyTables(
   })
   const { instanceData, ...featureData } = value
   const settings = viewColorSettings({
-    color: view.color,
-    opacity: view.opacity,
+    color: view.encoding?.color,
+    opacity: view.encoding?.opacity,
     defaultOpacity: DEFAULT_ALPHA,
     attributeRanges: featureData.attributeRanges,
   })

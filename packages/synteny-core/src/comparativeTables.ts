@@ -1,4 +1,4 @@
-import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
+import { fullConfSnapshot } from '@jbrowse/core/configuration'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import {
@@ -120,7 +120,7 @@ export interface ViewColorSettings {
   field: string
   valueColor?: string
   paint: SyntenyColorPaint
-  labels?: readonly string[]
+  names?: readonly string[]
   title?: string
   descending?: boolean
   trackColor: string
@@ -128,13 +128,18 @@ export interface ViewColorSettings {
   fade?: SyntenyOpacitySnapshot
   level: number
   attributeRanges: Record<string, AttributeRange>
-  /** `color` and `opacity` as config objects, every slot filled, `value` the view's default opacity where unset */
-  config: { color: Record<string, unknown>; opacity: Record<string, unknown> }
+  /** `encoding.color` and `encoding.opacity` as config objects, every slot filled, `value` the view's default opacity where unset */
+  config: {
+    encoding: {
+      color: Record<string, unknown>
+      opacity: Record<string, unknown>
+    }
+  }
 }
 
 /**
- * The view's `color` and `opacity` as the color pass reads them: the field
- * painted (`reference` resolved to the query side, as a two-row view does),
+ * The view's `encoding.color` and `encoding.opacity` as the color pass reads
+ * them: the field painted (`reference` resolved to the query side, as a two-row view does),
  * the constant under it, the ramp or label settings, the opacity level every
  * alignment draws at and the fade a field applies under it.
  */
@@ -149,39 +154,41 @@ export function viewColorSettings({
   defaultOpacity: number
   attributeRanges: Record<string, AttributeRange>
 }): ViewColorSettings {
-  const colorSnap = typeof color === 'string' ? { value: color } : (color ?? {})
-  const conf = syntenyColorConfigSchema.create(colorSnap)
+  const conf = syntenyColorConfigSchema.create(
+    typeof color === 'string' ? { field: color } : (color ?? {}),
+  )
   const setting = colorSnapshotOf(conf)
-  const descending: boolean | undefined = readConfObject(conf, 'descending')
   const field0 = paintedField(setting)
   const field = field0 === 'reference' ? 'query' : field0
   const opacitySnap: SyntenyOpacitySnapshot =
     typeof opacity === 'number' ? { value: opacity } : (opacity ?? {})
   const ordered = orderAttributeLabels(
     attributeRanges,
-    setting.domain,
-    setting.range,
+    setting.scale.domain,
+    setting.scale.range,
   )
   return {
     field,
     valueColor: setting.value,
     paint: colorPaintOf(conf),
-    labels: setting.labels,
-    title: setting.title,
-    descending,
+    names: setting.scale.names,
+    title: setting.legend.title,
+    descending: setting.legend.descending,
     trackColor: syntenyTrackPalette[0]!,
     opacity: opacitySnap,
     fade: opacityFadeOf(opacitySnap),
     level: opacityLevel(opacitySnap, defaultOpacity, ordered),
     attributeRanges: ordered,
     config: {
-      color: fullConfSnapshot(conf),
-      opacity: fullConfSnapshot(
-        syntenyOpacityConfigSchema.create({
-          ...opacitySnap,
-          value: opacitySnap.value ?? defaultOpacity,
-        }),
-      ),
+      encoding: {
+        color: fullConfSnapshot(conf),
+        opacity: fullConfSnapshot(
+          syntenyOpacityConfigSchema.create({
+            ...opacitySnap,
+            value: opacitySnap.value ?? defaultOpacity,
+          }),
+        ),
+      },
     },
   }
 }
@@ -232,7 +239,7 @@ export function comparativeLegend(
     cigarOps,
     attributeRanges: settings.attributeRanges,
     paint: settings.paint,
-    labels: settings.labels,
+    names: settings.names,
     descending: settings.descending,
   }
   const swatch = getColorBySwatch(settings.field, opts)

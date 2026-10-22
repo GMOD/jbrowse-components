@@ -49,7 +49,7 @@ const [forwardStrandColor, reverseStrandColor]: readonly [
   string,
   string,
   ...string[],
-] = UNIVERSAL_FIELD_PRESETS.strand.range
+] = UNIVERSAL_FIELD_PRESETS.strand.scale.range
 
 export const colorSchemes = {
   default: {

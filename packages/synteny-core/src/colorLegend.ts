@@ -162,39 +162,40 @@ const VIEW_FIELD_LABELS: Record<string, string> = {
 export function colorByShortLabel(field: string) {
   return (
     VIEW_FIELD_LABELS[field] ??
-    (isMeasureField(field) ? SYNTENY_FIELD_PRESETS[field].title : field)
+    (isMeasureField(field) ? SYNTENY_FIELD_PRESETS[field].legend.title : field)
   )
 }
 
-// A threshold's bins as chips, named by `labels` or the field's preset and
+// A threshold's bins as chips, named by `names` or the field's preset and
 // turned round where the key reads highest first.
 function thresholdChips(
   field: string,
   mode: ThresholdMode,
   {
     paint = {},
-    labels = [],
+    names = [],
     descending,
   }: {
     paint?: SyntenyColorPaint
-    labels?: readonly string[]
+    names?: readonly string[]
     descending?: boolean
   },
 ): ColorChip[] {
-  const key = withPreset(
+  const { scale, legend } = withPreset(
     {
       field,
-      scale: mode.scale,
-      domain: paint.domain ?? [],
-      labels,
-      descending,
+      scale: { type: mode.scale, domain: paint.domain ?? [], names },
+      legend: { descending },
     },
     SYNTENY_FIELD_PRESETS,
   )
-  const chips = thresholdKeyEntries(mode.cuts, mode.colors, {}, key.labels).map(
-    ({ color, label }) => ({ color, label }),
-  )
-  return key.descending ? chips.toReversed() : chips
+  const chips = thresholdKeyEntries(
+    mode.cuts,
+    mode.colors,
+    {},
+    scale.names as readonly string[],
+  ).map(({ color, label }) => ({ color, label }))
+  return legend.descending ? chips.toReversed() : chips
 }
 
 // What a field with no swatch spec is doing instead. Lives here rather than
@@ -222,7 +223,7 @@ export function getColorBySwatch(
     attributeRanges,
     hideUnlabelled = false,
     missingColor,
-    labels,
+    names,
     descending,
     paint = {},
   }: {
@@ -241,9 +242,9 @@ export function getColorBySwatch(
     // both kinds of mode; by default a ramp's is the match red and a text
     // column's the no-category grey, as `colorFunctions` paints them
     missingColor?: string
-    // `color.labels`: what the key names each domain value or interval
-    labels?: readonly string[]
-    // `color.descending`: a threshold's key lists its highest interval first
+    // `scale.names`: what the key names each domain value or interval
+    names?: readonly string[]
+    // `legend.descending`: a threshold's key lists its highest interval first
     descending?: boolean
     // what `color` declares over a field's own scale
     paint?: SyntenyColorPaint
@@ -265,7 +266,7 @@ export function getColorBySwatch(
             ],
       }
     case 'strand': {
-      const [forward, reverse] = strandLevels(paint, labels)
+      const [forward, reverse] = strandLevels(paint, names)
       return {
         kind: 'chips',
         chips: [
@@ -296,7 +297,7 @@ export function getColorBySwatch(
       return {
         kind: 'chips',
         chips: [
-          ...thresholdChips(field, numeric, { paint, labels, descending }),
+          ...thresholdChips(field, numeric, { paint, names, descending }),
           ...(missing
             ? [
                 {
@@ -322,7 +323,7 @@ export function getColorBySwatch(
   if (!categorical) {
     return undefined
   }
-  const chips = labelChips(categorical, labels)
+  const chips = labelChips(categorical, names)
   const shown = chips.slice(0, MAX_LEGEND_ENTRIES)
   const rest = chips.length - shown.length
   return {
@@ -356,7 +357,7 @@ export function getColorBySwatch(
  * on-screen composited ribbon colors, subject to `legendChipColor`'s
  * legibility floor; a mode with no fixed key (a color per sequence name) is a
  * note row saying so. A threshold keys its bins as chips. `title` is
- * `color.title` as written: unset keeps the field's own heading, `''` draws
+ * `legend.title` as written: unset keeps the field's own heading, `''` draws
  * none.
  */
 export function colorByScales(

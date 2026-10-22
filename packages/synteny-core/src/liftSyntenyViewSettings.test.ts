@@ -3,22 +3,46 @@ import { liftSyntenyViewSettings } from './liftSyntenyViewSettings.ts'
 // launch links the genomes portal handed out hold the mode string on the view
 test('a mode string lifts into the field it paints', () => {
   expect(liftSyntenyViewSettings({ colorBy: 'strand' })).toEqual({
-    color: { field: 'strand' },
+    encoding: { color: { field: 'strand' } },
   })
   expect(liftSyntenyViewSettings({ colorBy: 'mappingQuality' })).toEqual({
-    color: { field: 'mapq' },
+    encoding: { color: { field: 'mapq' } },
   })
   expect(liftSyntenyViewSettings({ colorBy: 'meanQueryIdentity' })).toEqual({
-    color: { field: 'identity' },
+    encoding: { color: { field: 'identity' } },
   })
-  expect(liftSyntenyViewSettings({ colorBy: 'default' })).toEqual({
-    color: undefined,
-  })
+  expect(liftSyntenyViewSettings({ colorBy: 'default' })).toEqual({})
 })
 
 test('a snapshot with no colorBy is left alone', () => {
-  const snap = { color: { field: 'track' }, init: { views: [] } }
+  const snap = { encoding: { color: 'track' }, init: { views: [] } }
   expect(liftSyntenyViewSettings(snap)).toBe(snap)
+})
+
+// jb2hubs' desktop links write the view's `color` as it was before `encoding`
+test("a view's color lands as encoding.color, a bare string the constant", () => {
+  expect(liftSyntenyViewSettings({ color: { field: 'query' } })).toEqual({
+    encoding: { color: { field: 'query' } },
+  })
+  expect(liftSyntenyViewSettings({ color: 'grey' })).toEqual({
+    encoding: { color: { value: 'grey' } },
+  })
+  expect(
+    liftSyntenyViewSettings({
+      color: { field: 'identity', scale: 'threshold', domain: [0.9] },
+    }),
+  ).toEqual({
+    encoding: {
+      color: { field: 'identity', scale: { type: 'threshold', domain: [0.9] } },
+    },
+  })
+  expect(
+    liftSyntenyViewSettings({
+      color: { field: 'query' },
+      colorBy: 'strand',
+      encoding: { opacity: 0.4 },
+    }),
+  ).toEqual({ encoding: { color: { field: 'query' }, opacity: 0.4 } })
 })
 
 // v4.3.0 held colorBy, alpha and minAlignmentLength on each synteny display
@@ -43,8 +67,7 @@ test('a v4.3.0 display setting lands on the view', () => {
     ],
   })
   expect(lifted).toMatchObject({
-    color: { field: 'strand' },
-    opacity: 0.6,
+    encoding: { color: { field: 'strand' }, opacity: 0.6 },
     filter: [{ field: 'length', gte: 500 }],
   })
   expect(lifted).not.toHaveProperty('colorBy')
@@ -57,19 +80,24 @@ test("a dotplot's display colorBy lands, and the view's own setting wins", () =>
     liftSyntenyViewSettings({
       tracks: [{ displays: [{ type: 'DotplotDisplay', colorBy: 'query' }] }],
     }),
-  ).toMatchObject({ color: { field: 'query' } })
+  ).toMatchObject({ encoding: { color: { field: 'query' } } })
   expect(
     liftSyntenyViewSettings({
       alpha: 0.9,
       tracks: [{ displays: [{ alpha: 0.1 }] }, 'a_track_id'],
     }),
-  ).toMatchObject({ opacity: 0.9 })
+  ).toMatchObject({ encoding: { opacity: 0.9 } })
 })
 
-// share links and figure specs written before the opacity object say alpha
-test("a view's alpha is the opacity object's constant, which wins if written", () => {
-  expect(liftSyntenyViewSettings({ alpha: 0.3 })).toEqual({ opacity: 0.3 })
+// share links and figure specs written before the opacity channel say alpha
+test("a view's alpha is encoding.opacity's constant, which wins if written", () => {
+  expect(liftSyntenyViewSettings({ alpha: 0.3 })).toEqual({
+    encoding: { opacity: 0.3 },
+  })
   expect(
-    liftSyntenyViewSettings({ alpha: 0.3, opacity: { field: 'identity' } }),
-  ).toEqual({ opacity: { field: 'identity' } })
+    liftSyntenyViewSettings({
+      alpha: 0.3,
+      encoding: { opacity: { field: 'identity' } },
+    }),
+  ).toEqual({ encoding: { opacity: { field: 'identity' } } })
 })

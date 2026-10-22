@@ -13,7 +13,7 @@ jest.mock('@jbrowse/core/configuration', () => {
   return {
     ...actual,
     readConfObject: (conf: unknown, slot: unknown, args: unknown) => {
-      if (Array.isArray(slot) && slot[0] === 'color' && slot[1] === 'value') {
+      if (slot === 'value' && args !== undefined) {
         evaluations.color++
       } else if (slot === 'utrColor') {
         evaluations.utrColor++
@@ -91,11 +91,9 @@ async function stackWithGenes({ star = false } = {}) {
       value: { anchorAssemblyName: 'volvox' },
     })
   }
-  setConf(
-    display,
-    'color',
-    "jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'",
-  )
+  setConf(display, ['encoding', 'color'], {
+    value: "jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'",
+  })
   setConf(
     display,
     'utrColor',

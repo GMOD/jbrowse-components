@@ -1,13 +1,14 @@
 import { ConfigurationSchema, plotList } from '@jbrowse/core/configuration'
 import { utrDefaultColor } from '@jbrowse/core/ui/palette'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { syntenyDataConfigSchema } from '@jbrowse/synteny-core'
 
-import { geneColorConfigSchema } from './geneColorConfigSchema.ts'
+import { geneEncodingConfigSchema } from './geneColorConfigSchema.ts'
 import { laneLayerConfigSchema } from './laneLayerConfigSchema.ts'
 import { laneRowsConfigSchema } from './laneRowsConfigSchema.ts'
-import { ribbonColorConfigSchema } from './ribbonColorConfigSchema.ts'
+import { ribbonsConfigSchema } from './ribbonColorConfigSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -71,8 +72,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *       type: 'MultiWaySyntenyDisplay',
  *       displayId: 'primate_synteny-MultiWaySyntenyDisplay',
  *       rows: { sort: ['panTro6', 'gorGor6', 'ponAbe3'] },
- *       color: { field: 'cluster' },
- *       ribbonColor: { field: 'identity' },
+ *       encoding: { color: 'cluster' },
+ *       ribbons: { encoding: { color: 'identity' } },
  *     },
  *   ],
  * }
@@ -83,12 +84,11 @@ export function configSchemaFactory() {
     'MultiWaySyntenyDisplay',
     {
       /**
-       * #slot color
-       * The gene glyphs' fill: a CSS color or `jexl:` callback, goldenrod
-       * unset, or `{ field }` to paint each value in a palette color, with
-       * a key.
+       * #slot encoding
+       * The channels the gene glyphs paint through: `encoding.color`, their
+       * fill.
        */
-      color: geneColorConfigSchema,
+      encoding: geneEncodingConfigSchema,
       /**
        * #slot
        */
@@ -112,12 +112,11 @@ export function configSchemaFactory() {
        */
       rows: laneRowsConfigSchema,
       /**
-       * #slot ribbonColor
-       * `"rgba(130,130,130,0.3)"` paints every ribbon; `{ field: "strand" }`
-       * the record's strand, `{ field: "identity" }` a preset ramp and
-       * `{ field: "group" }` a declared column.
+       * #slot ribbons
+       * The bands joining each gene's placements in adjacent lanes:
+       * `ribbons.encoding.color` paints them.
        */
-      ribbonColor: ribbonColorConfigSchema,
+      ribbons: ribbonsConfigSchema,
       /**
        * #slot
        */
@@ -155,14 +154,14 @@ export function configSchemaFactory() {
         defaultValue: true,
       },
       /**
-       * #slot
+       * #slot legend
+       * The color key: the anchor lane's drawn gene colors, and what
+       * `ribbons.encoding.color` paints — the strand colors, the identity
+       * ramp, or a column's labels. Derived from what is on screen, so an
+       * `encoding.color` resolving to one color and a ribbon scale painting
+       * nothing key nothing.
        */
-      showLegend: {
-        type: 'boolean',
-        description:
-          "show the color key: the anchor lane's drawn gene colors, and what `ribbonColor` paints — the strand colors, the identity ramp, or a column's labels. Derived from what is on screen, so a `color` slot resolving to one color and a ribbon scale painting nothing key nothing. Defaults to on",
-        defaultValue: true,
-      },
+      legend: legendConfigSchema,
       /**
        * #slot
        */

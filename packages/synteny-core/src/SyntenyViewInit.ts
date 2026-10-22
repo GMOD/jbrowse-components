@@ -18,10 +18,10 @@ export interface SyntenyViewSharedCommands {
 // Everything below the commands is a declared property of both models, so MST
 // lands it natively off the view object and no launcher interprets it.
 export interface SyntenyViewSharedInit extends SyntenyViewSharedCommands {
-  // The color object every track paints with (`SyntenyColor`): a field such
-  // as `{ field: 'query' }` (chromosome painting) for whole-genome views where
-  // the default red is hard to distinguish across many ribbons.
-  color?: SyntenyColorSnapshot
+  // The channels every track paints with (`SyntenyEncoding`): a color field
+  // such as `{ color: 'query' }` (chromosome painting) for whole-genome views
+  // where the default red is hard to distinguish across many ribbons.
+  encoding?: { color?: SyntenyColorSnapshot | string }
   // The alignments drawn, a list of field predicates:
   // `[{ field: 'length', gte: 100000 }]` hides chains shorter than 100 kb,
   // which cuts the genome-scale hairball.

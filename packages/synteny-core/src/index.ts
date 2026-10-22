@@ -178,8 +178,10 @@ export {
   SYNTENY_COLOR_SCALES,
   SYNTENY_VIEW_FIELDS,
   syntenyColorConfigSchema,
-  syntenyColorSlots,
+  syntenyColorLegendSlots,
+  syntenyColorScaleSlots,
 } from './syntenyColorConfigSchema.ts'
+export { syntenyEncodingConfigSchema } from './syntenyEncodingConfigSchema.ts'
 export type {
   SyntenyColorScale,
   SyntenyColorSnapshot,
@@ -199,6 +201,7 @@ export {
 } from './syntenyOpacityConfigSchema.ts'
 export type {
   SyntenyOpacityScale,
+  SyntenyOpacityScaleSnapshot,
   SyntenyOpacitySnapshot,
 } from './syntenyOpacityConfigSchema.ts'
 export {

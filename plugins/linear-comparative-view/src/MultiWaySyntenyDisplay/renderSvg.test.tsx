@@ -112,7 +112,9 @@ test('the export prints gene names where the panned glyphs are', async () => {
 // widens the canvas by.
 test('the view export carries the color key beside the lanes', async () => {
   const display = createDisplay()
-  setConf(display, 'color', "jexl:randomColor(get(feature,'name'))")
+  setConf(display, ['encoding', 'color'], {
+    value: "jexl:randomColor(get(feature,'name'))",
+  })
   await when(() => display.features !== undefined, { timeout: 5000 })
   display.setFeatures(
     ['galF', 'wzzB'].map(

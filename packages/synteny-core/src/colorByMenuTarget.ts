@@ -5,7 +5,7 @@ import type { ColorableTrack } from './trackColors.ts'
 export interface ColorByMenuTrack {
   trackId: string
   name: string
-  /** the color it draws under `color: { field: 'track' }` */
+  /** the color it draws under `encoding.color: 'track'` */
   trackColor: string
   /** whether that color was pinned by hand rather than taken from the palette */
   pinned: boolean

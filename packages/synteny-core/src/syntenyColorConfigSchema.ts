@@ -2,20 +2,26 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { MEASURE_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 import {
   colorChannelOptions,
-  colorChannelSlots,
   colorDescendingSlot,
   colorDomainEndsSlots,
   colorDomainSlot,
-  colorLabelsSlot,
+  colorFieldSlot,
+  colorLegendOptions,
+  colorNamesSlot,
   colorRampSlots,
   colorRangeSlot,
+  colorScaleOptions,
+  colorScaleTypeSlot,
   colorTitleSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
-import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+import type {
+  ColorLegendSetting,
+  ColorScaleSetting,
+} from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
- * `scale` on a synteny color object: `linear` or `threshold` names how a
+ * `scale.type` on a synteny color channel: `linear` or `threshold` names how a
  * number paints. Unset, a measurement takes its
  * preset's scale and a column's type is read off the fetched values, a ramp
  * over the span for numbers and a color per label for text.
@@ -37,29 +43,25 @@ export const SYNTENY_VIEW_FIELDS = [
   'track',
 ] as const
 
-/** A synteny color object as its snapshot holds it. */
-export interface SyntenyColorSnapshot extends Partial<ColorSetting> {}
+/** A synteny color channel as its snapshot holds it. */
+export interface SyntenyColorSnapshot {
+  value?: string
+  field?: string
+  scale?: Partial<ColorScaleSetting>
+  legend?: ColorLegendSetting
+}
 
 /**
- * The slots every comparative color object declares: the linear synteny and
- * dotplot views' `color` and the multi-way display's `ribbonColor`, which
- * paint through the same resolver.
+ * The `scale` slots every comparative color channel declares: the synteny
+ * views' `encoding.color` and the multi-way display's
+ * `ribbons.encoding.color`, which paint through the same resolver.
  */
-export function syntenyColorSlots({
-  scaleName,
-  field,
-}: {
-  scaleName: string
-  field: string
-}) {
+export function syntenyColorScaleSlots(scaleName: string) {
   return {
-    ...colorChannelSlots({
+    ...colorScaleTypeSlot({
       scales: SYNTENY_COLOR_SCALES,
       scaleName,
-      fieldType: 'string',
-      field,
-      scale:
-        'linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement uses its preset scale and a column one read off its values',
+      type: 'linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement uses its preset scale and a column one read off its values',
     }),
     ...colorDomainSlot({
       domain:
@@ -71,47 +73,68 @@ export function syntenyColorSlots({
     }),
     ...colorRampSlots,
     ...colorDomainEndsSlots,
-    ...colorLabelsSlot,
-    ...colorDescendingSlot,
-    ...colorTitleSlot,
+    ...colorNamesSlot,
   }
+}
+
+/** The `legend` slots every comparative color channel declares. */
+export const syntenyColorLegendSlots = {
+  ...colorTitleSlot,
+  ...colorDescendingSlot,
 }
 
 /**
  * #config SyntenyColor
  * #category view
- * The linear synteny and dotplot views' `color` setting, which every track
- * in the view paints with: one color for every alignment, or a field of each
- * alignment — its strand, the sequence at either end, the anchor
- * assembly's, the track it came from, a measurement through its preset
+ * The linear synteny, dotplot and circular views' `encoding.color`, which
+ * every track in the view paints with: one color for every alignment, or a
+ * field of each alignment — its strand, the sequence at either end, the
+ * anchor assembly's, the track it came from, a measurement through its preset
  * (`identity` and `dnds` on a ramp, `mapq` in the alignments display's bins,
  * `syntenicDepth` grey for a one-to-one ortholog and orange where genes share
  * one),
  * or a column the tracks declare in `attributeColumns`. A string is the
- * constant.
+ * field.
  *
  * #example
  * ```js
- * { type: 'LinearSyntenyView', color: { field: 'strand' } }
+ * { type: 'LinearSyntenyView', encoding: { color: 'strand' } }
  * ```
  * ```js
- * { type: 'DotplotView', color: { field: 'query' } }
- * ```
- * ```js
- * { type: 'LinearSyntenyView', color: { field: 'identity', scheme: 'magma', domainMin: 0.9 } }
- * ```
- * ```js
- * { type: 'LinearSyntenyView', color: { field: 'identity', scale: 'threshold', domain: [0.95, 0.99] } }
+ * { type: 'DotplotView', encoding: { color: { field: 'query' } } }
  * ```
  * ```js
  * {
  *   type: 'LinearSyntenyView',
- *   color: {
- *     field: 'gene_group',
- *     domain: ['A1a', 'B1'],
- *     range: ['#1b9e77', '#d95f02'],
- *     labels: ['Subgenome A', 'Subgenome B'],
- *     title: 'Gene group',
+ *   encoding: {
+ *     color: { field: 'identity', scale: { scheme: 'magma', domainMin: 0.9 } },
+ *   },
+ * }
+ * ```
+ * ```js
+ * {
+ *   type: 'LinearSyntenyView',
+ *   encoding: {
+ *     color: {
+ *       field: 'identity',
+ *       scale: { type: 'threshold', domain: [0.95, 0.99] },
+ *     },
+ *   },
+ * }
+ * ```
+ * ```js
+ * {
+ *   type: 'LinearSyntenyView',
+ *   encoding: {
+ *     color: {
+ *       field: 'gene_group',
+ *       scale: {
+ *         domain: ['A1a', 'B1'],
+ *         range: ['#1b9e77', '#d95f02'],
+ *         names: ['Subgenome A', 'Subgenome B'],
+ *       },
+ *       legend: { title: 'Gene group' },
+ *     },
  *   },
  * }
  * ```
@@ -121,23 +144,41 @@ export const syntenyColorConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot value
-     * The color of every alignment under the `none` scale, in place of the
+     * The color of every alignment while no field paints, in place of the
      * view's default scheme: the match block of a synteny ribbon, whose
      * insertions and deletions keep their colors, or a dotplot point.
-     * Writing `color: "grey"` lands here. Unset, the default scheme paints.
+     * Unset, the default scheme paints.
      */
     value: {
       type: 'maybeColor',
       description:
         'the color of every alignment in place of the default scheme',
     },
-    ...syntenyColorSlots({
-      scaleName: 'SyntenyColorScale',
+    ...colorFieldSlot({
+      fieldType: 'string',
       field:
         'field to color each alignment by: strand paints forward and reverse; query and target one color per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity and dnds paint their preset ramps, mapq its bins and syntenicDepth grey for a one-to-one MCScan .anchors or .blocks link and orange where genes share an ortholog; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it)',
     }),
+    /**
+     * #slot scale
+     * How the field's values map to colors, Vega-Lite's scale object.
+     */
+    scale: ConfigurationSchema(
+      'SyntenyColorScale',
+      syntenyColorScaleSlots('SyntenyColorScaleType'),
+      colorScaleOptions('encoding.color.scale'),
+    ),
+    /**
+     * #slot legend
+     * The key this channel draws.
+     */
+    legend: ConfigurationSchema(
+      'SyntenyColorLegend',
+      syntenyColorLegendSlots,
+      colorLegendOptions,
+    ),
   },
-  colorChannelOptions('color', MEASURE_FIELD_PRESETS),
+  colorChannelOptions('encoding.color', MEASURE_FIELD_PRESETS),
 )
 
 export type SyntenyColorConfigModel = typeof syntenyColorConfigSchema

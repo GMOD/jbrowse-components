@@ -49,7 +49,7 @@ test('any declared property lands natively, named nowhere in the launch path', a
     data: { resolution: 'coarse' },
     overdrawPx: 42,
     cigarMode: 'matches',
-    opacity: { field: 'identity' },
+    encoding: { opacity: { field: 'identity' } },
   })
   expect(view.axisGrid).toBe(true)
   expect(view.resolution).toBe('coarse')
@@ -59,31 +59,36 @@ test('any declared property lands natively, named nowhere in the launch path', a
   expect(view.launch).toEqual({ views: ROWS })
 })
 
+const colorOf = (view: LinearSyntenyViewModel) =>
+  (getSnapshot(view.encoding) as { color?: unknown } | undefined)?.color
+
 test('a property a composed mixin contributes lands too', async () => {
-  const view = await open({
-    views: ROWS,
-    color: { field: 'query' },
-  })
+  const view = await open({ views: ROWS, encoding: { color: 'query' } })
   expect(view.colorField).toBe('query')
-  expect(getSnapshot(view).color).toEqual({ field: 'query' })
+  expect(colorOf(view)).toEqual({ field: 'query' })
 })
 
-// The spec is the session: a color written as the object comes back as the
-// object, and the reader refuses the shapes a config cannot hold.
+// jb2hubs' desktop links write the view's color as it was before `encoding`
+test("a view's color lands as encoding.color, and says nothing", async () => {
+  const view = await open({ views: ROWS, color: { field: 'query' } })
+  expect(colorOf(view)).toEqual({ field: 'query' })
+  expect(warnings()).toEqual([])
+})
+
+// The spec is the session: a color written as the channel comes back as the
+// channel, and the reader refuses the shapes a config cannot hold.
 test('color round-trips a session spec and names a stray key', async () => {
-  const view = await open({
-    views: ROWS,
-    color: { field: 'gene_group', domain: ['B1', 'A1a'] },
-  })
+  const color = { field: 'gene_group', scale: { domain: ['B1', 'A1a'] } }
+  const view = await open({ views: ROWS, encoding: { color } })
   expect(view.colorField).toBe('gene_group')
   expect(view.colorDomain).toEqual(['B1', 'A1a'])
-  expect(getSnapshot(view).color).toEqual({
-    field: 'gene_group',
-    domain: ['B1', 'A1a'],
-  })
+  expect(colorOf(view)).toEqual(color)
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-  const stray = await open({ views: ROWS, color: { fields: 'strand' } })
-  expect(getSnapshot(stray).color).toBeUndefined()
+  const stray = await open({
+    views: ROWS,
+    encoding: { color: { fields: 'strand' } },
+  })
+  expect(colorOf(stray)).toBeUndefined()
   expect(warn).toHaveBeenCalledWith(
     'SyntenyColor does not declare fields: loading without it',
   )
@@ -91,7 +96,7 @@ test('color round-trips a session spec and names a stray key', async () => {
 })
 
 // launch links the genomes portal handed out hold the mode string on the view
-test('a colorBy mode string lands as color', async () => {
+test('a colorBy mode string lands as encoding.color', async () => {
   expect((await open({ views: ROWS, colorBy: 'query' })).colorField).toBe(
     'query',
   )
@@ -120,7 +125,7 @@ describe('the v4 nested form', () => {
 
   test('a declared property nested inside it lands', async () => {
     const view = await open({
-      init: { views: ROWS, color: { field: 'reference' } },
+      init: { views: ROWS, encoding: { color: 'reference' } },
     })
     expect(view.colorField).toBe('reference')
     expect(warnings()).toEqual([DEPRECATED])

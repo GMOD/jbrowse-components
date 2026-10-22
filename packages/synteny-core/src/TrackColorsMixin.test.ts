@@ -9,6 +9,9 @@ import { resolveCategoricalMode } from './colorRamps.ts'
 
 import type { AttributeRange } from './colorRamps.ts'
 
+const snapColor = (view: { encoding: object }) =>
+  (getSnapshot(view.encoding) as { color?: unknown } | undefined)?.color
+
 // The floating legend is one box for the whole view, so the domain it labels a
 // column's ramp with has to be one answer for every loaded display.
 // A per-display answer is what makes that one legend lie.
@@ -154,24 +157,24 @@ describe('a categorical column', () => {
     expect(view.attributeRanges).toBe(view.seenAttributeRanges)
   })
 
-  // A pick rewrites the object as written, so a member it does not change,
-  // such as `descending`, survives it.
+  // A pick rewrites the channel as written, so a member it does not change,
+  // such as `legend.descending`, survives it.
   it('keeps what a field pick or a reorder does not change', () => {
     const view = TrackColorsMixin().create({
-      color: {
-        field: 'identity',
-        scale: 'threshold',
-        domain: ['0.9'],
-        descending: true,
+      encoding: {
+        color: {
+          field: 'identity',
+          scale: { type: 'threshold', domain: ['0.9'] },
+          legend: { descending: true },
+        },
       },
     })
     view.setColorField('identity')
     view.setColorDomain(['0.95'])
-    expect(getSnapshot(view.color)).toEqual({
+    expect(snapColor(view)).toEqual({
       field: 'identity',
-      scale: 'threshold',
-      domain: ['0.95'],
-      descending: true,
+      scale: { type: 'threshold', domain: ['0.95'] },
+      legend: { descending: true },
     })
   })
 
@@ -211,11 +214,13 @@ describe('a categorical column', () => {
   })
 })
 
-// A text column's range colors its labels, its labels rename them in the key
+// A text column's range colors its labels, its names rename them in the key
 // and its title heads the key. None of them reorders what the fetches found.
-describe("a text column's range, labels and title", () => {
+describe("a text column's range, names and title", () => {
   const view = (color: Record<string, unknown>) =>
-    TrackColorsMixin().create({ color: { field: 'group', ...color } })
+    TrackColorsMixin().create({
+      encoding: { color: { field: 'group', ...color } },
+    })
   const seen = { group: { labels: ['B1', 'A1a'], colors: {} } }
   const colorOf = (v: ReturnType<typeof view>, label: string) =>
     categoricalColor(resolveCategoricalMode('group', v.attributeRanges)!, label)
@@ -224,12 +229,10 @@ describe("a text column's range, labels and title", () => {
     return { title: section!.title, labels: section!.items.map(i => i.label) }
   }
 
-  it('paints the domain from range and names it by labels under title', () => {
+  it('paints the domain from range and names it by names under title', () => {
     const v = view({
-      domain: ['A1a'],
-      range: ['#ff0000'],
-      labels: ['Subgenome A'],
-      title: 'Gene group',
+      scale: { domain: ['A1a'], range: ['#ff0000'], names: ['Subgenome A'] },
+      legend: { title: 'Gene group' },
     })
     v.observeAttributeRanges(seen)
     expect(colorOf(v, 'A1a')).toBe('#ff0000')
@@ -241,7 +244,7 @@ describe("a text column's range, labels and title", () => {
   })
 
   it('takes range alone without reordering the labels', () => {
-    const v = view({ range: ['#ff0000', '#00ff00'] })
+    const v = view({ scale: { range: ['#ff0000', '#00ff00'] } })
     v.observeAttributeRanges(seen)
     expect(v.attributeRanges.group).toMatchObject({ labels: ['B1', 'A1a'] })
     for (const label of ['B1', 'A1a']) {
@@ -251,7 +254,7 @@ describe("a text column's range, labels and title", () => {
 
   it('draws no heading under an empty title, and the field name when unset', () => {
     const titleOf = (title?: string) => {
-      const v = view(title === undefined ? {} : { title })
+      const v = view(title === undefined ? {} : { legend: { title } })
       v.observeAttributeRanges(seen)
       return v.colorScales[0]!.title
     }
@@ -259,39 +262,36 @@ describe("a text column's range, labels and title", () => {
     expect(titleOf('')).toBe('')
   })
 
-  it('recolors nothing when only the title or labels change', () => {
-    const v = view({ domain: ['A1a'], range: ['#ff0000'] })
+  it('recolors nothing when only the title or names change', () => {
+    const v = view({ scale: { domain: ['A1a'], range: ['#ff0000'] } })
     v.observeAttributeRanges(seen)
     const reads: unknown[] = []
     const stop = autorun(() => {
       reads.push(v.attributeRanges)
     })
-    v.color.setSlot('title', 'Gene group')
-    v.color.setSlot('labels', ['Subgenome A'])
+    v.encoding.color.legend.setSlot('title', 'Gene group')
+    v.encoding.color.scale.setSlot('names', ['Subgenome A'])
     stop()
     expect(reads).toHaveLength(1)
   })
 
   it('keeps all three through a domain pin and a re-pick of the field', () => {
-    const color = {
+    const scale = {
       domain: ['A1a'],
       range: ['#ff0000'],
-      labels: ['Subgenome A'],
-      title: 'Gene group',
+      names: ['Subgenome A'],
     }
-    const v = view(color)
+    const legend = { title: 'Gene group' }
+    const v = view({ scale, legend })
+    const pinned = {
+      field: 'group',
+      scale: { ...scale, domain: ['A1a', 'B1'] },
+      legend,
+    }
     v.setColorDomain(['A1a', 'B1'])
-    expect(getSnapshot(v).color).toEqual({
-      field: 'group',
-      ...color,
-      domain: ['A1a', 'B1'],
-    })
+    expect(snapColor(v)).toEqual(pinned)
     v.setColorField('group')
-    expect(getSnapshot(v).color).toEqual({
-      field: 'group',
-      ...color,
-      domain: ['A1a', 'B1'],
-    })
+    expect(snapColor(v)).toEqual(pinned)
   })
 })
 
@@ -306,7 +306,7 @@ test('strand keys its two colors on points, and nothing on ribbons', () => {
           return surface
         },
       }))
-      .create({ color: { field: 'strand' } })
+      .create({ encoding: { color: 'strand' } })
   expect(
     legendSpecOf(on('points').colorScales).sections[0]!.items.map(
       item => item.label,
@@ -330,17 +330,19 @@ test('the track legend lists a track on several levels once', () => {
         ]
       },
     }))
-    .create({ color: { field: 'track' } })
+    .create({ encoding: { color: 'track' } })
   expect(view.colorLegendChips).toEqual([
     { label: 'orthogroups', color: view.trackColorFor('ortho') },
     { label: 'other', color: view.trackColorFor('other') },
   ])
 })
 
-// The view's `color` is one SyntenyColor object: a field the view reads as a
-// mode of its own, a measurement preset, a declared column, or a color.
-describe('the color object', () => {
-  const view = (color: unknown) => TrackColorsMixin().create({ color } as never)
+// The view's `encoding.color` is one SyntenyColor channel: a field the view
+// reads as a mode of its own, a measurement preset, a declared column, or a
+// color.
+describe('the color channel', () => {
+  const view = (color: unknown) =>
+    TrackColorsMixin().create({ encoding: { color } } as never)
 
   it('reads the structural fields as their modes', () => {
     for (const field of ['strand', 'query', 'target', 'reference', 'track']) {
@@ -354,20 +356,21 @@ describe('the color object', () => {
     expect(view({ field: 'gene_group' }).colorField).toBe('gene_group')
   })
 
-  it('lifts a color string into value, which the default mode paints', () => {
-    const v = view('grey')
+  it('reads a string as the field, and paints value under the default mode', () => {
+    expect(view('strand').colorField).toBe('strand')
+    expect(snapColor(view('strand'))).toEqual({ field: 'strand' })
+    const v = view({ value: 'grey' })
     expect(v.colorField).toBe('')
     expect(v.colorValue).toBe('grey')
-    expect(getSnapshot(v).color).toEqual({ value: 'grey' })
   })
 
-  it('refuses a mode string where a color goes, naming the value', () => {
-    expect(() => view('strand')).toThrow('strand')
+  it('refuses a color string where the field goes, naming the value', () => {
+    expect(() => view('grey')).toThrow('"grey" is a color')
   })
 
   it('names a key the object does not declare, and loads without it', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    expect(getSnapshot(view({ fields: 'strand' })).color).toBeUndefined()
+    expect(snapColor(view({ fields: 'strand' }))).toBeUndefined()
     expect(warn).toHaveBeenCalledWith(
       'SyntenyColor does not declare fields: loading without it',
     )
@@ -375,41 +378,43 @@ describe('the color object', () => {
   })
 
   it('keys a declared ramp, keeps it through a domain edit, and drops it on a new field', () => {
-    const v = view({ field: 'identity', scheme: 'magma', domainMin: 0.9 })
+    const v = view({
+      field: 'identity',
+      scale: { scheme: 'magma', domainMin: 0.9 },
+    })
     expect(v.colorPaint).toMatchObject({ scheme: 'magma', domainMin: 0.9 })
     const [ramp] = v.colorScales
     expect(ramp?.kind === 'ramp' && ramp.domain).toEqual([0.9, 1])
     v.setColorDomain(['a'])
-    expect(getSnapshot(v).color).toMatchObject({
-      scheme: 'magma',
-      domainMin: 0.9,
+    expect(snapColor(v)).toMatchObject({
+      scale: { scheme: 'magma', domainMin: 0.9 },
     })
     v.setColorField('mapq')
-    expect(getSnapshot(v).color).toEqual({ field: 'mapq' })
+    expect(snapColor(v)).toEqual({ field: 'mapq' })
   })
 
   it('clears on null and on omission', () => {
     expect(view(null).colorField).toBe('')
     expect(view(undefined).colorField).toBe('')
-    expect(getSnapshot(view(null)).color).toBeUndefined()
+    expect(snapColor(view(null))).toBeUndefined()
   })
 
   it('writes the whole object from a picked mode, parking the field it leaves', () => {
-    const v = view({ field: 'gene_group', domain: ['B1'] })
+    const v = view({ field: 'gene_group', scale: { domain: ['B1'] } })
     v.setColorField('')
-    expect(getSnapshot(v).color).toBeUndefined()
+    expect(snapColor(v)).toBeUndefined()
     expect(v.colorField).toBe('')
     v.setColorField('gene_group')
-    expect(getSnapshot(v).color).toEqual({
+    expect(snapColor(v)).toEqual({
       field: 'gene_group',
-      domain: ['B1'],
+      scale: { domain: ['B1'] },
     })
     v.setColorField('query')
-    expect(getSnapshot(v).color).toEqual({ field: 'query' })
+    expect(snapColor(v)).toEqual({ field: 'query' })
     v.setColorDomain(['chr2'])
-    expect(getSnapshot(v).color).toEqual({
+    expect(snapColor(v)).toEqual({
       field: 'query',
-      domain: ['chr2'],
+      scale: { domain: ['chr2'] },
     })
     expect(v.colorDomain).toEqual(['chr2'])
   })

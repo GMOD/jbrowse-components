@@ -42,7 +42,7 @@ test("mapq keys the alignments display's bins, confident reads first", () => {
 test('written cuts key their intervals, lowest first unless descending', () => {
   const labels = (descending?: boolean) => {
     const swatch = getColorBySwatch('identity', {
-      paint: { scale: 'threshold', domain: ['0.95', '0.99'] },
+      paint: { type: 'threshold', domain: ['0.95', '0.99'] },
       descending,
     })
     return swatch?.kind === 'chips' && swatch.chips.map(c => c.label)
@@ -51,10 +51,10 @@ test('written cuts key their intervals, lowest first unless descending', () => {
   expect(labels(true)).toEqual(['≥ 0.99', '0.95 – 0.99', '< 0.95'])
 })
 
-test('strand keys the colors range writes and the names labels gives', () => {
+test('strand keys the colors range writes and the names it gives', () => {
   const strand = getColorBySwatch('strand', {
     paint: { range: ['gold', 'black'] },
-    labels: ['Plus', 'Minus'],
+    names: ['Plus', 'Minus'],
     cigarOps: NO_CIGAR_OPS,
   })
   expect(strand?.kind === 'chips' && strand.chips).toEqual([
