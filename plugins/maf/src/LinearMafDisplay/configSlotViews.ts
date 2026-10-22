@@ -118,8 +118,8 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #getter
      * The identity ramp's packed color at each hundredth, the default
-     * ramp unless `encoding.color` is identity. One array per ramp, so a color
-     * edit that leaves the ramp alone re-encodes nothing.
+     * ramp unless `encoding.color` is identity. One array per ramp, so a
+     * color edit that leaves the ramp alone re-encodes nothing.
      */
     get identityColors(): Uint32Array {
       const color = this.colorEncoding
@@ -131,9 +131,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * The named ramp identity paints along, the preset's where `encoding.color`
-     * writes none or is not identity, and none while a written `range`
-     * paints instead.
+     * The named ramp identity paints along, the preset's where
+     * `encoding.color` writes none or is not identity, and none while a
+     * written `scale.range` paints instead.
      */
     get colorScheme(): ColorSchemeName | undefined {
       const color = this.colorEncoding
@@ -145,8 +145,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * Each source chromosome rank's packed color, `encoding.color.scale.range`'s while
-     * `encoding.color` is chromosome. One array per range, as `identityColors`.
+     * Each source chromosome rank's packed color, the written
+     * `encoding.color.scale.range`'s while `encoding.color` is chromosome.
+     * One array per range, as `identityColors`.
      */
     get sourceChromColors(): readonly number[] {
       const color = this.colorEncoding
@@ -193,8 +194,8 @@ export function configSlotActions(self: ConfigSlotSelf) {
     },
     /**
      * #action
-     * Paint identity along a named ramp, clearing a written `scale.range`, which
-     * would win over it.
+     * Paint identity along a named ramp, clearing a written `scale.range`,
+     * which would win over it.
      */
     setColorScheme(scheme: ColorSchemeName) {
       setConf(

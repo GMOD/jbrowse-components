@@ -53,8 +53,8 @@ export interface RowPlan {
 }
 
 /**
- * What the rows draw from the written `encoding.color` and `y` and the view's state.
- * The summary tier draws its own bars, so the cells fall back to the
+ * What the rows draw from the written `encoding.color` and `y` and the view's
+ * state. The summary tier draws its own bars, so the cells fall back to the
  * mismatches there. At base level a one-base identity is a match call the
  * bases draw with more to say, so identity in either plot yields to them, and
  * the codon view needs base level and a frames adapter to define codons.
