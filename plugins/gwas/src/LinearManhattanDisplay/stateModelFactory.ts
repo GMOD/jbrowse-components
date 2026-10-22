@@ -20,7 +20,7 @@ import {
   withLd,
   withoutLd,
 } from './ldPlot.ts'
-import { placeIndexSnp } from './parseChrBp.ts'
+import { parseChrBp, placeIndexSnp } from './parseChrBp.ts'
 
 import type { LdJoin } from '../GWASAdapter/ldJoin.ts'
 import type { LinearManhattanDisplayConfigModel } from './configSchemaFactory.ts'
@@ -227,6 +227,13 @@ export function stateModelFactory(
         ) {
           return []
         }
+        const fix =
+          'right-click a point to color by LD to it, or use LD → Set index SNP to top hit in the track menu'
+        if (!parseChrBp(indexSnp)) {
+          return [
+            `The LD index SNP ${indexSnp} names no chr:bp position, so no point is colored by LD: ${fix}`,
+          ]
+        }
         const inReach = trackVisibleRegions.some(block => {
           const index = placeIndexSnp(self, indexSnp, block.assemblyName)
           return (
@@ -238,7 +245,7 @@ export function stateModelFactory(
         return inReach
           ? []
           : [
-              `No point on screen is within ${LD_WINDOW_BP / 1_000_000} Mb of the LD index SNP ${self.indexSnp}, so none is colored by LD: right-click a point to color by LD to it, or use LD → Set index SNP to top hit in the track menu`,
+              `No point on screen is within ${LD_WINDOW_BP / 1_000_000} Mb of the LD index SNP ${indexSnp}, so none is colored by LD: ${fix}`,
             ]
       },
     }))

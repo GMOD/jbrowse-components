@@ -131,6 +131,15 @@ describe('LinearManhattanDisplay LD auto-index', () => {
       expect(display.indexSnp).toBe('ctgA:101')
     })
 
+    it('says so when a restored index names no position', async () => {
+      const { display } = loaded({ indexSnp: 'rs12345' })
+      await settle(8)
+      expect(display.indexSnp).toBe('rs12345')
+      expect(display.displayNotices).toEqual([
+        expect.stringContaining('rs12345 names no chr:bp position'),
+      ])
+    })
+
     it('picks again when LD coloring is turned back on', async () => {
       const { display, view } = loaded()
       await settle(8)

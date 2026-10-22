@@ -4,6 +4,13 @@ test('parses a plain chr:bp locus', () => {
   expect(parseChrBp('chr2:100')).toEqual({ refName: 'chr2', bp: 100 })
 })
 
+test('takes the thousands commas the right-click label shows', () => {
+  expect(parseChrBp('chr2:191,958,656')).toEqual({
+    refName: 'chr2',
+    bp: 191_958_656,
+  })
+})
+
 test('splits on the last colon so a colon-bearing refName survives', () => {
   expect(parseChrBp('HLA:x:200')).toEqual({ refName: 'HLA:x', bp: 200 })
 })
