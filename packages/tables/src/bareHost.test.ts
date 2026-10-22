@@ -58,6 +58,11 @@ test('decodes UTF-8 as the WHATWG decoder does, valid or not', () => {
   for (const c of cases) {
     expect(shim.decode(new Uint8Array(c))).toBe(node.decode(new Uint8Array(c)))
   }
+  const bom = new Uint8Array([0xef, 0xbb, 0xbf, 0x41, 0xef, 0xbb, 0xbf])
+  expect(shim.decode(bom)).toBe(node.decode(bom))
+  expect(new TextDecoderShim('utf-8', { ignoreBOM: true }).decode(bom)).toBe(
+    new NodeTextDecoder('utf-8', { ignoreBOM: true }).decode(bom),
+  )
   expect(() =>
     new TextDecoderShim('utf-8', { fatal: true }).decode(
       new Uint8Array([0xff]),

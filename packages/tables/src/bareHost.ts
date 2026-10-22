@@ -39,14 +39,19 @@ function fromBase64(encoded: string) {
 // An ASCII run this long joins the output in one call rather than code by code
 const ASCII_RUN = 64
 
-// UTF-8 as the WHATWG decoder reads it: an invalid or truncated sequence is
-// one U+FFFD, and decoding resumes at the byte that broke it; `fatal` throws
-// there instead.
+// UTF-8 as the WHATWG decoder reads it: a leading BOM dropped unless
+// `ignoreBOM`, and an invalid or truncated sequence one U+FFFD, decoding
+// resuming at the byte that broke it; `fatal` throws there instead.
 export class TextDecoderShim {
   readonly encoding = 'utf-8'
   readonly fatal: boolean
-  constructor(_label = 'utf-8', options: { fatal?: boolean } = {}) {
+  readonly ignoreBOM: boolean
+  constructor(
+    _label = 'utf-8',
+    options: { fatal?: boolean; ignoreBOM?: boolean } = {},
+  ) {
     this.fatal = Boolean(options.fatal)
+    this.ignoreBOM = Boolean(options.ignoreBOM)
   }
   decode(input?: ArrayBufferView | ArrayBuffer) {
     if (!input) {
@@ -57,7 +62,8 @@ export class TextDecoderShim {
       : new Uint8Array(input)
     const units: number[] = []
     let out = ''
-    let i = 0
+    let i =
+      !this.ignoreBOM && b[0] === 0xef && b[1] === 0xbb && b[2] === 0xbf ? 3 : 0
     while (i < b.length) {
       const c = b[i]!
       let j = i + 1
