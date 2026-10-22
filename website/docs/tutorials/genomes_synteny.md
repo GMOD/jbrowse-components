@@ -175,6 +175,7 @@ each. On hg38 at
 - [](/docs/tutorials/synteny_visualization)
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/allvsall_synteny)
+- [](/docs/tutorials/pangenome_mouse)
 - [](/docs/tutorials/agent_synteny)
 - [](/docs/tutorials/genomes_proteins)
 - [](/docs/user_guides/linear_synteny_view)

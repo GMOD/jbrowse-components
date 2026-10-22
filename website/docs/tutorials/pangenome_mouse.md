@@ -147,6 +147,13 @@ path, is the strain with the deletion.
 
 <Figure caption="Nnt with the RefSeq genes and the bubbles track above the force-directed graph track. The haloed node beside Nnt is labelled as an insertion." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
+The graph holds no path per strain, so it cannot say which strains have the
+exons. mm39's liftOver chains can, one lane per strain assembly:
+[choosing mouse strain lanes at Nnt](/docs/tutorials/genomes_synteny#choosing-which-mouse-strains-become-lanes-at-nnt)
+turns on **mm39 vs 76 genomes (liftOver, multi-way)** at the same gene.
+
+<Figure caption="mm39 at Nnt over the Mus assemblies the liftOver track holds, the C57BL/6J T2T assembly first." src="/img/genomes_synteny/mouse_strains_nnt.png" />
+
 ## Ranking the graph's bubbles to find Dock2 {#finding-the-loci}
 
 The whole-chromosome overview records how many segments each bubble holds.
