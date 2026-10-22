@@ -3,8 +3,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { normalizeChannel } from './colorConfigSchema.ts'
 
 /**
- * The beta name of `sort`, which hosted hub configs jb2hubs generated still
- * write on `facet` and `rows`.
+ * The beta name of `sort`, which jb2hubs' hub configs write beside it on
+ * `facet` and `rows` for hosts that predate it.
  */
 export const retiredOrderSpelling = {
   domain: (sort: unknown) => ({ sort }),

@@ -177,10 +177,12 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
   its `rows` and `facet` lists write `sort`. Its published `dog10k_lof` page
   still shows `domain` until a re-knit, which waits on the Dog10K callset
   host's certificate.
-- **jb2hubs:** `hubtools/src/repeatClassDisplay.ts` and
-  its website's `geneOrderStar.ts` write `rows.domain`. Display-kit's
-  `retiredOrderSpelling` lifts it to `sort` until they write `sort` and the
-  hosted hub configs regenerate, then it goes.
+- **jb2hubs:** its row orders write `sort` beside `domain` (`rowOrder.ts`,
+  `repeatClassDisplay.ts`), `domain` for the released hosts and Desktop
+  installs that predate `sort`. Display-kit's `retiredOrderSpelling` stays
+  while they do, or a host from the rename on logs `domain` as undeclared;
+  both go once jb2hubs' `HOST_VERSIONS` floor reads `sort`. The hosted hub
+  configs pick up `sort` at their next regeneration.
 - **jbrowse-img:** its flags (`--minAlignmentLength`, `--drawCurves`) still
   carry the old names and write the new settings.
 - **The figure specs, tutorials and `demos/` configs:** `pnpm verify --full`
