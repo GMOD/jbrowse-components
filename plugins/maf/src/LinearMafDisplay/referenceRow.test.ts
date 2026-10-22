@@ -61,9 +61,10 @@ function leafNames(node: {
     : [node.data?.name ?? '']
 }
 
-// Under every color but `base` the reference's own row draws one constant
-// color, so it is off by default; the FASTA export keeps it.
-test('the reference row is off by default and the export keeps it', () => {
+// Under the default mismatch coloring the reference's own row matches at every
+// column, so it draws as a solid match-colored bar carrying no information.
+// UCSC omits it. The FASTA export keeps it.
+test('a hidden reference stays in the export', () => {
   const display = makeDisplay([REF, 'panTro4', 'mm10'], false)
   landRegion(display)
   expect(rowNames(display)).toEqual(['panTro4', 'mm10'])

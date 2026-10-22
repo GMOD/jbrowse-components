@@ -31,7 +31,7 @@ export const HG38_NCBI_GENE_TRACK = {
 // mafviewer plugin, which shadows the built-in MAF display.
 export const CE_MAF = 'test_data/ce_maf.json'
 
-// Adds an `framesAdapter` built from UCSC multiz26wayFrames, which
+// Adds a `framesAdapter` built from UCSC multiz26wayFrames, which
 // drives the CDS reading-frame overlay and codon view.
 export const CE_MAF_FRAMES = 'test_data/ce_maf_frames.json'
 
@@ -185,7 +185,8 @@ export const mafSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ce11.26way',
               rowHeight: 8,
-              alignments: { rowProportion: 0.9 },
+              // The reference row draws one constant color under this color.
+              alignments: { rowProportion: 0.9, reference: { show: false } },
             },
           ],
         },
@@ -266,7 +267,8 @@ export const mafSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ce11.26way',
               rowHeight: 8,
-              alignments: { rowProportion: 0.9 },
+              // The reference row draws one constant color under this color.
+              alignments: { rowProportion: 0.9, reference: { show: false } },
               color: 'chromosome',
             },
           ],

@@ -3,8 +3,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config MafPart
  * #category display
- * One part drawn over the MAF display's rows, `alignments.inversions`,
- * `.frames` or `.reference`, which `show` turns on.
+ * One part drawn over the MAF display's rows, `alignments.inversions` or
+ * `.frames`, which `show` turns on.
  *
  * #example
  * ```js

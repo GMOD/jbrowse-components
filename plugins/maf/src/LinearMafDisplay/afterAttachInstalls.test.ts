@@ -15,13 +15,13 @@ test('the placed-rows observer tracks the store and the row order', () => {
       'SampleRowsConfigurationSchema.domain',
       'LinearMafDisplay.sourcesVolatile',
       'SampleRowsConfigurationSchema.kept',
-      'MafPartConfigurationSchema.show',
+      'MafReferenceRowConfigurationSchema.show',
       'LinearMafDisplay.loadedRegions',
     ]),
   )
   // Which row is the reference moves rows only while it is hidden, so the
   // placement sees it then and only then.
-  expect(placedRows()).toContain('LinearMafDisplay.refSampleIdVolatile')
-  display.setShowReferenceRow(true)
   expect(placedRows()).not.toContain('LinearMafDisplay.refSampleIdVolatile')
+  display.setShowReferenceRow(false)
+  expect(placedRows()).toContain('LinearMafDisplay.refSampleIdVolatile')
 })

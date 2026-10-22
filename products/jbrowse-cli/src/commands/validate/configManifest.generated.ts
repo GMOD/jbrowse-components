@@ -7017,14 +7017,14 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "reference",
-              "type": "MafPartConfigurationSchema",
+              "type": "MafReferenceRowConfigurationSchema",
               "subSlots": [
                 {
                   "name": "show",
                   "type": "boolean"
                 }
               ],
-              "schema": "MafPart",
+              "schema": "MafReferenceRow",
               "writes": "members"
             }
           ],

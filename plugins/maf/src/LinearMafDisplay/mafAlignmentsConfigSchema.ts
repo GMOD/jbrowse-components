@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { DEFAULTS } from './displayDefaults.ts'
 import { mafPartConfigSchema } from './mafPartConfigSchema.ts'
+import { mafReferenceRowConfigSchema } from './mafReferenceRowConfigSchema.ts'
 
 /**
  * #config MafAlignments
@@ -54,11 +55,9 @@ export const mafAlignmentsConfigSchema = ConfigurationSchema(
     /**
      * #slot reference
      * `show` gives the reference species, which every other row is scored
-     * against, a row of its own. Off by default, since under every color but
-     * `base` that row draws one constant color; the FASTA export keeps it
-     * either way.
+     * against, a row of its own; on by default.
      */
-    reference: mafPartConfigSchema,
+    reference: mafReferenceRowConfigSchema,
   },
   { closed: true, plot: true },
 )

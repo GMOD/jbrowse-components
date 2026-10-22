@@ -31,9 +31,9 @@ test('a lifted setting merges with the alignments members a config writes', () =
   expect(readConfObject(conf, ['alignments', 'inversions', 'show'])).toBe(true)
 })
 
-test('the parts over the rows default off', () => {
+test('the overlays default off and the reference row on', () => {
   const conf = make()
-  for (const part of ['inversions', 'frames', 'reference'] as const) {
-    expect(readConfObject(conf, ['alignments', part, 'show'])).toBe(false)
-  }
+  expect(readConfObject(conf, ['alignments', 'inversions', 'show'])).toBe(false)
+  expect(readConfObject(conf, ['alignments', 'frames', 'show'])).toBe(false)
+  expect(readConfObject(conf, ['alignments', 'reference', 'show'])).toBe(true)
 })

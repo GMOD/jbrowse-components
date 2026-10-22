@@ -936,7 +936,7 @@
   },
   "MafAlignments": {
    "category": "Display",
-   "text": "# MafAlignments (Display config, maf plugin)\n\nThe MAF display's `alignments` setting: the per-species rows, the band that takes the height the bands above it leave, and the parts drawn over them. Letters draw over every cell `color` paints with its base's color, so `color: 'base'` letters every base and `mismatch` only the mismatches; they keep the case the file gives them, lowercase being soft-masked repeat in a UCSC alignment.\n\n```js\n{ type: 'LinearMafDisplay', alignments: { inversions: { show: true } } }\n```\n\n## Slots\n- `show: boolean = DEFAULTS.showAlignments`: When off, only the bands above the rows render.\n- `rowProportion: number = DEFAULTS.rowProportion`: fraction of the row height each glyph fills\n- `inversions: MafPart`: `show` hatches each block a species aligns on the other strand from the rest of its blocks on that source chromosome.\n- `frames: MafPart`: `show` draws each species' CDS reading frames from the MAF adapter's `framesAdapter` (UCSC `mafFrames`) as a strip over its row; no effect without one.\n- `reference: MafPart`: `show` gives the reference species, which every other row is scored against, a row of its own. Off by default, since under every color but `base` that row draws one constant color; the FASTA export keeps it either way."
+   "text": "# MafAlignments (Display config, maf plugin)\n\nThe MAF display's `alignments` setting: the per-species rows, the band that takes the height the bands above it leave, and the parts drawn over them. Letters draw over every cell `color` paints with its base's color, so `color: 'base'` letters every base and `mismatch` only the mismatches; they keep the case the file gives them, lowercase being soft-masked repeat in a UCSC alignment.\n\n```js\n{ type: 'LinearMafDisplay', alignments: { inversions: { show: true } } }\n```\n\n## Slots\n- `show: boolean = DEFAULTS.showAlignments`: When off, only the bands above the rows render.\n- `rowProportion: number = DEFAULTS.rowProportion`: fraction of the row height each glyph fills\n- `inversions: MafPart`: `show` hatches each block a species aligns on the other strand from the rest of its blocks on that source chromosome.\n- `frames: MafPart`: `show` draws each species' CDS reading frames from the MAF adapter's `framesAdapter` (UCSC `mafFrames`) as a strip over its row; no effect without one.\n- `reference: MafReferenceRow`: `show` gives the reference species, which every other row is scored against, a row of its own; on by default."
   },
   "MafColor": {
    "category": "Display",
@@ -948,7 +948,11 @@
   },
   "MafPart": {
    "category": "Display",
-   "text": "# MafPart (Display config, maf plugin)\n\nOne part drawn over the MAF display's rows, `alignments.inversions`, `.frames` or `.reference`, which `show` turns on.\n\n```js\n{ type: 'LinearMafDisplay', alignments: { inversions: { show: true } } }\n```\n\n## Slots\n- `show: boolean = false`: draw this part"
+   "text": "# MafPart (Display config, maf plugin)\n\nOne part drawn over the MAF display's rows, `alignments.inversions` or `.frames`, which `show` turns on.\n\n```js\n{ type: 'LinearMafDisplay', alignments: { inversions: { show: true } } }\n```\n\n## Slots\n- `show: boolean = false`: draw this part"
+  },
+  "MafReferenceRow": {
+   "category": "Display",
+   "text": "# MafReferenceRow (Display config, maf plugin)\n\nThe MAF display's `alignments.reference` part: the reference species' own row, which every other row is scored against. Under mismatch coloring it draws one constant color, and under codon coloring it carries the reference amino acids. The FASTA export keeps it either way.\n\n```js\n{ type: 'LinearMafDisplay', alignments: { reference: { show: false } } }\n```\n\n## Slots\n- `show: boolean = true`: give the reference species a row of its own"
   },
   "MafTabixAdapter": {
    "category": "Adapter",

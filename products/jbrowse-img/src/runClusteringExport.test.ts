@@ -156,7 +156,7 @@ test('runClustering=true on a MAF with its reference row hidden and one row left
       width: 800,
     })
   }
-  const hidden = ['rows.kept=ce11,cb4']
+  const hidden = ['rows.kept=ce11,cb4', 'alignments.reference.show=false']
   const [plain, clustered] = await Promise.all([
     render(...hidden),
     render(...hidden, 'runClustering=true'),

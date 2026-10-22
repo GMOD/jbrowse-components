@@ -13127,6 +13127,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "MafReferenceRow": {
+      "title": "MafReferenceRow",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "give the reference species a row of its own.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "MafAlignments": {
       "title": "MafAlignments",
       "type": "object",
@@ -13173,7 +13194,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/MafPart"
+            "$ref": "#/$defs/MafReferenceRow"
           }
         }
       },
