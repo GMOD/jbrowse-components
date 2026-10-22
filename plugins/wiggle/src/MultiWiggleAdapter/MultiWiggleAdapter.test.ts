@@ -1197,6 +1197,9 @@ describe('MultiWiggleAdapter with samplesTsvLocation', () => {
       jest.fn().mockImplementation(async (conf: { source: string }) => ({
         dataAdapter: { id: conf.source, getFeatureArrays },
       })),
+      {
+        getAdapterType: () => ({ configSchema: bigWigConfigSchema }),
+      } as unknown as PluginManager,
     )
     return { adapter, getFeatureArrays }
   }

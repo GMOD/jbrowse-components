@@ -422,14 +422,7 @@ export default class MultiWiggleAdapter
   getSourcesAndWarnings = cachedSetup({
     setup: async opts => {
       const sources = (await this.getAdapters()).map(
-        ({
-          type,
-          bigWigLocation: _bw,
-          dataAdapter: _da,
-          stamped: _st,
-          source,
-          ...rest
-        }) => ({
+        ({ type, dataAdapter: _da, stamped: _st, source, ...rest }) => ({
           ...this.withoutAdapterSlots(type, rest),
           source,
           name: source,
