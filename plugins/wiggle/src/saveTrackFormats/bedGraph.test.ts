@@ -30,6 +30,7 @@ test('a float32 score writes as the decimal the file held', () => {
   const f32 = new Float32Array([0.3, 1e-7, 123456.7, 2.5])
   expect([...f32].map(scoreText)).toEqual(['0.3', '1e-7', '123456.7', '2.5'])
   expect(scoreText(0.1)).toBe('0.1')
+  expect(scoreText(Math.fround(1.0384699372209587e-16))).toBe('1.03846994e-16')
   expect(scoreText(Math.PI)).toBe(`${Math.PI}`)
   expect(scoreText(Number.NaN)).toBe('NaN')
 })

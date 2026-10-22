@@ -138,6 +138,9 @@ export async function wiggleTables(
     yField: readConfObject(conf, 'y'),
     statusCallback: () => {},
   }
+  if (args.regions.length === 0) {
+    throw new Error('wiggleTables needs a region or regions')
+  }
   const results = (await executeRenderMultiWiggleData({ pluginManager, args }))
     .value
   const data = results[0]!

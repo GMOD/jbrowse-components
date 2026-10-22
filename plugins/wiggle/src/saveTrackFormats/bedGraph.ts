@@ -16,10 +16,10 @@ export const bedGraphFormatOptions: Record<string, FileTypeExporter> = {
 
 // A BigWig score is a float32, whose double expansion prints 0.3 as
 // 0.30000001192092896; the shortest decimal naming the same float32 is what the
-// file held.
+// file held, and nine significant digits always name one.
 export function scoreText(score: number) {
   if (Math.fround(score) === score) {
-    for (let digits = 1; digits < 9; digits++) {
+    for (let digits = 1; digits <= 9; digits++) {
       const shortest = +score.toPrecision(digits)
       if (Math.fround(shortest) === score) {
         return `${shortest}`

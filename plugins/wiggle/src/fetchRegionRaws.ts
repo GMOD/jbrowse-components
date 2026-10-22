@@ -55,13 +55,24 @@ export function fetchRegionRaws(
       ? Promise.all(
           regions.map(region => adapter.getFeatureArrays(region, opts)),
         )
-      : Promise.all(
-          regions.map(region =>
-            adapter
-              .getFeaturesArray(region, opts)
-              .then(features => featuresToRaw(features, opts.yField, jexl)),
-          ),
+      : featuresPerRegion(adapter, regions, opts).then(perRegion =>
+          perRegion.map(features => featuresToRaw(features, opts.yField, jexl)),
         )
+}
+
+// One fetch per region, concurrently, each on its own status line: the first
+// to finish would otherwise blank the label the others still need.
+function featuresPerRegion(
+  adapter: BaseFeatureDataAdapter,
+  regions: Region[],
+  opts: WiggleAdapterOptions,
+) {
+  const slot = createStatusFanOut(opts.statusCallback)
+  return Promise.all(
+    regions.map(region =>
+      adapter.getFeaturesArray(region, { ...opts, statusCallback: slot() }),
+    ),
+  )
 }
 
 // Every source's arrays, `raws` aligned to `regions`, for the render fetch and
@@ -78,20 +89,11 @@ export async function fetchSourceRaws(
   if (isMultiSource(adapter)) {
     return adapter.getMultiSourceFeatureArraysMulti(regions, opts)
   }
-  if (hasFeatureArraysMulti(adapter) || hasFeatureArrays(adapter)) {
+  if (servesArrays(adapter)) {
     return [{ source: '', raws: await fetchRegionRaws(adapter, regions, opts) }]
   }
-  const slot = createStatusFanOut(opts.statusCallback)
-  const groupsPerRegion = await Promise.all(
-    regions.map(async region =>
-      groupFeaturesBySource(
-        await adapter.getFeaturesArray(region, {
-          ...opts,
-          statusCallback: slot(),
-        }),
-      ),
-    ),
-  )
+  const perRegion = await featuresPerRegion(adapter, regions, opts)
+  const groupsPerRegion = perRegion.map(f => groupFeaturesBySource(f))
   const sources = new Set(groupsPerRegion.flatMap(groups => [...groups.keys()]))
   return [...sources].map(source => ({
     source,
