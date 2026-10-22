@@ -20,9 +20,10 @@ function ccr5Session() {
 // structure panels share one angle: B is turned so the kept and lost halves
 // sit side by side (in this crystal 182 residues are kept and 129 lost), and
 // C draws only what the frameshift spares, through Protein3d 1.26.0's
-// structure filter, so gp120 reaches into the gap where the rest would be. Δ32 keeps residues 1-184, so the session colors 185
-// on; gp120 (chain G) is a cartoon mark of its own color, and its V3 crown
-// (310-315) sticks of a brighter one.
+// structure filter. C leaves gp120 out: Δ32 protein misfolds and never reaches
+// the cell surface, so a gp120 docked on the fragment would read as HIV still
+// binding. Δ32 keeps residues 1-184, so the session colors 185 on; gp120
+// (chain G) in B is a cartoon mark of its own color.
 const PANELS = ['protein-CCR5-6meo', 'protein-CCR5-v3'] as const
 
 const molstar = (id: string) =>
@@ -122,12 +123,12 @@ export const proteinCcr5Delta32Specs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'Nothing left to bind',
+        text: 'Never reaches the cell surface',
         fontSize: 26,
-        maxWidth: 360,
+        maxWidth: 300,
         leader: true,
-        anchor: { residue: 'G:313', view: 2 },
-        dx: 150,
+        anchor: { residue: 'B:184', view: 2 },
+        dx: 60,
         dy: -170,
       },
     ],

@@ -112,15 +112,16 @@ blinded ideator given only a capability sheet, a landscape survey):
    adds 31 frameshifted, stops at 215). Builder `/var/tmp/ccr5/bin/`.
    A track of the codons Δ32's shifted frame reads (31 new ones, then a stop
    at 216) carries the step between the missing bases and the missing half of
-   the receptor; `/var/tmp/ccr5/bin/frameshift.py` writes them. Panel C is gp120's V3 crown (residues 310-315) reaching into the
-   bundle Δ32 deletes. Maraviroc went: Colin called it an analogy
+   the receptor; `/var/tmp/ccr5/bin/frameshift.py` writes them. Maraviroc went: Colin called it an analogy
    beside a consequence. Allele frequency went too, since its interesting
    form is by population ([[no-race-or-ancestry-framed-figures]]), and so did
    ClinVar, which draws the deletion as a green "benign" bar here.
-   Panel C now draws only residues 1-184, through Protein3d 1.26.0's
-   structure `filter` (`[{ field: 'residue', lte: 184 }]`, ADR-238's predicate
-   vocabulary), so gp120 reaches into the gap where the rest of the receptor
-   would be. `protein/ccr5_delta32_gene` is the same locus as a synteny view
+   Panel C draws CCR5's residues 1-184 alone, through Protein3d 1.26.0's
+   structure `filter` (`[{ field: 'chain', equal: 'B' }, { field: 'residue',
+   lte: 184 }]`, ADR-238's predicate vocabulary). It drew gp120 docked on the
+   fragment until Colin asked whether HIV still binds: Δ32 protein misfolds
+   and never reaches the cell surface, so gp120 stays in B only.
+   `protein/ccr5_delta32_gene` is the same locus as a synteny view
    over `demos/ccr5/`: the Δ32 allele is its own assembly, the deletion is the
    pinch between the PAF's two blocks, and the allele's own CDS ends at its
    premature stop. The design that generalises it is

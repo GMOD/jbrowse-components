@@ -8,53 +8,93 @@
       "hideHeaderOverview": true,
       "init": {
         "assembly": "hg38",
-        "loc": "chr3:46370246-46376906",
+        "loc": "chr3:46373391-46373606",
         "tracks": [
           {
-            "trackId": "ccr5_hg38_to_delta32",
-            "type": "MultiWaySyntenyDisplay",
-            "rows": {
-              "domain": ["ccr5_delta32"]
-            },
-            "laneGeneTracks": ["ccr5_hg38_gene", "ccr5_delta32_gene"],
-            "showLegend": false,
-            "height": 140
+            "trackId": "ccr5-mane",
+            "height": 40
           },
           {
             "trackId": "ccr5-HG00137",
-            "height": 140,
+            "height": 80,
             "sort": {
               "field": "base",
               "pos": 46373468,
               "refName": "chr3"
+            },
+            "pileup": {
+              "readHeight": 3
             }
           },
           {
             "trackId": "ccr5-HG00101",
-            "height": 140,
+            "height": 80,
             "sort": {
               "field": "base",
               "pos": 46373468,
               "refName": "chr3"
+            },
+            "pileup": {
+              "readHeight": 3
             }
           },
           {
             "trackId": "ccr5-HG00096",
-            "height": 140,
+            "height": 80,
             "sort": {
               "field": "base",
               "pos": 46373468,
               "refName": "chr3"
+            },
+            "pileup": {
+              "readHeight": 3
             }
           }
         ]
       }
     },
     {
+      "id": "synteny-gene",
+      "type": "LinearSyntenyView",
+      "displayName": "CCR5: hg38 above, the Δ32 allele below",
+      "mark": {
+        "interpolate": "bump"
+      },
+      "cigarMode": "full",
+      "tracks": [["ccr5_hg38_to_delta32"]],
+      "views": [
+        {
+          "id": "lgv-hg38",
+          "assembly": "hg38",
+          "loc": "chr3:46370246-46376906",
+          "hideHeaderOverview": true,
+          "tracks": [
+            {
+              "trackId": "ccr5_hg38_gene",
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "lgv-delta32",
+          "assembly": "ccr5_delta32",
+          "loc": "chr3_delta32:2246-8874",
+          "hideHeaderOverview": true,
+          "tracks": [
+            {
+              "trackId": "ccr5_delta32_gene",
+              "height": 88
+            }
+          ]
+        }
+      ],
+      "levelHeights": [40]
+    },
+    {
       "id": "protein-CCR5-6meo",
       "type": "ProteinView",
       "displayName": "CCR5 bound by HIV gp120 (PDB 6MEO)",
-      "height": 725,
+      "height": 860,
       "zoomToBaseLevel": false,
       "showAlignment": false,
       "color": {
@@ -470,7 +510,7 @@
       "id": "protein-CCR5-v3",
       "type": "ProteinView",
       "displayName": "What Δ32 leaves: residues 1-184 (PDB 6MEO)",
-      "height": 725,
+      "height": 860,
       "zoomToBaseLevel": false,
       "showAlignment": false,
       "color": {
@@ -843,17 +883,7 @@
       },
       "silhouettes": true,
       "occlusion": true,
-      "marks": [
-        {
-          "site": "G:*",
-          "mark": "cartoon",
-          "encoding": {
-            "color": {
-              "value": "#2e9e6b"
-            }
-          }
-        }
-      ],
+      "marks": [],
       "structures": [
         {
           "pdbId": "6meo",
@@ -880,6 +910,10 @@
           "userProvidedTranscriptSequence": "MDYQVSSPIYDINYYTSEPCQKINVKQIAARLLPPLYSLVFIFGFVGNMLVILILINCKRLKSMTDIYLLNLAISDLFFLLTVPFWAHYAAAQWDFGNTMCQLLTGLYFIGFFSGIFFIILLTIDRYLAVVHAVFALKARTVTFGVVTSVITWVVAVFASLPGIIFTRSQKEGLHYTCSSHFPYSQYQFWKNFQTLKIVILGLVLPLLVMVICYSGILKTLLRCRNEKKRHRAVRLIFTIMIVYFLFWAPYNIVLLLNTFQEFFGLNNCSSSNRLDQAMQVTETLGMTHCCINPIIYAFVGEKFRNYLLVFFQKHIAKRFCKCCSIFQQEAPERASSVYTRSTGEQEISVGL",
           "connectedViewId": "lgv-CCR5",
           "filter": [
+            {
+              "field": "chain",
+              "equal": "B"
+            },
             {
               "field": "residue",
               "lte": 184
@@ -968,13 +1002,31 @@
     "size": 1,
     "children": [
       {
-        "id": "panel-reads",
+        "id": "branch-genome",
+        "direction": "column",
         "size": 46,
-        "activeTabId": "tab-reads",
-        "tabs": [
+        "children": [
           {
-            "id": "tab-reads",
-            "viewIds": ["lgv-CCR5"]
+            "id": "panel-reads",
+            "size": 57,
+            "activeTabId": "tab-reads",
+            "tabs": [
+              {
+                "id": "tab-reads",
+                "viewIds": ["lgv-CCR5"]
+              }
+            ]
+          },
+          {
+            "id": "panel-gene",
+            "size": 43,
+            "activeTabId": "tab-gene",
+            "tabs": [
+              {
+                "id": "tab-gene",
+                "viewIds": ["synteny-gene"]
+              }
+            ]
           }
         ]
       },

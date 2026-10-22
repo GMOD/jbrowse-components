@@ -843,17 +843,7 @@
       },
       "silhouettes": true,
       "occlusion": true,
-      "marks": [
-        {
-          "site": "G:*",
-          "mark": "cartoon",
-          "encoding": {
-            "color": {
-              "value": "#2e9e6b"
-            }
-          }
-        }
-      ],
+      "marks": [],
       "structures": [
         {
           "pdbId": "6meo",
@@ -880,6 +870,10 @@
           "userProvidedTranscriptSequence": "MDYQVSSPIYDINYYTSEPCQKINVKQIAARLLPPLYSLVFIFGFVGNMLVILILINCKRLKSMTDIYLLNLAISDLFFLLTVPFWAHYAAAQWDFGNTMCQLLTGLYFIGFFSGIFFIILLTIDRYLAVVHAVFALKARTVTFGVVTSVITWVVAVFASLPGIIFTRSQKEGLHYTCSSHFPYSQYQFWKNFQTLKIVILGLVLPLLVMVICYSGILKTLLRCRNEKKRHRAVRLIFTIMIVYFLFWAPYNIVLLLNTFQEFFGLNNCSSSNRLDQAMQVTETLGMTHCCINPIIYAFVGEKFRNYLLVFFQKHIAKRFCKCCSIFQQEAPERASSVYTRSTGEQEISVGL",
           "connectedViewId": "lgv-CCR5",
           "filter": [
+            {
+              "field": "chain",
+              "equal": "B"
+            },
             {
               "field": "residue",
               "lte": 184
