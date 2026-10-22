@@ -31,9 +31,9 @@ hand, and Colin's rulings on the calls they split.
 
   // AND of every entry. A written list merges with the defaults by field.
   "filter": [
-    { "field": "flags.unmapped", "equal": false },   // defaults: 1540 as three
-    { "field": "flags.qcFail", "equal": false },     //   bits, fused to one mask
-    { "field": "flags.duplicate", "equal": false },
+    { "field": "flags.UNMAP", "equal": false },      // defaults: 1540 as three
+    { "field": "flags.QCFAIL", "equal": false },     //   bits, fused to one mask
+    { "field": "flags.DUP", "equal": false },
     { "field": "junction.reads", "gte": 2 },
     { "field": "breakpoint.reads", "gte": 2 },
     { "field": "mapq", "gte": 20 },                  // examples
