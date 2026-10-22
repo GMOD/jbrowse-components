@@ -55,9 +55,10 @@
             "domainMax": 4
           }
         },
-        "color": {
-          "field": "score",
-          "range": ["#2166ac", "#b2182b"]
+        "encoding": {
+          "color": {
+            "scale": { "range": ["#2166ac", "#b2182b"] }
+          }
         },
         "height": 500
       }
@@ -79,13 +80,17 @@
         }
       },
       "displayDefaults": {
-        "color": {
-          "field": "rank",
-          "scale": "threshold",
-          "domain": ["1"],
-          "range": ["rgb(52,152,219)", "rgb(237,137,44)"],
-          "labels": ["reference", "other assemblies"],
-          "title": "Segment rank"
+        "encoding": {
+          "color": {
+            "field": "rank",
+            "scale": {
+              "type": "threshold",
+              "domain": ["1"],
+              "range": ["rgb(52,152,219)", "rgb(237,137,44)"],
+              "names": ["reference", "other assemblies"]
+            },
+            "legend": { "title": "Segment rank" }
+          }
         }
       },
       "displays": [

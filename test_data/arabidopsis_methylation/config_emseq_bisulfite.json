@@ -179,8 +179,11 @@
             "trackId": "arabidopsis_wgbs",
             "displaySnapshot": {
               "type": "LinearAlignmentsDisplay",
-              "baseColor": {
-                "field": "bisulfite"
+              "pileup": {
+                "bases": {
+                  "show": true,
+                  "encoding": { "color": "bisulfite" }
+                }
               }
             }
           }

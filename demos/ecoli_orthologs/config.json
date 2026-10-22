@@ -1831,10 +1831,10 @@
         {
           "type": "MultiWaySyntenyDisplay",
           "displayId": "ecoli_orthologs-MultiWaySyntenyDisplay",
-          "color": {
-            "field": "cluster"
+          "encoding": {
+            "color": "cluster"
           },
-          "showLegend": false,
+          "legend": { "show": false },
           "height": 1500
         }
       ]

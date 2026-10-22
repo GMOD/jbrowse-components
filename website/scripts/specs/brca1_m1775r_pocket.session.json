@@ -18,13 +18,13 @@
             "trackId": "brca1-codon1775",
             "type": "LinearBasicDisplay",
             "height": 86,
-            "color": "jexl:get(feature,'color')"
+            "encoding": { "color": { "value": "jexl:get(feature,'color')" } }
           },
           {
             "trackId": "brca1-clinvar-1775",
             "height": 60,
             "type": "LinearBasicDisplay",
-            "color": "jexl:get(feature,'color')"
+            "encoding": { "color": { "value": "jexl:get(feature,'color')" } }
           }
         ]
       }
@@ -900,13 +900,16 @@
       "displayDefaults": {
         "mark": "point",
         "size": 11,
-        "color": {
-          "field": "score",
-          "scale": "threshold",
-          "domain": [-1.328, -0.748],
-          "range": ["#c51b1b", "#b9a7dd", "#4f8fc6"],
-          "labels": ["BRCA1 broken", "In between", "BRCA1 works"],
-          "title": "Function score"
+        "encoding": {
+          "color": {
+            "scale": {
+              "type": "threshold",
+              "domain": [-1.328, -0.748],
+              "range": ["#c51b1b", "#b9a7dd", "#4f8fc6"],
+              "names": ["BRCA1 broken", "In between", "BRCA1 works"]
+            },
+            "legend": { "title": "Function score" }
+          }
         },
         "scales": {
           "y": {

@@ -63,16 +63,18 @@
                 "y": "milliDiv",
                 "color": {
                   "field": "lineage",
-                  "scale": "categorical",
-                  "domain": ["AluJ", "AluS", "AluY", "FLAM", "FRAM"],
-                  "range": [
-                    "#4575b4",
-                    "#fdae61",
-                    "#d73027",
-                    "#8c8c8c",
-                    "#8c8c8c"
-                  ],
-                  "title": "Alu lineage"
+                  "scale": {
+                    "type": "ordinal",
+                    "domain": ["AluJ", "AluS", "AluY", "FLAM", "FRAM"],
+                    "range": [
+                      "#4575b4",
+                      "#fdae61",
+                      "#d73027",
+                      "#8c8c8c",
+                      "#8c8c8c"
+                    ]
+                  },
+                  "legend": { "title": "Alu lineage" }
                 }
               },
               "maxBpPerPx": 100
@@ -138,11 +140,13 @@
                 "y": "youngLog2",
                 "color": {
                   "field": "youngLog2",
-                  "scale": "threshold",
-                  "domain": [0],
-                  "range": ["#4575b4", "#d73027"],
-                  "labels": ["below the genome-wide share", "above it"],
-                  "title": "AluY share"
+                  "scale": {
+                    "type": "threshold",
+                    "domain": [0],
+                    "range": ["#4575b4", "#d73027"],
+                    "names": ["below the genome-wide share", "above it"]
+                  },
+                  "legend": { "title": "AluY share" }
                 }
               }
             }
@@ -177,11 +181,13 @@
                 "y": "strandLog2",
                 "color": {
                   "field": "strandLog2",
-                  "scale": "threshold",
-                  "domain": [0],
-                  "range": ["#4575b4", "#d73027"],
-                  "labels": ["below a half", "above it"],
-                  "title": "Plus-strand share"
+                  "scale": {
+                    "type": "threshold",
+                    "domain": [0],
+                    "range": ["#4575b4", "#d73027"],
+                    "names": ["below a half", "above it"]
+                  },
+                  "legend": { "title": "Plus-strand share" }
                 }
               }
             }

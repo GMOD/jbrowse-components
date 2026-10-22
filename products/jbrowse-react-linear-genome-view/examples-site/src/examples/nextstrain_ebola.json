@@ -103,7 +103,9 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "Ebola-nextstrain-color-display",
-          "color": "jexl:get(feature,'fill') || 'black'"
+          "encoding": {
+            "color": { "value": "jexl:get(feature,'fill') || 'black'" }
+          }
         }
       ]
     },

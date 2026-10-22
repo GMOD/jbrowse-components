@@ -50,8 +50,8 @@
         "height": 780,
         "tracks": ["KIM_to_CO92"],
         "filter": [{ "field": "length", "gte": 5000 }],
-        "color": {
-          "field": "strand"
+        "encoding": {
+          "color": "strand"
         }
       }
     ]

@@ -130,7 +130,9 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "RSV-A-nextstrain-color-display",
-          "color": "jexl:get(feature,'fill') || 'black'"
+          "encoding": {
+            "color": { "value": "jexl:get(feature,'fill') || 'black'" }
+          }
         }
       ]
     },

@@ -45,7 +45,7 @@
             "trackId": "ccr5-frameshift",
             "type": "LinearBasicDisplay",
             "height": 54,
-            "color": "jexl:get(feature,'color')"
+            "encoding": { "color": { "value": "jexl:get(feature,'color')" } }
           }
         ]
       }
