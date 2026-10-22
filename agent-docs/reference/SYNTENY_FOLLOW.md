@@ -480,9 +480,10 @@ the rows hold. Without the flag a held row and a dead follow look identical.
 
 The follow moves a row and leaves its orientation alone, so inside an inverted
 alignment the row pans opposite the anchor and the crossing ribbons show the
-inversion. Flipping a row hides half of a rearrangement, so the view dropped
-`navigation.matchOrientation`, an opt-in that flipped the row to pan with the
-anchor. A hand flip (`horizontallyFlip`) stands, and does not take the anchor.
+inversion. The view dropped `navigation.matchOrientation`, which flipped the
+row to pan with the anchor, because flipping a row hides half of a
+rearrangement. A hand flip (`horizontallyFlip`) stands, and does not take the
+anchor.
 
 ## Block coordinates are `start <= end`, with direction in `strands`
 
