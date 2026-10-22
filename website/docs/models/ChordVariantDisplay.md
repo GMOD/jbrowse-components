@@ -115,6 +115,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-shapeat">**shapeAt**</span><br><code>(i: number) =&gt; ChordShape &#124; undefined</code> | lane `i` as the SVG side draws it, on the unrotated figure; undefined for a chord whose ends are under a pixel apart |
 | <span id="method-laneat">**laneAt**</span><br><code>(x: number, y: number) =&gt; number &#124; undefined</code> | the chord passing nearest a figure point, within `CHORD_HIT_PX` |
 | <span id="method-shapelabel">**shapeLabel**</span><br><code>(feature: Feature) =&gt; string</code> |  |
+| <span id="method-swatchcolor">**swatchColor**</span><br><code>(color: string) =&gt; string</code> | a key swatch for `color`, faded as the chords draw it |
 | <span id="method-rendersvg">**renderSvg**</span><br><code>() =&gt; Promise&lt;Element &#124; null&gt;</code> |  |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Color by... and Advanced → Edit plot..., which the circular view shows under its Tracks menu |
 

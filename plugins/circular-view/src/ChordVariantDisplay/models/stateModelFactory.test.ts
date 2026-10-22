@@ -135,8 +135,11 @@ test('a constant color keys as one row, a field as the values it paints', async 
   const [scale]: ColorScale[] = display.colorScales
   expect(scale?.title).toBe('SV type')
   expect(
-    scale?.kind === 'categorical' && scale.entries.map(e => e.label),
-  ).toEqual(['Deletion', 'Inversion'])
+    scale?.kind === 'categorical' && scale.entries.map(e => [e.label, e.color]),
+  ).toEqual([
+    ['Deletion', `rgba(228,26,28,${115 / 255})`],
+    ['Inversion', `rgba(255,127,0,${115 / 255})`],
+  ])
 
   setConf(display, 'color', {
     field: 'svType',

@@ -432,9 +432,16 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         const { value } = self.colorSetting
         return self.paintedColorField || value === undefined || isJexl(value)
           ? undefined
-          : abgrToCssRgba(
-              scaleAbgrAlpha(cssColorToABGR(value), self.shapeAlpha),
-            )
+          : this.swatchColor(value)
+      },
+      /**
+       * #method
+       * a key swatch for `color`, faded as the chords draw it
+       */
+      swatchColor(color: string) {
+        return abgrToCssRgba(
+          scaleAbgrAlpha(cssColorToABGR(color), self.shapeAlpha),
+        )
       },
       /**
        * #getter
@@ -466,7 +473,14 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
               withPreset(self.colorSetting, CATEGORICAL_FIELD_PRESETS).title ??
               field.field,
           },
-        )
+        ).map(scale => ({
+          ...scale,
+          entries: scale.entries.map(e =>
+            e.color === undefined
+              ? e
+              : { ...e, color: this.swatchColor(e.color) },
+          ),
+        }))
       },
       /**
        * #getter
