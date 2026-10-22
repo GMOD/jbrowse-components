@@ -80,4 +80,17 @@ test('a contig of the sequence holding no records of a tabix file is empty, not 
   expect((await engine.features(elsewhere(onlyCtgA))).missingContig).toMatch(
     /^chrNope is not a contig of this file/,
   )
+  const vcfOnlyCtgA = {
+    adapterConfig: {
+      type: 'VcfTabixAdapter',
+      vcfGzLocation: uri('volvox.filtered.vcf.gz'),
+      index: { location: uri('volvox.filtered.vcf.gz.tbi') },
+    },
+    sequenceAdapter: GFF3.sequenceAdapter,
+    region: { refName: 'ctgB', start: 0, end: 6000 },
+  }
+  expect((await engine.variants(vcfOnlyCtgA)).missingContig).toBe('')
+  expect((await engine.variants(elsewhere(vcfOnlyCtgA))).missingContig).toMatch(
+    /^chrNope is not a contig of this file/,
+  )
 })

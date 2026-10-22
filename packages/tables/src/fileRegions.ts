@@ -1,5 +1,6 @@
 import { isRegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { VCF_ADAPTER_TYPES } from '@jbrowse/plugin-variants/tables'
 
 import type { ResolvedAssembly } from './assembly.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -31,6 +32,7 @@ const NAMES_FROM_RECORDS = new Set([
   'GtfAdapter',
   'GtfTabixAdapter',
   'FromConfigAdapter',
+  ...VCF_ADAPTER_TYPES,
 ])
 
 async function contigsOf(

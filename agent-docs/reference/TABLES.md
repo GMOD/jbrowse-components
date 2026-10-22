@@ -98,7 +98,7 @@ and `clips` stay.
 `missingContig` to each table: where the region's contig is not one the file
 lists, the tables come back empty, as the browser draws such a track, and
 `missingContig` says so and names the file's contigs, so a host can tell a
-typo from a quiet region. A BED or GFF lists only contigs holding records, so
+typo from a quiet region. A BED, GFF or VCF lists only contigs holding records, so
 for those a contig of the call's sequence counts as the file's. `alignmentTables` also returns `settings`, the
 four band objects resolved (`coverage`, `pileup`, `sashimi`,
 `readConnections`), which decide which bands a host stacks, so the host
