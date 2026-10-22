@@ -84,13 +84,8 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
           spreadsheet: types.maybe(Spreadsheet()),
           /**
            * #property
-           * transient launch state: the settings written on the view object
-           * that need resolving before they can be view state — the file to
-           * load, the assembly its rows are read against, the filter to open
-           * it under. `preProcessSnapshot` moves them here off the snapshot,
-           * the afterAttach reaction applies them and clears this, so a saved
-           * session never retains it. Not written by hand: author every
-           * setting directly on the view.
+           * transient launch keys lifted off the view object, applied on
+           * attach and then cleared; author them directly on the view
            */
           launch: types.frozen<
             LaunchInput<SpreadsheetViewCommands> | undefined
@@ -105,8 +100,7 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
         .views(self => ({
           /**
            * #getter
-           * the launch state that still has something to apply — the gate the
-           * afterAttach reaction reads.
+           * the launch keys still waiting to be applied
            */
           get pendingLaunch() {
             return pendingLaunch(self.launch)
@@ -122,9 +116,7 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
           },
           /**
            * #action
-           * returns the distance actually applied, which is less than the
-           * requested one once the drag runs into minHeight — the ResizeHandle
-           * needs that to keep the bar under the pointer
+           * returns the distance applied, which minHeight can cut short
            */
           resizeHeight(distance: number) {
             const oldHeight = self.height
@@ -134,13 +126,9 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
 
           /**
            * #action
-           * load a new spreadsheet and set our mode to display it. When the
-           * incoming data has the same columns as what's shown (i.e. a
-           * session-cached URI being re-fetched on reload), keep the
-           * user's column-visibility and SV-type filter — a fresh parse only
-           * supplies columns/rowSet, so a plain replace would reset them. The
-           * column match keeps this from leaking view state across different
-           * files.
+           * show a parsed sheet. One with the same columns as the sheet it
+           * replaces, as a reloaded session's re-fetch is, keeps that sheet's
+           * column visibility, filters and search
            */
           displaySpreadsheet(spreadsheet?: SpreadsheetSnapshot) {
             const prev = self.spreadsheet
@@ -171,11 +159,7 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
 
           /**
            * #action
-           * Receives the error of a failed launch, which `installInitAutorun`
-           * requires of its host. It delegates to the import form rather than
-           * adding a separate slot: the import form is on screen before a sheet
-           * exists, and its banner is already the one place this view shows an
-           * error.
+           * a failed launch's error, shown in the import form's banner
            */
           setError(error: unknown) {
             self.importWizard.setError(error)
@@ -190,34 +174,18 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
 
           /**
            * #action
-           * Put the loaded file in the session as a track, so the linear and
-           * breakpoint views a row opens have the records the row came from.
-           * Without it every drill-down opens an empty view and the reader has
-           * to add the same file again by hand.
+           * Put the loaded file in the session as a track, so the views a row
+           * opens show the records it came from. Idempotent: a session that
+           * already has a track for the file reuses it.
            *
-           * The action is idempotent, and cheaply so: the trackId is derived from
-           * the file's location and `addSessionTrackConf` dedupes against
-           * everything the session can already resolve, so a reloaded session
-           * re-importing its cached URI reuses the track rather than stacking a
-           * second one. `trackConfForImportedFile` declines outright when a
-           * track for the file already exists.
-           *
-           * **No code removes the track**, neither `returnToImportForm` nor closing
-           * this view. The views that opened it need the track and they outlive
-           * the sheet, so removing it would empty a
-           * linear view the reader is still reading. It is an ordinary session
-           * track from that point on: it shows up in the track selector, it
-           * saves with the session, and the reader closes it there. Importing a
-           * second file adds a second track rather than replacing this one,
-           * which is the same answer — they loaded two files.
+           * Nothing removes the track, since the views that opened it outlive
+           * the sheet; the reader closes it like any session track.
            */
           registerImportedTrack(assemblyName: string) {
             const session = getSession(self)
             const conf =
               self.importWizard.trackConfForImportedFile(assemblyName)
-            // a host with tracks turned off, or one whose session has no
-            // session-track store, keeps the old behavior: the drill-downs open
-            // without the callset rather than the import failing
+            // a host without session tracks opens the drill-downs without it
             if (conf && isSessionWithAddSessionTrack(session)) {
               session.addSessionTrackConf(conf)
             }
@@ -226,10 +194,8 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
         .actions(self => ({
           /**
            * #action
-           * the single load funnel: fetch+parse via the import wizard, then
-           * display the result. Every entry point (declarative init, cached
-           * reload, the import form's Open button) routes through here so the
-           * view stays the sole owner of displaySpreadsheet
+           * fetch, parse and show the wizard's file: the one path a launch, a
+           * session reload and the Open button all take
            */
           async loadSpreadsheet(
             assemblyName: string,
@@ -238,10 +204,7 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
             const session = getSession(self)
             try {
               const data = await self.importWizard.import(assemblyName)
-              // Alive is the weaker half. A second launch of this same view is
-              // still a live node, so liveness alone let a superseded load
-              // reach `displaySpreadsheet` and put the file the user had
-              // already replaced on screen.
+              // a newer launch of this live view replaced the file
               if (data && isAlive(self) && !superseded?.()) {
                 self.displaySpreadsheet(data)
                 self.registerImportedTrack(assemblyName)
@@ -255,9 +218,8 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
           },
           /**
            * #action
-           * drop the loaded sheet and the cached location together: leaving the
-           * cache behind makes afterAttach re-fetch the dismissed file on the
-           * next session load, putting the user back where they left
+           * drop the sheet and its cached location, so a session reload does
+           * not fetch the dismissed file again
            */
           returnToImportForm() {
             self.displaySpreadsheet(undefined)
@@ -267,11 +229,8 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
         .actions(self => ({
           /**
            * #action
-           * apply a declarative init (from addView / sv-inspector): point the
-           * import wizard at the file and load it. Without a uri there is
-           * nothing to load, so the wizard is only seeded — the import form
-           * then opens on the caller's assembly and file type instead of
-           * whichever assembly happens to sort first
+           * point the import wizard at a launch's file and load it; without a
+           * uri or an assembly, only seed the import form with what it names
            */
           async applyInit(
             init: LaunchInput<SpreadsheetViewCommands>,
@@ -290,27 +249,15 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
                 locationType: 'UriLocation' as const,
               }
               importWizard.setFileSource(fileLocation)
-              // persist the location synchronously (fileSource is volatile) so
-              // a snapshot taken before the async load finishes can still
-              // reload the file instead of dropping to the import form. init is
-              // cleared synchronously by the reaction, so the cache is the only
-              // reconstruction source.
               importWizard.setCachedFileLocation(fileLocation)
             }
-            // after setFileSource, which infers a type from the filename: an
-            // explicit fileType is the caller overriding that inference
+            // after setFileSource, so it overrides the type the name implied
             if (fileType) {
               importWizard.setFileType(fileType)
             }
-            // an assembly is what the rows' coordinates are read against, so a
-            // spec naming a file and no assembly seeds the wizard and stops
-            // there rather than importing against nothing
             if (uri && assembly) {
               await self.loadSpreadsheet(assembly, superseded)
-              // after the load, because the sheet the filter belongs to does
-              // not exist until then: displaySpreadsheet replaces the whole
-              // node, so a filter set before it would be thrown away with the
-              // sheet it was set on
+              // the filters belong to the sheet the load just built
               if (isAlive(self) && !superseded?.()) {
                 self.spreadsheet?.setFilterText(filterText)
                 self.spreadsheet?.setSvEventFilter(svEventFilter)
@@ -321,25 +268,13 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
         .actions(self => ({
           afterAttach() {
             const hadInit = !!self.pendingLaunch
-            // The same launcher the other four views use. The reaction this
-            // replaced fired `applyInit` without awaiting it and cleared `init`
-            // up front, claiming "a later setLaunch supersedes" — it did not.
-            // Two launches ran at once over one import wizard, and whichever
-            // file came back last won, so the one the user had replaced could
-            // be the one on screen. `installInitAutorun` drains them one at a
-            // time and hands each the `superseded` guard that liveness alone
-            // cannot supply.
             installInitAutorun(self, {
               name: 'SpreadsheetViewInit',
-              // nothing to measure first: this view needs no width to load
               ready: () => true,
-              // a sheet on screen is the view up, so a later failure is one
-              // step's problem rather than the import form's
               materialized: () => !!self.spreadsheet,
               apply: (init, { superseded }) => self.applyInit(init, superseded),
             })
-            // reload a session-cached URI (init and a cached file are mutually
-            // exclusive — fresh addView vs reloaded session — but guard anyway)
+            // a reloaded session re-reads its cached file
             const { importWizard } = self
             if (
               !hadInit &&
@@ -355,29 +290,16 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
         .views(self => ({
           /**
            * #getter
-           * Named to match LGV/dotplot/synteny/circular/breakpoint-split, which
-           * is what `ViewContainer` reads to publish `data-view-phase`. Without
-           * it this view published `ready` for its whole load, so a capture or a
-           * browser test waiting on that attribute treated a spreadsheet still
-           * fetching and parsing its VCF as settled — and there is no
-           * display-level wait to fall back on here, since a spreadsheet mounts
-           * no displays at all.
-           *
-           * The one view whose loading state renders *inside* its import form
-           * rather than replacing it: the wizard keeps the chosen file, type and
-           * assembly on screen and puts a spinner above them, which is more
-           * useful than a bare loading screen that throws that context away. The
-           * phase is about the model, not about which component is mounted.
+           * true while the file loads, which `ViewContainer` publishes as
+           * `data-view-phase`; the import form stays on screen under a spinner
            */
           get showLoading() {
             return self.importWizard.loading
           },
           /**
            * #getter
-           * every track a row's drill-down opens with, the loaded file's first.
-           * That one is derived, not recorded: after `registerImportedTrack`
-           * the session holds a track pointing at the file, so the location
-           * match that decides whether to build one also finds it afterwards
+           * every track a row's drill-down opens with, the loaded file's own
+           * first
            */
           get drilldownTrackIds(): string[] {
             const { existingTrackId } = self.importWizard
@@ -408,9 +330,7 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
         return rest
       }
       const { rowSet, ...spreadsheetRest } = spreadsheet
-      // omit rows when a URI is cached (re-fetched on load) or too large for
-      // the session snapshot. The cheap test is deliberately first: a cached URI makes
-      // the answer yes regardless of size
+      // rows a reload re-reads from the cached location, or too many to save
       const omitRows =
         !!rest.importWizard.cachedFileLocation ||
         rowsExceedSnapshotBudget(rowSet)

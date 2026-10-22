@@ -40,17 +40,14 @@ const fileTypeParsers = {
 
 function isFileLocation(loc: unknown): loc is FileLocation {
   return (
-    !!loc &&
-    typeof loc === 'object' &&
-    ('uri' in loc ||
-      'localPath' in loc ||
-      'blobId' in loc ||
-      'locationType' in loc)
+    isUriLocation(loc) ||
+    isLocalPathLocation(loc) ||
+    isBlobLocation(loc) ||
+    isFileHandleLocation(loc)
   )
 }
 
-// maps adapter type name → spreadsheet file type; this is both the allowlist
-// and the type resolution for "open from track" (avoids filename guessing)
+// the adapters "open from track" accepts, and the file type each reads
 const adapterFileTypes: Record<string, (typeof fileTypes)[number]> = {
   VcfAdapter: 'VCF',
   VcfTabixAdapter: 'VCF',
@@ -60,19 +57,9 @@ const adapterFileTypes: Record<string, (typeof fileTypes)[number]> = {
   StarFusionAdapter: 'STAR-Fusion',
 }
 
-// The track each file type opens as, for putting an imported file in the
-// session so the views a row drills down into can show it.
-//
-// Deliberately NOT `guessAdapter`, which is what "Add track" uses: that guesses
-// off the filename, so a `.vcf.gz` becomes a `VcfTabixAdapter` and needs an
-// index beside it. The C-GIAB benchmark VCF the SV tutorial is built on has no
-// `.tbi`, so a guessed track there would 404 — turning a drill-down that showed
-// nothing into one that shows an error, which is worse.
-//
-// These plain readers take the whole file, which is exactly what the sheet
-// already did to produce the rows on screen, so the track cannot fail where the
-// import succeeded. A file that already has an indexed track in the session
-// reaches that one instead, through `existingTrackId`.
+// The track an imported file becomes. Not `guessAdapter`, which makes a
+// `.vcf.gz` a tabix track that 404s without an index: these whole-file readers
+// cannot fail where the import succeeded.
 const fileTypeTracks: Record<
   (typeof fileTypes)[number],
   { trackType: string; adapterType: string }
@@ -86,7 +73,6 @@ const fileTypeTracks: Record<
   },
 }
 
-// matches a file extension against the supported file types (case-insensitive)
 const fileTypesRegexp = new RegExp(
   String.raw`\.(${fileTypes.join('|')})(\.gz)?$`,
   'i',
@@ -103,9 +89,9 @@ export function getFileSourceName(src: FileLocation): string | undefined {
 }
 
 /**
- * What tells two locations apart: a resolved URL, a path, or the id of a file
- * the user handed the page. Not the filename, which two different local files
- * can share.
+ * A key for a location: its resolved URL, its path, or the id of a file the
+ * user handed the page. The filename would not do, since two local files can
+ * share one.
  */
 export function fileSourceIdentity(src: FileLocation): string | undefined {
   return isUriLocation(src)
@@ -124,21 +110,13 @@ function isReloadable(src: FileLocation) {
   return isUriLocation(src) || isLocalPathLocation(src)
 }
 
-// case-insensitive match against the canonical list to handle e.g. STAR-Fusion.
-//
-// The query string and fragment are cut first because the extension is anchored
-// to the end: a presigned URL (`.../calls.bed?X-Amz-Signature=...`) matched
-// nothing, so an "open file from URL" of anything but a VCF silently kept the
-// VCF default and parsed the file as the wrong format
-//
-// STAR-Fusion output is a `.tsv`, so its extension says nothing; the tool's own
-// filenames (`star-fusion.fusion_predictions.abridged.tsv`, and the DepMap
-// export spelled `K562.star-fusion.tsv`) are what name it.
+// STAR-Fusion writes a `.tsv`, so only the tool's filenames identify it
 const starFusionNameRegexp = /star[-_]?fusion|fusion_predictions/i
 
 export function detectFileType(
   name: string,
 ): (typeof fileTypes)[number] | undefined {
+  // a presigned URL's query would hide the extension
   const path = name.split(/[?#]/)[0]!
   const match = fileTypesRegexp.exec(path)?.[1]?.toLowerCase()
   const byExtension = match
@@ -149,8 +127,7 @@ export function detectFileType(
     : byExtension
 }
 
-// The header line says what the file is when the name could not: STAR-Fusion
-// leads with `#FusionName`, whatever the file was renamed to.
+// STAR-Fusion's header starts `#FusionName` whatever the file is called
 export function sniffFileType(
   data: Uint8Array,
 ): (typeof fileTypes)[number] | undefined {
@@ -218,20 +195,12 @@ export default function stateModelFactory() {
 
       /**
        * #getter
-       * every track in the session this view could open, with its location and
-       * file type resolved, in label order.
-       *
-       * A getter rather than the body of tracksForAssembly so the sweep — a
-       * config read per track over the whole config, plus a localeCompare
-       * sort — is memoized instead of re-running on every render. TrackSelector
-       * is an observer and calls this during render, and the assembly filter it
-       * applies is a cheap array check on the result
+       * every session track this view could open, with its location and file
+       * type, in label order
        */
       get importableTracks() {
         const session = getSession(self)
         const { pluginManager } = getEnv(self)
-        // not [...tracks, ...sessionTracks]: session.tracks already contains
-        // sessionTracks, so that listed every session track twice
         return allSessionTracks(session)
           .flatMap(track => {
             const entry = toTrackConfigEntry(track)
@@ -283,14 +252,8 @@ export default function stateModelFactory() {
 
       /**
        * #getter
-       * the track the session already has for the loaded file, if any.
-       *
-       * Matched by location rather than remembered, which answers for all three
-       * ways a sheet can be holding a file: "open from track" (where it is the
-       * track the reader picked), a session reloaded from
-       * `cachedFileLocation` (where nothing was remembered), and a pasted URL
-       * that happens to name a file some track already points at — which should
-       * reach that track rather than stand up a second copy of it.
+       * the session's track for the loaded file, matched by location, so a
+       * picked track, a reloaded session and a pasted URL all find it
        */
       get existingTrackId() {
         const loc = self.fileSource ?? self.cachedFileLocation
@@ -305,14 +268,9 @@ export default function stateModelFactory() {
     .views(self => ({
       /**
        * #method
-       * A track config for the loaded file, so the views the sheet drills down
-       * into can show the records the rows came from. Undefined when the
-       * session already has a track for the file — see `existingTrackId` — and
-       * when the adapter declares no location key to put the file in.
-       *
-       * The trackId is derived from the location rather than from the view, so
-       * two views importing one file share a track and a reloaded session
-       * reuses the one it already has.
+       * a track config for the loaded file, or undefined when the session
+       * already has one. The trackId comes from the location, so two views
+       * importing one file share it
        */
       trackConfForImportedFile(assemblyName: string) {
         const loc = self.fileSource ?? self.cachedFileLocation
@@ -326,8 +284,6 @@ export default function stateModelFactory() {
         return locationKey
           ? {
               type: trackType,
-              // the basename alone as the label, which is what "Add track"
-              // shows and what fits a track selector row
               trackId: `spreadsheet-import-${identity}`,
               name: getFileName(loc),
               assemblyNames: [assemblyName],

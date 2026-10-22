@@ -30,7 +30,6 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
 | <span id="property-type">**type**</span><br><code>type: types.literal('SvInspectorView')</code> |  |
 | <span id="property-height">**height**</span><br><code>height: types.stripDefault(types.number, defaultHeight)</code> | height of the whole view in pixels |
 | <span id="property-onlydisplayrelevantregionsincircularview">**onlyDisplayRelevantRegionsInCircularView**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>onlyDisplayRelevantRegionsInCircularView: types.stripDefault( t…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>onlyDisplayRelevantRegionsInCircularView: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.boolean,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;false,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | draw only the chromosomes the visible rows touch |
@@ -40,9 +39,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-launch">**launch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>launch: types.frozen&lt; LaunchInput&lt;SvInspectorViewCommands&gt; &#124; un…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>launch: types.frozen&lt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;LaunchInput&lt;SvInspectorViewCommands&gt; &#124; undefined&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&gt;()</code></pre></dialog></span> | transient launch keys, forwarded to the sheet on attach and cleared; author them directly on the view |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>2 inherited properties from one model</summary>
+<summary>3 inherited properties from one model</summary>
 
-From [BaseViewModel](../baseviewmodel): <span id="property-displayname">[`displayName`](../baseviewmodel#property-displayname)</span>, <span id="property-minimized">[`minimized`](../baseviewmodel#property-minimized)</span>
+From [BaseViewModel](../baseviewmodel): <span id="property-id">[`id`](../baseviewmodel#property-id)</span>, <span id="property-displayname">[`displayName`](../baseviewmodel#property-displayname)</span>, <span id="property-minimized">[`minimized`](../baseviewmodel#property-minimized)</span>
 
 </details>
 

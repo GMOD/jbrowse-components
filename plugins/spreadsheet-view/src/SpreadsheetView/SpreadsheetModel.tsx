@@ -89,12 +89,7 @@ type VisibleRowFlags = Record<number, boolean>
 /** VCF 4.4's key for the rearrangement event a record belongs to */
 const SV_EVENT_COLUMN = 'INFO.EVENT'
 
-/**
- * Rows to measure column widths against. Evenly spaced across the whole sheet
- * rather than the first N, so a column that only widens near the end of the
- * file is still seen — a VCF sorted by contig puts its longest REF/ALT
- * sequences wherever they happen to fall, not at the top.
- */
+// spread over the whole sheet, since the widest REF/ALT can fall anywhere
 const WIDTH_SAMPLE_ROWS = 1000
 
 function sampleRows<T>(rows: T[] | undefined) {
@@ -109,17 +104,9 @@ function sampleRows<T>(rows: T[] | undefined) {
   return out
 }
 
-/**
- * Whether two visible-row lookups describe the same set of rows.
- *
- * The grid hands back a freshly built lookup on every pass of its filter
- * pipeline, and several of those passes cannot have changed the result: it
- * re-applies filters on `rowsSet`, on a strategy-processor change, and on a
- * column-visibility change while a quick filter is active. A new object each
- * time is a new `visibleRows`, and everything the SV inspector derives from the
- * rows on screen recomputes: the legend's tally, the circle's regions, the ids
- * its chord display draws. Comparing the lookups is one linear scan.
- */
+// The grid rebuilds its visible-rows lookup on filter passes that change
+// nothing, and every new object recomputes what the SV inspector derives from
+// `visibleRows`.
 function sameVisibleRowFlags(a?: VisibleRowFlags, b?: VisibleRowFlags) {
   if (a === b) {
     return true
@@ -185,26 +172,20 @@ export default function stateModelFactory() {
       ),
       /**
        * #property
-       * the SV class the sheet is narrowed to (undefined = show all) — a class
-       * like `BND`, not a raw `INFO.SVTYPE` token, so it and the SV inspector's
-       * legend name the same thing
+       * the SV class the sheet is narrowed to, such as `BND` (undefined = show
+       * all); a class rather than a raw `INFO.SVTYPE` token
        */
       svTypeFilter: types.maybe(types.string),
       /**
        * #property
-       * the caller's event the sheet is narrowed to (undefined = show all): a
-       * value of the `svEventColumnField` column, matched whole, so `cluster_1`
-       * leaves `cluster_10` out where the search box would keep it
+       * the caller's event the sheet is narrowed to (undefined = show all), a
+       * value of the `svEventColumnField` column matched whole
        */
       svEventFilter: types.maybe(types.string),
       /**
        * #property
        * the search box's text (undefined = show all), applied as the grid's
-       * quick filter across every visible column. Persisted so the search
-       * survives a session reload, and so a session spec can open the sheet
-       * already narrowed — the SV inspector's circular view mirrors the rows
-       * the search leaves, which is the only way a link can carry a chord
-       * subset
+       * quick filter; the SV inspector's circle draws the rows it leaves
        */
       filterText: types.maybe(types.string),
     })
@@ -226,8 +207,7 @@ export default function stateModelFactory() {
             field ? cellData?.[field] : undefined,
             !!field,
           )
-          // id/feature/derived last so a same-named data column can't shadow
-          // them; the record carries its class, as a VCF import's already does
+          // last, so a same-named data column can't shadow them
           return {
             ...cellData,
             id: i,
@@ -253,19 +233,16 @@ export default function stateModelFactory() {
       },
       /**
        * #getter
-       * the SVTYPE column field name, present only for structural-variant VCFs.
-       * Doubles as the sheet's "this is an SV callset" signal: it drives the
-       * SV-type quick-filter dropdown, and it decides whether the derived size
-       * column reports SV size or a plain interval length
+       * the SVTYPE column, present only in a structural-variant VCF, which
+       * makes this the sheet's "SV callset" signal
        */
       get svTypeColumnField() {
         return self.columns.find(c => c.name === 'INFO.SVTYPE')?.name
       },
       /**
        * #getter
-       * the column holding the caller's grouping of records into rearrangement
-       * events, where the file has one. A caller with its own key for it
-       * (Severus's `CLUSTERID`) is renamed before import, not recognised here
+       * the column grouping records into rearrangement events, where the file
+       * has one
        */
       get svEventColumnField() {
         return self.columns.find(c => c.name === SV_EVENT_COLUMN)?.name
@@ -288,26 +265,16 @@ export default function stateModelFactory() {
       },
       /**
        * #getter
-       * Every junction in the sheet, canonical refNames and all, for walking a
-       * rearrangement from one of its records to the rest.
-       *
-       * The whole sheet rather than the visible rows: a chain hops to wherever
-       * the rearrangement goes, and a filter narrowing what is on screen is not
-       * a statement about which junctions exist.
-       *
-       * Cached only while something observes it. The walk reads it from async
-       * code outside any reaction, so `findJunctionsNear` takes it once per
-       * walk rather than once per hop.
+       * every junction in the sheet, filters ignored, for walking a
+       * rearrangement from one record to the rest
        */
       get svJunctions() {
         return this.rowJunctions.filter(j => j !== undefined)
       },
       /**
        * #getter
-       * The rearrangement events the caller wrote: every value
-       * of `svEventColumnField` whose rows hold more than one junction. GRIDSS
-       * gives `EVENT` to the two mate records of one breakpoint, which is one
-       * junction and no grouping.
+       * every value of `svEventColumnField` whose rows hold more than one
+       * junction: GRIDSS also gives `EVENT` to a breakpoint's two mates
        */
       get svEvents() {
         const field = this.svEventColumnField
@@ -356,25 +323,13 @@ export default function stateModelFactory() {
       },
       /**
        * #method
-       * The sheet's own answer to "what else is near this breakend", which is
-       * what lets the breakpoint split view offer to follow a whole chain.
+       * The sheet's `FindJunctionsNear`, which lets the breakpoint split view
+       * follow a chain from a row or a chord.
        *
-       * A `FindJunctionsNear`, so both launch sites take it: the row menu had
-       * no way to query the callset at all and simply did not offer the option,
-       * while the chord click asked the chord track's adapter and so shipped
-       * the callset back through RPC to re-read what the sheet already holds.
-       *
-       * **Either end counts, which no coordinate-indexed query can offer.** A
-       * tabix index knows one coordinate per record, so an adapter answering
-       * this hands back the records filed AT the window and a junction written
-       * once, at its other end, is unreachable — the walk then extends only as
-       * far as the callset happens to have filed records at loci it has already
-       * reached, and on a four-locus chain written one record per junction that
-       * is 4 stops from the first record, 3 from the second, 2 from the third.
-       * Here the whole callset is already parsed in memory, so matching on the
-       * mate end costs one more comparison and the walk goes both ways from any
-       * record of the event. `nextJunctionFrom` turns a candidate around
-       * itself, so a junction matched by its mate end needs no flipping.
+       * A junction matches by either end, which an index keyed on one
+       * coordinate per record cannot offer, so the walk goes both ways from
+       * any record of an event. One walk takes `svJunctions` once, since it
+       * reads from async code that nothing observes.
        */
       findJunctionsNear(): (region: {
         refName: string
@@ -440,8 +395,8 @@ export default function stateModelFactory() {
             valueFormatter: (arg?: number) =>
               arg === undefined ? '' : toLocale(arg),
           },
-          // the mate's chromosome otherwise hides inside ALT, out of reach of
-          // the quick filter
+          // without this column the mate's chromosome is only in ALT, where
+          // the quick filter cannot single it out
           ...(isSvSheet
             ? [
                 {
@@ -486,10 +441,8 @@ export default function stateModelFactory() {
     .views(self => ({
       /**
        * #getter
-       * The rows the grid is handed: the sheet narrowed by the two dropdowns.
-       * Narrowed here and not through the grid's filter model, which in the
-       * community grid holds one item — the reader's own column filter, which
-       * a dropdown's item would replace.
+       * the rows the grid is handed, narrowed by the dropdowns here because
+       * the community grid's filter model holds only the reader's own filter
        */
       get gridRows() {
         const { svTypeFilter, svEventFilter } = self
@@ -510,18 +463,15 @@ export default function stateModelFactory() {
       },
       /**
        * #getter
-       * the SV classes in the whole sheet, offered by the quick-filter
-       * dropdown — off every row rather than the visible ones, or
-       * narrowing to one class would remove the way back
+       * the SV classes in the whole sheet, which the dropdown offers
        */
       get svTypeOptions() {
         return tallySvTypes(self.rows)
       },
       /**
        * #getter
-       * the SV classes among the rows on screen, counted by the SV inspector's
-       * legend. Same tally as `svTypeOptions`, so the two
-       * controls cannot name a class differently
+       * the SV classes among the rows on screen, which the SV inspector's
+       * legend counts
        */
       get visibleSvTypes() {
         return tallySvTypes(this.visibleRows)
@@ -563,11 +513,8 @@ export default function stateModelFactory() {
       },
       /**
        * #getter
-       * the row holding whatever the session has selected, so a chord click in
-       * the SV inspector's circle lands on a row here rather than only opening
-       * a view. The circle reads the same selection to decide which chord to
-       * draw as selected, so this is the two halves reading one channel rather
-       * than a second one invented between them
+       * the row holding the session's selected feature, so a chord click in
+       * the SV inspector lands on its row
        */
       get selectedRowId() {
         const { selection } = getSession(self)
@@ -582,12 +529,8 @@ export default function stateModelFactory() {
        * #action
        */
       setVisibleRows(arg?: VisibleRowFlags) {
-        // the grid reports an empty lookup when nothing is filtered (its own
-        // selectors read it that way), so normalize that back to undefined:
-        // otherwise mounting the grid reads as a filter change
+        // the grid reports an empty lookup when nothing is filtered
         const next = arg && Object.keys(arg).length ? arg : undefined
-        // and a re-filter that lands on the same rows is the same non-change,
-        // just spelled as a fresh object rather than an empty one
         if (!sameVisibleRowFlags(self.visibleRowFlags, next)) {
           self.visibleRowFlags = next
         }
@@ -595,9 +538,7 @@ export default function stateModelFactory() {
       /**
        * #action
        * put a row's record on the session selection, which highlights its
-       * chord in the SV inspector's circle. Clearing it when the row carries no
-       * feature keeps the circle from holding a highlight the sheet cannot
-       * explain
+       * chord in the SV inspector
        */
       setSelectedFeature(feature?: SimpleFeatureSerialized) {
         const session = getSession(self)
@@ -657,12 +598,8 @@ export default function stateModelFactory() {
         }
         const columns = snap.columns?.filter(f => !f.isDerived) ?? []
         const rows = snap.rowSet?.rows
-        // Rebuild the rows only when some row is actually in an older shape.
-        // migrateRow allocates a fresh object per row, and this hook runs on
-        // every snapshot applied to the node — including the freshly parsed one
-        // displaySpreadsheet casts on every import, which has nothing to
-        // migrate and can be six figures of rows. The scan that replaces it is
-        // two property checks per row and stops at the first legacy one
+        // every import passes through here, so copy rows only when one is
+        // in an older shape
         const legacy = rows?.some(r => !!r.cells || !!r.extendedData)
         return {
           ...snap,

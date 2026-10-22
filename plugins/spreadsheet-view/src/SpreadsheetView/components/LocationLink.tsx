@@ -6,14 +6,9 @@ import { observer } from 'mobx-react'
 import { locationLinkClick } from '../util.ts'
 
 /**
- * A locus in a cell, which opens it in the sheet's linear view.
- *
- * Two spellings on purpose: `children` is what the reader sees — grouped
- * coordinates — while `locString` is parsed at the other end, and the raw form
- * is the one that does not shift under the numberGrouping preference.
- *
- * Shared because a row has two loci worth reaching, its own and its mate's, and
- * the second one is the whole answer to "where does this translocation go".
+ * A row's locus or its mate's, opening it in the sheet's linear view. The
+ * reader sees grouped coordinates; `locString` is the raw form, which the
+ * numberGrouping preference does not change.
  */
 const LocationLink = observer(function LocationLink({
   model,

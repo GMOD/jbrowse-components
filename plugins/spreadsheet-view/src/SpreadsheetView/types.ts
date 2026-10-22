@@ -1,13 +1,8 @@
 /**
- * The launch keys `SpreadsheetView` writes code for. Not one of them is a
- * declared property of the view — the file and the assembly it is read against
- * are the import wizard's, and `filterText` belongs to the sheet the load
- * builds — so the partition lifts them all unconditionally.
+ * The launch keys `SpreadsheetView` takes, none of them a declared property.
  *
- * #launchKeys SpreadsheetView — the URL parameters page renders this interface
- * as the view's launch-key table. The `//` comment above each field is what
- * that table shows, so a field added without one fails the docs build rather
- * than rendering a blank cell.
+ * #launchKeys SpreadsheetView — the URL parameters page shows each field's
+ * `//` comment, and the docs build fails on a field without one.
  */
 export interface SpreadsheetViewCommands {
   // the assembly the sheet's rows are read against. With only this and no

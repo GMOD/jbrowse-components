@@ -58,9 +58,7 @@ const FeatureMenu = observer(function FeatureMenu({
               trackIds,
             }),
         },
-        // gated like every other launch site: a host that ships the sheet
-        // without breakpoint-split-view would otherwise offer a row that opens
-        // the choice dialog and fails on `addView` once it is answered
+        // a host may ship the sheet without breakpoint-split-view
         ...(hasBreakpointSplitView(session)
           ? [
               {
@@ -75,10 +73,6 @@ const FeatureMenu = observer(function FeatureMenu({
                       assemblyName,
                     ),
                     defaultTrackIds: trackIds,
-                    // the row menu used to be the one launch site that could
-                    // not offer "follow further breakends at each end", for
-                    // want of a way to query the callset — while the chord
-                    // click, over the same records, could
                     findJunctionsNear,
                     event: svEventFor(feature),
                   })

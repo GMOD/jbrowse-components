@@ -13,9 +13,7 @@ import { observer } from 'mobx-react'
 import type { SpreadsheetModel } from '../SpreadsheetModel.tsx'
 
 const useStyles = makeStyles()(theme => ({
-  // the row the circle's selected chord belongs to. Deliberately not the grid's
-  // own row-selection model, which is the reader's multi-select for exports and
-  // would be taken over by every chord click
+  // not the grid's row selection, which is the reader's multi-select
   selectedRow: {
     background: theme.palette.action.selected,
   },
@@ -46,20 +44,11 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
   } = model
   const { classes } = useStyles()
   const apiRef = useGridApiRef()
-  // gate on the grid actually being rendered: rows start undefined while data
-  // loads, so apiRef.current isn't populated on the first effect run — re-run
-  // once the grid mounts
+  // apiRef is unset until the grid mounts
   const gridReady = !!(rows && dataGridColumns)
 
-  // GRID -> MODEL stays a pair of event subscriptions, which is a lifecycle and
-  // is what an effect is for. Neither body takes its observables from the
-  // closure — they are read off `model` when the event fires — so this depends
-  // on the grid being mounted and nothing else, and a changing tally cannot
-  // tear the subscriptions down and rebuild them.
-  //
-  // Declared before the model -> grid effect, which pushes a restored search
-  // into the grid and publishes `filteredRowsSet` synchronously: a subscription
-  // made after it missed the event and `visibleRows` stayed at every row.
+  // grid -> model. Declared before the model -> grid effect, whose search push
+  // fires `filteredRowsSet` synchronously
   useEffect(() => {
     const api = apiRef.current
     if (!gridReady || !api) {
@@ -70,11 +59,7 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
     }
     syncVisibleRows()
     return disposeAll([
-      // The visible-rows lookup is recomputed by the filter pipeline, which
-      // fires `filteredRowsSet` only AFTER `filterModelChange`. Reading the
-      // lookup inside the latter therefore returns the prior filter's result,
-      // so anything downstream of visibleRows lagged a filter behind — or never
-      // updated on the first one.
+      // `filterModelChange` fires before the lookup is recomputed
       api.subscribeEvent('filteredRowsSet', syncVisibleRows),
       api.subscribeEvent('filterModelChange', filterModel => {
         model.setFilterText(
@@ -84,25 +69,14 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
     ])
   }, [apiRef, model, gridReady])
 
-  // Two directions, two mechanisms, and what separates them is what each can
-  // track.
-  //
-  // MODEL -> GRID is an `autorun`: it re-runs on whatever it read, where a
-  // dependency array is a hand-maintained restatement of the body that goes
-  // stale as soon as the body reads one more thing.
-  //
-  // The search push compares before writing, so the round trip with the handler
-  // above settles in one pass rather than ping-ponging, and it reads the grid's
-  // current value rather than trusting a ref, so a remount (session reload,
-  // StrictMode) re-applies instead of skipping.
+  // model -> grid, as autoruns. The search push compares against the grid's
+  // current value, so the round trip settles and a remount re-applies
   useEffect(() => {
     const api = apiRef.current
     if (!gridReady || !api) {
       return undefined
     }
     return disposeAll([
-      // the search box is the grid's own uncontrolled state, so the persisted
-      // text is pushed in rather than passed as a prop
       autorun(() => {
         const wanted = model.filterText?.split(' ').filter(Boolean) ?? []
         const current = gridQuickFilterValuesSelector(apiRef) ?? []
@@ -110,18 +84,12 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
           api.setQuickFilterValues(wanted)
         }
       }),
-      // Bring the selected row into view. A chord click in the SV inspector's
-      // circle selects the record it drew, and the row it belongs to is
-      // routinely hundreds of rows down a virtualized grid — off screen, and so
-      // not in the DOM at all, which is why this scrolls rather than relying on
-      // the highlight alone.
+      // a chord click's row is often far down the virtualized grid
       autorun(() => {
         const { selectedRowId } = model
         if (selectedRowId !== undefined) {
           const rowIndex = api.getRowIndexRelativeToVisibleRows(selectedRowId)
-          // -1 for a row the current filter leaves out, which is a real state:
-          // the circle draws what the filter left, but a selection can outlive
-          // the filter that was in force when it was made
+          // -1 for a row the filter has since left out
           if (rowIndex >= 0) {
             api.scrollToIndexes({ rowIndex })
           }
@@ -163,14 +131,8 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
               ))}
             </TextField>
           ))}
-          {/* The search itself lives in the grid's own toolbar, which collapses
-              to a magnifier once it loses focus — so with a search applied the
-              rows are gone and nothing on screen says why. That is worst
-              exactly where the search matters most: a session or a link that
-              restores one, and the SV inspector's circle, which draws the rows
-              the search leaves and would otherwise read as a smaller callset.
-              The count is of rows actually shown, so it stays true when a
-              column filter is narrowing things as well. */}
+          {/* the toolbar's search collapses to a magnifier, which would leave
+              a restored search invisible */}
           {filterText ? (
             <Chip
               size="small"
@@ -201,8 +163,6 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
           showToolbar
           rows={gridRows}
           columns={dataGridColumns}
-          // the other direction of the same channel the circle reads: clicking
-          // a row lights its chord, the way clicking a chord lands on its row
           onRowClick={({ row }) => {
             model.setSelectedFeature(row.feature)
           }}

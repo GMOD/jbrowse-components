@@ -35,10 +35,6 @@ export function parseVcfBuffer(buffer: Uint8Array) {
       line.split('\t')
     hasFormat ||= !!FORMAT
     const ret = Object.fromEntries(
-      // `.` is how VCF spells an absent INFO, and a trailing `;` leaves an
-      // empty field. Splitting either one gives a nameless key, which used to
-      // become an `INFO.` / `INFO..` flag column that every row in a
-      // sites-only VCF carried and no file ever declared
       splitInfo(INFO).map(e => {
         const eq = e.indexOf('=')
         const key = eq === -1 ? e : e.slice(0, eq)
@@ -74,11 +70,7 @@ export function parseVcfBuffer(buffer: Uint8Array) {
       ),
     })
   }
-  // SVTYPE is the field that distinguishes deletions/duplications/inversions/
-  // breakends, so for structural-variant VCFs surface it right after ID. This
-  // keeps it visible ahead of the REF/ALT columns, which for SVs hold multi-kb
-  // insertion/deletion sequences that otherwise widen those columns enough to
-  // push SVTYPE (and the rest of the INFO fields) off-screen.
+  // SVTYPE right after ID, ahead of an SV's multi-kb REF/ALT
   const svType = 'INFO.SVTYPE'
   const hasSvType = keys.has(svType)
   const infoColumns = [...keys].filter(k => k !== svType)
@@ -93,9 +85,6 @@ export function parseVcfBuffer(buffer: Uint8Array) {
       'QUAL',
       'FILTER',
       ...infoColumns,
-      // a sites-only VCF has no ninth column at all, so listing FORMAT
-      // unconditionally gave every such file a column that is empty in every
-      // row and cannot be anything else
       ...(hasFormat ? ['FORMAT'] : []),
       ...vcfParser.samples,
     ].map(c => ({ name: c })),

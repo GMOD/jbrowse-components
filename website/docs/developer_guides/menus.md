@@ -37,8 +37,7 @@ export default class SpreadsheetViewPlugin extends Plugin {
 
   configure(pluginManager: PluginManager) {
     const { rootModel } = pluginManager
-    // configure also runs in the web worker, which has no rootModel — the
-    // guard is what keeps a menu contribution from throwing there
+    // configure also runs in the worker, which has no rootModel
     if (isAbstractMenuManager(rootModel)) {
       rootModel.appendToMenu('Add', {
         label: 'Spreadsheet view',

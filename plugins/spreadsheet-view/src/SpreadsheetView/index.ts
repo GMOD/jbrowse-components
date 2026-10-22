@@ -8,9 +8,7 @@ import type { ViewTypeRegistry } from '@jbrowse/core/PluginManager'
 
 export default function SpreadsheetViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {
-    // annotated against the registry rather than inferred, which is what
-    // makes a hand-written augmentation earn what `getViewType` promises
-    // its callers — see `ViewTypeRegistry`
+    // annotated against the registry, which `getViewType` returns
     const stateModel = (): Promise<ViewTypeRegistry['SpreadsheetView']> =>
       import('./SpreadsheetViewModel.ts').then(f => f.default(pluginManager))
     return new ViewType({

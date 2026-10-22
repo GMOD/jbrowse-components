@@ -36,20 +36,9 @@ export function rowSvType(
 const SV_TYPE = categoricalField(SV_TYPE_FIELD)
 
 /**
- * The structural-variant classes present in a set of rows, in the order a
- * legend reads them.
- *
- * One tally for both places the view names an SV class — the "Filter by SV
- * type" dropdown and the circle's legend. They used to derive it separately and
- * disagreed: the dropdown listed the raw `INFO.SVTYPE` column values while the
- * legend bucketed by ALT, so a sniffles callset offered `TRA` in one control
- * and counted 273 `Breakend` in the other, inches apart.
- *
- * The class is what the circle draws and what a reader is looking at, so it is
- * the vocabulary both use, and `rowSvType` is what the sheet filters rows by.
- *
- * Records that are not structural variants (a plain SNV in a mixed VCF) have no
- * class and are left out rather than tallied under an empty label.
+ * The SV classes present in a set of rows, in legend order: the one tally both
+ * the "Filter by SV type" dropdown and the circle's legend read. A record that
+ * is not a structural variant has no class and is left out.
  */
 export function tallySvTypes(rows: GridRow[] | undefined) {
   const tally = new Map<string, number>()

@@ -7,10 +7,8 @@ import { observer } from 'mobx-react'
 
 import type { ImportWizardModel } from '../ImportWizard.ts'
 
-// The model source/type is seeded to the first track by the parent (via
-// selectDefaultTrack) whenever this selector is shown, so there's no mount
-// effect here. The parent also renders this with key={selectedAssembly}, so
-// switching assembly remounts and re-seeds selectedTrackId to the first track.
+// The parent seeds the model with the first track (selectDefaultTrack) and
+// keys this on the assembly, so a switch remounts on that track.
 const TrackSelector = observer(function TrackSelector({
   model,
   selectedAssembly,
