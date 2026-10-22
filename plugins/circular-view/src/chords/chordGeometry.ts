@@ -12,20 +12,10 @@ import type { Feature } from '@jbrowse/core/util'
 
 /**
  * A curve's Bezier control point for a signed `turn` from `startRadians`, on
- * the bisector of the arc it turns through.
- *
- * Its depth follows how far apart the two ends are, because a fixed depth is
- * only right for the widest chord. Every intrachromosomal event puts both ends
- * at essentially one angle, and a control point pinned near the center then
- * drew it as a full-depth radial spoke — rim, in to the middle, back out to the
- * same place. At whole-genome scale that is most of a real callset: 171 of the
- * 210 calls in the C-GIAB somatic benchmark have their two ends less than a
- * pixel apart, so the spokes buried the 39 chords that carry information.
- *
- * `sin(turn/2)` is the endpoints' straight-line distance over the diameter, so
- * an antipodal pair keeps the full `bezierRadius` bow, a local event collapses
- * to a point at the rim instead of a spoke, and the range between them bows in
- * proportion.
+ * the bisector of the arc it turns through. Its depth scales with
+ * `sin(turn/2)`, the ends' distance over the diameter: an antipodal pair bows
+ * the full `bezierRadius`, and a local event stays at the rim rather than
+ * drawing a spoke to the centre.
  */
 function turnControlPoint(
   startRadians: number,

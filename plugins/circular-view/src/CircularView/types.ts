@@ -1,19 +1,11 @@
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 
 /**
- * The launch keys `CircularView` writes code for: an assembly to draw the
- * circle from, the refNames to restrict it to, and the chord tracks to open.
- * `circularLaunchKeys` registers exactly these, and the Record it takes makes
- * an unregistered one a compile error.
+ * The launch keys `CircularView` resolves before they become view state; a
+ * plain setting is declared on the model instead.
  *
- * A plain display setting does not belong here — `bpPerPx`, `paddingPx`,
- * `autoFit` and the rest are declared on the model, and the partition leaves
- * them on the snapshot for MST to restore.
- *
- * #launchKeys CircularView — the URL parameters page renders this interface as
- * the view's launch-key table. The `//` comment above each field is what that
- * table shows, so a field added without one fails the docs build rather than
- * rendering a blank cell.
+ * #launchKeys CircularView — each field's `//` comment is its row in the URL
+ * parameters page's table.
  */
 export interface CircularViewCommands {
   // the assembly whose chromosomes the circle draws, or the assemblies, in the

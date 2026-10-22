@@ -23,19 +23,14 @@ import { Rulers } from './Ruler.tsx'
 import type { RingPointerEvent } from '../../rings/ringPointer.ts'
 import type { CircularViewModel } from '../model.ts'
 
-// lazies. Local Suspense at the use site rather than relying on the app's
-// ViewWrapper boundary: the sv-inspector renders this component directly inside
-// its own view, so suspending here would blank the whole SV inspector.
+// suspends under its own boundary, since the SV inspector renders this view
+// inside its own
 const ImportForm = lazy(() => import('./ImportForm/index.tsx'))
 
-// How far a press has to travel before it rotates the figure rather than
-// clicking what is under it. See handlePointerMove.
+// how far a press travels before it rotates rather than clicks
 const DRAG_THRESHOLD_PX = 4
 
-// where a pointer sits relative to the middle of the circle, in the *screen*
-// frame — the figure's own rotation is left in, since both callers want it
-// there (the rotation delta is a difference of two of these, and the pan
-// zoomToPoint applies is screen-space)
+// a pointer's offset from the circle's middle in the screen frame
 function offsetFromCenter(
   model: CircularViewModel,
   rect: DOMRect,
@@ -56,8 +51,6 @@ const useStyles = makeStyles()(theme => ({
     left: 0,
     top: 0,
   },
-  // a label a zoom reveals can reach past the padding the fit left it, and
-  // runs on to the view's edge rather than stopping at the figure's
   circularSvg: {
     position: 'absolute',
     left: 0,
@@ -153,9 +146,6 @@ const CircularView = observer(function CircularView({
 }) {
   const { loading, showView, showImportForm } = model
   if (model.awaitingAutoDiagonalize) {
-    // Before `showLoading`, which this flag is one term of: the reorder has its
-    // own screen, and the figure stays off it so nobody watches an
-    // undiagonalized hairball flash past.
     return (
       <DiagonalizeLoadingScreen
         status={model.diagonalizeStatus}
@@ -173,18 +163,12 @@ const CircularView = observer(function CircularView({
       </Suspense>
     )
   } else if (model.error) {
-    // Only reachable with `disableImportForm`, which suppresses the form this
-    // view normally reports errors inside. Before showView deliberately: an
-    // error means the regions on the circle can't be trusted, and the form
-    // branch above wins over the figure for the same reason when it is enabled.
+    // reached only under `disableImportForm`
     return <ErrorBanner error={model.error} />
   } else if (showView) {
     return <CircularViewLoaded model={model} />
   } else {
-    // The one view whose last branch isn't its content: `disableImportForm`
-    // (the sv-inspector's embedded circle) suppresses the form, so a circle
-    // with no regions yet has nothing to draw and nothing to offer. Every other
-    // view reaches its content here.
+    // no regions yet under `disableImportForm`
     return null
   }
 })
@@ -207,16 +191,12 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
   const { classes } = useStyles()
   const containerRef = useRef<HTMLDivElement>(null)
   const lastAngleRef = useRef(0)
-  // where the press started, until it either travels far enough to become a
-  // rotation (see handlePointerMove) or ends as the click it looked like
   const pressRef = useRef<{ x: number; y: number } | undefined>(undefined)
   const [isDragging, setIsDragging] = useState(false)
-  // a pointer over a ring goes to that ring display's own chrome
   const ringPointerRef = useRef<RingPointer | undefined>(undefined)
   const ringPointer = (ringPointerRef.current ??= new RingPointer(
     model.ringHost,
   ))
-  // whether the press that is ending became a rotation, which is not a click
   const draggedRef = useRef(false)
 
   useEffect(() => {
@@ -225,12 +205,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     }
   }, [model])
 
-  // Non-passive wheel listener so we can call preventDefault(). The handler only
-  // accumulates: one model write per animation frame, not per event. A trackpad
-  // burst is dozens of events between paints, and each write re-lays every slice
-  // and redraws every chord — a whole-genome callset is tens of thousands of
-  // them. `createFrameCoalescer` also owns the cancel, without which a view
-  // closed mid-fling flushes into a destroyed MST node.
+  // non-passive, to preventDefault; one model write per frame
   useEffect(() => {
     const el = containerRef.current
     if (!el) {
@@ -242,10 +217,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     let anchor: readonly [number, number] = [0, 0]
     const onWheel = (event: WheelEvent) => {
       if (!frame.pending) {
-        // measured once per frame, behind the pending check:
-        // getBoundingClientRect forces a synchronous reflow, and a burst
-        // reaching it per event is what trips "[Violation] 'wheel' handler took
-        // Nms"
+        // once per frame: getBoundingClientRect forces a reflow
         anchor = offsetFromCenter(model, el.getBoundingClientRect(), event)
       }
       const [dx, dy] = anchor
@@ -253,15 +225,9 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
         return
       }
       event.preventDefault()
-      // `deltaX`/`deltaY` are only pixels when `deltaMode` says so. Firefox
-      // reports whole lines for a mouse wheel — `deltaMode: 1`, `deltaY: ±3` —
-      // where Chrome reports `deltaMode: 0`, `deltaY: ±100`, so the raw number
-      // zoomed 0.3% of a notch there against Chrome's 10%
       const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode)
       const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode)
-      // whichever axis dominates, and only that one. A trackpad's horizontal
-      // swipe carries a little vertical noise (and vice versa), so running both
-      // arms meant every rotation gesture also crept the zoom
+      // the dominant axis only, so a swipe's noise neither zooms nor rotates
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
         rotateDelta += deltaX
       } else {
@@ -269,15 +235,11 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       }
       frame.schedule(() => {
         const [ax, ay] = anchor
-        // the figure moves under a pointer that does not, so what it hovered
-        // is no longer under it
         model.setHover(undefined)
         if (rotateDelta) {
           model.rotate(rotateDelta * 0.003)
         }
         if (zoomDelta) {
-          // exp is multiplicative, so a frame's deltas summed zoom by exactly
-          // what applying each in turn would have
           model.zoomToPoint(model.bpPerPx * Math.exp(zoomDelta * 0.001), ax, ay)
         }
         rotateDelta = 0
@@ -297,9 +259,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     return Math.atan2(dy, dx)
   }
 
-  // primary button only: a right-press latched a press the move handler's
-  // `buttons === 0` check waves through, so a right-drag spun the figure under
-  // the context menu it also opened
+  // primary button only, so a right-drag does not spin the figure
   const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
     if (event.button !== 0) {
       return
@@ -352,12 +312,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       routePointer(event, 'mousemove')
       return
     }
-    // A press under the drag threshold never captures the pointer (see below),
-    // so if it is released anywhere but on this <svg> — the controls overlay
-    // that sits on top of the figure, the resize handle, outside the window —
-    // no pointerup reaches endDrag and the press stays latched. The next plain
-    // hover over the figure would then pass the threshold and rotate it with no
-    // button held down.
+    // a press released off this svg never reached endDrag
     if (event.buttons === 0) {
       pressRef.current = undefined
       return
@@ -369,11 +324,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       ) {
         return
       }
-      // Only now take the pointer, so the rotation keeps following a cursor
-      // that leaves the figure. Capturing on pointerdown instead retargets the
-      // whole gesture at this <svg> — including the click that ends it — and
-      // the error ring's retry underneath would never see one. A press that
-      // doesn't move never captures, and stays a click.
+      // captured only once dragging, so a press that stays put is a click
       event.currentTarget.setPointerCapture(event.pointerId)
       draggedRef.current = true
       leaveFigure()
@@ -381,7 +332,6 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     }
     const angle = angleFromCenter(event.clientX, event.clientY)
     let delta = angle - lastAngleRef.current
-    // wrap delta to [-π, π] to handle the ±π boundary crossing
     if (delta > Math.PI) {
       delta -= 2 * Math.PI
     } else if (delta < -Math.PI) {
@@ -391,12 +341,9 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     lastAngleRef.current = angle
   }
 
-  // pointercancel as well as pointerup: a touch drag the browser interrupts
-  // never fires `up`, and the rotation would stay latched to the cursor
+  // on pointercancel too: an interrupted touch drag fires no pointerup
   const endDrag = (event: React.PointerEvent<SVGSVGElement>) => {
     pressRef.current = undefined
-    // release only what the move handler took — a press that stayed under the
-    // threshold never captured anything
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId)
     }

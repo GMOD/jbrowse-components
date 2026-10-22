@@ -29,15 +29,10 @@ export interface Annulus {
 
 /**
  * `ringWarp.slang`'s fragment on the CPU, for the Canvas2D painter and the SVG
- * export. Each pixel of the annulus samples `strip` at its turn round the
- * circle and its depth below the outer rim, filtered bilinearly over the
- * premultiplied strip with its edges clamped as the GPU sampler's are, and
- * both rims fade over a pixel. A pixel the ring leaves transparent keeps what
- * it held.
- *
- * Per pixel rather than as rotated slices of strip (ADR-119): slices are
- * rectangles, so neighbours overlap at their seams and more toward the inner
- * rim, and a 50% strip composited twice there drew at up to 75%, in stripes.
+ * export, per pixel rather than as rotated slices (ADR-119). Each pixel of the
+ * annulus samples `strip` bilinearly at its turn and its depth below the outer
+ * rim, edges clamped as the GPU sampler's are, and both rims fade over a
+ * pixel. A pixel the ring leaves transparent keeps what it held.
  */
 export function warpRing(out: Pixels, strip: Pixels, ring: Annulus) {
   const { centerX: cx, centerY: cy, innerPx: inner, outerPx: outer } = ring

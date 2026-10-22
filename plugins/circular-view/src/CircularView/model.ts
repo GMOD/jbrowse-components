@@ -123,45 +123,22 @@ const twoPi = 2 * Math.PI
 
 const DEFAULT_RIBBON_ALPHA = 0.45
 
-// a track is a synteny track here by what it draws: one ribbon display makes
-// it one for the reorder and for the color settings alike
 function isRibbonDisplay(display: { type: string }) {
   return display.type === 'ChordSyntenyDisplay'
 }
 
-// the figure never grows past this, so a zoomed-in circle stays a size the
-// browser can lay out
 const maximumRadiusPx = 5000
 
-// Where the middle of the circle lands vertically in a box of this size, before
-// the zoom-to-cursor pan.
-//
-// Centered, except in a box TALLER than it is wide, where a figure smaller than
-// the box hangs from the TOP instead. `autoFit` sizes the figure to
-// `min(width, height)`, so exactly one axis ever has slack, and it is the height
-// precisely when the view is taller than it is wide — the SV inspector's
-// circular pane beside a full-height spreadsheet. Splitting that slack evenly
-// left the chord plot floating in the middle of its pane with nothing above or
-// below it.
-//
-// The width comparison is what keeps the top-hang out of a WIDE box. There the
-// height has slack only once the user has zoomed out below the fit, and hanging
-// from the top then pinned a shrinking circle to the top edge of an 800x400 view
-// with 200px of nothing under it. The `Math.min(0, …)` keeps the centering where
-// it was load-bearing in the tall box too: a figure zoomed past its box still
-// overflows top and bottom equally rather than only off the bottom.
-//
-// The consequence is that in a tall box this middle MOVES with the figure's
-// size while the figure is smaller than the box, which the horizontal middle
-// (`width / 2`) never does. `zoomToPoint` has to undo that or the drawing slides
-// down as it grows — hence one function both callers read.
+// The circle's vertical middle before the pan: centered, except that a figure
+// smaller than a box taller than it is wide hangs from the top (the SV
+// inspector's pane). That middle moves with the figure's size, which
+// `zoomToPoint` undoes.
 function figureMiddleY(width: number, height: number, figureSize: number) {
   return height > width
     ? Math.min(0, (height - figureSize) / 2) + figureSize / 2
     : height / 2
 }
 
-// lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 const ReorderChromosomesDialog = lazy(
   () => import('./components/ReorderChromosomesDialog.tsx'),
@@ -172,8 +149,7 @@ const ReturnToImportFormDialog = lazy(
 
 export type ExportSvgOptions = ViewExportSvgOptions
 
-// the part of the view `applyInit` drives. Duck-typed rather than the model's
-// own Instance so the helper can live above the factory that defines it
+// duck-typed so `applyInit` can live above the factory
 interface CircularViewInitSelf extends IStateTreeNode {
   setDisplayedRegions: (regions: Region[]) => void
   launchTrack: (
@@ -190,9 +166,8 @@ interface CircularViewInitSelf extends IStateTreeNode {
   setColorField: (field: string) => void
 }
 
-// A ribbon display, as a chromosome reorder reads it. Duck-typed because the
-// display's model names this view's type, so naming its type here would be a
-// circular reference.
+// A ribbon display as the view reads it, duck-typed since the display's model
+// names this view's type
 export interface ChordSyntenyDisplaySelf extends IStateTreeNode {
   type: string
   loaded: boolean
@@ -210,12 +185,7 @@ export interface ChordSyntenyDisplaySelf extends IStateTreeNode {
   partnerSpans: (index: number) => PartnerSpan[]
 }
 
-/**
- * The assemblies a launch blob draws, in the order it names them. One name and
- * a list are the same thing here: a chord plot of one genome is the common
- * case, and a synteny ribbon plot needs both ends of the alignment on the
- * circle.
- */
+/** The assemblies a launch blob draws, in the order it names them. */
 function launchAssemblyNames(init: LaunchInput<CircularViewCommands>) {
   const { assembly } = init
   return assembly === undefined ? [] : [assembly].flat()
@@ -257,8 +227,7 @@ async function applyInit(
       assemblyName,
       assemblyManager,
     )
-    // A list that matches nothing in this assembly draws it whole, and says
-    // so, rather than blanking it. `?.length` because `[]` is truthy.
+    // a list matching nothing in this assembly draws it whole, and warns
     const named = names?.length
       ? resolveNamedRegions({
           regions,
@@ -280,8 +249,7 @@ async function applyInit(
   }
   const twoGenomes = new Set(drawn.map(r => r.assemblyName)).size === 2
   const reorder = init.autoDiagonalize ?? twoGenomes
-  // declare the reorder gate up front, before any ribbon can paint: it outlives
-  // this pass, since only the reorder itself lowers it
+  // raised before any ribbon can paint; only the reorder lowers it
   self.beginAutoDiagonalize(reorder)
   self.setDisplayedRegions(drawn)
   for (const t of init.tracks ?? []) {
@@ -295,7 +263,6 @@ async function applyInit(
     }
     await self.launchTrack(trackId, trackSnapshot, displaySnapshot)
   }
-  // after the tracks, whose ribbon fetch the reorder waits on and orders from;
   // a default reorder with no ribbons to order by lowers the gate instead
   if (reorder && (init.autoDiagonalize || self.canDiagonalize)) {
     await self.autoDiagonalize()
@@ -370,15 +337,11 @@ function stateModelFactory(pluginManager: PluginManager) {
       types.model({
         /**
          * #property
-         * this is a string instead of the const literal 'CircularView' to
-         * reduce some typescripting strictness, but you should pass the string
-         * 'CircularView' to the model explicitly
          */
         type: types.literal('CircularView') as unknown as string,
         /**
          * #property
-         * the angular offset of the view in radians, the counterpart of offsetPx in
-         * the linear genome view
+         * the figure's rotation in radians, the linear view's offsetPx
          */
         offsetRadians: types.stripDefault(types.number, defaultOffsetRadians),
         /**
@@ -389,9 +352,8 @@ function stateModelFactory(pluginManager: PluginManager) {
         bpPerPx: types.stripDefault(types.number, defaultBpPerPx),
         /**
          * #property
-         * whether the view keeps re-fitting to its container on resize.
-         * Cleared once the user manually zooms/pans so their view (persisted
-         * via bpPerPx/offsetRadians) is preserved across resizes and reloads.
+         * whether the view refits to its box on resize; a manual zoom or pan
+         * clears it
          */
         autoFit: types.stripDefault(types.boolean, true),
         /**
@@ -413,9 +375,8 @@ function stateModelFactory(pluginManager: PluginManager) {
         hideTrackSelectorButton: types.stripDefault(types.boolean, false),
         /**
          * #property
-         * suppress the import form even on an error — what the SV inspector's
-         * circle wants, since its assembly comes from the sheet beside it and a
-         * form there would offer a control that cannot work
+         * never show the import form, even on an error, for an embed that
+         * picks the assembly itself (the SV inspector)
          */
         disableImportForm: types.stripDefault(types.boolean, false),
         /**
@@ -426,10 +387,8 @@ function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * the height of the view in pixels. The circle auto-fits its
-         * container, so this is what sizes the drawing. Left at its default in
-         * a session that holds a list of views, the view opens square to its
-         * width, short of the window's height; an embedded view keeps 400.
+         * the view's height in px, which sizes the fitted circle. Left at its
+         * default in a multi-view session, the view opens square to its width
          */
         height: types.stripDefault(types.number, defaultHeight),
         /**
@@ -469,20 +428,14 @@ function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         * vestigial: the hierarchical selector is the only one that exists, so
-         * this value is ignored. Retained because saved sessions and share links
-         * persist it.
+         * ignored, kept because saved sessions carry it
+         * @deprecated
          */
         trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
          * #property
-         * transient launch state: the settings written on the view object that
-         * need resolving before they can be view state — the assembly the
-         * circle is drawn from, the refNames to restrict it to, chord track
-         * recipes. `preProcessSnapshot` moves them here off the snapshot, the
-         * afterAttach autorun applies them and clears this, so a saved session
-         * never retains it. Not written by hand: author every setting directly
-         * on the view.
+         * the launch keys still to apply, moved here by `preProcessSnapshot`
+         * and cleared once applied; not written by hand
          */
         launch: types.frozen<LaunchInput<CircularViewCommands> | undefined>(),
       }),
@@ -522,8 +475,7 @@ function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * The census entry for this view: the tracks it holds itself. Declared
-       * rather than derived — see `BaseViewModel.ownTracks`.
+       * the tracks this view holds itself, for the census
        */
       get ownTracks() {
         return [...self.tracks]
@@ -562,9 +514,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the circle that fills the box: its scale and radius, and the padding
-       * the view keeps at every zoom. A pure function of the regions and the
-       * box — see `fitLayout`
+       * the circle that fills the box: its scale, radius and padding
        */
       get fitLayout(): FitLayout {
         return fitLayout(this.fitInput)
@@ -598,10 +548,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * `paddingPx`, capped at a share of a small box and floored at what the
-       * labels drawn at the fit or at this zoom reach, so a label a zoom
-       * un-elides is not clipped by the figure. The circle's centre on screen
-       * does not move with it
+       * `paddingPx`, capped in a small box and floored at what the labels
+       * drawn at the fit or at this zoom reach
        */
       get effectivePaddingPx() {
         return Math.max(
@@ -708,14 +656,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * top-left of the figure within the view's box, then shifted by the
-       * zoom-to-cursor pan.
-       *
-       * Centered horizontally: a view much wider than it is tall would
-       * otherwise leave the circle jammed in the corner under the controls.
-       *
-       * Vertically it hangs from the top of a box taller than it is wide — see
-       * `figureMiddleY`, which `zoomToPoint` reads for the same reason.
+       * the figure's top-left in the view's box, centered horizontally and
+       * placed by `figureMiddleY` vertically, plus the pan
        */
       get figureOriginXY(): [number, number] {
         const { figureSize } = this
@@ -770,18 +712,15 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * this is displayedRegions, post-processed to elide regions that are too
-       * small to see reasonably. A run of them never crosses from one assembly
-       * into the next, so each genome's arcs stay within that genome. Read off
-       * `elisionMask`, so a zoom that elides nothing new rebuilds nothing
+       * `displayedRegions` with each run of too-narrow regions in one assembly
+       * folded into one elided slice
        */
       get elidedRegions() {
         return elideRegions(this.circleRegions, this.elisionMask)
       },
       /**
        * #getter
-       * the launch state that still has something to apply — the gate the
-       * loading and import-form paths below read.
+       * the launch state still to apply
        */
       get pendingLaunch() {
         return pendingLaunch(self.launch)
@@ -834,10 +773,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * Whether a chromosome reorder has anything to do: a ribbon track to take
-       * alignments from, and exactly the two genomes a mirrored layout is
-       * defined for. One is a self-alignment, with no second arc to reorder;
-       * three or more have no layout in which every pair reads as a band.
+       * whether a reorder applies: a ribbon track, and exactly two genomes
+       * (ADR-121)
        */
       get canDiagonalize() {
         return (
@@ -868,9 +805,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * The assemblies a pending launch names, which the gates below wait on
-       * before `displayedRegions` exist. A blob with only tracks
-       * names no assembly, and waiting for an unnamed assembly never ends.
+       * the assemblies a pending launch names, which the gates wait on before
+       * `displayedRegions` exist
        */
       get launchAssemblyNames() {
         const launch = this.pendingLaunch
@@ -914,8 +850,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (this.assemblyErrors) {
           return this.assemblyErrors
         }
-        // Check the launch assemblies for errors (displayedRegions may be
-        // empty while they are still resolving)
         const { assemblyManager } = getSession(self)
         for (const launching of this.launchAssemblyNames) {
           const asm = assemblyManager.get(launching)
@@ -938,7 +872,6 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * Whether to show a loading indicator instead of the import form or view
        */
       get showLoading() {
         return (
@@ -949,9 +882,7 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * The assembly whose load the spinner is waiting on. A pending launch
-       * names them before displayedRegions exist, so it is the source until
-       * then — the same order `initialized` above resolves in.
+       * the assembly whose load the spinner waits on
        */
       get loadingAssembly() {
         const { assemblyManager } = getSession(self)
@@ -963,8 +894,7 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * The loading screen's text while `showLoading`, taken from the
-       * assembly being waited on; undefined otherwise.
+       * the loading screen's text while `showLoading`
        */
       get loading() {
         return viewLoading(this.showLoading, () => this.loadingAssembly)
@@ -972,7 +902,6 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * Whether the view is fully initialized and ready to display
        */
       get showView() {
         return !!self.displayedRegions.length && this.initialized
@@ -980,21 +909,8 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * `!hasSomethingToShow || !!error`, the same predicate as every other
-       * view, with `disableImportForm` suppressing the whole thing rather than
-       * only its first half.
-       *
-       * An error therefore never re-enables a form the embedder turned off. The
-       * sv-inspector, the only setter of `disableImportForm`, drives its circle
-       * from the spreadsheet's assembly, so a circle left sitting on regions
-       * whose assembly the config no longer has reports an error (the case the
-       * region-binding autorun's comment describes). With the form enabled, the
-       * inspector's panel would show an assembly dropdown whose Open the
-       * inspector's autorun overwrites on the next pass, a control that cannot
-       * work.
-       *
-       * To report the error, the component renders a bare ErrorBanner in that
-       * case; the form is only the *usual* place a circular view shows one.
+       * nothing to show or an error, unless `disableImportForm`, which an
+       * error does not override
        */
       get showImportForm() {
         return (
@@ -1004,10 +920,7 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * The view's lifecycle as one value — ready, error, loading or noRegions
-       * — for a host that draws its own chrome and has to render all four. Same
-       * shape and same precedence as the linear view's, through
-       * `computeViewStatus`.
+       * the lifecycle as one value, as the linear view answers it
        */
       get status(): ViewStatus {
         return computeViewStatus({
@@ -1020,10 +933,8 @@ function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * The node a linear display's foundation reads as its view: the
-       * circumference unrolled into a strip. A display registered for the
-       * linear genome view draws on this view as a ring of that strip, so
-       * `containingHost` answers this rather than the view itself.
+       * the strip a linear display lays out along and draws its ring from
+       * (ADR-119)
        */
       get regionHost() {
         return self.ringHost
@@ -1162,17 +1073,15 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the circle's slices on the unrolled genome axis, which the chord
-       * displays place their feet on; rebuilt when the regions or their
-       * elision change, never by a zoom or a rotation alone
+       * the circle's slices on the unrolled genome axis, unchanged by a zoom
+       * or rotation
        */
       get chordAxis(): ChordAxis {
         return buildChordAxis(self.elidedRegions)
       },
       /**
        * #getter
-       * the polar stage's scale from the unrolled axis to radians: per base,
-       * and per gap between slices
+       * the scale from the unrolled axis to radians
        */
       get chordScale(): PolarScale {
         return {
@@ -1182,9 +1091,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * The width 'auto' compares against its thresholds: the narrowest capped
-       * mean span, on screen, of any ribbon display with enough alignments to
-       * judge, and nothing to judge before the circle has a size
+       * the narrowest capped mean ribbon span on screen, which the auto fade
+       * judges
        */
       get autoFadeWidthPx(): number {
         if (!self.initialized) {
@@ -1206,6 +1114,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * the slices at this zoom, in radians
        */
       get staticSlices() {
         return layoutSlices(self.elidedRegions, this.chordScale, this.chordAxis)
@@ -1246,18 +1155,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (!self.displayedRegions.length) {
           return
         }
-        // The fit needs a measured width, and `setHeight` can arrive before the
-        // first `setWidth` — a restored session brings its own
-        // `displayedRegions`, so the regions guard above doesn't cover it, and
-        // `self.width` throws by design until the view is measured. The
-        // SvInspectorView binds the two dimensions in separate autoruns and
-        // sizes the circular view's height unconditionally while sizing its
-        // width only when the circle is shown, so height-before-width is the
-        // normal path there, not an edge case.
-        //
-        // Deferring rather than fitting on a guessed width loses nothing:
-        // `setWidth` re-runs this under the same `autoFit` flag, so the fit
-        // happens as soon as the measurement exists.
+        // the SV inspector sets the height first; setWidth refits
         if (self.volatileWidth === undefined) {
           return
         }
@@ -1389,18 +1287,9 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (!oldRadiusPx) {
           return
         }
-        // The point's screen position is the circle's middle plus its own offset
-        // from that middle, and the drawing scales that offset with the radius.
-        // Taking the real offset rather than assuming the cursor sits on the
-        // ruler ring is what makes this hold over the chords too — at the middle
-        // of the figure the ring assumption pushed the drawing by the whole
-        // radius change.
+        // the offset from the middle scales with the radius; vertically the
+        // middle itself can move too (`figureMiddleY`)
         const scale = self.radiusPx / oldRadiusPx
-        // Horizontally the middle is `width / 2` whatever the figure's size, so
-        // the offset term is the whole story. Vertically it is not: in a tall
-        // box a figure smaller than the box hangs from the top, so growing it
-        // slides the middle down by half the growth and drags the point under
-        // the cursor with it. That is the tall-box case the top-hang exists for.
         self.panX += cursorX * (1 - scale)
         self.panY +=
           cursorY * (1 - scale) +
@@ -1485,8 +1374,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         trackId: string,
         initialSnapshot = {},
         displayInitialSnapshot = {},
-        // the loading path re-enters through this action, so a parameter it
-        // drops is one `launchTrackConf` loses
         inlineConf?: Record<string, unknown>,
       ) {
         return showTrackGeneric(
@@ -1588,9 +1475,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           const { runCircularDiagonalize } =
             await import('./util/runCircularDiagonalize.ts')
           await runCircularDiagonalize(self as CircularViewModel, opts)
-          // only now is the figure the diagonalized one, so release the gate a
-          // capture waits on. A reorder that threw skips this line and the gate
-          // stays up, so the capture times out rather than committing a hairball
+          // a reorder that threw leaves the gate up, so a capture times out
           if (isAlive(self)) {
             self.finishAutoDiagonalize()
           }
@@ -1602,8 +1487,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * renders the view to SVG markup, which it returns; saves it through
        * FileSaver unless `save: false`
        */
-      // Promise<string> is stated: renderToSvg is typed against this very
-      // model, so an inferred return makes the type reference itself (TS2456)
+      // stated, or the type references itself (TS2456)
       async exportSvg(opts: ExportSvgOptions = {}): Promise<string> {
         return exportViewSvg(
           self as CircularViewModel,
@@ -1689,8 +1573,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       afterAttach() {
         installAutoFadeLatch(self)
-        // a hover names a display; a track hidden under the pointer would
-        // leave it naming a dead node
+        // a track hidden under the pointer would leave the hover on a dead node
         addDisposer(
           self,
           autorun(() => {
@@ -1707,10 +1590,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         installInitAutorun(self, {
           name: 'CircularViewInit',
           ready: () => self.initialized,
-          // the same line postProcessSnapshot draws for persistence: once
-          // regions are on the circle the view is up, so a later failure is one
-          // step's problem and must not take the figure down with it —
-          // showImportForm keys off `error` alone
+          // once regions are on the circle, a later failure leaves the figure up
           materialized: () => self.displayedRegions.length > 0,
           apply: init => applyInit(self, init),
         })
@@ -1740,9 +1620,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #method
-       * `legendSpec` in another theme, the SVG export's, which keys a ring
-       * whose colors follow the theme (alignments, MAF) in that theme. The
-       * ribbon key takes no colors from the theme.
+       * `legendSpec` in another theme, the SVG export's
        */
       legendSpecIn(palette?: JBrowsePalette): LegendSpec {
         const { sections } = circularLegendSpec(self, palette)

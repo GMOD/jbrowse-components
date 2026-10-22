@@ -47,10 +47,6 @@ export async function renderToSvg(
   opts: ExportSvgOptions,
 ) {
   await awaitViewInitialized(model)
-  // an initialized view with no regions is one sitting on its import form:
-  // there is no figure, only the padding, so an export would save a blank
-  // square the size of the gutter. Say why instead — the dialog shows it as an
-  // error banner
   if (!model.displayedRegions.length) {
     throw new Error('Cannot export: no regions are displayed')
   }
@@ -58,16 +54,8 @@ export async function renderToSvg(
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
 
-  // `renderSvg` is optional, so a track whose display type never implemented one
-  // is dropped from the figure rather than being called anyway — which is not a
-  // graceful failure but a `TypeError: renderSvg is not a function`, reported as
-  // the whole export failing. Costing everyone in the session the ability to
-  // export because one third-party chord display didn't write an exporter is
-  // exactly what making it optional was for; renderViewTracks does the same
-  // partition for the three LGV-family exports, and this was the view that
-  // depends on neither it nor the LGV plugin and so never got it.
-  // a ring display's export is rendered for its strip and warped by
-  // `paintRingsSvg`, so it is left out of the chord exports here
+  // a display with no renderSvg is skipped and named; a ring's export is
+  // warped by paintRingsSvg instead
   const { ringHost } = model
   const { ringDisplays } = ringHost
   const isRing = (t: (typeof model.tracks)[number]) =>
@@ -88,9 +76,7 @@ export async function renderToSvg(
     )
   }
 
-  // `awaitSvgRenders` over `Promise.all`: a chord or ring track whose data
-  // won't load fails the export (a radial display has no box to draw the
-  // failure in), and every broken track is named, whichever kind it is
+  // a track whose data won't load fails the export, named
   const [displayResults, ringBodies] = await awaitSvgRenders([
     awaitSvgRenders(
       exportable.map(async track => ({
@@ -101,22 +87,10 @@ export async function renderToSvg(
     ringsDrawable ? renderRingBodies(ringHost, opts, theme) : [],
   ])
 
-  // Deliberately read after those waits, not before. The figure's size and center
-  // both follow bpPerPx, and its rotation is a live property; a zoom or a
-  // rotation landing while a track's features are still in flight moves all
-  // three. Everything below the wrapper — the rulers, the chords, the label
-  // flipping that reads offsetRadians for itself — is drawn from the values as
-  // of *this* point, so measuring up front sized and centered the canvas for
-  // the pre-wait geometry and drew a figure that was off-center in it, or
-  // clipped by it. (Same ordering rule as the dotplot and LGV exports.)
+  // read after the waits, since a zoom or rotation may land during them
   const { radiusPx, offsetRadians, effectivePaddingPx: paddingPx } = model
 
-  // The view's own `paddingPx` is a fixed guess at how much room the ruler
-  // labels need, and on screen a label that overruns it is merely clipped by a
-  // box the user can resize. An export is a standalone artifact, so it takes
-  // whichever is larger: a 12-character RefSeq accession already overruns the
-  // default 80px and used to come out with its last characters cut off at the
-  // canvas edge.
+  // the export grows to its labels where the screen clips them
   const gutterPx = Math.max(paddingPx, figureGutterPx(model))
   const figureSize = 2 * (radiusPx + gutterPx)
   const center = radiusPx + gutterPx
@@ -130,8 +104,6 @@ export async function renderToSvg(
     theme,
     width: figureSize,
     height: figureSize,
-    // the gutter above is the margin, and it has to be inside the figure's own
-    // square rather than added around it, since the circle is centered in it
     margin: 0,
     fontFamily,
     Wrapper,

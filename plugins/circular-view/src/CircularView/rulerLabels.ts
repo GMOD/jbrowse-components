@@ -110,16 +110,9 @@ export function labelsRunAlongArcs({
 }
 
 /**
- * The most room this figure's labels could need outside the ruler arc, from the
- * label TEXT alone.
- *
- * An upper bound, and geometry-free on purpose: what a label really needs
- * depends on whether it fits along its own arc, which depends on the radius,
- * which depends on the padding this is used to decide. Breaking that cycle
- * costs a little slack on a figure whose labels all fit tangentially, and buys
- * an on-screen circle that cannot grow into its own labels — the centre sits at
- * `radiusPx + padding`, so a label reaching further than the padding is drawn
- * at a negative x and clipped by the box.
+ * The most room this figure's labels could need outside the ruler arc, from
+ * the label text alone: geometry-free, since the radius it would need depends
+ * on the padding this decides.
  */
 export function maxLabelGutterPx(labels: string[]) {
   return labels.length
@@ -128,14 +121,9 @@ export function maxLabelGutterPx(labels: string[]) {
 }
 
 /**
- * How far past the ruler arc this figure's labels actually reach: the ticks,
- * then half a line when the labels run along their arcs, the longest label
- * when they radiate.
- *
- * The on-screen view reserves a fixed `paddingPx` for this and lives in a box
- * that clips anyway; an SVG export is a standalone artifact, so it sizes its
- * canvas to the labels it drew. The default 80px gutter is already too small
- * for 12-character RefSeq accessions, which came out cut off at the edge.
+ * How far past the ruler arc this figure's labels reach: the ticks, then half
+ * a line when the labels run along their arcs, the longest label when they
+ * radiate. The SVG export sizes its canvas by it.
  */
 export function labelGutterPx(model: {
   radiusPx: number
@@ -205,15 +193,8 @@ export function figureGutterPx(model: {
   )
 }
 
-// The view rotates the whole figure by offsetRadians, so which half of the
-// screen a label lands on - and therefore which way it has to be flipped to
-// read right-side-up - depends on that rotation too. cos/sin of the on-screen
-// angle answer that without normalizing offsetRadians, which grows without
-// bound as the user rotates.
-//
-// Along the arc: centered, flipped end-for-end on the bottom half. Radial:
-// radiating outward from the arc, flipped on the left half. Both flips keep the
-// anchored text outside the arc.
+// A label reads upright on screen: along the arc it flips on the bottom half,
+// radially on the left half, judged at the rotated angle
 export function labelPlacement(
   radians: number,
   offsetRadians: number,
