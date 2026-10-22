@@ -111,6 +111,31 @@ test('the bundle carries no UI', () => {
   expect(code).not.toMatch(/node_modules\/\.pnpm\/@mui\+/)
 })
 
+test('a host with a Worker decodes a CRAM in-process, not after the pool times out', async () => {
+  const warnings: unknown[] = []
+  const host: Record<string, unknown> = {
+    jbrowseHost: { readRange },
+    console: {
+      ...console,
+      warn: (...args: unknown[]) => warnings.push(args),
+    },
+  }
+  vm.createContext(host)
+  vm.runInContext(code, host)
+  vm.runInContext(
+    `globalThis.Worker = class { postMessage() {} addEventListener() {} removeEventListener() {} terminate() {} }
+     globalThis.Blob = class {}
+     URL.createObjectURL = () => 'blob:cram'`,
+    host,
+  )
+  const bare = (host.jbrowse as typeof jbrowse).alignments(JSON.stringify(CRAM))
+  const t = fromWire(JSON.parse(await bare), host.jbrowseBytes as Uint8Array)
+  expect(
+    (t as { reads: { start: number[] } }).reads.start.length,
+  ).toBeGreaterThan(0)
+  expect(warnings).toHaveLength(1)
+}, 10_000)
+
 test.each([
   ['BAM', BAM],
   ['CRAM', CRAM],

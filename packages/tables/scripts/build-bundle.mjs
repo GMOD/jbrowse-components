@@ -13,10 +13,10 @@ const names = new Set([
   ...builtinModules.map(m => `node:${m}`),
 ])
 
-// Modules a bare host never runs, stubbed to keep them out of the bundle: the
+// Modules a bare host never runs, stubbed with one that throws on load: the
 // feature details widget, which CorePlugin imports lazily and which brings MUI
-// and the data grid, and the CRAM reader's worker source, used only where a
-// `Worker` exists.
+// and the data grid, and the CRAM reader's worker source, so a host that has a
+// `Worker` decodes in-process at once rather than after the pool's timeout.
 const NEVER_RUN =
   /BaseFeatureWidget\/BaseFeatureDetail\/index\.tsx$|@gmod\/cram\/esm\/wasm\/cram-worker-source\.js$/
 
@@ -61,7 +61,7 @@ export async function buildBundle(outfile, minify = true) {
             contents: 'module.exports = {}',
           }))
           b.onLoad({ filter: NEVER_RUN }, () => ({
-            contents: 'export default undefined',
+            contents: "throw new Error('a bare host never loads this module')",
             loader: 'js',
           }))
         },
