@@ -111,7 +111,7 @@ describe('repartitioning', () => {
 
   // The arrangement and the row colors name rows by value, so under a new
   // partition they match nothing and come back with the field; the hidden
-  // categories are the legend's and clear.
+  // categories are the legend's, which a repartition leaves alone.
   it('keeps the arrangement across a repartition, idle until the field returns', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b'], ['sample', 'clade']), ctgA)
@@ -128,7 +128,7 @@ describe('repartitioning', () => {
     expect(display.rowsField).toBe('clade')
     expect(rowNames(display)).toEqual(['x', 'y'])
     expect(display.hierarchy).toBeUndefined()
-    expect(display.hiddenCategories).toEqual([])
+    expect(display.hiddenCategories).toEqual(['a'])
     expect(display.rowDomain).toEqual(['b', 'a'])
     expect(pairedColorsOf(display.rowColorSetting).get('b')).toBe('#00f')
     expect(display.rowTree).toBe('(b,a);')

@@ -307,5 +307,5 @@ test('a repartition keeps the arrangement, idle under rows it does not name', as
     ctgA,
   )
   expect(derived(display)).toMatchSnapshot()
-  expect(display.hiddenCategories).toEqual([])
+  expect(display.hiddenCategories).toEqual(['x'])
 })

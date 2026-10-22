@@ -22,7 +22,7 @@ import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
@@ -45,6 +45,7 @@ import {
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import { reaction } from 'mobx'
 
 import { copyItem } from '../shared/copyMenuItem.ts'
 import { featureColorViews } from '../shared/featureColorViews.ts'
@@ -515,6 +516,17 @@ export default function stateModelFactory(
       get hiddenCategorySet(): ReadonlySet<string> {
         return new Set(self.hiddenCategories)
       },
+      /**
+       * #getter
+       * What the key's names are names of: the painting field and its scale,
+       * or the constant or expression every feature is painted by. The hidden
+       * categories clear when it moves, since a name means nothing outside
+       * the key that offered it.
+       */
+      get legendKeySpace(): string {
+        const { scale = '', value = '' } = self.colorSetting
+        return [self.colorField ?? '', scale, value].join('\t')
+      },
     }))
     .views(self => ({
       /**
@@ -886,8 +898,8 @@ export default function stateModelFactory(
          * #action
          * Repartition. The arrangement and the row colors stay: a name keyed
          * on another field matches nothing and comes back with the field. The
-         * legend's hidden categories clear. Writing `rows.field` triggers a
-         * refetch.
+         * legend's hidden categories stay too, since the features and their
+         * colors do. Writing `rows.field` triggers a refetch.
          */
         setRowsField(field: string) {
           // Under auto, against what auto picked, so picking that radio pins
@@ -897,7 +909,6 @@ export default function stateModelFactory(
             return
           }
           setConf(self, ['rows', 'field'], field)
-          self.hiddenCategories.clear()
         },
         /**
          * #action
@@ -1047,6 +1058,15 @@ export default function stateModelFactory(
             void self.rowTable
           },
           { name: 'MultiRowHitIndexes' },
+        )
+        addDisposer(
+          self,
+          reaction(
+            () => self.legendKeySpace,
+            () => {
+              self.setHiddenCategories([])
+            },
+          ),
         )
         setupTreeSidebarAutoruns(self, {
           name: 'MultiRowFeature',
