@@ -3,7 +3,7 @@ import {
   getConf,
   setConf,
 } from '@jbrowse/core/configuration'
-import { getSession, toLocale } from '@jbrowse/core/util'
+import { toLocale } from '@jbrowse/core/util'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { stateModelFactory as markStateModelFactory } from '@jbrowse/plugin-marks/LinearMarkDisplay/stateModel'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
@@ -20,7 +20,7 @@ import {
   withLd,
   withoutLd,
 } from './ldPlot.ts'
-import { parseChrBp } from './parseChrBp.ts'
+import { placeIndexSnp } from './parseChrBp.ts'
 
 import type { LdJoin } from '../GWASAdapter/ldJoin.ts'
 import type { LinearManhattanDisplayConfigModel } from './configSchemaFactory.ts'
@@ -28,7 +28,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { MarkTransformStepConfig } from '@jbrowse/plugin-marks'
 
 const LD_PLOT_FIELDS = { numeric: [LD_FIELD], categorical: [LD_ROLE_FIELD] }
 const NO_PLOT_FIELDS = { numeric: [], categorical: [] }
@@ -116,18 +115,10 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The steps every mark runs before the mark's `transform`: the display's,
-       * then the facet's.
-       */
-      get sharedSteps(): MarkTransformStepConfig[] {
-        return [...self.conf.transform, ...self.conf.facet.transform]
-      },
-      /**
-       * #getter
        * Whether "Color by LD to index SNP" has a point mark to color.
        */
       get ldColorable(): boolean {
-        return self.conf.marks.some(m => colorsByLd(m, this.sharedSteps))
+        return self.conf.marks.some(m => colorsByLd(m, self.sharedSteps))
       },
     }))
     .views(self => ({
@@ -228,21 +219,22 @@ export function stateModelFactory(
        * can be colored by it.
        */
       get displayNotices(): string[] {
-        const locus = self.joinsLd && parseChrBp(self.indexSnp ?? '')
-        if (!locus || self.trackVisibleRegions.length === 0) {
+        const { indexSnp, trackVisibleRegions } = self
+        if (
+          !self.joinsLd ||
+          indexSnp === undefined ||
+          trackVisibleRegions.length === 0
+        ) {
           return []
         }
-        const { assemblyManager } = getSession(self)
-        const start = locus.bp - 1
-        const inReach = self.trackVisibleRegions.some(
-          block =>
-            (assemblyManager
-              .get(block.assemblyName)
-              ?.getCanonicalRefName2(locus.refName) ?? locus.refName) ===
-              block.refName &&
-            block.end > start - LD_WINDOW_BP &&
-            block.start <= start + LD_WINDOW_BP,
-        )
+        const inReach = trackVisibleRegions.some(block => {
+          const index = placeIndexSnp(self, indexSnp, block.assemblyName)
+          return (
+            index?.refName === block.refName &&
+            block.end > index.start - LD_WINDOW_BP &&
+            block.start <= index.start + LD_WINDOW_BP
+          )
+        })
         return inReach
           ? []
           : [
@@ -294,8 +286,7 @@ export function stateModelFactory(
        * #action
        * Make the top hit on screen the index.
        */
-      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST action named for its semantic meaning, not a React hook
-      useTopHitAsIndex() {
+      setIndexSnpToTopHit() {
         self.indexSnp = self.settledTopSnp ?? self.indexSnp
       },
     }))
@@ -336,7 +327,7 @@ export function stateModelFactory(
                           !self.settledTopSnp ||
                           self.settledTopSnp === self.indexSnp,
                         onClick: () => {
-                          self.useTopHitAsIndex()
+                          self.setIndexSnpToTopHit()
                         },
                       },
                     ],

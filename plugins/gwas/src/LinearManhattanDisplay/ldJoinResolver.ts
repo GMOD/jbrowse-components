@@ -1,7 +1,7 @@
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
-import { parseChrBp } from './parseChrBp.ts'
+import { placeIndexSnp } from './parseChrBp.ts'
 
 import type { LdJoin } from '../GWASAdapter/ldJoin.ts'
 import type { Region } from '@jbrowse/core/util'
@@ -21,24 +21,17 @@ export async function ldJoinFor(
   region: Region,
   signal: AbortSignal,
 ): Promise<LdJoin | undefined> {
-  const { assemblyManager } = getSession(self)
-  const locus = parseChrBp(indexSnp)
-  const refName =
-    locus &&
-    (assemblyManager
-      .get(region.assemblyName)
-      ?.getCanonicalRefName2(locus.refName) ??
-      locus.refName)
-  if (!locus || refName !== region.refName) {
+  const index = placeIndexSnp(self, indexSnp, region.assemblyName)
+  if (index?.refName !== region.refName) {
     return undefined
   }
-  const names = await assemblyManager.getRefNameMapForAdapter(
+  const names = await getSession(self).assemblyManager.getRefNameMapForAdapter(
     ldAdapterConfig,
     region.assemblyName,
     { sessionId: getRpcSessionId(self), signal },
   )
   return {
-    start: locus.bp - 1,
+    start: index.start,
     refName: names[region.refName] ?? region.refName,
   }
 }

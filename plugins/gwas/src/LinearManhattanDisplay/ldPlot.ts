@@ -29,7 +29,10 @@ export const LD_COLOR = {
 }
 
 /** A Manhattan plot's one mark: a point per feature at its `score`. */
-export const MANHATTAN_MARK = { mark: 'point', encoding: { y: 'score' } }
+export const MANHATTAN_MARK = {
+  mark: 'point',
+  encoding: { y: 'score' },
+} satisfies MarkSnapshot
 
 /** The index SNP's color, apart from every r² bin. */
 export const LD_INDEX_COLOR = '#c951c9'
@@ -53,31 +56,16 @@ const LD_INDEX_SHAPE = {
 }
 
 /**
- * Every point but the index SNP, colored by its r² to it. A SNP the join
- * left out has no `ld_role`, so the filter keeps it, grey as "No LD data".
+ * LocusZoom's plot: what "Color by LD to index SNP" makes of the default one.
+ * Every point but the index is colored by its r² to it, and a SNP the join
+ * left out has no `ld_role`, so the filter keeps it, grey as "No LD data";
+ * the index alone draws over them as a diamond in its own color, with its
+ * own key row.
  */
-const LD_PARTNERS_MARK = {
-  mark: 'point',
-  transform: [LD_PARTNERS_FILTER],
-  encoding: { y: 'score', color: LD_COLOR },
-}
-
-/**
- * The index SNP alone, drawn over the rest as a diamond in its own color,
- * with its own key row.
- */
-const LD_INDEX_MARK = {
-  mark: 'point',
-  transform: [LD_INDEX_FILTER],
-  encoding: {
-    y: 'score',
-    color: { value: LD_INDEX_COLOR },
-    shape: LD_INDEX_SHAPE,
-  },
-}
-
-/** LocusZoom's plot: what "Color by LD to index SNP" makes of the default one. */
-export const LD_MARKS = [LD_PARTNERS_MARK, LD_INDEX_MARK]
+export const LD_MARKS = [
+  partnersOf(MANHATTAN_MARK),
+  indexTwinOf(MANHATTAN_MARK),
+]
 
 const LD_FIELDS = new Set<unknown>([LD_FIELD, LD_ROLE_FIELD])
 

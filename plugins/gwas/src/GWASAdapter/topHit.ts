@@ -1,4 +1,4 @@
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 
 /** The name `GWASAdapter` reports a region's top hits under in a fetch's `facts`. */
 export const TOP_HIT_FACT = 'gwasTopHits'
@@ -31,7 +31,10 @@ function beats(f: TopHit, top: TopHit | undefined) {
  * ~323.3, so ties at the top are routine, and one broken by file order could
  * differ between two reads.
  */
-export function topHitsOf(features: Feature[], region: Region) {
+export function topHitsOf(
+  features: Feature[],
+  region: { start: number; end: number },
+) {
   const width = Math.max(1, region.end - region.start)
   const tops: (TopHit | undefined)[] = []
   for (const f of features) {

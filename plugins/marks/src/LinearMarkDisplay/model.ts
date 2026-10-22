@@ -460,12 +460,19 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * The steps every mark runs before its own `transform`: the
+         * display's, then the facet's.
+         */
+        get sharedSteps(): MarkTransformStepConfig[] {
+          return [...self.conf.transform, ...self.conf.facet.transform]
+        },
+        /**
+         * #getter
          * The steps that run before each mark's encode, in order: the
          * display's, the facet's, then the mark's own.
          */
         get markStepLists(): MarkTransformStepConfig[][] {
-          const shared = [...self.conf.transform, ...self.conf.facet.transform]
-          return self.conf.marks.map(m => [...shared, ...m.transform])
+          return self.conf.marks.map(m => [...this.sharedSteps, ...m.transform])
         },
         /**
          * #getter
@@ -627,10 +634,7 @@ export function stateModelFactory(
         get rowListing(): RowSourceListing | undefined {
           const listing = readFor(self, self.sourceListing)
           return listing &&
-            listingNamesRows(self.rowsField, listing.field, [
-              ...self.conf.transform,
-              ...self.conf.facet.transform,
-            ])
+            listingNamesRows(self.rowsField, listing.field, self.sharedSteps)
             ? listing
             : undefined
         },

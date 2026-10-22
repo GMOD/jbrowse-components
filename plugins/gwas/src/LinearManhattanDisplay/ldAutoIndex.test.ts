@@ -119,7 +119,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
         expect.arrayContaining(display.displayNotices),
       )
 
-      display.useTopHitAsIndex()
+      display.setIndexSnpToTopHit()
       expect(display.indexSnp).toBe('ctgA:101')
       expect(display.displayNotices).toEqual([])
     })
