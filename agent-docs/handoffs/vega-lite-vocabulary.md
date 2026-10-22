@@ -117,10 +117,15 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    `field-predicate-read-filter`). Before the alignments filter moves onto
    it, A/B the whole fetch on `1000x.shortread.bam` on ada; a loss in
    seconds there keeps the hand-written path behind the same config.
-   The same pass moves each band's layer toggles and thresholds into its
-   layers' `show` and `filter` (ADR-238 "Layers inside a part"):
-   `coverage.interbase`, `coverage.alleles`, `pileup.mismatches`,
-   `sashimi.labels`, the modification layer.
+   The same pass moves each band's layer thresholds into its layers'
+   `filter` (ADR-238 "Layers inside a part"): `coverage.alleles`,
+   `coverage.interbase`, the modification layer.
+   - **Claimed 2026-10-22, worktree `alignments-layer-shows`:** ADR-240 step
+     1, the layer toggles as `show` members ahead of the filters:
+     `coverage.interbase.show` (MAF's band too), `pileup.mismatches.show`,
+     `pileup.softClips.show`, `sashimi.labels.show`,
+     `readConnections.ordinaryPairs.show`, and `pileup.showOutline` cut.
+     Not `connectors` (ADR-240 open 3) or `bases` (step 0 above).
 3. **Legends, with step 1**: Vega-Lite gives each channel its own `legend`,
    so `legend.show` on the channel takes over every display's `showLegend`.
 4. **Wiggle's `resolution` and Hi-C's `resolutionBias`** under `data`, each
