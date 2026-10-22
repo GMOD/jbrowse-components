@@ -28,7 +28,6 @@ function addValues(
   sums: Float64Array,
   counts: Int32Array,
   seg: ColumnSegment,
-  invBpPerPx: number,
   raw: RawFeatureArrays,
   field: SummaryField,
 ) {
@@ -37,7 +36,7 @@ function addValues(
   for (let i = 0; i < count; i++) {
     const score = scores[i]!
     if (!Number.isNaN(score)) {
-      binSpan(sums, counts, 0, seg, invBpPerPx, starts[i]!, ends[i]!, score)
+      binSpan(sums, counts, 0, seg, starts[i]!, ends[i]!, score)
     }
   }
 }
@@ -57,7 +56,7 @@ export async function getScoreMatrix({
   const field = summaryFieldOf(yField)
   const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
-  const { segments, width, invBpPerPx } = columnSegments(regions, bpPerPx)
+  const { segments, width } = columnSegments(regions, bpPerPx)
 
   // Keyed in `sources` order and kept that way: the cluster `order` comes back
   // as indices into this map and buildClusteredLayout maps them into the
@@ -105,7 +104,7 @@ export async function getScoreMatrix({
     for (const [i, seg] of segments.entries()) {
       const values = perRegion?.[i]
       if (values) {
-        addValues(sums, counts, seg, invBpPerPx, values, field)
+        addValues(sums, counts, seg, values, field)
       }
     }
     columnMeans(sums, counts, 0, row)

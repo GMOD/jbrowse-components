@@ -73,7 +73,7 @@ export async function collectMarkRowMatrix({
         ),
       ),
   )
-  const { segments, width, invBpPerPx } = columnSegments(regions, bpPerPx)
+  const { segments, width } = columnSegments(regions, bpPerPx)
   const matrixRowOf = new Map(rows.map((name, r) => [name, r]))
   const sums = new Float64Array(rows.length * width)
   const counts = new Int32Array(rows.length * width)
@@ -96,7 +96,7 @@ export async function collectMarkRowMatrix({
     for (let i = 0; i < count; i++) {
       const offset = offsets[row[i]!] ?? -1
       if (offset !== -1) {
-        binSpan(sums, counts, offset, segment, invBpPerPx, x[i]!, x2[i]!, y[i]!)
+        binSpan(sums, counts, offset, segment, x[i]!, x2[i]!, y[i]!)
       }
     }
   }

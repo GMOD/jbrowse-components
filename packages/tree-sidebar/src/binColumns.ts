@@ -3,6 +3,7 @@ export interface ColumnSegment {
   colOffset: number
   width: number
   regionStart: number
+  bpPerPx: number
 }
 
 /**
@@ -13,35 +14,37 @@ export function columnSegments(
   regions: readonly { start: number; end: number }[],
   bpPerPx: number,
 ) {
-  const invBpPerPx = 1 / bpPerPx
   const segments: ColumnSegment[] = []
   let width = 0
   for (const r of regions) {
-    const w = Math.max(0, Math.floor((r.end - r.start) * invBpPerPx))
-    segments.push({ colOffset: width, width: w, regionStart: r.start })
+    const w = Math.max(0, Math.floor((r.end - r.start) / bpPerPx))
+    segments.push({ colOffset: width, width: w, regionStart: r.start, bpPerPx })
     width += w
   }
-  return { segments, width, invBpPerPx }
+  return { segments, width }
 }
 
 /**
  * The columns of `segment` that `[start, end)` covers, as offsets from its
- * first, empty for a span off it. Both edges truncate, and a span narrower
- * than a column covers the column it starts in, so base-resolution data never
- * bins to an all-zero row.
+ * first, empty for a span off it. Both edges floor, and a span narrower than a
+ * column covers the column it starts in, so base-resolution data never bins to
+ * an all-zero row.
+ *
+ * Divided by `bpPerPx` rather than multiplied by its reciprocal, which puts a
+ * span starting on a column edge one column early (`49 * (1 / 49)` is just
+ * under 1).
  */
 export function spanColumns(
   segment: ColumnSegment,
-  invBpPerPx: number,
   start: number,
   end: number,
 ) {
-  const { width, regionStart } = segment
+  const { width, regionStart, bpPerPx } = segment
   if (end <= regionStart) {
     return { startX: 0, endX: 0 }
   }
-  const startX = Math.max(0, ((start - regionStart) * invBpPerPx) | 0)
-  const rawEndX = ((end - regionStart) * invBpPerPx) | 0
+  const startX = Math.max(0, Math.floor((start - regionStart) / bpPerPx))
+  const rawEndX = Math.floor((end - regionStart) / bpPerPx)
   return { startX, endX: Math.min(width, Math.max(rawEndX, startX + 1)) }
 }
 
@@ -55,12 +58,11 @@ export function binSpan(
   counts: Int32Array,
   rowOffset: number,
   segment: ColumnSegment,
-  invBpPerPx: number,
   start: number,
   end: number,
   value: number,
 ) {
-  const { startX, endX } = spanColumns(segment, invBpPerPx, start, end)
+  const { startX, endX } = spanColumns(segment, start, end)
   const base = rowOffset + segment.colOffset
   for (let x = startX; x < endX; x++) {
     sums[base + x]! += value

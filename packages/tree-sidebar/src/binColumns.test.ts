@@ -5,11 +5,11 @@ function binned(
   bpPerPx: number,
   spans: [region: number, start: number, end: number, value: number][],
 ) {
-  const { segments, width, invBpPerPx } = columnSegments(regions, bpPerPx)
+  const { segments, width } = columnSegments(regions, bpPerPx)
   const sums = new Float64Array(width)
   const counts = new Int32Array(width)
   for (const [region, start, end, value] of spans) {
-    binSpan(sums, counts, 0, segments[region]!, invBpPerPx, start, end, value)
+    binSpan(sums, counts, 0, segments[region]!, start, end, value)
   }
   return [...columnMeans(sums, counts, 0, new Float32Array(width))]
 }
@@ -57,17 +57,26 @@ test('regions sit end to end, and a span is clipped to its own', () => {
 })
 
 test('a row offset keeps each row to its own columns', () => {
-  const { segments, width, invBpPerPx } = columnSegments(
-    [{ start: 0, end: 20 }],
-    10,
-  )
+  const { segments, width } = columnSegments([{ start: 0, end: 20 }], 10)
   const sums = new Float64Array(2 * width)
   const counts = new Int32Array(2 * width)
-  binSpan(sums, counts, width, segments[0]!, invBpPerPx, 12, 13, 8)
+  binSpan(sums, counts, width, segments[0]!, 12, 13, 8)
   expect([...columnMeans(sums, counts, 0, new Float32Array(width))]).toEqual([
     0, 0,
   ])
   expect([
     ...columnMeans(sums, counts, width, new Float32Array(width)),
   ]).toEqual([0, 8])
+})
+
+test('a span starting on a column edge lands in that column', () => {
+  // 49 * (1 / 49) is just under 1, which a reciprocal put in column 0
+  expect(binned([{ start: 0, end: 98 }], 49, [[0, 49, 98, 5]])).toEqual([0, 5])
+})
+
+test('a span far past the region fills to its last column', () => {
+  // 1.2e8 bp at 0.05 bp/px is 2.4e9 columns, past int32
+  expect(
+    binned([{ start: 0, end: 1 }], 0.05, [[0, 0, 120_000_000, 3]]),
+  ).toEqual(Array.from({ length: 20 }, () => 3))
 })

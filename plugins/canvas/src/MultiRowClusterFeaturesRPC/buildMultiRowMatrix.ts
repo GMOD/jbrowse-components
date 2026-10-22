@@ -94,10 +94,7 @@ export function buildMultiRowMatrix({
   )
   const totalWidth =
     regions.reduce((a, r) => a + Math.max(0, r.end - r.start), 0) || 1
-  const { segments, width, invBpPerPx } = columnSegments(
-    regions,
-    totalWidth / binCount,
-  )
+  const { segments, width } = columnSegments(regions, totalWidth / binCount)
 
   const byRow = new Map<string, MatrixFeature[]>()
   for (const f of features) {
@@ -128,7 +125,7 @@ export function buildMultiRowMatrix({
         const segment = segments[f.regionIndex]
         if (segment && f.value !== '') {
           const value = Number(f.value)
-          binSpan(sums, counts, 0, segment, invBpPerPx, f.start, f.end, value)
+          binSpan(sums, counts, 0, segment, f.start, f.end, value)
         }
       }
       rows.set(name, columnMeans(sums, counts, 0, row))
@@ -138,12 +135,7 @@ export function buildMultiRowMatrix({
     for (const f of intervals) {
       const segment = segments[f.regionIndex]
       if (segment) {
-        const { startX, endX } = spanColumns(
-          segment,
-          invBpPerPx,
-          f.start,
-          f.end,
-        )
+        const { startX, endX } = spanColumns(segment, f.start, f.end)
         const from = segment.colOffset + startX
         coveringPerBin.fill(f, from, from + Math.max(0, endX - startX))
       }
