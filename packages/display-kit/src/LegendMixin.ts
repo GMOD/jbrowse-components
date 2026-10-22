@@ -82,17 +82,6 @@ export default function LegendMixin() {
       },
       /**
        * #getter
-       * Overridable hook (default 0): px the on-screen key is pushed down from
-       * the key's inset. A display that already draws a control in
-       * that corner — Hi-C's resolution box — answers that control's height;
-       * the chrome adds axis captions on top. The export draws no
-       * controls, so it does not read this.
-       */
-      get legendTop(): number {
-        return 0
-      },
-      /**
-       * #getter
        * Overridable hook (default 0): px the on-screen key is pushed left from
        * the key's inset, for a display that draws a column of text down its
        * right edge — the multi-way lanes' scales. Not read by the export.

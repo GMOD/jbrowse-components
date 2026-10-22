@@ -13148,16 +13148,6 @@
             "type": "number"
           }
         },
-        "showResolutionControls": {
-          "description": "show the on-figure resolution dropdown in the overlay.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "selectedNormalization": {
           "description": "preferred matrix normalization (KR, SCALE, VC, VC_SQRT, NONE); a scheme the file lacks falls back to one it has.",
           "default": "KR",
@@ -13189,6 +13179,10 @@
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderer": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showResolutionControls": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -17820,9 +17814,6 @@
             "resolutionBias": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/resolutionBias"
             },
-            "showResolutionControls": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/showResolutionControls"
-            },
             "selectedNormalization": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/selectedNormalization"
             },
@@ -17843,6 +17834,9 @@
             },
             "renderer": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/renderer"
+            },
+            "showResolutionControls": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/showResolutionControls"
             }
           },
           "patternProperties": {

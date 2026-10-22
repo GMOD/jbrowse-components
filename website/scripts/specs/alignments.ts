@@ -674,7 +674,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         {
           trackId: 'hic',
           showLegend: true,
-          showResolutionControls: true,
         },
       ],
     }),

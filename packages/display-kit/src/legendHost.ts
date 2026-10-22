@@ -20,8 +20,6 @@ export interface LegendHost extends IStateTreeNode {
    * `focusesRows`; a click on one of their entries focuses the rows it names.
    */
   focusLegendEntry?(scaleId: string, value: string): void
-  /** Px the on-screen key is pushed down from its own inset, clearing a control there. */
-  legendTop?: number
   /** Px the on-screen key is pushed left from its own inset, clearing a column of text there. */
   legendRight?: number
   /**

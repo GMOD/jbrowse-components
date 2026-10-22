@@ -94,7 +94,7 @@ test('a log key starts where the ramp does', () => {
   setConf(display, ['color', 'scale'], 'log')
   expect(display.renderState.scaleType).toBe(SCALE_TYPE_LOG)
   expect(display.colorScales[0]).toMatchObject({
-    title: 'Contacts (log)',
+    title: 'Contacts (log) · 1Kbp',
     domain: [1, 40],
   })
 })
@@ -108,7 +108,7 @@ test('the Log scale toggle keeps counts at or below 1 visible', () => {
   const { scaleType, domainMin, domainMax } = display.renderState
   expect(scaleType).toBe(SCALE_TYPE_SYMLOG)
   expect(display.colorScales[0]).toMatchObject({
-    title: 'Contacts (symlog)',
+    title: 'Contacts (symlog) · 1Kbp',
     domain: [0, 40],
   })
   const t = makeScoreNormalizer(domainMin, domainMax, scaleType, 1)

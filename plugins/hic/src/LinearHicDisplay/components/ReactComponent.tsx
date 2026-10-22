@@ -5,7 +5,6 @@ import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
-import HicOverlayPanel from './HicOverlayPanel.tsx'
 import { HicRenderer } from './HicRenderer.ts'
 
 import type { HicDataResult } from '../../RenderHicDataRPC/types.ts'
@@ -138,7 +137,6 @@ const LinearHicReactComponent = observer(function LinearHicReactComponent({
             ref={canvasRef}
             style={{ width, height, position: 'absolute', left: 0 }}
           />
-          <HicOverlayPanel model={model} />
           <PointerLayer mouseTracker={mouseTracker}>
             {mouseState =>
               mouseState ? (

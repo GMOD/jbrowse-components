@@ -615,7 +615,6 @@ exports[`every registered schema slot default 1`] = `
     "resolutionBias": "number = 0",
     "selectedNormalization": "string = "KR"",
     "showLegend": "boolean = false",
-    "showResolutionControls": "boolean = false",
   },
   "display: LinearMafDisplay": {
     "alignments.frames.show": "boolean = false",

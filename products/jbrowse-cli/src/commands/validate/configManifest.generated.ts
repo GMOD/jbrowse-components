@@ -7228,10 +7228,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "showResolutionControls",
-          "type": "boolean"
-        },
-        {
           "name": "selectedNormalization",
           "type": "string"
         }
@@ -7242,14 +7238,16 @@ export const configManifest: ConfigManifest = {
         "fetchSizeLimit",
         "mouseover",
         "jexlFilters",
-        "renderer"
+        "renderer",
+        "showResolutionControls"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
         "mouseover",
-        "renderer"
+        "renderer",
+        "showResolutionControls"
       ],
       "stateModelProps": [
         "id",

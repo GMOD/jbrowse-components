@@ -4,7 +4,7 @@ import ChromeLegend from './ChromeLegend.tsx'
 
 import type { LegendHost } from './legendHost.ts'
 
-function host(clearance: Pick<LegendHost, 'legendTop' | 'legendRight'>) {
+function host(clearance: Pick<LegendHost, 'legendRight'>) {
   return {
     showLegend: true,
     legendSpec: {
@@ -16,14 +16,14 @@ function host(clearance: Pick<LegendHost, 'legendTop' | 'legendRight'>) {
   } as unknown as LegendHost
 }
 
-test('a display clears its own corner text by pushing the key down and left', () => {
+test('a display clears its own corner text by pushing the key left', () => {
   const { getByTestId, rerender } = render(<ChromeLegend model={host({})} />)
   const { style } = getByTestId('floating-legend')
   expect([style.top, style.right]).toEqual(['10px', '10px'])
 
-  rerender(<ChromeLegend model={host({ legendTop: 28, legendRight: 70 })} />)
+  rerender(<ChromeLegend model={host({ legendRight: 70 })} />)
   const moved = getByTestId('floating-legend').style
-  expect([moved.top, moved.right]).toEqual(['38px', '80px'])
+  expect([moved.top, moved.right]).toEqual(['10px', '80px'])
 })
 
 test('a hidden legend never derives its key', () => {

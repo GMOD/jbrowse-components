@@ -13618,16 +13618,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "showResolutionControls": {
-          "description": "show the on-figure resolution dropdown in the overlay.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "selectedNormalization": {
           "description": "preferred matrix normalization (KR, SCALE, VC, VC_SQRT, NONE); a scheme the file lacks falls back to one it has.",
           "default": "KR",
@@ -13659,6 +13649,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderer": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showResolutionControls": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -18388,9 +18382,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "resolutionBias": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/resolutionBias"
             },
-            "showResolutionControls": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/showResolutionControls"
-            },
             "selectedNormalization": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/selectedNormalization"
             },
@@ -18411,6 +18402,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderer": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/renderer"
+            },
+            "showResolutionControls": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/showResolutionControls"
             }
           },
           "patternProperties": {

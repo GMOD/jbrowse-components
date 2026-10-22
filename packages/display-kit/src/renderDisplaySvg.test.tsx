@@ -353,9 +353,6 @@ describe('SvgLegend', () => {
       },
       setShowLegend() {},
       dismissLegendSection() {},
-      // `legendTop` clears a control a display draws in the key's corner on
-      // screen (Hi-C's resolution box); the export draws no controls
-      legendTop: 28,
     } as unknown as LegendHost
   }
 

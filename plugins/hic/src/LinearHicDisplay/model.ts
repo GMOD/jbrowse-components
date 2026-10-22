@@ -5,7 +5,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 import { rampDomain, rampLutOf } from '@jbrowse/core/util/colorRamp'
 import {
   installPrerequisiteFetch,
@@ -58,11 +58,6 @@ import type { ContinuousRef } from '@jbrowse/core/util/markEncoding'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
-
-// How far the key sits below the resolution box when that box holds the
-// corner. The box's height is the UA `<select>`'s at fontSize 10, measured at
-// 15-18px across font stacks, so this errs high.
-export const RESOLUTION_ROW_CLEARANCE = 28
 
 // The fallback order when the selected normalization is not in the file.
 const NORMALIZATION_PREFERENCE = ['KR', 'SCALE', 'VC_SQRT', 'VC']
@@ -259,12 +254,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #getter
        */
-      get showResolutionControls(): boolean {
-        return getConf(self, 'showResolutionControls')
-      },
-      /**
-       * #getter
-       */
       get selectedNormalization(): string {
         return getConf(self, 'selectedNormalization')
       },
@@ -322,19 +311,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * Whether the resolution box is up; the chrome starts the key below it.
-       */
-      get showResolutionBox(): boolean {
-        return self.showResolutionControls && self.hasResolutions
-      },
-      /**
-       * #getter
-       */
-      get legendTop(): number {
-        return this.showResolutionBox ? RESOLUTION_ROW_CLEARANCE : 0
-      },
-      /**
-       * #getter
        * The normalization the loaded matrix has, which falls back per
        * binsize (KR at 5 kb, nothing at 2.5 Mb is typical). The menu ticks
        * this. Fetch-derived, so it stays out of `rpcProps()`.
@@ -368,11 +344,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #getter
        * The count ramp, once there is a domain to span. The ends are where
        * the ramp paints them, and a top below the largest loaded count reads
-       * `≥`.
+       * `≥`. The title names the loaded binsize, so a figure carries it.
        */
       get colorScales(): ColorScale[] {
         const [lo, hi] = self.colorDomain
-        const { scaleType } = self
+        const { scaleType, rpcData } = self
         const domain: [number, number] = [
           denormalizeScore(0, lo, hi, scaleType, 1),
           hi,
@@ -380,18 +356,20 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         if (!(domain[1] > domain[0])) {
           return []
         }
-        const maxScore = self.rpcData?.maxScore ?? 0
+        const label = contactsLabel(
+          self.appliedNormalization,
+          self.colorScaleType,
+        )
         return [
           {
             kind: 'ramp',
             id: 'contacts',
-            title: contactsLabel(
-              self.appliedNormalization,
-              self.colorScaleType,
-            ),
+            title: rpcData
+              ? `${label} · ${getBpDisplayStr(rpcData.resolution)}`
+              : label,
             domain,
             stops: legendStops(self.colorRamp),
-            extent: [domain[0], maxScore],
+            extent: [domain[0], rpcData?.maxScore ?? 0],
           },
         ]
       },
@@ -537,50 +515,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           ['color', 'domainQuantile'],
           f ? self.saturationQuantile : 1,
         )
-      },
-      /**
-       * #action
-       * The Color range dialog's ends and quantile; an undefined end follows
-       * the loaded counts.
-       */
-      setColorRange({
-        min,
-        max,
-        quantile,
-      }: {
-        min: number | undefined
-        max: number | undefined
-        quantile: number
-      }) {
-        setConf(self, ['color', 'domainMin'], min)
-        setConf(self, ['color', 'domainMax'], max)
-        setConf(self, ['color', 'domainQuantile'], quantile)
-      },
-      /**
-       * #action
-       * Back to the base config's ends and quantile, so an admin's declared
-       * range survives.
-       */
-      resetColorRange() {
-        const { color } = baseDisplayConfig(self)
-        const base = (
-          typeof color === 'object' && color !== null ? color : {}
-        ) as { domainMin?: number; domainMax?: number; domainQuantile?: number }
-        setConf(self, ['color', 'domainMin'], base.domainMin)
-        setConf(self, ['color', 'domainMax'], base.domainMax)
-        setConf(
-          self,
-          ['color', 'domainQuantile'],
-          base.domainQuantile ??
-            getSlotDefinition(self.configuration.color, 'domainQuantile')
-              .defaultValue,
-        )
-      },
-      /**
-       * #action
-       */
-      setShowResolutionControls(f: boolean) {
-        setConf(self, 'showResolutionControls', f)
       },
       /**
        * #action

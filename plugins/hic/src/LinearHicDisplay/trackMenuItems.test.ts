@@ -1,5 +1,4 @@
 import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
-import TuneIcon from '@mui/icons-material/Tune'
 
 import { DEFAULT_HIC_COLOR_SCHEME } from './hicColorConfigSchema.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -18,7 +17,6 @@ function baseSelf() {
     colorFollowsPercentile: true,
     saturationQuantile: 0.95,
     showLegend: false,
-    showResolutionControls: false,
     heightMode: 'fixed' as const,
     colorScheme: DEFAULT_HIC_COLOR_SCHEME,
     hasResolutions: true,
@@ -29,16 +27,9 @@ function baseSelf() {
     appliedNormalization: 'KR',
     effectiveResolution: 25000 as number | undefined,
     resolutionBias: 0,
-    colorDomain: [0, 40] as [number, number],
-    colorDomainMin: undefined as number | undefined,
-    colorDomainMax: undefined as number | undefined,
-    colorQuantile: 0.95,
-    setColorRange: jest.fn(),
-    resetColorRange: jest.fn(),
     setLogScale: jest.fn(),
     setColorFollowsPercentile: jest.fn(),
     setShowLegend: jest.fn(),
-    setShowResolutionControls: jest.fn(),
     setHeightMode: jest.fn(),
     setColorScheme: jest.fn(),
     setSelectedNormalization: jest.fn(),
@@ -79,9 +70,9 @@ describe('hic track menu shape', () => {
       ...subMenuOf(items, 'Normalization'),
     ].filter(i => i.type === 'radio' || i.type === 'checkbox')
 
-    // 3 visibility and layout checkboxes + 12 schemes + 2 scale toggles + 3
+    // 2 visibility and layout checkboxes + 12 schemes + 2 scale toggles + 3
     // normalizations, so the assertion below can't pass by finding no rows
-    expect(rows.length).toBe(20)
+    expect(rows.length).toBe(19)
     expect(rows.map(i => [labelOf(i), staysOpenOnClick(i)])).toEqual(
       rows.map(i => [labelOf(i), true]),
     )
@@ -159,47 +150,13 @@ describe('hic track menu shape', () => {
         availableNormalizations: undefined,
       }),
     )
-    expect(items.map(labelOf)).toEqual([
-      'Show...',
-      'Layout',
-      'Color scheme',
-      'Color range...',
-    ])
-    expect(subMenuOf(items, 'Show...').map(labelOf)).not.toContain(
-      'Resolution controls',
-    )
+    expect(items.map(labelOf)).toEqual(['Show...', 'Layout', 'Color scheme'])
 
     expect(
       buildHicTrackMenuItems(makeSelf({ availableNormalizations: [] })).map(
         labelOf,
       ),
     ).not.toContain('Normalization')
-  })
-})
-
-describe('hic color range row', () => {
-  it('captions only the pinned ends', () => {
-    const rowLabel = (o: Partial<ReturnType<typeof baseSelf>>) =>
-      buildHicTrackMenuItems(makeSelf(o))
-        .map(labelOf)
-        .find(l => String(l).startsWith('Color range'))
-    expect(rowLabel({})).toBe('Color range...')
-    expect(rowLabel({ colorDomainMax: 500 })).toBe(
-      'Color range (auto – 500)...',
-    )
-    expect(rowLabel({ colorDomainMin: 2, colorDomainMax: 500 })).toBe(
-      'Color range (2 – 500)...',
-    )
-  })
-
-  it('has its own icon, apart from the Advanced submenu and Normalization', () => {
-    const items = buildHicTrackMenuItems(makeSelf())
-    const iconOf = (label: string) => {
-      const item = items.find(i => String(labelOf(i)).startsWith(label))
-      return item && 'icon' in item ? item.icon : undefined
-    }
-    const icons = [iconOf('Color range'), iconOf('Normalization')]
-    expect(new Set([...icons, TuneIcon]).size).toBe(3)
   })
 })
 
@@ -225,18 +182,6 @@ describe('hic color rows on a display', () => {
     click(display, 'Log scale')
     expect(display.plot).toEqual({})
     expect(display.colorEncoding.scale).toBe('linear')
-  })
-
-  it('the color range writes both ends and the quantile, and resets them', () => {
-    const { display } = createDisplay()
-    display.setColorRange({ min: 2, max: 500, quantile: 0.99 })
-    expect(display.plot).toEqual({
-      color: { domainMin: 2, domainMax: 500, domainQuantile: 0.99 },
-    })
-    expect([display.colorDomainMin, display.colorDomainMax]).toEqual([2, 500])
-    display.resetColorRange()
-    expect(display.plot).toEqual({})
-    expect(display.colorDomainMax).toBeUndefined()
   })
 
   it('Emphasize faint contacts writes color.domainQuantile', () => {

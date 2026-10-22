@@ -41,7 +41,7 @@ open so you can step repeatedly. Stepping applies a persistent offset from the
 auto-selected level, so resolution still tracks your zoom, just shifted.
 **Reset** returns to auto.
 
-<Figure caption="Show... → Legend and Show... → Resolution, which add the color scale and a binsize dropdown." src="/img/hic/overlay_controls.png" />
+<Figure caption="Show... → Legend adds the color scale, its title naming the normalization and the binsize on screen." src="/img/hic/overlay_controls.png" />
 
 ## Adjusting the color scale
 
@@ -68,13 +68,13 @@ percentile of counts and TAD structure separates from background.
 
 <Figure caption="Emphasize faint contacts off and on, each frame labeled with its setting." src="/img/hic/faint_contacts.png" links="Emphasize faint contacts off=hic/percentile_off,Emphasize faint contacts on=hic/percentile_on" />
 
-**Color scheme → Log scale** maps counts to color on a log2 scale, compressing
-the diagonal further still.
+**Color scheme → Log scale** maps counts to color through log(1 + count),
+compressing the diagonal further still.
 
 The scale's top follows the loaded counts, so it moves as you zoom and differs
 between tracks. To compare two tracks, or one region at two zooms, on one scale,
-pin the top with **Color range...**, which writes
-[`color.domainMax`](/docs/config/hiccolor/#slot-domainmax), or in each track's
+pin the top as [`color.domainMax`](/docs/config/hiccolor/#slot-domainmax) in
+[**Advanced → Edit plot...**](/docs/user_guides/edit_plot), or in each track's
 config:
 
 ```json

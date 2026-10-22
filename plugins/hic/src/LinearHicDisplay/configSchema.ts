@@ -56,14 +56,6 @@ const HicTrackConfigFactory = () => {
       /**
        * #slot
        */
-      showResolutionControls: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'show the on-figure resolution dropdown in the overlay',
-      },
-      /**
-       * #slot
-       */
       selectedNormalization: {
         type: 'string',
         defaultValue: 'KR',
@@ -79,10 +71,12 @@ const HicTrackConfigFactory = () => {
       explicitIdentifier: 'displayId',
       // v4's renderer block held a base color the ramp has no member for,
       // a cap on the triangle's height and a per-cell callback into the
-      // plugin's jexl functions.
+      // plugin's jexl functions. The on-figure binsize dropdown gave way to
+      // the legend title naming the binsize.
       retired: {
         ...retiredBaseDisplaySpellings,
         renderer: () => ({}),
+        showResolutionControls: () => ({}),
       },
     },
   )

@@ -1,32 +1,25 @@
-import { lazy } from 'react'
-
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { getBpDisplayStr, getDialogHost } from '@jbrowse/core/util'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { fitToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { colorSchemeMenuItem } from '@jbrowse/display-kit/colorByMenu'
 import { makeResolutionSubMenuItem } from '@jbrowse/wiggle-core/chrome'
 import BalanceIcon from '@mui/icons-material/Balance'
-import GradientIcon from '@mui/icons-material/Gradient'
 import GridOnIcon from '@mui/icons-material/GridOn'
 import ViewQuiltIcon from '@mui/icons-material/ViewQuilt'
 
-import type { ColorRangeHost } from './components/ColorRangeDialog.tsx'
 import type { HicColorScale } from './hicColorConfigSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { TriangleHeightMode } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-const ColorRangeDialog = lazy(() => import('./components/ColorRangeDialog.tsx'))
-
-interface HicMenuSelf extends ColorRangeHost, IStateTreeNode {
+interface HicMenuSelf extends IStateTreeNode {
   colorScaleType: HicColorScale
   colorFollowsPercentile: boolean
   saturationQuantile: number
   showLegend: boolean
-  showResolutionControls: boolean
   heightMode: TriangleHeightMode
   colorScheme: ColorSchemeName
   hasResolutions: boolean
@@ -40,7 +33,6 @@ interface HicMenuSelf extends ColorRangeHost, IStateTreeNode {
   setLogScale: (log: boolean) => void
   setColorFollowsPercentile: (f: boolean) => void
   setShowLegend: (f: boolean) => void
-  setShowResolutionControls: (f: boolean) => void
   setHeightMode: (mode: TriangleHeightMode) => void
   setColorScheme: (scheme: ColorSchemeName) => void
   setSelectedNormalization: (s: string) => void
@@ -86,22 +78,7 @@ function resolutionMenuItems(self: HicMenuSelf): MenuItem[] {
 }
 
 function showMenuItems(self: HicMenuSelf): MenuItem[] {
-  return [
-    ...(self.hasResolutions
-      ? [
-          toggleItem(
-            'Resolution controls',
-            self.showResolutionControls,
-            self.setShowResolutionControls,
-            {
-              helpText:
-                'Show an on-figure binsize dropdown in the track overlay, e.g. to bake a chosen resolution into a screenshot.',
-            },
-          ),
-        ]
-      : []),
-    legendCheckboxItem(self),
-  ]
+  return [legendCheckboxItem(self)]
 }
 
 function layoutMenuItem(self: HicMenuSelf): MenuItem {
@@ -137,31 +114,10 @@ function colorScaleMenuItems(self: HicMenuSelf): MenuItem[] {
       self.colorFollowsPercentile,
       self.setColorFollowsPercentile,
       {
-        helpText: `Saturate the color scale at the ${percentileName(self.saturationQuantile)} percentile of the loaded counts instead of their maximum, so faint off-diagonal contacts read more strongly. A Color range max overrides both.`,
+        helpText: `Saturate the color scale at the ${percentileName(self.saturationQuantile)} percentile of the loaded counts instead of their maximum, so faint off-diagonal contacts read more strongly. A domainMax set in Edit plot overrides both.`,
       },
     ),
   ]
-}
-
-// The caption carries only the pinned ends, as the Y axis row's does.
-function colorRangeMenuItem(self: HicMenuSelf): MenuItem {
-  const { colorDomainMin: min, colorDomainMax: max } = self
-  const caption =
-    min === undefined && max === undefined
-      ? ''
-      : ` (${min ?? 'auto'} – ${max ?? 'auto'})`
-  return {
-    label: `Color range${caption}...`,
-    icon: GradientIcon,
-    helpText:
-      'Pin the counts the color ramp spans, or the percentile an open top follows.',
-    onClick: () => {
-      getDialogHost(self).queueDialog(handleClose => [
-        ColorRangeDialog,
-        { model: self, handleClose },
-      ])
-    },
-  }
 }
 
 // The schemes the file offers, ticked by what the loaded matrix carries: a
@@ -201,7 +157,6 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
     ...makeShowSubMenu(showMenuItems(self)),
     layoutMenuItem(self),
     colorSchemeMenuItem(self, colorScaleMenuItems(self)),
-    colorRangeMenuItem(self),
     ...normalizationMenuItems(self),
   ]
 }

@@ -40,10 +40,10 @@ test('the key is one ramp over the color domain, its two ends labelled', () => {
   expect(display.legendSpec.sections).toEqual([
     {
       id: 'contacts',
-      title: 'Contacts (KR)',
+      title: 'Contacts (KR) · 1Kbp',
       items: [
         {
-          label: 'Contacts (KR)',
+          label: 'Contacts (KR) · 1Kbp',
           gradient: {
             stops: stopsFromRampLut(rampLutOf({ scheme: 'juicebox' }), 11),
             minLabel: '0',
@@ -62,7 +62,7 @@ test('the key follows the encoding: log floor, pinned top and scheme', () => {
   setConf(display, ['color', 'scheme'], 'viridis')
   const [item] = display.legendSpec.sections[0]!.items
   expect(item).toEqual({
-    label: 'Contacts (KR, log)',
+    label: 'Contacts (KR, log) · 1Kbp',
     gradient: {
       stops: stopsFromRampLut(
         rampLutOf({ scheme: 'viridis', reverse: true }),

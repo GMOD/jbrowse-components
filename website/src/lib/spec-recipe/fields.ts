@@ -1370,16 +1370,9 @@ export const trackFields: Record<string, FieldRecipe> = {
   facet: facetStep,
   filter: readCategoryPath,
   'filter.expressions': expressionsStep,
-  // These two are declared by LinearHicDisplay alone, so as with the
-  // alignments-only fields the name settles the display and an unresolved entry
-  // can still be answered.
-  showResolutionControls: (value, { displayType }) =>
-    typeof value === 'boolean' && isHicOnlyField(displayType)
-      ? {
-          path: `${TRACK_MENU} → Show... → Resolution controls (${value ? 'checked' : 'unchecked'})`,
-          note: 'Puts a binsize dropdown in the track overlay, which is how a chosen resolution gets baked into a screenshot.',
-        }
-      : undefined,
+  // Declared by LinearHicDisplay alone, so as with the alignments-only fields
+  // the name settles the display and an unresolved entry can still be
+  // answered.
   useColorPercentile: (value, { displayType }) =>
     typeof value === 'boolean' && isHicOnlyField(displayType)
       ? {

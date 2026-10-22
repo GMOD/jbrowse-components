@@ -379,9 +379,9 @@ const FloatingLegend = observer(function FloatingLegend({
   // split-read rows have to say which kind of read they classify); leave it for
   // everything else, and let the ellipsis be the signal that a label is too long.
   maxWidth?: number
-  // Distances from the top and right of the display box. `ChromeLegend` adds a
-  // display's `legendTop` and `legendRight` clearances to the defaults for a
-  // display that already draws something in that corner.
+  // Distances from the top and right of the display box. `ChromeLegend` adds
+  // axis captions to the top and a display's `legendRight` clearance to the
+  // right, for a display that already draws something in that corner.
   top?: number
   right?: number
 }) {
