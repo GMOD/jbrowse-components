@@ -3,7 +3,7 @@ import { assembleLocString } from '@jbrowse/core/util'
 import { breakendTickPx, junctionEnds } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
-import { computeOverlayX, findFeatureViewLevel } from './overlayGeometry.ts'
+import { computeOverlayX, findFeatureViewLevel } from '../util.ts'
 import {
   OverlayPaths,
   buildBreakpointPath,

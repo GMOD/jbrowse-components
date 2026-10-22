@@ -11,8 +11,8 @@ import {
 import { observer } from 'mobx-react'
 
 import { readIdOf } from '../readChains.ts'
+import { computeOverlayRect } from '../util.ts'
 import BreakpointTooltip from './BreakpointTooltip.tsx'
-import { computeOverlayRect } from './overlayGeometry.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
 import type { ReadChain, ReadEntry } from '../readChains.ts'

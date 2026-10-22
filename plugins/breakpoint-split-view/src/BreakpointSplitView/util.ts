@@ -1,8 +1,11 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import {
+  bpToPx,
+  getLayoutHighlightCoords,
+} from '@jbrowse/core/util/Base1DUtils'
 
 import type { ReadSource } from './readChains.ts'
-import type { LayoutRecord, OverlayKind } from './types.ts'
+import type { LayoutRecord, OverlayKind, OverlayLevel } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -170,6 +173,80 @@ export function computeOverlayY({
   const bot = layout[3]
   const y = top - scrollTop + (bot - top) * at + coverageOffset
   return yOffset + (y < coverageOffset ? coverageOffset : Math.min(y, height))
+}
+
+// Horizontal screen position of an overlay endpoint, the sibling of
+// computeOverlayY and clamped for the same reason.
+//
+// A feature with no row in any track's layout is off-display in BOTH axes, and
+// computeOverlayY deliberately snaps its y to the track's bottom edge so the
+// curve terminating there is the one sign the segment exists. Leaving x at the
+// true coordinate defeats that: the point it terminates at is outside the panel,
+// so the curve simply leaves the frame on a diagonal and the reader sees a line
+// to nowhere rather than a marker at the edge. Clamping x puts the terminus back
+// in view, on the side the segment actually lies.
+//
+// An on-display feature keeps its true x even when that is off-panel — a long
+// read whose alignment runs past the window has a real row, a real y, and an x
+// that means something. Only the synthesized record is clamped.
+export function computeOverlayX(
+  x: number,
+  width: number,
+  layout: LayoutRecord,
+) {
+  return isOffscreenLayout(layout) ? Math.min(Math.max(x, 0), width) : x
+}
+
+// Screen rect of one laid-out feature — the rectangle computeOverlayY resolves
+// down to a single midpoint, kept whole so the hover highlight can box the read
+// a connector points at.
+//
+// getLayoutHighlightCoords rather than a bpToPx per edge: a read in a breakpoint
+// panel routinely starts before the displayed region and ends after it, and
+// bpToPx answers undefined for such an edge — which would drop the box for
+// exactly the long reads a split view is opened to look at. It carries the
+// min-width floor and the reversed-view handling too.
+//
+// Undefined once the clamps close the rect: an off-display segment (see
+// makeOffscreenLayout), one scrolled out of its pileup, or one whose span lies
+// entirely off the panel. There is no read on screen to box in any of those, and
+// the connector terminating on the panel's bottom edge is already the only sign
+// an off-display segment exists.
+export function computeOverlayRect({
+  level,
+  layout,
+  refName,
+  viewLayout,
+}: {
+  level: OverlayLevel
+  layout: LayoutRecord
+  refName: string
+  viewLayout: ViewLayout
+}) {
+  const [startBp, layoutTop, endBp, layoutBottom] = layout
+  const coords = isOffscreenLayout(layout)
+    ? undefined
+    : getLayoutHighlightCoords(viewLayout, {
+        refName,
+        start: startBp,
+        end: endBp,
+      })
+  if (coords) {
+    const { yOffset, height, coverageOffset, scrollTop } = level
+    const left = Math.max(coords.left, 0)
+    const right = Math.min(coords.left + coords.width, viewLayout.width)
+    const top = Math.max(layoutTop - scrollTop + coverageOffset, coverageOffset)
+    const bottom = Math.min(layoutBottom - scrollTop + coverageOffset, height)
+    if (right > left && bottom > top) {
+      return {
+        x: left,
+        y: yOffset + top,
+        width: right - left,
+        height: bottom - top,
+      }
+    }
+  }
+  return undefined
 }
 
 // Find which row (level) of the breakpoint split view a feature "belongs to"

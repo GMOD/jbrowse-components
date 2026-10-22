@@ -1,6 +1,6 @@
-import { computeOverlayRect } from './overlayGeometry.ts'
+import { computeOverlayRect } from './util.ts'
 
-import type { LayoutRecord, OverlayLevel } from '../types.ts'
+import type { LayoutRecord, OverlayLevel } from './types.ts'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 const OFFSCREEN_Y = Number.POSITIVE_INFINITY
