@@ -16,13 +16,13 @@ import type { LinearSyntenyViewCommands } from './types.ts'
 // `coord` is `replay`, the one kind that is not remapped: the value lands
 // on the declared property, and a copy rides in the blob because launching also
 // has to zoom the rows onto the shared scale, after `autoDiagonalize` has
-// rewritten and re-centred them. `color`, `alpha`,
-// `minAlignmentLength` and the rest are plain properties — writing them is the
-// whole job, so none of them is a launch key.
+// rewritten and re-centred them. `color`, `opacity`, `filter` and the rest
+// are plain properties — writing them is the whole job, so none of them is a
+// launch key.
 //
-// `colorBy` is v4's spelling of `color`, which the model's own
-// preProcessSnapshot converts (`liftSyntenyViewSettings`), so the partition
-// passes it through rather than reading it as a typo.
+// `colorBy` and `alpha` are older spellings of `color` and `opacity`, which the
+// model's own preProcessSnapshot converts (`liftSyntenyViewSettings`), so the
+// partition passes them through rather than reading them as typos.
 export const linearSyntenyLaunchKeys =
   defineLaunchKeys<LinearSyntenyViewCommands>()(
     {

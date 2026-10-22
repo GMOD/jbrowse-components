@@ -110,8 +110,8 @@ function liftDisplaySettings(snap: Snap) {
  * view: `colorBy` (a mode string), `alpha` and `minAlignmentLength` sat on each
  * synteny display, and land as `color`, `opacity` and a `filter` predicate
  * on `length`.
- * Launch links from the genomes portal put the mode string on the
- * view itself, which lifts the same way.
+ * An older genomes-portal launch link puts the mode string on the view
+ * itself, which lifts the same way.
  */
 export function liftSyntenyViewSettings(snap: Snap | undefined) {
   return snap

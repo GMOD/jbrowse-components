@@ -106,7 +106,7 @@ function summaryOf(mode: unknown) {
         }
 }
 
-// What a v4 menu wrote on the display instance, and a beta's arrangement.
+// The renderers a v4 config's `renderers` block could configure
 const V4_RENDERERS = ['XYPlotRenderer', 'LinePlotRenderer', 'DensityRenderer']
 
 /**
