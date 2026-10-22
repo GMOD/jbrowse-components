@@ -65,7 +65,7 @@ export async function readToEnd(
  *
  * Shared rather than copied specifically because of the trimming below.
  * `queryBlockSpan`'s own comment records two bugs from the read and the byte
- * estimate drifting apart, and a second copy of `!ranPastEnd && endBlock ===
+ * estimate drifting apart, and a second copy of `nextEntry && endBlock ===
  * startBlock && nextOffset > startOffset` is how a third would arrive: it is
  * four conditions with no obvious symptom when wrong, since a slice trimmed one
  * bracket short still parses and still draws.
@@ -96,15 +96,8 @@ export async function readTaiSlice({
   if (!span) {
     return undefined
   }
-  const {
-    firstEntry,
-    nextEntry,
-    ranPastEnd,
-    startBlock,
-    endBlock,
-    readLength,
-    toEnd,
-  } = span
+  const { firstEntry, nextEntry, startBlock, endBlock, readLength, toEnd } =
+    span
 
   const file = openLocation(location, pluginManager)
   const buffer = await unzip(
@@ -124,7 +117,7 @@ export async function readTaiSlice({
   // Trim to the cushion entry only for interior reads sharing the start block;
   // a past-the-end read keeps everything decoded to the chromosome end.
   const endOffset =
-    !ranPastEnd && endBlock === startBlock && nextOffset > startOffset
+    nextEntry && endBlock === startBlock && nextOffset > startOffset
       ? nextOffset
       : buffer.length
 

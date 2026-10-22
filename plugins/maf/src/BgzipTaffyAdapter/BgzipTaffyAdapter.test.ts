@@ -841,7 +841,7 @@ describe('BgzipTaffyAdapter integration tests', () => {
 
   test('adapter fetches the chromosome tail past the last index entry', async () => {
     // chrI's last .tai entry is at chrStart ~15,053,438; a query starting after
-    // it and running past the chromosome end exercises the ranPastEnd read path
+    // it and running past the chromosome end exercises the read past the last index entry
     // (read to the end of the file).
     const adapter = new BgzipTaffyAdapter(
       configSchema.create({

@@ -136,37 +136,24 @@ export function lowerBound<T>(
 }
 
 /**
- * Pick the index entries bracketing a query `[queryStart, queryEnd)`.
- *
- * The `.tai` index is sparse, so the entry containing `queryStart` is the one
- * *before* the first entry whose `chrStart >= queryStart` (clamped to 0).
- * `nextEntry` reaches one entry past `queryEnd` as a read cushion, falling back
- * to the last entry when the query runs off the end of the index. Reading a
- * little extra is harmless; reading too little would truncate the region.
- *
- * `ranPastEnd` is true when there is no real cushion entry past `queryEnd` (the
- * query reaches the last index entry of the chromosome). taffy spaces entries
- * by genomic distance and gives no guarantee the last entry is near the end of
- * the chromosome's data, so `queryBlockSpan` bounds the read at the
- * chromosome's data end rather than trusting the fallback entry's offset.
+ * The index entries bracketing a query `[queryStart, queryEnd)`. The `.tai` is
+ * sparse, so `firstEntry` is the one before the first entry at or past
+ * `queryStart` (clamped to 0), and `nextEntry` is one entry past `queryEnd`, a
+ * read cushion. `nextEntry` is undefined once the query reaches the
+ * chromosome's last entry, which taffy places by genomic distance and so may
+ * sit far from the end of its data.
  */
 export function selectIndexEntries(
   records: ByteRange[],
   queryStart: number,
   queryEnd: number,
-): {
-  firstEntry: ByteRange | undefined
-  nextEntry: ByteRange | undefined
-  ranPastEnd: boolean
-} {
+) {
   const getKey = (r: ByteRange) => r.chrStart
   const startIdx = lowerBound(records, queryStart, getKey)
   const endIdx = lowerBound(records, queryEnd, getKey)
-  const cushion = records[endIdx + 1]
   return {
     firstEntry: records[Math.max(startIdx - 1, 0)],
-    nextEntry: cushion ?? records.at(-1),
-    ranPastEnd: cushion === undefined,
+    nextEntry: records[endIdx + 1],
   }
 }
 
@@ -197,8 +184,8 @@ export function nextChrStartBlock(index: IndexData, refName: string) {
 /** The index entries and compressed block span one region query resolves to. */
 export interface QueryBlockSpan {
   firstEntry: ByteRange
+  /** undefined past the chromosome's last sparse entry */
   nextEntry: ByteRange | undefined
-  ranPastEnd: boolean
   /** compressed byte offset of the bgzf block the read starts in */
   startBlock: number
   /** compressed byte offset the read is bounded at (== startBlock for a
@@ -262,16 +249,15 @@ export function queryBlockSpan(
   const firstEntry = selected?.firstEntry
   let span: QueryBlockSpan | undefined
   if (selected !== undefined && firstEntry !== undefined) {
-    const { nextEntry, ranPastEnd } = selected
+    const { nextEntry } = selected
     const startBlock = firstEntry.virtualOffset.blockPosition
-    const bound = ranPastEnd
-      ? nextChrStartBlock(index, refName)
-      : (nextEntry?.virtualOffset.blockPosition ?? startBlock)
+    const bound = nextEntry
+      ? nextEntry.virtualOffset.blockPosition
+      : nextChrStartBlock(index, refName)
     const endBlock = bound ?? startBlock
     span = {
       firstEntry,
       nextEntry,
-      ranPastEnd,
       startBlock,
       endBlock,
       readLength: Math.max(endBlock, startBlock) + MIN_BLOCK_SIZE - startBlock,

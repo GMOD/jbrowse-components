@@ -205,20 +205,18 @@ describe('selectIndexEntries', () => {
 
   test('nextEntry reaches one entry past queryEnd as a read cushion', () => {
     const recs = records(0, 100, 200, 300, 400, 500)
-    const { nextEntry, ranPastEnd } = selectIndexEntries(recs, 110, 120)
+    const { nextEntry } = selectIndexEntries(recs, 110, 120)
     // first chrStart >= 120 is index 2 (200); +1 -> index 3 (300)
     expect(nextEntry).toMatchObject({ chrStart: 300 })
-    expect(ranPastEnd).toBe(false)
   })
 
-  test('ranPastEnd is true only when there is no cushion entry past queryEnd', () => {
+  test('nextEntry is undefined only when no cushion entry is past queryEnd', () => {
     const recs = records(0, 100, 200, 300)
     // queryEnd 150 -> first chrStart >= 150 is index 2 (200); cushion index 3 (300)
-    expect(selectIndexEntries(recs, 50, 150).ranPastEnd).toBe(false)
+    expect(selectIndexEntries(recs, 50, 150).nextEntry).toBeDefined()
     // queryEnd 250 -> first chrStart >= 250 is index 3 (300); cushion index 4 absent
-    expect(selectIndexEntries(recs, 50, 250).ranPastEnd).toBe(true)
-    // queryEnd past everything -> no cushion
-    expect(selectIndexEntries(recs, 50, 9999).ranPastEnd).toBe(true)
+    expect(selectIndexEntries(recs, 50, 250).nextEntry).toBeUndefined()
+    expect(selectIndexEntries(recs, 50, 9999).nextEntry).toBeUndefined()
   })
 
   test('query before all entries clamps firstEntry to the first record', () => {
@@ -227,23 +225,17 @@ describe('selectIndexEntries', () => {
     expect(firstEntry).toMatchObject({ chrStart: 1000 })
   })
 
-  test('query past the end falls back to the last entry', () => {
+  test('query past the end starts at the last entry with no cushion', () => {
     const recs = records(0, 100, 200)
     const { firstEntry, nextEntry } = selectIndexEntries(recs, 5000, 6000)
     expect(firstEntry).toMatchObject({ chrStart: 200 })
-    expect(nextEntry).toMatchObject({ chrStart: 200 })
+    expect(nextEntry).toBeUndefined()
   })
 
-  test('single-entry index returns that entry for both ends', () => {
-    const recs = records(0)
-    const { firstEntry, nextEntry, ranPastEnd } = selectIndexEntries(
-      recs,
-      10,
-      50,
-    )
+  test('single-entry index starts there with no cushion', () => {
+    const { firstEntry, nextEntry } = selectIndexEntries(records(0), 10, 50)
     expect(firstEntry).toMatchObject({ chrStart: 0 })
-    expect(nextEntry).toMatchObject({ chrStart: 0 })
-    expect(ranPastEnd).toBe(true)
+    expect(nextEntry).toBeUndefined()
   })
 })
 
@@ -303,7 +295,7 @@ describe('queryBlockSpan', () => {
       ],
     ])
     const span = queryBlockSpan(index, 'chr1', 50, 120)!
-    expect(span.ranPastEnd).toBe(false)
+    expect(span.nextEntry).toBeDefined()
     expect(span.startBlock).toBe(0)
     // first chrStart >= 120 is index 2; cushion index 3 -> block 3000
     expect(span.endBlock).toBe(3000)
@@ -315,7 +307,7 @@ describe('queryBlockSpan', () => {
       ['chr2', [entry(0, 90000)]],
     ])
     const span = queryBlockSpan(index, 'chr1', 50, 99999)!
-    expect(span.ranPastEnd).toBe(true)
+    expect(span.nextEntry).toBeUndefined()
     // the whole of chr1's data, not the distance to its last entry (1000)
     expect(span.endBlock - span.startBlock).toBe(90000)
   })
@@ -339,7 +331,7 @@ describe('queryBlockSpan', () => {
       ['chr1', [entry(0, 0), entry(100, 1000)]],
     ])
     const span = queryBlockSpan(index, 'chr1', 50, 99999)!
-    expect(span.ranPastEnd).toBe(true)
+    expect(span.nextEntry).toBeUndefined()
     expect(span.toEnd).toBe(true)
     expect(span.readLength).toBe(65536)
   })
