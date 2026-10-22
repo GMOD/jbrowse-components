@@ -9,7 +9,7 @@ import { Chip, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { Fragment } from 'react/jsx-runtime'
 
-import LevelSyntenyCanvas from '../../LinearSyntenyViewHelper/LevelSyntenyCanvas.tsx'
+import { SyntenyLevel } from '../../LinearSyntenyViewHelper/SyntenyLevel.tsx'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -17,11 +17,6 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 const useStyles = makeStyles()({
   container: {
     display: 'grid',
-  },
-  overlay: {
-    zIndex: 100,
-    gridArea: '1/1',
-    pointerEvents: 'none',
   },
   wrapper: {
     position: 'relative',
@@ -120,28 +115,15 @@ const LevelSection = observer(function LevelSection({
   model: LinearSyntenyViewModel
   levelIdx: number
 }) {
-  const { classes } = useStyles()
   const drag = useRef({ alone: false, from: [] as number[], moved: 0 })
   const level = model.levels[levelIdx]!
 
   return (
     <>
-      {/* The band's height comes from the level, not from what happens to be
-        drawn in it: the canvas is absolutely positioned and the legend floats,
-        so the only in-flow children are the per-track overlays. A level with no
-        synteny track is a legal state (the import form launches one, and hiding
-        the last track reaches it too), and without this the band reserved 0px
-        while its canvas still painted level.height over the genome row below. */}
-      <div className={classes.wrapper} style={{ height: level.height }}>
-        <div className={classes.container}>
-          <LevelSyntenyCanvas model={level} />
-          <Overlays model={model} level={levelIdx} />
-        </div>
-        {/* One legend for the whole view, hosted in the topmost synteny band
-          (the "helper" area) where the color-coded ribbons it describes are
-          actually drawn */}
+      <SyntenyLevel level={level}>
+        {/* one legend for the whole view, in the topmost band */}
         {levelIdx === 0 ? <ChromeLegend model={model} /> : null}
-      </div>
+      </SyntenyLevel>
       {/* Sizes every band, not this one gap (see `resizeAllLevelHeights`),
         and Alt sizes this one alone, which is the only way back to a stack
         whose bands differ on purpose. */}
@@ -168,42 +150,6 @@ const LevelSection = observer(function LevelSection({
             : 'Drag to resize the synteny band'
         }
       />
-    </>
-  )
-})
-
-const Overlays = observer(function Overlays({
-  model,
-  level,
-}: {
-  model: LinearSyntenyViewModel
-  level: number
-}) {
-  const { classes } = useStyles()
-  // The caller only ever renders one of these per level that exists, so the
-  // index is in range by construction — asserted rather than guarded, as the
-  // neighbouring `views[i]!` reads are.
-  const levelImpl = model.levels[level]!
-
-  // The same list the level uploads and renders geometry for, rather than a
-  // second walk over `tracks` taking `displays[0]`: those two disagree the
-  // moment a track carries anything but exactly one synteny display, and then
-  // a ribbon paints on the shared canvas with no overlay to hover or
-  // right-click it (or the reverse). Keyed by display id for the same reason.
-  return (
-    <>
-      {levelImpl.linearSyntenyDisplays.map(display => (
-        <div
-          className={classes.overlay}
-          key={display.id}
-          style={{
-            height: display.height,
-            overflow: 'hidden',
-          }}
-        >
-          <display.RenderingComponent model={display} />
-        </div>
-      ))}
     </>
   )
 })

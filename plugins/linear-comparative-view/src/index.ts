@@ -23,14 +23,10 @@ import type { AbstractViewContainer } from '@jbrowse/core/util'
 export { renderToSvg } from './LinearSyntenyView/svgcomponents/SVGLinearSyntenyView.tsx'
 export type { LinearSyntenyViewModel } from './LinearSyntenyView/model.ts'
 export type { MultiWaySyntenyDisplayModel } from './MultiWaySyntenyDisplay/model.ts'
-// The ribbon layer for one band, and the model it takes. A host drawing its own
-// comparative chrome needs this: the two genome rows are ordinary LGVs it
-// already knows how to mount, and the per-display `RenderingComponent` (tooltip,
-// context menu, fetch status) comes off the display model — but the ribbons are
-// drawn here, over `useRenderingBackend` and `SyntenyRendererFactory`, and there
-// is no way to write a substitute that isn't a worse copy of the GPU path. Same
-// argument as `usePanZoom`: an embedder would *have to* rebuild it, so it is a
-// missing export rather than something the reader owns.
+// For a host drawing its own comparative chrome: the whole stack, one ribbon
+// band, or the bare ribbon canvas under a band.
+export { SyntenyStack } from './LinearSyntenyView/SyntenyStack.tsx'
+export { SyntenyLevel } from './LinearSyntenyViewHelper/SyntenyLevel.tsx'
 export { default as LevelSyntenyCanvas } from './LinearSyntenyViewHelper/LevelSyntenyCanvas.tsx'
 // A level, for a host that reaches one off `view.levels` and wants to name what
 // it holds — its `linearSyntenyDisplays` and the `RenderingComponent` on each.
