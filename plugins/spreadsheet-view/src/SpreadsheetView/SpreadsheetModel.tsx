@@ -32,10 +32,49 @@ export interface RowSet {
   rows: Row[]
 }
 
+/** what the sheet reads off a row's record, worked out once per load */
+export interface RowDerived {
+  svType?: string
+  location?: string
+  size?: number
+  mate?: { raw: string; display: string }
+}
+
 export interface GridRow {
   id: number
   feature?: SimpleFeatureSerialized
+  derived: RowDerived
   [key: string]: unknown
+}
+
+// a non-SV sheet reports the plain interval length and no mate column
+function deriveRow(
+  feature: SimpleFeatureSerialized | undefined,
+  svTypeToken: unknown,
+  isSvSheet: boolean,
+): RowDerived {
+  const svType = rowSvType(feature, svTypeToken)
+  if (!feature) {
+    return { svType }
+  }
+  const location = assembleLocString(feature)
+  if (!isSvSheet) {
+    return { svType, location, size: feature.end - feature.start }
+  }
+  const mate = svMateLocus(new SimpleFeature(feature))
+  return {
+    svType,
+    location,
+    size: svSize(feature, mate),
+    mate: mate && {
+      raw: `${mate.refName}:${mate.pos + 1}`,
+      display: assembleLocString({
+        refName: mate.refName,
+        start: mate.pos,
+        end: mate.pos + 1,
+      }),
+    },
+  }
 }
 
 // shapes written by older versions: cells were positional (aligned with
@@ -180,12 +219,25 @@ export default function stateModelFactory() {
        * #getter
        */
       get rows(): GridRow[] | undefined {
-        // id/feature last so a same-named data column can't shadow them
-        return self.rowSet?.rows.map((row, i) => ({
-          ...row.cellData,
-          id: i,
-          feature: row.feature,
-        }))
+        const field = this.svTypeColumnField
+        return self.rowSet?.rows.map(({ cellData, feature }, i) => {
+          const derived = deriveRow(
+            feature,
+            field ? cellData?.[field] : undefined,
+            !!field,
+          )
+          // id/feature/derived last so a same-named data column can't shadow
+          // them; the record carries its class, as a VCF import's already does
+          return {
+            ...cellData,
+            id: i,
+            feature:
+              feature && derived.svType && feature.svType === undefined
+                ? { ...feature, svType: derived.svType }
+                : feature,
+            derived,
+          }
+        })
       },
 
       /**
@@ -352,162 +404,83 @@ export default function stateModelFactory() {
       /**
        * #getter
        */
-      get dataGridColumns() {
+      get dataGridColumns(): GridColDef<GridRow>[] | undefined {
         const { rows } = self
-        const isSvSheet = !!self.svTypeColumnField
-        // a non-SV sheet keeps reporting the plain interval length, so BED,
-        // BEDPE and STAR-Fusion read exactly as before
-        const rowSize = ({ feature }: { feature?: SimpleFeatureSerialized }) =>
-          feature
-            ? isSvSheet
-              ? svSize(feature)
-              : feature.end - feature.start
-            : undefined
-        // Where the record's other end is. Its own column because it is the one
-        // thing about an SV that the sheet held and could not be searched for:
-        // the mate chromosome lives inside the ALT string, so "everything
-        // touching chr17" meant typing `17` and hoping it did not also match a
-        // position or an ID. A column puts it in front of the quick filter and
-        // the filter panel like any other field.
-        const rowMate = ({
-          feature,
-        }: {
-          feature?: SimpleFeatureSerialized
-        }) => {
-          const mate = feature
-            ? svMateLocus(new SimpleFeature(feature))
-            : undefined
-          return mate
-            ? {
-                raw: `${mate.refName}:${mate.pos + 1}`,
-                display: assembleLocString({
-                  refName: mate.refName,
-                  start: mate.pos,
-                  end: mate.pos + 1,
-                }),
-              }
-            : undefined
+        if (!rows) {
+          return undefined
         }
-        // widths come off a sample, not the sheet. measureGridWidth walks every
-        // character of every value it is handed, so measuring all of them is
-        // rows × columns × characters of blocking main thread — 3.6s for a
-        // 50k-row, 25-column sheet, spent the moment the import finishes and
-        // again on every session reload. The width is a heuristic for auto-fit
-        // and the columns below cap it anyway, so a sample buys the same answer
-        // for a fortieth of the cost
-        const sample = sampleRows(rows)
-        return rows
-          ? [
-              {
-                field: 'Location',
-                width:
-                  measureGridWidth(
-                    sample.map(row =>
-                      row.feature ? assembleLocString(row.feature) : 'N/A',
-                    ),
-                  ) + 40,
-                // renderCell alone leaves the column empty in the toolbar's CSV
-                // export and unsortable, so give the grid the plain locstring
-                // too (the same string the cell renders)
-                valueGetter: (
-                  _val: unknown,
-                  row: { feature?: SimpleFeatureSerialized },
-                ) => (row.feature ? assembleLocString(row.feature) : undefined),
-                renderCell: ({ row }) => {
-                  const { feature } = row
-                  return feature ? (
-                    <LocationCell model={self} feature={feature} />
-                  ) : (
-                    'N/A'
-                  )
-                },
-              } satisfies GridColDef,
-              {
-                // the field stays `Length` across both spellings so one saved
-                // column-visibility preference covers them, and only the header
-                // changes: for an SV callset the number is the SV's size, which
-                // is a different quantity from the record's footprint on the
-                // reference and is what a reader of that sheet wants. See
-                // `svSize`
-                field: 'Length',
-                headerName: isSvSheet ? 'SV size' : 'Length',
-                type: 'number',
-                // measured through the same formatter the cell renders with:
-                // measuring the bare number left the column a separator short
-                // per three digits, so a megabase-scale SV read as `1,234,5…`
-                width: measureGridWidth(
-                  sample.map(row => {
-                    const size = rowSize(row)
-                    return size === undefined ? '' : toLocale(size)
-                  }),
-                ),
-                valueGetter: (
-                  _val: unknown,
-                  row: { feature?: SimpleFeatureSerialized },
-                ) => rowSize(row),
-                // blank, not the string "undefined", for a row with no size to
-                // report — an interchromosomal breakend has none, and there are
-                // 26 of them in the 210-call C-GIAB benchmark alone
-                valueFormatter: (arg?: number) =>
-                  arg === undefined ? '' : toLocale(arg),
-              } satisfies GridColDef,
-              ...(isSvSheet
-                ? [
-                    {
-                      field: 'Mate',
-                      width: measureGridWidth(
-                        sample.map(row => rowMate(row)?.display ?? ''),
-                      ),
-                      // the plain string for sorting, the quick filter and the
-                      // CSV export; renderCell only changes how it is drawn
-                      valueGetter: (
-                        _val: unknown,
-                        row: { feature?: SimpleFeatureSerialized },
-                      ) => rowMate(row)?.display,
-                      renderCell: ({ row }) => {
-                        const mate = rowMate(row)
-                        return mate ? (
-                          <MateCell
-                            model={self}
-                            locString={mate.raw}
-                            display={mate.display}
-                          />
-                        ) : null
-                      },
-                    } satisfies GridColDef,
-                  ]
-                : []),
-
-              ...self.columns.map(
-                f =>
-                  ({
-                    field: f.name,
-                    // cap the auto-fit width: a single multi-kb cell (e.g. a
-                    // VCF REF/ALT carrying a long indel sequence) would
-                    // otherwise stretch the column to measureGridWidth's 1000px
-                    // default and shove every later column off-screen. The full
-                    // value stays available via the cell tooltip / feature
-                    // details; the user can still drag-resize wider.
-                    width: measureGridWidth(
-                      [...sample.map(r => r[f.name]), f.name],
-                      { minWidth: 20, maxWidth: 200 },
-                    ),
-                    // infer the column type from the first populated cell, not
-                    // rows[0]: a leading empty/string cell would otherwise drop
-                    // numeric sorting for the whole column. Off the full rows,
-                    // not the sample: find stops at the first hit, so it costs
-                    // nothing on a populated column and only walks the sheet for
-                    // one that is empty — where sampling could pick the wrong
-                    // type outright rather than a slightly narrow column
-                    type:
-                      typeof rows.find(r => r[f.name] != null)?.[f.name] ===
-                      'number'
-                        ? 'number'
-                        : undefined,
-                  }) satisfies GridColDef,
+        const isSvSheet = !!self.svTypeColumnField
+        // measureGridWidth walks every character it is handed, so widths come
+        // off a sample: the whole of a 50k-row sheet blocked for 3.6s
+        const sampled = sampleRows(rows)
+        const sample = sampled.map(r => r.derived)
+        return [
+          {
+            field: 'Location',
+            width: measureGridWidth(sample.map(d => d.location ?? 'N/A')) + 40,
+            // the plain string too, or sorting and the CSV export see nothing
+            valueGetter: (_val, row) => row.derived.location,
+            renderCell: ({ row }) =>
+              row.feature ? (
+                <LocationCell model={self} feature={row.feature} />
+              ) : (
+                'N/A'
               ),
-            ]
-          : undefined
+          },
+          {
+            // one field for both headers, so one saved visibility covers them
+            field: 'Length',
+            headerName: isSvSheet ? 'SV size' : 'Length',
+            type: 'number',
+            width: measureGridWidth(
+              sample.map(d => (d.size === undefined ? '' : toLocale(d.size))),
+            ),
+            valueGetter: (_val, row) => row.derived.size,
+            // an interchromosomal breakend has no size
+            valueFormatter: (arg?: number) =>
+              arg === undefined ? '' : toLocale(arg),
+          },
+          // the mate's chromosome otherwise hides inside ALT, out of reach of
+          // the quick filter
+          ...(isSvSheet
+            ? [
+                {
+                  field: 'Mate',
+                  width: measureGridWidth(
+                    sample.map(d => d.mate?.display ?? ''),
+                  ),
+                  valueGetter: (_val, row) => row.derived.mate?.display,
+                  renderCell: ({ row }) =>
+                    row.derived.mate ? (
+                      <MateCell
+                        model={self}
+                        locString={row.derived.mate.raw}
+                        display={row.derived.mate.display}
+                      />
+                    ) : null,
+                } satisfies GridColDef<GridRow>,
+              ]
+            : []),
+          ...self.columns.map(
+            f =>
+              ({
+                field: f.name,
+                // capped, so one multi-kb REF/ALT cannot push every later
+                // column off screen
+                width: measureGridWidth(
+                  [...sampled.map(r => r[f.name]), f.name],
+                  { minWidth: 20, maxWidth: 200 },
+                ),
+                // typed by the first populated cell, off every row: a sample
+                // could miss the only values of a sparse column
+                type:
+                  typeof rows.find(r => r[f.name] != null)?.[f.name] ===
+                  'number'
+                    ? 'number'
+                    : undefined,
+              }) satisfies GridColDef<GridRow>,
+          ),
+        ]
       },
     }))
     .views(self => ({
@@ -520,11 +493,11 @@ export default function stateModelFactory() {
        */
       get gridRows() {
         const { svTypeFilter, svEventFilter } = self
-        const { svTypeColumnField, svEventColumnField } = self
+        const { svEventColumnField } = self
         return self.rows?.filter(
           row =>
             (svTypeFilter === undefined ||
-              rowSvType(row, svTypeColumnField) === svTypeFilter) &&
+              row.derived.svType === svTypeFilter) &&
             (svEventFilter === undefined ||
               eventLabel(row, svEventColumnField) === svEventFilter),
         )
@@ -542,7 +515,7 @@ export default function stateModelFactory() {
        * narrowing to one class would remove the way back
        */
       get svTypeOptions() {
-        return tallySvTypes(self.rows, self.svTypeColumnField)
+        return tallySvTypes(self.rows)
       },
       /**
        * #getter
@@ -551,7 +524,7 @@ export default function stateModelFactory() {
        * controls cannot name a class differently
        */
       get visibleSvTypes() {
-        return tallySvTypes(this.visibleRows, self.svTypeColumnField)
+        return tallySvTypes(this.visibleRows)
       },
       /**
        * #getter

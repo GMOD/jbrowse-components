@@ -6,6 +6,7 @@ import {
 import { svClassOf, svClassOfToken } from '@jbrowse/core/util/svAlt'
 
 import type { GridRow } from './SpreadsheetModel.tsx'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export interface SvTypeTally {
   /** the class `svClassOf` names */
@@ -17,15 +18,18 @@ export interface SvTypeTally {
 
 /**
  * A row's SV class, or undefined for a record that is not a structural variant.
- * A row carrying the declared type and no parsed record — one restored from an
- * older session — is classed from the `field` column's token.
+ * A row with no parsed record, as an older session can restore, is classed
+ * from its declared SVTYPE token.
  */
-export function rowSvType(row: GridRow, field?: string) {
-  const raw = field ? row[field] : undefined
+export function rowSvType(
+  feature: SimpleFeatureSerialized | undefined,
+  token: unknown,
+) {
   return (
-    (row.feature
-      ? svClassOf(new SimpleFeature(row.feature))
-      : svClassOfToken(typeof raw === 'string' ? raw : '')) || undefined
+    (feature
+      ? ((feature.svType as string | undefined) ??
+        svClassOf(new SimpleFeature(feature)))
+      : svClassOfToken(typeof token === 'string' ? token : '')) || undefined
   )
 }
 
@@ -47,10 +51,10 @@ const SV_TYPE = categoricalField(SV_TYPE_FIELD)
  * Records that are not structural variants (a plain SNV in a mixed VCF) have no
  * class and are left out rather than tallied under an empty label.
  */
-export function tallySvTypes(rows: GridRow[] | undefined, field?: string) {
+export function tallySvTypes(rows: GridRow[] | undefined) {
   const tally = new Map<string, number>()
   for (const row of rows ?? []) {
-    const type = rowSvType(row, field)
+    const type = row.derived.svType
     if (type) {
       tally.set(type, (tally.get(type) ?? 0) + 1)
     }

@@ -22,14 +22,15 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
  * own answer, and it is the only one that can be right for an insertion.
  * Failing that the record's far end decides.
  */
-export function svSize(data: SimpleFeatureSerialized) {
-  const feature = new SimpleFeature(data)
-  const mate = svMateLocus(feature)
+export function svSize(
+  data: SimpleFeatureSerialized,
+  mate = svMateLocus(new SimpleFeature(data)),
+) {
   if (mate !== undefined && mate.refName !== data.refName) {
     return undefined
   }
 
-  const info = feature.get('INFO') as Record<string, unknown[]> | undefined
+  const info = data.INFO as Record<string, unknown[]> | undefined
   const declared = info?.SVLEN?.[0]
   // narrowed rather than coerced: `Number(null)` and `Number([])` are both 0,
   // so a malformed SVLEN would otherwise report a zero-length SV rather than

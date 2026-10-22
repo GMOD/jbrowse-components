@@ -1,7 +1,6 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { SimpleFeature, clamp, getSession, isFeature } from '@jbrowse/core/util'
+import { clamp, getSession, isFeature } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
-import { svClassOf } from '@jbrowse/core/util/svAlt'
 import {
   pendingLaunch,
   withLaunchInput,
@@ -38,17 +37,8 @@ function variantTrackIdFor(viewId: string) {
   return `sv-inspector-variant-track-${viewId}`
 }
 
-// a row a v4.3.0 link restores carries a record serialized before svType was
 function rowFeatures(rows?: { feature?: SimpleFeatureSerialized }[]) {
-  return (
-    rows?.flatMap(({ feature }) =>
-      !feature
-        ? []
-        : feature.svType !== undefined
-          ? [feature]
-          : [{ ...feature, svType: svClassOf(new SimpleFeature(feature)) }],
-    ) ?? []
-  )
+  return rows?.flatMap(({ feature }) => (feature ? [feature] : [])) ?? []
 }
 
 /**

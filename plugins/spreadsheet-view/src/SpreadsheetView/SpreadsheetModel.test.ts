@@ -34,7 +34,15 @@ test('rows maps cellData format to GridRow', () => {
     rowSet: { rows: [{ feature, cellData: { score: 99, name: 'foo' } }] },
     columns: [{ name: 'score' }, { name: 'name' }],
   })
-  expect(model.rows).toEqual([{ id: 0, feature, score: 99, name: 'foo' }])
+  expect(model.rows).toEqual([
+    {
+      id: 0,
+      feature,
+      score: 99,
+      name: 'foo',
+      derived: { location: 'chr1:1..100', size: 100 },
+    },
+  ])
 })
 
 test('rows handles legacy cells format', () => {
@@ -43,7 +51,7 @@ test('rows handles legacy cells format', () => {
     columns: [{ name: 'chr' }, { name: 'pos' }],
   })
   expect(model.rows).toEqual([
-    { id: 0, feature: undefined, chr: 'chrX', pos: 42 },
+    { id: 0, feature: undefined, chr: 'chrX', pos: 42, derived: {} },
   ])
 })
 
@@ -151,7 +159,7 @@ test('a sheet smaller than the width sample is still measured off every row', ()
     },
     columns: [{ name: 'c' }],
   })
-  const narrow = model.dataGridColumns!.find(c => c.field === 'c')!.width
+  const narrow = model.dataGridColumns!.find(c => c.field === 'c')!.width!
 
   const model2 = makeModel({
     rowSet: {
@@ -207,19 +215,15 @@ describe('the derived size column', () => {
     INFO: { SVLEN: [2000] },
   }
 
-  // Narrowed to the three fields under test rather than read as a GridColDef:
-  // `satisfies` keeps each column's literal type, so `find` hands back a union
-  // whose other members have no headerName at all, and GridColDef's own
-  // callbacks are generic over a row type this test does not have
-  interface SizeColumn {
-    headerName?: string
-    valueGetter?: (v: unknown, row: { feature?: unknown }) => number | undefined
-    valueFormatter?: (v?: number) => string
-  }
   function sizeColumn(overrides: Record<string, unknown>) {
-    return makeModel(overrides).dataGridColumns!.find(
-      c => c.field === 'Length',
-    )! as unknown as SizeColumn
+    const model = makeModel(overrides)
+    const col = model.dataGridColumns!.find(c => c.field === 'Length')!
+    const row = model.rows![0]!
+    return {
+      headerName: col.headerName,
+      size: col.valueGetter!(undefined as never, row, col, {} as never),
+      valueFormatter: col.valueFormatter as (v?: number) => string,
+    }
   }
 
   test('a plain sheet reports the interval length under "Length"', () => {
@@ -228,7 +232,7 @@ describe('the derived size column', () => {
       columns: [{ name: 'c' }],
     })
     expect(col.headerName).toBe('Length')
-    expect(col.valueGetter!(undefined, { feature: insertion })).toBe(1)
+    expect(col.size).toBe(1)
   })
 
   test('an SV sheet reports the SV size instead', () => {
@@ -239,7 +243,7 @@ describe('the derived size column', () => {
       columns: [{ name: 'INFO.SVTYPE' }],
     })
     expect(col.headerName).toBe('SV size')
-    expect(col.valueGetter!(undefined, { feature: insertion })).toBe(2000)
+    expect(col.size).toBe(2000)
   })
 
   test('a row with no size to report formats as blank, not "undefined"', () => {
@@ -247,7 +251,7 @@ describe('the derived size column', () => {
       rowSet: { rows: [{ cellData: { 'INFO.SVTYPE': 'BND' } }] },
       columns: [{ name: 'INFO.SVTYPE' }],
     })
-    expect(col.valueFormatter!(undefined)).toBe('')
+    expect(col.valueFormatter(undefined)).toBe('')
   })
 })
 
