@@ -142,3 +142,27 @@ test('a stamp parses, and anything else reads as no stamp', () => {
   expect(parseBuildStamp('')).toBeUndefined()
   expect(parseBuildStamp(undefined)).toBeUndefined()
 })
+
+test('a dev server says it serves the working tree, and is never stale', () => {
+  const dev = parseBuildStamp('{"dev":true}')
+  expect(dev).toEqual({ dev: true })
+  expect(
+    stalenessReport({
+      source: 'the app on port 3000',
+      stamp: dev,
+      head: 'a'.repeat(40),
+      staleCommits: [{ hash: 'b'.repeat(40), subject: 'something' }],
+      uncommittedFiles: ['products/jbrowse-web/src/index.ts'],
+    }),
+  ).toBeUndefined()
+  // a build that stamps nothing still reports, which is what tells the two apart
+  expect(
+    stalenessReport({
+      source: 'the app on port 3000',
+      stamp: undefined,
+      head: 'a'.repeat(40),
+      staleCommits: [],
+      uncommittedFiles: [],
+    })?.title,
+  ).toMatch(/NO BUILD PROVENANCE/)
+})

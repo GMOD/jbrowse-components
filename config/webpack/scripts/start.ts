@@ -106,6 +106,17 @@ export default async function startWebpack(config: webpack.Configuration) {
         serveIndex: true,
         staticOptions: { dotfiles: 'allow' },
       },
+      // The dev server compiles the working tree, so it is never stale. It
+      // says so where a built app records the commit it came from, since a
+      // served path that 404s reads the same to the screenshot generator as a
+      // build that stamps nothing, and that warning would then fire on every
+      // dev run (website/scripts/build-staleness.ts).
+      setupMiddlewares: (middlewares, server) => {
+        server.app?.get('/build-info.json', (_req, res) => {
+          res.json({ dev: true })
+        })
+        return middlewares
+      },
     },
     compiler,
   )

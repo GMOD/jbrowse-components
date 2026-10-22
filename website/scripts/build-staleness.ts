@@ -26,6 +26,10 @@ export interface BuildStamp {
   commit?: string
   commitDate?: string
   builtAt?: string
+  // a dev server compiles the working tree on every request, so it is never
+  // stale and has no commit to record; it says so rather than going silent,
+  // which would read the same as a build that stamps nothing
+  dev?: boolean
 }
 
 export interface StaleCommit {
@@ -93,6 +97,8 @@ export function parseBuildStamp(text: string | undefined) {
     commit: str(fields.commit),
     commitDate: str(fields.commitDate),
     builtAt: str(fields.builtAt),
+    // only when set, so a built app's stamp keeps the shape it had
+    ...(fields.dev === true ? { dev: true } : {}),
   }
   return Object.values(stamp).some(v => v !== undefined) ? stamp : undefined
 }
@@ -144,6 +150,9 @@ export function stalenessReport(
 ): StalenessReport | undefined {
   const now = facts.now ?? new Date()
   const { source, stamp, head } = facts
+  if (stamp?.dev) {
+    return undefined
+  }
   if (stamp?.commit === undefined) {
     return {
       title: `NO BUILD PROVENANCE — ${source} does not record the commit it was built from, so this run cannot tell a current app from a stale one`,
@@ -279,7 +288,7 @@ async function readStamp({
     return {
       source: `the app on port ${externalPort}`,
       stamp: parseBuildStamp(text),
-      missing: `--port ${externalPort} proxies to a server this run did not start. A \`pnpm start\` dev server serves the current source and is never stale; a built app served from anywhere else can be any age, and this one serves no ${STAMP_FILE} to say`,
+      missing: `--port ${externalPort} proxies to a server this run did not start. A \`pnpm start\` dev server says so in its ${STAMP_FILE}; a built app served from anywhere else can be any age, and this one serves no ${STAMP_FILE} to say`,
     }
   }
   let text: string | undefined
