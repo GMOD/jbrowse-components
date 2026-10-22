@@ -1,5 +1,6 @@
 import fs from 'fs'
 import net from 'net'
+import path from 'path'
 
 import browserslist from 'browserslist'
 import chalk from 'chalk'
@@ -22,6 +23,7 @@ if (browserslist.loadConfig({ path: process.cwd() }) == null) {
 }
 
 const HOST = process.env.HOST || '0.0.0.0'
+const repoRoot = path.resolve(import.meta.dirname, '../../..')
 
 function isPortFree(port: number) {
   return new Promise<boolean>(resolve => {
@@ -106,14 +108,11 @@ export default async function startWebpack(config: webpack.Configuration) {
         serveIndex: true,
         staticOptions: { dotfiles: 'allow' },
       },
-      // The dev server compiles the working tree, so it is never stale. It
-      // says so where a built app records the commit it came from, since a
-      // served path that 404s reads the same to the screenshot generator as a
-      // build that stamps nothing, and that warning would then fire on every
-      // dev run (website/scripts/build-staleness.ts).
+      // Where a built app stamps its provenance, the dev server names the
+      // checkout it compiles, for website/scripts/build-staleness.ts.
       setupMiddlewares: (middlewares, server) => {
         server.app?.get('/build-info.json', (_req, res) => {
-          res.json({ dev: true })
+          res.json({ dev: true, repoRoot })
         })
         return middlewares
       },

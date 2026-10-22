@@ -1,35 +1,34 @@
 // Was the app these figures come from built from the source in this checkout?
+// `build/` is replaced in place, so nothing on disk tells last week's build
+// from this minute's. An old build rejects a session written against current
+// source, or worse, accepts it and draws a wrong figure.
 //
-// Nothing in a PNG says how old the app was, and `build/` is replaced in place,
-// so a build from last week looks exactly like one from this minute. Both ways
-// that bites are real. A session written against current source gets REJECTED
-// by a build whose config schema predates it: a build from 2026-10-20 threw
-// "AlignmentsSort takes type, pos, refName, tag and within, not field" at a
-// session using the renamed `sort` key, and the run reported it only as an
-// on-screen error. The quieter version is the dangerous one, where the old app
-// accepts the session and draws a figure that is simply wrong.
-//
-// The split in this file is deliberate: `collectStalenessFacts` shells out to
-// git and the network, everything else is a function of its arguments, so the
-// report's wording and its silences are testable. Nothing here imports
-// screenshot-options.ts, which parses process.argv when it loads.
-import { execFileSync } from 'node:child_process'
-import { readFileSync, statSync } from 'node:fs'
+// `collectStalenessFacts` shells out to git and the network; everything else
+// is a function of its arguments, so the report's wording and its silences are
+// testable. Nothing here imports screenshot-options.ts, which parses
+// process.argv when it loads.
+import { readFileSync, realpathSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
-// `build/build-info.json`, written by
-// products/jbrowse-web/scripts/writeBuildStamp.ts. Every field is optional:
-// git is absent in a tarball build, and a build made before the stamp existed
+import {
+  APP_PATHS,
+  git,
+  workingTreeSnapshot,
+} from '../../products/jbrowse-web/scripts/sourceSnapshot.ts'
+
+// `build/build-info.json`, from products/jbrowse-web/scripts/writeBuildStamp.ts.
+// Every field is optional: git is absent in a tarball build, and an older build
 // has no file at all.
 export interface BuildStamp {
   version?: string
   commit?: string
   commitDate?: string
+  // the app sources on disk when the compile started, as a git tree id
+  tree?: string
   builtAt?: string
-  // a dev server compiles the working tree on every request, so it is never
-  // stale and has no commit to record; it says so rather than going silent,
-  // which would read the same as a build that stamps nothing
+  // a dev server compiles the working tree of `repoRoot` on every request
   dev?: boolean
+  repoRoot?: string
 }
 
 export interface StaleCommit {
@@ -44,20 +43,15 @@ export interface StalenessFacts {
   // what to say about a build that carries no commit, when the source alone
   // does not explain it
   missing?: string
-  // the checkout's HEAD; absent when git could not answer, which leaves the
-  // gap unjudgeable
+  repoRoot?: string
+  // absent when git could not answer, which leaves the gap unjudgeable
   head?: string
-  // false when this checkout does not have the commit the build names
-  commitInCheckout?: boolean
-  // every commit HEAD has and the build lacks, whether or not it touches the app
-  behind?: number
-  // of those, the ones touching what the app is built from
+  // false when this checkout does not have the tree the build was made from
+  snapshotInCheckout?: boolean
+  // app files whose content differs between the build and the working tree
+  changedFiles?: string[]
+  // commits since the build's, touching those files
   commits?: StaleCommit[]
-  // app commits the build has and this checkout does not, after a reset or a
-  // rebase under a finished build
-  ahead?: number
-  // app files edited since the build was written, uncommitted
-  uncommittedFiles?: string[]
   now?: Date
 }
 
@@ -96,9 +90,11 @@ export function parseBuildStamp(text: string | undefined) {
     version: str(fields.version),
     commit: str(fields.commit),
     commitDate: str(fields.commitDate),
+    tree: str(fields.tree),
     builtAt: str(fields.builtAt),
-    // only when set, so a built app's stamp keeps the shape it had
-    ...(fields.dev === true ? { dev: true } : {}),
+    ...(fields.dev === true
+      ? { dev: true, repoRoot: str(fields.repoRoot) }
+      : {}),
   }
   return Object.values(stamp).some(v => v !== undefined) ? stamp : undefined
 }
@@ -136,22 +132,31 @@ function listed(items: string[], max: number, indent = '    ') {
 function builtLine(stamp: BuildStamp, now: Date) {
   const when = stampTime(stamp.commitDate)
   const old = age(stamp.builtAt ?? stamp.commitDate, now)
-  return `• built from ${stamp.commit?.slice(0, 10)}${when ? ` (${when})` : ''}${old ? `, ${old} ago` : ''}`
+  return `• built from ${stamp.commit?.slice(0, 10)}${stamp.tree ? '' : ' with no snapshot of uncommitted edits'}${when ? ` (${when})` : ''}${old ? `, ${old} ago` : ''}`
 }
 
 /**
  * What to print before a run captures anything, or undefined when the build
- * holds every app change in the checkout. Silence is the common case and has
- * to stay cheap: a docs-only commit, or a fixture edit the capture server
- * serves from the checkout anyway, moves nothing the build owns.
+ * holds exactly the app sources on disk. Silence is the common case: a
+ * docs-only commit, a commit of the edits the build was made from, or a
+ * fixture the capture server serves from the checkout moves nothing the build
+ * owns.
  */
 export function stalenessReport(
   facts: StalenessFacts,
 ): StalenessReport | undefined {
   const now = facts.now ?? new Date()
-  const { source, stamp, head } = facts
+  const { source, stamp, head, repoRoot } = facts
   if (stamp?.dev) {
-    return undefined
+    return stamp.repoRoot && repoRoot && stamp.repoRoot !== repoRoot
+      ? {
+          title: `DEV SERVER FROM ANOTHER CHECKOUT — ${source} compiles ${stamp.repoRoot}, not ${repoRoot}`,
+          lines: [
+            '• its figures draw that checkout’s code',
+            '• run `pnpm start` here, or point --port at this checkout’s server',
+          ],
+        }
+      : undefined
   }
   if (stamp?.commit === undefined) {
     return {
@@ -168,55 +173,38 @@ export function stalenessReport(
   if (head === undefined) {
     return undefined
   }
-  if (facts.commitInCheckout === false) {
+  if (facts.snapshotInCheckout === false) {
     return {
-      title: `APP BUILT FROM A COMMIT THIS CHECKOUT DOES NOT HAVE — ${source} may draw anything`,
+      title: `APP BUILT FROM SOURCE THIS CHECKOUT DOES NOT HAVE — ${source} may draw anything`,
       lines: [
         builtLine(stamp, now),
-        `• this checkout is at ${head.slice(0, 10)}, and ${stamp.commit.slice(0, 10)} is not in it: the build came from another branch or another machine`,
+        `• this checkout is at ${head.slice(0, 10)}, and has no record of what the build compiled: it came from another clone or machine`,
         `• rebuild: ${REBUILD}`,
       ],
     }
   }
-  const commits = facts.commits ?? []
-  const uncommittedFiles = facts.uncommittedFiles ?? []
-  const ahead = facts.ahead ?? 0
-  if (commits.length === 0 && uncommittedFiles.length === 0 && ahead === 0) {
+  const changedFiles = facts.changedFiles ?? []
+  if (changedFiles.length === 0) {
     return undefined
   }
+  const commits = facts.commits ?? []
   const built = age(stamp.builtAt ?? stamp.commitDate, now)
-  const gap =
-    commits.length > 0
-      ? `is ${plural(commits.length, 'commit')} behind this checkout${uncommittedFiles.length > 0 ? ', and misses uncommitted edits' : ''}`
-      : uncommittedFiles.length > 0
-        ? `predates ${plural(uncommittedFiles.length, 'uncommitted app edit')}`
-        : 'holds app commits this checkout does not'
   return {
-    title: `FIGURES CAPTURED AGAINST A STALE APP BUILD — ${source} ${gap}${built ? ` (built ${built} ago)` : ''}`,
+    title: `FIGURES CAPTURED AGAINST A STALE APP BUILD — ${source} differs from this checkout in ${plural(changedFiles.length, 'app file')}${built ? ` (built ${built} ago)` : ''}`,
     lines: [
       builtLine(stamp, now),
-      `• this checkout is at ${head.slice(0, 10)}${facts.behind ? `, ${plural(facts.behind, 'commit')} on from the build` : ''}`,
+      `• this checkout is at ${head.slice(0, 10)}`,
+      '• app files on disk that differ from what the build compiled:',
+      ...listed(changedFiles, MAX_FILES),
       ...(commits.length > 0
         ? [
-            `• ${plural(commits.length, 'commit')} since, touching what the app is built from:`,
+            '• commits since the build touching them:',
             ...listed(
               commits.map(c => `${c.hash} ${c.subject}`),
               MAX_COMMITS,
             ),
           ]
         : []),
-      ...(uncommittedFiles.length > 0
-        ? [
-            `• ${plural(uncommittedFiles.length, 'app file')} edited since the build was written:`,
-            ...listed(uncommittedFiles, MAX_FILES),
-          ]
-        : []),
-      ...(ahead > 0
-        ? [
-            `• the build also holds ${plural(ahead, 'app commit')} this checkout does not, so it can draw code that is not in the tree`,
-          ]
-        : []),
-      '• an old build rejects a session the current source accepts, and worse, accepts one it should reject and draws it wrong',
       `• rebuild: ${REBUILD}`,
     ],
   }
@@ -225,32 +213,6 @@ export function stalenessReport(
 // ---------------------------------------------------------------------------
 // git and the build on disk
 // ---------------------------------------------------------------------------
-
-// What the app bundle is built from. Over-inclusive by design: a package
-// outside @jbrowse/web's dependency closure counts here, and all that costs is
-// a warning over a change that could not have moved a figure. test_data is
-// excluded because the capture server serves it from the CHECKOUT rather than
-// from `build/`, so a new fixture needs no rebuild and must not warn.
-const APP_PATHS = [
-  'packages',
-  'plugins',
-  'products/jbrowse-web',
-  'config',
-  'pnpm-lock.yaml',
-  ':(exclude)products/jbrowse-web/test_data',
-]
-
-function git(repoRoot: string, args: string[]) {
-  try {
-    return execFileSync('git', args, {
-      cwd: repoRoot,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim()
-  } catch {
-    return undefined
-  }
-}
 
 function gitLines(out: string | undefined) {
   return out
@@ -261,9 +223,12 @@ function gitLines(out: string | undefined) {
     : []
 }
 
-function count(out: string | undefined) {
-  const n = Number(out)
-  return out !== undefined && Number.isFinite(n) ? n : undefined
+function realpath(path: string) {
+  try {
+    return realpathSync(path)
+  } catch {
+    return path
+  }
 }
 
 export interface StalenessInputs {
@@ -307,66 +272,57 @@ async function readStamp({
   }
 }
 
-// An edit older than the build is already in it, which is every file still
-// uncommitted after the rebuild that captured it — the normal way to work, and
-// it must stay silent. A file git names but stat cannot reach was deleted, so
-// it counts as newer.
-function editedAfter(repoRoot: string, file: string, builtAt: number) {
-  if (Number.isNaN(builtAt)) {
-    return true
-  }
-  try {
-    return statSync(join(repoRoot, file)).mtimeMs > builtAt
-  } catch {
-    return true
-  }
-}
-
 export async function collectStalenessFacts(
   inputs: StalenessInputs,
 ): Promise<StalenessFacts> {
-  const { repoRoot } = inputs
-  const { source, stamp, missing } = await readStamp(inputs)
-  const head = git(repoRoot, ['rev-parse', 'HEAD'])
+  const repoRoot = realpath(inputs.repoRoot)
+  const read = await readStamp(inputs)
+  const { source, missing } = read
+  const stamp = read.stamp?.repoRoot
+    ? { ...read.stamp, repoRoot: realpath(read.stamp.repoRoot) }
+    : read.stamp
+  const head = git(['rev-parse', 'HEAD'], repoRoot)
   const commit = stamp?.commit
-  if (commit === undefined || head === undefined) {
-    return { source, stamp, missing, head }
+  const base = { source, stamp, missing, repoRoot, head }
+  if (stamp?.dev || commit === undefined || head === undefined) {
+    return base
   }
-  // `cat-file -t` exits non-zero on a commit this checkout never fetched,
-  // which git() turns into undefined
-  if (git(repoRoot, ['cat-file', '-t', commit]) !== 'commit') {
-    return { source, stamp, head, commitInCheckout: false }
+  // a build stamped before snapshots existed compiled its commit, plus
+  // whatever was uncommitted then
+  const built = stamp.tree ?? `${commit}:`
+  if (git(['cat-file', '-t', built], repoRoot) !== 'tree') {
+    return { ...base, snapshotInCheckout: false }
   }
-  const builtAt = Date.parse(stamp?.builtAt ?? '')
+  const onDisk = workingTreeSnapshot(repoRoot)
+  if (onDisk === undefined) {
+    return base
+  }
+  const changedFiles = gitLines(
+    git(['diff', '--name-only', built, onDisk, '--', ...APP_PATHS], repoRoot),
+  )
   return {
-    source,
-    stamp,
-    head,
-    commitInCheckout: true,
-    behind: count(git(repoRoot, ['rev-list', '--count', `${commit}..HEAD`])),
-    commits: gitLines(
-      git(repoRoot, [
-        'log',
-        '--format=%h %s',
-        `${commit}..HEAD`,
-        '--',
-        ...APP_PATHS,
-      ]),
-    ).map(line => ({
-      hash: line.slice(0, line.indexOf(' ')),
-      subject: line.slice(line.indexOf(' ') + 1),
-    })),
-    ahead: count(
-      git(repoRoot, [
-        'rev-list',
-        '--count',
-        `HEAD..${commit}`,
-        '--',
-        ...APP_PATHS,
-      ]),
-    ),
-    uncommittedFiles: gitLines(
-      git(repoRoot, ['diff', '--name-only', 'HEAD', '--', ...APP_PATHS]),
-    ).filter(file => editedAfter(repoRoot, file, builtAt)),
+    ...base,
+    snapshotInCheckout: true,
+    changedFiles,
+    commits:
+      changedFiles.length > 0 &&
+      git(['cat-file', '-t', commit], repoRoot) === 'commit'
+        ? gitLines(
+            git(
+              [
+                '--literal-pathspecs',
+                'log',
+                '--format=%h %s',
+                `${commit}..HEAD`,
+                '--',
+                ...changedFiles,
+              ],
+              repoRoot,
+            ),
+          ).map(line => ({
+            hash: line.slice(0, line.indexOf(' ')),
+            subject: line.slice(line.indexOf(' ') + 1),
+          }))
+        : [],
   }
 }

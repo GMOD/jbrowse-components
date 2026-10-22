@@ -74,11 +74,17 @@ once.
 ## A build older than the checkout draws the old app
 
 `build/` is replaced in place, so a build from last week looks exactly like one
-from this minute. `postbuild` stamps `build/build-info.json` with the commit it
-came from (`products/jbrowse-web/scripts/writeBuildStamp.ts`), and the
-generator compares that against HEAD before it captures anything, printing
-`FIGURES CAPTURED AGAINST A STALE APP BUILD` with the commits that landed in
-between.
+from this minute. Before it compiles, the build snapshots the app sources on
+disk as a git tree, uncommitted and untracked files included
+(`products/jbrowse-web/scripts/sourceSnapshot.ts`), and stamps it into
+`build/build-info.json`. The generator diffs that tree against a fresh snapshot
+before it captures anything, and prints `FIGURES CAPTURED AGAINST A STALE APP
+BUILD` with the files that differ.
+
+- Committing the edits a build compiled leaves it current; discarding them
+  makes it stale.
+- The snapshot uses a scratch index, so it never touches the checkout's index
+  or the shared stash list.
 
 - The run reports and keeps going, since a docs-only figure run is right to
   capture against whatever is built. `--strict-build` stops it instead.
@@ -88,7 +94,8 @@ between.
   quiet version draws the old behavior and commits it.
 - `--port <n>` proxies to a server this run did not start, so the report is
   `NO BUILD PROVENANCE` unless that server serves a stamped build. A
-  `pnpm start` dev server serves the current source and needs no rebuild.
+  `pnpm start` dev server serves the current source and needs no rebuild; one
+  started from another checkout reports `DEV SERVER FROM ANOTHER CHECKOUT`.
 - An edit under `products/jbrowse-web/test_data` leaves the build current: the
   capture server serves test_data from the checkout, not from `build/`.
 

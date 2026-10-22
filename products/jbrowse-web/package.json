@@ -14,7 +14,6 @@
     "start": "NODE_ENV=development node scripts/start.ts",
     "build": "NODE_ENV=production node scripts/build.ts",
     "prebuild": "rimraf build",
-    "postbuild": "node scripts/writeBuildStamp.ts",
     "prepack": "pnpm build",
     "test:browser": "node browser-tests/runner.ts",
     "test:browser:headed": "node browser-tests/runner.ts --headed",
