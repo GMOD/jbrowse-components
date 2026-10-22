@@ -55,6 +55,22 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    variants, `scales.y`, `opacity` and the size slots. This collides with
    whoever is reshaping the alignments, wiggle, Hi-C, LD and MAF color objects,
    so agree on the order with that thread first.
+   - **The row displays, decided 2026-10-22:** the mark display keeps `facet`,
+     `rows` and `encoding.row` as three words; their members respell. First
+     `facet.domain` and `rows.domain` become `sort` in display-kit
+     (`facetConfigSchema.ts`, `rowArrangementConfigSchema.ts`), one pass over
+     every row display, the multi-way lanes, their readers and writers (about
+     90 files, ggjbrowse's R lists among them). Then `scales.y` becomes a
+     display-level `encoding.y` holding `scale` and `axis` and no field, which
+     every mark's `encoding.y: 'score'` reads, in the same pass as wiggle,
+     whose `scales.y` is the same wiggle-core object. The tree sidebar's
+     `showTree`, `showBranchLength`, `showRowLabels` and `treeAreaWidth` go to
+     an `axis` beside `rows` in step 3, not inside it, since `rows` writes
+     whole.
+   - ADR-238's "one position per category is `encoding.y` on a `band` scale"
+     fits the one-glyph row displays and not the mark display, whose `y` is
+     the value every mark folds into one scale and whose rows each hold a plot
+     of it; there the band is Vega-Lite's `row` channel with a shared `y`.
 2. **The other filter families as predicate lists**: alignments, canvas,
    variant, MAF and junction/connection rows. The compiler fuses flag bits
    (`bits` lanes) and measures 1.5x the hand-written flag and MAPQ test alone,
