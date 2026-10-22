@@ -105,12 +105,29 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
      `axis.labels` there would be a new feature, not a rename.
 6. **Comparative leftovers**:
    - The `indels` part takes over `cigarMode` and `drawCigar`, after step 1.
+     The linear synteny view already passes `cigarMode` to the worker as one
+     resolved value.
    - The multi-way display's ribbons part takes over `ribbonColor`,
      `drawCurves` and `bridgeSkippedLanes`. `drawCurves` draws the linear
      synteny view's bump, so it becomes `mark.interpolate: 'bump'`.
      `bridgeSkippedLanes` is Vega-Lite's `mark.invalid: 'filter'`, which
      joins a path across a missing value, and `false` breaks the path there
      as d3's `defined` does. A bridged ribbon also draws at `BRIDGE_ALPHA`.
+   - The same pass moves the multi-way display's other top-level words:
+     `hideUnlabelled` into `ribbons.filter` as the synteny views' `{ field,
+     valid: true }` entry, `showGeneLabels` to `genes.labels.show`,
+     `showLaneTicks` to `axis.show` (it should then gate the anchor rule's
+     ticks too, which it skips today), and `color`, `utrColor` and `text`
+     under `encoding`. `splitStrands` and `inlineLaneNames` change layout and
+     have no spelling yet.
+   - Not yet decided: LGVSyntenyDisplay's `hideSelfAlignments` is a predicate
+     on `mateAssembly` that needs a way to name the view's own assembly; the
+     linear synteny view's `followSynteny`, `followAnchorIndex` and
+     `followMatchOrientation`, and its `diagonalizeAnchorRow`, may be one
+     `navigation` part.
+   - Off-screen mate marks honor only the `length` filter: the worker sends
+     no attribute lanes with the mates, so an `identity` predicate cannot
+     reach them.
 
 ## Writers to update after each landing
 
