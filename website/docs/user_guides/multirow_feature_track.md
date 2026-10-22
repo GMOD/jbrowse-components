@@ -140,19 +140,23 @@ mean copy number, with `labels` naming each interval in the key:
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "tcga_brca_cnv-LinearMultiRowFeatureDisplay",
       "rows": "sample",
-      "color": {
-        "field": "segmean",
-        "scale": "threshold",
-        "domain": [-1, -0.3, 0.3, 1],
-        "range": ["#2166ac", "#92c5de", "#f7f7f7", "#f4a582", "#b2182b"],
-        "labels": [
-          "Deep loss (log2 < -1)",
-          "Loss",
-          "Balanced",
-          "Gain",
-          "Amplification (log2 > 1)"
-        ],
-        "title": "Copy number (log2)"
+      "encoding": {
+        "color": {
+          "field": "segmean",
+          "scale": {
+            "type": "threshold",
+            "domain": [-1, -0.3, 0.3, 1],
+            "range": ["#2166ac", "#92c5de", "#f7f7f7", "#f4a582", "#b2182b"],
+            "names": [
+              "Deep loss (log2 < -1)",
+              "Loss",
+              "Balanced",
+              "Gain",
+              "Amplification (log2 > 1)"
+            ]
+          },
+          "legend": { "title": "Copy number (log2)" }
+        }
       }
     }
   ]

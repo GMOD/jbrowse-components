@@ -76,7 +76,7 @@ the id of the track you edited:
         "displayId": "volvox_sv_cram-LinearAlignmentsDisplay",
         "height": 250,
         "unit": "chain",
-        "color": { "field": "insertSizeAndOrientation" }
+        "encoding": { "color": { "field": "insertSizeAndOrientation" } }
       }
     ]
   }
@@ -120,7 +120,7 @@ track's `displayDefaults` apply every time the track loads, and in a served
   "displayDefaults": {
     "height": 250,
     "unit": "chain",
-    "color": { "field": "insertSizeAndOrientation" }
+    "encoding": { "color": "insertSizeAndOrientation" }
   }
 }
 ```
@@ -147,7 +147,7 @@ type in brackets. This session sets `color` on that track and nothing else:
       "tracks": [
         {
           "trackId": "gff3tabix_genes_shorthand_jexl",
-          "color": "#8c8c8c"
+          "encoding": { "color": { "value": "#8c8c8c" } }
         }
       ]
     }
@@ -188,7 +188,7 @@ view: {
       type: 'LinearAlignmentsDisplay',
       height: 250,
       unit: 'chain',
-      color: { field: 'insertSizeAndOrientation' },
+      encoding: { color: 'insertSizeAndOrientation' },
     },
   ],
 }

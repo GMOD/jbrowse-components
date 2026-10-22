@@ -325,14 +325,19 @@ them:
         {
           "mark": "link",
           "encoding": {
-            "size": { "field": "score", "scale": "log", "range": [1, 8] },
+            "strokeWidth": {
+              "field": "score",
+              "scale": { "type": "log", "range": [1, 8] }
+            },
             "color": {
               "field": "known_junction",
-              "scale": "categorical",
-              "domain": ["1", "0"],
-              "range": ["#377eb8", "#e41a1c"],
-              "labels": ["annotated", "novel"],
-              "title": "RefSeq"
+              "scale": {
+                "type": "ordinal",
+                "domain": ["1", "0"],
+                "range": ["#377eb8", "#e41a1c"],
+                "names": ["annotated", "novel"]
+              },
+              "legend": { "title": "RefSeq" }
             }
           }
         },

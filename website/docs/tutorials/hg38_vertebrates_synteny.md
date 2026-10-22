@@ -189,7 +189,7 @@ down the tree from human, the apes first and the cow last.
           {
             "trackId": "hg38_liftover_multiway",
             "type": "MultiWaySyntenyDisplay",
-            "ribbonColor": { "field": "strand" },
+            "ribbons": { "encoding": { "color": "strand" } },
             "rows": {
               "sort": [
                 "panTro6",

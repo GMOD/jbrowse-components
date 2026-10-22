@@ -15,7 +15,10 @@ index resolves automatically. Coloring, height, and filtering are slots on the
   "name": "My Alignments",
   "assemblyNames": ["hg19"],
   "adapter": { "type": "BamAdapter", "uri": "https://yourhost/file.bam" },
-  "displayDefaults": { "color": { "field": "pairOrientation" }, "height": 250 }
+  "displayDefaults": {
+    "encoding": { "color": "pairOrientation" },
+    "height": 250
+  }
 }
 ```
 

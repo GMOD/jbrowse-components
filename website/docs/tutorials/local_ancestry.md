@@ -279,11 +279,15 @@ scale whose `scale: "identity"` names the BED's `itemRgb` colors in the key.
           "German Shepherd hap2"
         ]
       },
-      "color": {
-        "scale": "identity",
-        "domain": ["rgb(0,114,178)", "rgb(230,159,0)"],
-        "labels": ["Breed dog", "Gray wolf"],
-        "title": "Ancestry (FLARE)"
+      "encoding": {
+        "color": {
+          "scale": {
+            "type": "identity",
+            "domain": ["rgb(0,114,178)", "rgb(230,159,0)"],
+            "names": ["Breed dog", "Gray wolf"]
+          },
+          "legend": { "title": "Ancestry (FLARE)" }
+        }
       }
     }
   ]

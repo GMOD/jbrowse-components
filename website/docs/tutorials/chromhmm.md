@@ -251,42 +251,46 @@ all three:
     {
       "type": "LinearMultiRowFeatureDisplay",
       "rows": "cellType",
-      "color": {
-        "scale": "identity",
-        "domain": [
-          "rgb(255,0,0)",
-          "rgb(255,69,0)",
-          "rgb(50,205,50)",
-          "rgb(0,128,0)",
-          "rgb(0,100,0)",
-          "rgb(194,225,5)",
-          "rgb(255,255,0)",
-          "rgb(102,205,170)",
-          "rgb(138,145,208)",
-          "rgb(205,92,92)",
-          "rgb(233,150,122)",
-          "rgb(189,183,107)",
-          "rgb(128,128,128)",
-          "rgb(192,192,192)",
-          "rgb(255,255,255)"
-        ],
-        "labels": [
-          "1 Active TSS",
-          "2 Flanking active TSS",
-          "3 Transcribed 5'/3' flank",
-          "4 Strong transcription",
-          "5 Weak transcription",
-          "6 Genic enhancer",
-          "7 Enhancer",
-          "8 ZNF genes / repeats",
-          "9 Heterochromatin",
-          "10 Bivalent TSS",
-          "11 Flanking bivalent",
-          "12 Bivalent enhancer",
-          "13 Repressed Polycomb",
-          "14 Weak repressed Polycomb",
-          "15 Quiescent / low"
-        ]
+      "encoding": {
+        "color": {
+          "scale": {
+            "type": "identity",
+            "domain": [
+              "rgb(255,0,0)",
+              "rgb(255,69,0)",
+              "rgb(50,205,50)",
+              "rgb(0,128,0)",
+              "rgb(0,100,0)",
+              "rgb(194,225,5)",
+              "rgb(255,255,0)",
+              "rgb(102,205,170)",
+              "rgb(138,145,208)",
+              "rgb(205,92,92)",
+              "rgb(233,150,122)",
+              "rgb(189,183,107)",
+              "rgb(128,128,128)",
+              "rgb(192,192,192)",
+              "rgb(255,255,255)"
+            ],
+            "names": [
+              "1 Active TSS",
+              "2 Flanking active TSS",
+              "3 Transcribed 5'/3' flank",
+              "4 Strong transcription",
+              "5 Weak transcription",
+              "6 Genic enhancer",
+              "7 Enhancer",
+              "8 ZNF genes / repeats",
+              "9 Heterochromatin",
+              "10 Bivalent TSS",
+              "11 Flanking bivalent",
+              "12 Bivalent enhancer",
+              "13 Repressed Polycomb",
+              "14 Weak repressed Polycomb",
+              "15 Quiescent / low"
+            ]
+          }
+        }
       },
       "height": 700
     }

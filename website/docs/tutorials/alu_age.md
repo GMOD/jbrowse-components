@@ -122,10 +122,12 @@ through a `domain` to a `range`. The track below lists three marks:
             "y": "milliDiv",
             "color": {
               "field": "lineage",
-              "scale": "categorical",
-              "domain": ["AluJ", "AluS", "AluY", "FLAM", "FRAM"],
-              "range": ["#4575b4", "#fdae61", "#d73027", "#8c8c8c", "#8c8c8c"],
-              "title": "Alu lineage"
+              "scale": {
+                "type": "ordinal",
+                "domain": ["AluJ", "AluS", "AluY", "FLAM", "FRAM"],
+                "range": ["#4575b4", "#fdae61", "#d73027", "#8c8c8c", "#8c8c8c"]
+              },
+              "legend": { "title": "Alu lineage" }
             }
           },
           "maxBpPerPx": 100
@@ -249,11 +251,13 @@ and key names live. The config below sets them in the track:
             "y": "youngLog2",
             "color": {
               "field": "youngLog2",
-              "scale": "threshold",
-              "domain": [0],
-              "range": ["#4575b4", "#d73027"],
-              "labels": ["below the genome-wide share", "above it"],
-              "title": "AluY share"
+              "scale": {
+                "type": "threshold",
+                "domain": [0],
+                "range": ["#4575b4", "#d73027"],
+                "names": ["below the genome-wide share", "above it"]
+              },
+              "legend": { "title": "AluY share" }
             }
           }
         }

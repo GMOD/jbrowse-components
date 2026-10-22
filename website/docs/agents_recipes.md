@@ -319,10 +319,12 @@ session.addSessionTrackConf({
             y: 'template_length',
             color: {
               field: 'score',
-              scale: 'linear',
-              domainMin: 0,
-              domainMax: 60,
-              range: ['#bdbdbd', '#1f4e9a'],
+              scale: {
+                type: 'linear',
+                domainMin: 0,
+                domainMax: 60,
+                range: ['#bdbdbd', '#1f4e9a'],
+              },
             },
           },
         },

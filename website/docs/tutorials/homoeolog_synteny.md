@@ -243,11 +243,12 @@ wherever the view goes; the menu has no field for them:
           }
         ],
         "tracks": ["oat_homoeologs"],
-        "color": {
-          "field": "ds",
-          "domainMin": 0,
-          "domainMax": 0.25,
-          "title": "dS"
+        "encoding": {
+          "color": {
+            "field": "ds",
+            "scale": { "domainMin": 0, "domainMax": 0.25 },
+            "legend": { "title": "dS" }
+          }
         }
       }
     ]

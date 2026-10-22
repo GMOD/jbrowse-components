@@ -64,12 +64,16 @@ value, and a `threshold` scale bins it, with a key naming each bin:
   "uri": "https://yourhost/file.vcf.gz",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "color": {
-      "field": "jexl:maf(feature)",
-      "scale": "threshold",
-      "domain": [0.01, 0.05],
-      "range": ["#ccc", "#74a9cf", "#045a8d"],
-      "title": "Minor allele frequency"
+    "encoding": {
+      "color": {
+        "field": "jexl:maf(feature)",
+        "scale": {
+          "type": "threshold",
+          "domain": [0.01, 0.05],
+          "range": ["#ccc", "#74a9cf", "#045a8d"]
+        },
+        "legend": { "title": "Minor allele frequency" }
+      }
     }
   }
 }
@@ -136,7 +140,7 @@ default alt color.
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "color": { "field": "impact" }
+      "encoding": { "color": "impact" }
     }
   ]
 }
@@ -150,11 +154,15 @@ split into ultra-rare, rare, low-frequency and common:
 "displays": [
   {
     "type": "LinearMultiSampleVariantDisplay",
-    "color": {
-      "field": "INFO.AF",
-      "scale": "threshold",
-      "domain": [0.001, 0.01, 0.05],
-      "range": ["#b2182b", "#ef8a62", "#67a9cf", "#2166ac"]
+    "encoding": {
+      "color": {
+        "field": "INFO.AF",
+        "scale": {
+          "type": "threshold",
+          "domain": [0.001, 0.01, 0.05],
+          "range": ["#b2182b", "#ef8a62", "#67a9cf", "#2166ac"]
+        }
+      }
     }
   }
 ]

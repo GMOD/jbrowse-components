@@ -106,7 +106,7 @@ in an hg38 session:
   },
   "displayDefaults": {
     "variantLayout": "genomic",
-    "showLegend": true,
+    "legend": { "show": true },
     "height": 360
   }
 }

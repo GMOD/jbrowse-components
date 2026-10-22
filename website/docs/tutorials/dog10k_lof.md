@@ -269,20 +269,24 @@ on this track:
     {
       "type": "LinearMultiRowFeatureDisplay",
       "rows": "sample",
-      "showLegend": false,
-      "color": {
-        "scale": "identity",
-        "title": "Copy number",
-        "domain": [
-          "rgb(33,102,172)",
-          "rgb(146,197,222)",
-          "rgb(224,224,224)",
-          "rgb(244,165,130)",
-          "rgb(214,96,77)",
-          "rgb(178,24,43)",
-          "rgb(103,0,31)"
-        ],
-        "labels": ["CN 0", "CN 1", "CN 2", "CN 3", "CN 4", "CN 5", "CN 6+"]
+      "legend": { "show": false },
+      "encoding": {
+        "color": {
+          "scale": {
+            "type": "identity",
+            "domain": [
+              "rgb(33,102,172)",
+              "rgb(146,197,222)",
+              "rgb(224,224,224)",
+              "rgb(244,165,130)",
+              "rgb(214,96,77)",
+              "rgb(178,24,43)",
+              "rgb(103,0,31)"
+            ],
+            "names": ["CN 0", "CN 1", "CN 2", "CN 3", "CN 4", "CN 5", "CN 6+"]
+          },
+          "legend": { "title": "Copy number" }
+        }
       }
     }
   ]

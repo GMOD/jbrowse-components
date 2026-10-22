@@ -31,7 +31,9 @@ registers a function and the callback calls it:
         "type": "Gff3Adapter",
         "uri": "volvox.filtered.gff"
       },
-      "displayDefaults": { "color": "jexl:customColor(feature)" }
+      "displayDefaults": {
+        "encoding": { "color": { "value": "jexl:customColor(feature)" } }
+      }
     }
   ]
 }
@@ -92,36 +94,40 @@ CDSs back:
   "uri": "MGYG000000001_mobilome.gff",
   "assemblyNames": ["MGYG000000001"],
   "displayDefaults": {
-    "color": {
-      "field": "type",
-      "domain": [
-        "prophage",
-        "viral_sequence",
-        "plasmid",
-        "insertion_sequence",
-        "terminal_inverted_repeat_element",
-        "inverted_repeat_element",
-        "integron",
-        "conjugative_integron",
-        "attC_site",
-        "compositional_outlier",
-        "direct_repeat",
-        "CDS"
-      ],
-      "range": [
-        "#8e44ad",
-        "#9b59b6",
-        "#2980b9",
-        "#e67e22",
-        "#d35400",
-        "#d35400",
-        "#16a085",
-        "#1abc9c",
-        "#0e6655",
-        "#c0392b",
-        "#7f8c8d",
-        "#bdc3c7"
-      ]
+    "encoding": {
+      "color": {
+        "field": "type",
+        "scale": {
+          "domain": [
+            "prophage",
+            "viral_sequence",
+            "plasmid",
+            "insertion_sequence",
+            "terminal_inverted_repeat_element",
+            "inverted_repeat_element",
+            "integron",
+            "conjugative_integron",
+            "attC_site",
+            "compositional_outlier",
+            "direct_repeat",
+            "CDS"
+          ],
+          "range": [
+            "#8e44ad",
+            "#9b59b6",
+            "#2980b9",
+            "#e67e22",
+            "#d35400",
+            "#d35400",
+            "#16a085",
+            "#1abc9c",
+            "#0e6655",
+            "#c0392b",
+            "#7f8c8d",
+            "#bdc3c7"
+          ]
+        }
+      }
     }
   }
 }

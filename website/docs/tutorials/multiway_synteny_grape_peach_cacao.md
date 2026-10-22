@@ -264,7 +264,7 @@ dialog. As a `defaultSession`, the same stack ordered peach-cacao-grape:
           { "assembly": "GCF_030704535.1" }
         ],
         "tracks": ["grape_peach_cacao_blocks"],
-        "color": { "field": "reference" },
+        "encoding": { "color": "reference" },
         "autoDiagonalize": true,
         "collapseEmptyRows": true
       }

@@ -259,7 +259,12 @@ opens on, and the track menu switches it afterwards:
   "uri": "arabidopsis_wgbs.bam",
   "assemblyNames": ["GCF_000001735.4"],
   "displayDefaults": {
-    "baseColor": { "field": "bisulfite" },
+    "pileup": {
+      "bases": {
+        "show": true,
+        "encoding": { "color": "bisulfite" }
+      }
+    },
     "modifications": { "cytosineContext": "CG" }
   }
 }
@@ -332,7 +337,12 @@ change the `trackId`, the name and `cytosineContext`:
   "uri": "https://jbrowse.org/demos/bisulfite/arabidopsis_wgbs_bisulfite.cram",
   "assemblyNames": ["GCF_000001735.4"],
   "displayDefaults": {
-    "baseColor": { "field": "bisulfite" },
+    "pileup": {
+      "bases": {
+        "show": true,
+        "encoding": { "color": "bisulfite" }
+      }
+    },
     "modifications": { "cytosineContext": "CHG" },
     "coverage": { "show": false }
   }

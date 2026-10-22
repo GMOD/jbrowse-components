@@ -211,7 +211,9 @@ row as a bar chart of its identity to the reference in place of a band of cells:
   },
   "displayDefaults": {
     "rows": { "sort": ["microvolvox"] },
-    "rowColor": { "domain": ["microvolvox"], "range": ["#f28e2b"] },
+    "rowColor": {
+      "scale": { "domain": ["microvolvox"], "range": ["#f28e2b"] }
+    },
     "y": "identity"
   }
 }

@@ -119,7 +119,7 @@ the multi-sample matrix display:
       "type": "LinearMultiSampleVariantDisplay",
       "variantLayout": "columns",
       "height": 1010,
-      "color": { "field": "impact" }
+      "encoding": { "color": "impact" }
     }
   ]
 }
@@ -174,7 +174,7 @@ keys.
       "variantLayout": "columns",
       "height": 450,
       "lineZoneHeight": 130,
-      "color": { "field": "impact" },
+      "encoding": { "color": "impact" },
       "facet": { "field": "histology", "sort": ["ductal", "lobular"] },
       "rowColor": "histology"
     }
@@ -224,7 +224,7 @@ band first in `sort`:
       "variantLayout": "columns",
       "height": 450,
       "lineZoneHeight": 130,
-      "color": { "field": "impact" },
+      "encoding": { "color": "impact" },
       "facet": {
         "field": "subtype",
         "sort": ["HR+/HER2-", "HER2+", "triple-negative"]

@@ -172,6 +172,7 @@ export interface ColorScaleObject {
   scheme?: string
   reverse?: boolean
   unknown?: string
+  invalid?: string
 }
 
 /** A color channel as written; a bare string is the field. */

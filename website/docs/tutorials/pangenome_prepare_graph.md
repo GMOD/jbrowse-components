@@ -297,12 +297,16 @@ indexed against K12.
     "uri": "graph"
   },
   "displayDefaults": {
-    "color": {
-      "field": "sampleCount",
-      "scale": "linear",
-      "domainMin": 1,
-      "range": ["#e31a1c", "#bdbdbd"],
-      "title": "Haplotypes"
+    "encoding": {
+      "color": {
+        "field": "sampleCount",
+        "scale": {
+          "type": "linear",
+          "domainMin": 1,
+          "range": ["#e31a1c", "#bdbdbd"]
+        },
+        "legend": { "title": "Haplotypes" }
+      }
     }
   }
 }

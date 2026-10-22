@@ -244,8 +244,7 @@ dN/dS. In your own build, pick **Color by value → dN/dS**.
           }
         ],
         "tracks": [["primate_orthologs"]],
-        "color": { "field": "dnds" },
-        "opacity": 0.95,
+        "encoding": { "color": "dnds", "opacity": 0.95 },
         "mark": { "interpolate": "bump" }
       }
     ]

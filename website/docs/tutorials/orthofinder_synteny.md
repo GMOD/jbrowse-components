@@ -267,7 +267,7 @@ so the bands take a while to draw:
         "coord": { "ratio": 1 },
         "autoDiagonalize": true,
         "collapseEmptyRows": true,
-        "opacity": 0.15
+        "encoding": { "opacity": 0.15 }
       }
     ]
   }

@@ -237,10 +237,14 @@ tabix -p bed ecoli_pggb_untangle_rows.bed.gz
         "field": "strain",
         "sort": ["Sakai", "CFT073", "NCTC86", "IAI39"]
       },
-      "color": {
-        "scale": "identity",
-        "domain": ["rgb(153,153,153)", "rgb(214,39,40)"],
-        "labels": ["Same orientation as K12", "Inverted"]
+      "encoding": {
+        "color": {
+          "scale": {
+            "type": "identity",
+            "domain": ["rgb(153,153,153)", "rgb(214,39,40)"],
+            "names": ["Same orientation as K12", "Inverted"]
+          }
+        }
       }
     }
   ]
@@ -601,18 +605,22 @@ over the same files colors each segment by that count:
   "displayDefaults": {
     "displayMode": "collapsed",
     "showLabels": "none",
-    "color": {
-      "field": "sampleCount",
-      "domain": ["5", "4", "3", "2", "1"],
-      "range": ["#bdbdbd", "#fed976", "#feb24c", "#fd8d3c", "#e31a1c"],
-      "labels": [
-        "All 5 strains (core)",
-        "4 strains",
-        "3 strains",
-        "2 strains",
-        "1 strain (private)"
-      ],
-      "title": "Strains"
+    "encoding": {
+      "color": {
+        "field": "sampleCount",
+        "scale": {
+          "domain": ["5", "4", "3", "2", "1"],
+          "range": ["#bdbdbd", "#fed976", "#feb24c", "#fd8d3c", "#e31a1c"],
+          "names": [
+            "All 5 strains (core)",
+            "4 strains",
+            "3 strains",
+            "2 strains",
+            "1 strain (private)"
+          ]
+        },
+        "legend": { "title": "Strains" }
+      }
     }
   }
 }

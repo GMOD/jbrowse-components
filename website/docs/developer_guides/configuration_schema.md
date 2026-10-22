@@ -447,7 +447,9 @@ a `VariantTrack` can color SNVs green and everything else purple:
     "uri": "https://yourhost/file.vcf.gz"
   },
   "displayDefaults": {
-    "color": "jexl:feature.type=='SNV'?'green':'purple'"
+    "encoding": {
+      "color": { "value": "jexl:feature.type=='SNV'?'green':'purple'" }
+    }
   }
 }
 ```

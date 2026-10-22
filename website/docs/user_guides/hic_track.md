@@ -78,7 +78,7 @@ pin the top as [`color.domainMax`](/docs/config/hiccolor/#slot-domainmax) in
 config:
 
 ```json
-"displayDefaults": { "color": { "domainMax": 500 } }
+"displayDefaults": { "encoding": { "color": { "scale": { "domainMax": 500 } } } }
 ```
 
 ## Normalization

@@ -156,12 +156,16 @@ reads column names from its `#` header line.
   },
   "displayDefaults": {
     "displayMode": "compact",
-    "color": {
-      "field": "type",
-      "domain": ["DEL", "DUP"],
-      "range": ["#2166ac", "#b2182b"],
-      "labels": ["Loss (DEL)", "Gain (DUP)"],
-      "title": "Call"
+    "encoding": {
+      "color": {
+        "field": "type",
+        "scale": {
+          "domain": ["DEL", "DUP"],
+          "range": ["#2166ac", "#b2182b"],
+          "names": ["Loss (DEL)", "Gain (DUP)"]
+        },
+        "legend": { "title": "Call" }
+      }
     },
     "labels": { "name": "jexl:feature.type+' '+feature.cytoband" }
   }
@@ -247,13 +251,17 @@ set [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) to
     {
       "type": "LinearMultiRowFeatureDisplay",
       "rows": "haplotype",
-      "color": {
-        "field": "copynumber_state",
-        "scale": "threshold",
-        "domain": [0.5, 1.5],
-        "range": ["#2166ac", "#bdbdbd", "#f4a582"],
-        "labels": ["Haplotype lost (0)", "One copy", "Two or more copies"],
-        "title": "Copy number per haplotype"
+      "encoding": {
+        "color": {
+          "field": "copynumber_state",
+          "scale": {
+            "type": "threshold",
+            "domain": [0.5, 1.5],
+            "range": ["#2166ac", "#bdbdbd", "#f4a582"],
+            "names": ["Haplotype lost (0)", "One copy", "Two or more copies"]
+          },
+          "legend": { "title": "Copy number per haplotype" }
+        }
       }
     }
   ]

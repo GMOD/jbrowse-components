@@ -199,7 +199,7 @@ session's `color` is a color scale, a `field` mapped to colors:
           { "assembly": "EMU", "displayedRegionNames": ["EMU*"] }
         ],
         "tracks": ["RES_EMU"],
-        "color": { "field": "gene_group" },
+        "encoding": { "color": "gene_group" },
         "autoDiagonalize": true,
         "lineWidth": 4,
         "height": 860
@@ -266,18 +266,22 @@ mapping:
           ["BFL_EMU"],
           ["EMU_CLAa"]
         ],
-        "color": { "field": "gene_group" },
+        "encoding": {
+          "color": "gene_group",
+          "opacity": {
+            "field": "break_FET",
+            "scale": {
+              "type": "threshold",
+              "domain": [0.05],
+              "range": [0.8, 0.15]
+            }
+          }
+        },
         "filter": [{ "field": "gene_group", "valid": true }],
         "autoDiagonalize": true,
         "diagonalizeAnchorRow": 2,
         "mark": { "interpolate": "bump" },
         "render": { "antialias": false },
-        "opacity": {
-          "field": "break_FET",
-          "scale": "threshold",
-          "domain": [0.05],
-          "range": [0.8, 0.15]
-        },
         "levelHeights": [130, 130, 130, 130, 130],
         "collapseEmptyRows": true
       }

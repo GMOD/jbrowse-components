@@ -95,7 +95,10 @@ slot by that name takes the value:
     "type": "VcfTabixAdapter",
     "uri": "https://yourhost/file.vcf.gz"
   },
-  "displayDefaults": { "color": "green", "height": 200 }
+  "displayDefaults": {
+    "encoding": { "color": { "value": "green" } },
+    "height": 200
+  }
 }
 ```
 
@@ -126,7 +129,7 @@ it names itself.
     {
       "type": "LinearBasicDisplay",
       "height": 200,
-      "color": { "field": "strand" }
+      "encoding": { "color": "strand" }
     }
   ]
 }

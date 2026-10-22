@@ -38,8 +38,10 @@ shows what each does to the picture:
   "assemblyNames": ["hg19"],
   "displayDefaults": {
     "selectedNormalization": "KR",
-    "color": { "scale": "log", "scheme": "viridis" },
-    "showLegend": true
+    "encoding": {
+      "color": { "scale": { "type": "log", "scheme": "viridis" } }
+    },
+    "legend": { "show": true }
   }
 }
 ```
@@ -82,7 +84,7 @@ GM12878:
       "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic"
     }
   },
-  "displayDefaults": { "color": "observed/control" }
+  "displayDefaults": { "encoding": { "color": "observed/control" } }
 }
 ```
 
@@ -111,7 +113,7 @@ keeps the high-scoring calls, drawn here in dark red as thin arcs:
       "marks": [
         {
           "mark": "link",
-          "encoding": { "color": { "value": "#8b1a1a" }, "size": 1 },
+          "encoding": { "color": { "value": "#8b1a1a" }, "strokeWidth": 1 },
           "transform": [
             { "type": "mate" },
             { "type": "filter", "expr": "jexl:get(feature,'score')>=500" }

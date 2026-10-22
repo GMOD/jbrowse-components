@@ -153,7 +153,7 @@ D-loop, takes its `gbkey`:
       "name": "jexl:feature.gene || feature.product || feature.name || feature.gbkey || feature.id"
     },
     "facet": { "field": "strand" },
-    "color": { "field": "type" },
+    "encoding": { "color": "type" },
     "height": 250
   }
 }

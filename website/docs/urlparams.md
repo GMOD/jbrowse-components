@@ -519,7 +519,7 @@ split-read junctions:
           "displaySnapshot": {
             "height": 250,
             "pileup": { "softClips": { "show": true } },
-            "color": { "field": "pairOrientation" }
+            "encoding": { "color": "pairOrientation" }
           }
         }
       ]
@@ -544,7 +544,7 @@ such as `"jexl:get(feature,'type')=='gene'?'blue':'gray'"` to color per feature:
         {
           "trackId": "gff3tabix_genes",
           "displaySnapshot": {
-            "color": "green"
+            "encoding": { "color": { "value": "green" } }
           }
         }
       ]
@@ -797,9 +797,8 @@ strand, with curved ribbons and stronger opacity:
     {
       "type": "LinearSyntenyView",
       "tracks": ["volvox_fake_synteny"],
-      "color": { "field": "strand" },
+      "encoding": { "color": "strand", "opacity": 0.8 },
       "mark": { "interpolate": "bump" },
-      "opacity": 0.8,
       "views": [
         { "loc": "ctgA:1-30000", "assembly": "volvox" },
         { "loc": "ctgA:1000-31000", "assembly": "volvox" }

@@ -210,7 +210,7 @@ off because the row labels already name the four categories:
         "field": "parenthap",
         "sort": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"]
       },
-      "showLegend": false
+      "legend": { "show": false }
     }
   ]
 }

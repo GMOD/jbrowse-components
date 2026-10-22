@@ -68,16 +68,17 @@ names the levels and `labels` what the key calls them.
             "size": 8,
             "color": {
               "field": "strand",
-              "domain": ["1", "-1"],
-              "labels": ["+", "-"],
-              "title": "Strand"
+              "scale": { "domain": ["1", "-1"], "names": ["+", "-"] },
+              "legend": { "title": "Strand" }
             },
             "shape": {
               "field": "strand",
-              "domain": ["1", "-1"],
-              "range": ["circle", "triangle-down"],
-              "labels": ["+", "-"],
-              "title": ""
+              "scale": {
+                "domain": ["1", "-1"],
+                "range": ["circle", "triangle-down"],
+                "names": ["+", "-"]
+              },
+              "legend": { "title": "" }
             }
           }
         }
@@ -115,11 +116,13 @@ the same in every window. `scheme` names the ramp.
             "y": "milliDiv",
             "color": {
               "field": "milliDiv",
-              "scale": "linear",
-              "scheme": "viridis",
-              "domainMin": 0,
-              "domainMax": 300,
-              "title": "Divergence"
+              "scale": {
+                "type": "linear",
+                "scheme": "viridis",
+                "domainMin": 0,
+                "domainMax": 300
+              },
+              "legend": { "title": "Divergence" }
             }
           }
         }
@@ -157,10 +160,12 @@ A `threshold` scale cuts the column at the values in `domain` and paints one
             "y": "milliDiv",
             "color": {
               "field": "milliDiv",
-              "scale": "threshold",
-              "domain": [80, 150],
-              "range": ["#d73027", "#fdae61", "#4575b4"],
-              "title": "Divergence"
+              "scale": {
+                "type": "threshold",
+                "domain": [80, 150],
+                "range": ["#d73027", "#fdae61", "#4575b4"]
+              },
+              "legend": { "title": "Divergence" }
             }
           }
         }
@@ -275,9 +280,8 @@ draws the packing, colored by strand.
           "encoding": {
             "color": {
               "field": "strand",
-              "domain": ["1", "-1"],
-              "labels": ["+", "-"],
-              "title": "Strand"
+              "scale": { "domain": ["1", "-1"], "names": ["+", "-"] },
+              "legend": { "title": "Strand" }
             }
           }
         }
@@ -418,11 +422,13 @@ pair, stroked by its mapping quality.
           "encoding": {
             "color": {
               "field": "score",
-              "scale": "linear",
-              "domainMin": 0,
-              "domainMax": 60,
-              "range": ["#bdbdbd", "#1f4e9a"],
-              "title": "Mapping quality"
+              "scale": {
+                "type": "linear",
+                "domainMin": 0,
+                "domainMax": 60,
+                "range": ["#bdbdbd", "#1f4e9a"]
+              },
+              "legend": { "title": "Mapping quality" }
             }
           }
         }
@@ -502,7 +508,7 @@ the axis already reads the color.
     {
       "type": "LinearMarkDisplay",
       "displayId": "hpylori_identity-LinearMarkDisplay",
-      "showLegend": false,
+      "legend": { "show": false },
       "scales": {
         "y": { "domainMin": 0.5, "domainMax": 1, "title": "Identity" }
       },
@@ -511,14 +517,16 @@ the axis already reads the color.
           "mark": "rule",
           "encoding": {
             "y": "identity",
-            "size": 4,
+            "strokeWidth": 4,
             "color": {
               "field": "identity",
-              "scale": "linear",
-              "scheme": "viridis",
-              "domainMin": 0.7,
-              "domainMax": 1,
-              "title": "Identity"
+              "scale": {
+                "type": "linear",
+                "scheme": "viridis",
+                "domainMin": 0.7,
+                "domainMax": 1
+              },
+              "legend": { "title": "Identity" }
             }
           }
         }

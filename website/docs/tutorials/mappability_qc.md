@@ -157,7 +157,7 @@ against hg38; for your own sample, swap the `uri`. In
   "name": "NA12878, 30x Illumina (1000 Genomes)",
   "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram",
   "assemblyNames": ["hg38"],
-  "displayDefaults": { "color": { "field": "mapq" } }
+  "displayDefaults": { "encoding": { "color": "mapq" } }
 }
 ```
 

@@ -95,19 +95,23 @@ The segments themselves are a `FeatureTrack` whose
     {
       "type": "LinearMultiRowFeatureDisplay",
       "rows": "sample",
-      "color": {
-        "field": "segmean",
-        "scale": "threshold",
-        "domain": [-1, -0.3, 0.3, 1],
-        "range": ["#2166ac", "#92c5de", "#f7f7f7", "#f4a582", "#b2182b"],
-        "labels": [
-          "Deep loss (log2 < -1)",
-          "Loss",
-          "Balanced",
-          "Gain",
-          "Amplification (log2 > 1)"
-        ],
-        "title": "Copy number (log2)"
+      "encoding": {
+        "color": {
+          "field": "segmean",
+          "scale": {
+            "type": "threshold",
+            "domain": [-1, -0.3, 0.3, 1],
+            "range": ["#2166ac", "#92c5de", "#f7f7f7", "#f4a582", "#b2182b"],
+            "names": [
+              "Deep loss (log2 < -1)",
+              "Loss",
+              "Balanced",
+              "Gain",
+              "Amplification (log2 > 1)"
+            ]
+          },
+          "legend": { "title": "Copy number (log2)" }
+        }
       }
     }
   ]
@@ -175,10 +179,10 @@ other.
   },
   "displayDefaults": {
     "height": 120,
-    "color": {
-      "field": "score",
-      "scale": "threshold",
-      "range": ["#2166ac", "#b2182b"]
+    "encoding": {
+      "color": {
+        "scale": { "type": "threshold", "range": ["#2166ac", "#b2182b"] }
+      }
     },
     "scales": { "y": { "domainMin": -100, "domainMax": 100 } }
   }
@@ -250,11 +254,13 @@ signal's column name:
             "y": "score",
             "color": {
               "field": "score",
-              "scale": "threshold",
-              "domain": [0],
-              "range": ["#2166ac", "#b2182b"],
-              "labels": ["loss", "gain"],
-              "title": "Copy number call"
+              "scale": {
+                "type": "threshold",
+                "domain": [0],
+                "range": ["#2166ac", "#b2182b"],
+                "names": ["loss", "gain"]
+              },
+              "legend": { "title": "Copy number call" }
             }
           }
         }

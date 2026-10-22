@@ -238,7 +238,7 @@ group, named by its gene symbol, to a color:
   "displays": [
     {
       "type": "MultiWaySyntenyDisplay",
-      "color": { "field": "cluster" }
+      "encoding": { "color": "cluster" }
     }
   ]
 }
@@ -267,7 +267,7 @@ orientation. The session below opens the _TP53_ neighbourhood:
           {
             "trackId": "primate_orthologs",
             "type": "MultiWaySyntenyDisplay",
-            "ribbonColor": { "field": "strand" },
+            "ribbons": { "encoding": { "color": "strand" } },
             "height": 620
           }
         ]

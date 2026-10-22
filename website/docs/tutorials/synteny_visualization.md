@@ -243,7 +243,7 @@ The config below is the same setting on the hub's gene track:
   },
   "displayDefaults": {
     "filter": { "genes": "only" },
-    "color": { "field": "gene" }
+    "encoding": { "color": "gene" }
   }
 }
 ```

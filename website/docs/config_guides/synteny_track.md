@@ -405,7 +405,7 @@ start opens that circle from the track, and as a view it is:
   "displayedRegionNames": ["chr1", "chr2", "chr3"],
   "tracks": ["hg38_vs_mm39"],
   "autoDiagonalize": true,
-  "color": { "field": "query" }
+  "encoding": { "color": "query" }
 }
 ```
 

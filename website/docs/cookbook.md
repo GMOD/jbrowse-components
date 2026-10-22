@@ -125,7 +125,7 @@ and a theme. Every recipe below changes one piece of it.
       "assemblyNames": ["volvox"],
       "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
       "displayDefaults": {
-        "color": { "field": "strand" },
+        "encoding": { "color": "strand" },
         "height": 200,
         "mouseover": "jexl:feature.name"
       }
@@ -138,7 +138,7 @@ and a theme. Every recipe below changes one piece of it.
       "adapter": { "type": "BamAdapter", "uri": "volvox-sorted.bam" },
       "displayDefaults": {
         "heightMode": "fit",
-        "color": { "field": "mapq" },
+        "encoding": { "color": "mapq" },
         "filter": { "flagExclude": 1540, "flagInclude": 0 }
       }
     },
@@ -149,7 +149,7 @@ and a theme. Every recipe below changes one piece of it.
       "assemblyNames": ["volvox"],
       "adapter": { "type": "BigWigAdapter", "uri": "volvox_microarray.bw" },
       "displayDefaults": {
-        "color": "#C8B414",
+        "encoding": { "color": { "value": "#C8B414" } },
         "scales": { "y": { "type": "log", "domainMin": 0 } }
       }
     },
@@ -160,7 +160,9 @@ and a theme. Every recipe below changes one piece of it.
       "assemblyNames": ["volvox"],
       "adapter": { "type": "VcfTabixAdapter", "uri": "volvox.filtered.vcf.gz" },
       "displayDefaults": {
-        "color": "jexl:feature.type=='SNV'?'green':'purple'",
+        "encoding": {
+          "color": { "value": "jexl:feature.type=='SNV'?'green':'purple'" }
+        },
         "filter": ["jexl:feature.INFO.AF[0] > 0.05"]
       }
     }
@@ -197,7 +199,7 @@ ribbons included:
   "assemblyNames": ["volvox"],
   "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
   "displayDefaults": {
-    "color": { "field": "strand" }
+    "encoding": { "color": "strand" }
   }
 }
 ```
@@ -230,32 +232,36 @@ heads it:
   "assemblyNames": ["hg38"],
   "adapter": { "type": "BedTabixAdapter", "uri": "rmsk.bed.gz" },
   "displayDefaults": {
-    "color": {
-      "field": "repClass",
-      "domain": [
-        "SINE",
-        "LINE",
-        "LTR",
-        "DNA",
-        "Simple_repeat",
-        "Low_complexity"
-      ],
-      "range": [
-        "#e41a1c",
-        "#377eb8",
-        "#4daf4a",
-        "#984ea3",
-        "#ff7f00",
-        "#a65628"
-      ],
-      "labels": [
-        "SINE",
-        "LINE",
-        "LTR",
-        "DNA",
-        "Simple repeat",
-        "Low complexity"
-      ]
+    "encoding": {
+      "color": {
+        "field": "repClass",
+        "scale": {
+          "domain": [
+            "SINE",
+            "LINE",
+            "LTR",
+            "DNA",
+            "Simple_repeat",
+            "Low_complexity"
+          ],
+          "range": [
+            "#e41a1c",
+            "#377eb8",
+            "#4daf4a",
+            "#984ea3",
+            "#ff7f00",
+            "#a65628"
+          ],
+          "names": [
+            "SINE",
+            "LINE",
+            "LTR",
+            "DNA",
+            "Simple repeat",
+            "Low complexity"
+          ]
+        }
+      }
     }
   }
 }
@@ -347,7 +353,7 @@ pass every `jexl:` expression, on variant tracks too:
   "adapter": { "type": "BamAdapter", "uri": "volvox-sorted.bam" },
   "displayDefaults": {
     "height": 400,
-    "color": { "field": "mapq" },
+    "encoding": { "color": "mapq" },
     "pileup": { "softClips": { "show": true } },
     "facet": { "field": "tags.HP", "sort": ["2", "1"] },
     "filter": {
@@ -390,7 +396,7 @@ and paints the two sides apart.
   "assemblyNames": ["volvox"],
   "adapter": { "type": "BigWigAdapter", "uri": "volvox_microarray.bw" },
   "displayDefaults": {
-    "color": "#C8B414",
+    "encoding": { "color": { "value": "#C8B414" } },
     "scales": { "y": { "type": "log", "domainMin": 0 } }
   }
 }
@@ -449,7 +455,7 @@ color under a key:
   "assemblyNames": ["volvox"],
   "adapter": { "type": "VcfTabixAdapter", "uri": "volvox.dup.vcf.gz" },
   "displayDefaults": {
-    "color": { "field": "svType" },
+    "encoding": { "color": "svType" },
     "filter": ["jexl:feature.INFO.AF[0] > 0.05"]
   }
 }

@@ -152,9 +152,9 @@ input:
   "displays": [
     {
       "type": "LDTrackDisplay",
-      "color": { "field": "r2" },
+      "encoding": { "color": "r2" },
       "variantLayout": "genomic",
-      "showLegend": true,
+      "legend": { "show": true },
       "height": 340
     }
   ]

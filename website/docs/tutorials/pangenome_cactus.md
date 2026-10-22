@@ -220,7 +220,7 @@ in a row per assembly the track lists.
   "tracks": ["ecoli_cactus_ava"],
   "filter": [{ "field": "length", "gte": 10000 }],
   "levelHeights": [110, 110, 110, 110],
-  "color": { "field": "strand" }
+  "encoding": { "color": "strand" }
 }
 ```
 

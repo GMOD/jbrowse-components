@@ -176,7 +176,7 @@ assembly:
   "displays": [
     {
       "type": "MultiWaySyntenyDisplay",
-      "color": { "field": "cluster" }
+      "encoding": { "color": "cluster" }
     }
   ]
 }

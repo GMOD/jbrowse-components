@@ -308,10 +308,10 @@ from white at the fewest genes in view to orange at the most:
   "assemblyNames": ["hg38", "mm39"],
   "displayDefaults": {
     "mark": "span",
-    "color": {
-      "field": "score",
-      "scale": "linear",
-      "range": ["#ffffff", "#d95f02"]
+    "encoding": {
+      "color": {
+        "scale": { "type": "linear", "range": ["#ffffff", "#d95f02"] }
+      }
     },
     "height": 40
   }
@@ -362,10 +362,10 @@ before the synteny track:
             "trackId": "hg38ToMm39_gene_density",
             "type": "LinearWiggleDisplay",
             "mark": "span",
-            "color": {
-              "field": "score",
-              "scale": "linear",
-              "range": ["#ffffff", "#d95f02"]
+            "encoding": {
+              "color": {
+                "scale": { "type": "linear", "range": ["#ffffff", "#d95f02"] }
+              }
             },
             "height": 40
           },

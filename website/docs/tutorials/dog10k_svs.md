@@ -184,8 +184,10 @@ rows by hand, and **Advanced → Edit plot...** shows them as text.
               "labels": { "COLL000001": "Collie 1", "CLUPGR000001": "Wolf 1" }
             },
             "rowColor": {
-              "domain": ["COLL000001", "CLUPGR000001"],
-              "range": ["#0072B2", "#E69F00"]
+              "scale": {
+                "domain": ["COLL000001", "CLUPGR000001"],
+                "range": ["#0072B2", "#E69F00"]
+              }
             }
           }
         ]

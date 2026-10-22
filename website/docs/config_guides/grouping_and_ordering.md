@@ -43,9 +43,13 @@ from the same list:
     "field": "gene_biotype",
     "sort": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
   },
-  "color": {
-    "field": "gene_biotype",
-    "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
+  "encoding": {
+    "color": {
+      "field": "gene_biotype",
+      "scale": {
+        "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
+      }
+    }
   }
 }
 ```
@@ -159,7 +163,7 @@ ribbon joins:
       "rows": {
         "sort": ["peach", "cacao", "poplar", "citrus", "arabidopsis", "tomato"]
       },
-      "ribbonColor": { "field": "strand" }
+      "ribbons": { "encoding": { "color": "strand" } }
     }
   ]
 }

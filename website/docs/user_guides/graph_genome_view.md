@@ -507,7 +507,11 @@ from 4,050,000 that the figures above are cut from, is:
     "coarse": { "uri": "ecoli_minigraph.fold10000", "aboveBpPerPx": 1000 }
   },
   "displayDefaults": {
-    "color": "jexl:feature.rank>0 ? 'rgb(60,65,72)' : `hsl(${min(300, max(0, ((feature.start+feature.end)/2 - 4050000) / 50000 * 300))},70%,50%)`"
+    "encoding": {
+      "color": {
+        "value": "jexl:feature.rank>0 ? 'rgb(60,65,72)' : `hsl(${min(300, max(0, ((feature.start+feature.end)/2 - 4050000) / 50000 * 300))},70%,50%)`"
+      }
+    }
   },
   "displays": [
     {
