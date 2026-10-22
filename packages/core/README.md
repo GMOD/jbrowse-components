@@ -1981,8 +1981,8 @@ import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 
 ### safeParseBreakend
 
-parseBreakend, honoring its `Breakend | undefined` signature. ALT strings are
-user data and malformed breakends do occur;
+parseBreakend, which returns undefined for a malformed breakend. Kept under this
+name for plugins written when
 
 ```js
 import { safeParseBreakend } from '@jbrowse/core/util/svAlt'
