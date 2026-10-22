@@ -44,7 +44,7 @@ export interface JBrowseUrlOptions {
   tracks?: ShowTrack[]
   /** Settings to write on the view, as a session spec's view holds them: `{ axis: { grid: false } }`. */
   view?: Record<string, unknown>
-  /** A session spec, for anything the three fields above cannot say. */
+  /** A session spec, for what the fields above cannot say, such as several views. */
   spec?: object
   /**
    * A session saved with "Export session...": the `{ session: {...} }`
