@@ -3,17 +3,13 @@ import path from 'node:path'
 import {
   fileAdapter,
   fileTrack,
+  genomeAssembly,
   isSequenceAdapter,
-  sequenceAssembly,
   trackFlags,
 } from './fileInput.ts'
 import { genomeConfigUrl } from './genome.ts'
-import {
-  FILE_FLAG,
-  isDataFile,
-  modifierValue,
-  splitModifier,
-} from './parseArgv.ts'
+import { FILE_FLAG, isUrl, locValue, splitModifier } from './parseArgv.ts'
+import { viewSettings } from './slotPath.ts'
 
 import type { Assembly, Track } from './fileInput.ts'
 import type { Entry } from './parseArgv.ts'
@@ -31,6 +27,8 @@ export interface LaunchPlan {
   /** the genome the view opens on; undefined leaves it to the config's first */
   assemblyName?: string
   loc?: string
+  /** settings `--view` writes on the view, as a session spec's view holds them */
+  view: Record<string, unknown>
   /**
    * Tracks built from files. Without `assemblyNames` when the genome is the
    * config's, which only the app that fetches it can name.
@@ -47,19 +45,16 @@ export const launchFlags: ReadonlySet<string> = new Set([
   'config',
   'assembly',
   'loc',
+  'view',
   'track',
   'fasta',
-  'aliases',
-  'cytobands',
   FILE_FLAG,
   ...trackFlags,
 ])
 
 // consumed while building the config, so they reach the view as config
-const BUILD_MODIFIERS = new Set(['name', 'index', 'aliases', 'cytobands'])
+const BUILD_MODIFIERS = new Set(['name', 'index'])
 const PATH_MODIFIERS = new Set(['index', 'aliases', 'cytobands'])
-
-const URL_SCHEME = /^[a-z][a-z0-9+.-]*:\/\//i
 
 function isTrackFlag(key: string) {
   return key === FILE_FLAG || (trackFlags as string[]).includes(key)
@@ -84,25 +79,28 @@ function uniqueId(used: Set<string>, base: string) {
  * second launch hands its arguments to a running one.
  */
 export function launchPlan(entries: Entry[], cwd: string): LaunchPlan {
-  const abs = (file: string) =>
-    URL_SCHEME.test(file) ? file : path.resolve(cwd, file)
+  const abs = (file: string) => (isUrl(file) ? file : path.resolve(cwd, file))
   const absMod = (mod: string) =>
     PATH_MODIFIERS.has(modifierName(mod))
       ? `${modifierName(mod)}:${abs(mod.slice(mod.indexOf(':') + 1))}`
       : mod
-  const one = (key: string) => {
-    const given = entries.filter(([k]) => k === key)
-    if (given.length > 1) {
+  const given = (key: string) => {
+    const found = entries.filter(([k]) => k === key)
+    if (found.length > 1) {
       throw new Error(`--${key} is given more than once`)
     }
-    return given[0]?.[1][0]
+    return found[0]?.[1]
   }
+  const one = (key: string) => given(key)?.[0]
 
   const genome = one('genome')
   const config = one('config')
-  const fasta = one('fasta')
   if (genome && config) {
     throw new Error('pass --genome or --config, not both')
+  } else if (config && isUrl(config) && !/^https?:\/\//i.test(config)) {
+    throw new Error(
+      `--config ${config}: JBrowse fetches a config over http or https, or reads one from a file`,
+    )
   }
   const configRef = genome
     ? genomeConfigUrl(genome)
@@ -112,7 +110,7 @@ export function launchPlan(entries: Entry[], cwd: string): LaunchPlan {
 
   const resolved = entries.map(([key, values]): Entry => {
     const [file, ...mods] = values
-    if (!isTrackFlag(key)) {
+    if (!isTrackFlag(key) && key !== 'fasta') {
       return [key, values]
     } else if (!file) {
       throw new Error(`--${key} requires a file argument`)
@@ -120,15 +118,17 @@ export function launchPlan(entries: Entry[], cwd: string): LaunchPlan {
       return [key, [abs(file), ...mods.map(absMod)]]
     }
   })
-  const fastaMods = entries.find(([key]) => key === 'fasta')?.[1].slice(1) ?? []
-  const genomeFile: Entry | undefined = fasta
-    ? ['fasta', [abs(fasta), ...fastaMods.map(absMod)]]
-    : resolved.find(
-        ([key, [file = '']]) =>
-          key === FILE_FLAG && isSequenceAdapter(fileAdapter(file)),
-      )
+  const [genomeFile, otherGenome] = resolved.filter(
+    ([key, [file = '']]) =>
+      key === 'fasta' ||
+      (key === FILE_FLAG && isSequenceAdapter(fileAdapter(file))),
+  )
   const genomePath = genomeFile?.[1][0]
-  if (genomePath && configRef) {
+  if (otherGenome) {
+    throw new Error(
+      `${otherGenome[1][0]} is a genome, and this view already has one; open one genome per view`,
+    )
+  } else if (genomePath && configRef) {
     throw new Error(
       `${genomePath} is a genome, and ${genome ? '--genome' : '--config'} names one too; pass one or the other`,
     )
@@ -142,45 +142,29 @@ export function launchPlan(entries: Entry[], cwd: string): LaunchPlan {
     )
   }
 
+  const unapplied: string[] = []
   let assembly: Assembly | undefined
-  if (genomeFile && genomePath) {
-    const mods = genomeFile[1].slice(1)
-    const aliases = one('aliases') ?? modifierValue(mods, 'aliases')
-    const cytobands = one('cytobands') ?? modifierValue(mods, 'cytobands')
-    const adapter = fileAdapter(genomePath, {
-      adapterType:
-        genomeFile[0] === 'fasta' && !isDataFile(genomePath)
-          ? 'IndexedFastaAdapter'
-          : undefined,
-    })
-    assembly = sequenceAssembly(adapter, genomePath, {
-      aliases: aliases && abs(aliases),
-      cytobands: cytobands && abs(cytobands),
-    })
+  if (genomeFile) {
+    const built = genomeAssembly(genomeFile[0], genomeFile[1])
+    assembly = built.assembly
+    unapplied.push(...built.unused.map(mod => `${assembly!.name} ${mod}`))
   }
   const assemblyName = assembly?.name ?? one('assembly')
 
   const used = new Set<string>()
   const tracks: Track[] = []
   const show: string[] = []
-  const unapplied: string[] = []
   for (const entry of resolved) {
     const [key, [first, ...mods]] = entry
-    if (!isTrackFlag(key) && key !== 'track') {
-      unapplied.push(
-        ...mods
-          .filter(
-            mod => key !== 'fasta' || !BUILD_MODIFIERS.has(modifierName(mod)),
-          )
-          .map(extra => `--${key} ${extra}`),
-      )
+    if (entry === genomeFile || key === 'loc' || key === 'view') {
+      continue
     } else if (key === 'track') {
       if (!first) {
         throw new Error('--track requires a trackId')
       }
       show.push(first)
       unapplied.push(...mods.map(mod => `${first} ${mod}`))
-    } else if (isTrackFlag(key) && entry !== genomeFile) {
+    } else if (isTrackFlag(key)) {
       const track = fileTrack(key, entry[1], assemblyName)
       track.trackId = uniqueId(used, track.trackId)
       tracks.push(track)
@@ -190,14 +174,18 @@ export function launchPlan(entries: Entry[], cwd: string): LaunchPlan {
           .filter(mod => !BUILD_MODIFIERS.has(modifierName(mod)))
           .map(mod => `${track.trackId} ${mod}`),
       )
+    } else {
+      unapplied.push(...mods.map(extra => `--${key} ${extra}`))
     }
   }
 
+  const loc = given('loc')
   return {
     config: configRef,
     assembly,
     assemblyName,
-    loc: one('loc'),
+    loc: loc && locValue(loc),
+    view: viewSettings(given('view') ?? []),
     tracks,
     show,
     unapplied,

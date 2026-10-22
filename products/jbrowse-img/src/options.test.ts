@@ -7,17 +7,13 @@ import {
   buildHelp,
   getBoolean,
   getBooleanValue,
-  getCigarMode,
-  getColorBy,
   getFormat,
   getNumber,
-  getNumberList,
   getOptionalCount,
   getOptionalNumber,
   getString,
   getThemeName,
   getTrackLabels,
-  ignoredComparativeOptions,
   knownOptions,
 } from './options.ts'
 
@@ -56,28 +52,12 @@ test('validates trackLabels against the allowed modes', () => {
 test('warns on an invalid enum value instead of silently defaulting', () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   try {
-    expect(getCigarMode(parse('--cigarMode full'))).toBe('full')
     expect(getThemeName(parse('--themeName darkStock'))).toBe('darkStock')
     expect(warn).not.toHaveBeenCalled()
 
-    expect(getCigarMode(parse('--cigarMode ful'))).toBeUndefined()
     expect(getThemeName(parse('--themeName drakStock'))).toBeUndefined()
     expect(getTrackLabels(parse('--trackLabels lft'))).toBeUndefined()
-    expect(warn).toHaveBeenCalledTimes(3)
-  } finally {
-    warn.mockRestore()
-  }
-})
-
-test('validates colorBy, which the view would silently coerce to default', () => {
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-  try {
-    expect(getColorBy(parse('--colorBy query'))).toBe('query')
-    expect(getColorBy(parse('--colorBy mapq'))).toBe('mapq')
-    expect(warn).not.toHaveBeenCalled()
-
-    expect(getColorBy(parse('--colorBy quary'))).toBeUndefined()
-    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn).toHaveBeenCalledTimes(2)
   } finally {
     warn.mockRestore()
   }
@@ -86,7 +66,6 @@ test('validates colorBy, which the view would silently coerce to default', () =>
 test('absent enum flags return undefined without warning', () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   try {
-    expect(getCigarMode(parse('--loc chr1'))).toBeUndefined()
     expect(getThemeName(parse('--loc chr1'))).toBeUndefined()
     expect(warn).not.toHaveBeenCalled()
   } finally {
@@ -130,8 +109,8 @@ describe('numeric flags', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     try {
       expect(getNumber(parse('--width 1200'), 'width', 1500)).toBe(1200)
-      expect(getOptionalNumber(parse('--opacity 0.4'), 'opacity')).toBe(0.4)
-      expect(getOptionalNumber(parse('--loc chr1'), 'opacity')).toBeUndefined()
+      expect(getOptionalNumber(parse('--jobs 4'), 'jobs')).toBe(4)
+      expect(getOptionalNumber(parse('--loc chr1'), 'jobs')).toBeUndefined()
       expect(warn).not.toHaveBeenCalled()
     } finally {
       warn.mockRestore()
@@ -161,24 +140,6 @@ describe('numeric flags', () => {
       warn.mockRestore()
     }
   })
-
-  // one value applies to every level, so a dropped entry read as deliberate
-  test('a non-numeric levelHeights entry warns and is skipped', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    try {
-      expect(
-        getNumberList(parse('--levelHeights 300,300'), 'levelHeights'),
-      ).toEqual([300, 300])
-      expect(
-        getNumberList(parse('--levelHeights 300,abc'), 'levelHeights'),
-      ).toEqual([300])
-      expect(warn).toHaveBeenCalledWith(
-        expect.stringContaining('non-numeric entry "abc"'),
-      )
-    } finally {
-      warn.mockRestore()
-    }
-  })
 })
 
 test('knownOptions covers named options including help and version', () => {
@@ -200,7 +161,7 @@ test('help text lists options, examples, and track flags', () => {
 // the only way to find it was to already know it was there.
 test('the top-level help names the batch subcommand', () => {
   const help = buildHelp('jb2export', trackTypes, syntenyTrackTypes)
-  expect(help).toContain('jb2export batch --vcf')
+  expect(help).toContain('jb2export batch --sites')
 })
 
 // The docs embed this as the complete help, so every subcommand's options have
@@ -210,65 +171,15 @@ test('the full help reference carries every subcommand, batch included', () => {
   for (const mode of ['dotplot', 'synteny', 'circular', 'breakpoint']) {
     expect(help).toContain(`Usage: jb2export ${mode} [options]`)
   }
-  expect(help).toContain('Usage: jb2export batch --vcf <file> [options]')
+  expect(help).toContain('Usage: jb2export batch --sites <file> [options]')
   expect(help).toContain('--outDir')
 })
 
 test('subcommand help lists comparison track options', () => {
   const help = buildHelp('jb2export', trackTypes, syntenyTrackTypes, 'dotplot')
   expect(help).toContain('Usage: jb2export dotplot')
-  expect(help).toContain('--fasta2')
+  expect(help).toContain('--view')
   expect(help).toContain('Comparison track options: --paf')
-})
-
-describe('comparative options are scoped to the modes that read them', () => {
-  const dotplot = buildHelp(
-    'jb2export',
-    trackTypes,
-    syntenyTrackTypes,
-    'dotplot',
-  )
-  const synteny = buildHelp(
-    'jb2export',
-    trackTypes,
-    syntenyTrackTypes,
-    'synteny',
-  )
-
-  test('the ribbon-shape flags appear only under synteny', () => {
-    // a dotplot has no ribbon shape and no levels, so its init carries none of
-    // these — listing them documented flags that silently did nothing
-    for (const flag of [
-      '--drawCurves',
-      '--cigarMode',
-      '--opacity',
-      '--levelHeights',
-    ]) {
-      expect(synteny).toContain(flag)
-      expect(dotplot).not.toContain(flag)
-    }
-  })
-
-  test('the shared comparative flags appear under both', () => {
-    for (const flag of [
-      '--autoDiagonalize',
-      '--colorBy',
-      '--minAlignmentLength',
-    ]) {
-      expect(dotplot).toContain(flag)
-      expect(synteny).toContain(flag)
-    }
-  })
-
-  test('ignoredComparativeOptions names what a mode drops', () => {
-    expect(ignoredComparativeOptions('dotplot')).toEqual([
-      'drawCurves',
-      'opacity',
-      'levelHeights',
-      'cigarMode',
-    ])
-    expect(ignoredComparativeOptions('synteny')).toEqual([])
-  })
 })
 
 describe('batch options', () => {

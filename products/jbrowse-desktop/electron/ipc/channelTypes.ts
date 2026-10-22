@@ -98,6 +98,7 @@ export interface LaunchPlanJson {
   }
   assemblyName?: string
   loc?: string
+  view: Record<string, unknown>
   tracks: ({ trackId: string } & Record<string, unknown>)[]
   show: string[]
   unapplied: string[]

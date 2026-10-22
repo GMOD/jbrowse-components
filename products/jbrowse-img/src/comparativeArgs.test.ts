@@ -66,27 +66,22 @@ describe('buildComparative', () => {
     })
   })
 
-  test('legacy --fasta2/--loc/--loc2 still map to assemblies 0 and 1', () => {
-    const { assemblies, locs, syntenyTracks } = buildComparative([
+  test('a trailing synteny file clamps to the last level', () => {
+    const { syntenyTracks } = buildComparative([
       ['fasta', ['a.fa']],
-      ['fasta2', ['b.fa']],
-      ['loc', ['chr1']],
-      ['loc2', ['chr2']],
+      ['fasta', ['b.fa']],
       ['paf', ['a_b.paf']],
     ])
-    expect(assemblies.map(a => a.name)).toEqual(['a.fa', 'b.fa'])
-    expect(locs).toEqual(['chr1', 'chr2'])
-    // a trailing synteny file clamps to the last (only) level
     expect(syntenyTracks[0]!.assemblyNames).toEqual(['a.fa', 'b.fa'])
   })
 
-  test('a key:value modifier overrides the legacy per-index flag', () => {
-    const { locs } = buildComparative([
-      ['fasta', ['a.fa', 'loc:chrX']],
-      ['loc', ['chr1']],
-      ['fasta', ['b.fa']],
-    ])
-    expect(locs[0]).toBe('chrX')
+  test('a modifier an assembly has no use for throws', () => {
+    expect(() =>
+      buildComparative([
+        ['fasta', ['a.fa', 'height:100']],
+        ['fasta', ['b.fa']],
+      ]),
+    ).toThrow(/takes loc:, aliases: and cytobands:, not height:100/)
   })
 
   test('a synteny file with no second assembly throws', () => {

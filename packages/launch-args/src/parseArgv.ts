@@ -9,6 +9,11 @@ export type Entry = [string, string[]]
 export const FILE_FLAG = 'file'
 
 const URL_SCHEME = /^[a-z][a-z0-9+.-]*:\/\//i
+
+/** Whether a command-line file is a URL (http, s3, ftp, …) rather than a path. */
+export function isUrl(file: string) {
+  return URL_SCHEME.test(file)
+}
 const DRIVE_LETTER = /^[a-z]:[\\/]/i
 const MODIFIER = /^[a-z_][\w.-]*[:=]/i
 
@@ -20,9 +25,7 @@ const MODIFIER = /^[a-z_][\w.-]*[:=]/i
 export function isModifier(token: string) {
   return (
     token.startsWith('{') ||
-    (MODIFIER.test(token) &&
-      !URL_SCHEME.test(token) &&
-      !DRIVE_LETTER.test(token))
+    (MODIFIER.test(token) && !isUrl(token) && !DRIVE_LETTER.test(token))
   )
 }
 
@@ -109,17 +112,51 @@ export function modifierValue(tokens: string[], key: string) {
   return undefined
 }
 
+/** `--loc`'s tokens, which together name the regions of one view. */
+export function locValue(values: string[]) {
+  return values.join(' ').trim() || undefined
+}
+
+/**
+ * Words a flag's value is followed by, read off as one error: a flag that
+ * takes one value has no use for them.
+ */
+export function extraValuesMessage(flag: string, extra: string[]) {
+  return `--${flag} takes one value, so ${extra.map(e => `"${e}"`).join(' ')} ${extra.length > 1 ? 'apply' : 'applies'} to nothing`
+}
+
+/**
+ * The command line as option values, with the track entries apart, in order.
+ *
+ * - `--loc` takes all its tokens, so `--loc chr1:1-100 chr2:1-100` names the
+ *   regions a quoted `--loc` does.
+ * - A flag in `repeatable` may repeat, and one in `withModifiers` takes
+ *   modifiers after its value; their values come from the parsed entries. Any
+ *   other flag given twice, or followed by a token it has no use for, throws.
+ */
 export function standardizeArgv(
   args: Entry[],
   trackTypes: string[],
+  {
+    repeatable = ['track'],
+    withModifiers = ['track', 'view', 'fasta', 'chromSizes'],
+  }: { repeatable?: string[]; withModifiers?: string[] } = {},
 ): { trackList: Entry[]; [key: string]: unknown } {
   const trackList: Entry[] = []
   const rest: Record<string, unknown> = {}
   for (const [key, vals] of args) {
     if (key === FILE_FLAG || trackTypes.includes(key)) {
       trackList.push([key, vals])
+    } else if (key in rest && !repeatable.includes(key)) {
+      throw new Error(`--${key} is given more than once`)
+    } else if (key === 'loc') {
+      rest[key] = locValue(vals) ?? true
     } else {
-      rest[key] = vals[0] ?? true
+      const [value, ...extra] = vals
+      if (extra.length && !withModifiers.includes(key)) {
+        throw new Error(extraValuesMessage(key, extra))
+      }
+      rest[key] = value ?? true
     }
   }
   return { trackList, ...rest }

@@ -38,10 +38,7 @@ const render = (...modifiers: string[]) =>
   renderRegion({
     fasta: path.join(__dirname, '..', 'data', 'volvox', 'volvox.fa'),
     trackList: [
-      [
-        'vcfgz',
-        [vcf, 'display:multivariantmatrix', 'height:300', ...modifiers],
-      ],
+      ['vcf', [vcf, 'display:multivariantmatrix', 'height:300', ...modifiers]],
     ],
     loc: 'ctgA:1-8000',
     width: 800,

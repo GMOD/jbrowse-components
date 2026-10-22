@@ -1,6 +1,6 @@
+import { genomeAssembly } from '@jbrowse/launch-args'
+
 import {
-  makeChromSizesAssembly,
-  makeFastaAssembly,
   makeMultiWiggleTrackConfig,
   makeSyntenyTrackConfig,
 } from './makeConfigs.ts'
@@ -43,9 +43,9 @@ describe('makeSyntenyTrackConfig', () => {
   })
 })
 
-describe('makeFastaAssembly', () => {
+describe('genomeAssembly --fasta', () => {
   test('plain fasta → IndexedFastaAdapter with fai and no gzi', () => {
-    const a = makeFastaAssembly('genome.fa', undefined, undefined, 'rs')
+    const a = genomeAssembly('fasta', ['genome.fa'], 'rs').assembly
     expect(a.name).toBe('genome.fa')
     expect(a.sequence.trackId).toBe('rs')
     expect(a.sequence.adapter).toMatchObject({
@@ -57,7 +57,7 @@ describe('makeFastaAssembly', () => {
   })
 
   test('bgzipped fasta → BgzipFastaAdapter with a gzi location', () => {
-    const a = makeFastaAssembly('genome.fa.gz', undefined, undefined, 'rs')
+    const a = genomeAssembly('fasta', ['genome.fa.gz'], 'rs').assembly
     expect(a.sequence.adapter).toMatchObject({
       type: 'BgzipFastaAdapter',
       faiLocation: { localPath: 'genome.fa.gz.fai' },
@@ -66,7 +66,7 @@ describe('makeFastaAssembly', () => {
   })
 
   test('a .GZ fasta is bgzipped too', () => {
-    const a = makeFastaAssembly('genome.fa.GZ', undefined, undefined, 'rs')
+    const a = genomeAssembly('fasta', ['genome.fa.GZ'], 'rs').assembly
     expect(a.sequence.adapter).toMatchObject({
       type: 'BgzipFastaAdapter',
       gziLocation: { localPath: 'genome.fa.GZ.gzi' },
@@ -74,16 +74,20 @@ describe('makeFastaAssembly', () => {
   })
 
   test('a name merely ending in the letters gz is not bgzipped', () => {
-    const a = makeFastaAssembly('genome.fagz', undefined, undefined, 'rs')
+    const a = genomeAssembly('fasta', ['genome.fagz'], 'rs').assembly
     expect(a.sequence.adapter).toMatchObject({ type: 'IndexedFastaAdapter' })
     expect(a.sequence.adapter).not.toHaveProperty('gziLocation')
   })
 
   test('aliases attach a RefNameAliasAdapter only when provided', () => {
     expect(
-      makeFastaAssembly('g.fa', undefined, undefined, 'rs').refNameAliases,
+      genomeAssembly('fasta', ['g.fa'], 'rs').assembly.refNameAliases,
     ).toBeUndefined()
-    const a = makeFastaAssembly('g.fa', 'aliases.txt', undefined, 'rs')
+    const a = genomeAssembly(
+      'fasta',
+      ['g.fa', 'aliases:aliases.txt'],
+      'rs',
+    ).assembly
     expect(a.refNameAliases?.adapter).toMatchObject({
       type: 'RefNameAliasAdapter',
       location: { localPath: 'aliases.txt' },
@@ -92,9 +96,13 @@ describe('makeFastaAssembly', () => {
 
   test('cytobands attach a CytobandAdapter only when provided', () => {
     expect(
-      makeFastaAssembly('g.fa', undefined, undefined, 'rs').cytobands,
+      genomeAssembly('fasta', ['g.fa'], 'rs').assembly.cytobands,
     ).toBeUndefined()
-    const a = makeFastaAssembly('g.fa', undefined, 'cyto.bed', 'rs')
+    const a = genomeAssembly(
+      'fasta',
+      ['g.fa', 'cytobands:cyto.bed'],
+      'rs',
+    ).assembly
     expect(a.cytobands?.adapter).toMatchObject({
       type: 'CytobandAdapter',
       cytobandLocation: { localPath: 'cyto.bed' },
@@ -102,12 +110,7 @@ describe('makeFastaAssembly', () => {
   })
 
   test('a remote fasta uses uri locations for fasta + fai', () => {
-    const a = makeFastaAssembly(
-      'https://e.com/g.fa',
-      undefined,
-      undefined,
-      'rs',
-    )
+    const a = genomeAssembly('fasta', ['https://e.com/g.fa'], 'rs').assembly
     expect(a.sequence.adapter).toMatchObject({
       fastaLocation: { uri: 'https://e.com/g.fa' },
       faiLocation: { uri: 'https://e.com/g.fa.fai' },
@@ -115,14 +118,9 @@ describe('makeFastaAssembly', () => {
   })
 })
 
-describe('makeChromSizesAssembly', () => {
+describe('genomeAssembly --chromSizes', () => {
   test('chrom.sizes → ChromSizesAdapter (no sequence file)', () => {
-    const a = makeChromSizesAssembly(
-      'hg38.chrom.sizes',
-      undefined,
-      undefined,
-      'rs',
-    )
+    const a = genomeAssembly('chromSizes', ['hg38.chrom.sizes'], 'rs').assembly
     // the `.chrom.sizes` extension is stripped from the display name
     expect(a.name).toBe('hg38')
     expect(a.sequence.adapter).toEqual({
@@ -135,7 +133,11 @@ describe('makeChromSizesAssembly', () => {
   })
 
   test('shares the aliases/cytobands attach logic', () => {
-    const a = makeChromSizesAssembly('a.sizes', 'al.txt', 'cyto.bed', 'rs')
+    const a = genomeAssembly(
+      'chromSizes',
+      ['a.sizes', 'aliases:al.txt', 'cytobands:cyto.bed'],
+      'rs',
+    ).assembly
     expect(a.refNameAliases?.adapter).toMatchObject({
       location: { localPath: 'al.txt' },
     })
@@ -146,7 +148,7 @@ describe('makeChromSizesAssembly', () => {
 })
 
 describe('makeMultiWiggleTrackConfig', () => {
-  const asm = makeFastaAssembly('hg38.fa', undefined, undefined, 'rs')
+  const asm = genomeAssembly('fasta', ['hg38.fa'], 'rs').assembly
 
   // A plain string array becomes one BigWigAdapter subadapter per file, the
   // location run through makeLocation so a URL is a `uri`...

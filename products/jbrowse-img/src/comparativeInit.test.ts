@@ -2,7 +2,6 @@ import {
   comparativeViews,
   dotplotInit,
   syntenyInit,
-  syntenyViewKnobs,
 } from './comparativeInit.ts'
 
 import type { Assembly, Config, Track } from './types.ts'
@@ -18,52 +17,6 @@ function syntenyTrack(trackId: string, assemblyNames: string[]): Track {
 function config(assemblies: Assembly[], tracks: Track[] = []): Config {
   return { assemblies, assembly: assemblies[0]!, tracks }
 }
-
-describe('syntenyViewKnobs', () => {
-  test('omits every knob when no flag is set, leaving the view its defaults', () => {
-    expect(syntenyViewKnobs({})).toEqual({})
-  })
-
-  test('omits a boolean flag that is off rather than sending false', () => {
-    // the view applies an explicit false (its guard is `!== undefined`), which
-    // would override its own default
-    expect(
-      syntenyViewKnobs({
-        autoDiagonalize: false,
-        drawCurves: false,
-      }),
-    ).toEqual({})
-  })
-
-  test('passes the knobs that are set', () => {
-    expect(
-      syntenyViewKnobs({
-        autoDiagonalize: true,
-        drawCurves: true,
-        colorBy: 'query',
-        cigarMode: 'full',
-        minAlignmentLength: 10_000,
-        levelHeights: [300, 300],
-      }),
-    ).toEqual({
-      autoDiagonalize: true,
-      mark: { interpolate: 'bump' },
-      color: { field: 'query' },
-      cigarMode: 'full',
-      filter: [{ field: 'length', gte: 10_000 }],
-      levelHeights: [300, 300],
-    })
-  })
-
-  test('keeps a meaningful zero', () => {
-    // opacity 0 (fully transparent) and minAlignmentLength 0 are real values, not
-    // "unset" — a truthiness filter would drop both
-    expect(syntenyViewKnobs({ opacity: 0, minAlignmentLength: 0 })).toEqual({
-      opacity: { value: 0 },
-      filter: [{ field: 'length', gte: 0 }],
-    })
-  })
-})
 
 describe('comparativeViews', () => {
   test('throws when fewer than two assemblies were supplied', () => {
@@ -87,44 +40,10 @@ describe('dotplotInit', () => {
       [asm('a'), asm('b'), asm('c')],
       [syntenyTrack('a_b', ['a', 'b']), syntenyTrack('b_c', ['b', 'c'])],
     )
-    expect(dotplotInit(data, {})).toEqual({
+    expect(dotplotInit(data)).toEqual({
       views: [{ assembly: 'a' }, { assembly: 'b' }],
       tracks: ['a_b'],
     })
-  })
-
-  test('carries the shared comparative knobs', () => {
-    // colorBy and minAlignmentLength are read by DotplotView's init
-    // (applyInitDisplaySettings) but used to be dropped here, so `jb2export
-    // dotplot --colorBy query` silently rendered the default red
-    const data = config([asm('a'), asm('b')])
-    expect(
-      dotplotInit(data, {
-        colorBy: 'query',
-        minAlignmentLength: 5000,
-        autoDiagonalize: true,
-      }),
-    ).toEqual({
-      views: [{ assembly: 'a' }, { assembly: 'b' }],
-      tracks: [],
-      color: { field: 'query' },
-      filter: [{ field: 'length', gte: 5000 }],
-      autoDiagonalize: true,
-    })
-  })
-
-  test('omits the synteny-only knobs a dotplot has no equivalent for', () => {
-    const data = config([asm('a'), asm('b')])
-    const init = dotplotInit(data, {
-      drawCurves: true,
-      cigarMode: 'full',
-      opacity: 0.4,
-      levelHeights: [300],
-    })
-    expect(init).not.toHaveProperty('mark')
-    expect(init).not.toHaveProperty('cigarMode')
-    expect(init).not.toHaveProperty('opacity')
-    expect(init).not.toHaveProperty('levelHeights')
   })
 })
 
@@ -134,10 +53,9 @@ describe('syntenyInit', () => {
       [asm('a'), asm('b'), asm('c')],
       [syntenyTrack('a_b', ['a', 'b']), syntenyTrack('b_c', ['b', 'c'])],
     )
-    expect(syntenyInit(data, { drawCurves: true })).toEqual({
+    expect(syntenyInit(data)).toEqual({
       views: [{ assembly: 'a' }, { assembly: 'b' }, { assembly: 'c' }],
       tracks: ['a_b', 'b_c'],
-      mark: { interpolate: 'bump' },
     })
   })
 })

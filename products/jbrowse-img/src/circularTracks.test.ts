@@ -107,7 +107,7 @@ test('--track naming no track in the config fails', async () => {
 
 // The modifiers name slots on the LINEAR displays, a variant track here draws
 // chords, and a key a display does not declare fails the whole export — so
-// `height:400` beside a --vcfgz drew a chord plot until this view read
+// `height:400` beside a --vcf drew a chord plot until this view read
 // `--track`, and carrying the snapshot over killed the render instead. Both a
 // named modifier and a slot-path write land in the same warning, since neither
 // reaches the view. A typo'd value is covered by the same line, which is why

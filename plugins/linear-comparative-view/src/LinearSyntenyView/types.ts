@@ -71,10 +71,10 @@ export interface LinearSyntenyViewCommands extends SyntenyViewSharedCommands {
   // inline track config, with its assemblyNames, for a band no session list
   // holds
   tracks?: SyntenyTrackInit[] | SyntenyTrackInit[][]
-  // Pixel height of each synteny strip, one entry per level. Useful for
-  // whole-genome views where the default ~100px is too cramped for the
-  // ribbon detail to be readable.
-  levelHeights?: number[]
+  // Pixel height of each synteny strip, one entry per level, or one number for
+  // every level. Useful for whole-genome views where the default ~100px is too
+  // cramped for the ribbon detail to be readable.
+  levelHeights?: number | number[]
   // Open any genome row the launch gives no tracks collapsed to its ruler. The
   // "No tracks active / Open track selector" block costs ~90px per row, which on
   // a five-row launch is more of the viewport than the ribbons; a row is one

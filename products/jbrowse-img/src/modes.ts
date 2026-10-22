@@ -19,8 +19,8 @@ export interface ModeDescriptor {
   // MST view type, also the session-spec `type` discriminator. Absent for
   // linear, which is never selected via --spec.
   viewType?: string
-  // Renders two or more assemblies: accepts --fasta2/--loc2, the comparison
-  // track types, and the second-assembly help section.
+  // Renders two or more assemblies: a repeated --fasta or --chromSizes, and the
+  // comparison track types.
   comparative: boolean
   // Opens the tracks `--track` and the file flags name. False for the
   // comparative modes, whose levels are made of the synteny files themselves
@@ -52,7 +52,7 @@ export const modeDescriptors: Record<ViewMode, ModeDescriptor> = {
   // One assembly, several windows of it stacked with the reads that leave one
   // and arrive in another drawn between them — so `comparative: false` even
   // though it renders more than one panel. `comparative` asks whether a mode
-  // takes a SECOND ASSEMBLY (--fasta2, comparison tracks), which this does not.
+  // takes a SECOND ASSEMBLY (and comparison tracks), which this does not.
   breakpoint: {
     subcommand: 'breakpoint',
     viewType: 'BreakpointSplitView',

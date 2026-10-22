@@ -3,23 +3,12 @@ import { modeDescriptors, viewModes } from './modes.ts'
 import type { ViewMode } from './modes.ts'
 import type { AssertTrue, Covers } from './types.ts'
 import type { ThemeSelectionName } from '@jbrowse/core/ui/theme'
-import type { CigarMode } from '@jbrowse/plugin-linear-comparative-view'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
-import type {
-  SYNTENY_VIEW_FIELDS,
-  SYNTENY_FIELD_PRESETS,
-} from '@jbrowse/synteny-core'
 
 export interface OptionDef {
   name: string
   description: string
   default?: number | boolean | string
-  // Comparative modes that actually read this flag; absent means all of them.
-  // The dotplot has no ribbon shape and no levels, so its init interface carries
-  // none of drawCurves/cigarMode/opacity/levelHeights — listing them under
-  // `dotplot --help` documented flags that then silently did nothing. One table
-  // drives both the per-subcommand help and the warning in main.ts.
-  modes?: ViewMode[]
 }
 
 // Default output width in pixels, shared by the --width help default, the CLI
@@ -52,30 +41,6 @@ const trackLabelModes = [
   'hidden',
 ] as const satisfies readonly TrackLabelMode[]
 
-const cigarModes = [
-  'off',
-  'matches',
-  'full',
-] as const satisfies readonly CigarMode[]
-
-// Synteny ribbon coloring: the field the comparative views' `color` object
-// paints by. Validated here so a typo like `--colorBy quary` reports itself.
-type SyntenyColorField =
-  | (typeof SYNTENY_VIEW_FIELDS)[number]
-  | keyof typeof SYNTENY_FIELD_PRESETS
-
-const syntenyColorByModes = [
-  'strand',
-  'query',
-  'target',
-  'reference',
-  'track',
-  'identity',
-  'mapq',
-  'dnds',
-  'syntenicDepth',
-] as const satisfies readonly SyntenyColorField[]
-
 // The theme names, pinned to core's own registry so a palette added or renamed
 // there fails the build here rather than leaving the CLI silently rejecting (or
 // offering) a name that no longer matches. Light and dark are `--mode`; the
@@ -101,24 +66,23 @@ export const themeModes = ['light', 'dark'] as const
 // from applyTrackOpts.ts.
 export type AssertEnumListsCoverUpstream = [
   AssertTrue<Covers<TrackLabelMode, typeof trackLabelModes>>,
-  AssertTrue<Covers<CigarMode, typeof cigarModes>>,
-  // the CLI enumerates the named fields; a declared column is by construction
-  // unenumerable and reachable through --spec
-  AssertTrue<Covers<SyntenyColorField, typeof syntenyColorByModes>>,
   AssertTrue<Covers<ThemeName, typeof themeNames>>,
 ]
 
 const optionDefs: OptionDef[] = [
-  { name: 'fasta', description: 'Path to indexed FASTA file' },
+  {
+    name: 'fasta',
+    description:
+      'Genome FASTA or 2bit, for a name the file does not say; takes aliases: and cytobands: modifiers naming those files',
+  },
   {
     name: 'chromSizes',
     description:
       'Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view',
   },
-  { name: 'aliases', description: 'Path to reference name aliases file' },
   {
     name: 'assembly',
-    description: 'Path to assembly JSON (or "-" for stdin) or name in config',
+    description: "Which of the config's assemblies to open, by name",
   },
   {
     name: 'genome',
@@ -138,7 +102,12 @@ const optionDefs: OptionDef[] = [
   {
     name: 'loc',
     description:
-      'Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome)',
+      'Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side',
+  },
+  {
+    name: 'view',
+    description:
+      'Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump opacity=0.3 for a synteny view',
   },
   {
     name: 'out',
@@ -165,7 +134,6 @@ const optionDefs: OptionDef[] = [
     description:
       'Path to JSON file with an array of track configs (or "-" for stdin); added to the config\'s tracks, replacing any with the same trackId',
   },
-  { name: 'cytobands', description: 'Path to cytoband file for the assembly' },
   {
     name: 'themeName',
     description: `Palette for rendering: ${orList(paletteNames)}`,
@@ -201,85 +169,17 @@ const optionDefs: OptionDef[] = [
   },
 ]
 
-// Extra options accepted only by the comparative subcommands (dotplot/synteny).
-// Assemblies stack in argv order: repeat --fasta/--chromSizes per assembly and
-// put each synteny file (--paf/--chain/…) between the two it compares. Per-
-// assembly options ride on the assembly flag as `loc:`/`aliases:`/`cytobands:`
-// modifiers; --fasta2/--loc2/--aliases2 are kept as the two-assembly shorthand.
-const comparativeOptionDefs: OptionDef[] = [
-  { name: 'fasta2', description: 'Second assembly indexed FASTA (shorthand)' },
-  { name: 'aliases2', description: 'Reference name aliases for fasta2' },
-  { name: 'loc2', description: 'Location on the second assembly' },
-  {
-    name: 'autoDiagonalize',
-    description:
-      "Reorder the next assembly's chromosomes for least overlap (a clean diagonal)",
-    default: false,
-  },
-  {
-    name: 'drawCurves',
-    description: 'Draw synteny ribbons as bezier curves instead of trapezoids',
-    default: false,
-    modes: ['synteny'],
-  },
-  {
-    name: 'minAlignmentLength',
-    description: 'Hide alignments shorter than N bp (de-spaghetti a busy plot)',
-  },
-  {
-    name: 'colorBy',
-    description: `Color synteny ribbons by: ${orList(syntenyColorByModes)}. "query" gives each query chromosome a separate color; "reference" needs a stack of three or more genomes and "track" more than one alignment file`,
-  },
-  {
-    name: 'opacity',
-    description: 'Ribbon opacity 0-1 (lower reveals density)',
-    modes: ['synteny'],
-  },
-  {
-    name: 'levelHeights',
-    description:
-      'Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)',
-    modes: ['synteny'],
-  },
-  {
-    name: 'cigarMode',
-    description:
-      "CIGAR indels in synteny ribbons: 'full' (colored), 'matches' (see-through), or 'off' (one solid block per alignment, so overlapping blocks run together) [default: full]",
-    modes: ['synteny'],
-  },
-]
-
-// Comparative options accepted only by the dotplot/synteny subcommands; exposed
-// so the CLI can warn when they're passed without a comparative subcommand.
-export const comparativeOptionNames = comparativeOptionDefs.map(o => o.name)
-
-// The comparative options this mode actually honors. A flag whose `modes` list
-// excludes the mode is neither shown in that subcommand's help nor silently
-// accepted by it — main.ts warns instead.
-function comparativeOptionsFor(mode: ViewMode) {
-  return comparativeOptionDefs.filter(o => !o.modes || o.modes.includes(mode))
-}
-
-// Comparative flags the given mode ignores, so the CLI can say so rather than
-// drop them. Empty for a non-comparative mode: there the blanket "no effect
-// without the dotplot or synteny subcommand" warning already covers every one.
-export function ignoredComparativeOptions(mode: ViewMode) {
-  return comparativeOptionDefs
-    .filter(o => o.modes && !o.modes.includes(mode))
-    .map(o => o.name)
-}
-
 const examples: [string, string][] = [
   [
-    '--fasta ref.fa --bam reads.bam --loc chr1:1-10000 --out out.svg',
-    'Render BAM alignments to SVG',
+    'ref.fa reads.bam --loc chr1:1-10000 --out out.svg',
+    'Render BAM alignments to SVG; each file is typed by its name',
   ],
   [
-    '--fasta ref.fa --vcfgz variants.vcf.gz --loc chr1:1-50000 --out out.png',
-    'Render VCF variants to PNG',
+    'ref.fa --vcf variants.txt.gz --loc chr1:1-50000 --out out.png',
+    "Name a file's format with a flag when its name does not say it",
   ],
   [
-    '--fasta ref.fa --bam reads.bam height:80 color:strand --loc chr1:1-10000 --out out.svg',
+    'ref.fa reads.bam height:80 color:strand --loc chr1:1-10000 --out out.svg',
     'Custom track height and strand coloring',
   ],
   [
@@ -291,14 +191,14 @@ const examples: [string, string][] = [
     'Render from config with a JSON tracks file',
   ],
   [
-    '--fasta ref.fa.gz --cytobands cytobands.bed --bigwig signal.bw --loc chr1 --out out.svg',
+    'ref.fa.gz cytobands:cytobands.bed signal.bw --loc chr1 --out out.svg',
     'Render BigWig with cytobands',
   ],
 ]
 
 const comparativeExamples: [string, string][] = [
   [
-    'dotplot --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --out out.svg',
+    'dotplot --fasta a.fa --fasta b.fa --paf a_vs_b.paf --out out.svg',
     'Whole-genome dotplot of two assemblies via a PAF',
   ],
   [
@@ -310,6 +210,10 @@ const comparativeExamples: [string, string][] = [
     'Multi-way (3+) synteny: repeat the assembly flag, put each alignment between the pair it compares',
   ],
   [
+    'synteny --fasta a.fa --paf a_b.paf --fasta b.fa --view mark.interpolate=bump color.field=query filter.0.field=length filter.0.gte=10000 --out out.svg',
+    'Curved ribbons colored by query chromosome, alignments under 10 kb hidden',
+  ],
+  [
     'synteny --config jbrowse.json --spec spec.json --out out.svg',
     'N-way synteny from a config + session-spec JSON (see urlparams.md)',
   ],
@@ -317,7 +221,7 @@ const comparativeExamples: [string, string][] = [
 
 const circularExamples: [string, string][] = [
   [
-    'circular --fasta ref.fa --vcfgz sv.vcf.gz --out out.svg',
+    'circular ref.fa sv.vcf.gz --out out.svg',
     'Circular (chord) view of structural variants',
   ],
 ]
@@ -420,7 +324,7 @@ export function getOptionalCount(rest: Record<string, unknown>, key: string) {
 
 // Resolve a flag against a fixed set of allowed values, warning (rather than
 // silently falling back to the default) when a present value isn't one of them —
-// a typo like `--cigarMode ful` or `--trackLabels lft` should be reported, the
+// a typo like `--themeMode drak` or `--trackLabels lft` should be reported, the
 // same way an unknown option name is.
 function getEnum<T extends string>(
   rest: Record<string, unknown>,
@@ -437,37 +341,11 @@ function getEnum<T extends string>(
   return match
 }
 
-// A comma-separated numeric list (e.g. --levelHeights 300,300). A non-numeric
-// entry warns rather than being dropped in silence, which turned
-// `--levelHeights 300,abc` into a one-level list — and one value applies to
-// every level, so that read as deliberate. Undefined when the flag is absent or
-// nothing usable was given.
-export function getNumberList(rest: Record<string, unknown>, key: string) {
-  const v = rest[key]
-  if (typeof v !== 'string') {
-    return undefined
-  }
-  const list: number[] = []
-  for (const entry of v.split(',')) {
-    const n = entry.trim() === '' ? Number.NaN : Number(entry)
-    if (Number.isFinite(n)) {
-      list.push(n)
-    } else {
-      console.warn(`Warning: ignoring non-numeric entry "${entry}" in --${key}`)
-    }
-  }
-  return list.length ? list : undefined
-}
-
 // One getter per enum-valued flag, so the flag name and its allowed-value list
 // are bound in one place — a bare getEnum(rest, key, allowed) call site can pair
 // the wrong list with a key and still compile.
 export function getTrackLabels(rest: Record<string, unknown>) {
   return getEnum(rest, 'trackLabels', trackLabelModes)
-}
-
-export function getCigarMode(rest: Record<string, unknown>) {
-  return getEnum(rest, 'cigarMode', cigarModes)
 }
 
 export function getThemeName(rest: Record<string, unknown>) {
@@ -476,10 +354,6 @@ export function getThemeName(rest: Record<string, unknown>) {
 
 export function getThemeMode(rest: Record<string, unknown>) {
   return getEnum(rest, 'themeMode', themeModes)
-}
-
-export function getColorBy(rest: Record<string, unknown>) {
-  return getEnum(rest, 'colorBy', syntenyColorByModes)
 }
 
 // The output formats of a batch run, which are the extensions writeRendered
@@ -498,14 +372,9 @@ export function getFormat(rest: Record<string, unknown>) {
 // reported as unknown when batch is what is running.
 export const batchOptionDefs: OptionDef[] = [
   {
-    name: 'vcf',
+    name: 'sites',
     description:
-      'VCF (plain or bgzipped) of variants to render, one image per record',
-  },
-  {
-    name: 'bedpe',
-    description:
-      'BEDPE to render, one image per row; the format for anything a VCF cannot express (a LINX TSV reshaped by awk)',
+      'The records to render, one image each: a VCF (plain or bgzipped), or a BEDPE (.bedpe or .bedpe.gz) for anything a VCF cannot express (a LINX TSV reshaped by awk)',
   },
   {
     name: 'outDir',
@@ -555,8 +424,8 @@ export const batchOptionDefs: OptionDef[] = [
 
 // Exposed so the CLI can warn when a batch-only flag is passed without the
 // batch subcommand: every one is in knownOptions, so without this a
-// `--vcf calls.vcf` meant as `--vcfgz` (or as `batch --vcf`) passed the
-// unknown-option check and then rendered nothing from the file, silently.
+// `--sites calls.vcf` passed the unknown-option check and then rendered
+// nothing from the file, silently.
 export const batchOptionNames = batchOptionDefs.map(o => o.name)
 
 // Options a batch run cannot honor, in the two kinds it has of not honoring
@@ -581,14 +450,13 @@ const batchUnsupported = new Set([
 // the flags that take only true or false, so the tokenizer reads a data file
 // after one as a file of its own
 export const booleanOptions = new Set(
-  [...optionDefs, ...comparativeOptionDefs, ...batchOptionDefs]
+  [...optionDefs, ...batchOptionDefs]
     .filter(o => typeof o.default === 'boolean')
     .map(o => o.name),
 )
 
 export const knownOptions = new Set([
   ...optionDefs.map(o => o.name),
-  ...comparativeOptionDefs.map(o => o.name),
   ...batchOptionDefs.map(o => o.name),
   // how a --jobs run tells a worker its slice; nobody types it
   'shard',
@@ -603,7 +471,7 @@ export function buildBatchHelp(scriptName: string) {
   ]
   const pad = Math.max(...defs.map(o => o.name.length))
   return [
-    `Usage: ${scriptName} batch --vcf <file> [options]`,
+    `Usage: ${scriptName} batch --sites <file> [options]`,
     '',
     'Renders one image per record, a contig a row. Loci on one contig are a',
     'linear view, their windows side by side: the two ends of a deletion, a',
@@ -639,19 +507,19 @@ export function buildBatchHelp(scriptName: string) {
     'Examples:',
     ...formatExamples(scriptName, [
       [
-        'batch --vcf calls.vcf.gz --fasta ref.fa --bam tumor.bam --outDir figs --flank 1000',
+        'batch --sites calls.vcf.gz ref.fa tumor.bam --outDir figs --flank 1000',
         'A contact sheet of every junction in a callset',
       ],
       [
-        'batch --vcf calls.vcf.gz --genome hg38 --bam tumor.bam --limit 20',
+        'batch --sites calls.vcf.gz --genome hg38 tumor.bam --limit 20',
         'The first 20, to check the framing before committing to the whole run',
       ],
       [
-        'batch --vcf snvs.vcf.gz --genome hg38 --bam tumor.bam --passOnly',
+        'batch --sites snvs.vcf.gz --genome hg38 tumor.bam --passOnly',
         'Small variants at base resolution, reads with each variant sorted to the top',
       ],
       [
-        'batch --bedpe linx_links.bedpe --genome hg38 --bam tumor.bam',
+        'batch --sites linx_links.bedpe --genome hg38 tumor.bam',
         'The same from a BEDPE, for a caller whose output is not a VCF',
       ],
     ]),
@@ -697,23 +565,20 @@ function examplesForMode(mode: ViewMode) {
   }
 }
 
-// Help for a subcommand. Dotplot/synteny compare two assemblies (second-assembly
-// options + comparison file types); circular/linear are single-assembly.
+// Help for a subcommand. Dotplot/synteny compare assemblies (the comparison
+// file types); circular/linear are single-assembly.
 function buildSubcommandHelp(
   scriptName: string,
   mode: ViewMode,
   syntenyTrackTypes: string[],
 ) {
   const { comparative } = modeDescriptors[mode]
-  const defs = comparative
-    ? [...optionDefs, ...comparativeOptionsFor(mode)]
-    : optionDefs
-  const pad = Math.max(...defs.map(o => o.name.length))
+  const pad = Math.max(...optionDefs.map(o => o.name.length))
   return [
     `Usage: ${scriptName} ${modeDescriptors[mode].subcommand} [options]`,
     '',
     'Options:',
-    ...formatOpts(defs, pad),
+    ...formatOpts(optionDefs, pad),
     '',
     'Examples:',
     ...formatExamples(scriptName, examplesForMode(mode)),
@@ -744,7 +609,7 @@ export function buildHelp(
   return [
     `Usage: ${scriptName} [options]`,
     `       ${scriptName} <${subcommandNames.join('|')}> [options]`,
-    `       ${scriptName} batch --vcf <file> [options]`,
+    `       ${scriptName} batch --sites <file> [options]`,
     `       ${scriptName} list [genome] [filter]`,
     '',
     'Options:',
@@ -759,7 +624,7 @@ export function buildHelp(
     '',
     `Comparative subcommands (run "${scriptName} dotplot --help"): ${subcommandNames.join(', ')}`,
     '',
-    `Whole callsets: "${scriptName} batch --vcf calls.vcf.gz" writes one image per record (run "${scriptName} batch --help")`,
+    `Whole callsets: "${scriptName} batch --sites calls.vcf.gz" writes one image per record (run "${scriptName} batch --help")`,
     '',
     `Discovery: "${scriptName} list" lists genomes.jbrowse.org assemblies; "${scriptName} list <genome> [filter]" lists a genome's tracks`,
   ].join('\n')

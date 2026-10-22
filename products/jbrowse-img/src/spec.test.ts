@@ -1,6 +1,10 @@
-import { dotplotViewKnobs, syntenyViewKnobs } from './comparativeInit.ts'
 import { subcommandForViewType, viewTypeModes } from './modes.ts'
-import { parseSpec, specMode, viewSettingsFromSpec } from './spec.ts'
+import {
+  parseSpec,
+  specMode,
+  viewSettingsFromSpec,
+  withViewSettings,
+} from './spec.ts'
 
 import type { ViewSpec } from './spec.ts'
 
@@ -19,40 +23,25 @@ describe('viewSettingsFromSpec', () => {
       mark: { interpolate: 'bump' },
     })
   })
+})
 
-  it('lets an explicit flag win over the spec', () => {
-    // `--spec view.json --opacity 0.2` parsed and validated --opacity, then applied
-    // it nowhere
+describe('withViewSettings', () => {
+  it('writes --view over the spec, member by member', () => {
+    const settings = viewSettingsFromSpec({
+      ...spec,
+      mark: { type: 'link', interpolate: 'bump' },
+    })
     expect(
-      viewSettingsFromSpec(spec, syntenyViewKnobs({ opacity: 0.2 })),
-    ).toMatchObject({ opacity: { value: 0.2 } })
-  })
-
-  it('leaves a setting the flags never mention alone', () => {
-    expect(
-      viewSettingsFromSpec(spec, syntenyViewKnobs({ colorBy: 'query' })),
+      withViewSettings(settings, { mark: { interpolate: 'linear' } }),
     ).toMatchObject({
       opacity: 0.9,
-      mark: { interpolate: 'bump' },
-      color: { field: 'query' },
+      mark: { type: 'link', interpolate: 'linear' },
     })
+    expect(settings.mark).toEqual({ type: 'link', interpolate: 'bump' })
   })
 
-  it('leaves a spec boolean alone when the flag is off', () => {
-    // an absent boolean flag arrives as false, and the view applies an explicit
-    // false — so the knob builder has to drop it before the merge sees it
-    expect(
-      viewSettingsFromSpec(spec, syntenyViewKnobs({ drawCurves: false })),
-    ).toMatchObject({ mark: { interpolate: 'bump' } })
-  })
-
-  it('merges only the shared knobs for a dotplot', () => {
-    const settings = viewSettingsFromSpec(
-      { type: 'DotplotView', views: [], color: { field: 'target' } },
-      dotplotViewKnobs({ colorBy: 'query', opacity: 0.2 }),
-    )
-    expect(settings).toMatchObject({ color: { field: 'query' } })
-    expect(settings).not.toHaveProperty('opacity')
+  it('leaves the settings alone with no --view', () => {
+    expect(withViewSettings({ a: 1 })).toEqual({ a: 1 })
   })
 })
 

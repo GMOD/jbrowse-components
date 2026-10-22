@@ -85,12 +85,11 @@ test('pileup.showConnectors=true enables the curved-connector overlay', async ()
 // VCF track (instead of the default LinearVariantDisplay) and renders its cells.
 test('display:multivariant exports the multi-sample variant display', async () => {
   const svg = await renderRegion({
-    fasta,
-    aliases,
+    argv: [['fasta', [fasta, `aliases:${aliases}`]]],
     loc: 'ctgA:2900-3300',
     noRasterize: true,
     trackList: [
-      ['vcfgz', [multiVcf, 'display:multivariant', 'height:500', 'force:true']],
+      ['vcf', [multiVcf, 'display:multivariant', 'height:500', 'force:true']],
     ],
   })
   assert.ok(svg.includes('<svg'), 'output should be SVG')

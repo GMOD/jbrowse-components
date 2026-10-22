@@ -187,13 +187,16 @@ jbrowse-desktop --genome hg38 tumor.bam --track hg38-ncbiRefSeqCurated --loc EGF
 jbrowse-desktop myproject/config.json extra.bw --loc chr1:1-100,000
 ```
 
-- A FASTA, 2bit or `.chrom.sizes` is the genome, and any other file opens as a
-  track, typed by its name. `name:<label>` and `index:<file>` can follow a file.
+- A FASTA, 2bit or `.chrom.sizes` is the genome, which `aliases:<file>` and
+  `cytobands:<file>` can follow. Any other file opens as a track, typed by its
+  name, and `name:<label>` and `index:<file>` can follow it.
 - A typed flag such as `--bam` or `--bigwig` sets a file's type whatever its
   name says; `jbrowse-desktop --help` lists them.
 - `--genome` opens a genome from
   [genomes.jbrowse.org](https://genomes.jbrowse.org), and `--track` adds one of
   its tracks by trackId (`jb2export list hg38` prints them).
+- `--view` writes settings on the view by their session-spec names, such as
+  `--view axis.grid=false`.
 - Paths resolve against the directory the command runs in.
 - Desktop skips display settings such as `height:200` for now, and jb2export's
   image flags such as `--width`, and names what it skipped once the session

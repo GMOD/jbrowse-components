@@ -2,6 +2,7 @@ import path from 'node:path'
 
 import {
   isDataFile,
+  isModifier,
   launchFlags,
   launchPlan,
   parseArgv,
@@ -167,8 +168,9 @@ const DESKTOP_FLAGS = new Map([
  *   Chromium, Electron or OS switch, which carries any value after an `=` and
  *   so takes nothing after it.
  * - Any other flag is one of jb2export's that Desktop does not take (`--width
- *   1400`, `--multiwig a.bw,b.bw`): it goes with its value, and is reported,
- *   so the value cannot read as a file of its own.
+ *   1400`, `--multiwig a.bw,b.bw`): it goes with its value and the modifiers
+ *   after it, and is reported, so none of them reads as a file of its own or
+ *   attaches to the entry before it.
  * - A bare config.json is the config the files open on, so `jbrowse-desktop
  *   project/config.json reads.bam` reads as `--config`.
  */
@@ -197,10 +199,15 @@ function launchArgs(args: readonly string[]) {
         i++
       }
     } else if (arg.startsWith('--') && !name.includes('-')) {
-      ignored.push(takesNext ? `${arg} ${next}` : arg)
+      const given = [arg]
       if (takesNext) {
+        given.push(next)
         i++
       }
+      while (i + 1 < args.length && isModifier(args[i + 1]!)) {
+        given.push(args[++i]!)
+      }
+      ignored.push(given.join(' '))
     }
   }
   return { kept, ignored }

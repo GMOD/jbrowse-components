@@ -151,12 +151,9 @@ describe('alignments modifiers', () => {
     'minmax:0:10',
     'resolution:fine',
   ])('%s is no modifier: its slot is the spelling', opt => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-    expect(buildDisplaySnapshot('alignments', [opt]).snap).toEqual({})
-    expect(warn).toHaveBeenCalledWith(
-      `Warning: unknown track option "${opt.split(':')[0]}"`,
+    expect(() => buildDisplaySnapshot('alignments', [opt])).toThrow(
+      `unknown track option "${opt.split(':')[0]}:"`,
     )
-    warn.mockRestore()
   })
 })
 
@@ -178,7 +175,7 @@ describe('feature modifiers', () => {
   })
 
   // A modifier aimed at the wrong track type used to be dropped in silence, so
-  // `--gffgz genes.gff.gz sashimi:down` looked like it had worked.
+  // `--gff genes.gff.gz sashimi:down` looked like it had worked.
   test('alignment-only modifiers warn on a feature track', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const { snap } = buildDisplaySnapshot('feature', [
@@ -286,15 +283,6 @@ describe('alignments settings a static export cannot reach any other way', () =>
       buildDisplaySnapshot('alignments', ['svSignal:only', 'spliced:exclude'])
         .snap.filter,
     ).toEqual({ svSignal: 'only', spliced: 'exclude' })
-  })
-
-  test('properPairs: refuses, naming svSignal:only', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    expect(() =>
-      buildDisplaySnapshot('alignments', ['properPairs:exclude']),
-    ).toThrow(/svSignal:only/)
-    expect(warn).not.toHaveBeenCalled()
-    warn.mockRestore()
   })
 
   test('mapq: writes the minimum mapping quality beside the other filters', () => {
@@ -614,20 +602,19 @@ test('a {...} token is merged as raw JSON', () => {
   expect(snap.color).toEqual({ field: 'strand' })
 })
 
-test('unknown modifier warns and does nothing', () => {
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-  buildDisplaySnapshot('alignments', ['colour:red'])
-  expect(warn).toHaveBeenCalledWith('Warning: unknown track option "colour"')
-  warn.mockRestore()
+test('an unknown modifier throws, naming the known ones', () => {
+  expect(() => buildDisplaySnapshot('alignments', ['colour:red'])).toThrow(
+    /unknown track option "colour:"; the options are height, .*color/,
+  )
 })
 
 // The modifier table is keyed by raw CLI input, so a name inherited from
 // Object.prototype read as a known modifier and died on its undefined `on` list
 test('an Object.prototype key is an unknown modifier, not a crash', () => {
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
   for (const name of ['constructor', 'toString', 'hasOwnProperty']) {
-    expect(buildDisplaySnapshot('alignments', [`${name}:x`]).snap).toEqual({})
-    expect(warn).toHaveBeenCalledWith(`Warning: unknown track option "${name}"`)
+    expect(() => buildDisplaySnapshot('alignments', [`${name}:x`])).toThrow(
+      `unknown track option "${name}:"`,
+    )
   }
   // the alias tables are keyed the same way
   expect(
@@ -636,7 +623,6 @@ test('an Object.prototype key is an unknown modifier, not a crash', () => {
   expect(buildDisplaySnapshot('alignments', ['sort:constructor']).sort).toEqual(
     { field: 'constructor' },
   )
-  warn.mockRestore()
 })
 
 // `index:` is consumed at config-build time (readData) but still rides in a

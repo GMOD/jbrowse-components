@@ -10,12 +10,7 @@ import type { SessionSpec, SpecTrackEntry, SpecView } from './decode.ts'
 
 export interface ImgRecipe {
   command: string
-  // view settings the command has no flag for, so its picture can differ
-  dropped: string[]
 }
-
-const LINEAR_FLAGS = new Set(['trackLabels', 'axis'])
-const LINEAR_CARRIED = new Set(['type', 'assembly', 'loc', 'tracks'])
 
 export function quote(arg: string) {
   return /^[\w.,:/@%+=-]+$/.test(arg) ? arg : `'${arg.replaceAll("'", `'\\''`)}'`
@@ -41,9 +36,16 @@ function trackArgs(entry: SpecTrackEntry) {
   ].map(quote)
 }
 
+// The view's own settings go on `--view` as one JSON argument; `trackLabels`
+// and `axis.grid` also set the export's options of those names, since the
+// export draws labels and gridlines by its own options, not the view's.
 function linearArgs(view: SpecView) {
+  const { type, assembly, loc, tracks, ...settings } = view
   return [
-    ['--assembly', view.assembly, '--loc', view.loc].map(a => quote(a!)),
+    ['--assembly', assembly, '--loc', loc].map(a => quote(a!)),
+    ...(Object.keys(settings).length
+      ? [['--view', quote(JSON.stringify(settings))]]
+      : []),
     ...(view.trackLabels ? [['--trackLabels', String(view.trackLabels)]] : []),
     ...((view.axis as { grid?: boolean } | undefined)?.grid
       ? [['--showGridlines']]
@@ -81,10 +83,5 @@ export function imgRecipe(
       ...(linear ? [] : heredoc('session.json', { views: [view] })),
       lines.join(' \\\n  '),
     ].join('\n'),
-    dropped: linear
-      ? Object.keys(view).filter(
-          field => !LINEAR_CARRIED.has(field) && !LINEAR_FLAGS.has(field),
-        )
-      : [],
   }
 }

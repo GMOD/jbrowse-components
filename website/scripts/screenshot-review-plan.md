@@ -418,15 +418,14 @@ tolerance ball for "did this figure move".
   one, so a shared height only adds dead space to the part that did not need it.
 
 - **jbrowse-img (CliSpec) gene tracks: use
-  `--genome <genome> --track <trackId>`, not a raw `--gffgz <url>`.**
-  `--genome hg38` supplies the assembly (built-in refName aliases, no
-  `--fasta`/`--aliases` needed) plus a bonus ideogram, and
-  `--track hg38-ncbiRefSeqCurated` adds a pre-configured hosted NCBI RefSeq
-  track. A raw UCSC `hg38.gff.gz` also carries RefSeqGene `match`/`region`
-  features with no `Name` → they render as bare-UUID full-width bars. Find
-  hosted trackIds with `jb2export list <genome> <filter>`. `--track` tokens
-  stack above `--bam`/`--cram`/`--hic` in argv order (gene-on-top = list
-  `--track` before the data track).
+  `--genome <genome> --track <trackId>`, not a raw GFF URL.** `--genome hg38`
+  supplies the assembly (built-in refName aliases, no genome file or `aliases:`
+  needed) plus a bonus ideogram, and `--track hg38-ncbiRefSeqCurated` adds a
+  pre-configured hosted NCBI RefSeq track. A raw UCSC `hg38.gff.gz` also carries
+  RefSeqGene `match`/`region` features with no `Name` → they render as bare-UUID
+  full-width bars. Find hosted trackIds with `jb2export list <genome> <filter>`.
+  `--track` tokens stack above `--bam`/`--cram`/`--hic` in argv order
+  (gene-on-top = list `--track` before the data track).
 - **NCBI gene tracks already in `config_demo.json`** (no rehosting needed):
   `ncbi_refseq_109_hg38_latest` (hg38), `ncbi_gff_hg19` (hg19). Add the trackId
   as the first entry in the session `tracks` array.

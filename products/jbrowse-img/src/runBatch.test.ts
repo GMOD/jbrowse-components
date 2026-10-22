@@ -57,7 +57,7 @@ function opts(extra: Record<string, unknown> = {}) {
   const bedpe = path.join(dir, 'j.bedpe')
   fs.writeFileSync(bedpe, BEDPE)
   return {
-    bedpe,
+    sites: bedpe,
     outDir: path.join(dir, 'out'),
     format: 'svg' as const,
     ...extra,
@@ -170,7 +170,7 @@ describe('runBatch', () => {
       spec: { type: 'LinearGenomeView', loc: 'chr1:1-2' },
     })
     await runBatch({
-      vcf,
+      sites: vcf,
       outDir: path.join(dir, 'out'),
       format: 'svg',
       flank: 600,
@@ -288,7 +288,7 @@ describe('runBatch', () => {
       alt: ['12/30', '0/28'],
     })
     await runBatch({
-      vcf,
+      sites: vcf,
       outDir: path.join(dir, 'out'),
       format: 'svg',
       manifest: true,
@@ -330,7 +330,7 @@ describe('runBatch', () => {
 
   it('draws an event that visits more than two loci once more, every locus in one image', async () => {
     await runBatch({
-      vcf: eventVcf(),
+      sites: eventVcf(),
       outDir: path.join(dir, 'out'),
       format: 'svg',
       flank: 600,
@@ -371,7 +371,7 @@ describe('runBatch', () => {
       ].join('\n'),
     )
     await runBatch({
-      vcf,
+      sites: vcf,
       outDir: path.join(dir, 'out'),
       format: 'svg',
       flank: 600,
@@ -406,7 +406,7 @@ describe('runBatch', () => {
       ].join('\n'),
     )
     const outDir = path.join(dir, 'out')
-    const base = { vcf, outDir, format: 'svg' as const }
+    const base = { sites: vcf, outDir, format: 'svg' as const }
     await runBatch({ ...base, limit: 2, progress: steps().progress })
     expect(fs.readdirSync(outDir).sort()).toEqual([
       '01_chr1_99999.svg',
@@ -439,7 +439,7 @@ describe('runBatch', () => {
       .mockImplementation(() => true)
     try {
       await runBatch({
-        vcf: tenInsertions(),
+        sites: tenInsertions(),
         outDir: path.join(dir, 'out'),
         format: 'svg',
         manifest: true,
@@ -487,7 +487,7 @@ for (const [i, file] of names.entries()) {
   it('renders in worker processes and writes their rows as one manifest, in callset order', async () => {
     const { seen, progress } = steps()
     const { done, failures } = await runBatch({
-      vcf: tenInsertions(),
+      sites: tenInsertions(),
       outDir: path.join(dir, 'out'),
       format: 'svg',
       manifest: true,

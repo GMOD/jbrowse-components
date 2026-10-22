@@ -36,10 +36,11 @@ import type { Entry } from '@jbrowse/launch-args'
 // and 44 to 53 s reopening them per record.
 
 export interface BatchOpts extends Opts {
-  /** BEDPE of junctions; mutually exclusive with `vcf` */
-  bedpe?: string
-  /** VCF (optionally bgzipped) of junctions; mutually exclusive with `bedpe` */
-  vcf?: string
+  /**
+   * The records to render: a VCF (optionally bgzipped), or a BEDPE when its
+   * name ends `.bedpe` or `.bedpe.gz`
+   */
+  sites?: string
   outDir: string
   /** bp of context around each locus; the default is `recordFlank`'s */
   flank?: number
@@ -128,25 +129,22 @@ function readMaybeGzip(file: string) {
   return (gzipped ? zlib.gunzipSync(buf) : buf).toString('utf8')
 }
 
-// Junctions from whichever input was given. BEDPE stays the interchange format
-// (a LINX TSV, a caller this tool has never heard of, anything an awk can
-// reshape); --vcf is the shortcut for what callers actually emit.
-function readJunctions(opts: BatchOpts) {
-  const { bedpe, vcf, passOnly } = opts
-  if (bedpe && vcf) {
-    throw new Error('pass --bedpe or --vcf, not both')
-  } else if (vcf) {
-    return parseVcfJunctions(readMaybeGzip(vcf), { passOnly })
-  } else if (bedpe) {
+// Junctions from --sites. BEDPE stays the interchange format (a LINX TSV, a
+// caller this tool has never heard of, anything an awk can reshape); a VCF is
+// what callers actually emit.
+function readJunctions({ sites, passOnly }: BatchOpts) {
+  if (!sites) {
+    throw new Error('batch needs --sites <file>: a VCF or a BEDPE')
+  } else if (/\.bedpe(\.b?gz)?$/i.test(sites)) {
     if (passOnly) {
       console.warn(
-        'Warning: --passOnly reads a VCF FILTER column; --bedpe has none',
+        'Warning: --passOnly reads a VCF FILTER column; a BEDPE has none',
       )
     }
     // a BEDPE row carries no EVENT, so no panel order is ever asked for
-    return { ...parseBedpe(fs.readFileSync(bedpe, 'utf8')), refNames: [] }
+    return { ...parseBedpe(readMaybeGzip(sites)), refNames: [] }
   } else {
-    throw new Error('batch needs --vcf <file> or --bedpe <file>')
+    return parseVcfJunctions(readMaybeGzip(sites), { passOnly })
   }
 }
 
@@ -188,7 +186,7 @@ export async function runBatch(opts: BatchOpts) {
       `batch renders one view per junction, so ${fixed.map(k => `--${k}`).join(' and ')} cannot be combined with it: ${fixed.length > 1 ? 'they fix' : 'it fixes'} the view, and every row would render the same image`,
     )
   }
-  const source = opts.vcf ?? opts.bedpe
+  const source = opts.sites
   const { records, skipped, refNames } = readJunctions(opts)
   // Counted rather than listed one line each: a whole-genome callset's
   // insertions are hundreds of rows, and burying the run's real output under

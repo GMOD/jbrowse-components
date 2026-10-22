@@ -16,7 +16,7 @@ const { runBatch } = await import('../src/runBatch.ts')
 test('renders small variants sorted and marked at the variant, and counts who differs', async () => {
   const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb2export-batch-'))
   const { done, failures, skipped } = await runBatch({
-    vcf: path.join(dataDir, 'volvox.filtered.vcf.gz'),
+    sites: path.join(dataDir, 'volvox.filtered.vcf.gz'),
     fasta: path.join(dataDir, 'volvox.fa'),
     trackList: [['bam', [path.join(dataDir, 'volvox-sorted.bam')]]],
     outDir,

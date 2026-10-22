@@ -33,7 +33,7 @@ test('a linear view is flags, with each track setting in one JSON argument', () 
   )
   expect(recipe.command).toContain('--assembly GRCh38 --loc chr2:135,787,850-135,876,467')
   expect(recipe.command).toContain('--width 1500 --out figure.svg')
-  expect(recipe.dropped).toEqual(['highlight'])
+  expect(recipe.command).toContain(`--view '{"highlight":["chr2:1-2"]}'`)
 })
 
 // jbrowse-img reads no dotted key in its JSON argument

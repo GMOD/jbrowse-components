@@ -5,7 +5,6 @@ import type {
   VariantSortColumn,
 } from '@jbrowse/alignments-core/variantSortColumn'
 import type { Assembly, Entry, Track } from '@jbrowse/launch-args'
-import type { CigarMode } from '@jbrowse/plugin-linear-comparative-view'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
 // Compile-time assertion that a type is empty. Used with `Exclude<...>` to prove
@@ -63,8 +62,6 @@ export interface Opts {
   // referenceable via --track. See resolveHub.ts.
   genome?: string
   fasta?: string
-  aliases?: string
-  cytobands?: string
   defaultSession?: boolean
   trackList?: Entry[]
   tracks?: string
@@ -83,15 +80,9 @@ export interface Opts {
   // — each --fasta/--chromSizes opens an assembly, each synteny file binds to the
   // gap it sits in. See comparativeArgs.ts.
   argv?: Entry[]
-  // Comparative view-level settings exposed as CLI flags so the simple
-  // dotplot/synteny subcommands can opt in without a full --spec JSON.
-  autoDiagonalize?: boolean
-  drawCurves?: boolean
-  minAlignmentLength?: number
-  colorBy?: string
-  opacity?: number
-  levelHeights?: number[]
-  cigarMode?: CigarMode
+  // `--view`'s settings, written over the view's own: a session spec's view
+  // object, as `viewSettings` reads them off the command line
+  view?: Record<string, unknown>
   // N-way comparative views: a session-spec JSON (inline or path to .json,
   // the same shape as the web's `&session=spec-`) that supplies the view's
   // sub-views and level-indexed tracks directly. Assemblies and synteny-track

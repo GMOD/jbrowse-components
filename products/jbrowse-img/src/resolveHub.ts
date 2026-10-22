@@ -1,22 +1,19 @@
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 import { fetchHub } from '@jbrowse/core/util/fetchHub'
+import { isUrl } from '@jbrowse/launch-args'
 
 import type { Config } from './types.ts'
 
 // genomes.jbrowse.org hosts a self-contained config.json per assembly: the
 // assembly (remote 2bit sequence, refNameAliases, cytobands, geneticCodes) plus
 // its full track set, all as remote URIs. `--genome` pulls one of these so a user
-// gets cytobands/aliasing/hosted trackIds without hand-wiring --fasta/--aliases.
+// gets cytobands/aliasing/hosted trackIds without hand-wiring a genome file.
 // The fetch is core's fetchHub (shared with the embedded mounts), which also
 // stamps each relative URI with the config URL as baseUri.
 
 // fetch has no timeout of its own, and a stalled connection otherwise hangs
 // the command forever
 export const FETCH_TIMEOUT_MS = 30000
-
-function isUrl(str: string) {
-  return /^https?:\/\//i.test(str)
-}
 
 // Fetch a --config that is itself a URL. Same baseUri stamping as fetchHub:
 // jbrowse-web resolves relative URIs because it loads the config from a URL;
@@ -60,6 +57,11 @@ export async function resolveConfigObject({
     })) as unknown as Config
   }
   if (config && isUrl(config)) {
+    if (!/^https?:\/\//i.test(config)) {
+      throw new Error(
+        `--config ${config}: JBrowse fetches a config over http or https, or reads one from a file`,
+      )
+    }
     return fetchConfig(config)
   }
   return undefined

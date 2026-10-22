@@ -1,7 +1,13 @@
 import path from 'node:path'
 
 import { guessTrack, guessTrackType } from './fileAdapter.ts'
-import { FILE_FLAG, modifierValue } from './parseArgv.ts'
+import {
+  FILE_FLAG,
+  isDataFile,
+  isUrl,
+  modifierValue,
+  splitModifier,
+} from './parseArgv.ts'
 
 import type { Adapter, Location } from './fileAdapter.ts'
 
@@ -21,33 +27,33 @@ export interface Track {
   [key: string]: unknown
 }
 
-const URL_SCHEME = /^[a-z][a-z0-9+.-]*:\/\//i
-
 /**
- * A command-line file as a JBrowse location: a URL (http, s3, ftp, …) is a
- * `uri`, anything else a local path.
+ * A command-line file as a JBrowse location: a URL is a `uri`, anything else a
+ * local path.
  */
 export function makeLocation(file: string): Location {
-  return URL_SCHEME.test(file)
+  return isUrl(file)
     ? { uri: file, locationType: 'UriLocation' }
     : { localPath: file, locationType: 'LocalPathLocation' }
 }
 
 /**
- * The adapter each typed track flag names. `--bam reads` opens `reads` as BAM
- * whatever its name says, and `--file reads.bam` (or a bare `reads.bam`) types
- * it by name; both build through the add-track format table.
+ * The format each typed track flag names, as the adapters that read it: plain,
+ * then bgzipped and tabix-indexed. `--vcf calls` opens `calls` as a VCF
+ * whatever its name says, and `--file calls.vcf.gz` (or a bare
+ * `calls.vcf.gz`) types it by name; both build through the add-track format
+ * table.
  */
 export const trackFlagAdapters = {
-  bam: 'BamAdapter',
-  cram: 'CramAdapter',
-  bigwig: 'BigWigAdapter',
-  vcfgz: 'VcfTabixAdapter',
-  gffgz: 'Gff3TabixAdapter',
-  hic: 'HicAdapter',
-  bigbed: 'BigBedAdapter',
-  bedgz: 'BedTabixAdapter',
-} as const
+  bam: ['BamAdapter'],
+  cram: ['CramAdapter'],
+  bigwig: ['BigWigAdapter'],
+  bigbed: ['BigBedAdapter'],
+  hic: ['HicAdapter'],
+  vcf: ['VcfAdapter', 'VcfTabixAdapter'],
+  gff: ['Gff3Adapter', 'Gff3TabixAdapter'],
+  bed: ['BedAdapter', 'BedTabixAdapter'],
+} as const satisfies Record<string, readonly string[]>
 
 export type TrackFlag = keyof typeof trackFlagAdapters
 
@@ -55,6 +61,17 @@ export const trackFlags = Object.keys(trackFlagAdapters) as TrackFlag[]
 
 function isTrackFlag(flag: string): flag is TrackFlag {
   return flag in trackFlagAdapters
+}
+
+// The name's own adapter when it is one of the flag's, else the plain one, or
+// the tabix one for a `.gz` name or a named index.
+function flagAdapterType(flag: TrackFlag, file: string, index?: string) {
+  const adapters: readonly string[] = trackFlagAdapters[flag]
+  const byName = guessTrack({ location: file, mapLocation: makeLocation })
+    .adapter.type
+  return adapters.includes(byName)
+    ? byName
+    : adapters[index || /\.b?gz$/i.test(file) ? adapters.length - 1 : 0]!
 }
 
 const SEQUENCE_TRACK = 'ReferenceSequenceTrack'
@@ -125,6 +142,48 @@ export function sequenceAssembly(
   }
 }
 
+const GENOME_MODIFIERS = new Set(['aliases', 'cytobands'])
+
+/**
+ * The assembly a genome argument opens, `--fasta ref.fa`, `--chromSizes
+ * a.sizes` or a bare genome file, with the files its `aliases:` and
+ * `cytobands:` modifiers name. `--fasta` opens a name the format table does not
+ * know as an indexed FASTA. `unused` is the modifiers it has no use for, for
+ * the caller to report.
+ */
+export function genomeAssembly(
+  flag: string,
+  [file, ...mods]: string[],
+  trackId?: string,
+) {
+  if (!file) {
+    throw new Error(`--${flag} requires a file argument`)
+  }
+  const adapter = fileAdapter(file, {
+    adapterType:
+      flag === 'chromSizes'
+        ? 'ChromSizesAdapter'
+        : flag === 'fasta' && !isDataFile(file)
+          ? 'IndexedFastaAdapter'
+          : undefined,
+  })
+  if (!isSequenceAdapter(adapter)) {
+    throw new Error(
+      `--${flag} ${file} is not a genome: a FASTA, 2bit or .chrom.sizes file`,
+    )
+  }
+  return {
+    assembly: sequenceAssembly(adapter, file, {
+      aliases: modifierValue(mods, 'aliases'),
+      cytobands: modifierValue(mods, 'cytobands'),
+      trackId,
+    }),
+    unused: mods.filter(
+      mod => !GENOME_MODIFIERS.has(splitModifier(mod)?.[0] ?? ''),
+    ),
+  }
+}
+
 /**
  * A track for one file argument, labelled by `name:` or the file's basename.
  * Without `assemblyName` it names no assembly, for a caller that learns the
@@ -141,9 +200,12 @@ export function fileTrack(
   if (!isTrackFlag(flag) && flag !== FILE_FLAG) {
     throw new Error(`--${flag} is not a file flag`)
   }
+  const index = modifierValue(mods, 'index')
   const adapter = fileAdapter(file, {
-    adapterType: isTrackFlag(flag) ? trackFlagAdapters[flag] : undefined,
-    index: modifierValue(mods, 'index'),
+    adapterType: isTrackFlag(flag)
+      ? flagAdapterType(flag, file, index)
+      : undefined,
+    index,
   })
   if (isSequenceAdapter(adapter)) {
     throw new Error(

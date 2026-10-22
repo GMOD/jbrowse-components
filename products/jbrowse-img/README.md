@@ -25,17 +25,16 @@ If you are a developer and want to modify the code, see the
 
 A multi-track human (hg19) view at the IFFO2 / ALDH4A1 locus (NCBI RefSeq genes,
 ClinGen gene–disease mapping, phyloP conservation, and SKBR3 nanopore reads),
-rendered straight from public files in a single command (`--aliases` reconciles
-the `1` / `chr1` / `NC_000001.10` refname styles across the files):
+rendered straight from public files in a single command. Each file is typed by
+its name, and the genome's `aliases:` file reconciles the `1` / `chr1` /
+`NC_000001.10` refname styles across the files:
 
 ![A multi-track hg19 view: NCBI RefSeq genes, ClinGen gene-disease mapping, phyloP conservation, and SKBR3 nanopore reads](https://jbrowse.org/jb2-figures/jbrowse-img/1.e2e6cac81c8d.png)
 
 <!-- jb2export: 1 -->
 
 ```bash
-jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
-  --aliases https://jbrowse.org/genomes/hg19/hg19_aliases.txt \
-  --gffgz https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz '{"filter":{"genes":"only"}}' \
+jb2export https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz aliases:https://jbrowse.org/genomes/hg19/hg19_aliases.txt https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz '{"filter":{"genes":"only"}}' \
   --bigbed https://jbrowse.org/genomes/hg19/clinGen/clinGenGeneDisease.bb \
   --bigwig https://hgdownload.soe.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw \
   --cram https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.cram \
@@ -74,18 +73,14 @@ jb2export yourfile.fa yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.svg
 
 ### Remote files
 
-An example with remote files, human hg19 and several tracks. `--aliases`
-reconciles refname differences, e.g. the fasta contains 1 for chr1, the bigbed
-contains chr1 and the gff contains NC_000001.10
+An example with remote files, human hg19 and several tracks. The genome's
+`aliases:` file reconciles refname differences, e.g. the fasta contains 1 for
+chr1, the bigbed contains chr1 and the gff contains NC_000001.10
 
 <!-- jb2export: remote_files -->
 
 ```bash
-jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
-  --aliases https://jbrowse.org/genomes/hg19/hg19_aliases.txt \
-  --bigbed https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb \
-  --gffgz https://jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz \
-  --bigwig https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw \
+jb2export https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz aliases:https://jbrowse.org/genomes/hg19/hg19_aliases.txt https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb https://jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw \
   --loc 1:48,683,542-48,907,531 --width 1200 --out remote_files.png
 ```
 
@@ -95,9 +90,10 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 
 `--genome <name>` pulls a whole assembly config from
 [genomes.jbrowse.org](https://genomes.jbrowse.org), supplying the sequence,
-cytobands (shown in the overview ideogram), and refName aliasing in place of
-`--fasta`/`--aliases`/`--cytobands`. `<name>` is either a UCSC database name
-(`hg19`, `hg38`, `mm10`, ...) or a GenArk accession (`GCA_...`/`GCF_...`):
+cytobands (shown in the overview ideogram), and refName aliasing in place of a
+genome file with its `aliases:` and `cytobands:`. `<name>` is either a UCSC
+database name (`hg19`, `hg38`, `mm10`, ...) or a GenArk accession
+(`GCA_...`/`GCF_...`):
 
 ```bash
 ## refName aliasing comes from the hosted config: "1" resolves to chr1
@@ -290,9 +286,7 @@ menu, so add it to any export whose coloring is not the default.
 <!-- jb2export: methylation -->
 
 ```bash
-jb2export --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
-  --aliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt \
-  --bedgz https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz index:https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz.csi \
+jb2export https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz aliases:https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz index:https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz.csi \
   --bam https://jbrowse.org/demos/ont/COLO829_tumor.ht.chr20_18.5Mb.bam baseColor:methylation showLegend=true height:350 \
   --loc chr20:18,503,000-18,509,000 --width 1200 --out methylation.png
 ```
@@ -521,15 +515,14 @@ jb2export --genome hg38 --track hg38-ncbiRefSeqCurated height:60 \
 
 ### Variant tracks
 
-A `--vcfgz` track draws each variant with its reference-to-alternate change.
+A VCF track draws each variant with its reference-to-alternate change.
 Reproducible with the bundled volvox VCF:
 
 <!-- jb2export: variants -->
 
 ```bash
-jb2export --fasta data/volvox/volvox.fa \
-  --vcfgz data/volvox/volvox.filtered.vcf.gz --loc ctgA:1-20000 --width 1200 \
-  --out variants.png
+jb2export data/volvox/volvox.fa data/volvox/volvox.filtered.vcf.gz \
+  --loc ctgA:1-20000 --width 1200 --out variants.png
 ```
 
 ![A variant track drawing each SNV with its reference-to-alternate change](https://jbrowse.org/jb2-figures/jbrowse-img/variants.c7d9a5843edd.png)
@@ -548,8 +541,8 @@ speckle:
 <!-- jb2export: multisample_variants -->
 
 ```bash
-jb2export --genome hg19 --track hg19-ncbiRefSeqCurated \
-  --vcfgz https://jbrowse.org/genomes/hg19/1000genomes/ALL.chr11.phase3_v5b.HBB_5.2-5.3Mb.vcf.gz display:multivariant height:450 force:true \
+jb2export --genome hg19 \
+  --track hg19-ncbiRefSeqCurated https://jbrowse.org/genomes/hg19/1000genomes/ALL.chr11.phase3_v5b.HBB_5.2-5.3Mb.vcf.gz display:multivariant height:450 force:true \
   --loc chr11:5,246,000-5,251,000 --width 1200 --out multisample_variants.png
 ```
 
@@ -577,14 +570,14 @@ and `color.scale=log` places them on it by their log2.
 
 ### Gene tracks and the reference sequence
 
-Feature tracks (`--gffgz`, `--bigbed`, `--bedgz`, or a hosted `--track`) render
-their glyphs with labels, and `--refseq` adds the assembly's reference-sequence
-track. Zoomed to base level, it shows the DNA bases and the six-frame
-translation (green start codons, red stops). This human example zooms into a
-`TP53` intron/CDS boundary. The intron thins to a connector line, the coding
-exon begins as a solid CDS block, and the block's edge lines up with a specific
-reference base and reading frame. The `filter`'s `"genes":"only"` keeps the
-RefSeq track to its gene features:
+Feature tracks (GFF, BigBed, BED, or a hosted `--track`) render their glyphs
+with labels, and `--refseq` adds the assembly's reference-sequence track. Zoomed
+to base level, it shows the DNA bases and the six-frame translation (green start
+codons, red stops). This human example zooms into a `TP53` intron/CDS boundary.
+The intron thins to a connector line, the coding exon begins as a solid CDS
+block, and the block's edge lines up with a specific reference base and reading
+frame. The `filter`'s `"genes":"only"` keeps the RefSeq track to its gene
+features:
 
 <!-- jb2export: gene_track -->
 
@@ -690,8 +683,7 @@ The last four modifiers in the table, `svSignal:`, `split:`, `alone:` and
 category, `exclude` drops it, and omitting the modifier leaves it alone. A read
 must pass each of them and the masks above. The SV export is `svSignal:only`.
 Passing `all` is accepted and stores nothing, which lets a script pass a
-category through from a variable that may be empty. The `properPairs:` modifier
-of 5.0 betas is an error naming `svSignal:only`.
+category through from a variable that may be empty.
 
 | Modifier                 | Example                | Description                                                                                                                                                                                                                                                                                                            |
 | ------------------------ | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -862,7 +854,7 @@ binned count is two steps, and the aggregate's `ops` is a list inside the
 second:
 
 ```bash
-jb2export --fasta ref.fa --gffgz genes.gff.gz display:marks height:160 \
+jb2export ref.fa genes.gff.gz display:marks height:160 \
   '{"marks":[{"mark":"bar","encoding":{"y":"count"},"transform":[{"type":"bin","step":100000},{"type":"aggregate","groupby":["start","end"],"ops":[{"op":"count"}]}]}]}' \
   --loc chr1:1-10,000,000 --out density.svg
 ```
@@ -895,17 +887,18 @@ jb2export --fasta ref.fa --bam reads.bam '{"color":{"range":["rgb(217,201,163)"]
 
 ### Compare two assemblies (dotplot / synteny)
 
-Two assemblies can be compared with the `dotplot` and `synteny` subcommands. The
-primary assembly is supplied with `--fasta`/`--loc` (as usual) and the second
-with `--fasta2`/`--loc2`. The alignment between them is a comparison track
-(`--paf`, `--delta`, `--chain`, or `--blasttab`); the query side of that file is
-the first assembly and the target side is the second.
+Two assemblies can be compared with the `dotplot` and `synteny` subcommands.
+Each is a `--fasta` (or `--chromSizes`), with its region as a `loc:` modifier.
+The alignment between them is a comparison track (`--paf`, `--delta`, `--chain`,
+or `--blasttab`); the query side of that file is the first assembly and the
+target side is the second.
 
 The examples below use the public yeast comparison (S. cerevisiae R64 vs the
 YJM1447 strain) and reproduce as-is with network access.
 
 The dotplot below is whole-genome, with every query contig on x and every target
-contig on y. `--autoDiagonalize` reorders the target contigs so the main
+contig on y. `--view` writes settings on the view, by the names a session spec
+gives them; `autoDiagonalize=true` reorders the target contigs so the main
 alignment forms a clean diagonal:
 
 <!-- jb2export: yeast_dotplot -->
@@ -913,36 +906,33 @@ alignment forms a clean diagonal:
 ```bash
 jb2export dotplot \
   --fasta https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa \
-  --fasta2 https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa \
+  --fasta https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa \
   --paf https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.paf \
-  --autoDiagonalize --width 1100 --out yeast_dotplot.png
+  --view autoDiagonalize=true --width 1100 --out yeast_dotplot.png
 ```
 
 ![Whole-genome dotplot of two yeast assemblies (R64 vs the YJM1447 strain)](https://jbrowse.org/jb2-figures/jbrowse-img/yeast_dotplot.1de4ed23beac.png)
 
 The linear synteny ribbon below joins one chromosome in each assembly (here
-YJM1447 chr `I` vs R64 chr `I`, accession `NC_001133.9`). `--drawCurves` renders
-the ribbon as a smooth bezier instead of straight trapezoids:
+YJM1447 chr `I` vs R64 chr `I`, accession `NC_001133.9`).
+`mark.interpolate=bump` draws the ribbon as a curve instead of straight
+trapezoids:
 
 <!-- jb2export: yeast_synteny -->
 
 ```bash
 jb2export synteny \
-  --fasta https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa \
-  --loc I \
-  --fasta2 https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa \
-  --loc2 NC_001133.9 \
+  --fasta https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa loc:I \
+  --fasta https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa loc:NC_001133.9 \
   --paf https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.paf \
-  --drawCurves --width 1400 --out yeast_synteny.png
+  --view mark.interpolate=bump --width 1400 --out yeast_synteny.png
 ```
 
 ![Linear synteny ribbon between YJM1447 chr I and R64 chr I](https://jbrowse.org/jb2-figures/jbrowse-img/yeast_synteny.399685cf2fcd.png)
 
-Omitting `--loc`/`--loc2` shows the whole assembly on that axis (note: `dotplot`
-ignores `--loc` and always shows the whole genome). `--autoDiagonalize` and
-`--drawCurves` are the CLI shortcuts for the options that help busy comparisons;
-the full set is available via `--spec` (see the table below). Run
-`jb2export dotplot --help` for the full list of comparative options.
+An assembly without `loc:` shows whole on its axis. `--view` takes any setting
+the view's session spec does; the table below lists the ones for busy
+comparisons.
 
 ### Multi-way synteny (three or more assemblies)
 
@@ -979,17 +969,18 @@ jb2export synteny \
 ```
 
 Per-assembly options attach to the assembly flag as `key:value` modifiers, e.g.
-`--fasta a.fa loc:chr1 aliases:a.aliases.txt`. The options for busy comparisons
-are these flags:
+`--fasta a.fa loc:chr1 aliases:a.aliases.txt`. The settings for busy comparisons
+go on `--view`:
 
-| Flag                   | Effect                                                        |
-| ---------------------- | ------------------------------------------------------------- |
-| `--autoDiagonalize`    | Reorders each lower assembly's chromosomes for least overlap  |
-| `--minAlignmentLength` | Hides alignments shorter than N bp, the main declutter option |
-| `--colorBy query`      | Tints each ribbon by its query chromosome                     |
-| `--opacity`            | Ribbon opacity (0–1); lower values reveal overlap density     |
-| `--drawCurves`         | Bezier ribbons instead of straight trapezoids                 |
-| `--levelHeights`       | Per-level pixel height (comma-separated, e.g. `300,300`)      |
+| `--view` setting                             | Effect                                                          |
+| -------------------------------------------- | --------------------------------------------------------------- |
+| `autoDiagonalize=true`                       | Reorders each lower assembly's chromosomes for least overlap    |
+| `filter.0.field=length filter.0.gte=500000`  | Hides alignments shorter than 500 kb, the main declutter option |
+| `color.field=query`                          | Tints each ribbon by its query chromosome                       |
+| `opacity=0.4`                                | Ribbon opacity (0–1); lower values reveal overlap density       |
+| `mark.interpolate=bump`                      | Curved ribbons instead of straight trapezoids                   |
+| `levelHeights=300` or `levelHeights=300,200` | Pixel height of every level, or of each level in turn           |
+| `cigarMode=matches`                          | CIGAR indels drawn see-through; `off` draws one solid block     |
 
 > **Query vs. target orientation.** PAF/BLAST list the query first, so the
 > assembly written _above_ the alignment is the query. A chain/delta liftover
@@ -1030,15 +1021,15 @@ the alignment PAF from S3):
 ```bash
 jb2export synteny --chromSizes data/comparative/peach.chrom.sizes \
   --paf https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf.gz \
-  --chromSizes data/comparative/grape.chrom.sizes --autoDiagonalize \
-  --colorBy query --opacity 0.4 --levelHeights 350 --drawCurves --width 1400 \
-  --out grape_peach_synteny.png
+  --chromSizes data/comparative/grape.chrom.sizes \
+  --view autoDiagonalize=true color.field=query opacity=0.4 levelHeights=350 mark.interpolate=bump \
+  --width 1400 --out grape_peach_synteny.png
 ```
 
 ![Whole-genome synteny, grape vs peach, with autoDiagonalize and colorBy query](https://jbrowse.org/jb2-figures/jbrowse-img/grape_peach_synteny.3b1a352d4f0b.png)
 
 The mammalian-scale example is a human (hs1/T2T) vs mouse (mm39) liftOver, where
-the `--minAlignmentLength 500000` filter keeps the plot readable. With
+a `filter` hiding alignments under 500 kb keeps the plot readable. With
 `--chromSizes`, the command downloads no multi-GB sequence (whole-genome synteny
 draws none); the chrom.sizes are committed and the liftOver chain streams from
 the web, so the example reproduces with only the public chain:
@@ -1048,9 +1039,9 @@ the web, so the example reproduces with only the public chain:
 ```bash
 jb2export synteny --chromSizes data/comparative/hs1.chrom.sizes \
   --chain https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz \
-  --chromSizes data/comparative/mm39.chrom.sizes --minAlignmentLength 500000 \
-  --autoDiagonalize --colorBy query --opacity 0.4 --levelHeights 350 \
-  --drawCurves --cigarMode matches --width 1400 --out hs1_mm39_synteny.png
+  --chromSizes data/comparative/mm39.chrom.sizes \
+  --view filter.0.field=length filter.0.gte=500000 autoDiagonalize=true color.field=query opacity=0.4 levelHeights=350 mark.interpolate=bump cigarMode=matches \
+  --width 1400 --out hs1_mm39_synteny.png
 ```
 
 ![Mammalian-scale synteny, human (hs1) vs mouse (mm39)](https://jbrowse.org/jb2-figures/jbrowse-img/hs1_mm39_synteny.2dfa94dae59c.png)
@@ -1068,9 +1059,9 @@ jb2export synteny --chromSizes data/comparative/hg38.chrom.sizes \
   --chain data/comparative/hg38ToHs1.over.chain.gz \
   --chromSizes data/comparative/hs1.chrom.sizes \
   --chain https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz \
-  --chromSizes data/comparative/mm39.chrom.sizes --minAlignmentLength 500000 \
-  --autoDiagonalize --colorBy query --opacity 0.4 --levelHeights 300,300 \
-  --drawCurves --cigarMode matches --width 1400 --out hg38_hs1_mm39_synteny.png
+  --chromSizes data/comparative/mm39.chrom.sizes \
+  --view filter.0.field=length filter.0.gte=500000 autoDiagonalize=true color.field=query opacity=0.4 levelHeights=300 mark.interpolate=bump cigarMode=matches \
+  --width 1400 --out hg38_hs1_mm39_synteny.png
 ```
 
 ![Three-level synteny stack: hg38, hs1, and mm39](https://jbrowse.org/jb2-figures/jbrowse-img/hg38_hs1_mm39_synteny.229bf6f58287.png)
@@ -1173,7 +1164,7 @@ view draws a variant track as chords. Settings for a circular view go in the
 config the track comes from, or in a `--spec`.
 
 ```bash
-jb2export circular --fasta ref.fa --vcfgz sv.vcf.gz --out circular.svg
+jb2export circular ref.fa sv.vcf.gz --out circular.svg
 ```
 
 The example below uses SKBR3 (a breast-cancer cell line) long-read Sniffles SV
@@ -1184,8 +1175,7 @@ fetches no sequence):
 <!-- jb2export: circular_chords -->
 
 ```bash
-jb2export circular --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
-  --vcfgz https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf.gz \
+jb2export circular https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf.gz \
   --width 800 --out circular_chords.png
 ```
 
@@ -1356,10 +1346,12 @@ equals sign (`--width=1200`).
 
 ### Assembly params
 
-- `--fasta` — path or http(s) URL to an indexed FASTA (`.fa`, `.fa.gz`)
-- `--aliases` — tab-separated refname aliases; column 1 matches the FASTA, other
-  columns are aliases (e.g. maps `1` → `chr1`)
-- `--cytobands` — path or URL to a cytoband BED file for the assembly
+- a genome file — path or URL to an indexed FASTA (`.fa`, `.fa.gz`), a `.2bit`
+  or a `.chrom.sizes`, typed by its name. `--fasta <file>` opens a file with any
+  other name as an indexed FASTA. Two modifiers may follow it:
+  - `aliases:<file>` — tab-separated refname aliases; column 1 matches the
+    FASTA, other columns are aliases (e.g. maps `1` → `chr1`)
+  - `cytobands:<file>` — a cytoband BED file for the assembly
 - `--genome` — a genomes.jbrowse.org assembly to pull the whole config from: a
   UCSC db name (`hg19`, `mm10`) or GenArk accession (`GCA_...`/`GCF_...`);
   supplies sequence, cytobands, and refName aliasing (see
@@ -1367,11 +1359,12 @@ equals sign (`--width=1200`).
 
 ### Track params
 
-Specify a filename (local) or http(s) URL. Can be repeated for multiple tracks
-of the same type, e.g. `--bam file1.bam --bam file2.bam`
+A data file (local path or URL) opens as a track of the type its name says, e.g.
+`file1.bam file2.bam`. A flag names the format of a file whose name does not:
 
-- `--bam`, `--cram`, `--bigwig`, `--vcfgz`, `--gffgz`, `--bigbed`, `--bedgz`,
-  `--hic`
+- `--bam`, `--cram`, `--bigwig`, `--bigbed`, `--hic`, `--vcf`, `--gff`, `--bed`;
+  the last three open a `.gz` name, or a file given `index:`, through the
+  bgzipped, tabix-indexed adapter
 - `--multiwig` — many BigWigs as one multi-row `MultiQuantitativeTrack`; the
   argument is a comma-separated BigWig file list (local paths or URLs) or a
   `.json` sources file (an array of BigWig paths/URLs, or of subadapter objects
@@ -1380,9 +1373,7 @@ of the same type, e.g. `--bam file1.bam --bam file2.bam`
 
 ### Config file params (optional)
 
-- `--assembly` — path to a JBrowse 2 assembly JSON (e.g.
-  [data/assembly.json](data/assembly.json)), or the name of an assembly in
-  `--config`; can be used in place of `--fasta`
+- `--assembly` — the name of an assembly in `--config` or `--genome` to open
 - `--tracks` — path to a JSON file containing an array of JBrowse 2 track
   configs (e.g. [data/tracks.json](data/tracks.json))
 - `--session` — path to a JBrowse 2 session JSON exported from File → Export
@@ -1421,25 +1412,24 @@ subcommand's options. The complete output:
 ```text
 Usage: jb2export [options]
        jb2export <dotplot|synteny|circular|breakpoint> [options]
-       jb2export batch --vcf <file> [options]
+       jb2export batch --sites <file> [options]
        jb2export list [genome] [filter]
 
 Options:
-  --fasta           Path to indexed FASTA file
+  --fasta           Genome FASTA or 2bit, for a name the file does not say; takes aliases: and cytobands: modifiers naming those files
   --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
-  --aliases         Path to reference name aliases file
-  --assembly        Path to assembly JSON (or "-" for stdin) or name in config
+  --assembly        Which of the config's assemblies to open, by name
   --genome          Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
   --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
-  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome)
+  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
+  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump opacity=0.3 for a synteny view
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
   --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
-  --cytobands       Path to cytoband file for the assembly
   --themeName       Palette for rendering: default, stock, or minimal
   --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
@@ -1451,137 +1441,44 @@ Options:
   --version         Print version
 
 Examples:
-  jb2export --fasta ref.fa --bam reads.bam --loc chr1:1-10000 --out out.svg
-      Render BAM alignments to SVG
-  jb2export --fasta ref.fa --vcfgz variants.vcf.gz --loc chr1:1-50000 --out out.png
-      Render VCF variants to PNG
-  jb2export --fasta ref.fa --bam reads.bam height:80 color:strand --loc chr1:1-10000 --out out.svg
+  jb2export ref.fa reads.bam --loc chr1:1-10000 --out out.svg
+      Render BAM alignments to SVG; each file is typed by its name
+  jb2export ref.fa --vcf variants.txt.gz --loc chr1:1-50000 --out out.png
+      Name a file's format with a flag when its name does not say it
+  jb2export ref.fa reads.bam height:80 color:strand --loc chr1:1-10000 --out out.svg
       Custom track height and strand coloring
   jb2export --genome hg19 --track hg19-ncbiRefSeqCurated --loc chr1:1-100000 --out out.svg
       Pull the hg19 config from genomes.jbrowse.org and show a hosted track
   jb2export --config jbrowse.json --assembly hg38 --tracks tracks.json --loc chr1:1-100000 --out out.svg
       Render from config with a JSON tracks file
-  jb2export --fasta ref.fa.gz --cytobands cytobands.bed --bigwig signal.bw --loc chr1 --out out.svg
+  jb2export ref.fa.gz cytobands:cytobands.bed signal.bw --loc chr1 --out out.svg
       Render BigWig with cytobands
 
-Track options: --bam, --cram, --bigwig, --vcfgz, --gffgz, --hic, --bigbed, --bedgz, --multiwig
+Track options: --bam, --cram, --bigwig, --bigbed, --hic, --vcf, --gff, --bed, --multiwig
 
 Comparative subcommands (run "jb2export dotplot --help"): dotplot, synteny, circular, breakpoint
 
-Whole callsets: "jb2export batch --vcf calls.vcf.gz" writes one image per record (run "jb2export batch --help")
+Whole callsets: "jb2export batch --sites calls.vcf.gz" writes one image per record (run "jb2export batch --help")
 
 Discovery: "jb2export list" lists genomes.jbrowse.org assemblies; "jb2export list <genome> [filter]" lists a genome's tracks
 
 Usage: jb2export dotplot [options]
 
 Options:
-  --fasta               Path to indexed FASTA file
-  --chromSizes          Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
-  --aliases             Path to reference name aliases file
-  --assembly            Path to assembly JSON (or "-" for stdin) or name in config
-  --genome              Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
-  --track               Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
-  --config              Path to JBrowse config.json (path, URL, or "-" for stdin)
-  --session             Path to session JSON (or "-" for stdin)
-  --loc                 Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome)
-  --out                 Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
-  --width               Width of output in pixels [default: 1500]
-  --noRasterize         Disable rasterization of pileup/coverage [default: false]
-  --defaultSession      Use default session from config [default: false]
-  --tracks              Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
-  --cytobands           Path to cytoband file for the assembly
-  --themeName           Palette for rendering: default, stock, or minimal
-  --themeMode           Draw that palette light or dark
-  --fontFamily          Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
-  --showGridlines       Show genomic coordinate gridlines in the output [default: false]
-  --trackLabels         Track label position: offset, overlapping, left, or hidden
-  --refseq              Show the reference sequence track [default: false]
-  --spec                Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
-  --fasta2              Second assembly indexed FASTA (shorthand)
-  --aliases2            Reference name aliases for fasta2
-  --loc2                Location on the second assembly
-  --autoDiagonalize     Reorder the next assembly's chromosomes for least overlap (a clean diagonal) [default: false]
-  --minAlignmentLength  Hide alignments shorter than N bp (de-spaghetti a busy plot)
-  --colorBy             Color synteny ribbons by: strand, query, target, reference, track, identity, mapq, dnds, or syntenicDepth. "query" gives each query chromosome a separate color; "reference" needs a stack of three or more genomes and "track" more than one alignment file
-
-Examples:
-  jb2export dotplot --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --out out.svg
-      Whole-genome dotplot of two assemblies via a PAF
-  jb2export synteny --fasta a.fa loc:chr1 --paf a_vs_b.paf --fasta b.fa loc:chr1 --out out.svg
-      Linear synteny of a region in each assembly (loc: rides on the assembly flag)
-  jb2export synteny --chromSizes a.sizes --paf a_b.paf --chromSizes b.sizes --chain b_c.chain --chromSizes c.sizes --out out.svg
-      Multi-way (3+) synteny: repeat the assembly flag, put each alignment between the pair it compares
-  jb2export synteny --config jbrowse.json --spec spec.json --out out.svg
-      N-way synteny from a config + session-spec JSON (see urlparams.md)
-
-Comparison track options: --paf, --blasttab, --chain, --delta
-
-Usage: jb2export synteny [options]
-
-Options:
-  --fasta               Path to indexed FASTA file
-  --chromSizes          Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
-  --aliases             Path to reference name aliases file
-  --assembly            Path to assembly JSON (or "-" for stdin) or name in config
-  --genome              Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
-  --track               Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
-  --config              Path to JBrowse config.json (path, URL, or "-" for stdin)
-  --session             Path to session JSON (or "-" for stdin)
-  --loc                 Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome)
-  --out                 Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
-  --width               Width of output in pixels [default: 1500]
-  --noRasterize         Disable rasterization of pileup/coverage [default: false]
-  --defaultSession      Use default session from config [default: false]
-  --tracks              Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
-  --cytobands           Path to cytoband file for the assembly
-  --themeName           Palette for rendering: default, stock, or minimal
-  --themeMode           Draw that palette light or dark
-  --fontFamily          Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
-  --showGridlines       Show genomic coordinate gridlines in the output [default: false]
-  --trackLabels         Track label position: offset, overlapping, left, or hidden
-  --refseq              Show the reference sequence track [default: false]
-  --spec                Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
-  --fasta2              Second assembly indexed FASTA (shorthand)
-  --aliases2            Reference name aliases for fasta2
-  --loc2                Location on the second assembly
-  --autoDiagonalize     Reorder the next assembly's chromosomes for least overlap (a clean diagonal) [default: false]
-  --drawCurves          Draw synteny ribbons as bezier curves instead of trapezoids [default: false]
-  --minAlignmentLength  Hide alignments shorter than N bp (de-spaghetti a busy plot)
-  --colorBy             Color synteny ribbons by: strand, query, target, reference, track, identity, mapq, dnds, or syntenicDepth. "query" gives each query chromosome a separate color; "reference" needs a stack of three or more genomes and "track" more than one alignment file
-  --opacity             Ribbon opacity 0-1 (lower reveals density)
-  --levelHeights        Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)
-  --cigarMode           CIGAR indels in synteny ribbons: 'full' (colored), 'matches' (see-through), or 'off' (one solid block per alignment, so overlapping blocks run together) [default: full]
-
-Examples:
-  jb2export dotplot --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --out out.svg
-      Whole-genome dotplot of two assemblies via a PAF
-  jb2export synteny --fasta a.fa loc:chr1 --paf a_vs_b.paf --fasta b.fa loc:chr1 --out out.svg
-      Linear synteny of a region in each assembly (loc: rides on the assembly flag)
-  jb2export synteny --chromSizes a.sizes --paf a_b.paf --chromSizes b.sizes --chain b_c.chain --chromSizes c.sizes --out out.svg
-      Multi-way (3+) synteny: repeat the assembly flag, put each alignment between the pair it compares
-  jb2export synteny --config jbrowse.json --spec spec.json --out out.svg
-      N-way synteny from a config + session-spec JSON (see urlparams.md)
-
-Comparison track options: --paf, --blasttab, --chain, --delta
-
-Usage: jb2export circular [options]
-
-Options:
-  --fasta           Path to indexed FASTA file
+  --fasta           Genome FASTA or 2bit, for a name the file does not say; takes aliases: and cytobands: modifiers naming those files
   --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
-  --aliases         Path to reference name aliases file
-  --assembly        Path to assembly JSON (or "-" for stdin) or name in config
+  --assembly        Which of the config's assemblies to open, by name
   --genome          Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
   --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
-  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome)
+  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
+  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump opacity=0.3 for a synteny view
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
   --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
-  --cytobands       Path to cytoband file for the assembly
   --themeName       Palette for rendering: default, stock, or minimal
   --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
@@ -1591,27 +1488,104 @@ Options:
   --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
 
 Examples:
-  jb2export circular --fasta ref.fa --vcfgz sv.vcf.gz --out out.svg
-      Circular (chord) view of structural variants
+  jb2export dotplot --fasta a.fa --fasta b.fa --paf a_vs_b.paf --out out.svg
+      Whole-genome dotplot of two assemblies via a PAF
+  jb2export synteny --fasta a.fa loc:chr1 --paf a_vs_b.paf --fasta b.fa loc:chr1 --out out.svg
+      Linear synteny of a region in each assembly (loc: rides on the assembly flag)
+  jb2export synteny --chromSizes a.sizes --paf a_b.paf --chromSizes b.sizes --chain b_c.chain --chromSizes c.sizes --out out.svg
+      Multi-way (3+) synteny: repeat the assembly flag, put each alignment between the pair it compares
+  jb2export synteny --fasta a.fa --paf a_b.paf --fasta b.fa --view mark.interpolate=bump color.field=query filter.0.field=length filter.0.gte=10000 --out out.svg
+      Curved ribbons colored by query chromosome, alignments under 10 kb hidden
+  jb2export synteny --config jbrowse.json --spec spec.json --out out.svg
+      N-way synteny from a config + session-spec JSON (see urlparams.md)
 
-Usage: jb2export breakpoint [options]
+Comparison track options: --paf, --blasttab, --chain, --delta
+
+Usage: jb2export synteny [options]
 
 Options:
-  --fasta           Path to indexed FASTA file
+  --fasta           Genome FASTA or 2bit, for a name the file does not say; takes aliases: and cytobands: modifiers naming those files
   --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
-  --aliases         Path to reference name aliases file
-  --assembly        Path to assembly JSON (or "-" for stdin) or name in config
+  --assembly        Which of the config's assemblies to open, by name
   --genome          Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
   --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
-  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome)
+  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
+  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump opacity=0.3 for a synteny view
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
   --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
-  --cytobands       Path to cytoband file for the assembly
+  --themeName       Palette for rendering: default, stock, or minimal
+  --themeMode       Draw that palette light or dark
+  --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
+  --showGridlines   Show genomic coordinate gridlines in the output [default: false]
+  --trackLabels     Track label position: offset, overlapping, left, or hidden
+  --refseq          Show the reference sequence track [default: false]
+  --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+
+Examples:
+  jb2export dotplot --fasta a.fa --fasta b.fa --paf a_vs_b.paf --out out.svg
+      Whole-genome dotplot of two assemblies via a PAF
+  jb2export synteny --fasta a.fa loc:chr1 --paf a_vs_b.paf --fasta b.fa loc:chr1 --out out.svg
+      Linear synteny of a region in each assembly (loc: rides on the assembly flag)
+  jb2export synteny --chromSizes a.sizes --paf a_b.paf --chromSizes b.sizes --chain b_c.chain --chromSizes c.sizes --out out.svg
+      Multi-way (3+) synteny: repeat the assembly flag, put each alignment between the pair it compares
+  jb2export synteny --fasta a.fa --paf a_b.paf --fasta b.fa --view mark.interpolate=bump color.field=query filter.0.field=length filter.0.gte=10000 --out out.svg
+      Curved ribbons colored by query chromosome, alignments under 10 kb hidden
+  jb2export synteny --config jbrowse.json --spec spec.json --out out.svg
+      N-way synteny from a config + session-spec JSON (see urlparams.md)
+
+Comparison track options: --paf, --blasttab, --chain, --delta
+
+Usage: jb2export circular [options]
+
+Options:
+  --fasta           Genome FASTA or 2bit, for a name the file does not say; takes aliases: and cytobands: modifiers naming those files
+  --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
+  --assembly        Which of the config's assemblies to open, by name
+  --genome          Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
+  --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
+  --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
+  --session         Path to session JSON (or "-" for stdin)
+  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
+  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump opacity=0.3 for a synteny view
+  --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
+  --width           Width of output in pixels [default: 1500]
+  --noRasterize     Disable rasterization of pileup/coverage [default: false]
+  --defaultSession  Use default session from config [default: false]
+  --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
+  --themeName       Palette for rendering: default, stock, or minimal
+  --themeMode       Draw that palette light or dark
+  --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
+  --showGridlines   Show genomic coordinate gridlines in the output [default: false]
+  --trackLabels     Track label position: offset, overlapping, left, or hidden
+  --refseq          Show the reference sequence track [default: false]
+  --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+
+Examples:
+  jb2export circular ref.fa sv.vcf.gz --out out.svg
+      Circular (chord) view of structural variants
+
+Usage: jb2export breakpoint [options]
+
+Options:
+  --fasta           Genome FASTA or 2bit, for a name the file does not say; takes aliases: and cytobands: modifiers naming those files
+  --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
+  --assembly        Which of the config's assemblies to open, by name
+  --genome          Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
+  --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
+  --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
+  --session         Path to session JSON (or "-" for stdin)
+  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
+  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump opacity=0.3 for a synteny view
+  --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
+  --width           Width of output in pixels [default: 1500]
+  --noRasterize     Disable rasterization of pileup/coverage [default: false]
+  --defaultSession  Use default session from config [default: false]
+  --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --themeName       Palette for rendering: default, stock, or minimal
   --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
@@ -1628,7 +1602,7 @@ Examples:
   jb2export breakpoint --fasta ref.fa --bam tumor.bam --loc "chr9:28,030,000-28,032,000 chr9:28,058,000-28,060,000" --loc chr9:28,059,000-28,061,000 --out fb.png
       Quote one --loc to put several windows in a single panel
 
-Usage: jb2export batch --vcf <file> [options]
+Usage: jb2export batch --sites <file> [options]
 
 Renders one image per record, a contig a row. Loci on one contig are a
 linear view, their windows side by side: the two ends of a deletion, a
@@ -1659,26 +1633,24 @@ The module graph loads once for the whole callset, so this is much faster
 than a shell loop over "jb2export breakpoint".
 
 Options:
-  --fasta           Path to indexed FASTA file
+  --fasta           Genome FASTA or 2bit, for a name the file does not say; takes aliases: and cytobands: modifiers naming those files
   --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
-  --aliases         Path to reference name aliases file
-  --assembly        Path to assembly JSON (or "-" for stdin) or name in config
+  --assembly        Which of the config's assemblies to open, by name
   --genome          Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
   --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
+  --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump opacity=0.3 for a synteny view
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
   --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
-  --cytobands       Path to cytoband file for the assembly
   --themeName       Palette for rendering: default, stock, or minimal
   --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
   --trackLabels     Track label position: offset, overlapping, left, or hidden
   --refseq          Show the reference sequence track [default: false]
-  --vcf             VCF (plain or bgzipped) of variants to render, one image per record
-  --bedpe           BEDPE to render, one image per row; the format for anything a VCF cannot express (a LINX TSV reshaped by awk)
+  --sites           The records to render, one image each: a VCF (plain or bgzipped), or a BEDPE (.bedpe or .bedpe.gz) for anything a VCF cannot express (a LINX TSV reshaped by awk)
   --outDir          Directory to write the images to [default: jb2export-batch]
   --flank           bp of context around each locus [default: 50 for a variant whose alleles are under 50 bp, 500 otherwise]
   --limit           Render only the first N rows
@@ -1690,13 +1662,13 @@ Options:
   --jobs            Processes to render in, each about a gigabyte. The default is half the cores, up to 4 and to what memory allows; 1 renders in this process
 
 Examples:
-  jb2export batch --vcf calls.vcf.gz --fasta ref.fa --bam tumor.bam --outDir figs --flank 1000
+  jb2export batch --sites calls.vcf.gz ref.fa tumor.bam --outDir figs --flank 1000
       A contact sheet of every junction in a callset
-  jb2export batch --vcf calls.vcf.gz --genome hg38 --bam tumor.bam --limit 20
+  jb2export batch --sites calls.vcf.gz --genome hg38 tumor.bam --limit 20
       The first 20, to check the framing before committing to the whole run
-  jb2export batch --vcf snvs.vcf.gz --genome hg38 --bam tumor.bam --passOnly
+  jb2export batch --sites snvs.vcf.gz --genome hg38 tumor.bam --passOnly
       Small variants at base resolution, reads with each variant sorted to the top
-  jb2export batch --bedpe linx_links.bedpe --genome hg38 --bam tumor.bam
+  jb2export batch --sites linx_links.bedpe --genome hg38 tumor.bam
       The same from a BEDPE, for a caller whose output is not a VCF
 
 The ALT grammar is parsed by @gmod/vcf, so inserted sequence at the
@@ -1730,9 +1702,9 @@ tabix -p vcf yourfile.vcf.gz   # -> yourfile.vcf.gz.tbi
 ### `unknown reference sequence name in location ...`
 
 The refname in `--loc` doesn't match the FASTA. Use the name exactly as it
-appears in the FASTA, or pass `--aliases` to reconcile differing naming styles
-(e.g. `1` vs `chr1` vs `NC_000001.10`) across the assembly and track files. See
-[Remote files](#remote-files).
+appears in the FASTA, or give the genome an `aliases:` file to reconcile
+differing naming styles (e.g. `1` vs `chr1` vs `NC_000001.10`) across the
+assembly and track files. See [Remote files](#remote-files).
 
 ### A track renders empty when zoomed far out
 

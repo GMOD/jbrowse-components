@@ -281,8 +281,15 @@ async function runAutoDiagonalize(self: LinearSyntenyViewModel) {
 
 // `levelHeights` lands after the auto-scale pass it is allowed to override.
 function applyLevelHeights(self: LinearSyntenyViewModel, init: SyntenyLaunch) {
-  for (const [i, h] of (init.levelHeights ?? []).entries()) {
-    self.levels[i]?.setHeight(h)
+  const { levelHeights } = init
+  if (typeof levelHeights === 'number') {
+    for (const level of self.levels) {
+      level.setHeight(levelHeights)
+    }
+  } else {
+    for (const [i, h] of (levelHeights ?? []).entries()) {
+      self.levels[i]?.setHeight(h)
+    }
   }
 }
 

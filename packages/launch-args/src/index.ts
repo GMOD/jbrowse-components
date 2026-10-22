@@ -13,6 +13,7 @@ export {
   type TrackFlag,
   fileAdapter,
   fileTrack,
+  genomeAssembly,
   isSequenceAdapter,
   makeLocation,
   sequenceAssembly,
@@ -20,6 +21,16 @@ export {
   trackFlags,
 } from './fileInput.ts'
 export { genomeConfigUrl } from './genome.ts'
+export {
+  type SlotWrite,
+  applySlotWrite,
+  isMemberWrite,
+  isSlotPathOption,
+  mergeSettings,
+  slotValue,
+  slotWrite,
+  viewSettings,
+} from './slotPath.ts'
 export {
   resolveTrackId,
   trackMatches,
@@ -30,8 +41,11 @@ export { type LaunchPlan, launchFlags, launchPlan } from './launchPlan.ts'
 export {
   type Entry,
   FILE_FLAG,
+  extraValuesMessage,
   isDataFile,
   isModifier,
+  isUrl,
+  locValue,
   modifierValue,
   parseArgv,
   splitModifier,

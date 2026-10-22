@@ -145,7 +145,7 @@ describe('breakpointInit', () => {
   })
 
   it('takes as many panels as the chain has hops, not two', () => {
-    // COLO829's der(3) visits four loci. A --loc/--loc2 flag pair could not
+    // COLO829's der(3) visits four loci. A pair of locus flags could not
     // express this, which is why the panel count comes from the input.
     const init = breakpointInit(
       config(),

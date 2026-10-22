@@ -74,14 +74,17 @@ test('--showGridlines adds coordinate gridlines', async () => {
   assert.match(withGrid, /gridline-clip/, 'gridlines should add a clip group')
 })
 
-// --cytobands shows the "you are here" overview: a cytoband ideogram plus the
+// A genome's cytobands: modifier shows the "you are here" overview: a cytoband ideogram plus the
 // OverviewScalebarPolygon trapezoid (a makeStyles component). That styled
 // component crashed in the node/jsdom export because emotion had no cache in
 // context — renderToStaticMarkup now provides one. This exercises the whole
 // path: cytobands load (regression for the CytobandAdapter `cytobandLocation`
 // slot), the overview renders, and the trapezoid gets its tertiary fill.
-test('--cytobands renders the overview scalebar polygon', async () => {
-  const svg = await render({ noRasterize: true, cytobands })
+test('cytobands: renders the overview scalebar polygon', async () => {
+  const svg = await render({
+    noRasterize: true,
+    argv: [['fasta', [fasta, `cytobands:${cytobands}`]]],
+  })
   assert.match(svg, /<polygon/, 'overview trapezoid should render')
   assert.match(
     svg,

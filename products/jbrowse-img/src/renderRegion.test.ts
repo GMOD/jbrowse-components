@@ -16,11 +16,11 @@ describe('standardizeArgv', () => {
     'bam',
     'cram',
     'bigwig',
-    'vcfgz',
-    'gffgz',
+    'vcf',
+    'gff',
     'hic',
     'bigbed',
-    'bedgz',
+    'bed',
   ]
 
   test('separates track types from other options', () => {
@@ -148,18 +148,26 @@ describe('readData', () => {
     ).toThrow(/assembly nonexistent not found in config/)
   })
 
-  test('reads assembly from assembly JSON file', () => {
-    const result = readData({ assembly: assemblyFile })
-    expect(result.assembly.name).toBe('GRCh38')
+  test('a genome file beside a config is refused', () => {
+    expect(() => readData({ config: configFile, fasta: '/ref.fa' })).toThrow(
+      /ref\.fa is a genome, and the config/,
+    )
   })
 
-  test('an assembly file joins the config assemblies it was chosen beside', () => {
-    const result = readData({ config: configFile, assembly: assemblyFile })
-    expect(result.assemblies.map(a => a.name).sort()).toEqual([
-      'GRCh38',
-      'hg19',
-    ])
-    expect(result.assemblies).toContain(result.assembly)
+  test('--fasta keeps its aliases: modifier', () => {
+    const result = readData({
+      fasta: '/ref.fa',
+      argv: [['fasta', ['/ref.fa', 'aliases:a.txt']]],
+    })
+    expect(result.assembly.refNameAliases).toMatchObject({
+      adapter: { location: { localPath: 'a.txt' } },
+    })
+  })
+
+  test('a modifier the genome has no use for throws', () => {
+    expect(() =>
+      readData({ trackList: [['file', ['/ref.fa', 'height:100']]] }),
+    ).toThrow(/takes aliases: and cytobands:, not height:100/)
   })
 
   test('clears defaultSession from config by default', () => {

@@ -11,7 +11,7 @@ const gff = path.join(volvox, 'volvox.sort.gff3.gz')
 const { setupEnv, renderRegion } = await import('../src/index.ts')
 setupEnv()
 
-// bigbed/bedgz have no example screenshot in the README, so these guard that
+// bigbed/bed have no example screenshot in the README, so these guard that
 // the two feature-file track types still render glyphs end-to-end. force:true
 // renders without a feature-density cap. <path> elements are the rendered
 // feature glyphs, so asserting on them catches an empty render (label/ruler
@@ -27,17 +27,17 @@ test('a bigbed (.bb) track renders feature glyphs to SVG', async () => {
   assert.ok(svg.includes('<path'), 'bigbed should render feature glyphs')
 })
 
-test('a bedgz (.bed.gz) track renders feature glyphs to SVG', async () => {
+test('a bed (.bed.gz) track renders feature glyphs to SVG', async () => {
   const svg = await renderRegion({
     fasta,
     loc: 'ctgA:1-50000',
     noRasterize: true,
     trackList: [
-      ['bedgz', [path.join(volvox, 'volvox-bed12.bed.gz'), 'force:true']],
+      ['bed', [path.join(volvox, 'volvox-bed12.bed.gz'), 'force:true']],
     ],
   })
   assert.ok(svg.includes('<svg'), 'output should be SVG')
-  assert.ok(svg.includes('<path'), 'bedgz should render feature glyphs')
+  assert.ok(svg.includes('<path'), 'bed should render feature glyphs')
 })
 
 // A track whose data file can't be loaded logs the failure but leaves the SVG
@@ -102,7 +102,7 @@ const renderGff = (...opts) =>
     fasta,
     loc: 'ctgA:1-20000',
     noRasterize: true,
-    trackList: [['gffgz', [gff, 'force:true', 'heightMode:grow', ...opts]]],
+    trackList: [['gff', [gff, 'force:true', 'heightMode:grow', ...opts]]],
   })
 
 // `color` describes the FEATURE, so it reaches a transcript's UTRs too and the
@@ -168,7 +168,7 @@ test('color:<css color> repaints a variant track', async () => {
       fasta,
       loc: 'ctgA:1-20000',
       noRasterize: true,
-      trackList: [['vcfgz', [vcf, 'force:true', ...opts]]],
+      trackList: [['vcf', [vcf, 'force:true', ...opts]]],
     })
   const magenta = fillCounts(await render('color:magenta'))
   assert.ok(magenta[MAGENTA] > 0, 'variant glyphs should be magenta')

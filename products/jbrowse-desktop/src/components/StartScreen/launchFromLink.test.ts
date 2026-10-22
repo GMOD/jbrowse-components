@@ -426,6 +426,7 @@ describe('a command-line plan', () => {
         assemblyName: 'ref.fa',
         loc: 'ctgA:1-100',
         tracks: [{ ...bam, assemblyNames: ['ref.fa'] }],
+        view: {},
         show: ['reads.bam'],
         unapplied: [],
       },
@@ -461,6 +462,7 @@ describe('a command-line plan', () => {
         config: 'https://jbrowse.org/ucsc/hg38/config.json',
         tracks: [bam],
         // jb2export's --track shorthand: the assembly prefix left off
+        view: {},
         show: ['reads.bam', 'genes'],
         unapplied: [],
       },
@@ -491,6 +493,7 @@ describe('a command-line plan', () => {
         {
           config: '/proj/config.json',
           tracks: [],
+          view: {},
           show: ['nope'],
           unapplied: [],
         },
@@ -502,11 +505,63 @@ describe('a command-line plan', () => {
   test('reads a local config from disk, not over the network', async () => {
     const d = deps()
     await launchFromPlan(
-      { config: '/proj/config.json', tracks: [], show: [], unapplied: [] },
+      {
+        config: '/proj/config.json',
+        view: {},
+        tracks: [],
+        show: [],
+        unapplied: [],
+      },
       d,
     )
     expect(d.readConfigFile).toHaveBeenCalledWith('/proj/config.json')
     expect(d.fetchConfig).not.toHaveBeenCalled()
+  })
+
+  test('--view settings go on the view', async () => {
+    const d = deps()
+    await launchFromPlan(
+      {
+        assembly: { name: 'ref.fa', sequence: {} },
+        assemblyName: 'ref.fa',
+        view: { axis: { grid: false } },
+        tracks: [],
+        show: [],
+        unapplied: [],
+      },
+      d,
+    )
+    expect(mockLoadSessionSpec).toHaveBeenCalledWith(
+      expect.objectContaining({
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'ref.fa',
+            axis: { grid: false },
+            tracks: [],
+          },
+        ],
+      }),
+      pluginManager,
+    )
+  })
+
+  test('an --assembly the config lacks names the ones it has', async () => {
+    await expect(
+      launchFromPlan(
+        {
+          config: '/proj/config.json',
+          assemblyName: 'asm.json',
+          view: {},
+          tracks: [],
+          show: [],
+          unapplied: [],
+        },
+        deps(),
+      ),
+    ).rejects.toThrow(
+      '/proj/config.json has no assembly asm.json; it has volvox',
+    )
   })
 
   test('names the settings it did not apply', async () => {
@@ -522,6 +577,7 @@ describe('a command-line plan', () => {
         assembly: { name: 'ref.fa', sequence: {} },
         assemblyName: 'ref.fa',
         tracks: [],
+        view: {},
         show: [],
         unapplied: ['reads.bam height:200'],
       },

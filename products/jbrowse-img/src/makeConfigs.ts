@@ -1,12 +1,6 @@
 import path from 'node:path'
 
-import {
-  fileAdapter,
-  isDataFile,
-  makeLocation,
-  sequenceAssembly,
-  trackFlags,
-} from '@jbrowse/launch-args'
+import { makeLocation, trackFlags } from '@jbrowse/launch-args'
 
 import type { Assembly, Track } from './types.ts'
 
@@ -80,33 +74,6 @@ export function makeSyntenyTrackConfig(
       targetAssembly,
     },
   }
-}
-
-// `--fasta` types a file by its name (FASTA, bgzipped FASTA, 2bit) and opens
-// a name it does not recognize as an indexed FASTA, which is what the flag says.
-export function makeFastaAssembly(
-  fasta: string,
-  aliases: string | undefined,
-  cytobands: string | undefined,
-  trackId: string,
-): Assembly {
-  const adapter = fileAdapter(fasta, {
-    adapterType: isDataFile(fasta) ? undefined : 'IndexedFastaAdapter',
-  })
-  return sequenceAssembly(adapter, fasta, { aliases, cytobands, trackId })
-}
-
-// Whole-genome comparative views (e.g. a synteny dotplot) need only chromosome
-// sizes, not the sequence itself, so a `.chrom.sizes` assembly skips the
-// multi-GB FASTA/2bit entirely.
-export function makeChromSizesAssembly(
-  chromSizes: string,
-  aliases: string | undefined,
-  cytobands: string | undefined,
-  trackId: string,
-): Assembly {
-  const adapter = fileAdapter(chromSizes, { adapterType: 'ChromSizesAdapter' })
-  return sequenceAssembly(adapter, chromSizes, { aliases, cytobands, trackId })
 }
 
 // Build a MultiQuantitativeTrack from a `--multiwig` sources list. A plain array

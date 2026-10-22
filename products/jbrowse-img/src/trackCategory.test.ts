@@ -102,10 +102,10 @@ test('a track takes the category of the display it opens as', async () => {
     cram: of('input.cram'),
     bigwig: of('input.bigwig'),
     multiwig: of('a.bw,b.bw'),
-    vcfgz: of('input.vcfgz'),
-    gffgz: of('input.gffgz'),
+    vcf: of('input.vcf'),
+    gff: of('input.gff'),
     bigbed: of('input.bigbed'),
-    bedgz: of('input.bedgz'),
+    bed: of('input.bed'),
     hic: of('input.hic'),
     gc: of('gc'),
     gwas: of('gwas'),
@@ -116,10 +116,10 @@ test('a track takes the category of the display it opens as', async () => {
     cram: 'alignments',
     bigwig: 'wiggle',
     multiwig: 'wiggle',
-    vcfgz: 'variant',
-    gffgz: 'feature',
+    vcf: 'variant',
+    gff: 'feature',
     bigbed: 'feature',
-    bedgz: 'feature',
+    bed: 'feature',
     hic: 'hic',
     gc: 'wiggle',
     gwas: 'other',
@@ -133,7 +133,7 @@ test('display: moves a track to the category of the display it asks for', async 
   expect(trackCategory(session, 'input.bigwig', ['display:marks'])).toBe(
     'other',
   )
-  expect(trackCategory(session, 'input.vcfgz', ['display:multivariant'])).toBe(
+  expect(trackCategory(session, 'input.vcf', ['display:multivariant'])).toBe(
     'variant',
   )
   expect(trackCategory(session, 'input.bam', ['display:Nonexistent'])).toBe(

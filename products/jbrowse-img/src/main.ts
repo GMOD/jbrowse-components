@@ -1,10 +1,15 @@
 import fs from 'node:fs'
 
-import { isDataFile, parseArgv, standardizeArgv } from '@jbrowse/launch-args'
+import {
+  isDataFile,
+  parseArgv,
+  standardizeArgv,
+  viewSettings,
+} from '@jbrowse/launch-args'
 
 import { runList } from './list.ts'
 import { syntenyTrackTypes, trackTypes } from './makeConfigs.ts'
-import { modeDescriptors, subcommandMode, subcommandTokens } from './modes.ts'
+import { subcommandMode, subcommandTokens } from './modes.ts'
 import {
   DEFAULT_WIDTH,
   batchDroppedOptions,
@@ -12,20 +17,14 @@ import {
   booleanOptions,
   buildBatchHelp,
   buildHelp,
-  comparativeOptionNames,
   getBoolean,
-  getCigarMode,
-  getColorBy,
   getFormat,
   getNumber,
-  getNumberList,
   getOptionalCount,
-  getOptionalNumber,
   getString,
   getThemeMode,
   getThemeName,
   getTrackLabels,
-  ignoredComparativeOptions,
   knownOptions,
 } from './options.ts'
 import { writeRendered } from './util.ts'
@@ -40,7 +39,7 @@ const scriptName = 'jb2export'
 async function main() {
   const argv = process.argv.slice(2)
   // A leading word (not a --flag or a data file) selects a subcommand, e.g.
-  // `jb2export dotplot --fasta a.fa --fasta2 b.fa ...`
+  // `jb2export dotplot --fasta a.fa --fasta b.fa ...`
   const first = argv[0]
   const isSubcommand =
     first !== undefined && !first.startsWith('-') && !isDataFile(first)
@@ -75,10 +74,18 @@ async function main() {
     console.log(version)
   } else {
     const parsed = parseArgv(args, { booleans: booleanOptions })
-    const { trackList, ...rest } = standardizeArgv(parsed, [
-      ...trackTypes,
-      ...syntenyTrackTypes,
-    ])
+    const { trackList, ...rest } = standardizeArgv(
+      parsed,
+      [...trackTypes, ...syntenyTrackTypes],
+      {
+        repeatable: [
+          'track',
+          'fasta',
+          'chromSizes',
+          ...(mode === 'breakpoint' ? ['loc'] : []),
+        ],
+      },
+    )
     // --track is repeatable and carries its own [id, ...modifiers], so it's read
     // from the raw entries rather than the collapsed `rest` (which keeps only the
     // last value of a repeated flag).
@@ -93,38 +100,8 @@ async function main() {
     if (first !== 'batch') {
       const batchOnly = batchOptionNames.filter(name => name in rest)
       if (batchOnly.length) {
-        const hint = batchOnly.includes('vcf')
-          ? ' (a variant TRACK is --vcfgz; batch --vcf names a junction file)'
-          : ''
         console.warn(
-          `Warning: ${batchOnly.map(name => `--${name}`).join(', ')} ${batchOnly.length > 1 ? 'have' : 'has'} no effect without the batch subcommand${hint}`,
-        )
-      }
-    }
-
-    // The comparative flags (--fasta2/--loc2/...) only take effect under a
-    // comparative subcommand or a comparative --spec; warn rather than silently
-    // ignore them in a plain linear render.
-    const comparativeMode = mode ? modeDescriptors[mode].comparative : false
-    if (
-      !comparativeMode &&
-      !getString(rest, 'spec') &&
-      comparativeOptionNames.some(name => name in rest)
-    ) {
-      console.warn(
-        'Warning: comparative options (e.g. --fasta2, --loc2) have no effect without the dotplot or synteny subcommand',
-      )
-    } else if (mode) {
-      // Under a comparative subcommand, the flags the OTHER comparative mode
-      // owns are still parsed but never reach that view's init (a dotplot has no
-      // ribbon shape, so --drawCurves/--cigarMode/--opacity/--levelHeights do
-      // nothing there). Name them instead of dropping them silently.
-      const ignored = ignoredComparativeOptions(mode).filter(
-        name => name in rest,
-      )
-      if (ignored.length) {
-        console.warn(
-          `Warning: ${ignored.map(name => `--${name}`).join(', ')} ${ignored.length > 1 ? 'have' : 'has'} no effect on a ${modeDescriptors[mode].subcommand} view`,
+          `Warning: ${batchOnly.map(name => `--${name}`).join(', ')} ${batchOnly.length > 1 ? 'have' : 'has'} no effect without the batch subcommand`,
         )
       }
     }
@@ -132,7 +109,6 @@ async function main() {
     const width = getNumber(rest, 'width', DEFAULT_WIDTH)
     const renderOpts = {
       fasta: getString(rest, 'fasta'),
-      aliases: getString(rest, 'aliases'),
       assembly: getString(rest, 'assembly'),
       genome: getString(rest, 'genome'),
       config: getString(rest, 'config'),
@@ -143,7 +119,6 @@ async function main() {
       noRasterize: getBoolean(rest, 'noRasterize'),
       defaultSession: getBoolean(rest, 'defaultSession'),
       tracks: getString(rest, 'tracks'),
-      cytobands: getString(rest, 'cytobands'),
       themeName: getThemeName(rest),
       themeMode: getThemeMode(rest),
       fontFamily: getString(rest, 'fontFamily'),
@@ -152,13 +127,7 @@ async function main() {
       refseq: getBoolean(rest, 'refseq'),
       mode,
       argv: parsed,
-      autoDiagonalize: getBoolean(rest, 'autoDiagonalize'),
-      drawCurves: getBoolean(rest, 'drawCurves'),
-      minAlignmentLength: getOptionalNumber(rest, 'minAlignmentLength'),
-      colorBy: getColorBy(rest),
-      opacity: getOptionalNumber(rest, 'opacity'),
-      levelHeights: getNumberList(rest, 'levelHeights'),
-      cigarMode: getCigarMode(rest),
+      view: viewSettings(parsed.find(([key]) => key === 'view')?.[1] ?? []),
       spec: getString(rest, 'spec'),
       trackList,
     }
@@ -175,8 +144,7 @@ async function main() {
       const { parseShard, runBatch } = await import('./runBatch.ts')
       const { failures } = await runBatch({
         ...renderOpts,
-        bedpe: getString(rest, 'bedpe'),
-        vcf: getString(rest, 'vcf'),
+        sites: getString(rest, 'sites'),
         outDir: getString(rest, 'outDir') ?? 'jb2export-batch',
         flank: getOptionalCount(rest, 'flank'),
         limit: getOptionalCount(rest, 'limit'),

@@ -201,6 +201,12 @@ describe('data files on the command line', () => {
       type: 'plan',
       plan: { config: undefined, unapplied: ['--tracks t.json'] },
     })
+    expect(
+      target('ref.fa', '--opacity', '0.3', 'height:100', 'reads.bam'),
+    ).toMatchObject({
+      type: 'plan',
+      plan: { show: ['reads.bam'], unapplied: ['--opacity 0.3 height:100'] },
+    })
     expect(target('--tracks', 't.json')).toBeUndefined()
     expect(target('--width', '1400', 'foo.json')).toMatchObject({
       type: 'file',

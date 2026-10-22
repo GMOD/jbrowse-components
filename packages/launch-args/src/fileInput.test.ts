@@ -5,6 +5,7 @@ import path from 'node:path'
 import {
   fileAdapter,
   fileTrack,
+  genomeAssembly,
   isSequenceAdapter,
   makeLocation,
   sequenceAssembly,
@@ -87,11 +88,16 @@ describe('fileTrack', () => {
   test.each([
     ['cram', 'reads.cram', 'AlignmentsTrack', 'CramAdapter'],
     ['bigwig', 'signal.bw', 'QuantitativeTrack', 'BigWigAdapter'],
-    ['vcfgz', 'variants.vcf.gz', 'VariantTrack', 'VcfTabixAdapter'],
-    ['gffgz', 'genes.gff.gz', 'FeatureTrack', 'Gff3TabixAdapter'],
+    ['vcf', 'variants.vcf.gz', 'VariantTrack', 'VcfTabixAdapter'],
+    ['gff', 'genes.gff.gz', 'FeatureTrack', 'Gff3TabixAdapter'],
     ['hic', 'matrix.hic', 'HicTrack', 'HicAdapter'],
     ['bigbed', 'features.bb', 'FeatureTrack', 'BigBedAdapter'],
-    ['bedgz', 'regions.bed.gz', 'FeatureTrack', 'BedTabixAdapter'],
+    ['bed', 'regions.bed.gz', 'FeatureTrack', 'BedTabixAdapter'],
+    ['vcf', 'variants.vcf', 'VariantTrack', 'VcfAdapter'],
+    ['gff', 'genes.gff3', 'FeatureTrack', 'Gff3Adapter'],
+    ['bed', 'regions.bed', 'FeatureTrack', 'BedAdapter'],
+    ['vcf', 'calls.gz', 'VariantTrack', 'VcfTabixAdapter'],
+    ['vcf', 'calls.txt', 'VariantTrack', 'VcfAdapter'],
   ])('--%s %s', (flag, file, type, adapterType) => {
     expect(fileTrack(flag, [file], 'testAsm')).toMatchObject({
       type,
@@ -105,9 +111,9 @@ describe('fileTrack', () => {
     })
   })
 
-  test('a vcfgz defaults to a tbi index', () => {
+  test('a bgzipped vcf defaults to a tbi index', () => {
     expect(
-      fileTrack('vcfgz', ['variants.vcf.gz'], 'testAsm').adapter,
+      fileTrack('vcf', ['variants.vcf.gz'], 'testAsm').adapter,
     ).toMatchObject({
       index: {
         indexType: 'TBI',
@@ -132,7 +138,7 @@ describe('fileTrack', () => {
     })
 
     test('a tabix track finds it, and opens it as CSI', () => {
-      expect(fileTrack('vcfgz', [vcf], 'testAsm').adapter).toMatchObject({
+      expect(fileTrack('vcf', [vcf], 'testAsm').adapter).toMatchObject({
         index: { indexType: 'CSI', location: { localPath: `${vcf}.csi` } },
       })
     })
@@ -146,7 +152,7 @@ describe('fileTrack', () => {
     test('the conventional sibling still wins when it is there', () => {
       fs.writeFileSync(`${vcf}.tbi`, '')
       try {
-        expect(fileTrack('vcfgz', [vcf], 'testAsm').adapter).toMatchObject({
+        expect(fileTrack('vcf', [vcf], 'testAsm').adapter).toMatchObject({
           index: { indexType: 'TBI' },
         })
       } finally {
@@ -187,7 +193,7 @@ describe('fileTrack', () => {
 
   test('a remote file keeps the conventional sibling, unprobed', () => {
     expect(
-      fileTrack('vcfgz', ['https://example.com/variants.vcf.gz'], 'testAsm')
+      fileTrack('vcf', ['https://example.com/variants.vcf.gz'], 'testAsm')
         .adapter,
     ).toMatchObject({
       index: {
@@ -253,5 +259,34 @@ describe('sequenceAssembly', () => {
       refNameAliases: { adapter: { type: 'RefNameAliasAdapter' } },
       cytobands: { adapter: { type: 'CytobandAdapter' } },
     })
+  })
+})
+
+describe('genomeAssembly', () => {
+  test('a genome argument with its aliases: and cytobands:', () => {
+    const { assembly, unused } = genomeAssembly('fasta', [
+      'ref.fa',
+      'aliases:a.txt',
+      'height:100',
+    ])
+    expect(assembly).toMatchObject({
+      name: 'ref.fa',
+      sequence: { adapter: { type: 'IndexedFastaAdapter' } },
+      refNameAliases: { adapter: { type: 'RefNameAliasAdapter' } },
+    })
+    expect(unused).toEqual(['height:100'])
+  })
+
+  test('--fasta opens an unknown name as an indexed FASTA; --chromSizes as sizes', () => {
+    expect(
+      genomeAssembly('fasta', ['genome.seq']).assembly.sequence,
+    ).toMatchObject({ adapter: { type: 'IndexedFastaAdapter' } })
+    expect(
+      genomeAssembly('chromSizes', ['a.txt']).assembly.sequence,
+    ).toMatchObject({ adapter: { type: 'ChromSizesAdapter' } })
+  })
+
+  test('a file that is not a genome says so', () => {
+    expect(() => genomeAssembly('fasta', ['reads.bam'])).toThrow(/not a genome/)
   })
 })

@@ -1,5 +1,7 @@
 import fs from 'node:fs'
 
+import { mergeSettings } from '@jbrowse/launch-args'
+
 import { viewTypeModes } from './modes.ts'
 import { STDIN_ARG, isFile, readStdin } from './util.ts'
 
@@ -66,15 +68,23 @@ export function specMode(spec: ViewSpec): ViewMode {
 // The view snapshot a comparative renderer feeds to addLaunchView: the spec
 // minus its `type` discriminator. Every setting is already written on the view
 // object, which is the one shape a view takes.
-//
-// `knobs` are the CLI flags naming the same settings, and they win — the
-// precedence `--loc` already has over a `--session`. `--spec view.json --opacity
-// 0.2` used to parse and validate --opacity and then apply it nowhere. A knob
-// builder drops its unset entries, so an absent flag leaves the spec's own
-// value alone rather than overwriting it with undefined.
-export function viewSettingsFromSpec(
-  { type, ...settings }: ViewSpec,
-  knobs: object = {},
-): Record<string, unknown> {
-  return { ...settings, ...knobs }
+export function viewSettingsFromSpec({
+  type,
+  ...settings
+}: ViewSpec): Record<string, unknown> {
+  return settings
+}
+
+/**
+ * `settings` with `--view`'s written over them, member by member, so
+ * `--view mark.interpolate=bump` keeps a spec's other `mark` members.
+ */
+export function withViewSettings<T extends object>(
+  settings: T,
+  view: Record<string, unknown> = {},
+): T {
+  return mergeSettings(
+    structuredClone(settings) as Record<string, unknown>,
+    view,
+  ) as T
 }

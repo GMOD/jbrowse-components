@@ -14,16 +14,20 @@ Usage: jbrowse-desktop [options] [file | jbrowse://open?url=<JBrowse Web link>]
                 file to open on launch
 
 Opening data (the same arguments jb2export takes):
-  <data file>        A FASTA, 2bit or .chrom.sizes is the genome; any other
+  <data file>        A FASTA, 2bit or .chrom.sizes is the genome, which
+                     aliases:<file> and cytobands:<file> may follow; any other
                      file (BAM, CRAM, VCF, BigWig, GFF, BED, ...) opens as a
                      track, typed by its name. name:<label> and index:<file>
                      may follow it
   --genome <name>    A genomes.jbrowse.org genome (hg38, GCA_...) to open on
   --config <path>    A config.json to open on, with --assembly to pick one of
                      its genomes
-  --loc <location>   Where to open: chr1:1-1000, or a gene name
+  --loc <location>   Where to open: chr1:1-1000, or a gene name; several
+                     regions open side by side
+  --view <settings>  Settings on the view, by their session-spec names:
+                     path=value or JSON, e.g. axis.grid=false
   --track <id>       A track from the genome's or config's own list
-  --bam, --cram, --vcfgz, --gffgz, --bigwig, --bigbed, --bedgz, --hic <file>
+  --bam, --cram, --vcf, --gff, --bigwig, --bigbed, --bed, --hic <file>
                      A file of that type, whatever its name says
 
 Options:

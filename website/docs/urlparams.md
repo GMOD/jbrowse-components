@@ -816,7 +816,7 @@ holds:
 | `autoDiagonalize` | After tracks load, automatically run the chromosome diagonalization pass so the bottom/vertical axis follows the top/horizontal axis. The canvas is hidden behind a "Reordering chromosomes…" spinner during the wait, so the user doesn't see an undiagonalized flash. |
 | `collapseEmptyRows` | Open any genome row the launch gives no tracks collapsed to its ruler. The "No tracks active / Open track selector" block costs ~90px per row, which on a five-row launch is more of the viewport than the ribbons; a row is one click from expanding again (MiniControls, or the view menu's "Rows" → "Expand all views"). Off by default so an authored session keeps its rows as written — the launch dialog turns it on, and offers a checkbox to not. |
 | `coord` | `{ ratio: 1 }` puts every genome row on one bp/px, the coarsest row's, instead of fitting each to the pane width. The largest genome then fills the frame and the rest are drawn shorter in proportion, so a size difference between rows (polyploidy, a genome duplication) is visible as length rather than hidden by the per-row stretch — and orthologs between two rows line up at the same scale on both. Applied last, after any autoDiagonalize pass. The `SyntenyCoord` object, `{ ratio: 1 }`. |
-| `levelHeights` | Pixel height of each synteny strip, one entry per level. Useful for whole-genome views where the default ~100px is too cramped for the ribbon detail to be readable. |
+| `levelHeights` | Pixel height of each synteny strip, one entry per level, or one number for every level. Useful for whole-genome views where the default ~100px is too cramped for the ribbon detail to be readable. |
 
 **Properties**, which are whatever the state model declares and the view
 restores natively:

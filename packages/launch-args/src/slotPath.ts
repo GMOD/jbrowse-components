@@ -221,3 +221,33 @@ export function applySlotWrite(
   setSlot(container, slotAt(container, segments.at(-1)!, write), value)
   return target
 }
+
+/**
+ * The settings `--view`'s tokens write onto the view, as a session spec's view
+ * object holds them: `mark.interpolate=bump`, `filter.0.field=length`, or a
+ * JSON object merged in whole.
+ */
+export function viewSettings(tokens: string[]) {
+  const settings: Record<string, unknown> = {}
+  for (const token of tokens) {
+    if (token.startsWith('{')) {
+      let parsed: unknown
+      try {
+        parsed = JSON.parse(token)
+      } catch (e) {
+        throw new Error(`--view ${token} is not valid JSON`, { cause: e })
+      }
+      if (!isPlainObject(parsed)) {
+        throw new Error(`--view ${token} is not a JSON object`)
+      }
+      mergeSettings(settings, parsed)
+    } else if (isSlotPathOption(token)) {
+      applySlotWrite(settings, slotWrite(token))
+    } else {
+      throw new Error(
+        `--view "${token}" is not a setting: write one as path=value (mark.interpolate=bump) or as a JSON object`,
+      )
+    }
+  }
+  return settings
+}

@@ -31,7 +31,7 @@ test('bare files: the genome file is the assembly, the rest are tracks', () => {
 
 test('paths resolve against the launch directory, URLs stay as they are', () => {
   const p = plan(
-    'g/ref.fa a.bw index:i/a.bw.idx https://x.org/b.bw --aliases al.txt',
+    'g/ref.fa aliases:al.txt a.bw index:i/a.bw.idx https://x.org/b.bw',
     '/data',
   )
   expect(p.assembly?.refNameAliases).toMatchObject({
@@ -53,12 +53,33 @@ test('--genome names a hosted config; tracks wait for its assembly name', () => 
 })
 
 test('a value a single-value flag cannot use is reported, not dropped', () => {
-  expect(plan('--genome hg38 --loc chr1:1-100 chr2:5-9').unapplied).toEqual([
-    '--loc chr2:5-9',
-  ])
   expect(plan('--genome hg38 typo.bamm').unapplied).toEqual([
     '--genome typo.bamm',
   ])
+  expect(plan('ref.fa height:100 aliases:a.txt').unapplied).toEqual([
+    'ref.fa height:100',
+  ])
+})
+
+test('--loc takes every region after it', () => {
+  const p = plan('--genome hg38 --loc chr1:1-100 chr2:5-9')
+  expect(p.loc).toBe('chr1:1-100 chr2:5-9')
+  expect(p.unapplied).toEqual([])
+})
+
+test('--view writes settings on the view', () => {
+  expect(
+    plan('ref.fa --view axis.grid=false {"trackLabels":"offset"}').view,
+  ).toEqual({ axis: { grid: false }, trackLabels: 'offset' })
+  expect(plan('ref.fa').view).toEqual({})
+  expect(() => plan('ref.fa --view grid')).toThrow(/not a setting/)
+})
+
+test('a config URL is fetched over http or https', () => {
+  expect(plan('--config https://x.org/c.json').config).toBe(
+    'https://x.org/c.json',
+  )
+  expect(() => plan('--config s3://b/c.json')).toThrow(/http or https/)
 })
 
 test('--assembly picks a config genome', () => {
@@ -86,4 +107,5 @@ test('a plan with no genome, or two, says so', () => {
   expect(() => plan('--genome hg38 --config c.json')).toThrow(/not both/)
   expect(() => plan('ref.fa --assembly hg38')).toThrow(/--assembly picks/)
   expect(() => plan('ref.fa other.2bit')).toThrow(/other\.2bit is a genome/)
+  expect(() => plan('ref.fa --fasta other.fa')).toThrow(/other\.fa is a genome/)
 })

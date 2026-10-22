@@ -88,8 +88,8 @@ export function assertCoherentOptions({
  * [URL parameters](https://jbrowse.org/jb2/docs/urlparams/), whose `loc`
  * takes a gene name. `spec` becomes a
  * [session spec](https://jbrowse.org/jb2/docs/urlparams/#session-spec), which
- * can describe several views and per-display settings but whose `init.loc`
- * takes a locstring only. `session` opens a saved session as exported.
+ * can describe several views and per-display settings. `session` opens a saved
+ * session as exported.
  */
 export function jbrowseUrl({
   genome,

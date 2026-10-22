@@ -27,19 +27,19 @@ import {
   writeMembers,
 } from './applyTrackOpts.ts'
 import { breakpointInit, breakpointPanelsFromSpec } from './breakpointInit.ts'
-import {
-  dotplotInit,
-  dotplotViewKnobs,
-  syntenyInit,
-  syntenyViewKnobs,
-} from './comparativeInit.ts'
+import { dotplotInit, syntenyInit } from './comparativeInit.ts'
 import { readsJoiningRegions } from './joinedReads.ts'
 import { syntenyTrackTypes } from './makeConfigs.ts'
 import { modeDescriptors, subcommandForViewType } from './modes.ts'
 import { DEFAULT_FONT_FAMILY, DEFAULT_WIDTH } from './options.ts'
 import { readData } from './readData.ts'
 import { resolveConfigObject } from './resolveHub.ts'
-import { parseSpec, specMode, viewSettingsFromSpec } from './spec.ts'
+import {
+  parseSpec,
+  specMode,
+  viewSettingsFromSpec,
+  withViewSettings,
+} from './spec.ts'
 
 import type { ViewMode } from './modes.ts'
 import type { ViewSpec } from './spec.ts'
@@ -490,12 +490,23 @@ async function addLaunchView<T extends InitView, N extends string>(
       `${fixedBy} fixes the view's tracks, so ${named.join(', ')} would be dropped; put them in ${fixedBy === '--spec' ? 'the spec' : 'the session'}`,
     )
   }
+  if (suppliedType === viewType && Object.keys(ctx.opts.view ?? {}).length) {
+    throw new Error(
+      'the session fixes the view, so --view would be dropped; put its settings in the session',
+    )
+  }
   const view =
     suppliedType === viewType
       ? session.views[0]
       : ctx.spec && settingsFromSpec
-        ? await session.launchView<string>(viewType, settingsFromSpec(ctx.spec))
-        : await session.launchView(viewType, makeSettings())
+        ? await session.launchView<string>(
+            viewType,
+            withViewSettings(settingsFromSpec(ctx.spec), ctx.opts.view),
+          )
+        : await session.launchView(
+            viewType,
+            withViewSettings(makeSettings(), ctx.opts.view),
+          )
   return readyView(view as T, ctx)
 }
 
@@ -571,7 +582,7 @@ const renderLinear: ModeRenderer = async ctx => {
   }
 
   // Hosted trackIds from --track (present in a --genome/--config config) go first,
-  // so they land above the file-type (--bam/--gffgz/--hic/...) tracks readData
+  // so they land above the file-type (--bam/--gff/--hic/...) tracks readData
   // built — argv order top-to-bottom, same convention as every other stacked
   // view in this CLI (synteny levels, multi-way assemblies). Both then take the
   // same path: the display category comes from the display the view opens the
@@ -639,8 +650,8 @@ const renderDotplot: ModeRenderer = async ctx => {
   const view = await addLaunchView<DotplotViewModel, 'DotplotView'>(
     ctx,
     'DotplotView',
-    () => dotplotInit(ctx.data, ctx.opts),
-    spec => viewSettingsFromSpec(spec, dotplotViewKnobs(ctx.opts)),
+    () => dotplotInit(ctx.data),
+    viewSettingsFromSpec,
   )
   return renderDotplotToSvg(view, baseSvgOpts(ctx.opts))
 }
@@ -649,8 +660,8 @@ const renderSynteny: ModeRenderer = async ctx => {
   const view = await addLaunchView<LinearSyntenyViewModel, 'LinearSyntenyView'>(
     ctx,
     'LinearSyntenyView',
-    () => syntenyInit(ctx.data, ctx.opts),
-    spec => viewSettingsFromSpec(spec, syntenyViewKnobs(ctx.opts)),
+    () => syntenyInit(ctx.data),
+    viewSettingsFromSpec,
   )
   return renderSyntenyToSvg(view, {
     ...baseSvgOpts(ctx.opts),
@@ -697,7 +708,7 @@ function circularDrawable(
 //
 // `--track` and the file flags name them, the way they do for a linear or a
 // breakpoint view; every track in the config is the fallback for neither
-// naming any, which is what a `--fasta ref.fa --vcfgz sv.vcf.gz` run means.
+// naming any, which is what a `ref.fa sv.vcf.gz` run means.
 // Naming them is the only usable form over a --genome, whose config carries
 // hundreds of tracks and would otherwise open every one of them whole-genome —
 // and until it was read here, `--track` was parsed, warned about, and dropped.
@@ -705,7 +716,7 @@ function circularDrawable(
 // **The modifiers that follow a track do not reach it here**, and a run passing
 // one is told so. They name slots on the LINEAR displays, this view draws a
 // variant track as chords instead, and a key a display does not declare fails
-// the whole export — so `height:400` beside a --vcfgz, which drew a chord plot
+// the whole export — so `height:400` beside a VCF, which drew a chord plot
 // before this view read `--track` at all, killed the render. Which display it
 // picks per track is `showTrackGeneric`'s to decide, and a second copy of that
 // rule here would be one more thing to drift.
@@ -740,7 +751,7 @@ const renderCircular: ModeRenderer = async ctx => {
     ctx,
     'CircularView',
     () => circularInit(ctx),
-    spec => viewSettingsFromSpec(spec),
+    viewSettingsFromSpec,
   )
   return renderCircularToSvg(view, baseSvgOpts(ctx.opts))
 }

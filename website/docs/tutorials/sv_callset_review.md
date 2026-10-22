@@ -64,7 +64,7 @@ curl -fO https://jbrowse.org/demos/cancer_sv/COLO829.somatic-sv.vcf.gz
 # --track: the track id, then display settings as key:value pairs
 # --flank: bases drawn either side of each breakend
 # --manifest: writes manifest.tsv beside the images
-jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
+jb2export batch --sites COLO829.somatic-sv.vcf.gz \
   --config https://jbrowse.org/demos/cancer_sv/config.json --assembly hg38 \
   --track COLO829_tumor_ont height:240 \
   --outDir tumor --flank 600 --width 1100 --manifest
@@ -82,7 +82,7 @@ The VCF's chromosome names must match the assembly's:
 # --limit: render only the first rows; a later --resume run keeps them
 # --passOnly: drop records the caller filtered out
 # --jobs: render processes, about a gigabyte each
-jb2export batch --vcf calls.vcf.gz \
+jb2export batch --sites calls.vcf.gz \
   --config your/config.json --assembly <assemblyName> --track <trackId> \
   --outDir out --passOnly --limit 20
 ```
@@ -93,7 +93,7 @@ Next we'll render the matched normal into a second directory. Each call keeps
 its file name across `tumor/` and `normal/`:
 
 ```bash
-jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
+jb2export batch --sites COLO829.somatic-sv.vcf.gz \
   --config https://jbrowse.org/demos/cancer_sv/config.json --assembly hg38 \
   --track COLO829BL_normal_ont height:240 \
   --outDir normal --flank 600 --width 1100 --manifest
@@ -155,10 +155,10 @@ details.
 `jb2export batch` and `jb2export breakpoint` read any caller that writes
 breakends or symbolic SVs (such as `<DEL>`) to a VCF:
 
-- cuteSV, Sniffles, pbsv, Delly, Manta and GRIDSS write a VCF that `--vcf` reads
-  directly.
+- cuteSV, Sniffles, pbsv, Delly, Manta and GRIDSS write a VCF that `--sites`
+  reads directly.
 - LINX writes clusters and chained links as TSVs. Convert the junction columns
-  to the six BEDPE columns with `awk` and pass the file as `--bedpe`.
+  to the six BEDPE columns with `awk` and pass the `.bedpe` file as `--sites`.
 - To draw PURPLE's copy-number segments under the reads, convert them to a
   bedGraph, run `bedGraphToBigWig`, and pass the result as `--bigwig`.
 

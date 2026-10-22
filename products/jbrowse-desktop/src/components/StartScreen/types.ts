@@ -24,7 +24,7 @@ export interface InternetAccount {
 }
 export interface JBrowseConfig {
   internetAccounts: InternetAccount[]
-  assemblies: { name: string }[]
+  assemblies: { name: string; aliases?: string[] }[]
   tracks: { trackId: string }[]
   connections?: { connectionId: string }[]
   aggregateTextSearchAdapters?: Record<string, unknown>[]

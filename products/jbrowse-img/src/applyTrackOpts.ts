@@ -5,19 +5,18 @@ import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { trackDisplayType } from '@jbrowse/core/util/tracks'
 import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
 import {
-  getSnapshot,
-  getType,
-  isArrayType,
-  isStateTreeNode,
-} from '@jbrowse/mobx-state-tree'
-
-import {
   applySlotWrite,
   isMemberWrite,
   isSlotPathOption,
   mergeSettings,
   slotWrite,
-} from './slotPath.ts'
+} from '@jbrowse/launch-args'
+import {
+  getSnapshot,
+  getType,
+  isArrayType,
+  isStateTreeNode,
+} from '@jbrowse/mobx-state-tree'
 
 import type { AssertNever, AssertTrue, Covers } from './types.ts'
 import type { VariantSortColumn } from '@jbrowse/alignments-core/variantSortColumn'
@@ -696,21 +695,10 @@ const modifiers: Record<string, Modifier> = {
   },
 }
 
-// A modifier an earlier release took and this one does not, with what to write
-// instead. An error rather than the unknown-name warning: the old name still
-// runs in scripts, and its figure would come out unfiltered.
-const removedModifiers: Record<string, string> = {
-  properPairs:
-    'Use svSignal:only for the SV evidence (split reads, indels of 50 bp or more, discordant pairs), or svSignal:exclude to hide it.',
-}
-
-// Fold one `prefix:val1:val2` modifier into the display snapshot, or say why it
-// did nothing. Modifier NAMES warn rather than throw — an unknown one for
-// forward compatibility, and a well-known one aimed at the wrong track type
-// because reusing one modifier list across a mixed set of files is a reasonable
-// thing to script. (Modifier VALUES throw; see `invalid` above.) Either way it
-// is now said out loud: `--bigwig sig.bw sashimi:up` used to look like it
-// worked.
+// Fold one `prefix:val1:val2` modifier into the display snapshot. An unknown
+// name throws, as a misspelled slot does. A known one aimed at the wrong track
+// type warns instead, because reusing one modifier list across a mixed set of
+// files is a reasonable thing to script.
 function applyModifier(
   result: BuildResult,
   category: Category,
@@ -718,13 +706,11 @@ function applyModifier(
   val1: string,
   val2: string | undefined,
 ) {
-  const replacement = lookup(removedModifiers, prefix)
-  if (replacement) {
-    throw new Error(`The ${prefix}: track option was removed. ${replacement}`)
-  }
   const modifier = lookup(modifiers, prefix)
   if (!modifier) {
-    console.warn(`Warning: unknown track option "${prefix}"`)
+    throw new Error(
+      `unknown track option "${prefix}:"; the options are ${Object.keys(modifiers).join(', ')}, or a slot written as path=value`,
+    )
   } else if (!modifier.on.includes(category)) {
     console.warn(
       `Warning: track option "${prefix}" has no effect on ${category === 'other' ? 'this track type' : `a ${category} track`} (applies to: ${modifier.on.join(', ')})`,

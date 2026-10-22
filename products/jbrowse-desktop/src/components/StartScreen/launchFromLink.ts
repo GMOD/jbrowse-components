@@ -192,6 +192,17 @@ export async function launchFromPlan(
   if (!assembly) {
     throw new Error(`${plan.config} has no assemblies`)
   }
+  const configAssemblies = config?.assemblies ?? []
+  if (
+    config &&
+    !configAssemblies.some(
+      a => a.name === assembly || a.aliases?.includes(assembly),
+    )
+  ) {
+    throw new Error(
+      `${plan.config} has no assembly ${assembly}; it has ${configAssemblies.map(a => a.name).join(', ')}`,
+    )
+  }
   // a file's trackId is exact; a --track token gets jb2export's leniency
   const fileIds = new Set(plan.tracks.map(t => t.trackId))
   const show = plan.show.map(id =>
@@ -206,6 +217,7 @@ export async function launchFromPlan(
       ),
       views: [
         {
+          ...plan.view,
           type: 'LinearGenomeView',
           assembly,
           ...(plan.loc ? { loc: plan.loc } : {}),

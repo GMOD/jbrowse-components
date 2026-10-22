@@ -7,20 +7,17 @@ import {
   FILE_FLAG,
   fileAdapter,
   fileTrack,
+  genomeAssembly,
   isSequenceAdapter,
   modifierValue,
-  sequenceAssembly,
 } from '@jbrowse/launch-args'
 
 import { buildComparative, hasComparativeArgs } from './comparativeArgs.ts'
-import {
-  makeFastaAssembly,
-  makeMultiWiggleTrackConfig,
-  syntenyTrackTypes,
-} from './makeConfigs.ts'
-import { STDIN_ARG, isFile, readTextInput } from './util.ts'
+import { makeMultiWiggleTrackConfig, syntenyTrackTypes } from './makeConfigs.ts'
+import { STDIN_ARG, readTextInput } from './util.ts'
 
-import type { Assembly, Config, OpenTrack, Opts, Track } from './types.ts'
+import type { Config, OpenTrack, Opts, Track } from './types.ts'
+import type { Entry } from '@jbrowse/launch-args'
 
 // how to name an input in an error message
 function inputName(file: string) {
@@ -133,8 +130,6 @@ export function readData(
     config,
     session,
     fasta,
-    aliases,
-    cytobands,
     defaultSession,
     tracks,
     trackList = [],
@@ -142,18 +137,15 @@ export function readData(
   }: Opts,
   configObject?: Config,
 ) {
-  let assemblyData: Assembly | undefined
-  const genome = trackList.find(
-    ([key, [file]]) =>
-      key === FILE_FLAG && !!file && isSequenceAdapter(fileAdapter(file)),
-  )
-  let genomeUsed = false
-  // `-` reads the assembly JSON from stdin; any other non-existent value is an
-  // assembly NAME to look up in the config below
-  if (asm && (asm === STDIN_ARG || isFile(asm))) {
-    assemblyData = read(asm) as Assembly
-    resolveLocalPaths(assemblyData, baseDirOf(asm))
-  }
+  // the genome a linear view opens on: --fasta (a library caller passes it bare),
+  // or a bare genome file
+  const genome: Entry | undefined =
+    argv.find(([key]) => key === 'fasta') ??
+    (fasta ? ['fasta', [fasta]] : undefined) ??
+    trackList.find(
+      ([key, [file]]) =>
+        key === FILE_FLAG && !!file && isSequenceAdapter(fileAdapter(file)),
+    )
 
   const tracksData = tracks ? readTrackArray(tracks) : undefined
   const configData: Partial<Config> & Record<string, unknown> = configObject
@@ -208,22 +200,13 @@ export function readData(
   if (configData.assemblies?.length) {
     configData.assemblies = configData.assemblies.map(expandAssemblySequence)
   }
-  if (assemblyData) {
-    configData.assemblies = [
-      ...(configData.assemblies ?? []).filter(
-        a => a.name !== assemblyData.name,
-      ),
-      assemblyData,
-    ]
-    configData.assembly = assemblyData
-  } else if (configData.assemblies?.length) {
-    // --config/--genome and the CLI assembly flags are alternatives, not additive:
-    // the config's assemblies win outright, so a --fasta given alongside one is
-    // dropped — and in a comparative run so is every --paf/--chain that binds to
-    // it, since those are built in the branch below that never runs.
-    if (fasta || hasComparativeArgs(argv)) {
-      console.warn(
-        'Warning: the assembly comes from the config (--config/--genome), so --fasta/--chromSizes and any comparison files passed with it are ignored. Use --assembly <name> to choose among the config assemblies.',
+  if (configData.assemblies?.length) {
+    // --config/--genome and the CLI assembly flags are alternatives, not
+    // additive: the config's assemblies would win, dropping the genome file and
+    // every comparison file that binds to it
+    if (genome || hasComparativeArgs(argv)) {
+      throw new Error(
+        `${genome?.[1][0] ?? '--chromSizes'} is a genome, and the config (--config or --genome) names its own; pass one or the other, and --assembly <name> to choose among the config's`,
       )
     }
     if (asm) {
@@ -238,27 +221,26 @@ export function readData(
   }
   // else build the assemblies from CLI args: a comparative view's stacked
   // assemblies + per-level synteny tracks (--fasta/--chromSizes/--paf/…), or a
-  // single linear assembly from --fasta (trackId 'refseq' for --refseq + tests).
+  // single linear assembly from the genome (trackId 'refseq' for --refseq).
   else if (hasComparativeArgs(argv)) {
     const comparative = buildComparative(argv)
     configData.assemblies = comparative.assemblies
     configData.assembly = comparative.assemblies[0]!
     configData.assemblyLocs = comparative.locs
     syntenyTracks = comparative.syntenyTracks
-  } else if (fasta) {
-    configData.assembly = makeFastaAssembly(fasta, aliases, cytobands, 'refseq')
   } else if (genome) {
-    const [file = '', ...mods] = genome[1]
-    configData.assembly = sequenceAssembly(fileAdapter(file), file, {
-      aliases: aliases ?? modifierValue(mods, 'aliases'),
-      cytobands: cytobands ?? modifierValue(mods, 'cytobands'),
-    })
-    genomeUsed = true
+    const { assembly, unused } = genomeAssembly(genome[0], genome[1], 'refseq')
+    if (unused.length) {
+      throw new Error(
+        `${genome[1][0]} takes aliases: and cytobands:, not ${unused.join(' ')}`,
+      )
+    }
+    configData.assembly = assembly
   }
 
   if (!configData.assembly) {
     throw new Error(
-      'no assembly specified: pass a genome file (an indexed FASTA from samtools faidx, a 2bit, or a .chrom.sizes), --fasta, --genome, or --config with --assembly',
+      'no assembly specified: pass a genome file (an indexed FASTA from samtools faidx, a 2bit, or a .chrom.sizes), --fasta, --genome, or --config',
     )
   }
 
@@ -287,10 +269,7 @@ export function readData(
   const openTracks: OpenTrack[] = []
   for (const [type, opts] of trackList) {
     const [file, ...rest] = opts
-    if (
-      !syntenyTrackTypes.includes(type) &&
-      !(genomeUsed && genome?.[1] === opts)
-    ) {
+    if (!syntenyTrackTypes.includes(type) && genome?.[1] !== opts) {
       if (!file) {
         throw new Error(`--${type} requires a file argument`)
       }

@@ -15,7 +15,7 @@ test('circular renders structural variant chords from a VCF', async () => {
   const svg = await renderRegion({
     mode: 'circular',
     fasta: volvoxFasta,
-    trackList: [['vcfgz', [sv]]],
+    trackList: [['vcf', [sv]]],
   })
   assert.ok(svg.includes('<svg'), 'output should be SVG')
   // chords + ideogram are drawn as <path> elements; the SV track adds chords on
@@ -36,7 +36,7 @@ test('a track with no chord display is skipped, not fatal', async () => {
     mode: 'circular',
     fasta: volvoxFasta,
     trackList: [
-      ['vcfgz', [sv]],
+      ['vcf', [sv]],
       ['bigwig', [bigwig]],
     ],
   })
@@ -77,7 +77,7 @@ test('a track of an unregistered type is skipped, not fatal', async () => {
   const svg = await renderRegion({
     mode: 'circular',
     fasta: volvoxFasta,
-    trackList: [['vcfgz', [sv]]],
+    trackList: [['vcf', [sv]]],
     tracks: path.join(__dirname, '../data/unknownTrackType.json'),
   })
   const paths = svg.match(/<path/g) ?? []
@@ -93,7 +93,7 @@ test('circular with an unreadable assembly rejects instead of hanging', async ()
     renderRegion({
       mode: 'circular',
       fasta: '/nonexistent/ref.fa',
-      trackList: [['vcfgz', [sv]]],
+      trackList: [['vcf', [sv]]],
     }),
     /ENOENT|no such file/,
   )

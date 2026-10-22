@@ -105,7 +105,7 @@ test('synteny with an unreadable assembly rejects instead of hanging', async () 
 // the only variable). Also exercises the DiagonalizeSynteny RPC headlessly on
 // the main-thread driver — a missing RPC registration would hang to the init
 // timeout instead of returning.
-test('synteny --autoDiagonalize reorders the lower axis', async () => {
+test('synteny --view autoDiagonalize=true reorders the lower axis', async () => {
   const crossPaf = path.join(tmp, 'cross.paf')
   fs.writeFileSync(
     crossPaf,
@@ -123,7 +123,7 @@ test('synteny --autoDiagonalize reorders the lower axis', async () => {
   const diagonalized = await renderRegion({
     mode: 'synteny',
     argv,
-    autoDiagonalize: true,
+    view: { autoDiagonalize: true },
   })
   assert.ok(diagonalized.includes('<svg'), 'diagonalized output should be SVG')
   assert.notEqual(
