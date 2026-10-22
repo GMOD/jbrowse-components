@@ -72,7 +72,7 @@ export type BodyScheme =
 /**
  * The read fields with a vocabulary or ramp of their own, each its scheme's
  * name. A field that is also a facet dimension takes the facet's name, so
- * `facet` and `color` over it are one word; the insert-size fields are not
+ * `facet` and `encoding.color` over it are one word; the insert-size fields are not
  * facet dimensions, since their band is sampled per region. There is no
  * `chainStrand`: a long read's inversion reads under View as pairs.
  */
@@ -87,7 +87,7 @@ export const COLOR_FIELDS = [
 ] as const
 
 /**
- * The per-base variables `baseColor` paints a cell per base from, which the
+ * The per-base variables `pileup.bases` paints a cell per base from, which the
  * display draws as a layer of its own beside whatever fills the read.
  */
 export const BASE_COLOR_FIELDS = [
@@ -120,16 +120,16 @@ export interface ColorBy {
   modifications?: ModificationColorBy
 }
 
-/** What fills a read: the display's `color` object as a scheme. */
+/** What fills a read: the display's `encoding.color` as a scheme. */
 export interface ReadColorBy extends ColorBy {
   type: ReadColorSchemeType
   modifications?: undefined
 }
 
 /** How a read tag colors: a color per value, or a gradient over its numbers. */
-export type TagColorScale = 'categorical' | 'linear'
+export type TagColorScale = 'ordinal' | 'linear'
 
-/** The per-base layer: the display's `baseColor` object as a scheme. */
+/** The per-base layer: `pileup.bases` as a scheme. */
 export interface BaseLayer extends ColorBy {
   type: BaseLayerType
   tag?: undefined
@@ -253,7 +253,7 @@ export const READ_DIMENSIONS = [
 export type ReadDimension = (typeof READ_DIMENSIONS)[number]
 
 // The read categories only a facet answers: reads keep the colors their arcs
-// paint (ADR-230), so `color` names none of them.
+// paint (ADR-230), so `encoding.color` names none of them.
 export const FACET_ONLY_DIMENSIONS = [
   'pairing',
   'split',
@@ -298,7 +298,7 @@ export type LayoutOrder = (typeof LAYOUT_ORDERS)[number]
 
 // The fields that rank the reads over one column, `pos` on `refName`: strand,
 // the base there, mapping quality, pair orientation, the interbase mark there,
-// or a SAM tag (`tags.HP`), spelt as `color` and `facet` spell a tag.
+// or a SAM tag (`tags.HP`), spelt as `encoding.color` and `facet` spell a tag.
 export const COLUMN_SORT_FIELDS = [
   'strand',
   'base',

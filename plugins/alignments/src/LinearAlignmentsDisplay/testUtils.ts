@@ -15,6 +15,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { arcStrokeScale } from '../features/arcs/arcLineWidth.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import { readCategoryColorsOf } from './colorUtils.ts'
 import configSchemaFactory from './configSchema.ts'
@@ -126,7 +127,7 @@ export function makeTestRenderState(
     chainMode: false,
     showLinkedReadLines: false,
     collapseSections: false,
-    readConnectionsLineWidth: 1,
+    readConnectionsStrokeScale: arcStrokeScale(1),
     linkRegions: [],
     pileupTopOffset: 0,
     coverageTopOffset: 0,

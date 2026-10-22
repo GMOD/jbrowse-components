@@ -55,11 +55,11 @@ const TagDialog = observer(function TagDialog({
           aria-label="Color as"
           value={scale}
           onChange={event => {
-            setScale(event.target.value === 'linear' ? 'linear' : 'categorical')
+            setScale(event.target.value === 'linear' ? 'linear' : 'ordinal')
           }}
         >
           <FormControlLabel
-            value="categorical"
+            value="ordinal"
             control={<Radio />}
             label="A color per value"
           />

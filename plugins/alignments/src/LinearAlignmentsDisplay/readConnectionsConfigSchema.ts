@@ -1,8 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { alignmentsArcColorConfigSchema } from './alignmentsArcColorConfigSchema.ts'
 import { READ_CONNECTIONS_PLACEMENTS } from './constants.ts'
+import { readConnectionsEncodingConfigSchema } from './readConnectionsEncodingConfigSchema.ts'
 import { readConnectionsMarkConfigSchema } from './readConnectionsMarkConfigSchema.ts'
 import { readConnectionsOrdinaryPairsConfigSchema } from './readConnectionsOrdinaryPairsConfigSchema.ts'
 
@@ -22,7 +22,7 @@ import { readConnectionsOrdinaryPairsConfigSchema } from './readConnectionsOrdin
  *   readConnections: {
  *     show: true,
  *     mark: 'rule',
- *     color: { field: 'insertSize' },
+ *     encoding: { color: 'insertSize' },
  *   },
  * }
  * ```
@@ -76,19 +76,12 @@ export const readConnectionsConfigSchema = ConfigurationSchema(
         'where the connections draw: up over the coverage band, or down in a separate band below it',
     },
     /**
-     * #slot
+     * #slot encoding
+     * The color and width each connection strokes at: `color`, a pair
+     * field, `""` following the reads' `encoding.color` field where a
+     * connection paints it, and `strokeWidth`.
      */
-    lineWidth: {
-      type: 'number',
-      defaultValue: 1,
-      description: 'width of each arc or line in pixels',
-    },
-    /**
-     * #slot color
-     * The field that colors the connections; `""` uses the reads' `color`
-     * field where a connection paints it.
-     */
-    color: alignmentsArcColorConfigSchema,
+    encoding: readConnectionsEncodingConfigSchema,
     /**
      * #slot ordinaryPairs
      * The pairs that carry no category, drawn as context: `show`.

@@ -7,13 +7,14 @@ import {
   alignmentsColorEncoding,
   colorFieldOf,
 } from '../shared/alignmentsColor.ts'
+import { colorSettingOf } from '../shared/colorSettingFixture.ts'
 import { bakedColorScale } from './bakedColorScale.ts'
 import { bakedValueColor } from './colorTagUtils.ts'
 import { buildReadFillColors, overlayReadFillColors } from './readFillColors.ts'
 
-import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
 import type { ColorBy } from '../shared/types.ts'
 import type { RefNamePosition } from './colorTagUtils.ts'
+import type { ColorScaleSlots } from '@jbrowse/core/util/colorScale'
 
 const TAG: ColorBy = { type: 'tag', tag: 'HP' }
 
@@ -26,33 +27,15 @@ function pileupWith(readTagValues: string[]) {
   })
 }
 
-const UNDECLARED: AlignmentsColorSetting = {
-  value: undefined,
-  field: '',
-  scale: undefined,
-  domain: [],
-  range: [],
-  scheme: undefined,
-  reverse: false,
-  domainMin: undefined,
-  domainMax: undefined,
-  domainMid: undefined,
-}
-
-function encodingFor(
-  colorBy: ColorBy,
-  declared: Partial<AlignmentsColorSetting> = {},
-) {
-  return alignmentsColorEncoding({
-    ...UNDECLARED,
-    field: colorFieldOf(colorBy),
-    ...declared,
-  })
+function encodingFor(colorBy: ColorBy, declared: ColorScaleSlots = {}) {
+  return alignmentsColorEncoding(
+    colorSettingOf({ field: colorFieldOf(colorBy), scale: declared }),
+  )
 }
 
 function scaleFor(
   colorBy: ColorBy,
-  declared: Partial<AlignmentsColorSetting> = {},
+  declared: ColorScaleSlots = {},
   position?: RefNamePosition,
 ) {
   return bakedColorScale(
@@ -211,7 +194,7 @@ describe('a declared scale', () => {
 
   test('a linear scale runs the ramp across its pinned ends and clamps past them', () => {
     const scale = scaleFor(NM, {
-      scale: 'linear',
+      type: 'linear',
       domainMin: 0,
       domainMax: 10,
       range: ['#000000', '#ffffff'],
@@ -230,7 +213,7 @@ describe('a declared scale', () => {
   test('an unpinned linear scale stretches over the loaded extent', () => {
     const scale = bakedColorScale(
       NM,
-      encodingFor(NM, { scale: 'linear', range: ['#000000', '#ffffff'] }),
+      encodingFor(NM, { type: 'linear', range: ['#000000', '#ffffff'] }),
       undefined,
       [4, 8],
     )
@@ -241,14 +224,14 @@ describe('a declared scale', () => {
   // Ends written high to low used to read as no pin at all, so the ramp
   // stretched over the reads instead; reverse is now the one way to turn it.
   test('ends written high to low still pin, and reverse turns the ramp round', () => {
-    const colorsOf = (declared: Partial<AlignmentsColorSetting>) =>
+    const colorsOf = (declared: ColorScaleSlots) =>
       buildReadFillColors(
         pileupWith(['0', '10']),
         NM,
         bakedColorScale(
           NM,
           encodingFor(NM, {
-            scale: 'linear',
+            type: 'linear',
             range: ['#000000', '#ffffff'],
             ...declared,
           }),
@@ -269,7 +252,7 @@ describe('a declared scale', () => {
     const scale = bakedColorScale(
       NM,
       encodingFor(NM, {
-        scale: 'linear',
+        type: 'linear',
         domainMin: 0,
         range: ['#000000', '#ffffff'],
       }),
@@ -286,7 +269,7 @@ describe('a declared scale', () => {
 
   test('a threshold scale paints the bin a value falls in', () => {
     const scale = scaleFor(NM, {
-      scale: 'threshold',
+      type: 'threshold',
       domain: ['5'],
       range: ['#00ff00', '#ff0000'],
     })
@@ -304,7 +287,7 @@ describe('a declared scale', () => {
 
   test('threshold cuts written high to low are read ascending', () => {
     const scale = scaleFor(NM, {
-      scale: 'threshold',
+      type: 'threshold',
       domain: ['0.5', '0.1'],
       range: ['#0000ff', '#00ff00', '#ff0000'],
     })

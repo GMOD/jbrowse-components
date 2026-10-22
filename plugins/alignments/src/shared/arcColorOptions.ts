@@ -3,7 +3,7 @@ import { FACET_LABELS, INSERT_SIZE_LABELS } from './facetLabels.ts'
 /**
  * The read fields a paired-end arc and the read cloud can paint, and the
  * radios the 'Arc color' submenu builds from them. They are the reads' own
- * field names, so `arcColor` and `color` over one variable are one word.
+ * field names, so `arcColor` and `encoding.color` over one variable are one word.
  *
  * A leaf module because the website's figure recipes name these labels in a
  * click path, and the node script that builds them cannot load a module
@@ -48,7 +48,7 @@ function isArcColorField(field: string): field is ArcColorField {
 
 /**
  * The field the arcs paint: `own`, the `arcColor` object's, unless it is
- * empty, then `readField`, the reads' `color` field, where an arc can paint
+ * empty, then `readField`, the reads' `encoding.color` field, where an arc can paint
  * it, else {@link DEFAULT_ARC_COLOR_FIELD}.
  */
 export function arcColorFieldOf(own: string, readField: string) {

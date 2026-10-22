@@ -37,14 +37,11 @@ interface ReadConnectionsModel {
   showConnectors: boolean
   setShowConnectors: (flag: boolean) => void
   readConnectionsLineWidth: number
-  setReadConnectionsLineWidth: (width: number) => void
+  setReadConnectionsLineWidth: (width?: number) => void
 }
 
-// `readConnections.lineWidth`'s default, spelled again here for the reset item
-// and the is-default marker — the same duplication
-// `DEFAULT_MIN_INTERCHROM_READS` carries, and for the same reason: the config
-// docgen renders a slot default off its AST source text, so the slot cannot name
-// a constant.
+// The width a one-read connection strokes at under the default
+// `encoding.strokeWidth` scale, for the is-default marker.
 const DEFAULT_READ_CONNECTIONS_LINE_WIDTH = 1
 
 const PLACEMENT_OPTIONS: { value: ReadConnectionsPlacement; label: string }[] =
@@ -220,9 +217,7 @@ export function getReadConnectionsMenuItem(
             model.setReadConnectionsLineWidth(width)
           },
           onReset: () => {
-            model.setReadConnectionsLineWidth(
-              DEFAULT_READ_CONNECTIONS_LINE_WIDTH,
-            )
+            model.setReadConnectionsLineWidth()
           },
         }),
         ...bandGate,

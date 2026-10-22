@@ -69,6 +69,10 @@ export function drawnReadConnectionsOf(
 // which sends a junction down where it would cross another; arcs have no such
 // side assignment, so one shared enum would offer them a value that means
 // nothing. Sashimi's list sits beside the side-assignment algorithm it selects.
+export const READ_CONNECTIONS_WIDTH_SCALES = ['log', 'linear'] as const
+export type ReadConnectionsWidthScale =
+  (typeof READ_CONNECTIONS_WIDTH_SCALES)[number]
+
 export const READ_CONNECTIONS_PLACEMENTS = ['up', 'down'] as const
 export type ReadConnectionsPlacement =
   (typeof READ_CONNECTIONS_PLACEMENTS)[number]

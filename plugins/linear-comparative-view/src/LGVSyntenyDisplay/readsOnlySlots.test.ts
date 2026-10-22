@@ -5,16 +5,21 @@ import { createDisplay } from './testEnv.ts'
 
 // A synteny block has no introns, basecaller tags or qualities, so the schema
 // stops at the alignments base and the shared model answers these off.
-test('the schema declares no sashimi, junction filter, baseColor or modifications', () => {
+test('the schema declares no sashimi, junction filter, pileup.bases or modifications', () => {
   const definition = getConfigurationSchemaDefinition(configSchemaF())!
-  for (const slot of ['sashimi', 'baseColor', 'modifications']) {
+  for (const slot of ['sashimi', 'modifications']) {
     expect(definition).not.toHaveProperty(slot)
   }
-  const filter = getConfigurationSchemaDefinition(
-    definition.filter as Parameters<typeof getConfigurationSchemaDefinition>[0],
-  )!
-  expect(filter).not.toHaveProperty('junctions')
-  expect(filter).toHaveProperty('connections')
+  const partOf = (name: string) =>
+    getConfigurationSchemaDefinition(
+      definition[name] as Parameters<
+        typeof getConfigurationSchemaDefinition
+      >[0],
+    )!
+  expect(partOf('filter')).not.toHaveProperty('junctions')
+  expect(partOf('filter')).toHaveProperty('connections')
+  expect(partOf('pileup')).not.toHaveProperty('bases')
+  expect(partOf('pileup')).toHaveProperty('mismatches')
 })
 
 test('the model answers the four off and fetches no junctions', () => {

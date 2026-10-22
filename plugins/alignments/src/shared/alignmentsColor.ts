@@ -13,6 +13,7 @@ import {
   colorForField,
   colorSettingOf,
   colorSnapshotOf,
+  definedColor,
   impliedFieldOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
@@ -42,40 +43,50 @@ import type {
   TagColorScale,
 } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { ColorSlots, FieldPresets } from '@jbrowse/core/util/colorScale'
-import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
-import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+import type {
+  ColorSlots,
+  FieldPreset,
+  FieldPresets,
+} from '@jbrowse/core/util/colorScale'
+import type {
+  ColorScaleSetting,
+  ColorSetting,
+} from '@jbrowse/display-kit/colorConfigSchema'
 
 export const ALIGNMENTS_COLOR_SCALES = [
-  'categorical',
+  'ordinal',
   'linear',
   'threshold',
 ] as const
 export type AlignmentsColorScale = (typeof ALIGNMENTS_COLOR_SCALES)[number]
 
-/**
- * The `color` object's painted members, with the schema's `impliedField` where
- * it names neither a field nor a constant (LGVSyntenyColor's `strand`).
- */
-export function alignmentsColorSettingOf<C extends AnyConfigurationModel>(
-  color: C,
-) {
-  return withImpliedField(colorSettingOf(color), impliedFieldOf(color))
-}
-
-/** {@link alignmentsColorSettingOf} with the key's `labels` and `title`. */
-export function alignmentsColorSnapshotOf(color: AnyConfigurationModel) {
-  return withImpliedField(colorSnapshotOf(color), impliedFieldOf(color))
-}
-
-/** The `color` object as written on an alignments display. */
+/** The `encoding.color` channel as written on an alignments display. */
 export interface AlignmentsColorSetting extends ColorSetting {
-  scale: AlignmentsColorScale | undefined
-  scheme: ColorSchemeName | undefined
-  reverse: boolean | undefined
-  domainMin: number | undefined
-  domainMax: number | undefined
-  domainMid: number | undefined
+  scale: ColorScaleSetting & { type: AlignmentsColorScale | undefined }
+}
+
+/**
+ * The `encoding.color` channel's painted members, with the schema's
+ * `impliedField` where it names neither a field nor a constant
+ * (LGVSyntenyColor's `strand`).
+ */
+export function alignmentsColorSettingOf(
+  color: AnyConfigurationModel,
+): AlignmentsColorSetting {
+  return withImpliedField(
+    colorSettingOf(color) as AlignmentsColorSetting,
+    impliedFieldOf(color),
+  )
+}
+
+/** {@link alignmentsColorSettingOf} with the key's `scale.names` and `legend`. */
+export function alignmentsColorSnapshotOf(
+  color: AnyConfigurationModel,
+): AlignmentsColorSetting {
+  return withImpliedField(
+    colorSnapshotOf(color) as AlignmentsColorSetting,
+    impliedFieldOf(color),
+  )
 }
 
 export { BASE_COLOR_FIELDS, COLOR_FIELDS }
@@ -106,18 +117,18 @@ const INSERT_SIZE_FIELDS = new Set<string>([
 ])
 
 /**
- * The `color` object as it paints. Unset beside a field, the scale follows the
- * field: an insert-size field is a threshold, whose `domain` is the cuts
- * between short, normal and long, and any other field is categorical.
+ * The `encoding.color` channel as it paints. While `scale.type` is unset the
+ * field picks it: an insert-size field is a threshold, whose `scale.domain` is
+ * the cuts between short, normal and long, and any other field is ordinal.
  */
 export function alignmentsColorEncoding(setting: AlignmentsColorSetting) {
   return colorEncodingOf(setting, ALIGNMENTS_FIELD_PRESETS)
 }
 
 /**
- * What the `color` object says beside the schema's rules that the reads cannot
- * paint as written: a per-base field, which is `baseColor`'s, or levels its
- * field does not have.
+ * What the `encoding.color` channel says beside the schema's rules that the
+ * reads cannot paint as written: a per-base field, which `pileup.bases`
+ * paints, or levels its field does not have.
  */
 export function alignmentsColorProblems(setting: AlignmentsColorSetting) {
   const encoding = alignmentsColorEncoding(setting)
@@ -127,11 +138,11 @@ export function alignmentsColorProblems(setting: AlignmentsColorSetting) {
   const { field } = encoding
   return baseLayerOfField(field)
     ? [
-        `color.field: ${field} is drawn a cell per base, which baseColor paints over the reads`,
+        `encoding.color.field: ${field} is drawn a cell per base, which pileup.bases paints over the reads`,
       ]
     : FACET_ONLY_FIELDS.has(field)
       ? [
-          `color.field: ${field} colors nothing, since reads keep their arcs' colors; facet: "${field}" sections the reads by it`,
+          `encoding.color.field: ${field} colors nothing, since reads keep their arcs' colors; facet: "${field}" sections the reads by it`,
         ]
       : levelNotices(encoding)
 }
@@ -150,9 +161,9 @@ export function colorFieldOf(colorBy: ColorBy) {
 }
 
 /**
- * The read scheme a resolved `color` selects: a preset field its own scheme,
- * `tags.XX` the tag scheme, any other name a feature attribute through the
- * same per-read bake. A constant, a per-base variable, which `baseColor`
+ * The read scheme a resolved `encoding.color` selects: a preset field its own
+ * scheme, `tags.XX` the tag scheme, any other name a feature attribute through
+ * the same per-read bake. A constant, a per-base variable, which `pileup.bases`
  * draws, or a read category only a facet answers paints the plain fill.
  */
 export function colorByOf(encoding: AlignmentsColorEncoding): ReadColorBy {
@@ -172,15 +183,14 @@ export function colorByOf(encoding: AlignmentsColorEncoding): ReadColorBy {
 }
 
 /**
- * The per-base layer a `baseColor` field selects, with the settings the
- * modification fields read beside it. Undefined while no per-base field is
- * named.
+ * The per-base layer `pileup.bases` draws, with the settings the modification
+ * fields read beside it. Undefined while it is hidden or names no field.
  */
 export function baseLayerOf(
-  field: string | undefined,
+  { show, field }: { show: boolean; field: string },
   modifications?: ModificationColorBy,
 ): BaseLayer | undefined {
-  const type = baseLayerOfField(field ?? '')
+  const type = show ? baseLayerOfField(field) : undefined
   return type === undefined
     ? undefined
     : READS_MODIFICATION_SETTINGS.has(type) && modifications
@@ -204,7 +214,8 @@ export function bodyColorScheme(
 }
 
 /**
- * Whether the main thread bakes a color per read through the `color` scale:
+ * Whether the main thread bakes a color per read through the `encoding.color`
+ * scale:
  * from a value the worker ships, or from the read's MAPQ.
  */
 export function isBakedScheme(colorBy: ColorBy) {
@@ -280,8 +291,8 @@ const READ_COLOR_LEVELS: Record<
 
 /**
  * Every level a field paints: the levels its facet sections share, then the
- * mate and chain levels a mate-aware field adds, so a `domain`, `range` or
- * `labels` reaches every color on screen.
+ * mate and chain levels a mate-aware field adds, so a `scale.domain`,
+ * `scale.range` or `scale.names` reaches every color on screen.
  */
 function paintedLevels(type: ReadColorSchemeType): readonly ReadColorLevel[] {
   const { mateAware, orientation } = COLOR_SCHEMES[type]
@@ -310,28 +321,30 @@ export function levelKeysOf(type: ColorSchemeType) {
 }
 
 /**
- * What each field paints through while `scale` is unset: an insert-size field
- * a threshold, and any other field categorical, a preset scheme's field over
- * its own levels, which `range` and `labels` then index while `domain` is
- * unwritten.
+ * What each field paints through while `scale.type` is unset: an insert-size
+ * field a threshold, and any other field ordinal, a preset scheme's field over
+ * its own levels, which `scale.range` and `scale.names` then index while
+ * `scale.domain` is unwritten.
  */
-export const ALIGNMENTS_FIELD_PRESETS = {
+export const ALIGNMENTS_FIELD_PRESETS: FieldPresets = {
   ...Object.fromEntries(
-    COLOR_FIELDS.map(field => [
+    COLOR_FIELDS.map((field): [string, FieldPreset] => [
       field,
       INSERT_SIZE_FIELDS.has(field)
-        ? { scale: 'threshold' }
+        ? { scale: { type: 'threshold' } }
         : isBakedScheme({ type: field })
-          ? { scale: 'categorical' }
+          ? { scale: { type: 'ordinal' } }
           : {
-              scale: 'categorical',
-              domain: paintedLevels(field).map(([value]) => value),
+              scale: {
+                type: 'ordinal',
+                domain: paintedLevels(field).map(([value]) => value),
+              },
             },
     ]),
   ),
   mapq: MEASURE_FIELD_PRESETS.mapq,
-  '*': { scale: 'categorical' },
-} satisfies FieldPresets
+  '*': { scale: { type: 'ordinal' } },
+}
 
 /** The schemes whose levels are their whole vocabulary, so a `domain` names them. */
 const LEVEL_SCHEMES = new Set<ReadColorSchemeType>([
@@ -357,18 +370,18 @@ function levelNotices(encoding: AlignmentsColorEncoding): string[] {
       levels.includes(value),
     )
       ? [
-          `color.domain: names a level of ${encoding.field} (${named}), which a threshold scale reads as a cut point; scale: "categorical" colors the levels`,
+          `encoding.color.scale.domain: names a level of ${encoding.field} (${named}), which a threshold scale reads as a cut point; scale.type: "ordinal" colors the levels`,
         ]
       : []
   }
-  if (encoding.scale !== 'categorical') {
+  if (encoding.scale !== 'ordinal') {
     return []
   }
   return Array.from(encoding.domain ?? [], String)
     .filter(value => !levels.includes(value))
     .map(
       value =>
-        `color.domain: "${value}" names no level of ${encoding.field}, whose levels are ${named}`,
+        `encoding.color.scale.domain: "${value}" names no level of ${encoding.field}, whose levels are ${named}`,
     )
 }
 
@@ -380,7 +393,7 @@ function declaredOrder(
   if (encoding.scale === 'threshold') {
     return INSERT_SIZE_FIELDS.has(encoding.field) ? INSERT_SIZE_LEVELS : []
   }
-  if (encoding.scale !== 'categorical') {
+  if (encoding.scale !== 'ordinal') {
     return []
   }
   return (
@@ -389,8 +402,9 @@ function declaredOrder(
   )
 }
 
-// The levels `range` and `labels` index, in their order, and the read bucket
-// each one is: the levels `domain` names, or with no `domain` the field's own,
+// The levels `scale.range` and `scale.names` index, in their order, and the
+// read bucket each one is: the levels `scale.domain` names, or with none the
+// field's own,
 // and a threshold over an insert-size field its short, normal and long bins.
 function declaredLevels(
   encoding: Exclude<AlignmentsColorEncoding, string | undefined>,
@@ -403,32 +417,35 @@ function declaredLevels(
   }
 }
 
-const VALUE_FILLED: readonly ReadColorCategory[] = [
-  'plain',
-  'tag',
-  'noTagValue',
-]
+function filled(
+  color: string | undefined,
+  categories: readonly ReadColorCategory[],
+) {
+  const rgb = color ? cssColorToNormalizedRgb(color) : undefined
+  return rgb ? Object.fromEntries(categories.map(c => [c, rgb])) : {}
+}
 
 /**
- * The read category colors the `color` object sets over the palette's:
- * `value` fills a read no field colors and one its tag or mate scheme found
- * no value for, and `declaredReadCategoryColors` goes over that.
+ * The read category colors the `encoding.color` channel sets over the
+ * palette's: `value` fills a read no field colors, `scale.unknown` one its tag
+ * or mate scheme found no value for, before its bake too, and
+ * `declaredReadCategoryColors` goes over both.
  */
 export function writtenReadCategoryColors(
-  value: string | undefined,
+  { value, scale }: Pick<ColorSetting, 'value' | 'scale'>,
   encoding: AlignmentsColorEncoding,
 ): Partial<Record<ReadColorCategory, RGBColor>> {
-  const fill = value ? cssColorToNormalizedRgb(value) : undefined
   return {
-    ...(fill ? Object.fromEntries(VALUE_FILLED.map(c => [c, fill])) : {}),
+    ...filled(value, ['plain']),
+    ...filled(scale.unknown, ['tag', 'noTagValue']),
     ...declaredReadCategoryColors(encoding),
   }
 }
 
 /**
- * The read category colors the `color` object declares, over the palette's
- * defaults: `range[i]` colors the i-th of `declaredLevels`. A level left out
- * keeps its default.
+ * The read category colors the `encoding.color` channel declares, over the
+ * palette's defaults: `scale.range[i]` colors the i-th of `declaredLevels`. A
+ * level left out keeps its default.
  */
 export function declaredReadCategoryColors(
   encoding: AlignmentsColorEncoding,
@@ -449,7 +466,7 @@ export function declaredReadCategoryColors(
   return colors
 }
 
-/** What `color.labels` names: read buckets, and a baked scheme's values. */
+/** What `encoding.color.scale.names` names: read buckets, and a baked scheme's values. */
 export interface DeclaredReadLabels {
   categories: Partial<Record<ReadColorCategory, string>>
   // a tag or mate value by the value, or a threshold bin by its interval
@@ -457,18 +474,19 @@ export interface DeclaredReadLabels {
 }
 
 /**
- * `color.labels` against the levels and values it names, in the order
- * `range` colors them: `labels[i]` names the i-th of `declaredLevels`, and
- * under a baked scheme the i-th `domain` value, or a threshold's i-th bin.
- * Read apart from the encoding, so a renamed key entry re-bakes no read.
+ * `scale.names` against the levels and values it names, in the order
+ * `scale.range` colors them: `names[i]` names the i-th of `declaredLevels`,
+ * and under a baked scheme the i-th `scale.domain` value, or a threshold's
+ * i-th bin. Read apart from the encoding, so a renamed key entry re-bakes no
+ * read.
  */
 export function declaredReadLabels(
   encoding: AlignmentsColorEncoding,
   written: readonly string[],
 ): DeclaredReadLabels {
   const preset =
-    typeof encoding === 'object' && 'labels' in encoding
-      ? encoding.labels
+    typeof encoding === 'object' && 'names' in encoding
+      ? encoding.names
       : undefined
   const labels = written.length > 0 ? written : (preset ?? written)
   if (typeof encoding !== 'object' || labels.length === 0) {
@@ -495,32 +513,33 @@ function bakedKeys(
 ) {
   return encoding.scale === 'threshold'
     ? thresholdLabels(thresholdCuts(encoding.domain ?? []))
-    : encoding.scale === 'categorical'
+    : encoding.scale === 'ordinal'
       ? (encoding.domain ?? [])
       : []
 }
 
 /**
- * The `color` object the Tag dialog writes over `current`: the tag's field
- * as a Color by pick writes it, `parked` included, on a ramp under `linear`
- * and a color per value otherwise.
+ * The `encoding.color` channel the Tag dialog writes over `current`: the tag's
+ * field as a Color by pick writes it, `parked` included, on a ramp under
+ * `linear` and a color per value otherwise.
  */
 export function tagColorFor(
   current: ColorSlots,
   tag: string,
   scale: TagColorScale,
   parked?: ColorSlots,
-) {
-  return {
-    ...colorForField(current, `${TAG_FIELD_PREFIX}${tag}`, parked),
-    scale: scale === 'linear' ? 'linear' : undefined,
-  }
+): ColorSlots {
+  const picked = colorForField(current, `${TAG_FIELD_PREFIX}${tag}`, parked)
+  return definedColor({
+    ...picked,
+    scale: { ...picked.scale, type: scale === 'linear' ? 'linear' : undefined },
+  })
 }
 
 /**
  * The short/long cut points an insert-size field's threshold pins, in place of
- * the band sampled from the reads. Undefined unless its `domain` names two
- * distinct numbers.
+ * the band sampled from the reads. Undefined unless its `scale.domain` names
+ * two distinct numbers.
  *
  * Insert size stays a threshold scale. A gradient from the neutral toward each
  * endpoint by severity was tried in the v5 betas (`insertSizeGradient`):

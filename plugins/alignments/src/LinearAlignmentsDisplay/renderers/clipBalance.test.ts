@@ -1,4 +1,5 @@
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
 import { buildArcBandFeeds } from '../../features/arcs/bandFeed.ts'
 import { ARC_SHAPE_ARC } from '../../features/arcs/shapes.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
@@ -181,7 +182,7 @@ function state(): RenderState {
     chainMode: false,
     showLinkedReadLines: false,
     collapseSections: false,
-    readConnectionsLineWidth: 1,
+    readConnectionsStrokeScale: arcStrokeScale(1),
     linkRegions: [{ anchorPx: 0, anchorBp: REGION_START, signedPxPerBp: 2 }],
     drawnReadConnections: 'off',
     readConnectionsDown: false,

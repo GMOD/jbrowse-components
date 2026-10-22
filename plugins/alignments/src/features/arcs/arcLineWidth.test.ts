@@ -3,7 +3,12 @@ import {
   makeTestPalette,
   makeTestRenderState,
 } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { ARC_WIDTH_MAX_SCALE, ARC_WIDTH_PER_DOUBLING } from './arcLineWidth.ts'
+import {
+  ARC_WIDTH_MAX_SCALE,
+  ARC_WIDTH_PER_DOUBLING,
+  arcStrokeScale,
+  strokeWidthScale,
+} from './arcLineWidth.ts'
 import { arcsToRegionResult } from './arcRegions.ts'
 import { buildArcBandFeeds } from './bandFeed.ts'
 
@@ -41,7 +46,7 @@ function strokeFor(support: number, base: number) {
   const state = {
     ...makeTestRenderState({
       canvasWidth: 1000,
-      readConnectionsLineWidth: base,
+      readConnectionsStrokeScale: arcStrokeScale(base),
       linkRegions: [{ anchorPx: 0, anchorBp: 0, signedPxPerBp: 1 }],
     }),
     arcBand: { top: 0, height: 50, down: false },
@@ -95,5 +100,44 @@ describe('the stroke a connection draws for its support', () => {
   // upstream would read as one — a zero must not invert the curve.
   test('a degenerate support does not shrink the connection', () => {
     expect(strokeFor(0, 2)).toBeCloseTo(2)
+  })
+})
+
+describe('strokeWidthScale, the scale encoding.strokeWidth draws', () => {
+  const scale = { type: 'log' as const, range: [] as string[] }
+
+  test('unset maps reads from 1 px to 4 px, as the default curve does', () => {
+    expect(
+      strokeWidthScale({ value: undefined, field: undefined, scale }),
+    ).toEqual(arcStrokeScale(1))
+  })
+
+  test('a written value strokes every connection alike', () => {
+    const constant = strokeWidthScale({ value: 3, field: undefined, scale })
+    expect(constant.range).toEqual([3, 3])
+  })
+
+  test('a written field maps reads over any value, through its range', () => {
+    expect(
+      strokeWidthScale({
+        value: 3,
+        field: 'reads',
+        scale: { type: 'linear', range: ['2', '8'] },
+      }),
+    ).toEqual({
+      domain: arcStrokeScale(1).domain,
+      scale: 'linear',
+      range: [2, 8],
+    })
+  })
+
+  test('a range that is not two numbers keeps the default px', () => {
+    expect(
+      strokeWidthScale({
+        value: undefined,
+        field: 'reads',
+        scale: { type: 'log', range: ['2'] },
+      }).range,
+    ).toEqual(arcStrokeScale(1).range)
   })
 })

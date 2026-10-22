@@ -11,6 +11,7 @@ import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import { packReadSegments } from '../features/read/mark.ts'
 import { alignmentsColorEncoding } from '../shared/alignmentsColor.ts'
+import { colorSettingOf } from '../shared/colorSettingFixture.ts'
 import { RC_MAPQ, RC_MAPQ_UNAVAILABLE } from './slang/read.consts.generated.ts'
 import {
   INSTANCE_OFFSET_U32,
@@ -37,19 +38,7 @@ function mapqRegion(written: { domain?: string[] } = {}) {
   const colorBy = { type: 'mapq' } as const
   const scale = bakedColorScale(
     colorBy,
-    alignmentsColorEncoding({
-      value: undefined,
-      field: 'mapq',
-      scale: undefined,
-      scheme: undefined,
-      reverse: false,
-      domainMin: undefined,
-      domainMax: undefined,
-      domainMid: undefined,
-      domain: [],
-      range: [],
-      ...written,
-    }),
+    alignmentsColorEncoding(colorSettingOf({ field: 'mapq', scale: written })),
     undefined,
     undefined,
   )

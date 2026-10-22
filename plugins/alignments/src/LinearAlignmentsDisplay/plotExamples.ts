@@ -3,11 +3,11 @@ import type { PlotExample } from '@jbrowse/core/configuration'
 /** What "Edit plot..." offers as buttons on an alignments track. */
 export const ALIGNMENTS_PLOT_EXAMPLES: PlotExample[] = [
   {
-    plot: '{ "color": { "field": "strand" } }',
+    plot: '{ "encoding": { "color": "strand" } }',
     description: 'reads colored by strand',
   },
   {
-    plot: '{ "color": { "field": "mapq" } }',
+    plot: '{ "encoding": { "color": "mapq" } }',
     description: 'reads shaded by mapping quality',
   },
   {
@@ -15,11 +15,11 @@ export const ALIGNMENTS_PLOT_EXAMPLES: PlotExample[] = [
     description: 'one section per pair orientation',
   },
   {
-    plot: '{ "sort": "split", "color": { "field": "pairOrientation" } }',
+    plot: '{ "sort": "split", "encoding": { "color": "pairOrientation" } }',
     description: 'split reads stacked first, colored by pair orientation',
   },
   {
-    plot: '{ "facet": null, "color": null }',
+    plot: '{ "facet": null, "encoding": null }',
     description: 'one pileup, default colors',
   },
 ]
