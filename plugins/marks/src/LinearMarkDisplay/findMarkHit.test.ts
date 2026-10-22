@@ -2,15 +2,17 @@ import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
 import {
   HIDDEN_ROW,
   RAMP_NO_VALUE_BITS,
+  RowKeys,
   backToFront,
   buildRowTable,
   nearestMarkHit,
   pointInsetPx,
 } from '@jbrowse/render-core/marks'
 
-import { facetLayout, facetRegion } from './facet.ts'
+import { facetLayout } from './facet.ts'
 import { findMarkHit, hitLocString } from './findMarkHit.ts'
 import { buildMarkList } from './markList.ts'
+import { facetRowName, facetRowTable, keyRegion } from './rowTable.ts'
 
 import type { MarkHitInfo } from './findMarkHit.ts'
 import type {
@@ -323,7 +325,7 @@ test('keys the row table places, hides and reorders answer the same', () => {
   expect(hits).toBeGreaterThan(probes / 5)
 })
 
-test('a facet with a hidden section answers from the rows it kept', () => {
+test('a facet with a hidden section answers from the rows it shows', () => {
   const layer = randomLayer(7, 1500, 12)
   const region: MarkRegionData = {
     layers: [layer],
@@ -338,13 +340,30 @@ test('a facet with a hidden section answers from the rows it kept', () => {
     compare: (p: string, q: string) => p.localeCompare(q),
     sectionLabel: (key: string) => key,
   } as unknown as CategoricalField
-  const shown = facetRegion(
-    region,
+  const rowKeys = new RowKeys()
+  const keyed = keyRegion(region, rowKeys, 'group', facetRowName)
+  const rowTable = facetRowTable(
+    rowKeys.names.slice(),
     facetLayout([region], field, new Set(['b']), [true]),
   )
-  expect(shown.layers[0]!.count).toBeLessThan(layer.count)
-  const { hits, probes } = parity(['bar'], shown, STATE)
+  const state = { ...STATE, rowTable }
+  const { hits, probes } = parity(['bar'], keyed, state)
   expect(hits).toBeGreaterThan(probes / 5)
+  const marks = buildMarkList(entries('bar'))
+  const regions = new Map([[0, keyed]])
+  const rand = lcg(3)
+  for (let k = 0; k < 300; k++) {
+    const hit = findMarkHit(
+      rand() * state.canvasWidth,
+      rand() * state.canvasHeight,
+      [BLOCK],
+      regions,
+      marks,
+      state,
+      REGIONS,
+    )
+    expect(rowKeys.names[hit?.row ?? 0]!.startsWith('b')).toBe(false)
+  }
 })
 
 test('a link to another sequence names both feet, each on its own sequence', () => {

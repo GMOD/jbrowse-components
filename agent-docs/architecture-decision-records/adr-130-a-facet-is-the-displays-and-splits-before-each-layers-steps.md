@@ -55,10 +55,11 @@ which the encoder takes as the row channel's values. The request carries
 **The main thread owns order, cap and visibility.** `facetLayout` caps over
 every loaded region's keys in natural order, keeps each merged value's band
 inside the overflow section, orders by the domain and drops the hidden
-sections. `facetRegion` moves a region's rows onto that layout and
-filters a hidden section's instances out of every lane, rebuilding the hit
-index (`hitIndexOf`); the key and the extents are then read off what is
-drawn.
+sections. `facetRegion` moved a region's rows onto that layout and
+filtered a hidden section's instances out of every lane, rebuilding the hit
+index (`hitIndexOf`); the key and the extents were then read off what is
+drawn. Since ADR-165's stage 3 the rows are keys a row table places, and a
+hidden section hides through the table.
 
 ## Consequences
 

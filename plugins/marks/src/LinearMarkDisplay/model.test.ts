@@ -24,7 +24,11 @@ import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 import WigglePlugin from '@jbrowse/plugin-wiggle'
-import { LINK_NO_REGION, pointInsetPx } from '@jbrowse/render-core/marks'
+import {
+  LINK_NO_REGION,
+  pointInsetPx,
+  rowSlot,
+} from '@jbrowse/render-core/marks'
 import { render, screen, waitFor } from '@testing-library/react'
 import { autorun } from 'mobx'
 
@@ -2266,11 +2270,17 @@ test('a mark outside its zoom range leaves the sections as deep as the marks dra
   )
   expect(display.facetLayout.sections.map(s => s.rowCount)).toEqual([1, 1])
   expect(display.rowCount).toBe(2)
-  expect([...display.rpcDataMap.get(0)!.layers[1]!.row!]).toEqual([0, 1])
+  expect(rowsOf(display, 0, 1)).toEqual([0, 1])
+  expect(rowsOf(display, 0, 0)).toEqual([0, undefined, undefined, undefined, 1])
 })
 
-function rowsOf(display: LinearMarkDisplayModel, region = 0) {
-  return [...(display.rpcDataMap.get(region)!.layers[0]!.row ?? [])]
+// The row each instance of a region's layer draws in, through the row table:
+// undefined where the table hides it.
+function rowsOf(display: LinearMarkDisplayModel, region = 0, layer = 0) {
+  const { row, count } = display.rpcDataMap.get(region)!.layers[layer]!
+  return Array.from({ length: count }, (_, i) =>
+    rowSlot(row, i, display.rowTable),
+  )
 }
 
 test('bars faceted by a field stand in a band each, the axis ruling every band', () => {
@@ -2439,16 +2449,15 @@ test('past the old cap every key keeps a band of its own, across regions', () =>
   expect(rowsOf(display, 1)).toEqual([MAX_GROUPS - 1, MAX_GROUPS])
 })
 
-test('hiding a section takes its instances out of the drawn layer and lifts the ones below it', () => {
+test('hiding a section hides its instances through the table and lifts the ones below it', () => {
   const { display } = facetedEnvironment().createDisplay()
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
+  const drawn = display.rpcDataMap.get(0)
   display.hideGroup('a')
   expect(display.facetLayout.sections.map(s => s.key)).toEqual(['b'])
   expect(display.rowCount).toBe(2)
-  const [layer] = display.rpcDataMap.get(0)!.layers
-  expect(layer!.count).toBe(2)
-  expect([...layer!.featureIndex!]).toEqual([1, 2])
-  expect(rowsOf(display)).toEqual([0, 1])
+  expect(display.rpcDataMap.get(0)).toBe(drawn)
+  expect(rowsOf(display)).toEqual([undefined, 0, 1])
   display.showAllGroups()
   expect(rowsOf(display)).toEqual([0, 1, 2])
 })

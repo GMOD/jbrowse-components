@@ -379,18 +379,22 @@ test('a region fetched before the split draws nothing and counts for nothing', (
   expect(display.autoscaleRange?.[1]).toBeLessThan(50)
 })
 
-test('rows beside a facet bind no table, and the facet offsets its rows', () => {
+test("rows beside a facet place the facet's rows through the facet's table", () => {
   const display = loaded({ facet: 'source', rows: 'source' })
-  expect(display.rowTable).toBeUndefined()
-  expect(display.renderState.rowTable).toBeUndefined()
+  expect(display.drawsRows).toBe(false)
+  expect([...display.rowTable!.slot]).toEqual(
+    display.facetLayout.sections.map(s => s.firstRow),
+  )
+  expect(display.renderState.rowTable).toEqual(display.rowTable)
   const hal = new MockHal(display.markList.map(m => m.pass))
   display.startRenderingBackend(new GpuMarkBackend(hal, display.markList))
+  const { width, height } = display.rowTable!.texture
   expect(
     hal
       .callsOf('uploadTexture')
       .filter(c => c.args[4] === 'rowTable')
       .map(c => c.args.slice(2)),
-  ).toEqual([[256, 1, 'rowTable']])
+  ).toEqual([[width, height, 'rowTable']])
 })
 
 test('a listing names the rows on its field, or on the key a flatten wrote over it', () => {

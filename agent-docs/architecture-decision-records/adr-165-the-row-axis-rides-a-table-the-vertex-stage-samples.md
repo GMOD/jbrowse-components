@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A `span` instance's `row` lane is a stable row KEY, and the pass binds a two-plane RGBA8 row table the vertex stage samples — key to drawn slot or hidden, and a color override — so a reorder, focus, hide or recolor uploads one small texture and no instance bytes, the way a y domain rides a uniform. `buildRowTable` writes the texels where the shader's lifted twins put them, `RowKeys` assigns each row name a key at its first arrival and never moves it, the painter, the ink and the hit test read the same table, and a pass binding no table draws `row` as the slot. The multi-row feature display adopts it: its encode runs once per region arrival, a category toggle is the one thing that still re-encodes, and the gated volvox fixture keeps a focus. Stage 2 gives a render pass a second sampler and the mark display the table under `rows`, keyed at arrival, a facet still offsetting its rows. Measured: a reorder at 1000 rows and 500k features moves from 10.7 ms and 7.8 MB per region to 0.22 ms and 7.8 KB; a heavy focus costs a frame what the unfocused draw costs (6.6 vs 6.9 ms at 500k instances on an Intel UHD 630), against 0.7 ms compacted, which is the alternative recorded"
+summary: "A `span` instance's `row` lane is a stable row KEY, and the pass binds a two-plane RGBA8 row table the vertex stage samples — key to drawn slot or hidden, and a color override — so a reorder, focus, hide or recolor uploads one small texture and no instance bytes, the way a y domain rides a uniform. `buildRowTable` writes the texels where the shader's lifted twins put them, `RowKeys` assigns each row name a key at its first arrival and never moves it, the painter, the ink and the hit test read the same table, and a pass binding no table draws `row` as the slot. The multi-row feature display adopts it: its encode runs once per region arrival, a category toggle is the one thing that still re-encodes, and the gated volvox fixture keeps a focus. Stage 2 gives a render pass a second sampler and the mark display the table under `rows`, keyed at arrival, and stage 3 a facet, its rows keyed by section and depth. Measured: a reorder at 1000 rows and 500k features moves from 10.7 ms and 7.8 MB per region to 0.22 ms and 7.8 KB; a heavy focus costs a frame what the unfocused draw costs (6.6 vs 6.9 ms at 500k instances on an Intel UHD 630), against 0.7 ms compacted, which is the alternative recorded"
 ---
 
 # ADR-165: The row axis rides a table the vertex stage samples
@@ -23,8 +23,24 @@ the table follows the rows' order and focus, and bar, point, link and span
 read it, as do the text labels, the tooltip and the sort at a column. A
 focus's legend, axis and size scales come from a scan of each region's `row`
 lane against the drawn keys, which copies no lane (`drawnScales.ts`). A facet
-still offsets its rows through `facetRegion`, since its sections are of
-variable height, and binds no table.
+still offset its rows through `facetRegion`, since its sections are of
+variable height, and bound no table.
+
+Stage 3 (2026-10-22): a facet takes the table too. A section's height was no
+reason against it, since a table maps a key to a slot whatever the band's
+depth.
+
+- A facet row is keyed by its section and its depth there (`facetRowName`);
+  `facetRowTable` places it at the section's first row plus that depth, hidden
+  with the section or past the depth the drawn marks reach.
+- A hidden section, or a region packing a section deeper, rebuilds the table
+  and re-uploads no region. `facetRegion` re-ran over every loaded region on
+  either, rewriting the row lane, gathering every lane under a hidden section
+  and rebuilding the point and link hit indexes.
+- The legend and axis read a hidden section's instances through `drawnKeys`,
+  the scan a `rows` focus already pays.
+- The facet's keys only grow, as `rows`' do, until the field or the
+  arrangement changes.
 
 ## Context
 

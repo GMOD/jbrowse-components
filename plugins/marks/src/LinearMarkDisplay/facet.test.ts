@@ -1,7 +1,16 @@
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
+import { HIDDEN_ROW, RowKeys, rowSlot } from '@jbrowse/render-core/marks'
 
-import { facetLayout, facetRegion, unsplitRegion } from './facet.ts'
+import { facetLayout, unsplitRegion } from './facet.ts'
+import {
+  drawnKeysOf,
+  drawnRegion,
+  facetRowName,
+  facetRowTable,
+  keyRegion,
+} from './rowTable.ts'
 
+import type { FacetLayout } from './facet.ts'
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 
 function linkLayer(): StoredLayer {
@@ -29,49 +38,97 @@ function linkLayer(): StoredLayer {
   }
 }
 
-function hideFirstSection(layer: StoredLayer) {
-  const region: MarkRegionData = {
+// Each instance's slot through the facet's table, undefined where it hides.
+function slotsOf(regions: MarkRegionData[], layout: FacetLayout) {
+  const rowKeys = new RowKeys()
+  const keyed = regions.map(r => keyRegion(r, rowKeys, 'grp', facetRowName))
+  const table = facetRowTable(rowKeys.names.slice(), layout)
+  return {
+    keyed,
+    rowKeys,
+    table,
+    slots: keyed.map(r =>
+      r.layers.map(l =>
+        Array.from({ length: l.count }, (_, i) => rowSlot(l.row, i, table)),
+      ),
+    ),
+  }
+}
+
+function twoSections(layer: StoredLayer): MarkRegionData {
+  return {
     layers: [layer],
     facet: [
       { key: 'a', firstRow: 0, rowCount: 1 },
       { key: 'b', firstRow: 1, rowCount: 1 },
     ],
   }
+}
+
+test("a hidden section's rows hide through the table, and leave the key and extents", () => {
+  const region = twoSections(linkLayer())
   const layout = facetLayout(
     [region],
     categoricalField('grp'),
     new Set(['a']),
     [true],
   )
-  return facetRegion(region, layout).layers[0]!
-}
-
-test('a hidden section leaves every lane, size and x2Ref included', () => {
-  const out = hideFirstSection(linkLayer())
-  expect(out.count).toBe(2)
-  expect([...out.x]).toEqual([30, 40])
-  expect([...(out.color as Uint32Array)]).toEqual([3, 4])
-  expect([...out.size!]).toEqual([3, 4])
-  expect([...out.x2Ref!]).toEqual([1, 1])
+  const { keyed, rowKeys, table, slots } = slotsOf([region], layout)
+  expect(slots[0]![0]).toEqual([undefined, undefined, 0, 0])
+  const drawn = drawnKeysOf(table, keyed, rowKeys, 'grp', facetRowName)!
+  expect(drawnRegion(keyed[0]!, drawn).layers[0]!.sizeScale!.extent).toEqual([
+    3, 4,
+  ])
 })
 
-test('a hidden section leaves the series lane of a line, in step with x', () => {
-  const out = hideFirstSection({
-    ...linkLayer(),
-    series: Uint32Array.from([5, 6, 7, 8]),
-  })
-  expect([...out.x]).toEqual([30, 40])
-  expect([...out.series!]).toEqual([7, 8])
+test('every section shown hides nothing, so the legend reads the region whole', () => {
+  const region = twoSections(linkLayer())
+  const layout = facetLayout([region], categoricalField('grp'), new Set(), [
+    true,
+  ])
+  const { keyed, rowKeys, table, slots } = slotsOf([region], layout)
+  expect(slots[0]![0]).toEqual([0, 0, 1, 1])
+  expect(
+    drawnKeysOf(table, keyed, rowKeys, 'grp', facetRowName),
+  ).toBeUndefined()
 })
 
-test('a hidden section keeps a constant color as one number', () => {
-  const out = hideFirstSection({ ...linkLayer(), color: 0xff0000ff })
-  expect(out.count).toBe(2)
-  expect(out.color).toBe(0xff0000ff)
-})
-
-test('a hidden section leaves the size scale it widened', () => {
-  expect(hideFirstSection(linkLayer()).sizeScale!.extent).toEqual([3, 4])
+// The layout follows the deepest region, and a region already keyed keeps its
+// lanes: only the table moves.
+test('a deeper region moves the sections below it through the table alone', () => {
+  const shallow: MarkRegionData = {
+    layers: [linkLayer()],
+    facet: [
+      { key: 'a', firstRow: 0, rowCount: 1 },
+      { key: 'b', firstRow: 1, rowCount: 1 },
+    ],
+  }
+  const deep: MarkRegionData = {
+    layers: [barLayer([0, 1, 2, 3])],
+    facet: [
+      { key: 'a', firstRow: 0, rowCount: 3 },
+      { key: 'b', firstRow: 3, rowCount: 1 },
+    ],
+  }
+  const field = categoricalField('grp')
+  const rowKeys = new RowKeys()
+  const keyedShallow = keyRegion(shallow, rowKeys, 'grp', facetRowName)
+  const before = facetRowTable(
+    rowKeys.names.slice(),
+    facetLayout([shallow], field, new Set(), [true]),
+  )
+  const keyedDeep = keyRegion(deep, rowKeys, 'grp', facetRowName)
+  const after = facetRowTable(
+    rowKeys.names.slice(),
+    facetLayout([shallow, deep], field, new Set(), [true]),
+  )
+  const slots = (r: MarkRegionData, table: typeof before) =>
+    Array.from({ length: r.layers[0]!.count }, (_, i) =>
+      rowSlot(r.layers[0]!.row, i, table),
+    )
+  expect(slots(keyedShallow, before)).toEqual([0, 0, 1, 1])
+  expect(slots(keyedShallow, after)).toEqual([0, 0, 3, 3])
+  expect(slots(keyedDeep, after)).toEqual([0, 1, 2, 3])
 })
 
 function splitOn(field: string): MarkRegionData['request'] {
@@ -101,23 +158,23 @@ test('a region split on the outgoing field draws nothing, though its keys match 
     ],
     request: splitOn('strand'),
   }
-  const layout = facetLayout(
-    [stale, fresh],
-    categoricalField('strand'),
-    new Set(),
-    [true],
-  )
-  expect(facetRegion(stale, layout).layers[0]!.count).toBe(0)
-  expect(facetRegion(fresh, layout).layers[0]!.count).toBe(4)
+  const rowKeys = new RowKeys()
+  const keyed = (r: MarkRegionData) => [
+    ...keyRegion(r, rowKeys, 'strand', facetRowName).layers[0]!.row!,
+  ]
+  expect(keyed(stale)).toEqual([HIDDEN_ROW, HIDDEN_ROW, HIDDEN_ROW, HIDDEN_ROW])
+  expect(keyed(fresh)).not.toContain(HIDDEN_ROW)
 })
 
 test('a region fetched before the facet draws nothing', () => {
-  const layout = facetLayout([], categoricalField('strand'), new Set(), [])
   const unsplit: MarkRegionData = {
     layers: [linkLayer()],
     request: { ...splitOn('strand')!, facet: undefined },
   }
-  expect(facetRegion(unsplit, layout).layers[0]!.count).toBe(0)
+  expect([
+    ...keyRegion(unsplit, new RowKeys(), 'strand', facetRowName).layers[0]!
+      .row!,
+  ]).toEqual([HIDDEN_ROW, HIDDEN_ROW, HIDDEN_ROW, HIDDEN_ROW])
 })
 
 test('with no split, a region fetched under one draws nothing, and an unsplit one draws as it came', () => {
@@ -165,9 +222,9 @@ test('a section is as deep as the layers drawn at this zoom stand in it', () => 
     [0, 1],
     [1, 1],
   ])
-  const drawn = facetRegion(region, zoomedOut).layers
-  expect([...drawn[1]!.row!]).toEqual([0, 1])
-  expect([...drawn[0]!.row!]).toEqual([0, 1])
+  const [slots] = slotsOf([region], zoomedOut).slots
+  expect(slots![1]).toEqual([0, 1])
+  expect(slots![0]).toEqual([0, undefined, undefined, undefined, 1, undefined])
   const zoomedIn = facetLayout([region], field, new Set(), [true, true])
   expect(zoomedIn.rowCount).toBe(6)
 })

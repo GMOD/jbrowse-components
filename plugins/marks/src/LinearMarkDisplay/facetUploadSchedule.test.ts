@@ -3,6 +3,7 @@ import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 import WigglePlugin from '@jbrowse/plugin-wiggle'
+import { rowSlot } from '@jbrowse/render-core/marks'
 
 import { configSchemaFactory } from './configSchema.ts'
 import { stateModelFactory } from './model.ts'
@@ -13,8 +14,9 @@ import type {
   FacetSection,
 } from '@jbrowse/core/util/markEncoding'
 
-// The installer re-packs every cell whose reference moved, so under a facet
-// the remap decides which regions a store write re-uploads.
+// The installer re-packs every cell whose reference moved. Under a facet a
+// region's rows are keys the row table places, so only the region's own
+// arrival re-uploads it, and the layout moves the table alone.
 
 const REGION = {
   refName: 'ctgA',
@@ -102,10 +104,17 @@ test('a region landing under a facet uploads itself, and a region it does not mo
   expect(uploads).toEqual([0, 1, 2])
 })
 
-test('a region deepening a section moves every region, and so does hiding one', () => {
+test('a region deepening a section uploads itself alone, and hiding one uploads nothing', () => {
   const display = facetedDisplay()
   const uploads = recordUploads(display)
   display.setRpcData(0, region([0, 1, 2], TWO_SECTIONS), REGION)
+  const slots = () => {
+    const { row, count } = display.rpcDataMap.get(0)!.layers[0]!
+    return Array.from({ length: count }, (_, i) =>
+      rowSlot(row, i, display.rowTable),
+    )
+  }
+  expect(slots()).toEqual([0, 1, 2])
   display.setRpcData(
     1,
     region(
@@ -117,11 +126,12 @@ test('a region deepening a section moves every region, and so does hiding one', 
     ),
     REGION,
   )
-  expect(uploads.slice(1).sort()).toEqual([0, 1])
+  expect(uploads).toEqual([0, 1])
+  expect(slots()).toEqual([0, 2, 3])
 
   display.hideGroup('a')
-  expect(uploads.slice(3).sort()).toEqual([0, 1])
-  expect(uploads).toHaveLength(5)
+  expect(uploads).toEqual([0, 1])
+  expect(slots()).toEqual([undefined, 0, 1])
 })
 
 // A hover reads the drawn map untracked, and the Canvas2D ramp bake is kept on

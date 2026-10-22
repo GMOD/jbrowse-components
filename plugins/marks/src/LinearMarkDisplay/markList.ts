@@ -133,7 +133,7 @@ export interface MarkRenderState extends MarkFrame {
   rowProportions: number[]
   /** The px the rows are scrolled up by, 0 wherever they fit the plot. */
   scrollTop: number
-  /** What each `row` key draws on under `rows`; absent, `row` is the band. */
+  /** What each `row` key draws on under `rows` or a facet; absent, `row` is the band. */
   rowTable?: RowTable
 }
 
@@ -178,8 +178,8 @@ export interface TextMarkEntry extends MarkEntry {
 }
 
 /**
- * The value mark `mark`'s instances stand at over `pos`, by the `row` each
- * carries, a key under `rows`, the highest where two in one row cover it.
+ * The value mark `mark`'s instances stand at over `pos`, by the `row` key
+ * each carries, the highest where two in one row cover it.
  */
 export function rowValuesAt(
   region: MarkRegionData,

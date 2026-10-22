@@ -1,5 +1,3 @@
-import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
-
 import { drawnScales } from './drawnScales.ts'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
@@ -151,134 +149,38 @@ export function rowsLayout(
   }
 }
 
-const HIDDEN = 0xffffffff
-
-// Each of the region's rows on the layout: a section's rows onto its band, and
-// hidden past the band's depth, where only a layer outside its zoom range
-// stands.
-function rowRemap(table: readonly FacetSection[], layout: FacetLayout) {
-  const total = table.reduce((n, s) => Math.max(n, s.firstRow + s.rowCount), 0)
-  const remap = new Uint32Array(total).fill(HIDDEN)
-  for (const { key, firstRow, rowCount } of table) {
-    const band = layout.bandOf.get(key)
-    if (band) {
-      for (let i = 0; i < Math.min(rowCount, band.rowCount); i++) {
-        remap[firstRow + i] = band.firstRow + i
-      }
-    }
-  }
-  return remap
-}
-
-function gather<T extends Uint32Array | Uint8Array>(
-  lane: T,
-  kept: Uint32Array,
-) {
-  const out = new (lane.constructor as new (n: number) => T)(kept.length)
-  for (let k = 0; k < kept.length; k++) {
-    out[k] = lane[kept[k]!]!
-  }
-  return out
-}
-
-// A ramp's raw values by their bits, so a no-value marker survives the copy.
-function gatherFloats(lane: Float32Array, kept: Uint32Array) {
-  const bits = gather(
-    new Uint32Array(lane.buffer, lane.byteOffset, lane.length),
-    kept,
-  )
-  return new Float32Array(bits.buffer, bits.byteOffset, bits.length)
-}
-
-// The layer with only the instances `kept` lists, every lane gathered
-// through that one list, and its extents and hit index over what is left.
-function keptLayer(
-  layer: StoredLayer,
-  kept: Uint32Array,
-  row: Uint32Array | undefined,
-): StoredLayer {
-  const x = gather(layer.x, kept)
-  const x2 = gather(layer.x2, kept)
-  const y = layer.y && gatherFloats(layer.y, kept)
-  const { featureIndex, text, color } = layer
+// The layer with no instances: each lane an empty view of its own, and its
+// keys and extents over none.
+function emptyLayer(layer: StoredLayer): StoredLayer {
+  const { color } = layer
   return drawnScales({
     ...layer,
-    count: kept.length,
-    x,
-    x2,
-    y,
-    row,
-    featureIndex: featureIndex ? gather(featureIndex, kept) : kept,
-    color: typeof color === 'object' ? gather(color, kept) : color,
-    colorValue: layer.colorValue && gatherFloats(layer.colorValue, kept),
-    glyph: layer.glyph && gather(layer.glyph, kept),
-    text: text && Array.from(kept, i => text[i]!),
-    size: layer.size && gatherFloats(layer.size, kept),
-    x2Ref: layer.x2Ref && gather(layer.x2Ref, kept),
-    feet: layer.feet && gather(layer.feet, kept),
-    x2Region: layer.x2Region && gather(layer.x2Region, kept),
-    series: layer.series && gather(layer.series, kept),
-    flatbush:
-      layer.flatbush && kept.length > 0 ? hitIndexOf(x, x2, y) : undefined,
+    count: 0,
+    x: layer.x.subarray(0, 0),
+    x2: layer.x2.subarray(0, 0),
+    y: layer.y?.subarray(0, 0),
+    row: layer.row?.subarray(0, 0),
+    featureIndex: layer.featureIndex?.subarray(0, 0),
+    color: typeof color === 'object' ? color.subarray(0, 0) : color,
+    colorValue: layer.colorValue?.subarray(0, 0),
+    colorKey: layer.colorKey?.subarray(0, 0),
+    glyph: layer.glyph?.subarray(0, 0),
+    text: layer.text && [],
+    size: layer.size?.subarray(0, 0),
+    x2Ref: layer.x2Ref?.subarray(0, 0),
+    feet: layer.feet?.subarray(0, 0),
+    x2Region: layer.x2Region?.subarray(0, 0),
+    series: layer.series?.subarray(0, 0),
+    flatbush: undefined,
     flatbushData: undefined,
   })
-}
-
-// The layer as drawn: its rows on the layout, and a hidden section's
-// instances gone.
-function facetLayer(layer: StoredLayer, remap: Uint32Array): StoredLayer {
-  const { row } = layer
-  if (!row) {
-    return layer
-  }
-  const moved = new Uint32Array(row.length)
-  let shown = 0
-  for (let i = 0; i < row.length; i++) {
-    const r = remap[row[i]!] ?? HIDDEN
-    moved[i] = r
-    if (r !== HIDDEN) {
-      shown++
-    }
-  }
-  if (shown === row.length) {
-    return { ...layer, row: moved }
-  }
-  const kept = new Uint32Array(shown)
-  for (let i = 0, k = 0; i < moved.length; i++) {
-    if (moved[i] !== HIDDEN) {
-      kept[k++] = i
-    }
-  }
-  return keptLayer(layer, kept, gather(moved, kept))
-}
-
-/**
- * A region's layers on the one layout, so the chips and the bands they name
- * agree whichever region an instance came from and whatever the reader has
- * hidden. A region fetched before the split or split on another field draws
- * nothing until its refetch lands, as under `rows`: its rows hold the old
- * field's sections, which a matching key would place in the new layout at the
- * old depth.
- */
-export function facetRegion(
-  region: MarkRegionData,
-  layout: FacetLayout,
-): MarkRegionData {
-  const sections = sectionsOn(region, layout.field)
-  if (sections) {
-    const remap = rowRemap(sections, layout)
-    return { ...region, layers: region.layers.map(l => facetLayer(l, remap)) }
-  }
-  return hiddenRegion(region)
 }
 
 /** The region with every instance gone from every layer. */
 export function hiddenRegion(region: MarkRegionData): MarkRegionData {
   return {
     ...region,
-    layers: region.layers.map(l =>
-      keptLayer(l, new Uint32Array(0), l.row && new Uint32Array(0)),
-    ),
+    layers: region.layers.map(emptyLayer),
   }
 }
 

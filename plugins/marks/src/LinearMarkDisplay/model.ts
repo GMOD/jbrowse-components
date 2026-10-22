@@ -84,13 +84,7 @@ import {
 } from '@jbrowse/wiggle-core'
 import { autorun } from 'mobx'
 
-import {
-  facetLayout,
-  facetRegion,
-  rowsLayout,
-  sectionsOn,
-  unsplitRegion,
-} from './facet.ts'
+import { facetLayout, rowsLayout, sectionsOn, unsplitRegion } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import {
@@ -129,9 +123,12 @@ import { defaultPlot } from './plotDefault.ts'
 import {
   drawnKeysOf,
   drawnRegion,
+  facetRowName,
+  facetRowTable,
   keyRegion,
   listingNamesRows,
   markRowTable,
+  sectionRowName,
 } from './rowTable.ts'
 import { stepChannels } from './stepChannels.ts'
 import { TEXT_MARK_FONT_PX, placeTextMarks } from './textMarks.ts'
@@ -157,6 +154,7 @@ import type {
 } from './markList.ts'
 import type { MarkPlot, MarkPlotSettings } from './markPlot.ts'
 import type { MarkProblem } from './markProblems.ts'
+import type { RowKeySpace } from './rowTable.ts'
 import type { JoinedPlotFields, PlotFields } from './scanPlotFields.ts'
 import type { StepChannels } from './stepChannels.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -701,20 +699,38 @@ export function stateModelFactory(
         }
       })
       .views(self => {
-        let keySpace = { field: '', rowKeys: new RowKeys() }
+        let keySpace: RowKeySpace & { space: string } = {
+          space: '',
+          rowKeys: new RowKeys(),
+          rowName: sectionRowName,
+        }
         return {
           /**
            * #getter
-           * The key each value of `rows.field` holds across every loaded
-           * region, assigned at the value's first arrival and never moved; a
-           * new field is a new key space.
+           * The key each row holds across every loaded region, assigned at
+           * its first arrival and never moved, and the name it is keyed by:
+           * under `rows` its section's value, under a facet that value and
+           * the row's depth in it. A new split field, or a switch between
+           * `rows` and a facet, is a new key space.
+           */
+          get rowKeySpace(): RowKeySpace {
+            const rows = self.drawsRows
+            const space = `${rows ? 'rows' : 'facet'}:${self.splitField ?? ''}`
+            if (keySpace.space !== space) {
+              keySpace = {
+                space,
+                rowKeys: new RowKeys(),
+                rowName: rows ? sectionRowName : facetRowName,
+              }
+            }
+            return keySpace
+          },
+          /**
+           * #getter
+           * `rowKeySpace`'s keys.
            */
           get rowKeys(): RowKeys {
-            const field = self.rowsField
-            if (keySpace.field !== field) {
-              keySpace = { field, rowKeys: new RowKeys() }
-            }
-            return keySpace.rowKeys
+            return this.rowKeySpace.rowKeys
           },
         }
       })
@@ -743,22 +759,18 @@ export function stateModelFactory(
           withMarkColors,
         )
         const keyed = createEncodeMemo(
-          () => (self.drawsRows ? colored() : NO_REGIONS),
-          () => self.rowKeys,
-          (region, rowKeys) => keyRegion(region, rowKeys, self.rowsField),
-        )
-        const faceted = createEncodeMemo(
-          () => (self.facet ? colored() : NO_REGIONS),
-          () => layout.get(),
-          facetRegion,
+          () => (self.splitField === undefined ? NO_REGIONS : colored()),
+          () => self.rowKeySpace,
+          (region, { rowKeys, rowName }) =>
+            keyRegion(region, rowKeys, self.splitField ?? '', rowName),
         )
         const unsplit = createEncodeMemo(
-          () => (self.drawsRows || self.facet ? NO_REGIONS : colored()),
+          () => (self.splitField === undefined ? colored() : NO_REGIONS),
           undefined,
           unsplitRegion,
         )
         const drawn = () =>
-          self.drawsRows ? keyed() : self.facet ? faceted() : unsplit()
+          self.splitField === undefined ? unsplit() : keyed()
         const mateRegions = stableIdentityComputed((): MateRegion[] =>
           self.host.displayedRegions.map((r, index) => ({
             index,
@@ -791,13 +803,12 @@ export function stateModelFactory(
           },
           /**
            * #getter
-           * The layers the display draws. Under a facet every region's rows
-           * are offset onto the one layout, so a chip and the band beside it
-           * agree whichever region a span came from; under `rows` every row
-           * is a key the row table places, so a reorder or a focus moves no
-           * instance. A region is offset or keyed again only when it, the
-           * facet's layout or the key space moves, which is what the upload
-           * re-packs.
+           * The layers the display draws. Under a facet or `rows` every row
+           * is a key the row table places, so a chip and the band beside it
+           * agree whichever region a span came from, and a reorder, a focus,
+           * a hidden section or a deeper section moves no instance. A region
+           * is keyed again only when it or the key space moves, which is what
+           * the upload re-packs.
            */
           get rpcDataMap(): ReadonlyMap<number, MarkRegionData> {
             return self.hasLinkMark
@@ -809,7 +820,7 @@ export function stateModelFactory(
       .views(self => {
         const keyNames = stableIdentityComputed(() => {
           void self.rpcDataMap
-          return self.rowKeys.names.slice()
+          return self.rowKeySpace.rowKeys.names.slice()
         })
         const order = stableIdentityComputed(() =>
           self.sources.map(row => row.name),
@@ -817,29 +828,34 @@ export function stateModelFactory(
         return {
           /**
            * #getter
-           * Under `rows`, the table every mark places a key through: its slot
-           * in the rows' order, hidden where the focus leaves it out. Rebuilt
-           * on a reorder, a focus or a new value, which uploads one small
-           * texture and no instance bytes. Undefined wherever the lanes are
-           * not keys.
+           * The table every mark places a key through: under `rows` its slot
+           * in the rows' order, hidden where the focus leaves it out; under a
+           * facet its section's first row plus its depth, hidden with its
+           * section. Rebuilt on a reorder, a focus, a hidden or deeper section
+           * or a new row, which uploads one small texture and no instance
+           * bytes. Undefined while nothing splits the features.
            */
           get rowTable(): RowTable | undefined {
             return self.drawsRows
               ? markRowTable(keyNames.get(), order.get())
-              : undefined
+              : self.facet
+                ? facetRowTable(keyNames.get(), self.facetLayout)
+                : undefined
           },
         }
       })
       .views(self => {
         const drawnKeys = stableIdentityComputed(() => {
           const table = self.rowTable
+          const { rowKeys, rowName } = self.rowKeySpace
           return (
             table &&
             drawnKeysOf(
               table,
               self.rpcDataMap.values(),
-              self.rowKeys,
-              self.rowsField,
+              rowKeys,
+              self.splitField ?? '',
+              rowName,
             )
           )
         })
@@ -852,8 +868,8 @@ export function stateModelFactory(
           /**
            * #getter
            * 1 at each key the row table draws, undefined while every key a
-           * loaded region has is drawn: a focus moves it, a reorder does
-           * not.
+           * loaded region has is drawn: a focus or a hidden section moves it,
+           * a reorder does not.
            */
           get drawnKeys(): Uint8Array | undefined {
             return drawnKeys.get()
@@ -862,8 +878,8 @@ export function stateModelFactory(
            * #getter
            * `rpcDataMap` with each layer's key and extents over the instances
            * the row table draws, its lanes shared: what the legend, the axis
-           * and the size scales read, so a row the focus hides leaves them as
-           * it leaves the plot.
+           * and the size scales read, so a row the focus or a hidden section
+           * hides leaves them as it leaves the plot.
            */
           get scaleDataMap(): ReadonlyMap<number, MarkRegionData> {
             return drawnKeys.get() ? scaled() : self.rpcDataMap
@@ -1688,7 +1704,8 @@ export function stateModelFactory(
             pos,
             index => (mark === -1 ? undefined : self.rpcDataMap.get(index)),
             (rows, region) => {
-              const { rowKeys, rowTable } = self
+              const { rowTable } = self
+              const { rowKeys } = self.rowKeySpace
               const byName = new Map<string, number>()
               for (const [key, value] of rowValuesAt(region, mark, pos)) {
                 const name =

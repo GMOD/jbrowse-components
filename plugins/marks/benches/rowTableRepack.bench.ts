@@ -13,10 +13,12 @@
 // One synthetic region, one `bar` layer: `features` bars dealt across `rows`
 // values, each with its hit index. The first three arms are the whole
 // main-thread cost of one gesture for that region as the display ran it before
-// the table — `facetRegion` moving every layer's rows onto the new layout (and,
+// the table — `repack` moving every layer's rows onto the new layout (and,
 // under a focus, filtering every lane and rebuilding the hit index) and the
 // pack the upload then runs; the table arms are the same gestures through
-// the table, since no region re-keys:
+// the table, since no region re-keys. `repack` restates the display's retired
+// `facetRegion` for this one-row-per-section region and the lanes it carries,
+// as the baseline; a facet left `facetRegion` too once its rows became keys:
 //
 //   reorder          the rows permuted
 //   reorder-control  the same call through a second driver, the harness's floor
@@ -40,14 +42,16 @@ import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
 import { RowKeys, barMark } from '@jbrowse/render-core/marks'
 import { recordingContext } from '@jbrowse/render-core/marks/drawAgainstHit'
 
-import { facetRegion, rowsLayout } from '../src/LinearMarkDisplay/facet.ts'
+import { rowsLayout } from '../src/LinearMarkDisplay/facet.ts'
 import {
   drawnKeysOf,
   drawnRegion,
   keyRegion,
   markRowTable,
+  sectionRowName,
 } from '../src/LinearMarkDisplay/rowTable.ts'
 
+import type { FacetLayout } from '../src/LinearMarkDisplay/facet.ts'
 import type { MarkRegionData } from '../src/LinearMarkDisplay/markList.ts'
 import type {
   BarChannels,
@@ -157,18 +161,62 @@ function focusLayout() {
   return flip ? layouts.kept : layouts.listed
 }
 
+const HIDDEN = 0xffffffff
+
+// Every row moved onto the layout, a hidden row's bars dropped from every lane
+// this region carries and the hit index rebuilt over the rest.
+function repack(region: MarkRegionData, layout: FacetLayout): MarkRegionData {
+  const total = region.facet!.length
+  const remap = new Uint32Array(total).fill(HIDDEN)
+  for (const { key, firstRow } of region.facet!) {
+    const band = layout.bandOf.get(key)
+    if (band) {
+      remap[firstRow] = band.firstRow
+    }
+  }
+  const layer = region.layers[0]!
+  const moved = layer.row!.map(r => remap[r] ?? HIDDEN)
+  const kept = Uint32Array.from({ length: moved.length }, (_, i) => i).filter(
+    i => moved[i] !== HIDDEN,
+  )
+  if (kept.length === moved.length) {
+    return { ...region, layers: [{ ...layer, row: moved }] }
+  }
+  const pick = <T extends Uint32Array | Float32Array>(lane: T) =>
+    lane.filter((_, i) => moved[i] !== HIDDEN) as T
+  const x = pick(layer.x)
+  const x2 = pick(layer.x2)
+  const y = pick(layer.y!)
+  return {
+    ...region,
+    layers: [
+      {
+        ...layer,
+        count: kept.length,
+        x,
+        x2,
+        y,
+        row: pick(moved),
+        color: pick(layer.color as Uint32Array),
+        featureIndex: kept,
+        flatbush: hitIndexOf(x, x2, y),
+      },
+    ],
+  }
+}
+
 function packBars(region: MarkRegionData) {
   return barMark.pass.pack(region.layers[0] as BarChannels).byteLength
 }
 
 // The keys never move once the region arrives; the table follows.
 const rowKeys = new RowKeys()
-const keyed = keyRegion(data, rowKeys, 'sample')
+const keyed = keyRegion(data, rowKeys, 'sample', sectionRowName)
 const keyNames = rowKeys.names.slice()
 
 function focusTable(order: readonly string[]) {
   const table = markRowTable(keyNames, order)
-  const drawn = drawnKeysOf(table, [keyed], rowKeys, 'sample')
+  const drawn = drawnKeysOf(table, [keyed], rowKeys, 'sample', sectionRowName)
   if (drawn) {
     drawnRegion(keyed, drawn)
   }
@@ -179,13 +227,13 @@ function focusTable(order: readonly string[]) {
 // site polymorphic and hands every arm one set of inline caches.
 let bytes = 0
 const reorder = () => {
-  bytes = packBars(facetRegion(data, reorderLayout()))
+  bytes = packBars(repack(data, reorderLayout()))
 }
 const reorderControl = () => {
-  bytes = packBars(facetRegion(data, reorderLayout()))
+  bytes = packBars(repack(data, reorderLayout()))
 }
 const focus = () => {
-  bytes = packBars(facetRegion(data, focusLayout()))
+  bytes = packBars(repack(data, focusLayout()))
 }
 const tableReorder = () => {
   bytes = markRowTable(keyNames, shuffled).texture.bytes.byteLength
@@ -234,7 +282,7 @@ for (const [gesture, layout, order] of [
   ['reorder', layouts.shuffled, shuffled],
   ['focus', layouts.kept, kept],
 ] as const) {
-  const repacked = rectsOf(facetRegion(data, layout))
+  const repacked = rectsOf(repack(data, layout))
   const tabled = rectsOf(keyed, markRowTable(keyNames, order))
   if (repacked.length !== tabled.length) {
     throw new Error(

@@ -53,7 +53,7 @@ export interface MarkHitInfo {
   glyph: number | undefined
   /**
    * The `row` this instance carries, if its mark reads one: its band, or
-   * under `rows` its key, which the row table places.
+   * under `rows` or a facet its key, which the row table places.
    */
   row: number | undefined
   screenX: number
