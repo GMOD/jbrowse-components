@@ -20,13 +20,30 @@ export type { InsertionType } from '@jbrowse/alignments-core'
 export const ALIGNMENTS_UNITS = ['read', 'chain'] as const
 export type AlignmentsUnit = (typeof ALIGNMENTS_UNITS)[number]
 
-// The two marks the read-connection band draws (`readConnections.mark`): 'arc'
+// The two marks the read-connection band draws, by the menu's words: 'arc'
 // rises with the span between its ends, and 'cloud' draws a flat line at
 // Y=|tlen|, the modal pairs left out unless `ordinaryPairs.show` keeps them.
 // Both color by `readConnections.color`. They share one band and the cloud
 // repurposes its Y axis, so they are one choice rather than two switches.
 export const READ_CONNECTIONS_MARKS = ['arc', 'cloud'] as const
 export type ReadConnectionsMark = (typeof READ_CONNECTIONS_MARKS)[number]
+
+// The same two marks as `readConnections.mark.type` spells them, Vega-Lite's
+// mark types: the arcs a link between a pair's ends, the cloud a rule.
+export const READ_CONNECTIONS_MARK_TYPES = ['link', 'rule'] as const
+export type ReadConnectionsMarkType =
+  (typeof READ_CONNECTIONS_MARK_TYPES)[number]
+
+export const READ_CONNECTIONS_MARK_TYPE = {
+  arc: 'link',
+  cloud: 'rule',
+} as const satisfies Record<ReadConnectionsMark, ReadConnectionsMarkType>
+
+export function readConnectionsMarkOf(
+  type: ReadConnectionsMarkType,
+): ReadConnectionsMark {
+  return type === 'rule' ? 'cloud' : 'arc'
+}
 
 // What the band draws, as the model's `drawnReadConnections` answers it: a
 // mark, or 'off' while `readConnections.show` is. The rows of the "Connection

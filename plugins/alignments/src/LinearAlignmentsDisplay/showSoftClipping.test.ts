@@ -557,14 +557,14 @@ describe('alignments readConnections (arcs)', () => {
 
   it('takes an explicit per-track overlay', () => {
     const { display } = createDisplay({
-      readConnections: { show: true, mark: 'cloud' },
+      readConnections: { show: true, mark: 'rule' },
     })
     expect(display.drawnReadConnections).toBe('cloud')
   })
 
   it('keeps its mark while hidden', () => {
     const { display } = createDisplay({
-      readConnections: { show: true, mark: 'cloud' },
+      readConnections: { show: true, mark: 'rule' },
     })
     display.setDrawnReadConnections('off')
     expect(display.drawnReadConnections).toBe('off')

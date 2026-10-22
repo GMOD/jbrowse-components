@@ -200,9 +200,12 @@ function bandEntries(
   members: Record<string, unknown>,
 ): [string, unknown][] {
   const { show, mark, ...rest } = members
+  // The overlay radio's rows are the menu's words: a `rule` is the read cloud,
+  // a `link` (the default) the arcs.
+  const markType = isPlainObject(mark) ? mark.type : mark
   const drawn: [string, unknown][] =
     band === 'readConnections' && show !== undefined
-      ? [[band, show === true ? (mark ?? 'arc') : 'off']]
+      ? [[band, show === true ? (markType === 'rule' ? 'cloud' : 'arc') : 'off']]
       : [
           ...(show !== undefined
             ? [[`${band}.show`, show] as [string, unknown]]

@@ -231,7 +231,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               trackId: 'volvox_sv_cram_linked',
               readConnections: {
                 show: true,
-                mark: 'cloud',
+                mark: 'rule',
                 placement: 'down',
                 height: 100,
               },

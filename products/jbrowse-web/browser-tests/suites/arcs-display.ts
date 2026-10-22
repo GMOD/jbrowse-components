@@ -233,7 +233,7 @@ const suite: TestSuite = {
           trackId: 'volvox_sv_cram',
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
-            readConnections: { show: true, mark: 'cloud' },
+            readConnections: { show: true, mark: 'rule' },
           },
         },
       ],
@@ -256,7 +256,7 @@ const suite: TestSuite = {
           trackId: 'volvox_sv_cram',
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
-            readConnections: { show: true, mark: 'cloud', placement: 'up' },
+            readConnections: { show: true, mark: 'rule', placement: 'up' },
           },
         },
       ],

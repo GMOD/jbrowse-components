@@ -2,10 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { alignmentsArcColorConfigSchema } from './alignmentsArcColorConfigSchema.ts'
-import {
-  READ_CONNECTIONS_MARKS,
-  READ_CONNECTIONS_PLACEMENTS,
-} from './constants.ts'
+import { READ_CONNECTIONS_PLACEMENTS } from './constants.ts'
+import { readConnectionsMarkConfigSchema } from './readConnectionsMarkConfigSchema.ts'
 import { readConnectionsOrdinaryPairsConfigSchema } from './readConnectionsOrdinaryPairsConfigSchema.ts'
 
 /**
@@ -23,7 +21,7 @@ import { readConnectionsOrdinaryPairsConfigSchema } from './readConnectionsOrdin
  *   type: 'LinearAlignmentsDisplay',
  *   readConnections: {
  *     show: true,
- *     mark: 'cloud',
+ *     mark: 'rule',
  *     color: { field: 'insertSize' },
  *   },
  * }
@@ -48,20 +46,11 @@ export const readConnectionsConfigSchema = ConfigurationSchema(
       description: 'draw the read connections',
     },
     /**
-     * #slot
-     * The two share one band and differ in shape, y scale and one cut: an arc
-     * rises with the span between its ends, and the cloud draws a flat line
-     * at |TLEN| on a log scale and leaves the pairs of modal insert size out
-     * unless `ordinaryPairs.show` keeps them.
+     * #slot mark
+     * The shape each connection draws as: `type` `link`, the arcs, or
+     * `rule`, the read cloud.
      */
-    mark: {
-      type: 'stringEnum',
-      model: types.enumeration('ReadConnectionsMark', [
-        ...READ_CONNECTIONS_MARKS,
-      ]),
-      defaultValue: 'arc',
-      description: "arc, or cloud: a flat line at each pair's insert size",
-    },
+    mark: readConnectionsMarkConfigSchema,
     /**
      * #slot
      */

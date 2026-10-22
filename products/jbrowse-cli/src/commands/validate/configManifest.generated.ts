@@ -4158,7 +4158,18 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "mark",
-              "type": "ReadConnectionsMark"
+              "type": "ReadConnectionsMarkConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "type",
+                  "type": "ReadConnectionsMarkType"
+                }
+              ],
+              "schema": "ReadConnectionsMark",
+              "writes": "members",
+              "shorthand": {
+                "string": "type"
+              }
             },
             {
               "name": "height",
@@ -5000,7 +5011,18 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "mark",
-              "type": "ReadConnectionsMark"
+              "type": "ReadConnectionsMarkConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "type",
+                  "type": "ReadConnectionsMarkType"
+                }
+              ],
+              "schema": "ReadConnectionsMark",
+              "writes": "members",
+              "shorthand": {
+                "string": "type"
+              }
             },
             {
               "name": "height",

@@ -24,7 +24,7 @@ import { ARC_COLOR_FIELDS } from '../shared/arcColorOptions.ts'
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   readConnections: { show: true, mark: 'cloud' },
+ *   readConnections: { show: true, mark: 'rule' },
  *   color: { field: 'insertSize' },
  * }
  * ```

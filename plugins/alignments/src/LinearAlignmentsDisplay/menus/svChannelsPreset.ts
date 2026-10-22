@@ -9,6 +9,11 @@ function member(value: unknown, key: string) {
     : undefined
 }
 
+// A mark written as its bare type or as the object.
+function markType(mark: unknown) {
+  return typeof mark === 'string' ? mark : member(mark, 'type')
+}
+
 export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
 
 // One band per pair orientation, each with its own coverage and its own arcs,
@@ -32,7 +37,7 @@ export const SV_CHANNELS_ON = {
   facet: { field: 'pairOrientation' },
   readConnections: {
     show: true,
-    mark: 'arc',
+    mark: 'link',
     ordinaryPairs: { show: false },
   },
 } as const
@@ -61,7 +66,7 @@ export function isSvChannelsActive(settings: Record<string, unknown>) {
     (typeof facet === 'string' ? facet : member(facet, 'field')) ===
       on.facet.field &&
     member(readConnections, 'show') === on.readConnections.show &&
-    member(readConnections, 'mark') === on.readConnections.mark &&
+    markType(member(readConnections, 'mark')) === on.readConnections.mark &&
     member(member(readConnections, 'ordinaryPairs'), 'show') ===
       on.readConnections.ordinaryPairs.show
   )

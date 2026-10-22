@@ -82,8 +82,8 @@ export const TASKS: EvalTask[] = [
       const t = ${shownTrack('volvox_alignments')}
       const conf = t && t.activeDisplay.configuration
       const show = conf && jb.readConfObject(conf, ['readConnections', 'show'])
-      const mark = conf && jb.readConfObject(conf, ['readConnections', 'mark'])
-      return { pass: show === true && mark === 'arc', detail: { shown: !!t, show, mark } }`,
+      const mark = conf && jb.readConfObject(conf, ['readConnections', 'mark', 'type'])
+      return { pass: show === true && mark === 'link', detail: { shown: !!t, show, mark } }`,
   },
   {
     name: 'compact',

@@ -31,11 +31,11 @@ describe('alignments modifiers', () => {
   test('arcs:cloud and arcs:down map to readConnections fields', () => {
     expect(
       buildDisplaySnapshot('alignments', ['arcs:cloud']).snap,
-    ).toMatchObject({ readConnections: { show: true, mark: 'cloud' } })
+    ).toMatchObject({ readConnections: { show: true, mark: 'rule' } })
     expect(
       buildDisplaySnapshot('alignments', ['arcs:down']).snap,
     ).toMatchObject({
-      readConnections: { show: true, mark: 'arc', placement: 'down' },
+      readConnections: { show: true, mark: 'link', placement: 'down' },
     })
   })
 
@@ -116,7 +116,7 @@ describe('alignments modifiers', () => {
       readConnections: {
         height: 100,
         show: true,
-        mark: 'arc',
+        mark: 'link',
         placement: 'down',
       },
       sashimi: { labels: { show: true }, show: true, placement: 'auto' },

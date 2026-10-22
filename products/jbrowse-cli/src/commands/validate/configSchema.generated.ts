@@ -6934,6 +6934,44 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "ReadConnectionsMark": {
+      "title": "ReadConnectionsMark",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"type\\": ... }\`.",
+          "default": "link",
+          "enum": [
+            "link",
+            "rule"
+          ],
+          "type": "string"
+        },
+        {
+          "title": "ReadConnectionsMark",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "type": {
+              "description": "link, a dome between each pair's ends, or rule, the read cloud's flat line at each pair's insert size.",
+              "default": "link",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "link",
+                  "rule"
+                ]
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "AlignmentsArcColor": {
       "title": "AlignmentsArcColor",
       "type": "object",
@@ -6996,16 +7034,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "mark": {
-          "description": "arc, or cloud: a flat line at each pair's insert size.",
-          "default": "arc",
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "arc",
-              "cloud"
-            ]
+            "$ref": "#/$defs/ReadConnectionsMark"
           }
         },
         "height": {

@@ -114,7 +114,7 @@ export async function applyDisplayOpts(
         if (snap.readConnections?.show === undefined) {
           snap.readConnections = {
             show: true,
-            mark: 'arc',
+            mark: 'link',
             ...snap.readConnections,
           }
         }

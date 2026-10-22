@@ -60,7 +60,7 @@ describe("batch's one-row junction", () => {
       return calls[0]
     }
     expect(await snapOf([])).toEqual({
-      readConnections: { show: true, mark: 'arc' },
+      readConnections: { show: true, mark: 'link' },
       sort: 'svSignal',
     })
     expect(await snapOf(['arcs:off', 'sort=position'])).toEqual({
@@ -68,7 +68,7 @@ describe("batch's one-row junction", () => {
       sort: 'position',
     })
     expect(await snapOf(['{"readConnections":{"height":100}}'])).toEqual({
-      readConnections: { show: true, mark: 'arc', height: 100 },
+      readConnections: { show: true, mark: 'link', height: 100 },
       sort: 'svSignal',
     })
     expect(await snapOf([], 'feature')).toEqual({})

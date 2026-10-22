@@ -906,7 +906,7 @@ test('read connections come back as the display’s band draws them', async () =
 
   const cloud = await engine.alignments({
     ...PAIRED_INVERSION,
-    display: { readConnections: { show: true, mark: 'cloud' } },
+    display: { readConnections: { show: true, mark: 'rule' } },
   })
   expect(cloud.arcs.category).not.toContain('normalInsert')
   expect(new Set(cloud.arcs.shape)).toEqual(new Set(['flat', 'flatSplit']))

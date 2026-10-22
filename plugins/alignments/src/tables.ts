@@ -66,7 +66,10 @@ import {
 import { buildColorPaletteFromPalette } from './LinearAlignmentsDisplay/components/alignmentComponentUtils.ts'
 import { buildLaidOutChainMap } from './LinearAlignmentsDisplay/computeChainLayout.ts'
 import displayConfigSchemaFactory from './LinearAlignmentsDisplay/configSchema.ts'
-import { drawnReadConnectionsOf } from './LinearAlignmentsDisplay/constants.ts'
+import {
+  drawnReadConnectionsOf,
+  readConnectionsMarkOf,
+} from './LinearAlignmentsDisplay/constants.ts'
 import {
   applyChainStrandFrames,
   applyReadColorsByGroup,
@@ -872,7 +875,7 @@ function readConnectionTables(
   const connectionFilter = conf.filter.connections
   const mode = drawnReadConnectionsOf(
     readConfObject(band, 'show'),
-    readConfObject(band, 'mark'),
+    readConnectionsMarkOf(readConfObject(band, ['mark', 'type'])),
   )
   const cloud = mode === 'cloud'
   const colorField = arcColorFieldOf(

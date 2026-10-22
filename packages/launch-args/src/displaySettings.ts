@@ -197,7 +197,7 @@ export interface DisplaySnapshot {
   pileup?: { readHeight?: number }
   readConnections?: {
     show?: boolean
-    mark?: 'arc' | 'cloud'
+    mark?: 'link' | 'rule'
     placement?: 'up' | 'down'
   }
   sashimi?: { show?: boolean; placement?: 'up' | 'down' | 'auto' }
@@ -438,8 +438,8 @@ const modifiers: Record<string, Modifier> = {
           mode === 'off'
             ? { show: false }
             : mode === 'cloud'
-              ? { show: true, mark: 'cloud' }
-              : { show: true, mark: 'arc', placement: mode },
+              ? { show: true, mark: 'rule' }
+              : { show: true, mark: 'link', placement: mode },
       })
     },
   },

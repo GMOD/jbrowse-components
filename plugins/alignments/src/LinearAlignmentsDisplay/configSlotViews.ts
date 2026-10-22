@@ -25,7 +25,9 @@ import {
 } from './baseAlignmentsFilterConfigSchema.ts'
 import {
   DEFAULT_MIN_SASHIMI_READS,
+  READ_CONNECTIONS_MARK_TYPE,
   drawnReadConnectionsOf,
+  readConnectionsMarkOf,
 } from './constants.ts'
 
 import type {
@@ -244,7 +246,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get readConnectionsMark(): ReadConnectionsMark {
-      return getConf(self, ['readConnections', 'mark'])
+      return readConnectionsMarkOf(
+        getConf(self, ['readConnections', 'mark', 'type']),
+      )
     },
     /**
      * #getter
@@ -604,7 +608,11 @@ export function configSlotActions(self: ConfigSlotSelf) {
       if (mode === 'off') {
         setConf(self, ['readConnections', 'show'], false)
       } else {
-        setConf(self, ['readConnections', 'mark'], mode)
+        setConf(
+          self,
+          ['readConnections', 'mark', 'type'],
+          READ_CONNECTIONS_MARK_TYPE[mode],
+        )
         setConf(self, ['readConnections', 'show'], true)
       }
     },

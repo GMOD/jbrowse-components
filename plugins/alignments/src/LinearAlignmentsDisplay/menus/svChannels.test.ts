@@ -80,7 +80,7 @@ const ON = {
   facet: { field: 'pairOrientation' },
   readConnections: {
     show: true,
-    mark: 'arc',
+    mark: 'link',
     ordinaryPairs: { show: false },
   },
 } as const
@@ -100,10 +100,10 @@ test.each([
     { ...ON, readConnections: { ...ON.readConnections, show: false } },
   ],
   [
-    'readConnections.mark',
+    'readConnections.mark.type',
     {
       ...ON,
-      readConnections: { ...ON.readConnections, mark: 'cloud' as const },
+      readConnections: { ...ON.readConnections, mark: 'rule' as const },
     },
   ],
   [

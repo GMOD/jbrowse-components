@@ -80,7 +80,7 @@ export const retiredTypes: RetiredDisplayType[] = [
           pileup: { show: false },
           coverage: { show: false },
           sashimi: { show: false },
-          readConnections: { show: true, mark: 'cloud' },
+          readConnections: { show: true, mark: 'rule' },
         },
         entry,
       ),

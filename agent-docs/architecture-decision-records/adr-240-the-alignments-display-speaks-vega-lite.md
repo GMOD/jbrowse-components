@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "ADR-238's end state for LinearAlignmentsDisplay and LGVSyntenyDisplay, slot by slot: one `filter` predicate list that merges with its defaults by field (`flags.*`, `mapq`, `tags.XX`, the read categories, and the derived rows `junction.reads`, `connection.*` and `breakpoint.reads`); `encoding.color` with `scale.{type, domain, range, names, group, ...}` and a per-channel `legend` under a display-wide `legend.show`; `coverage.encoding.y`; a `show` on every band and layer (`pileup.mismatches`, `softClips`, `connectors`, `bases`, `coverage.interbase`, `alleles`, `sashimi.labels`, `readConnections.ordinaryPairs`); `pileup.mark.height`; `readConnections.mark` as `{ type: 'link', interpolate: 'dome' }` or `{ type: 'rule' }` with `encoding.strokeWidth`. Amends ADR-238: a written filter list merges by field, a link's width is `strokeWidth`, `autosize` is not borrowed, `scale: 'none'` goes with no value-beats-field rule, `scale.name` becomes `scale.group`, per-value names are `scale.names`. Keeps `collapseSections`, `heightMode`, `fadeLowFrequency` and `maxLayoutHeight`; cuts `pileup.showOutline`"
+summary: "ADR-238's end state for LinearAlignmentsDisplay and LGVSyntenyDisplay, slot by slot: one `filter` predicate list that merges with its defaults by field (`flags.*`, `mapq`, `tags.XX`, the read categories, and the derived rows `junction.reads`, `connection.*` and `breakpoint.reads`); `encoding.color` with `scale.{type, domain, range, names, group, ...}` and a per-channel `legend` under a display-wide `legend.show`; `coverage.encoding.y`; a `show` on every band and layer (`pileup.mismatches`, `softClips`, `connectors`, `bases`, `coverage.interbase`, `alleles`, `sashimi.labels`, `readConnections.ordinaryPairs`); `pileup.mark.height`; `readConnections.mark` as `{ type: 'link' }` (a dome) or `{ type: 'rule' }` with `encoding.strokeWidth`. Amends ADR-238: a written filter list merges by field, a link's width is `strokeWidth`, `autosize` is not borrowed, `scale: 'none'` goes with no value-beats-field rule, `scale.name` becomes `scale.group`, per-value names are `scale.names`. Keeps `collapseSections`, `heightMode`, `fadeLowFrequency` and `maxLayoutHeight`; cuts `pileup.showOutline`"
 ---
 
 # ADR-240: The alignments display speaks Vega-Lite
@@ -92,7 +92,7 @@ hand, and Colin's rulings on the calls they split.
 
   "readConnections": {
     "show": false, "height": 35, "placement": "down",
-    "mark": { "type": "link", "interpolate": "dome" },     // or { "type": "rule" }: the read cloud
+    "mark": { "type": "link" },     // a dome; or { "type": "rule" }: the read cloud
     "encoding": {
       "color": { "field": "insertSizeAndOrientation" },
       "strokeWidth": { "field": "reads", "scale": { "type": "log", "range": [1, 4] } }
@@ -185,7 +185,7 @@ them in its own stage:
 | `modifications.threshold` (percent), `cytosineContext`, `shownModifications` | `pileup.bases.filter` on `probability` (0–1), `context`, `code`; the threshold applies in the by-type view only, as today |
 | `modifications.unmodified` | `pileup.bases.unmodified.show`; the data picks implicit or called sites, as the menu does (`modificationsMenu.ts`) |
 | `sashimi.showCounts` | `sashimi.labels.show` |
-| `readConnections.mark: arc \| cloud` | `{ type: 'link', interpolate: 'dome' } \| { type: 'rule' }` (`arcMarks.ts` draws a dome) |
+| `readConnections.mark: arc \| cloud` | `{ type: 'link' } \| { type: 'rule' }`, a bare name lifting to the type. A link draws a dome (`arcMarks.ts`); `interpolate` joins the object when a second shape does, since one legal value would be a setting that sets nothing |
 | `readConnections.lineWidth` | `encoding.strokeWidth`, field-mapped over `reads` as it draws today |
 | `readConnections.color.field` | `encoding.color.field` |
 | `readConnections.showOrdinaryPairs` | `ordinaryPairs.show` |

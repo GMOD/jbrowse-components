@@ -27,7 +27,7 @@ the field, since the reads' `color` reads one as a constant.
 ```js
 {
   type: 'LinearAlignmentsDisplay',
-  readConnections: { show: true, mark: 'cloud' },
+  readConnections: { show: true, mark: 'rule' },
   color: { field: 'insertSize' },
 }
 ```
