@@ -40,7 +40,7 @@ const aluTrack = (
       type: 'LinearMarkDisplay',
       displayId: `${trackId}-LinearMarkDisplay`,
       height: 140,
-      showLegend: false,
+      legend: { show: false },
       marks: [
         {
           mark: 'bar',

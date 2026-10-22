@@ -131,8 +131,8 @@ const InlinePlugin = observer(function InlinePlugin() {
             height: 160,
             // skips the density probe, which samples the server window by window
             forceLoad: true,
-            color: { field: 'biotype' },
-            showLegend: false,
+            encoding: { color: 'biotype' },
+            legend: { show: false },
           },
         ],
       },

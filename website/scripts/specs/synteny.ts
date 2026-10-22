@@ -1520,7 +1520,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           ],
           tracks: [['syri_pangenome']],
           encoding: {
-            color: { field: 'syri', scale: { domain: { text: 'SYRI_TYPES' } } },
+            color: { field: 'syri', scale: { domain: SYRI_TYPES } },
             opacity: 0.9,
           },
           mark: { interpolate: 'bump' },
@@ -1545,7 +1545,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           views: SYRI_ACCESSIONS.map(assembly => ({ assembly })),
           tracks: ['syri_pangenome'],
           encoding: {
-            color: { field: 'syri', scale: { domain: { text: 'SYRI_TYPES' } } },
+            color: { field: 'syri', scale: { domain: SYRI_TYPES } },
             opacity: 0.9,
           },
           mark: { interpolate: 'bump' },

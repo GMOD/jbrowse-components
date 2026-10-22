@@ -19,7 +19,10 @@ const MultipleTracks = observer(function MultipleTracks() {
         trackId: 'hg38_phylop',
         name: 'phyloP 100-way conservation',
         uri: 'https://jbrowse.org/demos/phylop/hg38.phyloP100way.brca1.bw',
-        displayDefaults: { height: 100, color: '#3a7ca5' },
+        displayDefaults: {
+          height: 100,
+          encoding: { color: { value: '#3a7ca5' } },
+        },
       },
       {
         trackId: 'hg38_genes',
