@@ -1,30 +1,72 @@
 import { EMPTY_INSERTIONS } from '@jbrowse/alignments-core'
+import { isGapByte } from '@jbrowse/core/util/alignedBytes'
 
 import { blockHasRefGap, forEachInsertion } from './forEachInsertion.ts'
 
-import type { MafRegionData } from '../mafRenderingBackendTypes.ts'
+import type {
+  MafAlignedRow,
+  MafRegionData,
+} from '../mafRenderingBackendTypes.ts'
 import type { InsertionChannels } from '@jbrowse/alignments-core'
 
 type Placed = Omit<InsertionChannels, 'color'>
 
+/** One block's share of an insertion: a run of its reference-gap columns. */
+export interface InsertionPart {
+  row: MafAlignedRow
+  /** this row's own bases before the run */
+  baseOffset: number
+  byteStart: number
+  byteEnd: number
+}
+
+export interface RegionInsertion {
+  rowIndex: number
+  anchorBp: number
+  length: number
+  parts: InsertionPart[]
+}
+
+const recordsCache = new WeakMap<MafRegionData, RegionInsertion[]>()
 const placedCache = new WeakMap<MafRegionData, Placed>()
 const mergedCache = new WeakMap<Placed, { binBp: number; merged: Placed }>()
 
+function alignedBases(bytes: Uint8Array) {
+  let n = 0
+  for (const byte of bytes) {
+    if (!isGapByte(byte)) {
+      n++
+    }
+  }
+  return n
+}
+
+// Multiz splits a block where a species changes contig or strand, so two runs
+// at one anchor are one insertion only where the row's sequence carries on.
+function continues(prev: MafAlignedRow, next: MafAlignedRow) {
+  return (
+    prev.srcStart === undefined ||
+    next.srcStart === undefined ||
+    (prev.chr === next.chr &&
+      prev.strand === next.strand &&
+      next.srcStart === prev.srcStart + alignedBases(prev.alignmentBytes))
+  )
+}
+
 /**
- * Every insertion in a region, as `(anchorBp, rowIndex, length)`: a run of
+ * Every insertion in a region, in ascending bp per row: a run of
  * reference-gap columns where a sample carries bases, anchored at the
- * reference base after the run. `blockHasRefGap` answers for every row of a
- * block at once, and most real MAF blocks have no gap. Keyed on the region
- * object, which `placeMafRegionData` replaces per fetch and per row reorder,
- * so a re-encode for a theme or zoom change walks nothing.
+ * reference base after the run. A run that a block boundary splits, the row
+ * carrying on into the abutting block, is one insertion of two parts.
+ * `blockHasRefGap` answers for every row of a block at once, and most real
+ * MAF blocks have no gap. Keyed on the region object, which
+ * `placeMafRegionData` replaces per fetch and per row reorder.
  */
-function placedInsertions(region: MafRegionData): Placed {
-  let placed = placedCache.get(region)
-  if (placed === undefined) {
-    const x: number[] = []
-    const row: number[] = []
-    const length: number[] = []
-    const lastOfRow = new Map<number, number>()
+export function regionInsertions(region: MafRegionData): RegionInsertion[] {
+  let records = recordsCache.get(region)
+  if (records === undefined) {
+    const found: RegionInsertion[] = []
+    const lastOfRow = new Map<number, RegionInsertion>()
     for (const block of region.blocks) {
       if (blockHasRefGap(block)) {
         for (const r of block.rows) {
@@ -32,27 +74,46 @@ function placedInsertions(region: MafRegionData): Placed {
             block.refSeqBytes,
             r.alignmentBytes,
             block.startBp,
-            (anchorBp, len) => {
+            (anchorBp, length, baseOffset, byteStart, byteEnd) => {
+              const part = { row: r, baseOffset, byteStart, byteEnd }
               const last = lastOfRow.get(r.rowIndex)
-              if (last !== undefined && x[last] === anchorBp) {
-                length[last]! += len
+              if (
+                last?.anchorBp === anchorBp &&
+                continues(last.parts.at(-1)!.row, r)
+              ) {
+                last.length += length
+                last.parts.push(part)
               } else {
-                lastOfRow.set(r.rowIndex, x.length)
-                x.push(anchorBp)
-                row.push(r.rowIndex)
-                length.push(len)
+                const record = {
+                  rowIndex: r.rowIndex,
+                  anchorBp,
+                  length,
+                  parts: [part],
+                }
+                lastOfRow.set(r.rowIndex, record)
+                found.push(record)
               }
             },
           )
         }
       }
     }
-    const xs = Uint32Array.from(x)
+    records = found
+    recordsCache.set(region, records)
+  }
+  return records
+}
+
+function placedInsertions(region: MafRegionData): Placed {
+  let placed = placedCache.get(region)
+  if (placed === undefined) {
+    const records = regionInsertions(region)
+    const xs = Uint32Array.from(records, r => r.anchorBp)
     placed = {
       x: xs,
       x2: xs,
-      row: Uint32Array.from(row),
-      length: Uint32Array.from(length),
+      row: Uint32Array.from(records, r => r.rowIndex),
+      length: Uint32Array.from(records, r => r.length),
       count: xs.length,
     }
     placedCache.set(region, placed)

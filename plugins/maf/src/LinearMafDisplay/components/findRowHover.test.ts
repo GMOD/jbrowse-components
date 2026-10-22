@@ -411,3 +411,44 @@ test('an insertion split across abutting blocks hovers as one', () => {
     pos: 102,
   })
 })
+
+test('two runs at one anchor across a contig break stay two insertions', () => {
+  const r = region([
+    {
+      startBp: 100,
+      endBp: 102,
+      refSeqBytes: enc.encode('AA-'),
+      rows: [
+        {
+          rowIndex: 0,
+          alignmentBytes: enc.encode('aac'),
+          chr: 'chr5',
+          srcStart: 100,
+          strand: 1,
+        },
+      ],
+      empties: [],
+    },
+    {
+      startBp: 102,
+      endBp: 104,
+      refSeqBytes: enc.encode('--AA'),
+      rows: [
+        {
+          rowIndex: 0,
+          alignmentBytes: enc.encode('ggaa'),
+          chr: 'chr7',
+          srcStart: 500,
+          strand: 1,
+        },
+      ],
+      empties: [],
+    },
+  ])
+  expect(findRowHoverAtBp(r, at(102), 0, false, 0.1, 1, 20)).toMatchObject({
+    kind: 'insertion',
+    length: 1,
+    sequence: 'c',
+    chr: 'chr5',
+  })
+})
