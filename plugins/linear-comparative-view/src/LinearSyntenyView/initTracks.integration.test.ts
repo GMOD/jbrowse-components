@@ -162,6 +162,16 @@ test('a flat entry covering no band is reported, and the view still settles', as
   ])
 })
 
+test('a single levelHeights number sets every level', async () => {
+  const { view } = await openIn({
+    views: threeRows,
+    tracks: ['vol_all'],
+    levelHeights: 77,
+  })
+  await when(() => view.levels.every(l => l.height === 77), { timeout: 5000 })
+  expect(view.levels.map(l => l.height)).toEqual([77, 77])
+})
+
 test('an unknown trackId is reported, and the view still settles', async () => {
   const { session, view } = await openIn({
     views: threeRows,
