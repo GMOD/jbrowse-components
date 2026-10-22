@@ -331,13 +331,17 @@ cat > wakhan_track.json <<JSON
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "hg008_wakhan_haplotype-LinearMultiRowFeatureDisplay",
       "rows": "haplotype",
-      "color": {
-        "field": "copynumber_state",
-        "scale": "threshold",
-        "domain": ["0.5", "1.5"],
-        "range": ["#2166ac", "#bdbdbd", "#f4a582"],
-        "labels": ["Haplotype lost (0)", "One copy", "Two or more copies"],
-        "title": "Copy number per haplotype"
+      "encoding": {
+        "color": {
+          "field": "copynumber_state",
+          "scale": {
+            "type": "threshold",
+            "domain": ["0.5", "1.5"],
+            "range": ["#2166ac", "#bdbdbd", "#f4a582"],
+            "names": ["Haplotype lost (0)", "One copy", "Two or more copies"]
+          },
+          "legend": { "title": "Copy number per haplotype" }
+        }
       }
     }
   ]
@@ -375,12 +379,16 @@ cat > nygc_cnv_track.json <<JSON
   "displayDefaults": {
     "labels": { "name": "jexl:feature.type+' '+feature.cytoband" },
     "displayMode": "compact",
-    "color": {
-      "field": "type",
-      "domain": ["DEL", "DUP"],
-      "range": ["#2166ac", "#b2182b"],
-      "labels": ["Loss (DEL)", "Gain (DUP)"],
-      "title": "Call"
+    "encoding": {
+      "color": {
+        "field": "type",
+        "scale": {
+          "domain": ["DEL", "DUP"],
+          "range": ["#2166ac", "#b2182b"],
+          "names": ["Loss (DEL)", "Gain (DUP)"]
+        },
+        "legend": { "title": "Call" }
+      }
     }
   }
 }

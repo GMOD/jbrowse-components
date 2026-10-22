@@ -168,8 +168,10 @@ row_groups = [
 ]
 row_color = {
     'field': 'group',
-    'domain': list(groups),
-    'range': [members[0]['COLOR'] for members in groups.values()],
+    'scale': {
+        'domain': list(groups),
+        'range': [members[0]['COLOR'] for members in groups.values()],
+    },
 }
 for r in rows:
     hits = [g['group'] for g in row_groups if re.match(g['match'], label(r))]
@@ -228,7 +230,7 @@ tabix -f -p bed roadmap.multirow.bed.gz
 cp roadmap.multirow.bed.gz roadmap.multirow.bed.gz.tbi "$APP"/
 
 # ── config.json: hg19 + the multi-row Roadmap track ──────────────────────────
-# The color is an identity scale whose `labels` name the file's own itemRgb
+# The color is an identity scale whose `scale.names` name the file's own itemRgb
 # colors, because the Roadmap state names are mnemonics (`12_EnhBiv`,
 # `14_ReprPCWk`) and the key would otherwise show them as they are. The colors,
 # the labels and the row domain are generated from the tables above, so none
@@ -265,9 +267,11 @@ missing = set(colors) - set(STATE_LABELS)
 assert not missing, f'no readable label for state {sorted(missing)}'
 states = sorted(colors, key=int)
 color = {
-    'scale': 'identity',
-    'domain': [f'rgb({colors[n]})' for n in states],
-    'labels': [f'{n} {STATE_LABELS[n]}' for n in states],
+    'scale': {
+        'type': 'identity',
+        'domain': [f'rgb({colors[n]})' for n in states],
+        'names': [f'{n} {STATE_LABELS[n]}' for n in states],
+    },
 }
 row_order = json.loads(Path('roworder.json').read_text())
 row_groups = json.loads(Path('rowgroups.json').read_text())
@@ -310,7 +314,7 @@ config = {
                     'type': 'LinearMultiRowFeatureDisplay',
                     'displayId': 'roadmap_chromhmm_multirow_hg19-LinearMultiRowFeatureDisplay',
                     'rows': {'field': 'cellType', 'domain': row_order},
-                    'color': color,
+                    'encoding': {'color': color},
                     'rowGroups': row_groups,
                     'rowColor': row_color,
                     'height': 700,

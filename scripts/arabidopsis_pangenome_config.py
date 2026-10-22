@@ -145,7 +145,20 @@ def graph_tracks(names):
             'name': '1001G+ minigraph pangenome (rGFA segments)',
             'assemblyNames': ['TAIR10'],
             'adapter': {'type': 'RgfaTabixAdapter', 'uri': GRAPH, **PANSN},
-            'displayDefaults': {'color': "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"},
+            'displayDefaults': {
+                'encoding': {
+                    'color': {
+                        'field': 'rank',
+                        'scale': {
+                            'type': 'threshold',
+                            'domain': ['1'],
+                            'range': ['rgb(52,152,219)', 'rgb(237,137,44)'],
+                            'names': ['reference', 'other assemblies'],
+                        },
+                        'legend': {'title': 'Segment rank'},
+                    }
+                }
+            },
             'displays': graph_displays('arabidopsis_minigraph_segments'),
         },
         {
@@ -162,7 +175,7 @@ def graph_tracks(names):
             'name': '1001G+ minigraph pangenome bubbles',
             'assemblyNames': ['TAIR10'],
             'adapter': {'type': 'MinigraphBubbleAdapter', 'uri': f'{GRAPH}.bubbles.bed.gz', **PANSN},
-            'displayDefaults': {'color': 'rgb(130,130,130)'},
+            'displayDefaults': {'encoding': {'color': {'value': 'rgb(130,130,130)'}}},
         },
         {
             'type': 'QuantitativeTrack',
@@ -303,7 +316,7 @@ def main():
                         'type': 'LinearMultiRowFeatureDisplay',
                         'displayId': 'syri_regions_on_TAIR10-LinearMultiRowFeatureDisplay',
                         'rows': {'field': 'query', 'domain': names},
-                        'color': {'domain': SYRI_TYPES},
+                        'encoding': {'color': {'scale': {'domain': SYRI_TYPES}}},
                     }
                 ],
             },
@@ -318,7 +331,7 @@ def main():
                         'type': 'MultiWaySyntenyDisplay',
                         'displayId': 'syri_1001g-MultiWaySyntenyDisplay',
                         'domain': names,
-                        'ribbonColor': {'field': 'syri', 'domain': SYRI_TYPES},
+                        'ribbons': {'encoding': {'color': {'field': 'syri', 'scale': {'domain': SYRI_TYPES}}}},
                     }
                 ],
             },

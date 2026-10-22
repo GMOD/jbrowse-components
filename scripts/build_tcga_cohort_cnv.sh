@@ -242,17 +242,19 @@ cfg = json.load(open(path))
 # names live here.
 SEGMEAN_COLOR = {
     'field': 'segmean',
-    'scale': 'threshold',
-    'domain': ['-1', '-0.3', '0.3', '1'],
-    'range': ['#2166ac', '#92c5de', '#f7f7f7', '#f4a582', '#b2182b'],
-    'labels': [
-        'Deep loss (log2 < -1)',
-        'Loss',
-        'Balanced',
-        'Gain',
-        'Amplification (log2 > 1)',
-    ],
-    'title': 'Copy number (log2)',
+    'scale': {
+        'type': 'threshold',
+        'domain': ['-1', '-0.3', '0.3', '1'],
+        'range': ['#2166ac', '#92c5de', '#f7f7f7', '#f4a582', '#b2182b'],
+        'names': [
+            'Deep loss (log2 < -1)',
+            'Loss',
+            'Balanced',
+            'Gain',
+            'Amplification (log2 > 1)',
+        ],
+    },
+    'legend': {'title': 'Copy number (log2)'},
 }
 cfg['tracks'] += [
     {
@@ -270,7 +272,7 @@ cfg['tracks'] += [
             'type': 'LinearMultiRowFeatureDisplay',
             'displayId': f'{out}-LinearMultiRowFeatureDisplay',
             'rows': 'sample',
-            'color': SEGMEAN_COLOR,
+            'encoding': {'color': SEGMEAN_COLOR},
         }],
     },
     {
@@ -312,11 +314,13 @@ cfg['tracks'] += [
                     'y': 'score',
                     'color': {
                         'field': 'score',
-                        'scale': 'threshold',
-                        'domain': [0],
-                        'range': ['#2166ac', '#b2182b'],
-                        'labels': ['loss', 'gain'],
-                        'title': 'Copy number call',
+                        'scale': {
+                            'type': 'threshold',
+                            'domain': [0],
+                            'range': ['#2166ac', '#b2182b'],
+                            'names': ['loss', 'gain'],
+                        },
+                        'legend': {'title': 'Copy number call'},
                     },
                 },
             }],

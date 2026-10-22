@@ -218,7 +218,7 @@ cat > session.json <<'JSON'
         { "assembly": "EMU", "displayedRegionNames": ["EMU*"] }
       ],
       "tracks": ["RES_EMU"],
-      "color": { "field": "gene_group" },
+      "encoding": { "color": "gene_group" },
       "autoDiagonalize": true,
       "lineWidth": 4,
       "height": 860

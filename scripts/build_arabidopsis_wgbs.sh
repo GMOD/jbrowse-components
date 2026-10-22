@@ -140,7 +140,7 @@ for t in cfg["tracks"]:
         t["displays"] = [{
             "type": "LinearAlignmentsDisplay",
             "displayId": "arabidopsis_wgbs-LinearAlignmentsDisplay",
-            "baseColor": {"field": "bisulfite"},
+            "pileup": {"bases": {"show": True, "encoding": {"color": "bisulfite"}}},
             "modifications": {"cytosineContext": "CG"},
         }]
 cfg["defaultSession"] = {

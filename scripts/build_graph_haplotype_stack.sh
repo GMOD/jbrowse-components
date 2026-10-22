@@ -154,7 +154,7 @@ session = {
                 for row in rows
             ],
             'tracks': ['graph_adjacent'],
-            'color': {'field': 'strand'},
+            'encoding': {'color': 'strand'},
             'mark': {'interpolate': 'bump'},
         }
     ]

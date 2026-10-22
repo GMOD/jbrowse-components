@@ -174,10 +174,12 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@FAMILY@|$FAMILY|g" -e "s|@BED@|$BED|g" \
             "y": "milliDiv",
             "color": {
               "field": "lineage",
-              "scale": "categorical",
-              "domain": ["AluJ", "AluS", "AluY", "FLAM", "FRAM"],
-              "range": ["#4575b4", "#fdae61", "#d73027", "#8c8c8c", "#8c8c8c"],
-              "title": "@FAMILY@ lineage"
+              "scale": {
+                "type": "ordinal",
+                "domain": ["AluJ", "AluS", "AluY", "FLAM", "FRAM"],
+                "range": ["#4575b4", "#fdae61", "#d73027", "#8c8c8c", "#8c8c8c"]
+              },
+              "legend": { "title": "@FAMILY@ lineage" }
             }
           },
           "maxBpPerPx": 100
@@ -192,7 +194,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@FAMILY@|$FAMILY|g" -e "s|@BED@|$BED|g" \
               "ops": [{ "op": "count" }]
             }
           ],
-          "encoding": { "y": "count", "color": "#c0c0c0" },
+          "encoding": { "y": "count", "color": { "value": "#c0c0c0" } },
           "minBpPerPx": 100
         },
         {
@@ -206,7 +208,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@FAMILY@|$FAMILY|g" -e "s|@BED@|$BED|g" \
               "ops": [{ "op": "count" }]
             }
           ],
-          "encoding": { "y": "count", "color": "#d73027" },
+          "encoding": { "y": "count", "color": { "value": "#d73027" } },
           "minBpPerPx": 100
         }
       ]
@@ -249,11 +251,13 @@ for lane in young:youngLog2 strand:strandLog2; do
             "y": "@FIELD@",
             "color": {
               "field": "@FIELD@",
-              "scale": "threshold",
-              "domain": [0],
-              "range": ["#4575b4", "#d73027"],
-              "labels": ["below expected", "above expected"],
-              "title": "@FAMILY@ @KIND@ share"
+              "scale": {
+                "type": "threshold",
+                "domain": [0],
+                "range": ["#4575b4", "#d73027"],
+                "names": ["below expected", "above expected"]
+              },
+              "legend": { "title": "@FAMILY@ @KIND@ share" }
             }
           }
         }
