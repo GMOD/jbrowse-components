@@ -43,6 +43,16 @@ test('decodes UTF-8 as the WHATWG decoder does, valid or not', () => {
       ),
     )
   }
+  const ascii = (n: number) =>
+    Array.from({ length: n }, (_, i) => 0x20 + (i % 0x5f))
+  for (let n = 0; n < 200; n++) {
+    cases.push([
+      ...cases[n]!,
+      ...ascii(Math.floor(rand() * 200)),
+      ...cases[n + 1]!,
+    ])
+  }
+  cases.push([...ascii(20_000), 0xe9, ...ascii(9000), 0xf0, 0x9f])
   const node = new NodeTextDecoder()
   const shim = new TextDecoderShim()
   for (const c of cases) {

@@ -36,6 +36,9 @@ function fromBase64(encoded: string) {
   return out
 }
 
+// An ASCII run this long joins the output in one call rather than code by code
+const ASCII_RUN = 64
+
 // UTF-8 as the WHATWG decoder reads it: an invalid or truncated sequence is
 // one U+FFFD, and decoding resumes at the byte that broke it; `fatal` throws
 // there instead.
@@ -57,55 +60,57 @@ export class TextDecoderShim {
     let i = 0
     while (i < b.length) {
       const c = b[i]!
-      const need =
-        c < 0x80
-          ? 0
-          : c < 0xc2
-            ? -1
-            : c < 0xe0
-              ? 1
-              : c < 0xf0
-                ? 2
-                : c < 0xf5
-                  ? 3
-                  : -1
-      let cp =
-        need === 0
-          ? c
-          : need === 1
-            ? c & 0x1f
-            : need === 2
-              ? c & 0x0f
-              : c & 0x07
-      // the second byte's range rules out overlong forms and surrogates
-      const lo = c === 0xe0 ? 0xa0 : c === 0xf0 ? 0x90 : 0x80
-      const hi = c === 0xed ? 0x9f : c === 0xf4 ? 0x8f : 0xbf
       let j = i + 1
-      let ok = need >= 0
-      for (let k = 0; ok && k < need; k++) {
-        const t = b[j]
-        if (
-          t !== undefined &&
-          t >= (k === 0 ? lo : 0x80) &&
-          t <= (k === 0 ? hi : 0xbf)
-        ) {
-          cp = (cp << 6) | (t & 0x3f)
+      if (c < 0x80) {
+        while (j < b.length && j - i < 8192 && b[j]! < 0x80) {
           j++
-        } else {
-          ok = false
         }
-      }
-      if (ok) {
-        if (cp > 0xffff) {
-          cp -= 0x10000
-          units.push(0xd800 + (cp >> 10), 0xdc00 + (cp & 0x3ff))
+        if (j - i >= ASCII_RUN) {
+          out +=
+            String.fromCharCode(...units) +
+            String.fromCharCode.apply(
+              null,
+              b.subarray(i, j) as unknown as number[],
+            )
+          units.length = 0
         } else {
-          units.push(cp)
+          for (let k = i; k < j; k++) {
+            units.push(b[k]!)
+          }
         }
-      } else if (this.fatal) {
-        throw new TypeError('The encoded data was not valid utf-8')
       } else {
-        units.push(0xfffd)
+        const need =
+          c < 0xc2 ? -1 : c < 0xe0 ? 1 : c < 0xf0 ? 2 : c < 0xf5 ? 3 : -1
+        let cp = need === 1 ? c & 0x1f : need === 2 ? c & 0x0f : c & 0x07
+        // the second byte's range rules out overlong forms and surrogates
+        const lo = c === 0xe0 ? 0xa0 : c === 0xf0 ? 0x90 : 0x80
+        const hi = c === 0xed ? 0x9f : c === 0xf4 ? 0x8f : 0xbf
+        let ok = need > 0
+        for (let k = 0; ok && k < need; k++) {
+          const t = b[j]
+          if (
+            t !== undefined &&
+            t >= (k === 0 ? lo : 0x80) &&
+            t <= (k === 0 ? hi : 0xbf)
+          ) {
+            cp = (cp << 6) | (t & 0x3f)
+            j++
+          } else {
+            ok = false
+          }
+        }
+        if (ok) {
+          if (cp > 0xffff) {
+            cp -= 0x10000
+            units.push(0xd800 + (cp >> 10), 0xdc00 + (cp & 0x3ff))
+          } else {
+            units.push(cp)
+          }
+        } else if (this.fatal) {
+          throw new TypeError('The encoded data was not valid utf-8')
+        } else {
+          units.push(0xfffd)
+        }
       }
       i = j
       if (units.length > 8192) {
