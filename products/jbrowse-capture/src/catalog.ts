@@ -1,8 +1,10 @@
-import { fetchJson, hubUrl, trackName, tracksMatching } from './genome.ts'
-import { instanceUrl } from './url.ts'
+import { genomeConfigUrl, resolveTrackId } from '@jbrowse/launch-args'
 
-import type { Track } from './genome.ts'
+import { fetchJson } from './genome.ts'
+import { instanceUrl, needsSpec } from './url.ts'
+
 import type { JBrowseUrlOptions } from './url.ts'
+import type { Track } from '@jbrowse/launch-args'
 
 interface CatalogAssembly {
   name: string
@@ -43,52 +45,6 @@ export function resolveAssemblyName(catalog: Catalog, input: string) {
   return found.name
 }
 
-/**
- * The trackId `input` names: an exact trackId, then the id with the assembly
- * prefix a hosted config puts on every track, then a single case-insensitive
- * match on the id, the unprefixed id or the display name. A miss suggests the
- * tracks whose id or name contains the input.
- */
-export function resolveTrackId(
-  tracks: Track[],
-  input: string,
-  assemblyName: string,
-) {
-  const ids = new Set(tracks.map(t => t.trackId))
-  const prefixed = `${assemblyName}-${input}`
-  if (ids.has(input)) {
-    return input
-  }
-  if (ids.has(prefixed)) {
-    return prefixed
-  }
-  const target = input.toLowerCase()
-  const prefix = `${assemblyName}-`.toLowerCase()
-  const loose = tracks.filter(t => {
-    const id = t.trackId.toLowerCase()
-    return (
-      id === target ||
-      (id.startsWith(prefix) && id.slice(prefix.length) === target) ||
-      trackName(t).toLowerCase() === target
-    )
-  })
-  if (loose.length === 1) {
-    return loose[0]!.trackId
-  }
-  if (loose.length > 1) {
-    throw new Error(
-      `--track "${input}" is ambiguous; matches: ${loose.map(t => t.trackId).join(', ')}`,
-    )
-  }
-  const suggestions = tracksMatching(tracks, input)
-    .slice(0, 8)
-    .map(t => t.trackId)
-  const hint = suggestions.length
-    ? `. Did you mean: ${suggestions.join(', ')}?`
-    : ''
-  throw new Error(`--track "${input}" is not in the config${hint}`)
-}
-
 async function fetchCatalog({
   genome,
   config,
@@ -97,7 +53,7 @@ async function fetchCatalog({
   const url = config
     ? new URL(config, instanceUrl(instance)).href
     : genome
-      ? hubUrl(genome)
+      ? genomeConfigUrl(genome)
       : undefined
   if (!url) {
     return undefined
@@ -121,7 +77,7 @@ export async function resolveAgainstConfig(
 ): Promise<JBrowseUrlOptions> {
   const { genome, assembly, tracks, spec, session } = options
   const wanted = assembly ?? genome
-  if (spec || session || (!wanted && !tracks?.length)) {
+  if (spec || session || (!wanted && !tracks?.length && !needsSpec(options))) {
     return options
   }
   const catalog = await fetchCatalog(options)
@@ -131,11 +87,17 @@ export async function resolveAgainstConfig(
   const assemblyName = wanted
     ? resolveAssemblyName(catalog, wanted)
     : assembliesOf(catalog)[0]?.name
+  const resolve = (id: string) =>
+    resolveTrackId(catalog.tracks ?? [], id, assemblyName ?? '')
   return {
     ...options,
-    assembly: wanted ? assemblyName : undefined,
+    // a session spec names its assembly, where the URL parameters may leave
+    // it to the app
+    assembly: wanted || needsSpec(options) ? assemblyName : undefined,
     tracks: tracks?.map(t =>
-      resolveTrackId(catalog.tracks ?? [], t, assemblyName ?? ''),
+      typeof t === 'string'
+        ? resolve(t)
+        : { ...t, trackId: resolve(t.trackId) },
     ),
   }
 }

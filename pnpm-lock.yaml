@@ -2329,13 +2329,12 @@ importers:
 
   products/jbrowse-capture:
     dependencies:
+      '@jbrowse/launch-args':
+        specifier: workspace:^
+        version: link:../../packages/launch-args
       puppeteer:
         specifier: ^25.15.0
         version: 25.15.0(yauzl@2.10.0)
-    devDependencies:
-      '@jbrowse/core':
-        specifier: workspace:^
-        version: link:../../packages/core
 
   products/jbrowse-cli:
     dependencies:

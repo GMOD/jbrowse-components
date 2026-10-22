@@ -1,8 +1,10 @@
 #!/usr/bin/env node
+import { trackName, trackType } from '@jbrowse/launch-args'
+
 import { parseArgs } from './args.ts'
 import { captureBatch, captureJBrowse } from './capture.ts'
 import { resolveAgainstConfig } from './catalog.ts'
-import { listHubAssemblies, listHubTracks, trackName } from './genome.ts'
+import { listHubAssemblies, listHubTracks } from './genome.ts'
 import { readAnnotations, readBatch, readJson, readSpec } from './jsonArgs.ts'
 import { PUBLIC_INSTANCE, jbrowseUrl } from './url.ts'
 import { version } from './version.ts'
@@ -22,9 +24,14 @@ WHAT TO SHOW
                         or a GenArk accession (GCA_.../GCF_...)
   --config <url>        a config.json URL, for data that is not hosted there
   --assembly <name>     assembly to open (defaults to --genome)
-  --loc <locstring>     chr1:1,000-2,000, several space-separated, or a gene name
-                        where the config has a text index (hosted ones do)
-  --track <trackId>     a track to open, by trackId or name; repeat for several
+  --loc <locstring>...  chr1:1,000-2,000, several for a discontinuous view, or a
+                        gene name where the config has a text index (hosted
+                        ones do)
+  --track <trackId> [settings...]
+                        a track to open, by trackId or name; repeat for several.
+                        Settings follow it: height:200, force:true, a display
+                        setting as path=value, or a JSON object
+  --view <settings...>  view settings as path=value (axis.grid=false) or JSON
   --spec <json|path|->  a session spec, for several views or per-display settings
   --session <path|->    a session saved with File → Export session
   --instance <url>      JBrowse Web deployment to drive
@@ -52,8 +59,8 @@ WAITING
 
 BATCH
   The manifest is a JSON array with one object per image. Each names its "out"
-  and may set genome, config, assembly, loc, tracks, spec, session, width, height,
-  dpr, fullPage and annotations; the flags above are the defaults for what an
+  and may set genome, config, assembly, loc, tracks, view, spec, session, width,
+  height, dpr, fullPage and annotations; the flags above are the defaults for what an
   object leaves out. Every image gets a page of its own in one shared browser.
   A failed image is reported and the rest carry on; the exit code is 1 if any
   failed.
@@ -71,6 +78,10 @@ EXAMPLES
   ## RefSeq genes and ClinVar at a gene, from hosted data, no setup
   jb2capture --genome hg38 --loc BRCA1 \\
     --track hg38-ncbiRefSeqCurated --track hg38-clinvarMain -o brca1.png
+
+  ## a taller track and no ruler grid, in jb2export's and Desktop's grammar
+  jb2capture --genome hg38 --loc EGFR --track ncbiRefSeqCurated height:200 \\
+    --view axis.grid=false -o egfr.png
 
   ## find the trackIds first
   jb2capture list hg38 conservation
@@ -91,6 +102,7 @@ function urlOptions(args: ParsedArgs) {
     assembly: args.assembly,
     loc: args.loc,
     tracks: args.tracks.length ? args.tracks : undefined,
+    view: Object.keys(args.view).length ? args.view : undefined,
     spec: args.spec ? readSpec(args.spec) : undefined,
     session: args.session ? readJson('session', args.session) : undefined,
     instance: args.instance,
@@ -100,7 +112,9 @@ function urlOptions(args: ParsedArgs) {
 async function runBatch(args: ParsedArgs) {
   const [manifest, ...extra] = args.positionals
   if (!manifest || extra.length) {
-    throw new Error('`jb2capture batch` takes one manifest: JSON, a path or -')
+    throw new Error(
+      '`jb2capture batch` takes one manifest, right after the word: JSON, a path or -',
+    )
   }
   const defaults = {
     ...urlOptions(args),
@@ -195,7 +209,7 @@ async function runList(positionals: string[]) {
   const pad = Math.min(60, Math.max(...tracks.map(t => t.trackId.length)))
   for (const t of tracks) {
     console.log(
-      `  ${t.trackId.padEnd(pad)}  ${(t.type ?? '').padEnd(18)}  ${trackName(t)}`,
+      `  ${t.trackId.padEnd(pad)}  ${trackType(t).padEnd(18)}  ${trackName(t)}`,
     )
   }
 }

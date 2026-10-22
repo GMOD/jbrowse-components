@@ -15,7 +15,12 @@ import {
   trackIdsFromSession,
 } from './session.ts'
 import { sessionOverflowInPage } from './sessionOverflow.ts'
-import { PUBLIC_INSTANCE, assertCoherentOptions, jbrowseUrl } from './url.ts'
+import {
+  PUBLIC_INSTANCE,
+  assertCoherentOptions,
+  jbrowseUrl,
+  trackIdOf,
+} from './url.ts'
 
 import type { Annotation } from './annotationOverlay.ts'
 import type { LaunchOptions } from './browser.ts'
@@ -77,7 +82,9 @@ async function prepareOpen(options: OpenOptions) {
     ready: {
       ...options,
       assembly: expectedAssembly,
-      trackIds: trackIds ?? (opens ? trackIdsFromSession(opens) : tracks),
+      trackIds:
+        trackIds ??
+        (opens ? trackIdsFromSession(opens) : tracks?.map(trackIdOf)),
     },
   }
 }

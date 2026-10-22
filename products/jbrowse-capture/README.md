@@ -16,6 +16,27 @@ assembly prefix (`clinvarMain`) or the track's display name; capture checks each
 one and the assembly against the config before launching a browser, and a miss
 fails at once with suggestions.
 
+The command line is the one
+[jb2export](https://jbrowse.org/jb2/docs/jbrowse-img) and JBrowse Desktop read,
+from [@jbrowse/launch-args](https://www.npmjs.com/package/@jbrowse/launch-args):
+
+```bash
+npx @jbrowse/capture --genome hg38 --loc EGFR \
+  --track ncbiRefSeqCurated height:200 --view axis.grid=false -o egfr.png
+```
+
+- **After a `--track`:** the settings every display takes: `height:200`,
+  `force:true`, a whole setting as `path=value`, or a JSON object. A display's
+  own modifiers (`color:`, `sort:`) are jb2export's, and capture refuses them.
+- **`--view`:** view settings by their session-spec names, as `path=value` or
+  JSON.
+- **Settings ride in a session spec**: with any present, the URL opens the same
+  view through `session=spec-…` instead of the `assembly`/`loc`/`tracks`
+  parameters.
+- **No data files:** capture opens what a config lists, and has no way to serve
+  a file on disk to its browser, so a bare `reads.bam` or a `--bam` fails naming
+  jb2export and Desktop.
+
 ## Knowing when JBrowse has finished rendering
 
 Knowing when a genome browser is done is the entire problem. JBrowse loads its
@@ -105,7 +126,9 @@ await own.close()
 
 The CLI covers the common capture and has no flag for the rest. A crop, a click
 before the shot or a hidden element is a line of Puppeteer on the page
-`openJBrowse` returns, and a view or display setting goes in a `--spec`.
+`openJBrowse` returns, and several views go in a `--spec`. In a script, `tracks`
+takes `{ trackId, height: 200 }` entries and `view` takes the view's settings,
+as `--track` and `--view` write them.
 
 Two waits, depending on what you did:
 
@@ -221,6 +244,8 @@ screenshot, so no session state passes from one image to the next.
 jb2capture batch captures.json --genome hg38 --track hg38-ncbiRefSeqCurated
 ```
 
+The manifest comes right after `batch`.
+
 ```json
 [
   { "loc": "BRCA1", "out": "brca1.png" },
@@ -229,7 +254,7 @@ jb2capture batch captures.json --genome hg38 --track hg38-ncbiRefSeqCurated
 ```
 
 An object names its `out` and may set `genome`, `config`, `assembly`, `loc`,
-`tracks`, `spec`, `session`, `width`, `height`, `dpr`, `fullPage` and
+`tracks`, `view`, `spec`, `session`, `width`, `height`, `dpr`, `fullPage` and
 `annotations`. The command-line flags are the defaults for what an object leaves
 out. `--concurrency` sets how many windows are open at once (default 4).
 

@@ -1,33 +1,4 @@
-import { hubUrl as coreHubUrl } from '@jbrowse/core/util/fetchHub'
-
-import { hubUrl, listHubTracks } from './genome.ts'
-
-// The mapping is copied rather than imported, and this is the
-// guard that makes the copy safe: if core's URL scheme ever moves, one of these
-// fails rather than this package quietly fetching from the old location.
-const HUBS = [
-  'hg38',
-  'hg19',
-  'mm39',
-  'hs1',
-  'GCA_964188535.1',
-  'GCF_000001405.40',
-  'GCA_000001405.15',
-]
-
-test.each(HUBS)('%s resolves the same as core hubUrl', genome => {
-  expect(hubUrl(genome)).toBe(coreHubUrl(genome))
-})
-
-test('a UCSC db name maps to /ucsc/<db>/config.json', () => {
-  expect(hubUrl('hg38')).toBe('https://jbrowse.org/ucsc/hg38/config.json')
-})
-
-test('a GenArk accession fans its digits into a directory tree', () => {
-  expect(hubUrl('GCA_964188535.1')).toBe(
-    'https://jbrowse.org/hubs/genark/GCA/964/188/535/GCA_964188535.1/config.json',
-  )
-})
+import { listHubTracks } from './genome.ts'
 
 test('a timed-out fetch names the genome, the URL and the budget', async () => {
   const timedOut = new Error('The operation was aborted due to timeout')

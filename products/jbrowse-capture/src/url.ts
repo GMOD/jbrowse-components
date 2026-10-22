@@ -1,6 +1,9 @@
-import { hubUrl } from './genome.ts'
+import { genomeConfigUrl } from '@jbrowse/launch-args'
+
 import { savedSessionParam, sessionSpecParam } from './session.ts'
 import { version } from './version.ts'
+
+import type { ShowTrack } from '@jbrowse/launch-args'
 
 // the release this package shipped with; `latest/` trails a major behind
 // during a beta
@@ -34,8 +37,13 @@ export interface JBrowseUrlOptions {
    * with a text index, which every UCSC assembly on genomes.jbrowse.org has.
    */
   loc?: string
-  /** trackIds from the config to open. */
-  tracks?: string[]
+  /**
+   * Tracks from the config to open: a trackId, or a trackId beside the display
+   * settings to write, `{ trackId, height: 200 }`.
+   */
+  tracks?: ShowTrack[]
+  /** Settings to write on the view, as a session spec's view holds them: `{ axis: { grid: false } }`. */
+  view?: Record<string, unknown>
   /** A session spec, for anything the three fields above cannot say. */
   spec?: object
   /**
@@ -62,6 +70,7 @@ export function assertCoherentOptions({
   assembly,
   loc,
   tracks,
+  view,
 }: JBrowseUrlOptions) {
   if (genome && config) {
     throw new Error(
@@ -71,12 +80,57 @@ export function assertCoherentOptions({
   if (spec && session) {
     throw new Error('pass a session spec or a saved session, not both')
   }
-  if ((spec || session) && (assembly || loc || tracks?.length)) {
+  if (
+    (spec || session) &&
+    (assembly || loc || tracks?.length || hasSettings(view))
+  ) {
     throw new Error(
       'a session spec or saved session says which assembly, locations and ' +
-        'tracks to open, so it cannot be combined with assembly, loc or tracks ' +
-        '(--assembly, --loc, --track): put them in the session',
+        'tracks to open, so it cannot be combined with assembly, loc, tracks ' +
+        'or view (--assembly, --loc, --track, --view): put them in the session',
     )
+  }
+}
+
+const hasSettings = (view: object | undefined) =>
+  !!view && Object.keys(view).length > 0
+
+/** The trackId a track entry opens. */
+export const trackIdOf = (track: ShowTrack) =>
+  typeof track === 'string' ? track : track.trackId
+
+/**
+ * Whether the options write settings, which only a session spec carries: the
+ * URL parameters name tracks and a location, nothing more.
+ */
+export function needsSpec({ tracks, view }: JBrowseUrlOptions) {
+  return hasSettings(view) || !!tracks?.some(t => typeof t !== 'string')
+}
+
+// the linear genome view the URL parameters would open, with the settings
+function launchSpec({
+  genome,
+  assembly,
+  loc,
+  tracks,
+  view,
+}: JBrowseUrlOptions) {
+  const name = assembly ?? genome
+  if (!name) {
+    throw new Error(
+      'track and view settings open the view through a session spec, which names its assembly: pass --assembly',
+    )
+  }
+  return {
+    views: [
+      {
+        ...view,
+        type: 'LinearGenomeView',
+        assembly: name,
+        ...(loc ? { loc } : {}),
+        ...(tracks?.length ? { tracks } : {}),
+      },
+    ],
   }
 }
 
@@ -86,7 +140,8 @@ export function assertCoherentOptions({
  *
  * `assembly`/`loc`/`tracks` become the
  * [URL parameters](https://jbrowse.org/jb2/docs/urlparams/), whose `loc`
- * takes a gene name. `spec` becomes a
+ * takes a gene name, or a one-view session spec when a track or `view` writes
+ * settings. `spec` becomes a
  * [session spec](https://jbrowse.org/jb2/docs/urlparams/#session-spec), which
  * can describe several views and per-display settings. `session` opens a saved
  * session as exported.
@@ -97,35 +152,31 @@ export function jbrowseUrl({
   assembly,
   loc,
   tracks,
+  view,
   spec,
   session,
   sessionName,
   instance,
 }: JBrowseUrlOptions) {
-  assertCoherentOptions({
-    genome,
-    config,
-    spec,
-    session,
-    assembly,
-    loc,
-    tracks,
-  })
+  const options = { genome, config, spec, session, assembly, loc, tracks, view }
+  assertCoherentOptions(options)
   const params = new URLSearchParams()
   const set = (key: string, value: string | undefined) => {
     if (value) {
       params.set(key, value)
     }
   }
-  set('config', config ?? (genome ? hubUrl(genome) : undefined))
+  set('config', config ?? (genome ? genomeConfigUrl(genome) : undefined))
   if (spec) {
     set('session', sessionSpecParam(spec))
   } else if (session) {
     set('session', savedSessionParam(session))
+  } else if (needsSpec(options)) {
+    set('session', sessionSpecParam(launchSpec(options)))
   } else {
     set('assembly', assembly ?? genome)
     set('loc', loc)
-    set('tracks', tracks?.join(','))
+    set('tracks', tracks?.map(trackIdOf).join(','))
   }
   set('sessionName', sessionName)
   const url = instanceUrl(instance)

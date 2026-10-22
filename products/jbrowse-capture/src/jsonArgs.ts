@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 
 import type { Annotation } from './annotationOverlay.ts'
+import type { ShowTrack } from '@jbrowse/launch-args'
 
 // inline JSON, `-` for stdin, or a path
 function parseJson(flag: string, value: string): unknown {
@@ -49,7 +50,10 @@ export interface BatchEntry {
   config?: string
   assembly?: string
   loc?: string
-  tracks?: string[]
+  /** trackIds, or `{ trackId, ...displaySettings }` */
+  tracks?: ShowTrack[]
+  /** settings written on the view, as a session spec's view holds them */
+  view?: Record<string, unknown>
   /** A session spec inline, or a path to one. */
   spec?: object | string
   /** A session saved with File → Export session inline, or a path to one. */
@@ -69,6 +73,7 @@ const BATCH_KEYS = new Set<string>([
   'assembly',
   'loc',
   'tracks',
+  'view',
   'spec',
   'session',
   'width',

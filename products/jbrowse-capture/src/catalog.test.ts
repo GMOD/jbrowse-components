@@ -8,7 +8,6 @@ import {
   canonicalSessionAssembly,
   resolveAgainstConfig,
   resolveAssemblyName,
-  resolveTrackId,
 } from './catalog.ts'
 
 import type { Catalog } from './catalog.ts'
@@ -25,27 +24,6 @@ const catalog: Catalog = {
   assemblies: [{ name: 'hg38', aliases: ['GRCh38'] }],
   tracks,
 }
-
-test.each([
-  ['an exact trackId', 'hg38-clinvarMain', 'hg38-clinvarMain'],
-  ['the id without its assembly prefix', 'clinvarMain', 'hg38-clinvarMain'],
-  ['any case', 'NCBIREFSEQCURATED', 'hg38-ncbiRefSeqCurated'],
-  ['the display name', 'clinvar main', 'hg38-clinvarMain'],
-])('%s resolves', (_name, input, id) => {
-  expect(resolveTrackId(tracks, input, 'hg38')).toBe(id)
-})
-
-test('a miss names the tracks it might have meant', () => {
-  expect(() => resolveTrackId(tracks, 'clinvar', 'hg38')).toThrow(
-    '--track "clinvar" is not in the config. Did you mean: hg38-clinvarMain, hg38-clinvarCnv?',
-  )
-})
-
-test('an unrelated miss says so without suggestions', () => {
-  expect(() => resolveTrackId(tracks, 'nope-xyz', 'hg38')).toThrow(
-    /is not in the config$/,
-  )
-})
 
 test('an alias resolves to the name the census publishes', () => {
   expect(resolveAssemblyName(catalog, 'grch38')).toBe('hg38')
@@ -107,7 +85,33 @@ describe('against a served config', () => {
         config: 'data/config.json',
         tracks: ['clinvr'],
       }),
-    ).rejects.toThrow('--track "clinvr" is not in the config')
+    ).rejects.toThrow('--track "clinvr" not found in the config')
+  })
+
+  test('a track with settings keeps them, and the spec they need gets the assembly', async () => {
+    await expect(
+      resolveAgainstConfig({
+        instance: base,
+        config: 'data/config.json',
+        tracks: [{ trackId: 'clinvarMain', height: 200 }, 'phyloP 100way'],
+      }),
+    ).resolves.toMatchObject({
+      assembly: 'hg38',
+      tracks: [
+        { trackId: 'hg38-clinvarMain', height: 200 },
+        'hg38-phyloP100way',
+      ],
+    })
+  })
+
+  test('view settings alone get the assembly a spec names', async () => {
+    await expect(
+      resolveAgainstConfig({
+        instance: base,
+        config: 'data/config.json',
+        view: { axis: { grid: false } },
+      }),
+    ).resolves.toMatchObject({ assembly: 'hg38' })
   })
 
   test('a config it cannot fetch leaves the options for the app to judge', async () => {

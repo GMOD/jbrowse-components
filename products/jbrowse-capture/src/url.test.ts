@@ -92,8 +92,63 @@ test.each([
   ['tracks', { tracks: ['a'] }],
 ])('a spec refuses %s beside it', (_name, extra) => {
   expect(() => jbrowseUrl({ genome: 'hg38', spec, ...extra })).toThrow(
-    'cannot be combined with assembly, loc or tracks',
+    'cannot be combined with assembly, loc, tracks or view',
   )
+})
+
+test('a spec refuses view settings beside it', () => {
+  expect(() =>
+    jbrowseUrl({ genome: 'hg38', spec, view: { axis: { grid: false } } }),
+  ).toThrow('cannot be combined with assembly, loc, tracks or view')
+})
+
+test('settings open the view the parameters would, through a session spec', () => {
+  const url = jbrowseUrl({
+    genome: 'hg38',
+    loc: 'EGFR',
+    tracks: [{ trackId: 'hg38-ncbiRefSeqCurated', height: 200 }, 'hg38-gc'],
+    view: { axis: { grid: false } },
+  })
+  expect(params(url).get('assembly')).toBeNull()
+  expect(params(url).get('tracks')).toBeNull()
+  expect(readSession(url)).toEqual({
+    views: [
+      {
+        axis: { grid: false },
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: 'EGFR',
+        tracks: [{ trackId: 'hg38-ncbiRefSeqCurated', height: 200 }, 'hg38-gc'],
+      },
+    ],
+  })
+})
+
+test('plain trackIds keep the URL parameters', () => {
+  const url = jbrowseUrl({ genome: 'hg38', tracks: ['a'], view: {} })
+  expect(params(url).get('session')).toBeNull()
+  expect(params(url).get('tracks')).toBe('a')
+})
+
+test('a view setting cannot write the view type or assembly the options name', () => {
+  const url = jbrowseUrl({
+    genome: 'hg38',
+    view: { type: 'DotplotView', assembly: 'mm39', trackLabels: 'offset' },
+  })
+  expect(readSession(url)).toEqual({
+    views: [
+      { type: 'LinearGenomeView', assembly: 'hg38', trackLabels: 'offset' },
+    ],
+  })
+})
+
+test('settings on a config with no assembly to name are refused', () => {
+  expect(() =>
+    jbrowseUrl({
+      config: 'https://x.test/config.json',
+      tracks: [{ trackId: 'a', height: 9 }],
+    }),
+  ).toThrow('pass --assembly')
 })
 
 test('a genome and a config are two sources for one config, so both is refused', () => {

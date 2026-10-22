@@ -41,13 +41,11 @@ test('--name=value and flags', () => {
   expect(args.verbose).toBe(false)
 })
 
-// node:util refuses a dash-leading value in the separated form rather than
-// guessing, and names the spelling that works. The hand-rolled parser took it,
-// so this is the one accepted shape that changed.
+// a dash opens a flag, so a value that starts with one is written with =
 test('a locstring with a leading dash needs the = form', () => {
   expect(parseArgs(['--loc=-1:100-200']).loc).toBe('-1:100-200')
   expect(() => parseArgs(['--loc', '-1:100-200'])).toThrow(
-    "To specify an option argument starting with a dash use '--loc=-XYZ'",
+    '--loc needs a value; write one that starts with a dash as --loc=<value>',
   )
 })
 
@@ -58,9 +56,7 @@ test('an unknown flag is an error, not a silent no-op', () => {
 })
 
 test('a missing value is an error', () => {
-  expect(() => parseArgs(['--genome'])).toThrow(
-    "Option '--genome <value>' argument missing",
-  )
+  expect(() => parseArgs(['--genome'])).toThrow('--genome needs a value')
 })
 
 test('a non-numeric size is an error', () => {
@@ -69,9 +65,11 @@ test('a non-numeric size is an error', () => {
   )
 })
 
-test('a value handed to a flag is an error, not true', () => {
-  expect(() => parseArgs(['--fullPage=false'])).toThrow(
-    "Option '--fullPage' does not take an argument",
+test('a switch takes true or false, as jb2export and Desktop read one', () => {
+  expect(parseArgs(['--fullPage=false']).fullPage).toBe(false)
+  expect(parseArgs(['--fullPage', 'true']).fullPage).toBe(true)
+  expect(() => parseArgs(['--fullPage=yes'])).toThrow(
+    '--fullPage takes true or false, got "yes"',
   )
 })
 
@@ -86,9 +84,7 @@ test('a zero or negative viewport dimension is an error', () => {
   expect(() => parseArgs(['--width=-5'])).toThrow(
     '--width needs a positive number, got "-5"',
   )
-  expect(() => parseArgs(['--width', '-5'])).toThrow(
-    "Option '--width' argument is ambiguous",
-  )
+  expect(() => parseArgs(['--width', '-5'])).toThrow('--width needs a value')
 })
 
 // `--timeout 0` means "no timeout at all" to puppeteer and "already expired" to
@@ -171,4 +167,87 @@ test('an image path belongs to a batch entry, and concurrency to a batch', () =>
   expect(() => parseArgs(['--concurrency', '2', '-o', 'x.png'])).toThrow(
     '--concurrency applies only to `jb2capture batch`',
   )
+})
+
+test('a track takes the settings every display takes, as Desktop writes them', () => {
+  const args = parseArgs([
+    '--genome',
+    'hg38',
+    '--loc',
+    'EGFR',
+    '--track',
+    'hg38-ncbiRefSeqCurated',
+    'height:200',
+    'force',
+    '--track',
+    'hg38-gc',
+    '{"height":50}',
+    '--view',
+    'axis.grid=false',
+    'trackLabels=offset',
+    '-o',
+    'egfr.png',
+  ])
+  expect(args.tracks).toEqual([
+    { trackId: 'hg38-ncbiRefSeqCurated', height: 200, forceLoad: true },
+    { trackId: 'hg38-gc', height: 50 },
+  ])
+  expect(args.view).toEqual({ axis: { grid: false }, trackLabels: 'offset' })
+  expect(parseArgs(['--track', 'a']).tracks).toEqual(['a'])
+})
+
+test('a display-specific modifier names jb2export, which applies it', () => {
+  expect(() => parseArgs(['--track', 'reads', 'color:strand'])).toThrow(
+    "--track reads color:strand: jb2capture writes the settings every display takes (height:, force:, a whole setting as path=value, JSON); a display's own modifiers are jb2export's",
+  )
+})
+
+test('--loc takes several regions, unquoted', () => {
+  expect(
+    parseArgs(['--loc', 'chr3:25,325,000-25,361,000', 'chr10:1-100']).loc,
+  ).toBe('chr3:25,325,000-25,361,000 chr10:1-100')
+})
+
+test('a flag given twice is an error, not the last one winning', () => {
+  expect(() => parseArgs(['--genome', 'hg38', '--genome', 'mm39'])).toThrow(
+    '--genome is given more than once',
+  )
+})
+
+test('a word after a value applies to nothing, so it is an error', () => {
+  expect(() => parseArgs(['--genome', 'hg38', 'mm39'])).toThrow(
+    '--genome takes one value, so "mm39" applies to nothing',
+  )
+})
+
+test.each([
+  [['reads.bam', '--genome', 'hg38'], 'reads.bam is a data file.'],
+  [
+    ['--genome', 'hg38', 'https://x.test/reads.cram'],
+    'https://x.test/reads.cram is a data file.',
+  ],
+  [['--bam', 'reads.bam'], '--bam opens a data file.'],
+  [['--fasta', 'ref.fa'], '--fasta opens a data file.'],
+])('a data file names the tools that open one (%j)', (argv, start) => {
+  expect(() => parseArgs(argv)).toThrow(
+    `${start} jb2capture opens the tracks a config lists and cannot serve a data file to its browser. Draw it with jb2export, or open it in JBrowse Desktop, which take the same command line`,
+  )
+})
+
+test('url takes track and view settings', () => {
+  const args = parseArgs([
+    'url',
+    '--genome',
+    'hg38',
+    '--view',
+    'axis.grid=false',
+  ])
+  expect(args.view).toEqual({ axis: { grid: false } })
+})
+
+test("batch's manifest comes right after the word", () => {
+  expect(parseArgs(['batch', '--genome', 'hg38']).positionals).toEqual([])
+  expect(() =>
+    parseArgs(['batch', '--genome', 'hg38', 'captures.json']),
+  ).toThrow('--genome takes one value, so "captures.json" applies to nothing')
 })

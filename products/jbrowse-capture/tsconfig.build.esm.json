@@ -1,1 +1,6 @@
-{ "extends": "../../tsconfig.base.esm.node.json" }
+{
+  "extends": "../../tsconfig.base.esm.node.json",
+  "references": [
+    { "path": "../../packages/launch-args/tsconfig.build.esm.json" }
+  ]
+}

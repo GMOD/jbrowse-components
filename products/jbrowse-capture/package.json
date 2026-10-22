@@ -42,10 +42,8 @@
     "start": "node --experimental-strip-types src/bin.ts"
   },
   "dependencies": {
+    "@jbrowse/launch-args": "workspace:^",
     "puppeteer": "^25.15.0"
-  },
-  "devDependencies": {
-    "@jbrowse/core": "workspace:^"
   },
   "publishConfig": {
     "access": "public",
