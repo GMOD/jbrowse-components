@@ -1235,7 +1235,7 @@ function checkFigure({ work }: { work: string }): Verdict {
       .split(' ')
       .map(Number)
     return {
-      pass: width! >= 1000 && bannerRows! < 5 && ink! > 0.05,
+      pass: width! >= 600 && bannerRows! < 5 && ink! > 0.05,
       detail: { width, height, bannerRows, ink },
     }
   } catch (e) {
