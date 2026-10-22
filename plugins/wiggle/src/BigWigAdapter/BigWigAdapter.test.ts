@@ -87,12 +87,12 @@ describe('adapter can fetch features from volvox.bw', () => {
       })
     },
   )
-  it('getFeatureArraysMulti returns one result per region at base resolution', async () => {
+  it('getFeatureArrays returns one result per region at base resolution', async () => {
     const regions = [
       { refName: 'ctgA', start: 0, end: 10000, assemblyName: 'volvox' },
       { refName: 'ctgA', start: 10000, end: 20000, assemblyName: 'volvox' },
     ]
-    const results = await adapter.getFeatureArraysMulti(regions, {
+    const results = await adapter.getFeatureArrays(regions, {
       bpPerPx: 1,
       resolution: 1,
     })
@@ -115,13 +115,13 @@ describe('adapter can fetch features from volvox.bw', () => {
     expect(Math.max(...Array.from(results[1]!.ends))).toBeLessThanOrEqual(20000)
   })
 
-  it('getFeatureArraysMulti returns summary min/max at zoom resolution', async () => {
+  it('getFeatureArrays returns summary min/max at zoom resolution', async () => {
     const regions = [
       { refName: 'ctgA', start: 0, end: 40000, assemblyName: 'volvox' },
       { refName: 'ctgA', start: 0, end: 20000, assemblyName: 'volvox' },
     ]
     // basesPerSpan=1000 triggers a zoom level (isSummary=true in bbi)
-    const results = await adapter.getFeatureArraysMulti(regions, {
+    const results = await adapter.getFeatureArrays(regions, {
       bpPerPx: 1000,
       resolution: 1,
     })
@@ -155,8 +155,8 @@ describe('the raw sample synthetic tiers are sized from', () => {
   it('is never read by a fetch that sends no zoom, or one finer than any bin', async () => {
     const adapter = coverage()
     await firstValueFrom(adapter.getFeatures(region).pipe(toArray()))
-    await adapter.getFeatureArrays(region)
-    await adapter.getFeatureArraysMulti([region], { bpPerPx: 1 })
+    await adapter.getFeatureArrays([region])
+    await adapter.getFeatureArrays([region], { bpPerPx: 1 })
     expect(await adapter.getZoomRange({})).toEqual({
       minBpPerPx: 0,
       maxBpPerPx: 2,
@@ -170,7 +170,7 @@ describe('the raw sample synthetic tiers are sized from', () => {
 
   it('is read once, at the first zoom a synthetic bin could serve', async () => {
     const adapter = coverage()
-    const [rows] = await adapter.getFeatureArraysMulti([region], { bpPerPx: 2 })
+    const [rows] = await adapter.getFeatureArrays([region], { bpPerPx: 2 })
     expect(rows!.minScores).toBeDefined()
     await adapter.getZoomRange({ bpPerPx: 19 })
     expect(sampleMeanRecordSpan).toHaveBeenCalledTimes(1)
@@ -185,7 +185,9 @@ function adapterAt(localPath: string) {
   )
 }
 
-function rowsOf(r: Awaited<ReturnType<BigWigAdapter['getFeatureArrays']>>) {
+function rowsOf(
+  r: Awaited<ReturnType<BigWigAdapter['getFeatureArrays']>>[number],
+) {
   return Array.from({ length: r.count }, (_, i) => [
     r.starts[i],
     r.ends[i],
@@ -204,13 +206,13 @@ describe('a synthetic zoom over several regions', () => {
       { refName: 'ctgB', start: 0, end: 100, assemblyName: 'v' },
       { refName: 'ctgA', start: 20003, end: 21007, assemblyName: 'v' },
     ]
-    const together = await adapter.getFeatureArraysMulti(regions, {
+    const together = await adapter.getFeatureArrays(regions, {
       bpPerPx: 5,
     })
     expect(together).toHaveLength(4)
     for (const [i, region] of regions.entries()) {
-      const alone = await adapter.getFeatureArrays(region, { bpPerPx: 5 })
-      expect(rowsOf(together[i]!)).toEqual(rowsOf(alone))
+      const [alone] = await adapter.getFeatureArrays([region], { bpPerPx: 5 })
+      expect(rowsOf(together[i]!)).toEqual(rowsOf(alone!))
     }
     expect(together[0]!.minScores).toBeDefined()
     expect(together[0]!.count).toBeGreaterThan(100)
@@ -246,17 +248,17 @@ describe('a BigWig with no zoom levels', () => {
     const { fileLevels } = await adapter.setup()
     expect(fileLevels).toEqual([])
     expect(await adapter.getReductionLevels()).toEqual([])
-    const raw = await adapterAt(
+    const [raw] = await adapterAt(
       require.resolve('./test_data/volvox.bw'),
-    ).getFeatureArrays(region, { bpPerPx: 1 })
+    ).getFeatureArrays([region], { bpPerPx: 1 })
     for (const bpPerPx of [0.5, 5, 19, 1000]) {
       expect(await adapter.getZoomRange({ bpPerPx })).toEqual({
         minBpPerPx: 0,
         maxBpPerPx: Infinity,
       })
-      const [rows] = await adapter.getFeatureArraysMulti([region], { bpPerPx })
+      const [rows] = await adapter.getFeatureArrays([region], { bpPerPx })
       expect(rows!.minScores).toBeUndefined()
-      expect(rowsOf(rows!)).toEqual(rowsOf(raw))
+      expect(rowsOf(rows!)).toEqual(rowsOf(raw!))
     }
     expect(sampleMeanRecordSpan).not.toHaveBeenCalled()
   })

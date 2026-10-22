@@ -16,7 +16,7 @@ import { resolve } from 'node:path'
 //   read-raw        bbi's raw section over the region, then
 //                   processFeaturesFromArrays: the executor's work before
 //   read-raw-ctl    the same, declared a second time
-//   read-tier       the adapter's getFeatureArraysMulti at the zoom, then
+//   read-tier       the adapter's getFeatureArrays at the zoom, then
 //                   processFeaturesFromArrays: the executor's work now
 //   bin             binRawRegion alone over the bin-aligned raw read
 //   process-raw     processFeaturesFromArrays alone over the raw rows
@@ -94,7 +94,7 @@ const aligned = await bigwig.getFeaturesAsArraysMulti(
   [{ refName, ...extent }],
   { basesPerSpan: rawSpan },
 )
-const [tier] = await adapter.getFeatureArraysMulti([region], { bpPerPx })
+const [tier] = await adapter.getFeatureArrays([region], { bpPerPx })
 
 function sameRows(a: RawFeatureArrays, b: RawFeatureArrays, what: string) {
   if (a.count !== b.count) {
@@ -134,7 +134,7 @@ if (binBp !== undefined) {
 } else {
   sameRows(
     tier!,
-    await adapter.getFeatureArraysMulti([region], { bpPerPx }).then(r => r[0]!),
+    await adapter.getFeatureArrays([region], { bpPerPx }).then(r => r[0]!),
     'file tier',
   )
 }
@@ -168,7 +168,7 @@ const arms: Record<string, () => Promise<void>> = {
     }).numFeatures
   },
   'read-tier': async () => {
-    const [r] = await adapter.getFeatureArraysMulti([region], { bpPerPx })
+    const [r] = await adapter.getFeatureArrays([region], { bpPerPx })
     sink += processFeaturesFromArrays(r!).numFeatures
   },
   bin: async () => {

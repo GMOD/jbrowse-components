@@ -150,8 +150,8 @@ describe('MultiWiggleAdapter.getFeatureTable over arrays', () => {
 
   it('codes each row by its subtrack, in declared order', async () => {
     const adapter = adapterOver({
-      b: { getFeatureArraysMulti: async () => [raw([0, 10], [1, 2])] },
-      a: { getFeatureArrays: async () => raw([5], [3]) },
+      b: { getFeatureArrays: async () => [raw([0, 10], [1, 2])] },
+      a: { getFeatureArrays: async () => [raw([5], [3])] },
     })
     const table = await adapter.getFeatureTable(chr1)
     const column = table.column('source')
@@ -175,9 +175,9 @@ describe('MultiWiggleAdapter.getFeatureTable over arrays', () => {
 
   it('answers a raw subtrack row its score as min and max', async () => {
     const adapter = adapterOver({
-      raw: { getFeatureArrays: async () => raw([0], [1]) },
+      raw: { getFeatureArrays: async () => [raw([0], [1])] },
       binned: {
-        getFeatureArrays: async () => raw([0], [5], { min: [2], max: [9] }),
+        getFeatureArrays: async () => [raw([0], [5], { min: [2], max: [9] })],
       },
     })
     const table = await adapter.getFeatureTable(chr1)
@@ -203,7 +203,7 @@ describe('MultiWiggleAdapter.getFeatureTable over arrays', () => {
       )
     const adapter = adapterOver({
       arrays: {
-        getFeatureArrays: async () => raw([0], [1]),
+        getFeatureArrays: async () => [raw([0], [1])],
         getFeatures: feature({ score: 1 }),
       },
       features: { getFeatures: feature({ score: 4, methylated: 7 }) },

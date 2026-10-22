@@ -304,21 +304,21 @@ describe('plain feature adapter fallback', () => {
 // reason the regions arrive together.
 describe('single-source typed-array adapter', () => {
   it('takes the batched array path and reports one unnamed source', async () => {
-    const getFeatureArraysMulti = jest
+    const getFeatureArrays = jest
       .fn()
       .mockResolvedValue([raw([1, 2]), raw([3])])
     const getFeaturesArray = jest.fn()
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getZoomRange: async () => undefined,
       getValueDomain: async () => undefined,
-      getFeatureArraysMulti,
+      getFeatureArrays,
       getFeaturesArray,
     } as never)
 
     const results = await run({})
 
-    expect(getFeatureArraysMulti).toHaveBeenCalledTimes(1)
-    expect(getFeatureArraysMulti.mock.calls[0]![0]).toEqual(regions)
+    expect(getFeatureArrays).toHaveBeenCalledTimes(1)
+    expect(getFeatureArrays.mock.calls[0]![0]).toEqual(regions)
     expect(getFeaturesArray).not.toHaveBeenCalled()
     expect(results.map(r => r.sources.map(s => s.name))).toEqual([[''], ['']])
     expect(scoresOf(results[0]!, '')).toEqual([1, 2])

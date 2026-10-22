@@ -241,14 +241,11 @@ test.each([
   'the arrays hold exactly the bins the walk wrote: %s',
   async (_label, seq, windowSize, windowDelta, start, end) => {
     const adapter = makeAdapter(seq, 'content', windowSize, windowDelta)
-    const arrays = await adapter.getFeatureArrays({
-      refName: 'ctgA',
-      start,
-      end,
-      assemblyName: 'a',
-    })
-    expect(arrays.count).toBe(arrays.starts.length)
+    const [arrays] = await adapter.getFeatureArrays([
+      { refName: 'ctgA', start, end, assemblyName: 'a' },
+    ])
+    expect(arrays!.count).toBe(arrays!.starts.length)
     const features = await getFeatures(adapter, start, end)
-    expect(features.length).toBe(arrays.count)
+    expect(features.length).toBe(arrays!.count)
   },
 )

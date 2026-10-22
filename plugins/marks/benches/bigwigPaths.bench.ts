@@ -25,7 +25,7 @@ import { join, resolve } from 'node:path'
 // (agent-docs/reference/BENCHMARKING.md), each a fetch plus what the RPC
 // executor does with it:
 //
-//   wiggle      getFeatureArraysMulti, then processFeaturesFromArrays — the
+//   wiggle      getFeatureArrays, then processFeaturesFromArrays — the
 //               RenderWiggleData executor's work for one region
 //   control     the same, declared a second time
 //   marks       getFeaturesArray, then encodeFeatures over the bar mark's
@@ -194,13 +194,13 @@ function weightedSteps(bpPerPx: number): TransformStep[] {
 // polymorphic across arms.
 function armWiggle(region: Region, bpPerPx: number) {
   return async () => {
-    const raws = await adapter.getFeatureArraysMulti([region], { bpPerPx })
+    const raws = await adapter.getFeatureArrays([region], { bpPerPx })
     return processFeaturesFromArrays(raws[0]!)
   }
 }
 function armControl(region: Region, bpPerPx: number) {
   return async () => {
-    const raws = await adapter.getFeatureArraysMulti([region], { bpPerPx })
+    const raws = await adapter.getFeatureArrays([region], { bpPerPx })
     return processFeaturesFromArrays(raws[0]!)
   }
 }
@@ -553,7 +553,7 @@ for (const bpPerPx of zooms) {
             weightedSteps(bpPerPx),
             jexl,
           ),
-          await adapter.getFeatureArrays(region, { bpPerPx: 0 }),
+          (await adapter.getFeatureArrays([region], { bpPerPx: 0 }))[0]!,
           binBp,
         )
   results.push({

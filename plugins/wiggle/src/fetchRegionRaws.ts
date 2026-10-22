@@ -10,54 +10,36 @@ import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAda
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
-// Coalesced multi-region fast path (BigWig): one bbi pass over all regions,
-// adjacent on-disk blocks deduped/merged across region boundaries.
-function hasFeatureArraysMulti(
+/**
+ * Whether the adapter answers in typed arrays rather than features, one
+ * `RawFeatureArrays` per region, aligned to input order. BigWig reads every
+ * region in one bbi pass.
+ */
+export function servesArrays(
   adapter: BaseFeatureDataAdapter,
 ): adapter is BaseFeatureDataAdapter & {
-  getFeatureArraysMulti(
+  getFeatureArrays(
     regions: Region[],
     opts: WiggleAdapterOptions,
   ): Promise<RawFeatureArrays[]>
 } {
-  return 'getFeatureArraysMulti' in adapter
-}
-
-function hasFeatureArrays(
-  adapter: BaseFeatureDataAdapter,
-): adapter is BaseFeatureDataAdapter & {
-  getFeatureArrays(
-    region: Region,
-    opts: WiggleAdapterOptions,
-  ): Promise<RawFeatureArrays>
-} {
   return 'getFeatureArrays' in adapter
 }
 
-/** Whether the adapter answers in typed arrays rather than features. */
-export function servesArrays(adapter: BaseFeatureDataAdapter) {
-  return hasFeatureArraysMulti(adapter) || hasFeatureArrays(adapter)
-}
-
-// One RawFeatureArrays per region, aligned to input order. Adapters that
-// coalesce (BigWig) serve every region in a single pass; the others fall back
-// to a per-region loop, and non-array adapters to plain features, whose
-// `yField` may be a `jexl:` expression the worker's instance evaluates.
+// One RawFeatureArrays per region, aligned to input order. A non-array
+// adapter serves plain features, whose `yField` may be a `jexl:` expression
+// the worker's instance evaluates.
 export function fetchRegionRaws(
   adapter: BaseFeatureDataAdapter,
   regions: Region[],
   opts: WiggleAdapterOptions,
   jexl?: JexlInstance,
 ): Promise<RawFeatureArrays[]> {
-  return hasFeatureArraysMulti(adapter)
-    ? adapter.getFeatureArraysMulti(regions, opts)
-    : hasFeatureArrays(adapter)
-      ? Promise.all(
-          regions.map(region => adapter.getFeatureArrays(region, opts)),
-        )
-      : featuresPerRegion(adapter, regions, opts).then(perRegion =>
-          perRegion.map(features => featuresToRaw(features, opts.yField, jexl)),
-        )
+  return servesArrays(adapter)
+    ? adapter.getFeatureArrays(regions, opts)
+    : featuresPerRegion(adapter, regions, opts).then(perRegion =>
+        perRegion.map(features => featuresToRaw(features, opts.yField, jexl)),
+      )
 }
 
 // One fetch per region, concurrently, each on its own status line: the first

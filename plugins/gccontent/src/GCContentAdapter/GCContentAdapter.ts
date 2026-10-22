@@ -1,6 +1,10 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getSequenceSubAdapter } from '@jbrowse/core/data_adapters/getSequenceSubAdapter'
-import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  createStatusFanOut,
+  updateStatus,
+} from '@jbrowse/core/util'
 import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
@@ -34,11 +38,23 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
   }
 
   /**
-   * The scored bins as the typed arrays the wiggle displays consume, written
-   * straight out of the sliding window. `getFeatures` boxes these on demand;
-   * the render path never asks it to.
+   * The scored bins as the typed arrays the wiggle displays consume, one per
+   * region, written straight out of the sliding window. `getFeatures` boxes
+   * these on demand; the render path never asks it to.
    */
   public async getFeatureArrays(
+    regions: Region[],
+    opts?: BaseOptions,
+  ): Promise<RawFeatureArrays[]> {
+    const slot = createStatusFanOut(opts?.statusCallback)
+    return Promise.all(
+      regions.map(region =>
+        this.regionArrays(region, { ...opts, statusCallback: slot() }),
+      ),
+    )
+  }
+
+  private async regionArrays(
     query: Region,
     opts?: BaseOptions,
   ): Promise<RawFeatureArrays> {
@@ -169,7 +185,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
 
   public getFeatures(query: Region, opts?: BaseOptions) {
     return ObservableCreate<Feature>(async observer => {
-      const { starts, ends, scores, count } = await this.getFeatureArrays(
+      const { starts, ends, scores, count } = await this.regionArrays(
         query,
         opts,
       )

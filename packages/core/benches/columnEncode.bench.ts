@@ -346,7 +346,7 @@ async function bigwigFixture(): Promise<SourceColumns[]> {
   const { header } = await adapter.setup()
   const refName = Object.keys(header.refsByName)[0]!
   const length = header.refsByNumber[header.refsByName[refName]!]!.length
-  const [section] = await adapter.getFeatureArraysMulti(
+  const [section] = await adapter.getFeatureArrays(
     [{ refName, start: 0, end: length, assemblyName: 'bench' }],
     { bpPerPx: 1 },
   )

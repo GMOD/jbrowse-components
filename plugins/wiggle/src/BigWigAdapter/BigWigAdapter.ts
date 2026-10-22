@@ -223,22 +223,10 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     })
   }
 
-  // origin is a display concern (pos/neg color split) and stays out of
-  // the adapter API. Callers run processFeaturesFromArrays themselves with the
-  // pivot — split happens inline with the data scan, no second pass.
+  // Every region in one bbi pass, fewer range requests than one read each —
+  // the win for collapsed-intron and whole-genome overviews. regionOffsets
+  // slices each region out of bbi's packed arrays copy-free.
   public async getFeatureArrays(
-    region: Region,
-    opts: WiggleOptions = {},
-  ): Promise<RawFeatureArrays> {
-    const [arrays] = await this.readRegions([region], opts)
-    return arrays!
-  }
-
-  // Multi-region fast path: fewer range requests than N independent
-  // getFeatureArrays calls — the win for collapsed-intron and whole-genome
-  // overviews. regionOffsets slices each region out of bbi's packed arrays
-  // copy-free.
-  public async getFeatureArraysMulti(
     regions: Region[],
     opts: WiggleOptions = {},
   ): Promise<RawFeatureArrays[]> {

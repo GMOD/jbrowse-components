@@ -90,7 +90,7 @@ async function fetchRaw(file: string) {
   const refName = refNameFlag ?? Object.keys(header.refsByName)[0]!
   const len = header.refsByNumber[header.refsByName[refName]!]!.length
   const end = Math.min(len, Math.round(start + bpPerPx * screenPx))
-  const [raw] = await adapter.getFeatureArraysMulti(
+  const [raw] = await adapter.getFeatureArrays(
     [{ refName, start, end, assemblyName: 'bench' }],
     { bpPerPx },
   )

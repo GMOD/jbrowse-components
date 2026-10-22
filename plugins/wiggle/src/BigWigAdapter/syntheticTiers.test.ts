@@ -616,11 +616,11 @@ describe('against a real file', () => {
       end: 36000,
       assemblyName: 'v',
     }
-    const [raw] = await adapter.getFeatureArraysMulti([region], { bpPerPx: 1 })
-    const [synthetic] = await adapter.getFeatureArraysMulti([region], {
+    const [raw] = await adapter.getFeatureArrays([region], { bpPerPx: 1 })
+    const [synthetic] = await adapter.getFeatureArrays([region], {
       bpPerPx: 19,
     })
-    const [file] = await adapter.getFeatureArraysMulti([region], {
+    const [file] = await adapter.getFeatureArrays([region], {
       bpPerPx: 20,
     })
     expect(raw!.minScores).toBeUndefined()
@@ -670,7 +670,7 @@ describe('against a real file', () => {
       }),
     )
     const rowsAt = async (start: number, end: number, bpPerPx = 19) => {
-      const [r] = await adapter.getFeatureArraysMulti(
+      const [r] = await adapter.getFeatureArrays(
         [{ refName: 'ctgA', start, end, assemblyName: 'v' }],
         { bpPerPx },
       )
@@ -725,7 +725,7 @@ describe('against a real file', () => {
       minBpPerPx: 0,
       maxBpPerPx: 256,
     })
-    const [raw] = await posneg.getFeatureArraysMulti(
+    const [raw] = await posneg.getFeatureArrays(
       [{ refName: 'ctgA', start: 0, end: 50000, assemblyName: 'v' }],
       { bpPerPx: 100 },
     )
@@ -797,7 +797,7 @@ describe('the browser-test fixture', () => {
         minBpPerPx: range[0],
         maxBpPerPx: range[1],
       })
-      const [rows] = await bw.getFeatureArraysMulti(
+      const [rows] = await bw.getFeatureArrays(
         [{ refName: 'ctgA', start, end, assemblyName: 'volvox' }],
         { bpPerPx },
       )

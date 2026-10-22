@@ -157,8 +157,8 @@ from another writer, and its raw section is the only resolution it has.
 
 ## Consequences
 
-- Every read path goes through one `readRegions`: `getFeatureArraysMulti`,
-  `getFeatureArrays`, and `getFeatures` with its `getRegionQuantitativeStats`.
+- Every read path goes through one `readRegions`: `getFeatureArrays`, and
+  `getFeatures` with its `getRegionQuantitativeStats`.
   A synthetic region's features report `summary: true` with `minScore` and
   `maxScore`, so `featuresToRaw` keeps them for a BigWig under a
   MultiQuantitativeTrack. The mark display reads the same bins the wiggle

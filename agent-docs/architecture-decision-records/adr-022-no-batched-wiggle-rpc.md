@@ -18,7 +18,7 @@ the useful part. That list is about *dispatch*: fetches ceasing to overlap,
 per-call setup growing, RPC dispatch dominating a profile. None of them
 happened. The deciding term was a fourth thing, priced at zero throughout the
 reasoning below: **what the adapter can do once it can see every region at
-once.** `BigWigAdapter.getFeatureArraysMulti` routes to bbi's
+once.** `BigWigAdapter.getFeatureArrays` routes to bbi's
 `getFeaturesAsArraysMulti`, which merges adjacent on-disk blocks *across region
 boundaries* — so a collapsed-intron or whole-genome view issues far fewer range
 requests, not merely the same requests with fewer `postMessage`s. A per-region
@@ -133,5 +133,5 @@ reason this list does not contain — see Status.)*
 
 ## Related
 
-- ADR-021 covers the per-region fast path (`getFeatureArrays`) which is the
+- ADR-021 covers the array fast path (`getFeatureArrays`) which is the
   actual lever for reducing per-region work — orthogonal to dispatch shape.

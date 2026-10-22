@@ -16,8 +16,8 @@ Wiggle adapters expose two paths to the executor:
 - **Slow:** `adapter.getFeatures(region, opts)` returns an RxJS `Observable<Feature>`.
   The executor collects it via `firstValueFrom(... .pipe(toArray()))`, then walks
   the array converting each `Feature` into typed arrays.
-- **Fast:** `adapter.getFeatureArrays(region, opts)` returns a `RawFeatureArrays`
-  struct (`{ starts, ends, scores, minScores, maxScores, count }`) directly.
+- **Fast:** `adapter.getFeatureArrays(regions, opts)` returns a `RawFeatureArrays`
+  per region, each a struct (`{ starts, ends, scores, minScores, maxScores, count }`) directly.
   Avoids the per-feature object allocation/iteration entirely.
 
 `BigWigAdapter` implements the fast path because the BigWig zoom-bin format is
@@ -89,7 +89,8 @@ single-source BigWig already had the fast path; multi-source was the gap.
 The wiggle adapter contract is now symmetric:
 
 - `getFeatures(region, opts) → Observable<Feature>` (slow, universal)
-- `getFeatureArrays?(region, opts) → RawFeatureArrays` (fast, optional)
+- `getFeatureArrays?(regions, opts) → RawFeatureArrays[]` (fast, optional; one
+  per region, so BigWig reads them all in one bbi pass)
 
 Plus `MultiWiggleAdapter` exposes:
 

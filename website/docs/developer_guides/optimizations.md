@@ -123,13 +123,13 @@ before it is issued. The `regionTooLarge` banner and its Force load override are
 [documented with the fetch chain](/docs/developer_guides/data_fetching#byte-estimation-and-regiontoolarge).
 
 A whole-genome overview asks one file for many regions at once, and fetching
-them independently costs a round trip each.
-`BigWigAdapter.getFeatureArraysMulti` hands the whole set to the library in one
-call, which walks every region's index at once, drops any block two regions both
-asked for, and merges blocks that sit next to each other on disk into a single
-read. A row of adjacent windows merges into one read that way, and the bytes
-fall with it, since a block on the boundary between two of them would otherwise
-be downloaded and decompressed twice.
+them independently costs a round trip each. `BigWigAdapter.getFeatureArrays`
+hands the whole set to the library in one call, which walks every region's index
+at once, drops any block two regions both asked for, and merges blocks that sit
+next to each other on disk into a single read. A row of adjacent windows merges
+into one read that way, and the bytes fall with it, since a block on the
+boundary between two of them would otherwise be downloaded and decompressed
+twice.
 [`@gmod/bbi`](https://github.com/GMOD/bbi-js/blob/main/docs/optimizations.md#many-regions-in-one-pass)
 records that measurement.
 
