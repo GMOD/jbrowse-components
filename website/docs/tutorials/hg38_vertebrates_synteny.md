@@ -16,8 +16,8 @@ hosts, and jbrowse.org keeps each chain as an indexed alignment file. We:
 - compose the chains into one multi-way synteny track, a lane per genome under
   the human view, each lane drawing the RefSeq gene models from that genome's
   UCSC hub
-- stack the genomes at _TP53_ and at _PMP22_
-- read each lane's span, width multiple and ribbons
+- stack the genomes at _TP53_
+- pin and flip lanes near the _PMP22_ duplications
 
 ## Prerequisites
 
@@ -260,24 +260,6 @@ the frame:
 
 <Figure caption="The same lanes near the PMP22 duplications. A flipped lane, marked reversed in its header, draws its ribbons straight and still blue." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
 
-## Reading a lane's span, width multiple and ribbons {#reading-the-stack}
-
-Each lane draws in the coordinates of that lane's genome, fitted to wherever the
-alignment places the hg38 window.
-
-- **Span**: the number at a lane's right edge is the span the lane shows, and
-  the multiple after it is how many times wider than the hg38 window that span
-  is, rounded to one of a few fixed steps. The step fits the stretch the lane
-  draws: a lane up to a tenth wider than a step stays on that step, and short
-  pieces off that stretch fall off its edges.
-- **Ribbons**: each joins a lane to hg38, the anchor, since each chain aligns
-  one genome to hg38. The ticked rule above the ribbons is hg38's axis, and the
-  badge opening each lane label names it.
-- Hover a ribbon to light the same alignment in every lane it reaches.
-- Drag a lane label to reorder the stack.
-- Use the lane header menu to re-anchor the view on that genome or open it in a
-  separate view.
-
 ## Reproduce it end to end
 
 The script writes one config, with nothing to build or upload, in three steps:
@@ -298,6 +280,7 @@ bash build_hg38_liftover_multiway.sh   # writes ./hg38_vertebrates_build/config.
 
 ## See also
 
+- [](/docs/user_guides/multiway_synteny_display)
 - [](/docs/tutorials/pangenome_hprc_haplotypes)
 - [](/docs/tutorials/primate_orthologs_synteny)
 - [](/docs/tutorials/t2t_apes_cactus_synteny)

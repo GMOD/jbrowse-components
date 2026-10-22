@@ -343,9 +343,8 @@ applies edits live.
 
 A strain with no alignment to the backbone is a white gap on the K-12 axis.
 **Display types → Multi-way synteny display** redraws each lane in the
-coordinates of the strain it shows, one ribbon per PAF record. The
-[ortholog-table tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
-has a figure of the display.
+coordinates of the strain it shows, one ribbon per PAF record
+([multi-way synteny display](/docs/user_guides/multiway_synteny_display)).
 
 ### Launching a stacked view at one locus
 

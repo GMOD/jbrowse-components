@@ -384,6 +384,7 @@ gap in the alignment with the element named at the indel:
 ## See also
 
 - [](/docs/user_guides/dotplot_view)
+- [](/docs/user_guides/multiway_synteny_display)
 - [Synteny visualization tutorial](/docs/tutorials/synteny_visualization)
 - [](/docs/tutorials/genomes_synteny) - hosted liftOver chains, nothing to set
   up

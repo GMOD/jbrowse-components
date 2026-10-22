@@ -235,13 +235,13 @@ single haplotype (`grape#1`):
 
 ## Three or more genomes
 
-`MCScanBlocksAdapter` and the two multi-genome PAF adapters pair with
-`MultiWaySyntenyDisplay` as well as with the two-way linear synteny view above —
-it draws one lane per assembly, each in the local coordinates of that assembly,
-with ribbons connecting orthologs between adjacent lanes rather than anchoring
-every assembly against one reference. The display's lane order, coloring and the
-rest of its config are covered in
-[grouping and lane order](/docs/config_guides/grouping_and_ordering#multiway-synteny).
+`MCScanBlocksAdapter`, the two multi-genome PAF adapters and
+`MultiPairwiseSyntenyAdapter` draw in the two-way linear synteny view and in
+`MultiWaySyntenyDisplay`, one lane per assembly under a linear genome view. The
+[multi-way synteny display guide](/docs/user_guides/multiway_synteny_display)
+says which lanes each adapter's ribbons join, and
+[grouping and lane order](/docs/config_guides/grouping_and_ordering#multiway-synteny)
+has the display's `rows` config.
 
 ## Building a table for MCScanBlocksAdapter
 

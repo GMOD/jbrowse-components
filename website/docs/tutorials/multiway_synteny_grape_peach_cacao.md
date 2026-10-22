@@ -397,29 +397,11 @@ config, so name your own `trackId` instead):
 
 <Figure caption="The grape gene track above multi-way lanes from one MCScan blocks track. A chain of ribbons bridges past a lane that places nothing." src="/img/multiway_synteny/lgv_track_lanes.png" />
 
-### What a lane header shows
-
-Each lane has a separate scale, shown in its header:
-
-- the left end shows where the lane starts, with `[rev]` where its gene order
-  runs against grape's
-- the right end shows how much sequence the lane spans, and that span as a
-  multiple of the grape span
-- the ticks fall at one interval shared by every mate lane
-
-The view gridlines stop at the grape lane, the one lane they fit. A lane with no
-readable gene track (GFF3, GTF, BigBed or BED) outlines the gene spans from the
-table, labeled `no annotation`.
-
-### Ordering the lanes
-
-In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
-one lane per value of a field, here the genome.
-
-- `rows.sort` pins the lanes it names to the top; the rest follow densest-first,
-  so the order holds across a pan
-- With **Show... → Ribbons across gaps** off, a sparse lane mid-stack cuts every
-  chain running through it
+Each lane header gives the lane's start, with `[rev]` where its gene order runs
+against grape's, and its span as a multiple of the grape window. `rows.sort` in
+the session above pins peach and cacao to the top. The
+[multi-way synteny display guide](/docs/user_guides/multiway_synteny_display)
+covers the headers, lane order and lane menus.
 
 ### Zooming the lanes to a few genes
 
@@ -442,13 +424,6 @@ Two routes open a stacked synteny view from the lanes:
   view**. The dialog opens a row per genome, grape already seated between peach
   and cacao for the [reference-in-the-middle](#direct-vs-transitive-pairs)
   layout, with arrows to reorder them
-
-The ⋮ on a lane header, or a right-click on its name, opens the lane menu.
-**Re-anchor on peach** turns the track around on that genome, and **Open peach
-at the matching region** opens peach in a linear genome view, with its gene
-track.
-
-<Figure caption="The lane header menu." src="/img/multiway_synteny/lane_header_menu.png" />
 
 <Video src="/media/synteny/restack_around_locus.mp4" caption="Restacking around one grape locus: a scale-bar selection raises Launch, and the dialog lists a panel per genome with grape between its two mates." />
 
