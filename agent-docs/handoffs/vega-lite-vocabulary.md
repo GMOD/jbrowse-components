@@ -5,6 +5,11 @@ description: "ADR-238's migration of every display's settings to Vega-Lite's wor
 
 # Vega-Lite vocabulary: what is left
 
+The alignments displays' end state, slot by slot, and its amendments to
+ADR-238 are
+[ADR-240](../architecture-decision-records/adr-240-the-alignments-display-speaks-vega-lite.md);
+its order of work slots into the steps below.
+
 [ADR-238](../architecture-decision-records/adr-238-every-display-speaks-vega-lite.md)
 holds the decided end state. This file tracks the order of work. Other
 sessions reshaping a display's settings meanwhile should write the ADR's

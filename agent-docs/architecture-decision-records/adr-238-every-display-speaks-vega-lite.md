@@ -12,6 +12,12 @@ slot paths (ADR-120). Amended the same day: a part turns off through its
 `show` member, not `null`, once building the synteny view's `offscreen` part
 showed the config system reading `null` as "reset to the default".
 
+Amended 2026-10-22 by [ADR-240](adr-240-the-alignments-display-speaks-vega-lite.md),
+the alignments stage: a written `filter` list merges with the defaults by
+field, a link's width is `strokeWidth`, `autosize` is not borrowed,
+`scale: 'none'` goes with no value-beats-field rule, `scale.name` becomes
+`scale.group`, and per-value names are `scale.names`.
+
 Colin's steer, on a review of the linear synteny view's settings: aim for
 ideal grammar-of-graphics terms rather than house ones ("things like
 'minLength' are exactly the types of things that concern me"), elegance over
