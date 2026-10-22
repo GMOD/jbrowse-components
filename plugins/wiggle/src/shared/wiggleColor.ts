@@ -5,7 +5,10 @@ import {
 import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { withImpliedField } from '@jbrowse/core/util/colorScale'
 import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
-import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  colorEncodingOf,
+  colorSnapshotOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { MAX_WIGGLE_CUTS } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
@@ -14,7 +17,17 @@ import {
   WIGGLE_IMPLIED_FIELD,
 } from './wiggleColorConfigSchema.ts'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+
+/**
+ * The `encoding.color` channel as written, the key's `scale.names` and
+ * `legend.title` with it. The channel names no field, so `field` is `''`
+ * until `paintedWiggleColor` implies `score`.
+ */
+export function wiggleColorSettingOf(color: AnyConfigurationModel) {
+  return { ...colorSnapshotOf(color), field: '' } as ColorSetting
+}
 
 function lutColor(lut: Uint8Array, entry: number) {
   return `rgb(${lut[entry * 4]},${lut[entry * 4 + 1]},${lut[entry * 4 + 2]})`
@@ -49,19 +62,35 @@ export function scoreGradientPaints(wiggleColor: ResolvedWiggleColor) {
 }
 
 /**
+ * Whether `encoding.color` says what paints: a `value`, or a scale member
+ * other than the key's `names`.
+ */
+export function wiggleColorWritten({
+  value,
+  scale: { names: _names, ...painted },
+}: ColorSetting) {
+  return (
+    value !== undefined ||
+    Object.values(painted).some(v =>
+      Array.isArray(v) ? v.length > 0 : v !== undefined,
+    )
+  )
+}
+
+/**
  * How a plot spends color, for the model and `wiggleTables` alike. A written
- * `color` paints every mark, and so does a gradient. Unset, a source's marks
- * take its row color.
+ * `encoding.color` paints every mark, and so does a gradient. Unset, a
+ * source's marks take its row color.
  */
 export function wiggleMarkColoring({
   colorSetting,
   wiggleColor,
 }: {
-  colorSetting: { value?: unknown; field?: string }
+  colorSetting: ColorSetting
   wiggleColor: ResolvedWiggleColor
 }) {
   const gradientPaints = scoreGradientPaints(wiggleColor)
-  const written = colorSetting.value !== undefined || !!colorSetting.field
+  const written = wiggleColorWritten(colorSetting)
   return { gradientPaints, rowColorPaintsMarks: !written && !gradientPaints }
 }
 
@@ -110,51 +139,55 @@ export function wiggleColorEncoding(color: ColorSetting) {
 export const WIGGLE_SPAN_MIDDLE = '#ffffff'
 
 /**
- * The two colors a `score` color with no `scale` names, below and above the
- * `origin`: its two-color `range`, else the defaults. Undefined where it names
- * a `scheme` or more stops, which only a ramp can paint.
+ * The two colors a score color with no `scale.type` names, below and above
+ * the `origin`: its two-color `scale.range`, else the defaults. Undefined
+ * where it names a `scale.scheme` or more stops, which only a ramp can paint.
  */
-export function wigglePairOf(color: ColorSetting) {
-  return color.value !== undefined || color.scale || color.scheme
+export function wigglePairOf({ value, scale }: ColorSetting) {
+  return value !== undefined || scale.type || scale.scheme
     ? undefined
-    : color.range.length === 2
-      ? { below: color.range[0]!, above: color.range[1]! }
-      : color.range.length === 0
+    : scale.range.length === 2
+      ? { below: scale.range[0]!, above: scale.range[1]! }
+      : scale.range.length === 0
         ? { below: WIGGLE_NEG_COLOR_DEFAULT, above: WIGGLE_POS_COLOR_DEFAULT }
         : undefined
 }
 
 /**
- * The `color` object as it paints. A `score` color with no `scale` is the
- * pair about the `origin` (`wigglePairOf`), which every mark draws in its own
- * idiom: bars, points and lines paint it solid either side of the cut, a
- * threshold, and a heatmap (`span`) fades to it from white at the origin, a
- * `linear` ramp with its middle stop there (`domainMid` moves it). A written
- * `threshold` paints solid bands and a written `linear` a ramp on every mark.
+ * The `encoding.color` channel as it paints. A score color with no
+ * `scale.type` is the pair about the `origin` (`wigglePairOf`), which every
+ * mark draws in its own idiom: bars, points and lines paint it solid either
+ * side of the cut, a threshold, and a heatmap (`span`) fades to it from white
+ * at the origin, a `linear` ramp with its middle stop there
+ * (`scale.domainMid` moves it). A written `threshold` paints solid bands and
+ * a written `linear` a ramp on every mark.
  */
 export function paintedWiggleColor<C extends ColorSetting>(
   color: C,
   { span, origin }: { span: boolean; origin: number },
 ): C {
   const implied = withImpliedField(color, WIGGLE_IMPLIED_FIELD)
-  if (!span || color.value !== undefined || color.scale) {
+  if (!span || color.value !== undefined || color.scale.type) {
     return implied
   }
   const pair = wigglePairOf(color)
   return {
     ...implied,
-    scale: 'linear',
-    ...(pair
-      ? {
-          range: [pair.below, WIGGLE_SPAN_MIDDLE, pair.above],
-          domainMid: color.domainMid ?? origin,
-        }
-      : {}),
+    scale: {
+      ...color.scale,
+      type: 'linear',
+      ...(pair
+        ? {
+            range: [pair.below, WIGGLE_SPAN_MIDDLE, pair.above],
+            domainMid: color.scale.domainMid ?? origin,
+          }
+        : {}),
+    },
   }
 }
 
 /**
- * What the `color` object says beside the schema's rules that the plot cannot
+ * What `encoding.color` says beside the schema's rules that the plot cannot
  * paint as written: threshold cuts past the ones the shader reads, and one
  * color on a heatmap, which paints it flat.
  */
@@ -166,12 +199,12 @@ export function wiggleColorProblems(color: ColorSetting, rendering: string) {
   return [
     ...(cuts > MAX_WIGGLE_CUTS
       ? [
-          `color.domain: a wiggle threshold reads at most ${MAX_WIGGLE_CUTS} cuts, and the ${cuts - MAX_WIGGLE_CUTS} past them draw no band`,
+          `encoding.color.scale.domain: a wiggle threshold reads at most ${MAX_WIGGLE_CUTS} cuts, and the ${cuts - MAX_WIGGLE_CUTS} past them draw no band`,
         ]
       : []),
     ...(rendering === 'density' && typeof encoding !== 'object'
       ? [
-          'color: one color paints a heatmap flat; a two-color range fades to it from white at the origin',
+          'encoding.color: one color paints a heatmap flat; a two-color scale.range fades to it from white at the origin',
         ]
       : []),
   ]
@@ -212,7 +245,7 @@ export function resolveWiggleColor(
     return solid(encoding ?? WIGGLE_POS_COLOR_DEFAULT, origin)
   }
   switch (encoding.scale) {
-    case 'categorical':
+    case 'ordinal':
       return solid(MISCONFIGURED_COLOR, origin)
     case 'threshold': {
       const declared = declaredCuts(encoding)

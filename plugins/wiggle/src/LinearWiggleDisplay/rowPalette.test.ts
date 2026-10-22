@@ -57,7 +57,7 @@ describe('an overlay of several subtracks deals tableau10 by name', () => {
   it('deals nothing under None, every subtrack in the plot color', () => {
     const display = makeDisplay({
       rows: false,
-      displayConfig: { rowColor: { unknown: '' } },
+      displayConfig: { rowColor: { scale: { unknown: '' } } },
     })
     expect(rowColors(display)).toEqual([undefined, undefined, undefined])
     expect(display.rowColorChoice).toBe('')
@@ -67,7 +67,9 @@ describe('an overlay of several subtracks deals tableau10 by name', () => {
     const display = makeDisplay({
       rows: false,
       displayConfig: {
-        rowColor: { domain: ['b'], range: ['#123456'], unknown: '#cccccc' },
+        rowColor: {
+          scale: { domain: ['b'], range: ['#123456'], unknown: '#cccccc' },
+        },
       },
     })
     expect(rowColors(display)).toEqual(['#cccccc', '#123456', '#cccccc'])
@@ -77,7 +79,7 @@ describe('an overlay of several subtracks deals tableau10 by name', () => {
   it('deals nothing over a declared color', () => {
     const display = makeDisplay({
       rows: false,
-      displayConfig: { color: 'darkgreen' },
+      displayConfig: { encoding: { color: { value: 'darkgreen' } } },
     })
     expect(display.rowPaletteDeals).toBe(false)
     expect(display.rowPaletteDeals).toBe(false)
@@ -113,7 +115,9 @@ describe('a row per subtrack deals no palette', () => {
   it('paints a row rowColor or the file gives a color', () => {
     const display = makeDisplay({
       names: [],
-      displayConfig: { rowColor: { domain: ['b'], range: ['#123456'] } },
+      displayConfig: {
+        rowColor: { scale: { domain: ['b'], range: ['#123456'] } },
+      },
     })
     display.setRpcData(
       0,

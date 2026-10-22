@@ -31,7 +31,9 @@ test('a row per source defaults to the pos/neg pair about the origin', () => {
 // score through it, where the pair used to swallow it.
 test('a bare color writing a scale paints score through it', () => {
   const display = makeDisplay(['a'], true)
-  display.applyPlot({ color: { scale: 'linear', scheme: 'viridis' } })
+  display.applyPlot({
+    encoding: { color: { scale: { type: 'linear', scheme: 'viridis' } } },
+  })
   expect(display.colorEncoding).toMatchObject({
     field: 'score',
     scale: 'linear',
@@ -43,11 +45,17 @@ test('a bare color writing a scale paints score through it', () => {
 // schema's implied field, and a written constant is not score.
 test("the plot's notices read a bare color as score and a constant as no field", () => {
   const display = makeDisplay(['a'], true)
-  expect(display.plotProblems({ color: { domain: ['2', '1'] } })).toEqual([
-    expect.stringMatching(/^color\.domain: threshold cuts/),
+  expect(
+    display.plotProblems({
+      encoding: { color: { scale: { domain: ['2', '1'] } } },
+    }),
+  ).toEqual([
+    expect.stringMatching(/^encoding\.color\.scale\.domain: threshold cuts/),
   ])
   expect(
-    display.plotProblems({ color: { value: 'red', domain: ['2', '1'] } }),
+    display.plotProblems({
+      encoding: { color: { value: 'red', scale: { domain: ['2', '1'] } } },
+    }),
   ).toEqual([])
 })
 
@@ -58,7 +66,7 @@ test('one source in a shared plot keeps the pair, several take a color each', ()
 
 test('a written color wins over the layout, whatever it is', () => {
   const display = makeDisplay(['a', 'b'], false)
-  display.applyPlot({ color: 'green' })
+  display.applyPlot({ encoding: { color: { value: 'green' } } })
   expect(display.rowPaletteDeals).toBe(false)
   expect(display.wiggleColor.posColor).toBe('green')
 })
@@ -69,7 +77,7 @@ test('a written color wins over the layout, whatever it is', () => {
 test('the circular key reads the color the plot paints', () => {
   const display = makeDisplay(['a'], true)
   expect(display.legendColor).toBe(WIGGLE_POS_COLOR_DEFAULT)
-  display.applyPlot({ color: 'green' })
+  display.applyPlot({ encoding: { color: { value: 'green' } } })
   expect(display.legendColor).toBe('green')
 })
 
@@ -84,11 +92,14 @@ test('a declared threshold draws a key, the layout default draws none', () => {
   expect(display.colorScales.map(s => s.id)).not.toContain('threshold')
 
   display.applyPlot({
-    color: {
-      field: 'score',
-      scale: 'threshold',
-      domain: ['2'],
-      range: ['#2166ac', '#b2182b'],
+    encoding: {
+      color: {
+        scale: {
+          type: 'threshold',
+          domain: ['2'],
+          range: ['#2166ac', '#b2182b'],
+        },
+      },
     },
   })
   const key = display.colorScales.find(s => s.id === 'threshold')
@@ -102,34 +113,29 @@ test('a declared threshold draws a key, the layout default draws none', () => {
 test('the plot reads back what was written', () => {
   const display = makeDisplay(['a'], true)
   display.applyPlot({
-    color: {
-      field: 'score',
-      scale: 'linear',
-      scheme: 'viridis',
-      reverse: true,
+    encoding: {
+      color: { scale: { type: 'linear', scheme: 'viridis', reverse: true } },
     },
   })
-  expect(display.plot.color).toEqual({
-    field: 'score',
-    scale: 'linear',
-    scheme: 'viridis',
-    reverse: true,
+  expect(display.plot.encoding).toEqual({
+    color: { scale: { type: 'linear', scheme: 'viridis', reverse: true } },
   })
-  display.applyPlot({ color: 'green' })
-  expect(display.plot.color).toBe('green')
+  display.applyPlot({ encoding: { color: { value: 'green' } } })
+  expect(display.plot.encoding).toEqual({ color: { value: 'green' } })
 })
 
-// A subtrack's color is `rowColor`'s, so `source` is no color field and
-// `categorical` no color scale here.
-test('the color reads score alone and refuses any other field or a categorical scale', () => {
+// The channel colors the score it plots, and a subtrack's color is
+// `rowColor`'s, so it takes no field and no ordinal scale.
+test('the color refuses a field, a bare string and an ordinal scale', () => {
   const display = makeDisplay(['a'], true)
   for (const color of [
-    { field: 'pvalue', scale: 'threshold' },
-    { field: 'source' },
-    { field: 'score', scale: 'categorical' },
+    { field: 'pvalue', scale: { type: 'threshold' } },
+    { field: 'score' },
+    'source',
+    { scale: { type: 'ordinal' } },
   ] as const) {
     expect(() => {
-      display.applyPlot({ color })
+      display.applyPlot({ encoding: { color } })
     }).toThrow()
   }
 })
@@ -137,13 +143,16 @@ test('the color reads score alone and refuses any other field or a categorical s
 test("a threshold key takes color's title and a label per interval", () => {
   const display = makeDisplay(['a'], true)
   display.applyPlot({
-    color: {
-      field: 'score',
-      scale: 'threshold',
-      domain: ['2'],
-      range: ['#2166ac', '#b2182b'],
-      labels: ['loss'],
-      title: 'log2 ratio',
+    encoding: {
+      color: {
+        scale: {
+          type: 'threshold',
+          domain: ['2'],
+          range: ['#2166ac', '#b2182b'],
+          names: ['loss'],
+        },
+        legend: { title: 'log2 ratio' },
+      },
     },
   })
   const key = display.colorScales.find(s => s.id === 'threshold')
@@ -157,11 +166,14 @@ test("a threshold key takes color's title and a label per interval", () => {
 test('a threshold paints a band per cut, sorted as every threshold scale sorts them', () => {
   const display = makeDisplay(['a'], true)
   display.applyPlot({
-    color: {
-      field: 'score',
-      scale: 'threshold',
-      domain: ['5', '2'],
-      range: ['blue', 'grey', 'red'],
+    encoding: {
+      color: {
+        scale: {
+          type: 'threshold',
+          domain: ['5', '2'],
+          range: ['blue', 'grey', 'red'],
+        },
+      },
     },
   })
   expect(display.wiggleColor.cuts).toEqual([2, 5])
@@ -178,7 +190,7 @@ test('a threshold paints a band per cut, sorted as every threshold scale sorts t
 test('a threshold cut moves the color, and the bars still grow from the origin', () => {
   const display = makeDisplay(['a'], true)
   display.applyPlot({
-    color: { field: 'score', scale: 'threshold', domain: ['2'] },
+    encoding: { color: { scale: { type: 'threshold', domain: ['2'] } } },
   })
   const state = makeWiggleRenderState(display, {
     width: 100,
@@ -191,16 +203,21 @@ test('a threshold cut moves the color, and the bars still grow from the origin',
 test('a threshold range that does not fit its cuts is a notice', () => {
   const { createDisplay } = createTestEnvironment({
     displayConfig: {
-      color: {
-        field: 'score',
-        scale: 'threshold',
-        domain: ['0', '2'],
-        range: ['red', 'blue'],
+      encoding: {
+        color: {
+          scale: {
+            type: 'threshold',
+            domain: ['0', '2'],
+            range: ['red', 'blue'],
+          },
+        },
       },
     },
   })
   expect(createDisplay().display.notices).toEqual([
-    expect.stringMatching(/^color\.range: 2 threshold cuts make 3 intervals/),
+    expect.stringMatching(
+      /^encoding\.color\.scale\.range: 2 threshold cuts make 3 intervals/,
+    ),
   ])
 })
 
@@ -231,14 +248,14 @@ function scoredDisplay(sources: { name: string; color?: string }[]) {
 const scoreKey = (display: ReturnType<typeof scoredDisplay>) =>
   display.colorScales.find(s => s.id === 'score')
 
-const viridis = { field: 'score', scale: 'linear', scheme: 'viridis' } as const
+const viridis = { scale: { type: 'linear', scheme: 'viridis' } } as const
 
 test.each(['bar', 'point'] as const)(
   'a gradient on %s keys its ramp, into the export too, and keeps the axis',
   mark => {
     const display = scoredDisplay([{ name: 'a' }])
     display.setMark(mark)
-    display.applyPlot({ color: viridis })
+    display.applyPlot({ encoding: { color: viridis } })
     expect(display.domain).toBeDefined()
     expect(scoreKey(display)?.kind).toBe('ramp')
     expect(display.legendSpec.sections.map(s => s.id)).toContain('score')
@@ -249,12 +266,12 @@ test.each(['bar', 'point'] as const)(
 
 test.each([
   ['the default pair', undefined],
-  ['a threshold', { field: 'score', scale: 'threshold', domain: ['2'] }],
-  ['a solid color', 'green'],
+  ['a threshold', { scale: { type: 'threshold', domain: ['2'] } }],
+  ['a solid color', { value: 'green' }],
 ] as const)('%s on xyplot draws no gradient key', (_name, color) => {
   const display = scoredDisplay([{ name: 'a' }])
   if (color !== undefined) {
-    display.applyPlot({ color })
+    display.applyPlot({ encoding: { color } })
   }
   expect(display.domain).toBeDefined()
   expect(scoreKey(display)).toBeUndefined()
@@ -292,7 +309,7 @@ test('a gradient keys its ramp over rows with their own colors, which keep their
   expect(scoreKey(display)).toBeUndefined()
   expect(display.rowColorPaintsMarks).toBe(true)
   expect(display.sources.map(s => s.rowColor)).toEqual(['#ff0000', '#0000ff'])
-  display.applyPlot({ color: viridis })
+  display.applyPlot({ encoding: { color: viridis } })
   expect(scoreKey(display)?.kind).toBe('ramp')
   expect(display.rowColorPaintsMarks).toBe(false)
   expect(display.sources.map(s => s.rowColor)).toEqual(['#ff0000', '#0000ff'])
@@ -302,7 +319,7 @@ test('a gradient keys its ramp over rows with their own colors, which keep their
 test('a gradient on a line keys its ramp and raises no notice', () => {
   const display = scoredDisplay([{ name: 'a' }])
   display.setMark('line')
-  display.applyPlot({ color: viridis })
+  display.applyPlot({ encoding: { color: viridis } })
   expect(scoreKey(display)?.kind).toBe('ramp')
   expect(display.scoreGradientPaints).toBe(true)
   expect(display.notices).toEqual([])
@@ -321,18 +338,18 @@ test("the corner notice reads scales.y's ends by the color ramp's rule", () => {
 // own way: bars as a threshold, a heatmap as a ramp through white at the
 // origin. A written scale keeps its meaning on a heatmap too.
 describe('a heatmap reads the pair as a fade and a written scale as written', () => {
-  const heatmap = (color?: string | Record<string, unknown>) => {
+  const heatmap = (color?: Record<string, unknown>) => {
     const display = makeDisplay(['a'], true)
     display.setMark('span')
     if (color !== undefined) {
-      display.applyPlot({ color })
+      display.applyPlot({ encoding: { color } })
     }
     return display
   }
 
   test.each([
     ['unset', undefined],
-    ['the field alone', { field: 'score' }],
+    ['an empty channel', {}],
   ])('%s fades from white at the origin to the defaults', (_, color) => {
     expect(heatmap(color).colorEncoding).toMatchObject({
       scale: 'linear',
@@ -342,7 +359,7 @@ describe('a heatmap reads the pair as a fade and a written scale as written', ()
   })
 
   test('a two-color range fades to its colors, white following the origin', () => {
-    const display = heatmap({ range: ['#2166ac', '#b2182b'] })
+    const display = heatmap({ scale: { range: ['#2166ac', '#b2182b'] } })
     display.setOrigin(2)
     expect(display.colorEncoding).toMatchObject({
       scale: 'linear',
@@ -353,25 +370,29 @@ describe('a heatmap reads the pair as a fade and a written scale as written', ()
     expect(display.colorEncoding).toMatchObject({ scale: 'threshold' })
   })
 
-  test('a written threshold paints solid bands, without the field', () => {
+  test('a written threshold paints solid bands', () => {
     const display = heatmap({
-      scale: 'threshold',
-      domain: ['1', '3'],
-      range: ['#000', '#888', '#fff'],
+      scale: {
+        type: 'threshold',
+        domain: ['1', '3'],
+        range: ['#000', '#888', '#fff'],
+      },
     })
     expect(display.colorEncoding).toMatchObject({ scale: 'threshold' })
     expect(display.wiggleColor.rampLut).toBeNull()
   })
 
   test('a scheme without a scale is that ramp, not the pair', () => {
-    expect(heatmap({ scheme: 'viridis' }).colorEncoding).toMatchObject({
+    expect(
+      heatmap({ scale: { scheme: 'viridis' } }).colorEncoding,
+    ).toMatchObject({
       scale: 'linear',
       scheme: 'viridis',
     })
   })
 
   test('one color paints the heatmap flat and says so', () => {
-    const display = heatmap('green')
+    const display = heatmap({ value: 'green' })
     expect(display.wiggleColor.rampLut).toBeNull()
     expect(display.configProblemsOf(display.configuration).join('\n')).toMatch(
       /paints a heatmap flat/,

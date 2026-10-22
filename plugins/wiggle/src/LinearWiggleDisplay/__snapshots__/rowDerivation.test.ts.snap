@@ -3,15 +3,19 @@
 exports[`overlay: adapter colors paint the plot 1`] = `
 {
   "effectiveColor": {
-    "domain": [],
-    "domainMid": undefined,
     "field": "score",
-    "labels": [],
-    "range": [],
-    "reverse": undefined,
-    "scale": undefined,
-    "scheme": undefined,
-    "title": undefined,
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
     "value": undefined,
   },
   "isOverlay": true,
@@ -69,15 +73,19 @@ exports[`overlay: adapter colors paint the plot 1`] = `
 exports[`overlay: rowColor's spare range leads the palette 1`] = `
 {
   "effectiveColor": {
-    "domain": [],
-    "domainMid": undefined,
     "field": "score",
-    "labels": [],
-    "range": [],
-    "reverse": undefined,
-    "scale": undefined,
-    "scheme": undefined,
-    "title": undefined,
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
     "value": undefined,
   },
   "isOverlay": true,
@@ -148,15 +156,19 @@ exports[`overlay: rowColor's spare range leads the palette 1`] = `
 exports[`overlay: tableau10 by name, grouped or not 1`] = `
 {
   "effectiveColor": {
-    "domain": [],
-    "domainMid": undefined,
     "field": "score",
-    "labels": [],
-    "range": [],
-    "reverse": undefined,
-    "scale": undefined,
-    "scheme": undefined,
-    "title": undefined,
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
     "value": undefined,
   },
   "isOverlay": true,
@@ -227,19 +239,23 @@ exports[`overlay: tableau10 by name, grouped or not 1`] = `
 exports[`rows, density: a dialog edit tints the label 1`] = `
 {
   "effectiveColor": {
-    "domain": [],
-    "domainMid": 0,
     "field": "score",
-    "labels": [],
-    "range": [
-      "#e01e26",
-      "#ffffff",
-      "#0068d1",
-    ],
-    "reverse": undefined,
-    "scale": "linear",
-    "scheme": undefined,
-    "title": undefined,
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": 0,
+      "names": [],
+      "range": [
+        "#e01e26",
+        "#ffffff",
+        "#0068d1",
+      ],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": "linear",
+    },
     "value": undefined,
   },
   "isOverlay": false,
@@ -289,19 +305,23 @@ exports[`rows, density: a dialog edit tints the label 1`] = `
 exports[`rows, density: identity moves to the label tint 1`] = `
 {
   "effectiveColor": {
-    "domain": [],
-    "domainMid": 0,
     "field": "score",
-    "labels": [],
-    "range": [
-      "#e01e26",
-      "#ffffff",
-      "#0068d1",
-    ],
-    "reverse": undefined,
-    "scale": "linear",
-    "scheme": undefined,
-    "title": undefined,
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": 0,
+      "names": [],
+      "range": [
+        "#e01e26",
+        "#ffffff",
+        "#0068d1",
+      ],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": "linear",
+    },
     "value": undefined,
   },
   "isOverlay": false,
@@ -351,15 +371,19 @@ exports[`rows, density: identity moves to the label tint 1`] = `
 exports[`rows, line: dialog edits reorder, recolor the plot and relabel 1`] = `
 {
   "effectiveColor": {
-    "domain": [],
-    "domainMid": undefined,
     "field": "score",
-    "labels": [],
-    "range": [],
-    "reverse": undefined,
-    "scale": undefined,
-    "scheme": undefined,
-    "title": undefined,
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
     "value": undefined,
   },
   "isOverlay": false,
@@ -409,15 +433,19 @@ exports[`rows, line: dialog edits reorder, recolor the plot and relabel 1`] = `
 exports[`rows, line: dialog edits reorder, recolor the plot and relabel 2`] = `
 {
   "effectiveColor": {
-    "domain": [],
-    "domainMid": undefined,
     "field": "score",
-    "labels": [],
-    "range": [],
-    "reverse": undefined,
-    "scale": undefined,
-    "scheme": undefined,
-    "title": undefined,
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
     "value": undefined,
   },
   "isOverlay": false,
@@ -467,15 +495,19 @@ exports[`rows, line: dialog edits reorder, recolor the plot and relabel 2`] = `
 exports[`rows, line: the adapter color, else the plot color 1`] = `
 {
   "effectiveColor": {
-    "domain": [],
-    "domainMid": undefined,
     "field": "score",
-    "labels": [],
-    "range": [],
-    "reverse": undefined,
-    "scale": undefined,
-    "scheme": undefined,
-    "title": undefined,
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
     "value": undefined,
   },
   "isOverlay": false,
@@ -525,15 +557,19 @@ exports[`rows, line: the adapter color, else the plot color 1`] = `
 exports[`rows: a focus hides rows without recoloring the kept ones 1`] = `
 {
   "effectiveColor": {
-    "domain": [],
-    "domainMid": undefined,
     "field": "score",
-    "labels": [],
-    "range": [],
-    "reverse": undefined,
-    "scale": undefined,
-    "scheme": undefined,
-    "title": undefined,
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
     "value": undefined,
   },
   "isOverlay": false,
@@ -578,15 +614,19 @@ exports[`rows: a focus hides rows without recoloring the kept ones 1`] = `
 exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the seed 1`] = `
 {
   "effectiveColor": {
-    "domain": [],
-    "domainMid": undefined,
     "field": "score",
-    "labels": [],
-    "range": [],
-    "reverse": undefined,
-    "scale": undefined,
-    "scheme": undefined,
-    "title": undefined,
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
     "value": undefined,
   },
   "isOverlay": false,
@@ -636,15 +676,19 @@ exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the 
 exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the seed 2`] = `
 {
   "effectiveColor": {
-    "domain": [],
-    "domainMid": undefined,
     "field": "score",
-    "labels": [],
-    "range": [],
-    "reverse": undefined,
-    "scale": undefined,
-    "scheme": undefined,
-    "title": undefined,
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
     "value": undefined,
   },
   "isOverlay": false,
@@ -694,15 +738,19 @@ exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the 
 exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the seed 3`] = `
 {
   "effectiveColor": {
-    "domain": [],
-    "domainMid": undefined,
     "field": "score",
-    "labels": [],
-    "range": [],
-    "reverse": undefined,
-    "scale": undefined,
-    "scheme": undefined,
-    "title": undefined,
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
     "value": undefined,
   },
   "isOverlay": false,
@@ -752,15 +800,19 @@ exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the 
 exports[`rows: the declared order leads and the rest keep adapter order 1`] = `
 {
   "effectiveColor": {
-    "domain": [],
-    "domainMid": undefined,
     "field": "score",
-    "labels": [],
-    "range": [],
-    "reverse": undefined,
-    "scale": undefined,
-    "scheme": undefined,
-    "title": undefined,
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
     "value": undefined,
   },
   "isOverlay": false,

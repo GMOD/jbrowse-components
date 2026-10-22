@@ -30,7 +30,7 @@ export default observer(function WiggleSetColorDialog({
   // One subtrack has nothing to arrange, so the dialog is the plot's colors
   // and the buttons — which is the whole color UI a plain BigWig needs.
   const showRows = model.discoveredRows.length > 1
-  const { line, edit } = plotColorOf(model)
+  const { line, edit, parkable } = plotColorOf(model)
   return (
     <SetColorDialog
       model={model}
@@ -48,8 +48,8 @@ export default observer(function WiggleSetColorDialog({
               reason: line.reason,
               onSubmit: next => {
                 const color = edit(next)
-                model.parkColor('color', model.colorSetting, color)
-                model.applyPlot({ color })
+                model.parkColor('color', parkable, color)
+                model.applyPlot({ encoding: { color } })
               },
             }
       }
