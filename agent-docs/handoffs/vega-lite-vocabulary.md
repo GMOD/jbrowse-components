@@ -119,6 +119,9 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
      fits the one-glyph row displays and not the mark display, whose `y` is
      the value every mark folds into one scale and whose rows each hold a plot
      of it; there the band is Vega-Lite's `row` channel with a shared `y`.
+   - **ADR-240 step 5, `readConnections.mark` as a mark object**
+     (`{ type: 'link' | 'rule' }`, a bare name lifting to the type):
+     **claimed 2026-10-22, worktree `read-connections-mark`.**
 2. **The other filter families as predicate lists**: alignments, canvas,
    variant, MAF and junction/connection rows. The compiler fuses flag bits
    (`bits` lanes) and measures 1.5x the hand-written flag and MAPQ test alone,
