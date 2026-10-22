@@ -107,6 +107,10 @@ test('the bundle is printable ASCII and ES2020', () => {
   expect(() => parse(code, { ecmaVersion: 2020 })).not.toThrow()
 })
 
+test('the bundle carries no UI', () => {
+  expect(code).not.toMatch(/node_modules\/\.pnpm\/@mui\+/)
+})
+
 test.each([
   ['BAM', BAM],
   ['CRAM', CRAM],

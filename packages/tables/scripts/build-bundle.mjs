@@ -13,6 +13,13 @@ const names = new Set([
   ...builtinModules.map(m => `node:${m}`),
 ])
 
+// Modules a bare host never runs, stubbed to keep them out of the bundle: the
+// feature details widget, which CorePlugin imports lazily and which brings MUI
+// and the data grid, and the CRAM reader's worker source, used only where a
+// `Worker` exists.
+const NEVER_RUN =
+  /BaseFeatureWidget\/BaseFeatureDetail\/index\.tsx$|@gmod\/cram\/esm\/wasm\/cram-worker-source\.js$/
+
 // A host reads the bundle as a text file. The CRAM reader inlines its
 // htscodecs wasm as a binary string, and R on Windows failed to source the
 // bundle with those raw control bytes in it, so every byte outside printable
@@ -52,6 +59,10 @@ export async function buildBundle(outfile, minify = true) {
           )
           b.onLoad({ filter: /.*/, namespace: 'empty' }, () => ({
             contents: 'module.exports = {}',
+          }))
+          b.onLoad({ filter: NEVER_RUN }, () => ({
+            contents: 'export default undefined',
+            loader: 'js',
           }))
         },
       },
