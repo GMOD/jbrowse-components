@@ -59,7 +59,7 @@ test('a scale the display does not paint is refused', () => {
   ).toThrow()
 })
 
-test("v4's rendering names load as the mark they draw, and an unknown one is refused", () => {
+test("v4's rendering names load as the mark they draw, and an unknown one as the default", () => {
   const read = (defaultRendering: string) => {
     const conf = create({ defaultRendering })
     return [
@@ -72,7 +72,13 @@ test("v4's rendering names load as the mark they draw, and an unknown one is ref
   expect(read('density')).toEqual(['span', 'step'])
   expect(read('line')).toEqual(['line', 'step'])
   expect(read('linecenter')).toEqual(['line', 'linear'])
-  expect(() => create({ defaultRendering: 'multirowarea' })).toThrow()
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+  expect(read('multixyplot')).toEqual(['bar', 'step'])
+  expect(warn).toHaveBeenCalledWith(
+    'LinearWiggleDisplay has no rendering "multixyplot": drawing the default mark',
+  )
+  warn.mockRestore()
+  expect(read('point')).toEqual(['point', 'step'])
   expect(readConfObject(create({ mark: 'point' }), ['mark', 'type'])).toBe(
     'point',
   )

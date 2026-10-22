@@ -19,7 +19,7 @@ import {
   wiggleValueScale,
 } from '../shared/wiggleConfigSchemaFields.ts'
 import { wiggleMarkConfigSchema } from '../shared/wiggleMarkConfigSchema.ts'
-import { markOf } from '../util.ts'
+import { WIGGLE_MARK_NAMES, markOf } from '../util.ts'
 import { retiredConfigSpellings } from './retired.ts'
 
 /**
@@ -203,9 +203,17 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       ...retiredAxisSpellings,
       ...retiredScaleSpellings,
       ...retiredConfigSpellings,
-      defaultRendering: rendering => ({
-        mark: markOf(String(rendering)) ?? rendering,
-      }),
+      defaultRendering: rendering => {
+        const mark =
+          markOf(String(rendering)) ??
+          WIGGLE_MARK_NAMES.find(name => name === rendering)
+        if (!mark) {
+          console.warn(
+            `LinearWiggleDisplay has no rendering ${JSON.stringify(rendering)}: drawing the default mark`,
+          )
+        }
+        return mark ? { mark } : {}
+      },
       lineWidth: size => ({ size }),
     },
   },
