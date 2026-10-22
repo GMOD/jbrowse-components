@@ -240,7 +240,7 @@ const FACET = { field: 'species' }
 const CELLS_ENCODING: MarkEncodingInput = {
   color: {
     field: 'state',
-    scale: 'categorical',
+    scale: 'ordinal',
     domain: ['match', 'mismatch', 'gap', 'insertion'],
     range: ['#d9d9d9', '#e41a1c', '#404040', '#984ea3'],
   },

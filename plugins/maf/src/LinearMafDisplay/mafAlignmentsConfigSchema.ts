@@ -9,8 +9,8 @@ import { mafReferenceRowConfigSchema } from './mafReferenceRowConfigSchema.ts'
  * #category display
  * The MAF display's `alignments` setting: the per-species rows, the band that
  * takes the height the bands above it leave, and the parts drawn over them.
- * Letters draw over every cell `color` paints with its base's color, so
- * `color: 'base'` letters every base and `mismatch` only the mismatches; they
+ * Letters draw over every cell `encoding.color` paints with its base's color,
+ * so `encoding: { color: 'base' }` letters every base and `mismatch` only the mismatches; they
  * keep the case the file gives them, lowercase being soft-masked repeat in a
  * UCSC alignment.
  *

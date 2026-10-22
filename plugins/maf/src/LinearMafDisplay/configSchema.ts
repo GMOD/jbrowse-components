@@ -1,6 +1,7 @@
 import { coverageBandConfigSchema } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
@@ -11,7 +12,7 @@ import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { DEFAULTS } from './displayDefaults.ts'
 import { mafAlignmentsConfigSchema } from './mafAlignmentsConfigSchema.ts'
-import { mafColorConfigSchema } from './mafColorConfigSchema.ts'
+import { mafEncodingConfigSchema } from './mafColorConfigSchema.ts'
 import { mafConservationConfigSchema } from './mafConservationConfigSchema.ts'
 import { MAF_Y_FIELDS } from './rowRenderings.ts'
 
@@ -20,8 +21,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * The v4 mafviewer plugin's row settings, top-level there. Letters now follow
- * `color` and keep the file's case, so the two letter settings lift to
- * nothing.
+ * `encoding.color` and keep the file's case, so the two letter settings lift
+ * to nothing.
  */
 const retiredMafSpellings: Record<string, RetiredSpelling> = {
   rowProportion: v => ({ alignments: { rowProportion: v } }),
@@ -82,21 +83,21 @@ export default function configSchemaF() {
       }),
       ...rowHeightConfigSchemaFields(),
       /**
-       * #slot color
-       * The field that colors the aligned cells; see
-       * [MafColor](../mafcolor).
+       * #slot encoding
+       * The channels the aligned cells paint through: `encoding.color`, the
+       * field that colors them; see [MafColor](../mafcolor).
        *
        * #example
        * ```js
-       * { color: 'identity' }
+       * { encoding: { color: 'identity' } }
        * ```
        */
-      color: mafColorConfigSchema,
+      encoding: mafEncodingConfigSchema,
       /**
        * #slot
        * Unset, each row is one band of cells. `identity` draws each row as a
        * bar chart of its identity to the reference, the bars painted by
-       * `color` where it is `identity` and in one color otherwise.
+       * `encoding.color` where it is `identity` and in one color otherwise.
        */
       y: {
         type: 'maybeStringEnum',
@@ -132,23 +133,18 @@ export default function configSchemaF() {
        *
        * #example
        * ```js
-       * { rowColor: { domain: ['mm10'], range: ['#f28e2b'] } }
+       * { rowColor: { scale: { domain: ['mm10'], range: ['#f28e2b'] } } }
        * ```
        */
       rowColor: rowColorConfigSchema,
       /**
-       * #slot
-       * Show the color key for the active row rendering: codon-change
-       * categories, source-chromosome ranks, the identity ramp and the CDS
-       * frame swatches. In `bases` mode nothing draws, since there is nothing
-       * to key.
+       * #slot legend
+       * The color key for the active row rendering: codon-change categories,
+       * source-chromosome ranks, the identity ramp and the CDS frame
+       * swatches. In `bases` mode nothing draws, since there is nothing to
+       * key.
        */
-      showLegend: {
-        type: 'boolean',
-        description:
-          'show the color key for the active row rendering. Defaults to on',
-        defaultValue: true,
-      },
+      legend: legendConfigSchema,
       /**
        * #slot coverage
        * The coverage band: `show`, `height`, `interbase` and

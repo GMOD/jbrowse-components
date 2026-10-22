@@ -200,10 +200,10 @@ function withKnownCopies(
 
 const NO_DETAIL: ReadonlyMap<number, MafRegionData> = new Map()
 
-/** A categorical field whose preset names no `range` paints the theme's. */
+/** An ordinal field whose preset names no `scale.range` paints the theme's. */
 function paintsThemeColors(field: MafColorField) {
   const preset = MAF_FIELD_PRESETS[field]
-  return preset.scale === 'categorical' && !('range' in preset)
+  return preset.scale.type === 'ordinal' && !('range' in preset.scale)
 }
 
 /**
@@ -1423,23 +1423,26 @@ export default function stateModelFactory(
            */
           configProblemsOf(conf: AnyConfigurationModel): string[] {
             const colorField: MafColorField = readConfObject(conf, [
+              'encoding',
               'color',
               'field',
             ])
             const range: readonly string[] = readConfObject(conf, [
+              'encoding',
               'color',
+              'scale',
               'range',
             ])
             return [
               ...superConfigProblemsOf(conf),
               ...(colorField === 'codon' && !self.framesAdapterConfig
                 ? [
-                    'color.field: codon needs a framesAdapter on the MAF adapter to define reading frames, so the rows paint the mismatches',
+                    'encoding.color.field: codon needs a framesAdapter on the MAF adapter to define reading frames, so the rows paint the mismatches',
                   ]
                 : []),
               ...(range.length > 0 && paintsThemeColors(colorField)
                 ? [
-                    `color.range: ${colorField} paints the theme's colors and reads no range`,
+                    `encoding.color.scale.range: ${colorField} paints the theme's colors and reads no range`,
                   ]
                 : []),
             ]

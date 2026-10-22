@@ -43,25 +43,25 @@ export function sourceChromRankLabel(rank: number): string {
  * The color key for the source-chromosome rendering: one row per rank present
  * in view, capped at the palette's last entry, where color and label both
  * saturate ("Other source"). A lone "Main chromosome" entry means nothing in
- * view is rearranged. A rank `color.labels` names takes that name, and a
- * written `color.range` its colors.
+ * view is rearranged. A rank `encoding.color.scale.names` names takes that
+ * name, and a written `scale.range` its colors.
  */
 export function sourceChromLegendItems(
   maxRank: number,
   {
     domain = [],
-    labels = [],
+    names = [],
     range = SOURCE_CHROM_PALETTE,
   }: {
     domain?: readonly (string | number)[]
-    labels?: readonly string[]
+    names?: readonly string[]
     range?: readonly string[]
   } = {},
 ): LegendItem[] {
-  const names = keyNames(domain, labels)
+  const keyed = keyNames(domain, names)
   const shown = Math.min(maxRank, range.length - 1) + 1
   return Array.from({ length: shown }, (_, rank) => ({
-    label: names.get(String(rank)) ?? sourceChromRankLabel(rank),
+    label: keyed.get(String(rank)) ?? sourceChromRankLabel(rank),
     color: range[rank]!,
   }))
 }

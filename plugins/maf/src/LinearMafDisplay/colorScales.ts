@@ -44,7 +44,7 @@ function renderedScales({
   oneBaseCells,
   maxSourceChromRank,
 }: MafColorScaleInputs): ColorScale[] {
-  const named = colorEncoding.scale === 'categorical' ? colorEncoding : {}
+  const named = colorEncoding.scale === 'ordinal' ? colorEncoding : {}
   if (rendering === 'codon') {
     return [
       categoricalScale(

@@ -17,7 +17,12 @@ function inputs(
     rendering: field,
     rowsColor: field,
     colorEncoding: colorEncodingOf(
-      { field, value: undefined, scale: undefined, domain: [], range: [] },
+      {
+        field,
+        value: undefined,
+        scale: { type: undefined, domain: [], range: [] },
+        legend: {},
+      },
       MAF_FIELD_PRESETS,
     )!,
     colorKeyTitle: 'Key',

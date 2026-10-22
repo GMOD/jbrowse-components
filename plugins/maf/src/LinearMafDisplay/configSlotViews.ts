@@ -14,6 +14,7 @@ import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
 import type { ConservationUnit } from './conservationUnits.ts'
 import type { MafColorField, MafYField } from './rowRenderings.ts'
+import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type {
   ColorSetting,
@@ -85,39 +86,39 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get colorField(): MafColorField {
-      return getConf(self, ['color', 'field'])
+      return getConf(self, ['encoding', 'color', 'field'])
     },
     /**
      * #getter
-     * The `color` object as written, with the key's labels and title.
+     * `encoding.color` as written, with the key's names and title.
      */
     get colorSetting(): ColorSetting & { value: undefined } {
-      const { color } = self.configuration
+      const setting = colorSnapshotOf(self.configuration.encoding.color)
       return {
-        ...colorSnapshotOf(color),
+        ...setting,
         value: undefined,
-        scale: undefined,
+        scale: { ...setting.scale, type: undefined },
       }
     },
     /**
      * #getter
-     * The `color` object as it paints, through its field's preset: one
-     * scale per field, so `scale` is never written.
+     * `encoding.color` as it paints, through its field's preset: one
+     * scale per field, so `scale.type` is never written.
      */
     get colorEncoding(): FieldColorEncoding {
       return colorEncodingOf(this.colorSetting, MAF_FIELD_PRESETS)!
     },
     /**
      * #getter
-     * The key's heading: the written `title`, else the field's own.
+     * The key's heading: the written `legend.title`, else the field's own.
      */
     get colorKeyTitle(): string {
-      return withPreset(this.colorSetting, MAF_FIELD_PRESETS).title ?? ''
+      return withPreset(this.colorSetting, MAF_FIELD_PRESETS).legend.title ?? ''
     },
     /**
      * #getter
      * The identity ramp's packed color at each hundredth, the default
-     * ramp unless `color` is identity. One array per ramp, so a color
+     * ramp unless `encoding.color` is identity. One array per ramp, so a color
      * edit that leaves the ramp alone re-encodes nothing.
      */
     get identityColors(): Uint32Array {
@@ -130,27 +131,27 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * The named ramp identity paints along, the preset's where `color`
+     * The named ramp identity paints along, the preset's where `encoding.color`
      * writes none or is not identity, and none while a written `range`
      * paints instead.
      */
     get colorScheme(): ColorSchemeName | undefined {
       const color = this.colorEncoding
       return color.field !== 'identity' || color.scale !== 'linear'
-        ? MAF_FIELD_PRESETS.identity.scheme
+        ? MAF_FIELD_PRESETS.identity.scale.scheme
         : color.range?.length
           ? undefined
-          : (color.scheme ?? MAF_FIELD_PRESETS.identity.scheme)
+          : (color.scheme ?? MAF_FIELD_PRESETS.identity.scale.scheme)
     },
     /**
      * #getter
-     * Each source chromosome rank's packed color, `color.range`'s while
-     * `color` is chromosome. One array per range, as `identityColors`.
+     * Each source chromosome rank's packed color, `encoding.color.scale.range`'s while
+     * `encoding.color` is chromosome. One array per range, as `identityColors`.
      */
     get sourceChromColors(): readonly number[] {
       const color = this.colorEncoding
       return sourceChromRankColors(
-        color.field === 'chromosome' && color.scale === 'categorical'
+        color.field === 'chromosome' && color.scale === 'ordinal'
           ? color.range
           : undefined,
       )
@@ -192,17 +193,17 @@ export function configSlotActions(self: ConfigSlotSelf) {
     },
     /**
      * #action
-     * Paint identity along a named ramp, clearing a written `range`, which
+     * Paint identity along a named ramp, clearing a written `scale.range`, which
      * would win over it.
      */
     setColorScheme(scheme: ColorSchemeName) {
       setConf(
         self,
-        'color',
+        ['encoding', 'color'],
         colorForScheme(
-          getSnapshot(self.configuration.color),
+          getSnapshot<ColorSlots>(self.configuration.encoding.color),
           scheme,
-          MAF_FIELD_PRESETS.identity.scheme,
+          MAF_FIELD_PRESETS.identity.scale.scheme,
         ),
       )
     },
