@@ -50,7 +50,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1334)
+# model members with no description (1332)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -848,6 +848,7 @@ LinearHicDisplay.showResolutionControls
 LinearHicDisplay.startRenderingBackend
 LinearHicDisplay.stepResolution
 LinearHicDisplay.trackMenuItems
+LinearMafDisplay.basesRenderingActive
 LinearMafDisplay.coarseAdapterSlot
 LinearMafDisplay.colorField
 LinearMafDisplay.conservationHeight
@@ -855,29 +856,26 @@ LinearMafDisplay.conservationUnit
 LinearMafDisplay.coverageHeight
 LinearMafDisplay.coverageMinAlleleFraction
 LinearMafDisplay.fetchCoarseTier
-LinearMafDisplay.rowIdentityAutoZoom
+LinearMafDisplay.identityEncoding
 LinearMafDisplay.rowProportion
+LinearMafDisplay.rowsColor
+LinearMafDisplay.rowsY
 LinearMafDisplay.scrollViewportHeight
 LinearMafDisplay.setConservationUnit
 LinearMafDisplay.setCoverageMinAlleleFraction
-LinearMafDisplay.setRowIdentityAutoZoom
 LinearMafDisplay.setRowProportion
 LinearMafDisplay.setShowAlignments
-LinearMafDisplay.setShowAllLetters
-LinearMafDisplay.setShowAnnotations
-LinearMafDisplay.setShowAsUpperCase
 LinearMafDisplay.setShowConservation
 LinearMafDisplay.setShowCoverage
+LinearMafDisplay.setShowFrames
 LinearMafDisplay.setShowInterbaseIndicators
 LinearMafDisplay.setShowInversions
 LinearMafDisplay.setShowReferenceRow
 LinearMafDisplay.setYField
 LinearMafDisplay.showAlignments
-LinearMafDisplay.showAllLetters
-LinearMafDisplay.showAnnotations
-LinearMafDisplay.showAsUpperCase
 LinearMafDisplay.showConservation
 LinearMafDisplay.showCoverage
+LinearMafDisplay.showFrames
 LinearMafDisplay.showInterbaseIndicators
 LinearMafDisplay.showInversions
 LinearMafDisplay.showReferenceRow
