@@ -147,7 +147,7 @@ export function standardizeArgv(
   for (const [key, vals] of args) {
     if (key === FILE_FLAG || trackTypes.includes(key)) {
       trackList.push([key, vals])
-    } else if (key in rest && !repeatable.includes(key)) {
+    } else if (Object.hasOwn(rest, key) && !repeatable.includes(key)) {
       throw new Error(`--${key} is given more than once`)
     } else if (key === 'loc') {
       rest[key] = locValue(vals) ?? true

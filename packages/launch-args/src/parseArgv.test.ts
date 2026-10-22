@@ -172,6 +172,7 @@ test('standardizeArgv: --loc keeps every region, a repeat or stray value throws'
     standardizeArgv(parseArgv(line.split(' ')), ['bam'], opts)
   expect(std('--loc chr1:1-100 chr2:5-9').loc).toBe('chr1:1-100 chr2:5-9')
   expect(() => std('--width 100 --width 200')).toThrow(/given more than once/)
+  expect(std('--constructor x').constructor).toBe('x')
   expect(() => std('--genome hg38 height:100')).toThrow(
     /--genome takes one value, so "height:100" applies to nothing/,
   )
