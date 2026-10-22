@@ -63,19 +63,25 @@ test('a feature track groups and colors through the two settings jb.help names, 
   expect(
     display.applyDisplaySettings({
       facet: 'strand',
-      color: { field: 'gene_biotype', domain: ['protein_coding'] },
+      encoding: {
+        color: { field: 'gene_biotype', scale: { domain: ['protein_coding'] } },
+      },
     }),
-  ).toMatchObject({ applied: ['facet', 'color'], failed: [] })
+  ).toMatchObject({ applied: ['facet', 'encoding'], failed: [] })
   expect(display.plot).toMatchObject({
     facet: 'strand',
-    color: { field: 'gene_biotype', domain: ['protein_coding'] },
+    encoding: {
+      color: { field: 'gene_biotype', scale: { domain: ['protein_coding'] } },
+    },
   })
   expect(jb.getConf(display, 'facet')).toEqual({ field: 'strand' })
   display.applyDisplaySettings({ facet: null })
   expect(display.plot.facet).toBeUndefined()
   expect(
-    display.applyDisplaySettings({ color: { field: 'x', scale: 'ld' } }).failed,
-  ).toMatchObject([{ key: 'color' }])
+    display.applyDisplaySettings({
+      encoding: { color: { field: 'x', scale: { type: 'ld' } } },
+    }).failed,
+  ).toMatchObject([{ key: 'encoding' }])
 
   const slots = jb.describeSlots(display.configuration)
   expect(slots.facet).toMatchObject({
@@ -83,8 +89,9 @@ test('a feature track groups and colors through the two settings jb.help names, 
     shorthand: { string: 'field' },
     slots: { field: { type: 'featureField' }, sort: { type: 'stringArray' } },
   })
-  expect(slots.color).toMatchObject({
-    type: 'FeatureColor',
-    shorthand: { string: 'value' },
+  expect(slots.encoding).toMatchObject({
+    slots: {
+      color: { type: 'FeatureColor', shorthand: { string: 'field' } },
+    },
   })
 })
