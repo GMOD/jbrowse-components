@@ -79,7 +79,7 @@ export function readsToLight({
  */
 export function slotsOfIds(ids: readonly string[], index: ReadIdIndex) {
   const slots: ReadSlot[] = []
-  for (const id of ids) {
+  for (const id of new Set(ids)) {
     const copies = index.copies.get(id)
     if (copies) {
       slots.push(...copies)

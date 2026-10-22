@@ -771,7 +771,8 @@ export function nextGroupHeightOverride({
 // override is a BAND height and a cap is a row count, so every px between two
 // row boundaries, and every px past what the lane's reads fill, names the same
 // caps. A "show all" lane takes the ceiling as its own cap, which opts it out
-// of the shared budget and the collapse as an override does.
+// of the shared budget and the collapse as an override does, and which reports
+// a clip as the ceiling's, so the notice offering to raise it still shows.
 export function groupRowCaps({
   overridesPx,
   expandedKeys,
@@ -785,7 +786,7 @@ export function groupRowCaps({
 }) {
   const caps = new Map<string, RowCap>()
   for (const key of expandedKeys) {
-    caps.set(key, overrideCap(maxRowsFor(ceilingPx, rowHeight)))
+    caps.set(key, ceilingCap(maxRowsFor(ceilingPx, rowHeight)))
   }
   for (const [key, px] of overridesPx) {
     caps.set(key, overrideCap(maxRowsFor(px, rowHeight)))

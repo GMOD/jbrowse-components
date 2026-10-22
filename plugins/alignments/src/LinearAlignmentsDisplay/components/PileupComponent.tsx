@@ -277,8 +277,8 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
   model: LinearAlignmentsDisplayModel
 }) {
   // `canSizeGroupHeights` is the shared gate with the label chip's expand
-  // button — both write `groupMaxHeightOverrides`, so neither is offered where
-  // the other is hidden. Only stacked lanes get a drag: one section's pileup
+  // button — both set a lane's own cap, so neither is offered where the other
+  // is hidden. Only stacked lanes get a drag: one section's pileup
   // bottom is the display's own bottom edge, which the track height owns.
   if (!model.isGrouped || !model.canSizeGroupHeights) {
     return null

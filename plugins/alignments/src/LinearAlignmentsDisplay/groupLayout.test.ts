@@ -280,14 +280,14 @@ test('groupRowCaps: px inside one row, or past the content, name one cap', () =>
   ).toBe(0)
 })
 
-test('groupRowCaps: a "show all" lane caps at the ceiling, a drag over it wins', () => {
+test('groupRowCaps: a "show all" lane takes the ceiling cap, a drag over it wins', () => {
   const caps = groupRowCaps({
     overridesPx: new Map([['HP: 2', 100]]),
     expandedKeys: new Set(['HP: 1', 'HP: 2']),
     ceilingPx: 6000,
     rowHeight: 20,
   })
-  expect(caps.get('HP: 1')).toEqual({ rows: 300, source: 'override' })
+  expect(caps.get('HP: 1')).toEqual({ rows: 300, source: 'ceiling' })
   expect(caps.get('HP: 2')).toEqual({ rows: 5, source: 'override' })
 })
 

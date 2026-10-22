@@ -288,6 +288,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           getSortMenuItem(self, {
             noun: self.featureNoun,
             modes: ['position', 'length', 'strand', 'mapq'],
+            disabledHelpText: self.collapseSortBlockedReason,
           }),
           ...getFiltersMenuItems(self),
           getSyntenyGroupByMenuItem(self),

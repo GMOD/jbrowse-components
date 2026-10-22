@@ -191,9 +191,9 @@ test('the truncation banner steps aside with the pileup hidden', () => {
   expect(anyCeilingClipped(display)).toBe(false)
 })
 
-// Both height affordances write `groupMaxHeightOverrides`, so they are offered
-// together: fit mode derives the read height to fill the display, which an
-// override contradicts.
+// Both height affordances set a lane's own cap, so they are offered together:
+// fit mode derives the read height to fill the display, which a lane's own cap
+// contradicts.
 test('the per-group height affordances are gated together', () => {
   const display = seed([
     { key: '1', label: 'HP: 1', n: 40 },
@@ -247,6 +247,10 @@ test('sorting is blocked while every section is collapsed', () => {
 
   display.toggleGroupExpanded('1')
   expect(display.canSortReads).toBe(true)
+
+  // the expanded lane hidden, every drawn lane is one row again
+  display.hideGroup('1')
+  expect(display.canSortReads).toBe(false)
 })
 
 // A lane the user sized themselves still clips, and neither signal fires: what
@@ -262,13 +266,27 @@ test('a lane clipped by its own override raises nothing', () => {
   display.setPileupMaxLayoutHeight(40)
   expect(clippedBy(display, '1')).toBe('ceiling')
 
-  display.toggleGroupExpanded('1')
-  expect(display.laneFor('1')!.expanded).toBe(true)
+  display.resizeGroupHeight('1', -8)
   expect(clippedBy(display, '1')).toBe('override')
   expect(expandable(display, '1')).toBe(false)
   expect(ceilingClipped(display, '1')).toBe(false)
   // and its sibling, still on the shared budget, is unaffected
   expect(clippedBy(display, '2')).toBe('ceiling')
+})
+
+// "Show all" asked for every read, so where the ceiling still clips the lane
+// the notice offering to raise it shows, and the chip offers the way back.
+test('an expanded lane the ceiling clips keeps the ceiling notice', () => {
+  const display = seed([
+    { key: '1', label: 'HP: 1', n: 400 },
+    { key: '2', label: 'HP: 2', n: 400 },
+  ])
+  display.setPileupMaxLayoutHeight(40)
+  display.toggleGroupExpanded('1')
+  expect(display.laneFor('1')!.expanded).toBe(true)
+  expect(clippedBy(display, '1')).toBe('ceiling')
+  expect(ceilingClipped(display, '1')).toBe(true)
+  expect(expandable(display, '1')).toBe(false)
 })
 
 // The drag's own direction, on a lane with nothing left to reveal: it pads the

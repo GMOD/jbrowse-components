@@ -419,9 +419,11 @@ describe('Arc color menu visibility', () => {
     display.setDrawnReadConnections('off')
     display.setShowConnectors(true)
     expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(true)
+    // a chain's links inside one region paint a fixed color, not this field
     display.setShowConnectors(false)
     display.setUnit('chain')
-    expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(true)
+    expect(display.view.displayedRegions.length).toBeLessThan(2)
+    expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(false)
   })
 })
 

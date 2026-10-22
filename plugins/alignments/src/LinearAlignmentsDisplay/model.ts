@@ -729,22 +729,25 @@ export default function stateModelFactory(
               ? 'Chain rows are ordered by chain — turn off "View as pairs / link supplementary alignments" to sort reads'
               : !self.showPileup
                 ? 'Turn on Show... → Pileup to sort reads'
-                : this.everySectionCollapsed
-                  ? 'Every group is drawn on one row — turn off Show... → "Collapse groups to one row", or expand a group from its label, to sort reads'
-                  : undefined
+                : this.collapseSortBlockedReason
           },
 
           /**
            * #getter
-           * Whether every section lays its reads on one row: the collapse is
-           * in effect and no section opted out by an expand or a drag.
+           * Why the collapse leaves no sort to take effect, or `undefined`:
+           * every drawn section lays its reads on one row, none opted out by
+           * an expand or a drag. A hidden lane or one shown as coverage alone
+           * stacks nothing, whatever cap it holds.
            */
-          get everySectionCollapsed() {
-            return (
-              this.collapseSections &&
-              this.groupHeightOverrides.size === 0 &&
-              this.expandedGroupKeys.size === 0
-            )
+          get collapseSortBlockedReason(): string | undefined {
+            return this.collapseSections &&
+              !this.groupOrder.some(
+                g =>
+                  this.groupRowCaps.has(g.key) &&
+                  !self.collapsedGroups.has(g.key),
+              )
+              ? 'Every group is drawn on one row — turn off Show... → "Collapse groups to one row", or expand a group from its label, to sort'
+              : undefined
           },
 
           /**
@@ -1821,6 +1824,8 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Every read's slot by id, and every slot of a read fetched in more
+         * than one displayed region (`buildReadIdIndex`).
          */
         get readIdIndex() {
           return buildReadIdIndex(self.rpcDataMap, self.hiddenGroupKeys)
@@ -3594,10 +3599,15 @@ export default function stateModelFactory(
               includePairedEnd: true,
               includeModifications: true,
               // Offered wherever a connection paints this field: the arcs,
-              // the read cloud, and the connectors over the pileup.
+              // the read cloud, the connectors over the pileup, and a chain's
+              // links between displayed regions. A chain's links inside one
+              // region paint a fixed color.
               arcColor:
                 self.drawnReadConnections === 'off' &&
-                self.bezierArcScope === 'none'
+                !self.showConnectors &&
+                !(
+                  self.unit === 'chain' && self.view.displayedRegions.length > 1
+                )
                   ? undefined
                   : {
                       own: getConf(self, ['readConnections', 'color', 'field']),

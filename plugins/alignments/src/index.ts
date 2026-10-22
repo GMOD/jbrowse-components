@@ -124,6 +124,7 @@ export type {
 export { NO_HIDDEN_GROUPS } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 export type {
   GroupId,
+  ReadIdIndex,
   ReadIdIndexMap,
 } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 export type {
