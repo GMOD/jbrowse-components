@@ -70,8 +70,14 @@ export function makeFeatureIntervalTreeMap<
           if (!cache[refName]) {
             statusCallback?.(parsingStatusMessage)
             const intervalTree = new IntervalTree<T>()
-            for (const feature of parse(lines!, refName)) {
-              intervalTree.insert([feature.start, feature.end], feature)
+            try {
+              for (const feature of parse(lines!, refName)) {
+                intervalTree.insert([feature.start, feature.end], feature)
+              }
+            } finally {
+              // a status fan-out keeps a slot's last word, which would leave
+              // the region reading as still parsing
+              statusCallback?.('')
             }
             lines = null
             cache[refName] = intervalTree

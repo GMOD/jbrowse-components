@@ -320,7 +320,7 @@ describe('makeFeatureIntervalTreeMap', () => {
     expect(map.ctgB!().search([0, 1])).toEqual([])
   })
 
-  it('parses lazily once per ref and emits the status message', () => {
+  it('parses lazily once per ref, and clears the status it set', () => {
     const spy = jest.fn(parse)
     const statusCallback = jest.fn()
     const map = makeFeatureIntervalTreeMap(
@@ -335,7 +335,6 @@ describe('makeFeatureIntervalTreeMap', () => {
     map.ctgA!(statusCallback)
 
     expect(spy).toHaveBeenCalledTimes(1)
-    expect(statusCallback).toHaveBeenCalledWith('Parsing data')
-    expect(statusCallback).toHaveBeenCalledTimes(1)
+    expect(statusCallback.mock.calls).toEqual([['Parsing data'], ['']])
   })
 })
