@@ -26,7 +26,7 @@ export const proteinCcr5GeneSpecs: ScreenshotSpec[] = [
     url: ccr5GeneSession(),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 300000,
-    hideTooltip: true,
+    tooltip: 'hide',
     viewportWidth: 1800,
     viewportHeight: 664,
     actions: [

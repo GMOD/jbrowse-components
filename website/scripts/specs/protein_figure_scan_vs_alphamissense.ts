@@ -77,7 +77,7 @@ function scanVsAlphaMissense(
       '.msp-highlight-info',
       '[data-testid="header-alignment-quality"]',
     ],
-    hideTooltip: true,
+    tooltip: 'hide',
     viewportWidth: 1600,
     viewportHeight: 1225,
     actions: [

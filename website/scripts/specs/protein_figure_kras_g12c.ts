@@ -42,7 +42,7 @@ export const proteinKrasG12cSpecs: ScreenshotSpec[] = [
       '.msp-highlight-info',
       '[data-testid="header-alignment-quality"]',
     ],
-    hideTooltip: true,
+    tooltip: 'hide',
     viewportWidth: 1800,
     viewportHeight: 1150,
     actions: [

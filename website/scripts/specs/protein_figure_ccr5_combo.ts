@@ -40,7 +40,7 @@ export const proteinCcr5ComboSpecs: ScreenshotSpec[] = [
       '.msp-highlight-info',
       '[data-testid="header-alignment-quality"]',
     ],
-    hideTooltip: true,
+    tooltip: 'hide',
     viewportWidth: 1800,
     viewportHeight: 1060,
     actions: [

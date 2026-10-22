@@ -28,7 +28,7 @@ export const proteinSncaE46kSpecs: ScreenshotSpec[] = [
       '.msp-highlight-info',
       '[data-testid="header-alignment-quality"]',
     ],
-    hideTooltip: true,
+    tooltip: 'hide',
     viewportWidth: 1600,
     viewportHeight: 1200,
     actions: [

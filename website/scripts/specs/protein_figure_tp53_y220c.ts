@@ -43,7 +43,7 @@ export const proteinTp53Y220cSpecs: ScreenshotSpec[] = [
       '.msp-highlight-info',
       '[data-testid="header-alignment-quality"]',
     ],
-    hideTooltip: true,
+    tooltip: 'hide',
     viewportWidth: 1800,
     viewportHeight: 1190,
     actions: [

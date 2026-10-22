@@ -151,7 +151,7 @@ test('a dev server says it serves the working tree, and is never stale', () => {
       source: 'the app on port 3000',
       stamp: dev,
       head: 'a'.repeat(40),
-      staleCommits: [{ hash: 'b'.repeat(40), subject: 'something' }],
+      commits: [{ hash: 'b'.repeat(40), subject: 'something' }],
       uncommittedFiles: ['products/jbrowse-web/src/index.ts'],
     }),
   ).toBeUndefined()
@@ -161,7 +161,7 @@ test('a dev server says it serves the working tree, and is never stale', () => {
       source: 'the app on port 3000',
       stamp: undefined,
       head: 'a'.repeat(40),
-      staleCommits: [],
+      commits: [],
       uncommittedFiles: [],
     })?.title,
   ).toMatch(/NO BUILD PROVENANCE/)
