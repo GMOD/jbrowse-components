@@ -604,6 +604,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // centred crop lands on the centromere gap
     position: 'left',
   },
+  protein_domains: {
+    // the gene models over their colored domains, below the view's toolbar
+    src: 'protein_domains/vav.png',
+    band: [0.28, 0.85],
+  },
   alu_age: {
     // The binned frame below the app header and the view's toolbar: the grey
     // count over the young share turning from red to blue is the card.
