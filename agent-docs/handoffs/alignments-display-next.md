@@ -1,6 +1,6 @@
 ---
 name: alignments-display-next
-description: "What is left of the 2026-10-22 LinearAlignmentsDisplay review after its bug fixes, ADR-240 and that ADR's steps 1 and 5 landed: two ADR-240 calls only Colin makes (unmodified as a modification code, which connector setting renames), the ADR-240 steps the vocabulary handoff orders, four internal cleanups (themed getter twins, the internal ColorBy scheme object, a misnamed extent, test-only exports), two small behaviour questions (sized lanes shrinking the fit budget, a connector's right-click), and ggjbrowse's unpushed respell and stale published pages."
+description: "What is left of the 2026-10-22 LinearAlignmentsDisplay review after its bug fixes, ADR-240, that ADR's steps 1 and 5 and the internal cleanups landed: two ADR-240 calls only Colin makes (unmodified as a modification code, which connector setting renames), the ADR-240 steps the vocabulary handoff orders, the internal ColorBy scheme object (waits on step 2's pass A), two small behaviour questions (sized lanes shrinking the fit budget, a connector's right-click), and ggjbrowse's unpushed respell and stale published pages."
 ---
 
 # LinearAlignmentsDisplay: next steps
@@ -35,27 +35,14 @@ starting it.
   `1000x.shortread.bam` on ada. `breakpoint.reads` is a new row namespace.
 - **Step 4:** `pileup.readHeight` to `pileup.mark.height`.
 
-## Internal cleanups
+## Internal cleanup
 
-None changes a config path, so none waits on the v5 freeze.
-
-- **Six themed getter twins in `model.ts`.** `colorPaletteIn`,
-  `arcFeedsByGroupIn`, `sashimiFeedsByGroupIn`, `connectorFeedsByGroupIn`,
-  `sourceSectionsIn` and `colorScalesIn` each repeat a getter with a palette
-  for the SVG export; one themed bundle would replace them. `renderSvg.tsx`
-  also re-derives the sashimi labels the model's getter answers.
 - **The internal `ColorBy` scheme object** (`shared/types.ts`,
   `shared/alignmentsColor.ts` `colorByOf` / `colorFieldOf`) restates
   `color.field` in v4's scheme names, and the RPC arguments are still
   `filterBy` and `colorBy`. One field classifier serving color, facet, sort and
-  predicates removes the translation. Coordinate with whoever runs step 2's
-  pass A, which rewrites the same readers.
-- **`tagValueExtent`** also covers MAPQ; it is `linearFieldExtent` by another
-  name.
-- **Test-only exports:** `PILEUP_PASSES`, `ARC_PASSES`
-  (`GpuAlignmentsRenderer.ts`), `buildAlignmentsRegionMap`
-  (`Canvas2DAlignmentsRenderer.ts`), and the upload-type re-exports in
-  `renderers/rendererTypes.ts`.
+  predicates removes the translation. It changes no config path but rewrites
+  the readers step 2's pass A rewrites, so it goes after or with that pass.
 
 ## Behaviour questions
 
@@ -65,8 +52,6 @@ None changes a config path, so none waits on the v5 freeze.
 - **A curved connector's right-click opens the browser menu.** ADR-225 chose
   that; the left click on the same connector selects a read, so whether to
   offer that read's menu is a product call.
-- **No test harness reaches this display's SVG export**, so no test pins the
-  chip-label fix (`renderSvg.tsx`).
 
 ## ggjbrowse
 

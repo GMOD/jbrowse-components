@@ -43,9 +43,9 @@ built from the theme gets a twin taking the palette (`renderStateIn`,
 palette into the getter's output re-copies model logic into the export.
 
 **Several inputs off one palette share one twin.** The alignments display's
-`themedIn(theme)` holds its palette, its read-connection and junction feeds
-and the sections joining them, each member memoized on its own; `themed` is
-the session theme's.
+`themedIn(theme)` returns its palette, its read-connection and junction feeds
+and the sections joining them, each member memoized on its own; `themed`
+returns the same for the session theme.
 
 The
 exported key draws `legendSpecIn(palette)`, so a display whose key takes
