@@ -524,8 +524,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           // which makes the toggle a color-lane patch through
           // `SYNTENY_INSTANCE_CACHE` — the same path a color change takes to avoid an
           // RPC.
-          view.drawCIGAR,
-          view.drawCIGARMatchesOnly,
+          view.cigarMode,
           view.offscreenDrawn,
           // the resolved tier, not view.resolution: in 'auto' the mode is constant
           // while the tier flips, and the tier is what the fetch differs by

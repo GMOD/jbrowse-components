@@ -13,7 +13,7 @@ import { viewportWindow } from './testUtils.ts'
 // (query) axis but not the bottom (target) axis, so on the top axis it occupies
 // the bp interval [50, 100). Both match runs (50px) and the deletion (50px) are
 // well above MIN_CIGAR_PX_WIDTH / MIN_INDEL_PX, so all render.
-function build(drawCIGARMatchesOnly: boolean) {
+function build(matchesOnly: boolean) {
   const packed = (len: number, op: number) => (len << 4) | op
   return buildSyntenyGeometry({
     p11_cumBp: new Float64Array([0]),
@@ -27,8 +27,7 @@ function build(drawCIGARMatchesOnly: boolean) {
     ],
     starts: new Uint32Array([0]),
     ends: new Uint32Array([150]),
-    drawCIGAR: true,
-    drawCIGARMatchesOnly,
+    cigarMode: matchesOnly ? 'matches' : 'full',
     bpPerPx0: 1,
     bpPerPx1: 1,
     viewOff0: 0,

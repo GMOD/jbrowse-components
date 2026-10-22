@@ -1,3 +1,4 @@
+import type { CigarMode } from '../LinearSyntenyView/cigarModes.ts'
 import type { FollowAnchorHost } from '../SyntenyFollow/followHost.ts'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -65,8 +66,7 @@ export interface ParentViewDuck extends FollowAnchorHost {
   opacityFade: SyntenyOpacitySnapshot | undefined
   opacityField: string
   fadeThinAlignments: boolean
-  drawCIGAR: boolean
-  drawCIGARMatchesOnly: boolean
+  cigarMode: CigarMode
   interpolate: RibbonInterpolation
   axisGrid: boolean
   resolution: LodMode

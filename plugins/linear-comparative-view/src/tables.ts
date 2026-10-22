@@ -360,8 +360,7 @@ export async function syntenyTables(
       windowRegions: t.regions,
       fetchRegions: t.regions,
     },
-    drawCIGAR: cigarMode !== 'off',
-    drawCIGARMatchesOnly: cigarMode === 'matches',
+    cigarMode,
     statusCallback: () => {},
   })
   const { instanceData, ...featureData } = value

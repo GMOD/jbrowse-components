@@ -530,18 +530,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return true
       },
       /**
-       * #getter
-       */
-      get drawCIGAR() {
-        return self.cigarMode !== 'off'
-      },
-      /**
-       * #getter
-       */
-      get drawCIGARMatchesOnly() {
-        return self.cigarMode === 'matches'
-      },
-      /**
        * #method
        * Every synteny track across every level, in order.
        */

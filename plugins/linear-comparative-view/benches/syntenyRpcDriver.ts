@@ -89,7 +89,7 @@ export async function runSyntenyRpc({
       displayedRegions: targetRegions,
       windowRegions: targetRegions,
     },
-    drawCIGAR: true,
+    cigarMode: 'full',
   })
   // rpcResultWithArrayBuffers wraps the payload for postMessage
   return (result as unknown as { value: { featureIds: string[] } }).value

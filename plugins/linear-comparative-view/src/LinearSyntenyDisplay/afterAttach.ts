@@ -55,8 +55,7 @@ export function doAfterAttach(
         return untracked(() => {
           const { view } = self
           return {
-            drawCIGAR: view.drawCIGAR,
-            drawCIGARMatchesOnly: view.drawCIGARMatchesOnly,
+            cigarMode: view.cigarMode,
             lodTier: self.lodTier,
             regionSignature: self.regionSignature,
             // Captured as strings HERE, not derived from the views after the
@@ -92,8 +91,7 @@ export function doAfterAttach(
         rawTarget,
         queryAssemblyName,
         targetAssemblyName,
-        drawCIGAR,
-        drawCIGARMatchesOnly,
+        cigarMode,
         lodTier,
       },
       ctx,
@@ -118,8 +116,7 @@ export function doAfterAttach(
         adapterConfig,
         queryView,
         targetView,
-        drawCIGAR,
-        drawCIGARMatchesOnly,
+        cigarMode,
         lodMode: lodTier,
       })
 

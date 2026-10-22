@@ -1,5 +1,6 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
+import type { CigarMode } from '../LinearSyntenyView/cigarModes.ts'
 import type {
   SyntenyQueryViewSnap,
   SyntenyRpcResult,
@@ -21,11 +22,9 @@ export interface SyntenyGetFeaturesAndPositionsArgs {
   // No `drawLocationMarkers` either, and for the same reason: the ticks are
   // always emitted and the toggle paints them transparent on the color lane. It
   // used to be here, which meant switching a purely visual grid on re-downloaded
-  // and re-parsed the whole track to arrive at the identical features. The two
-  // CIGAR flags below stay, because those genuinely change what is fetched —
-  // they gate the CIGAR parse.
-  drawCIGAR?: boolean
-  drawCIGARMatchesOnly?: boolean
+  // and re-parsed the whole track to arrive at the identical features.
+  // `cigarMode` stays, because it gates the CIGAR parse.
+  cigarMode?: CigarMode
   lodMode?: LodTier
 }
 

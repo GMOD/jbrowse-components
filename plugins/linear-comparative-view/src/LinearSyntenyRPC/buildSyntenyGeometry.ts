@@ -20,6 +20,7 @@ import {
   KIND_MARKER,
 } from './syntenyKinds.ts'
 
+import type { CigarMode } from '../LinearSyntenyView/cigarModes.ts'
 import type { CumBpSpan } from '@jbrowse/synteny-core'
 
 // Worker-side geometry. `colors` is injected by the main thread (computedColors
@@ -243,8 +244,7 @@ export function buildSyntenyGeometry({
   parsedCigars,
   starts,
   ends,
-  drawCIGAR,
-  drawCIGARMatchesOnly,
+  cigarMode,
   bpPerPx0,
   bpPerPx1,
   viewOff0,
@@ -267,8 +267,7 @@ export function buildSyntenyGeometry({
   parsedCigars: ArrayLike<number>[]
   starts: Uint32Array
   ends: Uint32Array
-  drawCIGAR: boolean
-  drawCIGARMatchesOnly: boolean
+  cigarMode: CigarMode
   bpPerPx0: number
   bpPerPx1: number
   viewOff0: number
@@ -286,6 +285,7 @@ export function buildSyntenyGeometry({
   window1: CumBpSpan
 }): SyntenyGeometry {
   const featureCount = p11_cumBp.length
+  const matchesOnly = cigarMode === 'matches'
 
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
@@ -395,7 +395,7 @@ export function buildSyntenyGeometry({
     let cigarBudget = 0
     if (
       cigar.length > 0 &&
-      drawCIGAR &&
+      cigarMode !== 'off' &&
       Math.max(widthPx0, widthPx1) >= MIN_CIGAR_PX_WIDTH
     ) {
       willDrawCigarArr[i] = 1
@@ -608,7 +608,7 @@ export function buildSyntenyGeometry({
   // segment instead of a single full-span base. Only transparent-indels mode
   // tiles — see cigarSegmentKind.
   function isTiled(i: number) {
-    return drawCIGARMatchesOnly && !!willDrawCigarArr[i]
+    return matchesOnly && !!willDrawCigarArr[i]
   }
 
   // The instance kind a rendered CIGAR segment contributes, or undefined to
@@ -632,7 +632,7 @@ export function buildSyntenyGeometry({
     // transparent: base color on matches only (indels stay see-through).
     // colored: indelKind per indel (undefined on matches -> the base covers).
     const transparentKind = isIndel ? undefined : KIND_BASE_TILE
-    return drawCIGARMatchesOnly ? transparentKind : indelKind(op)
+    return matchesOnly ? transparentKind : indelKind(op)
   }
 
   // A rendered segment is off-screen when either edge lies outside its own

@@ -35,6 +35,7 @@ import { flipSyntenyFeature } from './flipSyntenyFeature.ts'
 import { compareDrawOrder, drawTier } from './syntenyDrawOrder.ts'
 
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
+import type { CigarMode } from '../LinearSyntenyView/cigarModes.ts'
 import type { SyntenyMate } from '../syntenyMate.ts'
 import type { SyntenyGeometry } from './buildSyntenyGeometry.ts'
 import type { DrawOrderKey } from './syntenyDrawOrder.ts'
@@ -106,8 +107,7 @@ export async function executeSyntenyFeaturesAndPositions({
   queryView,
   targetView,
   signal,
-  drawCIGAR = true,
-  drawCIGARMatchesOnly = false,
+  cigarMode = 'full',
   lodMode,
   statusCallback,
 }: {
@@ -121,8 +121,7 @@ export async function executeSyntenyFeaturesAndPositions({
   queryView: SyntenyQueryViewSnap
   targetView: SyntenyTargetViewSnap
   signal?: AbortSignal
-  drawCIGAR?: boolean
-  drawCIGARMatchesOnly?: boolean
+  cigarMode?: CigarMode
   lodMode?: LodTier
   statusCallback?: StatusCallback
 }) {
@@ -655,7 +654,7 @@ export async function executeSyntenyFeaturesAndPositions({
     // alignments can carry multi-megabyte CIGAR strings (~4 bytes/op in the
     // parsed Uint32Array, so tens of MB per feature). Gate matches the
     // willDrawCigar predicate in buildSyntenyGeometry via the shared
-    // MIN_CIGAR_PX_WIDTH — drawCIGAR off or alignment narrower than that means
+    // MIN_CIGAR_PX_WIDTH — cigarMode off or alignment narrower than that means
     // the visitor never fires, and the location markers walk the corners instead
     // (`emitGridMarkers` over the whole feature), which needs no CIGAR. A
     // clipped block already carries its (short) visible-slice CIGAR from the
@@ -664,7 +663,7 @@ export async function executeSyntenyFeaturesAndPositions({
     const widthPx1 = Math.abs(p22 - p21) * bpPerPxInv2
     const willNeedCigar =
       (!!cigarStr || !!coarseStr) &&
-      drawCIGAR &&
+      cigarMode !== 'off' &&
       Math.max(widthPx0, widthPx1) >= MIN_CIGAR_PX_WIDTH
     parsedCigars.push(
       clippedCigar ??
@@ -727,8 +726,7 @@ export async function executeSyntenyFeaturesAndPositions({
         parsedCigars,
         starts: featureData.starts,
         ends: featureData.ends,
-        drawCIGAR,
-        drawCIGARMatchesOnly,
+        cigarMode,
         bpPerPx0: v1.bpPerPx,
         bpPerPx1: v2.bpPerPx,
         viewOff0: v1.offsetPx,
