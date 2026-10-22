@@ -65,24 +65,27 @@ const AlignmentConnections = observer(function AlignmentConnections(
           // leading edge for a split junction, or the mate's 3' edge for a
           // pair. A discordant connection within one view dips below the
           // reads; across views the curve already spans the divider.
+          const y1 = getY(e1.level, c1)
+          const y2 = getY(e2.level, c2)
+          const level = levels[e1.level]!
           const path = bezierConnectorPath({
             x1: end1.x,
-            y1: getY(e1.level, c1),
+            y1,
             x2: end2.x,
-            y2: getY(e2.level, c2),
+            y2,
             s1,
             s2,
             leadingEnd2: isSplit,
             reversed1: end1.reversed,
             reversed2: end2.reversed,
-            // A dip stays inside the panel it is drawn in: this view clips
-            // nothing per level, so a deeper one would bleed over the
-            // neighbouring panel's reads. The band is the pileup body below
-            // coverage, and only a same-contig connection has a span.
+            // A dip stays inside its own track: this view clips nothing per
+            // track, so a deeper one would cross the tracks below. The band is
+            // the room under the lower end, and only a same-contig connection
+            // has a span.
             dipPx:
               e1.level === e2.level && abnormal
                 ? discordantDipPx(
-                    levels[e1.level]!.height - levels[e1.level]!.coverageOffset,
+                    level.yOffset + level.height - Math.max(y1, y2),
                     e1.refName === e2.refName ? Math.abs(bp2 - bp1) : undefined,
                   )
                 : undefined,
