@@ -105,9 +105,9 @@ const renderGff = (...opts) =>
     trackList: [['gff', [gff, 'force:true', 'heightMode:grow', ...opts]]],
   })
 
-// `color` describes the FEATURE, so it reaches a transcript's UTRs too and the
-// whole track lands on one color; only an explicit `utrColor` contrasts them
-// again. That rule is getBoxColor's (plugins/canvas), and this asserts the
+// `encoding.color` describes the FEATURE, so it reaches a transcript's UTRs too
+// and the whole track lands on one color; only an explicit `utrColor` contrasts
+// them again. That rule is getBoxColor's (plugins/canvas), and this asserts the
 // end-to-end consequence of it — which is why the count to match is BOTH
 // defaults and not just the goldenrod one.
 test('color:<css color> repaints a feature track, UTRs included', async () => {
