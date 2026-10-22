@@ -19,9 +19,9 @@ summary statistics straight from the Pan-UKBB public S3 bucket.
 
 ## Example file
 
-To try the workflow without preparing anything, paste this hg19 BMI GWAS summary
-statistics file (with `neg_log_pvalue` as the score column) into the Add GWAS
-track form:
+To try the track without preparing anything, paste this hg19 BMI GWAS summary
+statistics file (with `neg_log_pvalue` as the score column) into the
+[Add track](#adding-a-gwas-track) form:
 
 ```text
 https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz
@@ -52,8 +52,7 @@ requires BED, so a conversion step is needed before loading. See the
 
 With an LD file loaded, the track colors points by r² to an index SNP, so you
 can see which nearby variants are in linkage with the lead signal (see
-[Add GWAS track workflow](#add-gwas-track-workflow) for how the index is
-chosen).
+[Adding a GWAS track](#adding-a-gwas-track) for how the index is chosen).
 
 <Figure caption="LD coloring at STAT4: the lead SNP is the diamond, and other points shade by their r² to it." src="/img/gwas/locuszoom_ld.png" />
 
@@ -127,25 +126,22 @@ the peak is tagging: index `rs1121980`, 51 variants, spanning 51 kb of FTO's
 first intron. Load `clumps.bed` through a
 [`BedAdapter`](/docs/config/bedadapter) beside the GWAS track.
 
-## Add GWAS track workflow
+## Adding a GWAS track
 
-Open the track selector, click **Add track**, and choose **Add GWAS / Manhattan
-track**.
+Open the track selector, click **Add track**, and give the GWAS file, plus its
+tabix index unless it sits at `<file>.tbi`.
 
-**GWAS data (required)**
+- A `.txt.gz` opens as a GWAS track. For a `.bed.gz` or `.tsv.gz`, choose **GWAS
+  adapter** under **Adapter type**, which offers it below the field.
+- _Score column_ and _Score transform_ name the column and how it maps onto
+  -log₁₀(p) (the [`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) and
+  [`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform) slots).
+- _PLINK LD table_ (optional) takes a `.ld` or `.vcor`, bgzipped or not. A
+  bgzipped one gets a field for its tabix index.
 
-- _GWAS file_ - the `.bed.gz` or `.txt.gz`
-- _GWAS tabix index_ - omit if the index is at `<file>.tbi`
-- _Score column_ - column name for the -log₁₀(p) values (the
-  [`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) slot)
-
-**LD coloring (optional)**
-
-Select a PLINK `.ld` or `.ld.gz` file. For bgzipped files a second field appears
-for the tabix index.
-
-Click **Submit**. In LD mode JBrowse auto-picks the highest-scoring loaded SNP
-as the index; right-click any point or use the track menu to change it.
+With an LD table the track opens colored by r² to an index SNP. JBrowse picks
+the highest-scoring SNP on screen; right-click any point or use the track menu's
+**LD** submenu to change it.
 
 ## See also
 

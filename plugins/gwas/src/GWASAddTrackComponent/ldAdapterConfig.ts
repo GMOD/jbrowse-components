@@ -17,7 +17,7 @@ export function needsExplicitIndex(loc: FileLocation): boolean {
   return deriveTbiLocation(loc) === undefined
 }
 
-export function tabixIndex(loc: FileLocation, index?: FileLocation) {
+function tabixIndex(loc: FileLocation, index?: FileLocation) {
   const location = index ?? deriveTbiLocation(loc)
   return {
     indexType: makeIndexType(location && getFileName(location), 'CSI', 'TBI'),

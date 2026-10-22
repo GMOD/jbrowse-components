@@ -1342,6 +1342,9 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
+      '@jbrowse/plugin-bed':
+        specifier: workspace:^
+        version: link:../bed
       '@jbrowse/plugin-gwas':
         specifier: workspace:^
         version: link:../gwas

@@ -3,12 +3,24 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ComponentType } from 'react'
 
 /**
+ * Where an add-track form keeps its fields, by key: the widget model, which
+ * outlives the drawer unmounting the form. Read and written through
+ * `workflowForm`.
+ */
+export interface WorkflowFormHost {
+  workflowForms: Record<string, object | undefined>
+  setWorkflowForm: (key: string, form: object) => void
+}
+
+/**
  * The slice of the add-track widget model an adapter-specific picker gets. It
  * is deliberately narrower than the widget's own model: a picker reads which
  * adapter is selected and contributes config fragments through `mixinData`,
- * which the widget merges into the track config on submit.
+ * which the widget merges into the track config on submit, keeping its own
+ * fields through `workflowForm`.
  */
-export interface AddTrackComponentModel extends IStateTreeNode {
+export interface AddTrackComponentModel
+  extends IStateTreeNode, WorkflowFormHost {
   assembly: string | undefined
   setAssembly: (arg: string) => void
   trackAdapterType: string | undefined

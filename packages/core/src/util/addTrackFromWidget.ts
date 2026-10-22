@@ -8,6 +8,7 @@ import {
   isSessionWithPublishTrackConf,
 } from './types/index.ts'
 
+import type { WorkflowFormHost } from './addTrackComponent.ts'
 import type { AssemblyNameResolver } from './tracks.ts'
 import type {
   AbstractSessionModel,
@@ -55,26 +56,24 @@ export interface AddTrackWidgetSelf extends IStateTreeNode {
  * own model type, so a plugin contributing a workflow doesn't take a package
  * dependency on the plugin that owns the widget.
  */
-export interface AddTrackWorkflowModel extends AddTrackWidgetSelf {
+export interface AddTrackWorkflowModel
+  extends AddTrackWidgetSelf, WorkflowFormHost {
   assembly: string | undefined
   setAssembly: (arg: string) => void
-  /** each workflow's form, by key; read and written through `workflowForm` */
-  workflowForms: Record<string, object | undefined>
-  setWorkflowForm: (key: string, form: object) => void
 }
 
 /**
- * A workflow's form fields, held on the widget model rather than in component
- * state. The drawer unmounts a widget whenever anything else is shown in it,
- * which discarded a form kept in `useState`; the model survives that, and its
- * `clearData` resets every form after an add or when the widget is reopened
- * for another view.
+ * An add-track form's fields, a workflow's or a picker's, held on the widget
+ * model rather than in component state. The drawer unmounts a widget whenever
+ * anything else is shown in it, which discarded a form kept in `useState`; the
+ * model survives that, and its `clearData` resets every form after an add or
+ * when the widget is reopened for another view.
  *
  * `update` merges a patch over the form as it stands when called, so two
  * updates from one handler don't drop each other.
  */
 export function workflowForm<T extends object>(
-  model: AddTrackWorkflowModel,
+  model: WorkflowFormHost,
   key: string,
   initial: T,
 ) {

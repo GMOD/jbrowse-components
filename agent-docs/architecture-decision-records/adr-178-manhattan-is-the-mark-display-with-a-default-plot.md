@@ -125,8 +125,10 @@ transforms or Edit plot.
 ## Consequences
 
 - A Manhattan plot facets, splits into rows, bins and aggregates like any mark
-  display; the add-track workflow writes the LD mark when it is given an LD
-  file.
+  display; the add-track form's GWAS fields write the LD marks as the
+  track's `displayDefaults` when given an LD file. (Amended 2026-10-22: a
+  separate GWAS add-track workflow wrote them, repeating the form's file,
+  index, name and assembly fields; it went for the form's adapter fields.)
 - The r² key and the index SNP's row are two keys where the old legend was
   one. The index's swatch is its pink diamond, since any shape key of a mark
   painted one color draws its shapes in that color, as ggplot2 draws a

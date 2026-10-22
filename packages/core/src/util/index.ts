@@ -518,6 +518,7 @@ export {
 export {
   type AddTrackComponentModel,
   type AddTrackComponentProps,
+  type WorkflowFormHost,
   adapterNeedsAddTrackComponent,
   addAddTrackComponent,
 } from './addTrackComponent.ts'
