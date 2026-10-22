@@ -253,8 +253,6 @@ interface DisplaySnapshot {
     placement?: 'up' | 'down'
   }
   sashimi?: { show?: boolean; placement?: 'up' | 'down' | 'auto' }
-  // Lifted back out by `applyDisplayOpts` rather than passed to showTrack —
-  // see there for why this one slot cannot ride in on the snapshot.
   filter?: ReadFilterSnapshot | string[]
   color?: string | ColorObject
   variantLayout?: 'genomic' | 'columns'
@@ -787,23 +785,18 @@ export async function applyDisplayOpts(
     snap.growMaxHeight ??= CARD_GROW_MAX_HEIGHT
   }
 
-  // The read filter is one a modifier EDITS rather than states: `filterTag:`
-  // adds a condition to the track's own tags, which a launch snapshot would
-  // replace. Applied after the open, through the display's own actions, so each
-  // of `flags:`, `filterTag:` and the four categories composes onto what the
-  // config already said instead of erasing its siblings.
+  // The launch snapshot merges `filter` into the configured one member by
+  // member, except `tags`, a list it replaces: a `filterTag:` is one more
+  // condition on the track's own, so the tags are added after the open.
   const readFilter =
     category === 'alignments' &&
     typeof snap.filter === 'object' &&
     !Array.isArray(snap.filter)
       ? snap.filter
       : undefined
-  const { filter: _filter, ...rest } = snap
-  const displaySnap = readFilter ? rest : snap
+  const { tags, ...launchFilter } = readFilter ?? {}
+  const displaySnap = tags ? { ...snap, filter: launchFilter } : snap
 
-  // Create the display already in its target state rather than mutating a
-  // default display with setter actions. An explicit `display:` selects a
-  // non-default display via the snapshot `type` launchTrack reads.
   const opened = await view.launchTrack(
     trackId,
     {},
@@ -819,40 +812,15 @@ export async function applyDisplayOpts(
       `Failed to open track "${trackId}"${displayType ? ` with display "${displayType}"` : ''}${reason ? `: ${reason}` : ''}`,
     )
   }
-  if (readFilter) {
+  if (tags) {
     const display = opened.displays[0] as
-      | {
-          readFilter?: ReadFilterSnapshot
-          setReadFilter?: (f: unknown) => void
-          setJunctionFilter?: (f: unknown) => void
-          setConnectionFilter?: (f: unknown) => void
-        }
+      | { readFilter?: ReadFilterSnapshot }
       | undefined
-    if (display?.setReadFilter) {
-      const { tags, junctions, connections, ...members } = readFilter
-      // `setReadFilter` writes the read members alone
-      if (junctions) {
-        display.setJunctionFilter?.(junctions)
-      }
-      if (connections) {
-        display.setConnectionFilter?.(connections)
-      }
-      display.setReadFilter({
-        ...display.readFilter,
-        ...members,
-        // AND-ed, like every other tag filter: a `filterTag:` on the command
-        // line adds a condition to the track's own rather than replacing it.
-        ...(tags
-          ? {
-              tags: [...(display.readFilter?.tags ?? []), ...tags],
-            }
-          : {}),
-      })
-    } else {
-      console.warn(
-        `Warning: filter options on "${trackId}" ignored — its display has no read filter`,
-      )
-    }
+    view.showTrack(
+      trackId,
+      {},
+      { filter: { tags: [...(display?.readFilter?.tags ?? []), ...tags] } },
+    )
   }
   const members = writeMembers(view, trackId, memberWrites(category, opts))
   // The spec reopens the track as drawn: the read filter the display ended
@@ -867,8 +835,8 @@ export async function applyDisplayOpts(
   }
 }
 
-// What the read filter came to after the setters ran: the read members the
-// display holds, beside the junction and connection tests the options named.
+// What the read filter came to: the read members the display holds, beside the
+// junction and connection tests the options named.
 function readFilterAsDrawn(
   opened: { displays: unknown[] },
   stated: ReadFilterSnapshot,

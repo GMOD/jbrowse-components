@@ -1,93 +1,48 @@
 import { applyDisplayOpts } from './applyTrackOpts.ts'
 
-import type { ReadFilterSnapshot } from './applyTrackOpts.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// `filterBy` is the one modifier target that is EDITED rather than stated, so it
-// cannot ride in on the display snapshot: the slot is `frozen`, and showTrack
-// writes a frozen slot by replacing the whole object. These pin that it reaches
-// the display through its own action instead, and composes with what the track's
-// config already said.
+// The snapshot each modifier list hands launchTrack. What a real display makes
+// of a read filter is readFilterModifiers.test.ts.
 
-function fakeView(configured: ReadFilterSnapshot = {}) {
-  const display = {
-    readFilter: {
-      flagInclude: 0,
-      flagExclude: 1540,
-      ...configured,
-    } as ReadFilterSnapshot,
-    setReadFilter(f: unknown) {
-      this.readFilter = f as typeof this.readFilter
-    },
-    junctionFilter: {} as Record<string, unknown>,
-    setJunctionFilter(f: Record<string, unknown>) {
-      this.junctionFilter = { ...this.junctionFilter, ...f }
-    },
-  }
+function fakeView() {
   const calls: unknown[] = []
   const view = {
     centerLineInfo: undefined,
     showTrack(_id: string, _t: unknown, snap: unknown) {
       calls.push(snap)
-      return { displays: [display] }
+      return { displays: [{}] }
     },
     async launchTrack(_id: string, _t: unknown, snap: unknown) {
       calls.push(snap)
-      return { displays: [display] }
+      return { displays: [{}] }
     },
   }
-  return { view: view as unknown as LinearGenomeViewModel, display, calls }
+  return { view: view as unknown as LinearGenomeViewModel, calls }
 }
 
-test('a category edit leaves the flag masks the track config set', async () => {
-  // The shape five of the cancer_sv figure specs in this repo use: drop
-  // secondary as well. It came back as the schema default 1540, with those
-  // alignments silently restored.
-  const { view, display } = fakeView({ flagExclude: 1796 })
-  await applyDisplayOpts(view, 'reads_vs_der3', 'alignments', ['split:only'])
-  expect(display.readFilter).toMatchObject({ flagExclude: 1796, split: 'only' })
-})
-
-test('an omitted half of flags keeps the configured mask, as the doc claims', async () => {
-  const { view, display } = fakeView({ flagInclude: 2, flagExclude: 1796 })
-  await applyDisplayOpts(view, 't', 'alignments', ['flags::256'])
-  expect(display.readFilter).toMatchObject({ flagInclude: 2, flagExclude: 256 })
-})
-
-test('a tag filter is a second condition, not a replacement', async () => {
-  const { view, display } = fakeView({
-    tags: [{ tag: 'HP', value: '1' }],
-  })
-  await applyDisplayOpts(view, 't', 'alignments', ['filterTag:RG:lane3'])
-  expect(display.readFilter.tags).toEqual([
-    { tag: 'HP', value: '1' },
-    { tag: 'RG', value: 'lane3' },
-  ])
-})
-
-// the display's read filter setter writes the read members alone
-test('a junction filter in a settings bag reaches its own setter', async () => {
-  const { view, display } = fakeView()
-  await applyDisplayOpts(view, 't', 'alignments', [
-    '{"filter":{"junctions":{"minReads":5}}}',
-    'split:only',
-  ])
-  expect(display.junctionFilter).toEqual({ minReads: 5 })
-  expect(display.readFilter).toMatchObject({ split: 'only' })
-  expect(display.readFilter).not.toHaveProperty('junctions')
-})
-
 test("a feature track's filter object rides in on the snapshot", async () => {
-  const { view, display, calls } = fakeView()
+  const { view, calls } = fakeView()
   await applyDisplayOpts(view, 't', 'feature', ['{"filter":{"genes":"only"}}'])
   expect(calls[0]).toEqual({ filter: { genes: 'only' } })
-  expect(display.readFilter).not.toHaveProperty('genes')
 })
 
-test('filterBy is kept out of the snapshot showTrack replaces slots from', async () => {
+test('a read filter rides in on the snapshot beside the other settings', async () => {
   const { view, calls } = fakeView()
   await applyDisplayOpts(view, 't', 'alignments', ['height:400', 'split:only'])
-  expect(calls[0]).toEqual({ height: 400 })
+  expect(calls[0]).toEqual({ height: 400, filter: { split: 'only' } })
+})
+
+test('the tag filters follow the open, onto the tags the track has', async () => {
+  const { view, calls } = fakeView()
+  await applyDisplayOpts(view, 't', 'alignments', [
+    'mapq:20',
+    'filterTag:RG:lane3',
+  ])
+  expect(calls).toEqual([
+    { filter: { minMapq: 20 } },
+    { filter: { tags: [{ tag: 'RG', value: 'lane3' }] } },
+  ])
 })
 
 describe("batch's one-row junction", () => {
@@ -176,43 +131,10 @@ describe("batch's per-record sort", () => {
   })
 })
 
-test('a display with no filterBy says so rather than dropping the option', async () => {
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-  const view = {
-    centerLineInfo: undefined,
-    showTrack: () => ({ displays: [{}] }),
-    launchTrack: async () => ({ displays: [{}] }),
-  } as unknown as LinearGenomeViewModel
-  await applyDisplayOpts(view, 'wiggle_track', 'alignments', ['split:only'])
-  expect(warn).toHaveBeenCalledWith(
-    expect.stringContaining('has no read filter'),
-  )
-  warn.mockRestore()
-})
-
 test('a track the view could not open names the display it was asked for', async () => {
   const { view } = fakeView()
   ;(view as { launchTrack: unknown }).launchTrack = async () => undefined
   await expect(
     applyDisplayOpts(view, 't', 'alignments', ['display:marks']),
   ).rejects.toThrow('Failed to open track "t" with display "LinearMarkDisplay"')
-})
-
-// The batch report's spec reopens the track as drawn, so the filter the
-// display ended with travels in it.
-test('the returned spec carries the read filter as drawn', async () => {
-  const { view } = fakeView({ flagExclude: 1796 })
-  const spec = await applyDisplayOpts(view, 't', 'alignments', ['split:only'])
-  expect(spec.filter).toMatchObject({ flagExclude: 1796, split: 'only' })
-})
-
-test('a category at all unsets an earlier modifier and the config alike', async () => {
-  const { view, display } = fakeView({ svSignal: 'only' })
-  await applyDisplayOpts(view, 't', 'alignments', [
-    'split:only',
-    'split:all',
-    'svSignal:all',
-  ])
-  expect(display.readFilter.split).toBeUndefined()
-  expect(display.readFilter.svSignal).toBeUndefined()
 })
