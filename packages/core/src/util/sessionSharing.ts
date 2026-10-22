@@ -120,7 +120,9 @@ async function shareSessionToDynamo(
   referer: string,
 ) {
   const sess = await toUrlSafeB64(JSON.stringify(session))
-  const password = generateUID(5)
+  // the server returns the ciphertext to anyone holding the session id, so the
+  // password alone guards it; 16 base62 characters is ~95 bits
+  const password = generateUID(16)
 
   const data = new FormData()
   data.append('session', await aesEncrypt(sess, password))
