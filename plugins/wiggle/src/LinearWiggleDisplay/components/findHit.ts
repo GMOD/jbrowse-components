@@ -1,4 +1,11 @@
-import { rowIndexAt } from '@jbrowse/core/util/rowStackGeometry'
+import {
+  rowIndexAt,
+  rowsUnderPointer,
+} from '@jbrowse/core/util/rowStackGeometry'
+import {
+  drawnRowHeightPx,
+  rowBandOffsetPx,
+} from '@jbrowse/render-core/shaders/rowRect'
 import { treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 
 import {
@@ -58,6 +65,10 @@ export function findOverlayHit(
 // track really does go sub-pixel (400 px over 1000 sources is 0.4 px a row).
 // These rows are sized to fit the display, so there is no scroll offset, and
 // `offsetY` is measured from the top of the rows.
+//
+// `tilesRows` is density's painting: each row at least a pixel tall and
+// centred on its slot, later rows over earlier ones, so below a pixel a row
+// the pointer is over is the last one painted there rather than its slot's.
 export function findRowHit(
   data: WiggleDataResult,
   visibleSources: VisibleSource[],
@@ -66,14 +77,38 @@ export function findRowHit(
   rowHeight: number,
   refName: string,
   showsMinMax: boolean,
+  tilesRows = false,
 ): WiggleHoveredFeature | undefined {
   if (rowHeight <= 0) {
     return undefined
   }
-  const rowIndex = rowIndexAt(offsetY, { rowHeight })
+  const rowIndex = tilesRows
+    ? paintedRowAt(offsetY, rowHeight, visibleSources.length)
+    : rowIndexAt(offsetY, { rowHeight })
   const src = visibleSources[rowIndex]
-  const ds = src ? data.sources.find(s => s.name === src.name) : undefined
-  return src && ds
+  return src ? sourceHit(data, src, bp, refName, showsMinMax) : undefined
+}
+
+// The last row whose painted cell covers `offsetY`, or -1 where none does.
+function paintedRowAt(offsetY: number, rowHeight: number, numRows: number) {
+  const { nearest, lowest } = rowsUnderPointer(
+    offsetY,
+    { rowHeight, topOffset: rowBandOffsetPx(rowHeight, 1) },
+    drawnRowHeightPx(rowHeight, 1),
+  )
+  const row = Math.min(nearest, numRows - 1)
+  return row >= lowest ? row : -1
+}
+
+function sourceHit(
+  data: WiggleDataResult,
+  src: VisibleSource,
+  bp: number,
+  refName: string,
+  showsMinMax: boolean,
+) {
+  const ds = data.sources.find(s => s.name === src.name)
+  return ds
     ? findSourceHit(ds, bp, refName, showsMinMax, src.name, src.color)
     : undefined
 }
@@ -88,6 +123,7 @@ export interface WiggleHitModel {
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   tooltipShowsMinMax: boolean
   isOverlay: boolean
+  isDensityMode: boolean
   showTree: boolean
   hierarchy?: unknown
   treeAreaWidth: number
@@ -116,6 +152,7 @@ export function findWiggleHit(
     rpcDataMap,
     tooltipShowsMinMax,
     isOverlay,
+    isDensityMode,
   } = model
   if (sources.length === 0 || offsetX < treeSidebarRightEdge(model)) {
     return undefined
@@ -125,9 +162,10 @@ export function findWiggleHit(
     return undefined
   }
   const { data, bp, region } = hit
-  return isOverlay
-    ? findOverlayHit(data, sources, bp, region.refName, tooltipShowsMinMax)
-    : findRowHit(
+  // A lone source names its bin, as a row does; only several sources sharing
+  // a box fall back to the cursor base
+  return !isOverlay
+    ? findRowHit(
         data,
         sources,
         bp,
@@ -135,7 +173,11 @@ export function findWiggleHit(
         effectiveRowHeight,
         region.refName,
         tooltipShowsMinMax,
+        isDensityMode,
       )
+    : sources.length === 1
+      ? sourceHit(data, sources[0]!, bp, region.refName, tooltipShowsMinMax)
+      : findOverlayHit(data, sources, bp, region.refName, tooltipShowsMinMax)
 }
 
 // Where a right-click landed, as a genomic coordinate rather than as which

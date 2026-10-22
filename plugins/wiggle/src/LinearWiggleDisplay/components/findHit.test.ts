@@ -196,6 +196,23 @@ describe('findRowHit', () => {
     expect(result?.rows).toEqual([{ source: 's6', score: 6 }])
   })
 
+  // Density paints row r over [r*0.3 - 0.35, r*0.3 + 0.65), later rows on top,
+  // so pixel 2's centre at 2.5 shows row 9, where its slot is row 8.
+  test('a sub-pixel density stack picks the row painted last at that pixel', () => {
+    const many = Array.from({ length: 12 }, (_, i) => ({ name: `s${i}` }))
+    const data = {
+      sources: many.map((s, i) =>
+        makeSource(s.name, [{ start: 0, end: 100, score: i }]),
+      ),
+    }
+    const at = (y: number) =>
+      findRowHit(data, many, 50, y, 0.3, 'chr1', false, true)?.rows[0]?.source
+    expect(at(2)).toBe('s9')
+    // the last row's 1px cell overhangs its slot past the end of the stack
+    expect(at(3)).toBe('s11')
+    expect(at(4)).toBeUndefined()
+  })
+
   test('returns undefined when offsetY is outside the rows', () => {
     const data = {
       sources: [makeSource('s1', [{ start: 0, end: 100, score: 5 }])],
@@ -273,6 +290,7 @@ describe('findWiggleHit', () => {
       ]),
       tooltipShowsMinMax: false,
       isOverlay: false,
+      isDensityMode: false,
       showTree: false,
       treeAreaWidth: 0,
       ...over,
@@ -338,6 +356,15 @@ describe('findWiggleHit', () => {
     })
     const hit = findWiggleHit(model, regions, 50, 5)
     expect(hit?.rows.map(r => r.score)).toEqual([5, 9])
+  })
+
+  test('a lone source in one box names its bin, not the cursor base', () => {
+    const model = makeModel({ isOverlay: true })
+    expect(findWiggleHit(model, regions, 50, 5)).toMatchObject({
+      start: 0,
+      end: 100,
+      rows: [{ source: 's1', score: 5 }],
+    })
   })
 
   test('row mode past the last row is a miss, not the last source', () => {
