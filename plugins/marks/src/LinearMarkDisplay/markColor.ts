@@ -8,8 +8,8 @@
  * threshold's cuts, a ramp's ends — then recolors what is already loaded and
  * fetches nothing.
  *
- * For example, `color: { field: 'type', scale: 'categorical' }` asks the worker
- * for each feature's index into the types it met, and an edit to `range`
+ * For example, `color: { field: 'type', scale: { type: 'ordinal' } }` asks the worker
+ * for each feature's index into the types it met, and an edit to `scale.range`
  * repaints those indexes here. A ramp over `score` on a bar whose `y` is
  * `score` asks the worker for nothing extra: it reads the heights the bar
  * already has.
@@ -27,6 +27,7 @@ import {
 import { scaleExtent } from '@jbrowse/core/util/quantileExtent'
 import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
 import {
+  colorSettingOf,
   featureColorEncoding,
   paintedColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -77,7 +78,7 @@ export type ColorSource =
   | { kind: 'expression'; encoding: string }
 
 /**
- * `owner` is the display holding the mark, whose track's categorical colors
+ * `owner` is the display holding the mark, whose track's ordinal colors
  * deal into one set of slots; a caller that only asks the worker leaves it
  * out.
  */
@@ -86,9 +87,9 @@ export function markColorOf(
   channels: StepChannels,
   owner?: object,
 ): ColorSource {
-  // a key's labels change what the legend says, not what any feature paints
+  // a key's names change what the legend says, not what any feature paints
   const encoding = paintedColorEncoding(
-    featureColorEncoding(mark.encoding.color),
+    featureColorEncoding(colorSettingOf(mark.encoding.color)),
   )
   if (typeof encoding !== 'object') {
     const value = encoding ?? DEFAULT_MARK_COLOR
@@ -96,7 +97,7 @@ export function markColorOf(
       ? { kind: 'expression', encoding: value }
       : { kind: 'constant', color: cssColorToABGR(value) }
   }
-  if (encoding.scale === 'categorical') {
+  if (encoding.scale === 'ordinal') {
     return {
       kind: 'categories',
       encoding,
@@ -124,7 +125,7 @@ export function wireColorOf(color: ColorSource): ColorEncoding {
     case 'expression':
       return color.encoding
     case 'categories':
-      return { field: color.encoding.field, scale: 'categorical' }
+      return { field: color.encoding.field, scale: 'ordinal' }
     case 'numbers':
       return color.fromY
         ? DEFAULT_MARK_COLOR
@@ -202,7 +203,7 @@ function numberScaleTable(
 // Each feature's category key, looked up in the worker's list of the keys it
 // met, painted through the config's domain and range, the list reordered to
 // the config's domain for the legend. Keys of another field, or with no
-// categorical config, take the field's own default colors.
+// ordinal config, take the field's own default colors.
 function colorByKeys<L extends EncodedChannels>(
   layer: L,
   keys: Uint32Array,

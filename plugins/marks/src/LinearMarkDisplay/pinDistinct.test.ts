@@ -67,7 +67,7 @@ test('Pin distinct shapes lists the colliding values in the domain, and the key 
   )
   display.pinDistinctShapes()
   expect(
-    [...getSnapshot(display.conf.marks[0]!.encoding.shape).domain].sort(),
+    [...getSnapshot(display.conf.marks[0]!.encoding.shape).scale.domain].sort(),
   ).toEqual(['SNV', 'deletion', 'insertion'])
   display.setRpcData(0, workerResult(display, VARIANTS), REGION)
   expect(shapesOf()).toBe(3)

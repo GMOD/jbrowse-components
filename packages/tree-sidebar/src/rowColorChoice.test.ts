@@ -15,43 +15,45 @@ describe('liftRowColor', () => {
     expect(lift({ field: '' }).field).toBe('name')
     expect(lift(undefined)).toEqual({
       field: 'name',
-      domain: [],
-      range: [],
+      scale: { domain: [], range: [] },
     })
   })
 
   it('reads a numeric domain as strings, and a null unknown as unset', () => {
-    expect(lift({ domain: [1, 2], unknown: null })).toEqual({
+    expect(lift({ scale: { domain: [1, 2], unknown: null } })).toEqual({
       field: 'name',
-      domain: ['1', '2'],
-      range: [],
+      scale: { domain: ['1', '2'], range: [] },
     })
   })
 
   it('writes back only the set members', () => {
-    expect(rowColorMembers(lift({ field: 'group', unknown: '' }))).toEqual({
-      field: 'group',
-      unknown: '',
-    })
+    expect(
+      rowColorMembers(lift({ field: 'group', scale: { unknown: '' } })),
+    ).toEqual({ field: 'group', scale: { unknown: '' } })
   })
 })
 
 describe('rowColorChoiceOf', () => {
   it('is None for a name setting that colors no row', () => {
     expect(rowColorChoiceOf(lift({}), false)).toBe('')
-    expect(rowColorChoiceOf(lift({ unknown: '' }), false)).toBe('')
-    expect(rowColorChoiceOf(lift({ unknown: '' }), true)).toBe('')
+    expect(rowColorChoiceOf(lift({ scale: { unknown: '' } }), false)).toBe('')
+    expect(rowColorChoiceOf(lift({ scale: { unknown: '' } }), true)).toBe('')
   })
 
   it('is Each row where a pick, an Other color or the palette colors a row', () => {
     expect(rowColorChoiceOf(lift({}), true)).toBe('name')
-    expect(rowColorChoiceOf(lift({ unknown: '#ccc' }), false)).toBe('name')
+    expect(rowColorChoiceOf(lift({ scale: { unknown: '#ccc' } }), false)).toBe(
+      'name',
+    )
     expect(
-      rowColorChoiceOf(lift({ domain: ['a'], range: ['#f00'] }), false),
+      rowColorChoiceOf(
+        lift({ scale: { domain: ['a'], range: ['#f00'] } }),
+        false,
+      ),
     ).toBe('name')
     expect(
       rowColorChoiceOf(
-        lift({ domain: ['a'], range: ['#f00'], unknown: '' }),
+        lift({ scale: { domain: ['a'], range: ['#f00'], unknown: '' } }),
         true,
       ),
     ).toBe('name')
@@ -59,20 +61,20 @@ describe('rowColorChoiceOf', () => {
 
   it('is the attribute', () => {
     expect(rowColorChoiceOf(lift('group'), false)).toBe('group')
-    expect(rowColorChoiceOf(lift({ field: 'group', unknown: '' }), true)).toBe(
-      'group',
-    )
+    expect(
+      rowColorChoiceOf(lift({ field: 'group', scale: { unknown: '' } }), true),
+    ).toBe('group')
   })
 })
 
 describe('withPair', () => {
   it('replaces a pair in place and appends a new one', () => {
-    const two = lift({ domain: ['a', 'b'], range: ['#f00', '#0f0'] })
-    expect(withPair(two, 'a', '#00f')).toMatchObject({
+    const two = lift({ scale: { domain: ['a', 'b'], range: ['#f00', '#0f0'] } })
+    expect(withPair(two, 'a', '#00f').scale).toMatchObject({
       domain: ['a', 'b'],
       range: ['#00f', '#0f0'],
     })
-    expect(withPair(two, 'c', '#00f')).toMatchObject({
+    expect(withPair(two, 'c', '#00f').scale).toMatchObject({
       domain: ['a', 'b', 'c'],
       range: ['#f00', '#0f0', '#00f'],
     })
@@ -81,9 +83,9 @@ describe('withPair', () => {
   it('keeps the spare range entries the unpaired values take', () => {
     const spares = lift({
       field: 'population',
-      range: ['red', 'blue', 'green'],
+      scale: { range: ['red', 'blue', 'green'] },
     })
-    expect(withPair(spares, 'EAS', 'black')).toMatchObject({
+    expect(withPair(spares, 'EAS', 'black').scale).toMatchObject({
       domain: ['EAS'],
       range: ['black', 'red', 'blue', 'green'],
     })
@@ -93,11 +95,12 @@ describe('withPair', () => {
 describe('startingRowColor', () => {
   const grey = lift({
     field: 'group',
-    domain: ['y'],
-    range: ['#abc'],
-    unknown: '#ccc',
+    scale: { domain: ['y'], range: ['#abc'], unknown: '#ccc' },
   })
-  const tissue = lift({ field: 'tissue', domain: ['t'], range: ['#f00'] })
+  const tissue = lift({
+    field: 'tissue',
+    scale: { domain: ['t'], range: ['#f00'] },
+  })
 
   it('None colors no row', () => {
     expect(rowColorMembers(startingRowColor('', [grey], false))).toEqual({
@@ -105,7 +108,7 @@ describe('startingRowColor', () => {
     })
     expect(rowColorMembers(startingRowColor('', [grey], true))).toEqual({
       field: 'name',
-      unknown: '',
+      scale: { unknown: '' },
     })
   })
 
@@ -124,7 +127,9 @@ describe('startingRowColor', () => {
   // rather than from the None.
   it("does not start Each row from a None's unknown: ''", () => {
     expect(
-      rowColorMembers(startingRowColor('name', [lift({ unknown: '' })], true)),
+      rowColorMembers(
+        startingRowColor('name', [lift({ scale: { unknown: '' } })], true),
+      ),
     ).toEqual({ field: 'name' })
   })
 })
@@ -146,26 +151,43 @@ describe('rowColorResetTarget', () => {
     expect(settled('group', {})).toBeUndefined()
     expect(settled({}, 'group')).toBeUndefined()
     expect(settled('tissue', 'group')).toBeUndefined()
-    expect(settled('group', { domain: ['a'], range: ['#f00'] })).toBeUndefined()
-    expect(settled({ unknown: '' }, {}, true)).toBeUndefined()
+    expect(
+      settled('group', { scale: { domain: ['a'], range: ['#f00'] } }),
+    ).toBeUndefined()
+    expect(settled({ scale: { unknown: '' } }, {}, true)).toBeUndefined()
   })
 
   it("returns the choice's pairs and unknown to the base's", () => {
-    const base = { field: 'name', domain: ['a'], range: ['#f00'] }
-    expect(settled({ domain: ['b'], range: ['#00f'] }, base)).toEqual(base)
-    expect(settled({ ...base, unknown: '#ccc' }, base)).toEqual(base)
-    const grouped = { field: 'group', domain: ['x'], range: ['#0f0'] }
+    const base = { field: 'name', scale: { domain: ['a'], range: ['#f00'] } }
     expect(
-      settled({ field: 'group', domain: ['y'], range: ['#abcdef'] }, grouped),
+      settled({ scale: { domain: ['b'], range: ['#00f'] } }, base),
+    ).toEqual(base)
+    expect(
+      settled({ ...base, scale: { ...base.scale, unknown: '#ccc' } }, base),
+    ).toEqual(base)
+    const grouped = {
+      field: 'group',
+      scale: { domain: ['x'], range: ['#0f0'] },
+    }
+    expect(
+      settled(
+        { field: 'group', scale: { domain: ['y'], range: ['#abcdef'] } },
+        grouped,
+      ),
     ).toEqual(grouped)
   })
 
   it('clears the colors of a choice the base does not make', () => {
-    const base = { field: 'group', unknown: '#ccc' }
+    const base = { field: 'group', scale: { unknown: '#ccc' } }
     expect(
-      settled({ field: 'tissue', domain: ['t'], range: ['#abc'] }, base),
+      settled(
+        { field: 'tissue', scale: { domain: ['t'], range: ['#abc'] } },
+        base,
+      ),
     ).toEqual({ field: 'tissue' })
-    expect(settled({ domain: ['a'], range: ['#f00'] }, {}, true)).toEqual({
+    expect(
+      settled({ scale: { domain: ['a'], range: ['#f00'] } }, {}, true),
+    ).toEqual({
       field: 'name',
     })
   })
@@ -173,21 +195,24 @@ describe('rowColorResetTarget', () => {
   // A config's grey for the values it lists none for is no reason to call
   // another attribute picked over it custom.
   it("is not custom where the base's unknown sits on another field", () => {
-    expect(settled('superpop', { field: 'population', unknown: '#ccc' })).toBe(
-      undefined,
-    )
+    expect(
+      settled('superpop', { field: 'population', scale: { unknown: '#ccc' } }),
+    ).toBe(undefined)
   })
 
   it('returns cleared spare range entries', () => {
-    const base = { field: 'population', range: ['red', 'blue', 'green'] }
+    const base = {
+      field: 'population',
+      scale: { range: ['red', 'blue', 'green'] },
+    }
     expect(settled({ field: 'population' }, base)).toEqual(base)
     expect(settled(base, base)).toBeUndefined()
   })
 
   it('reads pairs listed in another order as the same', () => {
-    const base = { domain: ['a', 'b'], range: ['#f00', '#00f'] }
+    const base = { scale: { domain: ['a', 'b'], range: ['#f00', '#00f'] } }
     expect(
-      settled({ domain: ['b', 'a'], range: ['#00f', '#f00'] }, base),
+      settled({ scale: { domain: ['b', 'a'], range: ['#00f', '#f00'] } }, base),
     ).toBeUndefined()
   })
 })

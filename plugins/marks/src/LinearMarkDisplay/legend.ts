@@ -18,6 +18,8 @@ import {
 } from '@jbrowse/core/util/thresholdScale'
 import {
   FEATURE_FIELD_PRESETS,
+  colorSettingOf,
+  colorSnapshotOf,
   featureColorEncoding,
   withPreset,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -46,7 +48,7 @@ const RAMP_STOPS = 8
  * written, and none under a jexl callback or a scale.
  */
 export function constantColorOf(mark: MarkConfig): string | undefined {
-  const encoding = featureColorEncoding(mark.encoding.color)
+  const encoding = featureColorEncoding(colorSettingOf(mark.encoding.color))
   return encoding === undefined
     ? DEFAULT_MARK_COLOR
     : typeof encoding === 'string' && !isJexl(encoding)
@@ -66,24 +68,27 @@ export function keySettingOf(
     return {}
   }
   if (channel === 'color') {
-    const { title, labels, breaks, descending, missingLabel, unknown } =
-      withPreset(mark.encoding.color, FEATURE_FIELD_PRESETS)
+    const { color } = mark.encoding
+    const { scale, legend } = withPreset(
+      colorSnapshotOf(color),
+      FEATURE_FIELD_PRESETS,
+    )
     return {
-      title,
-      labels: [...labels],
-      breaks: [...breaks],
-      descending,
-      missingLabel,
-      unknown,
+      title: legend.title,
+      names: [...(scale.names ?? [])],
+      values: [...color.legend.values],
+      descending: legend.descending,
+      missingLabel: color.legend.missingLabel,
+      unknown: scale.unknown,
     }
   }
-  const { title, labels, breaks, missingLabel } = mark.encoding.shape
+  const { scale, legend } = mark.encoding.shape
   const swatchColor = constantColorOf(mark)
   return {
-    title,
-    labels: [...labels],
-    breaks: [...breaks],
-    missingLabel,
+    title: legend.title,
+    names: [...scale.names],
+    values: [...legend.values],
+    missingLabel: legend.missingLabel,
     ...(swatchColor === undefined ? {} : { swatchColor }),
   }
 }
@@ -95,7 +100,7 @@ export function keySettingOf(
 const NUMERIC_KEY_HINT_ROWS = 8
 
 const NUMERIC_KEY_HINT =
-  "numeric values drawn as categories; set scale: 'linear' for a color scale"
+  "numeric values drawn as categories; set scale.type: 'linear' for a color scale"
 
 export type ScaledChannel = 'color' | 'shape'
 
@@ -109,8 +114,8 @@ export type ScaledChannel = 'color' | 'shape'
  */
 export interface MarkKeySetting {
   title?: string
-  labels?: readonly string[]
-  breaks?: readonly string[]
+  names?: readonly string[]
+  values?: readonly string[]
   descending?: boolean
   missingLabel?: string
   swatchColor?: string
@@ -335,7 +340,7 @@ export function buildMarkLegend(
   )
 }
 
-// A shape table over the same field a categorical color reads, on marks
+// A shape table over the same field an ordinal color reads, on marks
 // that color also keys: the two keys would list the same values twice, so
 // the color key draws the shape as its swatch, under the color's title, and
 // the shape key is folded away.
@@ -363,7 +368,7 @@ function keyField(
 ) {
   const own = categoricalField(scale.field, {
     domain: scale.domain,
-    labels: key.labels,
+    labels: key.names,
     unknown: key.unknown,
   })
   return facet?.field === scale.field
@@ -371,18 +376,18 @@ function keyField(
     : own
 }
 
-// A key's rows as its channel lists them: only the values `breaks` names, in
-// its order, where it names any, and the no-value row under `missingLabel`.
+// A key's rows as its channel lists them: only the values `legend.values` names, in
+// its order, where it names any, and the no-value row under `legend.missingLabel`.
 function listedRows(
   entries: CategoricalEntry[],
-  { breaks = [], missingLabel }: MarkKeySetting,
+  { values = [], missingLabel }: MarkKeySetting,
 ) {
   const rows =
-    breaks.length === 0
+    values.length === 0
       ? entries
       : [
           ...new Set(
-            breaks.flatMap(value =>
+            values.flatMap(value =>
               entries.filter(e => (e.values ?? [e.value]).includes(value)),
             ),
           ),
@@ -393,11 +398,11 @@ function listedRows(
 }
 
 function listedKey(scale: CategoricalScale, key: MarkKeySetting) {
-  const { breaks = [] } = key
+  const { values = [] } = key
   return {
     ...scale,
     entries: listedRows(scale.entries, key),
-    ...(breaks.length > 0 ? { domain: breaks } : {}),
+    ...(values.length > 0 ? { domain: values } : {}),
   }
 }
 
@@ -433,9 +438,9 @@ function shapeKey(
 // the rows for no value and not a number stay last either way.
 function thresholdRows(
   scale: Extract<ScaleTable, { kind: 'threshold' }>,
-  { labels, descending, missingLabel }: MarkKeySetting,
+  { names, descending, missingLabel }: MarkKeySetting,
 ) {
-  const rows = thresholdKeyEntries(scale.domain, scale.range, scale, labels)
+  const rows = thresholdKeyEntries(scale.domain, scale.range, scale, names)
   const intervals = scale.domain.length + 1
   return listedRows(
     descending
@@ -462,9 +467,9 @@ function shapeSwatches(shape: ShapeScaleTable) {
 }
 
 /**
- * The keys as the color scales `LegendMixin` derives the legend from. A
- * categorical color's key is the one every color channel derives
- * (`derivedColorScale`), a row per color. A shape table is a categorical
+ * The keys as the color scales `LegendMixin` derives the legend from. An
+ * ordinal color's key is the one every color channel derives
+ * (`derivedColorScale`), a row per color. A shape table is an ordinal
  * scale whose swatches are the shapes, drawn in the one color its mark
  * paints, or in the text color where that color is a scale, which the shape
  * key does not describe — unless the color key is over the same field, when
@@ -497,11 +502,11 @@ export function markColorScales(
         if (shape && keys.length > 0) {
           folded.add(shape)
         }
-        const breaks = key.breaks ?? []
+        const values = key.values ?? []
         const listed =
-          breaks.length === 0
+          values.length === 0
             ? scale.entries
-            : scale.entries.filter(e => breaks.includes(e.value))
+            : scale.entries.filter(e => values.includes(e.value))
         const hinted =
           scale.numericKeys && listed.length > NUMERIC_KEY_HINT_ROWS
         if (!hinted) {
@@ -617,14 +622,14 @@ export function shapeSection(sections: MarkLegendSection[], markIndex: number) {
 }
 
 // A value as a hover names it: as the key row does, the no-value row under
-// `missingLabel` where written.
+// `legend.missingLabel` where written.
 function keyLabel(
   scale: { field: string; domain: string[] },
   key: MarkKeySetting,
 ) {
   const { label } = categoricalField(scale.field, {
     domain: scale.domain,
-    labels: key.labels,
+    labels: key.names,
   })
   const { missingLabel } = key
   return (value: string) =>
@@ -677,7 +682,7 @@ export function valueRow(
     return gaps.find(e => !!e.missing === missing)
   }
   return scale.kind === 'threshold'
-    ? thresholdKeyEntries(scale.domain, scale.range, scale, key.labels)[
+    ? thresholdKeyEntries(scale.domain, scale.range, scale, key.names)[
         thresholdBandOf(value, scale.domain)
       ]
     : undefined

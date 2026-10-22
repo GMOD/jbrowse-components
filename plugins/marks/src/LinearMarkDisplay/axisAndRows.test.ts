@@ -84,12 +84,15 @@ test('a log axis under bars is not pulled toward an origin it cannot reach', () 
   expect(domainOf('bar')[0]).toBeLessThanOrEqual(0.002)
 })
 
-test('hiding a section leaves a log size scale over the positive values it strokes', () => {
+test('hiding a section leaves a log stroke width scale over the positive values it strokes', () => {
   const { display } = createTestEnvironment({
     marks: [
       {
         mark: 'link',
-        encoding: { x2: 'end', size: { field: 'score', scale: 'log' } },
+        encoding: {
+          x2: 'end',
+          strokeWidth: { field: 'score', scale: { type: 'log' } },
+        },
       },
     ],
     facet: 'kind',

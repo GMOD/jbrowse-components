@@ -52,7 +52,7 @@ export const markDefSchema = ConfigurationSchema(
      * #slot
      * `bar` spans from `origin` to `y`; `point` is a shape at `y` over
      * the middle of `x` to `x2`; `rule` is a line across `x` to `x2` at `y`,
-     * `encoding.size` px thick; `line` is a stroke through consecutive
+     * `encoding.strokeWidth` px thick; `line` is a stroke through consecutive
      * values, held across each span or run centre to centre as `interpolate`
      * says, dropping to `origin` across a gap; `span` is a band across the
      * whole plot from `x` to `x2`; `text` prints a field over the middle of

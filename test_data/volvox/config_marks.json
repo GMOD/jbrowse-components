@@ -111,7 +111,7 @@
               "mark": "line",
               "encoding": {
                 "y": "score",
-                "size": 2
+                "strokeWidth": 2
               }
             },
             {
@@ -148,7 +148,7 @@
               "mark": "line",
               "encoding": {
                 "y": "score",
-                "size": 2,
+                "strokeWidth": 2,
                 "color": {
                   "field": "score",
                   "scale": "threshold",
@@ -182,7 +182,7 @@
               "mark": { "type": "line", "interpolate": "linear" },
               "encoding": {
                 "y": "score",
-                "size": 2,
+                "strokeWidth": 2,
                 "color": {
                   "field": "score",
                   "scale": "threshold",
@@ -1184,7 +1184,7 @@
             {
               "mark": "link",
               "encoding": {
-                "size": 6
+                "strokeWidth": 6
               },
               "transform": [
                 {

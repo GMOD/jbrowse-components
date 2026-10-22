@@ -30,7 +30,7 @@ export interface MarkProblemIndex {
   forMark: (mark: number) => readonly MarkProblem[]
   /**
    * The problems at a slot and at every slot under it, so a control bound to
-   * `encoding.color` answers for `encoding.color.domainMin` too. `mark` is
+   * `encoding.color` answers for `encoding.color.scale.domainMin` too. `mark` is
    * `undefined` for a display-level slot.
    */
   under: (mark: number | undefined, slot: string) => readonly MarkProblem[]

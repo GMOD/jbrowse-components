@@ -29,10 +29,12 @@ const STARTS: Record<string, unknown> = {
     encoding: {
       color: {
         field: 'score',
-        scale: 'linear',
-        domainMin: 0,
-        domainMax: 10,
-        range: ['white', 'red'],
+        scale: {
+          type: 'linear',
+          domainMin: 0,
+          domainMax: 10,
+          range: ['white', 'red'],
+        },
       },
     },
   },
@@ -44,14 +46,17 @@ const STARTS: Record<string, unknown> = {
     mark: 'bar',
     encoding: {
       y: 'score',
-      color: { field: 'strand', domain: ['1'], range: ['red', 'blue'] },
+      color: {
+        field: 'strand',
+        scale: { domain: ['1'], range: ['red', 'blue'] },
+      },
     },
   },
   'an open-ended ramp': {
     mark: 'bar',
     encoding: {
       y: 'score',
-      color: { field: 'score', scale: 'linear', domainMin: 0 },
+      color: { field: 'score', scale: { type: 'linear', domainMin: 0 } },
     },
   },
   'a diverging ramp': {
@@ -60,11 +65,13 @@ const STARTS: Record<string, unknown> = {
       y: 'score',
       color: {
         field: 'score',
-        scale: 'linear',
-        domainMin: -2,
-        domainMax: 6,
-        domainMid: 0,
-        range: ['blue', 'white', 'red'],
+        scale: {
+          type: 'linear',
+          domainMin: -2,
+          domainMax: 6,
+          domainMid: 0,
+          range: ['blue', 'white', 'red'],
+        },
       },
     },
   },
@@ -74,9 +81,11 @@ const STARTS: Record<string, unknown> = {
       y: 'score',
       color: {
         field: 'pip',
-        scale: 'threshold',
-        domain: [0.1, 0.5],
-        range: ['#357ebd', '#eea236', '#d43f3a'],
+        scale: {
+          type: 'threshold',
+          domain: [0.1, 0.5],
+          range: ['#357ebd', '#eea236', '#d43f3a'],
+        },
       },
     },
   },
@@ -84,7 +93,10 @@ const STARTS: Record<string, unknown> = {
     mark: 'bar',
     encoding: {
       y: 'score',
-      color: { field: 'score', scale: 'log', scheme: 'viridis', reverse: true },
+      color: {
+        field: 'score',
+        scale: { type: 'log', scheme: 'viridis', reverse: true },
+      },
     },
   },
   'a binned count': {

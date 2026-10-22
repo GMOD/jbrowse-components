@@ -16,7 +16,7 @@ import {
 } from './markVocabulary.ts'
 
 import type { MarkSnapshot } from './markProblems.ts'
-import type { MarkChannel, MarkSpec } from './markSpecs.ts'
+import type { MarkChannel, MarkSpec, PxChannel } from './markSpecs.ts'
 import type { LineInterpolation, MarkType } from './markVocabulary.ts'
 import type { PlotFields } from './scanPlotFields.ts'
 
@@ -38,11 +38,17 @@ const POSITIONAL: EditChannel[] = ['x', 'x2']
 /** Which channels a mark of this type reads, in the order a form shows them. */
 export function editChannels(type: MarkType): EditChannel[] {
   const spec: MarkSpec = MARK_SPECS[type]
+  const { px } = spec
   return [
     ...spec.channels,
-    ...(spec.size === 'constant' ? (['size'] as const) : []),
+    ...(px && !(spec.channels as readonly string[]).includes(px) ? [px] : []),
     ...POSITIONAL,
   ]
+}
+
+/** Whether a channel holds a width in px, a point's `size` or a `strokeWidth`. */
+function isPxChannel(channel: EditChannel): channel is PxChannel {
+  return channel === 'size' || channel === 'strokeWidth'
 }
 
 /** What a control shows for one channel, and whether it may write it back. */
@@ -60,14 +66,15 @@ export interface ChannelEdit {
 
 const UNSET: ChannelEdit = { value: '', beyond: false }
 
-/** The members that shape a channel's key and paint nothing. */
+/** The members of a channel's `legend` that a control shows one at a time. */
 const KEY_MEMBERS = ['title', 'descending', 'missingLabel'] as const
 
 /**
- * The single-valued scale members a control shows beside a channel's field:
- * for a categorical color the one its left-out values paint, for a ramp the ends that pin it, its middle, the quantile an open end
- * follows, the named stops it samples and their direction, and for any scale the
- * key's title, row order and name for no value.
+ * The single-valued members a control shows beside a channel's field: under
+ * `scale`, for an ordinal color the one its left-out values paint, for a ramp
+ * the ends that pin it, its middle, the quantile an open end follows, the
+ * named stops it samples and their direction; under `legend`, for any scale
+ * the key's title, row order and name for no value.
  */
 export const SCALE_MEMBERS = [
   'unknown',
@@ -82,12 +89,22 @@ export const SCALE_MEMBERS = [
 export type ScaleMember = (typeof SCALE_MEMBERS)[number]
 
 /**
- * The list members a control holds as comma-separated text: a categorical
- * scale's values in order or a threshold's cut points, the colors or shapes
- * handed to them, the key's name for each, and the values the key lists.
+ * The list members a control holds as comma-separated text: under `scale`,
+ * an ordinal scale's values in order or a threshold's cut points, the colors
+ * or shapes handed to them and the key's name for each; under `legend`, the
+ * values the key lists.
  */
-export const LIST_MEMBERS = ['domain', 'range', 'labels', 'breaks'] as const
+export const LIST_MEMBERS = ['domain', 'range', 'names', 'values'] as const
 export type ListMember = (typeof LIST_MEMBERS)[number]
+
+type ChannelMember = ScaleMember | ListMember
+
+const LEGEND_MEMBERS = new Set<string>([...KEY_MEMBERS, 'values'])
+
+/** The part of a channel object a member sits in: `scale`, or the key's `legend`. */
+function partOf(member: string): 'scale' | 'legend' {
+  return LEGEND_MEMBERS.has(member) ? 'legend' : 'scale'
+}
 
 /** The ends a ramp is pinned by, which a width ramp shares with a color one. */
 export const RAMP_ENDS = ['domainMin', 'domainMax'] as const
@@ -96,38 +113,38 @@ export const RAMP_ENDS = ['domainMin', 'domainMax'] as const
 function rampMembers(channel: EditChannel): readonly ScaleMember[] {
   return channel === 'color'
     ? SCALE_MEMBERS.filter(
-        member =>
-          member !== 'unknown' &&
-          !(KEY_MEMBERS as readonly string[]).includes(member),
+        member => member !== 'unknown' && partOf(member) === 'scale',
       )
     : RAMP_ENDS
 }
 
 /**
  * The scale kinds a channel offers, off the vocabulary its own schema
- * declares: every color scale for `color`, `categorical` alone for `shape`,
- * and a width's two ramps for `size`.
+ * declares: every color scale for `color`, `ordinal` alone for `shape`, and
+ * a width's two ramps for `size` and `strokeWidth`.
  */
 export function channelScales(channel: EditChannel): readonly string[] {
   return channel === 'color'
     ? MARK_COLOR_SCALES
     : channel === 'shape'
-      ? ['categorical']
-      : channel === 'size'
+      ? ['ordinal']
+      : isPxChannel(channel)
         ? SIZE_SCALES
         : []
 }
 
 // A channel object a picker can round-trip: a field, the scale it reads
-// through, the ramp members above, or a constant in `value` — the slot a
-// shorthand lifts into. Anything else is the box's.
-const PICKABLE_MEMBERS = new Set<string>([
-  'field',
-  'scale',
-  'value',
-  ...SCALE_MEMBERS,
-  ...LIST_MEMBERS,
-])
+// through with the members above, the key's, or a constant in `value` — the
+// slot a shorthand lifts into. Anything else is the box's.
+const PICKABLE_MEMBERS = new Set<string>(['field', 'value', 'scale', 'legend'])
+
+const PICKABLE_PART_MEMBERS = {
+  scale: new Set<string>([
+    'type',
+    ...[...SCALE_MEMBERS, ...LIST_MEMBERS].filter(m => partOf(m) === 'scale'),
+  ]),
+  legend: LEGEND_MEMBERS,
+}
 
 // The field a channel object paints through, '' where it names none.
 function paintedField(members: Record<string, unknown> | undefined) {
@@ -145,6 +162,35 @@ function pickedValue(declared: Record<string, unknown>) {
       : ''
 }
 
+function objectOf(declared: unknown) {
+  return typeof declared === 'object' &&
+    declared !== null &&
+    !Array.isArray(declared)
+    ? (declared as Record<string, unknown>)
+    : undefined
+}
+
+// Whether a channel object's member holds what no control shows.
+function beyondPicker([key, value]: [string, unknown]) {
+  if (value === undefined) {
+    return false
+  }
+  if (!PICKABLE_MEMBERS.has(key)) {
+    return true
+  }
+  if (key !== 'scale' && key !== 'legend') {
+    return false
+  }
+  const part = objectOf(value)
+  return (
+    !part ||
+    Object.entries(part).some(
+      ([member, held]) =>
+        held !== undefined && !PICKABLE_PART_MEMBERS[key].has(member),
+    )
+  )
+}
+
 function editOf(declared: unknown): ChannelEdit {
   if (declared === undefined) {
     return UNSET
@@ -156,9 +202,7 @@ function editOf(declared: unknown): ChannelEdit {
     return { value: '', beyond: true }
   }
   const members = declared as Record<string, unknown>
-  const beyond = Object.entries(members).some(
-    ([key, value]) => !PICKABLE_MEMBERS.has(key) && value !== undefined,
-  )
+  const beyond = Object.entries(members).some(beyondPicker)
   return { value: beyond ? '' : pickedValue(members), beyond }
 }
 
@@ -169,14 +213,21 @@ export function channelEdit(
   return editOf(mark.encoding?.[channel])
 }
 
-function objectOf(declared: unknown) {
-  return typeof declared === 'object' && declared !== null
-    ? (declared as Record<string, unknown>)
-    : undefined
-}
-
 function channelObject(mark: DraftMark, channel: EditChannel) {
   return objectOf(mark.encoding?.[channel])
+}
+
+// One part of a channel object, `{}` where it writes none.
+function partOfChannel(
+  mark: DraftMark,
+  channel: EditChannel,
+  part: 'scale' | 'legend',
+): Record<string, unknown> {
+  return objectOf(channelObject(mark, channel)?.[part]) ?? {}
+}
+
+function memberOf(mark: DraftMark, channel: EditChannel, member: string) {
+  return partOfChannel(mark, channel, partOf(member))[member]
 }
 
 // The scale a channel's field reads through where the declaration names none.
@@ -184,8 +235,8 @@ function presetScale(channel: EditChannel, field: string) {
   return channel === 'color'
     ? fieldScaleOf(FEATURE_FIELD_PRESETS, field)
     : channel === 'shape'
-      ? 'categorical'
-      : channel === 'size'
+      ? 'ordinal'
+      : isPxChannel(channel)
         ? 'linear'
         : ''
 }
@@ -207,29 +258,43 @@ export function channelScale(mark: DraftMark, channel: EditChannel): string {
   if (channelEdit(mark, channel).beyond || !field) {
     return ''
   }
-  const scale = channelObject(mark, channel)?.scale
-  return typeof scale === 'string' ? scale : presetScale(channel, field)
+  const { type } = partOfChannel(mark, channel, 'scale')
+  return typeof type === 'string' ? type : presetScale(channel, field)
 }
 
-/** What one scale member says, as a control holds it: text, never a number. */
+/** What one scale or key member says, as a control holds it: text, never a number. */
 export function scaleMember(
   mark: DraftMark,
   channel: EditChannel,
   member: ScaleMember,
 ): string {
-  const held = channelObject(mark, channel)?.[member]
+  const held = memberOf(mark, channel, member)
   return held === undefined || held === false ? '' : String(held)
 }
 
+function definedPart(part: Record<string, unknown> | undefined) {
+  const kept = Object.fromEntries(
+    Object.entries(part ?? {}).filter(([, value]) => value !== undefined),
+  )
+  return Object.keys(kept).length > 0 ? kept : undefined
+}
+
+// The channel written as `members`, unset members and empty parts dropped.
 function writeChannel(
   mark: DraftMark,
   channel: EditChannel,
-  members: Record<string, unknown>,
+  { scale, legend, ...members }: Record<string, unknown>,
 ): DraftMark {
-  const kept = Object.fromEntries(
-    Object.entries(members).filter(([, value]) => value !== undefined),
-  )
-  return { ...mark, encoding: { ...mark.encoding, [channel]: kept } }
+  const kept = definedPart({
+    ...members,
+    scale: definedPart(objectOf(scale)),
+    legend: definedPart(objectOf(legend)),
+  })
+  return { ...mark, encoding: { ...mark.encoding, [channel]: kept ?? {} } }
+}
+
+function pick(part: Record<string, unknown>, members: readonly string[]) {
+  return Object.fromEntries(members.map(member => [member, part[member]]))
 }
 
 /**
@@ -244,26 +309,43 @@ export function withChannelScale(
   channel: EditChannel,
   scale: string,
 ): DraftMark {
-  const declared = channelObject(mark, channel) ?? {}
-  const kept = [
+  const keptScale = [
     ...(isRampScale(scale) ? rampMembers(channel) : []),
     ...(isRampScale(scale) && isRampScale(channelScale(mark, channel))
       ? ['range']
       : []),
-    'title',
-    'missingLabel',
-    ...(scale === 'categorical' ? ['unknown'] : []),
+    ...(scale === 'ordinal' ? ['unknown'] : []),
   ]
   return writeChannel(mark, channel, {
     field: channelField(mark, channel) || undefined,
-    scale,
-    ...Object.fromEntries(kept.map(member => [member, declared[member]])),
+    scale: {
+      type: scale,
+      ...pick(partOfChannel(mark, channel, 'scale'), keptScale),
+    },
+    legend: pick(partOfChannel(mark, channel, 'legend'), [
+      'title',
+      'missingLabel',
+    ]),
+  })
+}
+
+// The channel with one member of one of its parts written.
+function withMember(
+  mark: DraftMark,
+  channel: EditChannel,
+  member: ChannelMember,
+  held: unknown,
+): DraftMark {
+  const part = partOf(member)
+  return writeChannel(mark, channel, {
+    ...channelObject(mark, channel),
+    [part]: { ...partOfChannel(mark, channel, part), [member]: held },
   })
 }
 
 /**
- * The mark with one scale member written. An empty value clears it, so a
- * cleared end autoscales over the loaded regions again.
+ * The mark with one scale or key member written. An empty value clears it,
+ * so a cleared end autoscales over the loaded regions again.
  */
 export function withScaleMember(
   mark: DraftMark,
@@ -282,10 +364,7 @@ export function withScaleMember(
             member === 'unknown'
           ? value
           : Number(value)
-  return writeChannel(mark, channel, {
-    ...channelObject(mark, channel),
-    [member]: held,
-  })
+  return withMember(mark, channel, member, held)
 }
 
 /** A list member as the comma-separated text its control holds. */
@@ -294,13 +373,14 @@ export function listMember(
   channel: EditChannel,
   member: ListMember,
 ): string {
-  const held = channelObject(mark, channel)?.[member]
+  const held = memberOf(mark, channel, member)
   return Array.isArray(held) ? held.join(', ') : ''
 }
 
 /**
  * The mark with one list member written from comma-separated text, blanks
- * dropped; text naming nothing clears it. A `size` range is two px numbers.
+ * dropped; text naming nothing clears it. A width's `scale.range` is two px
+ * numbers.
  */
 export function withListMember(
   mark: DraftMark,
@@ -315,13 +395,10 @@ export function withListMember(
   const held =
     items.length === 0
       ? undefined
-      : channel === 'size' && member === 'range'
+      : isPxChannel(channel) && member === 'range'
         ? items.map(Number)
         : items
-  return writeChannel(mark, channel, {
-    ...channelObject(mark, channel),
-    [member]: held,
-  })
+  return withMember(mark, channel, member, held)
 }
 
 function readsNumbers(scale: unknown) {
@@ -347,7 +424,7 @@ function spellsConstant(channel: 'color' | 'shape', value: string) {
  * A color or shape value is a field unless it spells a constant, and a field
  * the scan found is a field whatever it spells. A field edit keeps the scale
  * it is read through and that scale's members; only a field the scan types
- * the other way — a number under `categorical`, text under a ramp — takes the
+ * the other way — a number under `ordinal`, text under a ramp — takes the
  * scale it implies, the rule Color by follows.
  *
  * `base` is the channel as declared before the edit began, so a value typed
@@ -366,10 +443,11 @@ export function withChannel(
   }
   // a bare string is a field, so it is held as the object it lifts to
   const held = typeof base === 'string' ? { field: base } : objectOf(base)
+  const heldScale = objectOf(held?.scale)
   const implied = fields.numeric.includes(value)
     ? 'linear'
     : fields.categorical.includes(value)
-      ? 'categorical'
+      ? 'ordinal'
       : undefined
   if (channel === 'color' || channel === 'shape') {
     const heldField = typeof held?.field === 'string' && held.field !== ''
@@ -380,23 +458,23 @@ export function withChannel(
       return writeChannel(mark, channel, {
         ...held,
         field: value,
-        scale: 'categorical',
+        scale: { ...heldScale, type: 'ordinal' },
       })
     }
     return heldField &&
       (implied === undefined ||
-        readsNumbers(implied) === readsNumbers(held.scale))
+        readsNumbers(implied) === readsNumbers(heldScale?.type))
       ? writeChannel(mark, channel, { ...held, field: value })
       : writeChannel(mark, channel, {
           value: held?.value,
           field: value,
-          scale: implied ?? 'categorical',
+          scale: { type: implied ?? 'ordinal' },
         })
   }
-  if (channel === 'size' && implied === undefined && spellsNumber(value)) {
-    return { ...mark, encoding: { ...mark.encoding, size: Number(value) } }
+  if (isPxChannel(channel) && implied === undefined && spellsNumber(value)) {
+    return { ...mark, encoding: { ...mark.encoding, [channel]: Number(value) } }
   }
-  return channel === 'size' && held
+  return isPxChannel(channel) && held
     ? writeChannel(mark, channel, { ...held, field: value, value: undefined })
     : { ...mark, encoding: { ...mark.encoding, [channel]: value } }
 }

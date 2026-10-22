@@ -145,7 +145,7 @@ export default observer(function SetColorDialog<S extends RowSource>({
   const editDraft = (next: (current: RowColorSetting) => RowColorSetting) => {
     setDrafts({ ...drafts, [choice]: next(setting) })
   }
-  const pairs = pairedColorsOf(setting)
+  const pairs = pairedColorsOf(setting.scale)
   const dealt = model.dealtRowColorsFor(setting)
   const colors = resolveRowColors(
     currLayout,
@@ -224,7 +224,7 @@ export default observer(function SetColorDialog<S extends RowSource>({
         <BulkEditPanel
           currLayout={currLayout.map(row => ({
             ...row,
-            rowColor: pairedColorsOf(eachRow).get(row.name),
+            rowColor: pairedColorsOf(eachRow.scale).get(row.name),
           }))}
           onClose={next => {
             if (next) {
@@ -235,8 +235,11 @@ export default observer(function SetColorDialog<S extends RowSource>({
               )
               const picked = {
                 ...eachRow,
-                domain: pasted.map(([name]) => name),
-                range: pasted.map(([, color]) => color),
+                scale: {
+                  ...eachRow.scale,
+                  domain: pasted.map(([name]) => name),
+                  range: pasted.map(([, color]) => color),
+                },
               }
               if (!samePairs(picked, eachRow)) {
                 setEachRow(picked)
@@ -288,9 +291,12 @@ export default observer(function SetColorDialog<S extends RowSource>({
                     choice === ''
                       ? undefined
                       : {
-                          color: setting.unknown,
+                          color: setting.scale.unknown,
                           onChange: unknown => {
-                            editDraft(s => ({ ...s, unknown }))
+                            editDraft(s => ({
+                              ...s,
+                              scale: { ...s.scale, unknown },
+                            }))
                           },
                         }
                   }
@@ -300,7 +306,10 @@ export default observer(function SetColorDialog<S extends RowSource>({
                     editDraft(s => withPair(s, value, color))
                   }}
                   onClear={() => {
-                    editDraft(s => ({ ...s, domain: [], range: [] }))
+                    editDraft(s => ({
+                      ...s,
+                      scale: { ...s.scale, domain: [], range: [] },
+                    }))
                   }}
                 />
 

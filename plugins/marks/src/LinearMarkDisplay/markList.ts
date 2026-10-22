@@ -116,9 +116,9 @@ export interface MarkRenderState extends MarkFrame {
   bpPerPx: number
   origin: number
   minWidthPx: number
-  /** Mark `i`'s `encoding.size` number: a point's diameter, a rule's thickness or a link's stroke in px. */
+  /** Mark `i`'s px number: a point's `encoding.size`, a rule's, a line's or a link's `encoding.strokeWidth`. */
   markSizes: number[]
-  /** Mark `i`'s size scale, where its `encoding.size` names a field. */
+  /** Mark `i`'s size scale, where its `encoding.strokeWidth` names a field. */
   sizeScales: (LinkSizeScale | undefined)[]
   /**
    * The view's displayed regions as a link's feet place through them, empty

@@ -12,7 +12,7 @@ function problem(
 
 const PROBLEMS = [
   problem(0, 'encoding.y', 'error'),
-  problem(0, 'encoding.color.domainMin'),
+  problem(0, 'encoding.color.scale.domainMin'),
   problem(0, 'encoding.colorValue'),
   problem(1, 'transform.2.expr', 'error'),
   problem(1, 'transform'),
@@ -27,7 +27,7 @@ describe('under', () => {
   // has to answer for the slots the rules address inside it.
   it('rolls a child slot up to the control that owns it', () => {
     expect(index.under(0, 'encoding.color').map(p => p.slot)).toEqual([
-      'encoding.color.domainMin',
+      'encoding.color.scale.domainMin',
     ])
   })
 

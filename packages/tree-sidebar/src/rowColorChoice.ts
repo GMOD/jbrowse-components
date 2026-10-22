@@ -1,42 +1,71 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { capitalizeFirst } from '@jbrowse/core/util'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { compareStructural } from 'mobx'
 
-import type { RowColorSetting } from './rowColorScale.ts'
+import type { RowColorScaleSetting, RowColorSetting } from './rowColorScale.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /** The `rowColor` object as a config or the dialog writes it. */
-export type RowColorSnapshot = Partial<RowColorSetting>
+export interface RowColorSnapshot {
+  field?: string
+  scale?: Partial<RowColorScaleSetting>
+}
 
 /**
  * `value` read as a `RowColorSetting`, the one shape every rule below takes:
- * a string is its field, a missing or empty field is `name`, and a `domain`
- * written as numbers reads as the strings the schema carries.
+ * a string is its field, a missing or empty field is `name`, and a
+ * `scale.domain` written as numbers reads as the strings the schema carries.
  */
 export function liftRowColor(value: unknown): RowColorSetting {
   const snap: RowColorSnapshot =
     typeof value === 'string'
       ? { field: value }
       : ((value as RowColorSnapshot | undefined) ?? {})
+  const { domain = [], range = [], unknown } = snap.scale ?? {}
   return {
     field: snap.field || 'name',
-    domain: (snap.domain ?? []).map(String),
-    range: snap.range ?? [],
-    ...(snap.unknown == null ? {} : { unknown: snap.unknown }),
+    scale: {
+      domain: domain.map(String),
+      range,
+      ...(unknown == null ? {} : { unknown }),
+    },
   }
 }
 
-/** The members a `rowColor` write carries: the set ones, and no empty list. */
+/** A `rowColor` config node read as a `RowColorSetting`. */
+export function rowColorSettingOf(
+  rowColor: AnyConfigurationModel,
+): RowColorSetting {
+  return liftRowColor({
+    field: readConfObject(rowColor, 'field'),
+    scale: {
+      domain: readConfObject(rowColor, ['scale', 'domain']),
+      range: readConfObject(rowColor, ['scale', 'range']),
+      unknown: readConfObject(rowColor, ['scale', 'unknown']),
+    },
+  })
+}
+
+/**
+ * The members a `rowColor` write carries: the set ones, no empty list, and
+ * no empty `scale`.
+ */
 export function rowColorMembers(setting: RowColorSetting): RowColorSnapshot {
-  return Object.fromEntries(
-    Object.entries(setting).filter(
+  const scale = Object.fromEntries(
+    Object.entries(setting.scale).filter(
       ([, value]) =>
         value !== undefined && !(Array.isArray(value) && value.length === 0),
     ),
   )
+  return {
+    field: setting.field,
+    ...(Object.keys(scale).length > 0 ? { scale } : {}),
+  }
 }
 
 /** The `range` entries past `domain`, which `dealRowColors` deals first. */
-function spareRange({ domain, range }: RowColorSetting) {
+function spareRange({ domain, range }: RowColorScaleSetting) {
   return range.slice(domain.length)
 }
 
@@ -47,18 +76,18 @@ function spareRange({ domain, range }: RowColorSetting) {
 export function samePairs(a: RowColorSetting, b: RowColorSetting) {
   return (
     compareStructural(
-      Object.fromEntries(pairedColorsOf(a)),
-      Object.fromEntries(pairedColorsOf(b)),
-    ) && compareStructural(spareRange(a), spareRange(b))
+      Object.fromEntries(pairedColorsOf(a.scale)),
+      Object.fromEntries(pairedColorsOf(b.scale)),
+    ) && compareStructural(spareRange(a.scale), spareRange(b.scale))
   )
 }
 
 export function sameRowColor(a: RowColorSetting, b: RowColorSetting) {
   return (
     a.field === b.field &&
-    compareStructural(a.domain, b.domain) &&
-    compareStructural(a.range, b.range) &&
-    a.unknown === b.unknown
+    compareStructural(a.scale.domain, b.scale.domain) &&
+    compareStructural(a.scale.range, b.scale.range) &&
+    a.scale.unknown === b.scale.unknown
   )
 }
 
@@ -71,26 +100,30 @@ export function withPair(
   value: string,
   color: string,
 ): RowColorSetting {
-  const pairs = new Map(pairedColorsOf(setting)).set(value, color)
+  const pairs = new Map(pairedColorsOf(setting.scale)).set(value, color)
   return {
     ...setting,
-    domain: [...pairs.keys()],
-    range: [...pairs.values(), ...spareRange(setting)],
+    scale: {
+      ...setting.scale,
+      domain: [...pairs.keys()],
+      range: [...pairs.values(), ...spareRange(setting.scale)],
+    },
   }
 }
 
 /**
  * What the dialog and a menu show `setting` as: its field, `name` for Each
  * row, or '' for None where it colors no row: `name` with no pair and an
- * `unknown` of '', or unset where no palette deals (`paletteDeals`).
+ * `scale.unknown` of '', or unset where no palette deals (`paletteDeals`).
  */
 export function rowColorChoiceOf(
   setting: RowColorSetting,
   paletteDeals: boolean,
 ): string {
-  const { field, unknown } = setting
+  const { field, scale } = setting
+  const { unknown } = scale
   return field === 'name' &&
-    pairedColorsOf(setting).size === 0 &&
+    pairedColorsOf(scale).size === 0 &&
     (unknown === '' || (unknown === undefined && !paletteDeals))
     ? ''
     : field
@@ -117,7 +150,10 @@ export function startingRowColor(
   paletteDeals: boolean,
 ): RowColorSetting {
   return choice === ''
-    ? liftRowColor({ field: 'name', unknown: paletteDeals ? '' : undefined })
+    ? liftRowColor({
+        field: 'name',
+        scale: { unknown: paletteDeals ? '' : undefined },
+      })
     : (from.find(
         setting => rowColorChoiceOf(setting, paletteDeals) === choice,
       ) ?? liftRowColor({ field: choice }))
@@ -141,7 +177,7 @@ export function rowColorResetTarget(
     return undefined
   }
   const target = startingRowColor(choice, [base], paletteDeals)
-  return live.unknown === target.unknown && samePairs(live, target)
+  return live.scale.unknown === target.scale.unknown && samePairs(live, target)
     ? undefined
     : target
 }

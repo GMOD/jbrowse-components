@@ -142,7 +142,7 @@ describe('a display supplying the hooks', () => {
         type: 'SuppliedTreeDisplay',
         configuration: {
           rows: { sort: ['c'], labels: { a: 'Ay' }, kept: ['a', 'c'] },
-          rowColor: { domain: ['b'], range: ['#00f'] },
+          rowColor: { scale: { domain: ['b'], range: ['#00f'] } },
         },
       })
   }
@@ -382,7 +382,7 @@ describe('resolvedRowColors', () => {
 
   it('takes a pair over the own color, and the own color over the palette', () => {
     const display = makeRowDisplay(
-      { rowColor: { domain: ['d'], range: ['#00f'] } },
+      { rowColor: { scale: { domain: ['d'], range: ['#00f'] } } },
       { rows: OWN, shared: true },
     )
     expect(colorsOf(display)).toEqual({
@@ -403,7 +403,7 @@ describe('resolvedRowColors', () => {
 
   it('gives a row only its pair or its own color where no panel is shared', () => {
     const display = makeRowDisplay(
-      { rowColor: { domain: ['a'], range: ['#00f'] } },
+      { rowColor: { scale: { domain: ['a'], range: ['#00f'] } } },
       { rows: OWN },
     )
     expect(colorsOf(display)).toEqual({
@@ -449,7 +449,10 @@ describe('resolvedRowColors', () => {
     it('takes no unknown color', () => {
       const display = makeRowDisplay(
         {
-          rowColor: { field: 'group', domain: [], range: [], unknown: '#ccc' },
+          rowColor: {
+            field: 'group',
+            scale: { domain: [], range: [], unknown: '#ccc' },
+          },
         },
         { rows: SPARSE },
       )
@@ -462,7 +465,12 @@ describe('resolvedRowColors', () => {
 
     it("takes the color a pair names '' by", () => {
       const display = makeRowDisplay(
-        { rowColor: { field: 'group', domain: [''], range: ['#eee'] } },
+        {
+          rowColor: {
+            field: 'group',
+            scale: { domain: [''], range: ['#eee'] },
+          },
+        },
         { rows: SPARSE },
       )
       expect(colorsOf(display)).toEqual({
@@ -484,7 +492,11 @@ describe('resolvedRowColors', () => {
   it('paints an unknown color on the unlisted rows without their own, shared panel or not', () => {
     for (const shared of [false, true]) {
       const display = makeRowDisplay(
-        { rowColor: { domain: ['a'], range: ['#00f'], unknown: '#ccc' } },
+        {
+          rowColor: {
+            scale: { domain: ['a'], range: ['#00f'], unknown: '#ccc' },
+          },
+        },
         { rows: OWN, shared },
       )
       expect(colorsOf(display)).toEqual({
@@ -499,7 +511,7 @@ describe('resolvedRowColors', () => {
 
   it("paints only the pairs under unknown: ''", () => {
     const display = makeRowDisplay(
-      { rowColor: { domain: ['a'], range: ['#00f'], unknown: '' } },
+      { rowColor: { scale: { domain: ['a'], range: ['#00f'], unknown: '' } } },
       { rows: OWN, shared: true },
     )
     expect(colorsOf(display)).toEqual({
@@ -518,7 +530,7 @@ describe('the row palette', () => {
 
   it('deals the unlisted rows tableau10 in source order', () => {
     const display = makePalette({
-      rowColor: { domain: ['b'], range: ['#00f'] },
+      rowColor: { scale: { domain: ['b'], range: ['#00f'] } },
     })
     expect(colorsOf(display)).toEqual({ a: p(0), b: '#00f', c: p(1) })
   })
@@ -549,8 +561,7 @@ describe('the row palette', () => {
     expect(display.rowColorFields).toEqual(['group'])
     const preview = display.dealtRowColorsFor({
       field: 'group',
-      domain: ['y'],
-      range: ['#abcdef'],
+      scale: { domain: ['y'], range: ['#abcdef'] },
     })
     expect(Object.fromEntries(preview)).toEqual({ x: p(0), y: '#abcdef' })
   })
@@ -575,8 +586,7 @@ describe('a dialog submit of the row colors', () => {
     const display = makeGrouped({ rowColor: 'group' })
     display.applyRowEdits(display.editableSources, {
       field: 'group',
-      domain: ['y'],
-      range: ['#abcdef'],
+      scale: { domain: ['y'], range: ['#abcdef'] },
     })
     expect(display.resolvedRowColors.get('b')).toBe('#abcdef')
     expect(display.resolvedRowColors.get('a')).toBe(p(0))
@@ -586,22 +596,19 @@ describe('a dialog submit of the row colors', () => {
     const display = makeGrouped({ rowColor: 'group' })
     display.applyRowEdits(display.editableSources, {
       field: 'name',
-      domain: ['b'],
-      range: ['#123456'],
+      scale: { domain: ['b'], range: ['#123456'] },
     })
     expect(display.rowColorChoice).toBe('name')
-    expect(Object.fromEntries(pairedColorsOf(display.rowColorSetting))).toEqual(
-      { b: '#123456' },
-    )
+    expect(
+      Object.fromEntries(pairedColorsOf(display.rowColorSetting.scale)),
+    ).toEqual({ b: '#123456' })
   })
 
   it("paints only the values an unknown: '' lists", () => {
     const display = makeGrouped({
       rowColor: {
         field: 'group',
-        domain: ['y'],
-        range: ['#abcdef'],
-        unknown: '',
+        scale: { domain: ['y'], range: ['#abcdef'], unknown: '' },
       },
     })
     expect(display.rowColorChoice).toBe('group')
@@ -610,7 +617,7 @@ describe('a dialog submit of the row colors', () => {
 
   it('gives every value an unknown color the pairs leave out', () => {
     const display = makeGrouped({
-      rowColor: { domain: ['b'], range: ['#00f'], unknown: '#ccc' },
+      rowColor: { scale: { domain: ['b'], range: ['#00f'], unknown: '#ccc' } },
     })
     expect(display.rowColorChoice).toBe('name')
     expect(colorsOf(display)).toEqual({ a: '#ccc', b: '#00f', c: '#ccc' })
@@ -620,9 +627,7 @@ describe('a dialog submit of the row colors', () => {
     const display = makeGrouped()
     display.applyRowEdits(display.editableSources, {
       field: 'name',
-      domain: ['b'],
-      range: ['#123456'],
-      unknown: '',
+      scale: { domain: ['b'], range: ['#123456'], unknown: '' },
     })
     expect(display.rowColorChoice).toBe('name')
     expect(colorsOf(display)).toEqual({ b: '#123456' })
@@ -630,12 +635,12 @@ describe('a dialog submit of the row colors', () => {
 
   it('None colors no row', () => {
     const display = makeGrouped({
-      rowColor: { domain: ['b'], range: ['#00f'] },
+      rowColor: { scale: { domain: ['b'], range: ['#00f'] } },
     })
     expect(display.resolvedRowColors.size).toBe(3)
     display.applyRowEdits(display.editableSources, {
       field: 'name',
-      unknown: '',
+      scale: { unknown: '' },
     })
     expect(display.rowColorChoice).toBe('')
     expect(display.resolvedRowColors.size).toBe(0)
@@ -644,9 +649,7 @@ describe('a dialog submit of the row colors', () => {
   it("a submit with no color object keeps an attribute's unknown: ''", () => {
     const listed = {
       field: 'group',
-      domain: ['y'],
-      range: ['#abcdef'],
-      unknown: '',
+      scale: { domain: ['y'], range: ['#abcdef'], unknown: '' },
     }
     const display = makeGrouped({ rowColor: listed })
     display.applyRowEdits([...display.editableSources].reverse())
@@ -656,12 +659,12 @@ describe('a dialog submit of the row colors', () => {
 
   it("a submit with no color object keeps unknown: '#ccc'", () => {
     const display = makeGrouped({
-      rowColor: { domain: ['b'], range: ['#00f'], unknown: '#ccc' },
+      rowColor: { scale: { domain: ['b'], range: ['#00f'], unknown: '#ccc' } },
     })
     display.applyRowEdits(
       display.editableSources.map(r => ({ ...r, label: r.name.toUpperCase() })),
     )
-    expect(display.rowColorSetting.unknown).toBe('#ccc')
+    expect(display.rowColorSetting.scale.unknown).toBe('#ccc')
     expect(colorsOf(display)).toEqual({ a: '#ccc', b: '#00f', c: '#ccc' })
   })
 
@@ -669,7 +672,7 @@ describe('a dialog submit of the row colors', () => {
     const display = makeGrouped()
     display.applyRowEdits(display.editableSources, {
       field: 'name',
-      unknown: '',
+      scale: { unknown: '' },
     })
     expect(display.resolvedRowColors.size).toBe(0)
     expect(display.rowStylingIsCustom).toBe(false)
@@ -681,12 +684,11 @@ describe('a dialog submit of the row colors', () => {
     const display = makeGrouped()
     display.applyRowEdits(display.editableSources, {
       field: 'name',
-      domain: ['b'],
-      range: ['#123456'],
+      scale: { domain: ['b'], range: ['#123456'] },
     })
     expect(display.rowStylingIsCustom).toBe(true)
     display.resetRowArrangement()
-    expect(pairedColorsOf(display.rowColorSetting).size).toBe(0)
+    expect(pairedColorsOf(display.rowColorSetting.scale).size).toBe(0)
     expect(display.resolvedRowColors.size).toBe(3)
   })
 
@@ -696,8 +698,7 @@ describe('a dialog submit of the row colors', () => {
     expect(display.rowStylingIsCustom).toBe(false)
     display.applyRowEdits(display.editableSources, {
       field: 'group',
-      domain: ['y'],
-      range: ['#abcdef'],
+      scale: { domain: ['y'], range: ['#abcdef'] },
     })
     expect(display.rowStylingIsCustom).toBe(true)
     display.resetRowArrangement()
@@ -707,14 +708,30 @@ describe('a dialog submit of the row colors', () => {
 
   it('writes nothing on a submit that changes nothing', () => {
     const display = makeGrouped({
-      rowColor: { field: 'group', domain: ['y'], range: ['#abcdef'] },
+      rowColor: {
+        field: 'group',
+        scale: { domain: ['y'], range: ['#abcdef'] },
+      },
     })
     const before = getSnapshot(display.configuration)
     display.applyRowEdits(display.editableSources, {
       field: 'group',
-      domain: ['y'],
-      range: ['#abcdef'],
+      scale: { domain: ['y'], range: ['#abcdef'] },
     })
     expect(getSnapshot(display.configuration)).toBe(before)
   })
+})
+
+// Hosted jb2hubs configs still write the rowColor pairs flat
+// (`hubtools/src/repeatClassDisplay.ts`); the deprecated lift reads them as
+// the channel's `scale`, so the repeat classes keep their colors.
+test('a hosted hub flat rowColor loads as the scale of the channel', () => {
+  const display = makeDisplay({
+    rowColor: { field: 'group', domain: ['a'], range: ['#f00'], unknown: '' },
+  })
+  expect(getSnapshot(display.configuration.rowColor)).toEqual({
+    field: 'group',
+    scale: { domain: ['a'], range: ['#f00'], unknown: '' },
+  })
+  expect(pairedColorsOf(display.rowColorSetting.scale).get('a')).toBe('#f00')
 })

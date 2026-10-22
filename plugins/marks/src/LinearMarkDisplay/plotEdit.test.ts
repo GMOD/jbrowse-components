@@ -12,12 +12,12 @@ test('a text field a step writes is picked as a category, a number as a ramp', (
   const scaleOf = (field: string) =>
     (
       withChannel({ mark: 'span' }, 'color', field, fields).encoding?.color as {
-        scale?: string
+        scale?: { type?: string }
       }
-    ).scale
-  expect(scaleOf('species')).toBe('categorical')
-  expect(scaleOf('state')).toBe('categorical')
-  expect(scaleOf('svType')).toBe('categorical')
+    ).scale?.type
+  expect(scaleOf('species')).toBe('ordinal')
+  expect(scaleOf('state')).toBe('ordinal')
+  expect(scaleOf('svType')).toBe('ordinal')
   expect(scaleOf('match')).toBe('linear')
   expect(scaleOf('mate.start')).toBe('linear')
   expect(fields.numeric).not.toContain('start')

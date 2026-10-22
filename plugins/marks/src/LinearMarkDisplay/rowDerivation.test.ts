@@ -17,7 +17,7 @@ const BARS = [
     mark: 'bar',
     encoding: {
       y: 'score',
-      color: { field: 'source', scale: 'categorical' },
+      color: { field: 'source', scale: { type: 'ordinal' } },
     },
   },
 ]
@@ -410,8 +410,7 @@ test('a reset returns the order, labels, tree and focus to the config', async ()
   await clusterRun(display, '((dad,s2),(mom,s10));')
   const [first, ...rest] = display.editableSources
   display.applyRowEdits([...rest, { ...first!, label: 'Last' }], {
-    domain: [first!.name],
-    range: ['#0000ff'],
+    scale: { domain: [first!.name], range: ['#0000ff'] },
   })
   display.setRowFocus(['mom'])
   expect(display.rowArrangementIsCustom).toBe(true)

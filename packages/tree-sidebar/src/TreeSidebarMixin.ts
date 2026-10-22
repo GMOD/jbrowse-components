@@ -22,6 +22,7 @@ import {
   rowColorChoiceOf,
   rowColorMembers,
   rowColorResetTarget,
+  rowColorSettingOf,
   sameRowColor,
   startingRowColor,
 } from './rowColorChoice.ts'
@@ -319,12 +320,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * `name` where it names none, and the values with an assigned color.
        */
       get rowColorSetting(): RowColorSetting {
-        return liftRowColor({
-          field: getConf(host(self), ['rowColor', 'field']),
-          domain: getConf(host(self), ['rowColor', 'domain']),
-          range: getConf(host(self), ['rowColor', 'range']),
-          unknown: getConf(host(self), ['rowColor', 'unknown']),
-        })
+        return rowColorSettingOf(host(self).configuration.rowColor)
       },
       /**
        * #getter
@@ -748,7 +744,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         const setting = self.rowColorSetting
         return {
           setting,
-          pairs: pairedColorsOf(setting),
+          pairs: pairedColorsOf(setting.scale),
           dealt: self.dealtRowColors,
           resolved: self.resolvedRowColors,
         }

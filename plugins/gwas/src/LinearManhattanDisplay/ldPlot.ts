@@ -20,12 +20,12 @@ const LD_PALETTE = ['#357ebd', '#46b8da', '#5cb85c', '#eea236', '#d43f3a']
  */
 export const LD_COLOR = {
   field: LD_FIELD,
-  scale: 'threshold' as const,
-  domain: LD_DOMAIN,
-  range: LD_PALETTE,
-  title: 'r² to index SNP',
-  descending: true,
-  missingLabel: 'No LD data',
+  scale: { type: 'threshold' as const, domain: LD_DOMAIN, range: LD_PALETTE },
+  legend: {
+    title: 'r² to index SNP',
+    descending: true,
+    missingLabel: 'No LD data',
+  },
 }
 
 /** A Manhattan plot's one mark: a point per feature at its `score`. */
@@ -49,10 +49,8 @@ const LD_INDEX_FILTER = {
 
 const LD_INDEX_SHAPE = {
   field: LD_ROLE_FIELD,
-  domain: ['index'],
-  range: ['diamond'],
-  labels: ['Index SNP'],
-  title: '',
+  scale: { domain: ['index'], range: ['diamond'], names: ['Index SNP'] },
+  legend: { title: '' },
 }
 
 /**
@@ -72,7 +70,7 @@ const LD_FIELDS = new Set<unknown>([LD_FIELD, LD_ROLE_FIELD])
 /**
  * Whether a mark's encoding names a field the LD join writes, which is what
  * makes a fetch join the `ldAdapter`: a `y`, a `text`, or the field a color,
- * shape or size scale reads.
+ * shape or stroke width scale reads.
  */
 export function readsLd({ encoding }: MarkConfig) {
   return [
@@ -80,7 +78,7 @@ export function readsLd({ encoding }: MarkConfig) {
     encoding.text,
     encoding.color.field,
     encoding.shape.field,
-    encoding.size.field,
+    encoding.strokeWidth.field,
   ].some(field => LD_FIELDS.has(field))
 }
 
@@ -194,10 +192,20 @@ function fieldOf(channel: unknown) {
     : channel
 }
 
+// A width channel less a scale over an LD field, keeping the px it held.
+function withoutLdWidth(
+  channel: 'size' | 'strokeWidth',
+  width: NonNullable<MarkSnapshot['encoding']>['size'],
+) {
+  const own = typeof width === 'object' ? width.value : undefined
+  return !LD_FIELDS.has(fieldOf(width))
+    ? width !== undefined && { [channel]: width }
+    : own !== undefined && { [channel]: own }
+}
+
 function withoutLdScales(mark: MarkSnapshot): MarkSnapshot {
-  const { color, shape, size, ...encoding } = mark.encoding ?? {}
+  const { color, shape, size, strokeWidth, ...encoding } = mark.encoding ?? {}
   const own = color?.value
-  const ownSize = typeof size === 'object' ? size.value : undefined
   return {
     ...mark,
     transform: mark.transform?.filter(s => !sameStep(LD_PARTNERS_FILTER)(s)),
@@ -207,9 +215,8 @@ function withoutLdScales(mark: MarkSnapshot): MarkSnapshot {
         ? color && { color }
         : own !== undefined && { color: { value: own } }),
       ...(!LD_FIELDS.has(fieldOf(shape)) && shape !== undefined && { shape }),
-      ...(!LD_FIELDS.has(fieldOf(size))
-        ? size !== undefined && { size }
-        : ownSize !== undefined && { size: ownSize }),
+      ...withoutLdWidth('size', size),
+      ...withoutLdWidth('strokeWidth', strokeWidth),
     },
   }
 }
@@ -218,7 +225,7 @@ function withoutLdScales(mark: MarkSnapshot): MarkSnapshot {
  * The plot with LD coloring taken off, or undefined where nothing is left,
  * which is the default plot. The index twins go, as does a mark plotting an LD
  * field as its `y` or `text`; every other mark loses the partner filter and
- * any color, shape or size scale over an LD field, a color keeping the value
+ * any color, shape or width scale over an LD field, a color keeping the value
  * it held beside the r² scale. No mark is left reading LD.
  */
 export function withoutLd(
