@@ -37,6 +37,9 @@ function sameCells(
 }
 
 /**
+ * #stateModel ChordPass
+ * #internal a volatile of the circular view's; tagged so a member typed as one
+ * prints its name
  * The canvas every chord display of a circular view draws on: one cell per
  * display, in track order, drawn through the polar stage the frame carries. A
  * rotation or a zoom is a frame change, so it redraws and uploads nothing; a

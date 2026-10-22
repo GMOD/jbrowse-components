@@ -68,6 +68,9 @@ interface Item {
   // `#config` page the nearest of them resolves to once every config is read
   schemaDeclIds?: string[]
   schemaPage?: { name: string; id: string }
+  // a sub-schema slot whose own slots are rows of this page: the schema's
+  // name, whether the slot holds a list of them, and the first of those rows
+  subSchema?: { name?: string; list: boolean; firstSlot: string }
   // the slot's default is a parameter of the factory declaring it, so the
   // column names the arrangement rather than one caller's value
   parameterisedDefault?: boolean
@@ -771,6 +774,36 @@ function schemaWrites(name: string) {
   return writesBySchema.get(name)
 }
 
+// A slot as the manifest declares it, by its config or sub-schema's name and
+// its dotted path there (`aggregate.ops`).
+let slotsBySchema: Map<string, ManifestSlot[]> | undefined
+
+function manifestSlot(schema: string, path: string) {
+  if (!slotsBySchema) {
+    const found = new Map<string, ManifestSlot[]>()
+    const visit = (slots: ManifestSlot[] = []) => {
+      for (const slot of slots) {
+        if (slot.schema && slot.subSlots) {
+          found.set(slot.schema, slot.subSlots)
+        }
+        visit(slot.subSlots)
+      }
+    }
+    for (const [name, entry] of Object.entries(configManifest())) {
+      found.set(name, entry.slots)
+      visit(entry.slots)
+    }
+    slotsBySchema = found
+  }
+  let slots = slotsBySchema.get(schema)
+  let slot: ManifestSlot | undefined
+  for (const part of path.split('.')) {
+    slot = slots?.find(s => s.name === part)
+    slots = slot?.subSlots
+  }
+  return slot
+}
+
 // The string-list slots whose schema reads a number written in them as its
 // string, by schema name: a ramp's `domain: [0, 100]` is legal JSON for a
 // `stringArray`, which the bare type name would deny.
@@ -1393,8 +1426,16 @@ const PLUGGABLE_INDEX_SECTION: Record<string, string> = {
   'internet account': 'internet-account',
 }
 
+// `types.array(types.union(...pluginManager.getDisplayElements().map(…)))`,
+// a track's list of every registered display's config.
+const DISPLAY_ELEMENTS_SLOT =
+  /^types\.array\(\s*types\.union\(\s*\.\.\.pluginManager\s*\.getDisplayElements\(\)/
+
 function pluggableSlotType(code: string | undefined) {
-  const [, array, kind] = PLUGGABLE_SLOT.exec(code?.trim() ?? '') ?? []
+  const trimmed = code?.trim() ?? ''
+  const [, array, kind] = DISPLAY_ELEMENTS_SLOT.test(trimmed)
+    ? [trimmed, 'list', 'display']
+    : (PLUGGABLE_SLOT.exec(trimmed) ?? [])
   return kind
     ? {
         name: array ? `list of ${kind} configs` : `${kind} config`,
@@ -1403,23 +1444,53 @@ function pluggableSlotType(code: string | undefined) {
     : undefined
 }
 
-// The Type cell: the slot's declared type, linked to the slot-types guide, with
-// a stringEnum's choices after it. A slot whose value isn't a `{ type, ... }`
-// object at all has no type to name: a nested schema links its page, another
-// element's config names that kind, and otherwise the source stands in.
-function slotTypeCell(meta: SlotMeta, schemaPage: Item['schemaPage']) {
-  const enums = meta.enumValues ? ` (${enumList(meta.enumValues)})` : ''
-  const code = meta.typeCode ?? (meta.valueCode && trimSlotCode(meta.valueCode))
+// `pluginManager.getTrackType('ReferenceSequenceTrack').configSchema`: a slot
+// holding one named element's config, which has a page of its own.
+const NAMED_ELEMENT_SLOT =
+  /^pluginManager\s*\.get(?:Track|Display|Adapter|Connection|InternetAccount)Type\(\s*'([^']+)'\s*\)!?\s*\.configSchema$/
+
+function slotSourceCode(meta: SlotMeta) {
+  return meta.typeCode ?? (meta.valueCode && trimSlotCode(meta.valueCode))
+}
+
+// What a slot whose value isn't a `{ type, ... }` object holds, named and
+// linked: a schema with a page of its own, another element's config, or a
+// sub-schema whose slots are rows of this page. Undefined leaves
+// the source to stand in.
+function slotKind(item: Item, code: string | undefined) {
   const pluggable = pluggableSlotType(code)
+  if (item.schemaPage) {
+    return { name: item.schemaPage.name, href: `../${item.schemaPage.id}` }
+  } else if (pluggable) {
+    return {
+      name: pluggable.name,
+      href: pluggable.section && `/docs/config#${pluggable.section}`,
+    }
+  } else if (item.subSchema) {
+    const { name, list, firstSlot } = item.subSchema
+    return {
+      name: list
+        ? `list of ${name ?? 'sub-schema'} entries`
+        : `${name ?? ''} sub-schema`.trim(),
+      href: `#${slotAnchor(firstSlot)}`,
+    }
+  }
+  return undefined
+}
+
+// The Type cell: the slot's declared type, linked to the slot-types guide, with
+// a stringEnum's choices after it, else what `slotKind` names, else the source.
+function slotTypeCell(meta: SlotMeta, item: Item) {
+  const enums = meta.enumValues ? ` (${enumList(meta.enumValues)})` : ''
+  const code = slotSourceCode(meta)
+  const kind = slotKind(item, code)
   return meta.type
     ? `${typeLink(meta.type)}${enums}`
-    : schemaPage
-      ? `[${schemaPage.name}](../${schemaPage.id})`
-      : pluggable
-        ? pluggable.section
-          ? `[${pluggable.name}](/docs/config#${pluggable.section})`
-          : pluggable.name
-        : codeCell(code)
+    : kind
+      ? kind.href
+        ? `[${kind.name}](${kind.href})`
+        : kind.name
+      : codeCell(code)
 }
 
 // A default the factory takes as a parameter has no one value to print, and its
@@ -1476,7 +1547,7 @@ function slotGroupRow(from: string, count: number) {
 // table.
 function slotRow(item: Item, schema: string) {
   const { meta } = slotMetaFor(item)
-  const type = `${slotTypeCell(meta, item.schemaPage)}${liftsNumbers(schema, item.name) ? ' of strings or numbers' : ''}`
+  const type = `${slotTypeCell(meta, item)}${liftsNumbers(schema, item.name) ? ' of strings or numbers' : ''}`
   const dflt = slotDefaultCell(item, meta)
   const cells = [
     [
@@ -1916,10 +1987,10 @@ const AGENT_SLOT_NESTING: Record<string, (name: string) => string> = {
 function agentSlotLine(item: Item) {
   const { meta } = slotMetaFor(item)
   const enums = meta.enumValues ? ` (${enumList(meta.enumValues)})` : ''
-  const code = meta.typeCode ?? (meta.valueCode && trimSlotCode(meta.valueCode))
+  const code = slotSourceCode(meta)
   const type = meta.type
     ? `${meta.type}${enums}`
-    : (item.schemaPage?.name ?? pluggableSlotType(code)?.name ?? flatCode(code))
+    : (slotKind(item, code)?.name ?? flatCode(code))
   const dflt = item.parameterisedDefault
     ? PARAMETERISED_DEFAULT
     : flatCode(
@@ -2004,10 +2075,37 @@ export function writeConfigDocs(
   const byName = mapByKey(withHeader, c => c.header.name)
   const index: ConfigIndex = { byDeclId, byName }
   resolveInheritedSlotMeta(withHeader, index)
-  for (const slot of withHeader.flatMap(c => c.slots)) {
-    const schema = slot.schemaDeclIds?.map(id => byDeclId.get(id)).find(Boolean)
-    if (schema) {
-      slot.schemaPage = { name: schema.header.name, id: schema.header.id }
+  for (const { header, slots } of withHeader) {
+    for (const slot of slots) {
+      const elementName = NAMED_ELEMENT_SLOT.exec(
+        slotSourceCode(slotMetaFor(slot).meta)?.trim() ?? '',
+      )?.[1]
+      const schema =
+        slot.schemaDeclIds?.map(id => byDeclId.get(id)).find(Boolean) ??
+        (elementName ? byName.get(elementName) : undefined)
+      if (schema) {
+        slot.schemaPage = { name: schema.header.name, id: schema.header.id }
+      }
+      const firstSlot = slots.find(
+        s =>
+          s.name.startsWith(`${slot.name}.`) &&
+          !isContainerSlot(s, slotMetaFor(s).meta, slots),
+      )?.name
+      if (firstSlot) {
+        const declared = manifestSlot(header.name, slot.name)
+        const code = slotSourceCode(slotMetaFor(slot).meta)?.trim() ?? ''
+        slot.subSchema = {
+          name:
+            declared?.schema ??
+            /^(?:types\.array\(\s*)?ConfigurationSchema\(\s*'([^']+)'/.exec(
+              code,
+            )?.[1],
+          list: declared
+            ? declared.type.endsWith('[]')
+            : code.startsWith('types.array('),
+          firstSlot,
+        }
+      }
     }
   }
   // All before the write loop, so a run that would emit a blank cell, drop a

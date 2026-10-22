@@ -652,6 +652,18 @@ export function writeModelDocs(
           .map(member => `${m.header.name}.${member.name}`),
       ),
     ),
+    // A member whose cell still prints a model's expansion: the model has no
+    // `#stateModel` tag for `printedTypes` to name it by, or the member is typed
+    // as a partial `typeof self`.
+    unnamedModelTypes: withHeader.flatMap(m =>
+      MEMBER_KINDS.flatMap(k =>
+        m.members[k.key]
+          .filter(member =>
+            k.memberCode(member).includes('ModelInstanceTypeProps<'),
+          )
+          .map(member => `${m.header.name}.${member.name}`),
+      ),
+    ),
     // Reported as a name plus the file, because the fix is positional and the
     // name alone doesn't say where to look.
     misattached: withHeader

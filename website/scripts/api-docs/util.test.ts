@@ -2,6 +2,7 @@ import { GENERATED_NOTICE } from '../check-utils.ts'
 import {
   categoryLabel,
   collectTransitive,
+  dropNodeTails,
   elideSignature,
   exampleSection,
   filterUnseenByName,
@@ -491,6 +492,35 @@ describe('elideSignature', () => {
   test('reads past a bracket inside a string literal', () => {
     const sig = `(a: "<" | ">", b: Map<string, ${'x'.repeat(200)}>) => void`
     expect(elideSignature(sig, 180)).toBe('(a: "<" | ">", b: Map<…>) => void')
+  })
+})
+
+describe('dropNodeTails', () => {
+  test('drops the MST holder off a node', () => {
+    expect(
+      dropNodeTails(
+        '(conf: X) => PluggableConfigNode & IStateTreeNode<PluggableConfigSchemaType>',
+      ),
+    ).toBe('(conf: X) => PluggableConfigNode')
+  })
+
+  test('drops the parentheses a bare type no longer needs', () => {
+    expect(
+      dropNodeTails(
+        '(IMSTArray<ISimpleType<string>> & IStateTreeNode<IArrayType<ISimpleType<string>>>) | undefined',
+      ),
+    ).toBe('IMSTArray<ISimpleType<string>> | undefined')
+  })
+
+  test('keeps parentheses that still group something', () => {
+    expect(
+      dropNodeTails('(A & { b: number; } & IStateTreeNode<IModelType<{}>>)[]'),
+    ).toBe('(A & { b: number; })[]')
+  })
+
+  test('leaves a standalone IStateTreeNode alone', () => {
+    const sig = '(self: IStateTreeNode<IAnyType>) => void'
+    expect(dropNodeTails(sig)).toBe(sig)
   })
 })
 

@@ -1218,12 +1218,11 @@ export function nameTypes(types: PrintedType[], sig: string) {
       const { end, extras } = matchEnd(out, at, type)
       if (end > 0) {
         const replacement = [type.name, ...extras].join(' & ')
-        const wrapped =
-          !extras.length && out[at - 1] === '(' && out[end] === ')'
-        const from = wrapped ? at - 1 : at
-        out =
-          out.slice(0, from) + replacement + out.slice(wrapped ? end + 1 : end)
-        at = out.indexOf(type.body, from + replacement.length)
+        out = unwrapBefore(
+          out.slice(0, at) + replacement + out.slice(end),
+          at + replacement.length,
+        )
+        at = out.indexOf(type.body, at)
       } else {
         at = out.indexOf(type.body, at + 1)
       }
@@ -1232,12 +1231,58 @@ export function nameTypes(types: PrintedType[], sig: string) {
   return out
 }
 
+// A node's `& IStateTreeNode<…>` names the MST type holding it, which nothing a
+// reader does with the member depends on: `PluggableConfigNode &
+// IStateTreeNode<PluggableConfigSchemaType>` is a `PluggableConfigNode`.
+export function dropNodeTails(sig: string) {
+  let out = sig
+  for (let at = out.indexOf(NODE_TAIL); at >= 0;) {
+    const end = groupEnd(out, at + NODE_TAIL.length - 1)
+    if (end < 0) {
+      break
+    }
+    out = unwrapBefore(out.slice(0, at) + out.slice(end), at)
+    at = out.indexOf(NODE_TAIL, Math.max(0, at - 1))
+  }
+  return out
+}
+
+// Drop the parentheses closing at `close` when what they hold reads the same
+// without them, as `(Assembly)[]` does. Anything with a space at its top level
+// keeps them: `(A | B)[]`, `(keyof T)[]`, a parameter list.
+function unwrapBefore(sig: string, close: number) {
+  if (sig[close] !== ')') {
+    return sig
+  }
+  let depth = 0
+  let spaced = false
+  for (let i = close; i >= 0; i--) {
+    const c = sig[i]!
+    if (c === '"') {
+      spaced = true
+      i = sig.lastIndexOf('"', i - 1)
+    } else if ('>})]'.includes(c) && !(c === '>' && sig[i - 1] === '=')) {
+      depth++
+    } else if ('<{(['.includes(c)) {
+      depth--
+      if (depth === 0) {
+        return spaced
+          ? sig
+          : sig.slice(0, i) + sig.slice(i + 1, close) + sig.slice(close + 1)
+      }
+    } else if (c === ' ' && depth === 1) {
+      spaced = true
+    }
+  }
+  return sig
+}
+
 // The marks the checker leaves: a cut at the end, a count where it dropped
 // members from the middle of a nested type, and a nested group emptied whole.
 const TRUNCATED = /\.\.\.$|\.\.\. \d+ more \.\.\.|<\.\.\.>|\{ \.\.\.; \}/
 
 function shortenSignature(sig: string) {
-  return elideSignature(sortUnionMembers(sig))
+  return elideSignature(sortUnionMembers(dropNodeTails(sig)))
 }
 
 // The checker prints a union in its own order, not ours, and that order moves
