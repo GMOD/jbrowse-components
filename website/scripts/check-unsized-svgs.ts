@@ -39,7 +39,7 @@ for (const file of walkFiles(distDir, n => n.endsWith('.html'))) {
   checked++
   for (const tag of unsizedTags(readFileSync(file, 'utf8'))) {
     const shape = tag
-      .replace(/\sdata-astro-cid-[\w-]+(="true")?/g, '')
+      .replaceAll(/\sdata-astro-cid-[\w-]+(="true")?/g, '')
       .slice(0, 120)
     problems.set(shape, [
       ...(problems.get(shape) ?? []),
