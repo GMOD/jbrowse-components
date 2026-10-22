@@ -69,7 +69,13 @@ const soleVideo = videos.length === 1 ? videos[0] : undefined
     {soleVideo ? (
       <nav class="video-jump" aria-label="Video on this page">
         <span class="video-jump-lead">
-          <svg class="video-jump-play" viewBox="0 0 24 24" aria-hidden="true">
+          <svg
+            class="video-jump-play"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <circle cx="12" cy="12" r="9" fill="none" stroke-width="2" />
             <path d="M10 8.3v7.4l6.5-3.7z" />
           </svg>
@@ -82,7 +88,13 @@ const soleVideo = videos.length === 1 ? videos[0] : undefined
     ) : (
       videos.length > 1 && (
         <p class="video-jump">
-          <svg class="video-jump-play" viewBox="0 0 24 24" aria-hidden="true">
+          <svg
+            class="video-jump-play"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <circle cx="12" cy="12" r="9" fill="none" stroke-width="2" />
             <path d="M10 8.3v7.4l6.5-3.7z" />
           </svg>
