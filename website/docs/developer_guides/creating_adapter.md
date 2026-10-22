@@ -343,7 +343,7 @@ export interface BaseOptions {
   // feeds the fetch cache key (`resolveLodTier` in @jbrowse/synteny-core).
   // Resolving it here instead hides a fetch input from that key, which is how
   // a zoom across the threshold came to leave a view holding the wrong tier.
-  lodMode?: LodTier
+  lodTier?: LodTier
   // The lanes a multi-genome source is asked about, spelled as it spells them.
   // A source that declares its lanes (`headerLanes`) reads only these lanes'
   // files for its header and refNames as it does for its features; absent,

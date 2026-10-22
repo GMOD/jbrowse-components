@@ -24,7 +24,7 @@ view's ribbons.
 | Member | Description |
 | --- | --- |
 | <span id="getter-predicates">**predicates**</span><br><code>FieldPredicate[]</code> | The `filter` list as the predicate compiler reads it. |
-| <span id="getter-minlength">**minLength**</span><br><code>number</code> | The lower bound on `length`, 0 for none: the cut the GPU applies as a uniform, which keeps a length slider drag off the color pass. |
+| <span id="getter-minlength">**minLength**</span><br><code>number</code> | The lower bound on `length`, 0 for none. |
 
 ## Methods
 
