@@ -272,6 +272,8 @@ each protein view then lights the residue it codes for.
 
 <Figure src="/img/protein/kras_g12c.png" caption="KRAS at codon 12 with its six single-base missense changes, above the KRAS surface at residue 12 in wild type (4OBE), G12C (4LDJ) and G12C bound to sotorasib (6OIM), all three from one camera, with switch II colored." />
 
+<Figure src="/img/protein/ccr5_delta32.png" caption="CCR5 with the 1000 Genomes 30x reads of a Δ32/Δ32, a Δ32/+ and a +/+ sample over the 32-base deletion, above CCR5 bound by HIV gp120 (6MEO) and by maraviroc (4MBS), colored by the residues Δ32 loses." />
+
 <Figure src="/img/protein/apoe_e4.png" caption="APOE under a Manhattan plot of FinnGen Alzheimer's disease statistics, above the ortholog alignment and two protein views: the 1B68 crystal structure and its AlphaFold model colored by pLDDT." />
 
 <Figure src="/img/protein/f5_leiden.png" caption="F5 under a Manhattan plot of FinnGen venous thromboembolism statistics, with the alignment and two protein views: factor Va alone (7KXY) and bound to activated protein C (9MOV)." />

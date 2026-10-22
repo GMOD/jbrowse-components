@@ -95,15 +95,26 @@ blinded ideator given only a capability sheet, a landscape survey):
      the scan is red across the whole stretch, so the four codons do not
      stand out, and no structure shows a mutant.
    - R273H was dropped: no R273H crystal with DNA except with a suppressor.
-2. **The painted fold as a supporting layer, not the subject**: a variant pair
+2. **Genome evidence that drives the figure.** Colin asked that the linear
+   view stay critical. `protein/ccr5_delta32` is the first: three 1000
+   Genomes 30x CRAMs streamed from the public S3 bucket (HG00137 Δ32/Δ32,
+   HG00101 Δ32/+, HG00096 +/+, genotypes from EBI's 2022 phased panel; the S3
+   copies of the 2020 VCFs are empty), over 6MEO (gp120) and 4MBS
+   (maraviroc) colored by the residues Δ32 loses (185 on; it keeps 1–184,
+   adds 31 frameshifted, stops at 215). Builder `/var/tmp/ccr5/bin/`.
+   Unbuilt ideas on the same footing: a population-constraint track whose
+   depleted stretch lands on an interface, RNA-seq junctions proving an exon
+   skip with the skipped residues on the fold, tumor reads at KRAS codon 12,
+   a long read phasing two variants in trans.
+3. **The painted fold as a supporting layer, not the subject**: a variant pair
    whose wild type is painted by the scan says both what the residue does and
    that the whole map agrees, if the key says what the color means.
-3. **TP53's painting has less contrast than BRCA1's**: the Funk scan's mean per
+4. **TP53's painting has less contrast than BRCA1's**: the Funk scan's mean per
    codon sits near zero over much of the domain, so the 2-class threshold at 0
    paints a mottled dimer.
-4. **Occlusion is subtle** in software GL at figure size; worth a headed
+5. **Occlusion is subtle** in software GL at figure size; worth a headed
    capture before deciding it stays on.
-5. **Figures the data supports, unbuilt:** VHL hydroxyproline pocket (1LM8 with
+6. **Figures the data supports, unbuilt:** VHL hydroxyproline pocket (1LM8 with
    VH032 4W9H, SGE S111/H115 allelic series), SOD1 H81R, DCLRE1C H35D, PTPN11,
    PTEN.
 
