@@ -145,12 +145,21 @@ cost is linear in lanes.
   must mint the same id for the same run on every refetch, or the clicked outline
   and hover re-resolve to another group (`clipToRegion`'s region suffix is the
   pattern).
-- **A flip pin and a lane pin outrank the vote** (`pinnedLaneFlips`,
-  `pinnedLanes`, a contig or a block on it); a released pin leaves no
-  incumbent. Both pins are session properties (`lanePins`, `laneFlipPins`), as
-  `hiddenLaneNames` is, so a share link opens on them. The decision is stored
-  as data and the drawn frame derives from it against the live view on every pan
+- **A flip pin and a lane pin outrank the vote** (`lanePins`, a list of
+  records: `{ lane, refName, at? }` for a contig or a block on it,
+  `{ lane, refName, flipped, anchor }` for the orientation on that contig);
+  a released pin leaves no incumbent. `lanePins` is a session property, as
+  `hiddenLaneNames` is, so a share link opens on them, and `multiwayTables`
+  takes both in the same shape (`pins`, `hidden`). The decision is stored as
+  data and the drawn frame derives from it against the live view on every pan
   (`frameFromDecision`, `rowFrames`).
+- **The display and `multiwayTables` share one lane pipeline**: `laneRowsOf`
+  picks and orders the lanes, `pinsInForceOf` resolves the pins, and an
+  `AnchorStage` (`laneStage.ts`) runs the decisions, frames and stack against
+  the view or a static layout. The model calls them from separate getters,
+  deciding at the settled view in an autorun and laying out frames and the
+  stack at the live one. A table keeps sub-px placements (`wholePx: false`),
+  where the view places at whole px.
 - **Lanes decide at the settled view, and draw at the live one.** The decision
   reads the coarse blocks and the zoom and offset they were laid out at
   (`coarseBpPerPx`, `coarseOffsetPx`), so a zoom animation re-decides nothing:

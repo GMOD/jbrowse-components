@@ -1,8 +1,44 @@
-import { bpToPx, clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
+import {
+  bpToLinearBp,
+  clipToDisplayedRegions,
+} from '@jbrowse/core/util/Base1DUtils'
 
 import type { AnchorCoord } from './laneDecision.ts'
 import type { Span } from './layoutMultiWay.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
+
+/**
+ * A linear genome view, or a static layout of the anchor's regions. A view
+ * places at whole px, as its own `bpToPx` does; `wholePx: false` keeps the
+ * fraction, which a table of positions wants
+ */
+export interface AnchorLayout extends Pick<
+  ViewLayout,
+  'displayedRegions' | 'bpPerPx' | 'offsetPx'
+> {
+  wholePx?: boolean
+}
+
+function layoutPx(view: AnchorLayout, bp: number) {
+  const px = bp / view.bpPerPx
+  return view.wholePx === false ? px : Math.round(px)
+}
+
+/** px of a coord before the scroll offset; undefined off the displayed regions */
+export function anchorPx(
+  view: AnchorLayout,
+  refName: string,
+  coord: number,
+  displayedRegionIndex?: number,
+) {
+  const bp = bpToLinearBp({
+    refName,
+    coord,
+    displayedRegions: view.displayedRegions,
+    displayedRegionIndex,
+  })
+  return bp === undefined ? undefined : layoutPx(view, bp)
+}
 
 export interface AxisPlacement {
   /**
@@ -14,39 +50,31 @@ export interface AxisPlacement {
   centre: AnchorCoord
 }
 
-/**
- * Clips to the displayed regions, since `bpToPx` answers only inside one.
- * `bpPerPx` places at a scale other than the view's live one.
- */
+/** Clips to the displayed regions, since `bpToPx` answers only inside one. */
 export function axisPlacement(
-  view: LinearGenomeViewModel,
+  view: AnchorLayout,
   refName: string,
   start: number,
   end: number,
-  bpPerPx?: number,
 ): AxisPlacement | undefined {
   const clipped = clipToDisplayedRegions(view, { refName, start, end })
   if (!clipped) {
     return undefined
   }
-  const layout = {
-    displayedRegions: view.displayedRegions,
-    bpPerPx: bpPerPx ?? view.bpPerPx,
-  }
-  const a = bpToPx({ refName, coord: clipped.start, self: layout })
-  const b = bpToPx({ refName, coord: clipped.end, self: layout })
-  return a === undefined || b === undefined
+  const x1 = anchorPx(view, refName, clipped.start)
+  const x2 = anchorPx(view, refName, clipped.end)
+  return x1 === undefined || x2 === undefined
     ? undefined
     : {
-        x1: a.offsetPx,
-        x2: b.offsetPx,
+        x1,
+        x2,
         centre: { refName, coord: (clipped.start + clipped.end) / 2 },
       }
 }
 
 /** px relative to `originPx`, as a lane's `spanOf` answers */
 export function axisSpan(
-  view: LinearGenomeViewModel,
+  view: AnchorLayout,
   refName: string,
   start: number,
   end: number,
@@ -61,7 +89,7 @@ export function axisSpan(
  * seam between two regions of one refName rather than bridging it
  */
 export function axisSpans(
-  view: LinearGenomeViewModel,
+  view: AnchorLayout,
   refName: string,
   start: number,
   end: number,
@@ -73,8 +101,7 @@ export function axisSpans(
     const e = Math.min(end, region.end)
     if (region.refName === refName && s <= e) {
       const px = (coord: number) =>
-        bpToPx({ refName, coord, displayedRegionIndex, self: view })!.offsetPx -
-        originPx
+        anchorPx(view, refName, coord, displayedRegionIndex)! - originPx
       out.push([px(s), px(e)])
     }
   })
@@ -82,15 +109,14 @@ export function axisSpans(
 }
 
 export function displayedRegionSpans(
-  view: LinearGenomeViewModel,
+  view: AnchorLayout,
   originPx = view.offsetPx,
 ): Span[] {
-  const { bpPerPx, displayedRegions } = view
   let bp = 0
-  return displayedRegions.map(({ start, end, reversed }) => {
-    const left = Math.round(bp / bpPerPx) - originPx
+  return view.displayedRegions.map(({ start, end, reversed }) => {
+    const left = layoutPx(view, bp) - originPx
     bp += end - start
-    const right = Math.round(bp / bpPerPx) - originPx
+    const right = layoutPx(view, bp) - originPx
     return reversed ? [right, left] : [left, right]
   })
 }
@@ -101,7 +127,7 @@ export function displayedRegionSpans(
  * keeps the answer
  */
 export function axisTickXs(
-  view: LinearGenomeViewModel,
+  view: AnchorLayout,
   step: number,
   [lo, hi]: Span,
   originPx = view.offsetPx,

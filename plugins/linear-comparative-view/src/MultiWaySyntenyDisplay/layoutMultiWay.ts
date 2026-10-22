@@ -657,7 +657,7 @@ export function groupSpansLanes(group: PlacedGroup) {
  */
 export function rowAssembliesOf(
   groups: MultiWayGroup[],
-  preferred: string[],
+  preferred: readonly string[],
   keyOf: (assemblyName: string) => string = name => name,
   placeless: readonly string[] = [],
 ) {

@@ -9,7 +9,8 @@ import {
 } from './laneDecision.ts'
 import { groupFeatures, laneOpeningsOf, rowFrameX } from './layoutMultiWay.ts'
 
-import type { LaneDecision, LaneFlipPin, LanePin } from './laneDecision.ts'
+import type { LaneDecision } from './laneDecision.ts'
+import type { LanePin } from './lanePins.ts'
 
 const WIDTH = 800
 const SPAN_BP = 1000
@@ -45,16 +46,14 @@ function decide(
   {
     assemblyNames = ['peach'],
     previous = new Map<string, LaneDecision | undefined>(),
-    pinned,
-    pinnedFlips,
+    pins,
     anchorReversed = false,
     panBp = 0,
     frozen,
   }: {
     assemblyNames?: string[]
     previous?: Map<string, LaneDecision | undefined>
-    pinned?: Map<string, LanePin>
-    pinnedFlips?: Map<string, LaneFlipPin>
+    pins?: LanePin[]
     anchorReversed?: boolean
     panBp?: number
     frozen?: Map<string, LaneDecision>
@@ -78,8 +77,7 @@ function decide(
     width: WIDTH,
     anchorReversed,
     previous,
-    pinned,
-    pinnedFlips,
+    pins,
     frozen,
   })
 }
@@ -340,7 +338,7 @@ describe('a stray piece', () => {
 
   test('a pin draws the block it names', () => {
     const decision = decide(split(400), {
-      pinned: new Map([['peach', { refName: 'Pp1', at: 500_200 }]]),
+      pins: [{ lane: 'peach', refName: 'Pp1', at: 500_200 }],
     }).get('peach')!
     expect([decision.fitMin, decision.fitMax]).toEqual([500_000, 500_400])
     expect(decision.pinned).toBe(true)
@@ -503,8 +501,8 @@ describe('the contig', () => {
   })
 
   test('a pin outranks the vote while the window still places on it', () => {
-    const pinned = new Map([['peach', { refName: 'Pp2' }]])
-    const decision = decide(twoContigs(200, 30), { pinned }).get('peach')!
+    const pins = [{ lane: 'peach', refName: 'Pp2' }]
+    const decision = decide(twoContigs(200, 30), { pins }).get('peach')!
     expect(decision.refName).toBe('Pp2')
     expect(decision.pinned).toBe(true)
     expect(decision.alsoOn).toEqual(['Pp1'])
@@ -513,7 +511,7 @@ describe('the contig', () => {
   test('releasing a pin lets the lane vote fresh rather than hold the pinned contig', () => {
     const groups = twoContigs(180, 130)
     const pinned = decide(groups, {
-      pinned: new Map([['peach', { refName: 'Pp2' }]]),
+      pins: [{ lane: 'peach', refName: 'Pp2' }],
     })
     expect(pinned.get('peach')!.refName).toBe('Pp2')
 
@@ -690,40 +688,38 @@ describe('the orientation', () => {
     expect(moved.flipped).toBe(true)
   })
 
-  const flipOnPp1 = (flipped: boolean) =>
-    new Map([['peach', { refName: 'Pp1', flipped }]])
+  const flipOnPp1 = (flipped: boolean) => [
+    { lane: 'peach', refName: 'Pp1', flipped },
+  ]
 
   test('a flip pin outranks the vote and the deadband on its contig', () => {
-    const fresh = decide(forwards, { pinnedFlips: flipOnPp1(true) })
+    const fresh = decide(forwards, { pins: flipOnPp1(true) })
     expect(fresh.get('peach')!.flipped).toBe(true)
     expect(fresh.get('peach')!.orientationPinned).toBe(true)
 
     const previous = new Map([['peach', settle(forwards)]])
     const flipped = (groups: typeof forwards, pin: boolean) =>
-      decide(groups, { previous, pinnedFlips: flipOnPp1(pin) }).get('peach')!
-        .flipped
+      decide(groups, { previous, pins: flipOnPp1(pin) }).get('peach')!.flipped
     expect(flipped(backwards, false)).toBe(false)
     expect(flipped(mostlyBackwards, true)).toBe(true)
   })
 
   test('a flip pin survives a pan on its contig', () => {
-    const pinnedFlips = flipOnPp1(true)
-    const pinned = decide(forwards, { pinnedFlips })
+    const pins = flipOnPp1(true)
+    const pinned = decide(forwards, { pins })
     const panned = groupFeatures(
       [250, 400, 550, 700, 850, 1000].map((start, i) =>
         pair(`p${i}`, `g${i + 1}`, start, { start: 500_000 + start }),
       ),
     )
-    const after = decide(panned, { previous: pinned, pinnedFlips }).get(
-      'peach',
-    )!
+    const after = decide(panned, { previous: pinned, pins }).get('peach')!
     expect(after.flipped).toBe(true)
     expect(after.orientationPinned).toBe(true)
   })
 
   test('a flip pin lapses once the lane draws another contig', () => {
-    const pinnedFlips = flipOnPp1(true)
-    const pinned = decide(forwards, { pinnedFlips })
+    const pins = flipOnPp1(true)
+    const pinned = decide(forwards, { pins })
     const elsewhere = groupFeatures(
       anchors.map((start, i) =>
         pair(`${i}`, `g${i}`, start, {
@@ -732,16 +728,14 @@ describe('the orientation', () => {
         }),
       ),
     )
-    const moved = decide(elsewhere, { previous: pinned, pinnedFlips }).get(
-      'peach',
-    )!
+    const moved = decide(elsewhere, { previous: pinned, pins }).get('peach')!
     expect(moved.refName).toBe('Pp2')
     expect(moved.flipped).toBe(false)
     expect(moved.orientationPinned).toBe(false)
   })
 
   test('releasing a flip pin lets the lane vote fresh rather than hold it', () => {
-    const pinned = decide(mostlyBackwards, { pinnedFlips: flipOnPp1(false) })
+    const pinned = decide(mostlyBackwards, { pins: flipOnPp1(false) })
     expect(pinned.get('peach')!.flipped).toBe(false)
     expect(settle(mostlyBackwards, pinned).flipped).toBe(true)
   })

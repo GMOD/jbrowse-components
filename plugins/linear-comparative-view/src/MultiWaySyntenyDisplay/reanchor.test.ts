@@ -181,7 +181,7 @@ test('Flip lane holds on its anchor, lapses on another, and is back on return', 
   display.setFeatures(
     starts.map((s, i) => record(`bC${i}`, `g${i}`, on(B, s), onC(s))),
   )
-  expect(display.pinnedLaneFlips.size).toBe(0)
+  expect(display.pinsInForce).toEqual([])
   expect(flippedOf(display, C)).toBe(false)
 
   onto(display, A)

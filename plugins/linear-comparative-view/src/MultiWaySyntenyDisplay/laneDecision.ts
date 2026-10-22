@@ -5,6 +5,7 @@ import {
   rungCovers,
 } from '../alignmentBlocks.ts'
 import { NEARLY_ALL, preferIncumbent } from '../syntenyHysteresis.ts'
+import { flipPinOf, placePinOf } from './lanePins.ts'
 import {
   frameOpenings,
   groupRunsOnRow,
@@ -17,6 +18,7 @@ import {
 } from './layoutMultiWay.ts'
 
 import type { Weighed } from '../alignmentBlocks.ts'
+import type { LanePin, LanePlacePin } from './lanePins.ts'
 import type {
   FetchRegion,
   LaneBlock,
@@ -56,19 +58,6 @@ export interface LaneDecision {
   /** the reader's pin chose the contig, so it is no incumbent once unpinned */
   pinned: boolean
   orientationPinned: boolean
-}
-
-/** the reader's pick of where a lane draws: a contig, and on it a block */
-export interface LanePin {
-  refName: string
-  /** a lane bp in the block picked; none lets the lane choose on the contig */
-  at?: number
-}
-
-/** `flipped` is against the anchor's order, as `LaneDecision.flipped` is */
-export interface LaneFlipPin {
-  refName: string
-  flipped: boolean
 }
 
 /** decisions in `anchor`'s coordinates; `window` is what the view showed */
@@ -263,7 +252,7 @@ function fitLane(
   assemblyName: string,
   unitBp: number,
   incumbent: FitIncumbent | undefined,
-  pinned: LanePin | undefined,
+  pinned: LanePlacePin | undefined,
   openingsOf: OpeningsOf,
 ) {
   const released = incumbent?.pinned && incumbent.refName !== pinned?.refName
@@ -543,8 +532,8 @@ export interface DecideLaneFramesOpts {
   width: number
   anchorReversed?: boolean
   previous: ReadonlyMap<string, LaneDecision | undefined>
-  pinned?: ReadonlyMap<string, LanePin>
-  pinnedFlips?: ReadonlyMap<string, LaneFlipPin>
+  /** each naming its lane as `assemblyNames` spells it */
+  pins?: readonly LanePin[]
   frozen?: ReadonlyMap<string, LaneDecision>
   /** read off every fetched group, so a hole does not wait on the viewport */
   openingsOf: OpeningsOf
@@ -588,8 +577,7 @@ export function decideLaneFrames({
   width,
   anchorReversed = false,
   previous,
-  pinned,
-  pinnedFlips,
+  pins = [],
   frozen,
   openingsOf,
 }: DecideLaneFramesOpts) {
@@ -629,7 +617,7 @@ export function decideLaneFrames({
       assemblyName,
       unitBp,
       prev,
-      pinned?.get(assemblyName),
+      placePinOf(pins, assemblyName),
       openingsOf,
     )
     if (fit === undefined) {
@@ -654,7 +642,7 @@ export function decideLaneFrames({
       },
       prev?.orientationPinned ? undefined : prev?.flipped,
     )
-    const flipPin = pinnedFlips?.get(assemblyName)
+    const flipPin = flipPinOf(pins, assemblyName)
     const orientationPinned = flipPin?.refName === fitted.refName
     const relativeFlipped = orientationPinned ? flipPin.flipped : voted
     const oriented = { ...fitted, flipped: relativeFlipped !== anchorReversed }

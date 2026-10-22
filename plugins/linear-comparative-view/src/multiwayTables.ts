@@ -2,7 +2,6 @@ import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { dedupe } from '@jbrowse/core/util'
-import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
 import { cssColorToHex } from '@jbrowse/core/util/colorBits'
 import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
 import {
@@ -28,20 +27,29 @@ import {
   liftAlignmentOps,
   multiWayFeaturesOf,
 } from './MultiWaySyntenyDisplay/MultiWayGetFeatures.ts'
-import { lanePairKey } from './MultiWaySyntenyDisplay/alignmentOps.ts'
 import { configSchemaFactory } from './MultiWaySyntenyDisplay/configSchema.ts'
+import { laneBpAt } from './MultiWaySyntenyDisplay/laneDecision.ts'
 import {
-  decideLaneFrames,
-  frameFromDecision,
-  laneBpAt,
-} from './MultiWaySyntenyDisplay/laneDecision.ts'
-import { starAnchorOf } from './MultiWaySyntenyDisplay/laneFetch.ts'
-import { lanesInForce } from './MultiWaySyntenyDisplay/laneSelection.ts'
+  laneGroupsFetchSpecsOf,
+  laneLinksFetchSpecsOf,
+  lanePairsOf,
+  starAnchorOf,
+} from './MultiWaySyntenyDisplay/laneFetch.ts'
+import { pinsInForceOf } from './MultiWaySyntenyDisplay/lanePins.ts'
 import {
-  buildLanes,
+  laneRowsOf,
+  lanesInForce,
+} from './MultiWaySyntenyDisplay/laneSelection.ts'
+import {
   geneLabelRowPx,
   laneGeometry,
 } from './MultiWaySyntenyDisplay/laneStack.ts'
+import {
+  anchorSpansOn,
+  decideLanesOn,
+  laneFrameOn,
+  laneStackOn,
+} from './MultiWaySyntenyDisplay/laneStage.ts'
 import {
   anchorlessGroupsOf,
   clipGroupToAnchor,
@@ -51,7 +59,6 @@ import {
   laneBpOfOpened,
   laneFetchRegion,
   laneOpeningsOf,
-  rowAssembliesOf,
   tickIntervalFor,
 } from './MultiWaySyntenyDisplay/layoutMultiWay.ts'
 import { ribbonColorScales } from './MultiWaySyntenyDisplay/legend.ts'
@@ -69,12 +76,9 @@ import {
 import { getMate } from './syntenyMate.ts'
 
 import type { LaneLinks } from './MultiWaySyntenyDisplay/alignmentOps.ts'
-import type {
-  LaneDecision,
-  LaneFlipPin,
-  LanePin,
-} from './MultiWaySyntenyDisplay/laneDecision.ts'
+import type { LanePin } from './MultiWaySyntenyDisplay/lanePins.ts'
 import type { Lane } from './MultiWaySyntenyDisplay/laneStack.ts'
+import type { AnchorStage } from './MultiWaySyntenyDisplay/laneStage.ts'
 import type {
   FetchRegion,
   MultiWayGroup,
@@ -101,15 +105,15 @@ export interface MultiWayTablesArgs {
    */
   anchor: AxisArgs
   /**
-   * A lane's contig and, with `at`, a lane bp in the block it draws, as the
-   * lane picker pins them, by assembly
+   * The reader's pins, as the display's `lanePins` holds them: `{ lane,
+   * refName, at }` draws the lane on a contig and, with `at`, the block
+   * holding that lane bp; `{ lane, refName, flipped, anchor }` sets which way
+   * it faces there against the anchor's order, under `anchor` or, naming
+   * none, any anchor
    */
-  pins?: Record<string, LanePin>
-  /**
-   * A lane's orientation against the anchor's on the contig `refName`, as the
-   * lane's flip pins it, by assembly
-   */
-  flips?: Record<string, LaneFlipPin>
+  pins?: LanePin[]
+  /** The lanes the reader hid, as the display's `hiddenLaneNames` holds them */
+  hidden?: string[]
   /**
    * The display's settings, as a `MultiWaySyntenyDisplay` config writes
    * them: `ribbonColor` (a CSS color, or the color object's slots such as
@@ -138,36 +142,6 @@ const wholeBp = (bp: number) => Math.round(bp) || 0
 
 const KIND_NAMES: Record<number, string> = {
   [KIND_BASE_TILE]: 'mismatch',
-}
-
-/** The anchor lane as the view places it: px of a span, clipped to its regions. */
-function anchorPlacer(axis: ComparativeAxis, width: number) {
-  const layout = {
-    displayedRegions: axis.regions,
-    bpPerPx: axis.bpPerPx,
-    offsetPx: 0,
-    width,
-    minimumBlockWidth: 0,
-  }
-  const pxOf = (refName: string, coord: number) => {
-    const k = axis.regions.findIndex(
-      r => r.refName === refName && coord >= r.start && coord <= r.end,
-    )
-    const r = axis.regions[k]
-    return r === undefined
-      ? undefined
-      : (axis.before[k]! + (r.reversed ? r.end - coord : coord - r.start)) /
-          axis.bpPerPx
-  }
-  const placement = (refName: string, start: number, end: number) => {
-    const clipped = clipToDisplayedRegions(layout, { refName, start, end })
-    const a = clipped && pxOf(refName, clipped.start)
-    const b = clipped && pxOf(refName, clipped.end)
-    return clipped && a !== undefined && b !== undefined
-      ? { clipped, span: [a, b] as Span }
-      : undefined
-  }
-  return { pxOf, placement }
 }
 
 function anchorRegionSpans(axis: ComparativeAxis): Span[] {
@@ -427,8 +401,8 @@ export async function multiwayTables(
   {
     adapterConfig,
     anchor: anchorArgs,
-    pins = {},
-    flips = {},
+    pins = [],
+    hidden = [],
     display,
   }: MultiWayTablesArgs,
 ) {
@@ -437,6 +411,20 @@ export async function multiwayTables(
   const anchor = axis.assemblyName
   const { width } = anchorArgs
   const unitBp = axis.bpPerPx * width
+  const stage: AnchorStage = {
+    layout: {
+      displayedRegions: axis.regions,
+      bpPerPx: axis.bpPerPx,
+      offsetPx: 0,
+      wholePx: false,
+    },
+    originPx: 0,
+    width,
+    anchorReversed:
+      axis.regions.length > 0 && axis.regions.every(r => !!r.reversed),
+    canon: refName => refName,
+  }
+  const keyOf = (name: string) => name
 
   const type = adapterConfig.type
   const capabilities =
@@ -493,114 +481,71 @@ export async function multiwayTables(
   const features = dedupe(fetched.features, f => f.id())
   const groups = groupFeatures(features)
   const openingsOf = laneOpeningsOf(groups)
-  const drawn = (name: string) =>
-    selection === undefined || selection.includes(name)
   const rowsVsAnchor = rowsReadAgainstAnchor(capabilities, starAnchor)
   const fetches = laneFetchesFor(features, rowsVsAnchor, starAnchor)
-  const preferred = stacksByStructure(capabilities, fetches)
-    ? [
-        ...settings.rowsDomain,
-        ...structureOrder(laneProfiles(features, fetched.ops)),
-      ]
-    : settings.rowsDomain
-  const rows = rowAssembliesOf(
+  const rows = laneRowsOf({
     groups,
-    preferred,
-    undefined,
-    fetched.deletions.map(d => d.assemblyName),
-  ).filter(name => name !== anchor && drawn(name))
+    placeless: fetched.deletions.map(d => d.assemblyName),
+    anchor,
+    preferred: stacksByStructure(capabilities, fetches)
+      ? [
+          ...settings.rowsDomain,
+          ...structureOrder(laneProfiles(features, fetched.ops)),
+        ]
+      : settings.rowsDomain,
+    selection,
+    hidden,
+    keyOf,
+  })
 
   const shown = shownGroups(groups, axis)
-  const place = anchorPlacer(axis, width)
-  const anchorAbsX = new Map<
-    string,
-    { coord: { refName: string; coord: number }; x: number }
-  >()
-  const anchorSpans = new Map<string, Span>()
-  for (const group of shown) {
-    const p = place.placement(
-      group.anchor.refName,
-      group.anchor.start,
-      group.anchor.end,
-    )
-    if (p) {
-      anchorSpans.set(group.key, p.span)
-      anchorAbsX.set(group.key, {
-        coord: {
-          refName: group.anchor.refName,
-          coord: (p.clipped.start + p.clipped.end) / 2,
-        },
-        x: (p.span[0] + p.span[1]) / 2,
-      })
-    }
-  }
-  const reversed =
-    axis.regions.length > 0 && axis.regions.every(r => !!r.reversed)
-  const decisions = decideLaneFrames({
+  const decisions = decideLanesOn(stage, {
     groups: shown,
     assemblyNames: rows,
-    anchorX: new Map([...anchorAbsX].map(([key, { x }]) => [key, x])),
-    anchorCoordOf: group => anchorAbsX.get(group.key)!.coord,
-    pxOfAnchor: coord => place.pxOf(coord.refName, coord.coord),
-    unitBp,
-    width,
-    anchorReversed: reversed,
     previous: new Map(),
-    pinned: new Map(Object.entries(pins)),
-    pinnedFlips: new Map(Object.entries(flips)),
+    pins: pinsInForceOf(pins, rows, anchor, keyOf),
     openingsOf,
   })
-  const frameOf = (decision: LaneDecision, assemblyName: string) => {
-    const pivot = place.pxOf(
-      decision.pivotAnchor.refName,
-      decision.pivotAnchor.coord,
-    )
-    return pivot === undefined
-      ? undefined
-      : frameFromDecision(
-          decision,
-          pivot,
-          unitBp,
-          width,
-          reversed,
-          openingsOf(assemblyName, decision.refName),
-        )
-  }
   const rowFrames = new Map<string, RowFrame | undefined>(
     rows.map(name => {
       const decision = decisions.get(name)
-      return [name, decision && frameOf(decision, name)]
+      return [
+        name,
+        decision &&
+          laneFrameOn(stage, decision, openingsOf(name, decision.refName)),
+      ]
     }),
   )
-  const laneRegion = (name: string): FetchRegion[] => {
-    const frame = rowFrames.get(name)
-    return frame ? [{ assemblyName: name, ...laneFetchRegion(frame) }] : []
+  const windows = new Map<string, { regions: FetchRegion[] }>([
+    [anchor, { regions: anchorRegions }],
+  ])
+  for (const [name, frame] of rowFrames) {
+    if (frame) {
+      windows.set(name, {
+        regions: [{ assemblyName: name, ...laneFetchRegion(frame) }],
+      })
+    }
   }
 
   const laneLinks = new Map<string, LaneLinks>()
   if (fetches.lanePairs) {
+    const specs = laneLinksFetchSpecsOf({
+      pairs: lanePairsOf(rows),
+      windows,
+      rowFrames,
+      anchor,
+      onAnchor: pairsOnAnchor,
+      lodTier: 'fine',
+      nearViewport: () => true,
+    })
     await Promise.all(
-      rows.slice(1).map(async (lower, i) => {
-        const upper = rows[i]!
-        const regions = pairsOnAnchor
-          ? rowFrames.get(upper) && rowFrames.get(lower)
-            ? anchorRegions
-            : []
-          : rowFrames.get(lower)
-            ? laneRegion(upper)
-            : []
-        const pair =
-          regions.length > 0
-            ? await fetch(regions, {
-                ...(pairsOnAnchor ? { queryAssemblyName: upper } : {}),
-                targetAssemblyName: lower,
-              })
-            : undefined
-        if (pair?.features.length) {
-          laneLinks.set(lanePairKey(upper, lower), {
-            links: pair.features,
-            ops: pair.ops,
-          })
+      specs.map(async spec => {
+        const pair = await fetch(spec.regions, {
+          ...(spec.onAnchor ? { queryAssemblyName: spec.assemblyName } : {}),
+          targetAssemblyName: spec.lowerAssembly,
+        })
+        if (pair.features.length) {
+          laneLinks.set(spec.lane, { links: pair.features, ops: pair.ops })
         }
       }),
     )
@@ -608,14 +553,11 @@ export async function multiwayTables(
   const anchorless = fetches.laneRows
     ? anchorlessGroupsOf(
         await Promise.all(
-          rows.map(
-            async lane =>
+          laneGroupsFetchSpecsOf(rows, windows, 'fine').map(
+            async spec =>
               [
-                lane,
-                laneRegion(lane).length
-                  ? (await fetch(laneRegion(lane), { mateShape: 'grouped' }))
-                      .features
-                  : [],
+                spec.lane,
+                (await fetch(spec.regions, { mateShape: 'grouped' })).features,
               ] as const,
           ),
         ),
@@ -624,22 +566,13 @@ export async function multiwayTables(
     : []
 
   const labels = new Map(declared.map(lane => [lane.name, lane.label]))
-  const stack = buildLanes({
+  const stack = laneStackOn(stage, {
     assemblyNames: [anchor, ...rows],
     groups: [...shown, ...anchorless],
-    anchorSpans,
+    anchorSpans: anchorSpansOn(stage, shown),
     rowFrames,
-    axisSpanOf: (refName, start, end) =>
-      place.placement(refName, start, end)?.span,
-    axisSpansOf: (refName, start, end) => {
-      const span = place.placement(refName, start, end)?.span
-      return span ? [span] : []
-    },
-    anchorRegionSpans: anchorRegionSpans(axis),
-    anchorBpPerPx: axis.bpPerPx,
     contigOf: () => undefined,
     refNameAliasOf: () => undefined,
-    width,
     geometry: laneGeometry(
       settings.height,
       1 + rows.length,

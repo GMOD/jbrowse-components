@@ -1,3 +1,6 @@
+import { rowAssembliesOf } from './layoutMultiWay.ts'
+
+import type { MultiWayGroup } from './layoutMultiWay.ts'
 import type { DeclaredLane } from '@jbrowse/synteny-core'
 
 /** `placed` is undefined where the fetch did not ask for the lane. */
@@ -29,6 +32,49 @@ export function laneResetLabel(
 
 type KeyOf = (name: string) => string
 
+/** Whether a lane draws: chosen by the selection in force and not hidden. */
+export function drawnLaneTest(
+  selection: readonly string[] | undefined,
+  hidden: readonly string[],
+  keyOf: KeyOf,
+) {
+  const chosen = selection && new Set(selection.map(keyOf))
+  const hiddenKeys = new Set(hidden.map(keyOf))
+  return (name: string) => {
+    const key = keyOf(name)
+    return (chosen === undefined || chosen.has(key)) && !hiddenKeys.has(key)
+  }
+}
+
+/**
+ * The mate lanes the stack draws, in order: `preferred` first, then by their
+ * heaviest contig's group weight, then each lane `placeless` names that no
+ * group places
+ */
+export function laneRowsOf({
+  groups,
+  placeless,
+  anchor,
+  preferred,
+  selection,
+  hidden,
+  keyOf,
+}: {
+  groups: MultiWayGroup[]
+  placeless: readonly string[]
+  anchor: string
+  preferred: readonly string[]
+  selection: readonly string[] | undefined
+  hidden: readonly string[]
+  keyOf: KeyOf
+}) {
+  const anchorKey = keyOf(anchor)
+  const drawn = drawnLaneTest(selection, hidden, keyOf)
+  return rowAssembliesOf(groups, preferred, keyOf, placeless).filter(
+    name => keyOf(name) !== anchorKey && drawn(name),
+  )
+}
+
 export interface LaneUniverseInputs {
   anchor: string
   mateNames: readonly string[]
@@ -57,8 +103,7 @@ export function laneUniverseOf({
 }: LaneUniverseInputs): LaneChoice[] {
   const anchorKey = keyOf(anchor)
   const placed = new Set(mateNames.map(keyOf))
-  const chosen = selection && new Set(selection.map(keyOf))
-  const hiddenKeys = new Set(hidden.map(keyOf))
+  const drawn = drawnLaneTest(selection, hidden, keyOf)
   const asked = landedLanes && new Set(landedLanes.map(keyOf))
   const known = (key: string) =>
     featuresLoaded && (asked === undefined || asked.has(key))
@@ -72,8 +117,7 @@ export function laneUniverseOf({
         ...lane,
         ...(label === lane.name ? {} : { label }),
         placed: placed.has(key) || (known(key) ? false : undefined),
-        drawn:
-          (chosen === undefined || chosen.has(key)) && !hiddenKeys.has(key),
+        drawn: drawn(lane.name),
       })
     }
   }

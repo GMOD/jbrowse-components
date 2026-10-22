@@ -410,7 +410,7 @@ export function layoutBpToPx(
 // `getLayoutHighlightCoords` below returns min/width, which a ribbon endpoint
 // cannot use.
 export function clipToDisplayedRegions(
-  layout: ViewLayout,
+  layout: Pick<ViewLayout, 'displayedRegions'>,
   region: { refName: string; start: number; end: number },
 ) {
   const [start, end] =

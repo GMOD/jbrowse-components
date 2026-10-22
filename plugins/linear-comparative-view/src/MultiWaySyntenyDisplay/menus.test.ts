@@ -11,7 +11,7 @@ import {
   showSubMenuItems,
 } from './menus.ts'
 
-import type { LanePin } from './laneDecision.ts'
+import type { LanePlacePin } from './lanePins.ts'
 import type { HeaderLane } from './menus.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -83,25 +83,23 @@ function headerModel({
     anchorLocString: 'chr1:1-1,000',
     holdsAssembly: () => held,
     canReanchor,
-    pinnedLanes: new Map(
-      pinned === undefined ? [] : [['peach', { refName: pinned }] as const],
-    ),
+    pinsInForce: [
+      ...(pinned === undefined ? [] : [{ lane: 'peach', refName: pinned }]),
+      ...(flipPinned === undefined
+        ? []
+        : [{ lane: 'peach', refName: flipPinned, flipped: true }]),
+    ],
     openInNewView: (name: string, loc: string) => {
       calls.push(`open ${name} ${loc}`)
     },
     reanchor: (name: string, loc: string) => {
       calls.push(`reanchor ${name} ${loc}`)
     },
-    pinLane: (name: string, pin: LanePin | undefined) => {
+    pinLane: (name: string, pin: Omit<LanePlacePin, 'lane'> | undefined) => {
       calls.push(
         `pin ${name} ${pin?.refName}${pin?.at === undefined ? '' : `@${pin.at}`}`,
       )
     },
-    pinnedLaneFlips: new Map(
-      flipPinned === undefined
-        ? []
-        : [['peach', { refName: flipPinned, flipped: true }] as const],
-    ),
     flipLane: (name: string) => {
       calls.push(`flip ${name}`)
     },

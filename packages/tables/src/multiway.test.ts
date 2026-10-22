@@ -95,6 +95,11 @@ test('the rows slot orders the lanes and keeps the ones it names', async () => {
   })
   expect(kept.assemblyNames).toEqual(['volvox', 'volvox_del'])
   expect(new Set(kept.ribbons.gutter)).toEqual(new Set([0]))
+  const hidden = await engine.multiway({
+    ...ALL_VS_ALL,
+    hidden: ['volvox_ins'],
+  })
+  expect(hidden.assemblyNames).toEqual(['volvox', 'volvox_del'])
 })
 
 test('ribbons color by strand, keyed against the lane above', async () => {
@@ -138,14 +143,14 @@ test('SyRI calls color their ribbons, and a lane unaligned on both sides opens n
 
   const pinned = await engine.multiway({
     ...SYRI,
-    pins: { Cvi: { refName: 'Chr2' } },
+    pins: [{ lane: 'Cvi', refName: 'Chr2' }],
   })
   expect(pinned.lanes.chrom[2]).toBe('Chr2')
   expect(t.lanes.chrom[2]).toBe('Chr1')
 
   const flipped = await engine.multiway({
     ...SYRI,
-    flips: { Cvi: { refName: 'Chr1', flipped: !t.lanes.flipped[2] } },
+    pins: [{ lane: 'Cvi', refName: 'Chr1', flipped: !t.lanes.flipped[2] }],
   })
   expect(flipped.lanes.flipped[2]).toBe(!t.lanes.flipped[2])
 })

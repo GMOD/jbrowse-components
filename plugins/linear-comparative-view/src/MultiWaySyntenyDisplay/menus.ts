@@ -23,9 +23,10 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import { CLUSTER_FIELD } from './geneColor.ts'
 import { blockLocString, laneRegion } from './laneHeader.ts'
+import { flipPinOf, placePinOf } from './lanePins.ts'
 import { laneResetLabel } from './laneSelection.ts'
 
-import type { LaneFlipPin, LanePin } from './laneDecision.ts'
+import type { LanePin, LanePlacePin } from './lanePins.ts'
 import type { LaneSelectionModel } from './laneSelection.ts'
 import type { Lane } from './laneStack.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -45,11 +46,13 @@ export interface LaneHeaderModel {
   anchorLocString: string
   holdsAssembly: (assemblyName: string) => boolean
   canReanchor: boolean
-  pinnedLanes: ReadonlyMap<string, LanePin>
-  pinnedLaneFlips: ReadonlyMap<string, LaneFlipPin>
+  pinsInForce: readonly LanePin[]
   openInNewView: (assemblyName: string, loc: string) => void
   reanchor: (assemblyName: string, loc: string) => void
-  pinLane: (assemblyName: string, pin: LanePin | undefined) => void
+  pinLane: (
+    assemblyName: string,
+    pin: Omit<LanePlacePin, 'lane'> | undefined,
+  ) => void
   flipLane: (assemblyName: string) => void
   unpinLaneFlip: (assemblyName: string) => void
   lanesFrozen: boolean
@@ -172,7 +175,7 @@ function laneContigMenuItems(
   lane: HeaderLane,
 ): MenuItem[] {
   const name = lane.assemblyName
-  const pinned = model.pinnedLanes.get(name)
+  const pinned = placePinOf(model.pinsInForce, name)
   const frame = lane.frame
   return [
     ...(frame?.alsoOn ?? []).map(refName => ({
@@ -208,7 +211,7 @@ function laneFlipMenuItems(
   lane: HeaderLane,
 ): MenuItem[] {
   const name = lane.assemblyName
-  const pin = model.pinnedLaneFlips.get(name)
+  const pin = flipPinOf(model.pinsInForce, name)
   return [
     ...(lane.frame === undefined
       ? []

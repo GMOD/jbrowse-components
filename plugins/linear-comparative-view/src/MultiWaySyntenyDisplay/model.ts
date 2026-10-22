@@ -23,7 +23,7 @@ import {
   openFeatureWidget,
   persistTrackConfigNow,
 } from '@jbrowse/core/util'
-import { bpToPx, clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
+import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
 import { withImpliedField } from '@jbrowse/core/util/colorScale'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
@@ -90,30 +90,20 @@ import {
 import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import { captureStackViewports } from '../SyntenyFollow/stackMove.ts'
 import { isNamedRecord } from '../syntenyMate.ts'
-import { NO_OPS, lanePairKey } from './alignmentOps.ts'
-import {
-  axisPlacement,
-  axisSpan,
-  axisSpans,
-  axisTickXs,
-  displayedRegionSpans,
-} from './anchorAxis.ts'
+import { NO_OPS } from './alignmentOps.ts'
+import { axisSpan, axisTickXs } from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
 import { configSlotActions, configSlotViews } from './configSlotViews.ts'
 import { dealGeneColors, geneColors } from './geneColor.ts'
 import { laneGeneTracksOf } from './laneAnnotation.ts'
-import {
-  decideLaneFrames,
-  frameFromDecision,
-  nudgeDecision,
-  sameDecisions,
-} from './laneDecision.ts'
+import { nudgeDecision, sameDecisions } from './laneDecision.ts'
 import {
   landLaneFetch,
   laneFetchAwaits,
   laneGenesFetchSpecsOf,
   laneGroupsFetchSpecsOf,
   laneLinksFetchSpecsOf,
+  lanePairsOf,
   starAnchorOf,
   staleLaneSpecs,
 } from './laneFetch.ts'
@@ -139,19 +129,23 @@ import {
   shownFrame,
 } from './laneMotion.ts'
 import { lanePanelsForRegion } from './lanePanels.ts'
+import { isFlipPin, pinHolds, pinsInForceOf, withPin } from './lanePins.ts'
 import {
+  laneRowsOf,
   laneUniverseOf,
   lanesInForce,
   pickedLanes,
   withLaneHidden,
   withLaneShown,
 } from './laneSelection.ts'
+import { gutterNearViewport, laneGeometry, stackReach } from './laneStack.ts'
 import {
-  buildLanes,
-  gutterNearViewport,
-  laneGeometry,
-  stackReach,
-} from './laneStack.ts'
+  anchorCentresOn,
+  anchorSpansOn,
+  decideLanesOn,
+  laneFrameOn,
+  laneStackOn,
+} from './laneStage.ts'
 import { laneTrackIds } from './laneTrackPattern.ts'
 import {
   anchorlessGroupsOf,
@@ -162,7 +156,6 @@ import {
   laneIndelsOf,
   laneTemplateRegion,
   mergeContiguousRegions,
-  rowAssembliesOf,
   tickIntervalFor,
 } from './layoutMultiWay.ts'
 import {
@@ -207,17 +200,10 @@ import type { SyntenyRenderState } from '../LinearSyntenyDisplay/syntenyRenderin
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { WindowDeletion } from './MultiWayGetFeatures.ts'
 import type { AlignmentOpsById, LaneLinks } from './alignmentOps.ts'
-import type { AxisPlacement } from './anchorAxis.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { GeneColors } from './geneColor.ts'
 import type { LaneGene } from './geneGlyph.ts'
-import type {
-  AnchorCoord,
-  FrozenLanes,
-  LaneDecision,
-  LaneFlipPin,
-  LanePin,
-} from './laneDecision.ts'
+import type { FrozenLanes, LaneDecision } from './laneDecision.ts'
 import type {
   HeldLane,
   HeldLaneGenes,
@@ -238,8 +224,10 @@ import type {
   LaneLayerSource,
 } from './laneLayers.ts'
 import type { LaneTransition } from './laneMotion.ts'
+import type { LanePin, LanePlacePin } from './lanePins.ts'
 import type { LaneChoice } from './laneSelection.ts'
 import type { Lane, LaneStack } from './laneStack.ts'
+import type { AnchorStage } from './laneStage.ts'
 import type {
   FetchRegion,
   PlacedGroup,
@@ -329,17 +317,6 @@ interface HeldLaneOrder {
 
 const NO_GENES: LaneGene[] = []
 
-/** `record` with `key` set to `value`, or dropped for undefined; empty is undefined */
-function withEntry<T>(
-  record: Readonly<Record<string, T>> | undefined,
-  key: string,
-  value: T | undefined,
-) {
-  const { [key]: _dropped, ...rest } = record ?? {}
-  const next = value === undefined ? rest : { ...rest, [key]: value }
-  return Object.keys(next).length > 0 ? next : undefined
-}
-
 function drawnRect(
   map: LaneMap,
   [x1, x2]: Span,
@@ -399,18 +376,10 @@ export function stateModelFactory(
         frozenLanes: types.frozen<FrozenLanes | undefined>(),
         /**
          * #property
-         * the contig, or a block on it, a reader pinned each lane to, by lane
+         * the reader's pins: a lane's contig, or a block on it, and its
+         * orientation on a contig against the anchor it was set under
          */
-        lanePins: types.frozen<Readonly<Record<string, LanePin>> | undefined>(),
-        /**
-         * #property
-         * each lane's pinned orientation, under the anchor it was set against,
-         * since a flip is stated against the anchor's order
-         */
-        laneFlipPins: types.frozen<
-          | Readonly<Record<string, Readonly<Record<string, LaneFlipPin>>>>
-          | undefined
-        >(),
+        lanePins: types.frozen<readonly LanePin[] | undefined>(),
       }),
     )
     .volatile((): MultiWayVolatiles => ({
@@ -927,18 +896,6 @@ export function stateModelFactory(
           self.starAnchor,
         )
       },
-      /** #getter */
-      get pinnedLanes(): ReadonlyMap<string, LanePin> {
-        return new Map(Object.entries(self.lanePins ?? {}))
-      },
-      /** #getter */
-      get pinnedLaneFlips(): ReadonlyMap<string, LaneFlipPin> {
-        return new Map(
-          Object.entries(
-            self.laneFlipPins?.[self.laneKey(self.anchorAssemblyName)] ?? {},
-          ),
-        )
-      },
     }))
     .views(self => ({
       /**
@@ -1092,18 +1049,28 @@ export function stateModelFactory(
        * a paralogy mate on the anchor assembly draws on its axis, not as a row
        */
       get rowAssemblies() {
-        const drawn = new Set(
-          this.laneUniverse
-            .filter(lane => lane.drawn)
-            .map(lane => self.laneKey(lane.name)),
-        )
-        const preferred = [...self.domain, ...(self.heldLaneOrder?.lanes ?? [])]
-        return rowAssembliesOf(
-          self.groups,
-          preferred,
+        return laneRowsOf({
+          groups: self.groups,
+          placeless: self.windowDeletions.map(d => d.assemblyName),
+          anchor: self.anchorAssemblyName,
+          preferred: [...self.domain, ...(self.heldLaneOrder?.lanes ?? [])],
+          selection: self.laneSelection,
+          hidden: self.hiddenLanes,
+          keyOf: self.laneKey,
+        })
+      },
+      /**
+       * #getter
+       * the pins that hold under the anchor, each naming its lane as
+       * `rowAssemblies` spells it
+       */
+      get pinsInForce(): LanePin[] {
+        return pinsInForceOf(
+          self.lanePins ?? [],
+          this.rowAssemblies,
+          self.anchorAssemblyName,
           self.laneKey,
-          self.windowDeletions.map(d => d.assemblyName),
-        ).filter(assemblyName => drawn.has(self.laneKey(assemblyName)))
+        )
       },
       /**
        * #getter
@@ -1413,30 +1380,6 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * in view px before the scroll offset; a flipped view gives x1 > x2
-       */
-      get anchorPlacements(): Map<string, AxisPlacement> {
-        const view = self.lgv
-        const assembly = self.anchorAssembly
-        const out = new Map<string, AxisPlacement>()
-        if (!view.initialized || !assembly) {
-          return out
-        }
-        for (const group of self.visibleGroups) {
-          const placement = axisPlacement(
-            view,
-            assembly.getCanonicalRefName2(group.anchor.refName),
-            group.anchor.start,
-            group.anchor.end,
-          )
-          if (placement) {
-            out.set(group.key, placement)
-          }
-        }
-        return out
-      },
-      /**
-       * #getter
        * the px the view has scrolled since the stack was laid out
        */
       get dragOffsetPx() {
@@ -1450,16 +1393,45 @@ export function stateModelFactory(
     }))
     .views(self => ({
       /**
+       * #method
+       * the view at `bpPerPx`, laid out against `originPx`, as the lanes
+       * decide against it
+       */
+      anchorStageAt(originPx: number, bpPerPx: number): AnchorStage {
+        const assembly = self.anchorAssembly
+        return {
+          layout: {
+            displayedRegions: self.lgv.displayedRegions,
+            bpPerPx,
+            offsetPx: originPx,
+          },
+          originPx,
+          width: self.canvasWidthPx,
+          anchorReversed: self.anchorReversed,
+          canon: refName => assembly?.getCanonicalRefName2(refName) ?? refName,
+        }
+      },
+      /**
+       * #getter
+       * the live view, laid out against `renderOriginPx`, as the lanes draw
+       * against it
+       */
+      get anchorStage(): AnchorStage {
+        const assembly = self.anchorAssembly
+        return {
+          layout: self.lgv,
+          originPx: self.renderOriginPx,
+          width: self.canvasWidthPx,
+          anchorReversed: self.anchorReversed,
+          canon: refName => assembly?.getCanonicalRefName2(refName) ?? refName,
+        }
+      },
+      /**
        * #getter
        * the anchor placements in stack px, relative to `renderOriginPx`
        */
       get anchorSpans(): Map<string, Span> {
-        const origin = self.renderOriginPx
-        const out = new Map<string, Span>()
-        for (const [key, { x1, x2 }] of self.anchorPlacements) {
-          out.set(key, [x1 - origin, x2 - origin])
-        }
-        return out
+        return anchorSpansOn(this.anchorStage, self.visibleGroups)
       },
       /**
        * #method
@@ -1467,28 +1439,10 @@ export function stateModelFactory(
        * scroll offset
        */
       anchorAbsXAt(bpPerPx: number) {
-        const view = self.lgv
-        const assembly = self.anchorAssembly
-        const out = new Map<string, { coord: AnchorCoord; x: number }>()
-        if (!view.initialized || !assembly) {
-          return out
-        }
-        for (const group of self.fitGroups) {
-          const placement = axisPlacement(
-            view,
-            assembly.getCanonicalRefName2(group.anchor.refName),
-            group.anchor.start,
-            group.anchor.end,
-            bpPerPx,
-          )
-          if (placement) {
-            out.set(group.key, {
-              coord: placement.centre,
-              x: (placement.x1 + placement.x2) / 2,
-            })
-          }
-        }
-        return out
+        return anchorCentresOn(
+          this.anchorStageAt(self.lgv.offsetPx, bpPerPx),
+          self.fitGroups,
+        )
       },
       /**
        * #method
@@ -1498,17 +1452,11 @@ export function stateModelFactory(
         decision: LaneDecision,
         assemblyName: string,
       ): RowFrame | undefined {
-        const pivot = self.lgv.bpToPx(decision.pivotAnchor)
-        return pivot
-          ? frameFromDecision(
-              decision,
-              pivot.offsetPx - self.renderOriginPx,
-              self.visibleBpSpan,
-              self.canvasWidthPx,
-              self.anchorReversed,
-              self.laneOpenings(assemblyName, decision.refName),
-            )
-          : undefined
+        return laneFrameOn(
+          this.anchorStage,
+          decision,
+          self.laneOpenings(assemblyName, decision.refName),
+        )
       },
     }))
     .views(self => ({
@@ -1581,26 +1529,12 @@ export function stateModelFactory(
         previous: ReadonlyMap<string, LaneDecision | undefined>
         frozen: ReadonlyMap<string, LaneDecision>
       }) {
-        const layout = { displayedRegions: self.lgv.displayedRegions, bpPerPx }
-        const anchorAbsX = self.anchorAbsXAt(bpPerPx)
-        return decideLaneFrames({
+        return decideLanesOn(self.anchorStageAt(originPx, bpPerPx), {
           groups: self.fitGroups,
           assemblyNames: self.rowAssemblies,
-          anchorX: new Map(
-            [...anchorAbsX].map(([key, { x }]) => [key, x - originPx]),
-          ),
-          anchorCoordOf: group => anchorAbsX.get(group.key)!.coord,
-          pxOfAnchor: coord => {
-            const px = bpToPx({ ...coord, self: layout })
-            return px && px.offsetPx - originPx
-          },
-          unitBp: self.canvasWidthPx * bpPerPx,
-          width: self.canvasWidthPx,
-          anchorReversed: self.anchorReversed,
           previous,
           frozen,
-          pinned: self.pinnedLanes,
-          pinnedFlips: self.pinnedLaneFlips,
+          pins: self.pinsInForce,
           openingsOf: self.laneOpenings,
         })
       },
@@ -1627,12 +1561,17 @@ export function stateModelFactory(
         }
         self.laneDragPx = next
       }
-      function setFlipPin(assemblyName: string, pin: LaneFlipPin | undefined) {
-        const anchor = self.laneKey(self.anchorAssemblyName)
-        self.laneFlipPins = withEntry(
-          self.laneFlipPins,
-          anchor,
-          withEntry(self.laneFlipPins?.[anchor], assemblyName, pin),
+      function setPin(
+        assemblyName: string,
+        flip: boolean,
+        pin: LanePin | undefined,
+      ) {
+        self.lanePins = withPin(
+          self.lanePins,
+          p =>
+            isFlipPin(p) === flip &&
+            pinHolds(p, assemblyName, self.anchorAssemblyName, self.laneKey),
+          pin,
         )
       }
       function nudgeLane(assemblyName: string, dxPx: number) {
@@ -1716,24 +1655,29 @@ export function stateModelFactory(
          * #action
          * a contig, or a block on it; `undefined` lets the lane choose again
          */
-        pinLane(assemblyName: string, pin: LanePin | undefined) {
-          self.lanePins = withEntry(self.lanePins, assemblyName, pin)
+        pinLane(
+          assemblyName: string,
+          pin: Omit<LanePlacePin, 'lane'> | undefined,
+        ) {
+          setPin(assemblyName, false, pin && { lane: assemblyName, ...pin })
           realign(assemblyName)
         },
         /** #action */
         flipLane(assemblyName: string) {
           const decision = self.laneDecisions.get(assemblyName)
           if (decision) {
-            setFlipPin(assemblyName, {
+            setPin(assemblyName, true, {
+              lane: assemblyName,
               refName: decision.refName,
               flipped: !decision.flipped,
+              anchor: self.anchorAssemblyName,
             })
             realign(assemblyName)
           }
         },
         /** #action */
         unpinLaneFlip(assemblyName: string) {
-          setFlipPin(assemblyName, undefined)
+          setPin(assemblyName, true, undefined)
           realign(assemblyName)
         },
       }
@@ -1852,11 +1796,7 @@ export function stateModelFactory(
       },
       /** #getter */
       get lanePairs(): LanePair[] {
-        const rows = self.rowAssemblies
-        return rows.slice(1).map((lower, i) => {
-          const upper = rows[i]!
-          return { upper, lower, key: lanePairKey(upper, lower) }
-        })
+        return lanePairsOf(self.rowAssemblies)
       },
       /** #getter */
       get anchorlessGroups(): PlacedGroup[] {
@@ -1970,18 +1910,11 @@ export function stateModelFactory(
           self.holdsAssembly(assemblyName)
             ? assemblyManager.get(assemblyName)
             : undefined
-        const view = self.lgv
-        return buildLanes({
+        return laneStackOn(self.anchorStage, {
           assemblyNames: [self.anchorAssemblyName, ...self.rowAssemblies],
           groups: [...self.visibleGroups, ...self.anchorlessGroups],
           anchorSpans: self.anchorSpans,
           rowFrames: self.rowFrames,
-          axisSpanOf: (refName, start, end) =>
-            axisSpan(view, refName, start, end, self.renderOriginPx),
-          axisSpansOf: (refName, start, end) =>
-            axisSpans(view, refName, start, end, self.renderOriginPx),
-          anchorRegionSpans: displayedRegionSpans(view, self.renderOriginPx),
-          anchorBpPerPx: view.bpPerPx,
           contigOf: (assemblyName, refName) => {
             const assembly = heldAssembly(assemblyName)
             const index = assembly?.refNameToIndex?.get(refName)
@@ -1993,7 +1926,6 @@ export function stateModelFactory(
               assembly && (refName => assembly.getCanonicalRefName2(refName))
             )
           },
-          width: self.canvasWidthPx,
           geometry: self.stackGeometry,
           pastHalfway: self.laneMotionHalfway,
           labelOf: assemblyName => self.laneLabel(assemblyName),

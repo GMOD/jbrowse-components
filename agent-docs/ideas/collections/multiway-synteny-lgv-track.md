@@ -36,7 +36,7 @@ rows in the synteny view: maize `1:286.7M` AND `5:6.3M` for one rice window).
 Since 2026-09-01 the other copy is at least NAMED and reachable: `pickContig`
 returns the contigs explaining a comparable share of the window (`alsoOn`, a
 fifth of the drawn one's evidence), the lane header says "also on 5", and the header
-menu offers "Show 5 in this lane", a per-lane pin (`pinnedLanes`) that
+menu offers "Show 5 in this lane", a per-lane pin (`lanePins`) that
 outranks the vote until the reader lets the lane choose again — the synteny
 follow's refused-spread report, applied to a lane. That is one copy at a time.
 The lane model that shows both is lane-per-REGION rather than lane-per-assembly —

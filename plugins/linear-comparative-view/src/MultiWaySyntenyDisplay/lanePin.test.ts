@@ -81,7 +81,7 @@ test('a lane names its other block, and its menu draws it and lets go', async ()
     'Let the lane choose where it draws',
   )
   await until(() => display.laneDecisions.get(C)!.fitMin > APART)
-  expect(display.pinnedLanes.has(C)).toBe(false)
+  expect(display.lanePins).toBeUndefined()
 })
 
 test('a lane pin and a flip pin ride the session, and come back with it', async () => {
@@ -100,14 +100,14 @@ test('a lane pin and a flip pin ride the session, and come back with it', async 
   display.flipLane(C)
   await until(() => display.laneDecisions.get(C)!.flipped === flipped)
   const pinned = getSnapshot(display)
-  expect(pinned.lanePins).toEqual({ [C]: { refName: 'ctgB', at: 20_200 } })
-  expect(pinned.laneFlipPins).toEqual({
-    [A]: { [C]: { refName: 'ctgB', flipped } },
-  })
+  expect(pinned.lanePins).toEqual([
+    { lane: C, refName: 'ctgB', at: 20_200 },
+    { lane: C, refName: 'ctgB', flipped, anchor: A },
+  ])
 
   applySnapshot(display, unpinned)
   await until(() => display.laneDecisions.get(C)!.fitMin > APART)
-  expect(display.pinnedLaneFlips.size).toBe(0)
+  expect(display.pinsInForce).toEqual([])
 
   applySnapshot(display, pinned)
   await until(() => display.laneDecisions.get(C)!.fitMax < APART)

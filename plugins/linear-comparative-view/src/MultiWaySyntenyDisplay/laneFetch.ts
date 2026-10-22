@@ -1,3 +1,4 @@
+import { lanePairKey } from './alignmentOps.ts'
 import { laneGeneFilter, laneIsoformSettings } from './geneGlyph.ts'
 
 import type { LaneLinks } from './alignmentOps.ts'
@@ -19,6 +20,14 @@ export interface LanePair {
   upper: string
   lower: string
   key: string
+}
+
+/** each adjacent pair of mate lanes, top down */
+export function lanePairsOf(rows: readonly string[]): LanePair[] {
+  return rows.slice(1).map((lower, i) => {
+    const upper = rows[i]!
+    return { upper, lower, key: lanePairKey(upper, lower) }
+  })
 }
 
 /** `lane` keys the held map; `assemblyName` is the genome the lane draws. */
@@ -167,7 +176,7 @@ export function laneGenesFetchSpecsOf({
 
 export function laneGroupsFetchSpecsOf(
   lanes: readonly string[],
-  windows: ReadonlyMap<string, LaneWindow>,
+  windows: ReadonlyMap<string, Pick<LaneWindow, 'regions'>>,
   lodTier: LodTier,
 ) {
   return lanes.flatMap(lane => {
@@ -188,7 +197,7 @@ export function laneGroupsFetchSpecsOf(
 
 export interface LaneLinksSpecInputs {
   pairs: readonly LanePair[]
-  windows: ReadonlyMap<string, LaneWindow>
+  windows: ReadonlyMap<string, Pick<LaneWindow, 'regions'>>
   rowFrames: ReadonlyMap<string, unknown>
   anchor: string
   onAnchor: boolean
