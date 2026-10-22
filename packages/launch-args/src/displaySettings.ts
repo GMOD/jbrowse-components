@@ -19,7 +19,7 @@ import {
 // This module stays free of node and of every JBrowse package but
 // cigar-utils, so Desktop's renderer imports it and jb2capture's install stays
 // small. The lists the plugins also hold are copied here; jb2export's
-// `displaySettingsGuards.ts` fails the build when one drifts from its plugin.
+// `applyTrackOpts.ts` fails the build when one drifts from its plugin.
 
 /**
  * The family of display a track opens as, which says which modifiers write
@@ -300,11 +300,14 @@ const CANVAS = ['feature', 'variant'] as const satisfies readonly Category[]
  * One `prefix:val1:val2` modifier: the display categories it writes for, and
  * what it folds into the settings. `byCategory` marks a modifier whose write
  * itself differs by category, which a caller that cannot name the category
- * has to refuse.
+ * has to refuse. `values` is how many it reads, one unless it says: `rest`
+ * gives `val2` everything after `val1`, colons included, and a value past the
+ * count throws.
  */
 interface Modifier {
   on: readonly Category[]
   byCategory?: true
+  values?: 2 | 'rest'
   apply: (
     result: DisplaySettings,
     val1: string,
@@ -361,12 +364,13 @@ const modifiers: Record<string, Modifier> = {
     },
   },
   // consumed while building the track's config
-  index: { on: ALL_CATEGORIES, apply: () => {} },
-  name: { on: ALL_CATEGORIES, apply: () => {} },
+  index: { on: ALL_CATEGORIES, values: 'rest', apply: () => {} },
+  name: { on: ALL_CATEGORIES, values: 'rest', apply: () => {} },
 
   // `heightMode:fit:200` sets the track height in the same modifier
   heightMode: {
     on: ['alignments', ...CANVAS],
+    values: 2,
     apply: (r, v, height) => {
       r.snap.heightMode = parseEnum('heightMode', v, HEIGHT_MODES)
       if (height !== undefined) {
@@ -409,10 +413,13 @@ const modifiers: Record<string, Modifier> = {
 
   sort: {
     on: ['alignments'],
+    values: 2,
     apply: (r, v, tag) => {
       const field = parseStr('sort', v, 'sort field')
       if (field === 'tag' && !tag) {
         invalidModifierValue('sort', v, 'tag:<TAG>')
+      } else if (field !== 'tag' && tag !== undefined) {
+        throw new Error(strayValueMessage('sort', 1, [tag]))
       }
       r.sort = {
         field:
@@ -452,6 +459,7 @@ const modifiers: Record<string, Modifier> = {
   // samtools' `-f` then `-F`; an omitted half leaves that mask as configured
   flags: {
     on: ['alignments'],
+    values: 2,
     apply: (r, include, exclude) => {
       r.snap.filter = {
         ...readFilterOf(r),
@@ -467,9 +475,11 @@ const modifiers: Record<string, Modifier> = {
       r.snap.filter = { ...readFilterOf(r), minMapq: parseNum('mapq', v) }
     },
   },
-  // appends: `filterTag:HP:1 filterTag:RG:x` is two conditions
+  // appends: `filterTag:HP:1 filterTag:RG:x` is two conditions, and a value
+  // keeps its colons, as in `filterTag:RG:HG002:fc1:1`
   filterTag: {
     on: ['alignments'],
+    values: 'rest',
     apply: (r, tag, value) => {
       r.snap.filter = {
         ...readFilterOf(r),
@@ -502,7 +512,8 @@ const modifiers: Record<string, Modifier> = {
   color: {
     on: ALL_CATEGORIES,
     byCategory: true,
-    apply: (r, v, _v2, category) => {
+    values: 'rest',
+    apply: (r, v, v2, category) => {
       const value = parseStr('color', v, 'color scheme or CSS color')
       if (value === 'tag' || value === 'attribute') {
         invalidModifierValue(
@@ -510,6 +521,8 @@ const modifiers: Record<string, Modifier> = {
           value,
           `a CSS color or a field name; a field of that name is color.field=${value === 'tag' ? 'tags.<TAG>' : '<name>'}`,
         )
+      } else if (v2 !== undefined) {
+        throw new Error(strayValueMessage('color', 1, [v2]))
       } else if (category === 'alignments') {
         if (BASE_COLOR_NAMES.has(value)) {
           invalidModifierValue(
@@ -549,13 +562,29 @@ const modifiers: Record<string, Modifier> = {
   },
 }
 
+function strayValueMessage(prefix: string, count: number, extra: string[]) {
+  return `track option "${prefix}:" takes ${count === 1 ? 'one value' : `${count} values`}, so ":${extra.join(':')}" applies to nothing`
+}
+
+function modifierArgs(prefix: string, modifier: Modifier, values: string[]) {
+  const [val1 = '', ...after] = values
+  if (modifier.values === 'rest') {
+    return [val1, after.length ? after.join(':') : undefined] as const
+  }
+  const count = modifier.values ?? 1
+  if (values.length > count) {
+    throw new Error(strayValueMessage(prefix, count, values.slice(count)))
+  }
+  return [val1, after[0]] as const
+}
+
 // An unknown name throws, as a misspelled slot does. A known one aimed at the
 // wrong track type warns, because reusing one modifier list across a mixed set
 // of files is a reasonable thing to script.
 function applyModifier(
   result: DisplaySettings,
   category: Category | undefined,
-  [prefix = '', val1 = '', val2]: string[],
+  [prefix = '', ...values]: string[],
   warn: (message: string) => void,
 ) {
   const modifier = lookup(modifiers, prefix)
@@ -572,6 +601,7 @@ function applyModifier(
       `track option "${prefix}" has no effect on ${category === 'other' ? 'this track type' : `a ${category} track`} (applies to: ${modifier.on.join(', ')})`,
     )
   } else {
+    const [val1, val2] = modifierArgs(prefix, modifier, values)
     modifier.apply(result, val1, val2, category)
   }
 }

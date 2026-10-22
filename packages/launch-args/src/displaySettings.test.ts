@@ -373,6 +373,24 @@ describe('alignments settings a static export cannot reach any other way', () =>
     })
   })
 
+  test("a tag filter's value keeps its colons", () => {
+    expect(
+      buildDisplaySnapshot('alignments', ['filterTag:RG:HG002:fc1:1']).snap
+        .filter,
+    ).toEqual({ tags: [{ tag: 'RG', value: 'HG002:fc1:1' }] })
+  })
+
+  test.each([
+    ['sort:tag:HP:x', /"sort:" takes 2 values, so ":x"/],
+    ['sort:base:HP', /"sort:" takes one value, so ":HP"/],
+    ['heightMode:fit:200:x', /"heightMode:" takes 2 values, so ":x"/],
+    ['flags:2:1540:3', /"flags:" takes 2 values/],
+    ['mapq:20:30', /"mapq:" takes one value, so ":30"/],
+    ['color:red:x:y', /"color:" takes one value, so ":x:y"/],
+  ])('a stray value in %s throws', (opt, message) => {
+    expect(() => buildDisplaySnapshot('alignments', [opt])).toThrow(message)
+  })
+
   test('a tag filter with no value passes any read carrying the tag', () => {
     expect(
       buildDisplaySnapshot('alignments', ['filterTag:HP']).snap.filter,
