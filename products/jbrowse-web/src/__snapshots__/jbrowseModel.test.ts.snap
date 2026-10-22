@@ -500,10 +500,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             },
           ],
           "rows": {
-            "domain": [
-              "offspring10",
-              "dad",
-            ],
             "field": "sample",
             "kept": [
               "offspring10",
@@ -511,6 +507,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
               "mom",
               "offspring03",
               "offspring07",
+            ],
+            "sort": [
+              "offspring10",
+              "dad",
             ],
           },
           "type": "LinearMultiRowFeatureDisplay",
