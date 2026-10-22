@@ -1,6 +1,6 @@
 ---
 name: launch-args
-description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --genome, --view (view settings by their session-spec names), format-family track flags, batch --sites, genome modifiers in place of --aliases/--cytobands. Open: display-specific modifiers in Desktop (it takes height:, force:, slot writes and JSON), img rendering through loadSessionSpec, jb2capture on the shared grammar, comparative views from Desktop."
+description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --genome, --view (view settings by their session-spec names), format-family track flags, batch --sites, genome modifiers in place of --aliases/--cytobands. jb2capture on the shared grammar (track settings, --view, data files refused). Open: display-specific modifiers in Desktop and capture (both take height:, force:, slot writes and JSON), img rendering through loadSessionSpec, comparative views from Desktop."
 ---
 
 # Launch arguments: one grammar for img, capture and Desktop
@@ -28,6 +28,12 @@ packages is released, so breaking changes are fine.
 - Desktop: `electron/launchTarget.ts` (`findLaunchTarget`),
   `electron/electron.ts` (single-instance lock data, open-file),
   `src/components/StartScreen/launchFromLink.ts` (`launchFromPlan`).
+- jb2capture: `args.ts` tokenizes with `parseArgv`/`standardizeArgv`, writes
+  `--track id height:200` through `trackSettings` and `--view` through
+  `viewSettings`; `url.ts` sends either as a one-view session spec and keeps
+  the URL parameters otherwise. `resolveTrackId` runs against the config
+  capture already fetches. Display-specific modifiers throw there, naming
+  jb2export.
 - jb2export: `readData.ts` builds the genome with `genomeAssembly` and tracks
   with `fileTrack`; `addLaunchView` in `renderRegion.ts` writes `--view` over
   every view it opens.
@@ -49,6 +55,13 @@ packages is released, so breaking changes are fine.
 
 ## Traps
 
+- **jb2capture drives the released instance of its own version**, so a spec key
+  renamed on main fails against the instance a published capture loads until
+  both ship together.
+- **jb2capture cannot open data files.** file:// fails for workers, and a
+  loopback server hits Chrome's local-network-access checks; it refuses a bare
+  file or a track-file flag naming jb2export and Desktop.
+
 - **Chromium reorders a second launch's argv** in the `second-instance` event,
   switches first. The second instance sends its own `process.argv` and cwd as
   `requestSingleInstanceLock` data; `forwardedLaunch` reads it.
@@ -65,7 +78,7 @@ packages is released, so breaking changes are fine.
 
 ## Next, in order
 
-1. **Display-specific modifiers in Desktop.** Desktop applies `trackSettings`
+1. **Display-specific modifiers in Desktop, then capture.** Desktop applies `trackSettings`
    and reports `color:`, `featureHeight:`, the read filters, `sort:` and member
    writes as not applied. Run img's translator (`buildDisplaySnapshot`) in
    Desktop's renderer, where `launchFromPlan` has the plugin manager (for
@@ -73,17 +86,12 @@ packages is released, so breaking changes are fine.
    merges into), and have the plan carry each track's modifiers instead of
    `unapplied` strings. ADR-238 does not remove the merge: a written `filter`
    list replaces the default one, so `mapq:30` is the default list plus one
-   predicate.
+   predicate. Capture has no plugin manager in node, so its route is the
+   same translator inside the page, or a spec key the app resolves.
 2. **img renders through `loadSessionSpec`** for the half that writes settings.
    img still reads links, alt counts and the manifest back off the drawn view,
    and a gene-name `--loc` must stay on `navToLocOrGene`, since a search with
    several hits opens a picker nothing answers headless.
-3. **jb2capture on the shared grammar.** launch-args depends only on
-   add-track-core, which has no dependencies, so capture can take it on. Its
-   strict `parseArgs` rejects modifiers today, and it drives a pinned released
-   instance, so a renamed key fails on an older one. Local files still need
-   serving to its browser (file:// fails for workers; a loopback server hits
-   Chrome's local-network checks).
-4. **Comparative views from Desktop's command line** (`--fasta` twice, `--paf`):
+3. **Comparative views from Desktop's command line** (`--fasta` twice, `--paf`):
    jb2export's `comparativeArgs.ts` has the grammar; Desktop's plan builds one
    linear view.
