@@ -13,11 +13,35 @@ export interface WorkflowFormHost {
 }
 
 /**
+ * An add-track form's fields, a workflow's or a picker's, held on the widget
+ * model rather than in component state. The drawer unmounts a widget whenever
+ * anything else is shown in it, which discarded a form kept in `useState`; the
+ * model survives that, and its `clearData` resets every form after an add or
+ * when the widget is reopened for another view.
+ *
+ * `update` merges a patch over the form as it stands when called, so two
+ * updates from one handler don't drop each other.
+ */
+export function workflowForm<T extends object>(
+  model: WorkflowFormHost,
+  key: string,
+  initial: T,
+) {
+  const read = () => ({ ...initial, ...model.workflowForms[key] })
+  return {
+    form: read(),
+    update(patch: Partial<T>) {
+      model.setWorkflowForm(key, { ...read(), ...patch })
+    },
+  }
+}
+
+/**
  * The slice of the add-track widget model an adapter-specific picker gets. It
  * is deliberately narrower than the widget's own model: a picker reads which
  * adapter is selected and contributes config fragments through `mixinData`,
- * which the widget merges into the track config on submit, keeping its own
- * fields through `workflowForm`.
+ * which the widget merges into the track config on submit. `useAddTrackFields`
+ * does both halves for it.
  */
 export interface AddTrackComponentModel
   extends IStateTreeNode, WorkflowFormHost {
@@ -25,7 +49,9 @@ export interface AddTrackComponentModel
   setAssembly: (arg: string) => void
   trackAdapterType: string | undefined
   mixinData: Record<string, unknown>
-  setMixinData: (data: Record<string, unknown>) => void
+  /** why the picker's fields cannot make a track yet; holds the Add button */
+  mixinMissing: string | undefined
+  setMixinData: (data: Record<string, unknown>, missing?: string) => void
 }
 
 export interface AddTrackComponentProps {

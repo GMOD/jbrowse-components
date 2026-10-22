@@ -275,7 +275,6 @@ export {
   addTracksFromWidget,
   containerDisplaysAssembly,
   finishAddTrack,
-  workflowForm,
   type AddTrackWidgetSelf,
   type AddTrackWorkflowModel,
   type WidgetTrackConf,
@@ -521,7 +520,12 @@ export {
   type WorkflowFormHost,
   adapterNeedsAddTrackComponent,
   addAddTrackComponent,
+  workflowForm,
 } from './addTrackComponent.ts'
+export {
+  type AddTrackContribution,
+  useAddTrackFields,
+} from './useAddTrackFields.ts'
 export { adapterConfigFromSpec } from './formatGuessers.ts'
 export {
   type AdapterConfig,

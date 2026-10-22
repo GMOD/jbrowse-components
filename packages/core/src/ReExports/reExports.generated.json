@@ -2531,6 +2531,7 @@
         "toggleTrackGeneric",
         "truncateMiddle",
         "updateStatus",
+        "useAddTrackFields",
         "useCreateOnce",
         "useDebounce",
         "useFinalUnmount",

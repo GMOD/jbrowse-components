@@ -1,8 +1,6 @@
-import { useEffect } from 'react'
-
 import { FileSelector } from '@jbrowse/core/ui'
-import { workflowForm } from '@jbrowse/core/util'
-import { getRoot, isAlive } from '@jbrowse/mobx-state-tree'
+import { useAddTrackFields } from '@jbrowse/core/util'
+import { getRoot } from '@jbrowse/mobx-state-tree'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -17,40 +15,25 @@ import { isTabixLocation } from './ldAdapterConfig.ts'
 import type { GwasForm } from './gwasTrackMixin.ts'
 import type {
   AbstractRootModel,
-  AddTrackComponentModel,
   AddTrackComponentProps,
 } from '@jbrowse/core/util'
 
-const FORM_KEY = 'GWASAdapter'
-
-function readForm(model: AddTrackComponentModel) {
-  return workflowForm(model, FORM_KEY, INITIAL_GWAS_FORM)
+function contribute(form: GwasForm) {
+  return { trackConfig: gwasTrackMixin(form) }
 }
 
 const GWASAddTrackComponent = observer(function ({
   model,
 }: AddTrackComponentProps) {
-  // Seeds the track config from the form on mount, which may be a remount
-  // after the drawer showed another widget, and takes it back on unmount, so a
-  // switch to another adapter type carries none of these fields over.
-  useEffect(() => {
-    model.setMixinData(gwasTrackMixin(readForm(model).form))
-    return () => {
-      if (isAlive(model)) {
-        model.setMixinData({})
-      }
-    }
-  }, [model])
-
   const rootModel = getRoot<AbstractRootModel>(model)
-  const { form, update } = readForm(model)
+  const { form, update: set } = useAddTrackFields(
+    model,
+    'GWASAdapter',
+    INITIAL_GWAS_FORM,
+    contribute,
+  )
   const { scoreColumn, scoreTransform, ldLocation, ldIndexLocation } = form
   const indexMissing = ldIndexMissing(form)
-
-  function set(patch: Partial<GwasForm>) {
-    update(patch)
-    model.setMixinData(gwasTrackMixin(readForm(model).form))
-  }
 
   return (
     <>

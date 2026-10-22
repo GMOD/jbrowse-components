@@ -1,11 +1,7 @@
-import { useState } from 'react'
-
 import { AssemblySelector, FileSelector } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, useAddTrackFields } from '@jbrowse/core/util'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import { useSeedTrackMixin } from '../addTrackMixinContribution.ts'
 
 import type { AddTrackComponentModel, FileLocation } from '@jbrowse/core/util'
 
@@ -20,16 +16,22 @@ interface AnchorsForm {
 // tracks that cover every assembly it displays (filterTracks), so a track left
 // listing just the assembly the widget was opened on never appears in the view
 // it was made for.
-function formToMixin(form: AnchorsForm) {
+function contribute(form: AnchorsForm) {
   const { bed1Assembly, bed2Assembly, bed1Location, bed2Location } = form
   const assemblyNames = [bed1Assembly, bed2Assembly]
   return {
-    assemblyNames,
-    adapter: {
+    trackConfig: {
       assemblyNames,
-      bed1Location,
-      bed2Location,
+      adapter: {
+        assemblyNames,
+        bed1Location,
+        bed2Location,
+      },
     },
+    missing:
+      bed1Location && bed2Location
+        ? undefined
+        : 'Choose both BED files: the .anchors file names genes, and the BEDs place them',
   }
 }
 
@@ -40,18 +42,12 @@ const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
 }) {
   const session = getSession(model)
   const defaultAsm = session.assemblies[0]?.name
-  const [form, setForm] = useState<AnchorsForm>({
-    bed1Assembly: defaultAsm,
-    bed2Assembly: defaultAsm,
-  })
-
-  useSeedTrackMixin(model, formToMixin(form))
-
-  function update(patch: Partial<AnchorsForm>) {
-    const next = { ...form, ...patch }
-    setForm(next)
-    model.setMixinData(formToMixin(next))
-  }
+  const { form, update } = useAddTrackFields<AnchorsForm>(
+    model,
+    'MCScanAddTrackComponent',
+    { bed1Assembly: defaultAsm, bed2Assembly: defaultAsm },
+    contribute,
+  )
 
   return (
     <div style={{ marginTop: 20 }}>

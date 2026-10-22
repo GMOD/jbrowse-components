@@ -36,6 +36,7 @@ list for adding several tracks at once.
 | <span id="volatile-textindextrack">**textIndexTrack**</span><br><code>boolean</code> |  |
 | <span id="volatile-textindexingconf">**textIndexingConf**</span><br><code>IndexingAttr &#124; undefined</code> |  |
 | <span id="volatile-mixindata">**mixinData**</span><br><code>Record&lt;string, unknown&gt;</code> |  |
+| <span id="volatile-mixinmissing">**mixinMissing**</span><br><code>string &#124; undefined</code> |  |
 | <span id="volatile-detectedindexname">**detectedIndexName**</span><br><code>string &#124; undefined</code> |  |
 | <span id="volatile-workflowforms">**workflowForms**</span><br><code>Record&lt;string, object &#124; undefined&gt;</code> |  |
 
@@ -70,7 +71,7 @@ list for adding several tracks at once.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setmixindata">**setMixinData**</span><br><code>(arg: Record&lt;string, unknown&gt;) =&gt; void</code> |  |
+| <span id="action-setmixindata">**setMixinData**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(arg: Record&lt;string, unknown&gt;, missing?: string &#124; undefined) =&gt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(arg: Record&lt;string, unknown&gt;, missing?: string &#124; undefined) =&gt; void</code></pre></dialog></span> | What the adapter's picker adds to the track config, and why it cannot make a track yet, if it cannot. |
 | <span id="action-setworkflowform">**setWorkflowForm**</span><br><code>(key: string, form: object) =&gt; void</code> | Store one workflow's form; `workflowForm` in core reads and patches it. |
 | <span id="action-setworkflowname">**setWorkflowName**</span><br><code>(name: string) =&gt; void</code> |  |
 | <span id="action-setadapterhint">**setAdapterHint**</span><br><code>(obj: string) =&gt; void</code> |  |

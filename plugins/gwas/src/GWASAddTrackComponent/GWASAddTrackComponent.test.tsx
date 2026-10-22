@@ -7,6 +7,7 @@ import GWASAddTrackComponent from './GWASAddTrackComponent.tsx'
 const WidgetStub = types
   .model({
     mixinData: types.frozen<Record<string, unknown>>({}),
+    mixinMissing: types.maybe(types.string),
     workflowForms: types.frozen<Record<string, object | undefined>>({}),
   })
   .views(() => ({
@@ -19,8 +20,9 @@ const WidgetStub = types
   }))
   .actions(self => ({
     setAssembly() {},
-    setMixinData(data: Record<string, unknown>) {
+    setMixinData(data: Record<string, unknown>, missing?: string) {
       self.mixinData = data
+      self.mixinMissing = missing
     },
     setWorkflowForm(key: string, form: object) {
       self.workflowForms = { ...self.workflowForms, [key]: form }

@@ -139,6 +139,11 @@ const ConfirmTrack = observer(function ConfirmTrack({
               props={{ model }}
             />
           </Suspense>
+          {model.mixinMissing ? (
+            <Typography color="error" variant="body2">
+              {model.mixinMissing}
+            </Typography>
+          ) : null}
         </div>
 
         {isElectron && supportedForIndexing && (

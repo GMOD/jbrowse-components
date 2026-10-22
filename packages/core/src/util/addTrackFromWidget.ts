@@ -63,30 +63,6 @@ export interface AddTrackWorkflowModel
 }
 
 /**
- * An add-track form's fields, a workflow's or a picker's, held on the widget
- * model rather than in component state. The drawer unmounts a widget whenever
- * anything else is shown in it, which discarded a form kept in `useState`; the
- * model survives that, and its `clearData` resets every form after an add or
- * when the widget is reopened for another view.
- *
- * `update` merges a patch over the form as it stands when called, so two
- * updates from one handler don't drop each other.
- */
-export function workflowForm<T extends object>(
-  model: WorkflowFormHost,
-  key: string,
-  initial: T,
-) {
-  const read = () => ({ ...initial, ...model.workflowForms[key] })
-  return {
-    form: read(),
-    update(patch: Partial<T>) {
-      model.setWorkflowForm(key, { ...read(), ...patch })
-    },
-  }
-}
-
-/**
  * Reset the form and dismiss the widget after a successful add.
  *
  * Only ever on an add that landed something: finishing throws away what the

@@ -1,11 +1,7 @@
-import { useState } from 'react'
-
 import { AssemblySelector, FileSelector } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, useAddTrackFields } from '@jbrowse/core/util'
 import { Button, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import { useSeedTrackMixin } from '../addTrackMixinContribution.ts'
 
 import type { AddTrackComponentModel, FileLocation } from '@jbrowse/core/util'
 
@@ -18,15 +14,20 @@ interface GenomeColumn {
 // only offers tracks that cover every assembly it displays (filterTracks), so a
 // track left listing just the assembly the widget was opened on never appears in
 // the view it was made for.
-function columnsToMixin(columns: GenomeColumn[]) {
+function contribute({ columns }: { columns: GenomeColumn[] }) {
   const assemblyNames = columns.map(c => c.assembly)
   return {
-    assemblyNames,
-    adapter: {
-      blockAssemblies: assemblyNames,
-      bedLocations: columns.map(c => c.bed),
+    trackConfig: {
       assemblyNames,
+      adapter: {
+        blockAssemblies: assemblyNames,
+        bedLocations: columns.map(c => c.bed),
+        assemblyNames,
+      },
     },
+    missing: columns.every(c => c.bed)
+      ? undefined
+      : 'Choose a BED file for every genome column',
   }
 }
 
@@ -43,16 +44,21 @@ const MCScanBlocksAddTrackComponent = observer(
   }) {
     const session = getSession(model)
     const defaultAsm = session.assemblies[0]?.name ?? ''
-    const [columns, setColumns] = useState<GenomeColumn[]>([
-      { assembly: defaultAsm },
-      { assembly: session.assemblies[1]?.name ?? defaultAsm },
-    ])
-
-    useSeedTrackMixin(model, columnsToMixin(columns))
+    const fields = useAddTrackFields(
+      model,
+      'MCScanBlocksAddTrackComponent',
+      {
+        columns: [
+          { assembly: defaultAsm },
+          { assembly: session.assemblies[1]?.name ?? defaultAsm },
+        ] as GenomeColumn[],
+      },
+      contribute,
+    )
+    const { columns } = fields.form
 
     const update = (next: GenomeColumn[]) => {
-      setColumns(next)
-      model.setMixinData(columnsToMixin(next))
+      fields.update({ columns: next })
     }
 
     const setColumn = (idx: number, patch: Partial<GenomeColumn>) => {

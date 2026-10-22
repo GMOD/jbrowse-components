@@ -73,6 +73,7 @@ function createVolatileState() {
     textIndexTrack: true,
     textIndexingConf: undefined as IndexingAttr | undefined,
     mixinData: {} as Record<string, unknown>,
+    mixinMissing: undefined as string | undefined,
     // The filename of an index this widget found beside the main file, so the
     // form can say the field was filled in for you rather than leaving a path
     // you did not type looking like one you did. Cleared the moment you set an
@@ -138,9 +139,12 @@ export default function f(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
+       * What the adapter's picker adds to the track config, and why it cannot
+       * make a track yet, if it cannot.
        */
-      setMixinData(arg: Record<string, unknown>) {
+      setMixinData(arg: Record<string, unknown>, missing?: string) {
         self.mixinData = arg
+        self.mixinMissing = missing
       },
       /**
        * #action

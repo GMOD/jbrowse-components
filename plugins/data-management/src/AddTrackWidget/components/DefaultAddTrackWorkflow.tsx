@@ -50,7 +50,8 @@ const steps = [
         model.submittableTrackName &&
         model.trackType &&
         model.trackAdapter?.type &&
-        model.assembly
+        model.assembly &&
+        !model.mixinMissing
       ),
   },
 ]

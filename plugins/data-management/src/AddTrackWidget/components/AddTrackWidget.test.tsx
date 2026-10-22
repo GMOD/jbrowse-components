@@ -225,6 +225,51 @@ test('synteny add-track component seeds query/target assemblies into the config'
   })
 })
 
+// the drawer unmounts the widget whenever it shows another one; the remount
+// used to seed the picker's defaults back over the pair the user chose
+test('a chosen synteny pair survives the picker unmounting', async () => {
+  const { model } = getSession()
+  model.setTrackData({ uri: 'test.paf', locationType: 'UriLocation' })
+  const first = render(<ConfirmTrack model={model} />)
+  await waitFor(() => {
+    expect(model.mixinData.adapter).toBeDefined()
+  })
+  model.setWorkflowForm('ComparativeAddTrackComponent', {
+    queryAssembly: 'volMyt1',
+    targetAssembly: 'other',
+  })
+  first.unmount()
+
+  render(<ConfirmTrack model={model} />)
+  await waitFor(() => {
+    expect(model.getTrackConfig(Date.now())?.adapter).toMatchObject({
+      queryAssembly: 'volMyt1',
+      targetAssembly: 'other',
+    })
+  })
+})
+
+test('an anchors file holds Add until both BED files are chosen', async () => {
+  const { model } = getSession()
+  model.setTrackData({ uri: 'test.anchors', locationType: 'UriLocation' })
+  const { findByText, queryByText } = render(<ConfirmTrack model={model} />)
+
+  expect(await findByText(/Choose both BED files/)).toBeTruthy()
+  expect(model.mixinMissing).toBeTruthy()
+
+  const bed = (uri: string) => ({ uri, locationType: 'UriLocation' })
+  model.setWorkflowForm('MCScanAddTrackComponent', {
+    bed1Assembly: 'volMyt1',
+    bed2Assembly: 'volMyt1',
+    bed1Location: bed('a.bed'),
+    bed2Location: bed('b.bed'),
+  })
+  await waitFor(() => {
+    expect(model.mixinMissing).toBeUndefined()
+  })
+  expect(queryByText(/Choose both BED files/)).toBeNull()
+})
+
 test('TextIndexingConfig edits existing values and has distinct add buttons', () => {
   const { model } = getSession()
   const { getByDisplayValue, getByTestId } = render(

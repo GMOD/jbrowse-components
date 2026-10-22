@@ -64,10 +64,10 @@ AddTrackModel.indexTrackData
 AddTrackModel.isFtp
 AddTrackModel.isRelativeUrl
 AddTrackModel.mixinData
+AddTrackModel.mixinMissing
 AddTrackModel.setAdapterHint
 AddTrackModel.setAssembly
 AddTrackModel.setIndexTrackData
-AddTrackModel.setMixinData
 AddTrackModel.setTextIndexTrack
 AddTrackModel.setTextIndexingConf
 AddTrackModel.setTrackData

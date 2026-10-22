@@ -1,13 +1,16 @@
-import { useState } from 'react'
-
 import { AssemblySelector } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, useAddTrackFields } from '@jbrowse/core/util'
 import { Button, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { useSeedTrackMixin } from '../addTrackMixinContribution.ts'
-
 import type { AddTrackComponentModel } from '@jbrowse/core/util'
+
+// the same list goes on the track and on the adapter: the adapter uses it to
+// label mates, while the track needs it to be offered by the track selector of
+// a multi-way view (which only shows tracks covering every displayed assembly)
+function contribute({ assemblyNames }: { assemblyNames: string[] }) {
+  return { trackConfig: { assemblyNames, adapter: { assemblyNames } } }
+}
 
 // The assembly names are assumed to match the PanSN sample prefixes; a mismatch
 // is rare enough to configure via the assemblyNameToPanSN slot in the config
@@ -20,25 +23,18 @@ const MultiGenomeAddTrackComponent = observer(
   }) {
     const session = getSession(model)
     const defaultAsm = session.assemblies[0]?.name ?? ''
-    const [assemblyNames, setAssemblyNames] = useState<string[]>([
-      defaultAsm,
-      session.assemblies[1]?.name ?? defaultAsm,
-    ])
-
-    // the same list goes on the track and on the adapter: the adapter uses it to
-    // label mates, while the track needs it to be offered by the track selector of
-    // a multi-way view (which only shows tracks covering every displayed assembly)
-    useSeedTrackMixin(model, {
-      assemblyNames,
-      adapter: { assemblyNames },
-    })
+    const fields = useAddTrackFields(
+      model,
+      'MultiGenomeAddTrackComponent',
+      {
+        assemblyNames: [defaultAsm, session.assemblies[1]?.name ?? defaultAsm],
+      },
+      contribute,
+    )
+    const { assemblyNames } = fields.form
 
     function update(next: string[]) {
-      setAssemblyNames(next)
-      model.setMixinData({
-        assemblyNames: next,
-        adapter: { assemblyNames: next },
-      })
+      fields.update({ assemblyNames: next })
     }
 
     return (

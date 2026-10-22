@@ -1069,11 +1069,16 @@ export default function GWASAddTrackComponentF(pluginManager: PluginManager) {
 }
 ```
 
-Your component writes the config fragments it collects to `model.mixinData`,
-which the widget merges into the track config on submit. Write the whole
-fragment on every edit (a later write replaces the previous one rather than
-merging with it), and clear it on unmount, so switching to another adapter
-doesn't leave stale fields behind.
+Your component keeps its fields with `useAddTrackFields` (from
+`@jbrowse/core/util`), which takes a function from the fields to what they add:
+
+- **`trackConfig`** is merged into the track config the widget builds
+- **`missing`**, when set, is the reason the fields cannot make a track yet; the
+  widget shows it and holds the Add button
+
+The hook keeps the fields on the widget model, so they survive the drawer
+showing another widget, and takes the contribution back when the user picks
+another adapter.
 
 ### TrackSelector-multiTrackMenuItems
 
