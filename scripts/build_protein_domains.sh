@@ -107,7 +107,8 @@ sed "s|@ASSEMBLY@|$ASM|" >track.json <<'JSON'
     "disableGeneHeuristic": true
   },
   "displayDefaults": {
-    "color": { "field": "name" }
+    "color": { "field": "name" },
+    "rows": { "field": "transcript" }
   }
 }
 JSON

@@ -12,3 +12,4 @@ tutorials/dog10k_selection.md 1
 tutorials/genomes_basics.md 4
 tutorials/ld_mosquitoes.md 1
 tutorials/local_ancestry.md 2
+tutorials/protein_domains.md 1

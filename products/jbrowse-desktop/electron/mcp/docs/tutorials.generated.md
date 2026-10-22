@@ -698,6 +698,17 @@ Page: https://jbrowse.org/jb2/docs/tutorials/primate_orthologs_synteny/
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 - https://jbrowse.org/hubs/genark/GCF/028/858/775/GCF_028858775.2/config.json
 
+## Protein domains on gene models
+
+Call Pfam domains on a genome's proteins, place each domain on the exons that encode it, and draw the domains under the genes, one row per isoform
+
+Page: https://jbrowse.org/jb2/docs/tutorials/protein_domains/
+
+- https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/254/395/GCF_003254395.2_Amel_HAv3.1/GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz
+- https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/254/395/GCF_003254395.2_Amel_HAv3.1/GCF_003254395.2_Amel_HAv3.1_genomic.gff.gz
+- https://jbrowse.org/demos/protein_domains/pfam.bed.gz
+- https://jbrowse.org/hubs/genark/GCF/003/254/395/GCF_003254395.2/config.json
+
 ## Variants on protein structures part 6: BRAF V600 in the activation loop
 
 Open BRAF on codon 600, whose V600E change drives about half of melanomas, beside a crystal structure of the V600E kinase, and read which of NCBI's conserved sites of the kinase domain the codon falls in
