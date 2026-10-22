@@ -570,6 +570,10 @@ range through the host's synchronous `jbrowseHost.readRange(url, start, end)`.
 - **The test that matters runs the bundle in an empty `node:vm` context**,
   which has no web globals, as V8 in R has none (`bundle.test.ts`). A shim
   removed turns it red.
+- **`build-bundle.mjs` stubs what a bare host never runs**: the feature
+  details widget, which brings MUI and the data grid through CorePlugin's lazy
+  import, and `@gmod/cram`'s worker source. That halves the bundle, and
+  `bundle.test.ts` holds MUI out.
 - **The output is printable ASCII, newline and tab, and ES2020.** A host reads
   the bundle as a text file, and the CRAM reader inlines its htscodecs wasm as
   a binary string: the raw control bytes in it broke R's Windows check, so the
