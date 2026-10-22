@@ -7,7 +7,7 @@ import { openFeatureWidget } from '@jbrowse/core/util'
 
 import { spliceMotifLabel } from '../../features/sashimi/motif.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
-import { getCigarTypeLabel } from '../../shared/types.ts'
+import { getCigarTypeLabel, isInterbaseType } from '../../shared/types.ts'
 import { getCoverageBin, getInterbaseBin } from './positionStats.ts'
 import { sashimiFeatureId } from './sashimiArcs.ts'
 
@@ -175,26 +175,29 @@ export function openCigarWidget(
   cigarHit: CigarHitResult,
   refName: string,
 ) {
+  // An insertion or clip sits between two reference bases and covers none,
+  // so its span is empty and its length, counted in read bases, is stated.
+  const interbase = isInterbaseType(cigarHit.type)
   const featureData: SimpleFeatureSerialized = {
     uniqueId: `${cigarHit.type}-${refName}-${cigarHit.position}`,
     name: getCigarTypeLabel(cigarHit.type),
     type: cigarHit.type,
     refName,
     start: cigarHit.position,
-    end: cigarHit.position + cigarHit.length,
+    end: interbase ? cigarHit.position : cigarHit.position + cigarHit.length,
   }
 
   // base (mismatch) and sequence (insertion) are populated mutually exclusively
   // by the hit-testers, so copy whichever the hit carries rather than
-  // re-deriving the type here. Length is reported only when it says something:
-  // every mismatch is 1bp, so a "Length: 1" row is noise.
+  // re-deriving the type here. Every mismatch is 1bp, so a "Length: 1" row
+  // there is noise.
   if (cigarHit.base) {
     featureData.base = cigarHit.base
   }
   if (cigarHit.qual !== undefined) {
     featureData.quality = cigarHit.qual
   }
-  if (cigarHit.length > 1) {
+  if (interbase || cigarHit.length > 1) {
     featureData.length = cigarHit.length
   }
   if (cigarHit.sequence) {
