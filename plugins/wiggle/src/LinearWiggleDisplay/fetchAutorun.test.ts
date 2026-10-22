@@ -206,7 +206,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.applyPlot({ color: '#abcdef' })
+    display.applyPlot({ encoding: { color: { value: '#abcdef' } } })
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
@@ -349,7 +349,7 @@ describe('LinearWiggleDisplay solid color', () => {
     'every layer keeps the single hue under %s with extent %s',
     (summaryField, extent) => {
       const display = loadedWithSignedData()
-      display.applyPlot({ color: 'green' })
+      display.applyPlot({ encoding: { color: { value: 'green' } } })
       display.setY(summaryField)
       display.setExtent(extent)
 
@@ -377,7 +377,7 @@ describe('LinearWiggleDisplay solid color', () => {
     'density under a constant color stays one color in %s mode',
     mode => {
       const display = loadedWithSignedData()
-      display.applyPlot({ color: 'green' })
+      display.applyPlot({ encoding: { color: { value: 'green' } } })
       display.setMark('span')
       display.setY(mode)
 

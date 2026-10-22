@@ -39,7 +39,10 @@ const markColors = (display: ReturnType<typeof makeDisplay>) =>
 
 describe('a written color paints every mark', () => {
   it.each([true, false])('rows %p: a constant, not the files', rows => {
-    const display = makeDisplay({ rows, displayConfig: { color: 'darkgreen' } })
+    const display = makeDisplay({
+      rows,
+      displayConfig: { encoding: { color: { value: 'darkgreen' } } },
+    })
     expect(markColors(display)).toEqual([undefined, undefined])
     expect(display.wiggleColor.posColor).toBe('darkgreen')
   })
@@ -48,7 +51,9 @@ describe('a written color paints every mark', () => {
     const display = makeDisplay({
       rows: true,
       displayConfig: {
-        color: { field: 'score', scale: 'threshold', range: ['red', 'blue'] },
+        encoding: {
+          color: { scale: { type: 'threshold', range: ['red', 'blue'] } },
+        },
       },
     })
     expect(markColors(display)).toEqual([undefined, undefined])
@@ -71,7 +76,7 @@ describe('the key names what an overlaid density paints', () => {
         mark: 'span',
         fileColors,
         displayConfig: {
-          rowColor: { domain: ['a', 'b'], range: ['red', 'blue'] },
+          rowColor: { scale: { domain: ['a', 'b'], range: ['red', 'blue'] } },
         },
       })
       expect(markColors(display)).toEqual([undefined, undefined])
@@ -85,8 +90,8 @@ describe('the key names what an overlaid density paints', () => {
       rows: false,
       mark: 'span',
       displayConfig: {
-        color: { field: 'score', scale: 'linear', scheme: 'viridis' },
-        rowColor: { domain: ['a', 'b'], range: ['red', 'blue'] },
+        encoding: { color: { scale: { type: 'linear', scheme: 'viridis' } } },
+        rowColor: { scale: { domain: ['a', 'b'], range: ['red', 'blue'] } },
       },
     })
     expect(display.scoreGradientPaints).toBe(true)

@@ -87,7 +87,7 @@ test('overlay: tableau10 by name, grouped or not', async () => {
 
 test("overlay: rowColor's spare range leads the palette", async () => {
   const display = await loaded(GROUPED, {
-    rowColor: { range: ['#111111', '#222222'] },
+    rowColor: { scale: { range: ['#111111', '#222222'] } },
   })
   expect(derived(display)).toMatchSnapshot()
 })
@@ -289,11 +289,16 @@ test('rows: the plot box writes rows whole', async () => {
 test('rows: a reorder keeps the declared rowColor as it was', async () => {
   const display = await loaded(GROUPED, {
     ...rowsPerSource(),
-    rowColor: { domain: ['Grain3', 'Grain1'], range: ['#0f0', '#00f'] },
+    rowColor: {
+      scale: { domain: ['Grain3', 'Grain1'], range: ['#0f0', '#00f'] },
+    },
   })
   expect(display.rowStylingIsCustom).toBe(false)
   const [g1, g2, g3, g4] = display.editableSources
   display.applyRowEdits([g1!, g3!, g2!, g4!])
-  expect(display.configuration.rowColor.domain).toEqual(['Grain3', 'Grain1'])
+  expect(display.configuration.rowColor.scale.domain).toEqual([
+    'Grain3',
+    'Grain1',
+  ])
   expect(display.rowStylingIsCustom).toBe(false)
 })

@@ -5,7 +5,6 @@ import {
   cssColorToHex,
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
-import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 import { thresholdBandOf } from '@jbrowse/render-core/marks'
@@ -40,6 +39,7 @@ import {
   paintedWiggleColor,
   resolveWiggleColor,
   wiggleColorEncoding,
+  wiggleColorSettingOf,
   wiggleMarkColoring,
   wiggleMarkSources,
   wiggleSharesPanel,
@@ -153,19 +153,9 @@ export async function wiggleTables(
   const summaryField = summaryFieldOf(readConfObject(conf, 'y'))
   const extent: string = density ? 'none' : readConfObject(conf, 'extent')
   const origin: number = readConfObject(conf, 'origin')
-  const setting = colorSettingOf(conf.color)
+  const setting = wiggleColorSettingOf(conf.encoding.color)
   const wiggleColor = resolveWiggleColor(
-    wiggleColorEncoding(
-      paintedWiggleColor(
-        {
-          ...setting,
-          field: setting.field ?? '',
-          labels: readConfObject(conf.color, 'labels'),
-          title: readConfObject(conf.color, 'title'),
-        },
-        { span: density, origin },
-      ),
-    ),
+    wiggleColorEncoding(paintedWiggleColor(setting, { span: density, origin })),
     origin,
   )
 
@@ -229,9 +219,9 @@ export async function wiggleTables(
     wiggleSharesPanel(rowLayout, sources.length) && rowColorPaintsMarks
   const rowColor = liftRowColor({
     field: readConfObject(conf.rowColor, 'field'),
-    domain: readConfObject(conf.rowColor, 'domain'),
-    range: readConfObject(conf.rowColor, 'range'),
-    unknown: readConfObject(conf.rowColor, 'unknown'),
+    domain: readConfObject(conf.rowColor, ['scale', 'domain']),
+    range: readConfObject(conf.rowColor, ['scale', 'range']),
+    unknown: readConfObject(conf.rowColor, ['scale', 'unknown']),
   })
   const rowColors = resolveRowColors(
     sources,
