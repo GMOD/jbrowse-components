@@ -63,6 +63,13 @@ const registry: {
     load: () => import('./commands/make-density/index.ts').then(m => m.run),
   },
   {
+    name: 'make-protein-features',
+    summary:
+      'Places InterProScan or HMMER domain calls on the genome as a BED12',
+    load: () =>
+      import('./commands/make-protein-features/index.ts').then(m => m.run),
+  },
+  {
     name: 'sort-gff',
     summary: 'Sort a GFF/GTF for tabix: sort -k1,1 -k4,4n, header kept on top',
     load: () => import('./commands/sort-gff.ts').then(m => m.run),
