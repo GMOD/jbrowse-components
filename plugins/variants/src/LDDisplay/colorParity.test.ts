@@ -56,7 +56,7 @@ const BEFORE = {
 
 function displayDrawing(metric: LDMetric) {
   const { display } = createTestEnvironment().createDisplay()
-  setConf(display, ['color', 'field'], metric)
+  setConf(display, ['encoding', 'color', 'field'], metric)
   display.setShowLegend(true)
   return display
 }

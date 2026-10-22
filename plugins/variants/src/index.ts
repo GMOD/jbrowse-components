@@ -82,7 +82,7 @@ export default class VariantsPlugin extends Plugin {
     jexl.addFunction('consequence', getVariantConsequence)
     /** #jexlFunction Variant functions | 'missense_variant' in consequences(feature) | every consequence term on the record, across all transcripts (bcftools INFO/CSQ ~ "missense_variant") */
     jexl.addFunction('consequences', getVariantConsequences)
-    /** #jexlFunction Variant functions | impactColor(feature) | the color `color: { field: 'impact' }` paints the variant's most severe tier */
+    /** #jexlFunction Variant functions | impactColor(feature) | the color `encoding: { color: 'impact' }` paints the variant's most severe tier */
     jexl.addFunction('impactColor', getVariantImpactColor)
     // Longest allele in bp, so a filter can select the SV tier of a decomposed
     // pangenome callset (`jexl:alleleLength(feature) >= 50`) without missing

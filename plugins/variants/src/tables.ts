@@ -11,6 +11,7 @@ import {
 } from '@jbrowse/core/util/colorScale'
 import {
   colorEncodingOf,
+  colorSnapshotOf,
   paintedColorEncoding,
   pairedColorsOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -90,7 +91,7 @@ export interface VariantTablesArgs {
   regions?: VariantRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
-   * `LinearMultiSampleVariantDisplay`: `color`, `unit` (`'allele'` or
+   * `LinearMultiSampleVariantDisplay`: `encoding`, `unit` (`'allele'` or
    * `'haplotype'`), `filter` (`expressions`, `minMinorAlleleFrequency`,
    * `maxMissingness`), `referenceDrawingMode`, `shadeByDosage`, the
    * arrangement `rows` and `facet` and the rest of its slots. Unset reads the
@@ -166,18 +167,10 @@ export async function variantTables(
     type: 'LinearMultiSampleVariantDisplay',
     displayId: 'tables',
   })
-  const colorSetting = {
-    value: readConfObject(conf.color, 'value'),
-    field: readConfObject(conf.color, 'field'),
-    scale: readConfObject(conf.color, 'scale'),
-    domain: readConfObject(conf.color, 'domain'),
-    range: readConfObject(conf.color, 'range'),
-    labels: readConfObject(conf.color, 'labels'),
-    title: readConfObject(conf.color, 'title'),
-  }
+  const colorSetting = colorSnapshotOf(conf.encoding.color)
   const encoding = colorEncodingOf(colorSetting)
   const slots: HeldSlots | undefined =
-    typeof encoding === 'object' && encoding.scale === 'categorical'
+    typeof encoding === 'object' && encoding.scale === 'ordinal'
       ? new Map()
       : undefined
   const cellHue = cellHueOf(
@@ -375,7 +368,8 @@ export async function variantTables(
     shadeByDosage: shade,
     color: encoding,
     colorSlots: slots,
-    colorTitle: withPreset(colorSetting, CATEGORICAL_FIELD_PRESETS).title,
+    colorTitle: withPreset(colorSetting, CATEGORICAL_FIELD_PRESETS).legend
+      .title,
   })
   return {
     variants,
@@ -722,9 +716,9 @@ function rowColorsOf(
 ) {
   const setting = liftRowColor({
     field: readConfObject(conf.rowColor, 'field'),
-    domain: readConfObject(conf.rowColor, 'domain'),
-    range: readConfObject(conf.rowColor, 'range'),
-    unknown: readConfObject(conf.rowColor, 'unknown'),
+    domain: readConfObject(conf.rowColor, ['scale', 'domain']),
+    range: readConfObject(conf.rowColor, ['scale', 'range']),
+    unknown: readConfObject(conf.rowColor, ['scale', 'unknown']),
   })
   const dealt = dealtValueColors(setting, () => dealRows, false)
   const resolved = resolveRowColors(dealRows, setting.field, dealt, rowAlias)

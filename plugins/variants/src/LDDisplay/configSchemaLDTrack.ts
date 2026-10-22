@@ -1,10 +1,11 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { triangleMatrixConfigSchemaFields } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
+import { hiddenLegendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { ldColorConfigSchema } from './ldColorConfigSchema.ts'
+import { ldEncodingConfigSchema } from './ldColorConfigSchema.ts'
 
 /**
  * #config LDTrackDisplay
@@ -29,8 +30,8 @@ import { ldColorConfigSchema } from './ldColorConfigSchema.ts'
  *     {
  *       type: 'LDTrackDisplay',
  *       displayId: 'ld-LDTrackDisplay',
- *       color: { field: 'dprime' },
- *       showLegend: true,
+ *       encoding: { color: { field: 'dprime' } },
+ *       legend: { show: true },
  *     },
  *   ],
  * }
@@ -57,11 +58,17 @@ export default function ldTrackDisplayConfigSchema() {
         advanced: true,
       },
       /**
-       * #slot color
-       * The statistic the cells show, `field` `r2` or `dprime`, and the
-       * linear ramp it paints through over the statistic's 0 to 1.
+       * #slot encoding
+       * The cells' channels: `encoding.color`, the statistic the cells show,
+       * `field` `r2` or `dprime`, and the linear ramp it paints through over
+       * the statistic's 0 to 1.
        */
-      color: ldColorConfigSchema,
+      encoding: ldEncodingConfigSchema,
+      /**
+       * #slot legend
+       * The color ramp's key, off until asked for.
+       */
+      legend: hiddenLegendConfigSchema,
       /**
        * #slot
        */
@@ -115,7 +122,8 @@ export default function ldTrackDisplayConfigSchema() {
       // drew a recombination band; the file carries the statistic now.
       retired: {
         ...retiredBaseDisplaySpellings,
-        ldMetric: field => ({ color: { field } }),
+        ldMetric: field => ({ encoding: { color: { field } } }),
+        showLegend: show => ({ legend: { show } }),
         fitToHeight: fit => ({ heightMode: fit ? 'fit' : 'fixed' }),
         // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- the retired slot's own name
         useGenomicPositions: genomic => ({

@@ -48,7 +48,9 @@ const CellColorFieldDialog = observer(function CellColorFieldDialog({
   model: {
     id: string
     colorField: string
-    colorSetting: { scale: string | undefined; domain: readonly string[] }
+    colorSetting: {
+      scale: { type: string | undefined; domain: readonly string[] }
+    }
     writtenColor: ColorSlots
     parkedColor?: ColorSlots
     parkColor: (name: string, written: ColorSlots, next: unknown) => void
@@ -66,7 +68,7 @@ const CellColorFieldDialog = observer(function CellColorFieldDialog({
   const current = model.colorSetting
   const [ref, setRef] = useState(model.colorField)
   const [cuts, setCuts] = useState(
-    current.scale === 'threshold' ? current.domain.join(', ') : '',
+    current.scale.type === 'threshold' ? current.scale.domain.join(', ') : '',
   )
   const trimmed = ref.trim()
   const chosen = choices.find(c => c.ref === trimmed)
@@ -89,7 +91,7 @@ const CellColorFieldDialog = observer(function CellColorFieldDialog({
           model.parkedColor,
         )
         model.parkColor('color', model.writtenColor, color)
-        model.applyPlot({ color })
+        model.applyPlot({ encoding: { color } })
         handleClose()
       }}
     >

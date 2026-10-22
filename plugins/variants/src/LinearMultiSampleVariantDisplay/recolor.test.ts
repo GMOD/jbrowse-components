@@ -1,4 +1,5 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { onPatch } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { featureInfoOf } from '../shared/cellDataFixtures.ts'
@@ -10,7 +11,18 @@ import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { CellHueRead } from '../shared/cellHue.ts'
 
 const SAMPLES = ['S0', 'S1', 'S2']
-const AF = { field: 'INFO.AF', scale: 'categorical' as const }
+const AF = { field: 'INFO.AF', scale: { type: 'ordinal' } }
+
+function recolor(color: Record<string, unknown>) {
+  return { encoding: { color } }
+}
+
+function afIn(range: string[]) {
+  return recolor({
+    ...AF,
+    scale: { ...AF.scale, domain: ['0.5'], range },
+  })
+}
 const het = (css: string) => getCachedABGR(cellFill(css, 128, true))
 
 function featureIndexData() {
@@ -63,7 +75,7 @@ function cellData(colorRead: CellHueRead): CellDataResult {
 function setup() {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources(SAMPLES.map(name => ({ name })))
-  display.applyPlot({ color: { ...AF, domain: ['0.5'], range: ['#aa0000'] } })
+  display.applyPlot(afIn(['#aa0000']))
   display.setCellData(cellData({ field: 'INFO.AF' }))
   // the views are observed, as the renderer observes them, so each keeps its
   // value until an input moves
@@ -84,7 +96,7 @@ test('a recolor repaints the loaded cells, the lane and the key', () => {
   expect(cells(display)).toEqual(new Array(3).fill(het('#aa0000')))
   expect(display.paintedDomain).toEqual(['0.5'])
 
-  display.applyPlot({ color: { ...AF, domain: ['0.5'], range: ['#00aa00'] } })
+  display.applyPlot(afIn(['#00aa00']))
   expect(display.rpcProps()).toEqual(key)
   expect(cells(display)).toEqual(new Array(3).fill(het('#00aa00')))
   expect([...display.regionFeatureColors.get(0)!]).toEqual([
@@ -123,15 +135,18 @@ test('a key label repaints nothing, and a reorder or shading moves only what it 
   const lane = display.regionFeatureColors
   const rows = display.placedRegionRows
 
-  display.applyPlot({
-    color: {
+  display.applyPlot(
+    recolor({
       ...AF,
-      domain: ['0.5'],
-      range: ['#aa0000'],
-      labels: ['half'],
-      title: 'Allele frequency',
-    },
-  })
+      scale: {
+        ...AF.scale,
+        domain: ['0.5'],
+        range: ['#aa0000'],
+        names: ['half'],
+      },
+      legend: { title: 'Allele frequency' },
+    }),
+  )
   expect(display.regionCellColors).toBe(colors)
   expect(display.regionFeatureColors).toBe(lane)
 
@@ -149,29 +164,63 @@ test('a key label repaints nothing, and a reorder or shading moves only what it 
 
 test('a recolor of one field keeps the fetch key', () => {
   const { display } = createTestEnvironment().createDisplay()
-  display.applyPlot({ color: AF })
+  display.applyPlot(recolor(AF))
   const key = display.rpcProps()
-  display.applyPlot({ color: { ...AF, range: ['#aa0000'] } })
+  display.applyPlot(
+    recolor({ ...AF, scale: { ...AF.scale, range: ['#aa0000'] } }),
+  )
   expect(display.rpcProps()).toEqual(key)
-  display.applyPlot({
-    color: { field: 'INFO.AF', scale: 'threshold', domain: ['0.01'] },
-  })
+  display.applyPlot(
+    recolor({
+      field: 'INFO.AF',
+      scale: { type: 'threshold', domain: ['0.01'] },
+    }),
+  )
   expect(display.rpcProps()).toEqual(key)
   display.setShadeByDosage(false)
   expect(display.rpcProps()).toEqual(key)
-  display.applyPlot({
-    color: { field: 'INFO.DP', scale: 'threshold', domain: ['10'] },
-  })
+  display.applyPlot(
+    recolor({ field: 'INFO.DP', scale: { type: 'threshold', domain: ['10'] } }),
+  )
   expect(display.rpcProps()).not.toEqual(key)
 })
 
 test('a constant reads nothing, and a jexl callback is read in the worker', () => {
   const { display } = createTestEnvironment().createDisplay()
   const key = display.rpcProps()
-  display.applyPlot({ color: { value: '#123456' } })
+  display.applyPlot(recolor({ value: '#123456' }))
   expect(display.rpcProps()).toEqual(key)
-  display.applyPlot({ color: { value: "jexl:'#123456'" } })
+  display.applyPlot(recolor({ value: "jexl:'#123456'" }))
   expect(display.rpcProps().color).toBe("jexl:'#123456'")
+})
+
+// A written field paints over the constant beside it, so the worker reads the
+// field, not the callback.
+test('the worker reads the field of a channel naming a field and a callback', () => {
+  const { display } = createTestEnvironment({
+    displayConfig: {
+      encoding: { color: { value: "jexl:'#123456'", field: 'INFO.AF' } },
+    },
+  }).createDisplay()
+  expect(display.rpcProps().color).toEqual({ field: 'INFO.AF' })
+})
+
+// An all-default `scale` or `legend` must compare alike with the snapshot,
+// or a pick of what already paints writes and refetches.
+test('a pick of what already paints writes nothing', () => {
+  const { display } = createTestEnvironment({
+    displayConfig: {
+      encoding: { color: { value: '#123456', field: 'INFO.AF' } },
+    },
+  }).createDisplay()
+  const patches: unknown[] = []
+  onPatch(display, patch => patches.push(patch))
+  display.colorByField('INFO.AF')
+  expect(patches).toEqual([])
+  display.colorByField('')
+  patches.length = 0
+  display.setColorValue('#123456')
+  expect(patches).toEqual([])
 })
 
 // two SNPs on one base, shorter than the 2 px a cell draws

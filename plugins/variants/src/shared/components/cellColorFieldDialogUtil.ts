@@ -1,4 +1,7 @@
-import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  colorForField,
+  definedColor,
+} from '@jbrowse/display-kit/colorConfigSchema'
 
 import type { JexlFilterField } from '@jbrowse/core/ui/JexlFilterDialog'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
@@ -21,8 +24,8 @@ export function parseCuts(text: string): number[] | undefined {
 }
 
 /**
- * The `color` object a field pick writes over `current`: a threshold where it
- * has cuts. Re-picking the field already painting, or the one `parked`
+ * The `encoding.color` a field pick writes over `current`: a threshold where
+ * it has cuts. Re-picking the field already painting, or the one `parked`
  * holds, keeps its key names and colors, its range only while the number of
  * cuts holds.
  */
@@ -33,18 +36,22 @@ export function cellColorOfField(
   parked?: ColorSlots,
 ): ColorSlots {
   const next = colorForField(current, field, parked)
-  if (next.scale !== 'threshold' && !cuts.length) {
+  const { scale = {}, ...rest } = next
+  if (scale.type !== 'threshold' && !cuts.length) {
     return next
   }
-  const { scale, domain: _cuts, range, ...kept } = next
-  return cuts.length
-    ? {
-        ...kept,
-        scale: 'threshold',
-        domain: cuts.map(String),
-        ...(scale === 'threshold' && range?.length === cuts.length + 1
-          ? { range }
-          : {}),
-      }
-    : kept
+  const { type, domain: _cuts, range, ...kept } = scale
+  return definedColor({
+    ...rest,
+    scale: cuts.length
+      ? {
+          ...kept,
+          type: 'threshold',
+          domain: cuts.map(String),
+          ...(type === 'threshold' && range?.length === cuts.length + 1
+            ? { range }
+            : {}),
+        }
+      : kept,
+  })
 }

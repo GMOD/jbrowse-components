@@ -25,33 +25,38 @@ test('cuts make a threshold, none a color per value', () => {
   })
   expect(cellColorOfField({}, 'INFO.AF', [0.001, 0.01])).toEqual({
     field: 'INFO.AF',
-    scale: 'threshold',
-    domain: ['0.001', '0.01'],
+    scale: { type: 'threshold', domain: ['0.001', '0.01'] },
   })
 })
 
 test('new cuts on the field already painting keep its key and parked color', () => {
+  const scale = {
+    type: 'threshold',
+    domain: ['0.01'],
+    range: ['grey', 'red'],
+    names: ['rare', 'common'],
+    unknown: '#ccc',
+  }
   const current = {
     value: 'teal',
     field: 'INFO.AF',
-    scale: 'threshold',
-    domain: ['0.01'],
-    range: ['grey', 'red'],
-    labels: ['rare', 'common'],
-    title: 'Frequency',
-    unknown: '#ccc',
+    scale,
+    legend: { title: 'Frequency' },
   }
   expect(cellColorOfField(current, 'INFO.AF', [0.05])).toEqual({
     ...current,
-    domain: ['0.05'],
+    scale: { ...scale, domain: ['0.05'] },
   })
-  const { range: _range, ...withoutRange } = current
+  const { range: _range, ...withoutRange } = scale
   expect(cellColorOfField(current, 'INFO.AF', [0.001, 0.05])).toEqual({
-    ...withoutRange,
-    domain: ['0.001', '0.05'],
+    ...current,
+    scale: { ...withoutRange, domain: ['0.001', '0.05'] },
   })
-  const { scale: _scale, domain: _domain, ...perValue } = withoutRange
-  expect(cellColorOfField(current, 'INFO.AF', [])).toEqual(perValue)
+  const { type: _type, domain: _domain, ...perValue } = withoutRange
+  expect(cellColorOfField(current, 'INFO.AF', [])).toEqual({
+    ...current,
+    scale: perValue,
+  })
   expect(cellColorOfField(current, 'INFO.DP', [])).toEqual({
     value: 'teal',
     field: 'INFO.DP',

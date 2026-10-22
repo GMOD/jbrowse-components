@@ -35,6 +35,7 @@ import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   colorEncodingOf,
+  colorSnapshotOf,
   paintedColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
@@ -754,20 +755,11 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The `color` object as written, `value` raw: a `jexl:` callback is the
+         * `encoding.color` as written, `value` raw: a `jexl:` callback is the
          * worker's to evaluate per variant.
          */
         get colorSetting(): ColorSetting {
-          const { color } = self.configuration
-          return {
-            value: color.value,
-            field: color.field,
-            scale: getConf(self, ['color', 'scale']),
-            domain: getConf(self, ['color', 'domain']),
-            range: getConf(self, ['color', 'range']),
-            labels: getConf(self, ['color', 'labels']),
-            title: getConf(self, ['color', 'title']),
-          }
+          return colorSnapshotOf(self.configuration.encoding.color)
         },
         /**
          * #getter
@@ -779,8 +771,8 @@ export function stateModelFactory(
         /**
          * #getter
          * What the alt cells' hue paints: undefined for the genotype colors,
-         * a CSS color or `jexl:` callback, or a field through its categorical
-         * or threshold scale (`shared/cellHue.ts`).
+         * a CSS color or `jexl:` callback, or a field through its ordinal or
+         * threshold scale (`shared/cellHue.ts`).
          */
         get colorEncoding() {
           return colorEncodingOf(this.colorSetting)
@@ -1169,7 +1161,7 @@ export function stateModelFactory(
         },
       }))
       .views(self => {
-        // compared by value, so editing the key's title or labels repaints
+        // compared by value, so editing the key's title or names repaints
         // nothing
         const hueInput = stableIdentityComputed(() => ({
           encoding: paintedColorEncoding(self.colorEncoding),
@@ -1213,7 +1205,8 @@ export function stateModelFactory(
         /**
          * #getter
          * Whether the held payload's color values were read for the current
-         * `color`; one read for another paints as though it read none.
+         * `encoding.color`; one read for another paints as though it read
+         * none.
          */
         get cellHueValuesRead() {
           return sameHueRead(self.cellData?.colorRead, self.cellHue.read)
@@ -1686,10 +1679,10 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Each fetched region's cell colors through the current `color`,
-         * faded where records share pixels. Apart from the rows, so a reorder
-         * repaints nothing, and a recolor re-places nothing and refetches
-         * nothing.
+         * Each fetched region's cell colors through the current
+         * `encoding.color`, faded where records share pixels. Apart from the
+         * rows, so a reorder repaints nothing, and a recolor re-places nothing
+         * and refetches nothing.
          */
         get regionCellColors() {
           const { cellData, cellHue } = self
@@ -2318,7 +2311,7 @@ export function stateModelFactory(
               colorTitle: withPreset(
                 self.colorSetting,
                 CATEGORICAL_FIELD_PRESETS,
-              ).title,
+              ).legend.title,
               insertionMarkers: self.drawsInsertionMarkers,
             }),
             ...self.rowColorScales,

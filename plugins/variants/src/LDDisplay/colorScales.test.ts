@@ -28,14 +28,16 @@ test('the scale is the loaded metric, read out of the painting LUT', () => {
 
 test("a dprime request keys as D'", () => {
   const { display } = createTestEnvironment().createDisplay()
-  setConf(display, ['color', 'field'], 'dprime')
+  setConf(display, ['encoding', 'color', 'field'], 'dprime')
   expect(display.colorScales[0]!.title).toBe("D'")
 })
 
 // Every value past a pinned end paints that end's color, so the key says so.
 test('an end pinned inside 0 to 1 keys as at-most or at-least', () => {
   const { display } = createTestEnvironment().createDisplay()
-  setConf(display, 'color', { domainMin: 0.2, domainMax: 0.8 })
+  setConf(display, ['encoding', 'color'], {
+    scale: { domainMin: 0.2, domainMax: 0.8 },
+  })
   expect(display.legendSpec.sections[0]!.items[0]).toMatchObject({
     gradient: { minLabel: '≤0.2', maxLabel: '≥0.8' },
   })

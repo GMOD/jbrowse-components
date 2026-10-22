@@ -13,7 +13,7 @@ export interface PaintableCells extends CellHueValues {
 
 // Each distinct hue the values paint, `hues[0]` the hue of a variant with no
 // value, and each value's index into them, `valueHue[0]` for no value. Values
-// read for another `color` paint as though none were read.
+// read for another `encoding.color` paint as though none were read.
 function hueTable(data: CellHueValues, hue: CellHue, valuesRead: boolean) {
   const { colorValues } = data
   const hues: (string | undefined)[] = [hue.constant]

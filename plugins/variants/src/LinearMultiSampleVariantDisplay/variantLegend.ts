@@ -56,7 +56,8 @@ export interface VariantLegendInputs {
   // or SV classes.
   paintedDomain: readonly string[]
   shadeByDosage: boolean
-  // `color.title` as written: unset keeps the key's own heading, `''` draws none.
+  // `encoding.color.legend.title` as written: unset keeps the key's own
+  // heading, `''` draws none.
   colorTitle?: string
 }
 
@@ -101,9 +102,9 @@ function altEntries(hue: string, inputs: VariantLegendInputs) {
   ]
 }
 
-// The genotype scale: the constant alt hue or a plain CSS color from `color`,
-// plus, in phased mode, the fill for an alt other than the site's most
-// frequent. An override paints every alt, so that entry never keys beside one,
+// The genotype scale: the constant alt hue or a plain CSS color from
+// `encoding.color`, plus, in phased mode, the fill for an alt other than the
+// site's most frequent. An override paints every alt, so that entry never keys beside one,
 // even while the flags are still the previous coloring's.
 export function getGenotypeEntries(
   inputs: VariantLegendInputs,
@@ -164,11 +165,11 @@ function recordFieldScale(
   }
 }
 
-// The cell-coloring scale for the resolved `color`: the phasing rule for the
-// phase-set preset, a record field's values (the SV classes and the impact
-// tiers among them), or the
-// genotype key — which is also where a plain CSS color lands, since "every alt
-// cell is that color" is a genotype key with one alt hue. Undefined only for a
+// The cell-coloring scale for the resolved `encoding.color`: the phasing rule
+// for the phase-set preset, a record field's values (the SV classes and the
+// impact tiers among them), or the genotype key — which is also where a plain
+// CSS color lands, since "every alt cell is that color" is a genotype key with
+// one alt hue. Undefined only for a
 // jexl callback, whose output can't be enumerated into swatches.
 function getCellColorScale(
   encoding: ColorEncoding | undefined,
@@ -229,10 +230,11 @@ export function getVariantColorScales({
   colorSlots,
   ...inputs
 }: VariantLegendInputs & {
-  // The alt cells' hue as the display resolved its `color`; undefined for the
-  // genotype colors.
+  // The alt cells' hue as the display resolved its `encoding.color`; undefined
+  // for the genotype colors.
   color: ColorEncoding | undefined
-  // The slots a categorical `color` deals its values into (`heldColorSlots`).
+  // The slots an ordinal `encoding.color` deals its values into
+  // (`heldColorSlots`).
   colorSlots?: HeldSlots
   // Whether the display is drawing insertion markers in this window (columns
   // never does, genomic only where a marker outgrows its cell).
