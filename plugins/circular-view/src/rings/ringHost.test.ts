@@ -1,3 +1,4 @@
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { MockHal } from '@jbrowse/render-core/hal'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
@@ -99,6 +100,18 @@ test('each displayed region starts on the strip where its slice does', () => {
   const elided = blocks.blocks[2]!
   expect(offsets[2]).toBeCloseTo(elided.offsetPx)
   expect(offsets[3]).toBeCloseTo(elided.offsetPx + 2 / 0.1)
+})
+
+// React may still render a pass the host just let go of (ADR-069)
+test('a pass the rings no longer need dies on a later task, not in place', async () => {
+  const host = RingHost.create({})
+  host.syncRings(['a'])
+  const [pass] = host.passes
+  host.syncRings([])
+  expect(host.passes).toEqual([])
+  expect(isAlive(pass!)).toBe(true)
+  await new Promise(resolve => setTimeout(resolve, 0))
+  expect(isAlive(pass!)).toBe(false)
 })
 
 const display = (id: string, height: number): RingDisplay => ({

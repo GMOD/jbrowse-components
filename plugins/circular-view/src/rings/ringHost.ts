@@ -1,4 +1,4 @@
-import { getEnv } from '@jbrowse/core/util'
+import { getEnv, scheduleDetachedDestroy } from '@jbrowse/core/util'
 import { BlockSet, wholeBaseRegions } from '@jbrowse/core/util/blockTypes'
 import { addDisposer, destroy, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
@@ -686,10 +686,12 @@ export const RingHost = types
         pass.setGroup(self as RingHostModel, self.passes.length)
         self.passes = [...self.passes, pass]
       }
-      while (self.passes.length > wanted) {
-        const pass = self.passes.at(-1)!
-        self.passes = self.passes.slice(0, -1)
-        destroy(pass)
+      if (self.passes.length > wanted) {
+        const dropped = self.passes.slice(wanted)
+        self.passes = self.passes.slice(0, wanted)
+        for (const pass of dropped) {
+          scheduleDetachedDestroy(pass)
+        }
       }
     },
   }))
