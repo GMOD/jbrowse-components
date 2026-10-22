@@ -96,8 +96,16 @@ export function getEndpoint<S>(
 ) {
   const mate = svMateLocus(feature)
   return mate
-    ? { endBlock: sliceForRef(mate.refName), endPosition: mate.pos }
-    : { endBlock: startBlock, endPosition: feature.get('end') }
+    ? {
+        endBlock: sliceForRef(mate.refName),
+        endRefName: mate.refName,
+        endPosition: mate.pos,
+      }
+    : {
+        endBlock: startBlock,
+        endRefName: feature.get('refName'),
+        endPosition: feature.get('end'),
+      }
 }
 
 /** A chord's outline: from one end, bowing through the control point, to the other. */

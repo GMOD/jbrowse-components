@@ -2,12 +2,12 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
 
+import ChordVariantDisplay from '../../chords/ShapeDisplay.tsx'
 import ShapePaths from '../../chords/ShapePaths.tsx'
 import configSchemaF from '../models/configSchema.ts'
-import ChordVariantDisplay from './ChordVariantDisplay.tsx'
 
 import type { ChordShape } from '../../chords/shapes.ts'
-import type { ChordDisplayModel } from '../../chords/types.ts'
+import type { ShapeDisplayModel } from '../../chords/types.ts'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
 const configuration = configSchemaF(new PluginManager()).create({
@@ -17,8 +17,8 @@ const configuration = configSchemaF(new PluginManager()).create({
 
 function chordModel(
   phase: DisplayStatusPhase,
-  overrides: Partial<ChordDisplayModel> = {},
-): ChordDisplayModel {
+  overrides: Partial<ShapeDisplayModel> = {},
+): ShapeDisplayModel {
   return {
     id: 'sv',
     error: undefined,
@@ -33,6 +33,7 @@ function chordModel(
     svgReady: phase !== 'loading',
     drawnCount: overrides.shapes?.length ?? 0,
     shapes: [],
+    shapesTestId: 'structuralVariantChordRenderer',
     shapeFor: id =>
       (overrides.shapes ?? []).find(shape => shape.feature.id() === id),
     chordCell: undefined,
@@ -51,7 +52,7 @@ function chordModel(
   }
 }
 
-function attrs(model: ChordDisplayModel) {
+function attrs(model: ShapeDisplayModel) {
   const { container } = render(
     <svg>
       <ChordVariantDisplay display={model} />
@@ -179,7 +180,7 @@ test('on screen the renderer group counts every chord and draws the hovered one'
 })
 
 test('the export dims chords outside the highlighted set, and with no set none', () => {
-  const opacities = (overrides: Partial<ChordDisplayModel>) => {
+  const opacities = (overrides: Partial<ShapeDisplayModel>) => {
     const { container } = render(
       <svg>
         <ShapePaths
@@ -228,7 +229,7 @@ test("the export draws each chord at the display's opacity, over its color's alp
   ])
 })
 
-function pairModel(overrides: Partial<ChordDisplayModel>) {
+function pairModel(overrides: Partial<ShapeDisplayModel>) {
   const [shared] = shapesOf(bnd('a', 100, 900))
   return chordModel('ready', {
     shapes: [shared!],

@@ -39,8 +39,8 @@ async function clickChord(
     circularView: {
       tracks: {
         displays: {
-          shapes: { feature: { id: () => string } }[]
-          laneIndexById: Map<string, number>
+          shapes: unknown[]
+          shapeFor: (id: string) => { feature: unknown } | undefined
           clickFeature: (feature: unknown) => void
         }[]
       }[]
@@ -51,12 +51,8 @@ async function clickChord(
     expect(display()?.shapes.length).toBeGreaterThan(0)
   }, delay)
   const d = display()!
-  // A breakend pair's twin shares its lane with the record that draws it, so a
-  // click on the twin's id resolves through the lane it was folded into.
-  const shape =
-    d.shapes.find(s => s.feature.id() === featureId) ??
-    d.shapes[d.laneIndexById.get(featureId)!]!
-  d.clickFeature(shape.feature)
+  // a breakend pair's twin resolves to the chord its pair draws
+  d.clickFeature(d.shapeFor(featureId)!.feature)
 }
 
 test('opens a vcf.gz file in the sv inspector view', () => {

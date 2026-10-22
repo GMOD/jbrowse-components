@@ -6,9 +6,7 @@ import { DIMMED_OPACITY } from './shaders/chordStage.generated.ts'
 import { shapePath } from './shapePath.ts'
 
 import type { Shape } from './shapes.ts'
-import type { ChordDisplayModel, RibbonDisplayModel } from './types.ts'
-
-type ShapeDisplay = ChordDisplayModel | RibbonDisplayModel
+import type { ShapeDisplayModel } from './types.ts'
 
 type ShapeState = 'resting' | 'hovered' | 'selected'
 
@@ -16,7 +14,11 @@ function testId(shape: Shape) {
   return `${shape.kind}-${shape.feature.id()}`
 }
 
-function paintProps(display: ShapeDisplay, shape: Shape, state: ShapeState) {
+function paintProps(
+  display: ShapeDisplayModel,
+  shape: Shape,
+  state: ShapeState,
+) {
   const { feature } = shape
   const color =
     state === 'resting'
@@ -42,7 +44,7 @@ function paintProps(display: ShapeDisplay, shape: Shape, state: ShapeState) {
  * by its record's lane rather than compared by id, since a breakend pair draws
  * one chord under its first record and the second record names it too.
  */
-function highlightedShapes(display: ShapeDisplay) {
+function highlightedShapes(display: ShapeDisplayModel) {
   const { hoveredFeatureId, selectedFeatureId } = display
   const hovered =
     hoveredFeatureId === undefined
@@ -72,7 +74,7 @@ const ShapePaths = observer(function ShapePaths({
   testid,
   only,
 }: {
-  display: ShapeDisplay
+  display: ShapeDisplayModel
   testid: string
   only: 'highlighted' | 'all'
 }) {

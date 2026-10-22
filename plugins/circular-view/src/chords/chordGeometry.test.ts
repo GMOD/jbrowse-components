@@ -30,6 +30,7 @@ test('falls back to the feature end in its own block', () => {
   })
   expect(getEndpoint(feature, sliceForRef, chr1)).toEqual({
     endBlock: chr1,
+    endRefName: 'chr1',
     endPosition: 200,
   })
 })
@@ -44,6 +45,7 @@ test('uses an explicit mate field (already 0-based)', () => {
   })
   expect(getEndpoint(feature, sliceForRef, chr1)).toEqual({
     endBlock: chr2,
+    endRefName: 'chr2',
     endPosition: 500,
   })
 })
@@ -58,6 +60,7 @@ test('converts a VCF breakend ALT mate from 1-based to 0-based', () => {
   })
   expect(getEndpoint(feature, sliceForRef, chr1)).toEqual({
     endBlock: chr3,
+    endRefName: 'chr3',
     endPosition: 899,
   })
 })
@@ -73,6 +76,7 @@ test('converts a symbolic translocation (INFO END/CHR2) to 0-based', () => {
   })
   expect(getEndpoint(feature, sliceForRef, chr1)).toEqual({
     endBlock: chr3,
+    endRefName: 'chr3',
     endPosition: 899,
   })
 })

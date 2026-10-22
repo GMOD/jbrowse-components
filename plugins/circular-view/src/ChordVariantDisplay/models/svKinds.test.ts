@@ -68,7 +68,7 @@ async function svKindsDisplay() {
 // One record of each kind an SV caller writes, read through the VCF adapter:
 // each chord runs between the two loci the record names, a breakend pair's
 // two records drawing one chord, and a record naming one locus a chord of no
-// length. Ends are 0-based, on slices ctgA (0) and ctgB (1).
+// length. Ends are 0-based.
 test('every SV kind draws its chord between the loci it names, a breakend pair once', async () => {
   const display = await svKindsDisplay()
   const { junction, placed } = display.chordFeet
@@ -79,21 +79,21 @@ test('every SV kind draws its chord between the loci it names, a breakend pair o
     ]),
   )
   expect(ends).toEqual({
-    bnd_a: '0:1000|1:2000',
-    bnd_b: '0:1000|1:2000',
-    bnd_c: '0:3000|1:4000',
-    bnd_d: '0:3500|1:4500',
-    del: '0:5000|0:5999',
-    del_me: '0:6500|0:6799',
-    inv: '0:7000|0:7999',
-    dup: '0:8500|0:8999',
-    cnv: '0:9100|0:9499',
-    del_svlen: '0:10000|0:10500',
-    del_seq: '0:11000|0:11020',
-    tra: '0:12000|1:6000',
-    ins: '0:13000|0:13001',
-    single: '0:14000|0:14001',
-    snv: '0:15000|0:15001',
+    bnd_a: 'ctgA:1000|ctgB:2000',
+    bnd_b: 'ctgA:1000|ctgB:2000',
+    bnd_c: 'ctgA:3000|ctgB:4000',
+    bnd_d: 'ctgA:3500|ctgB:4500',
+    del: 'ctgA:5000|ctgA:5999',
+    del_me: 'ctgA:6500|ctgA:6799',
+    inv: 'ctgA:7000|ctgA:7999',
+    dup: 'ctgA:8500|ctgA:8999',
+    cnv: 'ctgA:9100|ctgA:9499',
+    del_svlen: 'ctgA:10000|ctgA:10500',
+    del_seq: 'ctgA:11000|ctgA:11020',
+    tra: 'ctgA:12000|ctgB:6000',
+    ins: 'ctgA:13000|ctgA:13001',
+    single: 'ctgA:14000|ctgA:14001',
+    snv: 'ctgA:15000|ctgA:15001',
   })
   const drawn = display.chordLanes.features.map(f => f.get('name'))
   expect(drawn).toHaveLength(14)

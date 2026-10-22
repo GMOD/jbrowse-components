@@ -23,7 +23,7 @@ export default function ChordVariantDisplayF(pluginManager: PluginManager) {
       viewType: 'CircularView',
       plotExamples: CHORD_PLOT_EXAMPLES,
       ReactComponent: lazyWithPreload(
-        () => import('./components/ChordVariantDisplay.tsx'),
+        () => import('../chords/ShapeDisplay.tsx'),
       ),
     })
   })

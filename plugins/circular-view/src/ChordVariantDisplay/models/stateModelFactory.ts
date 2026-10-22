@@ -6,11 +6,7 @@ import {
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { getEnv, getSession, openFeatureWidget } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
-import {
-  abgrAlpha,
-  cssColorToABGR,
-  withAbgrAlpha,
-} from '@jbrowse/core/util/colorBits'
+import { cssColorToABGR, scaleAbgrAlpha } from '@jbrowse/core/util/colorBits'
 import {
   CATEGORICAL_FIELD_PRESETS,
   withPreset,
@@ -43,12 +39,10 @@ import {
 import { getEndpoint } from '../../chords/chordGeometry.ts'
 import { hitChord } from '../../chords/chordHit.ts'
 import { chordLabel } from '../../chords/chordLabel.ts'
-import { axisX, chordEndsAt, figurePoint } from '../../chords/chordStage.ts'
+import { axisX, chordEndsAt } from '../../chords/chordStage.ts'
 import { DIMMED_OPACITY } from '../../chords/shaders/chordStage.generated.ts'
-import { shapePath } from '../../chords/shapePath.ts'
 import { CHORD_DEFAULT_COLOR } from './chordColorConfigSchema.ts'
 
-import type { ExportSvgOptions } from '../../CircularView/model.ts'
 import type { ChordCell } from '../../chords/chordMarks.ts'
 import type { ChordLanes } from '../../chords/chordStage.ts'
 import type { ChordShape } from '../../chords/shapes.ts'
@@ -57,7 +51,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
-import type { ThemeOptions } from '@mui/material'
 
 /**
  * #stateModel ChordVariantDisplay
@@ -170,22 +163,31 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
           junction: new Array<string>(n),
           index: new Map<Feature, number>(),
         }
+        const assembly = self.assemblyOf(undefined)
         const sliceOf = (refName: string) => self.axisSlice(undefined, refName)
+        // by refName, not slice: an elided slice holds many contigs
+        const place = (refName: string, pos: number) =>
+          `${assembly === undefined ? refName : self.canonicalRefName(assembly, refName)}:${pos}`
         features.forEach((feature, i) => {
           feet.index.set(feature, i)
-          const start = sliceOf(feature.get('refName'))
+          const refName = feature.get('refName')
+          const start = sliceOf(refName)
           if (!start) {
             return
           }
-          const { endBlock, endPosition } = getEndpoint(feature, sliceOf, start)
+          const { endBlock, endRefName, endPosition } = getEndpoint(
+            feature,
+            sliceOf,
+            start,
+          )
           if (endBlock) {
             feet.placed[i] = 1
             feet.x[i] = axisX(start, feature.get('start'))
             feet.x2[i] = axisX(endBlock, endPosition)
             feet.xGaps[i] = start.gaps
             feet.x2Gaps[i] = endBlock.gaps
-            const own = `${start.index}:${feature.get('start')}`
-            const far = `${endBlock.index}:${endPosition}`
+            const own = place(refName, feature.get('start'))
+            const far = place(endRefName, endPosition)
             feet.junction[i] = own < far ? `${own}|${far}` : `${far}|${own}`
           }
         })
@@ -293,27 +295,23 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
           lanes.x2Gaps[k] = feet.x2Gaps[i]!
           lanes.color[k] =
             highlighted?.has(feature.id()) === false
-              ? withAbgrAlpha(
-                  abgr,
-                  Math.round(abgrAlpha(abgr) * DIMMED_OPACITY),
-                )
+              ? scaleAbgrAlpha(abgr, DIMMED_OPACITY)
               : abgr
         })
         return lanes
       },
       /**
        * #getter
-       * how many records the chord lanes hold, the ones whose ends are under a
-       * pixel apart included
+       * the chord lanes, the ones whose ends are under a pixel apart included
        */
-      get drawnCount() {
-        return this.chordLanes.count
+      get drawnLanes() {
+        return this.chordLanes
       },
       /**
        * #getter
-       * each drawn record's place in the lanes, by id
+       * each drawn record's lane by id, a breakend pair's twin included
        */
-      get laneIndexById() {
+      get laneIndexById(): ReadonlyMap<string, number> {
         return this.chordPicks.laneOfId
       },
       /**
@@ -336,41 +334,10 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #method
-       * the chord for a drawn record's id, as the SVG side draws it;
-       * undefined for an id not in the lanes, and for a chord whose ends
-       * are under a pixel apart
+       * the chord passing nearest a figure point, within `CHORD_HIT_PX`
        */
-      shapeFor(featureId: string) {
-        const i = this.laneIndexById.get(featureId)
-        return i === undefined ? undefined : this.shapeAt(i)
-      },
-      /**
-       * #getter
-       * every drawn chord as the export draws it
-       */
-      get shapes(): ChordShape[] {
-        const out: ChordShape[] = []
-        for (let i = 0; i < this.chordLanes.count; i++) {
-          const shape = this.shapeAt(i)
-          if (shape) {
-            out.push(shape)
-          }
-        }
-        return out
-      },
-      /**
-       * #method
-       * the record whose chord passes nearest a point CSS px from the circle's
-       * centre in the screen frame, within `CHORD_HIT_PX`
-       */
-      hitAt(dx: number, dy: number) {
-        if (self.displayPhase !== 'ready') {
-          return undefined
-        }
-        const lanes = this.chordLanes
-        const [x, y] = figurePoint(dx, dy, self.view.offsetRadians)
-        const i = hitChord(lanes, self.figureStage, x, y)
-        return i === undefined ? undefined : lanes.features[i]
+      laneAt(x: number, y: number) {
+        return hitChord(this.chordLanes, self.figureStage, x, y)
       },
       /**
        * #getter
@@ -384,17 +351,6 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        */
       shapeLabel(feature: Feature) {
         return chordLabel(feature)
-      },
-      /**
-       * #method
-       * a drawn feature's outline as an SVG path on the unrotated figure, for
-       * anything that has to find a chord on screen without a DOM node to find
-       */
-      shapePathFor(feature: Feature) {
-        const shape = this.shapeFor(feature.id())
-        return shape
-          ? shapePath(shape, self.radiusPx, self.bezierRadius)
-          : undefined
       },
     }))
     .views(self => ({
@@ -513,11 +469,20 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         return legendSpecOf(this.colorScales)
       },
       /**
+       * #getter
+       */
+      get shapesTestId() {
+        return 'structuralVariantChordRenderer'
+      },
+    }))
+    .views(self => ({
+      /**
        * #method
        */
-      async renderSvg(_opts: ExportSvgOptions & { theme?: ThemeOptions }) {
-        const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self)
+      async renderSvg() {
+        const { renderShapesSvg } =
+          await import('../../chords/ShapeDisplay.tsx')
+        return renderShapesSvg(self)
       },
     }))
     .views(self => ({

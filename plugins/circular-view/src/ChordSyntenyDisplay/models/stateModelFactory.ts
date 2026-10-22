@@ -6,12 +6,10 @@ import {
 } from '@jbrowse/core/util'
 import {
   abgrAlpha,
-  abgrBlue,
-  abgrGreen,
-  abgrRed,
   abgrToCssRgba,
+  abgrToHex,
   cssColorToABGR,
-  withAbgrAlpha,
+  scaleAbgrAlpha,
 } from '@jbrowse/core/util/colorBits'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -33,7 +31,6 @@ import {
 import { ribbonHitTest } from '../../chords/chordHit.ts'
 import {
   axisX,
-  figurePoint,
   ribbonAnglesAt,
   ribbonFadeAt,
   sliceKey,
@@ -41,9 +38,7 @@ import {
 import { dedupeRibbons } from '../../chords/dedupeRibbons.ts'
 import { paintRuns } from '../../chords/ideogramPaint.ts'
 import { ribbonLabel } from '../../chords/ribbonLabel.ts'
-import { shapePath } from '../../chords/shapePath.ts'
 
-import type { ExportSvgOptions } from '../../CircularView/model.ts'
 import type { ChordCell } from '../../chords/chordMarks.ts'
 import type { RibbonLanes } from '../../chords/chordStage.ts'
 import type { PaintRun } from '../../chords/ideogramPaint.ts'
@@ -55,19 +50,12 @@ import type { Feature } from '@jbrowse/core/util'
 import type { AlignmentData } from '@jbrowse/core/util/diagonalizeRegions'
 import type { Region } from '@jbrowse/core/util/types'
 import type { AttributeRange } from '@jbrowse/synteny-core'
-import type { ThemeOptions } from '@mui/material'
 
 // what a ribbon paints under the view's default mode, at the view's `opacity`
 const DEFAULT_ABGR = cssColorToABGR('rgb(70,130,180)')
 
 function defaultAbgr(value: string | undefined) {
   return value === undefined ? DEFAULT_ABGR : cssColorToABGR(value)
-}
-
-function opaqueHex(abgr: number) {
-  return `#${[abgrRed(abgr), abgrGreen(abgr), abgrBlue(abgr)]
-    .map(channel => channel.toString(16).padStart(2, '0'))
-    .join('')}`
 }
 
 // The regions a ribbon fetch asks for: every genome's but the last's. A
@@ -93,10 +81,6 @@ interface AlignmentEnds {
   own: AlignmentEnd
   mate: AlignmentEnd | undefined
   ownIsFirst: boolean
-}
-
-function atAlpha(abgr: number, alpha: number) {
-  return abgrToCssRgba(withAbgrAlpha(abgr, Math.round(abgrAlpha(abgr) * alpha)))
 }
 
 /**
@@ -341,24 +325,18 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        * #getter
        * the alignments the canvas draws, by their place in `features`, the
        * widest first so every narrower ribbon draws over them: both ends on
-       * the circle, at least the view's `filter` bound on `length` long on each
-       * side, and not hidden by the view's color or its identity cut
+       * the circle, and not hidden by the view's color or its `filter`, which
+       * `ribbonColors` paints at zero alpha
        */
       get ribbonPicks(): Uint32Array {
         const feet = this.ribbonFeet
         const colors = this.ribbonColors
-        const min = self.view.minLength
-        const features = self.features ?? []
         const picked: number[] = []
-        features.forEach((f, i) => {
-          if (
-            feet.xSlice[i]! >= 0 &&
-            Math.abs(f.get('end') - f.get('start')) >= min &&
-            abgrAlpha(colors[i]!) > 0
-          ) {
+        for (let i = 0; i < colors.length; i++) {
+          if (feet.xSlice[i]! >= 0 && abgrAlpha(colors[i]!) > 0) {
             picked.push(i)
           }
-        })
+        }
         const span = (i: number) =>
           Math.abs(feet.x2[i]! - feet.x1[i]!) +
           Math.abs(feet.y2[i]! - feet.y1[i]!)
@@ -454,10 +432,9 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * how many alignments the canvas draws as ribbons
        */
-      get drawnCount() {
-        return this.ribbonLanes.count
+      get drawnLanes() {
+        return this.ribbonLanes
       },
       /**
        * #getter
@@ -474,13 +451,6 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
         )
       },
       /**
-       * #getter
-       * each drawn feature's place in the lanes, by id
-       */
-      get laneIndexById() {
-        return new Map(this.ribbonLanes.features.map((f, i) => [f.id(), i]))
-      },
-      /**
        * #method
        * lane `i` as the SVG side draws it, on the unrotated figure
        */
@@ -491,7 +461,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           kind: 'ribbon',
           feature: lanes.features[i]!,
           angles: ribbonAnglesAt(lanes, i, self.figureStage),
-          fill: opaqueHex(lanes.color[i]!),
+          fill: abgrToHex(lanes.color[i]!),
           opacity:
             (ribbonFadeAt(lanes, i, self.figureStage, chordThinFadeFloor) *
               abgrAlpha(lanes.color[i]!)) /
@@ -500,36 +470,9 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #method
-       * the ribbon a drawn alignment's id names, as the SVG side draws it;
-       * undefined for an id the canvas draws no ribbon for
-       */
-      shapeFor(featureId: string) {
-        const i = this.laneIndexById.get(featureId)
-        return i === undefined ? undefined : this.shapeAt(i)
-      },
-      /**
-       * #getter
-       * every drawn alignment as the export draws it
-       */
-      get shapes(): RibbonShape[] {
-        return this.ribbonLanes.features.map((_, i) => this.shapeAt(i))
-      },
-      /**
-       * #method
        */
       shapeLabel(feature: Feature) {
         return ribbonLabel(feature)
-      },
-      /**
-       * #method
-       * a drawn feature's outline as an SVG path on the unrotated figure, for
-       * anything that has to find a ribbon on screen without a DOM node to find
-       */
-      shapePathFor(feature: Feature) {
-        const shape = this.shapeFor(feature.id())
-        return shape
-          ? shapePath(shape, self.radiusPx, self.bezierRadius)
-          : undefined
       },
       /**
        * #getter
@@ -539,7 +482,9 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       get legendColor(): string | undefined {
         const { view } = self
         return view.colorField === ''
-          ? atAlpha(defaultAbgr(view.colorValue), view.opacityLevel)
+          ? abgrToCssRgba(
+              scaleAbgrAlpha(defaultAbgr(view.colorValue), view.opacityLevel),
+            )
           : undefined
       },
       /**
@@ -635,18 +580,11 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       return {
         /**
          * #method
-         * the alignment whose ribbon covers a point CSS px from the circle's
-         * centre in the screen frame, the topmost where several do. Measured
-         * on the unrotated figure, so a rotation keeps the held geometry
+         * the topmost ribbon covering a figure point, measured on the
+         * unrotated figure so a rotation keeps the held geometry
          */
-        hitAt(dx: number, dy: number) {
-          if (self.displayPhase !== 'ready') {
-            return undefined
-          }
-          const lanes = self.ribbonLanes
-          const [x, y] = figurePoint(dx, dy, self.view.offsetRadians)
-          const i = hitRibbon(lanes, self.figureStage, x, y)
-          return i === undefined ? undefined : lanes.features[i]
+        laneAt(x: number, y: number) {
+          return hitRibbon(self.ribbonLanes, self.figureStage, x, y)
         },
       }
     })
@@ -689,13 +627,22 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
         },
       }
     })
+    .views(() => ({
+      /**
+       * #getter
+       */
+      get shapesTestId() {
+        return 'syntenyRibbonRenderer'
+      },
+    }))
     .views(self => ({
       /**
        * #method
        */
-      async renderSvg(_opts: ExportSvgOptions & { theme?: ThemeOptions }) {
-        const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self)
+      async renderSvg() {
+        const { renderShapesSvg } =
+          await import('../../chords/ShapeDisplay.tsx')
+        return renderShapesSvg(self)
       },
     }))
     .actions(self => ({

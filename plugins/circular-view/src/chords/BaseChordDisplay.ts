@@ -15,11 +15,13 @@ import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { computeDisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
-import { sliceKey } from './chordStage.ts'
+import { figurePoint, sliceKey } from './chordStage.ts'
+import { shapePath } from './shapePath.ts'
 
 import type { CircularViewModel } from '../CircularView/model.ts'
 import type { ChordConfigModel } from './chordMarkConfigSchema.ts'
 import type { AxisSlice, ChordStage } from './chordStage.ts'
+import type { Shape } from './shapes.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { Region } from '@jbrowse/core/util/types'
@@ -29,6 +31,8 @@ import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 const ErrorMessageStackTraceDialog = lazy(
   () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
 )
+
+const NO_LANES = { count: 0, features: [] as readonly Feature[] }
 
 export interface ChordFetchArgs {
   sessionId: string
@@ -195,7 +199,93 @@ export function BaseChordDisplay() {
         }
       },
     }))
+    .views(() => ({
+      /**
+       * #getter
+       * Overridable hook: the drawn records, one per lane, in paint order
+       */
+      get drawnLanes(): { count: number; features: readonly Feature[] } {
+        return NO_LANES
+      },
+      /**
+       * #method
+       * Overridable hook: lane `i` as the SVG side draws it, on the unrotated
+       * figure; undefined where it draws nothing
+       */
+      shapeAt(_i: number): Shape | undefined {
+        return undefined
+      },
+      /**
+       * #method
+       * Overridable hook: the topmost lane under a point on the unrotated
+       * figure
+       */
+      laneAt(_x: number, _y: number): number | undefined {
+        return undefined
+      },
+    }))
     .views(self => ({
+      /**
+       * #getter
+       * each drawn record's lane, by id
+       */
+      get laneIndexById(): ReadonlyMap<string, number> {
+        return new Map(self.drawnLanes.features.map((f, i) => [f.id(), i]))
+      },
+      /**
+       * #getter
+       */
+      get drawnCount() {
+        return self.drawnLanes.count
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * the shape a drawn record's id names, undefined where none draws
+       */
+      shapeFor(featureId: string) {
+        const i = self.laneIndexById.get(featureId)
+        return i === undefined ? undefined : self.shapeAt(i)
+      },
+      /**
+       * #getter
+       * every drawn shape, as the export draws it
+       */
+      get shapes(): Shape[] {
+        const out: Shape[] = []
+        for (let i = 0; i < self.drawnLanes.count; i++) {
+          const shape = self.shapeAt(i)
+          if (shape) {
+            out.push(shape)
+          }
+        }
+        return out
+      },
+      /**
+       * #method
+       * a drawn feature's outline as an SVG path on the unrotated figure, for
+       * anything that has to find a shape on screen without a DOM node
+       */
+      shapePathFor(feature: Feature) {
+        const shape = this.shapeFor(feature.id())
+        return shape
+          ? shapePath(shape, self.radiusPx, self.bezierRadius)
+          : undefined
+      },
+      /**
+       * #method
+       * the record drawn under a point CSS px from the circle's centre in the
+       * screen frame
+       */
+      hitAt(dx: number, dy: number) {
+        if (self.displayPhase !== 'ready') {
+          return undefined
+        }
+        const [x, y] = figurePoint(dx, dy, self.view.offsetRadians)
+        const i = self.laneAt(x, y)
+        return i === undefined ? undefined : self.drawnLanes.features[i]
+      },
       /**
        * #method
        * the assembly on the circle a feature names, in whatever spelling the

@@ -1,5 +1,5 @@
 import type { ChordCell } from './chordMarks.ts'
-import type { ChordShape, ChordLayerDisplay, RibbonShape } from './shapes.ts'
+import type { ChordLayerDisplay, Shape } from './shapes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
@@ -30,21 +30,15 @@ export interface ChordDisplayFrameModel {
 // What the chord and ribbon displays both answer. The canvas draws their lanes
 // through `chordCell`; the SVG side draws the hovered and selected shapes over
 // it, and the export draws every shape
-interface ChordLayerModel extends ChordDisplayFrameModel, ChordLayerDisplay {
+export interface ShapeDisplayModel
+  extends ChordDisplayFrameModel, ChordLayerDisplay {
   drawnCount: number
   selectedFeatureId: string | undefined
   hoveredFeatureId: string | undefined
   highlightedFeatureIdSet?: Set<string>
   bezierRadius: number
   shapeAlpha: number
-}
-
-export interface ChordDisplayModel extends ChordLayerModel {
-  shapes: readonly ChordShape[]
-  shapeFor: (featureId: string) => ChordShape | undefined
-}
-
-export interface RibbonDisplayModel extends ChordLayerModel {
-  shapes: readonly RibbonShape[]
-  shapeFor: (featureId: string) => RibbonShape | undefined
+  shapes: readonly Shape[]
+  shapesTestId: string
+  shapeFor: (featureId: string) => Shape | undefined
 }

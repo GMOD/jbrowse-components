@@ -2,13 +2,13 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
 
+import ChordSyntenyDisplay from '../../chords/ShapeDisplay.tsx'
 import ShapePaths from '../../chords/ShapePaths.tsx'
 import configSchemaF from '../models/configSchema.ts'
-import ChordSyntenyDisplay from './ChordSyntenyDisplay.tsx'
 
 import type { ChordCell } from '../../chords/chordMarks.ts'
 import type { RibbonShape } from '../../chords/shapes.ts'
-import type { RibbonDisplayModel } from '../../chords/types.ts'
+import type { ShapeDisplayModel } from '../../chords/types.ts'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
 // the hover and selected slots take jexl, so the config needs the manager that
@@ -46,8 +46,8 @@ function shapesOf(...features: SimpleFeature[]): RibbonShape[] {
 
 function ribbonModel(
   phase: DisplayStatusPhase,
-  overrides: Partial<RibbonDisplayModel> = {},
-): RibbonDisplayModel {
+  overrides: Partial<ShapeDisplayModel> = {},
+): ShapeDisplayModel {
   return {
     id: 'paf',
     error: undefined,
@@ -62,6 +62,7 @@ function ribbonModel(
     svgReady: phase !== 'loading',
     drawnCount: overrides.shapes?.length ?? 0,
     shapes: [],
+    shapesTestId: 'syntenyRibbonRenderer',
     shapeFor: id =>
       (overrides.shapes ?? []).find(shape => shape.feature.id() === id),
     chordCell: undefined,
@@ -80,7 +81,7 @@ function ribbonModel(
   }
 }
 
-function attrs(model: RibbonDisplayModel) {
+function attrs(model: ShapeDisplayModel) {
   const { container } = render(
     <svg>
       <ChordSyntenyDisplay display={model} />

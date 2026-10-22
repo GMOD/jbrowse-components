@@ -172,6 +172,11 @@ export function withAbgrAlpha(c: number, a: number) {
   return ((c & 0x00ffffff) | (a << 24)) >>> 0
 }
 
+/** `c` with its alpha byte scaled by `k`. */
+export function scaleAbgrAlpha(c: number, k: number) {
+  return k === 1 ? c : withAbgrAlpha(c, Math.round(abgrAlpha(c) * k))
+}
+
 // Pack a 0..1 normalized RGB triple into an ABGR u32 (opaque alpha). Inverse
 // of cssColorToNormalizedRgb at the GPU write boundary — the shader side
 // unpacks with unpackRGBA() (see packages/render-core/src/shaders/colorPack.slang).

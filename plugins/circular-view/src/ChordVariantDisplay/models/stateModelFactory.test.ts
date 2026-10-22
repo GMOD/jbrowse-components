@@ -292,6 +292,63 @@ test('a mate on a contig the file holds no record on still finds its slice', asy
   expect(sliceFor(display, undefined, 'B')?.region.refName).toBe('ctgB')
 }, 20000)
 
+// an elided slice stands for every contig in its run, so two records that
+// land on different contigs of one run are two chords, not a breakend pair
+test('chords into one elided run keep their own lanes', async () => {
+  const session = createTestSession()
+  const contig = (refName: string, end: number) => ({
+    refName,
+    uniqueId: refName,
+    start: 0,
+    end,
+    seq: 'a'.repeat(end),
+  })
+  session.addAssemblyConf({
+    name: 'volvox',
+    sequence: {
+      trackId: 'volvox_refseq',
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: [
+          contig('big', 1_000_000),
+          contig('u1', 10),
+          contig('u2', 10),
+        ],
+      },
+    },
+  })
+  const tra = (uniqueId: string, mate: string) => ({
+    uniqueId,
+    refName: 'big',
+    start: 100,
+    end: 101,
+    mate: { refName: mate, start: 5, end: 6 },
+  })
+  session.addSessionTrackConf({
+    trackId: 'sv',
+    type: 'VariantTrack',
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'FromConfigAdapter',
+      features: [tra('to-u1', 'u1'), tra('to-u2', 'u2')],
+    },
+  })
+  const view = (await session.launchView('CircularView', {
+    assembly: 'volvox',
+    tracks: ['sv'],
+  })) as CircularViewModel
+  view.setWidth(800)
+  await when(() => view.tracks.length > 0)
+  const display = view.tracks[0]!.displays[0]!
+  await when(() => display.ready)
+  expect(view.elidedRegions.some(r => r.elided)).toBe(true)
+  expect(display.chordLanes.count).toBe(2)
+  expect(display.laneIndexById.get('to-u2')).not.toBe(
+    display.laneIndexById.get('to-u1'),
+  )
+}, 20000)
+
 function subMenuOf(item: MenuItem | undefined): MenuItem[] {
   return item && 'subMenu' in item && Array.isArray(item.subMenu)
     ? item.subMenu

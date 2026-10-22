@@ -178,7 +178,7 @@ export type ChordCell =
 
 export interface ChordCellDisplay {
   shapeAlpha: number
-  curveDepth: number
+  bezierRadius: number
 }
 
 /** The polar stage a frame draws through, shared by every display's cell. */
@@ -198,7 +198,7 @@ function params(frame: ChordLayerFrame, cell: ChordCell): ChordStageParams {
     gapRadians: frame.gapRadians,
     offsetRadians: frame.offsetRadians,
     radiusPx: frame.radiusPx,
-    bezierRadiusPx: frame.radiusPx * (1 - cell.display.curveDepth),
+    bezierRadiusPx: cell.display.bezierRadius,
     alpha: cell.display.shapeAlpha,
     strokeWidthPx: CHORD_STROKE_PX,
     thinFadeFloor: frame.thinFadeFloor,

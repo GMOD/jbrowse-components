@@ -25,7 +25,7 @@ export default function ChordSyntenyDisplayF(pluginManager: PluginManager) {
       viewType: 'CircularView',
       plotExamples: CHORD_SYNTENY_PLOT_EXAMPLES,
       ReactComponent: lazyWithPreload(
-        () => import('./components/ChordSyntenyDisplay.tsx'),
+        () => import('../chords/ShapeDisplay.tsx'),
       ),
     })
   })
