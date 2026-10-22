@@ -34,6 +34,27 @@ describe('GtfAdapter on a GENCODE excerpt', () => {
     )
     expect(featuresArray.map(f => f.toJSON())).toMatchSnapshot()
   })
+
+  it('leaves out a gene that only touches the region', async () => {
+    const adapter = new GtfAdapter(
+      configSchema.create({
+        gtfLocation: {
+          localPath: require.resolve('../test_data/gencode_tp53.gtf'),
+        },
+      }),
+    )
+    for (const [start, end] of [
+      [7590868, 7591868],
+      [7570719, 7571719],
+    ] as const) {
+      const features = await firstValueFrom(
+        adapter
+          .getFeatures({ refName: 'chr17', start, end, assemblyName: 'hg19' })
+          .pipe(toArray()),
+      )
+      expect(features).toHaveLength(0)
+    }
+  })
 })
 
 test('can instantiate new GtfAdapter and check for demo data', async () => {

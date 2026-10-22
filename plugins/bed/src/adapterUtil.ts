@@ -28,8 +28,16 @@ export function intervalTreeFeatures(
     ObservableCreate<Feature>(async observer => {
       await loadData(opts)
       const tree = await loadTree(query.refName)
+      // the tree's search is closed at both ends, so it also returns a feature
+      // that only touches the region; a zero-length one counts where it sits
       for (const f of tree?.search([query.start, query.end]) ?? []) {
-        observer.next(f)
+        const start = f.get('start')
+        if (
+          start < query.end &&
+          (f.get('end') > query.start || start >= query.start)
+        ) {
+          observer.next(f)
+        }
       }
       observer.complete()
     }, opts.signal)

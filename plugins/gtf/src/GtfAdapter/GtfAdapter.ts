@@ -8,6 +8,7 @@ import {
   groupLinesByRef,
   makeFeatureIntervalTreeMap,
 } from '@jbrowse/core/util/parseLineByLine'
+import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { aggregateGtfFeatures, parseGtfToFeatures } from '../util.ts'
@@ -75,11 +76,17 @@ export default class GtfAdapter extends BaseFeatureDataAdapter<GtfAdapterConfig>
         const { intervalTreeMap } = await this.loadData(opts)
         const tree = intervalTreeMap[query.refName]
         if (tree) {
+          // the tree's search is closed at both ends; a feature ending exactly
+          // at `start` touches the region without overlapping it
           for (const feat of tree(opts.statusCallback).search([
             query.start,
             query.end,
           ])) {
-            observer.next(new SimpleFeature({ id: feat.uniqueId, data: feat }))
+            if (doesIntersect2(feat.start, feat.end, query.start, query.end)) {
+              observer.next(
+                new SimpleFeature({ id: feat.uniqueId, data: feat }),
+              )
+            }
           }
         }
         observer.complete()

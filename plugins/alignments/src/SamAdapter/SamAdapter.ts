@@ -7,6 +7,7 @@ import {
   makeFeatureIntervalTreeMap,
   parseLineByLine,
 } from '@jbrowse/core/util/parseLineByLine'
+import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { BaseAlignmentsAdapter } from '../shared/BaseAlignmentsAdapter.ts'
@@ -124,7 +125,11 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
       const records = tree
         ? tree(statusCallback)
             .search([start, end])
-            .filter(record => !drops(record))
+            .filter(
+              record =>
+                doesIntersect2(record.start, record.end, start, end) &&
+                !drops(record),
+            )
         : []
 
       // only records lacking an MD tag need the reference, so defer loading the
