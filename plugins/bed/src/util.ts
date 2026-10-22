@@ -257,7 +257,8 @@ export function featureData({
   const data: BedData = parser.parseLine(splitLine, { uniqueId })
   const strand = parseStrand(data.strand)
   const rawScore = scoreColumn ? data[scoreColumn] : data.score
-  const score = rawScore === undefined ? undefined : Number(rawScore)
+  const score =
+    rawScore === undefined || rawScore === '' ? undefined : Number(rawScore)
 
   const repeat = parseRepeatMaskerDescription(data.description)
   if (repeat) {
