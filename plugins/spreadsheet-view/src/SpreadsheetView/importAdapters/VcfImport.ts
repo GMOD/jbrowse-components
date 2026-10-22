@@ -13,6 +13,15 @@ function splitInfo(info: string | undefined) {
         .filter(f => f !== '')
 }
 
+// the sample columns already hold each genotype as the file wrote it, and
+// nothing reads the record's parsed copy, which grows with every sample
+function withoutSamples<T extends { samples?: unknown }>({
+  samples: _samples,
+  ...rest
+}: T) {
+  return rest
+}
+
 export function parseVcfBuffer(buffer: Uint8Array) {
   const lines = bufferToLines(buffer)
   const header = lines.filter(l => l.startsWith('#')).join('\n')
@@ -56,11 +65,13 @@ export function parseVcfBuffer(buffer: Uint8Array) {
           vcfParser.samples.map((s, idx) => [s, rest[idx]]),
         ),
       },
-      feature: new VcfFeature({
-        parser: vcfParser,
-        variant: vcfParser.parseLine(line),
-        id: `vcf-${i}`,
-      }).toJSON(),
+      feature: withoutSamples(
+        new VcfFeature({
+          parser: vcfParser,
+          variant: vcfParser.parseLine(line),
+          id: `vcf-${i}`,
+        }).toJSON(),
+      ),
     })
   }
   // SVTYPE is the field that distinguishes deletions/duplications/inversions/
