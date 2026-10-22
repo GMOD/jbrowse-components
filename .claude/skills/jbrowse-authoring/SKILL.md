@@ -145,13 +145,10 @@ type still answers to (`LinearPileupDisplay`, `LinearFeatureDisplay`) are
 resolved through their `aliases` and checked against the type that absorbed
 them, so those are not flagged.
 
-The slot manifest it checks against is generated from the live schemas and rides
-`pnpm autogen`, so it can't drift from a schema change on main. Working in the
-monorepo and just edited a `configSchema.ts`? Regenerate it:
-
-```bash
-node --experimental-strip-types scripts/generateConfigManifest.ts
-```
+The validator checks against the slots of the `@jbrowse/cli` version installed,
+so match it to the JBrowse version that will open the config. (Inside the
+jbrowse-components repo, `pnpm autogen` regenerates the manifest after a
+`configSchema.ts` edit.)
 
 ## Looking things up
 

@@ -77,7 +77,15 @@ on load anyway, such as a type registered by a plugin it cannot see.
 ## Claude Code skills
 
 The JBrowse repository keeps Claude Code skills that brief an agent on this
-loop. Copy a folder into `~/.claude/skills/` to install one:
+loop. Claude Code can install them itself; ask it:
+
+```text
+Install the jbrowse-authoring, jbrowse-hosted-data and jbrowse-capture skills
+from https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills
+into ~/.claude/skills
+```
+
+To install by hand, copy each folder into `~/.claude/skills/`:
 
 - [jbrowse-authoring](https://github.com/GMOD/jbrowse-components/tree/main/.claude/skills/jbrowse-authoring):
   the config shape, the session spec, and the validator

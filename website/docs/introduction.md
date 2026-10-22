@@ -20,6 +20,13 @@ See the [tutorials](/docs/tutorials/), or hosted genomes at
 - [JBrowse desktop](/docs/quickstart_desktop)
 - [](/docs/embedded_components)
 
+## Use JBrowse with an AI agent
+
+- [](/docs/agents): Claude Desktop, Claude Code or Claude in Chrome driving the
+  open app
+- [](/docs/agents_authoring): an agent writing and rendering a config from a
+  shell
+
 ## Use JBrowse
 
 - [](/docs/user_guide)
