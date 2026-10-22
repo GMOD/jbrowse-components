@@ -1429,9 +1429,10 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * `linearFieldExtent` over the loaded reads
+           * The whole span of a linear color field, a tag or MAPQ, over the
+           * loaded reads (`linearFieldExtent`).
            */
-          get tagValueExtent(): NumericExtent | undefined {
+          get linearFieldExtent(): NumericExtent | undefined {
             return linearFieldExtent(
               self.colorEncoding,
               self.colorBy,
@@ -2489,7 +2490,7 @@ export default function stateModelFactory(
                 colorBy: self.colorBy,
                 baseLayer: self.baseLayer,
                 bakedScale: self.bakedColorScale,
-                tagValueExtent: self.tagValueExtent,
+                linearFieldExtent: self.linearFieldExtent,
                 baseQualityExtent: self.baseQualitySpan.extent,
               }),
               colorTitle: self.colorKeyTitle,

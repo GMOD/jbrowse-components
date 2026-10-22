@@ -208,7 +208,7 @@ describe('color.title heads the key the color object draws', () => {
         undefined,
         [0, 10],
       ),
-      tagValueExtent: [0, 10],
+      linearFieldExtent: [0, 10],
       baseQualityExtent: undefined,
     })
     expect(

@@ -520,7 +520,7 @@ function colorReads(
     colorBy,
     baseLayer,
     bakedScale,
-    tagValueExtent: linearFieldExtent(encoding, colorBy, byGroup),
+    linearFieldExtent: linearFieldExtent(encoding, colorBy, byGroup),
     baseQualityExtent:
       baseLayer?.type === 'baseQuality'
         ? baseQualitySpanAcrossGroups(byGroup).extent

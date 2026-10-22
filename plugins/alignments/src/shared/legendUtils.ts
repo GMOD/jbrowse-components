@@ -897,17 +897,17 @@ export function colorRampScales({
   colorBy,
   baseLayer,
   bakedScale,
-  tagValueExtent,
+  linearFieldExtent,
   baseQualityExtent,
 }: {
   colorBy: ColorBy | undefined
   baseLayer: BaseLayer | undefined
   bakedScale: BakedColorScale | undefined
-  tagValueExtent: Extent
+  linearFieldExtent: Extent
   baseQualityExtent: Extent
 }): RampScale[] {
   const readRamp =
-    colorBy && bakedRampScale(colorBy, bakedScale, tagValueExtent)
+    colorBy && bakedRampScale(colorBy, bakedScale, linearFieldExtent)
   return [
     ...(baseLayer?.type === 'baseQuality'
       ? [

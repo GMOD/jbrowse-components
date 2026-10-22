@@ -877,7 +877,7 @@ describe('getArcLegendItems', () => {
 describe('colorRampScales', () => {
   const noExtents = {
     bakedScale: undefined,
-    tagValueExtent: undefined,
+    linearFieldExtent: undefined,
     baseQualityExtent: undefined,
   }
   const mapqRamp = bakedColorScale(
@@ -905,7 +905,7 @@ describe('colorRampScales', () => {
       colorBy: { type: 'mapq' },
       baseLayer: undefined,
       bakedScale: mapqRamp,
-      tagValueExtent: [0, 70],
+      linearFieldExtent: [0, 70],
     })
     expect(rest).toEqual([])
     expect(mapq).toMatchObject({ title: 'Mapping quality', domain: [0, 60] })
