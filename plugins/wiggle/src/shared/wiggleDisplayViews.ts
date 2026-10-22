@@ -37,11 +37,6 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
   yField: string
   /** `scales.y.title`, empty where it names none. */
   scaleTitle: string
-  /**
-   * Whether one color ramp describes the whole plot: a gradient outside the
-   * line renderings.
-   */
-  scoreRampApplies: boolean
 }
 
 /**
@@ -67,7 +62,7 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
      */
     get scoreColorScale(): RampScale | undefined {
       const { rampLut, rampMid } = self.wiggleColor
-      return self.scoreRampApplies && self.domain && rampLut
+      return self.domain && rampLut
         ? scoreRampScale(
             self.domain,
             self.scaleType,

@@ -472,20 +472,11 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Whether one color ramp describes the plot: wherever a gradient paints,
-       * since its one table ignores the rows' colors.
-       */
-      get scoreRampApplies() {
-        return self.scoreGradientPaints
-      },
-
-      /**
-       * #getter
        * A density row has no y scale, so under the one ramp the ramp is the
        * key and shows the domain; bars and points keep their axis beside it.
        */
       get scoreRampReplacesAxis() {
-        return self.isDensityMode && this.scoreRampApplies
+        return self.isDensityMode && self.scoreGradientPaints
       },
     }))
     .views(self => wiggleDisplayViews(self))

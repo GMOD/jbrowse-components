@@ -75,7 +75,7 @@ describe('the key names what an overlaid density paints', () => {
         },
       })
       expect(markColors(display)).toEqual([undefined, undefined])
-      expect(display.scoreRampApplies).toBe(true)
+      expect(display.scoreGradientPaints).toBe(true)
       expect(display.colorScales.map(s => s.kind)).not.toContain('categorical')
     },
   )
@@ -89,7 +89,7 @@ describe('the key names what an overlaid density paints', () => {
         rowColor: { domain: ['a', 'b'], range: ['red', 'blue'] },
       },
     })
-    expect(display.scoreRampApplies).toBe(true)
+    expect(display.scoreGradientPaints).toBe(true)
     expect(display.colorScales.map(s => s.kind)).not.toContain('categorical')
   })
 })

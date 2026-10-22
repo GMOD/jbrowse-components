@@ -38,7 +38,6 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   scrollableHeight: number
   rowFocusLineHeight: number
   axes: YAxis[]
-  scoreRampApplies: boolean
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
   showTree: boolean
