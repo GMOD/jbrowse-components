@@ -178,6 +178,7 @@ exports[`every registered schema slot default 1`] = `
     "index.location": "fileLocation = {"uri":"/path/to/my.gz.tbi","locationType":"UriLocation"}",
   },
   "adapter: HicAdapter": {
+    "controlAdapter": "maybeFrozen = undefined",
     "hicLocation": "fileLocation = {"uri":"/path/to/my.hic","locationType":"UriLocation"}",
   },
   "adapter: HtsgetBamAdapter": {
@@ -603,7 +604,7 @@ exports[`every registered schema slot default 1`] = `
     "color.domainMid": "maybeNumber = undefined",
     "color.domainMin": "maybeNumber = undefined",
     "color.domainQuantile": "number = 0.95",
-    "color.field": "stringEnum = "observed" of ["observed","observed/expected"]",
+    "color.field": "stringEnum = "observed" of ["observed","observed/expected","observed/control"]",
     "color.reverse": "maybeBoolean = undefined",
     "color.scale": "maybeStringEnum = undefined of ["linear","symlog","log"]",
     "color.scheme": "maybeStringEnum = undefined of ["viridis","magma","inferno","cividis","juicebox","fall","reds","blues","redblue","purpleorange","redgreyblue","redyellowblue"]",
