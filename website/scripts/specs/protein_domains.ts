@@ -7,7 +7,6 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 const CONFIG =
   'https://jbrowse.org/hubs/genark/GCF/003/254/395/GCF_003254395.2/config.json'
 const ASSEMBLY = 'GCF_003254395.2'
-const GENES = 'GCF_003254395.2-ncbiGff'
 
 // tutorials/protein_domains.md fences this track
 const PFAM_TRACK = {
@@ -22,14 +21,11 @@ const PFAM_TRACK = {
   },
   displayDefaults: {
     color: { field: 'name' },
-    rows: { field: 'transcript' },
   },
 }
 
-// vav: four isoforms, the first exon of X3 skipping the CH domain
-const VAV = 'NC_037640.1:1,971,400-1,976,800'
-
 export const proteinDomainsSpecs: ScreenshotSpec[] = [
+  // vav's four isoforms, the top one skipping the exon that encodes CH
   {
     mode: 'url',
     name: 'protein_domains/vav',
@@ -39,10 +35,10 @@ export const proteinDomainsSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: ASSEMBLY,
-          loc: VAV,
+          loc: 'NC_037640.1:1,971,400-1,976,800',
           tracks: [
-            { trackId: GENES, height: 130 },
-            { trackId: 'pfam_domains', height: 260 },
+            { trackId: 'GCF_003254395.2-ncbiGff', height: 120 },
+            { trackId: 'pfam_domains', height: 160 },
           ],
         },
       ],
@@ -50,31 +46,6 @@ export const proteinDomainsSpecs: ScreenshotSpec[] = [
     readyText: 'Pfam domains',
     readyTimeout: 60000,
     viewportWidth: 1200,
-    viewportHeight: 620,
-  },
-  {
-    mode: 'url',
-    name: 'protein_domains/vav_rows',
-    url: sessionSpec(CONFIG, {
-      sessionTracks: [PFAM_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: ASSEMBLY,
-          loc: VAV,
-          tracks: [
-            { trackId: GENES, height: 130 },
-            {
-              trackId: 'pfam_domains',
-              type: 'LinearMultiRowFeatureDisplay',
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'Pfam domains',
-    readyTimeout: 60000,
-    viewportWidth: 1200,
-    viewportHeight: 520,
+    viewportHeight: 540,
   },
 ]

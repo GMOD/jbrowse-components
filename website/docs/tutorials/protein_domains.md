@@ -20,7 +20,6 @@ whose isoforms differ at their first domain. We:
 - place each domain on the exons that encode it with
   `jbrowse make-protein-features`
 - load the domains as a track under the genes, colored by Pfam family
-- split the domains into one row per transcript
 
 ## Prerequisites
 
@@ -125,7 +124,7 @@ jbrowse make-protein-features genes.gff3 pfam.domtblout --out pfam.bed.gz
 
 The domain track reads the BED with `disableGeneHeuristic`, which stops JBrowse
 drawing a stranded BED12 row as a coding transcript, and colors each domain by
-its family. `rows` is the multi-row display's setting for the next section:
+its family:
 
 ```json addtrack loc=NC_037640.1:1,971,400-1,976,800
 {
@@ -139,8 +138,7 @@ its family. `rows` is the multi-row display's setting for the next section:
     "disableGeneHeuristic": true
   },
   "displayDefaults": {
-    "color": { "field": "name" },
-    "rows": { "field": "transcript" }
+    "color": { "field": "name" }
   }
 }
 ```
@@ -151,17 +149,11 @@ To follow along on genomes.jbrowse.org, open the honey bee genome, add the track
 above, go to `NC_037640.1:1,971,400-1,976,800`, and turn on the gene track,
 **NCBI RefSeq - RefSeq All (GFF)**.
 
-<Figure src="/img/protein_domains/vav.png" caption="Honey bee vav: the four RefSeq isoforms over the Pfam domains each one encodes, colored by family. A domain crossing an intron draws as blocks joined like the exons above it." />
+The track draws one copy of each domain per isoform, and a domain crossing an
+intron as blocks joined like the exons above it. Clicking a domain shows its
+transcript, accession and residue range.
 
-## One row per transcript
-
-The domain track stacks one copy of each domain per isoform, so an isoform
-missing a domain shows only as one copy fewer.
-
-**Display types → Multi-row feature display (painting)** in the track menu gives
-each transcript a labelled row, from the `rows` setting in the track config.
-
-<Figure src="/img/protein_domains/vav_rows.png" caption="The same window with one row per transcript, labelled with the transcript's ID. One row lacks the CH domain the other three start with." />
+<Figure src="/img/protein_domains/vav.png" caption="Honey bee vav: the four RefSeq isoforms over the Pfam domains they encode, colored by family. The top isoform skips the exon encoding CH, so CH has three copies where the other domains have four." />
 
 ## Reproduce it end to end
 
