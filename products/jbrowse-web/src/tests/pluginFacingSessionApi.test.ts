@@ -31,8 +31,9 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 // bundles of the plugins the repo itself points at (protein3d in
 // `test_data/protein3d_config.json`, graphgenomeviewer in the screenshot
 // generator's TRUSTED_PLUGIN_URLS, msaview in the hosted hg38 config the
-// proteins tutorial opens). Extend it when another plugin is checked; say in the
-// commit which bundle you read.
+// proteins tutorial opens), plus civic and tview from the plugin store for the
+// two deprecated aliases they still call. Extend it when another plugin is
+// checked; say in the commit which bundle you read.
 //
 // Recomputing it is a grep of each bundle for `.member` / `"member"` against the
 // session's own member names — minification renames the variable but not the
@@ -47,7 +48,7 @@ const PLUGIN_FACING = {
   // a deprecated alias since the destination split; the call test below is what
   // actually holds it, because a name that survives while its meaning moves is
   // the failure this file exists for
-  addTrackConf: 'protein3d',
+  addTrackConf: 'civic',
   // optional-chained at the call site (`session.addTemporaryAssembly?.({...})`),
   // so losing it degrades as silently as setPendingMove did
   addTemporaryAssembly: 'protein3d',
@@ -55,7 +56,7 @@ const PLUGIN_FACING = {
   addWidget: 'graphgenomeviewer',
   assemblyManager: 'protein3d, msaview, graphgenomeviewer',
   getTrackById: 'protein3d',
-  getTracksById: 'protein3d',
+  getTracksById: 'tview',
   // the genome hover both plugins light a residue or a column from; renamed, the
   // linking stops with no error on either side
   hovered: 'protein3d, msaview',
@@ -124,20 +125,20 @@ test("protein3d's side-by-side launch still splits, called as the plugin calls i
 // presence list cannot see either. `addTrackConf` used to publish an admin's
 // track into the config.json every visitor is served; it now means the session,
 // because that is what its callers wanted and the two meanings behind one name
-// were shipping dead per-click entries into everyone's config. protein3d reaches
-// it through the guard it also links by name, so both halves are performed here
-// as the published bundle spells them (jbrowse-plugin-protein3d 0.8.0, minified:
-// `(0,ll.isSessionWithAddTracks)(e)?e:void 0` off
-// `JBrowseExports['@jbrowse/core/util']`, then `addTrackConf` on the result).
+// were shipping dead per-click entries into everyone's config. The civic plugin
+// adds its track with it (jbrowse-plugin-civic 1.0.8, minified:
+// `r.addTrackConf({trackId:"civic_hg19",...})` on `rootModel.session`), and a
+// bundle built against v4 guards the same call with `isSessionWithAddTracks`
+// off `JBrowseExports['@jbrowse/core/util']`, so both halves are performed here.
 //
 // An admin session on purpose: a non-admin lands in the session either way, so
 // only an admin can tell the two destinations apart.
-test("protein3d's structure track still lands, and lands in the session", () => {
+test("a plugin's track added by the old name lands in the session", () => {
   const session = createTestSession({ adminMode: true }) as any
   expect(isSessionWithAddTracks(session)).toBe(true)
 
   const added = session.addTrackConf({
-    trackId: 'protein3d-structure',
+    trackId: 'civic_hg19',
     type: 'FeatureTrack',
     assemblyNames: ['volvox'],
     adapter: { type: 'FromConfigAdapter', features: [] },
@@ -145,7 +146,7 @@ test("protein3d's structure track still lands, and lands in the session", () => 
 
   expect(added).toBeDefined()
   expect(session.sessionTracks.map((t: any) => t.trackId)).toEqual([
-    'protein3d-structure',
+    'civic_hg19',
   ])
   expect(session.jbrowse.tracks).toHaveLength(0)
 })

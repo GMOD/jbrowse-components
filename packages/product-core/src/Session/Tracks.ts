@@ -251,8 +251,8 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
          * @deprecated
          *
          * Kept because a prebuilt plugin bundle reaches this by name at runtime
-         * and cannot be recompiled — `jbrowse-plugin-protein3d` calls it, and a
-         * member lookup that stops resolving throws nothing at all
+         * and cannot be recompiled — `jbrowse-plugin-civic` adds its track
+         * with it, and a member lookup that stops resolving throws nothing at all
          * (`pluginFacingSessionApi.test.ts` is the guard). It now means the
          * session, which is the destination every such caller wanted: a track a
          * plugin stands up for one user is not a catalog entry. Nothing in tree

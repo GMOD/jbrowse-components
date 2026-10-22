@@ -504,13 +504,10 @@ export function isSessionWithAddSessionTrack(
  * workflow.
  *
  * Kept because a prebuilt plugin bundle links it by name off
- * `JBrowseExports['@jbrowse/core/util']` and cannot be recompiled:
- * jbrowse-plugin-protein3d 0.8.0 gates its structure-track launch on it
- * (`(0,ll.isSessionWithAddTracks)(e)?e:void 0`), so dropping the export makes
- * the call `undefined is not a function` inside the menu builder rather than
- * failing a build. It answers the session-scoped question now, which is the one
- * that caller wanted — its launch goes on to `session.addTrackConf`, the
- * session-scoped alias. `graphgenomeviewer` does not reference either name.
+ * `JBrowseExports['@jbrowse/core/util']` and cannot be recompiled, so dropping
+ * the export makes its call `undefined is not a function` rather than failing a
+ * build. It answers the session-scoped question, which is the one such a caller
+ * wants before going on to `session.addTrackConf`.
  *
  * Nothing in tree may call it; `no-restricted-syntax` says so.
  */

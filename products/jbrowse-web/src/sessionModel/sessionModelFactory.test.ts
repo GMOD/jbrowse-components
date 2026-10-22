@@ -385,8 +385,8 @@ describe('JBrowseWebSessionModel', () => {
     })
 
     // `addTrackConf` outlived its own meaning: it survives only because
-    // jbrowse-plugin-protein3d 0.8.0 calls it by name off a bundle that cannot
-    // be recompiled, and it now means the session. An admin reaching it through
+    // jbrowse-plugin-civic calls it by name off a bundle that cannot be
+    // recompiled, and it now means the session. An admin reaching it through
     // that bundle no longer publishes.
     it('the deprecated addTrackConf alias writes the session even for an admin', () => {
       const session = createTestSession({ adminMode: true })

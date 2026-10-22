@@ -12,8 +12,6 @@ export default class TextSearchAdapterType<
 
   description?: string
 
-  // `AdapterClass` is retained for backward compatibility with third-party
-  // plugins; new code should prefer `getAdapterClass` for code splitting.
   constructor(
     stuff: {
       name: string
@@ -22,7 +20,14 @@ export default class TextSearchAdapterType<
       description?: string
     } & (
       | { getAdapterClass: () => Promise<AdapterClassFor<SCHEMA>> }
-      | { AdapterClass: AdapterClassFor<SCHEMA> }
+      | {
+          /**
+           * @deprecated pass `getAdapterClass`, which loads the class on first
+           * use. Still read for the prebuilt plugin bundles that register with
+           * it.
+           */
+          AdapterClass: AdapterClassFor<SCHEMA>
+        }
     ),
   ) {
     super(stuff)
