@@ -130,9 +130,45 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    The same pass moves each band's layer thresholds into its layers'
    `filter` (ADR-238 "Layers inside a part"): `coverage.alleles`,
    `coverage.interbase`, the modification layer.
-   **ADR-240 steps 3a and 3b claimed 2026-10-22**: the alignments and
-   LGVSynteny `filter` as one predicate list, with amendment 1's merge by
-   field.
+   **Claimed 2026-10-22, built but unlanded** on branch
+   `worktree-alignments-filter-predicates` (worktree
+   `.claude/worktrees/alignments-filter-predicates`): every display's
+   `filter` is one predicate list, landing as one fast-forward.
+   - **Built:** the alignments and LGVSynteny lists (ADR-240 steps 3a, 3b,
+     merge by field), then canvas (`genes` is the `geneLike` field), mark,
+     and multi-sample variant (`minorAlleleFrequency` gte and
+     `missingness` lte, compiled per fetch by `compileSiteFilter`).
+     PlotExamples, typecheck, lint and the touched packages' suites pass.
+     The MAF display has no filter slot to move.
+   - **The gate:** the whole-fetch A/B on ada over `1000x.shortread.bam`
+     found no cost (130.4 vs 129.5 ms), so alignments has no hand-written
+     fallback.
+   - **Blocks landing:** the mark display's worker `FilterStep` takes only
+     `expr`, so `plotRequest` sends only the list's `jexl:` entries and a
+     field entry on a mark display filters nothing. Give `FilterStep` a
+     predicate form.
+   - **Blocks landing:** a `jexl:` entry is `{ field, equal: true }`, and
+     `coerce` admits only `true` or `'true'`, so an expression that returns a
+     truthy non-boolean (`get(feature,'name')`) now drops every feature.
+     Either test a bare expression entry for truthiness or say so where the
+     slot is documented.
+   - **Writers still on the object form:** `test_data/config_demo.json`
+     (`genes: "only"`), the multiway, orthofinder, pangenome_hprc and
+     ld_human tutorials, `config_guides/variant_track.md`,
+     `website/src/lib/spec-recipe`, `website/scripts/specs`,
+     `scripts/build_lct_ld.sh`, the jbrowse-img, tables and
+     react-linear-genome-view tests, `browser-tests/multiway-lanegenes-probe`,
+     and ggjbrowse's R docs (`R/features.R`, `R/variants.R`,
+     `R/synteny.R`). Then `pnpm autogen` for the generated config and model
+     docs.
+   - **Still to do:** benchmark the variant site test and the canvas `jexl:`
+     computed field, or say why they aren't hot. Check store plugins for the
+     removed exports (`featureFilterConfigSchema`'s schema,
+     `variantFilterConfigSchema`, `filterMembersNarrowing`, `baseFilterOf`,
+     `passesSiteThresholds`, canvas's `WorkerFeatureFilter` type)
+     (`reference/PLUGIN_ABI_STABILITY.md`). Run `pnpm verify --full`. Push a
+     ggjbrowse engine rebuilt from the landed commit along with the landing,
+     or the R export test stays red.
 3. **Legends, with step 1**: Vega-Lite gives each channel its own `legend`,
    so `legend.show` on the channel takes over every display's `showLegend`.
 4. **Wiggle's `resolution` and Hi-C's `resolutionBias`** under `data`, each
