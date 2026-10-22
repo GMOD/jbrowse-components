@@ -11,7 +11,7 @@ type DisplaySnapshot = {
   type?: string
   geneGlyphMode?: string
   showLabels?: unknown
-  color?: string
+  encoding?: { color?: { value?: string } }
   connectorColor?: string
   utrColor?: string
   outlineColor?: string
@@ -93,7 +93,7 @@ test('renames legacy color1/color2/color3/outline config slots', () => {
     ],
   })
   expect(out.displays![0]).toMatchObject({
-    color: 'green',
+    encoding: { color: { value: 'green' } },
     connectorColor: 'gray',
     utrColor: 'lightblue',
     outlineColor: 'black',
@@ -126,7 +126,7 @@ test('lifts style slots out of the old renderer sub-config', () => {
       },
     ],
   })
-  expect(out.displays![0]!.color).toBe('red')
+  expect(out.displays![0]!.encoding).toEqual({ color: { value: 'red' } })
   expect(out.displays![0]!.renderer).toBeUndefined()
 })
 

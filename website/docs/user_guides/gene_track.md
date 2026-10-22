@@ -125,14 +125,14 @@ setting whole, and `null` clears one. Each of these pastes as it is:
 - `{ "facet": "strand" }` one section per strand
 - `{ "facet": { "field": "gene_biotype", "sort": ["protein_coding", "lncRNA"] } }`
   a section per biotype, these two first
-- `{ "color": { "field": "source" } }` one color per source
-- `{ "color": { "field": "strand" } }` forward strand red, reverse blue
-- `{ "color": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"], "range": ["#1f77b4", "#ff7f0e"] } }`
+- `{ "encoding": { "color": "source" } }` one color per source
+- `{ "encoding": { "color": "strand" } }` forward strand red, reverse blue
+- `{ "encoding": { "color": { "field": "gene_biotype", "scale": { "domain": ["protein_coding", "lncRNA"], "range": ["#1f77b4", "#ff7f0e"] } } } }`
   those two biotypes blue and orange, and every other value a distinct color
-- `{ "color": "#1f77b4" }` one color for everything
+- `{ "encoding": { "color": { "value": "#1f77b4" } } }` one color for everything
 - `{ "filter": { "genes": "only" } }` genes only
 - `{ "filter": ["jexl:feature.score > 100"] }` scores above 100
-- `{ "facet": null, "color": null }` ungrouped, default color
+- `{ "facet": null, "encoding": null }` ungrouped, default color
 
 The dialog lists the same examples. This one groups by biotype in a chosen
 order, gives each of the four biotypes a distinct color, and leaves the track's

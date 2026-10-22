@@ -26,15 +26,21 @@ const STATES = [
     }),
 )
 
-const CHROMHMM = {
-  scale: 'identity',
-  domain: ['rgb(255,0,0)', 'rgb(0,128,0)', 'rgb(255,255,255)'],
-  labels: ['1 Active TSS', '4 Strong transcription', '15 Quiescent / low'],
+function identity(domain: string[], names: string[]) {
+  return { scale: { type: 'identity', domain, names } }
 }
+
+const CHROMHMM = identity(
+  ['rgb(255,0,0)', 'rgb(0,128,0)', 'rgb(255,255,255)'],
+  ['1 Active TSS', '4 Strong transcription', '15 Quiescent / low'],
+)
 
 function loaded(color?: typeof CHROMHMM, features = STATES) {
   const { display } = createTestEnvironment({
-    displayConfig: { rows: 'sample', ...(color ? { color } : {}) },
+    displayConfig: {
+      rows: 'sample',
+      ...(color ? { encoding: { color } } : {}),
+    },
   }).createDisplay()
   const colorConfig: WorkerColor = display.workerColor
   display.setRpcData(
@@ -72,7 +78,7 @@ describe('an identity color over a file that colors its own features', () => {
     )
   })
 
-  it('names each color in the key by its label, in domain order', () => {
+  it('names each color in the key by its name, in domain order', () => {
     const [section] = loaded(CHROMHMM).legendSpec.sections
     expect(section?.items.map(i => [i.label, i.color])).toEqual([
       ['1 Active TSS', 'rgba(255,0,0,1)'],
@@ -112,7 +118,7 @@ describe('an identity color over a black itemRgb', () => {
   ]
 
   it('paints black, as UCSC does under itemRgb on', () => {
-    const color = { ...CHROMHMM, domain: ['rgb(0,0,0)'], labels: ['Black'] }
+    const color = identity(['rgb(0,0,0)'], ['Black'])
     expect(paintedColors(loaded(color, BLACK))).toEqual([
       cssColorToABGR('rgb(0,0,0)'),
     ])

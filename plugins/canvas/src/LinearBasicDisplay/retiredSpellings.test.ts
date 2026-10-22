@@ -41,7 +41,7 @@ test('a retired color key becomes the slot that replaced it', () => {
   const conf = pluginManager()
     .getDisplayType('LinearBasicDisplay')
     .configSchema.create({ ...base, color1: 'red' })
-  expect(readConfObject(conf, ['color', 'value'])).toBe('red')
+  expect(readConfObject(conf, ['encoding', 'color', 'value'])).toBe('red')
 })
 
 // A v4 name the entry spells is the entry's own setting, so it has to beat a
@@ -68,6 +68,9 @@ function entryAgainstShorthand(
 
 test('a retired color on the entry beats the shorthand’s current one', () => {
   expect(
-    entryAgainstShorthand({ color1: 'red' }, { color: 'blue' }),
-  ).toMatchObject({ color: 'red' })
+    entryAgainstShorthand(
+      { color1: 'red' },
+      { encoding: { color: { value: 'blue' } } },
+    ),
+  ).toMatchObject({ encoding: { color: { value: 'red' } } })
 })

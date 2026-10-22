@@ -63,5 +63,7 @@ test('Edit plot over the parked field opens on that field', () => {
     </ThemeProvider>,
   )
   fireEvent.click(getByText('Edit plot...'))
-  expect(openPlotDialog).toHaveBeenCalledWith({ color: { field: 'biotype' } })
+  expect(openPlotDialog).toHaveBeenCalledWith({
+    encoding: { color: { field: 'biotype' } },
+  })
 })

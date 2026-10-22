@@ -8,16 +8,22 @@ import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTyp
 test('a threshold range that does not fit its cuts shows as a notice', async () => {
   const { display } = createTestEnvironment({
     displayConfig: {
-      color: {
-        field: 'segmean',
-        scale: 'threshold',
-        domain: ['-1', '1'],
-        range: ['blue', 'red'],
+      encoding: {
+        color: {
+          field: 'segmean',
+          scale: {
+            type: 'threshold',
+            domain: ['-1', '1'],
+            range: ['blue', 'red'],
+          },
+        },
       },
     },
   }).createDisplay()
   expect(display.notices).toEqual([
-    expect.stringMatching(/^color\.range: 2 threshold cuts make 3 intervals/),
+    expect.stringMatching(
+      /^encoding\.color\.scale\.range: 2 threshold cuts make 3 intervals/,
+    ),
   ])
   render(<LinearMultiRowFeatureDisplayComponent model={display} />)
   expect(await screen.findByText('1 config problem')).toBeTruthy()

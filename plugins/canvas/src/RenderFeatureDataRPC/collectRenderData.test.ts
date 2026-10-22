@@ -1002,8 +1002,7 @@ describe('color key', () => {
     const result = collectAll({ color: { field: 'biotype' } })
     const { rectColors, key } = paintThroughColor(result, {
       field: 'biotype',
-      domain: ['lncRNA'],
-      range: ['#123456'],
+      scale: { domain: ['lncRNA'], range: ['#123456'] },
     })
     expect(rectColors[1]).toBe(cssColorToABGR('#123456'))
     expect(rectColors[2]).toBe(cssColorToABGR(NO_CATEGORY_COLOR))
@@ -1039,9 +1038,11 @@ describe('color key', () => {
     })
     const { rectColors, key } = paintThroughColor(result, {
       field: 'dif',
-      scale: 'threshold',
-      domain: ['-0.3', '0', '0.3'],
-      range: ['#0000ff', '#8888ff', '#ff8888', '#ff0000'],
+      scale: {
+        type: 'threshold',
+        domain: ['-0.3', '0', '0.3'],
+        range: ['#0000ff', '#8888ff', '#ff8888', '#ff0000'],
+      },
     })
     const red = cssColorToABGR('#ff0000')
     const grey = cssColorToABGR(NO_CATEGORY_COLOR)
@@ -1131,8 +1132,7 @@ describe("a glyph's own palette is the default the track's color beats", () => {
     const result = collectRepeat({ color: { field: 'Classification' } })
     const { rectColors, key } = paintThroughColor(result, {
       field: 'Classification',
-      domain: ['LTR/Copia'],
-      range: ['#123456'],
+      scale: { domain: ['LTR/Copia'], range: ['#123456'] },
     })
     const painted = cssColorToABGR('#123456')
     expect(rectColors).toEqual([painted, painted, painted])

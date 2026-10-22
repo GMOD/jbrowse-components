@@ -145,7 +145,9 @@ test('grouping with its color writes the grouping color, and unticking takes it 
   display.applyGroupBy('biotype', false)
   expect(display.colorByMode).toBe('default')
 
-  display.applyPlot({ color: { field: 'biotype', domain: ['b', 'a'] } })
+  display.applyPlot({
+    encoding: { color: { field: 'biotype', scale: { domain: ['b', 'a'] } } },
+  })
   display.applyGroupBy('biotype', false)
   expect(display.colorByMode).toBe('default')
 

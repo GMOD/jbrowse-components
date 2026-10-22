@@ -1,10 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { featureEncodingConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
-import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
-import { retiredDisplayColor } from '@jbrowse/display-kit/retiredSettings'
 import { featureFilterConfigSchema } from '@jbrowse/display-kit/featureFilterConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
+import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
+import { retiredDisplayColor } from '@jbrowse/display-kit/retiredSettings'
 import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 

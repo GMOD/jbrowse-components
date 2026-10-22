@@ -6,7 +6,7 @@ export const PLOT_EXAMPLES: PlotExample[] = [
     description: 'one section per strand',
   },
   {
-    plot: '{ "color": { "field": "strand" } }',
+    plot: '{ "encoding": { "color": "strand" } }',
     description: 'forward strand red, reverse blue',
   },
   {
@@ -18,7 +18,7 @@ export const PLOT_EXAMPLES: PlotExample[] = [
     description: 'scores above 100',
   },
   {
-    plot: '{ "facet": null, "color": null }',
+    plot: '{ "facet": null, "encoding": null }',
     description: 'ungrouped, default color',
   },
 ]

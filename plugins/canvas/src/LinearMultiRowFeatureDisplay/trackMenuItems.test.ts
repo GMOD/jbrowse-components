@@ -10,8 +10,7 @@ import type { RowColorSetting, RowSource } from '@jbrowse/tree-sidebar'
 
 const EMPTY_ROW_COLOR: RowColorSetting = {
   field: 'name',
-  domain: [],
-  range: [],
+  scale: { domain: [], range: [] },
 }
 
 // The builder only reads state, so a plain object stands in for the display —
@@ -237,7 +236,7 @@ describe('multi-row track menu', () => {
     expect(labels(subMenuOf(withLegend, 'Show...'))).toContain('Legend')
   })
 
-  // The row color key is drawn under the same `showLegend` slot but is not a
+  // The row color key is drawn under the same `legend.show` switch but is not a
   // category vocabulary, so it contributes no "Categories" submenu — and its
   // ordinary track has an empty colorLegend, so gating "Legend" on
   // colorLegend alone makes the legend's own "x" a one-way door.
