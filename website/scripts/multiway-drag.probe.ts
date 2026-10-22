@@ -54,7 +54,7 @@ const multiwayTrack = {
   trackId: 'grape_peach_cacao_blocks',
   type: 'MultiWaySyntenyDisplay',
   rows: {
-    domain: ['peach', 'cacao', 'poplar', 'citrus', 'arabidopsis', 'tomato'],
+    sort: ['peach', 'cacao', 'poplar', 'citrus', 'arabidopsis', 'tomato'],
   },
   height: 340,
 }

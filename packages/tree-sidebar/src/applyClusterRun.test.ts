@@ -8,7 +8,7 @@ test('lands the layout from the row lists the run started with', async () => {
   const c = row('c')
   const model = {
     editableSources: [a, b, c],
-    rowDomain: [] as string[],
+    rowSort: [] as string[],
     setRowOrder: jest.fn(),
   }
   await applyClusterRun({
@@ -35,7 +35,7 @@ test('rotates the run towards the config domain', async () => {
   const c = row('c')
   const model = {
     editableSources: [a, b, c],
-    rowDomain: ['c'],
+    rowSort: ['c'],
     setRowOrder: jest.fn(),
   }
   await applyClusterRun({

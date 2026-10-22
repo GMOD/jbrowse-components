@@ -25,7 +25,7 @@ function scored(name: string, score: number) {
 }
 
 // Driven off a real display, like trackMenuItems.test.ts: the menu's gates read
-// getters (`isRowLayout`, `numSources`, `rowDomain`) a stub would have to restate.
+// getters (`isRowLayout`, `numSources`, `rowSort`) a stub would have to restate.
 //
 // The region is registered alongside its data, as a real fetch does: the sort
 // names a coordinate, so it resolves which loaded region covers it.
@@ -154,7 +154,7 @@ test('does nothing when the clicked region has since been discarded', () => {
 
   click(items, 'Sort rows by score here')
 
-  expect(display.rowDomain).toEqual([])
+  expect(display.rowSort).toEqual([])
 })
 
 test('leaves the rows alone at a position no loaded region covers', () => {
@@ -164,7 +164,7 @@ test('leaves the rows alone at a position no loaded region covers', () => {
 
   display.sortRowsByScoreAt('ctgB', 50)
 
-  expect(display.rowDomain).toEqual([])
+  expect(display.rowSort).toEqual([])
 })
 
 // The right-click item is gated on the row count already (it is absent below
@@ -179,7 +179,7 @@ test('sorts nothing when there is a single row to order', () => {
 
   display.sortRowsByScoreAt('ctgA', 50)
 
-  expect(display.rowDomain).toEqual([])
+  expect(display.rowSort).toEqual([])
 })
 
 // The same two rows the multi-row painting and the variant displays offer, so

@@ -19,7 +19,7 @@ function arrangedSamples(rows: SampleRow[]) {
   const tinted = rows.filter(r => r.color)
   return {
     rows: {
-      domain: rows.map(r => r.name),
+      sort: rows.map(r => r.name),
       labels: Object.fromEntries(rows.map(r => [r.name, r.label])),
     },
     ...(tinted.length
@@ -482,7 +482,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           ...CEA_ROWS,
           facet: {
             field: 'clade',
-            domain: ['Collie clade', 'Other breeds', 'Gray wolf'],
+            sort: ['Collie clade', 'Other breeds', 'Gray wolf'],
           },
           // The 3,432 bp deletion 4 kb downstream is no-call in the four
           // homozygous Collies and paints a yellow stripe against them. `start`

@@ -45,7 +45,7 @@ tree that no longer names the rows on screen draws against the wrong ones,
 silently. When writing a display:
 
 - **Every action that moves rows routes through `setRowOrder`**, never a bare
-  write to `rows.domain`.
+  write to `rows.sort`.
 - **Pass `sources` to `computeClusterHierarchy`** — after every reorder, filter
   and decoration, never the pre-layout list — and `rowBands` beside it on a
   display that bands.
@@ -57,22 +57,22 @@ the bands with no clade (`treelessBandCount`).
 
 ## A declared row order rotates the tree, it does not reorder against it
 
-The declared row order, `rows.domain`, is a preference wherever the rows are a
+The declared row order, `rows.sort`, is a preference wherever the rows are a
 tree's leaves: a phylogeny fixes its leaf order only up to a rotation at each
 node, so `rotateNewickByDomain` turns each node towards the earliest listed leaf
 below it and the dendrogram keeps drawing. It is pure over `NewickNode` — no
 jbrowse import, so it lifts into `@gmod/newick` as written — and builds fresh
 nodes iteratively. `parsedTree` is cached per newick string, so an in-place sort
-compounds across domain changes and an unlisted clade never returns to file
+compounds across `rows.sort` changes and an unlisted clade never returns to file
 order.
 
 **Where it runs is the design.** Parse time rotates only a tree that was
 supplied rather than computed. On `TreeSidebarMixin` provenance alone says so,
-because `rows.domain` is the arrangement itself: a run writes its tree's leaf
+because `rows.sort` is the arrangement itself: a run writes its tree's leaf
 order there in the same action as the tree. A guide tree, the newick a display's
 adapter supplies through `guideTreeNewick` (MAF's `.nh`), never enters
 `rows.tree`: the mixin's `rowTree` draws it while some rotation of it lists
-`rows.domain`, so it carries no provenance and rotates at parse, and maf reads
+`rows.sort`, so it carries no provenance and rotates at parse, and maf reads
 its row order back off that same computed, so the leaves and the rows cannot
 drift. Everything else rotates in the run that produced it: `rotateClusterRun`,
 called from `applyClusterRun`, which every display's run goes through. Rotating an arranged tree on the
@@ -117,7 +117,7 @@ which stays the display's own. `rowColor` is
 display-kit's `RowColor` on every row display, one categorical channel whose
 `field` names a row attribute, `name` by default, with `domain`/`range` pairing
 that field's values with colors (ADR-160). **Shared code reads the mixin's API,
-never a config member behind it**: `rowDomain`, `rowTree`, `rowTreeProvenance`,
+never a config member behind it**: `rowSort`, `rowTree`, `rowTreeProvenance`,
 `rowFocus`, `resolvedRowColors`, `rowArrangementIsCustom`, `rowOrderWillDropTree`,
 `setRowOrder`, `setRowFocus`, `resetRowArrangement`.
 
@@ -157,10 +157,10 @@ hook's name throws at `create`:
   the marks: multi-row's `color` setting or itemRgb, wiggle's gradient or
   declared `color`, variants' genotypes.
 - `unlistedRowsSort` — `source` by default; multi-row's discovered values sort.
-- `rowOrder` — `rows.domain` by default; MAF leads with a drawn tree's leaves.
+- `rowOrder` — `rows.sort` by default; MAF leads with a drawn tree's leaves.
 - `rowBanding` — none by default; the variant displays' `facet`, and the
   multi-row display's `facet` with its `rowGroups` groups listed after the
-  facet's domain.
+  facet's `sort`.
 - `rowBand(row)` — the row's value of the banding attribute by default;
   multi-row matches `rowGroups` on the name, since its rows are tagged after the
   arrangement.
@@ -347,8 +347,7 @@ renderer.
 `showBranchLength` / `showRowLabels` / `treeAreaWidth`), taking only the
 per-display descriptions, so a display cannot ship three of the four. The
 declared row order is not in it: every row display declares a `rows` object, and
-the getter is `rowDomain`, never `domain`, which is the score axis on the wiggle
-display. **The mixin declares the accessors over those slots**, so a display
+the mixin reads its `sort` as `rowSort`. **The mixin declares the accessors over those slots**, so a display
 composes both halves or neither. Hand-written `getConf` / `setConf` one-liners
 beside slots this package's own code reads are how the labels toggle came to be
 spelled `showSidebarLabels` on one display and silently ignore its config.
@@ -458,7 +457,7 @@ tree alone.
   `clusterPartition`, `clusterMatrix` clusters each band apart, and the root
   joins the band trees at the tallest one's height, so every leaf sits at one
   depth and the forest drawn unbanded is a dendrogram. A one-row band is a bare
-  leaf. `rows.domain` is the leaves in turn, written by the one `setRowOrder`,
+  leaf. `rows.sort` is the leaves in turn, written by the one `setRowOrder`,
   and the forest root's child order places nothing, since `rowBanding` places
   the bands.
 - **`matchBandClades` is one post-order walk** labelling each node with the band

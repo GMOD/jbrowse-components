@@ -214,12 +214,12 @@ export async function wiggleTables(
 
   const rowLayout = !!rowsSettingOf({
     field: readConfObject(conf.rows, 'field'),
-    domain: readConfObject(conf.rows, 'domain'),
+    sort: readConfObject(conf.rows, 'sort'),
   })
   const maxGapMultiple: number = readConfObject(conf, 'maxGapMultiple')
   const sources = orderRowsByDomain(
     data.sources,
-    readConfObject(conf.rows, 'domain'),
+    readConfObject(conf.rows, 'sort'),
   )
   const { gradientPaints, rowColorPaintsMarks } = wiggleMarkColoring({
     colorSetting: setting,
@@ -372,7 +372,7 @@ export async function wiggleTables(
   results.forEach((result, regionIndex) => {
     for (const source of orderRowsByDomain(
       result.sources,
-      readConfObject(conf.rows, 'domain'),
+      readConfObject(conf.rows, 'sort'),
     )) {
       for (let i = 0; i < source.numFeatures; i++) {
         bins.region.push(regionIndex)

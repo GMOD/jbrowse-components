@@ -14,8 +14,8 @@ function layerModel(
   return {
     height: 200,
     hiddenGroups: new Set(),
-    facet: { field: 'strand', domain: [] },
-    setFacetDomain: jest.fn(),
+    facet: { field: 'strand', sort: [] },
+    setFacetSort: jest.fn(),
     hideGroup: jest.fn(),
     showAllGroups: jest.fn(),
     ...model,
@@ -130,7 +130,7 @@ test('dragging a chip onto the section below writes the drawn order as the domai
   fireEvent.pointerDown(pill, { clientY: 5, button: 0, pointerId: 1 })
   fireEvent.pointerMove(pill, { clientY: 60, pointerId: 1 })
   fireEvent.pointerUp(pill, { clientY: 60, pointerId: 1 })
-  expect(model.setFacetDomain).toHaveBeenCalledWith(['-1', '1'])
+  expect(model.setFacetSort).toHaveBeenCalledWith(['-1', '1'])
 })
 
 test('ungrouped draws nothing', () => {

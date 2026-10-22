@@ -263,11 +263,11 @@ export const FACET_ONLY_DIMENSIONS = [
 export type FacetOnlyDimension = (typeof FACET_ONLY_DIMENSIONS)[number]
 
 // In-track stacked grouping, the `facet` object as the model and worker carry
-// it. `domain` is the section order: the keys it lists stack first, the rest
+// it. `sort` is the section order: the keys it lists stack first, the rest
 // follow sorted. Absent means a single ungrouped section.
 export interface Facet {
   field: string
-  domain?: readonly string[]
+  sort?: readonly string[]
 }
 
 // What the worker partitions by. `unit` is the observation a section keeps

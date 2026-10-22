@@ -61,7 +61,7 @@ The rules below apply under `website/`, including `docs/` and `tutorials/`.
 - A diagram's labels are names. On-image text is a label, never a paragraph.
 - **One word per thing**: `color`; a row is a row and a track a track; "lane"
   only in multi-way synteny, whose menu says **Lanes**; prose over a `facet`
-  config says facet. Name the object a `domain` belongs to (`rows.domain`,
+  config says facet. Name the object a `domain` belongs to (`rows.sort`,
   `color.domain`).
 - Card titles: dataset first, then the pipeline; no numerals, no JBrowse
   vocabulary, about 32 characters.

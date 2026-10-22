@@ -1,8 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { retiredOrderSpelling } from './facetConfigSchema.ts'
+
 /** The members a reader's arrangement writes, every one a config member. */
 export const ROW_ARRANGEMENT_MEMBERS = [
-  'domain',
+  'sort',
   'labels',
   'tree',
   'treeProvenance',
@@ -33,7 +35,7 @@ function stringList(snap: Record<string, unknown>, key: string) {
  * ```js
  * {
  *   type: 'LinearMultiSampleVariantDisplay',
- *   rows: { domain: ['NA12878', 'NA12891'], labels: { NA12878: 'Proband' } },
+ *   rows: { sort: ['NA12878', 'NA12891'], labels: { NA12878: 'Proband' } },
  * }
  * ```
  */
@@ -41,15 +43,16 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
   'RowArrangement',
   {
     /**
-     * #slot domain
-     * The row order: the rows listed lead, in this order. The rest keep the
+     * #slot sort
+     * The row order, as Vega-Lite's `sort` lists it: the rows listed lead, in
+     * this order, and none is dropped. The rest keep the
      * order their source lists them in (a VCF's samples, a multi-BigWig's
      * subtracks), or sort, digits by magnitude, where the rows are values
      * found on features. A clustering run, the arrangement dialog and
      * "Sort rows here" all write it, and a run rotates its dendrogram towards
      * it rather than discarding it.
      */
-    domain: {
+    sort: {
       type: 'stringArray',
       defaultValue: [],
       description:
@@ -99,9 +102,10 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
   },
   {
     closed: true,
+    retired: retiredOrderSpelling,
     preProcessSnapshot: (snap = {}) => ({
       ...snap,
-      ...stringList(snap, 'domain'),
+      ...stringList(snap, 'sort'),
       ...stringList(snap, 'kept'),
     }),
   },

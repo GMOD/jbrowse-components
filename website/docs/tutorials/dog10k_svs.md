@@ -180,7 +180,7 @@ rows by hand, and **Advanced → Edit plot...** shows them as text.
             "trackId": "dog10k_nhej1_svs",
             "type": "LinearMultiSampleVariantDisplay",
             "rows": {
-              "domain": ["COLL000001", "CLUPGR000001"],
+              "sort": ["COLL000001", "CLUPGR000001"],
               "labels": { "COLL000001": "Collie 1", "CLUPGR000001": "Wolf 1" }
             },
             "rowColor": {

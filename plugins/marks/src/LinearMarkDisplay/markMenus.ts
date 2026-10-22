@@ -112,9 +112,9 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
         : []),
       ...hiddenGroupsItems(self),
       ...resetSectionOrderItems({
-        domain: self.facet?.domain ?? [],
+        domain: self.facet?.sort ?? [],
         setDomain: domain => {
-          self.setFacetDomain(domain)
+          self.setFacetSort(domain)
         },
       }),
       legendCheckboxItem(self),

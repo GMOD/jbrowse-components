@@ -66,7 +66,7 @@ interface WiggleDisplaySelf extends IStateTreeNode {
   type: string
   isRowLayout: boolean
   renderingType: string
-  rowDomain: string[]
+  rowSort: string[]
   configuration: AnyConfigurationModel
 }
 
@@ -96,7 +96,7 @@ test('a v4 multi-wiggle share link opens as rows, in its order', async () => {
   expect(display.type).toBe('LinearWiggleDisplay')
   expect(display.isRowLayout).toBe(true)
   expect(display.renderingType).toBe('density')
-  expect(display.rowDomain).toEqual(['b', 'a'])
+  expect(display.rowSort).toEqual(['b', 'a'])
   expect(getConf(display, ['rowColor', 'range'])).toEqual(['red'])
 })
 

@@ -160,13 +160,13 @@ export function normalizeChannel(
   snap: Record<string, unknown> = {},
   name: string,
 ): Record<string, unknown> {
-  for (const key of ['domain', 'range', 'hidden']) {
+  for (const key of ['domain', 'sort', 'range', 'hidden']) {
     if (snap[key] !== undefined && !Array.isArray(snap[key])) {
       throw new Error(`${name}.${key} is a list`)
     }
   }
   const out = { ...snap }
-  for (const key of ['domain', 'breaks', 'labels', 'hidden']) {
+  for (const key of ['domain', 'sort', 'breaks', 'labels', 'hidden']) {
     if (Array.isArray(out[key])) {
       out[key] = out[key].map(String)
     }

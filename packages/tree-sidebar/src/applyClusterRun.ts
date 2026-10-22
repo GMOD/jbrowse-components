@@ -5,7 +5,7 @@ import type { ClusterProvenance } from './clusterProvenance.ts'
 
 export interface ClusterRunModel<S extends { name: string }> {
   editableSources: S[]
-  rowDomain: string[]
+  rowSort: string[]
   setRowOrder: (
     rows: S[],
     run?: { tree?: string; provenance?: ClusterProvenance },
@@ -17,9 +17,9 @@ export interface ClusterRunModel<S extends { name: string }> {
  * The row lists are read before the run, so a filter change while the worker
  * is busy cannot pair the order it hands back with a different row list.
  *
- * The run composes with the config `domain` rather than overwriting it:
+ * The run composes with the config `sort` rather than overwriting it:
  * `rotateClusterRun` turns the dendrogram towards the declared order and reads
- * the row order back off it, so a domain-seeded track keeps its leading rows as
+ * the row order back off it, so a sort-seeded track keeps its leading rows as
  * early as the topology allows and still draws the tree.
  */
 export async function applyClusterRun<S extends { name: string }>({
@@ -33,10 +33,10 @@ export async function applyClusterRun<S extends { name: string }>({
   provenance: ClusterProvenance
   matrix: () => Promise<{ order: number[]; tree?: string }>
 }) {
-  const { editableSources, rowDomain } = model
+  const { editableSources, rowSort } = model
   const { order, tree } = rotateClusterRun({
     rows,
-    domain: rowDomain,
+    domain: rowSort,
     ...(await matrix()),
   })
   model.setRowOrder(clusteredCladeLayout({ rows, editableSources, order }), {

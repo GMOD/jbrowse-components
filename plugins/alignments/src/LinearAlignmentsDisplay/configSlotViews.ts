@@ -87,7 +87,7 @@ export function alignmentsConfigProblems(
     ...facetUnitNotices(
       facetSettingOf({
         field: readConfObject(conf, ['facet', 'field']),
-        domain: readConfObject(conf, ['facet', 'domain']),
+        sort: readConfObject(conf, ['facet', 'sort']),
       }),
       readConfObject(conf, 'unit'),
     ),
@@ -463,7 +463,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     get facet(): Facet | undefined {
       return facetSettingOf({
         field: getConf(self, ['facet', 'field']),
-        domain: getConf(self, ['facet', 'domain']),
+        sort: getConf(self, ['facet', 'sort']),
       })
     },
   }

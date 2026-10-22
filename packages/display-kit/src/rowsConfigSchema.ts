@@ -5,7 +5,7 @@ import { rowArrangementConfigSchema } from './rowArrangementConfigSchema.ts'
 /** The `rows` object as read: the field, and the row order. */
 export interface RowsSetting {
   field: string
-  domain: readonly string[]
+  sort: readonly string[]
 }
 
 /**
@@ -26,7 +26,7 @@ export interface RowsSetting {
  * ```js
  * {
  *   type: 'LinearWiggleDisplay',
- *   rows: { field: 'source', domain: ['tumor', 'normal'], labels: { tumor: 'Tumor' } },
+ *   rows: { field: 'source', sort: ['tumor', 'normal'], labels: { tumor: 'Tumor' } },
  * }
  * ```
  */
@@ -60,9 +60,9 @@ export const rowsConfigSchema = ConfigurationSchema(
 /** The rows as read back: undefined while nothing is on rows. */
 export function rowsSettingOf(snapshot: {
   field: string
-  domain: readonly string[]
+  sort: readonly string[]
 }): RowsSetting | undefined {
   return snapshot.field
-    ? { field: snapshot.field, domain: snapshot.domain }
+    ? { field: snapshot.field, sort: snapshot.sort }
     : undefined
 }

@@ -377,7 +377,7 @@ config, so name your own `trackId` instead):
             "trackId": "grape_peach_cacao_blocks",
             "type": "MultiWaySyntenyDisplay",
             "rows": {
-              "domain": [
+              "sort": [
                 "GCF_000346465.2",
                 "GCF_000208745.1",
                 "poplar",
@@ -416,8 +416,8 @@ table, labeled `no annotation`.
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
 one lane per value of a field, here the genome.
 
-- `rows.domain` pins the lanes it names to the top; the rest follow
-  densest-first, so the order holds across a pan
+- `rows.sort` pins the lanes it names to the top; the rest follow densest-first,
+  so the order holds across a pan
 - With **Show... → Ribbons across gaps** off, a sparse lane mid-stack cuts every
   chain running through it
 

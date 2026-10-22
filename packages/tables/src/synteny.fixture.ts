@@ -76,7 +76,7 @@ export const SYRI: MultiWayTablesArgs = {
     width: 800,
   },
   display: {
-    rows: { domain: ['Ler', 'Cvi', 'Eri', 'Kyo', 'Sha'] },
+    rows: { sort: ['Ler', 'Cvi', 'Eri', 'Kyo', 'Sha'] },
     ribbonColor: {
       field: 'syri',
       domain: ['SYN', 'INV', 'TRANS', 'INVTR', 'DUP', 'INVDP'],

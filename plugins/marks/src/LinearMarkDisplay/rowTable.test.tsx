@@ -221,14 +221,14 @@ test('sort at a column after a reorder names each value by its key, not its slot
   const display = loaded({ rows: 'source' })
   reorder(display, ['s10', 's2', 'dad', 'mom'])
   expect(display.sortRowsByValueAt('ctgA', 250)).toBe(true)
-  expect(display.rowDomain).toEqual(['dad', 'mom', 's2', 's10'])
+  expect(display.rowSort).toEqual(['dad', 'mom', 's2', 's10'])
 })
 
 test('a focused-out row sorts with the rows that have no value there', () => {
   const display = loaded({ rows: 'source' })
   display.setRowFocus(['mom', 's2', 's10'])
   expect(display.sortRowsByValueAt('ctgA', 250)).toBe(true)
-  expect(display.rowDomain).toEqual(['mom', 's2', 'dad', 's10'])
+  expect(display.rowSort).toEqual(['mom', 's2', 'dad', 's10'])
 })
 
 test('the tooltip names the hovered row by its key after a reorder', async () => {

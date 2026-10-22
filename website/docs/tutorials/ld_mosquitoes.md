@@ -199,7 +199,7 @@ with a `LinearMultiSampleVariantDisplay`:
       "type": "LinearMultiSampleVariantDisplay",
       "facet": {
         "field": "karyotype",
-        "domain": ["2L+a/2L+a", "2La/2L+a", "2La/2La"]
+        "sort": ["2L+a/2L+a", "2La/2L+a", "2La/2La"]
       },
       "rowColor": "karyotype",
       "referenceDrawingMode": "skip"
@@ -209,7 +209,7 @@ with a `LinearMultiSampleVariantDisplay`:
 ```
 
 [`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) splits the
-display into one section per `karyotype` value, `facet.domain` orders them by
+display into one section per `karyotype` value, `facet.sort` orders them by
 dosage, and `rowColor` is a color scale on each row's label bar.
 [`referenceDrawingMode`](/docs/config/linearmultisamplevariantdisplay/#slot-referencedrawingmode)
 `skip` fills the track with the reference color and paints alt cells on top.

@@ -251,7 +251,7 @@ export default function stateModelFactory(
       get facet(): FacetSetting | undefined {
         return facetSettingOf({
           field: getConf(self, ['facet', 'field']),
-          domain: getConf(self, ['facet', 'domain']),
+          sort: getConf(self, ['facet', 'sort']),
         })
       },
     }))
@@ -410,8 +410,8 @@ export default function stateModelFactory(
           return facet
             ? {
                 field: facet.field,
-                domain: [
-                  ...facet.domain,
+                sort: [
+                  ...facet.sort,
                   ...self.rowGroups.map(({ group }) => group),
                 ],
               }

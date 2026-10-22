@@ -159,7 +159,7 @@ bgzipped, tabix-indexed BED from the merge above:
       "type": "LinearMultiRowFeatureDisplay",
       "rows": {
         "field": "cellType",
-        "domain": [
+        "sort": [
           "GM12878",
           "H1-hESC",
           "K562",
@@ -183,7 +183,7 @@ JBrowse finds the `.bed.gz.tbi` beside the file. In
 
 - `field` is the attribute to split rows by, so every distinct `cellType`
   becomes a labeled row
-- `domain` pins the rows to an order, here ENCODE's tiers; without it the rows
+- `sort` pins the rows to an order, here ENCODE's tiers; without it the rows
   sort by value
 
 JBrowse paints each feature with its `itemRgb`. The
@@ -233,7 +233,7 @@ track and one fetch. Their state names are mnemonics (`12_EnhBiv`,
 `14_ReprPCWk`), so this track labels its colors with `scale: "identity"`: the
 file's `itemRgb` still paints each block, and `labels` spells out the fifteen
 `domain` colors in order. The merged file is hosted, so the track loads as it
-stands. The track omits three settings the PAX5 figure uses: a `rows.domain`
+stands. The track omits three settings the PAX5 figure uses: a `rows.sort`
 naming every epigenome, grouped by tissue, and the `rowGroups` and `rowColor`
 built later in this section that color the label bars. The hosted demo config,
 https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has the track with
@@ -298,7 +298,7 @@ Red is active TSS, yellow enhancer, green transcription, grey Polycomb, and
 speckled olive bivalent.
 
 Type `chr9:34,700,000-38,420,000` into the location box, the chr9 stretch from
-_FAM205A_ to _ALDH1B1_. The figure below adds a `facet` whose `domain` lists the
+_FAM205A_ to _ALDH1B1_. The figure below adds a `facet` whose `sort` lists the
 tissue groups in the paper's order, which reproduces
 [Roadmap Epigenomics 2015](https://doi.org/10.1038/nature14248) Fig. 3a, all 127
 epigenomes. Over _PAX5_:
@@ -310,9 +310,9 @@ epigenomes. Over _PAX5_:
 
 <Figure src="/img/chromhmm.png" caption="All the Roadmap epigenomes over chr9, banded by tissue group with facet. PAX5 is boxed."/>
 
-Listing epigenome names in `rows.domain` (the order) and `rows.kept` (the
-subset) narrows the same track to lung fibroblasts, foreskin fibroblasts and ES
-cells over HOXA, which reproduces the chromatin domains
+Listing epigenome names in `rows.sort` (the order) and `rows.kept` (the subset)
+narrows the same track to lung fibroblasts, foreskin fibroblasts and ES cells
+over HOXA, which reproduces the chromatin domains
 [Rinn et al. 2007](https://doi.org/10.1016/j.cell.2007.05.022) mapped in
 fibroblasts from different parts of the body:
 
@@ -330,7 +330,7 @@ fibroblasts from different parts of the body:
             "trackId": "roadmap_chromhmm_multirow_hg19",
             "rows": {
               "field": "cellType",
-              "domain": [
+              "sort": [
                 "NHLF Lung Fibroblast Primary Cells",
                 "IMR90 fetal lung fibroblasts Cell Line",
                 "Foreskin Fibroblast Primary Cells skin01",
@@ -356,7 +356,7 @@ fibroblasts from different parts of the body:
 }
 ```
 
-**Advanced → Edit plot...** in the track menu shows `rows` with its `domain` and
+**Advanced → Edit plot...** in the track menu shows `rows` with its `sort` and
 `kept` as text and applies the same subset to an open track live.
 
 <Figure src="/img/chromhmm_hoxa_fibroblasts.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA, with HOXA1-A7 and HOXA9-A13 boxed."/>
@@ -416,16 +416,16 @@ Merge the two keys of `tissues.json` into the display. The build script also
 appends the mnemonic to a name that two epigenomes share, which a `STD_NAME`
 match leaves as one row.
 
-The hosted track orders the rows by tissue group through `rows.domain` and
-leaves `facet` out, so clustering runs over all the rows together and the label
-bars show which tissues a cluster spans. The PAX5 figure adds `facet` with this
-`domain`, which stacks the groups in the paper's order:
+The hosted track orders the rows by tissue group through `rows.sort` and leaves
+`facet` out, so clustering runs over all the rows together and the label bars
+show which tissues a cluster spans. The PAX5 figure adds `facet` with this
+`sort`, which stacks the groups in the paper's order:
 
 ```json
 {
   "facet": {
     "field": "group",
-    "domain": [
+    "sort": [
       "IMR90",
       "ESC",
       "iPSC",

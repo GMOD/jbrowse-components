@@ -81,7 +81,7 @@ export function liftRetiredRowState(
   const labelled = rows.filter(r => r.label !== undefined)
   const colored = colors ? rows.filter(r => typeof r.color === 'string') : []
   const arrangement = {
-    ...(rows.length > 0 ? { domain: rows.map(r => r.key) } : {}),
+    ...(rows.length > 0 ? { sort: rows.map(r => r.key) } : {}),
     ...(labelled.length > 0
       ? { labels: Object.fromEntries(labelled.map(r => [r.key, r.label])) }
       : {}),

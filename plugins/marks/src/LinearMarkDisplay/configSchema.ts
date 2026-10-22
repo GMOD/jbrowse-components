@@ -413,7 +413,7 @@ export function configSchemaFactory() {
        * { rows: 'source' }
        * ```
        * ```js
-       * { rows: { field: 'source', domain: ['tumor', 'normal'] } }
+       * { rows: { field: 'source', sort: ['tumor', 'normal'] } }
        * ```
        */
       rows: rowsConfigSchema,

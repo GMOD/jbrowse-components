@@ -74,7 +74,7 @@ test('the bands follow the order rowGroups declares them in', () => {
 test('a facet domain stacks the bands it lists first', () => {
   const display = banded(['VILLCN000001', 'COLL000001', 'CLUP000001'], {
     rowGroups: [WOLF, VILLAGE],
-    facet: { field: 'group', domain: ['Village dog'] },
+    facet: { field: 'group', sort: ['Village dog'] },
   })
   expect(display.sources.map(s => s.group)).toEqual([
     'Village dog',
@@ -86,7 +86,7 @@ test('a facet domain stacks the bands it lists first', () => {
 test('a band keeps its rows in their arranged order, so a sort survives', () => {
   const display = banded(['CLUPa', 'CLUPb', 'COLLx', 'COLLy'], {
     rowGroups: [WOLF],
-    rows: { field: '', domain: ['COLLy', 'CLUPb', 'COLLx', 'CLUPa'] },
+    rows: { field: '', sort: ['COLLy', 'CLUPb', 'COLLx', 'CLUPa'] },
   })
   expect(drawn(display)).toEqual(['CLUPb', 'CLUPa', 'COLLy', 'COLLx'])
 })

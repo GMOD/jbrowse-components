@@ -67,7 +67,7 @@ cluster, and ribbons colored by percent identity:
     {
       type: 'MultiWaySyntenyDisplay',
       displayId: 'primate_synteny-MultiWaySyntenyDisplay',
-      rows: { domain: ['panTro6', 'gorGor6', 'ponAbe3'] },
+      rows: { sort: ['panTro6', 'gorGor6', 'ponAbe3'] },
       color: { field: 'cluster' },
       ribbonColor: { field: 'identity' },
     },

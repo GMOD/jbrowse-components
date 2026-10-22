@@ -187,7 +187,7 @@ header, needs no `columnNames`, and sees the same order in every locale.
 Load `trio.hapibd.bed.gz` as a `FeatureTrack` with a
 `LinearMultiRowFeatureDisplay`. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
-one row per value of the `parenthap` field and `rows.domain` orders them, while
+one row per value of the `parenthap` field and `rows.sort` orders them, while
 each block takes its BED `itemRgb` color.
 [`showLegend`](/docs/config/linearmultirowfeaturedisplay/#slot-showlegend) is
 off because the row labels already name the four categories:
@@ -208,7 +208,7 @@ off because the row labels already name the four categories:
       "type": "LinearMultiRowFeatureDisplay",
       "rows": {
         "field": "parenthap",
-        "domain": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"]
+        "sort": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"]
       },
       "showLegend": false
     }

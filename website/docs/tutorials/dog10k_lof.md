@@ -156,7 +156,7 @@ An SNV VCF loads as an ordinary `VariantTrack`:
 
 The display draws one row per sample, labelled with the Dog10K IDs. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, the figure's
-`rows` orders the rows through `domain` and names them through `labels`
+`rows` orders the rows through `sort` and names them through `labels`
 (`{ "GHND000001": "German Hound 1" }`), and `rowColor`, a color scale on each
 row's label bar, tints them.
 
@@ -292,7 +292,7 @@ on this track:
 The build script prints this `color` block from the palette it painted with. The
 figure's upper track is a second BED the script writes,
 `dog10k_cyp1a2_breed_cn.bed.gz`, whose `sample` column already holds breed
-names; its track takes `rows: { "field": "sample", "domain": [...] }` with those
+names; its track takes `rows: { "field": "sample", "sort": [...] }` with those
 names in drawing order.
 
 <Figure caption="Copy number over CYP1A2, named animals above and the whole collection below." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />

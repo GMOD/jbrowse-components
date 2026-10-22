@@ -1665,7 +1665,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'roadmap_chromhmm_multirow_hg19',
-          facet: { field: 'group', domain: ROADMAP_FIGURE_GROUPS },
+          facet: { field: 'group', sort: ROADMAP_FIGURE_GROUPS },
           height: 900,
         },
       ],
@@ -1720,7 +1720,7 @@ export const uiSpecs: ScreenshotSpec[] = [
           trackId: 'roadmap_chromhmm_multirow_hg19',
           rows: {
             field: 'cellType',
-            domain: HOXA_FIBROBLAST_ROWS,
+            sort: HOXA_FIBROBLAST_ROWS,
             kept: HOXA_FIBROBLAST_ROWS,
           },
           height: 240,

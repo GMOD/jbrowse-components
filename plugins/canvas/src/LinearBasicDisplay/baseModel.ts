@@ -372,7 +372,7 @@ export default function baseStateModelFactory(
       get facet(): FeatureFacet | undefined {
         return facetSettingOf({
           field: getConf(self, ['facet', 'field']),
-          domain: getConf(self, ['facet', 'domain']),
+          sort: getConf(self, ['facet', 'sort']),
         })
       },
     }))

@@ -906,7 +906,7 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * `rows.domain` in each placed lane's own spelling, so an order a config
+       * `rows.sort` in each placed lane's own spelling, so an order a config
        * wrote with an alias merges with one a drag writes
        */
       get domain(): string[] {
@@ -919,7 +919,7 @@ export function stateModelFactory(
             }
           }
         }
-        const written: string[] = getConf(self, ['rows', 'domain'])
+        const written: string[] = getConf(self, ['rows', 'sort'])
         return [
           ...new Set(
             written.map(name => spelled.get(self.laneKey(name)) ?? name),

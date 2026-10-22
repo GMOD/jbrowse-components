@@ -68,7 +68,7 @@ const view = (
       trackId: LANES_TRACK,
       type: 'MultiWaySyntenyDisplay',
       rows: {
-        domain: [
+        sort: [
           'HG00097.1',
           'HG00099.1',
           'HG00128.1',

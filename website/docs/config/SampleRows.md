@@ -16,13 +16,13 @@ the arrangement a reader gives the rows, written whole as every display's
 ## Example usage
 
 ```js
-{ type: 'LinearMultiSampleVariantDisplay', rows: { domain: ['HG002', 'HG003'] } }
+{ type: 'LinearMultiSampleVariantDisplay', rows: { sort: ['HG002', 'HG003'] } }
 ```
 
 ```js
 {
   type: 'LinearMafDisplay',
-  rows: { domain: ['mm10'], labels: { mm10: 'Mouse' }, kept: ['mm10', 'hg38'] },
+  rows: { sort: ['mm10'], labels: { mm10: 'Mouse' }, kept: ['mm10', 'hg38'] },
 }
 ```
 

@@ -172,7 +172,7 @@ tier, which the `tabix -l` line above checks on each file.
 Opened on hg38 around _TP53_, the track draws a lane per genome under the human
 axis, each fitted to wherever its chain places the window. Each lane header
 names the chromosome and the span the lane shows, with `[rev]` where that
-chromosome runs the other way relative to hg38. `rows.domain` stacks the lanes
+chromosome runs the other way relative to hg38. `rows.sort` stacks the lanes
 down the tree from human, the apes first and the cow last.
 
 ```json session config=https://jbrowse.org/demos/hg38_vertebrates/config.json
@@ -191,7 +191,7 @@ down the tree from human, the apes first and the cow last.
             "type": "MultiWaySyntenyDisplay",
             "ribbonColor": { "field": "strand" },
             "rows": {
-              "domain": [
+              "sort": [
                 "panTro6",
                 "gorGor6",
                 "ponAbe3",

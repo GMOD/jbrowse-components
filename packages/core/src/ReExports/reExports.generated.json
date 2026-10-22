@@ -4375,7 +4375,8 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "facetConfigSchema",
-        "facetSettingOf"
+        "facetSettingOf",
+        "retiredOrderSpelling"
       ],
       "worker": "real"
     },

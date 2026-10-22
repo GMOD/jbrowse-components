@@ -289,7 +289,7 @@ function tnnt3StarSession() {
         tracks: [
           {
             trackId: 'hg38_liftOver_multiway',
-            rows: { domain: lanes, kept: lanes },
+            rows: { sort: lanes, kept: lanes },
             ribbonColor: { field: 'strand' },
             height: (lanes.length + 1) * 60,
           },
@@ -316,7 +316,7 @@ function hostedStarSession(
           { trackId: `${db}-ncbiRefSeq`, ...genes },
           {
             trackId: `${db}_liftOver_multiway`,
-            rows: { domain: lanes, kept: lanes },
+            rows: { sort: lanes, kept: lanes },
             height: (lanes.length + 1) * 34,
             ...display,
           },
@@ -506,7 +506,7 @@ const GRASSES_RICE_LANES = sessionSpec(
           {
             trackId: 'grasses_orthogroups',
             type: 'MultiWaySyntenyDisplay',
-            rows: { domain: ['sorghum', 'brachypodium', 'setaria', 'maize'] },
+            rows: { sort: ['sorghum', 'brachypodium', 'setaria', 'maize'] },
             height: 320,
           },
         ],
@@ -534,7 +534,7 @@ const LGV_TRACK_ZOOM_SESSION = sessionSpec(
             trackId: 'grape_peach_cacao_blocks',
             type: 'MultiWaySyntenyDisplay',
             rows: {
-              domain: [
+              sort: [
                 'GCF_000346465.2',
                 'GCF_000208745.1',
                 'poplar',
@@ -969,7 +969,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'grape_peach_cacao_blocks',
                 type: 'MultiWaySyntenyDisplay',
                 rows: {
-                  domain: [
+                  sort: [
                     'GCF_000346465.2',
                     'GCF_000208745.1',
                     'poplar',
@@ -1012,7 +1012,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'grape_peach_cacao_blocks',
                 type: 'MultiWaySyntenyDisplay',
                 rows: {
-                  domain: [
+                  sort: [
                     'GCF_000346465.2',
                     'GCF_000208745.1',
                     'poplar',
@@ -1084,7 +1084,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             {
               trackId: 'ecoli_ava',
               type: 'MultiWaySyntenyDisplay',
-              rows: { domain: ['NCTC86', 'CFT073', 'Sakai', 'IAI39'] },
+              rows: { sort: ['NCTC86', 'CFT073', 'Sakai', 'IAI39'] },
               height: 340,
               color: {
                 field:
@@ -1124,7 +1124,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'vertebrates_orthogroups',
                 type: 'MultiWaySyntenyDisplay',
-                rows: { domain: ['chicken', 'frog', 'gar', 'zebrafish'] },
+                rows: { sort: ['chicken', 'frog', 'gar', 'zebrafish'] },
                 height: 320,
               },
             ],
@@ -1159,7 +1159,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'solanaceae_orthogroups',
                 type: 'MultiWaySyntenyDisplay',
-                rows: { domain: ['potato', 'pepper', 'tobacco', 'coffee'] },
+                rows: { sort: ['potato', 'pepper', 'tobacco', 'coffee'] },
                 height: 320,
               },
             ],
@@ -1193,7 +1193,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'drosophila_orthogroups',
                 type: 'MultiWaySyntenyDisplay',
                 rows: {
-                  domain: ['simulans', 'yakuba', 'pseudoobscura', 'virilis'],
+                  sort: ['simulans', 'yakuba', 'pseudoobscura', 'virilis'],
                 },
                 height: 320,
               },
@@ -1379,7 +1379,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg38_liftover_multiway',
               ribbonColor: { field: 'strand' },
-              rows: { domain: HG38_VERTEBRATES_TREE_ORDER },
+              rows: { sort: HG38_VERTEBRATES_TREE_ORDER },
               height: 600,
             },
           ],
@@ -1616,7 +1616,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg38_liftover_multiway',
               ribbonColor: { field: 'strand' },
-              rows: { domain: HG38_VERTEBRATES_TREE_ORDER },
+              rows: { sort: HG38_VERTEBRATES_TREE_ORDER },
               height: 600,
             },
           ],
@@ -3562,7 +3562,7 @@ function launchMenuStills(): ScreenshotSpec[] {
                   trackId: 'grape_peach_cacao_blocks',
                   type: 'MultiWaySyntenyDisplay',
                   rows: {
-                    domain: ['GCF_000346465.2', 'GCF_000208745.1', 'poplar'],
+                    sort: ['GCF_000346465.2', 'GCF_000208745.1', 'poplar'],
                   },
                   height: 260,
                 },

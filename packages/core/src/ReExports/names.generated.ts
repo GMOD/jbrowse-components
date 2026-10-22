@@ -426,7 +426,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/DisplayErrorBar': ['default'],
   '@jbrowse/display-kit/DisplayLoadingOverlay': ['default'],
   '@jbrowse/display-kit/DisplayRenderErrorOverlay': ['default'],
-  '@jbrowse/display-kit/facetConfigSchema': ['facetConfigSchema', 'facetSettingOf'],
+  '@jbrowse/display-kit/facetConfigSchema': ['facetConfigSchema', 'facetSettingOf', 'retiredOrderSpelling'],
   '@jbrowse/display-kit/FacetWritesMixin': ['default', 'facetForField'],
   '@jbrowse/display-kit/featureFilterConfigSchema': ['featureFilterConfigSchema', 'retiredFilterSpelling'],
   '@jbrowse/display-kit/fetchEachRegion': ['callEachRegion', 'fetchAllRegions', 'fetchEachRegion', 'fetchRegionsBatched'],

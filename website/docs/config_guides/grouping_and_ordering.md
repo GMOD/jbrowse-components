@@ -1,7 +1,7 @@
 ---
 title: Grouping and lane order
 description:
-  The one `domain` slot that orders a track's sections, lanes and rows, across
+  The one `sort` slot that orders a track's sections, lanes and rows, across
   feature, alignments, mark, synteny and multi-row displays
 guide_category: Track types
 ---
@@ -10,39 +10,38 @@ Several unrelated-looking track settings — a gene track's biotype sections, an
 alignments track's haplotype bands, a multi-sample variant track's karyotype
 rows, a multiway synteny track's lanes, a multi-row display's partitions — use
 the same two ideas: a field (or, for multiway synteny, the assembly itself)
-splits the data into sections, and a `domain` list decides which section draws
+splits the data into sections, and a `sort` list decides which section draws
 first. This page is the shared mechanism; each example below links to the guide
 or tutorial it is worked through in full.
 
-## `field` and `domain`
+## `field` and `sort`
 
-Most of these displays take a `facet` object: `{ field, domain }`. `field` is a
+Most of these displays take a `facet` object: `{ field, sort }`. `field` is a
 feature attribute, a dotted path into a structured one (`INFO.SVTYPE`), or a
-`jexl:` expression — each distinct value it returns makes one section. `domain`
-is a list of values: the ones it names stack first, in that order, and every
-other value found in the data follows, sorted. A value in `domain` that the data
-never produces is never drawn, because `domain` orders sections and does not
-create them. Naming one ahead of time therefore adds no refetch when it later
-appears.
+`jexl:` expression — each distinct value it returns makes one section. `sort` is
+a list of values: the ones it names stack first, in that order, and every other
+value found in the data follows, sorted. A value in `sort` that the data never
+produces is never drawn, because `sort` orders sections and does not create
+them. Naming one ahead of time therefore adds no refetch when it later appears.
 
-A `rows.domain` orders a display's rows by the same rule, with one difference:
+A `rows.sort` orders a display's rows by the same rule, with one difference:
 rows a source lists, such as a VCF's samples or a multi-BigWig's subtracks, keep
-the source's order past the `domain` rather than sorting.
+the source's order past the `sort` list rather than sorting.
 
 A short form exists for the common case of no ordering: `"facet": "tags.HP"` is
-`"facet": { "field": "tags.HP", "domain": [] }`.
+`"facet": { "field": "tags.HP", "sort": [] }`.
 
 ## Feature tracks
 
 NCBI RefSeq genes on hg38, grouped and colored by `gene_biotype`, with the
 protein-coding section pinned to the top and each biotype given a distinct color
-from the same `domain`:
+from the same list:
 
 ```json
 {
   "facet": {
     "field": "gene_biotype",
-    "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
+    "sort": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
   },
   "color": {
     "field": "gene_biotype",
@@ -51,7 +50,7 @@ from the same `domain`:
 }
 ```
 
-<Video src="/media/ui/gene_track_channel_spec.mp4" caption="Edit plot from the Group by dialog, the spec above pasted in, and the sections in the facet's domain order." />
+<Video src="/media/ui/gene_track_channel_spec.mp4" caption="Edit plot from the Group by dialog, the spec above pasted in, and the sections in the facet's sort order." />
 
 [The gene track guide's Grouping features into sections section](/docs/user_guides/gene_track#grouping-features-into-sections)
 has the full mechanism — the Group by/Color by menus, the draggable chips, and
@@ -67,8 +66,7 @@ dimensions no attribute expresses — `strand`, `firstOfPairStrand`,
 <Figure src="/img/mark_display/facet.png" caption="HG002 ONT reads faceted by their HP tag: each haplotype's reads packed into a separate band under the chip that names it, and the untagged reads in a third."/>
 
 [The cookbook's alignments recipe](/docs/cookbook#alignments-tracks) has a
-worked `LinearAlignmentsDisplay` config; the reordering rule is the same
-`domain`.
+worked `LinearAlignmentsDisplay` config; the reordering rule is the same `sort`.
 
 ## Variant tracks
 
@@ -78,20 +76,20 @@ biologically meaningful examples readable rather than a wall of samples in
 whatever order the VCF lists them:
 
 ```json
-"facet": { "field": "karyotype", "domain": ["Standard", "In(2L)t"] }
+"facet": { "field": "karyotype", "sort": ["Standard", "In(2L)t"] }
 ```
 
 <Figure src="/img/popgen/in2lt_inversion.png" caption="Top: the six dm6 arms with the In(2L)t extent over Fst. Below: chr2L with one row per DGRP line, grouped by karyotype." links="Six arms=popgen/fst_in2lt_2L"/>
 
 ```json
-"facet": { "field": "karyotype", "domain": ["2L+a/2L+a", "2La/2L+a", "2La/2La"] }
+"facet": { "field": "karyotype", "sort": ["2L+a/2L+a", "2La/2L+a", "2La/2La"] }
 ```
 
 <Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G arm 2L with the published extents of 2La and Vgsc above r² blocks for Cameroon and Gabon."/>
 
-The domain in each case is a genetics decision, not an alphabetical one: dosage
+The order in each case is a genetics decision, not an alphabetical one: dosage
 order in the mosquito figure, standard-before-inverted in the fly figure, both
-read off the `domain` lists above.
+read off the `sort` lists above.
 [LD in mosquitoes](/docs/tutorials/ld_mosquitoes#reading-the-2la-ld-block-against-the-karyotype-rows)
 works through the mosquito one, and
 [population genomics](/docs/tutorials/population_genomics#the-inversion-genome-wide-and-within-each-arrangement)
@@ -108,13 +106,13 @@ facet splits into sections first, and each mark packs rows inside each section:
 
 [The mark display guide's Facets section](/docs/config_guides/mark_display#facets)
 has the full mechanism, including how the track menu's **Sections** list writes
-a drag back into `domain`.
+a drag back into `sort`.
 
 ## Multiway synteny
 
 `MultiWaySyntenyDisplay` draws one lane per assembly rather than one section per
 field value, so there is no `facet` — its `rows` is the lane arrangement, and
-`rows.domain` lists assembly names. It composes with `ribbonColor`, which paints
+`rows.sort` lists assembly names. It composes with `ribbonColor`, which paints
 each ribbon by a field — here, the relative strand between the two lanes a
 ribbon joins:
 
@@ -159,14 +157,7 @@ ribbon joins:
       "type": "MultiWaySyntenyDisplay",
       "displayId": "grape_peach_cacao_blocks-MultiWaySyntenyDisplay",
       "rows": {
-        "domain": [
-          "peach",
-          "cacao",
-          "poplar",
-          "citrus",
-          "arabidopsis",
-          "tomato"
-        ]
+        "sort": ["peach", "cacao", "poplar", "citrus", "arabidopsis", "tomato"]
       },
       "ribbonColor": { "field": "strand" }
     }
@@ -187,7 +178,7 @@ works through picking the lane order itself.
 
 `LinearMultiRowFeatureDisplay` fixes one row per value rather than a foldable
 section — no chip, no hide, no overflow merge — through `rows` instead of
-`facet`, with the same `domain`. Nine ENCODE cell types, pinned to ENCODE's own
+`facet`, with the same `sort`. Nine ENCODE cell types, pinned to ENCODE's own
 tiers rather than alphabetical order:
 
 ```json addtrack
@@ -203,7 +194,7 @@ tiers rather than alphabetical order:
       "type": "LinearMultiRowFeatureDisplay",
       "rows": {
         "field": "cellType",
-        "domain": [
+        "sort": [
           "GM12878",
           "H1-hESC",
           "K562",
@@ -221,24 +212,24 @@ tiers rather than alphabetical order:
 }
 ```
 
-At a larger scale, a `rows.domain` of six names with `rows.kept` narrows a
+At a larger scale, a `rows.sort` of six names with `rows.kept` narrows a
 127-epigenome track to the three tissues a figure is about, in the order the
 comparison reads:
 
 <Figure src="/img/chromhmm_hoxa_fibroblasts.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA, with HOXA1-A7 and HOXA9-A13 boxed."/>
 
 [The ChromHMM tutorial](/docs/tutorials/chromhmm#the-legend-filtering-and-row-order)
-has both tracks in full, plus what an unset `rows.domain` does instead:
-**Cluster rows by similarity...** derives a row order from the data itself.
+has both tracks in full, plus what an unset `rows.sort` does instead: **Cluster
+rows by similarity...** derives a row order from the data itself.
 
 ## Reordering at runtime
 
-Every one of these displays writes a drag-to-reorder back into the same `domain`
+Every one of these displays writes a drag-to-reorder back into the same `sort`
 slot it read the curated order from — the gene track and mark display's
 **Sections** list, the alignments track menu's group-by sections, multiway
 synteny's **Lanes** menu and lane-header drag, and the multi-row display's row
-drag, which writes `rows.domain`. A session saved after reordering records the
-new order in `config.json` terms, not as separate runtime-only state.
+drag, which writes `rows.sort`. A session saved after reordering records the new
+order in `config.json` terms, not as separate runtime-only state.
 
 ## See also
 

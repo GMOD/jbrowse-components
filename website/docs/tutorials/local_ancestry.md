@@ -249,7 +249,7 @@ runs the converter twice:
 
 The multi-row feature display (`LinearMultiRowFeatureDisplay`) draws one row per
 `sample`. In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
-`rows` assigns the rows and `rows.domain` orders them, and `color` is a color
+`rows` assigns the rows and `rows.sort` orders them, and `color` is a color
 scale whose `scale: "identity"` names the BED's `itemRgb` colors in the key.
 
 ```json addtrack
@@ -268,7 +268,7 @@ scale whose `scale: "identity"` names the BED's `itemRgb` colors in the key.
       "type": "LinearMultiRowFeatureDisplay",
       "rows": {
         "field": "sample",
-        "domain": [
+        "sort": [
           "Gray wolf 7 hap1",
           "Gray wolf 7 hap2",
           "Saarloos 1 hap1",
@@ -293,14 +293,13 @@ scale whose `scale: "identity"` names the BED's `itemRgb` colors in the key.
 **Advanced → Edit plot...** in the track menu shows `rows` and `color` as text
 and applies edits live.
 
-`rows.domain` is abbreviated here; the build script writes every row in
-descending order of chr1 wolf fraction from FLARE's summary. For your own
-animals:
+`rows.sort` is abbreviated here; the build script writes every row in descending
+order of chr1 wolf fraction from FLARE's summary. For your own animals:
 
-- omit `domain` and cluster the rows, or list the animals in the order you want
-- load a second BED of all the animals the same way, with no `domain`: at two
-  rows per animal there is no room for labels, so the named-animals track shows
-  the labels and the all-animals track the extent
+- omit `sort` and cluster the rows, or list the animals in the order you want
+- load a second BED of all the animals the same way, with no `sort`: at two rows
+  per animal there is no room for labels, so the named-animals track shows the
+  labels and the all-animals track the extent
 
 ## Wolf blocks along chr1 in wolfdogs and controls
 

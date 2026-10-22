@@ -12,7 +12,7 @@ test('the placed-rows observer tracks the store and the row order', () => {
   const placedRows = () => reactionDependencies(display, 'Maf:placedRows')
   expect(placedRows()).toEqual(
     expect.arrayContaining([
-      'SampleRowsConfigurationSchema.domain',
+      'SampleRowsConfigurationSchema.sort',
       'LinearMafDisplay.sourcesVolatile',
       'SampleRowsConfigurationSchema.kept',
       'MafReferenceRowConfigurationSchema.show',

@@ -13,6 +13,6 @@ export function keySectionOrder(facet: Facet | undefined, colorBy: ColorBy) {
   return facet &&
     facet.field === colorFieldOf(colorBy) &&
     colorBy.type !== 'mapq'
-    ? sectionOrder(facet.field, facet.domain)
+    ? sectionOrder(facet.field, facet.sort)
     : undefined
 }

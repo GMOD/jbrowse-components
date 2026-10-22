@@ -84,7 +84,7 @@ there; **Show... → Reset section order** returns them to the sorted order.
 The `facet` setting pre-groups a track, so a shared link opens grouped. As a
 string it names the field: a feature attribute, a dotted path into a structured
 one such as `INFO.SVTYPE`, or `strand`. As an object it adds the section order,
-`{ "field": …, "domain": [...] }`: the values listed stack first, in that order,
+`{ "field": …, "sort": [...] }`: the values listed stack first, in that order,
 and the rest follow sorted. A chip drag writes the same setting, so what a
 config author declares and what a reader arranges are one setting:
 
@@ -97,7 +97,7 @@ config author declares and what a reader arranges are one setting:
   "displayDefaults": {
     "facet": {
       "field": "gene_biotype",
-      "domain": ["protein_coding", "lncRNA", "pseudogene"]
+      "sort": ["protein_coding", "lncRNA", "pseudogene"]
     }
   }
 }
@@ -116,14 +116,14 @@ choice by hand.
 Group by and Color by attribute dialogs, opens the track's grouping, color and
 filter as text ([](/docs/user_guides/edit_plot)). `facet` and `color` are the
 display's two settings of those names, in the shape a config file takes them:
-`facet` stacks a section per value of a field, in the order its `domain` lists;
+`facet` stacks a section per value of a field, in the order its `sort` lists;
 `color` is a CSS color or a jexl expression, or `{ "field": … }` for one color
 per value; `filter` is the list of jexl expressions **Filter by...** edits.
 Applying a spec changes only the channels it names, an object replaces the
 setting whole, and `null` clears one. Each of these pastes as it is:
 
 - `{ "facet": "strand" }` one section per strand
-- `{ "facet": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"] } }`
+- `{ "facet": { "field": "gene_biotype", "sort": ["protein_coding", "lncRNA"] } }`
   a section per biotype, these two first
 - `{ "color": { "field": "source" } }` one color per source
 - `{ "color": { "field": "strand" } }` forward strand red, reverse blue
@@ -142,7 +142,7 @@ filter alone:
 {
   "facet": {
     "field": "gene_biotype",
-    "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
+    "sort": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
   },
   "color": {
     "field": "gene_biotype",
@@ -151,7 +151,7 @@ filter alone:
 }
 ```
 
-<Video src="/media/ui/gene_track_channel_spec.mp4" caption="Edit plot from the Group by dialog, the spec above pasted in, and the sections in the facet's domain order." />
+<Video src="/media/ui/gene_track_channel_spec.mp4" caption="Edit plot from the Group by dialog, the spec above pasted in, and the sections in the facet's sort order." />
 
 A color by a field is the `color` setting's `{ "field", "domain", "range" }`
 form, and the track draws a key from the values it painted. A `domain` spends

@@ -659,7 +659,7 @@
           "type": "MultiWaySyntenyDisplay",
           "displayId": "t2t_apes_cactus-MultiWaySyntenyDisplay",
           "rows": {
-            "domain": [
+            "sort": [
               "GCF_028858775.2",
               "GCF_029289425.2",
               "GCF_029281585.2",

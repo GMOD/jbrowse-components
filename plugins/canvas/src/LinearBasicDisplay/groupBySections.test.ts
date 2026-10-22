@@ -46,7 +46,7 @@ test('grouping by strand stacks two labelled sections', () => {
   expect(display.showsGroupLabels).toBe(false)
 
   display.facetByField('strand')
-  expect(display.facet).toEqual({ field: 'strand', domain: [] })
+  expect(display.facet).toEqual({ field: 'strand', sort: [] })
   expect(display.groupSections.map(s => [s.key, s.label, s.top])).toEqual([
     ['1', 'Forward strand', 0],
     ['-1', 'Reverse strand', expect.any(Number)],
@@ -62,7 +62,7 @@ test('a strand domain reorders the strands', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
-  display.applyPlot({ facet: { field: 'strand', domain: ['-1'] } })
+  display.applyPlot({ facet: { field: 'strand', sort: ['-1'] } })
   expect(display.groupSections.map(s => s.key)).toEqual(['-1', '1'])
 })
 
@@ -70,7 +70,7 @@ test('re-picking the field already grouping keeps its section order', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
-  display.applyPlot({ facet: { field: 'strand', domain: ['-1'] } })
+  display.applyPlot({ facet: { field: 'strand', sort: ['-1'] } })
   display.facetByField('strand')
   expect(display.groupSections.map(s => s.key)).toEqual(['-1', '1'])
   display.facetByField('biotype')
@@ -96,7 +96,7 @@ test('a jexl: facet field reaches the worker as written', () => {
   display.setRpcData(0, strandedRegionData(), ctgA)
   const field = "jexl:get(feature,'type')"
   display.facetByField(field)
-  expect(display.facet).toEqual({ field, domain: [] })
+  expect(display.facet).toEqual({ field, sort: [] })
   expect(display.groupKeySpace).toBe(field)
   expect(display.rpcProps().displayConfig.facetField).toBe(field)
 })
@@ -180,7 +180,7 @@ test('reordering the sections keeps the hidden ones hidden', () => {
   display.setRpcData(0, strandedRegionData(), ctgA)
   display.facetByField('biotype')
   display.hideGroup('lncRNA')
-  display.setFacetDomain(['protein_coding'])
+  display.setFacetSort(['protein_coding'])
   expect(display.hiddenGroups.size).toBe(1)
   expect(display.groupSections.map(s => s.key)).toEqual(['protein_coding'])
 })
@@ -222,7 +222,7 @@ test('no Sections row; the reset sits in Show... once the order is pinned', () =
   const show = () => menuRows(display.trackMenuItems(), 'Show...')
   expect(labelsOf(show())).not.toContain('Reset section order')
   display.applyPlot({
-    facet: { field: 'biotype', domain: ['protein_coding', 'lncRNA'] },
+    facet: { field: 'biotype', sort: ['protein_coding', 'lncRNA'] },
   })
   expect(display.groupSections.map(s => s.key)).toEqual([
     'protein_coding',
@@ -232,7 +232,7 @@ test('no Sections row; the reset sits in Show... once the order is pinned', () =
     i => 'label' in i && i.label === 'Reset section order',
   ) as { onClick: () => void }
   reset.onClick()
-  expect(getConf(display, ['facet', 'domain'])).toEqual([])
+  expect(getConf(display, ['facet', 'sort'])).toEqual([])
   expect(display.plot.facet).toBe('biotype')
 })
 
@@ -240,12 +240,12 @@ test('re-picking the same field from the dialog keeps a curated domain', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.applyDisplaySettings({
-    facet: { field: 'biotype', domain: ['lncRNA'] },
+    facet: { field: 'biotype', sort: ['lncRNA'] },
   })
   display.applyGroupBy('biotype', true)
-  expect(display.facet?.domain).toEqual(['lncRNA'])
+  expect(display.facet?.sort).toEqual(['lncRNA'])
   display.applyGroupBy('gene_type', true)
-  expect(display.facet).toEqual({ field: 'gene_type', domain: [] })
+  expect(display.facet).toEqual({ field: 'gene_type', sort: [] })
 })
 
 // The hidden sections are config, so a session and a share link carry them,

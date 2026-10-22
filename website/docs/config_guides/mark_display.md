@@ -618,12 +618,12 @@ The field is read the way a channel reads one: a name, a dotted path
 first, the display's `transform` runs before the split:
 
 Sections order a name holding a number by that number, so chr2 before chr10, and
-the rest by code point. `domain` sets the order: listed values first, the rest
-sorted after. A domain orders the sections and leaves the set of sections
+the rest by code point. `sort` sets the order: listed values first, the rest
+sorted after. A `sort` orders the sections and leaves the set of sections
 unchanged.
 
 When a reader drags a section's chip onto another section, the display writes
-the drawn order back as the facet's `domain`, and **Show... → Reset section
+the drawn order back as the facet's `sort`, and **Show... → Reset section
 order**<!-- menu-path-ok --> clears it. A hidden section leaves the legend and
 the value axis along with the plot.
 
@@ -649,7 +649,7 @@ Haplotagged reads split by their `HP` tag, the tag lifted into a field by a
 
 <Figure src="/img/mark_display/facet.png" caption="HG002 ONT reads faceted by their HP tag: each haplotype's reads packed into a separate band under the chip that names it, and the untagged reads in a third."/>
 
-`facet` and its `domain` are the same slot and the same ordering rule that the
+`facet` and its `sort` are the same slot and the same ordering rule that the
 gene, alignments, variant, multiway synteny and multi-row displays each take in
 a separate form. [](/docs/config_guides/grouping_and_ordering) describes the
 shared mechanism across all of them.
@@ -673,7 +673,7 @@ file, the value axis repeated on each row tall enough to hold it.
 A label names each row, and the track menu has what the other row displays have:
 **Cluster rows by similarity...**, **Edit colors/arrangement...**, and **Sort
 rows by value here** on a right-click. As an object, `rows` takes the order too,
-`{ "field": "source", "domain": ["tumor", "normal"] }`, and a reorder, a
+`{ "field": "source", "sort": ["tumor", "normal"] }`, and a reorder, a
 clustering run or a clade off the tree is written there, so undo, **Reset row
 order** and a share link all reach it.
 

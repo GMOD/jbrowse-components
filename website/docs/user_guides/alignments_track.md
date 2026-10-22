@@ -155,7 +155,7 @@ order**<!-- menu-path-ok --> returns them to the sorted order.
 
 The `facet` setting pre-groups a track, spelled as on the feature tracks: a
 dimension (`"strand"`, `"pairOrientation"`, ...), a tag as `"tags.HP"`, or any
-other read field. The object form adds `domain`, the section order: the values
+other read field. The object form adds `sort`, the section order: the values
 listed stack first, in that order, and the rest follow sorted. A chip drag
 writes the same object:
 
@@ -173,7 +173,7 @@ writes the same object:
     }
   },
   "displayDefaults": {
-    "facet": { "field": "tags.HP", "domain": ["2", "1"] }
+    "facet": { "field": "tags.HP", "sort": ["2", "1"] }
   }
 }
 ```

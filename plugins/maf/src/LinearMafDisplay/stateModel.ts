@@ -291,7 +291,7 @@ export default function stateModelFactory(
         /**
          * #volatile
          * The adapter's guide tree as newick, which `rowTree` draws while some
-         * rotation of it lists `rows.domain` in order.
+         * rotation of it lists `rows.sort` in order.
          */
         treeNewickVolatile: undefined as string | undefined,
         /**
@@ -470,15 +470,15 @@ export default function stateModelFactory(
         /**
          * #getter
          * `TreeSidebarMixin`'s hook: rows follow the leaves of the rotated
-         * `parsedTree` that `rows.domain` uses, then any rows the tree does not
-         * name. Without a tree, the species `rows.domain` lists lead and the
+         * `parsedTree` that `rows.sort` uses, then any rows the tree does not
+         * name. Without a tree, the species `rows.sort` lists lead and the
          * rest keep adapter order.
          */
         get rowOrder(): readonly string[] {
-          const { parsedTree, rowDomain } = self
+          const { parsedTree, rowSort } = self
           return parsedTree
-            ? [...getLeafNames(parsedTree), ...rowDomain]
-            : rowDomain
+            ? [...getLeafNames(parsedTree), ...rowSort]
+            : rowSort
         },
       }))
       .views(self => ({
@@ -969,7 +969,7 @@ export default function stateModelFactory(
         /**
          * #action
          * Reorder the rows by the base each species has in the reference
-         * column at (refName, pos), writing the order to `rows.domain` as
+         * column at (refName, pos), writing the order to `rows.sort` as
          * clustering and the arrangement dialog do, so "Reset row order" undoes
          * all three.
          *

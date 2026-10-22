@@ -189,7 +189,7 @@ export async function variantTables(
   const shade: boolean = readConfObject(conf, 'shadeByDosage')
   const filters: string[] = readConfObject(conf.filter, 'expressions')
   const arrangement = {
-    domain: readConfObject(conf.rows, 'domain'),
+    domain: readConfObject(conf.rows, 'sort'),
     labels: readConfObject(conf.rows, 'labels'),
     kept: readConfObject(conf.rows, 'kept'),
   }
@@ -269,7 +269,7 @@ export async function variantTables(
   ).filter(row => fetched.has(row.name))
   const facet = facetSettingOf({
     field: readConfObject(conf.facet, 'field'),
-    domain: readConfObject(conf.facet, 'domain'),
+    sort: readConfObject(conf.facet, 'sort'),
   })
   const banded = facet
     ? bandRows(arranged, row => rowFieldValue(row, facet.field), facet)

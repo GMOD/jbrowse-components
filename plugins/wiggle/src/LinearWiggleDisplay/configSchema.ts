@@ -117,7 +117,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * separator and the clustering sidebar, and the arrangement a reader gives
      * them. `source` — one row per subtrack — is the only field this display
      * reads; leave it unset and every source is drawn in one shared plot.
-     * `domain` is the row order: the subtracks it names lead, the rest keep
+     * `sort` is the row order: the subtracks it names lead, the rest keep
      * the adapter's order, and a clustering run rotates its dendrogram towards
      * it rather than discarding it. `labels`, `tree`, `treeProvenance` and
      * `kept` are what the arrangement dialog, a clustering run and a focus

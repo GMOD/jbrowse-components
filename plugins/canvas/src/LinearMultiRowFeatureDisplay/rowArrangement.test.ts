@@ -151,7 +151,7 @@ describe('repartitioning', () => {
     expect(rowNames(display)).toEqual(['x', 'y'])
     expect(display.hierarchy).toBeUndefined()
     expect(display.hiddenCategories).toEqual(['a'])
-    expect(display.rowDomain).toEqual(['b', 'a'])
+    expect(display.rowSort).toEqual(['b', 'a'])
     expect(pairedColorsOf(display.rowColorSetting).get('b')).toBe('#00f')
     expect(display.rowTree).toBe('(b,a);')
   })
@@ -216,7 +216,7 @@ describe('a reorder over the rows a window holds', () => {
   function declared() {
     return createTestEnvironment({
       displayConfig: {
-        rows: { field: 'sample', domain: ['a', 'b', 'c', 'd'] },
+        rows: { field: 'sample', sort: ['a', 'b', 'c', 'd'] },
       },
     }).createDisplay().display
   }
@@ -225,7 +225,7 @@ describe('a reorder over the rows a window holds', () => {
     const display = declared()
     display.setRpcData(0, regionData(['b', 'd'], [], 'sample'), ctgA)
     display.setRowOrder([{ name: 'd' }, { name: 'b' }])
-    expect(display.rowDomain).toEqual(['d', 'b', 'a', 'c'])
+    expect(display.rowSort).toEqual(['d', 'b', 'a', 'c'])
 
     display.setRpcData(1, regionData(['a', 'c'], [], 'sample'), ctgB)
     expect(rowNames(display)).toEqual(['d', 'b', 'a', 'c'])
@@ -235,7 +235,7 @@ describe('a reorder over the rows a window holds', () => {
     const display = declared()
     display.setRpcData(0, regionData(['b', 'd'], [], 'sample'), ctgA)
     display.setRowOrder([{ name: 'd' }, { name: 'b' }], { tree: '(d,b);' })
-    expect(display.rowDomain).toEqual(['d', 'b', 'a', 'c'])
+    expect(display.rowSort).toEqual(['d', 'b', 'a', 'c'])
     expect(display.rowOrderWillDropTree([{ name: 'd' }, { name: 'b' }])).toBe(
       false,
     )

@@ -349,7 +349,7 @@ From [ContextMenuMixin](../contextmenumixin): <span id="action-closecontextmenu"
 
 From [CanvasFeatureGateMixin](../canvasfeaturegatemixin): <span id="action-setdensitystats">[`setDensityStats`](../canvasfeaturegatemixin#action-setdensitystats)</span>, <span id="action-cleargatemeasurements">[`clearGateMeasurements`](../canvasfeaturegatemixin#action-cleargatemeasurements)</span>, <span id="action-commitgatemeasurements">[`commitGateMeasurements`](../canvasfeaturegatemixin#action-commitgatemeasurements)</span>
 
-From [FacetWritesMixin](../facetwritesmixin): <span id="action-facetbyfield">[`facetByField`](../facetwritesmixin#action-facetbyfield)</span>, <span id="action-setfacetdomain">[`setFacetDomain`](../facetwritesmixin#action-setfacetdomain)</span>
+From [FacetWritesMixin](../facetwritesmixin): <span id="action-facetbyfield">[`facetByField`](../facetwritesmixin#action-facetbyfield)</span>, <span id="action-setfacetsort">[`setFacetSort`](../facetwritesmixin#action-setfacetsort)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
 

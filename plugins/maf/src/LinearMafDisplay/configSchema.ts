@@ -112,7 +112,7 @@ export default function configSchemaF() {
       /**
        * #slot rows
        * The arrangement a reader gives the species rows, each member by row
-       * name. `domain` is the row order: the guide tree rotates to it while
+       * name. `sort` is the row order: the guide tree rotates to it while
        * some rotation lists the species in that order; otherwise the listed
        * species lead and the rest keep adapter order. `labels`, `tree`,
        * `treeProvenance` and `kept` are what the arrangement dialog, a
@@ -121,7 +121,7 @@ export default function configSchemaF() {
        *
        * #example
        * ```js
-       * { rows: { domain: ['mm10'], labels: { mm10: 'Mouse' } } }
+       * { rows: { sort: ['mm10'], labels: { mm10: 'Mouse' } } }
        * ```
        */
       rows: sampleRowsConfigSchema,

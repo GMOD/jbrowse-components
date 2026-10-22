@@ -93,7 +93,7 @@ interface GroupKey {
 // every dimension a closed set" rule of ../RenderAlignmentDataRPC/CLAUDE.md —
 // `mateAssembly`, a tag and a field are the ones that can't be listed, and
 // MAX_GROUPS guards them. Strand keys are the `strand` vocabulary's, so one
-// `facet.domain` names the same sections on the mark display beside this one.
+// `facet.sort` names the same sections on the mark display beside this one.
 const STRANDS = categoricalField(STRAND_FIELD)
 const FWD_KEY = STRANDS.key(1)
 const REV_KEY = STRANDS.key(-1)

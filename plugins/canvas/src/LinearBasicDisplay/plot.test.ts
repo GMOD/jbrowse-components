@@ -22,14 +22,14 @@ test('facet, color and filter read back as the box shows them', () => {
   const d = display()
   expect(
     d.applyDisplaySettings({
-      facet: { field: 'subtrack', domain: ['key5', 'key2', 'key3'] },
+      facet: { field: 'subtrack', sort: ['key5', 'key2', 'key3'] },
       color: { field: 'subtrack', range: ['red'] },
     }),
   ).toMatchObject({ applied: ['facet', 'color'], failed: [] })
   d.setFilter(["jexl:feature.type == 'gene'"])
   expect(d.facet).toEqual({
     field: 'subtrack',
-    domain: ['key5', 'key2', 'key3'],
+    sort: ['key5', 'key2', 'key3'],
   })
   expect(d.colorSetting).toMatchObject({
     value: undefined,
@@ -40,13 +40,13 @@ test('facet, color and filter read back as the box shows them', () => {
   })
   expect(d.colorByAttribute).toBe('subtrack')
   expect(d.plot).toEqual({
-    facet: { field: 'subtrack', domain: ['key5', 'key2', 'key3'] },
+    facet: { field: 'subtrack', sort: ['key5', 'key2', 'key3'] },
     color: { field: 'subtrack', range: ['red'] },
     filter: ["jexl:feature.type == 'gene'"],
   })
   expect(getConf(d, 'facet')).toEqual({
     field: 'subtrack',
-    domain: ['key5', 'key2', 'key3'],
+    sort: ['key5', 'key2', 'key3'],
   })
 })
 
@@ -65,7 +65,7 @@ test("a plot's filter list writes the expressions and keeps the gene category", 
 test('a string is the one-value form: the facet field, or the constant color', () => {
   const d = display()
   d.applyDisplaySettings({ facet: 'strand', color: 'red' })
-  expect(d.facet).toEqual({ field: 'strand', domain: [] })
+  expect(d.facet).toEqual({ field: 'strand', sort: [] })
   expect(d.colorSetting).toMatchObject({ value: 'red', field: '' })
   expect(d.colorByMode).toBe('solid')
   expect(d.plot).toEqual({ facet: 'strand', color: 'red' })
@@ -106,7 +106,7 @@ test('a channel object replaces the setting whole, and null clears it', () => {
   expect(d.facet).toMatchObject({ field: 'strand' })
   expect(d.colorSetting).toMatchObject({ value: undefined, field: '' })
   expect(d.plot.color).toBeUndefined()
-  d.applyPlot({ facet: { field: 'biotype', domain: ['b', 'a'] } })
+  d.applyPlot({ facet: { field: 'biotype', sort: ['b', 'a'] } })
   d.applyPlot({ facet: { field: 'biotype' } })
   expect(d.plot.facet).toBe('biotype')
 })
@@ -116,7 +116,7 @@ test('a domain or range that is not a list is refused, and the display keeps wha
   d.applyDisplaySettings({ color: { field: 'source' } })
   const refused = {
     color: { field: 'source', range: 'red' },
-    facet: { field: 'source', domain: 'a' },
+    facet: { field: 'source', sort: 'a' },
   }
   expect(d.applyDisplaySettings(refused)).toMatchObject({
     applied: [],
@@ -216,7 +216,7 @@ describe('the Group by dialog applies a plot', () => {
     const viaDialog = display()
     const viaText = display()
     for (const d of [viaDialog, viaText]) {
-      d.applyPlot({ facet: { field: 'biotype', domain: ['b'] } })
+      d.applyPlot({ facet: { field: 'biotype', sort: ['b'] } })
     }
     viaDialog.applyGroupBy('biotype', true)
     viaText.applyPlot({ color: { field: 'biotype' } })

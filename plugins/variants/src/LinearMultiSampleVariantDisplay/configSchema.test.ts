@@ -255,11 +255,11 @@ describe('rows', () => {
     const config = configSchema.create({
       type: 'LinearMultiSampleVariantDisplay',
       displayId: 'test-rows-1',
-      rows: { domain: ['b', 'a'], tree: '(b,a);', labels: { a: 'A' } },
+      rows: { sort: ['b', 'a'], tree: '(b,a);', labels: { a: 'A' } },
     })
     expect(readConfObject(config, ['rows', 'field'])).toBe('sample')
-    applyConfSettings(config, { rows: { domain: ['a', 'b'] } })
-    expect(readConfObject(config, ['rows', 'domain'])).toEqual(['a', 'b'])
+    applyConfSettings(config, { rows: { sort: ['a', 'b'] } })
+    expect(readConfObject(config, ['rows', 'sort'])).toEqual(['a', 'b'])
     expect(readConfObject(config, ['rows', 'tree'])).toBeUndefined()
     expect(readConfObject(config, ['rows', 'labels'])).toEqual({})
     expect(() =>

@@ -301,7 +301,7 @@ export type VariantLayoutBackend =
  *     displayId: 'my-cohort',
  *     unit: 'haplotype',
  *     rowColor: 'population',
- *     rows: { domain: ['NA12878', 'NA12891'] },
+ *     rows: { sort: ['NA12878', 'NA12891'] },
  *     filter: { minMinorAlleleFrequency: 0.05 },
  *   },
  * ]
@@ -332,7 +332,7 @@ export type VariantLayoutBackend =
  * 1. `rows.kept` focuses the adapter's samples (`adapterSamples`) to the set
  *    the fetch asks for (`sourcesBase`, `sampleFilter`),
  * 2. phased mode expands each sample to its haplotypes (`expandedRows`), and
- *    `rows.domain` orders them, `rows.labels` relabels them and each row has
+ *    `rows.sort` orders them, `rows.labels` relabels them and each row has
  *    its resolved `rowColor` (`editableSources`, the dialog's list), each from
  *    `TreeSidebarMixin` over this display's hooks,
  * 3. the focus narrows those (`clusterableSources`, what a run clusters),
@@ -749,7 +749,7 @@ export function stateModelFactory(
         get facet(): FacetSetting | undefined {
           return facetSettingOf({
             field: getConf(self, ['facet', 'field']),
-            domain: getConf(self, ['facet', 'domain']),
+            sort: getConf(self, ['facet', 'sort']),
           })
         },
         /**
@@ -853,7 +853,7 @@ export function stateModelFactory(
             // dataset's. A partial overlap is the same cohort with samples
             // added or removed, and keeps the reader's order.
             const names = new Set(sources.map(resolveSampleName))
-            const domain = self.rowDomain
+            const domain = self.rowSort
             const arrangementIsStale =
               self.rowArrangementIsCustom &&
               domain.length > 0 &&
@@ -1106,7 +1106,7 @@ export function stateModelFactory(
             ? expandPhasedRows({
                 rows,
                 ploidy: self.samplePloidy,
-                domain: self.rowDomain,
+                domain: self.rowSort,
               })
             : rows
         },

@@ -105,7 +105,7 @@ cost is linear in lanes.
   commonest-first panel put two different structures in nearly every pair. The
   order is worked out when the anchor fetch lands and held until a fetch leaves
   that window or the lane selection changes, so a pan never reshuffles the
-  stack. Lanes `rows.domain` pins lead and the rest keep that order, which
+  stack. Lanes `rows.sort` pins lead and the rest keep that order, which
   is how the portal's focused launch puts one form on top. Cross-species stacks
   keep densest-first, the order the grape
   tutorial's lane-ordering section starts from.

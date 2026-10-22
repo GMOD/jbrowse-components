@@ -223,7 +223,7 @@ export default function stateModelFactory(
       get rows(): RowsSetting | undefined {
         return rowsSettingOf({
           field: getConf(self, ['rows', 'field']),
-          domain: self.rowDomain,
+          sort: self.rowSort,
         })
       },
 
@@ -761,13 +761,13 @@ export default function stateModelFactory(
        * #action
        * Rank the rows by each source's score at one genomic base. Reads the
        * region data already in hand — no refetch, no RPC — and writes the
-       * order through `rows.domain`, the same channel clustering and the
+       * order through `rows.sort`, the same channel clustering and the
        * arrangement dialog write, so "Reset row order" undoes all three.
        *
        * Named by coordinate rather than by loaded-region index because both
        * entry points are: the right-click hit resolves to one, and a session's
        * `sortRowsBy` holds one across a reload. Resolving that region and
-       * refusing the two cases where a sort would only cost a `rows.domain` write
+       * refusing the two cases where a sort would only cost a `rows.sort` write
        * are `sortRowsAtColumn`'s, shared with the multi-row feature display's
        * twin, and so is the returned "did it sort" the declarative entry point
        * reads to decide whether to keep its trigger for a later fetch.

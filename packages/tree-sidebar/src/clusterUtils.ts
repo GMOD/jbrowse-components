@@ -509,7 +509,7 @@ export function validateClusterOrder(
  * the user chose. `editableSources` narrowed by the focus is the list.
  *
  * The rows the focus is hiding are re-appended rather than dropped:
- * `rows.domain` records every row's position, so losing them here would erase
+ * `rows.sort` records every row's position, so losing them here would erase
  * them for good the moment the focus is cleared. They land after
  * the clustered block, which is a no-op with no focus active.
  *

@@ -235,7 +235,7 @@ tabix -p bed ecoli_pggb_untangle_rows.bed.gz
       "type": "LinearMultiRowFeatureDisplay",
       "rows": {
         "field": "strain",
-        "domain": ["Sakai", "CFT073", "NCTC86", "IAI39"]
+        "sort": ["Sakai", "CFT073", "NCTC86", "IAI39"]
       },
       "color": {
         "scale": "identity",

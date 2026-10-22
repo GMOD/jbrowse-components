@@ -9,7 +9,7 @@ test('a v4 quantitative row answers to its source, and its name is the label', (
       ],
     }),
   ).toEqual({
-    rows: { domain: ['tumor', 'normal'], labels: { tumor: 'Tumor' } },
+    rows: { sort: ['tumor', 'normal'], labels: { tumor: 'Tumor' } },
     rowColor: { domain: ['tumor'], range: ['red'] },
   })
 })
@@ -20,7 +20,7 @@ test('a later row answers to its name, and carries its label apart', () => {
       layout: [{ name: 'HG00096', label: 'first' }, { name: 'HG00097' }],
     }),
   ).toEqual({
-    rows: { domain: ['HG00096', 'HG00097'], labels: { HG00096: 'first' } },
+    rows: { sort: ['HG00096', 'HG00097'], labels: { HG00096: 'first' } },
   })
 })
 
@@ -30,7 +30,7 @@ test('colors: false leaves the colors a copied palette put there', () => {
       { layout: [{ name: 'HG00096', color: '#e41a1c' }] },
       { colors: false },
     ),
-  ).toEqual({ rows: { domain: ['HG00096'] } })
+  ).toEqual({ rows: { sort: ['HG00096'] } })
 })
 
 test('the tree, the focus and the sidebar come across', () => {

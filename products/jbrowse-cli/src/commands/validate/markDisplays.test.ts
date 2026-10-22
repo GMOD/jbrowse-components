@@ -215,7 +215,7 @@ describe('a marks list in a config file', () => {
     ).toEqual([])
     expect(found([COVERAGE, PILEUP], { facet: 'HP' })).toEqual([])
     expect(found([COVERAGE, PILEUP], { facet: { field: 'HP' } })).toEqual([])
-    expect(found([COVERAGE, PILEUP], { facet: { domain: ['1'] } })).toEqual([
+    expect(found([COVERAGE, PILEUP], { facet: { sort: ['1'] } })).toEqual([
       `warning value-beside-rows ${DISPLAY}.marks[0].encoding.row`,
     ])
   })

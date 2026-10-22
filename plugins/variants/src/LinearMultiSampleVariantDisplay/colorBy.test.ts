@@ -44,7 +44,7 @@ describe('multi-sample variant colorBy', () => {
 
   // ADR-239: the deal reads the samples as the VCF lists them, as
   // `variantTables` does, so the config's order moves no color.
-  it('deals the attribute in sample order, whatever rows.domain declares', () => {
+  it('deals the attribute in sample order, whatever rows.sort declares', () => {
     const colorsUnder = (displayConfig?: Record<string, unknown>) => {
       const model = createTestEnvironment({ displayConfig }).createDisplay()
         .display
@@ -53,7 +53,7 @@ describe('multi-sample variant colorBy', () => {
       return Object.fromEntries(model.resolvedRowColors)
     }
     expect(
-      colorsUnder({ rows: { domain: ['HG002', 'HG001', 'HG003'] } }),
+      colorsUnder({ rows: { sort: ['HG002', 'HG001', 'HG003'] } }),
     ).toEqual(colorsUnder())
   })
 
@@ -101,7 +101,7 @@ describe('multi-sample variant colorBy', () => {
     model.setSources(sources)
     model.setRowColorField('population')
 
-    expect(model.rowDomain).toEqual([])
+    expect(model.rowSort).toEqual([])
     expect(model.rowArrangementIsCustom).toBe(false)
   })
 

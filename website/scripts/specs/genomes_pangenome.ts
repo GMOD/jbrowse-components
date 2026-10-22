@@ -95,7 +95,7 @@ export function portalLanesView({
       {
         trackId: 'hprc_v2_1_walk_lanes',
         type: 'MultiWaySyntenyDisplay',
-        rows: { domain: lanes, kept: lanes },
+        rows: { sort: lanes, kept: lanes },
         height: 51 * (lanes.length + 1),
       },
     ],

@@ -28,7 +28,7 @@ interface Arrangement {
 // has to survive their move into the `rows` object, so this helper is all of
 // the file that move may change.
 function arrangementConfig({ domain }: Arrangement) {
-  return domain ? { rows: { domain } } : {}
+  return domain ? { rows: { sort: domain } } : {}
 }
 
 function loaded({

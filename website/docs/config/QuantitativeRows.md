@@ -21,7 +21,7 @@ object's.
 ```js
 {
   type: 'LinearWiggleDisplay',
-  rows: { field: 'source', domain: ['tumor', 'normal'], labels: { tumor: 'Tumor' } },
+  rows: { field: 'source', sort: ['tumor', 'normal'], labels: { tumor: 'Tumor' } },
 }
 ```
 

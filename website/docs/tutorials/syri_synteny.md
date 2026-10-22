@@ -142,8 +142,8 @@ Two entries in the track config matter here:
   becomes a color-by mode, and `color` is the color the file puts beside each
   type
 - the `MultiWaySyntenyDisplay` entry sets up the
-  [lanes view](#every-accession-in-columbia-coordinates): `rows.domain` orders
-  the lanes, and `ribbonColor` is a color scale on the bands, mapping the `syri`
+  [lanes view](#every-accession-in-columbia-coordinates): `rows.sort` orders the
+  lanes, and `ribbonColor` is a color scale on the bands, mapping the `syri`
   field through a `domain` of the six types
 
 ```json addtrack
@@ -160,7 +160,7 @@ Two entries in the track config matter here:
   "displays": [
     {
       "type": "MultiWaySyntenyDisplay",
-      "rows": { "domain": ["Ler", "Cvi", "Eri", "Kyo", "Sha"] },
+      "rows": { "sort": ["Ler", "Cvi", "Eri", "Kyo", "Sha"] },
       "ribbonColor": {
         "field": "syri",
         "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
@@ -268,7 +268,7 @@ tabix -p bed syri_regions.bed.gz
 ```
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
-one row per value of a field, here `query`, the accession, and `rows.domain`
+one row per value of a field, here `query`, the accession, and `rows.sort`
 orders them:
 
 ```json addtrack
@@ -287,7 +287,7 @@ orders them:
       "type": "LinearMultiRowFeatureDisplay",
       "rows": {
         "field": "query",
-        "domain": ["Ler", "Cvi", "Eri", "Kyo", "Sha"]
+        "sort": ["Ler", "Cvi", "Eri", "Kyo", "Sha"]
       },
       "color": { "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"] }
     }

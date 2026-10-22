@@ -137,7 +137,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * partial one with `mergeDomain` first
      */
     setDomain(domain: string[]) {
-      setConf(self, ['rows', 'domain'], domain)
+      setConf(self, ['rows', 'sort'], domain)
       persistTrackConfigNow(self)
     },
     /** #action */

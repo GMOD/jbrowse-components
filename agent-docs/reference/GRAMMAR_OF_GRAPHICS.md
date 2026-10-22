@@ -93,14 +93,14 @@ ramp dark at its low end paints every sparse cell a dark speck.
 
 ## The facet stage
 
-**A domain orders and never decides which sections exist**, so no worker request
-carries one and a reorder refetches nothing. The multiway `domain` slot, every
-`rows.domain` (`rowDomain`, ADR-157), every `facet.domain` and the legend order
-are that one rule (`groupKeyComparator`). Past the domain, values found on
-features sort, since the order they arrive in changes with the region, while
-rows a source lists keep its order (`orderRowsByDomain`), since a phylogeny's
-leaf order and a file's sample order mean something; where a tree describes
-the rows, the domain rotates it (`rotateNewickByDomain`).
+**A `sort` orders and never decides which sections exist**, so no worker request
+carries one and a reorder refetches nothing. Every `rows.sort` (`rowSort`,
+ADR-157), the multiway lanes' included, every `facet.sort` and the legend order
+are that one rule (`groupKeyComparator`). Past the `sort` list, values found on
+features follow sorted, since the order they arrive in changes with the region,
+while rows a source lists keep its order (`orderRowsByDomain`), since a
+phylogeny's leaf order and a file's sample order mean something; where a tree
+describes the rows, the `sort` list rotates it (`rotateNewickByDomain`).
 
 A filter is a list of Vega-Lite field predicates (`{ field, gte | oneOf |
 valid ... }`), each compiled to a typed read and a compare before the loop;
@@ -227,7 +227,7 @@ the result, since it is what a later audit need not redo:
 - `displayDefaults` expand into the display config, so `plot` and "Reset track
   settings" see them.
 - Alignments `sort` is not a second spelling of
-  `rows.domain`, since pileup rows have no keys; `displayMode`, `data.resolution`
+  `rows.sort`, since pileup rows have no keys; `displayMode`, `data.resolution`
   and `heightMode` are layout or fetch modes, not marks, and MAF's
   `conservation.unit` is what one bar stands for.
 

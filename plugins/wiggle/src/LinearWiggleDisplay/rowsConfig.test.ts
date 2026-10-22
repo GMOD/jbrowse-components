@@ -22,21 +22,21 @@ test('rows on any other field are refused by the slot itself', () => {
   expect(() => configSchema.create({ ...base, rows: 'group' })).toThrow(/group/)
 })
 
-test('the arrangement rides on rows, and there is no `domain` slot', () => {
+test('the arrangement rides on rows, and there is no top-level `sort` slot', () => {
   const config = configSchema.create({
     ...base,
     rows: {
       field: 'source',
-      domain: ['b', 'a'],
+      sort: ['b', 'a'],
       labels: { a: 'Sample A' },
       kept: ['a'],
     },
   })
-  expect(readConfObject(config, ['rows', 'domain'])).toEqual(['b', 'a'])
+  expect(readConfObject(config, ['rows', 'sort'])).toEqual(['b', 'a'])
   expect(readConfObject(config, ['rows', 'labels'])).toEqual({ a: 'Sample A' })
   expect(readConfObject(config, ['rows', 'kept'])).toEqual(['a'])
   expect(readConfObject(config, ['rows', 'tree'])).toBeUndefined()
-  expect('domain' in config).toBe(false)
+  expect('sort' in config).toBe(false)
 })
 
 test('rowColor pairs each named subtrack with its color', () => {

@@ -109,7 +109,7 @@ describes. `rows` replaces the display's setting whole, so name `field` too:
   "trackId": "my_multiwig",
   "rows": {
     "field": "source",
-    "domain": ["s2", "s1", "s3"],
+    "sort": ["s2", "s1", "s3"],
     "tree": "((s2,s1),s3);"
   }
 }
@@ -123,14 +123,14 @@ with no `field`. In phased mode the names are haplotypes, `"<sample> HP<n>"`:
 {
   "trackId": "my_vcf",
   "rows": {
-    "domain": ["HG002", "HG001", "HG003"],
+    "sort": ["HG002", "HG001", "HG003"],
     "tree": "((HG002,HG001),HG003);"
   }
 }
 ```
 
 A multi-row feature track's `rows` names its partition `field` beside the same
-members, `{ "field": "sample", "domain": [...], "tree": "..." }`. A MAF track's
+members, `{ "field": "sample", "sort": [...], "tree": "..." }`. A MAF track's
 rows are its species, so its `rows` takes the variant display's members, and a
 `tree` there replaces the adapter's guide tree.
 

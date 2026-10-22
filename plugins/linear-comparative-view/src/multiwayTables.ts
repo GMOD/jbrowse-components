@@ -117,14 +117,14 @@ export interface MultiWayTablesArgs {
   /**
    * The display's settings, as a `MultiWaySyntenyDisplay` config writes
    * them: `ribbonColor` (a CSS color, or the color object's slots such as
-   * `{ field: 'strand' }`), `rows` (`domain`, the lanes that stack first,
+   * `{ field: 'strand' }`), `rows` (`sort`, the lanes that stack first,
    * and `kept`, the lanes drawn), `hideUnlabelled`, `drawCurves`,
    * `bridgeSkippedLanes`, `splitStrands`, `showGeneLabels`,
    * `inlineLaneNames` and `height`, the stack's px.
    */
   display?: {
     ribbonColor?: ColorArg
-    rows?: { domain?: string[]; kept?: string[] }
+    rows?: { sort?: string[]; kept?: string[] }
     hideUnlabelled?: boolean
     drawCurves?: boolean
     bridgeSkippedLanes?: boolean
@@ -201,7 +201,7 @@ function readDisplay({
     labels: setting.labels,
     title: setting.title,
     descending: readConfObject(color, 'descending'),
-    rowsDomain: readConfObject(conf, ['rows', 'domain']),
+    rowsSort: readConfObject(conf, ['rows', 'sort']),
     kept: readConfObject(conf, ['rows', 'kept']),
     hideUnlabelled: readConfObject(conf, 'hideUnlabelled'),
     drawCurves: readConfObject(conf, 'drawCurves'),
@@ -494,10 +494,10 @@ export async function multiwayTables(
     anchor,
     preferred: stacksByStructure(capabilities, fetches)
       ? [
-          ...settings.rowsDomain,
+          ...settings.rowsSort,
           ...structureOrder(laneProfiles(features, fetched.ops)),
         ]
-      : settings.rowsDomain,
+      : settings.rowsSort,
     selection,
     hidden,
     keyOf,

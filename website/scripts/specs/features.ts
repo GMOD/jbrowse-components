@@ -115,7 +115,7 @@ const GROUPING_TRACK = {
 export const GENE_CHANNEL_SPEC_JSON = `{
   "facet": {
     "field": "gene_biotype",
-    "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
+    "sort": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
   },
   "color": {
     "field": "gene_biotype",

@@ -177,7 +177,7 @@ test('group by mate assembly from the Group by submenu', async () => {
 
     const display = view.tracks[0]!.displays[0]!
     await waitFor(() => {
-      expect(display.facet).toEqual({ field: 'mateAssembly', domain: [] })
+      expect(display.facet).toEqual({ field: 'mateAssembly', sort: [] })
     }, delay)
   })
 }, 60000)

@@ -191,7 +191,7 @@ doc quotes the bytes per base measured on HPRC's published alignment:
 ## Species rows
 
 Three display settings work over the species rows.
-[`rows`](/docs/config/linearmafdisplay/#slot-rows) arranges them: its `domain`
+[`rows`](/docs/config/linearmafdisplay/#slot-rows) arranges them: its `sort`
 lists species to lead, and the guide tree rotates to that order where its
 topology allows. [`rowColor`](/docs/config/linearmafdisplay/#slot-rowcolor)
 paints the bar beside each species label, over the color its `samples` entry
@@ -210,7 +210,7 @@ row as a bar chart of its identity to the reference in place of a band of cells:
     "samples": ["volvox", "simvolvox", "microvolvox"]
   },
   "displayDefaults": {
-    "rows": { "domain": ["microvolvox"] },
+    "rows": { "sort": ["microvolvox"] },
     "rowColor": { "domain": ["microvolvox"], "range": ["#f28e2b"] },
     "y": "identity"
   }

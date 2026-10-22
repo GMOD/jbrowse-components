@@ -1302,7 +1302,7 @@ export async function alignmentTables(
   const facetNode = conf.facet
   const facetSetting = facetSettingOf({
     field: readConfObject(facetNode, 'field'),
-    domain: readConfObject(facetNode, 'domain'),
+    sort: readConfObject(facetNode, 'sort'),
   })
   const args: RpcExecuteArgs<'RenderAlignmentData'> = {
     sessionId: 'tables',
@@ -1343,7 +1343,7 @@ export async function alignmentTables(
   const order = orderedGroups(
     fetched,
     hidden,
-    sectionOrder(facetSetting?.field ?? '', facetSetting?.domain),
+    sectionOrder(facetSetting?.field ?? '', facetSetting?.sort),
   )
   if (!order.length) {
     throw new Error(

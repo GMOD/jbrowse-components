@@ -307,10 +307,10 @@ describe('keySectionOrder', () => {
     display.colorByField('tags.HP')
     expect(display.keySectionOrder).toBeUndefined()
 
-    display.applyPlot({ facet: { field: 'tags.HP', domain: ['2'] } })
+    display.applyPlot({ facet: { field: 'tags.HP', sort: ['2'] } })
     expect(['1', '2'].sort(display.keySectionOrder)).toEqual(['2', '1'])
 
-    display.applyPlot({ facet: { field: 'tags.RG', domain: [] } })
+    display.applyPlot({ facet: { field: 'tags.RG', sort: [] } })
     expect(display.keySectionOrder).toBeUndefined()
   })
 
@@ -1915,20 +1915,20 @@ describe('per-lane state belongs to one grouping key space', () => {
 
   test('re-picking the grouping keeps its domain, and a reorder keeps the lane state', () => {
     const display = createDisplay({ withRegions: true })
-    display.applyPlot({ facet: { field: 'tags.HP', domain: ['2'] } })
+    display.applyPlot({ facet: { field: 'tags.HP', sort: ['2'] } })
     seedGroups(display, [
       { key: '1', label: 'HP: 1' },
       { key: '2', label: 'HP: 2' },
     ])
     display.toggleGroupCollapsed('1')
     display.facetByField('tags.HP')
-    expect(display.facet).toEqual({ field: 'tags.HP', domain: ['2'] })
+    expect(display.facet).toEqual({ field: 'tags.HP', sort: ['2'] })
     expect(display.groupOrder.map(g => g.key)).toEqual(['2', '1'])
-    display.applyPlot({ facet: { field: 'tags.HP', domain: ['1'] } })
+    display.applyPlot({ facet: { field: 'tags.HP', sort: ['1'] } })
     expect(display.groupOrder.map(g => g.key)).toEqual(['1', '2'])
     expect(display.collapsedGroups.has('1')).toBe(true)
     display.facetByField('tags.RG')
-    expect(display.facet).toEqual({ field: 'tags.RG', domain: [] })
+    expect(display.facet).toEqual({ field: 'tags.RG', sort: [] })
   })
 
   test('a lane drop writes the drawn order as the domain without a refetch, and Show... offers the reset', () => {
@@ -1946,11 +1946,11 @@ describe('per-lane state belongs to one grouping key space', () => {
     expect(reset()).toBeUndefined()
     const fetched = display.rpcProps()
     moveSectionOnto(sectionOrderOf(display)!, '1', '2')
-    expect(display.facet).toEqual({ field: 'tags.HP', domain: ['2', '1'] })
+    expect(display.facet).toEqual({ field: 'tags.HP', sort: ['2', '1'] })
     expect(display.rpcProps()).toEqual(fetched)
     expect(display.groupOrder.map(g => g.key)).toEqual(['2', '1'])
     reset()!.onClick()
-    expect(display.facet).toEqual({ field: 'tags.HP', domain: [] })
+    expect(display.facet).toEqual({ field: 'tags.HP', sort: [] })
   })
 
   // Chain mode degrades a per-read dimension to ungrouped (`facetForUnit`)

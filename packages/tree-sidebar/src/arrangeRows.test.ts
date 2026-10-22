@@ -235,7 +235,7 @@ describe('bandRows', () => {
   const band = (
     rows: { name: string; pop?: string }[],
     domain: string[] = [],
-  ) => bandRows(rows, pop, { field: 'pop', domain })
+  ) => bandRows(rows, pop, { field: 'pop', sort: domain })
   const sources = [
     { name: 's1', pop: 'EUR' },
     { name: 's2', pop: 'AFR' },

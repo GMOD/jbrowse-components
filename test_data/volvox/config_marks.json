@@ -1152,7 +1152,7 @@
           "displayId": "marks_rows_arranged-LinearMarkDisplay",
           "rows": {
             "field": "grp",
-            "domain": ["c", "a", "d", "b"],
+            "sort": ["c", "a", "d", "b"],
             "kept": ["c", "a", "b"]
           },
           "marks": [

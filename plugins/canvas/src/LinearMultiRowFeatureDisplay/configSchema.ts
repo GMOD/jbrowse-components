@@ -45,7 +45,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     {
  *       type: 'LinearMultiRowFeatureDisplay',
  *       displayId: 'ancestry_painting-LinearMultiRowFeatureDisplay',
- *       rows: { field: 'sample', domain: ['HG00097', 'HG00096'] },
+ *       rows: { field: 'sample', sort: ['HG00097', 'HG00096'] },
  *       rowColor: {
  *         domain: ['HG00096', 'HG00097'],
  *         range: ['#4e79a7', '#f28e2b'],
@@ -60,7 +60,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * no configuration at all, and `color.scale: 'identity'` names it in the key.
  * To color per feature off some other attribute, set the `color` slot to a
  * `jexl:` expression reading it.
- * Omit `rows.domain` and the rows sort by value.
+ * Omit `rows.sort` and the rows sort by value.
  */
 export default function configSchemaF() {
   return ConfigurationSchema(
@@ -71,7 +71,7 @@ export default function configSchemaF() {
        * One row per value of a feature attribute, and the arrangement a reader
        * gives the rows. `field` names the attribute, or a `jexl:` expression
        * derives one; empty, the default, picks one off the data (`repClass`
-       * where the features have it, else `name`). `domain` is the row order:
+       * where the features have it, else `name`). `sort` is the row order:
        * the values it lists lead, and the rest sort, digits by magnitude, with
        * the row of features with no value last. `labels`, `tree`,
        * `treeProvenance` and `kept` are what the arrangement dialog, a
@@ -83,7 +83,7 @@ export default function configSchemaF() {
        * { rows: 'sample' }
        * ```
        * ```js
-       * { rows: { field: 'sample', domain: ['HG00097', 'HG00096'] } }
+       * { rows: { field: 'sample', sort: ['HG00097', 'HG00096'] } }
        * ```
        * ```js
        * { rows: "jexl:split(split(feature.name,'#')[1],'/')[0]" }
@@ -205,7 +205,7 @@ export default function configSchemaF() {
        * #slot facet
        * Stacks the rows in labelled bands: `group` bands them by their
        * `rowGroups` group, the groups in the order `rowGroups` declares them
-       * unless `domain` lists some first, and the rows no entry matches last.
+       * unless `sort` lists some first, and the rows no entry matches last.
        * Each band keeps the rows' arranged order and, where the cluster tree
        * holds a clade of exactly its rows, draws that clade; a clustering run
        * clusters each band apart.

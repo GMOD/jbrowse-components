@@ -229,12 +229,12 @@ track is configured with a Newick guide tree.
 - **Edit row arrangement...** reorders, relabels and recolors rows. The
   display's [`rows`](/docs/config/linearmafdisplay/#slot-rows) setting holds the
   arrangement, so it survives unticking the track and an undo takes it back. Its
-  `domain` is the order: with a guide tree it rotates the tree rather than
+  `sort` is the order: with a guide tree it rotates the tree rather than
   overruling it, each node putting the clade holding the earliest listed species
   first, so a listed species comes as early as the topology allows and brings
   its relatives with it — `["mm10"]` on `((hg38,panTro4),mm10)` draws mouse's
   branch at the top. With no guide tree the listed species simply lead. The tree
-  draws while some rotation of it lists the species in `domain`'s order, so a
+  draws while some rotation of it lists the species in `sort`'s order, so a
   reorder that splits a clade hides it until **Reset row order** brings it back,
   and one that only turns a clade keeps it.
 - **Row height** offers squeeze-to-fit, normal, compact, and custom row heights.
@@ -266,7 +266,7 @@ the run covers the visible rows only, so it resolves the structure inside the
 clade.
 
 The submenu names the locus a tree was computed over, since clustering reads the
-region in view. The run rotates its tree towards the current `rows.domain`, a
+region in view. The run rotates its tree towards the current `rows.sort`, a
 declared order or an earlier reorder, so it composes with that order instead of
 replacing it. **Reset row order** restores the declared order, and the guide
 tree with it where a rotation of the tree lists that order.

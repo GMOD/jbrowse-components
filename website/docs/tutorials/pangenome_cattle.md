@@ -159,8 +159,8 @@ In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rowColor` in
 the track config is a color scale on each row's label bar, mapping the sample
 table's `lineage` column through `domain` to `range`. The config also sets:
 
-- `rows.domain` lists the cattle breeds above the wild species, and
-  `rows.labels` writes each breed beside its row
+- `rows.sort` lists the cattle breeds above the wild species, and `rows.labels`
+  writes each breed beside its row
 - `unit: "haplotype"` draws one row per assembly, each being one haplotype, with
   a second alternate allele in a separate color
 - `variants` draws each call once in a band above the rows, across the reference
@@ -186,7 +186,7 @@ table's `lineage` column through `domain` to `range`. The config also sets:
       "unit": "haplotype",
       "variants": { "show": true },
       "rows": {
-        "domain": [
+        "sort": [
           "ANG",
           "BSW",
           "HIG",

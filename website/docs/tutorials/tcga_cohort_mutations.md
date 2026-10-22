@@ -146,7 +146,7 @@ its darkness.
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 [`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) splits the
 display into stacked sections, one per value of a samples TSV column, sorted,
-and `facet.domain` pins the sections you want first.
+and `facet.sort` pins the sections you want first.
 [`rowColor`](/docs/config/linearmultisamplevariantdisplay/#slot-rowcolor) is a
 color scale on each row's label bar, so it puts the matching color strip in the
 gutter.
@@ -175,7 +175,7 @@ keys.
       "height": 450,
       "lineZoneHeight": 130,
       "color": { "field": "impact" },
-      "facet": { "field": "histology", "domain": ["ductal", "lobular"] },
+      "facet": { "field": "histology", "sort": ["ductal", "lobular"] },
       "rowColor": "histology"
     }
   ]
@@ -202,7 +202,7 @@ gene-scale.
 
 Setting `facet` and `rowColor` to `subtype` instead bands the rows by receptor
 status ([TCGA 2012](https://doi.org/10.1038/nature11412)), with the HR+/HER2-
-band first in `domain`:
+band first in `sort`:
 
 ```json addtrack loc=chr3:179,148,000-179,240,500
 {
@@ -227,7 +227,7 @@ band first in `domain`:
       "color": { "field": "impact" },
       "facet": {
         "field": "subtype",
-        "domain": ["HR+/HER2-", "HER2+", "triple-negative"]
+        "sort": ["HR+/HER2-", "HER2+", "triple-negative"]
       },
       "rowColor": "subtype"
     }

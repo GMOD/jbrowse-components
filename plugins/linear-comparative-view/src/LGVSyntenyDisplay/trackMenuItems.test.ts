@@ -57,7 +57,7 @@ test('a string color is the constant fill, over the strand default', () => {
 })
 
 // An all-vs-all track stacks one section per mate assembly, so this display
-// inherits the alignments base's `facet.domain` and has to offer the same
+// inherits the alignments base's `facet.sort` and has to offer the same
 // reorder menu over it.
 function seedSections(
   display: ReturnType<typeof createDisplay>,
@@ -95,7 +95,7 @@ test('a lane drop writes the drawn order as the domain, and Show... offers the r
   moveSectionOnto(sectionOrderOf(display)!, 'volvox_random', 'volvox_two')
   expect(display.facet).toEqual({
     field: 'mateAssembly',
-    domain: ['volvox_two', 'volvox_random'],
+    sort: ['volvox_two', 'volvox_random'],
   })
   expect(display.groupOrder.map((g: { key: string }) => g.key)).toEqual([
     'volvox_two',

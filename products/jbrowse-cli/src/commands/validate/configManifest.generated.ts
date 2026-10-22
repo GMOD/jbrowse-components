@@ -3286,7 +3286,7 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "domain",
+              "name": "sort",
               "type": "string[]",
               "liftsNumbers": true
             },
@@ -3435,7 +3435,7 @@ export const configManifest: ConfigManifest = {
           "type": "RowsConfigurationSchema",
           "subSlots": [
             {
-              "name": "domain",
+              "name": "sort",
               "type": "string[]",
               "liftsNumbers": true
             },
@@ -3612,7 +3612,7 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "domain",
+              "name": "sort",
               "type": "string[]",
               "liftsNumbers": true
             }
@@ -3797,7 +3797,7 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "domain",
+              "name": "sort",
               "type": "string[]",
               "liftsNumbers": true
             },
@@ -4602,7 +4602,7 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "domain",
+              "name": "sort",
               "type": "string[]",
               "liftsNumbers": true
             },
@@ -5135,7 +5135,7 @@ export const configManifest: ConfigManifest = {
           "type": "LaneRowsConfigurationSchema",
           "subSlots": [
             {
-              "name": "domain",
+              "name": "sort",
               "type": "string[]",
               "liftsNumbers": true
             },
@@ -5871,7 +5871,7 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "domain",
+              "name": "sort",
               "type": "string[]",
               "liftsNumbers": true
             },
@@ -6024,7 +6024,7 @@ export const configManifest: ConfigManifest = {
           "type": "SampleRowsConfigurationSchema",
           "subSlots": [
             {
-              "name": "domain",
+              "name": "sort",
               "type": "string[]",
               "liftsNumbers": true
             },
@@ -6163,7 +6163,7 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "domain",
+              "name": "sort",
               "type": "string[]",
               "liftsNumbers": true
             }
@@ -6421,7 +6421,7 @@ export const configManifest: ConfigManifest = {
           "type": "QuantitativeRowsConfigurationSchema",
           "subSlots": [
             {
-              "name": "domain",
+              "name": "sort",
               "type": "string[]",
               "liftsNumbers": true
             },
@@ -6890,7 +6890,7 @@ export const configManifest: ConfigManifest = {
           "type": "SampleRowsConfigurationSchema",
           "subSlots": [
             {
-              "name": "domain",
+              "name": "sort",
               "type": "string[]",
               "liftsNumbers": true
             },
@@ -7584,7 +7584,7 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "domain",
+              "name": "sort",
               "type": "string[]",
               "liftsNumbers": true
             },
@@ -7609,7 +7609,7 @@ export const configManifest: ConfigManifest = {
           "type": "RowsConfigurationSchema",
           "subSlots": [
             {
-              "name": "domain",
+              "name": "sort",
               "type": "string[]",
               "liftsNumbers": true
             },
@@ -8126,7 +8126,7 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "domain",
+              "name": "sort",
               "type": "string[]",
               "liftsNumbers": true
             },
@@ -8151,7 +8151,7 @@ export const configManifest: ConfigManifest = {
           "type": "RowsConfigurationSchema",
           "subSlots": [
             {
-              "name": "domain",
+              "name": "sort",
               "type": "string[]",
               "liftsNumbers": true
             },

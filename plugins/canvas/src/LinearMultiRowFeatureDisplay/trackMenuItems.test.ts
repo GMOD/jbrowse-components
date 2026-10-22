@@ -45,7 +45,7 @@ function makeSelf(
     facetByField: () => {},
     showBranchLength: true,
     treeHasBranchLengths: false,
-    rowDomain: [],
+    rowSort: [],
     rowArrangementIsCustom: false,
     editableSources: rows,
     clusterableSources: rows,
@@ -448,7 +448,7 @@ describe('multi-row track menu', () => {
         makeSelf({
           rowsFieldCandidates: ['name'],
           rowColorFields: ['group'],
-          facet: { field: 'group', domain: [] },
+          facet: { field: 'group', sort: [] },
         }),
       )
       expect(labels(items).slice(1, 3)).toEqual([
@@ -463,7 +463,7 @@ describe('multi-row track menu', () => {
 
     it('keeps a configured field checked before any row carries it', () => {
       const items = buildMultiRowTrackMenuItems(
-        makeSelf({ facet: { field: 'group', domain: [] } }),
+        makeSelf({ facet: { field: 'group', sort: [] } }),
       )
       expect(checkedLabel(subMenuOf(items, 'Group by...'))).toEqual(['group'])
     })
@@ -473,7 +473,7 @@ describe('multi-row track menu', () => {
       expect(checkedLabel(groupBy(display))).toEqual(['None'])
 
       click(groupBy(display), 'group')
-      expect(display.facet).toEqual({ field: 'group', domain: [] })
+      expect(display.facet).toEqual({ field: 'group', sort: [] })
       expect(display.rowBands.map(b => b.label)).toEqual([
         'Wolf',
         'Village dog',
@@ -486,9 +486,9 @@ describe('multi-row track menu', () => {
     })
 
     it('a re-pick of the banding field keeps its band order', () => {
-      const display = grouped({ field: 'group', domain: ['Village dog'] })
+      const display = grouped({ field: 'group', sort: ['Village dog'] })
       click(groupBy(display), 'group')
-      expect(display.facet).toEqual({ field: 'group', domain: ['Village dog'] })
+      expect(display.facet).toEqual({ field: 'group', sort: ['Village dog'] })
     })
   })
 })

@@ -7,7 +7,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 /** A `facet` object as written. */
 export interface WrittenFacet {
   field?: string
-  domain?: readonly string[]
+  sort?: readonly string[]
   hidden?: readonly string[]
   [member: string]: unknown
 }
@@ -29,14 +29,14 @@ export function facetForField(current: WrittenFacet, field: string) {
   if (field === (current.field ?? '')) {
     return current
   }
-  const { field: _field, domain: _domain, hidden: _hidden, ...kept } = current
+  const { field: _field, sort: _sort, hidden: _hidden, ...kept } = current
   return field ? { ...kept, field } : kept
 }
 
 /**
  * #stateModel FacetWritesMixin
  * #category display
- * #crossCuttingMixin The writes a display's `facet` object takes from a menu row, a dialog or a chip drag: the field the sections split by (`facetByField`) and their order (`setFacetDomain`). Each rewrites the object as written, so what a pick leaves alone stays, and a pick of the field already grouping writes nothing. A display that resets its scroll when the sections change does it from `HiddenGroupsMixin`'s `dropGroupState`, which also runs for a facet an agent, a share link or "Edit plot" writes
+ * #crossCuttingMixin The writes a display's `facet` object takes from a menu row, a dialog or a chip drag: the field the sections split by (`facetByField`) and their order (`setFacetSort`). Each rewrites the object as written, so what a pick leaves alone stays, and a pick of the field already grouping writes nothing. A display that resets its scroll when the sections change does it from `HiddenGroupsMixin`'s `dropGroupState`, which also runs for a facet an agent, a share link or "Edit plot" writes
  */
 export default function FacetWritesMixin() {
   return types
@@ -74,9 +74,9 @@ export default function FacetWritesMixin() {
          * The order the sections take, the ones it names first; `[]` sorts
          * them all.
          */
-        setFacetDomain(domain: readonly string[]) {
+        setFacetSort(sort: readonly string[]) {
           if (self.writtenFacet.field) {
-            write({ ...self.writtenFacet, domain: [...domain] })
+            write({ ...self.writtenFacet, sort: [...sort] })
           }
         },
       }

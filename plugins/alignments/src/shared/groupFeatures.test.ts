@@ -649,18 +649,18 @@ test('the worker partitions in natural order and caps off the key set alone', ()
   expect(groups.at(-1)!.mergedKeys).toContain(last)
 })
 
-test('the worker is sent the field, never the domain', () => {
-  expect(workerFacet({ field: 'tags.HP', domain: ['2'] }, 'read')).toEqual({
+test('the worker is sent the field, never the sort', () => {
+  expect(workerFacet({ field: 'tags.HP', sort: ['2'] }, 'read')).toEqual({
     field: 'tags.HP',
   })
-  expect(workerFacet({ field: 'strand', domain: ['-1'] }, 'read')).toEqual({
+  expect(workerFacet({ field: 'strand', sort: ['-1'] }, 'read')).toEqual({
     field: 'strand',
   })
   expect(workerFacet(undefined, 'read')).toBeUndefined()
 })
 
 test('chain mode sends the chain as the unit only when there is a facet', () => {
-  expect(workerFacet({ field: 'tags.HP', domain: ['2'] }, 'chain')).toEqual({
+  expect(workerFacet({ field: 'tags.HP', sort: ['2'] }, 'chain')).toEqual({
     field: 'tags.HP',
     unit: 'chain',
   })

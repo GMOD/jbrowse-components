@@ -130,7 +130,7 @@ export const circularSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'colo829_coverage_pair',
-              rows: { field: 'source', domain: ['Tumor', 'Normal'] },
+              rows: { field: 'source', sort: ['Tumor', 'Normal'] },
               scales: { y: { domainMin: 0, domainMax: 100 } },
               height: 140,
             },

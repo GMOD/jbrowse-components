@@ -182,7 +182,7 @@ column.
 appears in the same right-click menu and in the track menu, and it undoes a
 sort, a clustering run, and a hand-arranged order alike. Where a track should
 open on a particular order, the
-[`rows`](/docs/config/linearwiggledisplay/#slot-rows) slot's `domain` lists the
+[`rows`](/docs/config/linearwiggledisplay/#slot-rows) slot's `sort` lists the
 sources that lead — the rest keep the adapter's order, and the reset returns to
 that order rather than past it.
 

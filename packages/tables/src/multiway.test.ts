@@ -86,7 +86,7 @@ test('an all-vs-all PAF stacks a lane per genome, with ribbons down each gutter'
 test('the rows slot orders the lanes and keeps the ones it names', async () => {
   const swapped = await engine.multiway({
     ...ALL_VS_ALL,
-    display: { rows: { domain: ['volvox_del'] } },
+    display: { rows: { sort: ['volvox_del'] } },
   })
   expect(swapped.assemblyNames).toEqual(['volvox', 'volvox_del', 'volvox_ins'])
   const kept = await engine.multiway({
@@ -231,7 +231,7 @@ test('a lane reading backwards against the anchor flips, and its ribbons run str
       regions: [{ refName: 'chr1', start: 0, end: 10_000 }],
       width: 800,
     },
-    display: { ribbonColor: { field: 'strand' }, rows: { domain: ['B'] } },
+    display: { ribbonColor: { field: 'strand' }, rows: { sort: ['B'] } },
   })
   expect(t.assemblyNames).toEqual(['A', 'B'])
   expect(t.lanes.flipped).toEqual([false, true])

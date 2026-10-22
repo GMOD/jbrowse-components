@@ -67,7 +67,7 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    so agree on the order with that thread first.
    - **The row displays, decided 2026-10-22:** the mark display keeps `facet`,
      `rows` and `encoding.row` as three words; their members respell. First
-     `facet.domain` and `rows.domain` become `sort` in display-kit
+     `facet.sort` and `rows.sort` become `sort` in display-kit
      (`facetConfigSchema.ts`, `rowArrangementConfigSchema.ts`), one pass over
      every row display, the multi-way lanes, their readers and writers (about
      90 files, ggjbrowse's R lists among them). Then `scales.y` becomes a
@@ -141,7 +141,13 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
   respelled up to `data.resolution`. The multi-way export's `pins` is now a
   list of `{ lane, refName, at }` and `{ lane, refName, flipped }` records,
   and `lane_choice` in `R/multiway.R` still sends a lane-keyed map, which the
-  engine rejects by name; respell it with the next engine pin.
+  engine rejects by name; respell it with the next engine pin. Its `rows` and
+  `facet` lists still write `domain` (`R/multiway.R`, `scripts/gallery.R`, two
+  tutorials, two testthat files).
+- **jb2hubs:** `hubtools/src/repeatClassDisplay.ts` and
+  `website/src/components/geneOrderStar.ts` write `rows.domain`. Display-kit's
+  `retiredOrderSpelling` lifts it to `sort` until they write `sort` and the
+  hosted hub configs regenerate, then it goes.
 - **jbrowse-img:** its flags (`--minAlignmentLength`, `--drawCurves`) still
   carry the old names and write the new settings.
 - **The figure specs, tutorials and `demos/` configs:** `pnpm verify --full`

@@ -19,8 +19,8 @@ import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 export type FeatureFacet = FacetSetting
 
 // The facet's field, which orders its sections and names their chips.
-export function facetField({ field, domain }: FeatureFacet) {
-  return categoricalField(field, { domain })
+export function facetField({ field, sort }: FeatureFacet) {
+  return categoricalField(field, { domain: sort })
 }
 
 // Read off the hit item rather than the feature: the worker stamps what a

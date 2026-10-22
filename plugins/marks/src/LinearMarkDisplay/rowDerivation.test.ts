@@ -97,7 +97,7 @@ test('bars faceted by source draw a band per source under its chip', () => {
 })
 
 test('a facet domain leads the bands and the key', () => {
-  const display = loaded({ facet: { field: 'source', domain: ['s10', 'mom'] } })
+  const display = loaded({ facet: { field: 'source', sort: ['s10', 'mom'] } })
   expect(drawn(display)).toMatchSnapshot()
 })
 
@@ -151,8 +151,8 @@ test('rows draw what the facet drew, one labelled row per source and no chips', 
 
 test('a rows domain leads the rows as a facet domain leads the bands', () => {
   const domain = ['s10', 'mom']
-  expect(drawn(loaded({ rows: { field: 'source', domain } }))).toEqual(
-    drawn(loaded({ facet: { field: 'source', domain } })),
+  expect(drawn(loaded({ rows: { field: 'source', sort: domain } }))).toEqual(
+    drawn(loaded({ facet: { field: 'source', sort: domain } })),
   )
 })
 
@@ -160,18 +160,18 @@ test('a reorder moves the drawn rows and the key with them', () => {
   const display = loaded({ rows: 'source' })
   const [dad, mom, s2, s10] = display.editableSources
   display.setRowOrder([s10!, s2!, dad!, mom!])
-  expect(display.rowDomain).toEqual(['s10', 's2', 'dad', 'mom'])
+  expect(display.rowSort).toEqual(['s10', 's2', 'dad', 'mom'])
   expect(drawn(display)).toEqual(
     drawn(
       loaded({
-        facet: { field: 'source', domain: ['s10', 's2', 'dad', 'mom'] },
+        facet: { field: 'source', sort: ['s10', 's2', 'dad', 'mom'] },
       }),
     ),
   )
 })
 
 test('a cluster run lands its tree turned towards the seed, and orders the rows', async () => {
-  const display = loaded({ rows: { field: 'source', domain: ['s10'] } })
+  const display = loaded({ rows: { field: 'source', sort: ['s10'] } })
   await clusterRun(display, '((dad,s2),(mom,s10));')
   expect(sidebar(display)).toMatchSnapshot()
   expect(rowOfEach(display)).toEqual(['9@2', '7@1', '3@1', '2@3', '4@0'])
@@ -191,14 +191,14 @@ test('a focus draws the rows it keeps and leaves the rest out of the plot', () =
 test('sort at a column orders the rows by the value each stands at there', () => {
   const display = loaded({ rows: 'source' })
   expect(display.sortRowsByValueAt('ctgA', 250)).toBe(true)
-  expect(display.rowDomain).toEqual(['dad', 'mom', 's2', 's10'])
+  expect(display.rowSort).toEqual(['dad', 'mom', 's2', 's10'])
   expect(drawn(display)).toEqual(
-    drawn(loaded({ facet: { field: 'source', domain: display.rowDomain } })),
+    drawn(loaded({ facet: { field: 'source', sort: display.rowSort } })),
   )
   expect(display.sortRowsByValueAt('ctgA', 650)).toBe(true)
-  expect(display.rowDomain).toEqual(['dad', 's10', 'mom', 's2'])
+  expect(display.rowSort).toEqual(['dad', 's10', 'mom', 's2'])
   expect(drawn(display)).toEqual(
-    drawn(loaded({ facet: { field: 'source', domain: display.rowDomain } })),
+    drawn(loaded({ facet: { field: 'source', sort: display.rowSort } })),
   )
 })
 
@@ -232,7 +232,7 @@ test('Sort rows by value here sorts at the base right-clicked, not at the start 
     throw new Error('no Sort rows by value here item')
   }
   item.onClick()
-  expect(display.rowDomain).toEqual(['dad', 's10', 'mom', 's2'])
+  expect(display.rowSort).toEqual(['dad', 's10', 'mom', 's2'])
 })
 
 test('a region arriving with a new value adds its row, and the arranged rows keep their places', () => {
@@ -405,7 +405,7 @@ test('a list is asked for only under rows on source', () => {
 })
 
 test('a reset returns the order, labels, tree and focus to the config', async () => {
-  const seed = { rows: { field: 'source', domain: ['s10'] } }
+  const seed = { rows: { field: 'source', sort: ['s10'] } }
   const display = loaded(seed)
   await clusterRun(display, '((dad,s2),(mom,s10));')
   const [first, ...rest] = display.editableSources

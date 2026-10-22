@@ -159,7 +159,7 @@ export function showHiddenItems(
 
 /**
  * What the section-order menu reads and writes: the sections drawn, in
- * stacking order and without the hidden ones, and the facet's `domain`, the
+ * stacking order and without the hidden ones, and the facet's `sort`, the
  * declared order every stacking display sorts through. A write names the
  * whole drawn order, so the sections stay where the reader put them as the
  * data under them changes.

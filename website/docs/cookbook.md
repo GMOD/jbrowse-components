@@ -349,7 +349,7 @@ pass every `jexl:` expression, on variant tracks too:
     "height": 400,
     "color": { "field": "mapq" },
     "pileup": { "showSoftClipping": true },
-    "facet": { "field": "tags.HP", "domain": ["2", "1"] },
+    "facet": { "field": "tags.HP", "sort": ["2", "1"] },
     "filter": {
       "flagExclude": 1540,
       "flagInclude": 0,
@@ -366,7 +366,7 @@ pass every `jexl:` expression, on variant tracks too:
 - `baseColor` draws a per-base layer over the reads, whatever `color` fills them
   with: `"modifications"`, `"bisulfite"`, `"baseQuality"` or `"base"`
 - `facet` also takes `strand`, `firstOfPairStrand`, `pairOrientation`, `split`,
-  `pairing`, `mapq`, or any read field; `domain` pins which haplotype (or other
+  `pairing`, `mapq`, or any read field; `sort` pins which haplotype (or other
   value) stacks first — the same slot
   [feature, variant, mark and multiway synteny tracks](/docs/config_guides/grouping_and_ordering)
   all take
@@ -500,18 +500,18 @@ has a worked config).
 ## Settings every track type shares {#shared-settings}
 
 A handful of setting names recur across track types. `field` names a feature
-field. Over a field's categories (a color per value, the sections of a facet,
-the rows) `domain` lists the values that lead, in order, and the rest follow
-after them; a color's `range` gives the listed values their colors, as ggplot2's
-`breaks` with named `values` would. A threshold color reads `domain` as its cut
-points, one fewer than the colors in `range`, and a gradient pins its ends with
-`domainMin` and `domainMax`.
+field. Over a field's categories, `facet.sort`, `rows.sort` and a color's
+`domain` list the values that lead, in order, and the rest follow after them; a
+color's `range` gives the listed values their colors, as ggplot2's `breaks` with
+named `values` would. A threshold color reads `domain` as its cut points, one
+fewer than the colors in `range`, and a gradient pins its ends with `domainMin`
+and `domainMax`.
 
 | Setting    | What it does                                                                                                                                 | Track types                                                                          |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | `color`    | a CSS color, or `{ "field", "domain", "range" }` painting by a field, with a key ([Colors](#colors))                                         | feature, variant, alignments, quantitative, synteny, mark display (`encoding.color`) |
-| `facet`    | one labelled section per value of a field; `domain` stacks the listed values first                                                           | feature, variant, alignments, synteny, mark display                                  |
-| `rows`     | one row per source or sample; `domain` puts the listed rows first                                                                            | quantitative, multi-row feature, multi-sample variant, MAF, mark display             |
+| `facet`    | one labelled section per value of a field; `sort` stacks the listed values first                                                             | feature, variant, alignments, synteny, mark display                                  |
+| `rows`     | one row per source or sample; `sort` puts the listed rows first                                                                              | quantitative, multi-row feature, multi-sample variant, MAF, mark display             |
 | `scales.y` | the value axis: `type`, `domainMin`/`domainMax`, `domainQuantile`, `autoscaleGroup`, and the guides `rules`, `grid`, `title`, `minimalTicks` | quantitative, alignments coverage, synteny, mark display, GWAS                       |
 
 A `scales.y` object works the same way on each of those track types. This one
@@ -598,7 +598,7 @@ share links.
 
 ## Where to go next
 
-- [](/docs/config_guides/grouping_and_ordering) - the `domain` slot that orders
+- [](/docs/config_guides/grouping_and_ordering) - the `sort` slot that orders
   sections, lanes and rows, across every display type that has one
 - [](/docs/config_guides/mark_display_examples) - one copyable config per plot
   shape, from bars and points to histograms and links

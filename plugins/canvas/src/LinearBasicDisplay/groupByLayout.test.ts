@@ -69,7 +69,7 @@ const base: LayoutInputs = {
   reversedRegions: new Set<number>(),
   displayMode: 'normal',
   pinnedFeatureIds: new Set<string>(),
-  facet: { field: 'strand', domain: [] },
+  facet: { field: 'strand', sort: [] },
 }
 
 function topsOf(out: ReadonlyMap<number, FeatureDataResult>) {
@@ -105,7 +105,7 @@ test('a hidden section leaves the pack and the stack closes over it', () => {
 })
 
 test('an attribute grouping sections by the stamped key, unvalued last', () => {
-  const facet = { field: 'biotype', domain: [] }
+  const facet = { field: 'biotype', sort: [] }
   const raw = new Map([
     [
       0,
@@ -122,8 +122,8 @@ test('an attribute grouping sections by the stamped key, unvalued last', () => {
   ).toEqual(['biotype: lncRNA', 'biotype: protein_coding', 'biotype: none'])
 })
 
-test('a domain stacks the sections it lists first, the rest sorted behind', () => {
-  const facet = { field: 'subtrack', domain: ['key5', 'key2', 'absent'] }
+test('a sort stacks the sections it lists first, the rest sorted behind', () => {
+  const facet = { field: 'subtrack', sort: ['key5', 'key2', 'absent'] }
   const raw = new Map([
     [
       0,
@@ -146,7 +146,7 @@ test('a domain stacks the sections it lists first, the rest sorted behind', () =
 })
 
 test('past the old cap every value keeps a section of its own', () => {
-  const facet = { field: 'id', domain: [] }
+  const facet = { field: 'id', sort: [] }
   const n = MAX_GROUPS + 5
   const raw = new Map([
     [

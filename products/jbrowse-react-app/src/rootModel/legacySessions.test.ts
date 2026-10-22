@@ -230,7 +230,7 @@ test('a v4 multi-wiggle display opens as rows, in its order and colors', async (
   expect(display.type).toBe('LinearWiggleDisplay')
   expect(display.isRowLayout).toBe(true)
   expect(display.renderingType).toBe('density')
-  expect(display.rowDomain).toEqual(['b', 'a'])
+  expect(display.rowSort).toEqual(['b', 'a'])
   expect(display.rowLabels).toEqual({ a: 'A sample' })
   expect(getConf(display, ['rowColor', 'range'])).toEqual(['red'])
 })
@@ -375,7 +375,7 @@ test('a v4 multi-wiggle display arranged on its default keeps its rows', async (
     }),
   )
   expect(display.isRowLayout).toBe(true)
-  expect(display.rowDomain).toEqual(['b', 'a'])
+  expect(display.rowSort).toEqual(['b', 'a'])
   expect(getConf(display, ['rows', 'tree'])).toBe('(b:1,a:1);')
 })
 
@@ -422,7 +422,7 @@ test('a v4 clustered multi-sample variant display loads with its order, tree and
   )
   expect(display.type).toBe('LinearMultiSampleVariantDisplay')
   expect(display.configuredFilters()).toEqual(["jexl:get(feature,'QUAL')>30"])
-  expect(display.rowDomain).toEqual(['HG00097', 'HG00096'])
+  expect(display.rowSort).toEqual(['HG00097', 'HG00096'])
   expect(getConf(display, ['rows', 'tree'])).toBe('(HG00097:1,HG00096:1);')
   expect(getConf(display, ['rows', 'kept'])).toEqual(['HG00097'])
   expect(getConf(display, ['rowColor', 'domain'])).toEqual([])

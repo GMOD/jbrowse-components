@@ -166,7 +166,7 @@ submenu beside it hides individual categories, so you can drop the states or
 classes you aren't reading and leave the rest painted. The submenu counts what
 is hidden and offers **Show all categories** to put them back. `color.domain`
 sets the order those rows read in — the values it lists first, the rest sorted —
-the same word and rule `domain` orders the track's rows by.
+the same rule `rows.sort` orders the track's rows by.
 
 You can also pick a color for single rows under **Color rows by → Each row** in
 **Edit colors/arrangement...**, which writes each as a `rowColor` entry and
@@ -184,8 +184,8 @@ Rows start sorted by value, digits by magnitude, with the row of features with
 no value last. Three ways to change that:
 
 - **Edit colors/arrangement...** reorders, relabels or hand-picks rows in a
-  dialog, and `rows.domain` pins an explicit order in config: the values it
-  lists lead, and the rest sort.
+  dialog, and `rows.sort` pins an explicit order in config: the values it lists
+  lead, and the rest sort.
 - Right-click a position and choose **Sort rows by _attribute_ here** to order
   rows by the value each has at that exact base, the analogue of an alignments
   track's sort-by-base. The attribute is the one clustering compares rows on

@@ -282,11 +282,11 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The row order, `rows.domain`: the rows it names lead, in its order,
+       * The row order, `rows.sort`: the rows it names lead, in its order,
        * and the rest follow as `unlistedRowsSort` says.
        */
-      get rowDomain(): string[] {
-        return getConf(host(self), ['rows', 'domain'])
+      get rowSort(): string[] {
+        return getConf(host(self), ['rows', 'sort'])
       },
       /**
        * #getter
@@ -336,14 +336,14 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The `rows.domain` this display's base declares: the order a display
+       * The `rows.sort` this display's base declares: the order a display
        * whose rows are values found on features lists them in.
        */
       get baseRowDomain(): readonly string[] {
         const base = (baseDisplayConfig(self).rows ?? {}) as {
-          domain?: string[]
+          sort?: string[]
         }
-        return base.domain ?? []
+        return base.sort ?? []
       },
       /**
        * #getter
@@ -359,7 +359,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * #getter
        * Overridable hook: the guide tree the display's adapter supplies, as
        * newick, which `rowTree` draws while some rotation of it lists
-       * `rows.domain`. It never enters `rows.tree`, since the adapter
+       * `rows.sort`. It never enters `rows.tree`, since the adapter
        * re-supplies it on every load. `undefined` by default.
        */
       get guideTreeNewick(): string | undefined {
@@ -452,23 +452,23 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * `guideTreeNewick` parsed and rotated towards `rows.domain`; undefined
+       * `guideTreeNewick` parsed and rotated towards `rows.sort`; undefined
        * while the display supplies none.
        */
       get guideTree() {
         const newick = self.guideTreeNewick
-        return newick ? buildTree(newick, self.rowDomain) : undefined
+        return newick ? buildTree(newick, self.rowSort) : undefined
       },
       /**
        * #getter
-       * Whether the rotated guide tree lists `rows.domain`'s names in
-       * `rows.domain`'s order, which holds exactly when some rotation of it
+       * Whether the rotated guide tree lists `rows.sort`'s names in
+       * `rows.sort`'s order, which holds exactly when some rotation of it
        * does.
        */
       get guideTreeHonoursDomain(): boolean {
         const { guideTree } = this
         return (
-          !!guideTree && listsInOrder(getLeafNames(guideTree), self.rowDomain)
+          !!guideTree && listsInOrder(getLeafNames(guideTree), self.rowSort)
         )
       },
       /**
@@ -498,11 +498,11 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * Overridable hook: the row names in display order, `rows.domain` by
+       * Overridable hook: the row names in display order, `rows.sort` by
        * default; MAF puts a drawn tree's leaves first.
        */
       get rowOrder(): readonly string[] {
-        return self.rowDomain
+        return self.rowSort
       },
       /**
        * #getter
@@ -587,7 +587,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #getter
        * The rows the palette deals over: `expandedRows`, in the order their
-       * source lists them, so no `rows.domain` (the config's or a reorder's),
+       * source lists them, so no `rows.sort` (the config's or a reorder's),
        * focus or relabel recolors a row, and a tables export deals the same.
        */
       get rowColorDealRows(): readonly S[] {
@@ -810,12 +810,12 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * #getter
        * `rowTree` parsed. A run rotated its tree in the same write as the
        * order it produced; a tree that arrived as data rotates towards
-       * `rows.domain` here, and the guide tree is `guideTree`'s parse.
+       * `rows.sort` here, and the guide tree is `guideTree`'s parse.
        */
       get parsedTree() {
         const tree: string | undefined = getConf(host(self), ['rows', 'tree'])
         if (tree) {
-          return buildTree(tree, self.rowTreeProvenance ? [] : self.rowDomain)
+          return buildTree(tree, self.rowTreeProvenance ? [] : self.rowSort)
         }
         return self.guideTreeHonoursDomain ? self.guideTree : undefined
       },
@@ -826,14 +826,14 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * guide tree drops only for an order no rotation of it lists.
        */
       rowOrderWillDropTree(next: readonly { name: string }[]) {
-        const order = orderOver(self.rowDomain, next)
+        const order = orderOver(self.rowSort, next)
         const guide = self.guideTreeNewick
         return guide &&
           !getConf(host(self), ['rows', 'tree']) &&
           self.guideTreeHonoursDomain
           ? !listsInOrder(getLeafNames(buildTree(guide, order)), order)
           : !movesNoRow(next, self.editableSources) &&
-              orderDropsTree(self.rowTree, self.rowDomain, order)
+              orderDropsTree(self.rowTree, self.rowSort, order)
       },
     }))
     .views(self => ({
@@ -1065,10 +1065,10 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         write('treeProvenance', run?.provenance)
       }
       function writeOrder(rows: readonly { name: string }[], run?: ClusterRun) {
-        const domain = orderOver(self.rowDomain, rows)
+        const domain = orderOver(self.rowSort, rows)
         const dropTree =
-          !run && orderDropsTree(self.rowTree, self.rowDomain, domain)
-        write('domain', domain)
+          !run && orderDropsTree(self.rowTree, self.rowSort, domain)
+        write('sort', domain)
         if (run) {
           writeTree(run)
         } else if (dropTree) {
@@ -1114,7 +1114,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
          * with the label the reader left on it, and the `rowColor` object
          * the dialog shows, written where it differs from the config's. The
          * labels go to `rows` by the rule `labelEdits` states, and the order
-         * to `rows.domain` unless it moves no row, so a submit that changes
+         * to `rows.sort` unless it moves no row, so a submit that changes
          * nothing writes nothing.
          */
         applyRowEdits(rows: readonly S[], rowColor?: RowColorSnapshot) {

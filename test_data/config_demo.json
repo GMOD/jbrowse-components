@@ -328,7 +328,7 @@
           "displayId": "broad_chromhmm_multirow_hg19-LinearMultiRowFeatureDisplay",
           "rows": {
             "field": "cellType",
-            "domain": [
+            "sort": [
               "GM12878",
               "H1-hESC",
               "K562",
@@ -363,7 +363,7 @@
           "displayId": "roadmap_chromhmm_multirow_hg19-LinearMultiRowFeatureDisplay",
           "rows": {
             "field": "cellType",
-            "domain": [
+            "sort": [
               "Adipose Nuclei",
               "Primary T cells from cord blood",
               "Primary T cells from peripheral blood",
@@ -5054,12 +5054,7 @@
           "displayId": "HG02024_VN049_KHVTrio.chr1.hapibd-LinearMultiRowFeatureDisplay",
           "rows": {
             "field": "parenthap",
-            "domain": [
-              "Father hap1",
-              "Father hap2",
-              "Mother hap1",
-              "Mother hap2"
-            ]
+            "sort": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"]
           },
           "showLegend": false,
           "rowColor": {

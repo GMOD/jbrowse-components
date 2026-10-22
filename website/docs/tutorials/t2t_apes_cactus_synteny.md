@@ -116,7 +116,7 @@ siamang.
 ## One track over the apes
 
 A `MultiGenomeIndexedPAFAdapter` reads the file and finds each genome by its
-PanSN prefix. `rows.domain` stacks the lanes in tree order, so each lane's
+PanSN prefix. `rows.sort` stacks the lanes in tree order, so each lane's
 neighbour above it is the genome its ribbons were aligned to. The assemblies and
 gene tracks come from each genome's hub unchanged, as in the hosted config.
 
@@ -152,7 +152,7 @@ gene tracks come from each genome's hub unchanged, as in the hosted config.
       "type": "MultiWaySyntenyDisplay",
       "displayId": "t2t_apes_cactus-MultiWaySyntenyDisplay",
       "rows": {
-        "domain": [
+        "sort": [
           "GCF_028858775.2",
           "GCF_029289425.2",
           "GCF_029281585.2",

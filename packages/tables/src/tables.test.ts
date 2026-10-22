@@ -642,7 +642,7 @@ test('the display’s facet object splits the reads into sections, each laid out
   const [first, second] = t.sections.key
   const reordered = await engine.alignments({
     ...BAM,
-    display: { facet: { field: 'strand', domain: [second!, first!] } },
+    display: { facet: { field: 'strand', sort: [second!, first!] } },
   })
   expect(reordered.sections.key).toEqual([second, first])
   const hidden = await engine.alignments({
@@ -679,7 +679,7 @@ test('a key over the facet’s own field lists its values as the sections stack'
     ...READ_GROUPS,
     display: {
       color: { field: 'tags.RG' },
-      facet: { field: 'tags.RG', domain: ['5', '4'] },
+      facet: { field: 'tags.RG', sort: ['5', '4'] },
     },
   })
   expect(t.sections.key).toEqual(['5', '4'])

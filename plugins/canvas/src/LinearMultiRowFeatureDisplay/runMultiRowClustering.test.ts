@@ -15,7 +15,7 @@ function makeModel(names: string[]) {
   const model = {
     clusterableSources: rows,
     editableSources: rows,
-    rowDomain: [],
+    rowSort: [],
     adapterConfig: { type: 'BedTabixAdapter' },
     effectiveRowsField: 'sample',
     effectiveClusterField: 'state',
@@ -66,7 +66,7 @@ test('clusters the focused clade and keeps the hidden rows', async () => {
     model: {
       clusterableSources: [{ name: 'a' }, { name: 'b' }],
       editableSources: [{ name: 'a' }, { name: 'b' }, { name: 'hidden' }],
-      rowDomain: [],
+      rowSort: [],
       adapterConfig: { type: 'BedTabixAdapter' },
       effectiveRowsField: 'sample',
       effectiveClusterField: '',
@@ -93,7 +93,7 @@ describe('featureMatrixKey', () => {
   const model = {
     clusterableSources: rows,
     editableSources: rows,
-    rowDomain: [],
+    rowSort: [],
     adapterConfig: { type: 'BedTabixAdapter' },
     effectiveRowsField: 'repClass',
     effectiveClusterField: 'name',

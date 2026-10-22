@@ -311,9 +311,9 @@ contig as the reference spells it (`originalRefName`). Under
 contig order, `refNames` spelled as the file spells them, or the file header's
 order where a host passes none.
 
-The display's `facet` object (`field`, `domain`, `hidden`) splits the reads
+The display's `facet` object (`field`, `sort`, `hidden`) splits the reads
 into stacked sections as the worker partitions them for the display, ordered
-by `orderedGroups` under the facet's `domain`, each laid out on its own:
+by `orderedGroups` under the facet's `sort`, each laid out on its own:
 
 - Every table carries a `section` column, the section's label, and `sections`
   lists `key` and `label` in stacking order. Ungrouped, there is one section
@@ -426,7 +426,7 @@ layer encoder (`buildSourceRenderData`):
 - `run` numbers an interpolated line's stretches, starting a new one where
   the display breaks the line (`centerLinksToPrevious` over the encoder's
   `gapLimitBp`).
-- The sources stack in the order `rows.domain` gives them
+- The sources stack in the order `rows.sort` gives them
   (`orderRowsByDomain`, the tree sidebar's own rule), each on its `row`
   under a row layout and all on row 0 in a shared panel.
 - `domain`, `scaleType` and `symlogConstant` are the axis `scales.y`

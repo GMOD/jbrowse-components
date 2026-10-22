@@ -1,4 +1,8 @@
-import { getConfigurationSchemaMetadata } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  getConfigurationSchemaMetadata,
+} from '@jbrowse/core/configuration'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import {
   ROW_ARRANGEMENT_MEMBERS,
@@ -12,4 +16,15 @@ test('the arrangement members are every RowArrangement slot', () => {
     getConfigurationSchemaMetadata(rowArrangementConfigSchema)!.definition,
   )
   expect([...ROW_ARRANGEMENT_MEMBERS].sort()).toEqual(slots.sort())
+})
+
+// hosted hub configs jb2hubs generated before the rename
+const BETA = 'domain'
+test('rows written with the beta `domain` read as their `sort`', () => {
+  const Display = ConfigurationSchema('RowsHost', {
+    rows: rowArrangementConfigSchema,
+  })
+  expect(getSnapshot(Display.create({ rows: { [BETA]: ['b', 'a'] } }))).toEqual(
+    { rows: { sort: ['b', 'a'] } },
+  )
 })

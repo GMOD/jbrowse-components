@@ -4991,6 +4991,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
+            "domain": {
+              "deprecated": true,
+              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+            },
             "field": {
               "description": "feature field (or jexl expression) to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
               "default": "",
@@ -5001,7 +5005,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/FeatureField"
               }
             },
-            "domain": {
+            "sort": {
               "description": "values whose sections stack first, in order.",
               "if": {
                 "type": "null"
@@ -5532,6 +5536,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "domain": {
+              "deprecated": true,
+              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+            },
+            "sort": {
               "description": "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features.",
               "if": {
                 "type": "null"
@@ -5748,6 +5756,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
+            "domain": {
+              "deprecated": true,
+              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+            },
             "field": {
               "description": "feature field (or jexl expression) to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
               "default": "",
@@ -5758,7 +5770,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/FeatureField"
               }
             },
-            "domain": {
+            "sort": {
               "description": "values whose sections stack first, in order.",
               "if": {
                 "type": "null"
@@ -8804,6 +8816,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "domain": {
+              "deprecated": true,
+              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+            },
+            "sort": {
               "description": "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features.",
               "if": {
                 "type": "null"
@@ -11288,6 +11304,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "domain": {
+              "deprecated": true,
+              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+            },
+            "sort": {
               "description": "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features.",
               "if": {
                 "type": "null"
@@ -12262,6 +12282,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "domain": {
+              "deprecated": true,
+              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+            },
+            "sort": {
               "description": "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features.",
               "if": {
                 "type": "null"
@@ -13711,6 +13735,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
+            "domain": {
+              "deprecated": true,
+              "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+            },
             "field": {
               "description": "feature field (or jexl expression) to facet over, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
               "default": "",
@@ -13721,7 +13749,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/FeatureField"
               }
             },
-            "domain": {
+            "sort": {
               "description": "values whose sections stack first, in order.",
               "if": {
                 "type": "null"

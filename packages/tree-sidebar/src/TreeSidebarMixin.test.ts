@@ -110,7 +110,7 @@ describe('the tree toggles', () => {
 // arrange.
 describe('the declared hooks', () => {
   it('derive empty rows before a display supplies any', () => {
-    const display = makeDisplay({ rows: { domain: ['a'] } })
+    const display = makeDisplay({ rows: { sort: ['a'] } })
     expect(display.discoveredRows).toEqual([])
     expect(display.editableSources).toEqual([])
     expect(display.clusterableSources).toEqual([])
@@ -141,7 +141,7 @@ describe('a display supplying the hooks', () => {
       .create({
         type: 'SuppliedTreeDisplay',
         configuration: {
-          rows: { domain: ['c'], labels: { a: 'Ay' }, kept: ['a', 'c'] },
+          rows: { sort: ['c'], labels: { a: 'Ay' }, kept: ['a', 'c'] },
           rowColor: { domain: ['b'], range: ['#00f'] },
         },
       })
@@ -299,7 +299,7 @@ describe('a dialog submit after a region adds a row', () => {
     display.reveal('a')
     expect(display.rowOrderWillDropTree(dialog)).toBe(false)
     display.applyRowEdits(dialog)
-    expect(display.rowDomain).toEqual([])
+    expect(display.rowSort).toEqual([])
     expect(display.rowTree).toBe('(b:1,c:1);')
     expect(display.editableSources.map(r => r.name)).toEqual(['a', 'b', 'c'])
   })

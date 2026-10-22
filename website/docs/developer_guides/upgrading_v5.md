@@ -381,7 +381,7 @@ stay display props.
 <!-- prettier-ignore -->
 | v4 display prop | v5 display config |
 | --- | --- |
-| `layout`, the rows in order with any label and color set on each | `rows.domain`, `rows.labels` and `rowColor` |
+| `layout`, the rows in order with any label and color set on each | `rows.sort`, `rows.labels` and `rowColor` |
 | `clusterTree` | `rows.tree`, beside `rows.treeProvenance` |
 | `subtreeFilter` | `rows.kept` |
 
@@ -392,7 +392,7 @@ slots that hold them now.
 ## The multi-sample variant rows are config too
 
 The multi-sample variant displays keep their arrangement in `rows` as well, with
-no `field`, since their rows are the samples: `rows.domain` is the row order,
+no `field`, since their rows are the samples: `rows.sort` is the row order,
 `rows.labels` the relabels, `rows.tree` and `rows.treeProvenance` a clustering
 run's tree, and `rows.kept` the focus. In phased mode the names are haplotypes,
 `"<sample> HP<n>"`, and a sample's name stands for all of its haplotypes.
@@ -404,7 +404,7 @@ takes precedence over them.
 <!-- prettier-ignore -->
 | v4 | v5 display config |
 | --- | --- |
-| `layout` display prop, the rows in order with any label and color set on each | `rows.domain`, `rows.labels` and `rowColor.domain`/`range` |
+| `layout` display prop, the rows in order with any label and color set on each | `rows.sort`, `rows.labels` and `rowColor.domain`/`range` |
 | `clusterTree` display prop | `rows.tree` |
 | `subtreeFilter` display prop | `rows.kept` |
 
@@ -426,7 +426,7 @@ colors, and holds both a color a config names and a color a reader sets in
 The MAF display keeps its arrangement in `rows` with no `field`, since its rows
 are the species, as on the multi-sample variant displays. The adapter's guide
 tree stays the adapter's: it draws while some rotation of it lists the species
-in `rows.domain`'s order, so a reorder that splits a clade hides it and **Reset
+in `rows.sort`'s order, so a reorder that splits a clade hides it and **Reset
 row order** brings it back, and a clustering run's tree in `rows.tree` replaces
 it. `rowColor: { domain, range }` pairs species with the label tint a reader
 set, over the adapter's `samples[].color`. A session saved with

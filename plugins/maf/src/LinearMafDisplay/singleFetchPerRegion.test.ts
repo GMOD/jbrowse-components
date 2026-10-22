@@ -242,7 +242,7 @@ describe('LinearMafDisplay alignment fetch count', () => {
 
 describe('LinearMafDisplay row placement', () => {
   // A session that ARRIVES with a row arrangement (share link, screenshot spec)
-  // has a `rows.domain` before it has any data, and labels its rows from it. The
+  // has a `rows.sort` before it has any data, and labels its rows from it. The
   // fetch that DISCOVERS the row set cannot state that set, so it used to send
   // canonical order and the client drew every row under another row's name.
   // Nothing about order is sent now: rows come back named, and the client
@@ -251,7 +251,7 @@ describe('LinearMafDisplay row placement', () => {
     const { createDisplay, mockRpcCall } = createMafTestEnvironment({
       assemblyEnd: 50_000,
       viewRegionEnd: 10_000,
-      displayConfig: { rows: { domain: ['mm10', 'hg38'] } },
+      displayConfig: { rows: { sort: ['mm10', 'hg38'] } },
     })
     mockRpcCall.mockImplementation(() =>
       Promise.resolve(makeMafResult(HG38_MM10)),
@@ -310,7 +310,7 @@ describe('LinearMafDisplay row placement', () => {
     const { createDisplay, mockRpcCall } = createMafTestEnvironment({
       assemblyEnd: 50_000,
       viewRegionEnd: 10_000,
-      displayConfig: { rows: { domain: ['mm10', 'rn6', 'hg38'] } },
+      displayConfig: { rows: { sort: ['mm10', 'rn6', 'hg38'] } },
     })
     mockRpcCall.mockImplementation((_id, method) =>
       Promise.resolve(
@@ -340,7 +340,7 @@ describe('LinearMafDisplay row placement', () => {
     const { createDisplay, mockRpcCall } = createMafTestEnvironment({
       assemblyEnd: 50_000,
       viewRegionEnd: 10_000,
-      displayConfig: { rows: { domain: ['mm10', 'hg38'], kept: ['hg38'] } },
+      displayConfig: { rows: { sort: ['mm10', 'hg38'], kept: ['hg38'] } },
     })
     mockRpcCall.mockImplementation(() =>
       Promise.resolve(makeMafResult(HG38_MM10)),

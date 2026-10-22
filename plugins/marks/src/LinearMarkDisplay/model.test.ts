@@ -2360,7 +2360,7 @@ test('a display transform runs before the facet splits the features', () => {
 
 test('a facet domain orders the folded sections and stays off the worker request', () => {
   const { display } = facetedEnvironment({
-    facet: { field: 'sample', domain: ['b'] },
+    facet: { field: 'sample', sort: ['b'] },
   }).createDisplay()
   expect(display.rpcProps().facet).toEqual({ field: 'sample' })
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
@@ -2388,14 +2388,14 @@ test('a pinned facet domain orders the sections off the worker request, and Show
   expect(labels(display.trackMenuItems())).not.toContain('Sections')
   expect(labels(show())).not.toContain('Reset section order')
   const fetched = display.rpcProps()
-  display.setFacetDomain(['b', 'a'])
+  display.setFacetSort(['b', 'a'])
   expect(display.rpcProps()).toEqual(fetched)
   expect(display.facetLayout.sections.map(s => s.key)).toEqual(['b', 'a'])
   const reset = show().find(
     r => 'label' in r && r.label === 'Reset section order',
   ) as { onClick: () => void }
   reset.onClick()
-  expect(display.facet?.domain).toEqual([])
+  expect(display.facet?.sort).toEqual([])
 })
 
 test('two regions fold into one row space, the deeper pack setting each band', () => {
@@ -2658,7 +2658,7 @@ test("a key over the facet's field follows the sections' order", () => {
     ],
     REGION,
     'BedAdapter',
-    { facet: { field: 'sample', domain: ['b'] } },
+    { facet: { field: 'sample', sort: ['b'] } },
   ).createDisplay()
   display.setRpcData(
     0,
@@ -2692,7 +2692,7 @@ test("a key over the facet's field follows the sections' order", () => {
     )
   expect(display.facetLayout.sections.map(s => s.key)).toEqual(['b', 'a'])
   expect(keyed()).toEqual(['b', 'a'])
-  display.setFacetDomain(['a', 'b'])
+  display.setFacetSort(['a', 'b'])
   expect(keyed()).toEqual(['a', 'b'])
 })
 

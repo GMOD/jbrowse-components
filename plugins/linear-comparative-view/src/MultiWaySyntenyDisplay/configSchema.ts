@@ -70,7 +70,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     {
  *       type: 'MultiWaySyntenyDisplay',
  *       displayId: 'primate_synteny-MultiWaySyntenyDisplay',
- *       rows: { domain: ['panTro6', 'gorGor6', 'ponAbe3'] },
+ *       rows: { sort: ['panTro6', 'gorGor6', 'ponAbe3'] },
  *       color: { field: 'cluster' },
  *       ribbonColor: { field: 'identity' },
  *     },

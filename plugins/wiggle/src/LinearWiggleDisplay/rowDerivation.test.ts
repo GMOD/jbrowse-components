@@ -19,7 +19,7 @@ afterEach(() => {
 // The setting that puts each source on a row of its own, spelled once: the
 // derivation pinned below is what has to survive the setting's own rename.
 const rowsPerSource = (domain?: string[]) => ({
-  rows: domain ? { field: 'source', domain } : 'source',
+  rows: domain ? { field: 'source', sort: domain } : 'source',
 })
 
 const GROUPED: SourceInfo[] = [
@@ -259,14 +259,14 @@ test('rows: the plot box writes rows whole', async () => {
     tree: '((Grain1,Grain2),(Grain3,Grain4));',
   })
 
-  const draft = structuredClone(display.plot) as { rows: { domain: string[] } }
-  draft.rows.domain = ['Grain2', 'Grain1']
+  const draft = structuredClone(display.plot) as { rows: { sort: string[] } }
+  draft.rows.sort = ['Grain2', 'Grain1']
   display.applyPlot(draft)
   expect(display.sources.map(s => s.name)).toEqual(['Grain2', 'Grain1'])
   expect(display.rowLabels).toEqual({ Grain1: 'One' })
   expect(display.rowFocus).toEqual(['Grain1', 'Grain2'])
 
-  display.applyPlot({ rows: { field: 'source', domain: ['Grain2', 'Grain1'] } })
+  display.applyPlot({ rows: { field: 'source', sort: ['Grain2', 'Grain1'] } })
   expect(display.sources.map(s => s.name)).toEqual([
     'Grain2',
     'Grain1',

@@ -48,7 +48,7 @@ test('a reorder writes the declared pairs back in their own order', () => {
   const display = loaded(DECLARED)
   const [a, b, c, none] = display.editableSources
   display.applyRowEdits([c!, a!, b!, none!])
-  expect(display.rowDomain).toEqual(['c', 'a', 'b', ''])
+  expect(display.rowSort).toEqual(['c', 'a', 'b', ''])
   expect(display.configuration.rowColor.domain).toEqual(['c', 'a'])
   expect(display.rowStylingIsCustom).toBe(false)
   expect(display.rowLabels).toEqual({})
@@ -103,7 +103,7 @@ test('a submit over a window holding a fraction of the rows leaves the rest stan
     a: '#f00',
   })
   expect(display.rowLabels).toEqual({ c: 'Sea' })
-  expect(display.rowDomain).toEqual(['b', 'a'])
+  expect(display.rowSort).toEqual(['b', 'a'])
 })
 
 // Each row has a lane of its own, so no palette deals the rows a color by

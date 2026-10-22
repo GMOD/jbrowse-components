@@ -27,28 +27,28 @@ function display(facet?: Record<string, unknown>) {
 test('a new field starts with no order, and other members stay', () => {
   expect(
     facetForField(
-      { field: 'type', domain: ['gene'], hidden: ['exon'], transform: [] },
+      { field: 'type', sort: ['gene'], hidden: ['exon'], transform: [] },
       'strand',
     ),
   ).toEqual({ field: 'strand', transform: [] })
-  expect(facetForField({ field: 'type', domain: ['gene'] }, '')).toEqual({})
+  expect(facetForField({ field: 'type', sort: ['gene'] }, '')).toEqual({})
 })
 
 test('re-picking the field grouping writes nothing, and a reorder keeps the field', () => {
-  const d = display({ field: 'type', domain: ['gene'] })
+  const d = display({ field: 'type', sort: ['gene'] })
   const patches: unknown[] = []
   onPatch(d, patch => patches.push(patch))
   d.facetByField('type')
   expect(patches).toEqual([])
-  d.setFacetDomain(['mRNA', 'gene'])
+  d.setFacetSort(['mRNA', 'gene'])
   expect(getSnapshot(d.configuration.facet)).toEqual({
     field: 'type',
-    domain: ['mRNA', 'gene'],
+    sort: ['mRNA', 'gene'],
   })
 })
 
 test('a reorder with nothing grouping writes nothing', () => {
   const d = display()
-  d.setFacetDomain(['a'])
+  d.setFacetSort(['a'])
   expect(d.writtenFacet).toEqual({})
 })

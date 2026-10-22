@@ -358,7 +358,7 @@
           "displayId": "dog10k_cyp1a2_cn-LinearMultiRowFeatureDisplay",
           "rows": {
             "field": "sample",
-            "domain": [
+            "sort": [
               "Greenland Dog",
               "Springer Spaniel 1",
               "Springer Spaniel 2",
@@ -491,7 +491,7 @@
           "displayId": "dog10k_cyp1a2_breed_cn-LinearMultiRowFeatureDisplay",
           "rows": {
             "field": "sample",
-            "domain": [
+            "sort": [
               "Wolf 1",
               "Wolf 2",
               "Wolf 3",
@@ -605,7 +605,7 @@
           "displayId": "dog10k_slc28a3_breed_cn-LinearMultiRowFeatureDisplay",
           "rows": {
             "field": "sample",
-            "domain": [
+            "sort": [
               "Grand Basset Griffon Vendeen 1",
               "Grand Basset Griffon Vendeen 2",
               "Grand Basset Griffon Vendeen 3",
@@ -693,7 +693,7 @@
           },
           "rows": {
             "field": "sample",
-            "domain": [
+            "sort": [
               "Gray wolf 7 hap1",
               "Gray wolf 7 hap2",
               "Gray wolf 3 hap1",

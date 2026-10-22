@@ -43,7 +43,7 @@ interface Arrangement {
 // helper is all of the file that move may change.
 function arrangementConfig({ domain, rowColor, facet }: Arrangement) {
   return {
-    ...(domain ? { rows: { domain } } : {}),
+    ...(domain ? { rows: { sort: domain } } : {}),
     ...(rowColor ? { rowColor } : {}),
     ...(facet ? { facet } : {}),
   }

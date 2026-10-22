@@ -102,7 +102,7 @@ describe('"Sort rows by ... here"', () => {
 
     expect(call).not.toHaveBeenCalled()
     expect(display.rowTree).toBe('((c,a),b);')
-    expect(display.rowDomain).toEqual(['c', 'a', 'b'])
+    expect(display.rowSort).toEqual(['c', 'a', 'b'])
   })
 
   // One surviving row reorders to itself, so the sort is a no-op — but writing
@@ -117,12 +117,12 @@ describe('"Sort rows by ... here"', () => {
     expect(await display.sortRowsByValueAt('ctgA', 100)).toBe(false)
 
     expect(display.rowTree).toBe('((c,a),b);')
-    expect(display.rowDomain).toEqual(['c', 'a', 'b'])
+    expect(display.rowSort).toEqual(['c', 'a', 'b'])
   })
 
   // Rows aplenty, but the column is off the end of what was fetched, so there
   // is nothing to rank by and the unchanged order must not be written back as
-  // an explicit `rows.domain`.
+  // an explicit `rows.sort`.
   it('declines a column no loaded region covers', async () => {
     const display = clustered()
     const call = stubColumnValues(display, {})
@@ -131,7 +131,7 @@ describe('"Sort rows by ... here"', () => {
     expect(await display.sortRowsByValueAt('ctgB', 100)).toBe(false)
 
     expect(call).not.toHaveBeenCalled()
-    expect(display.rowDomain).toEqual(['c', 'a', 'b'])
+    expect(display.rowSort).toEqual(['c', 'a', 'b'])
   })
 
   it('keeps the order and the tree where no row has a feature there', async () => {
@@ -140,7 +140,7 @@ describe('"Sort rows by ... here"', () => {
 
     expect(await display.sortRowsByValueAt('ctgA', 100)).toBe(true)
 
-    expect(display.rowDomain).toEqual(['c', 'a', 'b'])
+    expect(display.rowSort).toEqual(['c', 'a', 'b'])
     expect(display.rowTree).toBe('((c,a),b);')
   })
 
@@ -154,7 +154,7 @@ describe('"Sort rows by ... here"', () => {
     expect(await first).toBe(false)
     expect(await second).toBe(true)
     expect(call).toHaveBeenCalledTimes(2)
-    expect(display.rowDomain).toEqual(['c', 'b', 'a'])
+    expect(display.rowSort).toEqual(['c', 'b', 'a'])
   })
 
   // Rows that actually move: the clustered order is c,a,b, `a` and `b` share a
@@ -175,7 +175,7 @@ describe('"Sort rows by ... here"', () => {
         regions: [expect.objectContaining({ start: 100, end: 101 })],
       }),
     )
-    expect(display.rowDomain).toEqual(['a', 'b', 'c'])
+    expect(display.rowSort).toEqual(['a', 'b', 'c'])
     expect(display.rowTree).toBeUndefined()
   })
 })

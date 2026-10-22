@@ -379,7 +379,7 @@ export async function featureTables(
     : readConfObject(conf, 'subfeatureLabels')
   const facet = facetSettingOf({
     field: readConfObject(conf, ['facet', 'field']),
-    domain: readConfObject(conf, ['facet', 'domain']),
+    sort: readConfObject(conf, ['facet', 'sort']),
   })
   const hiddenGroupKeys = new Set<string>(
     facet ? readConfObject(conf, ['facet', 'hidden']) : [],

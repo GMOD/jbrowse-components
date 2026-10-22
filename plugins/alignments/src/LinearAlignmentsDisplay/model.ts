@@ -1519,7 +1519,7 @@ export default function stateModelFactory(
             return orderedGroups(
               self.rpcDataMap,
               self.hiddenGroupKeys,
-              sectionOrder(facet?.field ?? '', facet?.domain),
+              sectionOrder(facet?.field ?? '', facet?.sort),
             )
           },
 

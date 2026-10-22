@@ -75,7 +75,7 @@ try {
             trackId: 'grape_peach_cacao_blocks',
             type: 'MultiWaySyntenyDisplay',
             rows: {
-              domain: [
+              sort: [
                 'peach',
                 'cacao',
                 'poplar',

@@ -95,7 +95,7 @@ import { variantsBandConfigSchema } from './variantsBandConfigSchema.ts'
  *       type: 'LinearMultiSampleVariantDisplay',
  *       height: 400,
  *       unit: 'haplotype',
- *       rows: { domain: ['HG002'] },
+ *       rows: { sort: ['HG002'] },
  *     },
  *   ],
  * }

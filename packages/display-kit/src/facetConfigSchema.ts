@@ -2,10 +2,18 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { normalizeChannel } from './colorConfigSchema.ts'
 
+/**
+ * The beta name of `sort`, which hosted hub configs jb2hubs generated still
+ * write on `facet` and `rows`.
+ */
+export const retiredOrderSpelling = {
+  domain: (sort: unknown) => ({ sort }),
+}
+
 /** The `facet` object as written: a field, and the order its sections stack in. */
 export interface FacetSetting {
   field: string
-  domain: readonly string[]
+  sort: readonly string[]
   hidden?: readonly string[]
 }
 
@@ -26,13 +34,13 @@ export interface FacetSetting {
  * ```js
  * {
  *   type: 'LinearBasicDisplay',
- *   facet: { field: 'gene_biotype', domain: ['protein_coding', 'lncRNA'] },
+ *   facet: { field: 'gene_biotype', sort: ['protein_coding', 'lncRNA'] },
  * }
  * ```
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   facet: { field: 'tags.HP', domain: ['1', '2'] },
+ *   facet: { field: 'tags.HP', sort: ['1', '2'] },
  * }
  * ```
  */
@@ -60,12 +68,13 @@ export const facetConfigSchema = ConfigurationSchema(
         'feature field (or jexl expression) to facet over, one labelled section per value; `strand` for one per strand, and empty for no sections',
     },
     /**
-     * #slot domain
-     * The values whose sections stack first, in order; the rest follow
-     * sorted. Empty stacks every section sorted, and a `strand` facet
-     * forward, reverse, then unstranded (`1`, `-1`, `0`).
+     * #slot sort
+     * The values whose sections stack first, in order, as Vega-Lite's `sort`
+     * lists them: the rest follow sorted, and none is dropped. Empty stacks
+     * every section sorted, and a `strand` facet forward, reverse, then
+     * unstranded (`1`, `-1`, `0`).
      */
-    domain: {
+    sort: {
       type: 'stringArray',
       defaultValue: [],
       description: 'values whose sections stack first, in order',
@@ -76,6 +85,7 @@ export const facetConfigSchema = ConfigurationSchema(
     writes: 'whole',
     plot: true,
     closed: true,
+    retired: retiredOrderSpelling,
     preProcessSnapshot: snap => normalizeChannel(snap, 'facet'),
   },
 )
@@ -83,9 +93,9 @@ export const facetConfigSchema = ConfigurationSchema(
 /** The facet as read back: undefined while ungrouped. */
 export function facetSettingOf(snapshot: {
   field: string
-  domain: readonly string[]
+  sort: readonly string[]
 }): FacetSetting | undefined {
   return snapshot.field
-    ? { field: snapshot.field, domain: snapshot.domain }
+    ? { field: snapshot.field, sort: snapshot.sort }
     : undefined
 }

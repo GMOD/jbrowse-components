@@ -54,7 +54,7 @@ test('picking an attribute bands the rows and ticks itself', () => {
   // No domain, so the bands sort: AFR before EUR, whatever their sizes. The
   // band is resolved on the read, so nothing lands in `rows`.
   expect(d.sources.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
-  expect(d.rowDomain).toEqual([])
+  expect(d.rowSort).toEqual([])
   const next = facetSubMenu(d)[1]!
   expect('checked' in next && next.checked).toBe(true)
 })
@@ -73,7 +73,7 @@ test('each radio writes its own facet, a re-pick keeping the band order', () => 
   const writes = facetSubMenu(display(SOURCES)).map((_, i) => {
     const d = display(SOURCES)
     d.facetByField('population')
-    setConf(d, ['facet', 'domain'], ['EUR'])
+    setConf(d, ['facet', 'sort'], ['EUR'])
     const item = facetSubMenu(d)[i]!
     if ('onClick' in item) {
       expect(staysOpenOnClick(item)).toBe(true)
@@ -83,8 +83,8 @@ test('each radio writes its own facet, a re-pick keeping the band order', () => 
   })
   expect(writes).toEqual([
     ['None', undefined],
-    ['Population', { field: 'population', domain: ['EUR'] }],
-    ['Sex', { field: 'sex', domain: [] }],
+    ['Population', { field: 'population', sort: ['EUR'] }],
+    ['Sex', { field: 'sex', sort: [] }],
   ])
 })
 

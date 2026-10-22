@@ -14,7 +14,7 @@ function rowNames(display: { sources?: { name: string }[] }) {
 
 describe('a discovered row set widens under a custom arrangement', () => {
   // A sample-discovery track learns of a genome only from the region whose
-  // blocks contain it, so the row set grows as the user scrolls. `rows.domain`
+  // blocks contain it, so the row set grows as the user scrolls. `rows.sort`
   // is an ordering hint, never the row set, so a species revealed by a later
   // region still gets a row.
   it('gives a newly discovered species a row after a reorder', () => {
@@ -82,7 +82,7 @@ describe('a discovered row set widens under a custom arrangement', () => {
 // `((hg38,panTro4),mm10)` has four of the six orders of its leaves as
 // rotations; hg38, mm10, panTro4 parts the sister pair, so no rotation lists
 // it.
-describe('the guide tree draws while a rotation of it lists `rows.domain`', () => {
+describe('the guide tree draws while a rotation of it lists `rows.sort`', () => {
   function treedDisplay() {
     const { display } = createMafTestEnvironment().createDisplay()
     display.setSamples({
@@ -120,7 +120,7 @@ describe('the guide tree draws while a rotation of it lists `rows.domain`', () =
     const display = treedDisplay()
     reorder(display, ['panTro4'])
 
-    expect(display.rowDomain).toEqual(['panTro4'])
+    expect(display.rowSort).toEqual(['panTro4'])
     expect(display.hierarchy).toBeDefined()
     expect(rowNames(display)).toEqual(['panTro4', 'hg38', 'mm10'])
   })
@@ -141,7 +141,7 @@ describe('the guide tree draws while a rotation of it lists `rows.domain`', () =
     const [hg38, ...rest] = display.editableSources
     display.applyRowEdits([{ ...hg38!, label: 'Human' }, ...rest])
 
-    expect(display.rowDomain).toEqual([])
+    expect(display.rowSort).toEqual([])
     expect(display.rowLabels).toEqual({ hg38: 'Human' })
     expect(display.rowTree).toBe(TREE)
     expect(display.hierarchy).toBeDefined()
@@ -204,10 +204,10 @@ describe('the guide tree draws while a rotation of it lists `rows.domain`', () =
   })
 })
 
-describe('the declared `rows.domain` seeds the row order', () => {
+describe('the declared `rows.sort` seeds the row order', () => {
   function domainDisplay(domain: string[]) {
     const { display } = createMafTestEnvironment({
-      displayConfig: { rows: { domain } },
+      displayConfig: { rows: { sort: domain } },
     }).createDisplay()
     display.setSamples({
       samples: [sample('hg38'), sample('panTro4'), sample('mm10')],
@@ -263,7 +263,7 @@ describe('the declared `rows.domain` seeds the row order', () => {
   // the tree as a declared one does.
   it('rotates towards a session domain a rotation lists', () => {
     const display = domainDisplay(['mm10'])
-    setConf(display, ['rows', 'domain'], ['panTro4', 'mm10'])
+    setConf(display, ['rows', 'sort'], ['panTro4', 'mm10'])
     expect(rowNames(display)).toEqual(['panTro4', 'hg38', 'mm10'])
     expect(display.rowTree).toBe(TREE)
     expect(display.hierarchy).toBeDefined()

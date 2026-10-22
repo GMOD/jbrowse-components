@@ -238,7 +238,7 @@ signal's column name:
       ],
       "rows": {
         "field": "subtype",
-        "domain": ["HR+/HER2-", "HER2+", "triple-negative", "unknown"]
+        "sort": ["HR+/HER2-", "HER2+", "triple-negative", "unknown"]
       },
       "scales": {
         "y": { "domainMin": -70, "domainMax": 70, "title": "% of tumors" }

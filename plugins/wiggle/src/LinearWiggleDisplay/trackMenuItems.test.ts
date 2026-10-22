@@ -150,7 +150,7 @@ describe('the wiggle display Clustering submenu', () => {
     if ('onClick' in item) {
       item.onClick()
     }
-    expect(display.rowDomain).toEqual([])
+    expect(display.rowSort).toEqual([])
     expect(display.rowTree).toBeUndefined()
   })
 })

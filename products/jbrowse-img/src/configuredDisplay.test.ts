@@ -100,19 +100,19 @@ function exportTrack(config: string, modifiers: string[] = [], locs = [loc]) {
 
 const basic = { type: 'LinearBasicDisplay' }
 const byName = { field: 'name', domain: ['EDEN.1', 'EDEN.2'] }
-const byStrand = { field: 'strand', domain: ['1'] }
+const byStrand = { field: 'strand', sort: ['1'] }
 
 describe('a path write into a setting the config already writes', () => {
   test('changes that member and keeps the rest, as the config saying it would', async () => {
     const written = await exportTrack(
       configWith({ ...basic, color: byName, facet: byStrand }),
-      ['color.domain=EDEN.2,EDEN.1', 'facet.domain=-1,1'],
+      ['color.domain=EDEN.2,EDEN.1', 'facet.sort=-1,1'],
     )
     const stated = await exportTrack(
       configWith({
         ...basic,
         color: { ...byName, domain: ['EDEN.2', 'EDEN.1'] },
-        facet: { ...byStrand, domain: ['-1', '1'] },
+        facet: { ...byStrand, sort: ['-1', '1'] },
       }),
     )
     expect(written).toBe(stated)
@@ -122,14 +122,14 @@ describe('a path write into a setting the config already writes', () => {
     const panels = ['ctgA:1-12000', 'ctgA:15000-25000']
     const written = await exportTrack(
       configWith({ ...basic, color: byName, facet: byStrand }),
-      ['color.domain=EDEN.2,EDEN.1', 'facet.domain=-1,1'],
+      ['color.domain=EDEN.2,EDEN.1', 'facet.sort=-1,1'],
       panels,
     )
     const stated = await exportTrack(
       configWith({
         ...basic,
         color: { ...byName, domain: ['EDEN.2', 'EDEN.1'] },
-        facet: { ...byStrand, domain: ['-1', '1'] },
+        facet: { ...byStrand, sort: ['-1', '1'] },
       }),
       [],
       panels,

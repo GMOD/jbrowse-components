@@ -183,14 +183,14 @@ any attribute you supply. Two slots wire it up:
   TSV gives a row. Set it back to None to restore the TSV's colors; the
   arrangement editor's **Each row** picks a color per sample instead.
 - `facet` bands the rows so each value of a column is contiguous: the column's
-  name, or `{ "field": …, "domain": [...] }` with the band order. Each band's
-  name runs up a strip beside the dendrogram where the band is tall enough to
-  hold it. The bands override whatever order you have arranged, so dragging a
-  sample into another band snaps it back, and clustering under bands clusters
-  each band separately, with a dendrogram per band.
-- [`rows.domain`](/docs/config/rowarrangement/#slot-domain) names the samples
-  that lead the rows; the rest keep the file's order, and a grouping attribute
-  bands within that order.
+  name, or `{ "field": …, "sort": [...] }` with the band order. Each band's name
+  runs up a strip beside the dendrogram where the band is tall enough to hold
+  it. The bands override whatever order you have arranged, so dragging a sample
+  into another band snaps it back, and clustering under bands clusters each band
+  separately, with a dendrogram per band.
+- [`rows.sort`](/docs/config/rowarrangement/#slot-sort) names the samples that
+  lead the rows; the rest keep the file's order, and a grouping attribute bands
+  within that order.
 
 The JBrowse demo wires up the 1000 Genomes phase 3 chr1 callset (2,504 samples
 across 26 population codes) this way. For the TSV layout and the adapter and

@@ -83,7 +83,7 @@ describe('the facet bands over the arranged order', () => {
     expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
   })
 
-  // The band is resolved on the read, over whatever `rows.domain` holds, so a drag
+  // The band is resolved on the read, over whatever `rows.sort` holds, so a drag
   // that moves a sample into another band has nowhere to land.
   it('snaps a cross-band drag back', () => {
     const { display } = createTestEnvironment().createDisplay()
@@ -95,7 +95,7 @@ describe('the facet bands over the arranged order', () => {
     display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
 
     expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
-    expect(display.rowDomain).toEqual(['S1', 'S0', 'S2'])
+    expect(display.rowSort).toEqual(['S1', 'S0', 'S2'])
   })
 
   // The bands win over a whole-cohort tree: a band draws only a clade of
@@ -201,7 +201,7 @@ describe('a tree per band', () => {
         ['S1', 'S3'],
       ],
     ])
-    expect(display.rowDomain).toEqual(['S2', 'S0', 'S3', 'S1'])
+    expect(display.rowSort).toEqual(['S2', 'S0', 'S3', 'S1'])
     expect(display.rowTree).toBe('((S2,S0),(S3,S1));')
     expect(display.hierarchy?.forestRoot).toBe(true)
     expect(bandTrees(display)).toEqual([
@@ -221,7 +221,7 @@ describe('a tree per band', () => {
 
   it('moving the bands keeps every tree', async () => {
     const { display } = await bandedRun()
-    setConf(display, 'facet', { field: 'population', domain: ['EUR'] })
+    setConf(display, 'facet', { field: 'population', sort: ['EUR'] })
 
     expect(rowNames(display)).toEqual(['S3', 'S1', 'S2', 'S0'])
     expect(bandTrees(display)).toEqual([
@@ -235,7 +235,7 @@ describe('a tree per band', () => {
 describe('the config `domain` seeds the sample order', () => {
   function domainDisplay(domain: string[]) {
     const { display } = createTestEnvironment({
-      displayConfig: { rows: { domain } },
+      displayConfig: { rows: { sort: domain } },
     }).createDisplay()
     display.setSources(SOURCES)
     return display
@@ -258,11 +258,11 @@ describe('the config `domain` seeds the sample order', () => {
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
   })
 
-  // The seed is the config's own `rows.domain`, so a track nobody has touched
+  // The seed is the config's own `rows.sort`, so a track nobody has touched
   // is not offered "Reset row order".
   it('is not a custom row order', () => {
     const display = domainDisplay(['S2'])
-    expect(display.rowDomain).toEqual(['S2'])
+    expect(display.rowSort).toEqual(['S2'])
     expect(display.rowArrangementIsCustom).toBe(false)
   })
 
@@ -322,7 +322,7 @@ describe('a rendering-mode switch renames the rows', () => {
     display.setUnit('haplotype')
 
     expect(display.rowFocus).toBeUndefined()
-    expect(display.rowDomain).toEqual([])
+    expect(display.rowSort).toEqual([])
     expect(display.rowTree).toBeUndefined()
     expect(rowNames(display)).toEqual(['S0', 'S1', 'S2'])
   })

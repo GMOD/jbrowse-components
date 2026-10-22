@@ -45,9 +45,9 @@ const MarkFacetChips = observer(function MarkFacetChips({
           moveSectionOnto(
             {
               sections,
-              domain: model.facet?.domain ?? [],
+              domain: model.facet?.sort ?? [],
               setDomain: domain => {
-                model.setFacetDomain(domain)
+                model.setFacetSort(domain)
               },
             },
             key,

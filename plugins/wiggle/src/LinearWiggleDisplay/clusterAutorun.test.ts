@@ -39,7 +39,7 @@ describe('MultiLinearWiggleDisplay declarative runClustering', () => {
     await waitFor(() => {
       expect(display.rowTree).toBe('(b,a);')
     })
-    expect(display.rowDomain).toEqual(['b', 'a'])
+    expect(display.rowSort).toEqual(['b', 'a'])
 
     // one-shot: the flag clears itself so a saved session never re-triggers it
     expect(display.runClustering).toBeUndefined()

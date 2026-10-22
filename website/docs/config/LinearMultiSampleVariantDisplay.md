@@ -84,7 +84,7 @@ them by sample name, so the order below puts both of HG002's rows first:
       type: 'LinearMultiSampleVariantDisplay',
       height: 400,
       unit: 'haplotype',
-      rows: { domain: ['HG002'] },
+      rows: { sort: ['HG002'] },
     },
   ],
 }

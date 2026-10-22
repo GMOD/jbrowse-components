@@ -20,7 +20,7 @@ function colored() {
 // anyone had touched it.
 test('a configured colorBy writes no order and is not a custom row order', () => {
   const display = colored()
-  expect(display.rowDomain).toEqual([])
+  expect(display.rowSort).toEqual([])
   expect(display.rowArrangementIsCustom).toBe(false)
   expect(display.sources.every(s => s.rowColor)).toBe(true)
 })
@@ -30,7 +30,7 @@ test('a configured facet writes no order and is not a custom row order', () => {
   display.facetByField('population')
   display.setSources(SOURCES)
 
-  expect(display.rowDomain).toEqual([])
+  expect(display.rowSort).toEqual([])
   expect(display.rowArrangementIsCustom).toBe(false)
   expect(display.sources.map(s => s.name)).toEqual(['HG002', 'HG001'])
 })
@@ -60,7 +60,7 @@ test('a second color-by still writes no order', () => {
   const display = colored()
   display.setRowColorField('super_pop')
 
-  expect(display.rowDomain).toEqual([])
+  expect(display.rowSort).toEqual([])
   expect(display.rowArrangementIsCustom).toBe(false)
 })
 

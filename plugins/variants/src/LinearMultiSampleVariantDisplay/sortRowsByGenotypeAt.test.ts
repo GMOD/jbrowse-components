@@ -93,7 +93,7 @@ test('anchors on the shortest record covering the column', () => {
 test('leaves the rows alone at a column no record covers', () => {
   const display = displayWithCells()
   display.sortRowsByGenotypeAt('ctgA', 600)
-  expect(display.rowDomain).toEqual([])
+  expect(display.rowSort).toEqual([])
 })
 
 // The shared gate only knows a region covers the column; the record it needs is

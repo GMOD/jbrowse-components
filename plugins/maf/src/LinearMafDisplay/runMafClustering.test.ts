@@ -27,7 +27,7 @@ function makeModel(overrides: Partial<MafClusterSelf> = {}) {
       src('HG00099.2'),
       src('HG00146.1'),
     ],
-    rowDomain: [],
+    rowSort: [],
     adapterConfig: { type: 'BgzipTaffyAdapter' },
     resolvedByteLimit: () => undefined,
     setRowOrder: jest.fn(),

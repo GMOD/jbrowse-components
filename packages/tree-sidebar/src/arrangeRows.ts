@@ -166,7 +166,7 @@ export interface RowBand {
 /** What bands a display's rows: the attribute read and the bands listed first. */
 export interface RowBanding {
   field: string
-  domain: readonly string[]
+  sort: readonly string[]
 }
 
 /**
@@ -188,7 +188,7 @@ export function bandRows<S>(
   for (const key of keys) {
     counts.set(key, (counts.get(key) ?? 0) + 1)
   }
-  const ordered = [...counts.keys()].sort(groupKeyComparator(banding.domain))
+  const ordered = [...counts.keys()].sort(groupKeyComparator(banding.sort))
   const starts = new Map<string, number>()
   const bands: RowBand[] = []
   let at = 0

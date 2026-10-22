@@ -131,7 +131,7 @@ export const cookbookSpecs: ScreenshotSpec[] = [
               type: 'LinearMultiRowFeatureDisplay',
               rows: {
                 field: 'repClass',
-                domain: [
+                sort: [
                   'SINE',
                   'LINE',
                   'LTR',

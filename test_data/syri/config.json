@@ -83,7 +83,7 @@
         {
           "type": "MultiWaySyntenyDisplay",
           "displayId": "syri_pangenome-MultiWaySyntenyDisplay",
-          "rows": { "domain": ["Ler", "Cvi", "Eri", "Kyo", "Sha"] },
+          "rows": { "sort": ["Ler", "Cvi", "Eri", "Kyo", "Sha"] },
           "ribbonColor": {
             "field": "syri",
             "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
@@ -107,7 +107,7 @@
           "displayId": "syri_regions_on_Col-0-LinearMultiRowFeatureDisplay",
           "rows": {
             "field": "query",
-            "domain": ["Ler", "Cvi", "Eri", "Kyo", "Sha"]
+            "sort": ["Ler", "Cvi", "Eri", "Kyo", "Sha"]
           },
           "color": {
             "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]

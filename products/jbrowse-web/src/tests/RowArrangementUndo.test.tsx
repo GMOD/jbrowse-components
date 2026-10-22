@@ -30,7 +30,7 @@ const sleep = (ms: number) =>
     setTimeout(resolve, ms)
   })
 
-// A display's `rows.domain` as the session's delta for the track carries it.
+// A display's `rows.sort` as the session's delta for the track carries it.
 function rowsDomainInDelta(delta: unknown, displayId?: string) {
   const displays = (delta as { displays?: unknown } | undefined)?.displays
   if (!Array.isArray(displays)) {
@@ -38,12 +38,12 @@ function rowsDomainInDelta(delta: unknown, displayId?: string) {
   }
   const entries = displays as {
     displayId?: string
-    rows?: { domain?: string[] }
+    rows?: { sort?: string[] }
   }[]
   const entry = displayId
     ? entries.find(d => d.displayId === displayId)
     : entries[0]
-  return entry?.rows?.domain
+  return entry?.rows?.sort
 }
 
 // An arrangement write reaches the session's delta at once rather than after
@@ -79,7 +79,7 @@ test('a row reorder lands in the session at once and stays undone across the def
   await sleep(500)
   expect(rowsDomainInDelta(session.trackConfigDeltas[TRACK_ID])).toBeUndefined()
   const undone: LinearWiggleDisplayModel = view.tracks[0]!.displays[0]
-  expect(undone.rowDomain).toEqual([])
+  expect(undone.rowSort).toEqual([])
   expect(undone.sources.map(s => s.name)).toEqual(['k1', 'k2'])
 }, 60000)
 
@@ -120,7 +120,7 @@ test('a variant row reorder lands in the session at once and undoes', async () =
   ).toBeUndefined()
   const undone: LinearMultiSampleVariantDisplayModel =
     view.tracks[0]!.displays[0]
-  expect(undone.rowDomain).toEqual([])
+  expect(undone.rowSort).toEqual([])
   expect(undone.sources.map(s => s.name)).toEqual(before)
 }, 60000)
 
@@ -129,7 +129,7 @@ test('a variant row reorder lands in the session at once and undoes', async () =
 interface MultiRowDisplay {
   configuration: { displayId: string }
   sources: { name: string }[]
-  rowDomain: string[]
+  rowSort: string[]
   setRowOrder: (rows: { name: string }[]) => void
 }
 
@@ -171,7 +171,7 @@ test('a multi-row reorder lands in the session at once and undoes', async () => 
     rowsDomainInDelta(session.trackConfigDeltas[PAINTING], displayId),
   ).toBeUndefined()
   const undone: MultiRowDisplay = view.tracks[0]!.displays[0]
-  expect(undone.rowDomain).toEqual([])
+  expect(undone.rowSort).toEqual([])
   expect(undone.sources.map(s => s.name)).toEqual(before)
 }, 60000)
 
@@ -222,7 +222,7 @@ test('a MAF reorder lands in the session at once and undoes', async () => {
     rowsDomainInDelta(session.trackConfigDeltas[MAF], displayId),
   ).toBeUndefined()
   const undone: MafDisplay = view.tracks[0]!.displays[0]
-  expect(undone.rowDomain).toEqual([])
+  expect(undone.rowSort).toEqual([])
   expect(undone.sources.map(s => s.name)).toEqual(before)
   expect(undone.rowTree).toBeDefined()
 }, 60000)
@@ -282,6 +282,6 @@ test('a mark display row reorder lands in the session at once and undoes', async
     rowsDomainInDelta(session.trackConfigDeltas[MARKS], displayId),
   ).toBeUndefined()
   const undone: MultiRowDisplay = view.tracks[0]!.displays[0]
-  expect(undone.rowDomain).toEqual([])
+  expect(undone.rowSort).toEqual([])
   expect(undone.sources.map(s => s.name)).toEqual(before)
 }, 60000)

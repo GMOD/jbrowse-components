@@ -500,7 +500,7 @@
           "displayId": "syri_regions_on_TAIR10-LinearMultiRowFeatureDisplay",
           "rows": {
             "field": "query",
-            "domain": [
+            "sort": [
               "Col-0.6909",
               "KBS-Mac-74",
               "Sq-1",
@@ -578,7 +578,7 @@
           "type": "MultiWaySyntenyDisplay",
           "displayId": "syri_1001g-MultiWaySyntenyDisplay",
           "rows": {
-            "domain": [
+            "sort": [
               "Col-0.6909",
               "KBS-Mac-74",
               "Sq-1",
@@ -729,7 +729,7 @@
           "displayId": "arabidopsis_minigraph_paths-LinearMultiRowFeatureDisplay",
           "rows": {
             "field": "strain",
-            "domain": [
+            "sort": [
               "Col-0.6909",
               "KBS-Mac-74",
               "Sq-1",

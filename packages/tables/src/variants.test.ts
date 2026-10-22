@@ -137,7 +137,7 @@ test('each row takes the display’s rowColor from the samples file, under the a
     ...DOG_SV,
     display: {
       rowColor: { field: 'group' },
-      rows: { domain: [...t.rows.name].reverse() },
+      rows: { sort: [...t.rows.name].reverse() },
     },
   })
   expect(reordered.rows.color).toEqual([...t.rows.color].reverse())
@@ -151,7 +151,7 @@ test('the rows take the arrangement `rows` saves: its order first, its labels, i
   const [a, b, c] = plain.rows.name.slice(-3) as [string, string, string]
   const t = await engine.variants({
     ...DOG_VCF,
-    display: { rows: { domain: [c, a], labels: { [c]: 'Proband' } } },
+    display: { rows: { sort: [c, a], labels: { [c]: 'Proband' } } },
   })
   expect(t.rows.name.slice(0, 2)).toEqual([c, a])
   expect(t.rows.name.slice(2)).toEqual(
@@ -172,7 +172,7 @@ test('a sample named in the order places each of its haplotype rows', async () =
   const last = plain.rows.name.at(-1)!
   const t = await engine.variants({
     ...DOG_VCF,
-    display: { unit: 'haplotype', rows: { domain: [last] } },
+    display: { unit: 'haplotype', rows: { sort: [last] } },
   })
   expect(t.rows.name.slice(0, 2)).toEqual([`${last} HP0`, `${last} HP1`])
   expect(t.rows.sample.slice(0, 2)).toEqual([last, last])
@@ -181,7 +181,7 @@ test('a sample named in the order places each of its haplotype rows', async () =
 test('a facet stacks the rows in a band per value of the samples file’s attribute', async () => {
   const t = await engine.variants({
     ...DOG_SV,
-    display: { facet: { field: 'group', domain: ['Gray wolf'] } },
+    display: { facet: { field: 'group', sort: ['Gray wolf'] } },
   })
   expect(t.bands.label[0]).toBe('Gray wolf')
   expect(t.bands.label.slice(1)).toEqual([...t.bands.label.slice(1)].sort())

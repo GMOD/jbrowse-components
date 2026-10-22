@@ -95,7 +95,7 @@ The display partitions on `repClass` whenever the file has that column, and
 ## Pinning row order and colors in a track config
 
 A track config can open the track in the partitioned view, and two settings keep
-the rows stable as the window's class list changes. `rows.domain` lists the
+the rows stable as the window's class list changes. `rows.sort` lists the
 classes that come first, in order, and a class it leaves out follows the listed
 ones. `rowColor` is a color scale on each row's label bar, pairing each class in
 its `domain` with a color in its `range`.
@@ -112,7 +112,7 @@ its `domain` with a color in its `range`.
       "type": "LinearMultiRowFeatureDisplay",
       "rows": {
         "field": "repClass",
-        "domain": [
+        "sort": [
           "SINE",
           "LINE",
           "LTR",

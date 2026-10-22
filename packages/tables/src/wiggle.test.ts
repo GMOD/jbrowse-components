@@ -163,11 +163,11 @@ test('a line takes the color of the band between the cuts its score is in', asyn
   }
 })
 
-test('a multi-wiggle stacks its sources in the order rows.domain gives', async () => {
+test('a multi-wiggle stacks its sources in the order rows.sort gives', async () => {
   const domain = ['posneg_rw3', 'posneg_rw1', 'posneg_rw2']
   const t = await engine.wiggle({
     ...MULTI_BIGWIG,
-    display: { rows: { field: 'source', domain } },
+    display: { rows: { field: 'source', sort: domain } },
   })
   expect(t.sources.name).toEqual(domain)
   domain.forEach((name, row) => {
@@ -225,7 +225,7 @@ describe('sources sharing one panel take the colors the display deals them', () 
       plain.painted.map((c, i) => [`posneg_rw${i + 1}`, c]),
     )
     const domain = ['posneg_rw3', 'posneg_rw1', 'posneg_rw2']
-    const reordered = await colorsOf({ rows: { field: '', domain } })
+    const reordered = await colorsOf({ rows: { field: '', sort: domain } })
     expect(reordered.painted).toEqual(domain.map(name => colorOf.get(name)))
   })
 

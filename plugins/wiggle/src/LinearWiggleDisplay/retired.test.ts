@@ -17,11 +17,11 @@ test('the layout joins an arrangement already lifted', () => {
   expect(
     foldMultiWiggleRendering({
       defaultRendering: 'multirowxy',
-      rows: { domain: ['b', 'a'] },
+      rows: { sort: ['b', 'a'] },
     }),
   ).toEqual({
     defaultRendering: 'xyplot',
-    rows: { domain: ['b', 'a'], field: 'source' },
+    rows: { sort: ['b', 'a'], field: 'source' },
   })
 })
 

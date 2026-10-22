@@ -17,7 +17,7 @@ export function facetOf(
   return facet
     ? {
         field: facet.field,
-        ...(facet.domain.length ? { domain: [...facet.domain] } : {}),
+        ...(facet.sort.length ? { sort: [...facet.sort] } : {}),
         ...(hidden.length ? { hidden: [...hidden] } : {}),
       }
     : null

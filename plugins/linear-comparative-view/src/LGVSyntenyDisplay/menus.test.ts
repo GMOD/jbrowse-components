@@ -138,7 +138,7 @@ function makeShowModel(showCoverage: boolean) {
     showAllGroups: jest.fn(),
     effectiveFacet: undefined,
     groupOrder: [],
-    setFacetDomain: jest.fn(),
+    setFacetSort: jest.fn(),
   }
 }
 

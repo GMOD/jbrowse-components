@@ -327,7 +327,7 @@ function ecoliHoverSession() {
           { trackId: 'K12_genes', height: 70 },
           {
             trackId: PGGB_MAF_TRACK,
-            rows: { domain: PGGB_STRAIN_ROWS },
+            rows: { sort: PGGB_STRAIN_ROWS },
             height: 130,
           },
           // The halos and exon bars hid the reference nodes' hues.
@@ -410,7 +410,7 @@ function pggbLocusSession(
             ? [
                 {
                   trackId: PGGB_MAF_TRACK,
-                  rows: { domain: PGGB_STRAIN_ROWS },
+                  rows: { sort: PGGB_STRAIN_ROWS },
                   showTree: true,
                   height: 150,
                 },
@@ -636,7 +636,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: PGGB_MAF_TRACK,
-              rows: { domain: PGGB_STRAIN_ROWS },
+              rows: { sort: PGGB_STRAIN_ROWS },
               coverage: { show: false },
               height: 110,
             },

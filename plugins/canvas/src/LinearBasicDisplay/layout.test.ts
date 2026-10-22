@@ -2896,7 +2896,7 @@ describe('group by strand', () => {
     reversedRegions: new Set<number>(),
     displayMode: 'normal' as const,
     pinnedFeatureIds: new Set<string>(),
-    facet: { field: 'strand', domain: [] },
+    facet: { field: 'strand', sort: [] },
   }
 
   test('forward features stack above reverse ones, each section under its chip row', () => {

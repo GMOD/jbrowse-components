@@ -21,7 +21,7 @@ interface Arrangement {
 // all of the file that move may change.
 function arrangementConfig({ field = 'sample', domain, colors }: Arrangement) {
   return {
-    rows: domain ? { field, domain } : field,
+    rows: domain ? { field, sort: domain } : field,
     ...(colors
       ? {
           rowColor: {

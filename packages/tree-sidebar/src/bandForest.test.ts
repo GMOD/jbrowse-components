@@ -43,7 +43,7 @@ function banded(names: string[], domain: string[] = []) {
   return bandRows(
     names.map(name => ({ name })),
     row => POP[row.name] ?? '',
-    { field: 'pop', domain },
+    { field: 'pop', sort: domain },
   )
 }
 

@@ -334,7 +334,7 @@ test('the display’s facet packs a section per value, each under its chip row',
   const [first, second] = t.sections.key
   const reordered = await engine.features({
     ...GFF3,
-    display: { ...GROW, facet: { field: 'strand', domain: [second!, first!] } },
+    display: { ...GROW, facet: { field: 'strand', sort: [second!, first!] } },
   })
   expect(reordered.sections.key.slice(0, 2)).toEqual([second, first])
 

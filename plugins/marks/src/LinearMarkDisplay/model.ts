@@ -345,7 +345,7 @@ export function stateModelFactory(
         get facet(): FacetSetting | undefined {
           return facetSettingOf({
             field: getConf(self, ['facet', 'field']),
-            domain: getConf(self, ['facet', 'domain']),
+            sort: getConf(self, ['facet', 'sort']),
           })
         },
         /**
@@ -739,7 +739,7 @@ export function stateModelFactory(
           if (self.drawsRows) {
             return rowsLayout(self.sources, categoricalField(self.rowsField))
           }
-          const { field = '', domain = [] } = self.facet ?? {}
+          const { field = '', sort: domain = [] } = self.facet ?? {}
           return facetLayout(
             self.featurePayloads.values(),
             categoricalField(field, { domain }),
@@ -1517,7 +1517,7 @@ export function stateModelFactory(
               this.legendSections,
               self.facet
                 ? categoricalField(self.facet.field, {
-                    domain: self.facet.domain,
+                    domain: self.facet.sort,
                   })
                 : self.drawsRows
                   ? categoricalField(self.rowsField, {

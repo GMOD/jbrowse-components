@@ -373,7 +373,7 @@ field holds the far breakpoint:
 
 The samples TSV pairs each line with its `karyotype` (standard or inverted).
 `facet` splits the display into sections, one per `karyotype` value,
-`facet.domain` orders them, and `rowColor` is a color scale on each row's label
+`facet.sort` orders them, and `rowColor` is a color scale on each row's label
 bar:
 
 ```json addtrack
@@ -392,7 +392,7 @@ bar:
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "facet": { "field": "karyotype", "domain": ["Standard", "In(2L)t"] },
+      "facet": { "field": "karyotype", "sort": ["Standard", "In(2L)t"] },
       "rowColor": "karyotype"
     }
   ]

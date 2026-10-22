@@ -47,7 +47,7 @@ function makeModel(overrides: Partial<ReducedModel> = {}): ReducedModel {
     editableSources: THREE,
     adapterConfig,
     unit: 'sample',
-    rowDomain: [],
+    rowSort: [],
     clusteringReady: true,
     hasClusterableRows: true,
     setRowOrder: jest.fn(),
@@ -102,7 +102,7 @@ describe('runGenotypeClustering', () => {
   // still describes the rows. Placing each named sample outright instead would
   // read sampleB, sampleC, sampleA and leave the dendrogram describing nobody.
   it('rotates the run towards the config domain', async () => {
-    const model = makeModel({ rowDomain: ['sampleB', 'sampleC'] })
+    const model = makeModel({ rowSort: ['sampleB', 'sampleC'] })
     const rpcManager = makeRpcManager(async () => ({
       order: [0, 1, 2],
       tree: '((sampleA:1,sampleB:1):1,sampleC:2);',
