@@ -2,7 +2,7 @@ import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
 import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
 
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
-import { makeRowFlank } from '../../LinearMafRenderer/rendering/rowFlank.ts'
+import { rowFlankOf } from '../../LinearMafRenderer/rendering/rowFlank.ts'
 import { LABEL_FONT } from '../../LinearMafRenderer/rendering/types.ts'
 import { regionDeletionRunBounds } from './mafRowEvents.ts'
 import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
@@ -59,9 +59,7 @@ export function computeVisibleDeletions(
     } of eachVisibleRegion(view, rpcDataMap)) {
       const { blocks } = regionData
       const runBounds = regionDeletionRunBounds(regionData)
-      // Built only once a block survives the culls, since most frames cull
-      // every block.
-      let rowFlank: ReturnType<typeof makeRowFlank> | undefined
+      const flank = rowFlankOf(blocks)
       // Hoisted so the emit callback closes over this scope: it is the
       // innermost thing on a hot walk.
       let longest = 0
@@ -79,7 +77,6 @@ export function computeVisibleDeletions(
         }
         // Walked to full depth while measuring, so the bound survives a scroll.
         const measuring = bound === 0
-        const flank = (rowFlank ??= makeRowFlank(blocks))
         longest = 0
         for (const row of block.rows) {
           const drawn = row.rowIndex >= firstRow && row.rowIndex < endRow

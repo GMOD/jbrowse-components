@@ -5,7 +5,7 @@ import { blockIndexAtBp } from '../../LinearMafRenderer/blockAtBp.ts'
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
 import { forEachInsertion } from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
 import { mergedInsertions } from '../../LinearMafRenderer/rendering/insertions.ts'
-import { rowFlankAt } from '../../LinearMafRenderer/rendering/rowFlank.ts'
+import { rowFlankOf } from '../../LinearMafRenderer/rendering/rowFlank.ts'
 
 import type {
   MafAlignedRow,
@@ -325,7 +325,7 @@ export function findRowHoverAtBp(
         block,
         row,
         targetBp,
-        rowFlankAt(region.blocks, i, rowIndex),
+        rowFlankOf(region.blocks)(i, rowIndex),
       )
     )
   }

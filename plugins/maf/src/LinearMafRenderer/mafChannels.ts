@@ -1,6 +1,6 @@
 import { ColumnMapper } from './binning.ts'
 import { resolvedExtent } from './rendering/alignedExtent.ts'
-import { makeRowFlank } from './rendering/rowFlank.ts'
+import { rowFlankOf } from './rendering/rowFlank.ts'
 import {
   packMafCellColorConfig,
   resolveCellPacked,
@@ -88,7 +88,7 @@ export function buildMafChannels(args: BuildChannelsArgs): SpanChannels {
   const row = new Uint32Array(cap)
   const color = new Uint32Array(cap)
   let count = 0
-  const rowFlank = makeRowFlank(blocks)
+  const rowFlank = rowFlankOf(blocks)
   // One buffer for the whole encode rather than one per block — a real MAF is
   // tens of thousands of small blocks, so the per-block allocation was the
   // encode's only remaining one. See `ColumnMapper`.
