@@ -12,26 +12,36 @@ test.each([
   ['reds', false],
 ] as const)('a config naming %s reverses it: %s', (scheme, reversed) => {
   const { display } = createTestEnvironment().createDisplay()
-  setConf(display, ['color', 'scheme'], scheme)
+  setConf(display, ['encoding', 'color', 'scale', 'scheme'], scheme)
   expect(display.colorReverse).toBe(reversed)
 })
 
 test('a written reverse wins over the scheme', () => {
   const { display } = createTestEnvironment().createDisplay()
-  setConf(display, ['color', 'scheme'], 'viridis')
-  setConf(display, ['color', 'reverse'], false)
+  setConf(display, ['encoding', 'color', 'scale', 'scheme'], 'viridis')
+  setConf(display, ['encoding', 'color', 'scale', 'reverse'], false)
   expect(display.colorReverse).toBe(false)
 })
 
 test('picking a scheme from the menu leaves reverse to follow it', () => {
   const { display } = createTestEnvironment().createDisplay()
-  setConf(display, ['color', 'reverse'], false)
+  setConf(display, ['encoding', 'color', 'scale', 'reverse'], false)
   display.setColorScheme('magma')
-  expect(readConfObject(display.configuration, ['color', 'scheme'])).toBe(
-    'magma',
-  )
   expect(
-    readConfObject(display.configuration, ['color', 'reverse']),
+    readConfObject(display.configuration, [
+      'encoding',
+      'color',
+      'scale',
+      'scheme',
+    ]),
+  ).toBe('magma')
+  expect(
+    readConfObject(display.configuration, [
+      'encoding',
+      'color',
+      'scale',
+      'reverse',
+    ]),
   ).toBeUndefined()
   expect(display.colorReverse).toBe(true)
 })

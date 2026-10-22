@@ -59,9 +59,9 @@ test('the key is one ramp over the color domain, its two ends labelled', () => {
 
 test('the key follows the encoding: log floor, pinned top and scheme', () => {
   const display = loaded()
-  setConf(display, ['color', 'scale'], 'log')
-  setConf(display, ['color', 'domainMax'], 1000)
-  setConf(display, ['color', 'scheme'], 'viridis')
+  setConf(display, ['encoding', 'color', 'scale', 'type'], 'log')
+  setConf(display, ['encoding', 'color', 'scale', 'domainMax'], 1000)
+  setConf(display, ['encoding', 'color', 'scale', 'scheme'], 'viridis')
   const [item] = display.legendSpec.sections[0]!.items
   expect(item).toEqual({
     label: 'Contacts (KR, log) · 1Kbp',
@@ -74,4 +74,12 @@ test('the key follows the encoding: log floor, pinned top and scheme', () => {
       maxLabel: '1000',
     },
   })
+})
+
+test('legend.title replaces the heading, and "" draws none', () => {
+  const display = loaded()
+  setConf(display, ['encoding', 'color', 'legend', 'title'], 'Contacts')
+  expect(display.colorScales[0]?.title).toBe('Contacts')
+  setConf(display, ['encoding', 'color', 'legend', 'title'], '')
+  expect(display.colorScales[0]?.title).toBe('')
 })

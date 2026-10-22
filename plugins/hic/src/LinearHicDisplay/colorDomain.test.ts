@@ -67,13 +67,13 @@ test('with the percentile off an unset top is the largest count', () => {
 
 test('the percentile is the color domain quantile', () => {
   const display = loaded()
-  expect(display.configuration.color.domainQuantile).toBe(0.95)
+  expect(display.configuration.encoding.color.scale.domainQuantile).toBe(0.95)
   expect(display.saturationQuantile).toBe(0.95)
   display.setColorFollowsPercentile(false)
-  expect(display.configuration.color.domainQuantile).toBe(1)
+  expect(display.configuration.encoding.color.scale.domainQuantile).toBe(1)
   expect(display.saturationQuantile).toBe(0.95)
   display.setColorFollowsPercentile(true)
-  expect(display.configuration.color.domainQuantile).toBe(0.95)
+  expect(display.configuration.encoding.color.scale.domainQuantile).toBe(0.95)
 })
 
 test('a new percentile reselects the loaded counts and refetches nothing', () => {
@@ -92,14 +92,14 @@ test('a new percentile reselects the loaded counts and refetches nothing', () =>
   })
   const settings = structuredClone(display.settingsFetchInputs)
   expect(display.colorDomain).toEqual([0, 95])
-  setConf(display, ['color', 'domainQuantile'], 0.5)
+  setConf(display, ['encoding', 'color', 'scale', 'domainQuantile'], 0.5)
   expect(display.colorDomain).toEqual([0, 50])
   expect(display.settingsFetchInputs).toEqual(settings)
 })
 
 test('a pinned top holds whatever the loaded counts are', () => {
   const display = loaded()
-  setConf(display, ['color', 'domainMax'], 1000)
+  setConf(display, ['encoding', 'color', 'scale', 'domainMax'], 1000)
   expect(display.renderState).toMatchObject({ domainMin: 0, domainMax: 1000 })
   display.setRpcData({ ...DATA, maxScore: 5, quantileScore: 2 })
   expect(display.renderState.domainMax).toBe(1000)
@@ -110,7 +110,7 @@ test('a pinned top holds whatever the loaded counts are', () => {
 test('domainMid moves the ramp middle on every surface', () => {
   const display = loaded()
   expect(display.renderState.midNorm).toBe(0.5)
-  setConf(display, ['color', 'domainMid'], 10)
+  setConf(display, ['encoding', 'color', 'scale', 'domainMid'], 10)
   expect(display.colorDomain).toEqual([0, 40])
   expect(display.renderState.midNorm).toBe(0.25)
   expect(display.colorScales[0]).toMatchObject({
@@ -121,14 +121,14 @@ test('domainMid moves the ramp middle on every surface', () => {
 test('a pinned top gives a key before any data lands', () => {
   const { display } = createDisplay()
   expect(display.colorScales).toEqual([])
-  setConf(display, ['color', 'domainMax'], 1000)
+  setConf(display, ['encoding', 'color', 'scale', 'domainMax'], 1000)
   expect(display.colorScales[0]).toMatchObject({ domain: [0, 1000] })
 })
 
 // the log scale floors at a count of 1, so that is where the key starts
 test('a log key starts where the ramp does', () => {
   const display = loaded()
-  setConf(display, ['color', 'scale'], 'log')
+  setConf(display, ['encoding', 'color', 'scale', 'type'], 'log')
   expect(display.renderState.scaleType).toBe(SCALE_TYPE_LOG)
   expect(display.colorScales[0]).toMatchObject({
     title: 'Contacts (log) · 1Kbp',

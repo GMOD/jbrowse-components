@@ -48,6 +48,7 @@ import type {
 import type { HicTrackConfigModel } from './configSchema.ts'
 import type { HicColorField, HicColorScale } from './hicColorConfigSchema.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -104,7 +105,9 @@ interface HicFileInfo {
  *     {
  *       type: 'LinearHicDisplay',
  *       displayId: 'hic-LinearHicDisplay',
- *       color: { scale: 'symlog', domainMax: 500 },
+ *       encoding: {
+ *         color: { scale: { type: 'symlog', domainMax: 500 } },
+ *       },
  *       resolutionBias: 1,
  *     },
  *   ],
@@ -176,16 +179,16 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * `color.domainQuantile`: the quantile of the loaded counts an unset
-       * `domainMax` follows, their maximum at 1.
+       * `encoding.color.scale.domainQuantile`: the quantile of the loaded
+       * counts an unset `domainMax` follows, their maximum at 1.
        */
       get colorQuantile(): number {
-        return getConf(self, ['color', 'domainQuantile'])
+        return getConf(self, ['encoding', 'color', 'scale', 'domainQuantile'])
       },
       /**
        * #getter
-       * Whether an unset `color.domainMax` saturates at `colorQuantile`
-       * rather than the counts' maximum.
+       * Whether an unset `encoding.color.scale.domainMax` saturates at
+       * `colorQuantile` rather than the counts' maximum.
        */
       get colorFollowsPercentile(): boolean {
         return this.colorQuantile < 1
@@ -201,8 +204,10 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         return this.colorFollowsPercentile
           ? this.colorQuantile
           : clipQuantileOf(
-              getSlotDefinition(self.configuration.color, 'domainQuantile')
-                .defaultValue,
+              getSlotDefinition(
+                self.configuration.encoding.color.scale,
+                'domainQuantile',
+              ).defaultValue,
             )
       },
       /**
@@ -213,10 +218,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * `color.field`, what the fetch asks the worker to put in each cell.
+       * `encoding.color.field`, what the fetch asks the worker to put in
+       * each cell.
        */
       get colorField(): HicColorField {
-        return getConf(self, ['color', 'field'])
+        return getConf(self, ['encoding', 'color', 'field'])
       },
     }))
     .views(self => ({
@@ -315,9 +321,9 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * Where `color.domainMid` sits on the normalized ramp, 0.5 unset, so a
-       * diverging scheme centres on it and equal distances from it take equal
-       * colors.
+       * Where `encoding.color.scale.domainMid` sits on the normalized ramp,
+       * 0.5 unset, so a diverging scheme centres on it and equal distances
+       * from it take equal colors.
        */
       get colorMidNorm(): number {
         const [lo, hi] = self.colorDomain
@@ -348,7 +354,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #getter
        * The count ramp, once there is a domain to span. The ends are where
        * the ramp paints them, and a top below the largest loaded count reads
-       * `≥`. The title names the loaded binsize, so a figure carries it.
+       * `≥`. The title names the loaded binsize, so a figure carries it,
+       * unless `encoding.color.legend.title` replaces it.
        */
       get colorScales(): ColorScale[] {
         const [lo, hi] = self.colorDomain
@@ -365,13 +372,21 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           self.appliedNormalization,
           self.colorScaleType,
         )
+        const title: string | undefined = getConf(self, [
+          'encoding',
+          'color',
+          'legend',
+          'title',
+        ])
         return [
           {
             kind: 'ramp',
             id: 'contacts',
-            title: rpcData
-              ? `${label} · ${getBpDisplayStr(rpcData.resolution)}`
-              : label,
+            title:
+              title ??
+              (rpcData
+                ? `${label} · ${getBpDisplayStr(rpcData.resolution)}`
+                : label),
             domain,
             stops: legendStops(self.colorRamp, self.colorMidNorm),
             // a ratio's smallest value is not scored, and one below the
@@ -516,19 +531,28 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * count's scheme or pinned top does not carry onto a ratio.
        */
       setColorField(field: HicColorField) {
-        setConf(
-          self,
-          'color',
-          colorForField(getSnapshot(self.configuration.color), field),
-        )
+        if (field !== self.colorField) {
+          setConf(
+            self,
+            ['encoding', 'color'],
+            colorForField(
+              getSnapshot<ColorSlots>(self.configuration.encoding.color),
+              field,
+            ),
+          )
+        }
       },
       /**
        * #action
-       * The Log scale toggle: `color.scale` symlog, which keeps every nonzero
-       * count visible, or unset for `observed`'s linear preset.
+       * The Log scale toggle: `encoding.color.scale.type` symlog, which keeps
+       * every nonzero count visible, or unset for `observed`'s linear preset.
        */
       setLogScale(log: boolean) {
-        setConf(self, ['color', 'scale'], log ? 'symlog' : undefined)
+        setConf(
+          self,
+          ['encoding', 'color', 'scale', 'type'],
+          log ? 'symlog' : undefined,
+        )
       },
       /**
        * #action
@@ -536,7 +560,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       setColorFollowsPercentile(f: boolean) {
         setConf(
           self,
-          ['color', 'domainQuantile'],
+          ['encoding', 'color', 'scale', 'domainQuantile'],
           f ? self.saturationQuantile : 1,
         )
       },

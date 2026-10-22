@@ -1,9 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { triangleMatrixConfigSchemaFields } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
+import { hiddenLegendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 
-import { hicColorConfigSchema } from './hicColorConfigSchema.ts'
+import { hicEncodingConfigSchema } from './hicColorConfigSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -24,7 +25,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   name: 'Hi-C',
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'HicAdapter', uri: 'https://example.com/contacts.hic' },
- *   displayDefaults: { color: { scale: 'symlog' }, resolutionBias: 1 },
+ *   displayDefaults: {
+ *     encoding: { color: { scale: { type: 'symlog' } } },
+ *     resolutionBias: 1,
+ *   },
  * }
  * ```
  */
@@ -38,12 +42,16 @@ const HicTrackConfigFactory = () => {
       }),
       ...triangleMatrixConfigSchemaFields,
       /**
-       * #slot color
-       * The scale from count to color: a `linear`, `symlog` or `log` scale onto
-       * a named `scheme`, over a domain whose unset ends follow the loaded
-       * counts.
+       * #slot encoding
+       * The channels the bins paint through: `encoding.color`, the scale from
+       * count to color.
        */
-      color: hicColorConfigSchema,
+      encoding: hicEncodingConfigSchema,
+      /**
+       * #slot legend
+       * The color ramp's key, off until asked for.
+       */
+      legend: hiddenLegendConfigSchema,
       /**
        * #slot
        */

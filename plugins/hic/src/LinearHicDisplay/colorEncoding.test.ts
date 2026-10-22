@@ -35,9 +35,9 @@ const DATA: HicDataResult = {
 
 const { createDisplay } = createTestEnvironment()
 
-function loaded(color: Record<string, unknown>) {
+function loaded(scale: Record<string, unknown>) {
   const { display } = createDisplay()
-  display.applyPlot({ color })
+  display.applyPlot({ encoding: { color: { scale } } })
   display.setRpcData(DATA)
   return display
 }
@@ -60,7 +60,7 @@ const CASES: {
 
 describe.each(['linear', 'symlog', 'log'] as const)('a %s scale', scale => {
   test.each(CASES)('paints what the hand-built ramp did: %j', color => {
-    const display = loaded({ ...color, scale })
+    const display = loaded({ ...color, type: scale })
     const reverse = color.reverse ?? darkAtLowEnd(color.scheme)
     const loadedMax =
       (color.domainQuantile ?? 0.95) < 1 ? DATA.quantileScore : DATA.maxScore
@@ -77,7 +77,7 @@ describe.each(['linear', 'symlog', 'log'] as const)('a %s scale', scale => {
 })
 
 test('the encoding is the one object every surface reads', () => {
-  const display = loaded({ scale: 'log', scheme: 'viridis', domainMax: 50 })
+  const display = loaded({ type: 'log', scheme: 'viridis', domainMax: 50 })
   expect(display.colorEncoding).toEqual({
     field: 'observed',
     scale: 'log',
@@ -99,9 +99,9 @@ test('the ramp texture follows only the scheme and its direction', () => {
   expect(deps).toContain('colorScheme')
   expect(deps).toContain('colorReverse')
   expect(getDependencyTree(display, 'colorRamp').dependencies).toHaveLength(2)
-  setConf(display, ['color', 'domainMax'], 10)
-  setConf(display, ['color', 'scale'], 'log')
-  setConf(display, ['color', 'domainQuantile'], 1)
+  setConf(display, ['encoding', 'color', 'scale', 'domainMax'], 10)
+  setConf(display, ['encoding', 'color', 'scale', 'type'], 'log')
+  setConf(display, ['encoding', 'color', 'scale', 'domainQuantile'], 1)
   expect(display.colorRamp).toBe(ramp)
   dispose()
 })
@@ -109,15 +109,21 @@ test('the ramp texture follows only the scheme and its direction', () => {
 test('an inverted domain is flagged, and spans its ends in order', () => {
   const display = loaded({})
   expect(
-    display.plotProblems({ color: { domainMin: 10, domainMax: 1 } }),
+    display.plotProblems({
+      encoding: { color: { scale: { domainMin: 10, domainMax: 1 } } },
+    }),
   ).toEqual([
-    'color.domainMax: domainMax is below domainMin: the scale spans the two in order either way, and reverse is what turns it round',
+    'encoding.color.scale.domainMax: domainMax is below domainMin: the scale spans the two in order either way, and reverse is what turns it round',
   ])
-  expect(display.plotProblems({ color: { scale: 'log' } })).toEqual([])
-  expect(display.plotProblems({ color: { domainQuantile: 95 } })).toHaveLength(
-    1,
-  )
-  setConf(display, ['color', 'domainMin'], 10)
-  setConf(display, ['color', 'domainMax'], 1)
+  expect(
+    display.plotProblems({ encoding: { color: { scale: { type: 'log' } } } }),
+  ).toEqual([])
+  expect(
+    display.plotProblems({
+      encoding: { color: { scale: { domainQuantile: 95 } } },
+    }),
+  ).toHaveLength(1)
+  setConf(display, ['encoding', 'color', 'scale', 'domainMin'], 10)
+  setConf(display, ['encoding', 'color', 'scale', 'domainMax'], 1)
   expect(display.colorDomain).toEqual([1, 10])
 })
