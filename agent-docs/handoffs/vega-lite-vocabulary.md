@@ -57,7 +57,7 @@ spelling, not a new house word. That means no new `min*`, `max*`, `show*` or
   `showSoftClipping`, `showCounts` and `showOrdinaryPairs`;
   `pileup.showOutline` went, the outline following `unit`. Left for their
   own calls: `pileup.showConnectors` (ADR-240 open 3) and `baseColor` (step 0
-  below). ggjbrowse's tables `settings` reads these paths.
+  below).
 - MAF's `alignments.inversions`, `.frames` and `.reference` as `{ show }`
   parts, which replaced `showInversions`, `showAnnotations` and the top-level
   `showReferenceRow`. `rowIdentityAutoZoom`, `showAllLetters` and
@@ -175,8 +175,9 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
 
 - **ggjbrowse:** respell its R lists and re-pin its engine (memory
   `a-config-rename-reaches-ggjbrowse`). Its synteny and dotplot lists are
-  respelled up to `data.resolution`, its multi-way `pins` are records, and
-  its `rows` and `facet` lists write `sort`. Its published `dog10k_lof` page
+  respelled up to `data.resolution`, its multi-way `pins` are records, its
+  `rows` and `facet` lists write `sort`, and its alignments lists and
+  `autoplot` take the layer `show` parts. Its published `dog10k_lof` page
   still shows `domain` until a re-knit, which waits on the Dog10K callset
   host's certificate.
 - **jb2hubs:** its row orders write `sort` beside `domain` (`rowOrder.ts`,
