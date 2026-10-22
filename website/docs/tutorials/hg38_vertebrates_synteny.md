@@ -111,7 +111,10 @@ One `SyntenyTrack` names hg38 and every genome it stacks. Its adapter, a
 - Each child names its two assemblies as `query,target`, with the genome the
   chain lifts to first. The anchor is the one assembly every chain names.
 - The config below is cut to a few genomes for the page, and the hosted config
-  has all of them.
+  has all of them. genomes.jbrowse.org serves the same kind of track over every
+  hg38 chain, which
+  [Stacking many genomes under hg38](/docs/tutorials/genomes_synteny#many-genomes-at-once)
+  turns on.
 - The assemblies and their gene tracks come from the hub configs unchanged, and
   each lane finds its gene models through the session, so this track is the only
   addition to the hub entries.
