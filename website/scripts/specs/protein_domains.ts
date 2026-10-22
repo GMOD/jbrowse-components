@@ -38,7 +38,7 @@ export const proteinDomainsSpecs: ScreenshotSpec[] = [
           loc: 'NC_037640.1:1,971,400-1,976,800',
           tracks: [
             { trackId: 'GCF_003254395.2-ncbiGff', height: 120 },
-            { trackId: 'pfam_domains', height: 160 },
+            { trackId: 'pfam_domains', height: 200 },
           ],
         },
       ],
@@ -46,6 +46,6 @@ export const proteinDomainsSpecs: ScreenshotSpec[] = [
     readyText: 'Pfam domains',
     readyTimeout: 60000,
     viewportWidth: 1200,
-    viewportHeight: 540,
+    viewportHeight: 580,
   },
 ]
