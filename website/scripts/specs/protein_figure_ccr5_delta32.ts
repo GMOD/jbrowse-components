@@ -101,6 +101,16 @@ export const proteinCcr5Delta32Specs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
+        text: '32 bases is not a multiple of 3,\nso the frame shifts and hits a stop',
+        fontSize: 30,
+        maxWidth: 760,
+        leader: true,
+        anchor: { trackId: 'ccr5-frameshift', loc: 'chr3:46373581' },
+        dx: -120,
+        dy: -150,
+      },
+      {
+        type: 'text',
         text: 'Helices 5-7 and the tail',
         fontSize: 24,
         maxWidth: 340,
