@@ -36,6 +36,12 @@ spelling, not a new house word. That means no new `min*`, `max*`, `show*` or
   beside it.
 - The mark display's `marks[].mark` as the same object (`MarkDef`), so the
   two displays spell a mark alike (ADR-216).
+- MAF's `alignments.inversions`, `.frames` and `.reference` as `{ show }`
+  parts, which replaced `showInversions`, `showAnnotations` and the top-level
+  `showReferenceRow`. `rowIdentityAutoZoom`, `showAllLetters` and
+  `showAsUpperCase` went outright: identity always yields to the bases at
+  base level, letters follow `color`, and they keep the file's case. MAF's
+  `color`, `y`, `scales` and `showLegend` wait on steps 1 and 3 below.
 
 ## Next, one concept at a time across the app
 
