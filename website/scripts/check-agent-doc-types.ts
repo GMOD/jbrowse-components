@@ -37,6 +37,7 @@ import { docsDir, repoRoot } from './paths.ts'
 const SOURCES = [
   ...Object.values(DOC_TOPICS).map(t => t.file),
   'website/docs/agents.md',
+  'website/docs/agents_authoring.md',
   'website/docs/agents_capture.md',
   'products/jbrowse-desktop/electron/mcp/toolDefinitions.ts',
   'products/jbrowse-desktop/electron/mcp/README.md',
