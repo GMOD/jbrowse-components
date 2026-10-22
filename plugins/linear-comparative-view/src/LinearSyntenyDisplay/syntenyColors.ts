@@ -9,6 +9,7 @@ import {
 import {
   DEFAULT_RIBBON_COLOR,
   colorSchemes,
+  comparativeFilter,
   createComparativeColorFunction,
 } from '@jbrowse/synteny-core'
 
@@ -44,13 +45,10 @@ function markerColor(groundColor: string) {
   return packAbgr(r, g, b, MARKER_ALPHA_BYTE)
 }
 
-// And what "markers off" is: the same instance, painted to nothing. A zero alpha
-// is below the `isInstanceInvisible` floor the Canvas2D draw loop, the pick
-// engine and the shaders' vertex prologue share, so the tick is skipped
-// outright. That is the whole cost of keeping the toggle off the RPC —
-// see `currentFetchKey` for what it buys, and MIN_MARKER_FEATURE_PX for why the
-// count is small enough not to care (a whole-genome hairball emits no ticks at
-// all).
+// A tick painted to nothing: zero alpha is below the `isInstanceInvisible`
+// floor the draw loops and the pick engine share, so the tick is skipped. The
+// count is small (MIN_MARKER_FEATURE_PX), so keeping the toggle off the RPC
+// costs little.
 const MARKER_COLOR_HIDDEN = packAbgr(0, 0, 0, 0)
 
 // I/D/N indel colors for the active scheme (strand recolors N/D purple). Both
@@ -86,7 +84,6 @@ export function computeSyntenyColors({
   groundColor,
   namePosition,
   attributeRanges,
-  hideUnlabelled,
   filter,
   filterExtras,
   hiddenFeatures,
@@ -102,10 +99,9 @@ export function computeSyntenyColors({
   valueColor?: string
   // the view's `opacity`, whose field fades each ribbon and its indels
   opacity?: SyntenyOpacitySnapshot
-  // The location-marker toggle, which is a color decision rather than a fetch
-  // one — the geometry always carries the ticks. Independent of the color: markers
-  // are the ruler continued through the ribbons, not data, so no scheme paints
-  // them and none of them can hide them either.
+  // `axis.grid`, a color decision since the geometry always carries the ticks.
+  // A tick is the ruler continued through its ribbon, so no scheme paints it,
+  // but it goes where its ribbon is filtered out or hidden.
   drawLocationMarkers?: boolean
   // The band the ticks are drawn onto, which is what they have to contrast
   // against — see `bandGroundColor`.
@@ -115,7 +111,6 @@ export function computeSyntenyColors({
   // The domain a column's ramp scales to — the view's accumulated
   // one, not this fetch's. See `createComparativeColorFunction`.
   attributeRanges: Record<string, AttributeRange>
-  hideUnlabelled?: boolean
   // the view's `filter`, which paints a ribbon it rejects at zero alpha
   filter?: readonly FieldPredicate[]
   filterExtras?: FilterExtras
@@ -130,7 +125,6 @@ export function computeSyntenyColors({
     trackColor,
     namePosition,
     attributeRanges,
-    hideUnlabelled,
     paint,
     opacity,
     filter,
@@ -144,6 +138,9 @@ export function computeSyntenyColors({
   const marker = drawLocationMarkers
     ? markerColor(groundColor)
     : MARKER_COLOR_HIDDEN
+  const passes = drawLocationMarkers
+    ? comparativeFilter(filter, featureData, filterExtras)
+    : undefined
   const out = new Uint32Array(instanceCount)
 
   const indelColors: Record<number, number> = {
@@ -154,10 +151,13 @@ export function computeSyntenyColors({
   for (let i = 0; i < instanceCount; i++) {
     const kind = kinds[i]!
     const indelColor = indelColors[kind]
+    const f = instanceFeatureIdx[i]!
     if (kind === KIND_MARKER) {
-      out[i] = marker
+      out[i] =
+        hiddenFeatures?.has(f) || (passes && !passes(f))
+          ? MARKER_COLOR_HIDDEN
+          : marker
     } else {
-      const f = instanceFeatureIdx[i]!
       const base = hiddenFeatures?.has(f) ? 0 : colorFn(f)
       // an indel takes its ribbon's opacity: hidden with it, faded with it
       out[i] =

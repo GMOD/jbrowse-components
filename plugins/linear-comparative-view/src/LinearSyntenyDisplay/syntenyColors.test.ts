@@ -119,7 +119,7 @@ describe("computeSyntenyColors under the 'track' field", () => {
   })
 })
 
-// "Hide unlabelled" paints a ribbon at zero alpha, and the identity fade wrote
+// "Hide unlabelled" filters a ribbon to zero alpha, and the identity fade wrote
 // its own alpha over every ribbon, so the hidden ones came back at 30% or more.
 test('a ribbon the color mode hides stays hidden under the identity fade', () => {
   const group = { labels: ['A'], colors: {} }
@@ -147,7 +147,7 @@ test('a ribbon the color mode hides stays hidden under the identity fade', () =>
     trackColor: TRACK_COLOR,
     attributeRanges: { group },
     opacity: { field: 'identity' },
-    hideUnlabelled: true,
+    filter: [{ field: 'group', valid: true }],
   })
   expect(abgrAlpha(colors[0]!)).toBe(Math.round((0.3 + 0.7 * 0.9) * 255))
   expect(abgrAlpha(colors[1]!)).toBe(0)
@@ -177,7 +177,7 @@ test("a hidden ribbon's indels are hidden with it", () => {
     field: 'group',
     trackColor: TRACK_COLOR,
     attributeRanges: { group },
-    hideUnlabelled: true,
+    filter: [{ field: 'group', valid: true }],
   })
   expect(colors[0]).toBe(abgrOfHex('#ffff00'))
   expect(abgrAlpha(colors[1]!)).toBe(0)
@@ -237,6 +237,33 @@ describe('the location-marker toggle', () => {
     })
     expect(abgrRed(dark[1]!)).toBe(255)
     expect(abgrAlpha(dark[1]!)).toBe(64)
+  })
+
+  test('on: a tick goes with a ribbon the filter or the hidden set removes', () => {
+    const twoRibbons = {
+      kinds: new Uint8Array([KIND_MARKER, KIND_MARKER, KIND_MARKER]),
+      instanceFeatureIdx: new Uint32Array([0, 1, 2]),
+      instanceCount: 3,
+    }
+    const colors = computeSyntenyColors({
+      groundColor: '#fff',
+      instanceData: twoRibbons,
+      featureData: features(
+        [
+          { refName: 'chr1', mateRefName: 'chrA' },
+          { refName: 'chr1', mateRefName: 'chrA' },
+          { refName: 'chr1', mateRefName: 'chrA' },
+        ],
+        { identity: new Float32Array([0.99, 0.5, 0.99]) },
+      ),
+      field: 'track',
+      trackColor: TRACK_COLOR,
+      drawLocationMarkers: true,
+      attributeRanges: {},
+      filter: [{ field: 'identity', gte: 0.9 }],
+      hiddenFeatures: new Set([2]),
+    })
+    expect([...colors].map(c => abgrAlpha(c))).toEqual([64, 0, 0])
   })
 
   test('off: a tick is transparent, and nothing else moves', () => {

@@ -81,7 +81,6 @@ export interface ParentViewDuck extends FollowAnchorHost {
   colorField: string
   colorValue: string | undefined
   colorPaint: SyntenyColorPaint
-  hideUnlabelled: boolean
   // a track's slot in the view's palette, keyed by trackId
   trackColorFor: (trackId: string) => string
   clearClickedFeatures: () => void
