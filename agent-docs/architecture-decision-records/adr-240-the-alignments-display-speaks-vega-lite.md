@@ -11,7 +11,9 @@ Accepted (2026-10-22), with three calls open (below). The alignments stage of
 [ADR-238](adr-238-every-display-speaks-vega-lite.md), whose order of work this
 follows. Amended the same day: a ramp's quantile is `scale.domainQuantile`,
 not `{ quantile }`, which no slot type holds and which reads as d3's
-`type: 'quantile'`.
+`type: 'quantile'`. Amended again when the channel object landed on every
+display: the categorical `scale.type` is Vega-Lite's `ordinal`, and a missing
+value's color is `scale.invalid`, Vega-Lite's member for null and NaN inputs.
 
 Five reviews shaped it: an Opus design pass from ADR-238 and the schemas, two
 Opus arbiters on its calls (one on Vega-Lite fidelity, one on authors, writers
@@ -50,7 +52,7 @@ hand, and Colin's rulings on the calls they split.
       "value": "steelblue",             // the constant, and nothing else
       "field": "tags.HP",
       "scale": {
-        "type": "categorical",
+        "type": "ordinal",
         "domain": ["1", "2"], "range": ["#d95f02", "#1b9e77"],
         "names": ["Maternal", "Paternal"],
         "scheme": "viridis", "reverse": false,
@@ -116,9 +118,8 @@ hand, and Colin's rulings on the calls they split.
     stays AND-only.
   - Every count field is `reads`, the strokeWidth's included.
 - **`value` is the constant only.** Today alignments also paints it on a read
-  with no value under a tag; that fill moves to a scale member for missing
-  values, named in the channel step with display-kit's `unknown`, which means
-  "not in the domain".
+  with no value under a tag; that fill moves to `scale.invalid`, while
+  `scale.unknown` keeps d3's "not in the domain".
 - **`scale.names`** names each domain value, by position, in the key, the hovers
   and the arc key. `labels` keeps Vega-Lite's boolean on `axis` and the text
   layer on `sashimi`; the rows objects' `labels` map converges on `names` in the
@@ -174,7 +175,7 @@ them in its own stage:
 | `filter.junctions.minReads`, `nonCanonical` | `junction.reads gte`, `junction.canonical equal` |
 | `filter.connections.interchrom`, `offscreenMates`, `minInterchromReads` | `connection.interchrom`, `connection.offscreen`, `breakpoint.reads gte` |
 | `facet.domain` | `facet.sort`; every `domain` that only orders moves in the same sweep |
-| `color.*` | `encoding.color`: `scale.{type, domain, range, names, scheme, reverse, domainMin, domainMax, domainMid, domainQuantile}`, `legend.{show, title, descending}` |
+| `color.*` | `encoding.color`: `scale.{type, domain, range, names, unknown, invalid, scheme, reverse, domainMin, domainMax, domainMid, domainQuantile}`, `legend.{show, title, descending}` |
 | `showLegend` | `legend.show` |
 | `scales.y.*` | `coverage.encoding.y.scale` and `.axis`, with wiggle's y step (`ScoreScaleMixin` hard-codes the path); `rules` follows wiggle's spelling |
 | `coverage.showInterbaseIndicators`, `minAlleleFraction` | `coverage.interbase.show`, `coverage.alleles.filter` |
