@@ -42,7 +42,7 @@ A region's reads, or several regions', as the alignments display fetches,
 filters, lays out and colors them, as tables: the worker's reads, mismatches,
 gaps, insertions, clips, modifications, per-base qualities, coverage and splice
 junctions, each read on the row the display's pileup layout gives it and in the
-color the display's `color` object paints it, with the key the display shows:
+color the display's `encoding.color` paints it, with the key the display shows:
 `legend`, and `ramps`, its color bars (`rampKeyOf`). Under a `facet` each
 section lays out separately, every row has a `section`, and `sections` lists
 them in stacking order; ungrouped, there is one section, labelled `''`. Several

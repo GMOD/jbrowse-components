@@ -124,7 +124,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | Member | Description |
 | --- | --- |
 | <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> |  |
-| <span id="getter-colorsetting">**colorSetting**</span><br><code>ColorSetting</code> | The `color` object as written, `value` undefined while nothing names a color and the layout decides (`effectiveColor`). |
+| <span id="getter-colorsetting">**colorSetting**</span><br><code>ColorSetting</code> | The `encoding.color` channel as written, `value` undefined while nothing names a color and the layout decides (`effectiveColor`). |
 | <span id="getter-rows">**rows**</span><br><code>RowsSetting &#124; undefined</code> | The `rows` object's field and order, or undefined while every source shares one plot. `source` is the only field the config admits here. |
 | <span id="getter-isrowlayout">**isRowLayout**</span><br><code>boolean</code> | Whether each source is drawn in a separate row, which is all that `rows` decides here: the tree sidebar, the row labels, the separators, the clustering menu and the row-order sort all hang off it. |
 | <span id="getter-isoverlay">**isOverlay**</span><br><code>boolean</code> | Every source in one plot box. The complement of the row layout, named for what is drawn rather than for the setting that is off. |

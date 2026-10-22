@@ -159,27 +159,3 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
   },
   colorChannelOptions('encoding.color', ALIGNMENTS_FIELD_PRESETS),
 )
-
-/**
- * #config AlignmentsEncoding
- * #category display
- * The alignments displays' `encoding`, the channels the reads paint through.
- *
- * #example
- * ```js
- * { type: 'LinearAlignmentsDisplay', encoding: { color: 'tags.HP' } }
- * ```
- */
-export const alignmentsEncodingConfigSchema = ConfigurationSchema(
-  'AlignmentsEncoding',
-  {
-    /**
-     * #slot color
-     * The read fill: `{ value: "steelblue" }` paints every read,
-     * `"strand"` a read dimension's own vocabulary and `"tags.HP"` a SAM
-     * tag.
-     */
-    color: alignmentsColorConfigSchema,
-  },
-  encodingOptions,
-)

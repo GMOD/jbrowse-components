@@ -3,7 +3,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { alignmentsFilterConfigSchema } from './alignmentsFilterConfigSchema.ts'
 import { alignmentsModificationsConfigSchema } from './alignmentsModificationsConfigSchema.ts'
 import { baseLinearAlignmentsDisplayConfigSchema } from './baseConfigSchema.ts'
-import { readsPileupConfigSchema } from './pileupConfigSchema.ts'
+import { readsPileupConfigSchema } from './readsPileupConfigSchema.ts'
 import { sashimiConfigSchema } from './sashimiConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'

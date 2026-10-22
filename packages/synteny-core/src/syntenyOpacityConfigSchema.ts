@@ -93,7 +93,7 @@ export const syntenyOpacityConfigSchema = ConfigurationSchema(
       'SyntenyOpacityScale',
       {
         /**
-         * #slot type
+         * #slot scale.type
          * `threshold` reads `domain` as cut points, a value on a cut taking
          * the interval above it. Unset, a number column fades linearly from
          * `domainMin` to `domainMax` and a text column takes one opacity per
@@ -105,7 +105,7 @@ export const syntenyOpacityConfigSchema = ConfigurationSchema(
           type: 'threshold, or unset to follow the field',
         }),
         /**
-         * #slot domain
+         * #slot scale.domain
          * A text column's labels, which take `range` in order; under
          * `threshold`, the cut points.
          */

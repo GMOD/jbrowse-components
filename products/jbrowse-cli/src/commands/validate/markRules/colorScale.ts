@@ -48,7 +48,10 @@ export interface ColorScaleSlots {
   domainMax?: number
   domainMid?: number
   domainQuantile?: number
+  /** The output for a value outside `domain`, d3's `ordinal.unknown`. */
   unknown?: string
+  /** The output for a missing value, Vega-Lite's `invalid`. */
+  invalid?: string
 }
 
 /** A channel's `legend` as written. */

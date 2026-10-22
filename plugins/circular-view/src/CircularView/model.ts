@@ -37,7 +37,7 @@ import {
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
 import { isNamedFeatureHost } from '@jbrowse/display-kit/floatingLabelHost'
-import { hiddenLegendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
+import { hiddenLegendConfigSchema } from '@jbrowse/display-kit/hiddenLegendConfigSchema'
 import {
   addDisposer,
   cast,

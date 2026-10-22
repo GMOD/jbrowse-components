@@ -18,6 +18,7 @@ import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor, within } from '@testing-library/react'
@@ -143,7 +144,7 @@ function initialize() {
         {
           height: { type: 'number', defaultValue: DISPLAY_HEIGHT },
           color: { type: 'color', defaultValue: DISPLAY_COLOR },
-          showLegend: { type: 'boolean', defaultValue: true },
+          legend: legendConfigSchema,
           facet: sectionFacetConfigSchema,
         },
         {

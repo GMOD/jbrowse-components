@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { chordMarkConfigSchema } from '../../chords/chordMarkConfigSchema.ts'
-import { chordEncodingConfigSchema } from './chordColorConfigSchema.ts'
+import { chordEncodingConfigSchema } from './chordEncodingConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

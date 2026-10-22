@@ -1,36 +1,46 @@
 ---
 id: ribboncolor
 title: RibbonColor
-description: "The multi-way synteny display's ribbonColor setting: one color for every ribbon, or a field each ribbon carries: the record's strand (the default, while the setting names neither a field nor a…"
+description: "The multi-way synteny display's ribbons.encoding.color: one color for every ribbon, or a field each ribbon carries: the record's strand (the default, while the channel names neither a field nor a…"
 sidebar_label: Display -> RibbonColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/ribbonColorConfigSchema.ts).
 
-The multi-way synteny display's `ribbonColor` setting: one color for every
-ribbon, or a field each ribbon carries: the record's strand (the default,
-while the setting names neither a field nor a color), a measurement
-through its preset (`identity`, `mapq`, `dnds`, `syntenicDepth`), or a column the table
-declares in `attributeColumns`, through the same slots as the synteny
-view's [SyntenyColor](../syntenycolor). A string is the constant.
+The multi-way synteny display's `ribbons.encoding.color`: one color for
+every ribbon, or a field each ribbon carries: the record's strand (the
+default, while the channel names neither a field nor a color), a
+measurement through its preset (`identity`, `mapq`, `dnds`,
+`syntenicDepth`), or a column the table declares in `attributeColumns`,
+through the same slots as the synteny view's
+[SyntenyColor](../syntenycolor). A string is the field.
 
 ## Example usage
 
 ```js
-{ type: 'MultiWaySyntenyDisplay', ribbonColor: 'rgba(130,130,130,0.3)' }
+{
+  type: 'MultiWaySyntenyDisplay',
+  ribbons: { encoding: { color: { value: 'rgba(130,130,130,0.3)' } } },
+}
 ```
 
 ```js
-{ type: 'MultiWaySyntenyDisplay', ribbonColor: { field: 'strand' } }
+{ type: 'MultiWaySyntenyDisplay', ribbons: { encoding: { color: 'strand' } } }
 ```
 
 ```js
 {
   type: 'MultiWaySyntenyDisplay',
-  ribbonColor: {
-    field: 'strand',
-    range: ['#1b9e77', '#d95f02'],
-    labels: ['Kept', 'Inverted'],
+  ribbons: {
+    encoding: {
+      color: {
+        field: 'strand',
+        scale: {
+          range: ['#1b9e77', '#d95f02'],
+          names: ['Kept', 'Inverted'],
+        },
+      },
+    },
   },
 }
 ```
@@ -38,7 +48,14 @@ view's [SyntenyColor](../syntenycolor). A string is the constant.
 ```js
 {
   type: 'MultiWaySyntenyDisplay',
-  ribbonColor: { field: 'group', domain: ['core', 'shell'] },
+  ribbons: {
+    encoding: {
+      color: {
+        field: 'group',
+        scale: { domain: ['core', 'shell'], invalid: 'lightgrey' },
+      },
+    },
+  },
 }
 ```
 
@@ -49,16 +66,8 @@ A setting written to it replaces it whole, since its members are alternatives: a
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-value">**value**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | The color of every ribbon under the `none` scale, and of a pair with no value under a field. |
+| <span id="slot-value">**value**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | The color of every ribbon while no field paints. |
+| <span id="slot-scale">**scale**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ConfigurationSchema( 'RibbonColorScale', { ...syntenyColorScale…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ConfigurationSchema(&#10;&#160;&#160;'RibbonColorScale',&#10;&#160;&#160;{&#10;&#160;&#160;&#160;&#160;...syntenyColorScaleSlots('RibbonColorScaleType'),&#10;&#160;&#160;&#160;&#160;invalid: {&#10;&#160;&#160;&#160;&#160;&#160;&#160;type: 'maybeColor',&#10;&#160;&#160;&#160;&#160;&#160;&#160;description:&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;'the color of a pair with no value for the field, whose alpha every ribbon takes; unset, rgba(130,130,130,0.3)',&#10;&#160;&#160;&#160;&#160;},&#10;&#160;&#160;},&#10;&#160;&#160;colorScaleOptions('ribbons.encoding.color.scale'),&#10;)</code></pre></dialog></span> | How the field's values map to colors, Vega-Lite's scale object. |
+| <span id="slot-invalid">**invalid**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | The color of a pair with no value for the field, Vega-Lite's word for a missing value's output; its alpha is every ribbon's under the field. |
+| <span id="slot-legend">**legend**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ConfigurationSchema( 'RibbonColorLegend', syntenyColorLegendSlo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ConfigurationSchema(&#10;&#160;&#160;'RibbonColorLegend',&#10;&#160;&#160;syntenyColorLegendSlots,&#10;&#160;&#160;colorLegendOptions,&#10;)</code></pre></dialog></span> | The key this channel draws. |
 | <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | field to color each ribbon by: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity and dnds paint their preset ramps, mapq its bins and syntenicDepth one-to-one against shared orthologs, as the synteny view's do; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it) |
-| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (linear, threshold) | linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement uses its preset scale and a column one read off its values |
-| <span id="slot-domain">**domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | a text column's labels that take the palette first, in order, and lead the key, the rest following sorted, strand's values (1, -1) in the order range colors them, or a threshold's cuts; a label left out takes a color no listed label or label met before it paints, the first time the view meets it, and keeps it |
-| <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colors a text column's labels or strand's values take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's default stops; under threshold, one per interval |
-| <span id="slot-scheme">**scheme**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (viridis, magma, inferno, cividis, juicebox, fall, reds, blues, redblue, purpleorange, redgreyblue, redyellowblue) | a named ramp: a linear, log or symlog scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it |
-| <span id="slot-reverse">**reverse**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | turns the ramp round, so its last color paints the bottom of a ramp's domain or a threshold's lowest interval; unset follows the field's preset, else runs as written |
-| <span id="slot-domainmid">**domainMid**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it |
-| <span id="slot-domainmin">**domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the bottom of a ramp's domain; unset follows the loaded values |
-| <span id="slot-domainmax">**domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the top of a ramp's domain; unset follows the loaded values |
-| <span id="slot-labels">**labels**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | key label for each domain value, one each in order, or under threshold for each interval from the lowest; a value past the end of the list shows its name |
-| <span id="slot-descending">**descending**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | threshold key lists the highest interval first; unset follows the field's preset, else the lowest first |
-| <span id="slot-title">**title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | key title; unset keeps the display's own heading, "" draws none |

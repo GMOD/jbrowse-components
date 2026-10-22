@@ -175,11 +175,13 @@ test('a field name written as the constant is refused with the field spelling', 
 })
 
 test('a bare string is the field, and a color written as one is refused with the constant spelling', () => {
-  const color = colorConfigSchema.create('gene_biotype' as never, { pluginManager })
+  const color = colorConfigSchema.create('gene_biotype' as never, {
+    pluginManager,
+  })
   expect(colorSettingOf(color).field).toBe('gene_biotype')
-  expect(() => colorConfigSchema.create('red' as never, { pluginManager })).toThrow(
-    'write encoding.color: { "value": "red" }',
-  )
+  expect(() =>
+    colorConfigSchema.create('red' as never, { pluginManager }),
+  ).toThrow('write encoding.color: { "value": "red" }')
 })
 
 describe('colorSettingOf', () => {

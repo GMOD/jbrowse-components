@@ -279,7 +279,7 @@ a key off the colors of the keys met before it.
 
 ### CategoricalRef
 
-A field bound to a categorical scale: each distinct value takes one entry of the
+A field bound to an ordinal scale: each distinct value takes one entry of the
 channel's `range` — a color for `color`, a shape name for `shape`. Every value
 derives its entry from itself (an integer takes the slot it names, anything else
 hashes in), so every region agrees on a value it shares with another at the cost

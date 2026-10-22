@@ -68,8 +68,8 @@ cluster, and ribbons colored by percent identity:
       type: 'MultiWaySyntenyDisplay',
       displayId: 'primate_synteny-MultiWaySyntenyDisplay',
       rows: { sort: ['panTro6', 'gorGor6', 'ponAbe3'] },
-      color: { field: 'cluster' },
-      ribbonColor: { field: 'identity' },
+      encoding: { color: 'cluster' },
+      ribbons: { encoding: { color: 'identity' } },
     },
   ],
 }
@@ -99,16 +99,16 @@ Display slots go on a display entry: `"displays": [{ "type": "MultiWaySyntenyDis
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-color">**color**</span><br>[MultiWayGeneColor](../multiwaygenecolor) | The gene glyphs' fill: a CSS color or `jexl:` callback, goldenrod unset, or `{ field }` to paint each value in a palette color, with a key. |
+| <span id="slot-encoding">**encoding**</span><br>[MultiWayGeneEncoding](../multiwaygeneencoding) | The channels the gene glyphs paint through: `encoding.color`, their fill. |
 | <span id="slot-utrcolor">**utrColor**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#357089'</code> | the fill color of the untranslated parts of a gene glyph, matching the canvas gene track default<br>_callback args:_ `feature` |
 | <span id="slot-data">**data**</span><br>[SyntenyData](../syntenydata) | What the fetch reads, a [](/docs/config/syntenydata) object: `resolution` picks a tiered file's stored tier. |
 | <span id="slot-rows">**rows**</span><br>[LaneRows](../lanerows) | The lane order and the lanes drawn, which the Lanes menu, a header drag and the lane picker write. |
-| <span id="slot-ribboncolor">**ribbonColor**</span><br>[RibbonColor](../ribboncolor) | `"rgba(130,130,130,0.3)"` paints every ribbon; `{ field: "strand" }` the record's strand, `{ field: "identity" }` a preset ramp and `{ field: "group" }` a declared column. |
+| <span id="slot-ribbons">**ribbons**</span><br>[MultiWayRibbons](../multiwayribbons) | The bands joining each gene's placements in adjacent lanes: `ribbons.encoding.color` paints them. |
 | <span id="slot-hideunlabelled">**hideUnlabelled**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | under a text column, draw only the ribbons whose pair has a label |
 | <span id="slot-drawcurves">**drawCurves**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | draw each ribbon side as the S-curve that leaves and meets each lane square, the linear synteny view's `mark.interpolate: 'bump'`; off draws it straight, the default, since a straight side's slant reads as the offset between two lanes |
 | <span id="slot-lanegenetracks">**laneGeneTracks**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | the trackId of the gene track each lane draws, one per genome, or an entry spelling `{assembly}`, such as `{assembly}-ncbiRefSeq`, naming in each lane the track whose id has that lane's genome, or any of its aliases, written there. Plain ids outrank `{assembly}` entries, and an earlier entry outranks a later one. A lane whose genome no entry names draws the session's best-ranked annotation track for it, which on a config holding several gene sets per genome is whichever is declared first |
 | <span id="slot-bridgeskippedlanes">**bridgeSkippedLanes**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | join a group across a lane that places nothing for it, to the next lane down that does. A ribbon otherwise joins adjacent lanes only, so a sparse lane mid-stack cuts every chain running through it |
-| <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | show the color key: the anchor lane's drawn gene colors, and what `ribbonColor` paints — the strand colors, the identity ramp, or a column's labels. Derived from what is on screen, so a `color` slot resolving to one color and a ribbon scale painting nothing key nothing. Defaults to on |
+| <span id="slot-legend">**legend**</span><br>[Legend](../legend) | The color key: the anchor lane's drawn gene colors, and what `ribbons.encoding.color` paints — the strand colors, the identity ramp, or a column's labels. Derived from what is on screen, so an `encoding.color` resolving to one color and a ribbon scale painting nothing key nothing. |
 | <span id="slot-showlaneticks">**showLaneTicks**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw each lane's coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out. With this off, the header's span and multiple are the only scale shown |
 | <span id="slot-text">**text**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field, or jexl expression over `feature`, each lane's gene labels print; unset, the gene's name, else its ID. |
 | <span id="slot-inlinelanenames">**inlineLaneNames**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | print each lane's genome name over the left end of its gene row, without its coordinates, instead of on a line above the genes. The stack then fits 12 px less per lane |

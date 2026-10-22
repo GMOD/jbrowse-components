@@ -13,8 +13,8 @@ translocation as a chord across the circle.
 ## Example usage
 
 The circular-view display for a `VariantTrack` of structural variants;
-translocations are drawn as chords across the circle. `color` is the
-chord's resting color, a constant or a field of the record with a key, and
+translocations are drawn as chords across the circle. `encoding.color` is
+the chord's resting color, a constant or a field of the record with a key, and
 `colorHover` and `colorSelected` its hovered and selected ones:
 
 ```js
@@ -31,7 +31,7 @@ chord's resting color, a constant or a field of the record with a key, and
     {
       type: 'ChordVariantDisplay',
       displayId: 'sv-ChordVariantDisplay',
-      color: { field: 'svType' },
+      encoding: { color: 'svType' },
       opacity: 0.45,
       colorHover: '#555',
     },
@@ -57,7 +57,7 @@ Display slots go on a display entry: `"displays": [{ "type": "ChordVariantDispla
 | --- | --- |
 | <span id="slot-mark">**mark**</span><br>[ChordMark](../chordmark) | How far each chord curves toward the center, a [](/docs/config/chordmark) object |
 | <span id="slot-onchordclick">**onChordClick**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | a jexl callback run when a chord is clicked, in place of opening the record's details<br>_callback args:_ `feature`, `track`, `pluginManager` |
-| <span id="slot-color">**color**</span><br>[ChordColor](../chordcolor) | The line color of each resting chord: a CSS color or `jexl:` callback, or a field of the record, `svType` say, whose values each take a color with a key on the circle. |
+| <span id="slot-encoding">**encoding**</span><br>[ChordEncoding](../chordencoding) | The channels each resting chord paints through: `encoding.color`, its line color. |
 | <span id="slot-opacity">**opacity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.32</code> | the alpha every resting chord draws at, over its color's own |
 | <span id="slot-colorselected">**colorSelected**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'black'</code> | the line color of a chord that has been selected<br>_callback args:_ `feature` |
 | <span id="slot-colorhover">**colorHover**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#555'</code> | the line color of a chord that is being hovered over with the mouse<br>_callback args:_ `feature` |

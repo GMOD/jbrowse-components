@@ -1,11 +1,11 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { triangleMatrixConfigSchemaFields } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
-import { hiddenLegendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
+import { hiddenLegendConfigSchema } from '@jbrowse/display-kit/hiddenLegendConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { ldEncodingConfigSchema } from './ldColorConfigSchema.ts'
+import { ldEncodingConfigSchema } from './ldEncodingConfigSchema.ts'
 
 /**
  * #config LDTrackDisplay

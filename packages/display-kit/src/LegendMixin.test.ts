@@ -4,11 +4,8 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import LegendMixin from './LegendMixin.ts'
-
-import {
-  hiddenLegendConfigSchema,
-  legendConfigSchema,
-} from './legendConfigSchema.ts'
+import { hiddenLegendConfigSchema } from './hiddenLegendConfigSchema.ts'
+import { legendConfigSchema } from './legendConfigSchema.ts'
 
 import type { LegendConfHost } from './LegendMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'

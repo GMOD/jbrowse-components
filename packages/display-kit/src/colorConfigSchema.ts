@@ -766,7 +766,10 @@ export function colorForField(
   if (field === '') {
     const cleared = withoutField(current)
     return cleared.scale?.type === IDENTITY_SCALE
-      ? definedColor({ ...cleared, scale: { ...cleared.scale, type: undefined } })
+      ? definedColor({
+          ...cleared,
+          scale: { ...cleared.scale, type: undefined },
+        })
       : cleared
   }
   if (field === current.field) {
@@ -998,29 +1001,4 @@ export const colorConfigSchema = ConfigurationSchema(
     ),
   },
   colorChannelOptions('encoding.color', FEATURE_FIELD_PRESETS),
-)
-
-/**
- * #config FeatureEncoding
- * #category display
- * The canvas feature displays' `encoding`, the channels the features paint
- * through.
- *
- * #example
- * ```js
- * { type: 'LinearBasicDisplay', encoding: { color: 'gene_biotype' } }
- * ```
- */
-export const featureEncodingConfigSchema = ConfigurationSchema(
-  'FeatureEncoding',
-  {
-    /**
-     * #slot color
-     * The main fill of each feature: `{ value }`, a CSS color or a jexl
-     * expression, or a field and the `scale` its values map through, with a
-     * key.
-     */
-    color: colorConfigSchema,
-  },
-  encodingOptions,
 )

@@ -27,8 +27,8 @@ LD from genotypes; run plink (or an equivalent) and point this at the result.
     {
       type: 'LDTrackDisplay',
       displayId: 'ld-LDTrackDisplay',
-      color: { field: 'dprime' },
-      showLegend: true,
+      encoding: { color: { field: 'dprime' } },
+      legend: { show: true },
     },
   ],
 }
@@ -54,13 +54,13 @@ Display slots go on a display entry: `"displays": [{ "type": "LDTrackDisplay", .
 | Slot | Description |
 | --- | --- |
 | <span id="slot-linezoneheight">**lineZoneHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | height of the band above the triangle holding the connector lines and labels<br>_advanced_ |
-| <span id="slot-color">**color**</span><br>[LDColor](../ldcolor) | The statistic the cells show, `field` `r2` or `dprime`, and the linear ramp it paints through over the statistic's 0 to 1. |
+| <span id="slot-encoding">**encoding**</span><br>[LDEncoding](../ldencoding) | The cells' channels: `encoding.color`, the statistic the cells show, `field` `r2` or `dprime`, and the linear ramp it paints through over the statistic's 0 to 1. |
+| <span id="slot-legend">**legend**</span><br>[HiddenLegend](../hiddenlegend) | The color ramp's key, off until asked for. |
 | <span id="slot-showverticalguides">**showVerticalGuides**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | on hover, draw guides across the view at the pair's genomic positions<br>_advanced_ |
 | <span id="slot-showlabels">**showLabels**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (none, name) = <code>'none'</code> | `name` draws each variant name above its tick mark and `none` draws no labels, two of the modes of the feature display `showLabels`<br>_advanced_ |
 | <span id="slot-tickheight">**tickHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>6</code> | height of the tick marks at the genomic positions<br>_advanced_ |
 | <span id="slot-variantlayout">**variantLayout**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (genomic, columns) = <code>'columns'</code> | `'columns'` draws every SNP one uniform square wide; `'genomic'` sizes the cells by the genomic distance between SNPs. The multi-sample variant display takes the same slot for the same choice.<br>_advanced_ |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>400</code> | default height of the display, the band above the triangle included |
-| <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | show the color scale legend |
 | <span id="slot-heightmode">**heightMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) = <code>'fixed'</code> | fixed draws square cells at the triangle's natural half-width height; fit squashes it to fill the display height |
 
 ## Retired keys
@@ -76,6 +76,7 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `mouseover` | ignored |
 | `jexlFilters` | moved into a current slot |
 | `ldMetric` | moved into a current slot |
+| `showLegend` | moved into a current slot |
 | `fitToHeight` | moved into a current slot |
 | `useGenomicPositions` | moved into a current slot |
 | `maxHeight` | ignored |

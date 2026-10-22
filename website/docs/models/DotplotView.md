@@ -21,7 +21,7 @@ directly on the view object. `views` lists the two assemblies on the axes and
   type: 'DotplotView',
   views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
   tracks: ['hg38_vs_mm10.paf'],
-  color: { field: 'query' },
+  encoding: { color: 'query' },
 }
 ```
 
@@ -50,13 +50,11 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-launch">**launch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>launch: types.frozen&lt;LaunchInput&lt;DotplotViewCommands&gt; &#124; undefin…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>launch: types.frozen&lt;LaunchInput&lt;DotplotViewCommands&gt; &#124; undefined&gt;()</code></pre></dialog></span> | transient launch state: the settings written on the view object that need resolving before they can be view state — the two axis assemblies, track recipes, highlights. `preProcessSnapshot` moves them here off the snapshot, the afterAttach autorun applies them and clears this, so a saved session never retains it. Not written by hand: author every setting directly on the view. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>8 inherited properties from 6 models</summary>
+<summary>7 inherited properties from 5 models</summary>
 
 From [SyntenyViewMixin](../syntenyviewmixin): <span id="property-data">[`data`](../syntenyviewmixin#property-data)</span>
 
-From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="property-opacity">[`opacity`](../syntenycolorsmixin#property-opacity)</span>
-
-From [TrackColorsMixin](../trackcolorsmixin): <span id="property-color">[`color`](../trackcolorsmixin#property-color)</span>, <span id="property-trackcolors">[`trackColors`](../trackcolorsmixin#property-trackcolors)</span>
+From [TrackColorsMixin](../trackcolorsmixin): <span id="property-encoding">[`encoding`](../trackcolorsmixin#property-encoding)</span>, <span id="property-trackcolors">[`trackColors`](../trackcolorsmixin#property-trackcolors)</span>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="property-parkedcolors">[`parkedColors`](../parkedcolormixin#property-parkedcolors)</span>
 

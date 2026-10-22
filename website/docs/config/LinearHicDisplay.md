@@ -23,7 +23,10 @@ A log color scale, one step coarser than the zoom picks, through the
   name: 'Hi-C',
   assemblyNames: ['hg38'],
   adapter: { type: 'HicAdapter', uri: 'https://example.com/contacts.hic' },
-  displayDefaults: { color: { scale: 'symlog' }, resolutionBias: 1 },
+  displayDefaults: {
+    encoding: { color: { scale: { type: 'symlog' } } },
+    resolutionBias: 1,
+  },
 }
 ```
 
@@ -45,11 +48,11 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearHicDisplay",
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-color">**color**</span><br>[HicColor](../hiccolor) | The scale from count to color: a `linear`, `symlog` or `log` scale onto a named `scheme`, over a domain whose unset ends follow the loaded counts. |
+| <span id="slot-encoding">**encoding**</span><br>[HicEncoding](../hicencoding) | The channels the bins paint through: `encoding.color`, the scale from count to color. |
+| <span id="slot-legend">**legend**</span><br>[HiddenLegend](../hiddenlegend) | The color ramp's key, off until asked for. |
 | <span id="slot-resolutionbias">**resolutionBias**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | steps from the zoom-picked binsize: -1 one finer, +1 one coarser, 0 follows the zoom |
 | <span id="slot-selectednormalization">**selectedNormalization**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'KR'</code> | preferred matrix normalization (KR, SCALE, VC, VC_SQRT, NONE); a scheme the file lacks falls back to one it has |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>300</code> | default height for the Hi-C track |
-| <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | show the color scale legend |
 | <span id="slot-heightmode">**heightMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) = <code>'fixed'</code> | fixed draws square cells at the triangle's natural half-width height; fit squashes it to fill the display height |
 
 ## Retired keys

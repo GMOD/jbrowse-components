@@ -2,8 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { baseLinearAlignmentsDisplayConfigSchema } from '@jbrowse/plugin-alignments'
 import { syntenyDataConfigSchema } from '@jbrowse/synteny-core'
 
-import { lgvSyntenyEncodingConfigSchema } from './lgvSyntenyColorConfigSchema.ts'
 import { lgvSyntenyCoverageConfigSchema } from './lgvSyntenyCoverageConfigSchema.ts'
+import { lgvSyntenyEncodingConfigSchema } from './lgvSyntenyEncodingConfigSchema.ts'
 import { lgvSyntenySortConfigSchema } from './lgvSyntenySortConfigSchema.ts'
 
 /**

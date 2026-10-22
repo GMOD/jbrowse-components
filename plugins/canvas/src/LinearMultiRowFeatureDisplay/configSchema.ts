@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { featureEncodingConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
+import { featureEncodingConfigSchema } from '@jbrowse/display-kit/featureEncodingConfigSchema'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { retiredDisplayColor } from '@jbrowse/display-kit/retiredSettings'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'

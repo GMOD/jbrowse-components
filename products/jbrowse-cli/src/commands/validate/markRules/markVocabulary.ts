@@ -67,13 +67,13 @@ export function markDefOf(entry: { mark?: MarkDefSnapshot }) {
   const { mark } = entry
   return typeof mark === 'object' ? mark : {}
 }
-/** The diameter a point draws at, and a rule's thickness, where its `size` is left unwritten. */
+/** The diameter a point draws at where its `size` is left unwritten, and a rule's thickness where its `strokeWidth` is. */
 export const DEFAULT_POINT_DIAMETER_PX = 4
 
-/** The width a line strokes at where its `size` is left unwritten. */
+/** The width a line strokes at where its `strokeWidth` is left unwritten. */
 export const DEFAULT_LINE_WIDTH_PX = 1
 
-/** The stroke a link draws at where its `size` is left unwritten. */
+/** The stroke a link draws at where its `strokeWidth` is left unwritten. */
 export const DEFAULT_LINK_STROKE_PX = 2
 
 /** The cuts a threshold color paints, render-core's `MAX_COLOR_CUTS`. */
@@ -81,7 +81,7 @@ export const MAX_THRESHOLD_CUTS = 8
 
 /** The scales a mark's `color` offers. */
 export const MARK_COLOR_SCALES = [
-  'categorical',
+  'ordinal',
   'linear',
   'log',
   'symlog',

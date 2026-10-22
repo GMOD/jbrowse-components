@@ -14,11 +14,11 @@ import {
 
 import { extentConfigSchemaFields } from '../shared/extentConfigSchemaFields.ts'
 import { quantitativeRowsConfigSchema } from '../shared/quantitativeRowsConfigSchema.ts'
-import { wiggleEncodingConfigSchema } from '../shared/wiggleColorConfigSchema.ts'
 import {
   wiggleConfigSchemaFields,
   wiggleValueScale,
 } from '../shared/wiggleConfigSchemaFields.ts'
+import { wiggleEncodingConfigSchema } from '../shared/wiggleEncodingConfigSchema.ts'
 import { wiggleMarkConfigSchema } from '../shared/wiggleMarkConfigSchema.ts'
 import { WIGGLE_MARK_NAMES, markOf } from '../util.ts'
 import { retiredConfigSpellings } from './retired.ts'

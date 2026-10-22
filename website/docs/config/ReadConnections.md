@@ -21,7 +21,7 @@ either draws is the display's `filter.connections`.
   readConnections: {
     show: true,
     mark: 'rule',
-    color: { field: 'insertSize' },
+    encoding: { color: 'insertSize' },
   },
 }
 ```
@@ -45,6 +45,5 @@ A setting written to it names members one by one: a member left out stays as it 
 | <span id="slot-mark">**mark**</span><br>[ReadConnectionsMark](../readconnectionsmark) | The shape each connection draws as: `type` `link`, the arcs, or `rule`, the read cloud. |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>35</code> | height in pixels of the connections' own band, drawn under placement: 'down', or under 'up' while the coverage band is hidden; with coverage shown, up arcs draw in its height |
 | <span id="slot-placement">**placement**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (up, down) = <code>'down'</code> | where the connections draw: up over the coverage band, or down in a separate band below it |
-| <span id="slot-linewidth">**lineWidth**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | width of each arc or line in pixels |
-| <span id="slot-color">**color**</span><br>[AlignmentsArcColor](../alignmentsarccolor) | The field that colors the connections; `""` uses the reads' `color` field where a connection paints it. |
+| <span id="slot-encoding">**encoding**</span><br>[ReadConnectionsEncoding](../readconnectionsencoding) | The color and width each connection strokes at: `color`, a pair field, `""` following the reads' `encoding.color` field where a connection paints it, and `strokeWidth`. |
 | <span id="slot-ordinarypairs">**ordinaryPairs**</span><br>[ReadConnectionsOrdinaryPairs](../readconnectionsordinarypairs) | The pairs that carry no category, drawn as context: `show`. |

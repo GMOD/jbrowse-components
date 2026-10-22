@@ -10,8 +10,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 Draws a `SyntenyTrack`'s alignments in a linear genome view, stacked and
 colored the way an alignments display draws reads. It has the alignments
 display's bands and settings but the sashimi band, `filter.junctions`,
-`baseColor` and `modifications`: a synteny block has no introns, basecaller
-tags or qualities.
+`pileup.bases` and `modifications`: a synteny block has no introns,
+basecaller tags or qualities.
 
 ## Example usage
 
@@ -65,7 +65,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LGVSyntenyDisplay"
 | Slot | Description |
 | --- | --- |
 | <span id="slot-data">**data**</span><br>[SyntenyData](../syntenydata) | What the fetch reads, a [](/docs/config/syntenydata) object: `resolution` picks a tiered file's stored tier. |
-| <span id="slot-color">**color**</span><br>[LGVSyntenyColor](../lgvsyntenycolor) | The alignments displays' `color` object with `field` defaulting to `strand`, where the base display paints the plain fill. |
+| <span id="slot-encoding">**encoding**</span><br>[LGVSyntenyEncoding](../lgvsyntenyencoding) | The alignments displays' `encoding` with `color` painting `strand` while it names neither a field nor a constant, where the base display paints the plain fill. |
 | <span id="slot-coverage">**coverage**</span><br>[LGVSyntenyCoverage](../lgvsyntenycoverage) | The alignments displays' `coverage` band with `show` defaulting to off: a synteny track hides the coverage histogram unless asked. |
 | <span id="slot-collapsesections">**collapseSections**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | One row per facet section by default: an all-vs-all track faceted by mate assembly draws each mate genome as a single band, with repeat depth shown as darker shading rather than as extra rows. Overrides the base alignments display's `collapseSections` default of `false`, where a section is a read category and the stack itself is the information. |
 | <span id="slot-sort">**sort**</span><br>[LGVSyntenySort](../lgvsyntenysort) | The row order, with `length` the default so big syntenic blocks cluster at the top; a string is the `field`. |
@@ -75,9 +75,9 @@ Display slots go on a display entry: `"displays": [{ "type": "LGVSyntenyDisplay"
 | <span id="slot-filter">**filter**</span><br>[BaseAlignmentsFilter](../basealignmentsfilter) | Every test the display applies, and every test must hold. The read members (the flag masks, `minMapq`, `readName`, `tags` and the read categories `spliced`, `svSignal`, `alone` and `split`, each `"only"`, `"exclude"` or unset) run before every band, so coverage counts only the reads they pass; by default `flagExclude` drops unmapped, QC-failed and duplicate reads (1540). `connections` tests the connections the arcs, the read cloud and the connectors over the pileup draw. |
 | <span id="slot-facet">**facet**</span><br>[SectionFacet](../sectionfacet) | In-track stacked grouping, one labelled section per value: a read dimension (`strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `svSignal`, `mapq`, `mateRefName`, `mateAssembly`), a tag (`tags.HP`), or any other field. `{ field: "tags.HP", domain: ["2", "1"] }` stacks the listed values first. |
 | <span id="slot-scales">**scales**</span><br>[ValueScale](../valuescale) | The coverage band's value scale. The read cloud's insert-size axis is a fixed log scale (`arcBandYScale`) no setting reaches, and the pileup has no value. `symlogConstant` starts at 1 rather than the wiggle family's 0, which makes symlog exactly `log(depth+1)`: the knee sits at one read, the smallest depth there is. `domainQuantile` stays at 1, the deepest base in view; the Coverage axis panel's Clip extreme outliers writes 0.99, which stops the axis at twice the 99th percentile of the covered bins' peaks, and misses a collapsed-repeat pile-up once it covers more than 1% of the view. |
-| <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Show the color-scheme legend overlay. Defaults to off |
+| <span id="slot-legend">**legend**</span><br>[HiddenLegend](../hiddenlegend) | The display's key: `show`, off by default. |
 | <span id="slot-pileup">**pileup**</span><br>[Pileup](../pileup) | The stacked reads: `show`, `readHeight` (default 7), `maxLayoutHeight`, and the parts drawn on each read. |
-| <span id="slot-readconnections">**readConnections**</span><br>[ReadConnections](../readconnections) | The connections between mates and split segments: `show` (default off), `mark` (`arc` or `cloud`), `height`, `placement`, `lineWidth`, `color` and `ordinaryPairs`; `filter.connections` filters the connections drawn. |
+| <span id="slot-readconnections">**readConnections**</span><br>[ReadConnections](../readconnections) | The connections between mates and split segments: `show` (default off), `mark` (`arc` or `cloud`), `height`, `placement`, `encoding` (`color` and `strokeWidth`) and `ordinaryPairs`; `filter.connections` filters the connections drawn. |
 | <span id="slot-heightmode">**heightMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (fixed, grow, fit) = <code>'fixed'</code> | Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). `fixed` (the default) keeps `pileup.readHeight` and scrolls; `grow` expands the track to show every read at that height; `fit` squeezes reads so every uncollapsed section fills the display without scrolling |
 | <span id="slot-growmaxheight">**growMaxHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>800</code> | Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see pileup.maxLayoutHeight)<br>_advanced_ |
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">2 slots</span> |

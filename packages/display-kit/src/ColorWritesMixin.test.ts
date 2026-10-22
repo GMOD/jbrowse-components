@@ -78,7 +78,11 @@ function colorOf(d: ReturnType<typeof display>) {
 }
 
 test('a new field keeps only the constant', () => {
-  const d = display({ value: 'red', field: 'type', scale: { domain: ['gene'] } })
+  const d = display({
+    value: 'red',
+    field: 'type',
+    scale: { domain: ['gene'] },
+  })
   d.colorByField('source')
   expect(colorOf(d)).toEqual({ value: 'red', field: 'source' })
 })
@@ -146,7 +150,11 @@ const StrandDefaultDisplay = displayOf(
 // LGVSyntenyColor maps `strand` while its snapshot names no field
 test('an implied field reads as written and keeps its range on a re-pick', () => {
   const d = StrandDefaultDisplay.create(
-    { configuration: { encoding: { color: { scale: { range: ['red', 'blue'] } } } } },
+    {
+      configuration: {
+        encoding: { color: { scale: { range: ['red', 'blue'] } } },
+      },
+    },
     { pluginManager },
   )
   const patches: unknown[] = []

@@ -5,10 +5,10 @@ import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { syntenyDataConfigSchema } from '@jbrowse/synteny-core'
 
-import { geneEncodingConfigSchema } from './geneColorConfigSchema.ts'
+import { geneEncodingConfigSchema } from './geneEncodingConfigSchema.ts'
 import { laneLayerConfigSchema } from './laneLayerConfigSchema.ts'
 import { laneRowsConfigSchema } from './laneRowsConfigSchema.ts'
-import { ribbonsConfigSchema } from './ribbonColorConfigSchema.ts'
+import { ribbonsConfigSchema } from './ribbonsConfigSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

@@ -3173,8 +3173,16 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "showLegend",
-          "type": "boolean"
+          "name": "legend",
+          "type": "LegendConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "Legend",
+          "writes": "members"
         },
         {
           "name": "showLabels",
@@ -3189,81 +3197,109 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "color",
-          "type": "FeatureColorConfigurationSchema",
+          "name": "encoding",
+          "type": "FeatureEncodingConfigurationSchema",
           "subSlots": [
             {
-              "name": "value",
-              "type": "(JexlString | (CssColor | undefined))"
-            },
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "(FeatureColorScale | undefined)"
-            },
-            {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "unknown",
-              "type": "(CssColor | undefined)"
-            },
-            {
-              "name": "labels",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "scheme",
-              "type": "(ColorScheme | undefined)"
-            },
-            {
-              "name": "reverse",
-              "type": "(boolean | undefined)"
-            },
-            {
-              "name": "domainMid",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMin",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMax",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainQuantile",
-              "type": "number"
-            },
-            {
-              "name": "title",
-              "type": "(string | undefined)"
+              "name": "color",
+              "type": "FeatureColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(JexlString | (CssColor | undefined))"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "FeatureColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "(FeatureColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "names",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainQuantile",
+                      "type": "number"
+                    }
+                  ],
+                  "schema": "FeatureColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "FeatureColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "FeatureColorLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "FeatureColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "score": {
+                  "scale": {
+                    "type": "linear"
+                  }
+                },
+                "*": {
+                  "scale": {
+                    "type": "ordinal"
+                  }
+                }
+              }
             }
           ],
-          "schema": "FeatureColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "value"
-          },
-          "fieldPresets": {
-            "score": {
-              "scale": "linear"
-            },
-            "*": {
-              "scale": "categorical"
-            }
-          }
+          "schema": "FeatureEncoding",
+          "writes": "members"
         },
         {
           "name": "showOutline",
@@ -3377,6 +3413,7 @@ export const configManifest: ConfigManifest = {
         "maxHeight",
         "hideSourceFeatures",
         "renderer",
+        "color",
         "showDescriptions"
       ],
       "droppedKeys": [
@@ -3477,81 +3514,109 @@ export const configManifest: ConfigManifest = {
           "type": "string"
         },
         {
-          "name": "color",
-          "type": "FeatureColorConfigurationSchema",
+          "name": "encoding",
+          "type": "FeatureEncodingConfigurationSchema",
           "subSlots": [
             {
-              "name": "value",
-              "type": "(JexlString | (CssColor | undefined))"
-            },
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "(FeatureColorScale | undefined)"
-            },
-            {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "unknown",
-              "type": "(CssColor | undefined)"
-            },
-            {
-              "name": "labels",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "scheme",
-              "type": "(ColorScheme | undefined)"
-            },
-            {
-              "name": "reverse",
-              "type": "(boolean | undefined)"
-            },
-            {
-              "name": "domainMid",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMin",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMax",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainQuantile",
-              "type": "number"
-            },
-            {
-              "name": "title",
-              "type": "(string | undefined)"
+              "name": "color",
+              "type": "FeatureColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(JexlString | (CssColor | undefined))"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "FeatureColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "(FeatureColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "names",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainQuantile",
+                      "type": "number"
+                    }
+                  ],
+                  "schema": "FeatureColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "FeatureColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "FeatureColorLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "FeatureColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "score": {
+                  "scale": {
+                    "type": "linear"
+                  }
+                },
+                "*": {
+                  "scale": {
+                    "type": "ordinal"
+                  }
+                }
+              }
             }
           ],
-          "schema": "FeatureColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "value"
-          },
-          "fieldPresets": {
-            "score": {
-              "scale": "linear"
-            },
-            "*": {
-              "scale": "categorical"
-            }
-          }
+          "schema": "FeatureEncoding",
+          "writes": "members"
         },
         {
           "name": "rowColor",
@@ -3562,17 +3627,25 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "unknown",
-              "type": "(CssColor | undefined)"
+              "name": "scale",
+              "type": "RowColorScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "domain",
+                  "type": "string[]",
+                  "liftsNumbers": true
+                },
+                {
+                  "name": "range",
+                  "type": "CssColorEntry[]"
+                },
+                {
+                  "name": "unknown",
+                  "type": "(CssColor | undefined)"
+                }
+              ],
+              "schema": "RowColorScale",
+              "writes": "members"
             }
           ],
           "schema": "RowColor",
@@ -3590,8 +3663,16 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "showLegend",
-          "type": "boolean"
+          "name": "legend",
+          "type": "LegendConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "Legend",
+          "writes": "members"
         },
         {
           "name": "rowGroups",
@@ -3649,7 +3730,8 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
-        "jexlFilters"
+        "jexlFilters",
+        "color"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -3851,134 +3933,180 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "color",
-          "type": "AlignmentsColorConfigurationSchema",
+          "name": "encoding",
+          "type": "AlignmentsEncodingConfigurationSchema",
           "subSlots": [
             {
-              "name": "value",
-              "type": "(CssColor | undefined)"
-            },
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "(AlignmentsColorScale | undefined)"
-            },
-            {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "domainMin",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMax",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainQuantile",
-              "type": "number"
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "scheme",
-              "type": "(ColorScheme | undefined)"
-            },
-            {
-              "name": "reverse",
-              "type": "(boolean | undefined)"
-            },
-            {
-              "name": "domainMid",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "labels",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "title",
-              "type": "(string | undefined)"
-            },
-            {
-              "name": "descending",
-              "type": "(boolean | undefined)"
+              "name": "color",
+              "type": "AlignmentsColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(CssColor | undefined)"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "AlignmentsColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "(AlignmentsColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "invalid",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "names",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainQuantile",
+                      "type": "number"
+                    }
+                  ],
+                  "schema": "AlignmentsColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "AlignmentsColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "descending",
+                      "type": "(boolean | undefined)"
+                    }
+                  ],
+                  "schema": "AlignmentsColorLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "AlignmentsColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "strand": {
+                  "scale": {
+                    "type": "ordinal",
+                    "domain": [
+                      "1",
+                      "-1"
+                    ]
+                  }
+                },
+                "mapq": {
+                  "scale": {
+                    "type": "threshold",
+                    "domain": [
+                      "1",
+                      "10",
+                      "30"
+                    ],
+                    "scheme": "cividis",
+                    "names": [
+                      "MAPQ 0 (multi-mapping)",
+                      "MAPQ 1-9 (low)",
+                      "MAPQ 10-29",
+                      "MAPQ 30+ (high confidence)"
+                    ]
+                  },
+                  "legend": {
+                    "title": "Mapping quality",
+                    "descending": true
+                  }
+                },
+                "insertSize": {
+                  "scale": {
+                    "type": "threshold"
+                  }
+                },
+                "firstOfPairStrand": {
+                  "scale": {
+                    "type": "ordinal",
+                    "domain": [
+                      "1",
+                      "-1"
+                    ]
+                  }
+                },
+                "pairOrientation": {
+                  "scale": {
+                    "type": "ordinal",
+                    "domain": [
+                      "LR",
+                      "RL",
+                      "RR",
+                      "LL",
+                      "",
+                      "unmappedMate",
+                      "interchrom",
+                      "splitInverted",
+                      "splitSameStrand",
+                      "segmentInverted",
+                      "segmentSameStrand"
+                    ]
+                  }
+                },
+                "insertSizeAndOrientation": {
+                  "scale": {
+                    "type": "threshold"
+                  }
+                },
+                "mateRefName": {
+                  "scale": {
+                    "type": "ordinal"
+                  }
+                },
+                "*": {
+                  "scale": {
+                    "type": "ordinal"
+                  }
+                }
+              }
             }
           ],
-          "schema": "AlignmentsColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "value"
-          },
-          "fieldPresets": {
-            "strand": {
-              "scale": "categorical",
-              "domain": [
-                "1",
-                "-1"
-              ]
-            },
-            "mapq": {
-              "scale": "threshold",
-              "domain": [
-                "1",
-                "10",
-                "30"
-              ],
-              "scheme": "cividis",
-              "labels": [
-                "MAPQ 0 (multi-mapping)",
-                "MAPQ 1-9 (low)",
-                "MAPQ 10-29",
-                "MAPQ 30+ (high confidence)"
-              ],
-              "title": "Mapping quality",
-              "descending": true
-            },
-            "insertSize": {
-              "scale": "threshold"
-            },
-            "firstOfPairStrand": {
-              "scale": "categorical",
-              "domain": [
-                "1",
-                "-1"
-              ]
-            },
-            "pairOrientation": {
-              "scale": "categorical",
-              "domain": [
-                "LR",
-                "RL",
-                "RR",
-                "LL",
-                "",
-                "unmappedMate",
-                "interchrom",
-                "splitInverted",
-                "splitSameStrand",
-                "segmentInverted",
-                "segmentSameStrand"
-              ]
-            },
-            "insertSizeAndOrientation": {
-              "scale": "threshold"
-            },
-            "mateRefName": {
-              "scale": "categorical"
-            },
-            "*": {
-              "scale": "categorical"
-            }
-          }
+          "schema": "AlignmentsEncoding",
+          "writes": "members"
         },
         {
           "name": "scales",
@@ -4059,8 +4187,16 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "showLegend",
-          "type": "boolean"
+          "name": "legend",
+          "type": "HiddenLegendConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "HiddenLegend",
+          "writes": "members"
         },
         {
           "name": "coverage",
@@ -4096,7 +4232,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "pileup",
-          "type": "PileupConfigurationSchema",
+          "type": "ReadsPileupConfigurationSchema",
           "subSlots": [
             {
               "name": "show",
@@ -4145,9 +4281,44 @@ export const configManifest: ConfigManifest = {
             {
               "name": "fadeLowFrequency",
               "type": "boolean"
+            },
+            {
+              "name": "bases",
+              "type": "PileupBasesConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                },
+                {
+                  "name": "encoding",
+                  "type": "PileupBasesEncodingConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "color",
+                      "type": "AlignmentsBaseColorConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "field",
+                          "type": "AlignmentsBaseColorField"
+                        }
+                      ],
+                      "schema": "AlignmentsBaseColor",
+                      "writes": "whole",
+                      "shorthand": {
+                        "string": "field"
+                      }
+                    }
+                  ],
+                  "schema": "PileupBasesEncoding",
+                  "writes": "members"
+                }
+              ],
+              "schema": "PileupBases",
+              "writes": "members"
             }
           ],
-          "schema": "Pileup",
+          "schema": "ReadsPileup",
           "writes": "members"
         },
         {
@@ -4182,19 +4353,63 @@ export const configManifest: ConfigManifest = {
               "type": "ReadConnectionsPlacement"
             },
             {
-              "name": "lineWidth",
-              "type": "number"
-            },
-            {
-              "name": "color",
-              "type": "AlignmentsArcColorConfigurationSchema",
+              "name": "encoding",
+              "type": "ReadConnectionsEncodingConfigurationSchema",
               "subSlots": [
                 {
-                  "name": "field",
-                  "type": "AlignmentsArcColorField"
+                  "name": "color",
+                  "type": "AlignmentsArcColorConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "field",
+                      "type": "AlignmentsArcColorField"
+                    }
+                  ],
+                  "schema": "AlignmentsArcColor",
+                  "writes": "whole",
+                  "shorthand": {
+                    "string": "field"
+                  }
+                },
+                {
+                  "name": "strokeWidth",
+                  "type": "ReadConnectionsStrokeWidthConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "field",
+                      "type": "(ReadConnectionsStrokeWidthField | undefined)"
+                    },
+                    {
+                      "name": "scale",
+                      "type": "ReadConnectionsStrokeWidthScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "ReadConnectionsStrokeWidthScaleType"
+                        },
+                        {
+                          "name": "range",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        }
+                      ],
+                      "schema": "ReadConnectionsStrokeWidthScale",
+                      "writes": "members"
+                    }
+                  ],
+                  "schema": "ReadConnectionsStrokeWidth",
+                  "writes": "whole",
+                  "shorthand": {
+                    "string": "field",
+                    "number": "value"
+                  }
                 }
               ],
-              "schema": "AlignmentsArcColor",
+              "schema": "ReadConnectionsEncoding",
               "writes": "members"
             },
             {
@@ -4212,21 +4427,6 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "ReadConnections",
           "writes": "members"
-        },
-        {
-          "name": "baseColor",
-          "type": "AlignmentsBaseColorConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "AlignmentsBaseColorField"
-            }
-          ],
-          "schema": "AlignmentsBaseColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "field"
-          }
         },
         {
           "name": "modifications",
@@ -4374,54 +4574,80 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "color",
-          "type": "ChordColorConfigurationSchema",
+          "name": "encoding",
+          "type": "ChordEncodingConfigurationSchema",
           "subSlots": [
             {
-              "name": "value",
-              "type": "(JexlString | CssColor)"
-            },
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "(ChordColorScale | undefined)"
-            },
-            {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "unknown",
-              "type": "(CssColor | undefined)"
-            },
-            {
-              "name": "labels",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "title",
-              "type": "(string | undefined)"
+              "name": "color",
+              "type": "ChordColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(JexlString | CssColor)"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "ChordColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "(ChordColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "names",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    }
+                  ],
+                  "schema": "ChordColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "ChordColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "ChordColorLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "ChordColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "*": {
+                  "scale": {
+                    "type": "ordinal"
+                  }
+                }
+              }
             }
           ],
-          "schema": "ChordColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "value"
-          },
-          "fieldPresets": {
-            "*": {
-              "scale": "categorical"
-            }
-          }
+          "schema": "ChordEncoding",
+          "writes": "members"
         },
         {
           "name": "opacity",
@@ -4701,135 +4927,181 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "color",
-          "type": "LGVSyntenyColorConfigurationSchema",
+          "name": "encoding",
+          "type": "LGVSyntenyEncodingConfigurationSchema",
           "subSlots": [
             {
-              "name": "value",
-              "type": "(CssColor | undefined)"
-            },
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "(AlignmentsColorScale | undefined)"
-            },
-            {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "domainMin",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMax",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainQuantile",
-              "type": "number"
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "scheme",
-              "type": "(ColorScheme | undefined)"
-            },
-            {
-              "name": "reverse",
-              "type": "(boolean | undefined)"
-            },
-            {
-              "name": "domainMid",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "labels",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "title",
-              "type": "(string | undefined)"
-            },
-            {
-              "name": "descending",
-              "type": "(boolean | undefined)"
+              "name": "color",
+              "type": "LGVSyntenyColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(CssColor | undefined)"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "AlignmentsColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "(AlignmentsColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "invalid",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "names",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainQuantile",
+                      "type": "number"
+                    }
+                  ],
+                  "schema": "AlignmentsColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "AlignmentsColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "descending",
+                      "type": "(boolean | undefined)"
+                    }
+                  ],
+                  "schema": "AlignmentsColorLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "LGVSyntenyColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "strand": {
+                  "scale": {
+                    "type": "ordinal",
+                    "domain": [
+                      "1",
+                      "-1"
+                    ]
+                  }
+                },
+                "mapq": {
+                  "scale": {
+                    "type": "threshold",
+                    "domain": [
+                      "1",
+                      "10",
+                      "30"
+                    ],
+                    "scheme": "cividis",
+                    "names": [
+                      "MAPQ 0 (multi-mapping)",
+                      "MAPQ 1-9 (low)",
+                      "MAPQ 10-29",
+                      "MAPQ 30+ (high confidence)"
+                    ]
+                  },
+                  "legend": {
+                    "title": "Mapping quality",
+                    "descending": true
+                  }
+                },
+                "insertSize": {
+                  "scale": {
+                    "type": "threshold"
+                  }
+                },
+                "firstOfPairStrand": {
+                  "scale": {
+                    "type": "ordinal",
+                    "domain": [
+                      "1",
+                      "-1"
+                    ]
+                  }
+                },
+                "pairOrientation": {
+                  "scale": {
+                    "type": "ordinal",
+                    "domain": [
+                      "LR",
+                      "RL",
+                      "RR",
+                      "LL",
+                      "",
+                      "unmappedMate",
+                      "interchrom",
+                      "splitInverted",
+                      "splitSameStrand",
+                      "segmentInverted",
+                      "segmentSameStrand"
+                    ]
+                  }
+                },
+                "insertSizeAndOrientation": {
+                  "scale": {
+                    "type": "threshold"
+                  }
+                },
+                "mateRefName": {
+                  "scale": {
+                    "type": "ordinal"
+                  }
+                },
+                "*": {
+                  "scale": {
+                    "type": "ordinal"
+                  }
+                }
+              },
+              "impliedField": "strand"
             }
           ],
-          "schema": "LGVSyntenyColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "value"
-          },
-          "fieldPresets": {
-            "strand": {
-              "scale": "categorical",
-              "domain": [
-                "1",
-                "-1"
-              ]
-            },
-            "mapq": {
-              "scale": "threshold",
-              "domain": [
-                "1",
-                "10",
-                "30"
-              ],
-              "scheme": "cividis",
-              "labels": [
-                "MAPQ 0 (multi-mapping)",
-                "MAPQ 1-9 (low)",
-                "MAPQ 10-29",
-                "MAPQ 30+ (high confidence)"
-              ],
-              "title": "Mapping quality",
-              "descending": true
-            },
-            "insertSize": {
-              "scale": "threshold"
-            },
-            "firstOfPairStrand": {
-              "scale": "categorical",
-              "domain": [
-                "1",
-                "-1"
-              ]
-            },
-            "pairOrientation": {
-              "scale": "categorical",
-              "domain": [
-                "LR",
-                "RL",
-                "RR",
-                "LL",
-                "",
-                "unmappedMate",
-                "interchrom",
-                "splitInverted",
-                "splitSameStrand",
-                "segmentInverted",
-                "segmentSameStrand"
-              ]
-            },
-            "insertSizeAndOrientation": {
-              "scale": "threshold"
-            },
-            "mateRefName": {
-              "scale": "categorical"
-            },
-            "*": {
-              "scale": "categorical"
-            }
-          },
-          "impliedField": "strand"
+          "schema": "LGVSyntenyEncoding",
+          "writes": "members"
         },
         {
           "name": "scales",
@@ -4910,8 +5182,16 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "showLegend",
-          "type": "boolean"
+          "name": "legend",
+          "type": "HiddenLegendConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "HiddenLegend",
+          "writes": "members"
         },
         {
           "name": "coverage",
@@ -5033,19 +5313,63 @@ export const configManifest: ConfigManifest = {
               "type": "ReadConnectionsPlacement"
             },
             {
-              "name": "lineWidth",
-              "type": "number"
-            },
-            {
-              "name": "color",
-              "type": "AlignmentsArcColorConfigurationSchema",
+              "name": "encoding",
+              "type": "ReadConnectionsEncodingConfigurationSchema",
               "subSlots": [
                 {
-                  "name": "field",
-                  "type": "AlignmentsArcColorField"
+                  "name": "color",
+                  "type": "AlignmentsArcColorConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "field",
+                      "type": "AlignmentsArcColorField"
+                    }
+                  ],
+                  "schema": "AlignmentsArcColor",
+                  "writes": "whole",
+                  "shorthand": {
+                    "string": "field"
+                  }
+                },
+                {
+                  "name": "strokeWidth",
+                  "type": "ReadConnectionsStrokeWidthConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "field",
+                      "type": "(ReadConnectionsStrokeWidthField | undefined)"
+                    },
+                    {
+                      "name": "scale",
+                      "type": "ReadConnectionsStrokeWidthScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "ReadConnectionsStrokeWidthScaleType"
+                        },
+                        {
+                          "name": "range",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        }
+                      ],
+                      "schema": "ReadConnectionsStrokeWidthScale",
+                      "writes": "members"
+                    }
+                  ],
+                  "schema": "ReadConnectionsStrokeWidth",
+                  "writes": "whole",
+                  "shorthand": {
+                    "string": "field",
+                    "number": "value"
+                  }
                 }
               ],
-              "schema": "AlignmentsArcColor",
+              "schema": "ReadConnectionsEncoding",
               "writes": "members"
             },
             {
@@ -5156,54 +5480,80 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "color",
-          "type": "MultiWayGeneColorConfigurationSchema",
+          "name": "encoding",
+          "type": "MultiWayGeneEncodingConfigurationSchema",
           "subSlots": [
             {
-              "name": "value",
-              "type": "(JexlString | (CssColor | undefined))"
-            },
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "(MultiWayGeneColorScale | undefined)"
-            },
-            {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "unknown",
-              "type": "(CssColor | undefined)"
-            },
-            {
-              "name": "labels",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "title",
-              "type": "(string | undefined)"
+              "name": "color",
+              "type": "MultiWayGeneColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(JexlString | (CssColor | undefined))"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "MultiWayGeneColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "(MultiWayGeneColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "names",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    }
+                  ],
+                  "schema": "MultiWayGeneColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "MultiWayGeneColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "MultiWayGeneColorLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "MultiWayGeneColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "*": {
+                  "scale": {
+                    "type": "ordinal"
+                  }
+                }
+              }
             }
           ],
-          "schema": "MultiWayGeneColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "value"
-          },
-          "fieldPresets": {
-            "*": {
-              "scale": "categorical"
-            }
-          }
+          "schema": "MultiWayGeneEncoding",
+          "writes": "members"
         },
         {
           "name": "utrColor",
@@ -5259,123 +5609,175 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "ribbonColor",
-          "type": "RibbonColorConfigurationSchema",
+          "name": "ribbons",
+          "type": "MultiWayRibbonsConfigurationSchema",
           "subSlots": [
             {
-              "name": "value",
-              "type": "(CssColor | undefined)"
-            },
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "(RibbonColorScale | undefined)"
-            },
-            {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "scheme",
-              "type": "(ColorScheme | undefined)"
-            },
-            {
-              "name": "reverse",
-              "type": "(boolean | undefined)"
-            },
-            {
-              "name": "domainMid",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMin",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMax",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "labels",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "descending",
-              "type": "(boolean | undefined)"
-            },
-            {
-              "name": "title",
-              "type": "(string | undefined)"
+              "name": "encoding",
+              "type": "MultiWayRibbonsEncodingConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "color",
+                  "type": "RibbonColorConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "field",
+                      "type": "string"
+                    },
+                    {
+                      "name": "scale",
+                      "type": "RibbonColorScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "(RibbonColorScaleType | undefined)"
+                        },
+                        {
+                          "name": "domain",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "range",
+                          "type": "CssColorEntry[]"
+                        },
+                        {
+                          "name": "scheme",
+                          "type": "(ColorScheme | undefined)"
+                        },
+                        {
+                          "name": "reverse",
+                          "type": "(boolean | undefined)"
+                        },
+                        {
+                          "name": "domainMid",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "names",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "invalid",
+                          "type": "(CssColor | undefined)"
+                        }
+                      ],
+                      "schema": "RibbonColorScale",
+                      "writes": "members"
+                    },
+                    {
+                      "name": "legend",
+                      "type": "RibbonColorLegendConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "title",
+                          "type": "(string | undefined)"
+                        },
+                        {
+                          "name": "descending",
+                          "type": "(boolean | undefined)"
+                        }
+                      ],
+                      "schema": "RibbonColorLegend",
+                      "writes": "members"
+                    }
+                  ],
+                  "schema": "RibbonColor",
+                  "writes": "whole",
+                  "shorthand": {
+                    "string": "field"
+                  },
+                  "fieldPresets": {
+                    "mapq": {
+                      "scale": {
+                        "type": "threshold",
+                        "domain": [
+                          "1",
+                          "10",
+                          "30"
+                        ],
+                        "scheme": "cividis",
+                        "names": [
+                          "MAPQ 0 (multi-mapping)",
+                          "MAPQ 1-9 (low)",
+                          "MAPQ 10-29",
+                          "MAPQ 30+ (high confidence)"
+                        ]
+                      },
+                      "legend": {
+                        "title": "Mapping quality",
+                        "descending": true
+                      }
+                    },
+                    "identity": {
+                      "scale": {
+                        "type": "linear",
+                        "domainMin": 0,
+                        "domainMax": 1,
+                        "scheme": "redgreyblue"
+                      },
+                      "legend": {
+                        "title": "Identity"
+                      }
+                    },
+                    "dnds": {
+                      "scale": {
+                        "type": "linear",
+                        "domainMin": 0,
+                        "domainMax": 2,
+                        "domainMid": 1,
+                        "scheme": "redyellowblue",
+                        "reverse": true
+                      },
+                      "legend": {
+                        "title": "dN/dS"
+                      }
+                    },
+                    "syntenicDepth": {
+                      "scale": {
+                        "type": "threshold",
+                        "domain": [
+                          "2",
+                          "3"
+                        ],
+                        "range": [
+                          "#bdbdbd",
+                          "#fdae6b",
+                          "#e6550d"
+                        ],
+                        "names": [
+                          "One-to-one",
+                          "Shared by 2 genes",
+                          "Shared by 3 or more"
+                        ]
+                      },
+                      "legend": {
+                        "title": "Syntenic depth"
+                      }
+                    }
+                  },
+                  "impliedField": "strand"
+                }
+              ],
+              "schema": "MultiWayRibbonsEncoding",
+              "writes": "members"
             }
           ],
-          "schema": "RibbonColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "value"
-          },
-          "fieldPresets": {
-            "mapq": {
-              "scale": "threshold",
-              "domain": [
-                "1",
-                "10",
-                "30"
-              ],
-              "scheme": "cividis",
-              "labels": [
-                "MAPQ 0 (multi-mapping)",
-                "MAPQ 1-9 (low)",
-                "MAPQ 10-29",
-                "MAPQ 30+ (high confidence)"
-              ],
-              "title": "Mapping quality",
-              "descending": true
-            },
-            "identity": {
-              "scale": "linear",
-              "domainMin": 0,
-              "domainMax": 1,
-              "scheme": "redgreyblue",
-              "title": "Identity"
-            },
-            "dnds": {
-              "scale": "linear",
-              "domainMin": 0,
-              "domainMax": 2,
-              "domainMid": 1,
-              "scheme": "redyellowblue",
-              "reverse": true,
-              "title": "dN/dS"
-            },
-            "syntenicDepth": {
-              "scale": "threshold",
-              "domain": [
-                "2",
-                "3"
-              ],
-              "range": [
-                "#bdbdbd",
-                "#fdae6b",
-                "#e6550d"
-              ],
-              "labels": [
-                "One-to-one",
-                "Shared by 2 genes",
-                "Shared by 3 or more"
-              ],
-              "title": "Syntenic depth"
-            }
-          },
-          "impliedField": "strand"
+          "schema": "MultiWayRibbons",
+          "writes": "members"
         },
         {
           "name": "hideUnlabelled",
@@ -5394,8 +5796,16 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "showLegend",
-          "type": "boolean"
+          "name": "legend",
+          "type": "LegendConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "Legend",
+          "writes": "members"
         },
         {
           "name": "showLaneTicks",
@@ -5521,66 +5931,82 @@ export const configManifest: ConfigManifest = {
                         },
                         {
                           "name": "scale",
-                          "type": "(MarkColorScale | undefined)"
+                          "type": "MarkColorScaleConfigurationSchema",
+                          "subSlots": [
+                            {
+                              "name": "type",
+                              "type": "(MarkColorScaleType | undefined)"
+                            },
+                            {
+                              "name": "domain",
+                              "type": "string[]",
+                              "liftsNumbers": true
+                            },
+                            {
+                              "name": "domainMin",
+                              "type": "(number | undefined)"
+                            },
+                            {
+                              "name": "domainMax",
+                              "type": "(number | undefined)"
+                            },
+                            {
+                              "name": "domainQuantile",
+                              "type": "number"
+                            },
+                            {
+                              "name": "range",
+                              "type": "CssColorEntry[]"
+                            },
+                            {
+                              "name": "unknown",
+                              "type": "(CssColor | undefined)"
+                            },
+                            {
+                              "name": "names",
+                              "type": "string[]",
+                              "liftsNumbers": true
+                            },
+                            {
+                              "name": "scheme",
+                              "type": "(ColorScheme | undefined)"
+                            },
+                            {
+                              "name": "reverse",
+                              "type": "(boolean | undefined)"
+                            },
+                            {
+                              "name": "domainMid",
+                              "type": "(number | undefined)"
+                            }
+                          ],
+                          "schema": "MarkColorScale",
+                          "writes": "members"
                         },
                         {
-                          "name": "domain",
-                          "type": "string[]",
-                          "liftsNumbers": true
-                        },
-                        {
-                          "name": "domainMin",
-                          "type": "(number | undefined)"
-                        },
-                        {
-                          "name": "domainMax",
-                          "type": "(number | undefined)"
-                        },
-                        {
-                          "name": "domainQuantile",
-                          "type": "number"
-                        },
-                        {
-                          "name": "range",
-                          "type": "CssColorEntry[]"
-                        },
-                        {
-                          "name": "unknown",
-                          "type": "(CssColor | undefined)"
-                        },
-                        {
-                          "name": "labels",
-                          "type": "string[]",
-                          "liftsNumbers": true
-                        },
-                        {
-                          "name": "scheme",
-                          "type": "(ColorScheme | undefined)"
-                        },
-                        {
-                          "name": "reverse",
-                          "type": "(boolean | undefined)"
-                        },
-                        {
-                          "name": "domainMid",
-                          "type": "(number | undefined)"
-                        },
-                        {
-                          "name": "title",
-                          "type": "(string | undefined)"
-                        },
-                        {
-                          "name": "breaks",
-                          "type": "string[]",
-                          "liftsNumbers": true
-                        },
-                        {
-                          "name": "descending",
-                          "type": "(boolean | undefined)"
-                        },
-                        {
-                          "name": "missingLabel",
-                          "type": "(string | undefined)"
+                          "name": "legend",
+                          "type": "MarkColorLegendConfigurationSchema",
+                          "subSlots": [
+                            {
+                              "name": "title",
+                              "type": "(string | undefined)"
+                            },
+                            {
+                              "name": "descending",
+                              "type": "(boolean | undefined)"
+                            },
+                            {
+                              "name": "values",
+                              "type": "string[]",
+                              "liftsNumbers": true
+                            },
+                            {
+                              "name": "missingLabel",
+                              "type": "(string | undefined)"
+                            }
+                          ],
+                          "schema": "MarkColorLegend",
+                          "writes": "members"
                         }
                       ],
                       "schema": "MarkColor",
@@ -5590,10 +6016,14 @@ export const configManifest: ConfigManifest = {
                       },
                       "fieldPresets": {
                         "score": {
-                          "scale": "linear"
+                          "scale": {
+                            "type": "linear"
+                          }
                         },
                         "*": {
-                          "scale": "categorical"
+                          "scale": {
+                            "type": "ordinal"
+                          }
                         }
                       }
                     },
@@ -5611,34 +6041,50 @@ export const configManifest: ConfigManifest = {
                         },
                         {
                           "name": "scale",
-                          "type": "(MarkShapeScale | undefined)"
+                          "type": "MarkShapeScaleConfigurationSchema",
+                          "subSlots": [
+                            {
+                              "name": "type",
+                              "type": "(MarkShapeScaleType | undefined)"
+                            },
+                            {
+                              "name": "range",
+                              "type": "ShapeName[]"
+                            },
+                            {
+                              "name": "domain",
+                              "type": "string[]",
+                              "liftsNumbers": true
+                            },
+                            {
+                              "name": "names",
+                              "type": "string[]",
+                              "liftsNumbers": true
+                            }
+                          ],
+                          "schema": "MarkShapeScale",
+                          "writes": "members"
                         },
                         {
-                          "name": "range",
-                          "type": "ShapeName[]"
-                        },
-                        {
-                          "name": "domain",
-                          "type": "string[]",
-                          "liftsNumbers": true
-                        },
-                        {
-                          "name": "title",
-                          "type": "(string | undefined)"
-                        },
-                        {
-                          "name": "labels",
-                          "type": "string[]",
-                          "liftsNumbers": true
-                        },
-                        {
-                          "name": "breaks",
-                          "type": "string[]",
-                          "liftsNumbers": true
-                        },
-                        {
-                          "name": "missingLabel",
-                          "type": "(string | undefined)"
+                          "name": "legend",
+                          "type": "MarkShapeLegendConfigurationSchema",
+                          "subSlots": [
+                            {
+                              "name": "title",
+                              "type": "(string | undefined)"
+                            },
+                            {
+                              "name": "values",
+                              "type": "string[]",
+                              "liftsNumbers": true
+                            },
+                            {
+                              "name": "missingLabel",
+                              "type": "(string | undefined)"
+                            }
+                          ],
+                          "schema": "MarkShapeLegend",
+                          "writes": "members"
                         }
                       ],
                       "schema": "MarkShape",
@@ -5665,20 +6111,73 @@ export const configManifest: ConfigManifest = {
                         },
                         {
                           "name": "scale",
-                          "type": "SizeScale"
-                        },
+                          "type": "MarkSizeScaleConfigurationSchema",
+                          "subSlots": [
+                            {
+                              "name": "type",
+                              "type": "SizeScale"
+                            },
+                            {
+                              "name": "domainMin",
+                              "type": "(number | undefined)"
+                            },
+                            {
+                              "name": "domainMax",
+                              "type": "(number | undefined)"
+                            },
+                            {
+                              "name": "range",
+                              "type": "string[]",
+                              "liftsNumbers": true
+                            }
+                          ],
+                          "schema": "MarkSizeScale",
+                          "writes": "members"
+                        }
+                      ],
+                      "schema": "MarkSize",
+                      "writes": "whole",
+                      "shorthand": {
+                        "number": "value",
+                        "string": "field"
+                      }
+                    },
+                    {
+                      "name": "strokeWidth",
+                      "type": "MarkSizeConfigurationSchema",
+                      "subSlots": [
                         {
-                          "name": "domainMin",
+                          "name": "value",
                           "type": "(number | undefined)"
                         },
                         {
-                          "name": "domainMax",
-                          "type": "(number | undefined)"
+                          "name": "field",
+                          "type": "string"
                         },
                         {
-                          "name": "range",
-                          "type": "string[]",
-                          "liftsNumbers": true
+                          "name": "scale",
+                          "type": "MarkSizeScaleConfigurationSchema",
+                          "subSlots": [
+                            {
+                              "name": "type",
+                              "type": "SizeScale"
+                            },
+                            {
+                              "name": "domainMin",
+                              "type": "(number | undefined)"
+                            },
+                            {
+                              "name": "domainMax",
+                              "type": "(number | undefined)"
+                            },
+                            {
+                              "name": "range",
+                              "type": "string[]",
+                              "liftsNumbers": true
+                            }
+                          ],
+                          "schema": "MarkSizeScale",
+                          "writes": "members"
                         }
                       ],
                       "schema": "MarkSize",
@@ -5846,8 +6345,16 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "showLegend",
-          "type": "boolean"
+          "name": "legend",
+          "type": "LegendConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "Legend",
+          "writes": "members"
         },
         {
           "name": "showLabels",
@@ -5862,81 +6369,109 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "color",
-          "type": "FeatureColorConfigurationSchema",
+          "name": "encoding",
+          "type": "FeatureEncodingConfigurationSchema",
           "subSlots": [
             {
-              "name": "value",
-              "type": "(JexlString | (CssColor | undefined))"
-            },
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "(FeatureColorScale | undefined)"
-            },
-            {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "unknown",
-              "type": "(CssColor | undefined)"
-            },
-            {
-              "name": "labels",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "scheme",
-              "type": "(ColorScheme | undefined)"
-            },
-            {
-              "name": "reverse",
-              "type": "(boolean | undefined)"
-            },
-            {
-              "name": "domainMid",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMin",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMax",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainQuantile",
-              "type": "number"
-            },
-            {
-              "name": "title",
-              "type": "(string | undefined)"
+              "name": "color",
+              "type": "FeatureColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(JexlString | (CssColor | undefined))"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "FeatureColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "(FeatureColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "names",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainQuantile",
+                      "type": "number"
+                    }
+                  ],
+                  "schema": "FeatureColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "FeatureColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "FeatureColorLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "FeatureColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "score": {
+                  "scale": {
+                    "type": "linear"
+                  }
+                },
+                "*": {
+                  "scale": {
+                    "type": "ordinal"
+                  }
+                }
+              }
             }
           ],
-          "schema": "FeatureColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "value"
-          },
-          "fieldPresets": {
-            "score": {
-              "scale": "linear"
-            },
-            "*": {
-              "scale": "categorical"
-            }
-          }
+          "schema": "FeatureEncoding",
+          "writes": "members"
         },
         {
           "name": "showOutline",
@@ -6006,6 +6541,7 @@ export const configManifest: ConfigManifest = {
         "maxHeight",
         "hideSourceFeatures",
         "renderer",
+        "color",
         "showDescriptions"
       ],
       "droppedKeys": [
@@ -6162,62 +6698,96 @@ export const configManifest: ConfigManifest = {
           "type": "VariantUnit"
         },
         {
-          "name": "color",
-          "type": "VariantCellColorConfigurationSchema",
+          "name": "encoding",
+          "type": "VariantCellEncodingConfigurationSchema",
           "subSlots": [
             {
-              "name": "value",
-              "type": "(JexlString | (CssColor | undefined))"
-            },
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "(VariantCellColorScale | undefined)"
-            },
-            {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "unknown",
-              "type": "(CssColor | undefined)"
-            },
-            {
-              "name": "labels",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "title",
-              "type": "(string | undefined)"
+              "name": "color",
+              "type": "VariantCellColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(JexlString | (CssColor | undefined))"
+                },
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "VariantCellColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "(VariantCellColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "names",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    }
+                  ],
+                  "schema": "VariantCellColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "VariantCellColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "VariantCellColorLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "VariantCellColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "*": {
+                  "scale": {
+                    "type": "ordinal"
+                  }
+                }
+              }
             }
           ],
-          "schema": "VariantCellColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "value"
-          },
-          "fieldPresets": {
-            "*": {
-              "scale": "categorical"
-            }
-          }
+          "schema": "VariantCellEncoding",
+          "writes": "members"
         },
         {
           "name": "shadeByDosage",
           "type": "boolean"
         },
         {
-          "name": "showLegend",
-          "type": "boolean"
+          "name": "legend",
+          "type": "LegendConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "Legend",
+          "writes": "members"
         },
         {
           "name": "rowColor",
@@ -6228,17 +6798,25 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "unknown",
-              "type": "(CssColor | undefined)"
+              "name": "scale",
+              "type": "RowColorScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "domain",
+                  "type": "string[]",
+                  "liftsNumbers": true
+                },
+                {
+                  "name": "range",
+                  "type": "CssColorEntry[]"
+                },
+                {
+                  "name": "unknown",
+                  "type": "(CssColor | undefined)"
+                }
+              ],
+              "schema": "RowColorScale",
+              "writes": "members"
             }
           ],
           "schema": "RowColor",
@@ -6357,10 +6935,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "showLegend",
-          "type": "boolean"
-        },
-        {
           "name": "heightMode",
           "type": "TriangleHeightMode"
         },
@@ -6369,52 +6943,88 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "color",
-          "type": "LDColorConfigurationSchema",
+          "name": "encoding",
+          "type": "LDEncodingConfigurationSchema",
           "subSlots": [
             {
-              "name": "field",
-              "type": "LDColorField"
-            },
-            {
-              "name": "scheme",
-              "type": "(ColorScheme | undefined)"
-            },
-            {
-              "name": "reverse",
-              "type": "(boolean | undefined)"
-            },
-            {
-              "name": "domainMin",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMax",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "scale",
-              "type": "(LDColorScale | undefined)"
+              "name": "color",
+              "type": "LDColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "LDColorField"
+                },
+                {
+                  "name": "scale",
+                  "type": "LDColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "(LDColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    }
+                  ],
+                  "schema": "LDColorScale",
+                  "writes": "members"
+                }
+              ],
+              "schema": "LDColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "r2": {
+                  "scale": {
+                    "type": "linear",
+                    "scheme": "reds"
+                  },
+                  "legend": {
+                    "title": "R²"
+                  }
+                },
+                "dprime": {
+                  "scale": {
+                    "type": "linear",
+                    "scheme": "blues"
+                  },
+                  "legend": {
+                    "title": "D'"
+                  }
+                }
+              },
+              "fieldDefault": "r2"
             }
           ],
-          "schema": "LDColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "field"
-          },
-          "fieldPresets": {
-            "r2": {
-              "scale": "linear",
-              "scheme": "reds",
-              "title": "R²"
-            },
-            "dprime": {
-              "scale": "linear",
-              "scheme": "blues",
-              "title": "D'"
+          "schema": "LDEncoding",
+          "writes": "members"
+        },
+        {
+          "name": "legend",
+          "type": "HiddenLegendConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
             }
-          },
-          "fieldDefault": "r2"
+          ],
+          "schema": "HiddenLegend",
+          "writes": "members"
         },
         {
           "name": "showVerticalGuides",
@@ -6440,6 +7050,7 @@ export const configManifest: ConfigManifest = {
         "mouseover",
         "jexlFilters",
         "ldMetric",
+        "showLegend",
         "fitToHeight",
         "useGenomicPositions",
         "maxHeight",
@@ -6556,17 +7167,25 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "unknown",
-              "type": "(CssColor | undefined)"
+              "name": "scale",
+              "type": "RowColorScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "domain",
+                  "type": "string[]",
+                  "liftsNumbers": true
+                },
+                {
+                  "name": "range",
+                  "type": "CssColorEntry[]"
+                },
+                {
+                  "name": "unknown",
+                  "type": "(CssColor | undefined)"
+                }
+              ],
+              "schema": "RowColorScale",
+              "writes": "members"
             }
           ],
           "schema": "RowColor",
@@ -6580,63 +7199,85 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "color",
-          "type": "WiggleColorConfigurationSchema",
+          "name": "encoding",
+          "type": "WiggleEncodingConfigurationSchema",
           "subSlots": [
             {
-              "name": "value",
-              "type": "(CssColor | undefined)"
-            },
-            {
-              "name": "field",
-              "type": "(WiggleColorField | undefined)"
-            },
-            {
-              "name": "scale",
-              "type": "(WiggleColorScale | undefined)"
-            },
-            {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "scheme",
-              "type": "(ColorScheme | undefined)"
-            },
-            {
-              "name": "reverse",
-              "type": "(boolean | undefined)"
-            },
-            {
-              "name": "domainMid",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "labels",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "title",
-              "type": "(string | undefined)"
+              "name": "color",
+              "type": "WiggleColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "value",
+                  "type": "(CssColor | undefined)"
+                },
+                {
+                  "name": "scale",
+                  "type": "WiggleColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "(WiggleColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "names",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    }
+                  ],
+                  "schema": "WiggleColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "WiggleColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "WiggleColorLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "WiggleColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "*": {
+                  "scale": {
+                    "type": "threshold"
+                  }
+                }
+              },
+              "impliedField": "score"
             }
           ],
-          "schema": "WiggleColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "value"
-          },
-          "fieldPresets": {
-            "*": {
-              "scale": "threshold"
-            }
-          },
-          "impliedField": "score"
+          "schema": "WiggleEncoding",
+          "writes": "members"
         },
         {
           "name": "y",
@@ -6737,8 +7378,16 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "showLegend",
-          "type": "boolean"
+          "name": "legend",
+          "type": "LegendConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "Legend",
+          "writes": "members"
         },
         {
           "name": "extent",
@@ -6834,131 +7483,175 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "color",
-          "type": "MafColorConfigurationSchema",
+          "name": "encoding",
+          "type": "MafEncodingConfigurationSchema",
           "subSlots": [
             {
-              "name": "field",
-              "type": "MafColorField"
-            },
-            {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "labels",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "title",
-              "type": "(string | undefined)"
-            },
-            {
-              "name": "scheme",
-              "type": "(ColorScheme | undefined)"
-            },
-            {
-              "name": "reverse",
-              "type": "boolean"
-            },
-            {
-              "name": "domainMin",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMax",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMid",
-              "type": "(number | undefined)"
+              "name": "color",
+              "type": "MafColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "MafColorField"
+                },
+                {
+                  "name": "scale",
+                  "type": "MafColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "names",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "boolean"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
+                    }
+                  ],
+                  "schema": "MafColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "MafColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "MafColorLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "MafColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "mismatch": {
+                  "scale": {
+                    "type": "ordinal",
+                    "domain": [
+                      "A",
+                      "C",
+                      "G",
+                      "T",
+                      "N",
+                      "gap",
+                      "match"
+                    ]
+                  },
+                  "legend": {
+                    "title": "Mismatch to reference"
+                  }
+                },
+                "base": {
+                  "scale": {
+                    "type": "ordinal",
+                    "domain": [
+                      "A",
+                      "C",
+                      "G",
+                      "T",
+                      "N",
+                      "gap"
+                    ]
+                  },
+                  "legend": {
+                    "title": "Base"
+                  }
+                },
+                "identity": {
+                  "scale": {
+                    "type": "linear",
+                    "domainMin": 0,
+                    "domainMax": 1,
+                    "scheme": "redgreyblue"
+                  },
+                  "legend": {
+                    "title": "Per-base identity to reference"
+                  }
+                },
+                "chromosome": {
+                  "scale": {
+                    "type": "ordinal",
+                    "domain": [
+                      "0",
+                      "1",
+                      "2",
+                      "3",
+                      "4"
+                    ],
+                    "range": [
+                      "hsl(210, 55%, 55%)",
+                      "hsl(28, 85%, 55%)",
+                      "hsl(350, 70%, 57%)",
+                      "hsl(275, 45%, 58%)",
+                      "hsl(150, 45%, 42%)"
+                    ],
+                    "names": [
+                      "Main chromosome",
+                      "2nd source",
+                      "3rd source",
+                      "4th source",
+                      "Other source"
+                    ]
+                  },
+                  "legend": {
+                    "title": "Source chromosome"
+                  }
+                },
+                "codon": {
+                  "scale": {
+                    "type": "ordinal",
+                    "domain": [
+                      "nonsyn",
+                      "syn",
+                      "stop"
+                    ],
+                    "names": [
+                      "Nonsynonymous",
+                      "Synonymous",
+                      "Stop gained"
+                    ]
+                  },
+                  "legend": {
+                    "title": "Codon change"
+                  }
+                }
+              },
+              "fieldDefault": "mismatch"
             }
           ],
-          "schema": "MafColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "field"
-          },
-          "fieldPresets": {
-            "mismatch": {
-              "scale": "categorical",
-              "domain": [
-                "A",
-                "C",
-                "G",
-                "T",
-                "N",
-                "gap",
-                "match"
-              ],
-              "title": "Mismatch to reference"
-            },
-            "base": {
-              "scale": "categorical",
-              "domain": [
-                "A",
-                "C",
-                "G",
-                "T",
-                "N",
-                "gap"
-              ],
-              "title": "Base"
-            },
-            "identity": {
-              "scale": "linear",
-              "domainMin": 0,
-              "domainMax": 1,
-              "scheme": "redgreyblue",
-              "title": "Per-base identity to reference"
-            },
-            "chromosome": {
-              "scale": "categorical",
-              "domain": [
-                "0",
-                "1",
-                "2",
-                "3",
-                "4"
-              ],
-              "range": [
-                "hsl(210, 55%, 55%)",
-                "hsl(28, 85%, 55%)",
-                "hsl(350, 70%, 57%)",
-                "hsl(275, 45%, 58%)",
-                "hsl(150, 45%, 42%)"
-              ],
-              "labels": [
-                "Main chromosome",
-                "2nd source",
-                "3rd source",
-                "4th source",
-                "Other source"
-              ],
-              "title": "Source chromosome"
-            },
-            "codon": {
-              "scale": "categorical",
-              "domain": [
-                "nonsyn",
-                "syn",
-                "stop"
-              ],
-              "labels": [
-                "Nonsynonymous",
-                "Synonymous",
-                "Stop gained"
-              ],
-              "title": "Codon change"
-            }
-          },
-          "fieldDefault": "mismatch"
+          "schema": "MafEncoding",
+          "writes": "members"
         },
         {
           "name": "y",
@@ -7026,17 +7719,25 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "unknown",
-              "type": "(CssColor | undefined)"
+              "name": "scale",
+              "type": "RowColorScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "domain",
+                  "type": "string[]",
+                  "liftsNumbers": true
+                },
+                {
+                  "name": "range",
+                  "type": "CssColorEntry[]"
+                },
+                {
+                  "name": "unknown",
+                  "type": "(CssColor | undefined)"
+                }
+              ],
+              "schema": "RowColorScale",
+              "writes": "members"
             }
           ],
           "schema": "RowColor",
@@ -7046,8 +7747,16 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "showLegend",
-          "type": "boolean"
+          "name": "legend",
+          "type": "LegendConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "Legend",
+          "writes": "members"
         },
         {
           "name": "coverage",
@@ -7274,78 +7983,120 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "showLegend",
-          "type": "boolean"
-        },
-        {
           "name": "heightMode",
           "type": "TriangleHeightMode"
         },
         {
-          "name": "color",
-          "type": "HicColorConfigurationSchema",
+          "name": "encoding",
+          "type": "HicEncodingConfigurationSchema",
           "subSlots": [
             {
-              "name": "field",
-              "type": "HicColorField"
-            },
-            {
-              "name": "scheme",
-              "type": "(ColorScheme | undefined)"
-            },
-            {
-              "name": "reverse",
-              "type": "(boolean | undefined)"
-            },
-            {
-              "name": "domainMid",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMin",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainQuantile",
-              "type": "number"
-            },
-            {
-              "name": "scale",
-              "type": "(HicColorScale | undefined)"
-            },
-            {
-              "name": "domainMax",
-              "type": "(number | undefined)"
+              "name": "color",
+              "type": "HicColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "HicColorField"
+                },
+                {
+                  "name": "scale",
+                  "type": "HicColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "type",
+                      "type": "(HicColorScaleType | undefined)"
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(boolean | undefined)"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainQuantile",
+                      "type": "number"
+                    }
+                  ],
+                  "schema": "HicColorScale",
+                  "writes": "members"
+                },
+                {
+                  "name": "legend",
+                  "type": "HicColorLegendConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "schema": "HicColorLegend",
+                  "writes": "members"
+                }
+              ],
+              "schema": "HicColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              },
+              "fieldPresets": {
+                "observed": {
+                  "scale": {
+                    "type": "linear",
+                    "scheme": "juicebox"
+                  }
+                },
+                "observed/expected": {
+                  "scale": {
+                    "type": "log",
+                    "scheme": "redblue",
+                    "reverse": true,
+                    "domainMin": 0.25,
+                    "domainMax": 4,
+                    "domainMid": 1
+                  }
+                },
+                "observed/control": {
+                  "scale": {
+                    "type": "log",
+                    "scheme": "redblue",
+                    "reverse": true,
+                    "domainMin": 0.25,
+                    "domainMax": 4,
+                    "domainMid": 1
+                  }
+                }
+              },
+              "fieldDefault": "observed"
             }
           ],
-          "schema": "HicColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "field"
-          },
-          "fieldPresets": {
-            "observed": {
-              "scale": "linear",
-              "scheme": "juicebox"
-            },
-            "observed/expected": {
-              "scale": "log",
-              "scheme": "redblue",
-              "reverse": true,
-              "domainMin": 0.25,
-              "domainMax": 4,
-              "domainMid": 1
-            },
-            "observed/control": {
-              "scale": "log",
-              "scheme": "redblue",
-              "reverse": true,
-              "domainMin": 0.25,
-              "domainMax": 4,
-              "domainMid": 1
+          "schema": "HicEncoding",
+          "writes": "members"
+        },
+        {
+          "name": "legend",
+          "type": "HiddenLegendConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
             }
-          },
-          "fieldDefault": "observed"
+          ],
+          "schema": "HiddenLegend",
+          "writes": "members"
         },
         {
           "name": "resolutionBias",
@@ -7489,66 +8240,82 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "scale",
-                      "type": "(MarkColorScale | undefined)"
+                      "type": "MarkColorScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "(MarkColorScaleType | undefined)"
+                        },
+                        {
+                          "name": "domain",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainQuantile",
+                          "type": "number"
+                        },
+                        {
+                          "name": "range",
+                          "type": "CssColorEntry[]"
+                        },
+                        {
+                          "name": "unknown",
+                          "type": "(CssColor | undefined)"
+                        },
+                        {
+                          "name": "names",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "scheme",
+                          "type": "(ColorScheme | undefined)"
+                        },
+                        {
+                          "name": "reverse",
+                          "type": "(boolean | undefined)"
+                        },
+                        {
+                          "name": "domainMid",
+                          "type": "(number | undefined)"
+                        }
+                      ],
+                      "schema": "MarkColorScale",
+                      "writes": "members"
                     },
                     {
-                      "name": "domain",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "domainMin",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "domainMax",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "domainQuantile",
-                      "type": "number"
-                    },
-                    {
-                      "name": "range",
-                      "type": "CssColorEntry[]"
-                    },
-                    {
-                      "name": "unknown",
-                      "type": "(CssColor | undefined)"
-                    },
-                    {
-                      "name": "labels",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "scheme",
-                      "type": "(ColorScheme | undefined)"
-                    },
-                    {
-                      "name": "reverse",
-                      "type": "(boolean | undefined)"
-                    },
-                    {
-                      "name": "domainMid",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "title",
-                      "type": "(string | undefined)"
-                    },
-                    {
-                      "name": "breaks",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "descending",
-                      "type": "(boolean | undefined)"
-                    },
-                    {
-                      "name": "missingLabel",
-                      "type": "(string | undefined)"
+                      "name": "legend",
+                      "type": "MarkColorLegendConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "title",
+                          "type": "(string | undefined)"
+                        },
+                        {
+                          "name": "descending",
+                          "type": "(boolean | undefined)"
+                        },
+                        {
+                          "name": "values",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "missingLabel",
+                          "type": "(string | undefined)"
+                        }
+                      ],
+                      "schema": "MarkColorLegend",
+                      "writes": "members"
                     }
                   ],
                   "schema": "MarkColor",
@@ -7558,10 +8325,14 @@ export const configManifest: ConfigManifest = {
                   },
                   "fieldPresets": {
                     "score": {
-                      "scale": "linear"
+                      "scale": {
+                        "type": "linear"
+                      }
                     },
                     "*": {
-                      "scale": "categorical"
+                      "scale": {
+                        "type": "ordinal"
+                      }
                     }
                   }
                 },
@@ -7579,34 +8350,50 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "scale",
-                      "type": "(MarkShapeScale | undefined)"
+                      "type": "MarkShapeScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "(MarkShapeScaleType | undefined)"
+                        },
+                        {
+                          "name": "range",
+                          "type": "ShapeName[]"
+                        },
+                        {
+                          "name": "domain",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "names",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        }
+                      ],
+                      "schema": "MarkShapeScale",
+                      "writes": "members"
                     },
                     {
-                      "name": "range",
-                      "type": "ShapeName[]"
-                    },
-                    {
-                      "name": "domain",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "title",
-                      "type": "(string | undefined)"
-                    },
-                    {
-                      "name": "labels",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "breaks",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "missingLabel",
-                      "type": "(string | undefined)"
+                      "name": "legend",
+                      "type": "MarkShapeLegendConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "title",
+                          "type": "(string | undefined)"
+                        },
+                        {
+                          "name": "values",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "missingLabel",
+                          "type": "(string | undefined)"
+                        }
+                      ],
+                      "schema": "MarkShapeLegend",
+                      "writes": "members"
                     }
                   ],
                   "schema": "MarkShape",
@@ -7633,20 +8420,73 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "scale",
-                      "type": "SizeScale"
-                    },
+                      "type": "MarkSizeScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "SizeScale"
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "range",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        }
+                      ],
+                      "schema": "MarkSizeScale",
+                      "writes": "members"
+                    }
+                  ],
+                  "schema": "MarkSize",
+                  "writes": "whole",
+                  "shorthand": {
+                    "number": "value",
+                    "string": "field"
+                  }
+                },
+                {
+                  "name": "strokeWidth",
+                  "type": "MarkSizeConfigurationSchema",
+                  "subSlots": [
                     {
-                      "name": "domainMin",
+                      "name": "value",
                       "type": "(number | undefined)"
                     },
                     {
-                      "name": "domainMax",
-                      "type": "(number | undefined)"
+                      "name": "field",
+                      "type": "string"
                     },
                     {
-                      "name": "range",
-                      "type": "string[]",
-                      "liftsNumbers": true
+                      "name": "scale",
+                      "type": "MarkSizeScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "SizeScale"
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "range",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        }
+                      ],
+                      "schema": "MarkSizeScale",
+                      "writes": "members"
                     }
                   ],
                   "schema": "MarkSize",
@@ -7762,17 +8602,25 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "unknown",
-              "type": "(CssColor | undefined)"
+              "name": "scale",
+              "type": "RowColorScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "domain",
+                  "type": "string[]",
+                  "liftsNumbers": true
+                },
+                {
+                  "name": "range",
+                  "type": "CssColorEntry[]"
+                },
+                {
+                  "name": "unknown",
+                  "type": "(CssColor | undefined)"
+                }
+              ],
+              "schema": "RowColorScale",
+              "writes": "members"
             }
           ],
           "schema": "RowColor",
@@ -7888,8 +8736,16 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "showLegend",
-          "type": "boolean"
+          "name": "legend",
+          "type": "LegendConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "Legend",
+          "writes": "members"
         },
         {
           "name": "filter",
@@ -8039,66 +8895,82 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "scale",
-                      "type": "(MarkColorScale | undefined)"
+                      "type": "MarkColorScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "(MarkColorScaleType | undefined)"
+                        },
+                        {
+                          "name": "domain",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainQuantile",
+                          "type": "number"
+                        },
+                        {
+                          "name": "range",
+                          "type": "CssColorEntry[]"
+                        },
+                        {
+                          "name": "unknown",
+                          "type": "(CssColor | undefined)"
+                        },
+                        {
+                          "name": "names",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "scheme",
+                          "type": "(ColorScheme | undefined)"
+                        },
+                        {
+                          "name": "reverse",
+                          "type": "(boolean | undefined)"
+                        },
+                        {
+                          "name": "domainMid",
+                          "type": "(number | undefined)"
+                        }
+                      ],
+                      "schema": "MarkColorScale",
+                      "writes": "members"
                     },
                     {
-                      "name": "domain",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "domainMin",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "domainMax",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "domainQuantile",
-                      "type": "number"
-                    },
-                    {
-                      "name": "range",
-                      "type": "CssColorEntry[]"
-                    },
-                    {
-                      "name": "unknown",
-                      "type": "(CssColor | undefined)"
-                    },
-                    {
-                      "name": "labels",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "scheme",
-                      "type": "(ColorScheme | undefined)"
-                    },
-                    {
-                      "name": "reverse",
-                      "type": "(boolean | undefined)"
-                    },
-                    {
-                      "name": "domainMid",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "title",
-                      "type": "(string | undefined)"
-                    },
-                    {
-                      "name": "breaks",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "descending",
-                      "type": "(boolean | undefined)"
-                    },
-                    {
-                      "name": "missingLabel",
-                      "type": "(string | undefined)"
+                      "name": "legend",
+                      "type": "MarkColorLegendConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "title",
+                          "type": "(string | undefined)"
+                        },
+                        {
+                          "name": "descending",
+                          "type": "(boolean | undefined)"
+                        },
+                        {
+                          "name": "values",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "missingLabel",
+                          "type": "(string | undefined)"
+                        }
+                      ],
+                      "schema": "MarkColorLegend",
+                      "writes": "members"
                     }
                   ],
                   "schema": "MarkColor",
@@ -8108,10 +8980,14 @@ export const configManifest: ConfigManifest = {
                   },
                   "fieldPresets": {
                     "score": {
-                      "scale": "linear"
+                      "scale": {
+                        "type": "linear"
+                      }
                     },
                     "*": {
-                      "scale": "categorical"
+                      "scale": {
+                        "type": "ordinal"
+                      }
                     }
                   }
                 },
@@ -8129,34 +9005,50 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "scale",
-                      "type": "(MarkShapeScale | undefined)"
+                      "type": "MarkShapeScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "(MarkShapeScaleType | undefined)"
+                        },
+                        {
+                          "name": "range",
+                          "type": "ShapeName[]"
+                        },
+                        {
+                          "name": "domain",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "names",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        }
+                      ],
+                      "schema": "MarkShapeScale",
+                      "writes": "members"
                     },
                     {
-                      "name": "range",
-                      "type": "ShapeName[]"
-                    },
-                    {
-                      "name": "domain",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "title",
-                      "type": "(string | undefined)"
-                    },
-                    {
-                      "name": "labels",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "breaks",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "missingLabel",
-                      "type": "(string | undefined)"
+                      "name": "legend",
+                      "type": "MarkShapeLegendConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "title",
+                          "type": "(string | undefined)"
+                        },
+                        {
+                          "name": "values",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "missingLabel",
+                          "type": "(string | undefined)"
+                        }
+                      ],
+                      "schema": "MarkShapeLegend",
+                      "writes": "members"
                     }
                   ],
                   "schema": "MarkShape",
@@ -8183,20 +9075,73 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "scale",
-                      "type": "SizeScale"
-                    },
+                      "type": "MarkSizeScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "SizeScale"
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "range",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        }
+                      ],
+                      "schema": "MarkSizeScale",
+                      "writes": "members"
+                    }
+                  ],
+                  "schema": "MarkSize",
+                  "writes": "whole",
+                  "shorthand": {
+                    "number": "value",
+                    "string": "field"
+                  }
+                },
+                {
+                  "name": "strokeWidth",
+                  "type": "MarkSizeConfigurationSchema",
+                  "subSlots": [
                     {
-                      "name": "domainMin",
+                      "name": "value",
                       "type": "(number | undefined)"
                     },
                     {
-                      "name": "domainMax",
-                      "type": "(number | undefined)"
+                      "name": "field",
+                      "type": "string"
                     },
                     {
-                      "name": "range",
-                      "type": "string[]",
-                      "liftsNumbers": true
+                      "name": "scale",
+                      "type": "MarkSizeScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "SizeScale"
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "range",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        }
+                      ],
+                      "schema": "MarkSizeScale",
+                      "writes": "members"
                     }
                   ],
                   "schema": "MarkSize",
@@ -8304,17 +9249,25 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "range",
-              "type": "CssColorEntry[]"
-            },
-            {
-              "name": "unknown",
-              "type": "(CssColor | undefined)"
+              "name": "scale",
+              "type": "RowColorScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "domain",
+                  "type": "string[]",
+                  "liftsNumbers": true
+                },
+                {
+                  "name": "range",
+                  "type": "CssColorEntry[]"
+                },
+                {
+                  "name": "unknown",
+                  "type": "(CssColor | undefined)"
+                }
+              ],
+              "schema": "RowColorScale",
+              "writes": "members"
             }
           ],
           "schema": "RowColor",
@@ -8430,8 +9383,16 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "showLegend",
-          "type": "boolean"
+          "name": "legend",
+          "type": "LegendConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "Legend",
+          "writes": "members"
         },
         {
           "name": "filter",
@@ -8926,9 +9887,8 @@ export const configManifest: ConfigManifest = {
         "minimized",
         "filter",
         "parkedColors",
-        "color",
+        "encoding",
         "trackColors",
-        "opacity",
         "render",
         "type",
         "offsetRadians",
@@ -8938,7 +9898,7 @@ export const configManifest: ConfigManifest = {
         "hideVerticalResizeHandle",
         "hideTrackSelectorButton",
         "disableImportForm",
-        "showLegend",
+        "legend",
         "height",
         "displayedRegions",
         "minimumRadiusPx",
@@ -8962,9 +9922,8 @@ export const configManifest: ConfigManifest = {
         "minimized",
         "filter",
         "parkedColors",
-        "color",
+        "encoding",
         "trackColors",
-        "opacity",
         "data",
         "type",
         "height",
@@ -8987,6 +9946,7 @@ export const configManifest: ConfigManifest = {
       ],
       "passThrough": [
         "alpha",
+        "color",
         "colorBy"
       ]
     },
@@ -8997,9 +9957,8 @@ export const configManifest: ConfigManifest = {
         "minimized",
         "filter",
         "parkedColors",
-        "color",
+        "encoding",
         "trackColors",
-        "opacity",
         "data",
         "render",
         "type",
@@ -9026,6 +9985,7 @@ export const configManifest: ConfigManifest = {
       ],
       "passThrough": [
         "alpha",
+        "color",
         "colorBy"
       ]
     },
@@ -9112,6 +10072,7 @@ export const configManifest: ConfigManifest = {
       "filterBy",
       "filterBySetting",
       "hideMismatchesSetting",
+      "showLegend",
       "sortedBy",
       "trackMaxHeight"
     ],

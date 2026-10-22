@@ -930,23 +930,23 @@ each reported under its id:
 | `op-field` | error | A `sum`, `mean`, `min` or `max` naming no `field`. |
 | `step-field-expression` | error | A step's field written as a `jexl:` expression, where a step reads a name or a dotted path. |
 | `unwritten-y` | error | A `y` naming a field that no `aggregate` or `coverage` step before it writes. |
-| `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span` or a size field on a point. |
-| `unread-size` | warning | An `encoding.size` on a mark that draws no point, rule or line and strokes no link. |
+| `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span`, a `size` on a rule, whose width is `strokeWidth`, or a size field on a point. |
+| `unread-size` | warning | An `encoding.size` or `encoding.strokeWidth` on a mark that draws no point, rule or line and strokes no link. |
 | `unread-mark-member` | warning | A `mark` member its type does not read: an `interpolate` off a line or a link, a `height` off a span, a `gapBp` off a line. |
 | `mark-interpolate` | warning | An `interpolate` the mark's type does not draw, such as `dome` on a line, which then draws its default. |
 | `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |
 | `threshold-no-cuts` | warning | A threshold color naming no cut, so every value paints one color. |
 | `threshold-cut-count` | warning | A threshold color naming more cuts than it paints, so a value past the eighth takes the ninth color. |
-| `threshold-range` | warning | A threshold `range` not one color longer than its cuts. |
-| `ramp-domain` | warning | A `domain` on a linear, log or symlog color, whose ends are `domainMin` and `domainMax`. |
-| `ramp-range` | warning | A linear, log or symlog color whose `range` lists one color, which paints every value alike. |
+| `threshold-range` | warning | A threshold `scale.range` not one color longer than its cuts. |
+| `ramp-domain` | warning | A `scale.domain` on a linear, log or symlog color, whose ends are `scale.domainMin` and `scale.domainMax`. |
+| `ramp-range` | warning | A linear, log or symlog color whose `scale.range` lists one color, which paints every value alike. |
 | `domain-ends` | warning | A scale's `domainMax` below its `domainMin`: a color ramp's, a width's or `scales.y`'s. |
 | `domain-quantile` | warning | A color ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. |
 | `log-floor` | warning | A log scale's `domainMin` at or below 0, which a log scale cannot represent, so the end floors above it. |
 | `field-spells-constant` | warning | A color's or a shape's `field` spelling a CSS color or a shape name, which is a constant written `{ value }`. |
-| `labels-domain` | warning | A color's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. |
-| `unknown-domain` | warning | A categorical color's `unknown` with no `domain`, so it paints every value. |
-| `unknown-scale` | warning | An `unknown` on a color painting through no categorical scale, so nothing reads it. |
+| `names-domain` | warning | A color's or a shape's `scale.names` naming values its `scale.domain` does not list, or no ordinal scale's. |
+| `unknown-domain` | warning | An ordinal color's `scale.unknown` with no `scale.domain`, so it paints every value. |
+| `unknown-scale` | warning | A `scale.unknown` on a color painting through no ordinal scale, so nothing reads it. |
 | `window-frame` | warning | A `window`'s `frame` other than two whole row offsets or `null`, the first not past the second, so the step reads its default. |
 | `step-pair` | warning | A `bin`'s `as` or `fields`, or a `pileup`'s `fields`, naming other than two fields, so the step reads its defaults. |
 | `bin-field-and-fields` | warning | A `bin` naming a `field` beside the `fields` it cuts at the bin edges, which leaves the `field` unread. |

@@ -4396,6 +4396,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/featureEncodingConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "featureEncodingConfigSchema"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/featureFilterConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -4597,6 +4604,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/hiddenLegendConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "hiddenLegendConfigSchema"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/highlightHost": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -4637,7 +4651,6 @@
     "@jbrowse/display-kit/legendConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "hiddenLegendConfigSchema",
         "legendConfigSchema"
       ],
       "worker": "real"
@@ -4786,8 +4799,11 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "RETIRED_ROW_STATE_KEYS",
+        "isFlatColor",
+        "liftFlatColor",
         "liftRetiredRowState",
-        "moveDisplayDefaults"
+        "moveDisplayDefaults",
+        "retiredDisplayColor"
       ],
       "worker": "real"
     },

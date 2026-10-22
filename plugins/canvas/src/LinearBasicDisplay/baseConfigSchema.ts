@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { featureEncodingConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { featureEncodingConfigSchema } from '@jbrowse/display-kit/featureEncodingConfigSchema'
 import { featureFilterConfigSchema } from '@jbrowse/display-kit/featureFilterConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'

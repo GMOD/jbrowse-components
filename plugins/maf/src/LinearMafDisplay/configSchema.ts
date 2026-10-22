@@ -12,8 +12,8 @@ import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { DEFAULTS } from './displayDefaults.ts'
 import { mafAlignmentsConfigSchema } from './mafAlignmentsConfigSchema.ts'
-import { mafEncodingConfigSchema } from './mafColorConfigSchema.ts'
 import { mafConservationConfigSchema } from './mafConservationConfigSchema.ts'
+import { mafEncodingConfigSchema } from './mafEncodingConfigSchema.ts'
 import { MAF_Y_FIELDS } from './rowRenderings.ts'
 
 import type { RetiredSpelling } from '@jbrowse/core/configuration'

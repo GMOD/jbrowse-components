@@ -15,7 +15,7 @@ import {
   MULTI_SAMPLE_VARIANT_DISPLAY,
   VARIANT_UNITS,
 } from '../shared/constants.ts'
-import { cellEncodingConfigSchema } from './cellColorConfigSchema.ts'
+import { cellEncodingConfigSchema } from './cellEncodingConfigSchema.ts'
 import { variantFilterConfigSchema } from './variantFilterConfigSchema.ts'
 import { variantsBandConfigSchema } from './variantsBandConfigSchema.ts'
 

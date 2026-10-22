@@ -40,26 +40,3 @@ export const lgvSyntenyColorConfigSchema = ConfigurationSchema(
     }),
   },
 )
-
-/**
- * #config LGVSyntenyEncoding
- * #category display
- * The LGVSyntenyDisplay's `encoding`, the channels its blocks paint through.
- *
- * #example
- * ```js
- * { type: 'LGVSyntenyDisplay', encoding: { color: 'mapq' } }
- * ```
- */
-export const lgvSyntenyEncodingConfigSchema = ConfigurationSchema(
-  'LGVSyntenyEncoding',
-  {
-    /**
-     * #slot color
-     * The block fill, `strand` while it names neither a field nor a
-     * constant.
-     */
-    color: lgvSyntenyColorConfigSchema,
-  },
-  encodingOptions,
-)

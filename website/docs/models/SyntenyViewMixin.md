@@ -21,11 +21,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-data">**data**</span><br><code>data: types.stripDefault(syntenyDataConfigSchema, {})</code> | What the fetch reads, a [](/docs/config/syntenydata) object: `resolution` picks a tiered file's stored tier. One value for the view, so every track draws at the same tier. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>5 inherited properties from 4 models</summary>
+<summary>4 inherited properties from 3 models</summary>
 
-From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="property-opacity">[`opacity`](../syntenycolorsmixin#property-opacity)</span>
-
-From [TrackColorsMixin](../trackcolorsmixin): <span id="property-color">[`color`](../trackcolorsmixin#property-color)</span>, <span id="property-trackcolors">[`trackColors`](../trackcolorsmixin#property-trackcolors)</span>
+From [TrackColorsMixin](../trackcolorsmixin): <span id="property-encoding">[`encoding`](../trackcolorsmixin#property-encoding)</span>, <span id="property-trackcolors">[`trackColors`](../trackcolorsmixin#property-trackcolors)</span>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="property-parkedcolors">[`parkedColors`](../parkedcolormixin#property-parkedcolors)</span>
 
