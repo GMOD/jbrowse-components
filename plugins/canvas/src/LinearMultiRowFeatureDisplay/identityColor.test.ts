@@ -88,6 +88,17 @@ describe('an identity color over a file that colors its own features', () => {
   })
 })
 
+const BLACK_ITEM = [
+  new SimpleFeature({
+    uniqueId: 'b0',
+    refName: 'ctgA',
+    start: 0,
+    end: 50,
+    sample: 'E001',
+    itemRgb: '0,0,0',
+  }),
+]
+
 describe('an identity color over a black itemRgb', () => {
   const BLACK = [
     new SimpleFeature({
@@ -111,5 +122,38 @@ describe('an identity color over a black itemRgb', () => {
     expect(paintedColors(loaded(undefined, BLACK))).toEqual([
       cssColorToABGR(featureDefaultColor),
     ])
+  })
+})
+
+describe("Color by's itemRgb", () => {
+  function colorBy(display: ReturnType<typeof loaded>) {
+    const menu = display
+      .trackMenuItems()
+      .find(m => 'label' in m && m.label === 'Color by...')
+    return menu && 'subMenu' in menu && Array.isArray(menu.subMenu)
+      ? (menu.subMenu as { label?: string; checked?: boolean }[])
+      : []
+  }
+  const ticked = (display: ReturnType<typeof loaded>) =>
+    colorBy(display)
+      .filter(item => item.checked)
+      .map(item => item.label)
+
+  it('is offered for a file with an itemRgb column, which leaves the attributes', () => {
+    const display = loaded()
+    expect(colorBy(display).map(item => item.label)).toContain('itemRgb')
+    expect(display.colorFieldCandidates).not.toContain('itemRgb')
+    expect(display.clusterCandidates).not.toContain('itemRgb')
+    expect(ticked(display)).toEqual(['Default'])
+  })
+
+  it("paints each feature its file's color, black included, and Default leaves it", () => {
+    const display = loaded(undefined, BLACK_ITEM)
+    display.colorByItemRgb()
+    expect(ticked(display)).toEqual(['itemRgb'])
+    expect(display.workerColor.itemRgbOn).toBe(true)
+    display.pickDefaultColor()
+    expect(display.writtenColor).toEqual({})
+    expect(ticked(display)).toEqual(['Default'])
   })
 })

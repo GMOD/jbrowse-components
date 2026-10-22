@@ -56,6 +56,9 @@ interface MultiRowMenuSelf
   effectiveRowsField: string
   rowsFieldCandidates: string[]
   colorFieldCandidates: string[]
+  carriesItemRgb: boolean
+  paintsItemRgb: boolean
+  colorByItemRgb: () => void
   rowCountsByField: ReadonlyMap<string, RowCountByField>
   setRowsField: (field: string) => void
   facet?: FacetSetting
@@ -162,9 +165,10 @@ function rowsFieldMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   ]
 }
 
-// Strand, as the feature display offers it, then a radio per attribute the
-// loaded features carry, the painting field kept among them while no feature
-// carries it.
+// Strand, as the feature display offers it, the file's own colors where the
+// features carry a BED color column, then a radio per attribute the loaded
+// features carry, the painting field kept among them while no feature carries
+// it.
 function colorByMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   const current = self.colorField
   const candidates = self.colorFieldCandidates
@@ -184,6 +188,17 @@ function colorByMenuItems(self: MultiRowMenuSelf): MenuItem[] {
               field: STRAND_FIELD,
               checked: self.colorByMode === 'strand',
             },
+            ...(self.carriesItemRgb || self.paintsItemRgb
+              ? [
+                  {
+                    label: 'itemRgb',
+                    checked: self.paintsItemRgb,
+                    onClick: () => {
+                      self.colorByItemRgb()
+                    },
+                  },
+                ]
+              : []),
             ...fields.map(field => ({
               label: field,
               field,

@@ -74,6 +74,7 @@ import {
   effectiveRowsField,
   clusterCandidates,
   colorFieldCandidates,
+  itemRgbFields,
   rowsFieldCandidates,
   rowCountsByField,
   pinnedRowsField,
@@ -345,6 +346,23 @@ export default function stateModelFactory(
        */
       get colorFieldCandidates(): string[] {
         return colorFieldCandidates(self)
+      },
+      /**
+       * #getter
+       * Whether the loaded features carry a BED color column, which Color
+       * by's itemRgb preset paints.
+       */
+      get carriesItemRgb(): boolean {
+        return itemRgbFields(self).length > 0
+      },
+      /**
+       * #getter
+       * Whether each feature paints its own color, black included, through
+       * a fieldless identity `color`.
+       */
+      get paintsItemRgb(): boolean {
+        const { scale, field, value } = self.writtenColor
+        return scale === 'identity' && !field && value === undefined
       },
       /**
        * #getter
@@ -912,6 +930,16 @@ export default function stateModelFactory(
          */
         setShowRowSeparators(f: boolean) {
           setConf(self, 'showRowSeparators', f)
+        },
+        /**
+         * #action
+         * Color by's itemRgb: each feature its file's color, through a
+         * fieldless identity `color`, so a black triple paints black.
+         */
+        colorByItemRgb() {
+          if (!self.paintsItemRgb) {
+            setConf(self, 'color', { scale: 'identity' })
+          }
         },
         /**
          * #action

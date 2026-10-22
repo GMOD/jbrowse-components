@@ -631,14 +631,20 @@ function definedMembers(color: object) {
 /**
  * The color object a Color by pick writes over `current`. `''` paints
  * `value` and keeps the field and its members under `scale: 'none'` for the
- * way back; the field already named keeps its members and a declared scale;
+ * way back, and drops a fieldless identity scale, which paints each feature's
+ * own color, black included; the field already named keeps its members and a declared scale;
  * a new field keeps only `value`. `none` takes the `scale` slot, so after the
  * way back the field paints through the display's default scale for it.
  */
 export function colorForField(current: ColorSlots, field: string) {
   const kept = definedMembers(current)
   if (field === '') {
-    return current.field ? { ...kept, scale: 'none' } : kept
+    const { scale, ...unscaled } = kept
+    return current.field
+      ? { ...kept, scale: 'none' }
+      : scale === 'identity'
+        ? unscaled
+        : kept
   }
   if (field === current.field) {
     return definedMembers({

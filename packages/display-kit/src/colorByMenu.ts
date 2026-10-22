@@ -59,12 +59,14 @@ export function solidColorItem(checked: boolean, onClick: () => void) {
   }
 }
 
-/** A field a Color by menu offers by name, ticked while it paints. */
-export interface ColorPreset {
-  label: string
-  field: string
-  checked: boolean
-}
+/**
+ * A row a Color by menu offers by name, ticked while it paints: a `field` to
+ * paint by, or an `onClick` writing a color object no field names.
+ */
+export type ColorPreset = { label: string; checked: boolean } & (
+  | { field: string }
+  | { onClick: () => void }
+)
 
 /**
  * A feature display's fill block: Default, a radio per preset field, a field
@@ -89,19 +91,22 @@ export function colorFieldRows(
     {
       label: 'Default',
       type: 'radio',
-      checked: self.colorByMode === 'default',
+      checked: self.colorByMode === 'default' && !presetPaints,
       onClick: () => {
         self.pickDefaultColor()
       },
     },
-    ...presets.map(({ label, field, checked }): MenuItem => ({
-      label,
+    ...presets.map((preset): MenuItem => ({
+      label: preset.label,
       type: 'radio',
-      checked,
-      onClick: () => {
-        self.setShowLegend(true)
-        self.colorByField(field)
-      },
+      checked: preset.checked,
+      onClick:
+        'field' in preset
+          ? () => {
+              self.setShowLegend(true)
+              self.colorByField(preset.field)
+            }
+          : preset.onClick,
     })),
     ...(openColorByAttributeDialog
       ? [

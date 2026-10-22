@@ -73,12 +73,28 @@ export function rowsFieldCandidates(self: RowsFieldSlice) {
   return rowsFieldCandidatesOf(fieldNames(self))
 }
 
+// The BED color column's names, as core's `colorBits` reads them: a named one
+// is the color column whatever it holds, a BED9's positional `field8` only once
+// its triples colored a loaded feature.
+const NAMED_ITEM_RGB_FIELDS = new Set(['itemRgb', 'reserved'])
+
+/** The loaded attributes that hold the BED color column. */
+export function itemRgbFields(self: RowsFieldSlice) {
+  const colored = [...self.rpcDataMap.values()].some(d => d.usedItemRgb)
+  return fieldNames(self).filter(
+    name => NAMED_ITEM_RGB_FIELDS.has(name) || (name === 'field8' && colored),
+  )
+}
+
 /**
- * The attributes Color by lists, `score` among them; strand has its own
- * preset.
+ * The attributes Color by lists, `score` among them; strand and the BED color
+ * column have their own presets.
  */
 export function colorFieldCandidates(self: RowsFieldSlice) {
-  return fieldNames(self).filter(name => name !== STRAND_FIELD)
+  const itemRgb = new Set(itemRgbFields(self))
+  return fieldNames(self).filter(
+    name => name !== STRAND_FIELD && !itemRgb.has(name),
+  )
 }
 
 /**

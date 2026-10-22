@@ -97,6 +97,8 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-pinnedrowsfield">**pinnedRowsField**</span><br><code>string</code> | What a fetch issued now should partition on under auto. Deliberately not an `rpcProps()` key, which would refetch every region the moment the first one answered. |
 | <span id="getter-rowsfieldcandidates">**rowsFieldCandidates**</span><br><code>string[]</code> | The attribute names on the loaded features, offered by the "One row per..." menu. |
 | <span id="getter-colorfieldcandidates">**colorFieldCandidates**</span><br><code>string[]</code> | The attribute names Color by offers beside its Strand preset. |
+| <span id="getter-carriesitemrgb">**carriesItemRgb**</span><br><code>boolean</code> | Whether the loaded features carry a BED color column, which Color by's itemRgb preset paints. |
+| <span id="getter-paintsitemrgb">**paintsItemRgb**</span><br><code>boolean</code> | Whether each feature paints its own color, black included, through a fieldless identity `color`. |
 | <span id="getter-clustercandidates">**clusterCandidates**</span><br><code>string[]</code> | The attribute names "Cluster rows by similarity" offers. |
 | <span id="getter-rowcountsbyfield">**rowCountsByField**</span><br><code>ReadonlyMap&lt;string, RowCountByField&gt;</code> | How many rows each candidate would draw, which the menu shows beside each name so a reader can judge it before paying the refetch. |
 | <span id="getter-discoveredrows">**discoveredRows**</span><br><code>RowSource[]</code> | `TreeSidebarMixin`'s hook: the distinct partition values across all loaded regions, in the order the config.json declares, the rest sorted. |
@@ -197,6 +199,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | --- | --- |
 | <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | the picker Color by's Solid color... opens |
 | <span id="action-setshowrowseparators">**setShowRowSeparators**</span><br><code>(f: boolean) =&gt; void</code> |  |
+| <span id="action-colorbyitemrgb">**colorByItemRgb**</span><br><code>() =&gt; void</code> | Color by's itemRgb: each feature its file's color, through a fieldless identity `color`, so a black triple paints black. |
 | <span id="action-togglecategory">**toggleCategory**</span><br><code>(values: readonly string[]) =&gt; void</code> | Show or hide a key row's names together, at render time with no refetch: a row any of whose names is hidden shows again. |
 | <span id="action-sethiddencategories">**setHiddenCategories**</span><br><code>(labels: string[]) =&gt; void</code> |  |
 | <span id="action-setrowsfield">**setRowsField**</span><br><code>(field: string) =&gt; void</code> | Repartition. The arrangement and the row colors stay: a name keyed on another field matches nothing and comes back with the field. The legend's hidden categories stay too, since the features and their colors do. Writing `rows.field` triggers a refetch. |
