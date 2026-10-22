@@ -198,9 +198,10 @@ jbrowse-desktop myproject/config.json extra.bw --loc chr1:1-100,000
 - `--view` writes settings on the view by their session-spec names, such as
   `--view axis.grid=false`.
 - Paths resolve against the directory the command runs in.
-- Desktop skips display settings such as `height:200` for now, and jb2export's
-  image flags such as `--width`, and names what it skipped once the session
-  opens.
+- A track takes `height:`, `force:`, a setting written as `path=value` and a
+  JSON object, as in jb2export. Desktop skips the display-specific modifiers
+  such as `color:strand` for now, and jb2export's image flags such as `--width`,
+  and names what it skipped once the session opens.
 
 ### Opening a session, config or link
 

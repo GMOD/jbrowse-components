@@ -32,12 +32,27 @@ export {
   viewSettings,
 } from './slotPath.ts'
 export {
+  invalidModifierValue,
+  parseBool,
+  parseEnum,
+  parseJsonModifier,
+  parseNum,
+  parseStr,
+  sharedModifiers,
+  trackSettings,
+} from './trackSettings.ts'
+export {
   resolveTrackId,
   trackMatches,
   trackName,
   trackType,
 } from './trackIds.ts'
-export { type LaunchPlan, launchFlags, launchPlan } from './launchPlan.ts'
+export {
+  type LaunchPlan,
+  type ShowTrack,
+  launchFlags,
+  launchPlan,
+} from './launchPlan.ts'
 export {
   type Entry,
   FILE_FLAG,

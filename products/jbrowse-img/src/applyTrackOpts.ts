@@ -6,9 +6,15 @@ import { trackDisplayType } from '@jbrowse/core/util/tracks'
 import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
 import {
   applySlotWrite,
+  invalidModifierValue,
   isMemberWrite,
   isSlotPathOption,
   mergeSettings,
+  parseEnum,
+  parseJsonModifier,
+  parseNum,
+  parseStr,
+  sharedModifiers,
   slotWrite,
 } from '@jbrowse/launch-args'
 import {
@@ -322,28 +328,6 @@ function lookup<T>(table: Record<string, T>, key: string) {
   return Object.hasOwn(table, key) ? table[key] : undefined
 }
 
-// One rule for every modifier value, so the grammar reads the same whatever the
-// track type: a value that isn't one of the things the modifier accepts is an
-// ERROR. jb2export writes a figure and exits, so a warning about a typo scrolls
-// past and leaves a wrong image behind — `arcs:upp` used to render a plot with
-// no arcs at all. (A modifier NAME is different: an unknown one, or one aimed at
-// a track type it doesn't apply to, only warns — see applyModifier.)
-function invalid(prefix: string, val: string, expected: string): never {
-  throw new Error(
-    val === ''
-      ? `Missing ${prefix} value. Expected ${prefix}:<${expected}>.`
-      : `Invalid ${prefix} value "${val}". Expected ${expected}.`,
-  )
-}
-
-// A bare `height:` with nothing after the colon would otherwise become a silent
-// 0 via `+''`. `expected` names the wider grammar for the modifiers that also
-// accept keywords.
-function parseNum(prefix: string, val: string, expected = 'a number') {
-  const n = val === '' ? Number.NaN : +val
-  return Number.isNaN(n) ? invalid(prefix, val, expected) : n
-}
-
 // A SAM flag mask, written as a number or as samtools' flag names.
 //
 // The names carry their own arithmetic — `SECONDARY,DUP` is an OR — so a reader
@@ -360,7 +344,7 @@ function parseFlagMask(prefix: string, val: string) {
             name.trim().toUpperCase() as (typeof samFlagNames)[number],
           )
           return i < 0
-            ? invalid(
+            ? invalidModifierValue(
                 prefix,
                 name,
                 `a number or one of ${samFlagNames.join(', ')}`,
@@ -368,38 +352,6 @@ function parseFlagMask(prefix: string, val: string) {
             : 1 << i
         })
         .reduce((a, b) => a | b, 0)
-}
-
-// A modifier whose value is mandatory and free-form (a color, a tag, a display
-// name). `color:` with nothing after the colon is a typo, not a request to color
-// by the empty string — which would reach the display as an invalid config-slot
-// value, or be dropped silently.
-function parseStr(prefix: string, val: string, expected = 'value') {
-  return val || invalid(prefix, val, expected)
-}
-
-// A modifier whose value comes from a fixed set (arcs, sashimi, heightMode, …).
-// Returns the matched member so the caller keeps the narrow literal type.
-function parseEnum<T extends string>(
-  prefix: string,
-  val: string,
-  allowed: readonly T[],
-) {
-  return (
-    allowed.find(a => a === val) ?? invalid(prefix, val, allowed.join(', '))
-  )
-}
-
-// A modifier that reads as a flag: bare (`coverage`) or `:true` is on, `:false`
-// is off, anything else is a typo. `getBooleanValue` in options.ts is the same
-// question for a top-level --flag, where an unusable value warns rather than
-// throws — the flags there are view cosmetics, these change what the image shows.
-function parseBool(prefix: string, val: string) {
-  return val === '' || val === 'true'
-    ? true
-    : val === 'false'
-      ? false
-      : invalid(prefix, val, 'true or false')
 }
 
 // Every category, for the modifiers that apply to any track type.
@@ -476,13 +428,13 @@ const modifiers: Record<string, Modifier> = {
   height: {
     on: ALL,
     apply: (r, v) => {
-      r.snap.height = parseNum('height', v)
+      Object.assign(r.snap, sharedModifiers.height!(v))
     },
   },
   force: {
     on: ALL,
     apply: (r, v) => {
-      r.snap.forceLoad = parseBool('force', v)
+      Object.assign(r.snap, sharedModifiers.force!(v))
     },
   },
   display: {
@@ -549,7 +501,7 @@ const modifiers: Record<string, Modifier> = {
     apply: (r, v, tag) => {
       const field = parseStr('sort', v, 'sort field')
       if (field === 'tag' && !tag) {
-        invalid('sort', v, 'tag:<TAG>')
+        invalidModifierValue('sort', v, 'tag:<TAG>')
       }
       r.sort = {
         field:
@@ -659,16 +611,20 @@ const modifiers: Record<string, Modifier> = {
     apply: (r, v, _v2, category) => {
       const value = parseStr('color', v, 'color scheme or CSS color')
       if (value === 'tag' || value === 'attribute') {
-        invalid(
+        invalidModifierValue(
           'color',
           value,
           `a CSS color or a field name; a field of that name is color.field=${value === 'tag' ? 'tags.<TAG>' : '<name>'}`,
         )
       } else if (category === 'alignments') {
         if (BASE_COLOR_NAMES.has(value)) {
-          invalid('color', value, `a read field; baseColor:${value} draws it`)
+          invalidModifierValue(
+            'color',
+            value,
+            `a read field; baseColor:${value} draws it`,
+          )
         } else if (FACET_ONLY_FIELDS.has(value)) {
-          invalid(
+          invalidModifierValue(
             'color',
             value,
             `a field color paints; reads keep their arcs' colors, and facet=${value} groups them by ${value}`,
@@ -681,7 +637,11 @@ const modifiers: Record<string, Modifier> = {
       } else if (category === 'hic') {
         // `memberWrites` writes it as `color.scheme`, over the track's own color
         if (!(COLOR_SCHEMES as readonly string[]).includes(value)) {
-          invalid('color', value, `a color scheme: ${COLOR_SCHEMES.join(', ')}`)
+          invalidModifierValue(
+            'color',
+            value,
+            `a color scheme: ${COLOR_SCHEMES.join(', ')}`,
+          )
         }
       } else if (
         (category === 'feature' || category === 'variant') &&
@@ -727,17 +687,6 @@ function settingsOf(result: BuildResult) {
   return result.snap as Record<string, unknown>
 }
 
-// Raw JSON escape hatch for settings without a dedicated modifier. Reported with
-// the offending token, since a bare SyntaxError from a shell-mangled brace names
-// nothing.
-function parseJsonModifier(opt: string): DisplaySnapshot {
-  try {
-    return JSON.parse(opt) as DisplaySnapshot
-  } catch (e) {
-    throw new Error(`Invalid JSON track option: ${opt}`, { cause: e })
-  }
-}
-
 // Parse a track's modifier list into a declarative display snapshot. Pure (no
 // view/display), so it's unit-testable; the center-line sort is returned as an
 // intent for the caller to resolve against the view. A member write is
@@ -746,10 +695,7 @@ export function buildDisplaySnapshot(category: Category, opts: string[]) {
   const result: BuildResult = { snap: {} }
   for (const opt of opts) {
     if (opt.startsWith('{')) {
-      mergeSettings(
-        settingsOf(result),
-        settingsOf({ snap: parseJsonModifier(opt) }),
-      )
+      mergeSettings(settingsOf(result), parseJsonModifier(opt))
     } else if (isSlotPathOption(opt)) {
       if (!isMemberWrite(opt)) {
         applySlotWrite(settingsOf(result), slotWrite(opt))

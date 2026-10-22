@@ -1,6 +1,6 @@
 ---
 name: launch-args
-description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --genome, --view (view settings by their session-spec names), format-family track flags, batch --sites, genome modifiers in place of --aliases/--cytobands. Open: display modifiers in Desktop, img rendering through loadSessionSpec, jb2capture on the shared grammar, comparative views from Desktop, the package's first npm publish."
+description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --genome, --view (view settings by their session-spec names), format-family track flags, batch --sites, genome modifiers in place of --aliases/--cytobands. Open: display-specific modifiers in Desktop (it takes height:, force:, slot writes and JSON), img rendering through loadSessionSpec, jb2capture on the shared grammar, comparative views from Desktop."
 ---
 
 # Launch arguments: one grammar for img, capture and Desktop
@@ -19,6 +19,10 @@ packages is released, so breaking changes are fine.
     the format-family track flags, and `genomeAssembly` (a genome file with its
     `aliases:`/`cytobands:`)
   - `slotPath.ts`: `path=value` writes, and `viewSettings` for `--view`
+  - `trackSettings.ts`: the modifier-value parsers both apps use, and
+    `trackSettings`, the settings a track's modifiers write on every display
+    type (`height:`, `force:`, whole-setting slot writes, JSON), which Desktop
+    puts on the spec's track entries
   - `launchPlan.ts` (Desktop's plan), `genome.ts` (`--genome` URLs),
     `trackIds.ts` (`--track` lookup, node-free, the `./trackIds` subpath)
 - Desktop: `electron/launchTarget.ts` (`findLaunchTarget`),
@@ -61,14 +65,15 @@ packages is released, so breaking changes are fine.
 
 ## Next, in order
 
-1. **Display modifiers in Desktop.** Desktop reports `height:`, `color:` and
-   the rest as not applied. Run img's translator (`buildDisplaySnapshot`) in
+1. **Display-specific modifiers in Desktop.** Desktop applies `trackSettings`
+   and reports `color:`, `featureHeight:`, the read filters, `sort:` and member
+   writes as not applied. Run img's translator (`buildDisplaySnapshot`) in
    Desktop's renderer, where `launchFromPlan` has the plugin manager (for
    `trackDisplayType`) and the config (for the configured filter a modifier
    merges into), and have the plan carry each track's modifiers instead of
    `unapplied` strings. ADR-238 does not remove the merge: a written `filter`
    list replaces the default one, so `mapq:30` is the default list plus one
-   predicate. Slot writes and JSON need none of this and can go first.
+   predicate.
 2. **img renders through `loadSessionSpec`** for the half that writes settings.
    img still reads links, alt counts and the manifest back off the drawn view,
    and a gene-name `--loc` must stay on `navToLocOrGene`, since a search with
@@ -82,5 +87,3 @@ packages is released, so breaking changes are fine.
 4. **Comparative views from Desktop's command line** (`--fasta` twice, `--paf`):
    jb2export's `comparativeArgs.ts` has the grammar; Desktop's plan builds one
    linear view.
-5. **Publish `@jbrowse/launch-args`.** `@jbrowse/cli`, `@jbrowse/img` and
-   Desktop depend on it; its first npm publish needs a human.

@@ -17,8 +17,8 @@ Opening data (the same arguments jb2export takes):
   <data file>        A FASTA, 2bit or .chrom.sizes is the genome, which
                      aliases:<file> and cytobands:<file> may follow; any other
                      file (BAM, CRAM, VCF, BigWig, GFF, BED, ...) opens as a
-                     track, typed by its name. name:<label> and index:<file>
-                     may follow it
+                     track, typed by its name. name:<label>, index:<file>,
+                     height:<px>, force and path=value settings may follow it
   --genome <name>    A genomes.jbrowse.org genome (hg38, GCA_...) to open on
   --config <path>    A config.json to open on, with --assembly to pick one of
                      its genomes

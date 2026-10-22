@@ -205,8 +205,12 @@ export async function launchFromPlan(
   }
   // a file's trackId is exact; a --track token gets jb2export's leniency
   const fileIds = new Set(plan.tracks.map(t => t.trackId))
-  const show = plan.show.map(id =>
-    fileIds.has(id) ? id : resolveTrackId(config?.tracks ?? [], id, assembly),
+  const resolve = (id: string) =>
+    fileIds.has(id) ? id : resolveTrackId(config?.tracks ?? [], id, assembly)
+  const show = plan.show.map(entry =>
+    typeof entry === 'string'
+      ? resolve(entry)
+      : { ...entry, trackId: resolve(entry.trackId) },
   )
   const pluginManager = await createPluginManager(config)
   await loadSessionSpec(

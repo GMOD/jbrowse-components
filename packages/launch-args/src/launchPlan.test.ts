@@ -25,8 +25,28 @@ test('bare files: the genome file is the assembly, the rest are tracks', () => {
   expect(p.tracks[0]?.adapter).toMatchObject({
     bamLocation: { localPath: '/work/reads.bam' },
   })
-  expect(p.show).toEqual(['reads.bam', 'calls.vcf.gz'])
-  expect(p.unapplied).toEqual(['reads.bam height:200'])
+  expect(p.show).toEqual([
+    { trackId: 'reads.bam', height: 200 },
+    'calls.vcf.gz',
+  ])
+  expect(p.unapplied).toEqual([])
+})
+
+test('a track carries the settings every track type takes; the rest are reported', () => {
+  const p = plan(
+    '--genome hg38 r.bam force:true showLegend=true color:strand color.field=strand --track genes height:80',
+  )
+  expect(p.show).toEqual([
+    { trackId: 'r.bam', forceLoad: true, showLegend: true },
+    { trackId: 'genes', height: 80 },
+  ])
+  expect(p.unapplied).toEqual([
+    'r.bam color:strand',
+    'r.bam color.field=strand',
+  ])
+  expect(() => plan('ref.fa r.bam height:tall')).toThrow(
+    'Invalid height value "tall". Expected a number.',
+  )
 })
 
 test('paths resolve against the launch directory, URLs stay as they are', () => {

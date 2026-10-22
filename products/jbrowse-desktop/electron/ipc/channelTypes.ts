@@ -100,7 +100,7 @@ export interface LaunchPlanJson {
   loc?: string
   view: Record<string, unknown>
   tracks: ({ trackId: string } & Record<string, unknown>)[]
-  show: string[]
+  show: (string | ({ trackId: string } & Record<string, unknown>))[]
   unapplied: string[]
 }
 

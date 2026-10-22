@@ -463,7 +463,10 @@ describe('a command-line plan', () => {
         tracks: [bam],
         // jb2export's --track shorthand: the assembly prefix left off
         view: {},
-        show: ['reads.bam', 'genes'],
+        show: [
+          { trackId: 'reads.bam', height: 200 },
+          { trackId: 'genes', height: 80 },
+        ],
         unapplied: [],
       },
       d,
@@ -479,7 +482,10 @@ describe('a command-line plan', () => {
           {
             type: 'LinearGenomeView',
             assembly: 'volvox',
-            tracks: ['reads.bam', 'volvox-genes'],
+            tracks: [
+              { trackId: 'reads.bam', height: 200 },
+              { trackId: 'volvox-genes', height: 80 },
+            ],
           },
         ],
       }),
@@ -579,12 +585,12 @@ describe('a command-line plan', () => {
         tracks: [],
         view: {},
         show: [],
-        unapplied: ['reads.bam height:200'],
+        unapplied: ['reads.bam color:strand'],
       },
       d,
     )
     expect(notify).toHaveBeenCalledWith(
-      expect.stringContaining('reads.bam height:200'),
+      expect.stringContaining('reads.bam color:strand'),
       'warning',
     )
   })
