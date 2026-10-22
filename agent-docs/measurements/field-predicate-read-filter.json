@@ -5,7 +5,7 @@
   "source": {
     "kind": "bench",
     "repro": "node packages/core/benches/fieldPredicate.bench.ts --rounds=15 --reads=2000000",
-    "notes": "ADR-238's compiled predicate list against the alignments display's hand-written read test, the default flag exclusion (unmapped, QC-failed, duplicate) plus a MAPQ floor of 20, over two million BAM-shaped records, arms interleaved in one process, min of 15 rounds, on ada. The first compiler (a closure per flag bit, a coercion per compare, Array.every) measured 5.5x on the laptop; the fused compiler (one mask compare for the flag bits, a typed number bound, an unrolled list, lanes over the record in hand) is the row below. For scale, @gmod/bam 10.0.1 fetches, inflates and decodes a volvox read in 359 ns on ada before any extraction, so the remaining gap is about 0.6% of decode alone. The whole-fetch A/B on 1000x.shortread.bam decides whether the alignments filter moves onto it."
+    "notes": "ADR-238's compiled predicate list against the alignments display's hand-written read test, the default flag exclusion (unmapped, QC-failed, duplicate) plus a MAPQ floor of 20, over two million BAM-shaped records, arms interleaved in one process, min of 15 rounds, on ada. The first compiler (a closure per flag bit, a coercion per compare, Array.every) measured 5.5x on the laptop; the fused compiler (one mask compare for the flag bits, a typed number bound, an unrolled list, lanes over the record in hand) is the row below. For scale, @gmod/bam 10.0.1 fetches, inflates and decodes a volvox read in 359 ns on ada before any extraction, so the remaining gap is about 0.6% of decode alone. The whole-fetch rows are ADR-240 step 3a's gate (node --experimental-transform-types plugins/alignments/benches/readFilterFetch.bench.ts --rounds=15, measured 2026-10-22): 1000x.shortread.bam chr22_mask:124000-143000 opened afresh each round, 153,677 records, the same four entries per record, on ada; a second run read 129.7 and 127.5 ms. The list costs nothing measurable there, so the worker runs it."
   },
   "columns": [
     { "key": "arm", "label": "arm" },
@@ -24,6 +24,20 @@
         "arm": "2M reads, flags + MAPQ, ada",
         "handMs": 7.0,
         "compiledMs": 10.9
+      }
+    },
+    {
+      "values": {
+        "arm": "1000x whole fetch, fetch + filter, ada",
+        "handMs": 130.4,
+        "compiledMs": 129.5
+      }
+    },
+    {
+      "values": {
+        "arm": "1000x whole fetch, filter loop alone, ada",
+        "handMs": 4.77,
+        "compiledMs": 4.83
       }
     }
   ]
