@@ -20,28 +20,14 @@ const cacheArgs = ({ limit }: { limit?: number | null }) =>
   limit === undefined ? {} : { limit: limit ?? Infinity }
 
 ;(globalThis as Record<string, unknown>).jbrowse = {
-  alignments: async (args: string) =>
-    send(await engine.alignments(JSON.parse(args))),
-  features: async (args: string) =>
-    send(await engine.features(JSON.parse(args))),
-  wiggle: async (args: string) => send(await engine.wiggle(JSON.parse(args))),
-  variants: async (args: string) =>
-    send(await engine.variants(JSON.parse(args))),
-  variantDensityAlpha: async (args: string) =>
-    send(engine.variantDensityAlpha(JSON.parse(args))),
-  alignmentMarkAlpha: async (args: string) =>
-    send(engine.alignmentMarkAlpha(JSON.parse(args))),
-  synteny: async (args: string) => send(await engine.synteny(JSON.parse(args))),
-  dotplot: async (args: string) => send(await engine.dotplot(JSON.parse(args))),
-  contigs: async (args: string) => send(await engine.contigs(JSON.parse(args))),
-  multiway: async (args: string) =>
-    send(await engine.multiway(JSON.parse(args))),
+  ...Object.fromEntries(
+    Object.entries(engine).map(([name, table]) => [
+      name,
+      async (args: string) =>
+        send(await (table as (args: unknown) => unknown)(JSON.parse(args))),
+    ]),
+  ),
   sequence: async (args: string) => engine.sequence(JSON.parse(args)),
-  fileRegions: async (args: string) =>
-    send(await engine.fileRegions(JSON.parse(args))),
-  regions: async (args: string) => send(await engine.regions(JSON.parse(args))),
-  canonicalNames: async (args: string) =>
-    send(await engine.canonicalNames(JSON.parse(args))),
   alignmentColors: () => send(alignmentColors()),
   cache: async (args: string) =>
     JSON.stringify(await engine.cache(cacheArgs(JSON.parse(args)))),
