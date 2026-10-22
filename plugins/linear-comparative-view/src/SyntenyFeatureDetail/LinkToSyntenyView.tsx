@@ -10,7 +10,10 @@ import { observer } from 'mobx-react'
 import { allAssembliesLaunchItems } from '../LaunchSyntenyView/allAssembliesLaunch.ts'
 import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
 import { openMateInLinearView } from '../LaunchSyntenyView/openMateInLinearView.ts'
-import { pairwiseSyntenyLaunch } from '../LaunchSyntenyView/pairwiseSyntenyLaunch.ts'
+import {
+  pairwiseLaunchLabel,
+  pairwiseSyntenyLaunch,
+} from '../LaunchSyntenyView/pairwiseSyntenyLaunch.ts'
 import { visibleSpanOnFeature } from '../LaunchSyntenyView/visibleSpanOnRefName.ts'
 import { getMate } from '../syntenyMate.ts'
 import { centerStackOnFeature } from './centerOnFeature.ts'
@@ -142,6 +145,7 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
         region: anchor.region,
       })
     : undefined
+  const mateAssembly = getMate(feature)?.assemblyName
   const launch =
     anchor && track
       ? pairwiseSyntenyLaunch({
@@ -202,10 +206,10 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
             </ActionLink>
           </li>
         ) : null}
-        {launch ? (
+        {launch && mateAssembly !== undefined ? (
           <li>
             <ActionLink onClick={launch}>
-              Launch linear synteny view on this feature
+              {pairwiseLaunchLabel(mateAssembly)}
             </ActionLink>
           </li>
         ) : null}

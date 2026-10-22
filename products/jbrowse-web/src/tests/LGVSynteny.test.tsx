@@ -97,9 +97,7 @@ test('nav to synteny from feature details', async () => {
     const canvas = findCanvasIn(display)
     fireEvent.mouseMove(canvas, { clientX: 200, clientY: 3 })
     fireEvent.click(canvas, { clientX: 200, clientY: 3 })
-    fireEvent.click(
-      await findByText('Launch linear synteny view on this feature'),
-    )
+    fireEvent.click(await findByText(/^Linear synteny view with /))
     // "Open in new view", not "Submit": this link reaches the same dialog the
     // right-click does, so it offers the same two destinations — and the same
     // framing: the launch is clipped to the panel's visible window rather than
