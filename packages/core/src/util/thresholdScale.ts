@@ -155,9 +155,13 @@ export function rampGapScales(
  * arrives as `[undefined]`. Text that fails to parse still counts as a value.
  */
 export function isMissing(value: unknown) {
-  return Array.isArray(value)
-    ? value.every(v => v === undefined || v === null)
-    : valueText(value) === ''
+  // the number test first: String() of a float costs ~50x an integer's, and a
+  // ramp asks this of every feature
+  return typeof value === 'number'
+    ? false
+    : Array.isArray(value)
+      ? value.every(v => v === undefined || v === null)
+      : valueText(value) === ''
 }
 
 /**
