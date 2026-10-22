@@ -71,7 +71,7 @@ test('a zoomed-out min-max extent draws the max and min bands around the mean', 
 
   const max = await engine.wiggle({
     ...wide,
-    display: { aggregate: 'max', extent: 'none' },
+    display: { y: 'maxScore', extent: 'none' },
   })
   expect(max.marks.score).toEqual(t.bins.max)
 
