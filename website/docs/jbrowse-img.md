@@ -76,7 +76,7 @@ jb2export yourfile.fa yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.svg
 
 - A FASTA, 2bit or `.chrom.sizes` is the genome, and any other file is a track,
   typed by its name. A typed flag such as `--fasta`, `--bam` or `--bigwig` sets
-  the type whatever the name says; `jb2export --help` lists them.
+  the type of a file with an unrecognized name; `jb2export --help` lists them.
 - With no `--out`, the SVG goes to stdout.
 
 ### Remote files
@@ -1034,7 +1034,7 @@ jb2export synteny --chromSizes data/comparative/peach.chrom.sizes \
   --width 1400 --out grape_peach_synteny.png
 ```
 
-<Figure src="/img/jbrowse-img/grape_peach_synteny.png" caption="Whole-genome synteny, grape vs peach, with autoDiagonalize and colorBy query" />
+<Figure src="/img/jbrowse-img/grape_peach_synteny.png" caption="Whole-genome synteny, grape vs peach, diagonalized and colored by query chromosome" />
 
 The mammalian-scale example is a human (hs1/T2T) vs mouse (mm39) liftOver, where
 a `filter` hiding alignments under 500 kb keeps the plot readable. With
@@ -1370,9 +1370,11 @@ equals sign (`--width=1200`).
 A data file (local path or URL) opens as a track of the type its name says, e.g.
 `file1.bam file2.bam`. A flag names the format of a file whose name does not:
 
-- `--bam`, `--cram`, `--bigwig`, `--bigbed`, `--hic`, `--vcf`, `--gff`, `--bed`;
-  the last three open a `.gz` name, or a file given `index:`, through the
-  bgzipped, tabix-indexed adapter
+- `--bam`, `--cram`, `--bigwig`, `--bigbed`, `--hic`, `--vcf`, `--gff`, `--bed`:
+  - `--gff` also opens a GTF file, and `--bed` a bedGraph or BEDPE file, typed
+    by its name; a file named for another flag's format is an error
+  - `--vcf`, `--gff` and `--bed` open a `.gz` name, or a file given `index:`,
+    through the bgzipped, tabix-indexed adapter
 - `--multiwig` — many BigWigs as one multi-row `MultiQuantitativeTrack`; the
   argument is a comma-separated BigWig file list (local paths or URLs) or a
   `.json` sources file (an array of BigWig paths/URLs, or of subadapter objects

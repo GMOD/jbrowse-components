@@ -231,10 +231,9 @@ the result, since it is what a later audit need not redo:
   and `heightMode` are layout or fetch modes, not marks, and MAF's
   `conservation.unit` is what one bar stands for.
 
-Two docs the audit left on a jexl callback or a flag name, on purpose: the
-cookbook's whole-config recipe paints SNVs one color and every other variant
-another, which a color object has no member for, and jb2export's comparative
-`--colorBy` keeps the menu's verb (ADR-139) while writing the `color` object.
+The audit left the cookbook's whole-config recipe on a jexl callback, on
+purpose: it paints SNVs one color and every other variant another, which a
+color object has no member for.
 
 ## Where a proposal lands
 

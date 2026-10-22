@@ -1,3 +1,18 @@
+import { trackModifierNames } from '@jbrowse/launch-args/displaySettings'
+
+function wrapped(text: string, indent: string, width = 78) {
+  const lines: string[] = []
+  for (const word of text.split(' ')) {
+    const last = lines.at(-1)
+    if (last !== undefined && last.length + word.length < width) {
+      lines[lines.length - 1] = `${last} ${word}`
+    } else {
+      lines.push(`${indent}${word}`)
+    }
+  }
+  return lines.join('\n')
+}
+
 /**
  * What a launch of the executable should actually do. Kept free of `electron`
  * imports, like launchTarget.ts, so the decision is unit-testable without an
@@ -18,8 +33,8 @@ Opening data (the same arguments jb2export takes):
   <data file>        A FASTA, 2bit or .chrom.sizes is the genome, which
                      aliases:<file> and cytobands:<file> may follow; any other
                      file (BAM, CRAM, VCF, BigWig, GFF, BED, ...) opens as a
-                     track, typed by its name. name:<label>, index:<file>,
-                     height:<px>, force and path=value settings may follow it
+                     track, typed by its name, which track modifiers and
+                     path=value settings may follow
   --genome <name>    A genomes.jbrowse.org genome (hg38, GCA_...) to open on
   --config <path>    A config.json to open on, with --assembly to pick one of
                      its genomes
@@ -27,9 +42,14 @@ Opening data (the same arguments jb2export takes):
                      regions open side by side
   --view <settings>  Settings on the view, by their session-spec names:
                      path=value or JSON, e.g. axis.grid=false
-  --track <id>       A track from the genome's or config's own list
+  --track <id>       A track from the genome's or config's own list, which
+                     modifiers may follow
   --bam, --cram, --vcf, --gff, --bigwig, --bigbed, --bed, --hic <file>
-                     A file of that type, whatever its name says
+                     A file of that type, for an unrecognized name
+
+Track modifiers, written name:value after a data file or --track <id>
+(https://jbrowse.org/jb2/docs/jbrowse-img/#track-modifiers):
+${wrapped(trackModifierNames.join(', '), '  ')}
 
 Comparing genomes (as jb2export synteny and dotplot take them):
   A second genome opens a synteny view, a row per genome in order, each at its

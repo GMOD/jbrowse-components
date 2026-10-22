@@ -578,6 +578,9 @@ function modifierArgs(prefix: string, modifier: Modifier, values: string[]) {
   return [val1, after[0]] as const
 }
 
+/** The named track modifiers; any other setting is a `path=value` write. */
+export const trackModifierNames = Object.keys(modifiers)
+
 // An unknown name throws, as a misspelled slot does. A known one aimed at the
 // wrong track type warns, because reusing one modifier list across a mixed set
 // of files is a reasonable thing to script.
@@ -590,7 +593,7 @@ function applyModifier(
   const modifier = lookup(modifiers, prefix)
   if (!modifier) {
     throw new Error(
-      `unknown track option "${prefix}:"; the options are ${Object.keys(modifiers).join(', ')}, or a slot written as path=value`,
+      `unknown track option "${prefix}:"; the options are ${trackModifierNames.join(', ')}, or a slot written as path=value`,
     )
   } else if (!category && modifier.byCategory) {
     throw new Error(

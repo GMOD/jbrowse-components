@@ -190,18 +190,19 @@ jbrowse-desktop myproject/config.json extra.bw --loc chr1:1-100,000
 - A FASTA, 2bit or `.chrom.sizes` is the genome, which `aliases:<file>` and
   `cytobands:<file>` can follow. Any other file opens as a track, typed by its
   name, and `name:<label>` and `index:<file>` can follow it.
-- A typed flag such as `--bam` or `--bigwig` sets a file's type whatever its
-  name says; `jbrowse-desktop --help` lists them.
+- A typed flag such as `--bam` or `--bigwig` sets the type of a file with an
+  unrecognized name; `jbrowse-desktop --help` lists them.
 - `--genome` opens a genome from
   [genomes.jbrowse.org](https://genomes.jbrowse.org), and `--track` adds one of
   its tracks by trackId (`jb2export list hg38` prints them).
 - `--view` writes settings on the view by their session-spec names, such as
   `--view axis.grid=false`.
 - Paths resolve against the directory the command runs in.
-- A track takes `height:`, `force:`, a setting written as `path=value` and a
-  JSON object, as in jb2export. Desktop skips the display-specific modifiers
-  such as `color:strand` for now, and jb2export's image flags such as `--width`,
-  and names what it skipped once the session opens.
+- A track takes jb2export's
+  [track modifiers](/docs/jbrowse-img#track-modifiers), such as `height:400` and
+  `color:strand`, a setting written as `path=value` and a JSON object.
+- Desktop skips jb2export's image flags, such as `--width`, and names them once
+  the session opens.
 
 ### Opening genomes side by side
 

@@ -57,8 +57,11 @@ packages is released, so breaking changes are fine.
   `--levelHeights`, `--cigarMode` and `--autoDiagonalize`.
 - `--showGridlines` and `--trackLabels` stay: they are the export's options, the
   ones the app's Export SVG dialog has, not view settings.
-- A track flag names a format family (`--vcf`, `--gff`, `--bed`); a `.gz` name
-  or `index:` picks the tabix adapter.
+- A track flag names a format family (`--gff` reads GFF3 and GTF, `--bed` BED,
+  bedGraph and BEDPE), opens the member the name says, and throws on a name
+  another flag reads; a `.gz` name or `index:` picks the tabix adapter.
+- Two genome files of one basename throw: a genome takes its file's name, and
+  the grammar has no `name:` for one.
 - batch reads `--sites <file>`, a VCF or a `.bedpe`, typed by name.
 - Cut: `--fasta2`/`--loc2`/`--aliases2`, `--aliases`/`--cytobands` (genome
   modifiers instead), `--assembly <json file>` (`--config` instead), the
