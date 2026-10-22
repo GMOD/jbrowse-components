@@ -2343,15 +2343,16 @@ export default function stateModelFactory(
         }
       })
       .views(self => {
+        function colorsIn(theme: JBrowsePalette) {
+          return buildColorPaletteFromPalette(theme, {
+            declared: writtenReadCategoryColors(
+              self.colorSetting.value,
+              self.colorEncoding,
+            ),
+          })
+        }
         function themedIn(theme: JBrowsePalette): ThemedSources {
-          const colors = computed(() =>
-            buildColorPaletteFromPalette(theme, {
-              declared: writtenReadCategoryColors(
-                self.colorSetting.value,
-                self.colorEncoding,
-              ),
-            }),
-          )
+          const colors = computed(() => colorsIn(theme))
           const arcFeedsByGroup = computed(() => {
             const { byGroup, crossRegionByGroup } = self.arcsResult
             const displayed = self.displayedRegionInfos
@@ -2447,8 +2448,9 @@ export default function stateModelFactory(
            * The read palette over `theme`, with the category colors `color`
            * sets, and the read connections and splice junctions colored from
            * it, each joined to its laid-out section. The SVG export passes the
-           * theme it renders with. Each member is memoized on its own, so a
-           * pan or a relayout rebuilds no feed.
+           * theme it renders with. Each member is its own computed, so while
+           * `themed` is observed a member rebuilds only when what it reads
+           * changes.
            */
           themedIn,
 
@@ -2461,7 +2463,7 @@ export default function stateModelFactory(
            */
           connectorStylerIn(theme: JBrowsePalette): ConnectorStyler {
             return connectorStyler({
-              colors: themedIn(theme).colors,
+              colors: colorsIn(theme),
               colorField: self.readConnectionsColorField,
               labels: self.declaredReadLabels.categories,
             })
@@ -2484,7 +2486,7 @@ export default function stateModelFactory(
            * not be the session's.
            */
           colorScalesIn(theme: JBrowsePalette): ColorScale[] {
-            const palette = themedIn(theme).colors
+            const palette = colorsIn(theme)
             return getAlignmentsColorScales({
               ramps: colorRampScales({
                 colorBy: self.colorBy,
