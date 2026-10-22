@@ -133,7 +133,7 @@ these pastes as it is:
 - `{ "encoding": { "color": { "value": "#1f77b4" } } }` one color for everything
 - `{ "filter": { "genes": "only" } }` genes only
 - `{ "filter": ["jexl:feature.score > 100"] }` scores above 100
-- `{ "facet": null, "encoding": { "color": null } }` ungrouped, default color
+- `{ "facet": null, "encoding": null }` ungrouped, default color
 
 The dialog lists the same examples. This one groups by biotype in a chosen
 order, gives each of the four biotypes a distinct color, and leaves the track's

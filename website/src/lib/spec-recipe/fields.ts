@@ -221,10 +221,10 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
 const basesStep: FieldRecipe = value => {
   const bases = asRecord(value)
   const color = channelOf(asRecord(bases?.encoding)?.color)
-  const layer =
-    bases?.show === false
-      ? undefined
-      : baseLayerOf(asString(color?.field) ?? '')
+  const layer = baseLayerOf({
+    show: bases?.show === true,
+    field: asString(color?.field) ?? '',
+  })
   if (!layer) {
     return undefined
   }
