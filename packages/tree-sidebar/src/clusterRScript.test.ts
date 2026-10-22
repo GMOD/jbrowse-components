@@ -40,6 +40,23 @@ test('generateClusterRScript escapes quotes and backslashes in row names', () =>
   )
 })
 
+// R's dist() gives NA for two rows with no column in common, and hclust then
+// stops; the in-app run imputes before clustering, so the script has to as well
+test('generateClusterRScript writes NaN as NA and imputes it before dist', () => {
+  const script = generateClusterRScript(
+    new Map([
+      ['a', [1, Number.NaN]],
+      ['b', [Number.NaN, Number.NaN]],
+    ]),
+    'average',
+  )
+  expect(script).toContain('c(1,NA,\nNA,NA')
+  expect(script.indexOf('inputMatrix[missing]<-siteMeans')).toBeLessThan(
+    script.indexOf('hclust(dist(inputMatrix)'),
+  )
+  expect(script).toContain('siteMeans[is.nan(siteMeans)]<-0')
+})
+
 test('matrixToTsv prefixes each row with its name', () => {
   expect(
     matrixToTsv(
