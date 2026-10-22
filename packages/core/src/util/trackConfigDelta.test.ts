@@ -321,6 +321,35 @@ test('a delta display under an id the base lacks lands on the base display of it
   ])
 })
 
+// The edited badge and the changes table read the flattened list, so it has to
+// pair a migrated id with the same base display the merge lands it on.
+test('listing changes pairs a delta display by type as the merge does', () => {
+  const withHeight = {
+    ...base,
+    displays: [
+      { type: 'ChordVariantDisplay', displayId: 'vcf-Chord' },
+      { type: 'LinearVariantDisplay', displayId: 'vcf-Linear', height: 50 },
+    ],
+  }
+  const unchanged = {
+    trackId: 'vcf',
+    displays: [
+      { type: 'LinearVariantDisplay', displayId: 'vcf-Retired', height: 50 },
+    ],
+  }
+  expect(mergeTrackConfig(withHeight, unchanged)).toEqual(withHeight)
+  expect(flattenTrackConfigDelta(withHeight, unchanged)).toEqual([])
+  const changed = {
+    trackId: 'vcf',
+    displays: [
+      { type: 'LinearVariantDisplay', displayId: 'vcf-Retired', height: 80 },
+    ],
+  }
+  expect(flattenTrackConfigDelta(withHeight, changed)).toEqual([
+    { path: ['displays', 'LinearVariantDisplay', 'height'], from: 50, to: 80 },
+  ])
+})
+
 test('a delta display of a type the base does not hold is still added', () => {
   const merged = mergeTrackConfig(base, {
     trackId: 'vcf',

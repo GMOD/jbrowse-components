@@ -100,6 +100,19 @@ const isWhole = (at: At) =>
 
 const UNCHANGED = Symbol('unchanged')
 
+// The base display a delta display addresses: the one with its id, else the
+// one of its type, since a track holds one display per type and a migrated
+// session names the display by the id its old type minted. Merging, diffing
+// and listing changes all match through this, so they agree on the pairing.
+function baseDisplayFor(baseDisplays: JsonObject[], d: JsonObject) {
+  return (
+    baseDisplays.find(b => b.displayId === d.displayId) ??
+    (d.type === undefined
+      ? undefined
+      : baseDisplays.find(b => b.type === d.type))
+  )
+}
+
 function diffValue(base: Json, edited: Json, at: At): Json | typeof UNCHANGED {
   if (edited == null) {
     if (base == null) {
@@ -111,11 +124,10 @@ function diffValue(base: Json, edited: Json, at: At): Json | typeof UNCHANGED {
     return UNCHANGED
   }
   if (isDisplayArray(edited) && isDisplayArray(base)) {
-    const baseById = new Map(base.map(d => [d.displayId as string, d]))
     const out: JsonObject[] = []
     for (const editedDisplay of edited) {
       const id = editedDisplay.displayId as string
-      const baseDisplay = baseById.get(id)
+      const baseDisplay = baseDisplayFor(base, editedDisplay)
       if (baseDisplay) {
         const d = diffValue(
           baseDisplay,
@@ -163,21 +175,18 @@ export function diffTrackConfig(
   return { ...delta, trackId }
 }
 
-// A delta display naming an id the base lacks lands on the base display of its
-// type, keeping the base's id: a track holds one display per type, and a
-// migrated session addresses the display by the id its old type minted.
+// A delta display lands on its base display (`baseDisplayFor`), keeping the
+// base's id.
 function mergeValue(base: Json, delta: Json, at: At): Json {
   if (isDisplayArray(delta)) {
     const baseDisplays = isDisplayArray(base) ? base : []
-    const baseIds = new Set(baseDisplays.map(d => d.displayId as string))
     const deltaByBaseId = new Map<string, JsonObject>()
     const added: JsonObject[] = []
     for (const d of delta) {
-      const byType = baseIds.has(d.displayId as string)
-        ? undefined
-        : baseDisplays.find(b => d.type !== undefined && b.type === d.type)
-      const id = (byType?.displayId ?? d.displayId) as string
-      if (baseIds.has(id)) {
+      const id = baseDisplayFor(baseDisplays, d)?.displayId as
+        | string
+        | undefined
+      if (id !== undefined) {
         const onId = { ...d, displayId: id }
         const earlier = deltaByBaseId.get(id)
         deltaByBaseId.set(
@@ -296,12 +305,10 @@ function walkDelta(
   identityKeys: Set<string> = IDENTITY_KEYS,
 ): void {
   if (isDisplayArray(delta)) {
-    const baseById = new Map(
-      (isDisplayArray(base) ? base : []).map(d => [d.displayId as string, d]),
-    )
+    const baseDisplays = isDisplayArray(base) ? base : []
     for (const editedDisplay of delta) {
       const id = editedDisplay.displayId as string
-      const baseDisplay = baseById.get(id)
+      const baseDisplay = baseDisplayFor(baseDisplays, editedDisplay)
       const label = (editedDisplay.type ?? baseDisplay?.type ?? id) as string
       // recurse into every display (missing base ⇒ {}) so only real slot edits
       // surface — a display present only for its {type, displayId} stub yields
@@ -328,7 +335,9 @@ function walkDelta(
         walkDelta(base[k], v, [...path, k], out, childAt(at, k))
       }
     }
-  } else {
+  } else if (!deepEqual(base, delta)) {
+    // equal where a migrated display paired by type, or the base has since
+    // taken the value the delta holds: no longer an override
     out.push({ path, from: base, to: delta ?? undefined })
   }
 }
