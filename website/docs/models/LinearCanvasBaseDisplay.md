@@ -213,7 +213,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | `LegendMixin`'s hook: the key the color channel's scale derives. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>89 inherited getters from 12 models</summary>
+<summary>88 inherited getters from 12 models</summary>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-owngroupstate">[`ownGroupState`](../hiddengroupsmixin#getter-owngroupstate)</span>, <span id="getter-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#getter-hiddengroups)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span>
 

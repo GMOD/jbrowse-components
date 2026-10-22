@@ -159,7 +159,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-plotscanlocus">**plotScanLocus**</span><br><code>string &#124; undefined</code> | The window the held field scan read, for the dialog to name. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>152 inherited getters from 14 models</summary>
+<summary>151 inherited getters from 14 models</summary>
 
 From [FacetWritesMixin](../facetwritesmixin): <span id="getter-writtenfacet">[`writtenFacet`](../facetwritesmixin#getter-writtenfacet)</span>
 

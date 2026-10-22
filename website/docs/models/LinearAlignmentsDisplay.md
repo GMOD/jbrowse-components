@@ -321,7 +321,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-gateenabled">**gateEnabled**</span><br><code>boolean</code> | Opt into RegionTooLargeMixin's byte gate: `fetchNeeded` passes `resolvedByteLimit()` to `RenderAlignmentData`, whose first await is the index estimate, so an over-budget region is refused before a read downloads. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>99 inherited getters from 13 models</summary>
+<summary>98 inherited getters from 13 models</summary>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#getter-hiddengroups)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span>
 
