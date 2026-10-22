@@ -84,12 +84,12 @@ box and the export's clip translate. Wiggle-core's `ScorePlotChrome` and
 `ScorePlotSvgFrame` take it as a prop defaulting to the single-plot box, which
 is what the Manhattan and mark displays (no such getter) draw in.
 
-**`color` maps `score` alone; a subtrack's color is `rowColor`'s.** Unset,
-`effectiveColor` is the pair about the `origin` a quantitative track has always
-drawn: `score` with no `scale`, its `range` the color below and the color above
-(`wigglePairOf`). Each mark draws the pair in its own idiom — bars, points and
-lines as a threshold, a heatmap as a `linear` ramp through white at the origin
-(`paintedWiggleColor`). That ramp through `rampMidT` is the white fade the
+**`encoding.color` maps `score` alone; a subtrack's color is `rowColor`'s.**
+Unset, `effectiveColor` is the pair about the `origin` a quantitative track has
+always drawn: no `scale.type`, and a `scale.range` of the color below and the
+color above (`wigglePairOf`). Each mark draws the pair in its own idiom —
+bars, points and lines as a threshold, a heatmap as a `linear` ramp through
+white at the origin (`paintedWiggleColor`). That ramp through `rampMidT` is the white fade the
 density shader used to compute, within one LUT step (the white itself lands
 between entries 127 and 128, a channel off), and `densityColorParity.test.ts`
 holds the retired fade's arithmetic as the oracle. A written scale means one
@@ -106,14 +106,14 @@ of what the layers and both backends read. `pivot` is where the color parts and
 never where bars grow from: bars read `origin`, and the layers part their
 colors at `pivot` and the cuts. A gradient (`rampLut`, from
 `linear`, through the y scale's type) colors each bar, point and density cell
-by its score's position, `rampMid`, the config's `domainMid`, on its middle
-stop, and a line and its min-max band by the score at each fragment's height,
-and never reads `origin`. The gradient follows the y domain and y scale, so the color declares no
-`domainMin`/`domainMax` and no `log`. `score` is the one field the schema
-admits, and `threshold`, `linear` and `none` its scales, since a two-sided plot
-has nothing to paint a cut over subtrack names with; `resolveWiggleColor`'s
-`categorical` arm paints the misconfiguration grey only to cover the shared
-encoding union.
+by its score's position, `rampMid`, the config's `scale.domainMid`, on its
+middle stop, and a line and its min-max band by the score at each fragment's
+height, and never reads `origin`. The gradient follows the y domain and y
+scale, so the color declares no `scale.domainMin`/`scale.domainMax` and no
+`log`. The field is always `score`, and `threshold`, `linear` and `none` the
+`scale.type`s the schema admits, since a two-sided plot has nothing to paint a
+cut over subtrack names with; `resolveWiggleColor`'s `categorical` arm paints
+the misconfiguration grey only to cover the shared encoding union.
 ADR-144, ADR-153.
 
 **Everything shared over the geometry is `wiggleDisplayViews`**:
@@ -244,10 +244,10 @@ stored summary refetches arrays the worker already shipped. A key folding the
 three summaries into one would be a derived value in the fetch key, and waits
 on a measurement of that refetch.
 
-**No color setting is a fetch key.** `color` and `origin` are `gpuProps` alone:
-the worker ships one set of score arrays and the main thread colors each
-instance by its side of the cut, so moving the cut re-encodes and refetches
-nothing. ADR-016, which put the split in the worker, is superseded;
+**No color setting is a fetch key.** `encoding.color` and `origin` are
+`gpuProps` alone: the worker ships one set of score arrays and the main thread
+colors each instance by its side of the cut, so moving the cut re-encodes and
+refetches nothing. ADR-016, which put the split in the worker, is superseded;
 `ideas/ready/wiggle-instance-records-carry-per-row-constants.md` §4 has what the
 split cost.
 
@@ -318,27 +318,27 @@ the bulk editor and the dialog is the plot's two colors and the buttons.
 
 **Those two colors are `plotColorLine` over the resolved pair**, offered on one
 line above the rows and written back through `plotColorEdit`. Read off
-`wiggleColor`, so an unset `color` shows what the layout paints; written whole,
-because a channel replaces its setting. Three rules it turns on:
+`wiggleColor`, so an unset `encoding.color` shows what the layout paints;
+written whole, because a channel replaces its setting. Three rules it turns on:
 
-- **An undeclared cut stays undeclared.** Writing `domain` would pin at today's
-  `origin` every config that had been following it, and nine shipped threshold
-  figures declare a range and no domain.
+- **An undeclared cut stays undeclared.** Writing `scale.domain` would pin at
+  today's `origin` every config that had been following it, and nine shipped
+  threshold figures declare a range and no domain.
 - **Two swatches only edit where they can say the whole picture.** A ramp or a
   threshold past one cut reads out beside the reason; a color per subtrack
   hides the line, since the grid below is already that control. A heatmap's
   pair is its two ends, so it edits too, and writes the pair back with no
-  `scale`, so the white keeps following the `origin` and the same edit draws
-  bicolor bars (`plotColorOf`).
+  `scale.type`, so the white keeps following the `origin` and the same edit
+  draws bicolor bars (`plotColorOf`).
   `plotColorLine.test.ts` round-trips every shape a shipped config holds.
 - **`Edit plot...` in the dialog is the escape**, on the display's `plot` — a
   ramp, several cut points, hand-written stops, a typed row order. ADR-204.
 
 **The palette deals by name only over a shared box.** `sharesPanel` is an
 overlay of several subtracks, and `rowColorPaintsMarks` holds while no gradient
-and no declared `color` paints the plot, so a lone BigWig keeps the red below
-its baseline and a row per subtrack draws each in the plot color unless
-`rowColor` or the file gives it one.
+and no declared `encoding.color` paints the plot, so a lone BigWig keeps the
+red below its baseline and a row per subtrack draws each in the plot color
+unless `rowColor` or the file gives it one.
 
 **A reader's color for a row is `rowColor`, and its label is `rows.labels`.**
 `TreeSidebarMixin` arranges them over `discoveredRows`, stamps each row's
@@ -347,7 +347,8 @@ so a `group` pasted into the bulk editor is not kept.
 
 **`markSources` is what the plot paints**, by one rule the model and
 `wiggleTables` share (`wiggleMarkColoring`, `wiggleMarkSources`). A written
-`color` or a gradient paints every mark, so no source color reaches them.
+`encoding.color` or a gradient paints every mark, so no source color reaches
+them.
 Unset, a source's marks take its `rowColor`. A file's own `color` reaches the
 marks only through `rowColor`, never past a heatmap's ramp, where a fade to
 each row's file color once keyed nothing and spent hue on two variables. The

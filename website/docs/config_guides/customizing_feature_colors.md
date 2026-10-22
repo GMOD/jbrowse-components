@@ -4,10 +4,10 @@ description: Per-feature color callbacks using jexl or plugin code
 guide_category: Callbacks
 ---
 
-Set a track's `color` in `displayDefaults` as a plain CSS color, an object that
-paints each value of a field with a key, or a `jexl:` expression. When the logic
-outgrows one jexl line, add a function to the jexl language with a small plugin
-and call it from your callback.
+Set a track's `encoding.color` in `displayDefaults` as a plain CSS color, an
+object that paints each value of a field with a key, or a `jexl:` expression.
+When the logic outgrows one jexl line, add a function to the jexl language with
+a small plugin and call it from your callback.
 
 The object forms (a color per `type`, chosen colors, a threshold, a gradient)
 are in the [cookbook](/docs/cookbook#colors). Past those, a plugin file
@@ -61,31 +61,32 @@ them generically as `field6`, `field7`, ... and `feature.itemRgb` reads as
 
 <!-- GOTCHA BedAdapter END -->
 
-An unset [`color`](/docs/config/linearcanvasbasedisplay/#slot-color) paints each
-feature from the colors a BED has, under whichever of those names they land, so
-a callback is only needed to override that.
+An unset [`encoding.color`](/docs/config/linearcanvasbasedisplay/#slot-color)
+paints each feature from the colors a BED has, under whichever of those names
+they land, so a callback is only needed to override that.
 
 ## Reading the type list off the file
 
-A `color` object with chosen colors per `type` is only as good as its `domain`,
-so read the types off the file. The `/^##FASTA/{exit}` stops before any inline
-sequence, whose lines have no `#` and would otherwise count as types:
+An `encoding.color` object with chosen colors per `type` is only as good as its
+`scale.domain`, so read the types off the file. The `/^##FASTA/{exit}` stops
+before any inline sequence, whose lines have no `#` and would otherwise count as
+types:
 
 ```bash
 awk -F'\t' '/^##FASTA/{exit} !/^#/{print $3}' annotations.gff |
   sort | uniq -c | sort -rn
 ```
 
-A type the `domain` does not list takes the next palette color and a separate
-row in the key, so an unexpected row there is the signal to go back to that
-list. A worked case: the
+A type the `scale.domain` does not list takes the next palette color and a
+separate row in the key, so an unexpected row there is the signal to go back to
+that list. A worked case: the
 [EBI mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline)
 writes a GFF whose column 3 holds mobile element types (published per genome
 under MGnify's
 [`mgnify_genomes`](https://ftp.ebi.ac.uk/pub/databases/metagenomics/mgnify_genomes/)
-as `<accession>_mobilome.gff`), so with no `color` the whole mobilome paints one
-color. One `color` object separates the element classes and greys the passenger
-CDSs back:
+as `<accession>_mobilome.gff`), so with no `encoding.color` the whole mobilome
+paints one color. One `encoding.color` object separates the element classes and
+greys the passenger CDSs back:
 
 ```json addtrack
 {
@@ -133,10 +134,11 @@ CDSs back:
 }
 ```
 
-- **`unknown` greys the rest in one go.** `"unknown": "#bdc3c7"` in place of the
-  `CDS` entry paints every type the `domain` leaves out that grey, and the key
-  names them one row, Other. An unexpected type then gets no separate row, so
-  the key no longer signals that the type list needs checking.
+- **`scale.unknown` greys the rest in one go.** `"unknown": "#bdc3c7"` in
+  `scale`, in place of the `CDS` entry, paints every type the `scale.domain`
+  leaves out that grey, and the key names them one row, Other. An unexpected
+  type then gets no separate row, so the key no longer signals that the type
+  list needs checking.
 - **Two names for the repeat flanks** because the pipeline renamed the type
   across releases, and a file uses whichever name its release used. A renamed
   type is the usual reason a key is missing.

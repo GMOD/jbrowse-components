@@ -270,15 +270,15 @@ opens on, and the track menu switches it afterwards:
 }
 ```
 
-In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `baseColor` is
-a color channel for each base, here set from the `bisulfite` field.
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `pileup.bases`
+is a color channel for each base, here set from the `bisulfite` field.
 [`cytosineContext`](/docs/config/linearalignmentsdisplay/#slot-modifications)
 takes `CG`, `CHG`, `CHH` or `all`.
 
 ## Coloring the reads by cytosine context
 
 **Color by... → Bisulfite / EM-seq** in the alignments track menu sets
-`baseColor` to the `bisulfite` field, which paints each read's cytosines by
+`pileup.bases` to the `bisulfite` field, which paints each read's cytosines by
 context. The submenu offers:
 
 - **CpG**, **CHG**, **CHH** or **All cytosines**: methylated cytosines paint red

@@ -129,8 +129,8 @@ calls, both loaded straight from their FTP URL.
 The CNV BED has no header, so
 [`columnNames`](/docs/config/bedadapter/#slot-columnnames) names its columns. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, the track's
-`color` is a color scale that maps the `field` `total_copy_number` through the
-cuts in `domain` to the colors in `range`.
+`encoding.color` is a color scale that maps the `field` `total_copy_number`
+through the cuts in `scale.domain` to the colors in `scale.range`.
 
 ```json addtrack
 {

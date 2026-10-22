@@ -113,8 +113,8 @@ copied.
   `alignments`, `features`, `wiggle` and `variants` alike. `multiway`
   returns its display's the same way; `synteny` and `dotplot`, whose
   settings live on a view rather than a config schema, return the view's
-  settings with the view's defaults, `color` and `opacity` as config
-  objects.
+  settings with the view's defaults, `encoding.color` and
+  `encoding.opacity` as config objects.
 - `alignmentTables` adds a `color` column, off the palette, to
   `mismatches`, `gaps`, `insertions`, `clips`, `coverage`, `alleleCoverage`,
   `interbaseCoverage`, `indicators` and `junctions`. It resolves a base
@@ -148,9 +148,10 @@ with it.** `alignmentTables` takes `display`, the `LinearAlignmentsDisplay`
 config as a track's `displays` entry writes it, resolves it through the
 display's config schema, so the schema's defaults are the table's, and runs
 the display's pipeline: the worker filters and fetches under
-`colorBy`, the main-thread bake and classification (`applyReadColorsByGroup`)
-paint each read, and the display's own key (`getReadDisplayLegendItems`) comes
-back as `legend` with `legendTitle`. Each read carries its painted `color` as
+`encoding.color`, the main-thread bake and classification
+(`applyReadColorsByGroup`) paint each read, and the display's own key
+(`getReadDisplayLegendItems`) comes back as `legend` with `legendTitle`. Each
+read carries its painted `color` as
 `#rrggbb` and its `category` (`fwdStrand`, `mapq`, `unmappedMate`, ...). A host
 draws `color` as given and keys the legend off `legend`, so a scheme the
 browser gains paints in R with no port. A color bar the display keys (a
@@ -237,15 +238,15 @@ threshold, which is what the pileup fades a sub-pixel mark by (the shaders'
 `frequencyAlpha`: `width + fade * (1 - width)` for a mark under a pixel
 wide), so a host can fade sequencing errors as the display does without
 porting the threshold. `alignmentMarkAlpha` finishes the fade at the host's
-px per bp (below). The display's `baseColor` and `modifications`
-objects select its per-base layer the same way `color` does: under
-`{ field: 'modifications' }` the reads' base modifications come back as
-`modifications` (position, read, type code and name, probability, whether
-the call says the base is unmodified, and the color and opacity the display
-paints it at), the reads take the layer's pale strand tints, and the key
-gains the modification rows. Under `{ field: 'baseQuality' }` each aligned
-base comes back in `qualities` (position, read, Phred score, and the ramp
-color the layer paints it), and `ramps` holds the quality bar.
+px per bp (below). The display's `pileup.bases` and `modifications`
+objects select its per-base layer the same way `encoding.color` does: under
+`encoding: { color: 'modifications' }` the reads' base modifications come
+back as `modifications` (position, read, type code and name, probability,
+whether the call says the base is unmodified, and the color and opacity the
+display paints it at), the reads take the layer's pale strand tints, and the
+key gains the modification rows. Under `encoding: { color: 'baseQuality' }`
+each aligned base comes back in `qualities` (position, read, Phred score, and
+the ramp color the layer paints it), and `ramps` holds the quality bar.
 `referenceSequence` reads a region's bases
 through the assembly's sequence adapter, for a host drawing them under a
 pileup; the bundle serves it as `jbrowse.sequence`. The coverage band's
@@ -307,7 +308,7 @@ half the depth area, in px, whatever the axis type. The display's
 rows out as the display does, through the display's own `sortOf`; a column
 sort may leave out `refName`, which then means the region's, and may name the
 contig as the reference spells it (`originalRefName`). Under
-`color: { field: 'mateRefName' }` the palette is dealt in the assembly's
+`encoding: { color: 'mateRefName' }` the palette is dealt in the assembly's
 contig order, `refNames` spelled as the file spells them, or the file header's
 order where a host passes none.
 
@@ -494,9 +495,10 @@ strings and flags in one text column.
   leaves `info` (`consequenceTables`).
 
 The table does not apply the display's density fade, which depends on zoom,
-and does not order the rows by the `rows` arrangement. A categorical `color`
-deals its values into slots the browser keeps per session; the table deals
-afresh on every call, so one value can take two colors across two calls.
+and does not order the rows by the `rows` arrangement. A categorical
+`encoding.color` deals its values into slots the browser keeps per session;
+the table deals afresh on every call, so one value can take two colors across
+two calls.
 
 ## In grammar-of-graphics terms
 
@@ -507,10 +509,10 @@ of the display's that it can't rebuild:
   geometry it carries the semantic columns a host may map instead (`mapq`,
   `strand`, `score`, `genotype`, `dosage`, `type`), and `section`, the
   display's facet.
-- **Scale output:** each mark's `color` is what the display's `color` object
-  resolves to. The display's scale has already run, so a host draws the
-  column as it is (ggjbrowse paints it as `I(color)`, which trains no
-  scale).
+- **Scale output:** each mark's `color` is what the display's
+  `encoding.color` object resolves to. The display's scale has already run,
+  so a host draws the column as it is (ggjbrowse paints it as `I(color)`,
+  which trains no scale).
 - **Guides:** `legend` and the other keys are that scale's guide, a label
   per color. `ramps` are its color bars (`rampKeyOf`): the stops the display
   samples, as `offset`, `color` and `opacity`, and the end labels its bar

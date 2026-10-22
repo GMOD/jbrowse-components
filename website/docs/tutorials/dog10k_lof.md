@@ -236,10 +236,10 @@ painting is in the config as `dog10k_cyp1a2_cn`.
 
 The output is a BED with the color in `itemRgb` and the rounded call in
 `copyNumber`. The `identity` color scale uses the file's own colors, and its
-`labels` pair each color with a copy number so the key reads as copy number. The
-figure draws one key, from the named-animals track above this one (described
-below), so this track sets `showLegend` to `false`. Drop that line to get a key
-on this track:
+`scale.names` pair each color with a copy number so the key reads as copy
+number. The figure draws one key, from the named-animals track above this one
+(described below), so this track sets `legend.show` to `false`. Drop that line
+to get a key on this track:
 
 ```json addtrack
 {
@@ -293,8 +293,8 @@ on this track:
 }
 ```
 
-The build script prints this `color` block from the palette it painted with. The
-figure's upper track is a second BED the script writes,
+The build script prints this `encoding.color` block from the palette it painted
+with. The figure's upper track is a second BED the script writes,
 `dog10k_cyp1a2_breed_cn.bed.gz`, whose `sample` column already holds breed
 names; its track takes `rows: { "field": "sample", "sort": [...] }` with those
 names in drawing order.

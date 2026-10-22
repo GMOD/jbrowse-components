@@ -143,8 +143,8 @@ Two entries in the track config matter here:
   type
 - the `MultiWaySyntenyDisplay` entry sets up the
   [lanes view](#every-accession-in-columbia-coordinates): `rows.sort` orders the
-  lanes, and `ribbonColor` is a color scale on the bands, mapping the `syri`
-  field through a `domain` of the six types
+  lanes, and `ribbons.encoding.color` is a color scale on the bands, mapping the
+  `syri` field through a `scale.domain` of the six types
 
 ```json addtrack
 {

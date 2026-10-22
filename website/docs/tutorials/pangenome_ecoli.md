@@ -210,9 +210,9 @@ jbrowse make-pif ecoli_pggb_untangle.paf
 `untangle_to_bed.py` turns the same PAF into a BED with a `strain` column, so
 one track can draw every strain on K12's axis. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
-one row per `strain`, and `color` is a color scale that here uses
-`scale: "identity"` for the colors the file states, red where the strain runs
-inverted:
+one row per `strain`, and `encoding.color` is a color scale that here uses
+`scale.type: "identity"` for the colors the file states, red where the strain
+runs inverted:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
@@ -627,7 +627,7 @@ over the same files colors each segment by that count:
 ```
 
 Type `chr:1,299,499-1,300,693`, the IS5 element. **Advanced → Edit plot...** in
-the track menu shows the `color` block as text and applies edits live.
+the track menu shows the `encoding.color` block as text and applies edits live.
 
 <Figure caption="The IS5 element: the depth curve over the strains-per-segment track. Red marks a segment K12 alone has." src="/img/pangenome/pggb_carriage_lane.png" />
 

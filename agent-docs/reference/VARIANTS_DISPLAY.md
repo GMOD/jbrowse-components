@@ -42,9 +42,9 @@ below are relative to `plugins/variants/src/`.
   skipped.
 - Cell arrays stay in the **worker's** row numbering; the hit test converts its
   one query row through `rowUnmap`.
-- **`color` is the single cell-coloring axis** (`shared/cellHue.ts`). A preset
-  (`impact`, `phaseSet`) and a record field (`svType` among them) are both
-  fields of it, and a record with no value keeps the alt hue. Color never
+- **`encoding.color` is the single cell-coloring axis** (`shared/cellHue.ts`).
+  A preset (`impact`, `phaseSet`) and a record field (`svType` among them) are
+  both fields of it, and a record with no value keeps the alt hue. Color never
   depends on zoom: the insertion marker is the cell's own color widened, and
   "insertion" is its shape and width. A purple marker made a variant read as an
   insertion only at the zooms where the marker outgrew its cell.
@@ -316,10 +316,10 @@ displays — and the band cannot drift from the display it stands in for.
   slides with the viewport.
 - **The color crosses over as a per-feature jexl.** `buildLaneRenderData` stamps
   each rebuilt feature with the `laneColor` attribute the display already
-  resolved for the alt cells, and the lane's `color` slot is a jexl reading it —
-  which is how a lane mark stays the color of the column under it. Not the BED
-  `itemRgb` path `boxColor` falls through to: that takes an `r,g,b` triple and
-  drops the alpha a jexl-authored cell color can carry.
+  resolved for the alt cells, and the lane's `encoding.color` is a jexl
+  reading it — which is how a lane mark stays the color of the column under
+  it. Not the BED `itemRgb` path `boxColor` falls through to: that takes an
+  `r,g,b` triple and drops the alpha a jexl-authored cell color can carry.
 - **`variantTopBands` no longer splits the band.** Mark strip, label strip and
   "do the labels fit" were ours and are now the fit ladder's; that file answers
   only how many pixels the band gets, plus which label kinds the slot asked for

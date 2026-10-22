@@ -114,25 +114,26 @@ choice by hand.
 
 **Advanced → Edit plot...** in the track menu, also a button at the foot of the
 Group by and Color by attribute dialogs, opens the track's grouping, color and
-filter as text ([](/docs/user_guides/edit_plot)). `facet` and `color` are the
-display's two settings of those names, in the shape a config file takes them:
-`facet` stacks a section per value of a field, in the order its `sort` lists;
-`color` is a CSS color or a jexl expression, or `{ "field": … }` for one color
-per value; `filter` is the list of jexl expressions **Filter by...** edits.
-Applying a spec changes only the channels it names, an object replaces the
-setting whole, and `null` clears one. Each of these pastes as it is:
+filter as text ([](/docs/user_guides/edit_plot)). `facet` and `encoding.color`
+are the display's settings of those names, in the shape a config file takes
+them: `facet` stacks a section per value of a field, in the order its `sort`
+lists; `encoding.color` is a field for one color per value, or `{ "value": … }`
+holding a CSS color or a jexl expression; `filter` is the list of jexl
+expressions **Filter by...** edits. Applying a spec changes only the channels it
+names, an object replaces the setting whole, and `null` clears one. Each of
+these pastes as it is:
 
 - `{ "facet": "strand" }` one section per strand
 - `{ "facet": { "field": "gene_biotype", "sort": ["protein_coding", "lncRNA"] } }`
   a section per biotype, these two first
-- `{ "color": { "field": "source" } }` one color per source
-- `{ "color": { "field": "strand" } }` forward strand red, reverse blue
-- `{ "color": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"], "range": ["#1f77b4", "#ff7f0e"] } }`
+- `{ "encoding": { "color": "source" } }` one color per source
+- `{ "encoding": { "color": "strand" } }` forward strand red, reverse blue
+- `{ "encoding": { "color": { "field": "gene_biotype", "scale": { "domain": ["protein_coding", "lncRNA"], "range": ["#1f77b4", "#ff7f0e"] } } } }`
   those two biotypes blue and orange, and every other value a distinct color
-- `{ "color": "#1f77b4" }` one color for everything
+- `{ "encoding": { "color": { "value": "#1f77b4" } } }` one color for everything
 - `{ "filter": { "genes": "only" } }` genes only
 - `{ "filter": ["jexl:feature.score > 100"] }` scores above 100
-- `{ "facet": null, "color": null }` ungrouped, default color
+- `{ "facet": null, "encoding": { "color": null } }` ungrouped, default color
 
 The dialog lists the same examples. This one groups by biotype in a chosen
 order, gives each of the four biotypes a distinct color, and leaves the track's
@@ -144,26 +145,31 @@ filter alone:
     "field": "gene_biotype",
     "sort": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
   },
-  "color": {
-    "field": "gene_biotype",
-    "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
+  "encoding": {
+    "color": {
+      "field": "gene_biotype",
+      "scale": {
+        "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
+      }
+    }
   }
 }
 ```
 
 <Video src="/media/ui/gene_track_channel_spec.mp4" caption="Edit plot from the Group by dialog, the spec above pasted in, and the sections in the facet's sort order." />
 
-A color by a field is the `color` setting's `{ "field", "domain", "range" }`
-form, and the track draws a key from the values it painted. A `domain` spends
-the `range` colors on the values it lists, in order, and a value it leaves out
-never takes one of their colors. Every other value takes a distinct color the
-first time the track shows it, and keeps it while the track is open; a value
-that no other value competes with gets a color derived from the value, the same
-on every reload. A transcript and all its parts take the transcript's value, or
-its gene's where the transcript has none. `strand` is a field too, painting
-forward tomato and reverse cornflowerblue unless a domain or range says
-otherwise. Each channel is the same setting its menu writes, so the Sections
-menu reorders a facet written this way.
+A color by a field is the `encoding.color` setting's
+`{ "field", "scale": { "domain", "range" } }` form, and the track draws a key
+from the values it painted. A `scale.domain` spends the `scale.range` colors on
+the values it lists, in order, and a value it leaves out never takes one of
+their colors. Every other value takes a distinct color the first time the track
+shows it, and keeps it while the track is open; a value that no other value
+competes with gets a color derived from the value, the same on every reload. A
+transcript and all its parts take the transcript's value, or its gene's where
+the transcript has none. `strand` is a field too, painting forward tomato and
+reverse cornflowerblue unless a domain or range says otherwise. Each channel is
+the same setting its menu writes, so the Sections menu reorders a facet written
+this way.
 
 ## Color by CDS
 
@@ -177,12 +183,12 @@ the view, and JBrowse remembers it across sessions.
 
 ## Color transcripts by a value in the file
 
-The [`color`](/docs/config/featurecolor) object binds a field in the GFF3
-attribute column to a scale. Under `categorical` each value takes a distinct
+The [`encoding.color`](/docs/config/featurecolor) object binds a field in the
+GFF3 attribute column to a scale. Under `ordinal` each value takes a distinct
 color; under `threshold` a number takes the color of the interval it falls in,
-between the cut points `domain` lists, with one `range` color per interval. A
-transcript's exons, CDS and UTRs take the transcript's value, and a UTR follows
-`color` unless `utrColor` overrides it.
+between the cut points `scale.domain` lists, with one `scale.range` color per
+interval. A transcript's exons, CDS and UTRs take the transcript's value, and a
+UTR follows `encoding.color` unless `utrColor` overrides it.
 
 - **JBrowse lowercases attribute names.** `dIF=0.79` reads under the key `dif`,
   so the field is `dif`
@@ -191,8 +197,8 @@ transcript's exons, CDS and UTRs take the transcript's value, and a UTR follows
   so the rest stay grey
 
 The key lists every interval and draws over the track, and you can dismiss it.
-For a rule no scale expresses, `color` also takes a jexl expression; see the
-[jexl configuration guide](/docs/config_guides/jexl).
+For a rule no scale expresses, `encoding.color` also takes a jexl expression as
+its `value`; see the [jexl configuration guide](/docs/config_guides/jexl).
 
 <Figure caption="ATP5F1C with muscle and liver RNA-seq coverage over GENCODE transcripts colored by satuRn's isoform-fraction change." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
 

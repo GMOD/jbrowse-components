@@ -276,8 +276,8 @@ dialog. As a `defaultSession`, the same stack ordered peach-cacao-grape:
 - `tracks` names the track once, and it backs both bands because its
   `assemblyNames` list every genome
 - `collapseEmptyRows` gives each trackless row a bare scale bar
-- `color` is a color scale, a `field` mapped to colors; the `reference` field
-  colors both bands by the chromosomes of the shared middle row
+- `encoding.color` is a color scale, a `field` mapped to colors; the `reference`
+  field colors both bands by the chromosomes of the shared middle row
 
 <Figure caption="Peach, cacao and grape stacked from one MCScan .blocks file. Color by → Reference anchors both bands on the middle row." src="/img/multiway_synteny/grape_peach_cacao.png" />
 

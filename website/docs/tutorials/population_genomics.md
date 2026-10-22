@@ -268,10 +268,10 @@ awk -F'\t' -v OFS='\t' -v B=250000 '
 bedGraphToBigWig pi_ratio_In2Lt.bedgraph dm6.chrom.sizes pi_ratio_In2Lt.bw
 ```
 
-In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `color` is a
-color scale: a `field` mapped through a `domain` to a `range` of colors. Here a
-`threshold` scale colors each bin by its side of zero, and `scales.y` pins the y
-scale to ±1.5:
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
+`encoding.color` is a color scale: the score mapped through `scale.domain` to a
+`scale.range` of colors. Here a `threshold` scale colors each bin by its side of
+zero, and `scales.y` pins the y scale to ±1.5:
 
 ```json addtrack
 {
@@ -302,8 +302,8 @@ scale to ±1.5:
 }
 ```
 
-**Advanced → Edit plot...** in the track menu shows `color` and `scales` as text
-and applies edits live.
+**Advanced → Edit plot...** in the track menu shows `encoding` and `scales` as
+text and applies edits live.
 
 ## Reading the Cyp6g1 sweep in Tajima's D and π
 

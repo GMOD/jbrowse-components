@@ -491,9 +491,10 @@ Three of its schemes are described here:
 - **Depth** is how many paths walk each segment, which is core-versus-accessory
   at the segment level.
 
-A segments lane shares the graph's hues when its track's `color` holds the
-matching expression. The `color` for Reference position, over the 50 kb window
-from 4,050,000 that the figures above are cut from, is:
+A segments lane shares the graph's hues when its track's `encoding.color` holds
+the matching expression as its `value`. The `encoding.color` for Reference
+position, over the 50 kb window from 4,050,000 that the figures above are cut
+from, is:
 
 ```json addtrack
 {
@@ -531,7 +532,7 @@ applies only on a lane opened on a contributing assembly, where rank>0 segments
 have coordinates.
 
 Stable rank needs no window, so it is the only scheme a hosted config can use.
-For the same track, set this `color`:
+For the same track, set this `encoding.color.value`:
 
 ```text
 jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'

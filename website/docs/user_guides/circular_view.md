@@ -111,8 +111,8 @@ menu offers what the linear synteny view's palette offers: either genome's
 chromosome, strand, identity or another measurement, a column the track
 declares, or one color per track when several overlay. **Opacity**, **Identity
 fade**, **Min length** and **Min identity** sit beside it, and as view settings
-they go in a session as `color`, `opacity` and `filter`; the identity fade is
-`opacity: { field: 'identity' }`.
+they go in a session as `encoding.color`, `encoding.opacity` and `filter`; the
+identity fade is `encoding: { opacity: { field: 'identity' } }`.
 
 An alignment narrower than a pixel draws at the share of the pixel it covers, as
 in the linear synteny view, so a circle of tens of thousands of short alignments

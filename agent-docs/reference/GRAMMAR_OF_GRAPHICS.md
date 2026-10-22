@@ -141,8 +141,8 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   an in-shader predicate would make the Canvas2D fallback repaint the whole
   display per mousemove.
 - **One channel carries two variables on the quantitative display's rows.**
-  With `color` unset, a row per subtrack paints a bar or line in its row
-  color above the cut and in the shared negative color below it
+  With `encoding.color` unset, a row per subtrack paints a bar or line in its
+  row color above the cut and in the shared negative color below it
   (`buildSourceRenderData`), so signed data still reads as signed. No color
   object states it: the hue is the row's and the side is the value's. A
   heatmap does not do it, since a gradient there paints every row alike
@@ -210,10 +210,11 @@ the result, since it is what a later audit need not redo:
 
 - Every color object carries ADR-151's members, and a written `field` paints
   on each. The audit checked `scale: 'none'`, which ADR-240 has since retired:
-  the field a pick leaves is display state (`ParkedColorMixin`). Alignments' `baseColor` and
-  `readConnections.color` are the exceptions by design: each names a field alone, since
-  each field paints a vocabulary of its own (ADR-149), and the arcs borrow
-  `color`'s `range` by category.
+  the field a pick leaves is display state (`ParkedColorMixin`). Alignments'
+  `pileup.bases.encoding.color` and `readConnections.encoding.color` are the
+  exceptions by design: each names a field alone, since each field paints a
+  vocabulary of its own (ADR-149), and the arcs borrow `encoding.color`'s
+  `scale.range` by category.
 - `fieldPresets` names agree across displays: `strand`, `identity`, `mapq`,
   `count`, `r2`, `dprime`.
 - Every shorthand has its schema branch, and a `null` reset agrees across the

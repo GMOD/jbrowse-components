@@ -249,8 +249,9 @@ runs the converter twice:
 
 The multi-row feature display (`LinearMultiRowFeatureDisplay`) draws one row per
 `sample`. In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
-`rows` assigns the rows and `rows.sort` orders them, and `color` is a color
-scale whose `scale: "identity"` names the BED's `itemRgb` colors in the key.
+`rows` assigns the rows and `rows.sort` orders them, and `encoding.color` is a
+color scale whose `scale.type: "identity"` names the BED's `itemRgb` colors in
+the key.
 
 ```json addtrack
 {
@@ -294,8 +295,8 @@ scale whose `scale: "identity"` names the BED's `itemRgb` colors in the key.
 }
 ```
 
-**Advanced → Edit plot...** in the track menu shows `rows` and `color` as text
-and applies edits live.
+**Advanced → Edit plot...** in the track menu shows `rows` and `encoding` as
+text and applies edits live.
 
 `rows.sort` is abbreviated here; the build script writes every row in descending
 order of chr1 wolf fraction from FLARE's summary. For your own animals:

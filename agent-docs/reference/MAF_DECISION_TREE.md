@@ -58,11 +58,11 @@ not a key over the tier's name.
 
 ![Which rendering the per-sample rows are painting](diagrams/maf-rendering.svg)
 
-The display states what colors the rows as two channels: `color`, whose field
-names the variable (mismatch, base, identity, chromosome, codon), and `y`, which
-puts identity on each row's bar height. They are independent, so identity bars
-can take the identity ramp. What is left to decide is what each channel can draw
-at the current zoom.
+The display states what colors the rows as two channels: `encoding.color`,
+whose field names the variable (mismatch, base, identity, chromosome, codon),
+and `y`, which puts identity on each row's bar height. They are independent, so
+identity bars can take the identity ramp. What is left to decide is what each
+channel can draw at the current zoom.
 
 **The setting and the active rendering are different getters.** The one the
 radio ticks is zoom-independent, or the tick moves as the user zooms, which
@@ -82,9 +82,9 @@ answer while insertions paint.
 ![What color one aligned base takes](diagrams/maf-cell-color.svg)
 
 The naive version is a branch cascade returning a color, spelled once in each
-painter. Both halves of that are wrong here. Only `color: 'base'` paints a
-matching base in its own color; every other field leaves matches in the match
-tone.
+painter. Both halves of that are wrong here. Only `encoding.color: 'base'`
+paints a matching base in its own color; every other field leaves matches in
+the match tone.
 
 **The cascade returns a category, not a color**, and each representation maps
 from it — CSS strings for Canvas2D, packed integers for the instance buffer.

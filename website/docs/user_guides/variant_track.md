@@ -65,7 +65,7 @@ the multi-sample displays too, where
 and [SV type](/docs/user_guides/multivariant_track#coloring-by-sv-type) list the
 terms in each tier and the color per class.
 
-For anything else, set the display's `color` slot to a
+For anything else, set the display's `encoding.color` to a
 [jexl](/docs/config_guides/jexl) expression. The variants plugin registers
 helpers for minor allele frequency, missingness and consequence impact; see
 [helper functions for jexl color expressions](/docs/config_guides/variant_track#helper-functions-for-jexl-color-expressions).

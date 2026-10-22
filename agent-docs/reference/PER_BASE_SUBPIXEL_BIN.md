@@ -8,13 +8,14 @@ kind: measurement
 
 ## The wall
 
-A `color` field of `baseQuality` or `base` is the one alignments pass that emits
-an entry per *aligned base of every read*; every other pass emits one per event.
-`extractPerBaseQuality` and `extractPerBaseLetter` write `PerBaseColumns`
-(`features/alignedBaseWalk.ts`), nine bytes per entry. Nothing bounds the count
-by the viewport: it is region span x depth, the span is the visible span widened
-by half a screen each side (`planRegionFetch`), and an approved force-load
-exempts the byte gate. `plugins/alignments/benches/perBaseWall.probe.ts`
+An `encoding.color` field of `baseQuality` or `base` is the one alignments pass
+that emits an entry per *aligned base of every read*; every other pass emits
+one per event. `extractPerBaseQuality` and `extractPerBaseLetter` write
+`PerBaseColumns` (`features/alignedBaseWalk.ts`), nine bytes per entry. Nothing
+bounds the count by the viewport: it is region span x depth, the span is the
+visible span widened by half a screen each side (`planRegionFetch`), and an
+approved force-load exempts the byte gate.
+`plugins/alignments/benches/perBaseWall.probe.ts`
 measured it over the in-tree pacbio fixture at 33x zoom-out:
 
 <!-- BEGIN GENERATED MEASUREMENT per-base-wall-bin -->

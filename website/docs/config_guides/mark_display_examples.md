@@ -43,8 +43,8 @@ the config whose shape matches your file and change the field names.
 ## Points, colored and shaped by a category
 
 Each point stands at the middle of its copy. The color and the shape each take a
-categorical scale over `strand`, whose values are `1` and `-1`, so `domain`
-names the levels and `labels` what the key calls them.
+categorical scale over `strand`, whose values are `1` and `-1`, so
+`scale.domain` names the levels and `scale.names` what the key calls them.
 
 ```json addtrack config=https://jbrowse.org/demos/gene_density/config.json loc=chr1:151,000,000-151,030,000
 {
@@ -93,7 +93,7 @@ names the levels and `labels` what the key calls them.
 ## A color ramp
 
 A `linear` scale over the plotted column, pinned at both ends so the colors mean
-the same in every window. `scheme` names the ramp.
+the same in every window. `scale.scheme` names the ramp.
 
 ```json addtrack config=https://jbrowse.org/demos/gene_density/config.json loc=chr1:151,000,000-151,030,000
 {
@@ -136,8 +136,9 @@ the same in every window. `scheme` names the ramp.
 
 ## A color per interval
 
-A `threshold` scale cuts the column at the values in `domain` and paints one
-`range` color per interval, so a divergence reads as young, middle or old.
+A `threshold` scale cuts the column at the values in `scale.domain` and paints
+one `scale.range` color per interval, so a divergence reads as young, middle or
+old.
 
 ```json addtrack config=https://jbrowse.org/demos/gene_density/config.json loc=chr1:151,000,000-151,030,000
 {
@@ -490,7 +491,7 @@ alignment length in a PAF without one. A `rule` at that value across each
 alignment is a percent identity plot, the picture
 [PipMaker](https://doi.org/10.1101/gr.10.4.577) drew for a pair of genomes.
 Stretches with no rule are where nothing aligned. Coloring each rule by the same
-value separates short alignments that overlap, and `showLegend` is off because
+value separates short alignments that overlap, and `legend.show` is off because
 the axis already reads the color.
 
 ```json addtrack config=https://jbrowse.org/demos/hpylori/config.json loc=NC_018939.1:330,000-560,000

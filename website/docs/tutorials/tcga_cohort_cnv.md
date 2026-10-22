@@ -126,10 +126,11 @@ the rows and colors:
 
 - [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) assigns one
   labeled row per value of `sample`
-- [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) is a
+- [`encoding.color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) is a
   `threshold` color scale on `segmean`, since this BED has no `itemRgb`: the
-  four cuts in `domain` open five intervals, `range` gives each a color on a
-  diverging blue-to-red scale, and `labels` names each interval in the key
+  four cuts in `scale.domain` open five intervals, `scale.range` gives each a
+  color on a diverging blue-to-red scale, and `scale.names` names each interval
+  in the key
 
 ## Cluster tumors by copy-number profile
 
@@ -162,9 +163,9 @@ chr16   89200000   89300000   3.26   -46.38
 ```
 
 `BedGraphTabixAdapter` reads every column past `end` as a separate signal. Loss
-is written negative, so a `threshold` color scale with no `domain`, which cuts
-at the default `origin` of 0, draws gains up in one color and losses down in the
-other.
+is written negative, so a `threshold` color scale with no `scale.domain`, which
+cuts at the default `origin` of 0, draws gains up in one color and losses down
+in the other.
 
 ```json addtrack
 {

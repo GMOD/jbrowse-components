@@ -270,7 +270,7 @@ set [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) to
 
 A `copynumber_state` of `0` marks a haplotype lost across an arm (LOH), and `1`
 is the normal single copy. **Advanced → Edit plot...** in the track menu shows
-`rows` and `color` as text and applies edits to the open track.
+`rows` and `encoding` as text and applies edits to the open track.
 
 ### Building depth-per-bin and B-allele frequency tracks
 
@@ -508,8 +508,9 @@ tandem duplication that includes the G12V-mutated copy
 
 _SMAD4_ on 18q is a single-copy loss with LOH (`CNA_48`, CN 1, 0+1), like
 _TP53_. The balanced p-arm and the matched normal are the two controls. Leave
-the copy-ratio track's `color` unset (one color above the `origin` of 0, another
-below) with a symmetric axis, so a step down and a step up fill equally.
+the copy-ratio track's `encoding.color` unset (one color above the `origin` of
+0, another below) with a symmetric axis, so a step down and a step up fill
+equally.
 
 <Figure caption="SMAD4's MANE Select transcript over the copy ratio, tumor and normal coverage and the BAF, above the CNV calls." src="/img/sv_cgiab/driver_smad4_loh.png" />
 

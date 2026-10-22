@@ -123,8 +123,8 @@ names the marker positions follow:
 The painting track is a `FeatureTrack` with a
 [`LinearMultiRowFeatureDisplay`](/docs/user_guides/multirow_feature_track). In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
-one row per `sample` and `color` is a color scale. For your own panel, swap
-`uri` for the bgzipped, tabix-indexed BED your conversion wrote.
+one row per `sample` and `encoding.color` is a color scale. For your own panel,
+swap `uri` for the bgzipped, tabix-indexed BED your conversion wrote.
 
 ```json addtrack loc=chr4
 {
@@ -156,11 +156,11 @@ one row per `sample` and `color` is a color scale. For your own panel, swap
 }
 ```
 
-- `scale: "identity"` on the
-  [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) keeps the
-  `itemRgb` colors, and its `labels` name the genotype each `domain` color
-  stands for. The same entries fill the **Categories** toggles in the track
-  menu, so hiding `H` isolates the B/D contrast.
+- `scale.type: "identity"` on
+  [`encoding.color`](/docs/config/linearmultirowfeaturedisplay/#slot-color)
+  keeps the `itemRgb` colors, and its `scale.names` name the genotype each
+  `scale.domain` color stands for. The same entries fill the **Categories**
+  toggles in the track menu, so hiding `H` isolates the B/D contrast.
 - `disableGeneHeuristic: true` stops the BED adapter from reading each block as
   a gene, which the `thickStart`/`thickEnd` columns would otherwise trigger.
 
@@ -250,11 +250,12 @@ jq '{ "4": ["black", "rgb(30,30,30)"], "3": ["grey", "rgb(150,150,160)"],
   | group_by(-.value)
   | map($class[.[0].value | floor | tostring] + [map(.sample_name) | join("|")])
   | { rowGroups: map({ match: ("^(" + .[2] + ")$"), group: .[0] }),
-      rowColor: { field: "group", domain: map(.[0]), range: map(.[1]) } }' \
+      rowColor: { field: "group",
+                  scale: { domain: map(.[0]), range: map(.[1]) } } }' \
   coat_color_values.json > coatColor.json
 ```
 
-Add both keys to the painting's display entry, beside `rows` and `color`,
+Add both keys to the painting's display entry, beside `rows` and `encoding`,
 together with `facet: "group"`:
 
 - `rowGroups` tags each strain with its coat color as its `group`.
@@ -298,13 +299,15 @@ applies edits live.
   "facet": "group",
   "rowColor": {
     "field": "group",
-    "domain": ["black", "grey", "brown", "dilute brown"],
-    "range": [
-      "rgb(30,30,30)",
-      "rgb(150,150,160)",
-      "rgb(130,80,40)",
-      "rgb(210,175,130)"
-    ]
+    "scale": {
+      "domain": ["black", "grey", "brown", "dilute brown"],
+      "range": [
+        "rgb(30,30,30)",
+        "rgb(150,150,160)",
+        "rgb(130,80,40)",
+        "rgb(210,175,130)"
+      ]
+    }
   }
 }
 ```

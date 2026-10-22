@@ -206,15 +206,15 @@ panel lists each as a feature attribute:
 }
 ```
 
-**Color by value → dN/dS** in the palette button menu sets the link's `color`, a
-color scale that reads `dn` and `ds`, on a ramp with 1 at the middle and 2 at
-the top.
+**Color by value → dN/dS** in the palette button menu sets the view's
+`encoding.color`, a color scale that reads `dn` and `ds`, on a ramp with 1 at
+the middle and 2 at the top.
 
 Two view settings matter for a view this sparse:
 
-- **Opacity** on the sliders button in the view header sets `opacity`, which
-  defaults to 0.25 for whole-genome views where ribbons overlap. 0.95 shows the
-  color as it is.
+- **Opacity** on the sliders button in the view header sets `encoding.opacity`,
+  which defaults to 0.25 for whole-genome views where ribbons overlap. 0.95
+  shows the color as it is.
 - **Curved lines** on the same menu sets `mark: { interpolate: 'bump' }`, which
   separates stacked neighbours.
 

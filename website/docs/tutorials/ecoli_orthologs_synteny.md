@@ -190,7 +190,7 @@ its header names the strain, contig and span shown, with `[rev]` where the lane
 runs against K-12
 ([lane headers](/docs/tutorials/multiway_synteny_grape_peach_cacao#what-a-lane-header-shows)).
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the display's
-`color` is a color scale, here the `cluster` field mapped to colors:
+`encoding.color` is a color scale, here the `cluster` field mapped to colors:
 
 - Every gene is colored by its ortholog group, which is named for the K-12 gene
   anchoring it in the table, so a conserved gene is one color running down the

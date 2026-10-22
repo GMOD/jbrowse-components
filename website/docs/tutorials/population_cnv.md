@@ -125,15 +125,16 @@ copy of a duplicated sequence. The config lists two of the panel's 104 PUR
 
 The [`bigWigs`](/docs/config/multiwiggleadapter/#slot-bigwigs) shorthand takes a
 plain list of absolute URLs and names each subtrack from its filename. In
-[grammar-of-graphics](/docs/config_guides/mark_display) terms, `color` is a
-color scale and `scales.y` the y scale, which these settings turn into a
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, `encoding.color`
+is a color scale and `scales.y` the y scale, which these settings turn into a
 copy-number heatmap:
 
 - [`mark`](/docs/config/linearwiggledisplay/#slot-mark) `span` gives each sample
   one strip of color.
 - [`origin`](/docs/config/linearwiggledisplay/#slot-origin) `2` puts white at
-  the diploid baseline, and [`color`](/docs/config/wigglecolor/)'s `range` names
-  the two colors it fades to: losses toward the first, gains toward the second.
+  the diploid baseline, and [`encoding.color`](/docs/config/wigglecolor/)'s
+  `scale.range` names the two colors it fades to: losses toward the first, gains
+  toward the second.
 - [`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin) and
   [`scales.y.domainMax`](/docs/config/valuescale/#slot-scalesydomainmax) pin the
   scale, so two copies are the same color in every window. Keep the bounds

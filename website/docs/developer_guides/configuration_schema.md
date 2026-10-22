@@ -165,8 +165,8 @@ type name stops recognising it.
 The `maybe*` forms are `undefined` while unset. Unset is the one state no config
 can spell, so it stays distinguishable from every real value a user might write,
 and a display reads it as "decide this from the data" — a MAF track's `height`
-fits its rows when nobody has fixed one, and a feature `color` left unset lets
-the feature's own BED color through.
+fits its rows when nobody has fixed one, and a feature `encoding.color` left
+unset lets the feature's own BED color through.
 
 Because unset _is_ their default, **`maybe*` slots omit `defaultValue`** — every
 other type must declare one, and leaving it off is a type error. Writing

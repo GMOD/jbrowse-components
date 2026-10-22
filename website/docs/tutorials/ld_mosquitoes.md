@@ -135,9 +135,9 @@ tabix -s 1 -b 2 -e 2 -f ag1000g_2L_CMgam.vcor.gz
 ```
 
 The track over that file is an `LDTrack`. In
-[grammar-of-graphics](/docs/config_guides/mark_display) terms, its `color` is a
-color scale, and `color.field` picks r² or D', the two metric columns, as its
-input:
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, its
+`encoding.color` is a color scale, and `encoding.color.field` picks r² or D',
+the two metric columns, as its input:
 
 ```json addtrack
 {

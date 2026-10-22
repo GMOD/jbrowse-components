@@ -130,9 +130,10 @@ The track config sets three things:
 - [`variantLayout: 'columns'`](/docs/user_guides/multivariant_track#matrix-best-for-snpindel-patterns)
   uses one column per mutation, so a gene's mutations pack together however far
   apart they sit, with a connector band from each column to its position
-- [`color`](/docs/config/linearmultisamplevariantdisplay/#slot-color) is a color
-  scale, and its `field` set to `impact` colors each cell by its VEP impact tier
-  from `CSQ`, the same as **Color by... → Consequence impact** in the track menu
+- [`encoding.color`](/docs/config/linearmultisamplevariantdisplay/#slot-color)
+  is a color scale, and its `field` set to `impact` colors each cell by its VEP
+  impact tier from `CSQ`, the same as **Color by... → Consequence impact** in
+  the track menu
 - [`samplesTsvLocation`](/docs/config/vcftabixadapter/#slot-samplestsvlocation)
   makes the clinical columns available to facet and color rows by
 

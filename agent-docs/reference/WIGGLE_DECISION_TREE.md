@@ -32,9 +32,9 @@ plugins draw a wiggle-shaped axis against it.
   arrays, none takes both from the summary's one array.
 - `domainQuantile` at 1 takes the visible extremes; below it each end is
   clipped to that quantile of the values on its side of 0 (`quantileExtent`,
-  the rule a color ramp's `domainQuantile` reads too), and a linear or symlog
-  axis then reaches 0 while `scales.y.zero` is on; a density row, which has
-  no axis, spans its values either way.
+  the rule a color ramp's `scale.domainQuantile` reads too), and a linear or
+  symlog axis then reaches 0 while `scales.y.zero` is on; a density row, which
+  has no axis, spans its values either way.
 - The domain is then widened to reach any score a rule is drawn at, and clamped
   by `scales.y`'s `domainMin` and `domainMax`. **A set bound wins; an unset one
   autoscales that end.**
@@ -69,17 +69,18 @@ Config bounds are still checked first.
 
 ![What a quantitative track's color resolves to](diagrams/wiggle-color.svg)
 
-`color` is one object — a CSS string, or `{ field, scale, domain, range,
-scheme }` over `score` — and a subtrack's color is `rowColor`'s:
+`encoding.color` is one object — `{ value }` holding a CSS string, or
+`{ scale: { type, domain, range, scheme } }` over `score` — and a subtrack's
+color is `rowColor`'s:
 
-| the layout | an unset `color` means | the marks paint | the palette deals |
+| the layout | an unset `encoding.color` means | the marks paint | the palette deals |
 | --- | --- | --- | --- |
 | shared: several sources in one box | the threshold pair, each source painting its row color on both sides | `rowColor` | by name |
 | row: a row per source, or a lone plot | the threshold pair about the `origin` | `rowColor` | by an attribute only |
 | density, either of the above | the pair, as a **ramp** through white at the `origin` | the ramp | by an attribute only |
 
-A written `color`, a constant or a scale, paints every mark in any layout;
-the table is what an unset one leaves to the rows. A row's `rowColor` draws
+A written `encoding.color`, a constant or a scale, paints every mark in any
+layout; the table is what an unset one leaves to the rows. A row's `rowColor` draws
 its label bar in every layout that has row labels.
 
 - `colorEncoding` resolves the object through display-kit's `colorEncodingOf`,
@@ -88,13 +89,13 @@ its label bar in every layout that has row labels.
   is the whole of what the encoder and both backends read: the pair every mode
   partitions by, the value they part at, the density LUT, and whether a source
   paints its own color on both sides.
-- **In density, `color` is a scale, not an identity**, so every cell reads
-  the one ramp and a row's `rowColor` shows only on the label bar.
+- **In density, `encoding.color` is a scale, not an identity**, so every cell
+  reads the one ramp and a row's `rowColor` shows only on the label bar.
 - The color key follows the scale, so which channel it reads and what an unset
   one falls back to come from the same table.
-- One cursor hands out every palette entry, the color's `range` and then the
-  default palette: groups first, then ungrouped rows, those its `domain` lists
-  ahead of the rest.
+- One cursor hands out every palette entry, the color's `scale.range` and then
+  the default palette: groups first, then ungrouped rows, those its
+  `scale.domain` lists ahead of the rest.
 
 ## Why the odd-looking branches are there
 

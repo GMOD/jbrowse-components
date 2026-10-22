@@ -334,7 +334,7 @@ The display draws two marks over the same rows:
   depth modkit counted there
 - **with `groupby: ["source"]`** the step averages each haplotype over that
   haplotype's CpGs, and with `rows: "source"` the display gives each haplotype a
-  row whose label names it, so `showLegend` is off
+  row whose label names it, so `legend.show` is off
 - **with `fetchSizeLimit`** raised, the track reads the whole slice when zoomed
   out
 

@@ -56,10 +56,11 @@ Pick the ramp from the track menu's **Color scheme**:
 A bin with no contacts is left unpainted, so the page shows through it, and a
 ramp that is dark at its low end would scatter dark specks across the sparse
 long-range half of the matrix. Viridis, magma, inferno and cividis therefore run
-light to dark unless [`color.reverse`](/docs/config/hiccolor/#slot-reverse)
-reverses them, whether picked from the menu or named in a config. These are the
-ramps every color scale in JBrowse names, so a config spells one as
-[`color.scheme`](/docs/config/hiccolor/#slot-scheme).
+light to dark unless
+[`encoding.color.scale.reverse`](/docs/config/hiccolor/#slot-reverse) reverses
+them, whether picked from the menu or named in a config. These are the ramps
+every color scale in JBrowse names, so a config spells one as
+[`encoding.color.scale.scheme`](/docs/config/hiccolor/#slot-scheme).
 
 **Color scheme → Emphasize faint contacts (95th percentile)** decides what the
 ramp spans. <!-- menu-path-ok --> Off, the diagonal owns the scale and
@@ -73,7 +74,8 @@ compressing the diagonal further still.
 
 The scale's top follows the loaded counts, so it moves as you zoom and differs
 between tracks. To compare two tracks, or one region at two zooms, on one scale,
-pin the top as [`color.domainMax`](/docs/config/hiccolor/#slot-domainmax) in
+pin the top as
+[`encoding.color.scale.domainMax`](/docs/config/hiccolor/#slot-domainmax) in
 [**Advanced → Edit plot...**](/docs/user_guides/edit_plot), or in each track's
 config:
 
@@ -126,9 +128,9 @@ How much figure this is depends on the file. A file storing only
 intra-chromosomal contacts leaves every block between the triangles empty, so
 check a candidate before reading anything into a blank off-diagonal. It also
 decides the sensible ramp: a sparse file needs a log
-[`color.scale`](/docs/config/hiccolor/#slot-scale) to lift its decayed
-long-range bins off the floor, and a dense one comes back solid under the same
-setting, since every bin then reaches the top of the scale.
+[`encoding.color.scale.type`](/docs/config/hiccolor/#slot-scale) to lift its
+decayed long-range bins off the floor, and a dense one comes back solid under
+the same setting, since every bin then reaches the top of the scale.
 
 The track has to be tall here. A pair's contacts are drawn in the wedge between
 its two regions, so the drawing is as tall as the widest pair on screen is wide,
@@ -171,8 +173,8 @@ above the matrix they came from.
 Add the BEDPE file from **Add a track** and pick **Marks** from the track menu's
 display types: the display sees each call name its other end and draws the arcs
 with nothing configured. Then add the `.hic` matrix as a separate track and
-reorder so the links sit above it. A link's `size` sets its stroke width, and
-`encoding.size` scales it by the score.
+reorder so the links sit above it. A link's `strokeWidth` sets its stroke width,
+and `encoding.strokeWidth` bound to a field scales it by the score.
 
 ## Compartments and subcompartments
 
