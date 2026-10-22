@@ -26,7 +26,7 @@ list for adding several tracks at once.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-workflowname">**workflowName**</span><br><code>string</code> | The workflow on screen. Outside `createVolatileState`, so it outlives `clearData`: a user adding several GWAS tracks keeps the GWAS form. |
+| <span id="volatile-workflowname">**workflowName**</span><br><code>string</code> | The workflow on screen. Outside `createVolatileState`, so it outlives `clearData`: a user adding several MAF tracks keeps the MAF form. |
 | <span id="volatile-trackdata">**trackData**</span><br><code>FileLocation &#124; undefined</code> |  |
 | <span id="volatile-indextrackdata">**indexTrackData**</span><br><code>FileLocation &#124; undefined</code> |  |
 | <span id="volatile-altassemblyname">**altAssemblyName**</span><br><code>string</code> |  |

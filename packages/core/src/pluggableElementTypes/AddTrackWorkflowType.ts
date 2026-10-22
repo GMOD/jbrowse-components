@@ -20,7 +20,7 @@ export type AddTrackWorkflowComponentType =
   | BasicComponent
 
 // 'general' workflows accept any track (file/URL, JSON, bulk); 'specialized'
-// ones target a particular data type (GWAS, MAF, multi-wiggle). Used to group
+// ones target a particular data type (MAF, multi-row). Used to group
 // the Add Track dropdown under subheaders.
 export type AddTrackWorkflowCategory = 'general' | 'specialized'
 

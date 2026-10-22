@@ -118,7 +118,7 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #volatile
        * The workflow on screen. Outside `createVolatileState`, so it outlives
-       * `clearData`: a user adding several GWAS tracks keeps the GWAS form.
+       * `clearData`: a user adding several MAF tracks keeps the MAF form.
        */
       workflowName: DEFAULT_WORKFLOW,
     }))
