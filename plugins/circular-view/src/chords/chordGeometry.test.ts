@@ -1,37 +1,21 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { Slice } from '../CircularView/slices.ts'
 import {
   chordControlPoint,
   getEndpoint,
   ribbonControlPoints,
 } from './chordGeometry.ts'
 
-function block(refName: string) {
-  return new Slice(
-    { bpPerRadian: 1 },
-    { elided: false, widthBp: 1, start: 0, end: 1, refName, assemblyName: 'a' },
-    0,
-  )
-}
-
-const chr1 = block('chr1')
-const chr2 = block('chr2')
-const chr3 = block('chr3')
-const slices: Record<string, Slice> = { chr1, chr2, chr3 }
-const sliceForRef = (refName: string) => slices[refName]
-
-test('falls back to the feature end in its own block', () => {
+test('falls back to the feature end on its own contig', () => {
   const feature = new SimpleFeature({
     uniqueId: 'x',
     refName: 'chr1',
     start: 100,
     end: 200,
   })
-  expect(getEndpoint(feature, sliceForRef, chr1)).toEqual({
-    endBlock: chr1,
-    endRefName: 'chr1',
-    endPosition: 200,
+  expect(getEndpoint(feature)).toEqual({
+    refName: 'chr1',
+    position: 200,
   })
 })
 
@@ -43,10 +27,9 @@ test('uses an explicit mate field (already 0-based)', () => {
     end: 200,
     mate: { refName: 'chr2', start: 500, end: 600 },
   })
-  expect(getEndpoint(feature, sliceForRef, chr1)).toEqual({
-    endBlock: chr2,
-    endRefName: 'chr2',
-    endPosition: 500,
+  expect(getEndpoint(feature)).toEqual({
+    refName: 'chr2',
+    position: 500,
   })
 })
 
@@ -58,10 +41,9 @@ test('converts a VCF breakend ALT mate from 1-based to 0-based', () => {
     end: 200,
     ALT: ['A[chr3:900['],
   })
-  expect(getEndpoint(feature, sliceForRef, chr1)).toEqual({
-    endBlock: chr3,
-    endRefName: 'chr3',
-    endPosition: 899,
+  expect(getEndpoint(feature)).toEqual({
+    refName: 'chr3',
+    position: 899,
   })
 })
 
@@ -74,10 +56,9 @@ test('converts a symbolic translocation (INFO END/CHR2) to 0-based', () => {
     ALT: ['<TRA>'],
     INFO: { END: [900], CHR2: ['chr3'] },
   })
-  expect(getEndpoint(feature, sliceForRef, chr1)).toEqual({
-    endBlock: chr3,
-    endRefName: 'chr3',
-    endPosition: 899,
+  expect(getEndpoint(feature)).toEqual({
+    refName: 'chr3',
+    position: 899,
   })
 })
 

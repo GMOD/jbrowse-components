@@ -636,26 +636,26 @@ restores natively:
 <!-- prettier-ignore -->
 | Property | What it does |
 | --- | --- |
-| [`autoFit`](/docs/models/circularview#property-autofit) | whether the view keeps re-fitting to its container on resize. Cleared once the user manually zooms/pans so their view (persisted via bpPerPx/offsetRadians) is preserved across resizes and reloads. |
+| [`autoFit`](/docs/models/circularview#property-autofit) | whether the view refits to its box on resize; a manual zoom or pan clears it |
 | [`bpPerPx`](/docs/models/circularview#property-bpperpx) | the zoom level, base-pairs per pixel. Capped by `minimumRadiusPx`, and refit over by the first resize unless `autoFit` is false. |
 | [`color`](/docs/models/trackcolorsmixin#property-color) | The color every track in the view paints with, a [](/docs/config/syntenycolor) object: `{ field: "strand" }`, `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`, a measurement (`identity`, `mapq`, `dnds`) or a column the tracks declare, with `domain` ordering a text column's labels, `range` coloring them and `labels` naming them in the key, `range` or `scheme`, `reverse` and pinned ends reshaping a ramp, and `scale: 'threshold'` binning a number at `domain`'s cuts; a color string paints every alignment. Unset, the view's default paints: `query` on the circular view, the default scheme elsewhere. |
-| [`disableImportForm`](/docs/models/circularview#property-disableimportform) | suppress the import form even on an error — what the SV inspector's circle wants, since its assembly comes from the sheet beside it and a form there would offer a control that cannot work |
+| [`disableImportForm`](/docs/models/circularview#property-disableimportform) | never show the import form, even on an error, for an embed that picks the assembly itself (the SV inspector) |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
 | [`filter`](/docs/models/syntenyfiltermixin#property-filter) | The alignments drawn, a list of [](/docs/config/fieldpredicate) entries an alignment must all pass. A field is any field `color` takes, or `length`, the alignment's bp on its own axis: `[{ field: 'length', gte: 10000 }]` clears a whole-genome hairball. A filter edit recolors and refetches nothing. |
-| [`height`](/docs/models/circularview#property-height) | the height of the view in pixels. The circle auto-fits its container, so this is what sizes the drawing. Left at its default in a session that holds a list of views, the view opens square to its width, short of the window's height; an embedded view keeps 400. |
+| [`height`](/docs/models/circularview#property-height) | the view's height in px, which sizes the fitted circle. Left at its default in a multi-view session, the view opens square to its width |
 | [`hideTrackSelectorButton`](/docs/models/circularview#property-hidetrackselectorbutton) | chrome switch, for an embed that drives the view itself |
 | [`hideVerticalResizeHandle`](/docs/models/circularview#property-hideverticalresizehandle) | chrome switch, for an embed that drives the view itself |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 | [`minimumRadiusPx`](/docs/models/circularview#property-minimumradiuspx) | how far out the circle may zoom, as the smallest radius it shrinks to; it is what caps bpPerPx |
 | [`minVisibleWidth`](/docs/models/circularview#property-minvisiblewidth) | arcs thinner than this many pixels are elided instead of drawn, so a few thousand unplaced contigs do not become a ring of hairlines |
-| [`offsetRadians`](/docs/models/circularview#property-offsetradians) | the angular offset of the view in radians, the counterpart of offsetPx in the linear genome view |
+| [`offsetRadians`](/docs/models/circularview#property-offsetradians) | the figure's rotation in radians, the linear view's offsetPx |
 | [`opacity`](/docs/models/syntenycolorsmixin#property-opacity) | The opacity every alignment draws at, a [](/docs/config/syntenyopacity) object: a number for all of them, or a field each alignment has, read into opacities, `{ field: "identity" }` or a column the tracks declare. Unset, the view's default: low on the synteny view for dense whole-genome hairballs, opaque on the dotplot. |
 | [`paddingPx`](/docs/models/circularview#property-paddingpx) | blank margin between the circle and the edge of the figure |
 | [`render`](/docs/models/syntenyfademixin#property-render) | How the ribbons rasterize, a [](/docs/config/syntenyrender) object: `antialias` fades a sub-pixel ribbon by its on-screen width, so an unfiltered whole-genome view doesn't read as a full-opacity hairball. Unset, it fades once sub-pixel ribbons dominate a display and leaves a sparse comparison at full alpha; `true` and `false` fix it. Resolved view-wide by `fadeThinAlignments`. |
 | [`showLegend`](/docs/models/circularview#property-showlegend) | a key naming each track's ring, chords or ribbons in the corner |
 | [`spacingPx`](/docs/models/circularview#property-spacingpx) | the gap drawn between adjacent chromosome arcs |
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `color: { field: 'track' }`. Absent means the track takes an automatic slot from the palette. |
-| [`trackSelectorType`](/docs/models/circularview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and share links persist it. |
+| [`trackSelectorType`](/docs/models/circularview#property-trackselectortype) | ignored, kept because saved sessions carry it |
 
 <!-- SPEC_KEYS CircularView END -->
 

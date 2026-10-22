@@ -194,7 +194,8 @@ export function figureGutterPx(model: {
 }
 
 // A label reads upright on screen: along the arc it flips on the bottom half,
-// radially on the left half, judged at the rotated angle
+// radially on the left half, judged by cos/sin of the rotated angle since
+// offsetRadians grows without bound
 export function labelPlacement(
   radians: number,
   offsetRadians: number,

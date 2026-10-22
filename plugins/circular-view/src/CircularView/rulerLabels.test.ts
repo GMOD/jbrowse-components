@@ -1,5 +1,5 @@
 import { assemblyArcs, labelsRunAlongArcs } from './rulerLabels.ts'
-import { layoutSlices } from './slices.ts'
+import { buildChordAxis, layoutSlices } from './slices.ts'
 
 import type { Slice } from './slices.ts'
 
@@ -7,12 +7,14 @@ function slices(
   regions: { assemblyName: string; refName: string; widthBp: number }[],
 ) {
   return layoutSlices(
-    regions.map(r => ({
-      ...r,
-      elided: false as const,
-      start: 0,
-      end: r.widthBp,
-    })),
+    buildChordAxis(
+      regions.map(r => ({
+        ...r,
+        elided: false as const,
+        start: 0,
+        end: r.widthBp,
+      })),
+    ),
     { radiansPerBp: 1 / 1000, gapRadians: 0 },
   )
 }

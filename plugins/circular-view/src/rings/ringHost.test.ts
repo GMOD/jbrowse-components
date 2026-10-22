@@ -3,7 +3,7 @@ import { MockHal } from '@jbrowse/render-core/hal'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
-import { layoutSlices } from '../CircularView/slices.ts'
+import { buildChordAxis, layoutSlices } from '../CircularView/slices.ts'
 import {
   MAX_RINGS_RADIUS_FRACTION,
   RingHost,
@@ -40,7 +40,7 @@ const region = (refName: string, end: number) => ({
 // three drawn slices with an elided run of two tiny contigs between the
 // second and third, at 10 bp per radian and a 5 px gap on a 100 px radius
 const slices = layoutSlices(
-  [
+  buildChordAxis([
     region('ctgA', 100),
     region('ctgB', 50),
     {
@@ -52,7 +52,7 @@ const slices = layoutSlices(
       ],
     },
     region('ctgE', 30),
-  ],
+  ]),
   { radiansPerBp: 1 / 10, gapRadians: 5 / 100 },
 )
 

@@ -129,6 +129,7 @@ export function gapUnitsAfter(regions: readonly SliceRegion[]) {
  * with the regions and which of them are elided.
  */
 export interface AxisSlice {
+  region: SliceRegion
   index: number
   /** the inter-slice gaps before this slice, a genome boundary counting several */
   gaps: number
@@ -163,6 +164,7 @@ export function buildChordAxis(regions: readonly SliceRegion[]): ChordAxis {
   let gaps = 0
   for (const region of regions) {
     const slice: AxisSlice = {
+      region,
       index: slices.length,
       gaps,
       cumBp,
@@ -188,13 +190,12 @@ export function axisX(slice: AxisSlice, bp: number) {
 
 /** The slices at one scale: each axis slice's span, turned into angles. */
 export function layoutSlices(
-  regions: readonly SliceRegion[],
+  axis: ChordAxis,
   { radiansPerBp, gapRadians }: PolarScale,
-  axis = buildChordAxis(regions),
 ) {
   const view = { bpPerRadian: 1 / radiansPerBp }
-  return regions.map((region, i) => {
-    const { cumBp, gaps } = axis.slices[i]!
-    return new Slice(view, region, cumBp * radiansPerBp + gaps * gapRadians)
-  })
+  return axis.slices.map(
+    ({ region, cumBp, gaps }) =>
+      new Slice(view, region, cumBp * radiansPerBp + gaps * gapRadians),
+  )
 }

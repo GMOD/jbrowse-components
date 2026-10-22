@@ -271,7 +271,8 @@ export function BaseChordDisplay() {
        * anything that has to find a shape on screen without a DOM node
        */
       shapePathFor(feature: Feature) {
-        const shape = this.shapeFor(feature.id())
+        const i = self.laneIndexById.get(feature.id())
+        const shape = i === undefined ? undefined : self.shapeAt(i)
         return shape
           ? shapePath(shape, self.radiusPx, self.bezierRadius)
           : undefined

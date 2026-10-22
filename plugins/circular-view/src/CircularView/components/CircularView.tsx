@@ -205,7 +205,9 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     }
   }, [model])
 
-  // non-passive, to preventDefault; one model write per frame
+  // non-passive, to preventDefault; one model write per frame, and the
+  // coalescer's cancel keeps a view closed mid-fling from flushing into a dead
+  // node
   useEffect(() => {
     const el = containerRef.current
     if (!el) {
@@ -324,7 +326,8 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       ) {
         return
       }
-      // captured only once dragging, so a press that stays put is a click
+      // captured only once dragging: a capture on pointerdown retargets the
+      // closing click, which the error ring's Retry under the figure needs
       event.currentTarget.setPointerCapture(event.pointerId)
       draggedRef.current = true
       leaveFigure()

@@ -54,7 +54,7 @@ const regions: SliceRegion[] = [
 const radiusPx = 1000
 const bpPerRadian = 1000
 const spacingPx = 20
-const slices = layoutSlices(regions, {
+const slices = layoutSlices(buildChordAxis(regions), {
   radiansPerBp: 1 / bpPerRadian,
   gapRadians: spacingPx / radiusPx,
 })

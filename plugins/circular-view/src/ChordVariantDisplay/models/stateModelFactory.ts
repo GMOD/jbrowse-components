@@ -36,7 +36,7 @@ import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { axisX } from '../../CircularView/slices.ts'
+import { axisX, sliceKey } from '../../CircularView/slices.ts'
 import {
   BaseChordDisplay,
   installChordFetch,
@@ -168,31 +168,30 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
           junction: new Array<string>(n),
           index: new Map<Feature, number>(),
         }
-        const assembly = self.assemblyOf(undefined)
-        const sliceOf = (refName: string) => self.axisSlice(undefined, refName)
-        // by refName, not slice: an elided slice holds many contigs
-        const place = (refName: string, pos: number) =>
-          `${assembly === undefined ? refName : self.canonicalRefName(assembly, refName)}:${pos}`
+        const assemblyName = self.assemblyOf(undefined)
+        if (assemblyName === undefined) {
+          return feet
+        }
+        const assembly = getSession(self).assemblyManager.get(assemblyName)
+        const { byKey } = self.view.chordAxis
+        const canonical = (refName: string) =>
+          assembly?.getCanonicalRefName2(refName) ?? refName
         features.forEach((feature, i) => {
           feet.index.set(feature, i)
-          const refName = feature.get('refName')
-          const start = sliceOf(refName)
-          if (!start) {
-            return
-          }
-          const { endBlock, endRefName, endPosition } = getEndpoint(
-            feature,
-            sliceOf,
-            start,
-          )
-          if (endBlock) {
+          const ownRef = canonical(feature.get('refName'))
+          const end = getEndpoint(feature)
+          const farRef = canonical(end.refName)
+          const start = byKey.get(sliceKey(assemblyName, ownRef))
+          const endBlock = byKey.get(sliceKey(assemblyName, farRef))
+          if (start && endBlock) {
             feet.placed[i] = 1
             feet.x[i] = axisX(start, feature.get('start'))
-            feet.x2[i] = axisX(endBlock, endPosition)
+            feet.x2[i] = axisX(endBlock, end.position)
             feet.xGaps[i] = start.gaps
             feet.x2Gaps[i] = endBlock.gaps
-            const own = place(refName, feature.get('start'))
-            const far = place(endRefName, endPosition)
+            // by refName, not slice: an elided slice holds many contigs
+            const own = `${ownRef}:${feature.get('start')}`
+            const far = `${farRef}:${end.position}`
             feet.junction[i] = own < far ? `${own}|${far}` : `${far}|${own}`
           }
         })

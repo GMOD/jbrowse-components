@@ -227,7 +227,8 @@ async function applyInit(
       assemblyName,
       assemblyManager,
     )
-    // a list matching nothing in this assembly draws it whole, and warns
+    // a list matching nothing in this assembly draws it whole, and warns;
+    // `?.length` because `[]` is truthy
     const named = names?.length
       ? resolveNamedRegions({
           regions,
@@ -872,6 +873,7 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * whether the loading screen stands in for the form or the figure
        */
       get showLoading() {
         return (
@@ -902,6 +904,7 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * whether the figure draws: regions, and every assembly loaded
        */
       get showView() {
         return !!self.displayedRegions.length && this.initialized
@@ -1117,7 +1120,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * the slices at this zoom, in radians
        */
       get staticSlices() {
-        return layoutSlices(self.elidedRegions, this.chordScale, this.chordAxis)
+        return layoutSlices(this.chordAxis, this.chordScale)
       },
       /**
        * #method

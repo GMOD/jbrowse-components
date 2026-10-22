@@ -75,27 +75,18 @@ export function ribbonControlPoints(
 }
 
 /**
- * The slice+position a chord's far end lands on: the record's mate where it
- * names one, else the feature's own end — which for anything but a breakend is
- * where the chord degenerates to a point.
+ * The locus a chord's far end lands on: the record's mate where it names one,
+ * else the feature's own end, where a chord of anything but a breakend
+ * degenerates to a point.
  */
-export function getEndpoint<S>(
-  feature: Feature,
-  sliceForRef: (refName: string) => S | undefined,
-  startBlock: S,
-) {
+export function getEndpoint(feature: Feature): {
+  refName: string
+  position: number
+} {
   const mate = svMateLocus(feature)
   return mate
-    ? {
-        endBlock: sliceForRef(mate.refName),
-        endRefName: mate.refName,
-        endPosition: mate.pos,
-      }
-    : {
-        endBlock: startBlock,
-        endRefName: feature.get('refName'),
-        endPosition: feature.get('end'),
-      }
+    ? { refName: mate.refName, position: mate.pos }
+    : { refName: feature.get('refName'), position: feature.get('end') }
 }
 
 /** A chord's outline: from one end, bowing through the control point, to the other. */

@@ -1,4 +1,4 @@
-import { bpToRadians, layoutSlices } from './slices.ts'
+import { bpToRadians, buildChordAxis, layoutSlices } from './slices.ts'
 
 import type { SliceRegion } from './slices.ts'
 
@@ -71,7 +71,7 @@ test('one slice', () => {
     pxPerRadian: 1000,
   }
 
-  const slices = layoutSlices(view.elidedRegions, {
+  const slices = layoutSlices(buildChordAxis(view.elidedRegions), {
     radiansPerBp: 1 / view.bpPerRadian,
     gapRadians: view.spacingPx / view.radiusPx,
   })
@@ -110,7 +110,7 @@ test('two slices', () => {
     bpPerRadian: 20000 / (2 * Math.PI),
   }
 
-  const slices = layoutSlices(view.elidedRegions, {
+  const slices = layoutSlices(buildChordAxis(view.elidedRegions), {
     radiansPerBp: 1 / view.bpPerRadian,
     gapRadians: view.spacingPx / view.radiusPx,
   })
@@ -146,7 +146,7 @@ test('volvox', () => {
     bpPerRadian: totalBp / (2 * Math.PI),
   }
 
-  const slices = layoutSlices(view.elidedRegions, {
+  const slices = layoutSlices(buildChordAxis(view.elidedRegions), {
     radiansPerBp: 1 / view.bpPerRadian,
     gapRadians: view.spacingPx / view.radiusPx,
   })

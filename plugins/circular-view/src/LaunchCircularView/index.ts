@@ -37,6 +37,7 @@ export default function LaunchCircularViewF(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-CircularView | async | Programmatically launch a circular view */
   pluginManager.addToExtensionPoint('LaunchView-CircularView', async args => {
     const { session, ...spec } = args
+    // `[x].flat()` so an empty `assembly: []` is refused too
     if (![spec.assembly].flat().filter(f => !!f).length) {
       throw new Error(
         'No assembly provided when launching circular genome view',
