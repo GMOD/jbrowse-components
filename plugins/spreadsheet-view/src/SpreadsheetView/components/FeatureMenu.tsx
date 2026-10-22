@@ -45,24 +45,18 @@ const FeatureMenu = observer(function FeatureMenu({
       menuItems={[
         {
           label: 'Open in linear genome view',
-          onClick: async () => {
-            try {
-              await locationLinkClick({
-                spreadsheetViewId,
-                assemblyName,
-                session,
-                locString:
-                  pairedEndsLocString(
-                    new SimpleFeature(feature),
-                    PAIRED_END_WINDOW_BP,
-                  ) ?? assembleLocStringRaw(feature),
-                trackIds,
-              })
-            } catch (e) {
-              console.error(e)
-              session.notifyError(`${e}`, e)
-            }
-          },
+          onClick: () =>
+            locationLinkClick({
+              spreadsheetViewId,
+              assemblyName,
+              session,
+              locString:
+                pairedEndsLocString(
+                  new SimpleFeature(feature),
+                  PAIRED_END_WINDOW_BP,
+                ) ?? assembleLocStringRaw(feature),
+              trackIds,
+            }),
         },
         // gated like every other launch site: a host that ships the sheet
         // without breakpoint-split-view would otherwise offer a row that opens

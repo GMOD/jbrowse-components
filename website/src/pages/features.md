@@ -68,8 +68,8 @@ more. See the [user guide](/docs/user_guide) for walkthroughs of each.
   chromosomes with stacked linear views
 - **SV inspector** - a sortable, filterable spreadsheet of structural variants
   with a linked circular overview
-- **Spreadsheet view** - BED, VCF, CSV/TSV, or bespoke formats like STAR-fusion
-  output in a sortable, filterable table
+- **Spreadsheet view** - VCF, BED, BEDPE, or STAR-Fusion output in a sortable,
+  filterable table
 
 ## Track and data types
 

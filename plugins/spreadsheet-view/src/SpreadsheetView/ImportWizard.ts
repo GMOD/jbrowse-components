@@ -1,4 +1,13 @@
-import { fetchAndMaybeUnzip, getEnv, getSession } from '@jbrowse/core/util'
+import {
+  fetchAndMaybeUnzip,
+  getEnv,
+  getSession,
+  isBlobLocation,
+  isFileHandleLocation,
+  isLocalPathLocation,
+  isUriLocation,
+  resolveUri,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import {
   allSessionTracks,
@@ -84,13 +93,35 @@ const fileTypesRegexp = new RegExp(
 )
 
 export function getFileSourceName(src: FileLocation): string | undefined {
-  return 'uri' in src
+  return isUriLocation(src)
     ? src.uri
-    : 'localPath' in src
+    : isLocalPathLocation(src)
       ? src.localPath
-      : 'blobId' in src
+      : isBlobLocation(src) || isFileHandleLocation(src)
         ? src.name
         : undefined
+}
+
+/**
+ * What tells two locations apart: a resolved URL, a path, or the id of a file
+ * the user handed the page. Not the filename, which two different local files
+ * can share.
+ */
+export function fileSourceIdentity(src: FileLocation): string | undefined {
+  return isUriLocation(src)
+    ? resolveUri(src)
+    : isLocalPathLocation(src)
+      ? src.localPath
+      : isBlobLocation(src)
+        ? `blob:${src.blobId}`
+        : isFileHandleLocation(src)
+          ? `handle:${src.handleId}`
+          : undefined
+}
+
+// a location a later session load can read again without the user's help
+function isReloadable(src: FileLocation) {
+  return isUriLocation(src) || isLocalPathLocation(src)
 }
 
 // case-insensitive match against the canonical list to handle e.g. STAR-Fusion.
@@ -149,7 +180,8 @@ export default function stateModelFactory() {
 
       /**
        * #property
-       * used specifically for UriLocation's
+       * the loaded file, when it is a URL or a local path a reloaded session
+       * can read again; the snapshot then omits the rows
        */
       cachedFileLocation: types.frozen<FileLocation | undefined>(),
     })
@@ -174,13 +206,7 @@ export default function stateModelFactory() {
        * #getter
        */
       get isReadyToOpen() {
-        const src = self.fileSource
-        return !!(
-          src &&
-          (('blobId' in src && src.blobId) ||
-            ('localPath' in src && src.localPath) ||
-            ('uri' in src && src.uri))
-        )
+        return !!self.fileSource && !!fileSourceIdentity(self.fileSource)
       },
 
       /**
@@ -268,10 +294,11 @@ export default function stateModelFactory() {
        */
       get existingTrackId() {
         const loc = self.fileSource ?? self.cachedFileLocation
-        const name = loc ? getFileSourceName(loc) : undefined
-        return name
-          ? this.importableTracks.find(t => getFileSourceName(t.loc) === name)
-              ?.track.trackId
+        const identity = loc ? fileSourceIdentity(loc) : undefined
+        return identity
+          ? this.importableTracks.find(
+              t => fileSourceIdentity(t.loc) === identity,
+            )?.track.trackId
           : undefined
       },
     }))
@@ -289,8 +316,8 @@ export default function stateModelFactory() {
        */
       trackConfForImportedFile(assemblyName: string) {
         const loc = self.fileSource ?? self.cachedFileLocation
-        const name = loc ? getFileSourceName(loc) : undefined
-        if (!loc || !name || self.existingTrackId) {
+        const identity = loc ? fileSourceIdentity(loc) : undefined
+        if (!loc || !identity || self.existingTrackId) {
           return undefined
         }
         const { trackType, adapterType } = fileTypeTracks[self.fileType]
@@ -299,10 +326,9 @@ export default function stateModelFactory() {
         return locationKey
           ? {
               type: trackType,
-              // the whole location in the id, so two files with one basename
-              // cannot collide; the basename alone as the label, which is what
-              // "Add track" shows and what fits a track selector row
-              trackId: `spreadsheet-import-${name}`,
+              // the basename alone as the label, which is what "Add track"
+              // shows and what fits a track selector row
+              trackId: `spreadsheet-import-${identity}`,
               name: getFileName(loc),
               assemblyNames: [assemblyName],
               adapter: { type: adapterType, [locationKey]: loc },
@@ -338,6 +364,7 @@ export default function stateModelFactory() {
         const valid = fileTypes.find(t => t === typeName)
         if (valid) {
           self.fileType = valid
+          self.error = undefined
         }
       },
 
@@ -384,86 +411,51 @@ export default function stateModelFactory() {
       async import(
         assemblyName: string,
       ): Promise<SpreadsheetSnapshot | undefined> {
-        let result: SpreadsheetSnapshot | undefined
         const src = self.fileSource
-        // guard on isReadyToOpen, not just src existence: a source like
-        // { uri: undefined } is a truthy object but has no usable location, so
-        // a bare launch lands on the import form instead of feeding an empty
-        // location into openLocation (which throws a spurious error)
-        if (src && self.isReadyToOpen) {
-          self.selectedAssemblyName = assemblyName
-          // Before the parser await, not after. That await is a lazy chunk
-          // fetch over the network and the user has already pressed Open, so
-          // set afterwards it left the whole fetch un-narrated: no spinner in
-          // the wizard, and `showLoading` (and so the view's
-          // `data-view-phase`) still reporting ready over a view that is
-          // plainly working. `openLocation` moved inside the try along with it,
-          // both so a throw there can't strand `loading` at true and so a bad
-          // location reports in the wizard's own error banner like every other
-          // import failure, rather than as a snackbar from loadSpreadsheet.
-          self.setLoading(true)
-          try {
-            // every await here is a place the user can close the view, and
-            // every write past one lands on a node MST has torn down. Under the
-            // default livelinessChecking that does not throw — it logs three
-            // warnings and drops the write — so the cost is a console full of
-            // them plus a whole file fetched and parsed for a view that is gone
-            if (!isAlive(self)) {
-              return undefined
-            }
-            const { pluginManager } = getEnv(self)
-            const filehandle = openLocation(src, pluginManager)
-            let stat: { size: number } | undefined
-            try {
-              stat = await filehandle.stat()
-            } catch (e) {
-              // stat failure is non-fatal; proceed without size check
-              console.warn(e)
-            }
-            // and again after the stat, which is the first round trip that can
-            // take long enough for the user to close the view
-            if (!isAlive(self)) {
-              return undefined
-            }
-            if (stat && stat.size > IMPORT_SIZE_LIMIT) {
-              self.setError(
-                `File is too big. Tabular files are limited to at most ${
-                  IMPORT_SIZE_LIMIT / 1_000_000
-                }MB.`,
-              )
-            } else {
-              if ('uri' in src) {
-                self.setCachedFileLocation(src)
-              }
-              const data = await fetchAndMaybeUnzip(filehandle)
-              if (!isAlive(self)) {
-                return undefined
-              }
-              const sniffed = sniffFileType(data)
-              if (sniffed !== undefined && sniffed !== self.fileType) {
-                self.setFileType(sniffed)
-              }
-              const typeParser = await fileTypeParsers[self.fileType]()
-              if (!isAlive(self)) {
-                return undefined
-              }
-              result = {
-                ...typeParser(data),
-                assemblyName,
-              }
-            }
-          } catch (e) {
-            console.error(e)
-            if (isAlive(self)) {
-              self.setError(e)
-            }
-          } finally {
-            if (isAlive(self)) {
-              self.setLoading(false)
-            }
+        if (!src || !self.isReadyToOpen) {
+          return undefined
+        }
+        self.selectedAssemblyName = assemblyName
+        self.error = undefined
+        // before the fetch, so a snapshot taken mid-load can still reload it
+        self.setCachedFileLocation(isReloadable(src) ? src : undefined)
+        self.setLoading(true)
+        try {
+          // the user can close the view during any await, and MST only warns
+          // about a write to a dead node, so check after each one
+          const data = await fetchAndMaybeUnzip(
+            openLocation(src, getEnv(self).pluginManager),
+          )
+          if (!isAlive(self)) {
+            return undefined
+          }
+          if (data.length > IMPORT_SIZE_LIMIT) {
+            self.setError(
+              `File is too big. Tabular files are limited to at most ${
+                IMPORT_SIZE_LIMIT / 1_000_000
+              }MB.`,
+            )
+            return undefined
+          }
+          const sniffed = sniffFileType(data)
+          if (sniffed !== undefined) {
+            self.setFileType(sniffed)
+          }
+          const typeParser = await fileTypeParsers[self.fileType]()
+          return isAlive(self)
+            ? { ...typeParser(data), assemblyName }
+            : undefined
+        } catch (e) {
+          console.error(e)
+          if (isAlive(self)) {
+            self.setError(e)
+          }
+          return undefined
+        } finally {
+          if (isAlive(self)) {
+            self.setLoading(false)
           }
         }
-        return result
       },
     }))
 }

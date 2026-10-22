@@ -31,8 +31,10 @@ export function parseVcfBuffer(buffer: Uint8Array) {
       // become an `INFO.` / `INFO..` flag column that every row in a
       // sites-only VCF carried and no file ever declared
       splitInfo(INFO).map(e => {
-        const [key, val = 'true'] = e.split('=')
-        const k = `INFO.${key!.trim()}`
+        const eq = e.indexOf('=')
+        const key = eq === -1 ? e : e.slice(0, eq)
+        const val = eq === -1 ? 'true' : e.slice(eq + 1)
+        const k = `INFO.${key.trim()}`
         keys.add(k)
         const v = val.trim()
         return [k, isNumber(v) ? +v : v]

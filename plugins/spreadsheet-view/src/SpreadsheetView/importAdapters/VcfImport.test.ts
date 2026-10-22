@@ -73,3 +73,16 @@ test('structural-variant VCF hoists SVTYPE ahead of REF/ALT', () => {
   // the other INFO fields still follow after QUAL/FILTER, not hoisted
   expect(names.indexOf('INFO.END')).toBeGreaterThan(names.indexOf('FILTER'))
 })
+
+test('an INFO value keeps everything after its first =', () => {
+  const vcf = [
+    '##fileformat=VCFv4.2',
+    '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
+    'chr1\t100\trs1\tG\tA\t50\tPASS\tHGVS=p.Leu54=;DB',
+  ].join('\n')
+  const { rowSet } = parseVcfBuffer(new TextEncoder().encode(vcf))
+  expect(rowSet.rows[0]!.cellData).toMatchObject({
+    'INFO.HGVS': 'p.Leu54=',
+    'INFO.DB': 'true',
+  })
+})

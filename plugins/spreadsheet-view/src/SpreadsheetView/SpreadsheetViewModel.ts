@@ -25,12 +25,12 @@ const defaultHeight = 440
 /**
  * #stateModel SpreadsheetView
  * #category view
- * Shows a tabular file, such as a VCF, BED or CSV, as a filterable table whose
+ * Shows a VCF, BED, BEDPE or STAR-Fusion file as a filterable table whose
  * rows open their genomic location in a new view.
  *
  * #example
  * Hand-authored under `defaultSession.views`, with every setting written
- * directly on the view object. `uri` loads a tabular file (VCF/BED/CSV/etc)
+ * directly on the view object. `uri` loads a VCF, BED, BEDPE or STAR-Fusion file
  * straight into the grid, skipping the import form; `assembly` names the
  * assembly that resolves genomic coordinates in the rows:
  * ```js

@@ -2,7 +2,6 @@ import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { SimpleFeature, clamp, getSession, isFeature } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { svClassOf } from '@jbrowse/core/util/svAlt'
-import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
   pendingLaunch,
   withLaunchInput,
@@ -88,10 +87,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       'SvInspectorView',
       BaseViewModel,
       types.model({
-        /**
-         * #property
-         */
-        id: ElementId,
         /**
          * #property
          */

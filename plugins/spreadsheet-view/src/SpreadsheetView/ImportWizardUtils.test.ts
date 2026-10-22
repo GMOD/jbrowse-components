@@ -1,5 +1,6 @@
 import {
   detectFileType,
+  fileSourceIdentity,
   getFileSourceName,
   sniffFileType,
 } from './ImportWizard.ts'
@@ -93,5 +94,42 @@ describe('sniffFileType', () => {
     )
     expect(sniffFileType(enc('chr1\t100\t200\n'))).toBe(undefined)
     expect(sniffFileType(enc(''))).toBe(undefined)
+  })
+})
+
+describe('fileSourceIdentity', () => {
+  test('two local files sharing a name are different files', () => {
+    const blob = (blobId: string) =>
+      fileSourceIdentity({
+        locationType: 'BlobLocation',
+        name: 'calls.vcf',
+        blobId,
+      })
+    expect(blob('b1')).not.toBe(blob('b2'))
+  })
+
+  test('a relative uri resolves against its baseUri', () => {
+    expect(
+      fileSourceIdentity({
+        locationType: 'UriLocation',
+        uri: 'calls.vcf',
+        baseUri: 'https://x.test/data/config.json',
+      }),
+    ).toBe(
+      fileSourceIdentity({
+        locationType: 'UriLocation',
+        uri: 'https://x.test/data/calls.vcf',
+      }),
+    )
+  })
+
+  test('a file handle is a source with a name', () => {
+    const loc = {
+      locationType: 'FileHandleLocation',
+      name: 'calls.bed',
+      handleId: 'h1',
+    } as const
+    expect(fileSourceIdentity(loc)).toBe('handle:h1')
+    expect(getFileSourceName(loc)).toBe('calls.bed')
   })
 })

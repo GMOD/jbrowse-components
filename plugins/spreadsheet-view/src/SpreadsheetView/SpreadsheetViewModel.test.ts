@@ -2,6 +2,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import stateModelFactory from './SpreadsheetViewModel.ts'
 
+import type { FileLocation } from '@jbrowse/core/util'
+
 // minimal session stub: getSession walks up for a node with rpcManager +
 // configuration, and applyInit routes load errors to notifyError
 function makeSession() {
@@ -39,7 +41,7 @@ beforeEach(() => {
   jest.spyOn(console, 'warn').mockImplementation(() => {})
 })
 
-test('setLaunch applies the import, and a failed one keeps its blob', async () => {
+test('a failed launch shows its error and keeps the file for a reload', async () => {
   const { Session, SpreadsheetView } = makeSession()
   const session = Session.create({ rpcManager: {}, configuration: {} })
   const model = session.setView(
@@ -47,18 +49,15 @@ test('setLaunch applies the import, and a failed one keeps its blob', async () =
   )
 
   model.setLaunch({ assembly: 'volvox', uri: 'test.vcf' })
-
-  // the launcher points the wizard at the file before its first await
   expect(model.importWizard.fileSource).toMatchObject({ uri: 'test.vcf' })
-  // and clears the blob once the apply settles, not on the way in: a setLaunch
-  // landing mid-apply has to survive for the drain loop to pick up, which is
-  // what clearing up front silently dropped
+
   await settled()
-  // The stubbed load fails and no sheet is built, so the launcher keeps the
-  // blob rather than clearing it — the reaction this replaced cleared on the
-  // way in, which is what let a setLaunch landing mid-apply be dropped. Nothing
-  // renders off it, so a blob left standing costs nothing.
-  expect(model.pendingLaunch).toMatchObject({ uri: 'test.vcf' })
+  expect(model.importWizard.loading).toBe(false)
+  expect(model.importWizard.error).toBeDefined()
+  expect(model.importWizard.cachedFileLocation).toMatchObject({
+    uri: 'test.vcf',
+  })
+  expect(model.spreadsheet).toBeUndefined()
 })
 
 // Regression: a launch that named an assembly but no file dropped the assembly
@@ -218,6 +217,7 @@ describe('the imported file as a track', () => {
         },
         addSessionTrackConf(conf: Record<string, unknown>) {
           added.push(conf)
+          self.tracks = [...self.tracks, conf]
           return conf
         },
         notifyError() {},
@@ -266,5 +266,88 @@ describe('the imported file as a track', () => {
       type: 'FeatureTrack',
       adapter: { type: 'BedAdapter' },
     })
+  })
+
+  test('a second local file with the same name gets its own track', () => {
+    const { model, added } = sessionWithTracks()
+    const blob = (blobId: string) =>
+      ({ locationType: 'BlobLocation', name: 'calls.vcf', blobId }) as const
+    model.importWizard.setFileSource(blob('b1'))
+    model.registerImportedTrack('hg38')
+    model.importWizard.setFileSource(blob('b2'))
+    expect(model.importWizard.existingTrackId).toBeUndefined()
+    model.registerImportedTrack('hg38')
+    expect(added).toHaveLength(2)
+    expect(model.drilldownTrackIds).toEqual([added[1]!.trackId])
+  })
+
+  test('re-importing one file reuses its track', () => {
+    const { model, added } = sessionWithTracks()
+    const loc = {
+      uri: 'https://x.test/calls.vcf',
+      locationType: 'UriLocation',
+    } as const
+    model.importWizard.setFileSource(loc)
+    model.registerImportedTrack('hg38')
+    model.importWizard.setFileSource({ ...loc })
+    model.registerImportedTrack('hg38')
+    expect(added).toHaveLength(1)
+  })
+})
+
+test('changing the file type clears the error a wrong-type import left', () => {
+  const { Session, SpreadsheetView } = makeSession()
+  const session = Session.create({ rpcManager: {}, configuration: {} })
+  const model = session.setView(
+    SpreadsheetView.create({ type: 'SpreadsheetView' }),
+  )
+  model.importWizard.setError(new Error('not a VCF'))
+  model.importWizard.setFileType('BED')
+  expect(model.importWizard.error).toBeUndefined()
+})
+
+test('a file picked through the browser file system API can be opened', () => {
+  const { Session, SpreadsheetView } = makeSession()
+  const session = Session.create({ rpcManager: {}, configuration: {} })
+  const model = session.setView(
+    SpreadsheetView.create({ type: 'SpreadsheetView' }),
+  )
+  model.importWizard.setFileSource({
+    locationType: 'FileHandleLocation',
+    name: 'calls.bedpe',
+    handleId: 'h1',
+  })
+  expect(model.importWizard.isReadyToOpen).toBe(true)
+  expect(model.importWizard.fileType).toBe('BEDPE')
+})
+
+describe('which imports a reloaded session reads again', () => {
+  async function importFrom(loc: FileLocation) {
+    const { Session, SpreadsheetView } = makeSession()
+    const session = Session.create({ rpcManager: {}, configuration: {} })
+    const model = session.setView(
+      SpreadsheetView.create({ type: 'SpreadsheetView' }),
+    )
+    model.importWizard.setFileSource(loc)
+    await model.loadSpreadsheet('volvox')
+    return model.importWizard.cachedFileLocation
+  }
+
+  test('a local path, which desktop can read again', async () => {
+    const loc = {
+      localPath: '/data/calls.vcf',
+      locationType: 'LocalPathLocation',
+    } as const
+    expect(await importFrom(loc)).toEqual(loc)
+  })
+
+  test('not a blob, which is gone once the page closes', async () => {
+    expect(
+      await importFrom({
+        locationType: 'BlobLocation',
+        name: 'calls.vcf',
+        blobId: 'b1',
+      }),
+    ).toBeUndefined()
   })
 })

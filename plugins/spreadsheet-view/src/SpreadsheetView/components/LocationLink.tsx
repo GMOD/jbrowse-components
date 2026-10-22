@@ -29,20 +29,15 @@ const LocationLink = observer(function LocationLink({
   const { assemblyName } = model
   return (
     <ActionLink
-      onClick={async () => {
-        try {
-          await locationLinkClick({
-            spreadsheetViewId: view.id,
-            session,
-            locString,
-            assemblyName: assemblyName!,
-            trackIds: view.drilldownTrackIds,
-          })
-        } catch (e) {
-          console.error(e)
-          session.notifyError(`${e}`, e)
-        }
-      }}
+      onClick={() =>
+        locationLinkClick({
+          spreadsheetViewId: view.id,
+          session,
+          locString,
+          assemblyName: assemblyName!,
+          trackIds: view.drilldownTrackIds,
+        })
+      }
     >
       {children}
     </ActionLink>
