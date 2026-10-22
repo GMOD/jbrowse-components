@@ -75,7 +75,7 @@ function isTrackFlag(flag: string): flag is TrackFlag {
   return Object.hasOwn(trackFlagFormats, flag)
 }
 
-const allFormats: readonly (readonly string[])[] = trackFlags.flatMap(
+const allFormats = trackFlags.flatMap<readonly string[]>(
   flag => trackFlagFormats[flag],
 )
 
