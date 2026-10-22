@@ -435,7 +435,6 @@ exports[`every registered schema slot default 1`] = `
     "growMaxHeight": "number = 800",
     "height": "number = 250",
     "heightMode": "stringEnum = "fixed" of ["fixed","grow","fit"]",
-    "hideSelfAlignments": "boolean = false",
     "pileup.fadeLowBaseQuality": "boolean = false",
     "pileup.fadeLowFrequency": "boolean = true",
     "pileup.maxLayoutHeight": "number = 6000",
