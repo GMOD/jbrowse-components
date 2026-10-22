@@ -2,7 +2,6 @@ import { ensureAutogenIndex } from './autogen-links.ts'
 import remarkDocCards from './remark-doc-cards.ts'
 
 import type { ListItem, PhrasingContent, Root, RootContent } from 'mdast'
-import type { VFile } from 'vfile'
 
 ensureAutogenIndex([
   {
@@ -35,7 +34,7 @@ function run(children: RootContent[]) {
   const tree: Root = { type: 'root', children }
   const transform = remarkDocCards.call(undefined as never) as (
     tree: Root,
-    file: Pick<VFile, 'data'>,
+    file: { data: Record<string, unknown> },
   ) => void
   transform(tree, { data: { id: 'user_guide' } })
   return tree.children
