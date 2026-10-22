@@ -5,6 +5,7 @@ description:
   one of the strains, then rank the graph's bubbles and open the densest
 guide_category: Tutorials
 tutorial_category: Pangenomes
+tutorial_subcategory: Mouse and cattle
 ---
 
 The mouse strain pangenome aligns eighteen inbred and wild-derived strain

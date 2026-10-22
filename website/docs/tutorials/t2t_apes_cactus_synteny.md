@@ -19,7 +19,7 @@ for every pair of genomes in it. We:
 - load them as one multi-way synteny track over the apes, each lane drawing the
   RefSeq genes of that ape's hub on
   [genomes.jbrowse.org](https://genomes.jbrowse.org)
-- color the ribbons by strand to read orientation at _TP53_ and _ERBB2_
+- color the ribbons by strand to read orientation at _ERBB2_
 
 ## Prerequisites
 
@@ -166,25 +166,26 @@ gene tracks come from each genome's hub unchanged, as in the hosted config.
 }
 ```
 
-## Reading TP53 down the tree
+## Orientation at ERBB2 down the tree
 
-Opened on hg38 around _TP53_, the track draws a lane per ape under human, each
-in that genome's own coordinates. Each lane header names the chromosome and the
-span the lane shows, with `[rev]` where the lane runs against human.
+Opened on hg38 around _ERBB2_ on 17q12, the track draws a lane per ape under
+human, each in that genome's own coordinates. Each lane header names the
+chromosome and the span the lane shows, with `[rev]` where the lane runs against
+human.
 
 The ribbons color by strand (**Color by... → Strand**, under **Ribbons** in the
 track menu), blue where a lane runs against the one above it. The session below
-opens on _TP53_:
+opens on _ERBB2_:
 
 ```json session config=https://jbrowse.org/demos/t2t_apes_cactus/config.json
 {
   "defaultSession": {
-    "name": "TP53 neighbourhood across seven apes",
+    "name": "ERBB2 across seven apes",
     "views": [
       {
         "type": "LinearGenomeView",
         "assembly": "hg38",
-        "loc": "chr17:7,400,000-7,700,000",
+        "loc": "chr17:39,400,000-40,200,000",
         "tracks": [
           "hg38-ncbiRefSeq",
           {
@@ -199,13 +200,7 @@ opens on _TP53_:
 }
 ```
 
-<Figure caption="TP53 on hg38 over six T2T ape lanes, each ribbon joining a lane to the one above, colored by strand." src="/img/multiway_synteny/t2t_apes_cactus_tp53.png" />
-
-## Orientation at ERBB2
-
-Navigate to `chr17:39,400,000-40,200,000`, around _ERBB2_ on 17q12.
-
-<Figure caption="ERBB2 over the same lanes, colored by strand." src="/img/multiway_synteny/t2t_apes_cactus_17q.png" />
+<Figure caption="ERBB2 on hg38 over six T2T ape lanes, each ribbon joining a lane to the one above, colored by strand." src="/img/multiway_synteny/t2t_apes_cactus_17q.png" />
 
 The ribbons turn blue between human and chimpanzee, and again between gorilla
 and the Sumatran orangutan: chimpanzee, bonobo and gorilla carry _ERBB2_ in one

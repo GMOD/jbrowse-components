@@ -5,6 +5,7 @@ description:
   each assembly's alleles, and find published breed and species variants in it
 guide_category: Tutorials
 tutorial_category: Pangenomes
+tutorial_subcategory: Mouse and cattle
 ---
 
 The bovine super-pangenome builds a set of assemblies into one graph on the

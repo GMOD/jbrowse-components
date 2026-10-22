@@ -91,7 +91,7 @@ export const TUTORIAL_SUBCATEGORIES: Record<string, string[]> = {
     'Whole-genome alignments',
     'Ortholog tables',
   ],
-  Pangenomes: ['HPRC release 2'],
+  Pangenomes: ['Building a graph', 'HPRC release 2', 'Mouse and cattle'],
   'Transcriptomics & proteins': ['Variants on protein structures'],
   'Population genomics': ['Dog10K'],
 }

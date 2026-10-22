@@ -5,6 +5,7 @@ description:
   by locus, plus the config that puts them on tracks
 guide_category: Tutorials
 tutorial_category: Pangenomes
+tutorial_subcategory: Building a graph
 ---
 
 To let people browse a pangenome graph in JBrowse, from a whole chromosome down

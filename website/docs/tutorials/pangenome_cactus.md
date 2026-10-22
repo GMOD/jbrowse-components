@@ -5,6 +5,7 @@ description:
   JBrowse
 guide_category: Tutorials
 tutorial_category: Pangenomes
+tutorial_subcategory: Building a graph
 ---
 
 We build a pangenome graph of five _E. coli_ strains with Minigraph-Cactus and
