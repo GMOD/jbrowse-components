@@ -262,7 +262,7 @@ describe('the schema', () => {
     const config = baseConfig()
     config.tracks[0]!.displays = [
       { type: 'LinearBasicDisplay', outlineColor: null, height: null },
-      { type: 'LinearAlignmentsDisplay', color: null },
+      { type: 'LinearAlignmentsDisplay', encoding: { color: null } },
       { type: 'LinearWiggleDisplay', scales: { y: { domainMin: null } } },
     ]
     expect(schemaProblems(config)).toEqual([])
@@ -271,15 +271,23 @@ describe('the schema', () => {
   it('checks a shorthand string as the slot it lifts into', () => {
     const config = baseConfig()
     config.tracks[0]!.displays = [
-      { type: 'LinearAlignmentsDisplay', color: 'bluee' },
+      {
+        type: 'LinearAlignmentsDisplay',
+        pileup: { bases: { show: true, encoding: { color: 'methylation' } } },
+      },
     ]
     const [error] = schemaProblems(config)
-    expect(error?.where).toBe('tracks[0].displays[0].color')
+    expect(error?.where).toBe(
+      'tracks[0].displays[0].pileup.bases.encoding.color',
+    )
     expect(error?.message).toBe(
-      'expected a CSS color (a name like "red", "#rrggbb", "rgb()" or "hsl()"), got "bluee"',
+      'expected one of "", "baseQuality", "base", "modifications", "bisulfite", got "methylation"',
     )
     config.tracks[0]!.displays = [
-      { type: 'LinearAlignmentsDisplay', color: 'steelblue' },
+      {
+        type: 'LinearAlignmentsDisplay',
+        pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
+      },
     ]
     expect(schemaProblems(config)).toEqual([])
   })
@@ -514,9 +522,11 @@ describe('the schema', () => {
           encoding: {
             color: {
               field: 'score',
-              scale: 'threshold',
-              domain: [0, 10],
-              range: ['white', 'red', 'black'],
+              scale: {
+                type: 'threshold',
+                domain: [0, 10],
+                range: ['white', 'red', 'black'],
+              },
             },
           },
         },
@@ -600,7 +610,7 @@ describe('the schema', () => {
   it('checks a legacy type name against the type that absorbed it', () => {
     const config = baseConfig()
     config.tracks[0]!.displays = [
-      { type: 'LinearPileupDisplay', color: { field: 'strand' } },
+      { type: 'LinearPileupDisplay', encoding: { color: { field: 'strand' } } },
     ]
     expect(schemaProblems(config)).toEqual([])
     config.tracks[0]!.displays = [{ type: 'LinearPileupDisplay', bogus: 1 }]
