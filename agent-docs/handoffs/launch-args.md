@@ -1,6 +1,6 @@
 ---
 name: launch-args
-description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --genome, --view (view settings by their session-spec names), format-family track flags, batch --sites, genome modifiers in place of --aliases/--cytobands. jb2capture on the shared grammar (track settings, --view, data files refused). Open: display-specific modifiers in Desktop and capture (both take height:, force:, slot writes and JSON), img rendering through loadSessionSpec, comparative views from Desktop."
+description: "One command-line grammar for jbrowse-img, jb2capture and JBrowse Desktop, in @jbrowse/launch-args. Landed: bare data files, the shared ADR-077 format table, Desktop opening 'jbrowse-desktop ref.fa reads.bam --loc ...', --genome, --view (view settings by their session-spec names), format-family track flags, batch --sites, genome modifiers in place of --aliases/--cytobands, jb2capture on the shared grammar (track settings, --view, data files refused), jb2export's read filter through the launch snapshot. Open: display-specific modifiers in Desktop and capture (both take height:, force:, slot writes and JSON), what of img's write path can still leave its live view, comparative views from Desktop."
 ---
 
 # Launch arguments: one grammar for img, capture and Desktop
@@ -82,16 +82,30 @@ packages is released, so breaking changes are fine.
    and reports `color:`, `featureHeight:`, the read filters, `sort:` and member
    writes as not applied. Run img's translator (`buildDisplaySnapshot`) in
    Desktop's renderer, where `launchFromPlan` has the plugin manager (for
-   `trackDisplayType`) and the config (for the configured filter a modifier
-   merges into), and have the plan carry each track's modifiers instead of
-   `unapplied` strings. ADR-238 does not remove the merge: a written `filter`
-   list replaces the default one, so `mapq:30` is the default list plus one
-   predicate. Capture has no plugin manager in node, so its route is the
-   same translator inside the page, or a spec key the app resolves.
-2. **img renders through `loadSessionSpec`** for the half that writes settings.
-   img still reads links, alt counts and the manifest back off the drawn view,
-   and a gene-name `--loc` must stay on `navToLocOrGene`, since a search with
-   several hits opens a picker nothing answers headless.
+   `trackDisplayType`), and have the plan carry each track's modifiers instead
+   of `unapplied` strings. The read filter needs no merge of its own: the
+   alignments `filter` is a config namespace, so a spec entry's `filter` merges
+   into the configured one member by member. Only `filterTag:`'s `tags` (a
+   list, written whole) and member writes into a channel (`color.field=`) need
+   the configured value, which img reads after the open. Capture has no plugin
+   manager in node, so its route is the same translator inside the page, or a
+   spec key the app resolves.
+2. **img renders through `loadSessionSpec`**: mostly declined. A spec track
+   entry and `applyDisplayOpts` already meet at `view.launchTrack(trackId, {},
+   snapshot)`, and the read filter rides in on that snapshot. What stays:
+   - `loadSessionSpec` itself: its `setSession` replaces the session a
+     `--session` or `--defaultSession` supplied.
+   - the LGV launch blob's `tracks`: `sort:` takes its pivot from the view
+     centre after navigation, and the blob opens its tracks straight after
+     navigating.
+   - `writeMembers` and the tag append, until something reads a track's
+     configured display before the open. Core's `resolveTrackDisplayChoice`
+     holds that logic (display pick, stub displays, `displayDefaults`), needs
+     a view, and is not exported.
+   - `navToLocOrGene`, the refseq and highlight steps, and the read-backs
+     (links, alt counts, manifest).
+   - Breakpoint panels still write `filterTag:` over the configured tags,
+     where a linear view adds to them.
 3. **Comparative views from Desktop's command line** (`--fasta` twice, `--paf`):
    jb2export's `comparativeArgs.ts` has the grammar; Desktop's plan builds one
    linear view.
