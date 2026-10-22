@@ -1,8 +1,3 @@
-import { openLocation } from '@jbrowse/core/util/io'
-
-import type PluginManager from '@jbrowse/core/PluginManager'
-import type { FileLocation } from '@jbrowse/core/util/types'
-
 export function parseChromSizes(data: string) {
   const result: Record<string, number> = {}
   for (const line of data.split(/\r?\n|\r/)) {
@@ -20,21 +15,4 @@ export function refSizesToRegions(refSizes: Record<string, number>) {
     start: 0,
     end,
   }))
-}
-
-// derives the fasta + fai locations from a `uri` shorthand, shared by the
-// IndexedFasta and BgzipFasta config preprocessors (the latter adds gzi)
-export function deriveFastaLocations(snap: Record<string, unknown>) {
-  const { uri, baseUri } = snap
-  return {
-    fastaLocation: { uri, baseUri },
-    faiLocation: { uri: `${uri}.fai`, baseUri },
-  }
-}
-
-export function readOptionalMetadata(
-  loc: FileLocation | undefined,
-  pm: PluginManager | undefined,
-) {
-  return loc ? openLocation(loc, pm).readFile('utf8') : null
 }

@@ -4,7 +4,8 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadPhase, updateStatus } from '@jbrowse/core/util'
 
-import { readOptionalMetadata, refSizesToRegions } from './chromSizesUtils.ts'
+import { refSizesToRegions } from './chromSizesUtils.ts'
+import { readOptionalMetadata } from './fastaUtils.ts'
 import { sequenceFeatures } from './sequenceFeatures.ts'
 
 import type { IndexedFasta } from '@gmod/indexedfasta'

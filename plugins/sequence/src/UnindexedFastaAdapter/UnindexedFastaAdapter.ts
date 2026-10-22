@@ -5,7 +5,7 @@ import {
 import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
-import { readOptionalMetadata } from '../chromSizesUtils.ts'
+import { readOptionalMetadata } from '../fastaUtils.ts'
 import { sequenceFeatures } from '../sequenceFeatures.ts'
 
 import type { UnindexedFastaAdapterConfig } from './configSchema.ts'
