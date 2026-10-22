@@ -61,14 +61,17 @@ test('a track carries its modifiers for the app to apply', () => {
 
 test('paths resolve against the launch directory, URLs stay as they are', () => {
   const p = plan(
-    'g/ref.fa aliases:al.txt a.bw index:i/a.bw.idx https://x.org/b.bw',
+    'g/ref.fa aliases:al.txt a.bam index:i/a.bam.bai https://x.org/b.bw',
     '/data',
   )
   expect(p.assembly?.refNameAliases).toMatchObject({
     adapter: { location: { localPath: '/data/al.txt' } },
   })
   expect(p.tracks.map(t => t.adapter)).toMatchObject([
-    { bigWigLocation: { localPath: '/data/a.bw' } },
+    {
+      bamLocation: { localPath: '/data/a.bam' },
+      index: { location: { localPath: '/data/i/a.bam.bai' } },
+    },
     { bigWigLocation: { uri: 'https://x.org/b.bw' } },
   ])
 })

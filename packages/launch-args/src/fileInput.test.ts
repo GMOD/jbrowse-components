@@ -98,11 +98,45 @@ describe('fileTrack', () => {
     ['bed', 'regions.bed', 'FeatureTrack', 'BedAdapter'],
     ['vcf', 'calls.gz', 'VariantTrack', 'VcfTabixAdapter'],
     ['vcf', 'calls.txt', 'VariantTrack', 'VcfAdapter'],
+    ['vcf', 'calls.txt.gz', 'VariantTrack', 'VcfTabixAdapter'],
+    ['gff', 'genes.gtf', 'FeatureTrack', 'GtfAdapter'],
+    ['gff', 'genes.gtf.gz', 'FeatureTrack', 'GtfTabixAdapter'],
+    ['bed', 'pairs.bedpe', 'VariantTrack', 'BedpeAdapter'],
+    ['bed', 'cov.bedgraph', 'QuantitativeTrack', 'BedGraphAdapter'],
   ])('--%s %s', (flag, file, type, adapterType) => {
     expect(fileTrack(flag, [file], 'testAsm')).toMatchObject({
       type,
       adapter: { type: adapterType },
     })
+  })
+
+  test.each([
+    ['bed', 'features.bb', /says a bigbed file.*as --bigbed/],
+    ['bam', 'reads.cram', /says a cram file/],
+    ['gff', 'calls.vcf.gz', /says a vcf file/],
+  ])('--%s %s throws: the name says another flag', (flag, file, message) => {
+    expect(() => fileTrack(flag, [file], 'testAsm')).toThrow(message)
+  })
+
+  test('index: opens the tabix adapter of the format the name says', () => {
+    for (const flag of ['vcf', 'file']) {
+      expect(
+        fileTrack(flag, ['calls.vcf', 'index:calls.vcf.tbi'], 'testAsm')
+          .adapter,
+      ).toMatchObject({
+        type: 'VcfTabixAdapter',
+        index: { location: { localPath: 'calls.vcf.tbi' } },
+      })
+    }
+    expect(
+      fileTrack('gff', ['genes.gtf', 'index:g.tbi'], 'testAsm').adapter,
+    ).toMatchObject({ type: 'GtfTabixAdapter' })
+  })
+
+  test('index: on a file that reads none throws', () => {
+    expect(() =>
+      fileTrack('file', ['signal.bw', 'index:signal.bw.tbi'], 'testAsm'),
+    ).toThrow(/BigWigAdapter, which reads no index/)
   })
 
   test('a cram finds its crai', () => {
