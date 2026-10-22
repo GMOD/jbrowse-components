@@ -75,7 +75,8 @@ describe('the track menu writes color and the bar height apart', () => {
   }
 
   it('lists the color fields, and the scheme only under identity', () => {
-    const { display } = createMafTestEnvironment().createDisplay()
+    const { display, view } = createMafTestEnvironment().createDisplay()
+    zoomPastBaseLevel(view)
     const colorBy = () => subMenu(display.trackMenuItems(), 'Color by...')
     expect(labels(colorBy())).toEqual(
       expect.arrayContaining([

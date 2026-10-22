@@ -43,6 +43,9 @@ const MafClusterDialog = lazy(() => import('./components/MafClusterDialog.tsx'))
 // The tick keeps the user's choice and this hint says why nothing draws.
 export const ZOOM_IN_FOR_BAND = 'zoom in past the summary tier'
 
+// At base level a one-base identity is a match call, so the bases draw instead.
+const ZOOM_OUT_FOR_IDENTITY = 'zoom out past base level'
+
 /**
  * A row whose action the summary tier took away keeps its place and says why it
  * cannot act.
@@ -146,7 +149,9 @@ function colorFieldRow(self: MafMenuSelf, field: MafColorField): MenuItem {
       ? 'the X-Y plot draws its bars in one color'
       : field === 'codon' && !self.zoomedToBaseLevel
         ? 'zoom in to base level'
-        : undefined
+        : field === 'identity' && self.zoomedToBaseLevel
+          ? ZOOM_OUT_FOR_IDENTITY
+          : undefined
   return {
     label: withHint(label, hint),
     type: 'radio',
@@ -191,7 +196,10 @@ function conservationResolutionMenuItems(self: MafMenuSelf): MenuItem[] {
 
 function plotTypeMenuItem(self: MafMenuSelf): MenuItem {
   return makeRadioSubMenu({
-    label: 'Plot type',
+    label: withHint(
+      'Plot type',
+      self.yField && self.zoomedToBaseLevel ? ZOOM_OUT_FOR_IDENTITY : undefined,
+    ),
     value: self.yField ?? 'cells',
     onChange: plot => {
       self.setYField(plot === 'cells' ? undefined : plot)

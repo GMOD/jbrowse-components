@@ -151,7 +151,6 @@ export class MafTabixBlockReader {
             firstFrom = c4 + 1
             firstTo = to
             firstSlot = slot
-            firstStrand = this.strand[slot]
           }
         } else if (
           from === 0 &&
@@ -175,10 +174,11 @@ export class MafTabixBlockReader {
     const refSampleId = ref === -1 ? undefined : rows.nameAt(ref)
     const refFrom = ref === -1 ? firstFrom : this.from[ref]!
     const refTo = ref === -1 ? firstTo : this.to[ref]!
-    // The first entry is the row the line's coordinates state. maf2bed places
-    // a `-` one at forward coordinates and keeps its text as written, so the
-    // whole block turns over here.
-    if (firstFrom !== -1 && firstStrand === -1) {
+    // maf2bed places the block at the reference row's forward coordinates
+    // and keeps its text as written, so a `-` reference turns the whole block
+    // over here.
+    const refStrand = ref === -1 ? firstStrand : this.strand[ref]!
+    if (refFrom !== -1 && refStrand === -1) {
       this.emitFlipped(sink, id, start, end, text, refFrom, refTo, refSampleId)
       return
     }

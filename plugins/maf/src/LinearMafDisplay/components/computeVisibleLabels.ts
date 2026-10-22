@@ -23,7 +23,6 @@ interface ComputeVisibleLabelsParams extends MafOverlayParams {
  * A letter over every cell that paints its base's color, in the case the file
  * gives it: under `color: 'mismatch'` the mismatches, under `base` every base.
  */
-
 export function computeVisibleLabels(
   params: ComputeVisibleLabelsParams,
 ): VisibleLabel[] {

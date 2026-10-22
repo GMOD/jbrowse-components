@@ -242,7 +242,7 @@ describe('getFeatures answers the MafFeatures the old parse did', () => {
     ['every species', undefined, ''],
     ['a sample set', ['hg38', 'mm10', '3', 'rn6'], ''],
     ['a filtered-out reference', ['mm10'], ''],
-    ['refAssemblyName', undefined, 'panTro6'],
+    ['refAssemblyName', undefined, 'mm10'],
     ['an absent refAssemblyName', undefined, 'galGal6'],
   ] as const)('%s', async (_, sampleIds, refAssemblyName) => {
     const { rebuilt, legacy } = await featuresBothWays(
@@ -285,7 +285,9 @@ describe('getFeatures answers the MafFeatures the old parse did', () => {
         f.get('seq'),
       )
     expect((await seqs())[0]).toBe('ACGT')
-    expect((await seqs(undefined, 'panTro6'))[0]).toBe('ACTT')
+    expect((await seqs(undefined, 'mm10'))[0]).toBe('--GT')
+    // a `-` reference turns its block over
+    expect((await seqs(undefined, 'panTro6'))[0]).toBe('AAGT')
     expect((await seqs(['mm10']))[0]).toBe('ACGT')
     expect((await seqs()).at(-1)).toBe('')
   })

@@ -3,9 +3,10 @@ import { DASH, isGapByte } from '@jbrowse/core/util/alignedBytes'
 
 import { blockIndexAtBp } from '../../LinearMafRenderer/blockAtBp.ts'
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
+import { forEachInsertion } from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
 import {
   mergedInsertions,
-  regionInsertions,
+  rowContinues,
 } from '../../LinearMafRenderer/rendering/insertions.ts'
 import { rowFlankOf } from '../../LinearMafRenderer/rendering/rowFlank.ts'
 
@@ -186,39 +187,63 @@ function insertionHitInRow(
   }
   return nearest === -1
     ? undefined
-    : describeInsertion(region, rowIndex, x[nearest]!)
+    : describeInsertion(region, rowIndex, x[nearest]!, length[nearest]!)
 }
 
+// The marker the hit test named, by its anchor and drawn length: the run in
+// the block ending at the anchor, the one in the block starting there, or the
+// two joined where the row carries on across the seam (`rowContinues`).
 function describeInsertion(
   region: MafRegionData,
   rowIndex: number,
   anchor: number,
+  len: number,
 ): InsertionHit | undefined {
-  const record = regionInsertions(region).find(
-    r => r.rowIndex === rowIndex && r.anchorBp === anchor,
-  )
-  if (!record) {
-    return undefined
-  }
-  let sequence = ''
-  for (const { row, byteStart, byteEnd } of record.parts) {
-    const aln = row.alignmentBytes
-    for (let k = byteStart; k < byteEnd; k++) {
-      const code = aln[k]!
-      if (!isGapByte(code)) {
-        sequence += String.fromCharCode(code)
-      }
+  const left = blockIndexAtBp(region.blocks, anchor - 1)
+  const right = blockIndexAtBp(region.blocks, anchor)
+  const runs: InsertionHit[] = []
+  let lastRow: MafAlignedRow | undefined
+  for (const i of left === right ? [left] : [left, right]) {
+    const block = region.blocks[i]
+    const row = block?.rows.find(r => r.rowIndex === rowIndex)
+    if (!block || !row) {
+      continue
     }
+    const aln = row.alignmentBytes
+    forEachInsertion(
+      block.refSeqBytes,
+      aln,
+      block.startBp,
+      (anchorBp, length, baseOffset, byteStart, byteEnd) => {
+        if (anchorBp !== anchor) {
+          return
+        }
+        let sequence = ''
+        for (let k = byteStart; k < byteEnd; k++) {
+          const code = aln[k]!
+          if (!isGapByte(code)) {
+            sequence += String.fromCharCode(code)
+          }
+        }
+        const prev = runs.at(-1)
+        if (prev && lastRow && lastRow !== row && rowContinues(lastRow, row)) {
+          prev.length += length
+          prev.sequence += sequence
+        } else {
+          runs.push({
+            kind: 'insertion',
+            length,
+            sequence,
+            chr: row.chr,
+            pos: forwardPos(row, baseOffset),
+            strand: row.strand,
+          })
+        }
+        lastRow = row
+      },
+    )
   }
-  const { row, baseOffset } = record.parts[0]!
-  return {
-    kind: 'insertion',
-    length: record.length,
-    sequence,
-    chr: row.chr,
-    pos: forwardPos(row, baseOffset),
-    strand: row.strand,
-  }
+  return runs.find(r => r.length === len) ?? runs[0]
 }
 
 // Resolve a deletion under the cursor. Shares the `forEachDeletion` walk with

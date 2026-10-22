@@ -1672,17 +1672,10 @@ export const trackFields: Record<string, FieldRecipe> = {
       : context.displayType === 'LinearWiggleDisplay'
         ? fromTable('Resolution → Bin summary', BIN_SUMMARIES)(value, context)
         : undefined,
-  rowIdentityAutoZoom: (value, { displayType }) =>
-    typeof value === 'boolean' && displayType === 'LinearMafDisplay'
-      ? {
-          path: `${TRACK_MENU} → Show... → Bases when zoomed in (${value ? 'checked' : 'unchecked'})`,
-          note: 'Qualifies identity, as the heatmap or the X-Y plot, and does nothing under the other colorings.',
-        }
-      : undefined,
   'conservation.show': (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearMafDisplay'
       ? {
-          path: `${TRACK_MENU} → Show... → Conservation (% identity) (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show... → Conservation (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   'conservation.unit': (value, { displayType }) => {
@@ -1698,6 +1691,14 @@ export const trackFields: Record<string, FieldRecipe> = {
     const presets = displayType ? ROW_HEIGHT_MENUS[displayType] : undefined
     return typeof value === 'number' && presets
       ? { path: rowHeightPath(value, presets) }
+      : undefined
+  },
+  'alignments.reference': (value, { displayType }) => {
+    const show = (value as { show?: unknown } | undefined)?.show
+    return typeof show === 'boolean' && displayType === 'LinearMafDisplay'
+      ? {
+          path: `${TRACK_MENU} → Show... → Reference row (${show ? 'checked' : 'unchecked'})`,
+        }
       : undefined
   },
   'alignments.rowProportion': (value, { displayType }) =>

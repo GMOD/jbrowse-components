@@ -450,3 +450,44 @@ test('two runs at one anchor across a contig break stay two insertions', () => {
     chr: 'chr5',
   })
 })
+
+test('a binned marker hovers as the insertion it draws, not its neighbour at the anchor', () => {
+  const r = region([
+    {
+      startBp: 100,
+      endBp: 102,
+      refSeqBytes: enc.encode('AA-'),
+      rows: [
+        {
+          rowIndex: 0,
+          alignmentBytes: enc.encode('aac'),
+          chr: 'chr2',
+          srcStart: 500,
+          strand: 1,
+        },
+      ],
+      empties: [],
+    },
+    {
+      startBp: 102,
+      endBp: 104,
+      refSeqBytes: enc.encode('--AA'),
+      rows: [
+        {
+          rowIndex: 0,
+          alignmentBytes: enc.encode('ggaa'),
+          chr: 'chr3',
+          srcStart: 10,
+          strand: 1,
+        },
+      ],
+      empties: [],
+    },
+  ])
+  expect(findRowHoverAtBp(r, at(102), 0, 0.1, 4, 20)).toMatchObject({
+    kind: 'insertion',
+    length: 2,
+    sequence: 'gg',
+    chr: 'chr3',
+  })
+})

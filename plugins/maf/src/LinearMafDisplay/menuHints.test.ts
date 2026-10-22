@@ -240,3 +240,22 @@ describe('the CDS strip says when its read was declined as too large', () => {
     expect(hintOn(display.trackMenuItems(), STRIP)).toBeUndefined()
   })
 })
+
+describe('identity says it yields to the bases at base level', () => {
+  const HINT = 'zoom out past base level'
+
+  it('hints on the Identity row and the plot type there, and not zoomed out', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+    display.setYField('identity')
+    expect(display.zoomedToBaseLevel).toBe(true)
+    expect(hintOn(display.trackMenuItems(), 'Identity to reference')).toBe(HINT)
+    expect(
+      display.trackMenuItems().map(i => 'label' in i && i.label),
+    ).toContain(`Plot type — ${HINT}`)
+
+    zoomPastBaseLevel(view)
+    expect(
+      hintOn(display.trackMenuItems(), 'Identity to reference'),
+    ).toBeUndefined()
+  })
+})
