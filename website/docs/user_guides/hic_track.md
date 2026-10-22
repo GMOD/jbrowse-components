@@ -136,6 +136,23 @@ and at whole-genome zoom that is chr1 against chrY: half the view. A
 hundred-pixel track shows the top slice of that pyramid, which is its faintest
 corner.
 
+## Comparing two conditions
+
+Two maps of one assembly, two cell types or a treatment and its control, compare
+as one track. **Compare with...** in a Hi-C track's menu lists the other Hi-C
+tracks on its assembly; picking one opens a new track of this map over that one,
+the view Juicebox calls Observed/Control. Both maps are scaled to one library
+depth first, so two libraries sequenced to different depths compare, and a
+contact either map lacks still draws: red where this map gained contacts, blue
+where it lost them. Hovering a bin prints the ratio and both counts.
+
+<Figure src="/img/hic/observed_control.png" caption="K562 over GM12878 at the BCR and ABL1 loci. The block between the two regions is the translocation K562 carries." links="Open this view=hic/observed_control" />
+
+JBrowse refuses a control whose chromosomes differ in length from the map's,
+since two builds share chromosome names and differ in coordinates. Only the
+binsizes and normalizations both files hold are offered, and where the two fall
+back to different normalizations for a region pair, both read raw counts.
+
 ## Fitting the triangle to the track height
 
 The triangle's natural height is half the view width, so on a wide view it is

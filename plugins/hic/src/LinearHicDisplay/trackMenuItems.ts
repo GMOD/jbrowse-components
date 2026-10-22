@@ -19,6 +19,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 interface HicMenuSelf extends IStateTreeNode {
   colorField: HicColorField
   paintedColorField: HicColorField
+  hasControl: boolean
   setColorField: (field: HicColorField) => void
   colorScaleType: HicColorScale
   colorFollowsPercentile: boolean
@@ -137,7 +138,21 @@ const FIELD_ITEMS: { value: HicColorField; label: string; helpText: string }[] =
       helpText:
         "Each count over the file's expected count at that distance, so compartments and loops show above the decay of contact with distance. Red is enriched, blue depleted.",
     },
+    {
+      value: 'observed/control',
+      label: 'Observed/control',
+      helpText:
+        "Each count over the control condition's, both scaled to their files' depth, so gained contacts show red and lost ones blue.",
+    },
   ]
+
+const FALLBACK_HELP: Record<HicColorField, string> = {
+  observed: '',
+  'observed/expected':
+    'This file has no expected values at the current resolution, so the cells show counts.',
+  'observed/control':
+    'The control has no matrix at the current resolution, so the cells show counts.',
+}
 
 // Ticks the field the loaded cells are; a file with no expected values at the
 // binsize paints counts, and the row asked for says why.
@@ -147,11 +162,13 @@ function fieldMenuItem(self: HicMenuSelf): MenuItem {
     label: 'Values',
     icon: InsightsIcon,
     subMenu: radioItems(
-      FIELD_ITEMS.map(item => ({
+      FIELD_ITEMS.filter(
+        item => item.value !== 'observed/control' || self.hasControl,
+      ).map(item => ({
         ...item,
         helpText:
           item.value === colorField && paintedColorField !== colorField
-            ? 'This file has no expected values at the current resolution, so the cells show counts.'
+            ? FALLBACK_HELP[item.value]
             : item.helpText,
       })),
       paintedColorField,

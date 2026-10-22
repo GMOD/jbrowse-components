@@ -22,6 +22,8 @@ export interface RenderHicDataArgs {
 }
 
 export interface HicContactItem {
+  /** the contact's instance, which indexes `HicDataResult.operands` */
+  index: number
   bin1: number
   bin2: number
   value: number
@@ -86,6 +88,11 @@ export interface HicDataResult {
    * observed/expected and the file has no expected values at this binsize.
    */
   appliedField: HicColorField
+  /**
+   * Under observed/control, each instance's two counts, the map's and the
+   * control's, which the ratio alone cannot give back.
+   */
+  operands?: { observed: Float32Array; control: Float32Array }
   regions: HicResultRegion[]
   /**
    * Hover recovers a contact's bins from its float32 position through these

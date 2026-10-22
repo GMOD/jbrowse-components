@@ -12,7 +12,11 @@ import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import type { ContactRecords, ExpectedValues } from '@gmod/hic'
+import { controlChromosomes } from './controlChromosomes.ts'
+import { binExtent, joinControl } from './joinControl.ts'
+
+import type { AxisMasks } from './joinControl.ts'
+import type { ContactRecords, ExpectedValues, HicRegion } from '@gmod/hic'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -34,6 +38,12 @@ export interface RegionPairContacts extends ContactRecords {
    * asked for them and the file has them.
    */
   expected?: ExpectedValues
+  /**
+   * The control's counts beside `counts`, the two joined on bin pairs, and
+   * each library's depth; where the call asked for them and the control has
+   * the pair.
+   */
+  control?: { counts: Float32Array; depth: number; controlDepth: number }
 }
 
 /**
@@ -54,6 +64,38 @@ interface HicContactOptions extends BaseOptions {
   normalization?: string
   /** also read each pair's expected counts, for observed/expected */
   expected?: boolean
+  /** also read and join the control's counts, for observed/control */
+  control?: boolean
+}
+
+/** What the display reads before any fetch: the choices the file offers. */
+export interface HicHeader {
+  norms: string[]
+  resolutions: number[]
+  /** whether `controlAdapter` names a control for observed/control */
+  hasControl: boolean
+}
+
+interface PairRead {
+  records: ContactRecords
+  appliedNormalization: string
+}
+
+interface Control {
+  adapter: HicAdapter
+  /** the control's name for each of this file's chromosomes it holds */
+  names: Map<string, string>
+}
+
+// A bin is reportable where its normalization factor is usable; the parser
+// drops a contact whose factor product is 0 or NaN.
+function validBins(values: Float64Array | undefined, n: number) {
+  const mask = new Uint8Array(n)
+  for (let i = 0; i < n; i++) {
+    const v = values?.[i]
+    mask[i] = v !== undefined && v !== 0 && !Number.isNaN(v) ? 1 : 0
+  }
+  return mask
 }
 
 // Each pair is an independent chain of range reads, so pairs run concurrently;
@@ -68,6 +110,11 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     setup: opts => this.hic.getMetaData({ signal: opts.signal }),
   })
 
+  private controlSetup = cachedSetup({
+    label: 'Downloading control header',
+    setup: opts => this.openControl(opts),
+  })
+
   public constructor(
     config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
@@ -79,7 +126,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  public async getHeader(opts?: BaseOptions) {
+  public async getHeader(opts?: BaseOptions): Promise<HicHeader> {
     const { statusCallback, signal } = opts ?? {}
     const { resolutions } = await this.setup(opts)
     // Its own phase: on a v8 file with no recorded index position this walks
@@ -90,7 +137,45 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       onProgress => this.hic.getNormalizationOptions({ onProgress, signal }),
       signal,
     )
-    return { norms, resolutions }
+    const control = await this.controlSetup(opts)
+    if (!control) {
+      return { norms, resolutions, hasControl: false }
+    }
+    // A ratio compares the two at one binsize under one normalization, so
+    // only what both files offer is offered.
+    const theirs = await control.adapter.getHeader(opts)
+    return {
+      norms: norms.filter(n => theirs.norms.includes(n)),
+      resolutions: resolutions.filter(r => theirs.resolutions.includes(r)),
+      hasControl: true,
+    }
+  }
+
+  /** The parsed header: chromosomes and binsizes. */
+  public async getMetadata(opts?: BaseOptions) {
+    return this.setup(opts)
+  }
+
+  private async openControl(opts: BaseOptions): Promise<Control | undefined> {
+    const config: Record<string, unknown> | undefined =
+      this.getConf('controlAdapter') ?? undefined
+    if (!config || !this.getSubAdapter) {
+      return undefined
+    }
+    const { dataAdapter } = await this.getSubAdapter(config)
+    if (!(dataAdapter instanceof HicAdapter)) {
+      throw new Error(
+        `A Hi-C control must be a HicAdapter, not ${String(config.type)}`,
+      )
+    }
+    const [mine, theirs] = await Promise.all([
+      this.setup(opts),
+      dataAdapter.getMetadata(opts),
+    ])
+    return {
+      adapter: dataAdapter,
+      names: controlChromosomes(mine.chromosomes, theirs.chromosomes),
+    }
   }
 
   async getRefNames(opts?: BaseOptions) {
@@ -116,9 +201,11 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       resolution,
       normalization = 'KR',
       expected = false,
+      control: withControl = false,
       statusCallback,
       signal,
     } = opts
+    const control = withControl ? await this.controlSetup(opts) : undefined
 
     const metadata = await this.setup(opts)
     if (!metadata.resolutions.includes(resolution)) {
@@ -134,11 +221,10 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       }
     }
     const fetched = new Array<
-      | {
-          records: ContactRecords
-          appliedNormalization: string
+      | (PairRead & {
           expected?: ExpectedValues
-        }
+          control?: RegionPairContacts['control']
+        })
       | undefined
     >(pairIndices.length)
 
@@ -167,17 +253,28 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
             const at = next++
             const [i, j] = pairIndices[at]!
             checkAbortSignal(signal)
-            fetched[at] = await this.fetchRegionPairRecords({
-              region1: regions[i]!,
-              region2: regions[j]!,
-              normalization,
-              resolution,
-              expected,
-              signal,
-              onProgress: (current, total) => {
-                advance(at, current / total)
-              },
-            })
+            const onProgress = (current: number, total: number) => {
+              advance(at, current / total)
+            }
+            fetched[at] = control
+              ? await this.fetchWithControl({
+                  control,
+                  region1: regions[i]!,
+                  region2: regions[j]!,
+                  normalization,
+                  resolution,
+                  signal,
+                  onProgress,
+                })
+              : await this.fetchRegionPairRecords({
+                  region1: regions[i]!,
+                  region2: regions[j]!,
+                  normalization,
+                  resolution,
+                  expected,
+                  signal,
+                  onProgress,
+                })
             advance(at, 1)
           }
         }
@@ -209,6 +306,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
         region2Idx: j,
         appliedNormalization: pair.appliedNormalization,
         expected: pair.expected,
+        control: pair.control,
         ...pair.records,
       })
       numContacts += pair.records.bin1.length
@@ -241,38 +339,188 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   }) {
     const r1 = { chr: region1.refName, start: region1.start, end: region1.end }
     const r2 = { chr: region2.refName, start: region2.start, end: region2.end }
+    const read = await this.readPair(r1, r2, normalization, resolution, {
+      onProgress,
+      signal,
+    })
+    // Under the normalization the pair's counts carry, since each has its
+    // own expected vector; symmetric in the two regions, so the transpose
+    // needs no undoing.
+    return read
+      ? {
+          ...read,
+          expected:
+            expected && read.records.bin1.length > 0
+              ? await this.hic.getExpectedValues(
+                  read.appliedNormalization,
+                  r1,
+                  r2,
+                  resolution,
+                  { signal },
+                )
+              : undefined,
+        }
+      : undefined
+  }
+
+  /**
+   * One region pair's contacts in this file, `bin1` along `r1`, or undefined
+   * where the file has no matrix for the pair at this binsize.
+   */
+  public async readPair(
+    r1: HicRegion,
+    r2: HicRegion,
+    normalization: string,
+    resolution: number,
+    opts: {
+      signal?: AbortSignal
+      onProgress?: (current: number, total: number) => void
+    },
+  ): Promise<PairRead | undefined> {
     try {
       // `transposed` is the parser's own answer, decided from the file's
       // chromosome indices, which this adapter would otherwise look up again.
       const { records, appliedNormalization, transposed } =
-        await this.hic.getContactRecords(normalization, r1, r2, resolution, {
-          onProgress,
-          signal,
-        })
-      // Under the normalization the pair's counts carry, since each has its
-      // own expected vector; symmetric in the two regions, so the transpose
-      // needs no undoing.
+        await this.hic.getContactRecords(
+          normalization,
+          r1,
+          r2,
+          resolution,
+          opts,
+        )
       return {
         records: transposed
           ? { bin1: records.bin2, bin2: records.bin1, counts: records.counts }
           : records,
         appliedNormalization,
-        expected:
-          expected && records.bin1.length > 0
-            ? await this.hic.getExpectedValues(
-                appliedNormalization,
-                r1,
-                r2,
-                resolution,
-                { signal },
-              )
-            : undefined,
       }
     } catch (e) {
       if (`${e}`.includes(NO_DATA_FOR_RESOLUTION)) {
         return undefined
       }
       throw e
+    }
+  }
+
+  /**
+   * The library's depth: its total contacts, or for a file with no `ALL` map
+   * the chromosome pair's own sum at this binsize, which the control's
+   * matching map compares against alike.
+   */
+  public async libraryDepth(chr1: string, chr2: string, resolution: number) {
+    const total = await this.hic.getTotalContacts()
+    if (total !== undefined) {
+      return total
+    }
+    const { chromosomes } = await this.setup({})
+    const c1 = chromosomes.find(c => c.name === chr1)
+    const c2 = chromosomes.find(c => c.name === chr2)
+    return c1 && c2
+      ? (await this.hic.getMatrix(c1.index, c2.index))?.getZoomData(resolution)
+          ?.sumCounts
+      : undefined
+  }
+
+  /** Which bins of `[start, end)` this file's `normalization` can report on. */
+  public async binMask(
+    normalization: string,
+    chr: string,
+    start: number,
+    end: number,
+    resolution: number,
+  ) {
+    if (normalization === 'NONE') {
+      return undefined
+    }
+    const vector = await this.hic.getNormalizationVector(
+      normalization,
+      chr,
+      resolution,
+    )
+    return validBins(await vector?.getValues(start, end), end - start)
+  }
+
+  /**
+   * One region pair in both files, under one normalization and joined on bin
+   * pairs. The two must carry the same normalization for the ratio to mean
+   * anything, so a pair where they fell back apart reads both raw.
+   */
+  private async fetchWithControl({
+    control,
+    region1,
+    region2,
+    normalization,
+    resolution,
+    signal,
+    onProgress,
+  }: {
+    control: Control
+    region1: Region
+    region2: Region
+    normalization: string
+    resolution: number
+    signal?: AbortSignal
+    onProgress: (current: number, total: number) => void
+  }) {
+    const name1 = control.names.get(region1.refName)
+    const name2 = control.names.get(region2.refName)
+    if (name1 === undefined || name2 === undefined) {
+      return undefined
+    }
+    const r1 = { chr: region1.refName, start: region1.start, end: region1.end }
+    const r2 = { chr: region2.refName, start: region2.start, end: region2.end }
+    const c1 = { ...r1, chr: name1 }
+    const c2 = { ...r2, chr: name2 }
+    const read = (norm: string) =>
+      Promise.all([
+        this.readPair(r1, r2, norm, resolution, { signal, onProgress }),
+        control.adapter.readPair(c1, c2, norm, resolution, { signal }),
+      ])
+    let [mine, theirs] = await read(normalization)
+    if (
+      mine &&
+      theirs &&
+      mine.appliedNormalization !== theirs.appliedNormalization
+    ) {
+      ;[mine, theirs] = await read('NONE')
+    }
+    if (!mine || !theirs) {
+      return undefined
+    }
+    const norm = mine.appliedNormalization
+    const [xLo, xHi] = binExtent(mine.records.bin1, theirs.records.bin1)
+    const [yLo, yHi] = binExtent(mine.records.bin2, theirs.records.bin2)
+    const masksOf = async (
+      file: HicAdapter,
+      chr1: string,
+      chr2: string,
+    ): Promise<AxisMasks> => ({
+      x: await file.binMask(norm, chr1, xLo, xHi, resolution),
+      y: await file.binMask(norm, chr2, yLo, yHi, resolution),
+    })
+    const [depth, controlDepth, myMasks, theirMasks] = await Promise.all([
+      this.libraryDepth(r1.chr, r2.chr, resolution),
+      control.adapter.libraryDepth(name1, name2, resolution),
+      masksOf(this, r1.chr, r2.chr),
+      masksOf(control.adapter, name1, name2),
+    ])
+    if (!depth || !controlDepth) {
+      return undefined
+    }
+    const joined = joinControl(mine.records, theirs.records, {
+      observed: myMasks,
+      control: theirMasks,
+      x0: xLo,
+      y0: yLo,
+    })
+    return {
+      records: {
+        bin1: joined.bin1,
+        bin2: joined.bin2,
+        counts: joined.counts,
+      },
+      appliedNormalization: norm,
+      control: { counts: joined.control, depth, controlDepth },
     }
   }
 }

@@ -117,7 +117,14 @@ test('a ratio offers no count scale toggles, and names itself in the key', () =>
 
 test('hover reads a ratio expected count off its pair run', () => {
   const data = payload('observed/expected')
-  const item = { bin1: 4, bin2: 7, region1Idx: 0, region2Idx: 0, value: 2 }
+  const item = {
+    index: 0,
+    bin1: 4,
+    bin2: 7,
+    region1Idx: 0,
+    region2Idx: 0,
+    value: 2,
+  }
   // distance 3 is the vector's second entry, its first being distance 2
   expect(expectedOf(data, item)).toBe(5)
   expect(

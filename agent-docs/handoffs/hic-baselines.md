@@ -1,6 +1,6 @@
 ---
 name: hic-baselines
-description: "Hi-C ratios against a baseline. Landed: observed/expected as a color field (@gmod/hic 2.1.0's getExpectedValues, checked against straw) and the groundwork. Open: observed/control, a ratio domain that can follow the data again, and what an absent bin paints. Read before touching plugins/hic, the LD color plumbing or @gmod/hic's footer reader."
+description: "Hi-C ratios against a baseline. Landed: observed/expected and observed/control as color fields, Compare with..., and the groundwork. Open: a ratio domain that can follow the data again, what an absent bin paints, a count filter for noisy ratios, and a treatment-versus-control demo. Read before touching plugins/hic, the LD color plumbing or @gmod/hic's footer reader."
 ---
 
 # Hi-C against a baseline
@@ -37,21 +37,14 @@ How O/E works is in
    bins, so a depleted cell with no contacts draws as the page, white, which
    on `redblue` reads as "ratio 1". Juicebox leaves it blank too; the
    alternative is the triangle's background in the `unknown` color.
-3. **`observed/control`**:
-   - a `control` sub-adapter on `HicAdapter` (GWAS `ldAdapter` is the
-     precedent);
-   - refName aliasing, a chromosome-size check, and the intersection of
-     binsizes and normalizations;
-   - `@gmod/hic` reporting which bins its normalization vector masks, since
-     it drops a masked bin exactly as it omits an empty one (`hicFile.ts`),
-     and a masked control bin would otherwise read as a huge ratio;
-   - an outer join by row bucketing (~0.4 s at 4.3M x 4.3M, a JS Map 3-5 s)
-     so lost loops draw;
-   - Juicebox's depth rule `(a/avgA)/(b/avgB)` with a pseudocount (check
-     whether `avg` from raw `sumCounts` biases KR counts);
-   - a default count filter on observed + control, a "Compare with track..."
-     menu item, and the cohesin-loss tutorial (Rao 2017 HCT116 RAD21-mAC
-     with and without auxin; check hosting with range support).
+3. **A count filter for noisy ratios.** The pseudocount of 1 tames a ratio of
+   two small counts, and Juicebox stops there. ADR-238's
+   `filter: [{ field: 'control', gte }]` would let a reader quiet the low-count
+   speckle further; Hi-C has no `filter` slot yet.
+4. **A treatment-versus-control demo.** The figure compares two cell lines
+   (K562 over GM12878, `hic/observed_control`). Cohesin loss (Rao 2017,
+   HCT116 RAD21-mAC with and without auxin) is the canonical lost-loops
+   picture; check for a copy on a server with range support.
 
 ## Traps the reviews found
 
@@ -59,5 +52,6 @@ How O/E works is in
   0 paints 0.5 and 0.01 alike.
 - `withPreset` drops a preset whose scale differs from the written one;
   `MatrixRampMixin` fills only `scheme` across scales.
-- A control spelling `1` where the primary spells `chr1` comes back empty and
-  reads as enrichment everywhere; `@gmod/hic` 2.0 dropped aliasing.
+- A control spelling `1` where the map spells `chr1` comes back empty and reads
+  as enrichment everywhere; `@gmod/hic` 2.0 dropped aliasing, so
+  `controlChromosomes.ts` maps the spellings.

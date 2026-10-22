@@ -4,6 +4,7 @@ import HicAdapterF from './HicAdapter/index.ts'
 import HicTrackF from './HicTrack/index.ts'
 import LinearHicDisplayF from './LinearHicDisplay/index.ts'
 import HicDataRPCMethodsF from './RenderHicDataRPC/index.ts'
+import HicCompareTrackMenuItemsF from './compareTrackMenuItems.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -15,6 +16,7 @@ export default class HicPlugin extends Plugin {
     HicTrackF(pluginManager)
     LinearHicDisplayF(pluginManager)
     HicDataRPCMethodsF(pluginManager)
+    HicCompareTrackMenuItemsF(pluginManager)
   }
 }
 

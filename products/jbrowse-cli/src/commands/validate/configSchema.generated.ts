@@ -3529,6 +3529,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FileLocation"
           }
         },
+        "controlAdapter": {
+          "description": "sub-adapter config for the control .hic. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
+          }
+        },
         "uri": {
           "type": "string",
           "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
@@ -13575,7 +13586,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "observed",
           "enum": [
             "observed",
-            "observed/expected"
+            "observed/expected",
+            "observed/control"
           ],
           "type": "string"
         },
@@ -13585,7 +13597,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "observed, each bin's contact count, or observed/expected, that count over the file's expected count at its distance.",
+              "description": "observed, each bin's contact count; observed/expected, that count over the file's expected count at its distance; or observed/control, that count over the control file's, both scaled to one library depth.",
               "default": "observed",
               "if": {
                 "type": "null"
@@ -13593,7 +13605,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "else": {
                 "enum": [
                   "observed",
-                  "observed/expected"
+                  "observed/expected",
+                  "observed/control"
                 ]
               }
             },

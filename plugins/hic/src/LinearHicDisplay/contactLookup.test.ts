@@ -110,6 +110,7 @@ describe('contact lookup table', () => {
       // value is unique per contact, so this pins the exact index, not just a
       // cell with matching coordinates
       expect(hoverCenter(d, i)).toEqual({
+        index: i,
         bin1: contacts[i]!.bin1,
         bin2: contacts[i]!.bin2,
         region1Idx: 0,
@@ -167,6 +168,7 @@ describe('contact lookup table', () => {
     })
     for (let i = 0; i < d.numContacts; i++) {
       expect(hoverCenter(d, i)).toEqual({
+        index: i,
         bin1: contacts[i]!.bin1,
         bin2: contacts[i]!.bin2,
         region1Idx: 0,
@@ -190,6 +192,7 @@ describe('contact lookup table', () => {
     const d = makeData(contacts, { binBase, span, reversed: [false, true] })
     contacts.forEach(({ r1, r2, bin1, bin2 }, i) => {
       expect(hoverCenter(d, i)).toEqual({
+        index: i,
         bin1,
         bin2,
         region1Idx: r1,

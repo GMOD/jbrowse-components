@@ -260,6 +260,7 @@ export function findContactAt(
   return idx === undefined
     ? undefined
     : {
+        index: idx,
         bin1,
         bin2,
         region1Idx: regionX,

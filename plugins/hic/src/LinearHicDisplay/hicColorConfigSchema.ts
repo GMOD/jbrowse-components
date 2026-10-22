@@ -14,11 +14,24 @@ export type HicColorScale = (typeof HIC_COLOR_SCALES)[number]
  * What a bin's color maps, in Juicebox's names: its contact count, or that
  * count over the count expected at its distance.
  */
-export const HIC_COLOR_FIELDS = ['observed', 'observed/expected'] as const
+export const HIC_COLOR_FIELDS = [
+  'observed',
+  'observed/expected',
+  'observed/control',
+] as const
 
 export type HicColorField = (typeof HIC_COLOR_FIELDS)[number]
 
 export const DEFAULT_HIC_COLOR_SCHEME: ColorSchemeName = 'juicebox'
+
+const RATIO_PRESET = {
+  scale: 'log',
+  scheme: 'redblue',
+  reverse: true,
+  domainMin: 0.25,
+  domainMax: 4,
+  domainMid: 1,
+} as const
 
 /**
  * Each field's ramp while the config leaves it unwritten. A ratio diverges
@@ -27,14 +40,8 @@ export const DEFAULT_HIC_COLOR_SCHEME: ColorSchemeName = 'juicebox'
  */
 export const HIC_FIELD_PRESETS = {
   observed: { scale: 'linear', scheme: DEFAULT_HIC_COLOR_SCHEME },
-  'observed/expected': {
-    scale: 'log',
-    scheme: 'redblue',
-    reverse: true,
-    domainMin: 0.25,
-    domainMax: 4,
-    domainMid: 1,
-  },
+  'observed/expected': RATIO_PRESET,
+  'observed/control': RATIO_PRESET,
 } as const satisfies MatrixFieldPresets<HicColorField>
 
 /**
@@ -53,6 +60,11 @@ export const HIC_FIELD_PRESETS = {
  *   under the decay of contact with distance. It diverges around 1 from a
  *   quarter to fourfold, and where the file has no expected values at the
  *   binsize, the display paints the counts and the key says so.
+ * - `observed/control`: each count over the adapter's `controlAdapter`
+ *   count for the same bins, both scaled to the two libraries' common depth
+ *   and given a pseudocount of 1. A cell only one condition holds draws too,
+ *   so lost and gained contacts both show; on the same ramp as
+ *   observed/expected.
  *
  * The slots are the shared color object's, so `jbrowse validate` and "Edit
  * plot..." judge them as they judge any other display's.
@@ -76,7 +88,7 @@ export const hicColorConfigSchema = ConfigurationSchema(
       model: types.enumeration('HicColorField', [...HIC_COLOR_FIELDS]),
       defaultValue: 'observed',
       description:
-        "observed, each bin's contact count, or observed/expected, that count over the file's expected count at its distance",
+        "observed, each bin's contact count; observed/expected, that count over the file's expected count at its distance; or observed/control, that count over the control file's, both scaled to one library depth",
     },
     /**
      * #slot scheme

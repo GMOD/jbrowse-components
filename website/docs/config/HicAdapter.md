@@ -47,6 +47,7 @@ Adapter slots go inside the track's `adapter`: `"adapter": { "type": "HicAdapter
 | Slot | Description |
 | --- | --- |
 | <span id="slot-hiclocation">**hicLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.hic', locationType: 'UriLocation' }</code> | location of the `.hic` contact matrix (Juicer / Juicebox format). The file holds every resolution and an index, so there is nothing else to configure — the display picks a bin size from the current zoom. |
+| <span id="slot-controladapter">**controlAdapter**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) | a second `HicAdapter`, the control condition the display's `observed/control` field divides by: both are scaled to one library depth, so two libraries sequenced to different depths compare. The two must be on one assembly; chromosome names may differ by a `chr` prefix. Leave it unset for a single map. |
 
 ## Retired keys
 

@@ -49,20 +49,27 @@ export async function executeRenderHicData({
     resolution,
     normalization,
     expected: field === 'observed/expected',
+    control: field === 'observed/control',
     signal,
     statusCallback,
   })
   checkAbortSignal(signal)
 
-  // A file with no expected values at this binsize paints its counts and says
-  // so; one missing them for some pairs leaves those pairs out, since a count
-  // on a ratio ramp would read as enrichment.
+  // A file with no baseline at this binsize, no expected values or no control
+  // matrix, paints its counts and says so; one missing it for some pairs
+  // leaves those pairs out, since a count on a ratio ramp would read as
+  // enrichment.
+  const hasBaseline = (pair: (typeof pairs)[number]) =>
+    field === 'observed/expected' ? !!pair.expected : !!pair.control
   const appliedField =
-    field === 'observed/expected' &&
-    (pairs.length === 0 || pairs.some(pair => pair.expected))
-      ? 'observed/expected'
+    field !== 'observed' && (pairs.length === 0 || pairs.some(hasBaseline))
+      ? field
       : 'observed'
-  const ratio = appliedField === 'observed/expected'
+  const overExpected = appliedField === 'observed/expected'
+  const overControl = appliedField === 'observed/control'
+  // the two counts a control ratio was made of, for the hover
+  const observedOut = overControl ? new Float32Array(numContacts) : undefined
+  const controlOut = overControl ? new Float32Array(numContacts) : undefined
 
   const w = resolution / Math.SQRT2
   const resultRegions = buildResultRegions(regions, axisBlocks, resolution)
@@ -80,8 +87,16 @@ export async function executeRenderHicData({
     report => {
       let read = 0
       for (const pair of pairs) {
-        const { region1Idx, region2Idx, bin1, bin2, counts, expected } = pair
-        if (ratio && !expected) {
+        const {
+          region1Idx,
+          region2Idx,
+          bin1,
+          bin2,
+          counts,
+          expected,
+          control,
+        } = pair
+        if (appliedField !== 'observed' && !hasBaseline(pair)) {
           read += bin1.length
           report(read)
           continue
@@ -94,6 +109,16 @@ export async function executeRenderHicData({
         const firstDistance =
           expected?.kind === 'intra' ? expected.firstDistance : 0
         const average = expected?.kind === 'inter' ? expected.average : 1
+        // Both counts scaled to the two libraries' geometric-mean depth, then
+        // a pseudocount of 1 so a cell one condition lacks still divides.
+        // Juicebox adds the 1 to each map's average contact instead, which
+        // at any binsize under one contact per bin pair swamps the depth and
+        // paints the deeper library's partner depleted everywhere. Scaling
+        // both halves of the way keeps A over B the inverse of B over A.
+        const ctrlCounts = control?.counts
+        const toMean = control
+          ? Math.sqrt(control.controlDepth / control.depth)
+          : 1
         const r1 = resultRegions[region1Idx]!
         const r2 = resultRegions[region2Idx]!
         const off1 = r1.combinedOffset
@@ -112,7 +137,7 @@ export async function executeRenderHicData({
             continue
           }
           let value = count
-          if (ratio) {
+          if (overExpected) {
             const e = byDistance
               ? byDistance[Math.abs(bin2[k]! - bin1[k]!) - firstDistance]!
               : average
@@ -121,6 +146,11 @@ export async function executeRenderHicData({
             if (!Number.isFinite(value)) {
               continue
             }
+          } else if (ctrlCounts) {
+            const ctrl = ctrlCounts[k]!
+            value = (count * toMean + 1) / (ctrl / toMean + 1)
+            observedOut![at] = count
+            controlOut![at] = ctrl
           }
           const u1 = (bin1[k]! + off1) * w
           const u2 = (bin2[k]! + off2) * w
@@ -138,7 +168,7 @@ export async function executeRenderHicData({
             region2Idx,
             start,
             end: at,
-            expected: ratio ? expected : undefined,
+            expected: overExpected ? expected : undefined,
           })
         }
         read += n
@@ -149,6 +179,13 @@ export async function executeRenderHicData({
 
   const instances = packed.subarray(0, at * INSTANCE_STRIDE_WORDS)
   const { maxScore, quantileScore } = computeCountStats(instances, at, quantile)
+  const operands =
+    observedOut && controlOut
+      ? {
+          observed: observedOut.slice(0, at),
+          control: controlOut.slice(0, at),
+        }
+      : undefined
 
   return rpcResult(
     {
@@ -162,11 +199,13 @@ export async function executeRenderHicData({
       resolution,
       appliedNormalization,
       appliedField,
+      operands,
       regions: resultRegions,
       pairRuns,
     },
     [
       instances.buffer,
+      ...(operands ? [operands.observed.buffer, operands.control.buffer] : []),
       ...new Set(
         pairRuns.flatMap(run =>
           run.expected?.kind === 'intra' ? [run.expected.values.buffer] : [],

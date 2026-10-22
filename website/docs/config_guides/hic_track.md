@@ -60,6 +60,36 @@ shows what each does to the picture:
   its distance, drawn diverging around 1
   ([compartments](/docs/user_guides/hic_track#compartments-and-subcompartments))
 
+## Comparing two conditions
+
+A [`controlAdapter`](/docs/config/hicadapter/#slot-controladapter) on the
+adapter names a second `.hic`, and the
+[`observed/control`](/docs/config/hiccolor/#slot-field) field draws each count
+over the control's, both scaled to one library depth. This track is K562 over
+GM12878:
+
+```json addtrack
+{
+  "type": "HicTrack",
+  "trackId": "hic_k562_over_gm12878",
+  "name": "K562 over GM12878",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "HicAdapter",
+    "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/4d332729-3463-4782-b33c-76e4fa8ff72a/ENCFF080DPJ.hic",
+    "controlAdapter": {
+      "type": "HicAdapter",
+      "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic"
+    }
+  },
+  "displayDefaults": { "color": "observed/control" }
+}
+```
+
+The track menu's **Compare with...** builds the same track from two tracks
+already loaded
+([comparing two conditions](/docs/user_guides/hic_track#comparing-two-conditions)).
+
 ## Loops and interactions as arcs
 
 BEDPE loop calls load as a `VariantTrack` with a

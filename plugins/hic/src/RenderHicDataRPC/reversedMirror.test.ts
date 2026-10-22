@@ -153,6 +153,7 @@ describe('reversed hic regions', () => {
     for (let i = 0; i < d.numContacts; i++) {
       const { ux, uy } = cellCenter(d, i)
       expect(findContactAt(d, ux, uy)).toEqual({
+        index: i,
         bin1: MULTI[i]!.bin1,
         bin2: MULTI[i]!.bin2,
         region1Idx: MULTI[i]!.region1Idx,

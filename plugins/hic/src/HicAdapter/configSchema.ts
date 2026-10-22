@@ -38,6 +38,18 @@ const HicAdapter = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    /**
+     * #slot
+     * a second `HicAdapter`, the control condition the display's
+     * `observed/control` field divides by: both are scaled to one library
+     * depth, so two libraries sequenced to different depths compare. The two
+     * must be on one assembly; chromosome names may differ by a `chr`
+     * prefix. Leave it unset for a single map.
+     */
+    controlAdapter: {
+      type: 'maybeFrozen',
+      description: 'sub-adapter config for the control .hic',
+    },
   },
   {
     explicitlyTyped: true,

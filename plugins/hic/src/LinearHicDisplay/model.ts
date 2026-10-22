@@ -58,6 +58,12 @@ const NORMALIZATION_PREFERENCE = ['KR', 'SCALE', 'VC_SQRT', 'VC']
 
 // The key's and the tooltip's name for a value: the field, its normalization
 // and, for a count, a scale other than linear. A ratio is always log.
+const FIELD_NAMES = {
+  observed: 'Contacts',
+  'observed/expected': 'Observed/expected',
+  'observed/control': 'Observed/control',
+} as const satisfies Record<HicColorField, string>
+
 function valueName(
   field: HicColorField,
   normalization: string,
@@ -67,13 +73,15 @@ function valueName(
     normalization === 'NONE' ? undefined : normalization,
     field === 'observed' && scale !== 'linear' ? scale : undefined,
   ].filter(q => q !== undefined)
-  const name = field === 'observed' ? 'Contacts' : 'Observed/expected'
+  const name = FIELD_NAMES[field]
   return qualifiers.length ? `${name} (${qualifiers.join(', ')})` : name
 }
 
 interface HicFileInfo {
   norms: string[] | undefined
   resolutions: number[]
+  /** whether the adapter names a control the ratio can divide by */
+  hasControl: boolean
 }
 
 /**
@@ -152,6 +160,13 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        */
       get availableResolutions(): number[] | undefined {
         return readFor(self, self.fileInfo)?.resolutions
+      },
+      /**
+       * #getter
+       * Whether the adapter names a control, which observed/control needs.
+       */
+      get hasControl(): boolean {
+        return !!readFor(self, self.fileInfo)?.hasControl
       },
       /**
        * #getter
@@ -609,14 +624,19 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             (await ctx.callRpc('CoreGetInfo', { adapterConfig })) as {
               norms?: string[]
               resolutions?: number[]
+              hasControl?: boolean
             },
-          commit: ({ adapterConfig, value: { norms, resolutions } }) => {
+          commit: ({
+            adapterConfig,
+            value: { norms, resolutions, hasControl = false },
+          }) => {
             if (resolutions?.length) {
               self.setFileInfo({
                 adapterConfig,
                 value: {
                   norms,
                   resolutions: [...resolutions].sort((a, b) => a - b),
+                  hasControl,
                 },
               })
             } else {

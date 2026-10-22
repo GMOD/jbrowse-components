@@ -16,6 +16,7 @@ function baseSelf() {
   return {
     colorField: 'observed' as HicColorField,
     paintedColorField: 'observed' as HicColorField,
+    hasControl: false,
     setColorField: jest.fn(),
     colorScaleType: 'linear' as const,
     colorFollowsPercentile: true,
@@ -62,6 +63,19 @@ function subMenuOf(items: MenuItem[], label: string) {
 }
 
 describe('hic track menu shape', () => {
+  it('offers observed/control only where the adapter names a control', () => {
+    const fields = (hasControl: boolean) =>
+      subMenuOf(buildHicTrackMenuItems(makeSelf({ hasControl })), 'Values').map(
+        labelOf,
+      )
+    expect(fields(false)).toEqual(['Observed', 'Observed/expected'])
+    expect(fields(true)).toEqual([
+      'Observed',
+      'Observed/expected',
+      'Observed/control',
+    ])
+  })
+
   // Every row here only writes a setting, and the menu is an observer, so the
   // ticks move live. They were hand-spelled literals without keepMenuOpen,
   // which dismissed the whole track menu on each toggle.

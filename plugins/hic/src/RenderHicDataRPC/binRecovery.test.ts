@@ -165,6 +165,7 @@ describe('bins survive the float32 round trip through the packed positions', () 
       // orientation shows up in where the cell is drawn, never in the locus the
       // tooltip prints.
       expect(hit).toEqual({
+        index: i,
         bin1,
         bin2,
         region1Idx: 0,

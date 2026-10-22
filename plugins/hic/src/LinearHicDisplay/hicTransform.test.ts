@@ -122,6 +122,7 @@ describe('hitTest inverts what the renderer drew', () => {
         },
       )
       expect(display.hitTest(x, y)).toEqual({
+        index: i,
         bin1,
         bin2,
         region1Idx: 0,

@@ -1272,6 +1272,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "hicLocation",
           "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+        },
+        {
+          "name": "controlAdapter",
+          "type": "(frozen | undefined)"
         }
       ],
       "legacyKeys": [
@@ -7297,6 +7301,14 @@ export const configManifest: ConfigManifest = {
               "scheme": "juicebox"
             },
             "observed/expected": {
+              "scale": "log",
+              "scheme": "redblue",
+              "reverse": true,
+              "domainMin": 0.25,
+              "domainMax": 4,
+              "domainMid": 1
+            },
+            "observed/control": {
               "scale": "log",
               "scheme": "redblue",
               "reverse": true,

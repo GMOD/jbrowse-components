@@ -2024,6 +2024,25 @@
       }
     },
     {
+      "type": "HicTrack",
+      "trackId": "hic_k562_over_gm12878",
+      "name": "K562 over GM12878 in situ Hi-C (ENCODE ENCSR545YBD / ENCSR410MDC)",
+      "assemblyNames": ["hg38"],
+      "category": ["Hi-C", "GM12878 vs K562"],
+      "adapter": {
+        "type": "HicAdapter",
+        "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/4d332729-3463-4782-b33c-76e4fa8ff72a/ENCFF080DPJ.hic",
+        "controlAdapter": {
+          "type": "HicAdapter",
+          "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic"
+        }
+      },
+      "displayDefaults": {
+        "selectedNormalization": "NONE",
+        "color": "observed/control"
+      }
+    },
+    {
       "type": "VariantTrack",
       "trackId": "hic_gm12878_loops",
       "name": "GM12878 Hi-C loops (HiCCUPS, ENCFF712NKX)",

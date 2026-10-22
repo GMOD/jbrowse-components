@@ -20,6 +20,11 @@ a named `scheme`.
   under the decay of contact with distance. It diverges around 1 from a
   quarter to fourfold, and where the file has no expected values at the
   binsize, the display paints the counts and the key says so.
+- `observed/control`: each count over the adapter's `controlAdapter`
+  count for the same bins, both scaled to the two libraries' common depth
+  and given a pseudocount of 1. A cell only one condition holds draws too,
+  so lost and gained contacts both show; on the same ramp as
+  observed/expected.
 
 The slots are the shared color object's, so `jbrowse validate` and "Edit
 plot..." judge them as they judge any other display's.
@@ -40,7 +45,7 @@ A setting written to it replaces it whole, since its members are alternatives: a
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (observed, observed/expected) = <code>'observed'</code> | observed, each bin's contact count, or observed/expected, that count over the file's expected count at its distance |
+| <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (observed, observed/expected, observed/control) = <code>'observed'</code> | observed, each bin's contact count; observed/expected, that count over the file's expected count at its distance; or observed/control, that count over the control file's, both scaled to one library depth |
 | <span id="slot-scheme">**scheme**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (viridis, magma, inferno, cividis, juicebox, fall, reds, blues, redblue, purpleorange, redgreyblue, redyellowblue) | the named ramp the field runs across; unset is the field's own, juicebox for count, which fades from transparent to red |
 | <span id="slot-reverse">**reverse**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | Unset turns round a scheme dark at its low end, since an unpainted bin is the page behind the matrix. |
 | <span id="slot-domainmid">**domainMid**</span><br><code>colorRampSlots.domainMid</code> | The value the ramp's middle stop sits at, so a diverging scheme centres on it and equal distances from it take equal colors; unset, the stops spread evenly across the domain. |

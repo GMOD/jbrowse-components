@@ -116,6 +116,29 @@ export const hicSpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // The same junction as one ratio track: K562 over GM12878, so the fusion
+  // block is a gain and the two cell lines' shared structure cancels to white.
+  {
+    mode: 'url',
+    name: 'hic/observed_control',
+    url: lgvSession(DEMO_CONFIG, {
+      ...junctionView,
+      tracks: [
+        junctionView.tracks[0]!,
+        {
+          trackId: 'hic_k562_over_gm12878',
+          height: 380,
+          heightMode: 'fixed',
+          showLegend: true,
+        },
+      ],
+    }),
+    viewportHeight: 700,
+    readySelector: displayPainted('hic-display'),
+    // both files' three region pairs, the same reads the two-track figure makes
+    readyTimeout: 360000,
+  },
+
   // An eigenvector fixes A only up to a sign per chromosome. On chr5 both files
   // are positive over gene-dense 5q31/5q35 and negative over the 5p14 desert,
   // so positive is A in both. From 157 Mb K562 turns B again, so the frame

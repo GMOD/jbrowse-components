@@ -119,6 +119,24 @@ count beside the ratio. `@gmod/hic`'s `getExpectedValues` is checked against str
 and `realFileObservedExpected.test.ts` runs the same cells through the adapter,
 worker and hover.
 
+**Observed/control keeps a cell either map lists, and drops a cell a map
+masks.** Juicebox
+pairs only the cells both maps list, which drops exactly the contacts a
+condition lost. The adapter joins on bin pairs by row bucketing
+(`joinControl.ts`) and keeps a cell either map lists, with the other's count
+as 0. A sparse `.hic` omits a bin its normalization masks just as it omits an
+empty one, so the adapter reads both files' normalization vectors over the
+pair's window and drops a one-sided cell the other file masks; read as 0, a
+masked control bin paints a huge ratio. Both counts are scaled to the two libraries' geometric-mean depth (each file's
+`ALL`-map total, `getTotalContacts`) before a pseudocount of 1, so A over B is
+the inverse of B over A. Juicebox adds the 1 to each map's average contact
+instead, `(obs + 1) / (avg + 1)`: at any binsize under one contact per bin
+pair the 1 swamps the average, the depth drops out, and K562 over the deeper
+GM12878 drew depleted everywhere but its amplicons. The two files must carry one normalization for
+a pair, so a pair where they fall back apart reads both raw. Two builds share
+chromosome names and differ in coordinates, so `controlChromosomes.ts` refuses
+a control whose shared chromosome differs in length.
+
 **The quantile is a call argument outside the fetch key.** The worker selects
 for the quantile it was asked for, so a pan or zoom costs the main thread
 nothing. An edited percentile reselects over the loaded matrix on the main

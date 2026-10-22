@@ -88,7 +88,7 @@ const HicTooltip = observer(function HicTooltip({
 })
 
 // A ratio is read with its two operands beside it, so speckle over a tiny
-// expected count can be told from signal.
+// count can be told from signal.
 function valueRows(
   model: LinearHicDisplayModel,
   data: HicDataResult,
@@ -96,13 +96,20 @@ function valueRows(
 ) {
   const value = [model.valueLabel, formatScore(item.value)] as const
   const expected = expectedOf(data, item)
-  return expected === undefined
-    ? [value]
-    : [
+  const { operands } = data
+  return operands
+    ? [
         value,
-        ['Observed', formatScore(item.value * expected)] as const,
-        ['Expected', formatScore(expected)] as const,
+        ['Observed', formatScore(operands.observed[item.index]!)] as const,
+        ['Control', formatScore(operands.control[item.index]!)] as const,
       ]
+    : expected === undefined
+      ? [value]
+      : [
+          value,
+          ['Observed', formatScore(item.value * expected)] as const,
+          ['Expected', formatScore(expected)] as const,
+        ]
 }
 
 const HicPointer = observer(function HicPointer({

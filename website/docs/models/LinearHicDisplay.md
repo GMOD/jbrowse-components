@@ -86,13 +86,14 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | --- | --- |
 | <span id="getter-availablenormalizations">**availableNormalizations**</span><br><code>string[] &#124; undefined</code> |  |
 | <span id="getter-availableresolutions">**availableResolutions**</span><br><code>number[] &#124; undefined</code> | Smallest first, so a negative `resolutionBias` is always finer. |
+| <span id="getter-hascontrol">**hasControl**</span><br><code>boolean</code> | Whether the adapter names a control, which observed/control needs. |
 | <span id="getter-resolutionbias">**resolutionBias**</span><br><code>number</code> |  |
 | <span id="getter-colorquantile">**colorQuantile**</span><br><code>number</code> | `color.domainQuantile`: the quantile of the loaded counts an unset `domainMax` follows, their maximum at 1. |
 | <span id="getter-colorfollowspercentile">**colorFollowsPercentile**</span><br><code>boolean</code> | Whether an unset `color.domainMax` saturates at `colorQuantile` rather than the counts' maximum. |
 | <span id="getter-saturationquantile">**saturationQuantile**</span><br><code>number</code> | The quantile "Emphasize faint contacts" saturates at: `colorQuantile` while it clips, else the one ticking it writes. Each fetch asks the worker for this one whichever is drawn, so the toggle reselects nothing. |
 | <span id="getter-selectednormalization">**selectedNormalization**</span><br><code>string</code> |  |
-| <span id="getter-colorfield">**colorField**</span><br><code>"observed" &#124; "observed/expected"</code> | `color.field`, what the fetch asks the worker to put in each cell. |
-| <span id="getter-paintedcolorfield">**paintedColorField**</span><br><code>"observed" &#124; "observed/expected"</code> | The field the loaded cells are: observed/expected falls back to the counts where the file has no expected values at the binsize. |
+| <span id="getter-colorfield">**colorField**</span><br><code>"observed" &#124; "observed/control" &#124; "observed/expected"</code> | `color.field`, what the fetch asks the worker to put in each cell. |
+| <span id="getter-paintedcolorfield">**paintedColorField**</span><br><code>"observed" &#124; "observed/control" &#124; "observed/expected"</code> | The field the loaded cells are: observed/expected falls back to the counts where the file has no expected values at the binsize. |
 | <span id="getter-hasresolutions">**hasResolutions**</span><br><code>boolean</code> | Whether the binsize list has arrived; every resolution control gates on it. |
 | <span id="getter-activenormalization">**activeNormalization**</span><br><code>string</code> | The normalization to request: the selection where the file has it, else the next best it does. A getter, so a file lacking the selection never marks the track edited. |
 | <span id="getter-loadedquantilescore">**loadedQuantileScore**</span><br><code>number</code> | The loaded counts' `saturationQuantile`: the worker's answer, or after an edit a selection over the loaded matrix, so a new percentile refetches nothing. The next fetch asks the worker for the new one. |
@@ -143,7 +144,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-rpcprops">**rpcProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { normalization: string; field: "observed" &#124; "observed/ex…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { normalization: string; field: "observed" &#124; "observed/expected"; }</code></pre></dialog></span> | The settings that refetch. The binsize is zoom-derived and the quantile reselects on the main thread, so both ride as call arguments. |
+| <span id="method-rpcprops">**rpcProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { normalization: string; field: "observed" &#124; "observed/co…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { normalization: string; field: "observed" &#124; "observed/control" &#124; "observed/expected"; }</code></pre></dialog></span> | The settings that refetch. The binsize is zoom-derived and the quantile reselects on the main thread, so both ride as call arguments. |
 | <span id="method-hittest">**hitTest**</span><br><code>(mouseX: number, mouseY: number) =&gt; HicContactItem &#124; undefined</code> | The contact under a display-px point, through the inverse of the transform the matrix was drawn with. |
 | <span id="method-hoverhitat">**hoverHitAt**</span><br><code>(mouseX: number, mouseY: number) =&gt; HicContactItem &#124; undefined</code> | No contact while the matrix loads: a global display replaces its whole frame, so the cells it holds are on their way out. |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
@@ -168,7 +169,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | Member | Description |
 | --- | --- |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: HicRenderingBackend) =&gt; void</code> |  |
-| <span id="action-setcolorfield">**setColorField**</span><br><code>(field: "observed" &#124; "observed/expected") =&gt; void</code> | What the cells show; a new field starts from its own preset, so a count's scheme or pinned top does not carry onto a ratio. |
+| <span id="action-setcolorfield">**setColorField**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(field: "observed" &#124; "observed/control" &#124; "observed/expected")…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(field: "observed" &#124; "observed/control" &#124; "observed/expected") =&gt; void</code></pre></dialog></span> | What the cells show; a new field starts from its own preset, so a count's scheme or pinned top does not carry onto a ratio. |
 | <span id="action-setlogscale">**setLogScale**</span><br><code>(log: boolean) =&gt; void</code> | The Log scale toggle: `color.scale` symlog, which keeps every nonzero count visible, or unset for `observed`'s linear preset. |
 | <span id="action-setcolorfollowspercentile">**setColorFollowsPercentile**</span><br><code>(f: boolean) =&gt; void</code> |  |
 | <span id="action-setselectednormalization">**setSelectedNormalization**</span><br><code>(f: string) =&gt; void</code> |  |
