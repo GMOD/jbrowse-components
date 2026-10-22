@@ -42,10 +42,13 @@ const state = {
   chainMode: false,
 } as RenderState
 
-const readIdIndexMap = new Map([
-  ['read0', { displayedRegionIndex: 0, groupKey: 'g', idx: 0 }],
-  ['read1', { displayedRegionIndex: 0, groupKey: 'g', idx: 1 }],
-])
+const readIdIndex = {
+  copies: new Map(),
+  byId: new Map([
+    ['read0', { displayedRegionIndex: 0, groupKey: 'g', idx: 0 }],
+    ['read1', { displayedRegionIndex: 0, groupKey: 'g', idx: 1 }],
+  ]),
+}
 
 function run(
   ids: string[],
@@ -63,7 +66,7 @@ function run(
   return readHighlightInk({
     blocks,
     sections,
-    slots: slotsOfIds(ids, readIdIndexMap),
+    slots: slotsOfIds(ids, readIdIndex),
     state: { ...state, scrollTop },
     scroll: { isGrouped: sections.length > 1, scrollTop, canvasHeight: 1000 },
     strong,
@@ -93,7 +96,7 @@ test('two hovered reads on different rows get a box each', () => {
   const boxes = readHighlightInk({
     blocks,
     sections: [{ ...open, laidOutPileupMap: { get: () => twoRows } }],
-    slots: slotsOfIds(['read0', 'read1'], readIdIndexMap),
+    slots: slotsOfIds(['read0', 'read1'], readIdIndex),
     state,
     scroll: { isGrouped: false, scrollTop: 0, canvasHeight: 1000 },
     strong: false,
@@ -182,13 +185,15 @@ describe('readsToLight', () => {
 // exons) has a slot in each, and each lights its own box.
 test('each region a read reaches lights its own copy', () => {
   const secondBlock = { ...blocks[0]!, displayedRegionIndex: 1 }
+  const first = { displayedRegionIndex: 0, groupKey: 'g', idx: 0 }
+  const second = { displayedRegionIndex: 1, groupKey: 'g', idx: 0 }
   const boxes = readHighlightInk({
     blocks: [blocks[0]!, secondBlock],
     sections: [open],
-    slots: [
-      { displayedRegionIndex: 0, groupKey: 'g', idx: 0 },
-      { displayedRegionIndex: 1, groupKey: 'g', idx: 0 },
-    ],
+    slots: slotsOfIds(['read0'], {
+      byId: new Map([['read0', second]]),
+      copies: new Map([['read0', [first, second]]]),
+    }),
     state,
     scroll: { isGrouped: false, scrollTop: 0, canvasHeight: 1000 },
     strong: false,

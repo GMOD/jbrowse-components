@@ -10,7 +10,7 @@ import {
 import {
   buildSashimiDownKeys,
   buildRawDataByGroup,
-  buildReadIdIndexMap,
+  buildReadIdIndex,
   hasNamedGroups,
   orderedGroups,
 } from './groupedDataMaps.ts'
@@ -293,8 +293,8 @@ test('cross-region tag: untagged-only early region stays last after merge', () =
   expect(order.map(g => g.key)).toEqual(['1', ''])
 })
 
-test('buildReadIdIndexMap locates each read by region + group + row', () => {
-  const map = buildReadIdIndexMap(
+test('buildReadIdIndex locates each read by region + group + row', () => {
+  const { byId: map } = buildReadIdIndex(
     new Map([
       [0, grouped([{ key: '+', data: data(['a', 'b']) }])],
       [1, grouped([{ key: '-', data: data(['c']) }])],
@@ -321,8 +321,8 @@ test('buildReadIdIndexMap locates each read by region + group + row', () => {
 // A hidden lane's entries were unreachable anyway — `findFeatureInRpcData`
 // resolves them through `laidOutByGroup`, which is built from the filtered
 // `groupOrder` — and each one spelled a `readIdAt` string to get there.
-test('buildReadIdIndexMap drops the reads of a hidden lane', () => {
-  const map = buildReadIdIndexMap(
+test('buildReadIdIndex drops the reads of a hidden lane', () => {
+  const { byId: map } = buildReadIdIndex(
     new Map([
       [
         0,
@@ -342,8 +342,8 @@ test('buildReadIdIndexMap drops the reads of a hidden lane', () => {
 // so it is keyed by the id STRING even though the result ships numeric keys —
 // `featureIdUnderMouse` is a string, and MST saves and restores it. Deferred
 // until something is hovered, which is what keeps the build off a cold render.
-test('buildReadIdIndexMap spells numeric keys back into ids', () => {
-  const map = buildReadIdIndexMap(
+test('buildReadIdIndex spells numeric keys back into ids', () => {
+  const { byId: map } = buildReadIdIndex(
     new Map([
       [
         0,
@@ -586,4 +586,26 @@ test('buildSashimiDownKeys: a hidden lane is never named', () => {
     hidden: new Set(['self']),
   })
   expect([...keys.keys()]).toEqual(['shown'])
+})
+
+// A read overlapping two displayed regions is fetched in each, under the same
+// id, and drawn in each: a hover has to light both, not whichever region came
+// last.
+test('buildReadIdIndex lists every region a read was fetched in', () => {
+  const { byId, copies } = buildReadIdIndex(
+    new Map([
+      [0, grouped([{ key: '', data: data(['a', 'b']) }])],
+      [1, grouped([{ key: '', data: data(['a']) }])],
+    ]),
+  )
+  expect(copies.get('a')).toEqual([
+    { displayedRegionIndex: 0, groupKey: '', idx: 0 },
+    { displayedRegionIndex: 1, groupKey: '', idx: 0 },
+  ])
+  expect(copies.has('b')).toBe(false)
+  expect(byId.get('b')).toEqual({
+    displayedRegionIndex: 0,
+    groupKey: '',
+    idx: 1,
+  })
 })

@@ -8,6 +8,7 @@ import { bandScreenTop, sectionBandBottom } from './sectionScreen.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ReadSlot } from '../../shared/readSlot.ts'
 import type { AlignmentsUnit } from '../constants.ts'
+import type { ReadIdIndex } from '../groupedDataMaps.ts'
 import type { RenderState } from '../renderers/rendererTypes.ts'
 import type { ScrollModel } from './sectionScreen.ts'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
@@ -74,18 +75,19 @@ export function readsToLight({
 }
 
 /**
- * The slots of the named reads, one region's copy each, as `readIdIndexMap`
- * holds them.
+ * The slots of the named reads, every region's copy of each.
  */
-export function slotsOfIds(
-  ids: readonly string[],
-  readIdIndexMap: ReadonlyMap<string, ReadSlot>,
-) {
+export function slotsOfIds(ids: readonly string[], index: ReadIdIndex) {
   const slots: ReadSlot[] = []
   for (const id of ids) {
-    const slot = readIdIndexMap.get(id)
-    if (slot) {
-      slots.push(slot)
+    const copies = index.copies.get(id)
+    if (copies) {
+      slots.push(...copies)
+    } else {
+      const slot = index.byId.get(id)
+      if (slot) {
+        slots.push(slot)
+      }
     }
   }
   return slots

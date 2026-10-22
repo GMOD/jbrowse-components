@@ -205,15 +205,27 @@ export function buildRawDataByGroup(
 // `findRead` (readLookup.ts) turns one of these entries into the read's data.
 export type ReadIdIndexMap = Map<string, ReadSlot>
 
+/**
+ * `byId` holds one slot per read, enough for a lookup of the read's own
+ * fields. A read fetched in two displayed regions has the same id in both and
+ * is drawn in both, so `copies` lists every slot of such a read, for whatever
+ * draws each copy. Only those reads get a list.
+ */
+export interface ReadIdIndex {
+  byId: ReadIdIndexMap
+  copies: ReadonlyMap<string, readonly ReadSlot[]>
+}
+
 // Hidden lanes drop here for `buildRawDataByGroup`'s reason plus one of its own:
 // `findRead` resolves an entry through `laidOutByGroup`, built from the already
 // filtered `groupOrder`, so a hidden lane's entries were unreachable by
 // construction — and each cost a `readIdAt` string no lookup can reach.
-export function buildReadIdIndexMap(
+export function buildReadIdIndex(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   hidden?: ReadonlySet<string>,
-): ReadIdIndexMap {
-  const map: ReadIdIndexMap = new Map()
+): ReadIdIndex {
+  const byId: ReadIdIndexMap = new Map()
+  const copies = new Map<string, ReadSlot[]>()
   for (const { displayedRegionIndex, key, data } of eachGroup(
     rpcDataMap,
     hidden,
@@ -221,9 +233,19 @@ export function buildReadIdIndexMap(
     for (let i = 0; i < data.readKeys.length; i++) {
       const id = readIdAt(data, i)
       if (id !== undefined) {
-        map.set(id, { displayedRegionIndex, groupKey: key, idx: i })
+        const slot = { displayedRegionIndex, groupKey: key, idx: i }
+        const prev = byId.get(id)
+        if (prev) {
+          const list = copies.get(id)
+          if (list) {
+            list.push(slot)
+          } else {
+            copies.set(id, [prev, slot])
+          }
+        }
+        byId.set(id, slot)
       }
     }
   }
-  return map
+  return { byId, copies }
 }

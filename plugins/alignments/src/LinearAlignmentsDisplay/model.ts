@@ -156,7 +156,7 @@ import {
 } from './groupLayout.ts'
 import {
   buildRawDataByGroup,
-  buildReadIdIndexMap,
+  buildReadIdIndex,
   buildSashimiDownKeys,
   hasNamedGroups,
   orderedGroups,
@@ -1807,8 +1807,15 @@ export default function stateModelFactory(
         /**
          * #getter
          */
+        get readIdIndex() {
+          return buildReadIdIndex(self.rpcDataMap, self.hiddenGroupKeys)
+        },
+
+        /**
+         * #getter
+         */
         get readIdIndexMap() {
-          return buildReadIdIndexMap(self.rpcDataMap, self.hiddenGroupKeys)
+          return this.readIdIndex.byId
         },
 
         /**
@@ -2749,13 +2756,13 @@ export default function stateModelFactory(
 
         /**
          * #method
-         * The boxes the named reads painted, clipped to their sections. Reading
-         * `readIdIndexMap` builds over the whole fetched dataset, so it waits
-         * until something is hovered or selected.
+         * The boxes the named reads painted, every region's copy, clipped to
+         * their sections. Reading `readIdIndex` builds over the whole fetched
+         * dataset, so it waits until something is hovered or selected.
          */
         readInk(ids: readonly string[], strong: boolean): HighlightRect[] {
           return ids.length > 0
-            ? this.slotInk(slotsOfIds(ids, self.readIdIndexMap), strong)
+            ? this.slotInk(slotsOfIds(ids, self.readIdIndex), strong)
             : []
         },
 
