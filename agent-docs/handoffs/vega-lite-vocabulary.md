@@ -66,17 +66,46 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    whoever is reshaping the alignments, wiggle, Hi-C, LD and MAF color objects,
    so agree on the order with that thread first.
    - **The row displays, decided 2026-10-22:** the mark display keeps `facet`,
-     `rows` and `encoding.row` as three words; their members respell. First
-     `facet.sort` and `rows.sort` become `sort` in display-kit
-     (`facetConfigSchema.ts`, `rowArrangementConfigSchema.ts`), one pass over
-     every row display, the multi-way lanes, their readers and writers (about
-     90 files, ggjbrowse's R lists among them). Then `scales.y` becomes a
-     display-level `encoding.y` holding `scale` and `axis` and no field, which
-     every mark's `encoding.y: 'score'` reads, in the same pass as wiggle,
-     whose `scales.y` is the same wiggle-core object. The tree sidebar's
-     `showTree`, `showBranchLength`, `showRowLabels` and `treeAreaWidth` go to
-     an `axis` beside `rows` in step 3, not inside it, since `rows` writes
-     whole.
+     `rows` and `encoding.row` as three words; their members respell. The
+     order slot on `facet` and `rows` became `sort` across every row display
+     (landed). Then `scales.y` becomes a display-level `encoding.y` holding
+     `scale` and `axis` and no field, which every mark's `encoding.y: 'score'`
+     reads, in the same pass as wiggle, whose `scales.y` is the same
+     wiggle-core object. The tree sidebar's `showTree`, `showBranchLength`,
+     `showRowLabels` and `treeAreaWidth` go to an `axis` beside `rows` in step
+     3, not inside it, since `rows` writes whole.
+   - **The channel object's plan, reviewed 2026-10-22** (it is ADR-240's
+     step 2; claim it here before starting):
+     - Words: ADR-240's (`scale.names`, `scale.group`, `legend.descending`, a
+       display-wide `legend.show` beside each channel's), `scale.type`
+       `ordinal` for `categorical`, and a scalar `scale.quantile` for a
+       ramp's `domainQuantile` (amend ADR-240's `{ quantile }`, which no slot
+       type holds and which would split today's one q). A bare string inside
+       `encoding` is a field, as on the mark display.
+     - A written `field` always paints (Colin); the field Color by → Default
+       leaves is display state (ADR-240 amendment 4), so Default and back
+       refetches nothing and keeps its domain and names. Today's Default also
+       clears a constant (`ColorWritesMixin.ts`), and the radios tick Solid
+       for a constant with no field; both change with it.
+     - Step 0, in today's flat spelling: `scale: 'none'` goes
+       (`colorForField`, `colorForValue`, `pickSolidColor`, `markEdit`, the
+       shape, wiggle and synteny scale lists), LGVSynteny's `strand` default
+       moves to `impliedField`, `baseColor`'s `none` becomes
+       `pileup.bases.show`.
+     - Pass A, together: every color object, the hand-written ones included
+       (HicColor, MafColor, MarkShape, MarkSize, RowColor, WiggleColor,
+       `baseColor`, `readConnections.color`), and every reader of the flat
+       member names: `markColor.ts` and `legend.ts`, `wiggleColor.ts`,
+       canvas's `renderConfig.ts` fetch key, `ColorWritesMixin.ts`,
+       `markEdit.ts`, `plot.ts`'s checks (which look at top-level keys only)
+       and the CLI's copy of `colorScale.ts`. A link's width is
+       `strokeWidth`.
+     - Pass B: `encoding.y` writes by member, as `scales.y` does, and only
+       color, shape and size write whole; `ScoreScaleMixin` takes its path, so
+       coverage reads `coverage.encoding.y`.
+     - Cut rather than respell: a channel `sort`, `legend.labels`,
+       `minimalTicks`, WiggleColor's `field` (`impliedField` supplies
+       `score`). Hosted hub configs keep a lift for each name they write.
    - ADR-238's "one position per category is `encoding.y` on a `band` scale"
      fits the one-glyph row displays and not the mark display, whose `y` is
      the value every mark folds into one scale and whose rows each hold a plot
