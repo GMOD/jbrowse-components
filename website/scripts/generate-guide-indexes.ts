@@ -9,6 +9,7 @@ import {
   CONFIG_CATEGORIES,
   DEVELOPER_CATEGORIES,
   TUTORIAL_CATEGORIES,
+  TUTORIAL_EXTRA_DOCS,
   TUTORIAL_FALLBACK,
   TUTORIAL_ORDER,
   TUTORIAL_SUBCATEGORIES,
@@ -110,16 +111,27 @@ function buildTutorialSection(): string[] {
     const i = TUTORIAL_ORDER.indexOf(slug)
     return i === -1 ? TUTORIAL_ORDER.length : i
   }
+  const extras = pagesIn(docsDir)
+    .filter(({ slug }) => slug in TUTORIAL_EXTRA_DOCS)
+    .map(({ slug, title }) => ({
+      slug,
+      title,
+      url: `/docs/${slug}`,
+      category: TUTORIAL_EXTRA_DOCS[slug]!,
+      subcategory: undefined,
+    }))
   const entries = pagesIn(dir)
     .filter(({ fm }) => fm.guide_category === 'Tutorials')
     .map(({ slug, title, fm }) => ({
       slug,
       title,
+      url: `/docs/tutorials/${slug}`,
       category: TUTORIAL_CATEGORIES.includes(fm.tutorial_category ?? '')
         ? fm.tutorial_category!
         : TUTORIAL_FALLBACK,
       subcategory: fm.tutorial_subcategory,
     }))
+    .concat(extras)
     .sort(
       (a, b) =>
         rank(a.slug) - rank(b.slug) || a.title.localeCompare(b.title, 'en'),
@@ -140,7 +152,7 @@ function buildTutorialSection(): string[] {
             lines.push(`#### ${sub}`, '')
           }
           for (const e of inSub) {
-            lines.push(`- [](/docs/tutorials/${e.slug})`)
+            lines.push(`- [](${e.url})`)
           }
           lines.push('')
         }

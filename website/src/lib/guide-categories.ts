@@ -76,6 +76,14 @@ export const TUTORIAL_CATEGORIES = [
 
 export const TUTORIAL_FALLBACK = 'More tutorials'
 
+// Root-level docs the tutorial indexes also list, with their section.
+export const TUTORIAL_EXTRA_DOCS: Record<string, string> = {
+  quickstart_web: 'Getting started',
+  quickstart_desktop: 'Getting started',
+  cookbook: 'Configuration & embedding',
+  agents: 'Automation',
+}
+
 // Ordered `tutorial_subcategory` values per category. A page in one of these
 // categories without a subcategory draws above the subsections.
 export const TUTORIAL_SUBCATEGORIES: Record<string, string[]> = {

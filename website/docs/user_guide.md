@@ -73,6 +73,8 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ### Getting started
 
+- [](/docs/quickstart_web)
+- [](/docs/quickstart_desktop)
 - [](/docs/tutorials/giab_hg002_reads)
 
 ### genomes.jbrowse.org
@@ -188,6 +190,7 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ### Configuration & embedding
 
+- [](/docs/cookbook)
 - [](/docs/tutorials/display_settings)
 - [](/docs/tutorials/embed_linear_genome_view)
 - [](/docs/tutorials/cli_desktop)
@@ -195,3 +198,4 @@ How to drive JBrowse once it is running. New here? Start with the
 ### Automation
 
 - [](/docs/tutorials/agent_synteny)
+- [](/docs/agents)

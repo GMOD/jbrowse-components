@@ -7,6 +7,7 @@ import { baseUrl } from '../../../lib/base-url.ts'
 import { entrySlug } from '../../../lib/docs-sidebar.ts'
 import {
   TUTORIAL_CATEGORIES,
+  TUTORIAL_EXTRA_DOCS,
   TUTORIAL_FALLBACK,
   TUTORIAL_NO_THUMB,
   TUTORIAL_ORDER,
@@ -16,13 +17,7 @@ import {
 const CATEGORY_ORDER = new Set(TUTORIAL_CATEGORIES)
 const FALLBACK = TUTORIAL_FALLBACK
 
-// Docs outside tutorials/ that this page also shows, with their section.
-const EXTRA_DOCS = new Map([
-  ['quickstart_web', 'Getting started'],
-  ['quickstart_desktop', 'Getting started'],
-  ['cookbook', 'Configuration & embedding'],
-  ['agents', 'Automation'],
-])
+const EXTRA_DOCS = new Map(Object.entries(TUTORIAL_EXTRA_DOCS))
 
 const rank = (key: string) => {
   const i = TUTORIAL_ORDER.indexOf(key)
