@@ -7,7 +7,14 @@ import type { BreakpointSplitViewCommands } from './types.ts'
 // without it is a recipe the init autorun opens. Model-guaranteed, since an
 // LGV's `type` is a required literal. A list mixing the two indexes against
 // neither, so the partition refuses it whole and afterAttach names it.
+//
+// `height` is deprecated: v4's height of the whole view, which the panels'
+// own heights replaced. It passes through so a saved session carrying it
+// raises no typo warning, and MST drops it.
 export const breakpointSplitLaunchKeys =
-  defineLaunchKeys<BreakpointSplitViewCommands>()({
-    views: { kind: 'rows' },
-  })
+  defineLaunchKeys<BreakpointSplitViewCommands>()(
+    {
+      views: { kind: 'rows' },
+    },
+    { passThrough: ['height'] },
+  )

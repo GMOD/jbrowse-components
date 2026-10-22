@@ -47,12 +47,27 @@ test('a declared property lands natively, named nowhere in the launch path', asy
     showIntraviewLinks: false,
     linkViews: true,
     interactiveOverlay: false,
-    height: 900,
   })
   expect(view.showIntraviewLinks).toBe(false)
   expect(view.linkViews).toBe(true)
   expect(view.interactiveOverlay).toBe(false)
-  expect(view.height).toBe(900)
+})
+
+// v4 sized the whole view with `height`, which nothing has read since the
+// panels came to size themselves; a saved session carrying it opens quietly.
+test('v4 `height` is dropped without a warning', async () => {
+  const view = await open({ views: PANELS, height: 900 })
+  expect(view.views).toHaveLength(2)
+  expect(warnings()).toEqual([])
+})
+
+// The import form opens its panels long after the view was measured, and
+// nothing measures it again unless the window resizes.
+test('panels opened on a measured view take its width', async () => {
+  const view = await open({})
+  view.setWidth(1234)
+  view.setViews(PANELS)
+  expect(view.views.map(v => v.width)).toEqual([1234, 1234])
 })
 
 describe('the v4 nested form', () => {
@@ -75,8 +90,8 @@ describe('the v4 nested form', () => {
   })
 
   test('a declared property nested inside it lands', async () => {
-    const view = await open({ init: { views: PANELS, height: 900 } })
-    expect(view.height).toBe(900)
+    const view = await open({ init: { views: PANELS, linkViews: true } })
+    expect(view.linkViews).toBe(true)
     expect(warnings()).toEqual([DEPRECATED])
   })
 })

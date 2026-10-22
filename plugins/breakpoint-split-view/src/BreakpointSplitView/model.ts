@@ -96,7 +96,6 @@ const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
  * set per-panel display options (e.g. a shorter alignments height).
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
-  const defaultHeight = 400
   const model = types
     .compose(
       'BreakpointSplitView',
@@ -106,11 +105,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         type: types.literal('BreakpointSplitView'),
-        /**
-         * #property
-         * the height of the whole view in pixels, panels and overlay together
-         */
-        height: types.stripDefault(types.number, defaultHeight),
         /**
          * #property
          * draw the links whose two ends fall in the same panel, as well as the
@@ -154,7 +148,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile<{
-      width: number
+      width: number | undefined
       matchedTrackFeatures: Record<string, Feature[][]>
       reloadCounter: number
       fetchStatus: StatusChannel
@@ -162,12 +156,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }>(() => ({
       /**
        * #volatile
+       * undefined until `ViewContainer` measures the view; an autorun passes it
+       * to every panel, including panels opened after the measure
        */
-      width: 800,
+      width: undefined,
       /**
        * #volatile
+       * each variant track's overlay records, keyed by trackId, one array
+       * per panel
        */
-
       matchedTrackFeatures: {},
       /**
        * #volatile
@@ -654,9 +651,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setWidth(newWidth: number) {
         self.width = newWidth
-        for (const v of self.views) {
-          v.setWidth(newWidth)
-        }
       },
 
       /**
@@ -780,14 +774,26 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(
-            function breakpointSplitViewInitAutorun() {
-              const { pendingLaunch, width } = self
-              if (!width || !pendingLaunch?.views) {
-                return
+            function breakpointSplitViewWidthAutorun() {
+              const { width } = self
+              if (width) {
+                for (const view of self.views) {
+                  view.setWidth(width)
+                }
               }
-
-              self.setViews(pendingLaunch.views)
-              self.setLaunch(undefined)
+            },
+            { name: 'BreakpointSplitViewWidth' },
+          ),
+        )
+        addDisposer(
+          self,
+          autorun(
+            function breakpointSplitViewInitAutorun() {
+              const { pendingLaunch } = self
+              if (pendingLaunch?.views) {
+                self.setViews(pendingLaunch.views)
+                self.setLaunch(undefined)
+              }
             },
             { name: 'BreakpointSplitViewInit' },
           ),

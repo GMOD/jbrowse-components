@@ -91,8 +91,12 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   )
   const heights = rowTracks.map(r => r.tracksHeight + offset)
   // after the waits: a resize during the fetch would otherwise size the canvas
-  // and the overlay clip for the old width while SVGView re-reads the new one
-  const { width } = model
+  // and the overlay clip for the old width while SVGView re-reads the new one.
+  // The panels' width, which every initialized panel has been handed.
+  const width = max(
+    views.map(v => v.width),
+    0,
+  )
 
   // one gutter for the whole export, wide enough for the widest label in any
   // view, so the stacked views stay aligned with each other
