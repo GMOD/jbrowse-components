@@ -1,3 +1,4 @@
+import { deepEqual } from './deepEqual.ts'
 import { getFileName } from './getFileName.ts'
 import { isLocalPathLocation, isUriLocation } from './types/data.ts'
 
@@ -132,16 +133,35 @@ export function initialFormState(): FormState {
   }
 }
 
+function guessedName(location: FileLocation) {
+  const filename = getFileName(location)
+  return filename ? getAssemblyNameFromFilename(filename) : ''
+}
+
+// The URL field fires on every keystroke, so a name or sidecar still equal to
+// what the previous location would have guessed is a guess, not a user edit,
+// and follows the new location.
+function nextAssemblyName(
+  state: FormState,
+  previous: FileLocation,
+  location: FileLocation,
+) {
+  return state.assemblyName && state.assemblyName !== guessedName(previous)
+    ? state.assemblyName
+    : guessedName(location)
+}
+
 export function applyPrimaryFile(
   state: FormState,
   location: FileLocation,
 ): FormState {
   const filename = getFileName(location)
   const detected = filename ? detectAdapterType(filename) : undefined
-  const assemblyName =
-    filename && !state.assemblyName
-      ? getAssemblyNameFromFilename(filename)
-      : state.assemblyName
+  const assemblyName = nextAssemblyName(
+    state,
+    state[primaryFields[state.adapterSelection]],
+    location,
+  )
   if (detected === 'TwoBitAdapter' || detected === 'ChromSizesAdapter') {
     return {
       ...state,
@@ -171,7 +191,10 @@ function guessSidecarLocations(
   const guesses: Partial<FormState> = {}
   for (const role of requiredSidecars[adapterSelection]) {
     const { field, ext } = sidecars[role]
-    const guess = isBlank(state[field]) ? sidecar(location, ext) : undefined
+    const stillGuessed =
+      isBlank(state[field]) ||
+      deepEqual(state[field], sidecar(state.fastaLocation, ext))
+    const guess = stillGuessed ? sidecar(location, ext) : undefined
     if (guess) {
       guesses[field] = guess
     }
@@ -196,12 +219,11 @@ export function applyTwoBitFile(
   state: FormState,
   location: FileLocation,
 ): FormState {
-  const filename = getFileName(location)
-  const assemblyName =
-    filename && !state.assemblyName
-      ? getAssemblyNameFromFilename(filename)
-      : state.assemblyName
-  return { ...state, twoBitLocation: location, assemblyName }
+  return {
+    ...state,
+    twoBitLocation: location,
+    assemblyName: nextAssemblyName(state, state.twoBitLocation, location),
+  }
 }
 
 // Everything about the genome just staged, gone, so the next one starts clean.

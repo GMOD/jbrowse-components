@@ -380,6 +380,34 @@ describe('applyPrimaryFile', () => {
       locationType: 'LocalPathLocation',
     })
   })
+
+  test('typing a URL a character at a time keeps the guesses current', () => {
+    const url = 'https://example.com/hg38.fa.gz'
+    let s = initialFormState()
+    for (let i = 1; i <= url.length; i++) {
+      s = applyPrimaryFile(s, {
+        uri: url.slice(0, i),
+        locationType: 'UriLocation',
+      })
+    }
+    expect(s.assemblyName).toBe('hg38')
+    expect(s.faiLocation).toEqual({
+      uri: `${url}.fai`,
+      locationType: 'UriLocation',
+    })
+    expect(s.gziLocation).toEqual({
+      uri: `${url}.gzi`,
+      locationType: 'UriLocation',
+    })
+  })
+
+  test('a name the user edited survives a later change of file', () => {
+    const s = applyPrimaryFile(
+      { ...applyPrimaryFile(initialFormState(), fasta), assemblyName: 'mine' },
+      fastaGz,
+    )
+    expect(s.assemblyName).toBe('mine')
+  })
 })
 
 describe('applyTwoBitFile', () => {
