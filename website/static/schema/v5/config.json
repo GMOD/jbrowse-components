@@ -26416,9 +26416,6 @@
         "minimized": {
           "type": "boolean"
         },
-        "height": {
-          "type": "number"
-        },
         "showIntraviewLinks": {
           "type": "boolean"
         },
@@ -26438,7 +26435,11 @@
             "$ref": "#/$defs/View"
           }
         },
-        "launch": {}
+        "launch": {},
+        "height": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        }
       }
     },
     "BreakpointSplitView": {

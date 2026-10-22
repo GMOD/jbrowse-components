@@ -8917,7 +8917,6 @@ export const configManifest: ConfigManifest = {
         "displayName",
         "minimized",
         "type",
-        "height",
         "showIntraviewLinks",
         "linkViews",
         "interactiveOverlay",
@@ -8927,6 +8926,9 @@ export const configManifest: ConfigManifest = {
       ],
       "launchKeys": [
         "views"
+      ],
+      "passThrough": [
+        "height"
       ]
     }
   },

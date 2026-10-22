@@ -915,7 +915,6 @@ every setting the view's menu offers:
 | Property | What it does |
 | --- | --- |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
-| [`height`](/docs/models/breakpointsplitview#property-height) | the height of the whole view in pixels, panels and overlay together |
 | [`interactiveOverlay`](/docs/models/breakpointsplitview#property-interactiveoverlay) | let the connection and junction curves drawn between the panels respond to hover and click; off, they are a static overlay |
 | [`linkViews`](/docs/models/breakpointsplitview#property-linkviews) | sync scroll and zoom across the panels, so panning one pans them all |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |

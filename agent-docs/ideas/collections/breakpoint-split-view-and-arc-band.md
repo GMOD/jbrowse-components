@@ -146,12 +146,6 @@ attributes card per read. The alignments plugin's own widget has the SA list,
 the paired-alignments card and the flags card. One widget hosting the alignments
 detail twice is the shape to decide.
 
-**`height` may be a launch key nothing reads.** `model.ts` declares it as the
-height of the whole view, `launchInput.test.ts` pins that a launch sets it, and
-no component or action in the plugin reads `self.height`; the heights the
-layout sums are the panels' own. Verify in the app that a launched `height`
-changes nothing, then remove the key under the beta rule of no migrations.
-
 **Variant curves may land on the track's bottom edge.** The survey reported
 that variant curves anchor on the track's bottom edge because the display
 exposes no `searchFeatureByID`. The variant display is built on the canvas

@@ -27502,9 +27502,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "minimized": {
           "type": "boolean"
         },
-        "height": {
-          "type": "number"
-        },
         "showIntraviewLinks": {
           "type": "boolean"
         },
@@ -27524,7 +27521,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/View"
           }
         },
-        "launch": {}
+        "launch": {},
+        "height": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        }
       }
     },
     "BreakpointSplitView": {
