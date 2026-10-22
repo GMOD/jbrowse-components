@@ -351,6 +351,18 @@ describe('buildSourceRenderData gapLimitBp', () => {
     expect(layer!.gapScore).toBe(4)
   })
 
+  // Canvas2D strokes a gradient line in bands over the scores the layer
+  // reaches, gapScore included, so an origin stamped here stretched an
+  // interpolated line's 32 bands from 0 to wherever its data sat.
+  test('an interpolated line never falls to the origin', () => {
+    const [layer] = buildSourceRenderData(spacedData(), {
+      ...baseGpuProps,
+      renderingType: 'linecenter',
+      origin: 4,
+    })
+    expect(layer!.gapScore).toBeUndefined()
+  })
+
   test('set from the mean point spacing for linecenter', () => {
     const [layer] = buildSourceRenderData(spacedData(), {
       ...baseGpuProps,
