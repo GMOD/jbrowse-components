@@ -16,8 +16,8 @@ import {
 } from '../GCContentAdapter/gcWindow.ts'
 import configSchemaF from './configSchema.ts'
 
+import type { GCContentAdapterConfig } from '../GCContentAdapter/configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const formatBp = (n: number) => `${toLocale(n)} bp`
@@ -39,7 +39,7 @@ export default function GCContentTrackF(pm: PluginManager) {
            * The `GCContentAdapter` computing the signal, which holds the
            * window, the step and the mode.
            */
-          get gcAdapter(): AnyConfigurationModel {
+          get gcAdapter(): GCContentAdapterConfig {
             return self.configuration.adapter
           },
           /**

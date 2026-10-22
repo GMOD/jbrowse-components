@@ -1,6 +1,6 @@
 {
   "id": "config-read-gap-populations",
-  "measured": "2026-10-18",
+  "measured": "2026-10-22",
   "published": false,
   "source": {
     "kind": "bench",
@@ -41,8 +41,8 @@
     {
       "values": {
         "population": "everything else",
-        "slots": "25 other names",
-        "reads": 29
+        "slots": "22 other names",
+        "reads": 26
       }
     }
   ]
