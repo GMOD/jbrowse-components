@@ -177,7 +177,7 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
     alignmentsColorEncoding({
       ...UNSET_COLOR,
       field: asString(color.field) ?? '',
-      scale: color.scale === 'none' ? 'none' : undefined,
+      scale: undefined,
     }),
   )
   if (colorBy.type === 'normal' || colorBy.attribute !== undefined) {
@@ -206,10 +206,9 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
 // Color by... menu. The two modification rows are submenus, whose radio the
 // sibling `modifications` slot settles (`modificationsStep`).
 const baseColorStep: FieldRecipe = value => {
-  const layer = baseLayerOf({
-    field: asString(value) ?? asString(asRecord(value)?.field) ?? '',
-    scale: asRecord(value)?.scale === 'none' ? 'none' : undefined,
-  })
+  const layer = baseLayerOf(
+    asString(value) ?? asString(asRecord(value)?.field) ?? '',
+  )
   if (!layer) {
     return undefined
   }
@@ -332,26 +331,26 @@ const SYNTENY_COLOR_MODES: Record<string, string> = Object.fromEntries(
   ]),
 )
 
+const SOLID_COLOR = 'Solid color...'
+
 // A synteny color object (the views' `color`, the multi-way display's
-// `ribbonColor`) as the field the Color by radios carry, `''` for Default. A
-// color paints through no radio, whether it is spelled as the string
-// shorthand or as `value` on the object, so both map to nothing.
+// `ribbonColor`) as the Color by row that writes it: Solid color... for a
+// constant, the string shorthand or `value` on the object, else the radio of
+// the field it names, `''` for Default.
 function syntenyColorField(value: unknown) {
-  const color = asRecord(value)
-  if (!color || (color.field === undefined && color.value !== undefined)) {
+  const color = typeof value === 'string' ? { value } : asRecord(value)
+  if (!color) {
     return undefined
   }
-  const scale = asString(color.scale)
-  return paintedField({
-    field: asString(color.field),
-    scale: scale === 'none' ? scale : undefined,
-  })
+  return color.field === undefined && color.value !== undefined
+    ? SOLID_COLOR
+    : paintedField({ field: asString(color.field) })
 }
 
 // A declared column has no fixed label but its own name, under Color by value.
 function syntenyColorLabel(field: string | undefined) {
-  return field === undefined
-    ? undefined
+  return field === undefined || field === SOLID_COLOR
+    ? field
     : (SYNTENY_COLOR_MODES[field] ?? `${VALUE_MODES_LABEL} → ${field}`)
 }
 
@@ -487,7 +486,7 @@ function colorStep(
         }
   }
   if (scale) {
-    const field = scale.scale === 'none' ? undefined : asString(scale.field)
+    const field = asString(scale.field)
     if (!field || !hasChannelMenus(displayType)) {
       return undefined
     }
@@ -526,7 +525,7 @@ function mafColorStep(value: unknown): FieldStep | undefined {
 function variantCellColorStep(
   color: Record<string, unknown>,
 ): FieldStep | undefined {
-  const field = color.scale === 'none' ? undefined : asString(color.field)
+  const field = asString(color.field)
   if (!field) {
     return undefined
   }

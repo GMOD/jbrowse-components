@@ -163,6 +163,7 @@ function trackModel({
     },
     ribbonColorField: '',
     setRibbonColorField: () => {},
+    openRibbonSolidColorDialog: () => {},
     ribbonColorAttributes: [],
     ribbonAttributeRanges: {},
     hideUnlabelled: false,
@@ -228,9 +229,9 @@ test('a source reading each lane against its anchor offers no bridging', () => {
 test('Color by offers the synteny view modes a lane stack paints', () => {
   const { model } = trackModel()
   expect(labelsOf(ribbonColorMenuItems(model))).toEqual([
-    'Default',
     'Strand',
     'Color by value',
+    'Solid color...',
   ])
 })
 
@@ -245,9 +246,9 @@ test('Color by heads the gene modes and the ribbon modes', () => {
     'Strand',
     'Solid color...',
     'Ribbons',
-    'Default',
     'Strand',
     'Color by value',
+    'Solid color...',
   ])
   expect(colorBy.map(i => i.type)).toEqual([
     'subHeader',
@@ -258,8 +259,8 @@ test('Color by heads the gene modes and the ribbon modes', () => {
     'radio',
     'subHeader',
     'radio',
-    'radio',
     undefined,
+    'radio',
   ])
   click(colorBy[2])
   expect(calls).toEqual(['gene color cluster'])

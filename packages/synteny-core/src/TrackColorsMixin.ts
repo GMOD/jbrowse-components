@@ -1,14 +1,19 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { coarseStripHTML } from '@jbrowse/core/util'
+import { coarseStripHTML, getSession } from '@jbrowse/core/util'
+import { withImpliedField } from '@jbrowse/core/util/colorScale'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { writtenColorOf } from '@jbrowse/display-kit/ColorWritesMixin'
+import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
+import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import {
   colorForField,
+  colorForValue,
   colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { SyntenyFilterMixin } from './SyntenyFilterMixin.ts'
+import { DEFAULT_RIBBON_CSS } from './colorFunctions.ts'
 import { colorByScales } from './colorLegend.ts'
 import {
   colorPaintOf,
@@ -28,6 +33,7 @@ import type { SyntenyColorSurface } from './colorModes.ts'
 import type { AttributeRange, SyntenyColorPaint } from './colorRamps.ts'
 import type { SyntenyColorSnapshot } from './syntenyColorConfigSchema.ts'
 import type { ColorableTrack } from './trackColors.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
@@ -162,9 +168,15 @@ export function orderAttributeLabels(
  * it lives here rather than being copied into both models.
  */
 export function TrackColorsMixin({ defaultColorField = '' } = {}) {
+  const implied = defaultColorField || undefined
+  const writtenOf = (color: AnyConfigurationModel) =>
+    withImpliedField(writtenColorOf(color), implied)
   return types
     .compose(
       SyntenyFilterMixin(),
+      ParkedColorMixin('color', (self: { color: AnyConfigurationModel }) =>
+        writtenOf(self.color),
+      ),
       types.model({
         /**
          * #property
@@ -179,10 +191,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
          * string paints every alignment. Unset, the view's default
          * paints: `query` on the circular view, the default scheme elsewhere.
          */
-        color: types.stripDefault(
-          syntenyColorConfigSchema,
-          defaultColorField ? { field: defaultColorField } : {},
-        ),
+        color: types.stripDefault(syntenyColorConfigSchema, {}),
         /**
          * #property
          * trackId -> explicit color under `color: { field: 'track' }`. Absent
@@ -289,10 +298,19 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       },
       /**
        * #getter
-       * The `color` object as its snapshot holds it.
+       * The `color` object as its snapshot holds it, with the view's default
+       * field where it names neither a field nor a constant.
        */
       get colorSetting(): SyntenyColorSnapshot {
-        return colorSnapshotOf(self.color)
+        return withImpliedField(colorSnapshotOf(self.color), implied)
+      },
+      /**
+       * #getter
+       * The field the view paints while `color` names neither a field nor a
+       * constant, '' for its default scheme.
+       */
+      get impliedColorField(): string {
+        return defaultColorField
       },
       /**
        * #getter
@@ -538,13 +556,47 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
         },
         /**
          * #action
-         * Set the field the view paints by over the `color` object (`''`
-         * for the default color), and rescale the ramp, which is the only way
-         * back from a domain one outlying window widened.
+         * Set the field the view paints by over the `color` object, `''`
+         * unsetting it for the view's default, and rescale the ramp, which is
+         * the only way back from a domain one outlying window widened.
          */
         setColorField(field: string) {
-          self.color = cast(colorForField(writtenColorOf(self.color), field))
+          const written = writtenOf(self.color)
+          self.color = cast(
+            field === ''
+              ? colorForValue(written, undefined)
+              : colorForField(written, field, self.parkedColor),
+          )
           forgetSeenRanges()
+        },
+        /**
+         * #action
+         * Paint every alignment `value`, undefined returning to the view's
+         * default.
+         */
+        setColorValue(value: string | undefined) {
+          self.color = cast(colorForValue(writtenOf(self.color), value))
+        },
+        /**
+         * #action
+         * The picker Color by's Solid color... opens.
+         */
+        openSolidColorDialog() {
+          getSession(self).queueDialog(handleClose => [
+            SolidColorDialog,
+            {
+              label: 'Alignment color',
+              color: self.colorSetting.value ?? DEFAULT_RIBBON_CSS,
+              written: self.colorSetting.value,
+              onChange: (color: string) => {
+                this.setColorValue(color)
+              },
+              onReset: () => {
+                this.setColorValue(undefined)
+              },
+              handleClose,
+            },
+          ])
         },
         /**
          * #action

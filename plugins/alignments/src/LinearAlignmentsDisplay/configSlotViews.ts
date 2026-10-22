@@ -1,7 +1,6 @@
 import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import { filterMembersNarrowing } from '@jbrowse/core/util/jexlFilters'
-import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
@@ -9,6 +8,7 @@ import { ordinaryPairsShown } from '../features/arcs/arcTypes.ts'
 import {
   ALIGNMENTS_FIELD_PRESETS,
   alignmentsColorEncoding,
+  alignmentsColorSettingOf,
   alignmentsColorProblems,
   baseLayerOf,
   bodyColorScheme,
@@ -82,7 +82,7 @@ export function alignmentsConfigProblems(
 ) {
   return [
     ...alignmentsColorProblems({
-      ...colorSettingOf(conf.color),
+      ...alignmentsColorSettingOf(conf.color),
       labels: readConfObject(conf, ['color', 'labels']),
     }),
     ...facetUnitNotices(
@@ -128,7 +128,9 @@ export function requireReadsConf(self: ConfigSlotSelf) {
 export function configSlotViews(self: ConfigSlotSelf) {
   const insertSizeBand = stableIdentityComputed(() =>
     pinnedInsertSizeBand(
-      alignmentsColorEncoding(colorSettingOf(self.configuration.color)),
+      alignmentsColorEncoding(
+        alignmentsColorSettingOf(self.configuration.color),
+      ),
     ),
   )
   return {
@@ -311,7 +313,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get colorSetting(): AlignmentsColorSetting {
-      return colorSettingOf(self.configuration.color)
+      return alignmentsColorSettingOf(self.configuration.color)
     },
     /**
      * #getter
@@ -414,10 +416,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
       const conf = readsConfOf(self.configuration)
       return conf
         ? baseLayerOf(
-            {
-              field: readConfObject(conf, ['baseColor', 'field']),
-              scale: readConfObject(conf, ['baseColor', 'scale']),
-            },
+            readConfObject(conf, ['baseColor', 'field']),
             this.modificationSettings,
           )
         : undefined
@@ -634,8 +633,6 @@ export function configSlotActions(self: ConfigSlotSelf) {
     /**
      * #action
      * Paint the connections by `field`, `''` following the reads.
-     * `readConnections.color` holds a field and nothing else, so it skips
-     * `colorForField`, whose `scale: 'none'` it has no slot for.
      */
     setReadConnectionsColorField(field: ArcColorField | '') {
       setConf(self, ['readConnections', 'color', 'field'], field)

@@ -147,19 +147,6 @@ describe('withChannel', () => {
     })
   })
 
-  it('shows a color under scale none as the constant it paints', () => {
-    const mark = {
-      mark: 'bar' as const,
-      encoding: {
-        y: 'score',
-        color: { value: 'red', field: 'strand', scale: 'none' },
-      },
-    }
-    expect(channelEdit(mark, 'color')).toEqual({ value: 'red', beyond: false })
-    expect(channelScale(mark, 'color')).toBe('')
-    expect(markSummary(mark)).toContain('color red')
-  })
-
   // A scan reads one window, and none has landed while it runs, so a field it
   // did not list — a dotted path, a tag, a half-typed name — is still a field.
   it('writes a value no scan saw and no constant spells as a field', () => {
@@ -230,15 +217,6 @@ describe('withChannel', () => {
         withChannel(detour, 'color', 'reads', FIELDS, ramp.encoding.color)
           .encoding,
       ).toEqual({ color: { ...ramp.encoding.color, field: 'reads' } })
-    })
-
-    it('starts afresh over a field painted through none', () => {
-      const none = {
-        encoding: { color: { field: 'score', scale: 'none', value: 'red' } },
-      }
-      expect(withChannel(none, 'color', 'strand', FIELDS).encoding).toEqual({
-        color: { field: 'strand', scale: 'categorical', value: 'red' },
-      })
     })
   })
 

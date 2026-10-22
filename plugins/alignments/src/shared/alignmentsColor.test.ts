@@ -1,4 +1,7 @@
-import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  colorForField,
+  parkedColorOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
 
 import {
   BASE_COLOR_FIELDS,
@@ -59,9 +62,8 @@ describe('colorByOf', () => {
     })
   })
 
-  test('no field, or a field under none, paints the plain fill', () => {
+  test('no field paints the plain fill', () => {
     expect(readFill('').type).toBe('normal')
-    expect(readFill('strand', 'none').type).toBe('normal')
   })
 
   test('a per-base field is no read fill, and costs no attribute lookup', () => {
@@ -74,24 +76,24 @@ describe('colorByOf', () => {
 describe('baseLayerOf', () => {
   test('every per-base field selects the layer of its name', () => {
     for (const field of BASE_COLOR_FIELDS) {
-      expect(baseLayerOf({ field, scale: undefined })?.type).toBe(field)
+      expect(baseLayerOf(field)?.type).toBe(field)
     }
   })
 
   test('only the modification layers carry the modification settings', () => {
     const settings = { threshold: 50 }
-    expect(
-      baseLayerOf({ field: 'modifications', scale: undefined }, settings),
-    ).toEqual({ type: 'modifications', modifications: settings })
-    expect(
-      baseLayerOf({ field: 'baseQuality', scale: undefined }, settings),
-    ).toEqual({ type: 'baseQuality' })
+    expect(baseLayerOf('modifications', settings)).toEqual({
+      type: 'modifications',
+      modifications: settings,
+    })
+    expect(baseLayerOf('baseQuality', settings)).toEqual({
+      type: 'baseQuality',
+    })
   })
 
-  test('no field, a read field, or a field under none draws no layer', () => {
-    expect(baseLayerOf({ field: '', scale: undefined })).toBeUndefined()
-    expect(baseLayerOf({ field: 'strand', scale: undefined })).toBeUndefined()
-    expect(baseLayerOf({ field: 'base', scale: 'none' })).toBeUndefined()
+  test('no field or a read field draws no layer', () => {
+    expect(baseLayerOf('')).toBeUndefined()
+    expect(baseLayerOf('strand')).toBeUndefined()
   })
 })
 
@@ -113,15 +115,10 @@ describe('a Color by pick over the written color', () => {
     range: ['red', 'blue'],
   }
 
-  test('the plain fill keeps the field under none, and re-picking it restores it', () => {
-    expect(colorForField(hp, '')).toMatchObject({
-      field: 'tags.HP',
-      scale: 'none',
-      domain: ['1', '2'],
-    })
-    const back = colorForField({ ...hp, scale: 'none' }, 'tags.HP')
+  test('the plain fill drops the field, and re-picking the parked one restores it', () => {
+    expect(colorForField(hp, '').field).toBeUndefined()
+    const back = colorForField({}, 'tags.HP', parkedColorOf(hp))
     expect(back).toMatchObject({ field: 'tags.HP', range: ['red', 'blue'] })
-    expect(back.scale).toBeUndefined()
   })
 
   test('a new field starts from no order or range and keeps the constant', () => {
@@ -144,9 +141,6 @@ describe('pinnedInsertSizeBand', () => {
     expect(band({ field: 'strand', domain: ['150', '600'] })).toBeUndefined()
     expect(
       band({ field: 'insertSize', domain: ['150', '150'] }),
-    ).toBeUndefined()
-    expect(
-      band({ field: 'insertSize', scale: 'none', domain: ['150', '600'] }),
     ).toBeUndefined()
   })
 })

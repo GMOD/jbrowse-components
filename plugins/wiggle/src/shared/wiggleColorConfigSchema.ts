@@ -15,7 +15,7 @@ import type { FieldPresets } from '@jbrowse/core/util/colorScale'
 const WIGGLE_COLOR_FIELDS = ['score'] as const
 
 /** A ramp here runs across the y domain through the y scale's own type, so no color scale is `log`. */
-const WIGGLE_COLOR_SCALES = ['none', 'linear', 'threshold'] as const
+const WIGGLE_COLOR_SCALES = ['linear', 'threshold'] as const
 
 /** The field a color naming neither a field nor a constant maps: the bicolor pair is `score` cut at the origin. */
 export const WIGGLE_IMPLIED_FIELD = 'score'
@@ -108,9 +108,7 @@ export const wiggleColorSchema = ConfigurationSchema(
      * `linear` runs `range`, else `scheme`, else viridis across
      * the y domain through `scales.y.type`, with `domainMid` at the middle
      * stop, coloring each bar, point and density cell by its score; a one-color
-     * `range` paints flat, so one color is `value`. `none` paints `value`,
-     * keeping the field for a
-     * switch back. Unset, `range` is the pair about the `origin`: a
+     * `range` paints flat, so one color is `value`. Unset, `range` is the pair about the `origin`: a
      * threshold on bars, points and lines, and on a heatmap a ramp through
      * white at the origin.
      */
@@ -118,7 +116,7 @@ export const wiggleColorSchema = ConfigurationSchema(
       type: 'maybeStringEnum',
       model: types.enumeration('WiggleColorScale', [...WIGGLE_COLOR_SCALES]),
       description:
-        'threshold bands score at the domain cuts, solid on every mark, linear ramps it across the y domain, none paints value; unset, range is the pair about the origin, solid on bars, points and lines and fading from white there on a heatmap',
+        'threshold bands score at the domain cuts, solid on every mark, linear ramps it across the y domain; unset, range is the pair about the origin, solid on bars, points and lines and fading from white there on a heatmap',
     },
     ...colorDomainSlot({
       domain:

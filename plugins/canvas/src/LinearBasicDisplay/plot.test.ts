@@ -227,10 +227,7 @@ describe('the Group by dialog applies a plot', () => {
   it("parks a color that was the grouping's own when unticked, and leaves any other", () => {
     const d = display()
     d.applyGroupBy('strand', true)
-    expect(d.groupByPlot(undefined, false)).toEqual({
-      facet: null,
-      color: { field: 'strand', scale: 'none' },
-    })
+    expect(d.groupByPlot(undefined, false)).toEqual({ facet: null, color: {} })
     d.applyDisplaySettings({ color: 'purple' })
     expect(d.groupByPlot(undefined, false)).toEqual({ facet: null })
   })
@@ -267,9 +264,8 @@ describe('the Group by dialog applies a plot', () => {
   })
 })
 
-// The plot is the config as written, so the parked field shows beside the
-// constant that paints.
-test('Solid color keeps the field, its order and range under scale none for the way back', () => {
+// The plot is the config as written, so the parked field stays out of it.
+test('Solid color parks the field, its order and range for the way back', () => {
   const d = display()
   d.applyPlot({
     color: { field: 'biotype', domain: ['lncRNA'], range: ['red'] },
@@ -277,12 +273,8 @@ test('Solid color keeps the field, its order and range under scale none for the 
   d.setColorValue('purple')
   expect(d.colorByMode).toBe('solid')
   expect(d.categoricalColorField).toBeUndefined()
-  expect(d.plot.color).toMatchObject({ value: 'purple', scale: 'none' })
-  expect(d.colorSetting).toMatchObject({
-    value: 'purple',
-    field: 'biotype',
-    scale: 'none',
-  })
+  expect(d.plot.color).toBe('purple')
+  expect(d.parkedColor).toMatchObject({ field: 'biotype' })
   expect(d.colorByAttribute).toBe('biotype')
   d.colorByField('biotype')
   expect(d.colorByMode).toBe('attribute')
@@ -290,6 +282,6 @@ test('Solid color keeps the field, its order and range under scale none for the 
   expect(d.categoricalColorField?.color('lncRNA')).toBe('red')
   d.setColorValue(undefined)
   expect(d.colorByMode).toBe('default')
-  expect(d.colorSetting).toMatchObject({ field: 'biotype', scale: 'none' })
+  expect(d.colorSetting.field).toBe('')
   expect(d.groupByPlot(undefined, false)).toEqual({ facet: null })
 })

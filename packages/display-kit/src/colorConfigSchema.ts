@@ -1,5 +1,6 @@
 import {
   ConfigurationSchema,
+  getConfigurationSchemaMetadata,
   isCallbackValue,
   readConfObject,
 } from '@jbrowse/core/configuration'
@@ -58,7 +59,7 @@ export type {
 } from '@jbrowse/core/util/colorScale'
 
 /** The scales of a color object whose field takes a range color per value. */
-export const CATEGORICAL_COLOR_SCALES = ['none', 'categorical'] as const
+export const CATEGORICAL_COLOR_SCALES = ['categorical'] as const
 
 /** The scales of a color object whose field paints one of a set of colors: a range color per value, or per bin. */
 export const DISCRETE_COLOR_SCALES = [
@@ -141,6 +142,16 @@ export function colorSettingOf<C extends AnyConfigurationModel>(
   return setting as ColorSettingOf<C>
 }
 
+/**
+ * The field `color`'s schema maps while the object names neither a field nor
+ * a constant (`colorChannelOptions`' `impliedField`), for `withImpliedField`.
+ */
+export function impliedFieldOf(
+  color: AnyConfigurationModel,
+): string | undefined {
+  return getConfigurationSchemaMetadata(color)?.options.impliedField
+}
+
 /** {@link colorSettingOf} with the key's `labels` and `title` spread on top. */
 export function colorSnapshotOf<C extends AnyConfigurationModel>(color: C) {
   const node: AnyConfigurationModel = color
@@ -153,8 +164,8 @@ export function colorSnapshotOf<C extends AnyConfigurationModel>(color: C) {
  * What every channel object checks on the way in, `name` being the setting's
  * key: a `domain` or `range` is a list, and a `domain`, `breaks` or `labels`
  * written as numbers is carried as strings. No combination of slots is refused, since the config
- * editor writes one slot at a time: a `domain` with no `field`, or a `field`
- * under `none`, waits unread until it paints again.
+ * editor writes one slot at a time: a `domain` with no `field` waits unread
+ * until a field paints again.
  */
 export function normalizeChannel(
   snap: Record<string, unknown> = {},
@@ -190,7 +201,7 @@ export function colorChannelSlots<
   field,
   fieldType,
   fieldDefault = '',
-  scale = 'unset follows field, none paints value',
+  scale = 'unset follows field',
 }: {
   scales: readonly S[]
   scaleName: string
@@ -498,8 +509,7 @@ export type FieldColorEncoding = Exclude<ColorEncoding, string>
 
 /**
  * What any display's color object paints: its `value` while it names no
- * field or sits under `none`, which is `undefined` on an object whose `value`
- * may be unset, else the field through the scale it paints through, its
+ * field, which is `undefined` on an object whose `value` may be unset, else the field through the scale it paints through, its
  * preset's where it writes none, with the members that scale reads under the
  * names the config spells them, the preset's where the config leaves one
  * unwritten. Each scale answers one fixed set of keys, absent members
@@ -629,30 +639,45 @@ function definedMembers(color: object) {
 }
 
 /**
- * The color object a Color by pick writes over `current`. `''` paints
- * `value` and keeps the field and its members under `scale: 'none'` for the
- * way back, and drops a fieldless identity scale, which paints each feature's
- * own color, black included; the field already named keeps its members and a declared scale;
- * a new field keeps only `value`. `none` takes the `scale` slot, so after the
- * way back the field paints through the display's default scale for it.
+ * The color object a Color by pick writes over `current`. `''` drops the field
+ * and its members, leaving `value`, and a fieldless identity scale, which
+ * paints each feature's own color, black included; the field already named
+ * keeps its members; the field `parked` holds (`parkedColorOf`) takes its
+ * members back; a new field keeps only `value`.
  */
-export function colorForField(current: ColorSlots, field: string) {
-  const kept = definedMembers(current)
+export function colorForField(
+  current: ColorSlots,
+  field: string,
+  parked?: ColorSlots,
+) {
+  const { value } = current
   if (field === '') {
-    const { scale, ...unscaled } = kept
-    return current.field
-      ? { ...kept, scale: 'none' }
-      : scale === 'identity'
-        ? unscaled
-        : kept
+    const cleared = withoutField(current)
+    return cleared.scale === IDENTITY_SCALE
+      ? definedMembers({ ...cleared, scale: undefined })
+      : cleared
   }
   if (field === current.field) {
-    return definedMembers({
-      ...kept,
-      scale: current.scale === 'none' ? undefined : current.scale,
-    })
+    return definedMembers(current)
   }
-  return definedMembers({ value: current.value, field })
+  return definedMembers(
+    field === parked?.field ? { ...parked, value } : { value, field },
+  )
+}
+
+function withoutField(current: ColorSlots) {
+  return definedMembers(current.field ? { value: current.value } : current)
+}
+
+/**
+ * The field a pick takes off `color`, with its members, for `colorForField`
+ * to give back; undefined while `color` names no field.
+ */
+export function parkedColorOf({
+  value: _value,
+  ...members
+}: ColorSlots): ColorSlots | undefined {
+  return members.field ? definedMembers(members) : undefined
 }
 
 /**
@@ -670,15 +695,11 @@ export function colorForScheme<
 
 /**
  * The color object a Solid color pick writes over `current`: `value` paints,
- * undefined returning to each feature's own color, and a field stays under
- * `scale: 'none'` for the way back.
+ * undefined returning to each feature's own color, and the field goes, since a
+ * written field paints over any constant.
  */
 export function colorForValue(current: ColorSlots, value: string | undefined) {
-  return definedMembers({
-    ...current,
-    value,
-    ...(current.field ? { scale: 'none' } : {}),
-  })
+  return definedMembers({ ...withoutField(current), value })
 }
 
 /**
@@ -727,9 +748,8 @@ export function colorFieldOf(
  * callback in `value`, or a field whose values each take a range color,
  * whose numbers each take the color of the interval between cut points they
  * fall in, or whose numbers run along a color ramp, with a key. A string is
- * the constant; the object binds the field, and `scale: "none"` beside a
- * field paints the constant while keeping the field for the way back.
- * `scale: "identity"` keeps each feature's color, whether a file's itemRgb or
+ * the constant; the object binds the field, which paints wherever one is
+ * written. `scale: "identity"` keeps each feature's color, whether a file's itemRgb or
  * what a `value` callback returns, and names the colors `domain` lists in the
  * key. Like UCSC's `itemRgb on`, it paints an itemRgb of `0,0,0` or `0` black,
  * which otherwise reads as no color, and reads a comma-free itemRgb as a packed
@@ -805,7 +825,7 @@ export const colorConfigSchema = ConfigurationSchema(
       field:
         "a feature field, or a jexl expression over feature, whose values each take one range color, with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise",
       scale:
-        "none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each feature's own color, as none does except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and categorical for any other field",
+        "categorical a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each feature's own color, as an object with no field does, except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and categorical for any other field",
     }),
     ...colorDomainSlot({
       domain:

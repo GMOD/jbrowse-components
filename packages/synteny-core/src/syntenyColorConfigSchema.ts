@@ -15,12 +15,12 @@ import {
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
- * `scale` on a synteny color object: `none` paints `value`, and `linear` or
- * `threshold` names how a number paints. Unset, a measurement takes its
+ * `scale` on a synteny color object: `linear` or `threshold` names how a
+ * number paints. Unset, a measurement takes its
  * preset's scale and a column's type is read off the fetched values, a ramp
  * over the span for numbers and a color per label for text.
  */
-export const SYNTENY_COLOR_SCALES = ['none', 'linear', 'threshold'] as const
+export const SYNTENY_COLOR_SCALES = ['linear', 'threshold'] as const
 
 export type SyntenyColorScale = (typeof SYNTENY_COLOR_SCALES)[number]
 
@@ -59,7 +59,7 @@ export function syntenyColorSlots({
       fieldType: 'string',
       field,
       scale:
-        'none paints value and keeps the field for a switch back; linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement uses its preset scale and a column one read off its values',
+        'linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement uses its preset scale and a column one read off its values',
     }),
     ...colorDomainSlot({
       domain:

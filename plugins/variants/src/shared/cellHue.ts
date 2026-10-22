@@ -77,10 +77,10 @@ export interface CellHue {
 }
 
 /**
- * The hue a `color` encoding paints. `keptField` is the field a setting keeps
- * under `scale: 'none'` for the way back: its values are read while a
- * constant or the genotype colors paint, so returning to it refetches
- * nothing. A phase set is the exception, since reading it paints it.
+ * The hue a `color` encoding paints. `keptField` is the field the display
+ * parked (`ParkedColorMixin`): its values are read while a constant or the
+ * genotype colors paint, so returning to it refetches nothing. A phase set is
+ * the exception, since reading it paints it.
  */
 export function cellHueOf(
   encoding: ColorEncoding | undefined,

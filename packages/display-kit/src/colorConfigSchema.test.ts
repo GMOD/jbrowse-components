@@ -13,6 +13,7 @@ import {
   colorForField,
   colorForScheme,
   colorForValue,
+  parkedColorOf,
   colorRampSlots,
   colorRangeSlot,
   colorConfigSchema,
@@ -108,9 +109,9 @@ test('each scale carries the members it reads under the config names', () => {
     domain: ['1', '2'],
     range: ['white', 'red'],
   })
-  expect(encodingOf({ value: 'blue', field: 'strand', scale: 'none' })).toBe(
-    'blue',
-  )
+  expect(encodingOf({ value: 'blue', field: 'strand' })).toMatchObject({
+    field: 'strand',
+  })
 })
 
 // The scale follows `field` and the display's own default alone: a written
@@ -203,16 +204,27 @@ describe('colorForField', () => {
     range: ['red', 'blue'],
   }
 
-  test('the constant keeps the field and its members under none', () => {
-    expect(colorForField(tag, '')).toEqual({ ...tag, scale: 'none' })
+  test('the constant drops the field and its members', () => {
+    expect(colorForField(tag, '')).toEqual({ value: 'grey' })
+    expect(parkedColorOf(tag)).toEqual({
+      field: 'tags.HP',
+      scale: 'categorical',
+      domain: ['1', '2'],
+      range: ['red', 'blue'],
+    })
   })
 
   test('the field already named keeps its members and a declared scale', () => {
     expect(colorForField(tag, 'tags.HP')).toEqual(tag)
-    expect(colorForField({ ...tag, scale: 'none' }, 'tags.HP')).toEqual({
+  })
+
+  test('the parked field takes its members back beside the constant', () => {
+    const parked = parkedColorOf(tag)
+    expect(colorForField({ value: 'pink' }, 'tags.HP', parked)).toEqual({
       ...tag,
-      scale: undefined,
+      value: 'pink',
     })
+    expect(colorForField({}, 'strand', parked)).toEqual({ field: 'strand' })
   })
 
   test('a new field keeps only the value', () => {
@@ -251,12 +263,9 @@ describe('colorForScheme', () => {
 })
 
 describe('colorForValue', () => {
-  test('paints the value and sets a field aside under none', () => {
-    const typed = { field: 'type', domain: ['gene'] }
-    expect(colorForValue(typed, 'red')).toEqual({
-      ...typed,
+  test('paints the value and drops the field, which would paint over it', () => {
+    expect(colorForValue({ field: 'type', domain: ['gene'] }, 'red')).toEqual({
       value: 'red',
-      scale: 'none',
     })
   })
 

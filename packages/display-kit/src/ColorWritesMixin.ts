@@ -1,9 +1,15 @@
-import { readConfObject, setConf } from '@jbrowse/core/configuration'
+import { setConf } from '@jbrowse/core/configuration'
+import { withImpliedField } from '@jbrowse/core/util/colorScale'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
-import { colorForField, colorForValue } from './colorConfigSchema.ts'
+import ParkedColorMixin from './ParkedColorMixin.ts'
+import {
+  colorForField,
+  colorForValue,
+  impliedFieldOf,
+} from './colorConfigSchema.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
@@ -21,15 +27,15 @@ export interface ColorWritesHost {
 const host = (self: object) => self as ColorWritesHost
 
 /**
- * A `color` object as written: each slot its config sets, and no default but
- * a `field`'s, since a schema whose `field` defaults to one (LGVSyntenyColor's
- * `strand`) paints it while the snapshot names none.
+ * A `color` object as written: each slot its config sets, with the schema's
+ * `impliedField` where it names neither a field nor a constant, since that
+ * field paints while the snapshot names none (LGVSyntenyColor's `strand`).
  */
 export function writtenColorOf(color: AnyConfigurationModel): ColorSlots {
-  const written = getSnapshot<ColorSlots | undefined>(color) ?? {}
-  const field: string | undefined =
-    'field' in color ? readConfObject(color, 'field') : undefined
-  return field && written.field === undefined ? { ...written, field } : written
+  return withImpliedField(
+    getSnapshot<ColorSlots | undefined>(color) ?? {},
+    impliedFieldOf(color),
+  )
 }
 
 // The constant `value` holds, painting or kept beside a field; undefined for
@@ -41,11 +47,17 @@ function solidColorOf({ value }: ColorSlots): string | undefined {
 /**
  * #stateModel ColorWritesMixin
  * #category display
- * #crossCuttingMixin The writes a display's `color` object takes from a menu row or a picker: the field it paints by (`colorByField`) and the constant every feature paints (`setColorValue`). Each rewrites the object as written, so what a pick leaves alone stays as it was, and a pick of what already paints writes nothing, since every color tier keys on the object's arrays. A dialog's Apply button writes the whole object through `applyPlot`, which rebuilds the display's config for the draft, too dear for a picker writing once per drag frame
+ * #crossCuttingMixin The writes a display's `color` object takes from a menu row or a picker: the field it paints by (`colorByField`) and the constant every feature paints (`setColorValue`). Each rewrites the object as written, so what a pick leaves alone stays as it was, and a pick of what already paints writes nothing, since every color tier keys on the object's arrays. A pick away from a field parks it (`ParkedColorMixin`), so picking it again keeps its domain, range and key names. A dialog's Apply button writes the whole object through `applyPlot`, which rebuilds the display's config for the draft, too dear for a picker writing once per drag frame
  */
 export default function ColorWritesMixin() {
   return types
-    .model('ColorWritesMixin', {})
+    .compose(
+      'ColorWritesMixin',
+      ParkedColorMixin('color', (self: object) =>
+        writtenColorOf(host(self).configuration.color),
+      ),
+      types.model({}),
+    )
     .views(self => ({
       /**
        * #getter
@@ -66,17 +78,16 @@ export default function ColorWritesMixin() {
         /**
          * #action
          * Paint by `field`, keeping its domain, range and key names while it
-         * is the field already painting; `''` paints `value` and keeps the
-         * field under `scale: 'none'` for the way back.
+         * is the field already painting or the one parked; `''` paints
+         * `value` and parks the field.
          */
         colorByField(field: string) {
-          write(colorForField(self.writtenColor, field))
+          write(colorForField(self.writtenColor, field, self.parkedColor))
         },
         /**
          * #action
          * Paint every feature `value`, a CSS color or a `jexl:` callback,
-         * keeping a field under `scale: 'none'` for the way back; undefined
-         * lets each feature's own color paint.
+         * parking the field; undefined lets each feature's own color paint.
          */
         setColorValue(value: string | undefined) {
           write(colorForValue(self.writtenColor, value))
@@ -100,11 +111,7 @@ export default function ColorWritesMixin() {
          */
         pickSolidColor() {
           const written = self.writtenColor
-          if (
-            written.field &&
-            written.scale !== 'none' &&
-            solidColorOf(written) !== undefined
-          ) {
+          if (written.field && solidColorOf(written) !== undefined) {
             this.colorByField('')
           }
           host(self).openSolidColorDialog?.()

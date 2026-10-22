@@ -1,6 +1,6 @@
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { TrackColorsMixin } from './TrackColorsMixin.ts'
@@ -8,10 +8,34 @@ import { categoricalColor } from './colorFunctions.ts'
 import { resolveCategoricalMode } from './colorRamps.ts'
 
 import type { AttributeRange } from './colorRamps.ts'
+import type {
+  IAnyModelType,
+  Instance,
+  SnapshotIn,
+} from '@jbrowse/mobx-state-tree'
 
 // The floating legend is one box for the whole view, so the domain it labels a
 // column's ramp with has to be one answer for every loaded display.
 // A per-display answer is what makes that one legend lie.
+// ParkedColorMixin installs its reaction on attach, so a test model hangs
+// under a root as a display or view does
+function attached<T extends IAnyModelType>(
+  Type: T,
+  snapshot: SnapshotIn<T>,
+  env?: object,
+): Instance<T> {
+  const root = types
+    .model({ child: types.maybe(Type) })
+    .actions(self => ({
+      attach(child: SnapshotIn<T>) {
+        self.child = child as never
+      },
+    }))
+    .create({} as never, env)
+  root.attach(snapshot)
+  return root.child as Instance<T>
+}
+
 function viewWith(loaded: Record<string, AttributeRange>[]) {
   return TrackColorsMixin()
     .views(() => ({
@@ -339,7 +363,8 @@ test('the track legend lists a track on several levels once', () => {
 // The view's `color` is one SyntenyColor object: a field the view reads as a
 // mode of its own, a measurement preset, a declared column, or a color.
 describe('the color object', () => {
-  const view = (color: unknown) => TrackColorsMixin().create({ color } as never)
+  const view = (color: unknown) =>
+    attached(TrackColorsMixin(), { color } as never)
 
   it('reads the structural fields as their modes', () => {
     for (const field of ['strand', 'query', 'target', 'reference', 'track']) {
@@ -393,14 +418,10 @@ describe('the color object', () => {
     expect(getSnapshot(view(null)).color).toBeUndefined()
   })
 
-  it('writes the whole object from a picked mode, keeping the field under none', () => {
+  it('writes the whole object from a picked mode, parking the field it leaves', () => {
     const v = view({ field: 'gene_group', domain: ['B1'] })
     v.setColorField('')
-    expect(getSnapshot(v).color).toEqual({
-      field: 'gene_group',
-      domain: ['B1'],
-      scale: 'none',
-    })
+    expect(getSnapshot(v).color).toBeUndefined()
     expect(v.colorField).toBe('')
     v.setColorField('gene_group')
     expect(getSnapshot(v).color).toEqual({

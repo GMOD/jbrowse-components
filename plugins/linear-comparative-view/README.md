@@ -65,7 +65,7 @@ to a `TrackStack`:
 
 ```js
 // type signature
-({…}: { view: ModelInstanceTypeProps<…> & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & { afterAttach(): void; } & IStateTreeNode<…>; renderRow?: ((row: ModelInstanceTypeProps<…> & any & IStateTreeNode<…>, index: number) => ReactNode) | undefined; style?: CSSProperties | undefined; }) => Element
+({…}: { view: ModelInstanceTypeProps<…> & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & { afterAttach(): void; } & IStateTreeNode<…>; renderRow?: ((row: ModelInstanceTypeProps<…> & any & IStateTreeNode<…>, index: number) => ReactNode) | undefined; style?: CSSProperties | undefined; }) => Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/SyntenyStack.tsx)

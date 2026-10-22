@@ -29,7 +29,7 @@ export function colorByMenuTargetFor(
   return {
     field: model.colorField,
     structuralFields: [
-      '',
+      ...(model.impliedColorField ? [] : ['']),
       'strand',
       ...(tracks.length > 1 ? ['track'] : []),
       'query',
@@ -45,6 +45,12 @@ export function colorByMenuTargetFor(
     },
     setHideUnlabelled: value => {
       model.setHideUnlabelled(value)
+    },
+    solidColor: {
+      checked: model.colorField === '' && model.colorValue !== undefined,
+      pick: () => {
+        model.openSolidColorDialog()
+      },
     },
     trackColors: {
       tracks,
@@ -66,12 +72,15 @@ export interface TrackColorsModel {
   colorableAttributes: string[]
   attributeRanges: Record<string, AttributeRange>
   colorField: string
+  impliedColorField: string
+  colorValue: string | undefined
   hideUnlabelled: boolean
   trackColorFor: (trackId: string) => string
   colorSurface: () => SyntenyColorSurface
   offersReferenceColor: () => boolean
   setColorField: (field: string) => void
   setHideUnlabelled: (value: boolean) => void
+  openSolidColorDialog: () => void
   setTrackColor: (trackId: string, value: string | undefined) => void
   clearTrackColors: () => void
 }
@@ -98,6 +107,8 @@ export interface ColorByMenuTarget {
   hideUnlabelled: boolean
   setColorField: (field: string) => void
   setHideUnlabelled: (value: boolean) => void
+  /** whether a constant paints, and the picker Solid color... opens */
+  solidColor?: { checked: boolean; pick: () => void }
   /** the per-track swatches of a view overlaying tracks */
   trackColors?: {
     tracks: ColorByMenuTrack[]

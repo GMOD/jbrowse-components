@@ -110,7 +110,7 @@ export const markColorSchema = ConfigurationSchema(
       field:
         'the feature field a scale reads, or a jexl expression over feature, which is slower per feature and so the opt-in',
       scale:
-        'categorical hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field',
+        'categorical hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; unset is linear for score and categorical for any other field',
     }),
     ...colorDomainSlot({
       domain:

@@ -29,7 +29,7 @@ import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 export { MARK_TYPES } from './markVocabulary.ts'
 export type { MarkType } from './markVocabulary.ts'
 
-const MARK_SHAPE_SCALES = ['none', 'categorical'] as const
+const MARK_SHAPE_SCALES = ['categorical'] as const
 export type MarkShapeScale = (typeof MARK_SHAPE_SCALES)[number]
 
 /** The scale a mark's shape is drawn through: `categorical` beside a `field`. */
@@ -69,13 +69,12 @@ const markShapeSchema = ConfigurationSchema(
     /**
      * #slot marks.encoding.shape.scale
      * `categorical` hands a shape from `range` to each distinct value of
-     * `field`; `none` draws `value`. Unset beside a `field`, it is
-     * `categorical`.
+     * `field`. Unset beside a `field`, it is `categorical`.
      */
     scale: {
       type: 'maybeStringEnum',
       model: types.enumeration('MarkShapeScale', [...MARK_SHAPE_SCALES]),
-      description: 'none or categorical; unset follows field',
+      description: 'categorical; unset follows field',
     },
     /**
      * #slot marks.encoding.shape.range

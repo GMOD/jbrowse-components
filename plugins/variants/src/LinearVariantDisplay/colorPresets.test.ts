@@ -84,7 +84,7 @@ test('the worker reads the impact field as it reads any other', () => {
   expect(color.value).toBeUndefined()
 })
 
-test('Default parks the preset under none', () => {
+test('Default parks the preset, whose values the worker still reads', () => {
   const display = createDisplay()
   clickRow(display, 'Consequence impact')
   clickRow(display, 'Default')

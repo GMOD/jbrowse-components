@@ -16,6 +16,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
 }: {
   model: AttributeScanModel & {
     colorByAttribute: string
+    colorField: string | undefined
     colorFieldNoun?: string
     colorByField: (field: string) => void
     openPlotDialog: (seed?: Plot) => void
@@ -42,7 +43,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
         <Button
           onClick={() => {
             model.openPlotDialog(
-              trimmed && trimmed !== model.colorByAttribute
+              trimmed && trimmed !== model.colorField
                 ? { color: { field: trimmed } }
                 : undefined,
             )

@@ -33,10 +33,6 @@ import {
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
 import { withPreset } from '@jbrowse/core/util/colorScale'
-import {
-  colorSettingOf,
-  colorSnapshotOf,
-} from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { SCALE_TYPE_LOG } from '@jbrowse/render-core/scoreScale'
 import { linkStrokeWidthPx } from '@jbrowse/render-core/shaders/linkMark'
@@ -133,6 +129,8 @@ import { qualityFade } from './shaders/slang/mismatch.js.generated.ts'
 import {
   ALIGNMENTS_FIELD_PRESETS,
   alignmentsColorEncoding,
+  alignmentsColorSettingOf,
+  alignmentsColorSnapshotOf,
   baseLayerOf,
   bodyColorScheme,
   colorByOf,
@@ -404,13 +402,7 @@ function baseLayerFor(conf: DisplayConf) {
     cytosineContext: readConfObject(mods, 'cytosineContext'),
     shownModifications: readConfObject(mods, 'shownModifications'),
   }
-  return baseLayerOf(
-    {
-      field: readConfObject(base, 'field'),
-      scale: readConfObject(base, 'scale'),
-    },
-    settings,
-  )
+  return baseLayerOf(readConfObject(base, 'field'), settings)
 }
 
 /**
@@ -428,7 +420,7 @@ function colorReads(
   refNamePosition: RefNamePosition | undefined,
   overlaps: 'chain' | undefined,
 ) {
-  const { labels, title, ...setting } = colorSnapshotOf(node)
+  const { labels, title, ...setting } = alignmentsColorSnapshotOf(node)
   const encoding = alignmentsColorEncoding(setting)
   const colorBy = colorByOf(encoding)
   const band = pinnedInsertSizeBand(encoding)
@@ -1286,7 +1278,9 @@ export async function alignmentTables(
     type: 'LinearAlignmentsDisplay',
     displayId: 'tables',
   })
-  const colorBy = colorByOf(alignmentsColorEncoding(colorSettingOf(conf.color)))
+  const colorBy = colorByOf(
+    alignmentsColorEncoding(alignmentsColorSettingOf(conf.color)),
+  )
   const baseLayer = baseLayerFor(conf)
   const { layoutOrder, sortColumn } = sortOf(
     conf.sort,

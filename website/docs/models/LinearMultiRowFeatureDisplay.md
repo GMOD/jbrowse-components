@@ -25,9 +25,11 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-hiddenkeyspace">**hiddenKeySpace**</span><br><code>hiddenKeySpace: types.maybe(types.string)</code> | The `legendKeySpace` the hidden categories were picked in; they apply only while it still holds. Unset in a session saved before it existed, which keeps its hides. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>4 inherited properties from 2 models</summary>
+<summary>5 inherited properties from 3 models</summary>
 
 From [TreeSidebarMixin](../treesidebarmixin): <span id="property-runclustering">[`runClustering`](../treesidebarmixin#property-runclustering)</span>, <span id="property-clusterregion">[`clusterRegion`](../treesidebarmixin#property-clusterregion)</span>, <span id="property-sortrowsby">[`sortRowsBy`](../treesidebarmixin#property-sortrowsby)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="property-parkedcolors">[`parkedColors`](../parkedcolormixin#property-parkedcolors)</span>
 
 From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay#property-id)</span>
 
@@ -135,7 +137,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-hoveredrow">**hoveredRow**</span><br><code>RowSource &#124; undefined</code> | The row the hovered feature sits on, off the live order. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>130 inherited getters from 11 models</summary>
+<summary>131 inherited getters from 12 models</summary>
 
 From [PointerHoverMixin](../pointerhovermixin): <span id="getter-hoveredfeature">[`hoveredFeature`](../pointerhovermixin#getter-hoveredfeature)</span>
 
@@ -144,6 +146,8 @@ From [TreeSidebarMixin](../treesidebarmixin): <span id="getter-showtree">[`showT
 From [FacetWritesMixin](../facetwritesmixin): <span id="getter-writtenfacet">[`writtenFacet`](../facetwritesmixin#getter-writtenfacet)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>
 
 From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendright">[`legendRight`](../legendmixin#getter-legendright)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span>
 
@@ -178,9 +182,11 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>15 inherited methods from 5 models</summary>
+<summary>16 inherited methods from 6 models</summary>
 
 From [TreeSidebarMixin](../treesidebarmixin): <span id="method-svgsidebarwidth">[`svgSidebarWidth`](../treesidebarmixin#method-svgsidebarwidth)</span>, <span id="method-rowband">[`rowBand`](../treesidebarmixin#method-rowband)</span>, <span id="method-dealtrowcolorsfor">[`dealtRowColorsFor`](../treesidebarmixin#method-dealtrowcolorsfor)</span>, <span id="method-rowcolorfor">[`rowColorFor`](../treesidebarmixin#method-rowcolorfor)</span>, <span id="method-roworderwilldroptree">[`rowOrderWillDropTree`](../treesidebarmixin#method-roworderwilldroptree)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
 From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScalesIn`](../legendmixin#method-colorscalesin)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 
@@ -214,7 +220,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-rendersvg">**renderSvg**</span><br><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>66 inherited actions from 12 models</summary>
+<summary>67 inherited actions from 13 models</summary>
 
 From [PointerHoverMixin](../pointerhovermixin): <span id="action-setpointer">[`setPointer`](../pointerhovermixin#action-setpointer)</span>
 
@@ -225,6 +231,8 @@ From [TreeSidebarMixin](../treesidebarmixin): <span id="action-setshowtree">[`se
 From [FacetWritesMixin](../facetwritesmixin): <span id="action-facetbyfield">[`facetByField`](../facetwritesmixin#action-facetbyfield)</span>, <span id="action-setfacetsort">[`setFacetSort`](../facetwritesmixin#action-setfacetsort)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
 
 From [LegendMixin](../legendmixin): <span id="action-setshowlegend">[`setShowLegend`](../legendmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../legendmixin#action-dismisslegendsection)</span>
 

@@ -2,7 +2,10 @@ import { lazy } from 'react'
 
 import { radioItem, radioItems } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
-import { colorByMenuItem } from '@jbrowse/display-kit/colorByMenu'
+import {
+  colorByMenuItem,
+  solidColorItem,
+} from '@jbrowse/display-kit/colorByMenu'
 
 import { baseLayerOfField, tagColorFor } from '../../shared/alignmentsColor.ts'
 import {
@@ -35,7 +38,10 @@ interface ColorByModel {
   colorField: string
   colorEncoding: AlignmentsColorEncoding
   writtenColor: ColorSlots
+  parkedColor?: ColorSlots
   colorByField: (field: string) => void
+  pickDefaultColor: () => void
+  pickSolidColor: () => void
   applyPlot: (draft: Plot) => void
   baseLayer: BaseLayer | undefined
   modificationSettings: ModificationColorBy
@@ -97,7 +103,13 @@ const pairedEndColorOptions = radioColorFieldOptions('pairedEnd')
 // which spread one caller decision across six signatures and hid the opt-in
 // list the file's comments keep describing.
 
-// A plain radio naming a field: the read fill's, or a per-base layer's.
+// A constant paints the reads while no field does
+function paintsConstant(model: AnyColorByModel) {
+  return model.colorField === '' && model.writtenColor.value !== undefined
+}
+
+// A plain radio naming a field: the read fill's, or a per-base layer's. The
+// plain fill's '' is unset, a constant included.
 function colorRadio(
   model: AnyColorByModel,
   { label, field }: ColorFieldOption,
@@ -107,9 +119,17 @@ function colorRadio(
     ? radioItem(label, model.baseLayer?.type === layer, () => {
         model.setBaseLayer({ type: layer })
       })
-    : radioItem(label, model.colorField === field, () => {
-        model.colorByField(field)
-      })
+    : field === ''
+      ? radioItem(
+          label,
+          model.colorField === '' && !paintsConstant(model),
+          () => {
+            model.pickDefaultColor()
+          },
+        )
+      : radioItem(label, model.colorField === field, () => {
+          model.colorByField(field)
+        })
 }
 
 // The per-base layer draws over whatever fills the reads, so its rows are a
@@ -163,6 +183,7 @@ function tagItem(model: AnyColorByModel): MenuItem {
                 model.writtenColor,
                 tag,
                 scale ?? 'categorical',
+                model.parkedColor,
               ),
             })
           },
@@ -266,6 +287,9 @@ export function getColorByMenuItem(
           ...readOptions.map(o => colorRadio(model, o)),
           ...(includeTagOption ? [tagItem(model)] : []),
           ...(includePairedEnd ? [pairedEndItem(model)] : []),
+          solidColorItem(paintsConstant(model), () => {
+            model.pickSolidColor()
+          }),
         ],
       },
       {

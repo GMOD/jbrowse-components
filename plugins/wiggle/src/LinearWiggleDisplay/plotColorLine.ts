@@ -1,8 +1,7 @@
-import { colorForValue } from '@jbrowse/display-kit/colorConfigSchema'
-
 import { wigglePairOf } from '../shared/wiggleColor.ts'
 
 import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
+import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
@@ -61,13 +60,11 @@ export function plotColorLine(
 
 /**
  * What a swatch writes: the pair about the `origin` (`wigglePairOf`). A
- * written threshold, or one a single color parked under `none`, stays a
- * threshold, and an unset scale stays the pair every mark draws in its own
- * idiom. On bars, one
- * color on both sides is a flat plot: the string form, or over a written
- * field that field parked under `scale: 'none'`, so its cut, labels and title
- * come back when the sides part again. On a heatmap the pair stays a pair,
- * fading from white to the one color.
+ * written threshold stays a threshold, and an unset scale stays the pair every
+ * mark draws in its own idiom. On bars, one color on both sides is a flat
+ * plot, the string form, and a pair written over it takes back the cut, labels
+ * and title `parked` holds. On a heatmap the pair stays a pair, fading from
+ * white to the one color.
  *
  * A channel replaces its setting whole, and the members this drops are the
  * ones a pair does not read: `scheme` and `reverse`, and a ramp is where the
@@ -76,18 +73,18 @@ export function plotColorLine(
  * `origin` every config that had been following it.
  */
 export function plotColorEdit(
-  color: ColorSetting,
+  written: ColorSetting,
   { above, below }: { above: string; below: string },
   heatmapPair = false,
+  parked?: Partial<ColorSetting>,
 ): string | Partial<ColorSetting> {
   if (above === below && !heatmapPair) {
-    return color.field ? colorForValue(color, above) : above
+    return above
   }
+  const color = written.field || !parked ? written : { ...written, ...parked }
   return {
     field: 'score',
-    ...(color.scale === 'threshold' || color.scale === 'none'
-      ? { scale: 'threshold' }
-      : {}),
+    ...(color.scale === 'threshold' ? { scale: 'threshold' } : {}),
     ...(color.domain.length ? { domain: [...color.domain] } : {}),
     ...(color.domainMid === undefined ? {} : { domainMid: color.domainMid }),
     range: [below, above],
@@ -106,6 +103,7 @@ export function plotColorOf(model: {
   rowPaletteDeals: boolean
   isDensityMode: boolean
   colorSetting: ColorSetting
+  parkedColor?: ColorSlots
 }) {
   const heatmapPair =
     model.isDensityMode && wigglePairOf(model.colorSetting) !== undefined
@@ -117,6 +115,11 @@ export function plotColorOf(model: {
   return {
     line,
     edit: (next: { above: string; below: string }) =>
-      plotColorEdit(model.colorSetting, next, heatmapPair),
+      plotColorEdit(
+        model.colorSetting,
+        next,
+        heatmapPair,
+        model.parkedColor as Partial<ColorSetting> | undefined,
+      ),
   }
 }

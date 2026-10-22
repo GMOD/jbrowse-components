@@ -552,22 +552,20 @@ test('cluster paints a gene by the group it carries', () => {
   ])
 })
 
-test('Default keeps the field, and the field keeps its order', () => {
+test('Default parks the field, and the field keeps its order', () => {
   const display = createDisplay()
   setConf(display, 'color', { value: 'red', field: 'name', domain: ['atpA'] })
   display.colorByField('')
   expect(display.geneColorField).toBe('')
   expect(display.geneColorSettings.color).toMatchObject({
     value: 'red',
-    field: 'name',
-    scale: 'none',
-    domain: ['atpA'],
+    field: '',
   })
+  expect(display.parkedColor).toMatchObject({ field: 'name', domain: ['atpA'] })
   display.colorByField('name')
   expect(display.geneColorSettings.color).toMatchObject({
     value: 'red',
     field: 'name',
-    scale: undefined,
     domain: ['atpA'],
   })
   display.colorByField('strand')
@@ -586,8 +584,7 @@ test('Solid color... paints the kept constant and opens the picker; Default drop
   expect(display.geneColorField).toBe('')
   expect(display.geneColorSettings.color).toMatchObject({
     value: 'red',
-    field: 'name',
-    scale: 'none',
+    field: '',
   })
   expect(session.queuedDialogs).toHaveLength(1)
   display.setColorValue('teal')
@@ -595,7 +592,7 @@ test('Solid color... paints the kept constant and opens the picker; Default drop
   display.pickDefaultColor()
   expect(display.geneSolidColor).toBeUndefined()
   expect(display.geneColorField).toBe('')
-  expect(display.geneColorSettings.color).toMatchObject({ field: 'name' })
+  expect(display.parkedColor).toMatchObject({ field: 'name' })
 })
 
 test('Solid color... over a painting field paints the pick', () => {
@@ -606,8 +603,7 @@ test('Solid color... over a painting field paints the pick', () => {
   expect(display.geneColorField).toBe('')
   expect(display.geneColorSettings.color).toMatchObject({
     value: 'teal',
-    field: 'strand',
-    scale: 'none',
+    field: '',
   })
 })
 
@@ -741,7 +737,7 @@ test('a ribbon color pick keeps the ramp the config declares', () => {
   }
   display.setRibbonColorField('identity')
   expect(display.ribbonPaint).toMatchObject(ramp)
-  display.setRibbonColorField('')
+  display.setRibbonColorValue('red')
   display.setRibbonColorField('identity')
   expect(display.ribbonPaint).toMatchObject(ramp)
 })
@@ -767,7 +763,7 @@ test('the strand ribbon mode adds its own section', () => {
   )
   expect(display.colorScales.map(s => s.id)).toEqual(['genes', 'ribbons'])
 
-  display.setRibbonColorField('')
+  display.setRibbonColorValue('grey')
   expect(display.colorScales.map(s => s.id)).toEqual(['genes'])
 })
 
@@ -775,11 +771,8 @@ test('ribbons color by strand until the setting names a field or a color', () =>
   const display = createDisplay()
   expect(display.ribbonColorField).toBe('strand')
 
+  display.setRibbonColorField('mapq')
   display.setRibbonColorField('')
-  expect(display.ribbonColorField).toBe('')
-  expect(display.ribbonColor).toBe('rgba(130,130,130,0.3)')
-
-  display.setRibbonColorField('strand')
   expect(display.ribbonColorField).toBe('strand')
 
   setConf(display, 'ribbonColor', { value: 'red' })
@@ -2473,13 +2466,8 @@ test('a picked ribbon mode is written as the ribbonColor object', () => {
     field: 'group',
     domain: ['C1'],
   })
-  display.setRibbonColorField('')
-  expect(ribbonColor()).toEqual({
-    value: 'grey',
-    field: 'group',
-    domain: ['C1'],
-    scale: 'none',
-  })
+  display.setRibbonColorValue('grey')
+  expect(ribbonColor()).toEqual({ value: 'grey' })
   expect(display.ribbonColorField).toBe('')
   expect(display.ribbonColor).toBe('grey')
   display.setRibbonColorField('group')
@@ -2495,7 +2483,7 @@ test('a picked ribbon mode is written as the ribbonColor object', () => {
   expect(ribbonColor()).toEqual({ value: 'grey', field: 'other' })
 })
 
-test('a ribbonColor field is a preset or a column, scale none parks it, and a palette is refused', () => {
+test('a ribbonColor field is a preset or a column, and a palette is refused', () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: {
       type: 'MCScanBlocksAdapter',
@@ -2516,11 +2504,6 @@ test('a ribbonColor field is a preset or a column, scale none parks it, and a pa
     display.configuration.setSubschema('ribbonColor', { field })
     expect(display.ribbonColorField).toBe(field)
   }
-  display.configuration.setSubschema('ribbonColor', {
-    field: 'group',
-    scale: 'none',
-  })
-  expect(display.ribbonColorField).toBe('')
   expect(() =>
     display.configuration.setSubschema('ribbonColor', { scale: 'strand' }),
   ).toThrow()

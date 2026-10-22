@@ -238,10 +238,7 @@ function colorByField(r: DisplaySettings, field: string) {
     typeof r.snap.color === 'object' ? r.snap.color : {}
   r.snap.color =
     field === current.field
-      ? definedMembers({
-          ...current,
-          scale: current.scale === 'none' ? undefined : current.scale,
-        })
+      ? definedMembers(current)
       : definedMembers({ value: current.value, field })
 }
 

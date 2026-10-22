@@ -88,11 +88,9 @@ test("a written domain takes none of a categorical preset's range or labels", ()
   })
 })
 
-test('a preset stays out of a color painting through another scale, or none', () => {
+test('a preset stays out of a color painting through another scale', () => {
   const linear = { field: 'r2', scale: 'linear', domain: [] }
   expect(withPreset(linear, LD)).toBe(linear)
-  const none = { field: 'r2', scale: 'none' }
-  expect(withPreset(none, LD)).toBe(none)
   const other = { field: 'score' }
   expect(withPreset(other, LD)).toBe(other)
 })
@@ -112,11 +110,8 @@ const rules = (
   scale = 'categorical',
 ) => colorProblems(color, { '*': { scale } }).map(p => p.rule)
 
-test('a color with no field, or a field under none, says nothing', () => {
+test('a color with no field says nothing', () => {
   expect(rules({ domain: ['b', 'a'], range: ['red'] }, 'threshold')).toEqual([])
-  expect(
-    rules({ field: 'x', scale: 'none', domain: ['2', '1'] }, 'threshold'),
-  ).toEqual([])
 })
 
 test('threshold cuts must ascend and be numbers', () => {

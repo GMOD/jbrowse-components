@@ -1,16 +1,16 @@
 ---
 id: lgvsyntenycolor
 title: LGVSyntenyColor
-description: "The LGVSyntenyDisplay's color setting: the AlignmentsColor object with field defaulting to strand, where the alignments display paints one fill."
+description: "The LGVSyntenyDisplay's color setting: the AlignmentsColor object, painting strand while it names neither a field nor a constant. strand, mapq and mateRefName (the query contig) are the fields a…"
 sidebar_label: Display -> LGVSyntenyColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/lgvSyntenyColorConfigSchema.ts).
 
 The LGVSyntenyDisplay's `color` setting: the
-[AlignmentsColor](../alignmentscolor) object with `field` defaulting to
-`strand`, where the alignments display paints one fill. A string is the
-constant, `{ value, scale: 'none' }`, so the default field does not hide it.
+[AlignmentsColor](../alignmentscolor) object, painting `strand` while it
+names neither a field nor a constant. `strand`, `mapq` and `mateRefName`
+(the query contig) are the fields a synteny block answers.
 
 ## Example usage
 
@@ -29,11 +29,11 @@ A setting written to it replaces it whole, since its members are alternatives: a
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'strand'</code> | `strand`, `mapq` and `mateRefName` (the query contig) are the fields a synteny block answers. |
-| <span class="slot-group">Inherited from [AlignmentsColor](../alignmentscolor)</span> | <span class="slot-group-count">13 slots</span> |
+| <span class="slot-group">Inherited from [AlignmentsColor](../alignmentscolor)</span> | <span class="slot-group-count">14 slots</span> |
 | <span id="slot-value">**value**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | The fill of every read while no field paints, and of a read with no value under a tag or attribute, or no mate under `mateRefName`. Arcs and pair orientations keep the theme's colors. Writing `color: "steelblue"` lands here. Unset, the theme's read color. |
 | <span id="slot-labels">**labels**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | Names for each level or value `range` colors, in the same order, in the key, the hovers and the arc key: `labels: ["Maternal", "Paternal"]` beside `domain: ["1", "2"]` on `tags.HP`. |
-| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical, linear, threshold) | none paints value and keeps the field for a switch back; categorical a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize, insertSizeAndOrientation and mapq, and categorical over any other field |
+| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName color by their fixed levels and mapq by its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing and svSignal color nothing, as a facet sections by them |
+| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (categorical, linear, threshold) | categorical a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize, insertSizeAndOrientation and mapq, and categorical over any other field |
 | <span id="slot-domain">**domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | for a categorical scale, the values that take the range first, in order: a preset field's levels (strand 1 and -1; pairOrientation LR, RL, RR and LL; insertSize short, normal and long; under the insert-size and orientation fields, unmappedMate and interchrom, and in a chain under the orientation ones splitInverted, splitSameStrand, segmentInverted and segmentSameStrand; '' a read with no value), a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them, and over mapq 1, 10 and 30 |
 | <span id="slot-domainmin">**domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the bottom of a ramp's domain; unset follows the loaded values |
 | <span id="slot-domainmax">**domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the top of a ramp's domain; unset follows the loaded values |

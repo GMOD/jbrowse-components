@@ -1,6 +1,9 @@
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
-import { MEASURE_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
+import {
+  MEASURE_FIELD_PRESETS,
+  withImpliedField,
+} from '@jbrowse/core/util/colorScale'
 import {
   thresholdCuts,
   thresholdLabels,
@@ -8,6 +11,9 @@ import {
 import {
   colorEncodingOf,
   colorForField,
+  colorSettingOf,
+  colorSnapshotOf,
+  impliedFieldOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { COLOR_SCHEMES } from './colorSchemes.ts'
@@ -35,17 +41,32 @@ import type {
   ReadColorSchemeType,
   TagColorScale,
 } from './types.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorSlots, FieldPresets } from '@jbrowse/core/util/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 export const ALIGNMENTS_COLOR_SCALES = [
-  'none',
   'categorical',
   'linear',
   'threshold',
 ] as const
 export type AlignmentsColorScale = (typeof ALIGNMENTS_COLOR_SCALES)[number]
+
+/**
+ * The `color` object's painted members, with the schema's `impliedField` where
+ * it names neither a field nor a constant (LGVSyntenyColor's `strand`).
+ */
+export function alignmentsColorSettingOf<C extends AnyConfigurationModel>(
+  color: C,
+) {
+  return withImpliedField(colorSettingOf(color), impliedFieldOf(color))
+}
+
+/** {@link alignmentsColorSettingOf} with the key's `labels` and `title`. */
+export function alignmentsColorSnapshotOf(color: AnyConfigurationModel) {
+  return withImpliedField(colorSnapshotOf(color), impliedFieldOf(color))
+}
 
 /** The `color` object as written on an alignments display. */
 export interface AlignmentsColorSetting extends ColorSetting {
@@ -150,30 +171,16 @@ export function colorByOf(encoding: AlignmentsColorEncoding): ReadColorBy {
   return tag ? { type: 'tag', tag } : { type: 'tag', attribute: field }
 }
 
-/** The `baseColor` object as written. */
-export interface BaseColorSetting {
-  field: string | undefined
-  scale: 'none' | undefined
-}
-
 /**
- * The per-base layer a `baseColor` object selects, with the settings the
+ * The per-base layer a `baseColor` field selects, with the settings the
  * modification fields read beside it. Undefined while no per-base field is
- * named, or one waits under `none`.
+ * named.
  */
 export function baseLayerOf(
-  { field = '', scale }: BaseColorSetting,
+  field: string | undefined,
   modifications?: ModificationColorBy,
 ): BaseLayer | undefined {
-  const encoding = colorEncodingOf({
-    value: undefined,
-    field,
-    scale,
-    domain: [],
-    range: [],
-  })
-  const type =
-    typeof encoding === 'object' ? baseLayerOfField(encoding.field) : undefined
+  const type = baseLayerOfField(field ?? '')
   return type === undefined
     ? undefined
     : READS_MODIFICATION_SETTINGS.has(type) && modifications
@@ -495,16 +502,17 @@ function bakedKeys(
 
 /**
  * The `color` object the Tag dialog writes over `current`: the tag's field
- * as a Color by pick writes it, on a ramp under `linear` and a color per
- * value otherwise.
+ * as a Color by pick writes it, `parked` included, on a ramp under `linear`
+ * and a color per value otherwise.
  */
 export function tagColorFor(
   current: ColorSlots,
   tag: string,
   scale: TagColorScale,
+  parked?: ColorSlots,
 ) {
   return {
-    ...colorForField(current, `${TAG_FIELD_PREFIX}${tag}`),
+    ...colorForField(current, `${TAG_FIELD_PREFIX}${tag}`, parked),
     scale: scale === 'linear' ? 'linear' : undefined,
   }
 }

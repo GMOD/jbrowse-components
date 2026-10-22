@@ -1173,7 +1173,7 @@ export function stateModelFactory(
         // nothing
         const hueInput = stableIdentityComputed(() => ({
           encoding: paintedColorEncoding(self.colorEncoding),
-          keptField: self.colorSetting.field,
+          keptField: self.colorSetting.field || self.parkedColor?.field,
         }))
         return {
           /**

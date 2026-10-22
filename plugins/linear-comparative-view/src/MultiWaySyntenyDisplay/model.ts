@@ -24,7 +24,6 @@ import {
   persistTrackConfigNow,
 } from '@jbrowse/core/util'
 import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
-import { withImpliedField } from '@jbrowse/core/util/colorScale'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
@@ -44,11 +43,13 @@ import ColorWritesMixin, {
 } from '@jbrowse/display-kit/ColorWritesMixin'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
+import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   colorFieldOf,
   colorForField,
+  colorForValue,
   colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
@@ -191,10 +192,7 @@ import {
   packedPx,
   ribbonPickState,
 } from './multiwayRenderTypes.ts'
-import {
-  RIBBON_IMPLIED_FIELD,
-  paintedRibbonColor,
-} from './ribbonColorConfigSchema.ts'
+import { RIBBON_GREY, paintedRibbonColor } from './ribbonColorConfigSchema.ts'
 import {
   laneFetchesFor,
   rowsReadAgainstAnchor,
@@ -256,6 +254,7 @@ import type {
 } from './multiwayRenderTypes.ts'
 import type { AssemblyDescription } from '@jbrowse/core/PluginManager'
 import type {
+  AnyConfigurationModel,
   AnyTrackConfig,
   TrackConfigEntry,
 } from '@jbrowse/core/configuration'
@@ -366,6 +365,11 @@ export function stateModelFactory(
       GlobalFetchMixin(),
       LegendMixin(),
       ColorWritesMixin(),
+      ParkedColorMixin(
+        'ribbonColor',
+        (self: { configuration: { ribbonColor: AnyConfigurationModel } }) =>
+          writtenColorOf(self.configuration.ribbonColor),
+      ),
       LodTierInfoMixin(),
       types.model({
         /** #property */
@@ -573,16 +577,17 @@ export function stateModelFactory(
           ) {
             setConf(self, 'hideUnlabelled', false)
           }
+          const written = writtenColorOf(self.configuration.ribbonColor)
           setConf(
             self,
             'ribbonColor',
-            colorForField(
-              withImpliedField(
-                writtenColorOf(self.configuration.ribbonColor),
-                RIBBON_IMPLIED_FIELD,
-              ),
-              field,
-            ),
+            field === ''
+              ? colorForValue(written, undefined)
+              : colorForField(
+                  written,
+                  field,
+                  self.parkedColorOf('ribbonColor'),
+                ),
           )
           self.seenAttributeRanges = {}
           observeRibbonFeatures(self.fetchedFeatures?.features ?? [])
@@ -2349,6 +2354,42 @@ export function stateModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * Paint every ribbon `value`, undefined returning to the strand colors.
+       */
+      setRibbonColorValue(value: string | undefined) {
+        setConf(
+          self,
+          'ribbonColor',
+          colorForValue(writtenColorOf(self.configuration.ribbonColor), value),
+        )
+      },
+      /**
+       * #action
+       * the picker the ribbon Color by's Solid color... opens
+       */
+      openRibbonSolidColorDialog() {
+        const written: string | undefined = getConf(self, [
+          'ribbonColor',
+          'value',
+        ])
+        getSession(self).queueDialog(handleClose => [
+          SolidColorDialog,
+          {
+            label: 'Ribbon color',
+            color: written ?? RIBBON_GREY,
+            written,
+            onChange: (color: string) => {
+              this.setRibbonColorValue(color)
+            },
+            onReset: () => {
+              this.setRibbonColorValue(undefined)
+            },
+            handleClose,
+          },
+        ])
+      },
       /**
        * #action
        * the picker the gene Color by's Solid color... opens

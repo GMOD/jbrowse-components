@@ -43,14 +43,6 @@ export const alignmentsBaseColorConfigSchema = ConfigurationSchema(
       description:
         'the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; empty draws none',
     },
-    /**
-     * #slot scale
-     */
-    scale: {
-      type: 'maybeStringEnum',
-      model: types.enumeration('AlignmentsBaseColorScale', ['none']),
-      description: 'none draws no layer and keeps the field for a switch back',
-    },
   },
   { shorthand: 'field', writes: 'whole', closed: true, plot: true },
 )

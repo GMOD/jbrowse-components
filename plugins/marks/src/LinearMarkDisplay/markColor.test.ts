@@ -419,7 +419,7 @@ test('a region holding keys under a ramp still draws them, and a constant clears
   expect(colorLane(display)).toEqual(keys)
   expect(layerOf(display).colorKey).toBeUndefined()
 
-  editColor(display, 'scale', 'none')
+  editColor(display, 'field', '')
   editColor(display, 'value', 'red')
 
   const layer = layerOf(display)

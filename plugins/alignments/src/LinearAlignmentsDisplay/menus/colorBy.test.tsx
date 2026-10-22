@@ -26,6 +26,8 @@ function makeModel() {
       this.colorField = field
     },
     applyPlot(_draft: Plot) {},
+    pickDefaultColor() {},
+    pickSolidColor() {},
     // Mirrors the display: the layer is the `baseColor` field, its settings
     // the `modifications` slot, which outlives a switch to another layer.
     layerType: undefined as BaseLayerType | undefined,
@@ -102,8 +104,8 @@ describe('color by menu', () => {
   // that just writes a scheme — users try several, and the menu is an observer so
   // the ticks move live. The tag row is the one exception: its click opens a
   // dialog, so it opts out with keepMenuOpen: false, or the dialog appears behind
-  // a menu the user then has to dismiss.
-  test('scheme rows stay open, the tag row (a dialog) dismisses', () => {
+  // a menu the user then has to dismiss. Solid color opens its picker likewise.
+  test('scheme rows stay open, the tag and solid color rows (dialogs) dismiss', () => {
     const model = makeModel()
     const rows = allItems(model, { includeTagOption: true }).filter(
       i => 'checked' in i,
@@ -113,7 +115,7 @@ describe('color by menu', () => {
       const label = 'label' in row ? String(row.label) : ''
       expect([label, staysOpenOnClick(row)]).toEqual([
         label,
-        !label.startsWith('Tag'),
+        !label.startsWith('Tag') && label !== 'Solid color...',
       ])
     }
   })
@@ -437,7 +439,7 @@ describe('color by menu curation', () => {
   test('curated colorOptions replace the basic radios', () => {
     expect(
       labelsFor({ colorOptions: colorFieldOptions('', 'mateRefName') }),
-    ).toEqual(['Normal', 'Mate chromosome'])
+    ).toEqual(['Normal', 'Mate chromosome', 'Solid color...'])
   })
 
   test('a curated entry can relabel one scheme for its own display', () => {
@@ -448,7 +450,7 @@ describe('color by menu curation', () => {
           label: 'Query name',
         }),
       }),
-    ).toEqual(['Normal', 'Query name'])
+    ).toEqual(['Normal', 'Query name', 'Solid color...'])
   })
 
   // Everything behind the scheme is already wired for a BAM (the worker reads

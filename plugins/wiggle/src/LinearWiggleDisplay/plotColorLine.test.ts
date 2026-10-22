@@ -252,17 +252,11 @@ describe('what a swatch writes', () => {
     })
 
     display.applyPlot({
-      color: plotColorEdit(display.colorSetting, {
-        above: 'green',
-        below: 'green',
-      }),
+      color: plotColorOf(display).edit({ above: 'green', below: 'green' }),
     })
     expect(lineOf(display)).toMatchObject({ above: 'green', below: 'green' })
     expect(
-      plotColorEdit(display.colorSetting, {
-        above: '#b2182b',
-        below: '#2166ac',
-      }),
+      plotColorOf(display).edit({ above: '#b2182b', below: '#2166ac' }),
     ).toEqual({
       field: 'score',
       scale: 'threshold',

@@ -208,8 +208,9 @@ pipeline, the plot write paths and the docs before v5.0.0, and their findings
 landed as ADR-214 to ADR-220. What they checked and found in order is as much
 the result, since it is what a later audit need not redo:
 
-- Every color object carries ADR-151's members, and `scale: 'none'` means the
-  same on each: paint `value`, keep the field. Alignments' `baseColor` and
+- Every color object carries ADR-151's members, and a written `field` paints
+  on each. The audit checked `scale: 'none'`, which ADR-240 has since retired:
+  the field a pick leaves is display state (`ParkedColorMixin`). Alignments' `baseColor` and
   `readConnections.color` are the exceptions by design: each names a field alone, since
   each field paints a vocabulary of its own (ADR-149), and the arcs borrow
   `color`'s `range` by category.

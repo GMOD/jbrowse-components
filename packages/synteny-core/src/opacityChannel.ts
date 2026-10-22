@@ -39,7 +39,7 @@ export const DEFAULT_NUMERIC_OPACITY_RANGE = [0.3, 1] as const
 
 /** Whether `opacity` reads a field, rather than drawing its constant. */
 export function opacityMapsField(setting: SyntenyOpacitySnapshot) {
-  return !!setting.field && setting.scale !== 'none'
+  return !!setting.field
 }
 
 function rangeOf(setting: SyntenyOpacitySnapshot, numeric: boolean) {

@@ -49,7 +49,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>1 inherited property from one model</summary>
+<summary>2 inherited properties from 2 models</summary>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="property-parkedcolors">[`parkedColors`](../parkedcolormixin#property-parkedcolors)</span>
 
 From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay#property-id)</span>
 
@@ -97,9 +99,11 @@ From [BaseDisplay](../basedisplay): <span id="volatile-error">[`error`](../based
 | <span id="getter-solidcolor">**solidColor**</span><br><code>string &#124; undefined</code> | the constant `color.value` holds as written, undefined for none or a `jexl:` one |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>32 inherited getters from 3 models</summary>
+<summary>33 inherited getters from 4 models</summary>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>
 
 From [BaseChordDisplay](../basechorddisplay): <span id="getter-view">[`view`](../basechorddisplay#getter-view)</span>, <span id="getter-trackassemblynames">[`trackAssemblyNames`](../basechorddisplay#getter-trackassemblynames)</span>, <span id="getter-fetchinert">[`fetchInert`](../basechorddisplay#getter-fetchinert)</span>, <span id="getter-loaded">[`loaded`](../basechorddisplay#getter-loaded)</span>, <span id="getter-ready">[`ready`](../basechorddisplay#getter-ready)</span>, <span id="getter-displayerror">[`displayError`](../basechorddisplay#getter-displayerror)</span>, <span id="getter-svgready">[`svgReady`](../basechorddisplay#getter-svgready)</span>, <span id="getter-displayphase">[`displayPhase`](../basechorddisplay#getter-displayphase)</span>, <span id="getter-radiuspx">[`radiusPx`](../basechorddisplay#getter-radiuspx)</span>, <span id="getter-curvedepth">[`curveDepth`](../basechorddisplay#getter-curvedepth)</span>, <span id="getter-bezierradius">[`bezierRadius`](../basechorddisplay#getter-bezierradius)</span>, <span id="getter-selectedfeatureid">[`selectedFeatureId`](../basechorddisplay#getter-selectedfeatureid)</span>, <span id="getter-hoveredfeatureid">[`hoveredFeatureId`](../basechorddisplay#getter-hoveredfeatureid)</span>, <span id="getter-figurestage">[`figureStage`](../basechorddisplay#getter-figurestage)</span>, <span id="getter-drawncount">[`drawnCount`](../basechorddisplay#getter-drawncount)</span>, <span id="getter-shapes">[`shapes`](../basechorddisplay#getter-shapes)</span>
 
@@ -120,7 +124,9 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Color by... and Advanced → Edit plot..., which the circular view shows under its Tracks menu |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>11 inherited methods from 2 models</summary>
+<summary>12 inherited methods from 3 models</summary>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
 From [BaseChordDisplay](../basechorddisplay): <span id="method-shapefor">[`shapeFor`](../basechorddisplay#method-shapefor)</span>, <span id="method-shapepathfor">[`shapePathFor`](../basechorddisplay#method-shapepathfor)</span>, <span id="method-hitat">[`hitAt`](../basechorddisplay#method-hitat)</span>, <span id="method-assemblyof">[`assemblyOf`](../basechorddisplay#method-assemblyof)</span>, <span id="method-canonicalrefname">[`canonicalRefName`](../basechorddisplay#method-canonicalrefname)</span>, <span id="method-axisslice">[`axisSlice`](../basechorddisplay#method-axisslice)</span>
 
@@ -140,9 +146,11 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | the picker Color by's Solid color... opens |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>12 inherited actions from 3 models</summary>
+<summary>13 inherited actions from 4 models</summary>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
 
 From [BaseChordDisplay](../basechorddisplay): <span id="action-openerrordialog">[`openErrorDialog`](../basechorddisplay#action-openerrordialog)</span>, <span id="action-setfeatures">[`setFeatures`](../basechorddisplay#action-setfeatures)</span>, <span id="action-reload">[`reload`](../basechorddisplay#action-reload)</span>
 

@@ -277,7 +277,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           // is relabelled here for the thing a PAF block aligns to —
           // chromosome painting, matching the synteny view's Query mode.
           getColorByMenuItem(self, {
-            colorOptions: colorFieldOptions('', 'strand', 'mapq', {
+            colorOptions: colorFieldOptions('strand', 'mapq', {
               field: 'mateRefName',
               label: 'Query',
             }),

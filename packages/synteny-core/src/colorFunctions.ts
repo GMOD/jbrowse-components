@@ -64,9 +64,9 @@ import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 export const MISSING_VALUE_COLOR = cssColorToABGR(NO_CATEGORY_COLOR)
 
 /** The ribbon color while no field paints and the track names none: the match color. */
-export const DEFAULT_RIBBON_COLOR = cssColorToABGR(
-  colorSchemes.default.cigarColors.M,
-)
+export const DEFAULT_RIBBON_CSS = colorSchemes.default.cigarColors.M
+
+export const DEFAULT_RIBBON_COLOR = cssColorToABGR(DEFAULT_RIBBON_CSS)
 
 // a row a text column leaves unlabelled is "in no group", not "no data", so it
 // takes the one grey every categorical channel paints a value-less feature

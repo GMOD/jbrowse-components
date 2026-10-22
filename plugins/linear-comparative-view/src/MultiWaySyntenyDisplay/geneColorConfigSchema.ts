@@ -43,7 +43,7 @@ export const geneColorConfigSchema = ConfigurationSchema(
       field:
         'a feature field, or a jexl expression over feature, whose values each take one range color, with a key; cluster paints a gene, or a placement box, by its ortholog group',
       scale:
-        'none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field',
+        'categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field',
     }),
     ...colorDomainSlot({
       domain:

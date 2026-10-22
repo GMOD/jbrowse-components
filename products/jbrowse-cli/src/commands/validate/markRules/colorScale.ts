@@ -18,9 +18,8 @@ export function isRampScale(scale: unknown): scale is RampScaleName {
   return scale === 'linear' || scale === 'log' || scale === 'symlog'
 }
 
-/** How a color object maps its `field`; `none` paints `value`. */
+/** How a color object maps its `field`. */
 export const COLOR_SCALES = [
-  'none',
   'categorical',
   ...RAMP_SCALES,
   'threshold',

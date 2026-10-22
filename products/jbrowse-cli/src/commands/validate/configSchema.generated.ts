@@ -4821,13 +4821,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each feature's own color, as none does except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and categorical for any other field.",
+              "description": "categorical a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each feature's own color, as an object with no field does, except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and categorical for any other field.",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
-                  "none",
                   "categorical",
                   "threshold",
                   "linear",
@@ -6379,13 +6378,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize, insertSizeAndOrientation and mapq, and categorical over any other field.",
+              "description": "categorical a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize, insertSizeAndOrientation and mapq, and categorical over any other field.",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
-                  "none",
                   "categorical",
                   "linear",
                   "threshold"
@@ -7131,15 +7129,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "bisulfite"
                 ]
               }
-            },
-            "scale": {
-              "description": "none draws no layer and keeps the field for a switch back.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "const": "none"
-              }
             }
           },
           "patternProperties": {
@@ -7678,7 +7667,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               },
               "else": {
                 "enum": [
-                  "none",
                   "categorical",
                   "threshold"
                 ]
@@ -8223,7 +8211,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "LGVSyntenyColor",
       "anyOf": [
         {
-          "description": "Shorthand for \`{ \\"value\\": ..., \\"scale\\": \\"none\\" }\`.",
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
           "$ref": "#/$defs/CssColor",
           "type": "string"
         },
@@ -8243,7 +8231,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "field": {
               "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName color by their fixed levels and mapq by its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing and svSignal color nothing, as a facet sections by them.",
-              "default": "strand",
+              "default": "",
               "if": {
                 "type": "null"
               },
@@ -8252,13 +8240,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize, insertSizeAndOrientation and mapq, and categorical over any other field.",
+              "description": "categorical a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize, insertSizeAndOrientation and mapq, and categorical over any other field.",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
-                  "none",
                   "categorical",
                   "linear",
                   "threshold"
@@ -8833,13 +8820,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field.",
+              "description": "categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field.",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
-                  "none",
                   "categorical",
                   "threshold"
                 ]
@@ -9076,13 +9062,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement uses its preset scale and a column one read off its values.",
+              "description": "linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement uses its preset scale and a column one read off its values.",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
-                  "none",
                   "linear",
                   "threshold"
                 ]
@@ -9406,13 +9391,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "categorical hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field.",
+              "description": "categorical hands out range colors per distinct value; linear, log and symlog read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; unset is linear for score and categorical for any other field.",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
-                  "none",
                   "categorical",
                   "linear",
                   "log",
@@ -9661,15 +9645,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none or categorical; unset follows field.",
+              "description": "categorical; unset follows field.",
               "if": {
                 "type": "null"
               },
               "else": {
-                "enum": [
-                  "none",
-                  "categorical"
-                ]
+                "const": "categorical"
               }
             },
             "range": {
@@ -11564,13 +11545,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field.",
+              "description": "categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field.",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
-                  "none",
                   "categorical",
                   "threshold"
                 ]
@@ -12544,13 +12524,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "threshold bands score at the domain cuts, solid on every mark, linear ramps it across the y domain, none paints value; unset, range is the pair about the origin, solid on bars, points and lines and fading from white there on a heatmap.",
+              "description": "threshold bands score at the domain cuts, solid on every mark, linear ramps it across the y domain; unset, range is the pair about the origin, solid on bars, points and lines and fading from white there on a heatmap.",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
-                  "none",
                   "linear",
                   "threshold"
                 ]
@@ -22500,6 +22479,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearBasicDisplayState": {
       "type": "object",
       "properties": {
+        "parkedColors": {},
         "pinnedFeatureIds": {
           "type": "array",
           "items": {
@@ -22605,6 +22585,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMultiRowFeatureDisplayState": {
       "type": "object",
       "properties": {
+        "parkedColors": {},
         "runClustering": {
           "type": "boolean"
         },
@@ -22665,6 +22646,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearAlignmentsDisplayState": {
       "type": "object",
       "properties": {
+        "parkedColors": {},
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
@@ -22759,6 +22741,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ChordVariantDisplayState": {
       "type": "object",
       "properties": {
+        "parkedColors": {},
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
@@ -22965,6 +22948,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LGVSyntenyDisplayState": {
       "type": "object",
       "properties": {
+        "parkedColors": {},
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
@@ -23009,6 +22993,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MultiWaySyntenyDisplayState": {
       "type": "object",
       "properties": {
+        "parkedColors": {},
         "hiddenLaneNames": {},
         "frozenLanes": {},
         "lanePins": {},
@@ -23100,6 +23085,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearVariantDisplayState": {
       "type": "object",
       "properties": {
+        "parkedColors": {},
         "pinnedFeatureIds": {
           "type": "array",
           "items": {
@@ -23202,6 +23188,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMultiSampleVariantDisplayState": {
       "type": "object",
       "properties": {
+        "parkedColors": {},
         "runClustering": {
           "type": "boolean"
         },
@@ -23333,6 +23320,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearWiggleDisplayState": {
       "type": "object",
       "properties": {
+        "parkedColors": {},
         "runClustering": {
           "type": "boolean"
         },
@@ -23453,6 +23441,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMafDisplayState": {
       "type": "object",
       "properties": {
+        "parkedColors": {},
         "runClustering": {
           "type": "boolean"
         },
@@ -25634,13 +25623,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement uses its preset scale and a column one read off its values.",
+              "description": "linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement uses its preset scale and a column one read off its values.",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
-                  "none",
                   "linear",
                   "threshold"
                 ]
@@ -25826,15 +25814,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none, threshold, or unset to follow the field.",
+              "description": "threshold, or unset to follow the field.",
               "if": {
                 "type": "null"
               },
               "else": {
-                "enum": [
-                  "none",
-                  "threshold"
-                ]
+                "const": "threshold"
               }
             },
             "domain": {
@@ -26596,6 +26581,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FieldPredicate"
           }
         },
+        "parkedColors": {},
         "color": {
           "$ref": "#/$defs/SyntenyColor"
         },
@@ -26897,6 +26883,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FieldPredicate"
           }
         },
+        "parkedColors": {},
         "color": {
           "$ref": "#/$defs/SyntenyColor"
         },
@@ -27283,6 +27270,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FieldPredicate"
           }
         },
+        "parkedColors": {},
         "color": {
           "$ref": "#/$defs/SyntenyColor"
         },

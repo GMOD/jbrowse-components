@@ -672,6 +672,12 @@ export default function baseStateModelFactory(
         return {
           displayConfig: {
             ...workerConfig,
+            // the parked field's values ship too, so its way back refetches
+            // nothing
+            color: {
+              ...workerConfig.color,
+              field: workerConfig.color.field || self.parkedColor?.field || '',
+            },
             subfeatureLabels: self.effectiveSubfeatureLabels,
             // A facet other than strand needs a stamp per feature, so only
             // it joins the cache key: a strand facet never refetches.
@@ -1590,9 +1596,8 @@ export default function baseStateModelFactory(
        * Apply writes and its Edit plot button shows: the facet, keeping its
        * domain while the field is the one already set; a color by the field
        * when ticked, left alone while it already paints through any scale;
-       * and unticked over a categorical color that was the facet's own, that
-       * field parked under `scale: 'none'`. Both colors keep a written
-       * constant for the way back, as Color by does.
+       * and unticked over a categorical color that was the facet's own, no
+       * field. Both colors keep a written constant, as Color by does.
        */
       groupByPlot(field: string | undefined, colorByGroup: boolean): Plot {
         const groupColor = self.categoricalColorField?.field ?? ''
@@ -1607,7 +1612,7 @@ export default function baseStateModelFactory(
           ...(colorByGroup && field
             ? field === painted
               ? {}
-              : { color: colorForField(written, field) }
+              : { color: colorForField(written, field, self.parkedColor) }
             : wasGroupColor
               ? { color: colorForField(written, '') }
               : {}),

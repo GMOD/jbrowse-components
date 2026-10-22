@@ -1,5 +1,6 @@
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import { withHint } from '@jbrowse/core/ui/menuItems'
+import { solidColorItem } from '@jbrowse/display-kit/colorByMenu'
 
 import { COLOR_MODES, VALUE_MODES_LABEL } from './colorModes.ts'
 import { attributeOf, resolveCategoricalMode } from './colorRamps.ts'
@@ -75,7 +76,8 @@ function radios(target: ColorByMenuTarget, modes: ModeEntry[]): MenuItem[] {
   return modes.map(({ label, value, helpText, disabledHelpText }) => ({
     label,
     type: 'radio' as const,
-    checked: target.field === value,
+    checked:
+      target.field === value && !(value === '' && target.solidColor?.checked),
     helpText,
     disabled: disabledHelpText !== undefined,
     disabledHelpText,
@@ -180,6 +182,9 @@ export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
       helpText: 'A number each alignment carries, on a ramp the legend labels.',
       subMenu: radios(target, values),
     },
+    ...(target.solidColor
+      ? [solidColorItem(target.solidColor.checked, target.solidColor.pick)]
+      : []),
     ...(categorical ? categoricalItems(target) : []),
     ...(trackColors && trackColors.tracks.length > 1
       ? trackColorItems(trackColors)

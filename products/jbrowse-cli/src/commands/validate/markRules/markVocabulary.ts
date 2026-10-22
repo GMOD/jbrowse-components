@@ -81,7 +81,6 @@ export const MAX_THRESHOLD_CUTS = 8
 
 /** The scales a mark's `color` offers. */
 export const MARK_COLOR_SCALES = [
-  'none',
   'categorical',
   'linear',
   'log',

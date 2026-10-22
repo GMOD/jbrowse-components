@@ -13,6 +13,12 @@ import {
   colorTitleSlot,
 } from './colorConfigSchema.ts'
 
+import type {
+  IAnyModelType,
+  Instance,
+  SnapshotIn,
+} from '@jbrowse/mobx-state-tree'
+
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
 
@@ -43,8 +49,28 @@ const Display = types.compose(
   ColorWritesMixin(),
 )
 
+// ParkedColorMixin installs its reaction on attach, so a test model hangs
+// under a root as a display or view does
+function attached<T extends IAnyModelType>(
+  Type: T,
+  snapshot: SnapshotIn<T>,
+  env?: object,
+): Instance<T> {
+  const root = types
+    .model({ child: types.maybe(Type) })
+    .actions(self => ({
+      attach(child: SnapshotIn<T>) {
+        self.child = child as never
+      },
+    }))
+    .create({} as never, env)
+  root.attach(snapshot)
+  return root.child as Instance<T>
+}
+
 function display(color?: unknown) {
-  return Display.create(
+  return attached(
+    Display,
     { configuration: color === undefined ? {} : { color } },
     { pluginManager },
   )
@@ -68,7 +94,8 @@ test("the way back parks the field, and re-picking it keeps the key's names", ()
     title: 'Feature type',
   })
   d.colorByField('')
-  expect(colorOf(d)).toMatchObject({ field: 'type', scale: 'none' })
+  expect(colorOf(d)).toEqual({})
+  expect(d.parkedColor).toMatchObject({ field: 'type' })
   d.colorByField('type')
   expect(colorOf(d)).toEqual({
     field: 'type',
@@ -78,16 +105,14 @@ test("the way back parks the field, and re-picking it keeps the key's names", ()
   })
 })
 
-test('a solid color parks the field under none, and undefined clears it', () => {
-  const d = display({ field: 'type' })
+test('a solid color parks the field, and undefined clears the color', () => {
+  const d = display({ field: 'type', domain: ['gene'] })
   d.setColorValue('steelblue')
-  expect(colorOf(d)).toEqual({
-    value: 'steelblue',
-    field: 'type',
-    scale: 'none',
-  })
+  expect(colorOf(d)).toEqual({ value: 'steelblue' })
   d.setColorValue(undefined)
-  expect(colorOf(d)).toEqual({ field: 'type', scale: 'none' })
+  expect(colorOf(d)).toEqual({})
+  d.colorByField('type')
+  expect(colorOf(d)).toEqual({ field: 'type', domain: ['gene'] })
 })
 
 // Every color tier keys on the object's arrays, so a write of the same
@@ -112,17 +137,23 @@ const StrandDefaultDisplay = types.compose(
     configuration: ConfigurationSchema('TestStrandDefaultDisplay', {
       color: ConfigurationSchema(
         'TestStrandDefaultColor',
-        { field: { type: 'string', defaultValue: 'strand' } },
-        { baseConfiguration: TestColor, ...colorChannelOptions('color') },
+        {},
+        {
+          baseConfiguration: TestColor,
+          ...colorChannelOptions('color', undefined, {
+            impliedField: 'strand',
+          }),
+        },
       ),
     }),
   }),
   ColorWritesMixin(),
 )
 
-// LGVSyntenyColor's field defaults to `strand`, which its snapshot omits
-test('a defaulted field parks on the way back and keeps its range on a re-pick', () => {
-  const d = StrandDefaultDisplay.create(
+// LGVSyntenyColor maps `strand` while its snapshot names no field
+test('an implied field reads as written and keeps its range on a re-pick', () => {
+  const d = attached(
+    StrandDefaultDisplay,
     { configuration: { color: { range: ['red', 'blue'] } } },
     { pluginManager },
   )
@@ -130,24 +161,19 @@ test('a defaulted field parks on the way back and keeps its range on a re-pick',
   onPatch(d, patch => patches.push(patch))
   d.colorByField('strand')
   expect(patches).toEqual([])
+  expect(d.writtenColor).toEqual({ field: 'strand', range: ['red', 'blue'] })
 
-  d.colorByField('')
-  expect(d.writtenColor).toEqual({
-    field: 'strand',
-    range: ['red', 'blue'],
-    scale: 'none',
-  })
+  d.colorByField('mapq')
+  expect(d.writtenColor).toEqual({ field: 'mapq' })
   d.colorByField('strand')
   expect(d.writtenColor).toEqual({ field: 'strand', range: ['red', 'blue'] })
 })
 
-test('Default clears the constant first, then the field', () => {
-  const parked = display({ value: 'red', field: 'type', scale: 'none' })
-  parked.pickDefaultColor()
-  expect(colorOf(parked)).toEqual({ field: 'type', scale: 'none' })
-  const painting = display({ field: 'type' })
-  painting.pickDefaultColor()
-  expect(colorOf(painting)).toEqual({ field: 'type', scale: 'none' })
+test('Default clears the constant and the field together', () => {
+  const kept = display({ value: 'red', field: 'type' })
+  kept.pickDefaultColor()
+  expect(colorOf(kept)).toEqual({})
+  expect(kept.parkedColor).toEqual({ field: 'type' })
 })
 
 test('Solid color paints the constant kept beside a painting field, and opens the picker', () => {
@@ -162,11 +188,7 @@ test('Solid color paints the constant kept beside a painting field, and opens th
     { pluginManager },
   )
   kept.pickSolidColor()
-  expect(getSnapshot(kept.configuration.color)).toEqual({
-    value: 'red',
-    field: 'type',
-    scale: 'none',
-  })
+  expect(getSnapshot(kept.configuration.color)).toEqual({ value: 'red' })
   const none = WithPicker.create(
     { configuration: { color: { field: 'type' } } },
     { pluginManager },

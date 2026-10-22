@@ -121,14 +121,6 @@ test.each(['type', 'r2'])(
   },
 )
 
-test('a dormant field under scale none reaches the color object as written', () => {
-  const conf = hydrateFeatureTrack({ color: { field: 'type', scale: 'none' } })
-  expect(colorOf(conf, 'LinearBasicDisplay')).toEqual({
-    field: 'type',
-    scale: 'none',
-  })
-})
-
 test('a color no display takes fails the load, naming every reason', () => {
   expect(() => hydrateFeatureTrack({ color: { scale: 'ordinal' } })).toThrow(
     /no display of a FeatureTrack takes displayDefaults\.color \(LinearBasicDisplay: /,

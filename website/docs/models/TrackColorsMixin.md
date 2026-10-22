@@ -23,11 +23,13 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-color">**color**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>color: types.stripDefault( syntenyColorConfigSchema, defaultCol…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>color: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;syntenyColorConfigSchema,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;defaultColorField ? { field: defaultColorField } : {},&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | The color every track in the view paints with, a [](/docs/config/syntenycolor) object: `{ field: "strand" }`, `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`, a measurement (`identity`, `mapq`, `dnds`) or a column the tracks declare, with `domain` ordering a text column's labels, `range` coloring them and `labels` naming them in the key, `range` or `scheme`, `reverse` and pinned ends reshaping a ramp, and `scale: 'threshold'` binning a number at `domain`'s cuts; a color string paints every alignment. Unset, the view's default paints: `query` on the circular view, the default scheme elsewhere. |
+| <span id="property-color">**color**</span><br><code>color: types.stripDefault(syntenyColorConfigSchema, {})</code> | The color every track in the view paints with, a [](/docs/config/syntenycolor) object: `{ field: "strand" }`, `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`, a measurement (`identity`, `mapq`, `dnds`) or a column the tracks declare, with `domain` ordering a text column's labels, `range` coloring them and `labels` naming them in the key, `range` or `scheme`, `reverse` and pinned ends reshaping a ramp, and `scale: 'threshold'` binning a number at `domain`'s cuts; a color string paints every alignment. Unset, the view's default paints: `query` on the circular view, the default scheme elsewhere. |
 | <span id="property-trackcolors">**trackColors**</span><br><code>trackColors: types.map(types.string)</code> | trackId -> explicit color under `color: { field: 'track' }`. Absent means the track takes an automatic slot from the palette. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>1 inherited property from one model</summary>
+<summary>2 inherited properties from 2 models</summary>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="property-parkedcolors">[`parkedColors`](../parkedcolormixin#property-parkedcolors)</span>
 
 From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="property-filter">[`filter`](../syntenyfiltermixin#property-filter)</span>
 
@@ -45,7 +47,8 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="property-filter">[`f
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-colorsetting">**colorSetting**</span><br><code>SyntenyColorSnapshot</code> | The `color` object as its snapshot holds it. |
+| <span id="getter-colorsetting">**colorSetting**</span><br><code>SyntenyColorSnapshot</code> | The `color` object as its snapshot holds it, with the view's default field where it names neither a field nor a constant. |
+| <span id="getter-impliedcolorfield">**impliedColorField**</span><br><code>string</code> | The field the view paints while `color` names neither a field nor a constant, '' for its default scheme. |
 | <span id="getter-colorpaint">**colorPaint**</span><br><code>SyntenyColorPaint</code> | What `color` declares over a field's own scale: `scale`, `domain`, `range` or `scheme` for its colors, `reverse`, and a ramp's pinned ends and middle. Read from these slots alone, so a key-only edit repaints nothing. |
 | <span id="getter-colorvalue">**colorValue**</span><br><code>string &#124; undefined</code> | `color.value`: the color every alignment paints under the default mode in place of the view's own scheme, or undefined for that scheme. |
 | <span id="getter-colordomain">**colorDomain**</span><br><code>readonly string[]</code> | `color.domain`, the order a text column's labels take. Read from that slot alone, so a key-only edit (`title`, `labels`) recolors nothing. |
@@ -61,7 +64,9 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="property-filter">[`f
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The active mode's key, or none for a mode without one. View-wide rather than per display because the key is one box for the whole view, and the ramp domain it labels is the view's. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>2 inherited getters from one model</summary>
+<summary>3 inherited getters from 2 models</summary>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>
 
 From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="getter-predicates">[`predicates`](../syntenyfiltermixin#getter-predicates)</span>, <span id="getter-minlength">[`minLength`](../syntenyfiltermixin#getter-minlength)</span>
 
@@ -83,7 +88,9 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="getter-predicates">[
 | <span id="method-trackcolorfor">**trackColorFor**</span><br><code>(trackId: string) =&gt; string</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>1 inherited method from one model</summary>
+<summary>2 inherited methods from 2 models</summary>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
 From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[`lowerBound`](../syntenyfiltermixin#method-lowerbound)</span>
 
@@ -97,13 +104,17 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 | <span id="action-observeattributeranges">**observeAttributeRanges**</span><br><code>(ranges: Record&lt;string, AttributeRange&gt;) =&gt; void</code> | Fold one fetch's observed attribute spans into the domain this view paints and labels its ramps with. Called by each display as its fetch lands, because the accumulation has to outlive the payload it came from: the previous window's span is gone from `loadedAttributeRanges` the moment the next one commits. |
 | <span id="action-resetattributeranges">**resetAttributeRanges**</span><br><code>() =&gt; void</code> | Forget the accumulated domain, leaving `attributeRanges` reporting what the loaded fetches cover and nothing else.<br><br>The way back from a monotonic domain, and the only one: a single window holding an outlier widens the ramp for the rest of the session, and `attributeRanges` unions the loaded spans over this, so a reset rescales to what is on screen without waiting for a refetch. Picking a mode calls it: a reader picks the mode again when the ramp shows nothing useful. |
 | <span id="action-sethideunlabelled">**setHideUnlabelled**</span><br><code>(value: boolean) =&gt; void</code> |  |
-| <span id="action-setcolorfield">**setColorField**</span><br><code>(field: string) =&gt; void</code> | Set the field the view paints by over the `color` object (`''` for the default color), and rescale the ramp, which is the only way back from a domain one outlying window widened. |
+| <span id="action-setcolorfield">**setColorField**</span><br><code>(field: string) =&gt; void</code> | Set the field the view paints by over the `color` object, `''` unsetting it for the view's default, and rescale the ramp, which is the only way back from a domain one outlying window widened. |
+| <span id="action-setcolorvalue">**setColorValue**</span><br><code>(value: string &#124; undefined) =&gt; void</code> | Paint every alignment `value`, undefined returning to the view's default. |
+| <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | The picker Color by's Solid color... opens. |
 | <span id="action-setcolordomain">**setColorDomain**</span><br><code>(domain: string[]) =&gt; void</code> | Declare the order a text column's labels take. The labels listed lead, the rest follow sorted; an empty list gives back the order the fetches found them in. |
 | <span id="action-settrackcolor">**setTrackColor**</span><br><code>(trackId: string, value: string &#124; undefined) =&gt; void</code> | Pin one track's color under `color: { field: 'track' }`, or release it back to an automatic palette slot. |
 | <span id="action-cleartrackcolors">**clearTrackColors**</span><br><code>() =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>2 inherited actions from one model</summary>
+<summary>3 inherited actions from 2 models</summary>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
 
 From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="action-setfilter">[`setFilter`](../syntenyfiltermixin#action-setfilter)</span>, <span id="action-setlowerbound">[`setLowerBound`](../syntenyfiltermixin#action-setlowerbound)</span>
 

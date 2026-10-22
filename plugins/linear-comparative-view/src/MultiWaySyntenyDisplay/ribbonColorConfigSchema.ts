@@ -11,7 +11,7 @@ import type { SyntenyColorSnapshot } from '@jbrowse/synteny-core'
 /** The field a ribbon color naming neither a field nor a constant paints. */
 export const RIBBON_IMPLIED_FIELD = 'strand'
 
-/** Every ribbon's color under `none`, and an unlabelled pair's under a field. */
+/** Every ribbon's color under no field, and an unlabelled pair's under one. */
 export const RIBBON_GREY = 'rgba(130,130,130,0.3)'
 
 /** The ribbon color object as it paints: the constant, and the field mapped. */

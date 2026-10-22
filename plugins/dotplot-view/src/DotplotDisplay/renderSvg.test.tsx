@@ -36,6 +36,7 @@ const view: {
 }
 
 jest.mock('@jbrowse/core/util', () => ({
+  ...jest.requireActual('@jbrowse/core/util'),
   getContainingView: () => view,
 }))
 

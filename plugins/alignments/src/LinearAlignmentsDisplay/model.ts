@@ -15,6 +15,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   canonicalizeViewRefName,
+  getDialogHost,
   getNotificationSink,
   getPaletteHost,
   getSession,
@@ -41,6 +42,7 @@ import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
@@ -120,6 +122,7 @@ import { attachChainFields, buildReadIdsByChainName } from './chainFields.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
   framesUnpairedChainStrand,
+  rgb255,
 } from './colorUtils.ts'
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
@@ -3144,6 +3147,30 @@ export default function stateModelFactory(
             if (isFeature(session.selection)) {
               session.clearSelection()
             }
+          },
+
+          /**
+           * #action
+           * The picker Color by's Solid color... opens, on the theme's plain
+           * read fill until a constant is written.
+           */
+          openSolidColorDialog() {
+            const written = self.colorSetting.value
+            getDialogHost(self).queueDialog(handleClose => [
+              SolidColorDialog,
+              {
+                label: 'Read color',
+                color: written ?? rgb255(self.colorPalette.colorPairLR),
+                written,
+                onChange: (color: string) => {
+                  self.setColorValue(color)
+                },
+                onReset: () => {
+                  self.setColorValue(undefined)
+                },
+                handleClose,
+              },
+            ])
           },
 
           /**

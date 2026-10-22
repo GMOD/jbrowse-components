@@ -93,17 +93,14 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
        ramp's `domainQuantile` (amend ADR-240's `{ quantile }`, which no slot
        type holds and which would split today's one q). A bare string inside
        `encoding` is a field, as on the mark display.
-     - A written `field` always paints (Colin); the field Color by → Default
-       leaves is display state (ADR-240 amendment 4), so Default and back
-       refetches nothing and keeps its domain and names. Today's Default also
-       clears a constant (`ColorWritesMixin.ts`), and the radios tick Solid
-       for a constant with no field; both change with it.
-     - Step 0, in today's flat spelling: `scale: 'none'` goes
-       (`colorForField`, `colorForValue`, `pickSolidColor`, `markEdit`, the
-       shape, wiggle and synteny scale lists), LGVSynteny's `strand` default
-       moves to `impliedField`, `baseColor`'s `none` becomes
-       `pileup.bases.show`.
-       **Claimed 2026-10-22, worktree `channel-step0`.**
+     - Step 0 landed as
+       [ADR-241](../architecture-decision-records/adr-241-a-color-object-is-unset-a-value-or-a-field.md):
+       a color object is unset, a `value` or a `field`, and the field a write
+       leaves is `ParkedColorMixin` state. Pass A moves its `writtenOf`
+       readers with the path, and the no-value fill alignments and the
+       ribbons still read off `value` goes to the missing-value member, so
+       `value` and `field` never share an object. `pileup.bases.show` comes
+       with `baseColor`'s move under `pileup.bases`.
      - Pass A, together: every color object, the hand-written ones included
        (HicColor, MafColor, MarkShape, MarkSize, RowColor, WiggleColor,
        `baseColor`, `readConnections.color`), and every reader of the flat

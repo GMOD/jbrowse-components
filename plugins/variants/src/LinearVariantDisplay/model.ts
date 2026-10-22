@@ -61,19 +61,13 @@ export default function stateModelFactory(
        * #getter
        */
       get colorsByConsequenceImpact() {
-        return (
-          self.colorSetting.field === IMPACT_FIELD &&
-          self.colorSetting.scale !== 'none'
-        )
+        return self.colorSetting.field === IMPACT_FIELD
       },
       /**
        * #getter
        */
       get colorsBySvType() {
-        return (
-          self.colorSetting.field === SV_TYPE_FIELD &&
-          self.colorSetting.scale !== 'none'
-        )
+        return self.colorSetting.field === SV_TYPE_FIELD
       },
       /**
        * #getter

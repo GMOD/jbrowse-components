@@ -106,12 +106,11 @@ function rampMembers(channel: EditChannel): readonly ScaleMember[] {
 /**
  * The scale kinds a channel offers, off the vocabulary its own schema
  * declares: every color scale for `color`, `categorical` alone for `shape`,
- * and a width's two ramps for `size`. `none` is the constant, which the field
- * picker above already means.
+ * and a width's two ramps for `size`.
  */
 export function channelScales(channel: EditChannel): readonly string[] {
   return channel === 'color'
-    ? MARK_COLOR_SCALES.filter(scale => scale !== 'none')
+    ? MARK_COLOR_SCALES
     : channel === 'shape'
       ? ['categorical']
       : channel === 'size'
@@ -130,11 +129,10 @@ const PICKABLE_MEMBERS = new Set<string>([
   ...LIST_MEMBERS,
 ])
 
-// The field a channel object paints through: none under `scale: 'none'`,
-// where the field waits unread and `value` paints.
+// The field a channel object paints through, '' where it names none.
 function paintedField(members: Record<string, unknown> | undefined) {
   const field = members?.field
-  return typeof field === 'string' && members?.scale !== 'none' ? field : ''
+  return typeof field === 'string' ? field : ''
 }
 
 function pickedValue(declared: Record<string, unknown>) {
@@ -385,10 +383,9 @@ export function withChannel(
         scale: 'categorical',
       })
     }
-    const heldScale = heldField ? held.scale : 'none'
-    return heldScale !== 'none' &&
+    return heldField &&
       (implied === undefined ||
-        readsNumbers(implied) === readsNumbers(heldScale))
+        readsNumbers(implied) === readsNumbers(held.scale))
       ? writeChannel(mark, channel, { ...held, field: value })
       : writeChannel(mark, channel, {
           value: held?.value,

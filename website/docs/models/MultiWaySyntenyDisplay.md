@@ -27,7 +27,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-lanepins">**lanePins**</span><br><code>lanePins: types.frozen&lt;readonly LanePin[] &#124; undefined&gt;()</code> | the reader's pins: a lane's contig, or a block on it, and its orientation on a contig against the anchor it was set under |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>1 inherited property from one model</summary>
+<summary>2 inherited properties from 2 models</summary>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="property-parkedcolors">[`parkedColors`](../parkedcolormixin#property-parkedcolors)</span>
 
 From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay#property-id)</span>
 
@@ -227,9 +229,11 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-hoveredfeature">**hoveredFeature**</span><br><code>Feature &#124; undefined</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>66 inherited getters from 10 models</summary>
+<summary>67 inherited getters from 11 models</summary>
 
 From [LodTierInfoMixin](../lodtierinfomixin): <span id="getter-adapterheader">[`adapterHeader`](../lodtierinfomixin#getter-adapterheader)</span>, <span id="getter-lodtierinfo">[`lodTierInfo`](../lodtierinfomixin#getter-lodtierinfo)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span>
 
@@ -276,7 +280,9 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>9 inherited methods from 3 models</summary>
+<summary>10 inherited methods from 4 models</summary>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
 From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScalesIn`](../legendmixin#method-colorscalesin)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 
@@ -330,6 +336,8 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-restamporigin">**restampOrigin**</span><br><code>() =&gt; void</code> | lays the lanes out against where the view is now; a lane's position does not depend on the origin, only what the stack clips to does |
 | <span id="action-advanceanimation">**advanceAnimation**</span><br><code>(nowMs: number) =&gt; void</code> |  |
 | <span id="action-endanimation">**endAnimation**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-setribboncolorvalue">**setRibbonColorValue**</span><br><code>(value: string &#124; undefined) =&gt; void</code> | Paint every ribbon `value`, undefined returning to the strand colors. |
+| <span id="action-openribbonsolidcolordialog">**openRibbonSolidColorDialog**</span><br><code>() =&gt; void</code> | the picker the ribbon Color by's Solid color... opens |
 | <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | the picker the gene Color by's Solid color... opens |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> |  |
 | <span id="action-openinnewview">**openInNewView**</span><br><code>(assemblyName: string, loc: string) =&gt; void</code> |  |
@@ -342,9 +350,11 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactNo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactNode&gt;</code></pre></dialog></span> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>38 inherited actions from 9 models</summary>
+<summary>39 inherited actions from 10 models</summary>
 
 From [LodTierInfoMixin](../lodtierinfomixin): <span id="action-setadapterheader">[`setAdapterHeader`](../lodtierinfomixin#action-setadapterheader)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
 

@@ -60,7 +60,7 @@ export const cellColorConfigSchema = ConfigurationSchema(
       field:
         'impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block in phased mode; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range color with a key. A record with no value keeps the default alt color',
       scale:
-        'none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field',
+        'categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field',
     }),
     ...colorDomainSlot({
       domain:

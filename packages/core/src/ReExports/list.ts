@@ -461,6 +461,7 @@ export default [
   '@jbrowse/display-kit/MarkSvgLayer',
   '@jbrowse/display-kit/MatrixRampMixin',
   '@jbrowse/display-kit/MultiRegionDisplayMixin',
+  '@jbrowse/display-kit/ParkedColorMixin',
   '@jbrowse/display-kit/planRegionFetch',
   '@jbrowse/display-kit/PlotDialog',
   '@jbrowse/display-kit/plotMenu',

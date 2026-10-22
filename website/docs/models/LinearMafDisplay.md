@@ -51,9 +51,11 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>4 inherited properties from 2 models</summary>
+<summary>5 inherited properties from 3 models</summary>
 
 From [TreeSidebarMixin](../treesidebarmixin): <span id="property-runclustering">[`runClustering`](../treesidebarmixin#property-runclustering)</span>, <span id="property-clusterregion">[`clusterRegion`](../treesidebarmixin#property-clusterregion)</span>, <span id="property-sortrowsby">[`sortRowsBy`](../treesidebarmixin#property-sortrowsby)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="property-parkedcolors">[`parkedColors`](../parkedcolormixin#property-parkedcolors)</span>
 
 From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay#property-id)</span>
 
@@ -205,7 +207,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-gateenabled">**gateEnabled**</span><br><code>boolean</code> | Enables byte-estimate gating: a MAF-aware estimate (per-species sequence x span) is checked against `fetchSizeLimit` inside the tier's own RPC, blocking the fetch with a force-load prompt.<br><br>On for both tiers: each RPC measures the file it reads, the alignment index on detail and the `summaryAdapter` sub-adapter on summary (`CoarseTierMixin`), since the summary read is a whole-feature download over every zoom from 20kb up. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>146 inherited getters from 14 models</summary>
+<summary>147 inherited getters from 15 models</summary>
 
 From [ScoreScaleMixin](../scorescalemixin): <span id="getter-scaletype">[`scaleType`](../scorescalemixin#getter-scaletype)</span>, <span id="getter-scalezero">[`scaleZero`](../scorescalemixin#getter-scalezero)</span>, <span id="getter-domainquantile">[`domainQuantile`](../scorescalemixin#getter-domainquantile)</span>, <span id="getter-clipquantile">[`clipQuantile`](../scorescalemixin#getter-clipquantile)</span>, <span id="getter-symlogconstant">[`symlogConstant`](../scorescalemixin#getter-symlogconstant)</span>, <span id="getter-manualminscore">[`manualMinScore`](../scorescalemixin#getter-manualminscore)</span>, <span id="getter-manualmaxscore">[`manualMaxScore`](../scorescalemixin#getter-manualmaxscore)</span>, <span id="getter-autoscalegroup">[`autoscaleGroup`](../scorescalemixin#getter-autoscalegroup)</span>, <span id="getter-scaletitle">[`scaleTitle`](../scorescalemixin#getter-scaletitle)</span>, <span id="getter-grid">[`grid`](../scorescalemixin#getter-grid)</span>, <span id="getter-minimalticks">[`minimalTicks`](../scorescalemixin#getter-minimalticks)</span>, <span id="getter-scorerules">[`scoreRules`](../scorescalemixin#getter-scorerules)</span>
 
@@ -216,6 +218,8 @@ From [TreeSidebarMixin](../treesidebarmixin): <span id="getter-showtree">[`showT
 From [RowHeightMixin](../rowheightmixin): <span id="getter-rowheight">[`rowHeight`](../rowheightmixin#getter-rowheight)</span>, <span id="getter-effectiverowheight">[`effectiveRowHeight`](../rowheightmixin#getter-effectiverowheight)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>
 
 From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendright">[`legendRight`](../legendmixin#getter-legendright)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span>
 
@@ -261,9 +265,11 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-summaryhoverinfo">**summaryHoverInfo**</span><br><code>(rowIndex: number, x: number) =&gt; MafSummaryRecord &#124; undefined</code> | The summary record whose bar is drawn at canvas x `x` on display row `rowIndex`, or undefined: the hover on the summary tier. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>16 inherited methods from 5 models</summary>
+<summary>17 inherited methods from 6 models</summary>
 
 From [TreeSidebarMixin](../treesidebarmixin): <span id="method-expandrows">[`expandRows`](../treesidebarmixin#method-expandrows)</span>, <span id="method-svgsidebarwidth">[`svgSidebarWidth`](../treesidebarmixin#method-svgsidebarwidth)</span>, <span id="method-rowband">[`rowBand`](../treesidebarmixin#method-rowband)</span>, <span id="method-rowcolordeclaredvalues">[`rowColorDeclaredValues`](../treesidebarmixin#method-rowcolordeclaredvalues)</span>, <span id="method-dealtrowcolorsfor">[`dealtRowColorsFor`](../treesidebarmixin#method-dealtrowcolorsfor)</span>, <span id="method-rowcolorfor">[`rowColorFor`](../treesidebarmixin#method-rowcolorfor)</span>, <span id="method-roworderwilldroptree">[`rowOrderWillDropTree`](../treesidebarmixin#method-roworderwilldroptree)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
 From [LegendMixin](../legendmixin): <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 
@@ -306,7 +312,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactElement&lt;unknown…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactElement&lt;unknown, string &#124; JSXElementConstructor&lt;any&gt;&gt; &#124; Iterable&lt;ReactNode&gt; &#124; AwaitedReactNode&gt;</code></pre></dialog></span> | Dynamic import so the export path — and everything it pulls in — stays out of the bundle until someone actually exports. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>77 inherited actions from 14 models</summary>
+<summary>78 inherited actions from 15 models</summary>
 
 From [ScoreScaleMixin](../scorescalemixin): <span id="action-setscaletype">[`setScaleType`](../scorescalemixin#action-setscaletype)</span>, <span id="action-setscalezero">[`setScaleZero`](../scorescalemixin#action-setscalezero)</span>, <span id="action-setdomainquantile">[`setDomainQuantile`](../scorescalemixin#action-setdomainquantile)</span>, <span id="action-setminscore">[`setMinScore`](../scorescalemixin#action-setminscore)</span>, <span id="action-setmaxscore">[`setMaxScore`](../scorescalemixin#action-setmaxscore)</span>, <span id="action-setautoscalegroup">[`setAutoscaleGroup`](../scorescalemixin#action-setautoscalegroup)</span>, <span id="action-setgrid">[`setGrid`](../scorescalemixin#action-setgrid)</span>, <span id="action-setscorerules">[`setScoreRules`](../scorescalemixin#action-setscorerules)</span>
 
@@ -317,6 +323,8 @@ From [TreeSidebarMixin](../treesidebarmixin): <span id="action-setshowtree">[`se
 From [RowHeightMixin](../rowheightmixin): <span id="action-setrowheight">[`setRowHeight`](../rowheightmixin#action-setrowheight)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
 
 From [LegendMixin](../legendmixin): <span id="action-setshowlegend">[`setShowLegend`](../legendmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../legendmixin#action-dismisslegendsection)</span>
 

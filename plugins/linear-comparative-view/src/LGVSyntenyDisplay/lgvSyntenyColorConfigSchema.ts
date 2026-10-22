@@ -6,12 +6,18 @@ import {
 } from '@jbrowse/plugin-alignments'
 
 /**
+ * The field LGVSyntenyColor maps while it names neither a field nor a
+ * constant.
+ */
+export const LGV_SYNTENY_IMPLIED_FIELD = 'strand'
+
+/**
  * #config LGVSyntenyColor
  * #category display
  * The LGVSyntenyDisplay's `color` setting: the
- * [AlignmentsColor](../alignmentscolor) object with `field` defaulting to
- * `strand`, where the alignments display paints one fill. A string is the
- * constant, `{ value, scale: 'none' }`, so the default field does not hide it.
+ * [AlignmentsColor](../alignmentscolor) object, painting `strand` while it
+ * names neither a field nor a constant. `strand`, `mapq` and `mateRefName`
+ * (the query contig) are the fields a synteny block answers.
  *
  * #example
  * ```js
@@ -20,20 +26,14 @@ import {
  */
 export const lgvSyntenyColorConfigSchema = ConfigurationSchema(
   'LGVSyntenyColor',
-  {
-    /**
-     * #slot field
-     * `strand`, `mapq` and `mateRefName` (the query contig) are the fields a
-     * synteny block answers.
-     */
-    field: { type: 'string', defaultValue: 'strand' },
-  },
+  {},
   {
     /**
      * #baseConfiguration
      */
     baseConfiguration: alignmentsColorConfigSchema,
-    ...colorChannelOptions('color', ALIGNMENTS_FIELD_PRESETS),
-    shorthandWith: { scale: 'none' },
+    ...colorChannelOptions('color', ALIGNMENTS_FIELD_PRESETS, {
+      impliedField: LGV_SYNTENY_IMPLIED_FIELD,
+    }),
   },
 )

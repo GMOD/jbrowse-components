@@ -89,9 +89,11 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>4 inherited properties from 2 models</summary>
+<summary>5 inherited properties from 3 models</summary>
 
 From [TreeSidebarMixin](../treesidebarmixin): <span id="property-runclustering">[`runClustering`](../treesidebarmixin#property-runclustering)</span>, <span id="property-clusterregion">[`clusterRegion`](../treesidebarmixin#property-clusterregion)</span>, <span id="property-sortrowsby">[`sortRowsBy`](../treesidebarmixin#property-sortrowsby)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="property-parkedcolors">[`parkedColors`](../parkedcolormixin#property-parkedcolors)</span>
 
 From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay#property-id)</span>
 
@@ -234,7 +236,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | `LegendMixin`'s hook: the cell coloring, the insertion marker where one is drawn, and the row color key. Whether the marker is keyed is `drawsInsertionMarkers`' answer, the painter's own test on the painter's own blocks. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>126 inherited getters from 12 models</summary>
+<summary>127 inherited getters from 13 models</summary>
 
 From [TreeSidebarMixin](../treesidebarmixin): <span id="getter-showtree">[`showTree`](../treesidebarmixin#getter-showtree)</span>, <span id="getter-showbranchlength">[`showBranchLength`](../treesidebarmixin#getter-showbranchlength)</span>, <span id="getter-showrowlabels">[`showRowLabels`](../treesidebarmixin#getter-showrowlabels)</span>, <span id="getter-treeareawidth">[`treeAreaWidth`](../treesidebarmixin#getter-treeareawidth)</span>, <span id="getter-rowsort">[`rowSort`](../treesidebarmixin#getter-rowsort)</span>, <span id="getter-rowlabels">[`rowLabels`](../treesidebarmixin#getter-rowlabels)</span>, <span id="getter-rowtreeprovenance">[`rowTreeProvenance`](../treesidebarmixin#getter-rowtreeprovenance)</span>, <span id="getter-rowfocus">[`rowFocus`](../treesidebarmixin#getter-rowfocus)</span>, <span id="getter-rowcolorsetting">[`rowColorSetting`](../treesidebarmixin#getter-rowcolorsetting)</span>, <span id="getter-baserowcolor">[`baseRowColor`](../treesidebarmixin#getter-baserowcolor)</span>, <span id="getter-baserowdomain">[`baseRowDomain`](../treesidebarmixin#getter-baserowdomain)</span>, <span id="getter-guidetreenewick">[`guideTreeNewick`](../treesidebarmixin#getter-guidetreenewick)</span>, <span id="getter-unlistedrowssort">[`unlistedRowsSort`](../treesidebarmixin#getter-unlistedrowssort)</span>, <span id="getter-rowfocuslineheight">[`rowFocusLineHeight`](../treesidebarmixin#getter-rowfocuslineheight)</span>, <span id="getter-rowstopoffset">[`rowsTopOffset`](../treesidebarmixin#getter-rowstopoffset)</span>, <span id="getter-guidetree">[`guideTree`](../treesidebarmixin#getter-guidetree)</span>, <span id="getter-guidetreehonoursdomain">[`guideTreeHonoursDomain`](../treesidebarmixin#getter-guidetreehonoursdomain)</span>, <span id="getter-rowtree">[`rowTree`](../treesidebarmixin#getter-rowtree)</span>, <span id="getter-roworder">[`rowOrder`](../treesidebarmixin#getter-roworder)</span>, <span id="getter-expandedrows">[`expandedRows`](../treesidebarmixin#getter-expandedrows)</span>, <span id="getter-sharespanel">[`sharesPanel`](../treesidebarmixin#getter-sharespanel)</span>, <span id="getter-rownoun">[`rowNoun`](../treesidebarmixin#getter-rownoun)</span>, <span id="getter-rowbandingnotices">[`rowBandingNotices`](../treesidebarmixin#getter-rowbandingnotices)</span>, <span id="getter-rowpalettedeals">[`rowPaletteDeals`](../treesidebarmixin#getter-rowpalettedeals)</span>, <span id="getter-rowcolordealrows">[`rowColorDealRows`](../treesidebarmixin#getter-rowcolordealrows)</span>, <span id="getter-rowstylingiscustom">[`rowStylingIsCustom`](../treesidebarmixin#getter-rowstylingiscustom)</span>, <span id="getter-rowcolorchoice">[`rowColorChoice`](../treesidebarmixin#getter-rowcolorchoice)</span>, <span id="getter-rowcolorattribute">[`rowColorAttribute`](../treesidebarmixin#getter-rowcolorattribute)</span>, <span id="getter-dealtrowcolors">[`dealtRowColors`](../treesidebarmixin#getter-dealtrowcolors)</span>, <span id="getter-rowcolorattributesoffered">[`rowColorAttributesOffered`](../treesidebarmixin#getter-rowcolorattributesoffered)</span>, <span id="getter-resolvedrowcolors">[`resolvedRowColors`](../treesidebarmixin#getter-resolvedrowcolors)</span>, <span id="getter-rowarrangementiscustom">[`rowArrangementIsCustom`](../treesidebarmixin#getter-rowarrangementiscustom)</span>, <span id="getter-editablesources">[`editableSources`](../treesidebarmixin#getter-editablesources)</span>, <span id="getter-rowcolorkeyinputs">[`rowColorKeyInputs`](../treesidebarmixin#getter-rowcolorkeyinputs)</span>, <span id="getter-rowcolorscales">[`rowColorScales`](../treesidebarmixin#getter-rowcolorscales)</span>, <span id="getter-clusterablesources">[`clusterableSources`](../treesidebarmixin#getter-clusterablesources)</span>, <span id="getter-parsedtree">[`parsedTree`](../treesidebarmixin#getter-parsedtree)</span>, <span id="getter-root">[`root`](../treesidebarmixin#getter-root)</span>, <span id="getter-bandedrows">[`bandedRows`](../treesidebarmixin#getter-bandedrows)</span>, <span id="getter-bandedsources">[`bandedSources`](../treesidebarmixin#getter-bandedsources)</span>, <span id="getter-rowbands">[`rowBands`](../treesidebarmixin#getter-rowbands)</span>, <span id="getter-sources">[`sources`](../treesidebarmixin#getter-sources)</span>, <span id="getter-treeroot">[`treeRoot`](../treesidebarmixin#getter-treeroot)</span>, <span id="getter-drawstree">[`drawsTree`](../treesidebarmixin#getter-drawstree)</span>, <span id="getter-awaitingdependentdata">[`awaitingDependentData`](../treesidebarmixin#getter-awaitingdependentdata)</span>, <span id="getter-rowscontentheight">[`rowsContentHeight`](../treesidebarmixin#getter-rowscontentheight)</span>, <span id="getter-hierarchy">[`hierarchy`](../treesidebarmixin#getter-hierarchy)</span>, <span id="getter-spatialindex">[`spatialIndex`](../treesidebarmixin#getter-spatialindex)</span>, <span id="getter-clusterpartition">[`clusterPartition`](../treesidebarmixin#getter-clusterpartition)</span>, <span id="getter-treelessbandcount">[`treelessBandCount`](../treesidebarmixin#getter-treelessbandcount)</span>, <span id="getter-treehasbranchlengths">[`treeHasBranchLengths`](../treesidebarmixin#getter-treehasbranchlengths)</span>
 
@@ -245,6 +247,8 @@ From [RowHeightMixin](../rowheightmixin): <span id="getter-rowheight">[`rowHeigh
 From [FacetWritesMixin](../facetwritesmixin): <span id="getter-writtenfacet">[`writtenFacet`](../facetwritesmixin#getter-writtenfacet)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>
 
 From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendright">[`legendRight`](../legendmixin#getter-legendright)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span>, <span id="getter-haslegendkey">[`hasLegendKey`](../legendmixin#getter-haslegendkey)</span>
 
@@ -282,9 +286,11 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactEl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactElement&lt;unknown, string &#124; JSXElementConstructor&lt;any&gt;&gt; &#124; Iterable&lt;ReactNode&gt; &#124; AwaitedReactNode&gt;</code></pre></dialog></span> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>16 inherited methods from 5 models</summary>
+<summary>17 inherited methods from 6 models</summary>
 
 From [TreeSidebarMixin](../treesidebarmixin): <span id="method-svgsidebarwidth">[`svgSidebarWidth`](../treesidebarmixin#method-svgsidebarwidth)</span>, <span id="method-rowband">[`rowBand`](../treesidebarmixin#method-rowband)</span>, <span id="method-rowcolordeclaredvalues">[`rowColorDeclaredValues`](../treesidebarmixin#method-rowcolordeclaredvalues)</span>, <span id="method-dealtrowcolorsfor">[`dealtRowColorsFor`](../treesidebarmixin#method-dealtrowcolorsfor)</span>, <span id="method-rowcolorfor">[`rowColorFor`](../treesidebarmixin#method-rowcolorfor)</span>, <span id="method-roworderwilldroptree">[`rowOrderWillDropTree`](../treesidebarmixin#method-roworderwilldroptree)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
 From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScalesIn`](../legendmixin#method-colorscalesin)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 
@@ -336,7 +342,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: VariantLayoutBackend) =&gt; void</code> | The layout's chrome hands over its backend; a layout switch mounts the other chrome, whose backend replaces this one. The upload lifecycle is installed once, so its cells and its render follow the backend attached rather than the setting: until the other chrome's backend arrives, the old one is sent nothing it cannot draw. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>64 inherited actions from 12 models</summary>
+<summary>65 inherited actions from 13 models</summary>
 
 From [ContextMenuMixin](../contextmenumixin): <span id="action-opencontextmenu">[`openContextMenu`](../contextmenumixin#action-opencontextmenu)</span>, <span id="action-closecontextmenu">[`closeContextMenu`](../contextmenumixin#action-closecontextmenu)</span>
 
@@ -349,6 +355,8 @@ From [RowHeightMixin](../rowheightmixin): <span id="action-setrowheight">[`setRo
 From [FacetWritesMixin](../facetwritesmixin): <span id="action-facetbyfield">[`facetByField`](../facetwritesmixin#action-facetbyfield)</span>, <span id="action-setfacetsort">[`setFacetSort`](../facetwritesmixin#action-setfacetsort)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
 
 From [LegendMixin](../legendmixin): <span id="action-setshowlegend">[`setShowLegend`](../legendmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../legendmixin#action-dismisslegendsection)</span>
 

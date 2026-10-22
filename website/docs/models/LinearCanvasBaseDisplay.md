@@ -27,7 +27,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-featurehighlights">**featureHighlights**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>featureHighlights: types.stripDefault( types.array(FeatureHighl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>featureHighlights: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.array(FeatureHighlightModel),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;[],&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | Declarative feature highlights, typically seeded by a text search (highlight the gene you searched for). |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>2 inherited properties from one model</summary>
+<summary>3 inherited properties from 2 models</summary>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="property-parkedcolors">[`parkedColors`](../parkedcolormixin#property-parkedcolors)</span>
 
 From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay#property-id)</span>, <span id="property-type">[`type`](../basedisplay#property-type)</span>
 
@@ -213,7 +215,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | `LegendMixin`'s hook: the key the color channel's scale derives. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>88 inherited getters from 12 models</summary>
+<summary>89 inherited getters from 13 models</summary>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-owngroupstate">[`ownGroupState`](../hiddengroupsmixin#getter-owngroupstate)</span>, <span id="getter-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#getter-hiddengroups)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span>
 
@@ -222,6 +224,8 @@ From [CanvasFeatureGateMixin](../canvasfeaturegatemixin): <span id="getter-gatee
 From [FacetWritesMixin](../facetwritesmixin): <span id="getter-writtenfacet">[`writtenFacet`](../facetwritesmixin#getter-writtenfacet)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>
 
 From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendright">[`legendRight`](../legendmixin#getter-legendright)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span>, <span id="getter-haslegendkey">[`hasLegendKey`](../legendmixin#getter-haslegendkey)</span>
 
@@ -262,7 +266,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-featurenarrowings">**featureNarrowings**</span><br><code>() =&gt; Reversibles</code> | Everything this display is doing to narrow what the user sees, each declared once, so the "Filter by... (n)" count, its undo rows and "Clear all filters" cannot disagree; a method, not a getter, because a getter cannot be super-captured. |
 | <span id="method-featuremarks">**featureMarks**</span><br><code>() =&gt; Reversibles</code> | Reversible state that MARKS features rather than hiding them — the highlight boxes and the pins holding features at the top of the layout. |
 | <span id="method-zoomfetchargs">**zoomFetchArgs**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { geneGlyphMode: "all" &#124; "auto" &#124; "longestCoding"; peptid…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { geneGlyphMode: "all" &#124; "auto" &#124; "longestCoding"; peptides: boolean; expandedGeneIds: (IMSTArray&lt;ISimpleType&lt;string&gt;&gt; &amp; IStateTreeNode&lt;IOptionalIType&lt;IArrayType&lt;ISimpleType&lt;string&gt;&gt;, [...]&gt;&gt;) &#124; undefined; }</code></pre></dialog></span> | The worker's zoom-dependent decisions, resolved: the RPC spreads this object and the foundation stamps it beside each region, so a track with the overlay off and a fixed mode never refetches on zoom. `expandedGeneIds` only under `longestCoding`, the one mode the worker collapses in. |
-| <span id="method-groupbyplot">**groupByPlot**</span><br><code>(field: string &#124; undefined, colorByGroup: boolean) =&gt; Plot</code> | The Group by dialog's choice of field as plot settings, which its Apply writes and its Edit plot button shows: the facet, keeping its domain while the field is the one already set; a color by the field when ticked, left alone while it already paints through any scale; and unticked over a categorical color that was the facet's own, that field parked under `scale: 'none'`. Both colors keep a written constant for the way back, as Color by does. |
+| <span id="method-groupbyplot">**groupByPlot**</span><br><code>(field: string &#124; undefined, colorByGroup: boolean) =&gt; Plot</code> | The Group by dialog's choice of field as plot settings, which its Apply writes and its Edit plot button shows: the facet, keeping its domain while the field is the one already set; a color by the field when ticked, left alone while it already paints through any scale; and unticked over a categorical color that was the facet's own, no field. Both colors keep a written constant, as Color by does. |
 | <span id="method-scangroupbycandidates">**scanGroupByCandidates**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts: GroupByScanOptions) =&gt; Promise&lt;RegionTooLargeResult &#124; Gr…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts: GroupByScanOptions) =&gt; Promise&lt;RegionTooLargeResult &#124; GroupByCandidate[]&gt;</code></pre></dialog></span> | The attributes the features in view have and the sections each would make, for the Group by dialog: the render fetch's download over the visible blocks, under the same admission and byte budget. |
 | <span id="method-configproblemsof">**configProblemsOf**</span><br><code>(conf: AnyConfigurationModel) =&gt; string[]</code> | The schema's rules, then a `jexl:` color or filter that does not compile. |
 | <span id="method-showsubmenucheckboxitems">**showSubmenuCheckboxItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
@@ -276,9 +280,11 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>11 inherited methods from 5 models</summary>
+<summary>12 inherited methods from 6 models</summary>
 
 From [CanvasFeatureGateMixin](../canvasfeaturegatemixin): <span id="method-observedmaxdensity">[`observedMaxDensity`](../canvasfeaturegatemixin#method-observedmaxdensity)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
 From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScalesIn`](../legendmixin#method-colorscalesin)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 
@@ -341,7 +347,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-opengroupbydialog">**openGroupByDialog**</span><br><code>() =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>52 inherited actions from 13 models</summary>
+<summary>53 inherited actions from 14 models</summary>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-hidegroup">[`hideGroup`](../hiddengroupsmixin#action-hidegroup)</span>, <span id="action-showallgroups">[`showAllGroups`](../hiddengroupsmixin#action-showallgroups)</span>
 
@@ -352,6 +358,8 @@ From [CanvasFeatureGateMixin](../canvasfeaturegatemixin): <span id="action-setde
 From [FacetWritesMixin](../facetwritesmixin): <span id="action-facetbyfield">[`facetByField`](../facetwritesmixin#action-facetbyfield)</span>, <span id="action-setfacetsort">[`setFacetSort`](../facetwritesmixin#action-setfacetsort)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
 
 From [LegendMixin](../legendmixin): <span id="action-setshowlegend">[`setShowLegend`](../legendmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../legendmixin#action-dismisslegendsection)</span>
 

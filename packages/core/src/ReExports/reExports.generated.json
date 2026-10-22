@@ -4233,11 +4233,13 @@
         "dealRowColors",
         "featureColorEncoding",
         "identityKeyEntries",
+        "impliedFieldOf",
         "matrixColorEncodingOf",
         "normalizeChannel",
         "paintedColorEncoding",
         "paintedScale",
         "pairedColorsOf",
+        "parkedColorOf",
         "presetOf",
         "withPreset"
       ],
@@ -4661,6 +4663,13 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "MAX_STORED_REGIONS",
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/ParkedColorMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
         "default"
       ],
       "worker": "real"

@@ -42,8 +42,8 @@ describe('the constant', () => {
     ).toBeUndefined()
   })
 
-  test('a field parked under none draws the constant', () => {
-    const setting = { value: 0.4, field: 'identity', scale: 'none' } as const
+  test('a constant with no field draws itself', () => {
+    const setting = { value: 0.4 } as const
     expect(opacityLevel(setting, 0.2)).toBe(0.4)
     expect(opacityFadeOf(setting)).toBeUndefined()
   })

@@ -6,12 +6,11 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
- * `scale` on a synteny opacity object: `none` draws `value` and keeps the
- * field for a switch back, as it does on `color`; `threshold` reads `domain`
- * as cut points. Unset, a field's type decides: a number column fades along
+ * `scale` on a synteny opacity object: `threshold` reads `domain` as cut
+ * points. Unset, a field's type decides: a number column fades along
  * `range`, a text column takes `range` per label in `domain`.
  */
-export const SYNTENY_OPACITY_SCALES = ['none', 'threshold'] as const
+export const SYNTENY_OPACITY_SCALES = ['threshold'] as const
 
 export type SyntenyOpacityScale = (typeof SYNTENY_OPACITY_SCALES)[number]
 
@@ -74,7 +73,6 @@ export const syntenyOpacityConfigSchema = ConfigurationSchema(
      * alignment at `value`. Writing `opacity: "identity"` sets it.
      *
      * #slot scale
-     * `none` draws `value` and keeps the field for a switch back;
      * `threshold` reads `domain` as cut points, a value on a cut taking the
      * interval above it. Unset, a number column fades linearly from
      * `domainMin` to `domainMax` and a text column takes one opacity per
@@ -85,7 +83,7 @@ export const syntenyOpacityConfigSchema = ConfigurationSchema(
       scaleName: 'SyntenyOpacityScale',
       fieldType: 'string',
       field: 'measurement or attributeColumns column; empty is value',
-      scale: 'none, threshold, or unset to follow the field',
+      scale: 'threshold, or unset to follow the field',
     }),
     /**
      * #slot domain

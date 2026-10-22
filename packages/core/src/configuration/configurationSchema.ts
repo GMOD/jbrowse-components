@@ -112,8 +112,7 @@ export interface ConfigurationSchemaOptions<
   plot?: boolean
   /**
    * Slots a bare value sets beside `shorthand`, for a schema whose defaults
-   * would hide it: LGVSyntenyColor's `field` defaults to `strand`, so its
-   * `color: "steelblue"` is `{ value: "steelblue", scale: "none" }`.
+   * would hide it.
    */
   shorthandWith?: Record<string, unknown>
   /**

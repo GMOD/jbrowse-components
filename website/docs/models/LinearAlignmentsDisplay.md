@@ -87,7 +87,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>1 inherited property from one model</summary>
+<summary>2 inherited properties from 2 models</summary>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="property-parkedcolors">[`parkedColors`](../parkedcolormixin#property-parkedcolors)</span>
 
 From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay#property-id)</span>
 
@@ -325,13 +327,15 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-gateenabled">**gateEnabled**</span><br><code>boolean</code> | Opt into RegionTooLargeMixin's byte gate: `fetchNeeded` passes `resolvedByteLimit()` to `RenderAlignmentData`, whose first await is the index estimate, so an over-budget region is refused before a read downloads. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>98 inherited getters from 13 models</summary>
+<summary>99 inherited getters from 14 models</summary>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#getter-hiddengroups)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span>
 
 From [FacetWritesMixin](../facetwritesmixin): <span id="getter-writtenfacet">[`writtenFacet`](../facetwritesmixin#getter-writtenfacet)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>
 
 From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendright">[`legendRight`](../legendmixin#getter-legendright)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span>, <span id="getter-haslegendkey">[`hasLegendKey`](../legendmixin#getter-haslegendkey)</span>
 
@@ -391,7 +395,9 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>9 inherited methods from 4 models</summary>
+<summary>10 inherited methods from 5 models</summary>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
 From [LegendMixin](../legendmixin): <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 
@@ -424,7 +430,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setdrawnreadconnections">**setDrawnReadConnections**</span><br><code>(mode: "arc" &#124; "cloud" &#124; "off") =&gt; void</code> | What the "Connection overlay" radio writes: 'off' hides the band and keeps its mark for the way back. |
 | <span id="action-setreadconnectionsplacement">**setReadConnectionsPlacement**</span><br><code>(placement: "down" &#124; "up") =&gt; void</code> |  |
 | <span id="action-setreadconnectionslinewidth">**setReadConnectionsLineWidth**</span><br><code>(width: number) =&gt; void</code> |  |
-| <span id="action-setreadconnectionscolorfield">**setReadConnectionsColorField**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(field: "" &#124; "insertSize" &#124; "insertSizeAndOrientation" &#124; "pairO…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(field: "" &#124; "insertSize" &#124; "insertSizeAndOrientation" &#124; "pairOrientation") =&gt; void</code></pre></dialog></span> | Paint the connections by `field`, `''` following the reads. `readConnections.color` holds a field and nothing else, so it skips `colorForField`, whose `scale: 'none'` it has no slot for. |
+| <span id="action-setreadconnectionscolorfield">**setReadConnectionsColorField**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(field: "" &#124; "insertSize" &#124; "insertSizeAndOrientation" &#124; "pairO…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(field: "" &#124; "insertSize" &#124; "insertSizeAndOrientation" &#124; "pairOrientation") =&gt; void</code></pre></dialog></span> | Paint the connections by `field`, `''` following the reads. |
 | <span id="action-setshowordinarypairs">**setShowOrdinaryPairs**</span><br><code>(show?: boolean &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setconnectionfilter">**setConnectionFilter**</span><br><code>(patch: Partial&lt;ConnectionFilter&gt;) =&gt; void</code> |  |
 | <span id="action-togglegroupcollapsed">**toggleGroupCollapsed**</span><br><code>(key: string) =&gt; void</code> | Collapse/expand a stacked group's pileup (coverage stays visible). |
@@ -434,6 +440,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-seterror">**setError**</span><br><code>(error?: unknown) =&gt; void</code> |  |
 | <span id="action-setrpcdata">**setRpcData**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(displayedRegionIndex: number, data: GroupedAlignmentsResult, r…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(displayedRegionIndex: number, data: GroupedAlignmentsResult, region: Region) =&gt; void</code></pre></dialog></span> | Stage a region as fetched, with this display's payload shape — so a test stands up a loaded display in one call. Production goes through `ctx.commitRegion`. |
 | <span id="action-clearselection">**clearSelection**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | The picker Color by's Solid color... opens, on the theme's plain read fill until a constant is written. |
 | <span id="action-setbaselayer">**setBaseLayer**</span><br><code>(layer?: BaseLayer &#124; undefined) =&gt; void</code> | Draw a per-base layer over the reads, or none. The read fill is `colorByField`'s and stays as it is. |
 | <span id="action-sortatcenterline">**sortAtCenterLine**</span><br><code>(field: ColumnSortField) =&gt; void</code> |  |
 | <span id="action-setsort">**setSort**</span><br><code>(sort: SortSetting) =&gt; void</code> | The one writer of `sort`: a whole-window order, or a column sort. |
@@ -461,13 +468,15 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-clearhoveredfeature">**clearHoveredFeature**</span><br><code>() =&gt; void</code> | Fills `BaseDisplay`'s hover-clear hook, which the fetch foundation's reaction calls on every viewport change. A pan, zoom or internal scroll under a stationary cursor fires no mousemove or mouseleave, so the highlight and tooltip would keep naming the read that was there. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>56 inherited actions from 12 models</summary>
+<summary>57 inherited actions from 13 models</summary>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-hidegroup">[`hideGroup`](../hiddengroupsmixin#action-hidegroup)</span>, <span id="action-showallgroups">[`showAllGroups`](../hiddengroupsmixin#action-showallgroups)</span>
 
 From [FacetWritesMixin](../facetwritesmixin): <span id="action-facetbyfield">[`facetByField`](../facetwritesmixin#action-facetbyfield)</span>, <span id="action-setfacetsort">[`setFacetSort`](../facetwritesmixin#action-setfacetsort)</span>
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
+
+From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
 
 From [LegendMixin](../legendmixin): <span id="action-setshowlegend">[`setShowLegend`](../legendmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../legendmixin#action-dismisslegendsection)</span>
 

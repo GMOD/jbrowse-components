@@ -50,7 +50,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1322)
+# model members with no description (1324)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -1205,6 +1205,8 @@ OAuthInternetAccount.scopes
 OAuthInternetAccount.storeRefreshToken
 OAuthInternetAccount.tokenEndpoint
 OAuthInternetAccount.validateToken
+ParkedColorMixin.parkColor
+ParkedColorMixin.parkedColorOf
 PluginStoreWidget.clearTagFilters
 PluginStoreWidget.filterText
 PluginStoreWidget.selectedTags

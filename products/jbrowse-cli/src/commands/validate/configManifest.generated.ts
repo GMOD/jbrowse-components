@@ -3403,6 +3403,7 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "parkedColors",
         "configuration",
         "pinnedFeatureIds",
         "soloFeatureIds",
@@ -3659,6 +3660,7 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "parkedColors",
         "runClustering",
         "clusterRegion",
         "sortRowsBy",
@@ -4218,10 +4220,6 @@ export const configManifest: ConfigManifest = {
             {
               "name": "field",
               "type": "AlignmentsBaseColorField"
-            },
-            {
-              "name": "scale",
-              "type": "(AlignmentsBaseColorScale | undefined)"
             }
           ],
           "schema": "AlignmentsBaseColor",
@@ -4345,6 +4343,7 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "parkedColors",
         "configuration"
       ]
     },
@@ -4446,6 +4445,7 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "parkedColors",
         "configuration"
       ]
     },
@@ -4829,7 +4829,7 @@ export const configManifest: ConfigManifest = {
               "scale": "categorical"
             }
           },
-          "fieldDefault": "strand"
+          "impliedField": "strand"
         },
         {
           "name": "scales",
@@ -5129,6 +5129,7 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "parkedColors",
         "configuration"
       ]
     },
@@ -5737,6 +5738,7 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "parkedColors",
         "configuration",
         "hiddenLaneNames",
         "frozenLanes",
@@ -6027,6 +6029,7 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "parkedColors",
         "configuration",
         "pinnedFeatureIds",
         "soloFeatureIds",
@@ -6332,6 +6335,7 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "parkedColors",
         "runClustering",
         "clusterRegion",
         "sortRowsBy",
@@ -6796,6 +6800,7 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "parkedColors",
         "runClustering",
         "clusterRegion",
         "sortRowsBy",
@@ -7247,6 +7252,7 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "parkedColors",
         "runClustering",
         "clusterRegion",
         "sortRowsBy",
@@ -8919,6 +8925,7 @@ export const configManifest: ConfigManifest = {
         "displayName",
         "minimized",
         "filter",
+        "parkedColors",
         "color",
         "trackColors",
         "opacity",
@@ -8954,6 +8961,7 @@ export const configManifest: ConfigManifest = {
         "displayName",
         "minimized",
         "filter",
+        "parkedColors",
         "color",
         "trackColors",
         "opacity",
@@ -8988,6 +8996,7 @@ export const configManifest: ConfigManifest = {
         "displayName",
         "minimized",
         "filter",
+        "parkedColors",
         "color",
         "trackColors",
         "opacity",

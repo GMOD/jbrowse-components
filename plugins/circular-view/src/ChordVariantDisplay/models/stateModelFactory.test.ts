@@ -391,16 +391,13 @@ test('the track menu picks the chord color through Color by', async () => {
   clickRow(colorByRows(display), 'Solid color...')
   expect(session.DialogProps?.label).toBe('Chord color')
   ;(session.DialogProps?.onChange as (c: string) => void)('#123456')
-  expect(display.writtenColor).toEqual({
-    field: 'svType',
-    scale: 'none',
-    value: '#123456',
-  })
+  expect(display.writtenColor).toEqual({ value: '#123456' })
   expect(display.legendColor).toBe(`rgba(18,52,86,${82 / 255})`)
   expect(ticked(colorByRows(display))).toEqual(['Solid color...'])
 
   clickRow(colorByRows(display), 'Default')
-  expect(display.writtenColor).toEqual({ field: 'svType', scale: 'none' })
+  expect(display.writtenColor).toEqual({})
+  expect(display.parkedColor).toEqual({ field: 'svType' })
   expect(display.legendColor).toBe(DEFAULT_SWATCH)
   expect(ticked(colorByRows(display))).toEqual(['Default'])
 }, 20000)

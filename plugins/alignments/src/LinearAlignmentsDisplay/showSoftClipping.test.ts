@@ -381,20 +381,13 @@ describe('alignments colorBy', () => {
     expect(display.baseLayer).toBeUndefined()
   })
 
-  it('None keeps the per-base field under none, as the read fill does', () => {
+  it('None clears the per-base field', () => {
     const { display } = createDisplay({ baseColor: 'modifications' })
-    const field = readConfObject(requireReadsConf(display), [
-      'baseColor',
-      'field',
-    ])
     display.setBaseLayer()
     expect(display.baseLayer).toBeUndefined()
     expect(
       readConfObject(requireReadsConf(display), ['baseColor', 'field']),
-    ).toBe(field)
-    expect(
-      readConfObject(requireReadsConf(display), ['baseColor', 'scale']),
-    ).toBe('none')
+    ).toBe('')
   })
 
   it('a ramp with its ends reversed is a notice', () => {
@@ -418,16 +411,14 @@ describe('alignments colorBy', () => {
     })
     display.colorByField('')
     expect(display.colorBy).toEqual({ type: 'normal' })
-    expect(display.colorSetting.field).toBe('tags.HP')
+    expect(display.parkedColor?.field).toBe('tags.HP')
     display.colorByField('tags.HP')
     expect(display.colorSetting.range).toEqual(['red', 'blue'])
     display.colorByField('strand')
     expect(display.colorSetting).toMatchObject({ field: 'strand', range: [] })
   })
 
-  // `none` and a declared kind share the one `scale` slot (ADR-151), so the
-  // way back keeps every member the kind reads but not the kind itself.
-  it('Normal and back keeps a tag and its members, and paints it through the default scale', () => {
+  it('Normal and back keeps a tag and its members, its scale included', () => {
     const color = {
       field: 'tags.NM',
       scale: 'linear',
@@ -441,7 +432,7 @@ describe('alignments colorBy', () => {
     display.colorByField('tags.NM')
     expect(display.colorSetting).toMatchObject({
       field: 'tags.NM',
-      scale: undefined,
+      scale: 'linear',
       range: ['#ffffff', '#000000'],
       domainMin: 0,
     })
@@ -458,7 +449,12 @@ describe('alignments colorBy', () => {
     })
     display.colorByField('')
     display.applyPlot({
-      color: tagColorFor(display.writtenColor, 'NM', 'linear'),
+      color: tagColorFor(
+        display.writtenColor,
+        'NM',
+        'linear',
+        display.parkedColor,
+      ),
     })
     expect(display.bakedColorScale?.kind).toBe('linear')
     expect(display.colorSetting).toMatchObject({
