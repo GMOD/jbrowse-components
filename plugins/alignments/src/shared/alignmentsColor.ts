@@ -427,7 +427,7 @@ function filled(
 
 /**
  * The read category colors the `encoding.color` channel sets over the
- * palette's: `value` fills a read no field colors, `scale.unknown` one its tag
+ * palette's: `value` fills a read no field colors, `scale.invalid` one its tag
  * or mate scheme found no value for, before its bake too, and
  * `declaredReadCategoryColors` goes over both.
  */
@@ -437,7 +437,7 @@ export function writtenReadCategoryColors(
 ): Partial<Record<ReadColorCategory, RGBColor>> {
   return {
     ...filled(value, ['plain']),
-    ...filled(scale.unknown, ['tag', 'noTagValue']),
+    ...filled(scale.invalid, ['tag', 'noTagValue']),
     ...declaredReadCategoryColors(encoding),
   }
 }

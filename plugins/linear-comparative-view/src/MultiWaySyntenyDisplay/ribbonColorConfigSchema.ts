@@ -32,7 +32,7 @@ export function paintedRibbonColor(setting: SyntenyColorSnapshot) {
   const color = withImpliedField(setting, RIBBON_IMPLIED_FIELD)
   const field = paintedField(color)
   return {
-    value: (field ? color.scale?.unknown : color.value) ?? RIBBON_GREY,
+    value: (field ? color.scale?.invalid : color.value) ?? RIBBON_GREY,
     field,
   }
 }
@@ -81,7 +81,7 @@ export function paintedRibbonColor(setting: SyntenyColorSnapshot) {
  *     encoding: {
  *       color: {
  *         field: 'group',
- *         scale: { domain: ['core', 'shell'], unknown: 'lightgrey' },
+ *         scale: { domain: ['core', 'shell'], invalid: 'lightgrey' },
  *       },
  *     },
  *   },
@@ -114,11 +114,12 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
       {
         ...syntenyColorScaleSlots('RibbonColorScaleType'),
         /**
-         * #slot unknown
-         * The color of a pair with no value for the field; its alpha is
-         * every ribbon's under the field.
+         * #slot invalid
+         * The color of a pair with no value for the field, Vega-Lite's word
+         * for a missing value's output; its alpha is every ribbon's under the
+         * field.
          */
-        unknown: {
+        invalid: {
           type: 'maybeColor',
           description:
             'the color of a pair with no value for the field, whose alpha every ribbon takes; unset, rgba(130,130,130,0.3)',

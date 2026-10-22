@@ -1,4 +1,4 @@
-import { setConf } from '@jbrowse/core/configuration'
+import { readConfObject, setConf } from '@jbrowse/core/configuration'
 import { withImpliedField } from '@jbrowse/core/util/colorScale'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
@@ -29,15 +29,17 @@ export interface ColorWritesHost {
 const host = (self: object) => self as ColorWritesHost
 
 /**
- * A color channel as written: each slot its config sets, with the schema's
- * `impliedField` where it names neither a field nor a constant, since that
- * field paints while the snapshot names none (LGVSyntenyColor's `strand`).
+ * A color channel as written: each slot its config sets, with the field that
+ * paints where the snapshot names none, a `field` slot's default (Hi-C's
+ * `observed`) or else the schema's `impliedField` while the channel names no
+ * constant either (LGVSyntenyColor's `strand`).
  */
 export function writtenColorOf(color: AnyConfigurationModel): ColorSlots {
-  return withImpliedField(
-    getSnapshot<ColorSlots | undefined>(color) ?? {},
-    impliedFieldOf(color),
-  )
+  const written = getSnapshot<ColorSlots | undefined>(color) ?? {}
+  const field: unknown = 'field' in color ? readConfObject(color, 'field') : ''
+  return typeof field === 'string' && field && written.field === undefined
+    ? { ...written, field }
+    : withImpliedField(written, impliedFieldOf(color))
 }
 
 // The constant `value` holds, painting or kept beside a field; undefined for

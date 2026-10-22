@@ -48,7 +48,7 @@ import {
  *         domain: ['1', '2'],
  *         range: ['#d95f02', '#1b9e77'],
  *         names: ['Maternal', 'Paternal'],
- *         unknown: '#cccccc',
+ *         invalid: '#cccccc',
  *       },
  *     },
  *   },
@@ -118,12 +118,13 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
             "CSS colors an ordinal scale hands its domain in order, or with no domain a preset field's levels in their preset order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty uses the field's default colors, cividis over mapq's bins, the tag palette or viridis",
         }),
         /**
-         * #slot unknown
-         * The fill of a read with no value under the field: no tag, no
+         * #slot invalid
+         * The fill of a read with no value under the field, Vega-Lite's word
+         * for a missing value's output: no tag, no
          * attribute, or no mate under `mateRefName`. A `''` in `domain`
          * colors it by its `range` entry instead.
          */
-        unknown: {
+        invalid: {
           type: 'maybeColor',
           description:
             'CSS color of a read with no value under the field; unset, the theme color',

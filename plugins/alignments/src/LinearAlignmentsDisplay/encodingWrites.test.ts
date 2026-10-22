@@ -93,10 +93,10 @@ describe('a key-only edit reaches neither the bake nor the fetch', () => {
   })
 })
 
-describe('scale.unknown paints a read with no value under the field', () => {
+describe('scale.invalid paints a read with no value under the field', () => {
   test('the no-value read takes it and the plain read keeps the theme', () => {
     const display = createDisplay({
-      encoding: { color: { field: 'tags.HP', scale: { unknown: '#00ff00' } } },
+      encoding: { color: { field: 'tags.HP', scale: { invalid: '#00ff00' } } },
     })
     const colors = writtenReadCategoryColors(
       display.colorSetting,

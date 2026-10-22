@@ -284,7 +284,7 @@ test('nothing declared, or a range over an open field, leaves the defaults', () 
   ).toEqual(DEFAULT.readCategoryColors)
 })
 
-describe('value fills the reads no field colors, scale.unknown the reads with no value', () => {
+describe('value fills the reads no field colors, scale.invalid the reads with no value', () => {
   const STEEL = 'rgb(70,130,180)'
   const neutral = categorySwatchColor('pairLR', DEFAULT)
 
@@ -297,10 +297,10 @@ describe('value fills the reads no field colors, scale.unknown the reads with no
     )
   })
 
-  test('scale.unknown paints a tag scheme before its bake and a read with no value', () => {
+  test('scale.invalid paints a tag scheme before its bake and a read with no value', () => {
     const palette = paletteFor({
       field: 'tags.HP',
-      scale: { unknown: 'steelblue' },
+      scale: { invalid: 'steelblue' },
     })
     expect(uniformColor(palette, 'tag')).toBe(STEEL)
     expect(everyPathPaints(palette, 'noTagValue')).toEqual(
@@ -327,10 +327,10 @@ describe('value fills the reads no field colors, scale.unknown the reads with no
     }
   })
 
-  test("a declared '' level colors the no-value read over scale.unknown", () => {
+  test("a declared '' level colors the no-value read over scale.invalid", () => {
     const palette = paletteFor({
       field: 'tags.HP',
-      scale: { unknown: 'steelblue', domain: [''], range: ['#1b9e77'] },
+      scale: { invalid: 'steelblue', domain: [''], range: ['#1b9e77'] },
     })
     expect(categorySwatchColor('noTagValue', palette)).toBe('rgb(27,158,119)')
     expect(uniformColor(palette, 'tag')).toBe(STEEL)

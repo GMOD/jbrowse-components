@@ -88,6 +88,7 @@ export interface ColorScaleSetting {
   domainMid?: number | undefined
   domainQuantile?: number
   unknown?: string | undefined
+  invalid?: string | undefined
 }
 
 /** A channel's `legend` as read off its node. */
@@ -115,6 +116,7 @@ const PAINTED_SCALE_SLOTS = [
   'domain',
   'range',
   'unknown',
+  'invalid',
   'scheme',
   'reverse',
   'domainMin',

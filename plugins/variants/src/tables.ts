@@ -18,7 +18,7 @@ import {
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { arrangeRows, bandRows } from '@jbrowse/tree-sidebar/arrangeRows'
 import { keptRows } from '@jbrowse/tree-sidebar/clusterUtils'
-import { liftRowColor } from '@jbrowse/tree-sidebar/rowColorChoice'
+import { rowColorSettingOf } from '@jbrowse/tree-sidebar/rowColorChoice'
 import {
   dealtValueColors,
   resolveRowColors,
@@ -714,12 +714,7 @@ function rowColorsOf(
   drawn: readonly ProcessedSource[],
   rowAlias: RowAlias,
 ) {
-  const setting = liftRowColor({
-    field: readConfObject(conf.rowColor, 'field'),
-    domain: readConfObject(conf.rowColor, ['scale', 'domain']),
-    range: readConfObject(conf.rowColor, ['scale', 'range']),
-    unknown: readConfObject(conf.rowColor, ['scale', 'unknown']),
-  })
+  const setting = rowColorSettingOf(conf.rowColor)
   const dealt = dealtValueColors(setting, () => dealRows, false)
   const resolved = resolveRowColors(dealRows, setting.field, dealt, rowAlias)
   const attribute = setting.field === 'name' ? '' : setting.field
