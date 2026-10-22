@@ -585,6 +585,71 @@ describe('a command-line plan', () => {
     )
   })
 
+  test("an --assembly alias opens as the config's own name", async () => {
+    const aliased = {
+      ...config,
+      assemblies: [{ name: 'hg38', aliases: ['GRCh38'] }],
+      tracks: [{ trackId: 'hg38-ncbiRefSeq', name: 'RefSeq' }],
+    }
+    const d = {
+      ...deps(),
+      readConfigFile: jest.fn().mockResolvedValue(aliased),
+    }
+    await launchFromPlan(
+      {
+        type: 'LinearGenomeView',
+        config: '/proj/config.json',
+        assemblyName: 'GRCh38',
+        view: {},
+        tracks: [bam],
+        show: [{ trackId: 'ncbiRefSeq', modifiers: [] }],
+        unapplied: [],
+      },
+      d,
+    )
+    expect(mockLoadSessionSpec).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionTracks: [{ ...bam, assemblyNames: ['hg38'] }],
+        views: [
+          expect.objectContaining({
+            assembly: 'hg38',
+            tracks: [{ trackId: 'hg38-ncbiRefSeq', modifiers: [] }],
+          }),
+        ],
+      }),
+      pluginManager,
+    )
+  })
+
+  test('a config track the loose way, with no trackId, is skipped by --track', async () => {
+    const loose = {
+      ...config,
+      tracks: [{ uri: 'genes.gff3.gz' }, { trackId: 'volvox-genes' }],
+    } as unknown as typeof config
+    const d = { ...deps(), readConfigFile: jest.fn().mockResolvedValue(loose) }
+    await launchFromPlan(
+      {
+        type: 'LinearGenomeView',
+        config: '/proj/config.json',
+        view: {},
+        tracks: [],
+        show: [{ trackId: 'genes', modifiers: [] }],
+        unapplied: [],
+      },
+      d,
+    )
+    expect(mockLoadSessionSpec).toHaveBeenCalledWith(
+      expect.objectContaining({
+        views: [
+          expect.objectContaining({
+            tracks: [{ trackId: 'volvox-genes', modifiers: [] }],
+          }),
+        ],
+      }),
+      pluginManager,
+    )
+  })
+
   test('a synteny plan opens one view of its genome rows', async () => {
     const d = deps()
     const assemblies = [

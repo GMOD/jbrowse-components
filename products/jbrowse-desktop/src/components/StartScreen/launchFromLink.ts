@@ -236,21 +236,10 @@ async function launchLinearPlan(
       ? await fetchConfig(plan.config)
       : await readConfigFile(plan.config)
     : undefined
-  const assembly = plan.assemblyName ?? config?.assemblies?.[0]?.name
-  if (!assembly) {
-    throw new Error(`${plan.config} has no assemblies`)
-  }
-  const configAssemblies = config?.assemblies ?? []
-  if (
-    config &&
-    !configAssemblies.some(
-      a => a.name === assembly || a.aliases?.includes(assembly),
-    )
-  ) {
-    throw new Error(
-      `${plan.config} has no assembly ${assembly}; it has ${configAssemblies.map(a => a.name).join(', ')}`,
-    )
-  }
+  const assembly = canonicalAssembly(plan, config)
+  const configTracks = (config?.tracks ?? []).filter(
+    t => typeof t.trackId === 'string',
+  )
   // a file's trackId is exact; a --track token gets jb2export's leniency
   const fileIds = new Set(plan.tracks.map(t => t.trackId))
   const pluginManager = await createPluginManager(config)
@@ -269,7 +258,7 @@ async function launchLinearPlan(
           tracks: plan.show.map(({ trackId: token, modifiers }) => ({
             trackId: fileIds.has(token)
               ? token
-              : resolveTrackId(config?.tracks ?? [], token, assembly),
+              : resolveTrackId(configTracks, token, assembly),
             modifiers,
           })),
         },
@@ -278,4 +267,32 @@ async function launchLinearPlan(
     pluginManager,
   )
   return pluginManager
+}
+
+/**
+ * The config's own name for the assembly the plan asks for, so an alias on the
+ * command line still matches `<assembly>-` trackIds and lands in track configs
+ * as the canonical name.
+ */
+function canonicalAssembly(
+  plan: LinearLaunchPlanJson,
+  config: JBrowseConfigInput | undefined,
+) {
+  const requested = plan.assemblyName ?? config?.assemblies?.[0]?.name
+  if (!requested) {
+    throw new Error(`${plan.config} has no assemblies`)
+  }
+  if (!config) {
+    return requested
+  }
+  const configAssemblies = config.assemblies ?? []
+  const match = configAssemblies.find(
+    a => a.name === requested || a.aliases?.includes(requested),
+  )
+  if (!match) {
+    throw new Error(
+      `${plan.config} has no assembly ${requested}; it has ${configAssemblies.map(a => a.name).join(', ')}`,
+    )
+  }
+  return match.name
 }
