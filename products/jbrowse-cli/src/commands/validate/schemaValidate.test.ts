@@ -560,6 +560,25 @@ describe('the schema', () => {
     expect(error?.message).toContain('did you mean "height"')
   })
 
+  it("names a display's y scale by its config name, not its def's", () => {
+    const config = baseConfig()
+    config.tracks[0] = {
+      type: 'QuantitativeTrack',
+      trackId: 'signal',
+      assemblyNames: ['hg38'],
+      adapter: { type: 'BigWigAdapter', uri: 'signal.bw' },
+      displays: [
+        {
+          type: 'LinearWiggleDisplay',
+          encoding: { y: { scale: { domainMx: 5 } } },
+        },
+      ],
+    }
+    const [error] = schemaProblems(config)
+    expect(error?.where).toBe('tracks[0].displays[0].encoding.y.scale.domainMx')
+    expect(error?.message).toContain('YScale takes')
+  })
+
   it('opens a track textSearching.textSearchAdapter', () => {
     const config = baseConfig()
     config.tracks[0]!.textSearching = {

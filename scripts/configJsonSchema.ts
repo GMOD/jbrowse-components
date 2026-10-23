@@ -861,14 +861,14 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     let shared = sharedByContent.get(content)
     if (!shared) {
       shared = base
-      // Two schemas of one name that differ get numbered defs (`Scales2`,
-      // `ValueScale3`); naming them by their owner waits on a reader who
-      // trips on one.
+      // Two schemas of one name that differ, as the displays' YScales default
+      // their fence and constant apart, get numbered defs but keep the name a
+      // message reports
       for (let i = 2; shared in defs; i++) {
         shared = `${base}${i}`
       }
       sharedByContent.set(content, shared)
-      defs[shared] = { title: shared, ...schema }
+      defs[shared] = { title: base, ...schema }
     }
     return ref(shared)
   }

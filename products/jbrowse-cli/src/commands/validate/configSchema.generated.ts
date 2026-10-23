@@ -13202,7 +13202,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       ]
     },
     "YScale2": {
-      "title": "YScale2",
+      "title": "YScale",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -14642,7 +14642,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       ]
     },
     "YScale3": {
-      "title": "YScale3",
+      "title": "YScale",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -14724,7 +14724,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "additionalProperties": false
     },
     "YChannel2": {
-      "title": "YChannel2",
+      "title": "YChannel",
       "type": "object",
       "x-closed": true,
       "properties": {

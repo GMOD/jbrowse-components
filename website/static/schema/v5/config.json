@@ -12785,7 +12785,7 @@
       ]
     },
     "YScale2": {
-      "title": "YScale2",
+      "title": "YScale",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -14182,7 +14182,7 @@
       ]
     },
     "YScale3": {
-      "title": "YScale3",
+      "title": "YScale",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -14260,7 +14260,7 @@
       "additionalProperties": false
     },
     "YChannel2": {
-      "title": "YChannel2",
+      "title": "YChannel",
       "type": "object",
       "x-closed": true,
       "properties": {
