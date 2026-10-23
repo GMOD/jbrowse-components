@@ -20,7 +20,7 @@ const PFAM_TRACK = {
     disableGeneHeuristic: true,
   },
   displayDefaults: {
-    color: { field: 'name' },
+    color: { field: 'name', title: 'Pfam family' },
   },
 }
 

@@ -138,7 +138,7 @@ its family:
     "disableGeneHeuristic": true
   },
   "displayDefaults": {
-    "color": { "field": "name" }
+    "color": { "field": "name", "title": "Pfam family" }
   }
 }
 ```
