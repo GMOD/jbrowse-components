@@ -97,7 +97,7 @@ export type {
 } from './scoreMenuItems.ts'
 export { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 export { ScoreScaleMixin } from './ScoreScaleMixin.ts'
-export { readYMember, yRuleNodes } from './yScaleRead.ts'
+export { confNodeAt, readYMember, yRuleNodes } from './yScaleRead.ts'
 export type { YMember, YScalePaths } from './yScalePaths.ts'
 export { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'
 export type { WiggleScoreConfigHost } from './WiggleScoreConfigMixin.ts'

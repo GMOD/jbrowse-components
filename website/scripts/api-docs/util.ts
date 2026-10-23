@@ -54,7 +54,7 @@ export interface ExtractedNode {
   // the config named "LinearWiggleDisplay".
   baseConfigName?: string
   // For `#slot` nodes only: the declIds a slot's value expression names, nearest
-  // first (`facet: facetConfigSchema`; `scales: wiggleValueScale()`), so its row
+  // first (`facet: facetConfigSchema`; `encoding: yEncodingSchema(...)`), so its row
   // can link the page of the first one that is a `#config`.
   valueDeclIds?: string[]
   // For `#slot` nodes only: whether the slot's `defaultValue` names a parameter
@@ -1663,13 +1663,11 @@ function bindsAParameter(decl: ts.Declaration) {
 }
 
 // Every declaration a sub-schema slot's value expression names, nearest first.
-// `facet: facetConfigSchema` names one; `scales: wiggleValueScale()` and
-// `scales: scalesSchema(valueScaleSchema({ types: ['linear'] }))` name a factory
-// whose schema is built by a call further in, so the walk goes through a
-// callee's returned expression and through a call's arguments as well as its
-// head. The caller keeps the first that is a `#config`, which is what decides
-// the page a row links to — a wrapper with no page of its own (`scalesSchema`)
-// falls through to the one that has it.
+// `facet: facetConfigSchema` names one; `encoding: yEncodingSchema(yChannelSchema())`
+// names a factory whose schema is built by a call further in, so the walk goes
+// through a callee's returned expression and through a call's arguments as well
+// as its head. The caller keeps the first that is a `#config`, which is what
+// decides the page a row links to.
 function referencedSchemaDeclIds(checker: ts.TypeChecker, node: ts.Node) {
   if (!ts.isPropertyAssignment(node)) {
     return undefined

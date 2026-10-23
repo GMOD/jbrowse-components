@@ -1,7 +1,11 @@
 import { scaleEndsOf } from '@jbrowse/core/util/colorScale'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { confNodeAt } from '@jbrowse/wiggle-core'
+
+import { MARK_Y_PATHS } from './markYPaths.ts'
 
 import type {
+  AxisSnapshot,
   FacetSnapshot,
   MarkSnapshot,
   PlotSnapshot,
@@ -53,20 +57,19 @@ export function markPlotSettingsOf(
     transform: (snapshot.transform ?? []) as StepSnapshot[],
     facet: snapshot.facet as FacetSnapshot | undefined,
     rows: snapshot.rows as RowsSnapshot | undefined,
-    axis: {
-      where: 'encoding.y.scale',
-      fence: 'fenceQuantile',
-      ends: scaleEndsOf(
-        name =>
-          asRecord(asRecord(asRecord(snapshot.encoding)?.y)?.scale)?.[name],
-        'fenceQuantile',
-      ),
-    },
+    axis: axisOf(conf),
   }
 }
 
-function asRecord(value: unknown) {
-  return value && typeof value === 'object'
-    ? (value as Record<string, unknown>)
-    : undefined
+function axisOf(conf: AnyConfigurationModel): AxisSnapshot {
+  const scalePath = MARK_Y_PATHS.members.fence.slice(0, -1)
+  const fence = MARK_Y_PATHS.members.fence.at(-1)!
+  const scale = getSnapshot<Record<string, unknown>>(
+    confNodeAt(conf, scalePath),
+  )
+  return {
+    where: scalePath.join('.'),
+    fence,
+    ends: scaleEndsOf(name => scale[name], fence),
+  }
 }
