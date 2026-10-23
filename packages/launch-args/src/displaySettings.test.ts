@@ -93,14 +93,14 @@ describe('alignments modifiers', () => {
     const { snap } = buildDisplaySnapshot('alignments', [
       'featureHeight:super-compact',
     ])
-    expect(snap).toMatchObject({ pileup: { readHeight: 1 } })
+    expect(snap).toMatchObject({ pileup: { mark: { height: 1 } } })
     expect(snap).not.toHaveProperty('featureSpacing')
   })
 
-  test('featureHeight numeric sets pileup.readHeight on alignments', () => {
+  test('featureHeight numeric sets pileup.mark.height on alignments', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['featureHeight:4']).snap.pileup
-        ?.readHeight,
+      buildDisplaySnapshot('alignments', ['featureHeight:4']).snap.pileup?.mark
+        ?.height,
     ).toBe(4)
   })
 
@@ -112,7 +112,7 @@ describe('alignments modifiers', () => {
       'sashimi:auto',
     ])
     expect(snap).toMatchObject({
-      pileup: { softClips: { show: true }, readHeight: 4 },
+      pileup: { softClips: { show: true }, mark: { height: 4 } },
       readConnections: {
         height: 100,
         show: true,
@@ -473,7 +473,7 @@ describe('color routing', () => {
       ]).snap,
     ).toEqual({
       pileup: {
-        readHeight: 3,
+        mark: { height: 3 },
         bases: { show: true, encoding: { color: 'baseQuality' } },
       },
     })

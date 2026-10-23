@@ -207,13 +207,13 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * `pileup.readHeight` as configured, independent of the fit squeeze.
+     * `pileup.mark.height` as configured, independent of the fit squeeze.
      * Consumers that EDIT the size (the "Custom..." height dialog) must start
      * from it, not the fractional fit pitch `featureHeight` resolves to in fit
      * mode, or opening the dialog while compressed would bake the squeeze.
      */
     get configuredReadHeight(): number {
-      return getConf(self, ['pileup', 'readHeight'])
+      return getConf(self, ['pileup', 'mark', 'height'])
     },
     /** #getter */
     get pileupMaxLayoutHeight(): number {

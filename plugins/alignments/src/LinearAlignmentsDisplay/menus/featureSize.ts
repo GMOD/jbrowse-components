@@ -79,8 +79,7 @@ export function getFeatureHeightMenuItem(
 ) {
   const fit = model.heightMode === 'fit'
   const height = model.configuredReadHeight
-  const matchesPreset = (preset: { readHeight: number }) =>
-    height === preset.readHeight
+  const matchesPreset = (preset: { height: number }) => height === preset.height
   return {
     label: `${capitalizeFirst(noun)} height`,
     icon: HeightIcon,
@@ -89,7 +88,7 @@ export function getFeatureHeightMenuItem(
     subMenu: [
       ...PRESETS.map(preset =>
         radioItem(preset.label, !fit && matchesPreset(preset), () => {
-          model.setReadHeight(preset.readHeight)
+          model.setReadHeight(preset.height)
         }),
       ),
       {

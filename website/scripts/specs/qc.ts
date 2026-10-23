@@ -87,7 +87,7 @@ const panel = (loc: string) => ({
       pileup: {
         // At the default height the lane hits "Max layout height reached" and
         // crops the pileup.
-        readHeight: 2,
+        mark: { height: 2 },
       },
       height: 300,
       // 100 kb of a 30x CRAM is past the byte gate, and a capture has nobody to

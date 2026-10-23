@@ -19,13 +19,13 @@ test('featureSpacingForHeight: 1px gap only once the body clears 3px', () => {
 
 test('featureSpacingForHeight reproduces the fixed-mode preset pitches', () => {
   const pitch = (h: number) => h + featureSpacingForHeight(h)
-  expect(pitch(COMPACTNESS_PRESETS.normal.readHeight)).toBe(8)
-  expect(pitch(COMPACTNESS_PRESETS.compact.readHeight)).toBe(3)
-  expect(pitch(COMPACTNESS_PRESETS['super-compact'].readHeight)).toBe(1)
+  expect(pitch(COMPACTNESS_PRESETS.normal.height)).toBe(8)
+  expect(pitch(COMPACTNESS_PRESETS.compact.height)).toBe(3)
+  expect(pitch(COMPACTNESS_PRESETS['super-compact'].height)).toBe(1)
 })
 
 test('NORMAL_PITCH is the Normal body plus its derived gap (the fit cap)', () => {
-  const { readHeight: featureHeight } = COMPACTNESS_PRESETS.normal
+  const { height: featureHeight } = COMPACTNESS_PRESETS.normal
   expect(NORMAL_PITCH).toBe(
     featureHeight + featureSpacingForHeight(featureHeight),
   )

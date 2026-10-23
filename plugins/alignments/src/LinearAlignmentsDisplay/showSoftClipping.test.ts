@@ -71,7 +71,7 @@ describe('alignments compactness', () => {
   })
 
   it('takes a per-track size from the config', () => {
-    const { display } = createDisplay({ pileup: { readHeight: 3 } })
+    const { display } = createDisplay({ pileup: { mark: { height: 3 } } })
     expect(display.featureHeight).toBe(3)
     // spacing is derived from the height (3 -> 0)
     expect(display.featureSpacing).toBe(0)

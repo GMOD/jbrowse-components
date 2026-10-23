@@ -58,8 +58,6 @@ Git history has each landing.
    into its layer's `filter`, percents becoming fractions.
 5. **The comparative `indels` part** takes over `cigarMode` and `drawCigar`,
    after the alignments `show` parts.
-6. **The height step** (ADR-240 step 4): `pileup.readHeight` becomes
-   `pileup.mark.height`. The remaining layout words are in the idea below.
 
 Layout, the multi-way leftovers and settings with no step are in
 [ideas/waiting-on-a-call/vega-lite-layout-and-multiway-leftovers.md](../ideas/waiting-on-a-call/vega-lite-layout-and-multiway-leftovers.md).

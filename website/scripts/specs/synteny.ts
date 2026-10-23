@@ -429,7 +429,7 @@ const ECOLI_ONE_VS_ALL_LANES = sessionSpec(
           {
             trackId: 'ecoli_ava',
             facet: { field: 'mateAssembly', hidden: ['K12'] },
-            pileup: { readHeight: 14 },
+            pileup: { mark: { height: 14 } },
             height: 135,
           },
         ],
@@ -453,7 +453,7 @@ const ECOLI_ROUND_TRIP_START = sessionSpec(
           {
             trackId: 'ecoli_ava',
             facet: { field: 'mateAssembly', hidden: ['K12'] },
-            pileup: { readHeight: 14 },
+            pileup: { mark: { height: 14 } },
             height: 135,
           },
           {
@@ -695,7 +695,7 @@ export function ecoliOneVsAllUrl(levelHeight: number) {
                   // at 3.2kb/px the SNPs, each at a 1px floor, paint a solid wall
                   mismatches: { show: false },
                   // the gaps are the information; a 7px bar hides them
-                  readHeight: 20,
+                  mark: { height: 20 },
                 },
                 height: 100,
               },
@@ -937,7 +937,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'grape_peach_cacao_blocks',
                 facet: 'mateAssembly',
                 pileup: {
-                  readHeight: 14,
+                  mark: { height: 14 },
                 },
                 // six lanes; any shorter clips the last one
                 height: 140,
@@ -2256,7 +2256,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               // `minimap2 -X` built the PAF, so the K12 lane holds only paralogy
               facet: { field: 'mateAssembly', hidden: ['K12'] },
               pileup: {
-                readHeight: 14,
+                mark: { height: 14 },
               },
               height: 135,
             },
@@ -3429,7 +3429,7 @@ export const syntenyVideoFixtures = {
             {
               trackId: 'grape_peach_cacao_blocks',
               facet: 'mateAssembly',
-              pileup: { readHeight: 14 },
+              pileup: { mark: { height: 14 } },
               height: 140,
             },
           ],
@@ -3475,7 +3475,7 @@ export const syntenyVideoFixtures = {
           {
             trackId: 'hg38_to_hs1_liftOver',
             collapseSections: false,
-            pileup: { readHeight: 14 },
+            pileup: { mark: { height: 14 } },
             height: 70,
           },
         ],

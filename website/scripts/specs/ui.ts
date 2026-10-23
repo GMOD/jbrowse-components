@@ -759,7 +759,7 @@ export const uiSpecs: ScreenshotSpec[] = [
             ...['HG02030', 'HG02031', 'HG02032'].map(id => ({
               trackId: `${id}_trio_slice`,
               height: 150,
-              pileup: { readHeight: 1 },
+              pileup: { mark: { height: 1 } },
               readConnections: { show: true },
             })),
           ],

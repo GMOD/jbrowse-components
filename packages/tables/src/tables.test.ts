@@ -843,7 +843,7 @@ test('a chain’s overlaps and their key row come back only where the display dr
   })
   const thin = await engine.alignments({
     ...OVERLAP,
-    display: { unit: 'chain', pileup: { readHeight: 2 } },
+    display: { unit: 'chain', pileup: { mark: { height: 2 } } },
   })
   expect(plain.legend.label).not.toContain(label)
   const row = chained.legend.label.indexOf(label)
@@ -876,7 +876,7 @@ test('the glyph hands R the splice line’s fade at the read height, and the siz
   const tall = await engine.alignments(SPLICED)
   const compact = await engine.alignments({
     ...SPLICED,
-    display: { pileup: { readHeight: 3 } },
+    display: { pileup: { mark: { height: 3 } } },
   })
   expect(tall.glyph.intronAlpha).toBe(1)
   expect(compact.glyph.intronAlpha).toBeGreaterThan(0.25)
@@ -1032,7 +1032,7 @@ test('every mark carries the color the display paints it, keyed beside the reads
   expect(t.readPitch).toEqual({ featureHeight: 7, featureSpacing: 1 })
   const thin = await engine.alignments({
     ...SPLICED,
-    display: { pileup: { readHeight: 3 } },
+    display: { pileup: { mark: { height: 3 } } },
   })
   expect(thin.readPitch).toEqual({ featureHeight: 3, featureSpacing: 0 })
 })

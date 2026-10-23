@@ -69,12 +69,12 @@ test('an explicit author value wins over the band a retired type implies', () =>
   const [entry] = alignmentsEntries([
     {
       type: 'LinearSNPCoverageDisplay',
-      pileup: { show: true, readHeight: 3 },
+      pileup: { show: true, mark: { height: 3 } },
       height: 400,
     },
   ])
   expect(entry).toMatchObject({
-    pileup: { show: true, readHeight: 3 },
+    pileup: { show: true, mark: { height: 3 } },
     coverage: { height: 100 },
     height: 400,
   })

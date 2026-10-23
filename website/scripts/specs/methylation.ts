@@ -49,7 +49,7 @@ function wgbsContextTrack(
         show: false,
       },
       pileup: {
-        readHeight: 3,
+        mark: { height: 3 },
         bases: { show: true, encoding: { color: 'bisulfite' } },
       },
       heightMode: 'fixed',
@@ -199,7 +199,7 @@ export const bisulfiteVideoFixtures = {
         modifications: { cytosineContext: 'CG' },
         coverage: { show: false },
         pileup: {
-          readHeight: 5,
+          mark: { height: 5 },
           bases: { show: true, encoding: { color: 'bisulfite' } },
         },
         heightMode: 'fixed',
@@ -317,10 +317,10 @@ export const methylationSpecs: ScreenshotSpec[] = [
               // The basecaller also emits 5mC/5hmC; the allow-list keeps 6mA.
               modifications: { shownModifications: ['a'] },
               // displayMode is not a slot on this display; fixed height and
-              // readHeight make the rows compact.
+              // mark.height make the rows compact.
               heightMode: 'fixed',
               pileup: {
-                readHeight: 3,
+                mark: { height: 3 },
                 bases: { show: true, encoding: { color: 'modifications' } },
               },
               legend: { show: true },
@@ -331,7 +331,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
               modifications: { shownModifications: ['a'] },
               heightMode: 'fixed',
               pileup: {
-                readHeight: 3,
+                mark: { height: 3 },
                 bases: { show: true, encoding: { color: 'modifications' } },
               },
             },

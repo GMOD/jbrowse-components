@@ -130,7 +130,7 @@ copied.
   px). `alleleCoverage` has `shown`, true where the allele's share of the
   depth reaches `coverage.minAlleleFraction`, the coverageSnp shader's
   test.
-- `readPitch` gives the read height (`pileup.readHeight`) and the gap below a read
+- `readPitch` gives the read height (`pileup.mark.height`) and the gap below a read
   (`featureSpacingForHeight`). Under `heightMode: 'fit'` the browser
   squeezes the pitch to the track's height, which is the host's.
 - Under `unit: 'chain'`, `chains` holds each chain's line and `overlaps` the

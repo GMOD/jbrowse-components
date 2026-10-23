@@ -994,7 +994,7 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   lineWidth: v => ({
     readConnections: { encoding: { strokeWidth: { value: v } } },
   }),
-  featureHeight: v => ({ pileup: { readHeight: v } }),
+  featureHeight: v => ({ pileup: { mark: { height: v } } }),
   maxHeight: v => ({ pileup: { maxLayoutHeight: v } }),
   hideSmallIndels: () => ({}),
   hideMismatches: v => ({ pileup: { mismatches: { show: !v } } }),

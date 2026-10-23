@@ -1059,11 +1059,11 @@ const READ_CONNECTIONS_PLACEMENT: Record<string, string> = {
   down: 'Below coverage',
 }
 
-// The canvas displays' `featureHeight` and the alignments `pileup.readHeight`
+// The canvas displays' `featureHeight` and the alignments `pileup.mark.height`
 // share one size submenu, whose presets carry their own pixel heights.
-const readHeightStep: FieldRecipe = (value, { noun, displayType }) => {
+const readSizeStep: FieldRecipe = (value, { noun, displayType }) => {
   const preset = Object.values(COMPACTNESS_PRESETS).find(
-    p => p.readHeight === value,
+    p => p.height === value,
   )
   const menu = heightMenu(noun, displayType)
   return {
@@ -1913,8 +1913,9 @@ export const trackFields: Record<string, FieldRecipe> = {
   geneGlyphMode: geneGlyphStep,
   // the size presets carry their own pixel heights, so the figure's number
   // names its preset without a second table to keep in sync
-  featureHeight: readHeightStep,
-  'pileup.readHeight': readHeightStep,
+  featureHeight: readSizeStep,
+  'pileup.mark': (value, context) =>
+    readSizeStep(asRecord(value)?.height, context),
   // The canvas display's 'Track sizing' radios sit under a subheader in its
   // size submenu; the alignments display's fit is a Read height radio and its
   // autogrow a checkbox in Advanced. A triangle display's `heightMode` is the one shared fitToHeightCheckboxItem

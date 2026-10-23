@@ -160,7 +160,7 @@ const readEvidence = ({
             readConnections: { show: true, height: 60 },
             pileup: {
               // rows tall enough to show each maps-back loop
-              readHeight: connectorCurves ? 6 : 3,
+              mark: { height: connectorCurves ? 6 : 3 },
               connectors: { show: connectorCurves },
             },
             unit: 'chain',

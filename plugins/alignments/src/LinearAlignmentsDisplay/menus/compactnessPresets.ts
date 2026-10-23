@@ -1,19 +1,19 @@
 // The fixed read-height vocabulary, kept in a leaf module with no UI imports so
 // it can be read by things that must not pull in React — the menu itself
 // (featureSize.ts, which re-exports these), and the website's figure recipes,
-// which name a figure's `pileup.readHeight` by its preset label.
+// which name a figure's `pileup.mark.height` by its preset label.
 
 // Single source of truth for the fixed read-height presets — one height each
 // (spacing is derived from it). Both the radios' `checked` state and their
 // onClick derive from this, so adding a preset means updating one place.
 //
-// 'Normal' (7) is `pileup.readHeight`'s default, so a fresh display with no
+// 'Normal' (7) is `pileup.mark.height`'s default, so a fresh display with no
 // overrides reads as Normal-checked. Clicking any preset writes its exact
 // height.
 export const COMPACTNESS_PRESETS = {
-  normal: { label: 'Normal', readHeight: 7 },
-  compact: { label: 'Compact', readHeight: 3 },
-  'super-compact': { label: 'Super-compact', readHeight: 1 },
+  normal: { label: 'Normal', height: 7 },
+  compact: { label: 'Compact', height: 3 },
+  'super-compact': { label: 'Super-compact', height: 1 },
 } as const
 
 // The one rule turning a read size into its inter-read gap: a 1px gap once
@@ -29,8 +29,8 @@ export function featureSpacingForHeight(height: number) {
 // caps here so choosing "fit" only ever shrinks reads below Normal, never
 // balloons a handful past it.
 export const NORMAL_PITCH =
-  COMPACTNESS_PRESETS.normal.readHeight +
-  featureSpacingForHeight(COMPACTNESS_PRESETS.normal.readHeight)
+  COMPACTNESS_PRESETS.normal.height +
+  featureSpacingForHeight(COMPACTNESS_PRESETS.normal.height)
 
 /** The Read height radio that fits the read height to the track. */
 export const FIT_TO_TRACK_LABEL = 'Fit to track height'

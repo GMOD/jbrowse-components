@@ -1,20 +1,21 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { pileupConnectorsConfigSchema } from './pileupConnectorsConfigSchema.ts'
+import { pileupMarkConfigSchema } from './pileupMarkConfigSchema.ts'
 import { pileupMismatchesConfigSchema } from './pileupMismatchesConfigSchema.ts'
 import { pileupSoftClipsConfigSchema } from './pileupSoftClipsConfigSchema.ts'
 
 /**
  * #config Pileup
  * #category display
- * The alignments display's `pileup` setting: the band of stacked reads, its
- * read height and layout cap, and the parts drawn on each read.
+ * The alignments display's `pileup` setting: the band of stacked reads, the
+ * `mark` each read draws as, the layout cap, and the parts drawn on each read.
  *
  * #example
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   pileup: { readHeight: 3, softClips: { show: true } },
+ *   pileup: { mark: { height: 3 }, softClips: { show: true } },
  * }
  * ```
  */
@@ -30,16 +31,10 @@ export const pileupConfigSchema = ConfigurationSchema(
       description: 'draw the pileup band',
     },
     /**
-     * #slot
-     * The one compactness setting: the spacing between reads follows from it
-     * (`featureSpacingForHeight`), and the Normal, Compact and Super-compact
-     * presets (7, 3, 1) and the fit-mode squeeze all write or read it.
+     * #slot mark
+     * The bar each read draws as: `height`.
      */
-    readHeight: {
-      type: 'number',
-      defaultValue: 7,
-      description: 'height of each read in pixels',
-    },
+    mark: pileupMarkConfigSchema,
     /**
      * #slot
      */
@@ -78,5 +73,9 @@ export const pileupConfigSchema = ConfigurationSchema(
       advanced: true,
     },
   },
-  { closed: true, plot: true },
+  {
+    closed: true,
+    plot: true,
+    retired: { readHeight: height => ({ mark: { height } }) },
+  },
 )

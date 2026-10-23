@@ -25,7 +25,7 @@ function isObject(v: unknown): v is Record<string, unknown> {
 }
 
 // The bands a retired type implies, under whatever the entry spells itself:
-// an entry writing `pileup: { readHeight: 3 }` keeps the implied
+// an entry writing `pileup: { mark: { height: 3 } }` keeps the implied
 // `pileup.show`, as a band member the entry names wins over the implied one.
 function underEntry(bands: DisplayEntry, entry: DisplayEntry): DisplayEntry {
   const out: DisplayEntry = { ...bands, ...entry }
@@ -162,7 +162,7 @@ function rendererSlotsOf(renderers: unknown): DisplayEntry {
     ...(mismatchAlpha !== undefined ? mismatchFadeOf(mismatchAlpha) : {}),
   }
   const slots = {
-    ...(height !== undefined ? { readHeight: height } : {}),
+    ...(height !== undefined ? { mark: { height } } : {}),
     ...(maxHeight !== undefined ? { maxLayoutHeight: maxHeight } : {}),
     ...(Object.keys(mismatches).length > 0 ? { mismatches } : {}),
   }
@@ -192,7 +192,7 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
  * field and the `modifications` slot now; its LinearReadArcsDisplay gated the
  * two arc classes under the draw verb, which are `connection` filter fields
  * now, and its `filterBy` the read fields; `liftV4Filter` reads those three
- * together. Its read size and layout cap are `pileup`'s `readHeight` and
+ * together. Its read size and layout cap are `pileup`'s `mark.height` and
  * `maxLayoutHeight`. The coverage display's scale slots, and v5's `scales.y`,
  * land on the band's `coverage.encoding.y`. `flipStrandLongReadChains` went: a split segment's
  * strand against its molecule is a level of the orientation fields, which
@@ -214,7 +214,7 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   lineWidth: v => ({
     readConnections: { encoding: { strokeWidth: { value: v } } },
   }),
-  featureHeight: v => ({ pileup: { readHeight: v } }),
+  featureHeight: v => ({ pileup: { mark: { height: v } } }),
   maxHeight: v => ({ pileup: { maxLayoutHeight: v } }),
   hideSmallIndels: () => ({}),
   hideMismatches: v => ({ pileup: { mismatches: { show: !v } } }),

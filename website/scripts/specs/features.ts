@@ -305,7 +305,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'pten_directrna',
-              pileup: { readHeight: 3 },
+              pileup: { mark: { height: 3 } },
               sashimi: {
                 placement: 'auto',
               },

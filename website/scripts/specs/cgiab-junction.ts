@@ -31,7 +31,7 @@ const chrome = (height: number, { hideAppBar }: Chrome) => ({
 
 const reads = {
   trackId: READS,
-  pileup: { readHeight: 1 },
+  pileup: { mark: { height: 1 } },
   filter: [{ field: 'connection.offscreen', equal: false }],
   height: 200,
   forceLoad: true,
@@ -167,7 +167,7 @@ export const junctionScaffold = (
                 facet: 'split',
                 encoding: { color: 'pairOrientation' },
                 legend: { show: true },
-                pileup: { readHeight: 2 },
+                pileup: { mark: { height: 2 } },
                 readConnections: { show: true, height: 70 },
                 height: 690,
               },

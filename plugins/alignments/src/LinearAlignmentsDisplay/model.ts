@@ -3272,7 +3272,7 @@ export default function stateModelFactory(
             if (self.fitHeightToDisplay) {
               self.setHeightMode('fixed')
             }
-            setConf(self, ['pileup', 'readHeight'], height)
+            setConf(self, ['pileup', 'mark', 'height'], height)
             self.scrollTop = 0
           },
 

@@ -23,7 +23,7 @@
               "refName": "chr3"
             },
             "pileup": {
-              "readHeight": 3
+              "mark": { "height": 3 }
             }
           },
           {
@@ -35,7 +35,7 @@
               "refName": "chr3"
             },
             "pileup": {
-              "readHeight": 3
+              "mark": { "height": 3 }
             }
           },
           {
@@ -47,7 +47,7 @@
               "refName": "chr3"
             },
             "pileup": {
-              "readHeight": 3
+              "mark": { "height": 3 }
             }
           }
         ]

@@ -207,7 +207,7 @@ export interface DisplaySnapshot {
         within?: number
       }
   pileup?: {
-    readHeight?: number
+    mark?: { height?: number }
     bases?: { show?: boolean; encoding?: { color?: string } }
   }
   readConnections?: {
@@ -397,7 +397,7 @@ const modifiers: Record<string, Modifier> = {
     },
   },
 
-  // alignments write `pileup.readHeight`, the canvas displays `displayMode`
+  // alignments write `pileup.mark.height`, the canvas displays `displayMode`
   // or `featureHeight`
   featureHeight: {
     on: ['alignments', ...CANVAS],
@@ -417,7 +417,9 @@ const modifiers: Record<string, Modifier> = {
       if (category === 'alignments') {
         mergeSettings(settingsOf(r), {
           pileup: {
-            readHeight: preset ? ALIGNMENTS_COMPACTNESS[preset] : height,
+            mark: {
+              height: preset ? ALIGNMENTS_COMPACTNESS[preset] : height,
+            },
           },
         })
       } else if (preset) {

@@ -533,7 +533,7 @@ export const svSpecs: ScreenshotSpec[] = [
                 height: 200,
               },
               coverage: { height: 120 },
-              pileup: { readHeight: 3 },
+              pileup: { mark: { height: 3 } },
               // At 1px the discordant cluster loses its color. 'grow' because
               // the discordant reads land at the bottom of the layout, where a
               // short track scrolls them away.
@@ -962,7 +962,7 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008t_pacbio_chr10_deletion_slice',
               height: 300,
-              pileup: { readHeight: 3 },
+              pileup: { mark: { height: 3 } },
               sort: {
                 field: 'base',
                 pos: 122836434,
@@ -1023,7 +1023,7 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008t_pacbio_full',
               height: 260,
-              pileup: { readHeight: 5 },
+              pileup: { mark: { height: 5 } },
               forceLoad: true,
               sort: {
                 field: 'base',
@@ -1034,7 +1034,7 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3',
               height: 260,
-              pileup: { readHeight: 5 },
+              pileup: { mark: { height: 5 } },
               forceLoad: true,
               sort: {
                 field: 'base',
@@ -1406,7 +1406,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // fit ignores featureHeight. `unit: 'read'`: chain connectors
               // across the deletion merge into a solid grey block at 1px.
               heightMode: 'fixed',
-              pileup: { readHeight: 1 },
+              pileup: { mark: { height: 1 } },
               height: 160,
             },
             benchmarkCnvLane(),

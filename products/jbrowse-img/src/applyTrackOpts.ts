@@ -51,7 +51,7 @@ export type AssertDisplaySettingsMatchPlugins = [
     typeof ALIGNMENTS_COMPACTNESS extends {
       [
         K in keyof typeof COMPACTNESS_PRESETS
-      ]: (typeof COMPACTNESS_PRESETS)[K]['readHeight']
+      ]: (typeof COMPACTNESS_PRESETS)[K]['height']
     }
       ? true
       : false

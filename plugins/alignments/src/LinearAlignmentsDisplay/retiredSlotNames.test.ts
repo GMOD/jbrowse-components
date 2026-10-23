@@ -90,8 +90,13 @@ test('mismatchAlpha lifts onto the mismatches opacity field, top level and rende
 // `maxHeight`; both are the pileup band's now
 test('a v4 read size and layout cap lift into pileup', () => {
   const conf = create({ featureHeight: 3, maxHeight: 900 })
-  expect(readConfObject(conf, ['pileup', 'readHeight'])).toBe(3)
+  expect(readConfObject(conf, ['pileup', 'mark', 'height'])).toBe(3)
   expect(readConfObject(conf, ['pileup', 'maxLayoutHeight'])).toBe(900)
+})
+
+test('a beta pileup.readHeight lifts into pileup.mark.height', () => {
+  const conf = create({ pileup: { readHeight: 2 } })
+  expect(readConfObject(conf, ['pileup', 'mark', 'height'])).toBe(2)
 })
 
 test("a display's own v4 read size beats its renderer's", () => {
@@ -99,7 +104,7 @@ test("a display's own v4 read size beats its renderer's", () => {
     featureHeight: 3,
     renderers: { PileupRenderer: { height: 9, maxHeight: 900 } },
   })
-  expect(readConfObject(conf, ['pileup', 'readHeight'])).toBe(3)
+  expect(readConfObject(conf, ['pileup', 'mark', 'height'])).toBe(3)
   expect(readConfObject(conf, ['pileup', 'maxLayoutHeight'])).toBe(900)
 })
 

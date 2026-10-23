@@ -36,7 +36,7 @@ type SchemaDefinition = NonNullable<
   ReturnType<typeof getConfigurationSchemaDefinition>
 >
 
-// A sub-schema's slots are listed under its dotted name, `pileup.readHeight`,
+// A sub-schema's slots are listed under its dotted name, `pileup.mark.height`,
 // so a band object's defaults are pinned as a flat slot's are.
 function slotsOf(
   definition: SchemaDefinition,

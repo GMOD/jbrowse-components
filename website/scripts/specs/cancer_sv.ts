@@ -23,7 +23,7 @@ const NORMAL = 'COLO829BL_normal_ont'
 const SV = 'COLO829_somatic_sv'
 
 // One row per pixel fits the whole 200x ONT pileup in frame.
-const SUPER_COMPACT = { readHeight: 1 }
+const SUPER_COMPACT = { mark: { height: 1 } }
 
 // Both COLO829 ONT pileups exceed the byte gate at every window here, since an
 // ONT read is 20 kb of fetch; without forceLoad each figure captures the
@@ -45,7 +45,7 @@ const MULTIHOP_GENE_HEIGHT = 70
 // hairline a reader cannot follow across the join. Raising this needs a taller
 // lane, or the rows go behind the track's own scrollbar, which no size report
 // sees.
-const SPLIT_READS = { readHeight: 4 }
+const SPLIT_READS = { mark: { height: 4 } }
 
 // Every COLO829 window sits inside an intron. With all isoforms stacked, the
 // gene name's floating label falls below the fixed track height and clips.
@@ -105,7 +105,7 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
     pileup: {
       softClips: { show: true },
       // At 1px the rows fuse into a grey slab with white streaks.
-      readHeight: 2,
+      mark: { height: 2 },
     },
     // Split reads only: otherwise connectors leave rows packed below the
     // visible band and draw as diagonal ladders with no read at either end.
@@ -193,7 +193,7 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
               // 43 reads overlap this window (29 span all four junctions). At a
               // pitch of featureHeight + 1 they need 387 of the 425 px under
               // the coverage band; at 11 the pileup ran onto a scrollbar.
-              readHeight: 8,
+              mark: { height: 8 },
             },
             height: 470,
           },
@@ -246,13 +246,13 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         {
           trackId: TUMOUR,
           ...DEEP_ONT,
-          pileup: { softClips: { show: true }, readHeight: 2 },
+          pileup: { softClips: { show: true }, mark: { height: 2 } },
           height: 470,
         },
         {
           trackId: NORMAL,
           ...DEEP_ONT,
-          pileup: { softClips: { show: true }, readHeight: 2 },
+          pileup: { softClips: { show: true }, mark: { height: 2 } },
           height: 215,
         },
       ],
@@ -377,7 +377,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   ...DEEP_ONT,
                   filter: [{ field: 'split', equal: true }],
                   unit: 'chain',
-                  pileup: { connectors: { show: true }, readHeight: 3 },
+                  pileup: { connectors: { show: true }, mark: { height: 3 } },
                   coverage: { height: 30 },
                   readConnections: { show: true, height: 110 },
                   heightMode: 'grow',
@@ -478,7 +478,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                     // connectors adds the inverted and hidden-segment joins
                     // inside one panel.
                     connectors: { show: true },
-                    readHeight: 5,
+                    mark: { height: 5 },
                   },
                   coverage: {
                     // The filter runs before coverage, so this band counts the
@@ -524,7 +524,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // the two.
                   heightMode: 'grow',
                   height: 175,
-                  pileup: { readHeight: 5 },
+                  pileup: { mark: { height: 5 } },
                   coverage: {
                     // The flat realigned depth that the tutorial's prose cites.
                     height: 40,

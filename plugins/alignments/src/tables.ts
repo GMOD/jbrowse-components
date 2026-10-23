@@ -1343,7 +1343,11 @@ export async function alignmentTables(
   )
   const sortTag = fieldTag(sortColumn?.field)
   const chain = readConfObject(conf, 'unit') === 'chain'
-  const featureHeight: number = readConfObject(conf, ['pileup', 'readHeight'])
+  const featureHeight: number = readConfObject(conf, [
+    'pileup',
+    'mark',
+    'height',
+  ])
   const softClippingAsked: boolean = readConfObject(conf, [
     'pileup',
     'softClips',
@@ -1945,7 +1949,7 @@ export function alignmentMarkAlpha({
   }
   pileupDefaults ??= pileupConfigSchema.create()
   const height: number =
-    featureHeight ?? readConfObject(pileupDefaults, 'readHeight')
+    featureHeight ?? readConfObject(pileupDefaults, ['mark', 'height'])
   if (!Number.isFinite(height) || height < 0) {
     throw new Error(
       `featureHeight is ${featureHeight}; it takes a finite number >= 0`,

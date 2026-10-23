@@ -321,7 +321,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           pileup: {
             // nearly every read takes its own row; at 2 px the pileups push the
             // bands out of frame
-            readHeight: 1,
+            mark: { height: 1 },
           },
           coverage: { height: 150 },
           height: 700,
@@ -357,7 +357,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               encoding: { color: 'strand' },
               pileup: {
                 // ~12 reads a strand: at 3 px each pileup draws as a solid stripe
-                readHeight: 9,
+                mark: { height: 9 },
               },
               coverage: { height: 110 },
               height: 480,
@@ -553,10 +553,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          // featureSpacing is derived from readHeight, not a config slot, so
+          // featureSpacing is derived from mark.height, not a config slot, so
           // the display drops one added here
           sashimi: { labels: { show: true }, placement: 'auto' },
-          pileup: { readHeight: 1 },
+          pileup: { mark: { height: 1 } },
           coverage: { encoding: { y: { scale: { type: 'log' } } } },
         },
       ],
@@ -912,7 +912,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'illumina_hg002',
-          pileup: { readHeight: 3 },
+          pileup: { mark: { height: 3 } },
         },
       ],
     }),
@@ -1029,7 +1029,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         'ncbi_gff_hg19',
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          pileup: { readHeight: 3, maxLayoutHeight: 2000 },
+          pileup: { mark: { height: 3 }, maxLayoutHeight: 2000 },
           coverage: {
             height: 120,
           },
@@ -1057,7 +1057,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         {
           trackId: 'hg_isoforms.fasta_bam',
           coverage: { height: 120 },
-          pileup: { readHeight: 1 },
+          pileup: { mark: { height: 1 } },
           height: 620,
         },
       ],
@@ -1083,7 +1083,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         'ncbi_gff_hg19',
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          pileup: { readHeight: 3, maxLayoutHeight: 2000 },
+          pileup: { mark: { height: 3 }, maxLayoutHeight: 2000 },
           coverage: { height: 120 },
           filter: [{ field: 'junction.reads', gte: 3 }],
           height: 420,
@@ -1129,7 +1129,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         'ncbi_gff_hg19',
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          pileup: { readHeight: 3, maxLayoutHeight: 2000 },
+          pileup: { mark: { height: 3 }, maxLayoutHeight: 2000 },
           coverage: { height: 160 },
           height: 380,
           ...display,
@@ -1182,7 +1182,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // opposite sections in this stranded paired-end library
           facet: 'firstOfPairStrand',
           encoding: { color: 'firstOfPairStrand' },
-          pileup: { readHeight: 3 },
+          pileup: { mark: { height: 3 } },
           sashimi: { show: false },
           coverage: { height: 110 },
           height: 560,
