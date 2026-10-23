@@ -10,7 +10,6 @@
         "type": "DotplotView",
         "height": 600,
         "assemblyNames": ["grape", "peach"],
-        "drawCigar": true,
         "hview": {
           "id": "bs5Fq1B2O",
           "displayedRegions": [

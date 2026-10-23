@@ -16,7 +16,7 @@ const resolvedOp = span1 > bpPerPx0 || span2 > bpPerPx1 ? op : CIGAR_M
 wide enough to render, every match base merged into the segment ahead of it is
 labelled as part of the indel:
 
-- **transparent indels** (`cigarMode: 'matches'`) drop the segment entirely —
+- **transparent indels** (`indels: { encoding: { opacity: 0 } }`) drop the segment entirely —
   `cigarSegmentKind` emits no tile for an indel — so those match bases are
   unpainted ribbon;
 - **colored indels** paint the whole segment as an indel wedge, so the indel

@@ -181,7 +181,7 @@ export function doAfterAttach(
         if (!rpcData) {
           return
         }
-        const { drawCigar, hview, vview, minLength } = view
+        const { drawCigar, indelGaps, hview, vview, minLength } = view
         // GPU precision anchor: the viewport-start cumBp per axis at build time.
         // Read offsetPx untracked so panning alone doesn't rebuild geometry
         // (pan is a uniform-only update on the GPU); a zoom changes bpPerPx,
@@ -202,6 +202,7 @@ export function doAfterAttach(
             vview.bpPerPx,
             baseH,
             baseV,
+            indelGaps,
           ),
         )
       },

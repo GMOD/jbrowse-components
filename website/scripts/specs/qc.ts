@@ -330,7 +330,7 @@ export const qcSpecs: ScreenshotSpec[] = [
           mark: { interpolate: 'bump' },
           // 'off' draws each chain as an opaque slab, and 'full' is a hairball
           // over the segdup.
-          cigarMode: 'matches',
+          indels: { encoding: { opacity: 0 } },
           filter: [{ field: 'length', gte: 10000 }],
           levelHeights: [300],
           tracks: [['hg38_hs1_synteny']],

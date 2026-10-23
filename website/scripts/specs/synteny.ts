@@ -115,7 +115,6 @@ export const PICALM_ALU_LOCUS = {
 // A hosted liftOver chain is one chromosome-scale block, so zooming in on it
 // exercises the worker's oversized-block clip.
 export function hg38ChimpSynteny(
-  cigarMode: 'matches' | 'full',
   locus: { hg38: string; panTro6: string } = RB1_L1_LOCUS,
 ) {
   // panTro6 has no MANE, so 'longestCoding' cuts the isoform stacks. Pinning a
@@ -136,7 +135,6 @@ export function hg38ChimpSynteny(
     views: [
       {
         type: 'LinearSyntenyView',
-        cigarMode,
         mark: { interpolate: 'bump' },
         tracks: [['hg38_panTro6_synteny']],
         views: [
@@ -751,7 +749,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'synteny_human_chimp_cigar_modes',
-    url: hg38ChimpSynteny('full'),
+    url: hg38ChimpSynteny(),
     viewportWidth: 1200,
     viewportHeight: 691,
     readySelector: displayPainted('synteny_canvas'),
@@ -760,7 +758,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'synteny_te_picalm_alu',
-    url: hg38ChimpSynteny('full', PICALM_ALU_LOCUS),
+    url: hg38ChimpSynteny(PICALM_ALU_LOCUS),
     viewportWidth: 1200,
     viewportHeight: 667,
     readySelector: displayPainted('synteny_canvas'),
@@ -2598,7 +2596,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ...TNNT3_FRAME,
     name: 'synteny_hg38_hs1_tnnt3',
     url: tnnt3Session(
-      { mark: { interpolate: 'bump' }, cigarMode: 'matches' },
+      { mark: { interpolate: 'bump' }, indels: { encoding: { opacity: 0 } } },
       { markLinc01150: true },
     ),
   },
@@ -2628,7 +2626,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     ...TNNT3_FRAME,
     name: 'genomes_synteny/ribbons_curved',
-    url: tnnt3Session({ mark: { interpolate: 'bump' }, cigarMode: 'matches' }),
+    url: tnnt3Session({
+      mark: { interpolate: 'bump' },
+      indels: { encoding: { opacity: 0 } },
+    }),
     annotations: [
       {
         type: 'text',
@@ -2783,7 +2784,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               type: 'LinearSyntenyView',
               tracks: [['hg38_to_panTro6_liftOver']],
               mark: { interpolate: 'bump' },
-              cigarMode: 'matches',
+              indels: { encoding: { opacity: 0 } },
               views: [
                 {
                   assembly: 'hg38',
@@ -3324,7 +3325,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           tracks: ['hs1_chrY_self'],
           encoding: { color: 'strand', opacity: 0.4 },
           mark: { interpolate: 'bump' },
-          cigarMode: 'matches',
+          indels: { encoding: { opacity: 0 } },
           filter: [{ field: 'length', gte: 100000 }],
           levelHeights: [220],
           collapseEmptyRows: true,

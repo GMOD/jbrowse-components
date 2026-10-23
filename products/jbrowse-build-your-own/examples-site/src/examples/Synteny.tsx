@@ -58,7 +58,7 @@ const Synteny = observer(function Synteny() {
             ],
             tracks: ['hg38_mm39'],
             mark: { interpolate: 'bump' },
-            cigarMode: 'matches',
+            indels: { encoding: { opacity: 0 } },
           },
         ],
       },

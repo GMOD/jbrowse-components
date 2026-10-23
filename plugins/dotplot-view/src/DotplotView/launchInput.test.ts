@@ -48,7 +48,7 @@ test('any declared property lands natively, named nowhere in the launch path', a
   const view = await open({
     views: AXES,
     encoding: { color: 'query', opacity: 0.55 },
-    drawCigar: false,
+    indels: { show: false },
     lineWidth: 3,
     coord: { ratio: 1 },
     data: { resolution: 'coarse' },

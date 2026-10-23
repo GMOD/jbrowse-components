@@ -81,6 +81,23 @@ function liftMinLength(snap: Snap) {
   }
 }
 
+// `cigarMode` and the dotplot's `drawCigar` are the `indels` part
+function liftIndels(snap: Snap) {
+  if (!('cigarMode' in snap) && !('drawCigar' in snap)) {
+    return snap
+  }
+  const { cigarMode, drawCigar, ...rest } = snap
+  const lifted =
+    cigarMode === 'off' || drawCigar === false
+      ? { show: false }
+      : cigarMode === 'matches'
+        ? { encoding: { opacity: { value: 0 } } }
+        : undefined
+  return rest.indels !== undefined || lifted === undefined
+    ? rest
+    : { ...rest, indels: lifted }
+}
+
 // the displays a v4.3.0 session held these settings on: each level's tracks on
 // a linear synteny view, the view's own tracks on a dotplot
 function displaySnapshots(snap: Snap) {
@@ -106,7 +123,13 @@ const DISPLAY_SETTINGS = ['colorBy', 'alpha', 'minAlignmentLength'] as const
  * and dotplot views name as their launch keys' `passThrough` so a validator
  * accepts them.
  */
-export const LIFTED_VIEW_KEYS = ['colorBy', 'alpha', 'color'] as const
+export const LIFTED_VIEW_KEYS = [
+  'colorBy',
+  'alpha',
+  'color',
+  'cigarMode',
+  'drawCigar',
+] as const
 
 /**
  * #api
@@ -137,12 +160,15 @@ function liftDisplaySettings(snap: Snap) {
  * `filter` predicate on `length`.
  * An older genomes-portal launch link puts the mode string on the view
  * itself, which lifts the same way, and a jb2hubs desktop link writes the
- * view's `color`, which lands as `encoding.color`.
+ * view's `color`, which lands as `encoding.color`. The view's own
+ * `cigarMode` and `drawCigar` land as the `indels` part.
  */
 export function liftSyntenyViewSettings(snap: Snap | undefined) {
   return snap
-    ? liftMinLength(
-        liftAlpha(liftColorBy(liftViewColor(liftDisplaySettings(snap)))),
+    ? liftIndels(
+        liftMinLength(
+          liftAlpha(liftColorBy(liftViewColor(liftDisplaySettings(snap)))),
+        ),
       )
     : snap
 }

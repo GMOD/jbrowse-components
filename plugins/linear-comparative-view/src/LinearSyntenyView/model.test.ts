@@ -84,11 +84,11 @@ describe('LinearSyntenyViewInit type', () => {
       views: [{ assembly: 'hg38' }, { assembly: 'mm39' }],
       axis: { grid: true },
       overdrawPx: 500,
-      cigarMode: 'matches',
+      indels: { encoding: { opacity: { value: 0 } } },
       data: { resolution: 'coarse' },
       encoding: { opacity: { value: 0.4 } },
     }
-    expect(init.cigarMode).toBe('matches')
+    expect(init.indels).toEqual({ encoding: { opacity: { value: 0 } } })
   })
 
   test('rejects a misspelled property and a wrong value type', () => {
@@ -97,11 +97,5 @@ describe('LinearSyntenyViewInit type', () => {
     // @ts-expect-error overdrawPx is a number
     const wrongType: LinearSyntenyViewInit = { views: [], overdrawPx: 'loud' }
     expect([typo, wrongType]).toHaveLength(2)
-  })
-
-  test('rejects an enumeration value outside the property own union', () => {
-    // @ts-expect-error cigarMode is 'off' | 'matches' | 'full'
-    const bad: LinearSyntenyViewInit = { views: [], cigarMode: 'colored' }
-    expect(bad).toBeTruthy()
   })
 })

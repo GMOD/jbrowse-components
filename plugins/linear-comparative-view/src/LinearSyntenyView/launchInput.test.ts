@@ -48,7 +48,7 @@ test('any declared property lands natively, named nowhere in the launch path', a
     axis: { grid: true },
     data: { resolution: 'coarse' },
     overdrawPx: 42,
-    cigarMode: 'matches',
+    indels: { encoding: { opacity: 0 } },
     encoding: { opacity: { field: 'identity' } },
   })
   expect(view.axisGrid).toBe(true)
@@ -221,4 +221,9 @@ test('the tracks lift leaves the levels to the launch', async () => {
   const view = await open({ views: ROWS, tracks: [['a_track']] })
   expect(view.launch).toEqual({ views: ROWS, tracks: [['a_track']] })
   expect(getSnapshot(view).levels).toEqual([])
+})
+
+test('a beta cigarMode lands as the indels part', async () => {
+  const view = await open({ views: ROWS, cigarMode: 'off' })
+  expect(view.cigarMode).toBe('off')
 })

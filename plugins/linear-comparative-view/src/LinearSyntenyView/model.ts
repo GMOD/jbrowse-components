@@ -43,9 +43,12 @@ import {
   carriedSyntenySettings,
   collectTrackWarnings,
   getSyntenyTracks,
+  indelsDrawingOf,
+  indelsOfDrawing,
   releaseTemporaryAssemblies,
   reorderChromosomesMenuItem,
   syntenyCoordConfigSchema,
+  syntenyIndelsConfigSchema,
   syntenyMarkConfigSchema,
 } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
@@ -163,15 +166,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         type: types.literal('LinearSyntenyView'),
         /**
          * #property
-         * How per-base insertions and deletions inside each alignment are
-         * shown: 'full' paints indel wedges, 'matches' leaves them see-through,
-         * 'off' draws blocks only.
+         * The insertions and deletions inside each alignment, a
+         * [](/docs/config/syntenyindels) part: `{ show: false }` draws each
+         * alignment as one block, and `{ encoding: { opacity: 0 } }` leaves
+         * each indel a gap.
          */
-        cigarMode: types.stripDefault(
-          // `as const` keeps the CigarMode union from widening to `string`
-          types.enumeration(['off', 'matches', 'full'] as const),
-          'full',
-        ),
+        indels: types.stripDefault(syntenyIndelsConfigSchema, {}),
         /**
          * #property
          * How every band's ribbons draw, a [](/docs/config/syntenymark)
@@ -402,6 +402,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get offscreenDrawn(): boolean {
         return readConfObject(self.offscreen, 'show')
+      },
+      /**
+       * #getter
+       * How the `indels` part draws: `off`, `matches` (gaps) or `full`.
+       */
+      get cigarMode(): CigarMode {
+        return indelsDrawingOf(self.indels)
       },
       /**
        * #getter
@@ -1166,7 +1173,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setCigarMode(arg: CigarMode) {
-        self.cigarMode = arg
+        self.indels = cast(indelsOfDrawing(arg))
       },
       /**
        * #action

@@ -15,6 +15,7 @@ import {
   fadesThinAt,
   isInstanceInvisible,
   locateCum,
+  resolvedIndels,
   unpack,
   viewColorSettings,
 } from '@jbrowse/synteny-core'
@@ -53,6 +54,7 @@ import type {
   ColorArg,
   ComparativeAxis,
   FilterArg,
+  IndelsArg,
   OpacityArg,
   RefNamePosition,
   RibbonInterpolation,
@@ -72,7 +74,8 @@ export interface SyntenyTablesArgs {
    * The view's settings, as a `LinearSyntenyView` snapshot writes them:
    * `encoding` (`color`, a field such as `'strand'` or the color channel's
    * slots, and `opacity`, a number or the opacity channel),
-   * `filter` (a list of field predicates), `cigarMode` (`full`, `matches` or `off`),
+   * `filter` (a list of field predicates), `indels` (`show`, and
+   * `encoding.opacity` 0 to leave each indel a gap),
    * `mark` (`interpolate`: `linear` or `bump`), `axis` (`grid` draws the
    * location markers), `render` (`antialias`: `true`, `false`, or unset to
    * follow the data) and the level's `height` in px, which the thin-ribbon
@@ -81,7 +84,7 @@ export interface SyntenyTablesArgs {
   view?: {
     encoding?: { color?: ColorArg; opacity?: OpacityArg }
     filter?: FilterArg
-    cigarMode?: 'full' | 'matches' | 'off'
+    indels?: IndelsArg
     mark?: { interpolate?: RibbonInterpolation }
     axis?: { grid?: boolean }
     render?: { antialias?: boolean }
@@ -340,13 +343,14 @@ export async function syntenyTables(
   const t = comparativeAxis(target, adapterConfig, 1)
   const config = {
     filter: view.filter ?? [],
-    cigarMode: view.cigarMode ?? 'full',
+    indels: resolvedIndels(view.indels).settings,
     mark: { interpolate: view.mark?.interpolate ?? 'linear' },
     axis: { grid: view.axis?.grid ?? false },
     render: { antialias: view.render?.antialias },
     height: view.height ?? DEFAULT_LEVEL_HEIGHT,
   }
-  const { cigarMode, height } = config
+  const { height } = config
+  const cigarMode = resolvedIndels(view.indels).drawing
   const { value } = await executeSyntenyFeaturesAndPositions({
     pluginManager,
     sessionId: 'tables',

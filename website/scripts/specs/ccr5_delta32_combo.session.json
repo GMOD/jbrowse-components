@@ -60,7 +60,6 @@
       "mark": {
         "interpolate": "bump"
       },
-      "cigarMode": "full",
       "tracks": [["ccr5_hg38_to_delta32"]],
       "views": [
         {

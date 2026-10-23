@@ -73,6 +73,11 @@ describe('buildLineSegments over flat cigar buffers', () => {
     expect(segs.x2[5]).toBeCloseTo(20_100)
   })
 
+  it('leaves each indel a gap when asked', () => {
+    const segs = buildLineSegments(makeData(), true, 0, 1, 1, 0, 0, true)
+    expect([...segs.segmentOps]).toEqual([0, 0, 0, 0, 0])
+  })
+
   it('emits one flat segment per feature when drawCigar is off', () => {
     const segs = buildLineSegments(makeData(), false, 0, 1, 1, 0, 0)
     expect(segs.instanceCount).toBe(3)

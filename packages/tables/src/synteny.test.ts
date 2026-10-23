@@ -23,7 +23,7 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
   expect(t.alpha).toBe(0.25)
   expect(t.config).toMatchObject({
     filter: [],
-    cigarMode: 'full',
+    indels: { show: true },
     mark: { interpolate: 'linear' },
     axis: { grid: false },
     render: {},
@@ -61,16 +61,16 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
   expect(t.offscreen.axis).toHaveLength(0)
 })
 
-test('the CIGAR modes draw the ops colored, the matches alone, or the block alone', async () => {
+test('the indels part draws the ops colored, the matches alone, or the block alone', async () => {
   const off = await engine.synteny({
     ...INV_INDELS,
-    view: { cigarMode: 'off' },
+    view: { indels: { show: false } },
   })
   expect(new Set(off.ribbons.kind)).toEqual(new Set(['match']))
   expect(off.ribbons.kind).toHaveLength(7)
   const matches = await engine.synteny({
     ...INV_INDELS,
-    view: { cigarMode: 'matches' },
+    view: { indels: { encoding: { opacity: 0 } } },
   })
   expect(new Set(matches.ribbons.kind)).toEqual(new Set(['match']))
   expect(matches.ribbons.kind.length).toBeGreaterThan(7)
@@ -256,11 +256,19 @@ test('a PAF comes back as the dotplot lays out and colors it', async () => {
     y: { ...INV_INDELS_DOTPLOT.y, width: 4000 },
   })
   expect(new Set(zoomed.segments.op)).toContain('deletion')
+  const gaps = await engine.dotplot({
+    ...INV_INDELS_DOTPLOT,
+    x: { ...INV_INDELS_DOTPLOT.x, width: 4000 },
+    y: { ...INV_INDELS_DOTPLOT.y, width: 4000 },
+    view: { indels: { encoding: { opacity: 0 } } },
+  })
+  expect(new Set(gaps.segments.op)).toEqual(new Set(['match']))
+  expect(gaps.segments.op.length).toBeGreaterThan(7)
   expect(new Set(t.segments.color)).toEqual(new Set(['#000000']))
   expect(t.alpha).toBe(1)
   expect(t.config).toMatchObject({
     filter: [],
-    drawCigar: true,
+    indels: { show: true },
     lineWidth: 2.5,
     encoding: { opacity: { value: 1 } },
   })
@@ -270,7 +278,7 @@ test('a PAF comes back as the dotplot lays out and colors it', async () => {
   }
   const plain = await engine.dotplot({
     ...INV_INDELS_DOTPLOT,
-    view: { drawCigar: false, encoding: { color: { field: 'strand' } } },
+    view: { indels: { show: false }, encoding: { color: { field: 'strand' } } },
   })
   expect(plain.segments.op).toEqual(new Array(7).fill('match'))
   expect(new Set(plain.segments.color).size).toBe(2)

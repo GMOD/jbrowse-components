@@ -718,11 +718,11 @@ restores natively:
 | [`coord`](/docs/models/dotplotview#property-coord) | The coordinate system, a [](/docs/config/syntenycoord) object: `{ ratio: 1 }` keeps hview and vview at one bpPerPx so the plot stays square. Wheel zoom already preserves the ratio; box-zoom and other independent ops trigger an autorun resync. |
 | [`data`](/docs/models/syntenyviewmixin#property-data) | What the fetch reads, a [](/docs/config/syntenydata) object: `resolution` picks a tiered file's stored tier. One value for the view, so every track draws at the same tier. |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
-| [`drawCigar`](/docs/models/dotplotview#property-drawcigar) | resolve each alignment's CIGAR into the drawn shape rather than plotting it as a single straight segment |
 | [`encoding`](/docs/models/trackcolorsmixin#property-encoding) | The channels every track in the view paints with, a [](/docs/config/syntenyencoding) object. Its `color` is a [](/docs/config/syntenycolor) channel: `"strand"`, `"query"`, `"reference"`, `"track"`, a measurement (`identity`, `mapq`, `dnds`) or a column the tracks declare, with `scale.domain` ordering a text column's labels, `scale.range` coloring them and `scale.names` naming them in the key, `scale.range` or `scale.scheme`, `scale.reverse` and pinned ends reshaping a ramp, and `scale.type: 'threshold'` binning a number at `scale.domain`'s cuts; `{ value }` paints every alignment. Unset, the view's default paints: `query` on the circular view, the default scheme elsewhere. Its `opacity` is a [](/docs/config/syntenyopacity) channel. |
 | [`filter`](/docs/models/syntenyfiltermixin#property-filter) | The alignments drawn, a list of [](/docs/config/fieldpredicate) entries an alignment must all pass. A field is any field `color` takes, or `length`, the alignment's bp on its own axis: `[{ field: 'length', gte: 10000 }]` clears a whole-genome hairball. A filter edit recolors and refetches nothing. |
 | [`height`](/docs/models/dotplotview#property-height) | the height of the plot in pixels |
 | [`hview`](/docs/models/dotplotview#property-hview) | the horizontal axis, as a full 1D view state. A spec writes `views[0]` instead, which the launcher resolves into this. |
+| [`indels`](/docs/models/dotplotview#property-indels) | The insertions and deletions inside each alignment, a [](/docs/config/syntenyindels) part: `{ show: false }` plots each alignment as one straight segment, and `{ encoding: { opacity: 0 } }` leaves each indel a gap in its line. |
 | [`lineWidth`](/docs/models/dotplotview#property-linewidth) | Line width in CSS pixels of every alignment in the plot |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 | [`parkedColors`](/docs/models/parkedcolormixin#property-parkedcolors) | By color object, the field the last write away from one left, with its members |
@@ -811,7 +811,7 @@ strand, with curved ribbons and stronger opacity:
 ```
 
 The v4 spellings `colorBy` and `alpha` still open, as `encoding.color` and
-`encoding.opacity`.
+`encoding.opacity`, and the betas' `cigarMode` and `drawCigar` as `indels`.
 
 <!-- SPEC_KEYS LinearSyntenyView START -->
 
@@ -833,12 +833,12 @@ restores natively:
 | Property | What it does |
 | --- | --- |
 | [`axis`](/docs/models/linearsyntenyview#property-axis) | Each row's ruler guide, a [](/docs/config/linearsyntenyaxis) object: `{ grid: true }` continues the query row's scalebar ticks down through every band, each joined to the coordinate the alignment pairs it with. |
-| [`cigarMode`](/docs/models/linearsyntenyview#property-cigarmode) | How per-base insertions and deletions inside each alignment are shown: 'full' paints indel wedges, 'matches' leaves them see-through, 'off' draws blocks only. |
 | [`data`](/docs/models/syntenyviewmixin#property-data) | What the fetch reads, a [](/docs/config/syntenydata) object: `resolution` picks a tiered file's stored tier. One value for the view, so every track draws at the same tier. |
 | [`diagonalizeAnchorRow`](/docs/models/linearsyntenyview#property-diagonalizeanchorrow) | Which genome row "Re-order chromosomes" keeps as it is: the rows below it are ordered against the row above them, and the rows above it against the row below. It matters wherever the top row is not the one whose order means something: `linkage_groups/alg_stack` stacks six genomes whose linkage groups are the jellyfish row's chromosomes, and anchored on the top row every row below is ordered off a comb jelly instead. |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
 | [`encoding`](/docs/models/trackcolorsmixin#property-encoding) | The channels every track in the view paints with, a [](/docs/config/syntenyencoding) object. Its `color` is a [](/docs/config/syntenycolor) channel: `"strand"`, `"query"`, `"reference"`, `"track"`, a measurement (`identity`, `mapq`, `dnds`) or a column the tracks declare, with `scale.domain` ordering a text column's labels, `scale.range` coloring them and `scale.names` naming them in the key, `scale.range` or `scale.scheme`, `scale.reverse` and pinned ends reshaping a ramp, and `scale.type: 'threshold'` binning a number at `scale.domain`'s cuts; `{ value }` paints every alignment. Unset, the view's default paints: `query` on the circular view, the default scheme elsewhere. Its `opacity` is a [](/docs/config/syntenyopacity) channel. |
 | [`filter`](/docs/models/syntenyfiltermixin#property-filter) | The alignments drawn, a list of [](/docs/config/fieldpredicate) entries an alignment must all pass. A field is any field `color` takes, or `length`, the alignment's bp on its own axis: `[{ field: 'length', gte: 10000 }]` clears a whole-genome hairball. A filter edit recolors and refetches nothing. |
+| [`indels`](/docs/models/linearsyntenyview#property-indels) | The insertions and deletions inside each alignment, a [](/docs/config/syntenyindels) part: `{ show: false }` draws each alignment as one block, and `{ encoding: { opacity: 0 } }` leaves each indel a gap. |
 | [`levels`](/docs/models/linearsyntenyview#property-levels) | One synteny band per adjacent pair of `views`, each holding one track list. The track-selector and add-track widgets address a band through `trackContainerFor`. |
 | [`mark`](/docs/models/linearsyntenyview#property-mark) | How every band's ribbons draw, a [](/docs/config/syntenymark) object: `{ interpolate: 'bump' }` curves their sides. |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |

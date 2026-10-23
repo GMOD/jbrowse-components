@@ -348,7 +348,7 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
         // 'matches' leaves each intron an unpainted gap. 'full' names the indel
         // op, and the perspective flip swaps D<->I, so one 532 bp gap drew in
         // two colors depending on stacking order.
-        cigarMode: 'matches',
+        indels: { encoding: { opacity: 0 } },
         encoding: { opacity: 0.45 },
         // Level 0 is retro-CFA18 against the parent, level 1 the parent against
         // retro-CFA12.

@@ -525,7 +525,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
         self.instanceData = data
         // ...and the other writer of the arrays the index addresses. This one is
         // the reason the hover is stored as a segment index rather than a
-        // feature index: a zoom, a `drawCigar` toggle or a `minAlignmentLength`
+        // feature index: a zoom, an `indels` edit or a `minAlignmentLength`
         // change rebuilds the geometry WITHOUT a refetch, which renumbers every
         // segment while leaving the feature numbering alone.
         self.hoveredSegmentIdx = -1

@@ -166,6 +166,13 @@ export { SyntenyFadeMixin, installAutoFadeLatch } from './SyntenyFadeMixin.ts'
 export type { SyntenyFadeModel } from './SyntenyFadeMixin.ts'
 export { syntenyRenderConfigSchema } from './syntenyRenderConfigSchema.ts'
 export { syntenyDataConfigSchema } from './syntenyDataConfigSchema.ts'
+export {
+  indelsDrawingOf,
+  indelsOfDrawing,
+  resolvedIndels,
+  syntenyIndelsConfigSchema,
+} from './syntenyIndelsConfigSchema.ts'
+export type { IndelsArg, IndelsDrawing } from './syntenyIndelsConfigSchema.ts'
 export type { ColorableTrack, PalettableTrack } from './trackColors.ts'
 export { colorByMenuItems } from './colorByMenuItems.tsx'
 export { colorByMenuTargetFor } from './colorByMenuTarget.ts'

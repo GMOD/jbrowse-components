@@ -101,3 +101,16 @@ test("a view's alpha is encoding.opacity's constant, which wins if written", () 
     }),
   ).toEqual({ encoding: { opacity: { field: 'identity' } } })
 })
+
+test('cigarMode and drawCigar land as the indels part', () => {
+  expect(liftSyntenyViewSettings({ cigarMode: 'off' })).toEqual({
+    indels: { show: false },
+  })
+  expect(liftSyntenyViewSettings({ cigarMode: 'matches' })).toEqual({
+    indels: { encoding: { opacity: { value: 0 } } },
+  })
+  expect(liftSyntenyViewSettings({ cigarMode: 'full' })).toEqual({})
+  expect(liftSyntenyViewSettings({ drawCigar: false })).toEqual({
+    indels: { show: false },
+  })
+})

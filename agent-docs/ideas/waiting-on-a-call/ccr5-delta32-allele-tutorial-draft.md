@@ -36,7 +36,7 @@ needs the phase read first.
 - The reader's figures come from the reader's allele, which carries the sample's
   other SNVs; the hosted demo allele does not. Both give the same protein.
 - The block is one alignment with a `32I`, where the demo has two blocks and a
-  gap. Both draw a pinch; `cigarMode` decides the look.
+  gap. Both draw a pinch; the `indels` part decides the look.
 
 ## Draft page
 

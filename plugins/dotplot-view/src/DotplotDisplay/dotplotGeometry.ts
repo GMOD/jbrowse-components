@@ -1,4 +1,5 @@
 import {
+  CIGAR_INDEL_MASK,
   CIGAR_M,
   cigarWalkBp1,
   cigarWalkBp2,
@@ -145,6 +146,7 @@ export function buildLineSegments(
   bpPerPxV: number,
   baseH: number,
   baseV: number,
+  indelGaps = false,
 ): DotplotInstanceData {
   const {
     p11,
@@ -206,6 +208,9 @@ export function buildLineSegments(
           // write past the end is a no-op while `n` keeps counting, so
           // `trimToCount` would hand the renderer a short array and every read
           // past the end would project as NaN.
+          if (indelGaps && ((1 << op) & CIGAR_INDEL_MASK) !== 0) {
+            return
+          }
           if (n < maxSegments) {
             writeSegment(buf, n, seg1Start, seg2Start, seg1End, seg2End, i, op)
             n++

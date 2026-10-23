@@ -47,8 +47,10 @@ import {
   comparativeSurfacePhase,
   comparativeSurfaceSettled,
   liftSyntenyViewSettings,
+  indelsDrawingOf,
   releaseTemporaryAssemblies,
   syntenyCoordConfigSchema,
+  syntenyIndelsConfigSchema,
 } from '@jbrowse/synteny-core'
 import DataUsageIcon from '@mui/icons-material/DataUsage'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -251,10 +253,12 @@ export default function stateModelFactory(pm: PluginManager) {
           assemblyNames: types.stripDefault(types.array(types.string), []),
           /**
            * #property
-           * resolve each alignment's CIGAR into the drawn shape rather than
-           * plotting it as a single straight segment
+           * The insertions and deletions inside each alignment, a
+           * [](/docs/config/syntenyindels) part: `{ show: false }` plots each
+           * alignment as one straight segment, and `{ encoding: { opacity: 0 } }`
+           * leaves each indel a gap in its line.
            */
-          drawCigar: types.stripDefault(types.boolean, true),
+          indels: types.stripDefault(syntenyIndelsConfigSchema, {}),
           /**
            * #property
            * Both genome axes' guide, a [](/docs/config/dotplotaxis) object:
@@ -572,6 +576,20 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         get views() {
           return [self.hview, self.vview]
+        },
+        /**
+         * #getter
+         * `indels.show`: whether each alignment's CIGAR shapes its line.
+         */
+        get drawCigar(): boolean {
+          return readConfObject(self.indels, 'show')
+        },
+        /**
+         * #getter
+         * Whether each indel is left a gap rather than drawn.
+         */
+        get indelGaps(): boolean {
+          return indelsDrawingOf(self.indels) === 'matches'
         },
         /**
          * #getter
@@ -967,7 +985,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * #action
          */
         setDrawCigar(flag: boolean) {
-          self.drawCigar = flag
+          self.indels = cast({ ...getSnapshot(self.indels), show: flag })
         },
         /**
          * #action

@@ -2217,8 +2217,12 @@ export const viewFields: Record<string, FieldRecipe> = {
       ? { path: `${path} → tick it` }
       : undefined
   },
-  cigarMode: (value, { viewType }) => {
-    const label = typeof value === 'string' ? CIGAR_MODES[value] : undefined
+  indels: (value, { viewType }) => {
+    const indels = asRecord(value)
+    const opacity = asRecord(indels?.encoding)?.opacity
+    const gaps = (asRecord(opacity)?.value ?? opacity) === 0
+    const label =
+      CIGAR_MODES[indels?.show === false ? 'off' : gaps ? 'matches' : 'full']
     const path = settingsPath(viewType, 'CIGAR indels')
     return label && path && viewType === 'LinearSyntenyView'
       ? {

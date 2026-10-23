@@ -10,6 +10,7 @@ import {
   createComparativeColorFunction,
   isInstanceInvisible,
   locateCum,
+  resolvedIndels,
   unpack,
   viewColorSettings,
 } from '@jbrowse/synteny-core'
@@ -25,6 +26,7 @@ import type {
   ColorArg,
   ComparativeAxis,
   FilterArg,
+  IndelsArg,
   OpacityArg,
 } from '@jbrowse/synteny-core'
 
@@ -40,12 +42,13 @@ export interface DotplotTablesArgs {
    * The view's settings, as a `DotplotView` snapshot writes them:
    * `encoding` (`color`, a field such as `'strand'` or the color channel's
    * slots, and `opacity`, a number or the opacity channel), `filter` (a list
-   * of field predicates), `drawCigar` and `lineWidth`.
+   * of field predicates), `indels` (`show`, and `encoding.opacity` 0 to leave
+   * each indel a gap) and `lineWidth`.
    */
   view?: {
     encoding?: { color?: ColorArg; opacity?: OpacityArg }
     filter?: FilterArg
-    drawCigar?: boolean
+    indels?: IndelsArg
     lineWidth?: number
   }
 }
@@ -74,9 +77,10 @@ export async function dotplotTables(
   pluginManager: PluginManager,
   { adapterConfig, x, y, view = {} }: DotplotTablesArgs,
 ) {
+  const indels = resolvedIndels(view.indels)
   const config = {
     filter: view.filter ?? [],
-    drawCigar: view.drawCigar ?? true,
+    indels: indels.settings,
     lineWidth: view.lineWidth ?? DEFAULT_LINE_WIDTH,
   }
   const h = comparativeAxis(x, adapterConfig, 0)
@@ -105,12 +109,13 @@ export async function dotplotTables(
         : undefined
   const instanceData = buildLineSegments(
     rpcData,
-    config.drawCigar,
+    indels.drawing !== 'off',
     lowerBoundOf(config.filter, 'length') ?? 0,
     h.bpPerPx,
     v.bpPerPx,
     0,
     0,
+    indels.drawing === 'matches',
   )
   const colorArgs = {
     field: settings.field,

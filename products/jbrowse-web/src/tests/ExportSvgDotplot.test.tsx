@@ -29,7 +29,6 @@ test('export svg of dotplot', async () => {
           type: 'DotplotView',
           height: 600,
           assemblyNames: ['volvox_random_inv', 'volvox'],
-          drawCigar: true,
           hview: {
             id: 'FZRhMPvDfS',
             displayedRegions: [
