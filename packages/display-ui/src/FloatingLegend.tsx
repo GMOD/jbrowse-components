@@ -300,6 +300,13 @@ const GradientRow = observer(function GradientRow({
   )
 })
 
+// The entries among `items` that key a color, so a toggle never counts a note
+// row as one; all of them where none does.
+function keyedCount(items: LegendItem[]) {
+  const keyed = items.filter(i => i.gradient || legendSwatches(i).length > 0)
+  return keyed.length || items.length
+}
+
 // One list of swatches with its own independent collapse state, so each section
 // in a multi-section legend expands/collapses on its own.
 const LegendItemList = observer(function LegendItemList({
@@ -318,7 +325,7 @@ const LegendItemList = observer(function LegendItemList({
   // A toggle revealing one row costs the row it saves.
   const collapsible = items.length > maxItems + 1
   const shown = collapsible && !expanded ? items.slice(0, maxItems) : items
-  const hiddenCount = items.length - maxItems
+  const hiddenCount = keyedCount(items.slice(maxItems))
   // Every row reserves the widest row's swatch column, collapsed or not, so
   // labels stay in one vertical line and do not shift on expanding.
   const columns = Math.max(1, ...items.map(i => legendSwatches(i).length))

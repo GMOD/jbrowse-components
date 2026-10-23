@@ -216,16 +216,13 @@ describe('getVariantColorScales', () => {
 
   // Color by → Field… over a numeric INFO field with no cut points files each
   // value as its own category, and the key listed all sixty of them.
-  it('summarizes a field with more values than a key lists', () => {
-    const [scale] = getVariantColorScales({
-      ...inputs({
-        paintedDomain: Array.from({ length: 60 }, (_, i) => `${i}`),
-      }),
-      color: { field: 'INFO.DP', scale: 'ordinal' },
-    })
-    expect(scale?.kind === 'categorical' && scale.summarize).toEqual({
-      values: 60,
-    })
+  it('lists no field rows where the values painted are not a vocabulary', () => {
+    expect(
+      labelsOf(
+        { paintedDomain: Array.from({ length: 60 }, (_, i) => `${i}`) },
+        { field: 'INFO.DP', scale: 'ordinal' },
+      ),
+    ).toEqual(['Homozygous reference'])
   })
 
   it('keeps a lone field row beside the reference grey', () => {

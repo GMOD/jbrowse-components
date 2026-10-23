@@ -88,6 +88,16 @@ describe('FloatingLegend', () => {
     expect(queryByText('item12')).toBeNull()
   })
 
+  it('counts only the rows that key a color behind the toggle', () => {
+    const { getByText } = render(
+      <FloatingLegend
+        sections={one([...items(20), { label: 'a note' }])}
+        maxItems={12}
+      />,
+    )
+    expect(getByText('Show 8 more…')).toBeTruthy()
+  })
+
   // A row two vocabularies produced shows both colors, so the box count is the
   // count of colors drawn rather than of rows.
   it('draws one box per color, both of them when a row has two', () => {

@@ -155,16 +155,16 @@ describe('the entries', () => {
     expect(entriesOf(display).map(e => e.value)).toEqual(['x', 'y'])
   })
 
-  it(`list every value and summarize past ${MAX_LEGEND_ITEMS}`, () => {
-    const rowsOf = (n: number) =>
-      Array.from({ length: n }, (_, i) => ({ name: `r${i}`, group: `g${i}` }))
-    const listed = makeDisplay({ rowColor: 'group' }, { rows: rowsOf(20) })
+  it(`list every value past ${MAX_LEGEND_ITEMS}, never summarized`, () => {
+    const rows = Array.from({ length: 25 }, (_, i) => ({
+      name: `r${i}`,
+      group: `g${i}`,
+    }))
+    const scale = makeDisplay({ rowColor: 'group' }, { rows })
       .rowColorScales[0]!
-    expect(listed.summarize).toBeUndefined()
-    const scale = makeDisplay({ rowColor: 'group' }, { rows: rowsOf(25) })
-      .rowColorScales[0]!
-    expect(scale.entries.map(e => e.label).at(-1)).toBe('g24')
-    expect(scale.summarize).toEqual({ values: 25 })
+    expect(scale.entries).toHaveLength(25)
+    expect(scale.entries.at(-1)!.label).toBe('g24')
+    expect(scale.summarize).toBeUndefined()
   })
 
   it('end in one "Other" in the unknown color', () => {
