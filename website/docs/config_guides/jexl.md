@@ -137,7 +137,7 @@ jexl: feature.flags & 2 // bitwise and to check if BAM or CRAM feature flags has
 **Slot defaults from plugins**
 
 ```js
-jexl: defaultOnChordClick(feature, track, pluginManager) // opens a breakpoint split view on the clicked chord
+jexl: defaultOnChordClick(feature, track) // opens a breakpoint split view on the clicked chord
 ```
 
 **Variant functions**

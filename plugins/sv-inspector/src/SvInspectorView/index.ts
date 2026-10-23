@@ -69,7 +69,7 @@ function defaultOnChordClick(
 }
 
 export default function SvInspectorViewF(pluginManager: PluginManager) {
-  /** #jexlFunction Slot defaults from plugins | defaultOnChordClick(feature, track, pluginManager) | opens a breakpoint split view on the clicked chord */
+  /** #jexlFunction Slot defaults from plugins | defaultOnChordClick(feature, track) | opens a breakpoint split view on the clicked chord */
   pluginManager.jexl.addFunction('defaultOnChordClick', defaultOnChordClick)
 
   pluginManager.addViewType(() => {

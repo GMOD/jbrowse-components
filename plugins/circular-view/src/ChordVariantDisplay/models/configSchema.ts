@@ -98,7 +98,7 @@ function configSchemaF(_pluginManager: PluginManager) {
         description:
           "a jexl callback run when a chord is clicked, in place of opening the record's details",
         defaultValue: false,
-        contextVariable: ['feature', 'track', 'pluginManager'],
+        contextVariable: ['feature', 'track'],
       },
       /**
        * #slot encoding

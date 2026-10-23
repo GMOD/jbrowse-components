@@ -369,30 +369,23 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
           : undefined
       },
     }))
-    .actions(self => {
-      const { pluginManager } = getEnv(self)
-      return {
-        /**
-         * #action
-         * the `onChordClick` callback when the config sets one, else the
-         * record's details
-         */
-        onChordClick(feature: Feature) {
-          if (isJexl(self.configuration.onChordClick)) {
-            getConf(self, 'onChordClick', {
-              feature,
-              track: self,
-              pluginManager,
-            })
-          } else {
-            openFeatureWidget(self, feature.toJSON(), {
-              widget: self.featureWidgetType,
-              feature,
-            })
-          }
-        },
-      }
-    })
+    .actions(self => ({
+      /**
+       * #action
+       * the `onChordClick` callback when the config sets one, else the
+       * record's details
+       */
+      onChordClick(feature: Feature) {
+        if (isJexl(self.configuration.onChordClick)) {
+          getConf(self, 'onChordClick', { feature, track: self })
+        } else {
+          openFeatureWidget(self, feature.toJSON(), {
+            widget: self.featureWidgetType,
+            feature,
+          })
+        }
+      },
+    }))
     .actions(self => ({
       /**
        * #action
