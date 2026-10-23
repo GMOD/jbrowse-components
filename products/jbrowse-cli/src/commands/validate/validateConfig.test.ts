@@ -270,6 +270,31 @@ describe('validateConfig', () => {
     expect(warningsOf(config)[0]?.message).toContain('legacy key')
   })
 
+  it('warns on a legacy key in displayDefaults as on a display', () => {
+    const config = baseConfig()
+    config.tracks[0] = {
+      ...config.tracks[0]!,
+      type: 'QuantitativeTrack',
+      adapter: { type: 'BigWigAdapter', uri: 'coverage.bw' },
+      // @ts-expect-error the early v5 and v4 spellings
+      displayDefaults: {
+        scales: { y: { domainMax: 5 } },
+        scaleType: 'log',
+        minimalTicks: true,
+      },
+    }
+    expect(errorsOf(config)).toEqual([])
+    const warnings = warningsOf(config)
+    expect(warnings.map(w => w.where)).toEqual([
+      'tracks[0].displayDefaults.scales',
+      'tracks[0].displayDefaults.scaleType',
+      'tracks[0].displayDefaults.minimalTicks',
+    ])
+    for (const { message } of warnings) {
+      expect(message).toContain('legacy key')
+    }
+  })
+
   // The same rewrites, from the validator's side: a warning naming the current
   // spelling, never an error, because the app loads every one of these.
   it('warns rather than errors on a retired-type rendering value', () => {

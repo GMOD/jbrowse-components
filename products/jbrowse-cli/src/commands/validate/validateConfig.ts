@@ -290,6 +290,43 @@ function checkTrack(
       )
     }
   }
+  warnDisplayDefaults(track, manifest, where, report)
+}
+
+// Each display a `displayDefaults` key reaches judges it as its own entry
+// would, and a key two displays judge alike is said once.
+function warnDisplayDefaults(
+  track: Record<string, unknown>,
+  manifest: ConfigManifest,
+  where: string,
+  report: Report,
+) {
+  const trackType = trackTypeOf(track)
+  const defaults = track.displayDefaults
+  if (!trackType || !isRecord(defaults)) {
+    return
+  }
+  const found = new Report()
+  for (const display of displayDefaultsForTrackType(trackType, manifest)
+    .displayTypes) {
+    const entry = manifest.displays[display]
+    if (entry) {
+      warnSlots(
+        displayDefaultsReaching(display, defaults),
+        entry,
+        `${where}.displayDefaults`,
+        found,
+      )
+    }
+  }
+  const said = new Set<string>()
+  for (const problem of found.problems) {
+    const key = `${problem.where}\n${problem.message}`
+    if (!said.has(key)) {
+      said.add(key)
+      report.problems.push(problem)
+    }
+  }
 }
 
 function checkAssembly(
