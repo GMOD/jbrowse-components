@@ -51,8 +51,10 @@ the `LinearWiggleDisplay`), so you don't have to know display names:
     uri: 'https://example.com/coverage.bw',
   },
   displayDefaults: {
-    scales: { y: { type: 'log' } },
-    encoding: { color: { value: 'darkgreen' } },
+    encoding: {
+      y: { scale: { type: 'log' } },
+      color: { value: 'darkgreen' },
+    },
   },
 }
 ```

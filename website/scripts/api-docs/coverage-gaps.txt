@@ -1215,13 +1215,13 @@ RootAppMenuMixin.mutableMenuActions
 ScoreAxisWidget.display
 ScoreScaleMixin.scaleType
 ScoreScaleMixin.setAutoscaleGroup
-ScoreScaleMixin.setDomainQuantile
+ScoreScaleMixin.setFenceQuantile
 ScoreScaleMixin.setGrid
 ScoreScaleMixin.setMaxScore
 ScoreScaleMixin.setMinScore
 ScoreScaleMixin.setScaleType
 ScoreScaleMixin.setScaleZero
-ScoreScaleMixin.unclippedQuantile
+ScoreScaleMixin.unclippedFenceQuantile
 SequenceFeatureDetails.intronBp
 SequenceFeatureDetails.setCharactersPerRow
 SequenceFeatureDetails.setIntronBp

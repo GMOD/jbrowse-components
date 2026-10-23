@@ -27,7 +27,7 @@ above 0 keeps the top it has.
 ## computeAutoscaleDomain
 
 The score domain of the visible feature arrays, following `quantile` as
-`scales.y.domainQuantile` says, its outliers fenced for an axis that
+`encoding.y.scale.fenceQuantile` says, its outliers fenced for an axis that
 reaches 0 under `zero`.
 
 ```js
@@ -113,7 +113,7 @@ bins' stored extremes, anything else `score`, the bins' mean.
 ## getNiceDomain
 
 Rounds a domain to "nice" endpoints. `zero` reaches a linear or symlog
-domain to 0 (`scales.y.zero`, ADR-182); a log domain has no 0, so a min at
+domain to 0 (`encoding.y.scale.zero`, ADR-182); a log domain has no 0, so a min at
 or below it floors to a positive value and a positive min stays where the
 data put it. An end given an explicit `bounds` value keeps that value
 exactly — only an autoscaled end is rounded. A log scale's floor still
@@ -266,7 +266,7 @@ coverage domain collapses to about `[0, 1]` and a rule at the diploid depth
 falls outside it, though the rule's position above the data is what the reader needs to see
 in that view, and a dropped rule leaves no visible trace.
 
-Applied to the raw range, before `getNiceDomain` takes the `scales.y`
+Applied to the raw range, before `getNiceDomain` takes the y scale's
 domain bounds. Those still win: a rule outside an explicitly bounded axis
 is one the config asked not to be shown, and it drops as before.
 

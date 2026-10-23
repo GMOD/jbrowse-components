@@ -428,11 +428,10 @@ the axis from it — the score axis's counterpart to a color scale.
 
 `domain` is the resolved `[min, max]`; `height` the band it rules and `offset`
 the inset of the plot box inside that band (`axisPlotBox(height, offset)`);
-`minimalTicks` and `symlogConstant` how the ticks are chosen. `ticks` is a
-ladder the display supplies where the band uses arithmetic specific to it (the
-coverage band's octaves against the shader's box, the read cloud's decades
-against the arc geometry); `ScoreScaleMixin` derives one through `computeYTicks`
-otherwise.
+`symlogConstant` how the ticks are chosen. `ticks` is a ladder the display
+supplies where the band uses arithmetic specific to it (the coverage band's
+octaves against the shader's box, the read cloud's decades against the arc
+geometry); `ScoreScaleMixin` derives one through `computeYTicks` otherwise.
 
 `bandTops` is the screen y of each band the scale rules — one at 0 unless the
 display stacks the same plot: the multi-wiggle's rows, a grouped alignments

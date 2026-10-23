@@ -338,7 +338,7 @@ import { requirementProblems } from '@jbrowse/core/configuration'
 
 Write counterpart to `getConf`, and it takes the same path: a slot name, or
 an array naming a sub-schema's member at any depth —
-`setConf(self, ['scales', 'y', 'domainMin'], 5)`. Takes the display or track
+`setConf(self, ['encoding', 'y', 'scale', 'domainMin'], 5)`. Takes the display or track
 model, or a config node directly.
 
 A path ending on a slot writes that slot; one ending on a sub-schema replaces

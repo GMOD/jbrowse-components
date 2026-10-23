@@ -1,13 +1,13 @@
 ---
 id: scoreaxiswidget
 title: ScoreAxisWidget
-description: "Drawer widget editing one display's value scale, scales.y. The display is a safe reference, so hiding its track or closing its view empties it rather than leaving the widget writing to a dead node."
+description: "Drawer widget editing one display's value scale, its encoding.y."
 sidebar_label: Widget -> ScoreAxisWidget
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreAxisWidget/stateModel.ts).
 
-Drawer widget editing one display's value scale, `scales.y`. The display is
+Drawer widget editing one display's value scale, its `encoding.y`. The display is
 a safe reference, so hiding its track or closing its view empties it rather
 than leaving the widget writing to a dead node.
 

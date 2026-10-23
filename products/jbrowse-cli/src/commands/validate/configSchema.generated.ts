@@ -13201,27 +13201,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "WiggleEncoding": {
-      "title": "WiggleEncoding",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "color": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/WiggleColor"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "ValueScale": {
-      "title": "ValueScale",
+    "YScale2": {
+      "title": "YScale2",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -13267,26 +13248,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "autoscaleGroup": {
-          "description": "tracks naming one group autoscale together.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "symlogConstant": {
-          "description": "width of symlog's linear region around zero.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "domainQuantile": {
+        "fenceQuantile": {
           "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there.",
           "default": 0.99,
           "if": {
@@ -13296,44 +13258,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "grid": {
-          "description": "rule the plot at the tick positions.",
-          "default": false,
+        "constant": {
+          "description": "width of symlog's linear region around zero.",
+          "default": 0,
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "type": "number"
           }
         },
-        "minimalTicks": {
-          "description": "label only the ends of the axis.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "title": {
-          "description": "axis caption; unset draws none.",
+        "group": {
+          "description": "tracks naming one group autoscale together.",
           "if": {
             "type": "null"
           },
           "else": {
             "$ref": "#/$defs/PlainString"
-          }
-        },
-        "rules": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/ValueScaleRule"
-            }
           }
         }
       },
@@ -13342,17 +13283,84 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "Scales": {
-      "title": "Scales",
+    "YFieldChannel": {
+      "title": "YFieldChannel",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "score",
+          "$ref": "#/$defs/FeatureField",
+          "type": "string"
+        },
+        {
+          "title": "YFieldChannel",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "scale": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/YScale2"
+              }
+            },
+            "axis": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/YAxis"
+              }
+            },
+            "rules": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/ValueScaleRule"
+                }
+              }
+            },
+            "field": {
+              "description": "the feature field plotted on the value axis, as a mark's encoding.y names one. \`score\`, \`minScore\` and \`maxScore\` are a zoom bin's stored mean, minimum and maximum, which every quantitative source serves, a raw record answering its score for all three. Any other name, a dotted path or a \`jexl:\` expression reads a raw column the adapter left alone (a BED extra column, a GFF attribute) and draws no min-max extent. A feature with no finite value in the field plots at 0.",
+              "default": "score",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "WiggleEncoding": {
+      "title": "WiggleEncoding",
       "type": "object",
       "x-closed": true,
       "properties": {
+        "color": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/WiggleColor"
+          }
+        },
         "y": {
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/ValueScale"
+            "$ref": "#/$defs/YFieldChannel"
           }
         }
       },
@@ -13406,16 +13414,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/WiggleEncoding"
           }
         },
-        "y": {
-          "description": "the feature field plotted on the value axis, as a mark's encoding.y names one. \`score\`, \`minScore\` and \`maxScore\` are a zoom bin's stored mean, minimum and maximum, which every quantitative source serves, a raw record answering its score for all three. Any other name, a dotted path or a \`jexl:\` expression reads a raw column the adapter left alone (a BED extra column, a GFF attribute) and draws no min-max extent. A feature with no finite value in the field plots at 0.",
-          "default": "score",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/FeatureField"
-          }
-        },
         "resolution": {
           "description": "points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
           "default": 1,
@@ -13453,14 +13451,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "type": "number"
-          }
-        },
-        "scales": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/Scales"
           }
         },
         "legend": {
@@ -13533,6 +13523,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "type": "boolean"
           }
+        },
+        "scales": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "y": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "maxFeatureScreenDensity": {
           "deprecated": true,
@@ -14643,8 +14641,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "ValueScale2": {
-      "title": "ValueScale2",
+    "YScale3": {
+      "title": "YScale3",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -14690,26 +14688,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "autoscaleGroup": {
-          "description": "tracks naming one group autoscale together.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "symlogConstant": {
-          "description": "width of symlog's linear region around zero.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "domainQuantile": {
+        "fenceQuantile": {
           "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there.",
           "default": 1,
           "if": {
@@ -14719,33 +14698,50 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "grid": {
-          "description": "rule the plot at the tick positions.",
-          "default": false,
+        "constant": {
+          "description": "width of symlog's linear region around zero.",
+          "default": 0,
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "type": "number"
           }
         },
-        "minimalTicks": {
-          "description": "label only the ends of the axis.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "title": {
-          "description": "axis caption; unset draws none.",
+        "group": {
+          "description": "tracks naming one group autoscale together.",
           "if": {
             "type": "null"
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "YChannel2": {
+      "title": "YChannel2",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "scale": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/YScale3"
+          }
+        },
+        "axis": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/YAxis"
           }
         },
         "rules": {
@@ -14765,8 +14761,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "Scales2": {
-      "title": "Scales2",
+    "YEncoding": {
+      "title": "YEncoding",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -14775,7 +14771,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/ValueScale2"
+            "$ref": "#/$defs/YChannel2"
           }
         }
       },
@@ -14913,12 +14909,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "scales": {
+        "encoding": {
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Scales2"
+            "$ref": "#/$defs/YEncoding"
           }
         },
         "origin": {
@@ -14959,6 +14955,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/FieldPredicate"
             }
           }
+        },
+        "scales": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "maxFeatureScreenDensity": {
           "deprecated": true,
@@ -15132,12 +15132,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "scales": {
+        "encoding": {
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Scales2"
+            "$ref": "#/$defs/YEncoding"
           }
         },
         "origin": {
@@ -15178,6 +15178,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/FieldPredicate"
             }
           }
+        },
+        "scales": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "maxFeatureScreenDensity": {
           "deprecated": true,
@@ -15840,6 +15844,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/encoding"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/encoding"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/encoding"
                 }
               ]
             },
@@ -16100,9 +16110,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "mark": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
             },
-            "y": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/y"
-            },
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
             },
@@ -16125,6 +16132,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "maxGapMultiple": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
             },
+            "extent": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
+            },
             "scales": {
               "anyOf": [
                 {
@@ -16138,8 +16148,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
+            "y": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/y"
             },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
@@ -16457,7 +16467,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sort"
             },
             "encoding": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/encoding"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/encoding"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/encoding"
+                }
+              ]
             },
             "legend": {
               "anyOf": [
@@ -16987,6 +17004,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/encoding"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/encoding"
                 }
               ]
             },
@@ -17345,14 +17365,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
             },
-            "scales": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
-            },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
+            },
+            "scales": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
             }
           },
           "patternProperties": {
@@ -17820,10 +17840,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "encoding": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/encoding"
-            },
-            "y": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/y"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/encoding"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/encoding"
+                }
+              ]
             },
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
@@ -17843,16 +17867,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxGapMultiple": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
-            },
-            "scales": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scales"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
-                }
-              ]
             },
             "legend": {
               "anyOf": [
@@ -17909,6 +17923,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
+            },
+            "scales": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
+            },
+            "y": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/y"
             },
             "maxFeatureScreenDensity": {
               "anyOf": [
@@ -18228,10 +18255,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "encoding": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/encoding"
-            },
-            "y": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/y"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/encoding"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/encoding"
+                }
+              ]
             },
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
@@ -18251,16 +18282,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxGapMultiple": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
-            },
-            "scales": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scales"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
-                }
-              ]
             },
             "legend": {
               "anyOf": [
@@ -18317,6 +18338,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
+            },
+            "scales": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
+            },
+            "y": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/y"
             },
             "maxFeatureScreenDensity": {
               "anyOf": [
@@ -18617,9 +18651,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "encoding": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/encoding"
             },
-            "y": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/y"
-            },
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
             },
@@ -18631,9 +18662,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxGapMultiple": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
-            },
-            "scales": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scales"
             },
             "legend": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/legend"
@@ -18655,6 +18683,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
+            },
+            "scales": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scales"
+            },
+            "y": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/y"
             },
             "maxFeatureScreenDensity": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxFeatureScreenDensity"
@@ -18925,7 +18959,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "encoding": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/encoding"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/encoding"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/encoding"
+                }
+              ]
             },
             "showTree": {
               "anyOf": [
@@ -19580,6 +19621,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/encoding"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/encoding"
                 }
               ]
             },
@@ -20035,8 +20079,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "rowHeight": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowHeight"
             },
-            "scales": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scales"
+            "encoding": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/encoding"
             },
             "origin": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/origin"
@@ -20049,6 +20093,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "filter": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/filter"
+            },
+            "scales": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scales"
             },
             "maxFeatureScreenDensity": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/maxFeatureScreenDensity"

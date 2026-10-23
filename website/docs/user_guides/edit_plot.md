@@ -33,14 +33,14 @@ display:
 | Hi-C contact matrix display (`LinearHicDisplay`)                      | `encoding`, `legend`                                                                                                         |
 | LD heatmap display (`LDTrackDisplay`)                                 | `encoding`, `legend`                                                                                                         |
 | MAF display (`LinearMafDisplay`)                                      | `encoding`, `rows`, `rowColor`, `legend`, `coverage`, `alignments`, `conservation`                                           |
-| Manhattan plot display (`LinearManhattanDisplay`)                     | `marks`, `transform`, `facet`, `rows`, `rowColor`, `scales`, `origin`, `legend`, `filter`                                    |
-| Marks (`LinearMarkDisplay`)                                           | `marks`, `transform`, `facet`, `rows`, `rowColor`, `scales`, `origin`, `legend`, `filter`                                    |
+| Manhattan plot display (`LinearManhattanDisplay`)                     | `marks`, `transform`, `facet`, `rows`, `rowColor`, `encoding`, `origin`, `legend`, `filter`                                  |
+| Marks (`LinearMarkDisplay`)                                           | `marks`, `transform`, `facet`, `rows`, `rowColor`, `encoding`, `origin`, `legend`, `filter`                                  |
 | Multi-row feature display (painting) (`LinearMultiRowFeatureDisplay`) | `rows`, `encoding`, `rowColor`, `legend`, `facet`                                                                            |
 | Multi-sample variant display (`LinearMultiSampleVariantDisplay`)      | `filter`, `rows`, `unit`, `encoding`, `legend`, `rowColor`, `facet`, `variants`                                              |
 | Multi-way synteny display (`MultiWaySyntenyDisplay`)                  | `encoding`, `rows`, `ribbons`, `legend`, `text`, `laneLayers`                                                                |
 | Synteny alignments display (`LGVSyntenyDisplay`)                      | `unit`, `filter`, `facet`, `sort`, `encoding`, `legend`, `coverage`, `pileup`, `readConnections`                             |
 | Variant display (`LinearVariantDisplay`)                              | `filter`, `legend`, `encoding`, `facet`, `labels`                                                                            |
-| Wiggle display (`LinearWiggleDisplay`)                                | `mark`, `rows`, `rowColor`, `encoding`, `y`, `origin`, `size`, `scales`, `legend`, `extent`                                  |
+| Wiggle display (`LinearWiggleDisplay`)                                | `mark`, `rows`, `rowColor`, `encoding`, `origin`, `size`, `legend`, `extent`                                                 |
 
 <!-- END GENERATED PLOT_SETTINGS -->
 

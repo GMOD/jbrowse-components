@@ -67,8 +67,10 @@ Taller track, log scale, custom color:
   adapter: { type: 'BigWigAdapter', uri: 'https://example.com/coverage.bw' },
   displayDefaults: {
     height: 200,
-    scales: { y: { type: 'log' } },
-    encoding: { color: { value: 'darkgreen' } },
+    encoding: {
+      y: { scale: { type: 'log' } },
+      color: { value: 'darkgreen' },
+    },
   },
 }
 ```
@@ -90,11 +92,9 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearWiggleDispla
 | <span id="slot-mark">**mark**</span><br>[WiggleMark](../wigglemark) | The shape each score is drawn as, using the mark display's names: `bar` draws a bar from the `origin` to the score, `point` a point at it, `line` a line through the scores, stepped or as `interpolate` says, and `span` a strip whose color is the score. The track menu's Plot type writes it. v4's `defaultRendering` loads as its `mark`: `xyplot` a bar, `scatter` a point, `density` a span, `line` a stepped line and `linecenter` a linear one. A [](/docs/config/wigglemark) object, or its `type` alone.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{&#10;&#160;&#160;"type": "LinearWiggleDisplay",&#10;&#160;&#160;"mark": "span"&#10;}</code></pre></dialog></span> |
 | <span id="slot-rows">**rows**</span><br>[QuantitativeRows](../quantitativerows) | One row per value of a field, stacked down the track with a label, a separator and the clustering sidebar, and the arrangement a reader gives them. `source` — one row per subtrack — is the only field this display reads; leave it unset and every source is drawn in one shared plot. `sort` is the row order: the subtracks it names lead, the rest keep the adapter's order, and a clustering run rotates its dendrogram towards it rather than discarding it. `labels`, `tree`, `treeProvenance` and `kept` are what the arrangement dialog, a clustering run and a focus write, each as a session edit to this object.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{&#10;&#160;&#160;"type": "LinearWiggleDisplay",&#10;&#160;&#160;"rows": "source"&#10;}</code></pre></dialog></span> |
 | <span id="slot-rowcolor">**rowColor**</span><br>[RowColor](../rowcolor) | The color a reader set on a named subtrack, as `scale.domain` and `scale.range` pairs, ahead of the adapter's color and the palette: its plot while `encoding.color` is unset, and otherwise, or under a score gradient, the tint beside its label.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{&#10;&#160;&#160;"type": "LinearWiggleDisplay",&#10;&#160;&#160;"rowColor": { "scale": { "domain": ["tumor"], "range": ["#b2182b"] } }&#10;}</code></pre></dialog></span> |
-| <span id="slot-encoding">**encoding**</span><br>[WiggleEncoding](../wiggleencoding) | The channels the marks paint through: `encoding.color`, one CSS color in `value`, or the score through a `scale` — `threshold` for solid bands, `linear` for a gradient. Unset, it is the pos/neg pair about the `origin`, which a heatmap fades to from white there, and several sources in one plot box each paint their row color.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{&#10;&#160;&#160;"type": "LinearWiggleDisplay",&#10;&#160;&#160;"encoding": { "color": { "scale": { "type": "threshold", "domain": [2] } } }&#10;}</code></pre></dialog></span> |
-| <span id="slot-scales">**scales**</span><br>[ValueScale](../valuescale) | The y scale the plot is drawn through: `type`, `domainMin`, `domainMax`, `domainQuantile`, `symlogConstant` and `rules`, the reference lines drawn across it. The density rendering draws no rule and does not widen to one: it spends color on the score and has no axis to rule.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{&#10;&#160;&#160;"type": "LinearWiggleDisplay",&#10;&#160;&#160;"scales": { "y": { "rules": [{ "value": 30, "label": "2 copies" }, 15] } }&#10;}</code></pre></dialog></span> |
+| <span id="slot-encoding">**encoding**</span><br>[WiggleEncoding](../wiggleencoding) | The channels the marks paint through. `encoding.color` is one CSS color in `value`, or the score through a `scale` — `threshold` for solid bands, `linear` for a gradient; unset, it is the pos/neg pair about the `origin`, which a heatmap fades to from white there, and several sources in one plot box each paint their row color. `encoding.y` is the field plotted and the value axis it is drawn through: `field`, `scale`, `axis` and `rules`.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{&#10;&#160;&#160;"type": "LinearWiggleDisplay",&#10;&#160;&#160;"encoding": { "color": { "scale": { "type": "threshold", "domain": [2] } } }&#10;}</code></pre><pre><code>{&#10;&#160;&#160;"type": "LinearWiggleDisplay",&#10;&#160;&#160;"encoding": { "y": { "rules": [{ "value": 30, "label": "2 copies" }, 15] } }&#10;}</code></pre></dialog></span> |
 | <span id="slot-legend">**legend**</span><br>[Legend](../legend) | The key: density's score color ramp, a threshold's bands, or the source colors where several share one plot. |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track |
-| <span id="slot-y">**y**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>'score'</code> | the feature field plotted on the value axis, as a mark's encoding.y names one. `score`, `minScore` and `maxScore` are a zoom bin's stored mean, minimum and maximum, which every quantitative source serves, a raw record answering its score for all three. Any other name, a dotted path or a `jexl:` expression reads a raw column the adapter left alone (a BED extra column, a GFF attribute) and draws no min-max extent. A feature with no finite value in the field plots at 0 |
 | <span id="slot-resolution">**resolution**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end |
 | <span id="slot-origin">**origin**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin |
 | <span id="slot-size">**size**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the mark's size in px, the display's constant for what the mark display spells encoding.size: a point's diameter, 2 while unset, or a line's width, 1 while unset |
@@ -113,13 +113,15 @@ An older config may still write these. Each loads without an error, and `jbrowse
 <!-- prettier-ignore -->
 | Key | On load |
 | --- | --- |
+| `scales` | moved into a current slot |
+| `y` | moved into a current slot |
 | `maxFeatureScreenDensity` | ignored |
 | `maxDisplayedBpPerPx` | ignored |
 | `fetchSizeLimit` | ignored |
 | `mouseover` | ignored |
 | `jexlFilters` | moved into a current slot |
 | `displayCrossHatches` | moved into a current slot |
-| `minimalTicks` | moved into a current slot |
+| `minimalTicks` | ignored |
 | `scaleType` | moved into a current slot |
 | `autoscale` | moved into a current slot |
 | `minScore` | moved into a current slot |

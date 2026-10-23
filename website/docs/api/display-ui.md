@@ -375,7 +375,7 @@ derive the axis from it — the score axis's counterpart to a color scale.
 
 `domain` is the resolved `[min, max]`; `height` the band it rules and
 `offset` the inset of the plot box inside that band (`axisPlotBox(height,
-offset)`); `minimalTicks` and `symlogConstant` how the ticks are chosen.
+offset)`); `symlogConstant` how the ticks are chosen.
 `ticks` is a ladder the display supplies where the band uses arithmetic
 specific to it (the coverage band's octaves against the shader's box, the read cloud's
 decades against the arc geometry); `ScoreScaleMixin` derives one through
