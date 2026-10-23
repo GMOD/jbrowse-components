@@ -39,8 +39,8 @@ interface ReadsModel
   unit: AlignmentsUnit
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
-  mismatchOpacityField: MismatchOpacityField
-  setMismatchOpacityField: (field: MismatchOpacityField) => void
+  mismatchOpacityField: MismatchOpacityField | undefined
+  setMismatchOpacityField: (field?: MismatchOpacityField) => void
 }
 
 // Visibility of the rendering layers. Read connections live in their own menu.
@@ -93,7 +93,7 @@ export function getReadsMenuItems(model: ReadsModel) {
       'Fade low quality mismatches',
       model.mismatchOpacityField === 'baseQuality',
       fade => {
-        model.setMismatchOpacityField(fade ? 'baseQuality' : '')
+        model.setMismatchOpacityField(fade ? 'baseQuality' : undefined)
       },
     ),
     // The worker forces soft clipping off in chain mode

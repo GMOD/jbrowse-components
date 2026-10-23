@@ -235,8 +235,8 @@ function modificationsItems(model: ModificationsModel): MenuItem[] {
 
 /** The arcs, read cloud and connectors' own color field, for "Advanced". */
 export function getReadConnectionsColorItem(arcColor: {
-  own: ArcColorField | ''
-  setField: (field: ArcColorField | '') => void
+  own: ArcColorField | undefined
+  setField: (field?: ArcColorField) => void
 }): MenuItem {
   return {
     label: 'Read connections color',
@@ -246,8 +246,10 @@ export function getReadConnectionsColorItem(arcColor: {
         { value: '' as const, label: SAME_AS_READS_LABEL },
         ...ARC_COLOR_OPTIONS,
       ],
-      arcColor.own,
-      arcColor.setField,
+      arcColor.own ?? '',
+      field => {
+        arcColor.setField(field || undefined)
+      },
     ),
   }
 }

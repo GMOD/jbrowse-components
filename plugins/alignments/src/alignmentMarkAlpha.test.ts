@@ -136,7 +136,7 @@ test('a column may be one number, and a setting left out takes the pileup defaul
     pxPerBp: 0.5,
     featureHeight: 7,
     fadeLowFrequency: true,
-    mismatchOpacity: { field: '' },
+    mismatchOpacity: { field: undefined },
     insertions: { length: [3], fade: [0.2] },
     deletions: { length: [2], fade: [0] },
     mismatches: { fade: [0.5], quality: [255] },

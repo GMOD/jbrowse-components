@@ -11,7 +11,7 @@ export interface QualityOpacity {
   max: number
 }
 
-export const MISMATCH_OPACITY_FIELDS = ['', 'baseQuality'] as const
+export const MISMATCH_OPACITY_FIELDS = ['baseQuality'] as const
 
 export type MismatchOpacityField = (typeof MISMATCH_OPACITY_FIELDS)[number]
 
@@ -27,7 +27,7 @@ export const OPAQUE_MISMATCHES: QualityOpacity = {
 
 /** `pileup.mismatches.encoding.opacity` as its slots read. */
 export interface MismatchOpacitySetting {
-  field: string
+  field: string | undefined
   scale: {
     domain: readonly string[]
     range: readonly string[]

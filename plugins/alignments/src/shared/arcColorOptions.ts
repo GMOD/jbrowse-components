@@ -34,16 +34,16 @@ export const SAME_AS_READS_LABEL = 'Same as reads'
 /** What an arc paints when neither it nor the reads name a field it can. */
 export const DEFAULT_ARC_COLOR_FIELD: ArcColorField = 'insertSizeAndOrientation'
 
-function isArcColorField(field: string): field is ArcColorField {
-  return (ARC_COLOR_FIELDS as readonly string[]).includes(field)
+function isArcColorField(field?: string): field is ArcColorField {
+  return (ARC_COLOR_FIELDS as readonly (string | undefined)[]).includes(field)
 }
 
 /**
  * The field the arcs paint: `own`, the `arcColor` object's, unless it is
- * empty, then `readField`, the reads' `encoding.color` field, where an arc can paint
- * it, else {@link DEFAULT_ARC_COLOR_FIELD}.
+ * unset, then `readField`, the reads' `encoding.color` field, where an arc can
+ * paint it, else {@link DEFAULT_ARC_COLOR_FIELD}.
  */
-export function arcColorFieldOf(own: string, readField: string) {
+export function arcColorFieldOf(own: string | undefined, readField: string) {
   return isArcColorField(own)
     ? own
     : isArcColorField(readField)

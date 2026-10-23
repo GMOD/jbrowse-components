@@ -83,7 +83,7 @@ test('mismatchAlpha lifts onto the mismatches opacity field, top level and rende
       }),
       field,
     ),
-  ).toBe('')
+  ).toBeUndefined()
 })
 
 // v4.3.0's read cloud display declared `featureHeight` and its pileup renderer

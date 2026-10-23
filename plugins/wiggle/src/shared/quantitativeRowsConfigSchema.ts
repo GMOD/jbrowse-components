@@ -27,7 +27,9 @@ export const quantitativeRowsConfigSchema = ConfigurationSchema(
     /**
      * #slot field
      * `source` for one row per subtrack, or empty for one plot every source
-     * shares. Writing `rows: "source"` lands here.
+     * shares. Writing `rows: "source"` lands here. Empty stays an enum member
+     * rather than unset because the multi-row display defaults to `source`,
+     * where unset could not say "one shared plot".
      */
     field: {
       type: 'stringEnum',

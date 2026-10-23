@@ -436,9 +436,9 @@ describe('Read connections color menu visibility', () => {
 })
 
 describe('arc color follows the reads unless it names its own field', () => {
-  test('an empty readConnections.color takes a pair field from the reads', () => {
+  test('an unset readConnections.color takes a pair field from the reads', () => {
     const display = createDisplay()
-    display.setReadConnectionsColorField('')
+    display.setReadConnectionsColorField()
     display.colorByField('pairOrientation')
     expect(display.readConnectionsColorField).toBe('pairOrientation')
     display.colorByField('strand')

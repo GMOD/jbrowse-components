@@ -64,7 +64,7 @@ test('no field leaves every quality opaque', () => {
   }
   expect(
     qualityOpacityOf({
-      field: '',
+      field: undefined,
       scale: { domain: ['0', '30'], range: ['0', '1'], clamp: true },
     }),
   ).toBe(OPAQUE_MISMATCHES)

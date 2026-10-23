@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { MISMATCH_OPACITY_FIELDS } from '../features/mismatch/qualityOpacity.ts'
+import { dropEmptyField } from '../shared/dropEmptyField.ts'
 
 import type { MismatchOpacityField } from '../features/mismatch/qualityOpacity.ts'
 
@@ -56,13 +57,12 @@ export const pileupMismatchesOpacityConfigSchema = ConfigurationSchema(
      * #slot field
      */
     field: {
-      type: 'stringEnum',
+      type: 'maybeStringEnum',
       model: types.enumeration('PileupMismatchesOpacityField', [
         ...MISMATCH_OPACITY_FIELDS,
       ]),
-      defaultValue: '',
       description:
-        'baseQuality fades each mismatched base by its Phred quality; empty draws them opaque',
+        'baseQuality fades each mismatched base by its Phred quality; unset draws them opaque',
     },
     /**
      * #slot scale
@@ -114,5 +114,11 @@ export const pileupMismatchesOpacityConfigSchema = ConfigurationSchema(
       },
     ),
   },
-  { shorthand: 'field', writes: 'whole', closed: true, plot: true },
+  {
+    shorthand: 'field',
+    writes: 'whole',
+    closed: true,
+    plot: true,
+    preProcessSnapshot: dropEmptyField,
+  },
 )

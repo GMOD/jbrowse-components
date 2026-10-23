@@ -3654,7 +3654,7 @@ export default function stateModelFactory(
                         'color',
                         'field',
                       ]),
-                      setField: (field: ArcColorField | '') => {
+                      setField: (field?: ArcColorField) => {
                         self.setReadConnectionsColorField(field)
                       },
                     }),

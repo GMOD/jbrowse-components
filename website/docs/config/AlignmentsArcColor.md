@@ -38,4 +38,4 @@ A setting written to it replaces it whole, since its members are alternatives: a
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ("", insertSizeAndOrientation, insertSize, pairOrientation) = <code>''</code> | the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; empty takes the reads' color field where an arc paints it |
+| <span id="slot-field">**field**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (insertSizeAndOrientation, insertSize, pairOrientation) | the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; unset takes the reads' color field where an arc paints it |

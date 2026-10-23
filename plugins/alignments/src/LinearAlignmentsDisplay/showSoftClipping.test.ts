@@ -136,7 +136,7 @@ describe('alignments fit-to-display-height', () => {
 describe('alignments pileup.mismatches.encoding.opacity (fade by base quality)', () => {
   it('is off by default', () => {
     const { display } = createDisplay()
-    expect(display.mismatchOpacityField).toBe('')
+    expect(display.mismatchOpacityField).toBeUndefined()
     expect(display.mismatchQualityOpacity).toEqual(OPAQUE_MISMATCHES)
   })
 
@@ -144,7 +144,7 @@ describe('alignments pileup.mismatches.encoding.opacity (fade by base quality)',
     const { display } = createDisplay()
     display.setMismatchOpacityField('baseQuality')
     expect(display.mismatchQualityOpacity).toEqual(DEFAULT_QUALITY_FADE)
-    display.setMismatchOpacityField('')
+    display.setMismatchOpacityField()
     expect(display.mismatchQualityOpacity).toEqual(OPAQUE_MISMATCHES)
   })
 
@@ -167,7 +167,7 @@ describe('alignments pileup.mismatches.encoding.opacity (fade by base quality)',
       },
     })
     expect(display.mismatchQualityOpacity.slope).toBeCloseTo(1 / 30, 10)
-    display.setMismatchOpacityField('')
+    display.setMismatchOpacityField()
     display.setMismatchOpacityField('baseQuality')
     expect(display.mismatchQualityOpacity.slope).toBeCloseTo(1 / 30, 10)
   })
@@ -434,7 +434,7 @@ describe('alignments colorField', () => {
     expect(readConfObject(conf, ['pileup', 'bases', 'show'])).toBe(false)
     expect(
       readConfObject(conf, ['pileup', 'bases', 'encoding', 'color', 'field']),
-    ).toBe('')
+    ).toBeUndefined()
   })
 
   it('a named field draws no layer while bases.show is off', () => {

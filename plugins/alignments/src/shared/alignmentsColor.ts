@@ -90,8 +90,8 @@ export function alignmentsColorSnapshotOf(
 export { BASE_COLOR_FIELDS, COLOR_FIELDS }
 
 /** The per-base layer `field` draws, if it names one. */
-export function baseLayerOfField(field: string) {
-  const fields: readonly string[] = BASE_COLOR_FIELDS
+export function baseLayerOfField(field: string | undefined) {
+  const fields: readonly (string | undefined)[] = BASE_COLOR_FIELDS
   return fields.includes(field) ? (field as BaseLayerType) : undefined
 }
 
@@ -158,7 +158,7 @@ export function readColorFieldOf(encoding: AlignmentsColorEncoding) {
  * fields read beside it. Undefined while it is hidden or names no field.
  */
 export function baseLayerOf(
-  { show, field }: { show: boolean; field: string },
+  { show, field }: { show: boolean; field: string | undefined },
   modifications?: ModificationColorBy,
 ): BaseLayer | undefined {
   const type = show ? baseLayerOfField(field) : undefined

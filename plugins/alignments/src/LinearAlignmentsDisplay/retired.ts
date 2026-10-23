@@ -146,7 +146,7 @@ export function colorSlotsOf(value: unknown): DisplayEntry {
 
 // v4's `mismatchAlpha` switched the fade by base quality
 function mismatchFadeOf(on: unknown) {
-  return { encoding: { opacity: { field: on ? 'baseQuality' : '' } } }
+  return { encoding: { opacity: { field: on ? 'baseQuality' : null } } }
 }
 
 // v4's `renderers` block held the pileup renderer's own settings. Its color

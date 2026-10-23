@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { ARC_COLOR_FIELDS } from '../shared/arcColorOptions.ts'
+import { dropEmptyField } from '../shared/dropEmptyField.ts'
 
 /**
  * #config AlignmentsArcColor
@@ -35,15 +36,19 @@ export const alignmentsArcColorConfigSchema = ConfigurationSchema(
      * #slot field
      */
     field: {
-      type: 'stringEnum',
+      type: 'maybeStringEnum',
       model: types.enumeration('AlignmentsArcColorField', [
-        '',
         ...ARC_COLOR_FIELDS,
       ]),
-      defaultValue: '',
       description:
-        "the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; empty takes the reads' color field where an arc paints it",
+        "the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; unset takes the reads' color field where an arc paints it",
     },
   },
-  { shorthand: 'field', writes: 'whole', plot: true, closed: true },
+  {
+    shorthand: 'field',
+    writes: 'whole',
+    plot: true,
+    closed: true,
+    preProcessSnapshot: dropEmptyField,
+  },
 )

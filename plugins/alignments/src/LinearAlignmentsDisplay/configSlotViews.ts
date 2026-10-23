@@ -256,10 +256,10 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * The field `pileup.mismatches.encoding.opacity` fades by, `''` for none:
-     * the "Fade low quality mismatches" checkbox.
+     * The field `pileup.mismatches.encoding.opacity` fades by, unset for
+     * none: the "Fade low quality mismatches" checkbox.
      */
-    get mismatchOpacityField(): MismatchOpacityField {
+    get mismatchOpacityField(): MismatchOpacityField | undefined {
       return getConf(self, [
         'pileup',
         'mismatches',
@@ -716,7 +716,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * Writes `field` alone, so a written domain and range survive the
      * fade being turned off and on.
      */
-    setMismatchOpacityField(field: MismatchOpacityField) {
+    setMismatchOpacityField(field?: MismatchOpacityField) {
       setConf(
         self,
         ['pileup', 'mismatches', 'encoding', 'opacity', 'field'],
@@ -798,9 +798,9 @@ export function configSlotActions(self: ConfigSlotSelf) {
 
     /**
      * #action
-     * Paint the connections by `field`, `''` following the reads.
+     * Paint the connections by `field`; unset follows the reads.
      */
-    setReadConnectionsColorField(field: ArcColorField | '') {
+    setReadConnectionsColorField(field?: ArcColorField) {
       setConf(self, ['readConnections', 'encoding', 'color', 'field'], field)
     },
 

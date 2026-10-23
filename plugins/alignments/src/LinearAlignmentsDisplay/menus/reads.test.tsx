@@ -35,7 +35,7 @@ function makeModel(
     unit: 'read' as AlignmentsUnit,
     showInterbaseIndicators: true,
     setShowInterbaseIndicators: jest.fn(),
-    mismatchOpacityField: '' as const,
+    mismatchOpacityField: undefined,
     setMismatchOpacityField: jest.fn(),
     canCollapseSections: false,
     collapseSections: false,

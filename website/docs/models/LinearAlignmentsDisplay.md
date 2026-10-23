@@ -151,7 +151,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-showmismatches">**showMismatches**</span><br><code>boolean</code> |  |
 | <span id="getter-showsoftclipping">**showSoftClipping**</span><br><code>boolean</code> |  |
 | <span id="getter-showconnectors">**showConnectors**</span><br><code>boolean</code> |  |
-| <span id="getter-mismatchopacityfield">**mismatchOpacityField**</span><br><code>"" &#124; "baseQuality"</code> | The field `pileup.mismatches.encoding.opacity` fades by, `''` for none: the "Fade low quality mismatches" checkbox. |
+| <span id="getter-mismatchopacityfield">**mismatchOpacityField**</span><br><code>"baseQuality" &#124; undefined</code> | The field `pileup.mismatches.encoding.opacity` fades by, unset for none: the "Fade low quality mismatches" checkbox. |
 | <span id="getter-mismatchqualityopacity">**mismatchQualityOpacity**</span><br><code>QualityOpacity</code> | `pileup.mismatches.encoding.opacity` as mismatch.slang's `qualityFade` reads it. |
 | <span id="getter-fadelowfrequency">**fadeLowFrequency**</span><br><code>boolean</code> |  |
 | <span id="getter-hassashimi">**hasSashimi**</span><br><code>boolean</code> | Whether the display declares the sashimi band, which a synteny block, having no introns, has no use for. |
@@ -419,7 +419,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setshowmismatches">**setShowMismatches**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setshowsoftclipping">**setShowSoftClipping**</span><br><code>(value: boolean) =&gt; void</code> |  |
 | <span id="action-setshowconnectors">**setShowConnectors**</span><br><code>(flag: boolean) =&gt; void</code> | A main-thread tier-2/4 setting, not in `rpcProps`: toggling never refetches. |
-| <span id="action-setmismatchopacityfield">**setMismatchOpacityField**</span><br><code>(field: "" &#124; "baseQuality") =&gt; void</code> | Writes `field` alone, so a written domain and range survive the fade being turned off and on. |
+| <span id="action-setmismatchopacityfield">**setMismatchOpacityField**</span><br><code>(field?: "baseQuality" &#124; undefined) =&gt; void</code> | Writes `field` alone, so a written domain and range survive the fade being turned off and on. |
 | <span id="action-setshowsashimi">**setShowSashimi**</span><br><code>(show: boolean) =&gt; void</code> | Writes `sashimi.show` alone. Without the coverage band the arcs draw in a separate strip (`effectiveSashimiPlacement`). |
 | <span id="action-setsashimiplacement">**setSashimiPlacement**</span><br><code>(placement: "auto" &#124; "down" &#124; "up") =&gt; void</code> |  |
 | <span id="action-setshowsashimicounts">**setShowSashimiCounts**</span><br><code>(show: boolean) =&gt; void</code> |  |
@@ -427,7 +427,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setdrawnreadconnections">**setDrawnReadConnections**</span><br><code>(mode: "arc" &#124; "cloud" &#124; "off") =&gt; void</code> | What the "Read arcs" and "Read cloud" checkboxes write: 'off' hides the band and keeps its mark for the way back. |
 | <span id="action-setreadconnectionsplacement">**setReadConnectionsPlacement**</span><br><code>(placement: "down" &#124; "up") =&gt; void</code> |  |
 | <span id="action-setreadconnectionslinewidth">**setReadConnectionsLineWidth**</span><br><code>(width?: number &#124; undefined) =&gt; void</code> | Stroke a one-read connection `width` px, keeping the written field, scale type and range ratio, or a constant width; undefined returns to the default 1 px. |
-| <span id="action-setreadconnectionscolorfield">**setReadConnectionsColorField**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(field: "" &#124; "insertSize" &#124; "insertSizeAndOrientation" &#124; "pairO…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(field: "" &#124; "insertSize" &#124; "insertSizeAndOrientation" &#124; "pairOrientation") =&gt; void</code></pre></dialog></span> | Paint the connections by `field`, `''` following the reads. |
+| <span id="action-setreadconnectionscolorfield">**setReadConnectionsColorField**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(field?: "insertSize" &#124; "insertSizeAndOrientation" &#124; "pairOrien…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(field?: "insertSize" &#124; "insertSizeAndOrientation" &#124; "pairOrientation" &#124; undefined) =&gt; void</code></pre></dialog></span> | Paint the connections by `field`; unset follows the reads. |
 | <span id="action-setshowordinarypairs">**setShowOrdinaryPairs**</span><br><code>(show?: boolean &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setconnectionfilter">**setConnectionFilter**</span><br><code>(patch: Partial&lt;ConnectionFilter&gt;) =&gt; void</code> |  |
 | <span id="action-togglegroupcollapsed">**toggleGroupCollapsed**</span><br><code>(key: string) =&gt; void</code> | Collapse/expand a stacked group's pileup (coverage stays visible). |

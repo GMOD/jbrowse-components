@@ -7054,11 +7054,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "default": "",
-          "enum": [
-            "",
-            "baseQuality"
-          ],
+          "const": "baseQuality",
           "type": "string"
         },
         {
@@ -7067,16 +7063,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "baseQuality fades each mismatched base by its Phred quality; empty draws them opaque.",
-              "default": "",
+              "description": "baseQuality fades each mismatched base by its Phred quality; unset draws them opaque.",
               "if": {
                 "type": "null"
               },
               "else": {
-                "enum": [
-                  "",
-                  "baseQuality"
-                ]
+                "const": "baseQuality"
               }
             },
             "scale": {
@@ -7190,9 +7182,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "default": "",
           "enum": [
-            "",
             "baseQuality",
             "base",
             "modifications",
@@ -7206,14 +7196,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; empty draws none.",
-              "default": "",
+              "description": "the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; unset paints none.",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
-                  "",
                   "baseQuality",
                   "base",
                   "modifications",
@@ -7416,9 +7404,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "default": "",
           "enum": [
-            "",
             "insertSizeAndOrientation",
             "insertSize",
             "pairOrientation"
@@ -7431,14 +7417,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; empty takes the reads' color field where an arc paints it.",
-              "default": "",
+              "description": "the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; unset takes the reads' color field where an arc paints it.",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
-                  "",
                   "insertSizeAndOrientation",
                   "insertSize",
                   "pairOrientation"

@@ -45,7 +45,7 @@ A setting written to it replaces it whole, since its members are alternatives: a
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ("", baseQuality) = <code>''</code> | baseQuality fades each mismatched base by its Phred quality; empty draws them opaque |
+| <span id="slot-field">**field**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (baseQuality) | baseQuality fades each mismatched base by its Phred quality; unset draws them opaque |
 | <span id="slot-scale">**scale**</span><br>[PileupMismatchesOpacityScale sub-schema](#slot-scaledomain) | How a base quality maps to an opacity. |
 | <span id="slot-scaledomain">**scale.domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>['0', '50']</code> | the Phred qualities that take the first and the last opacity in range |
 | <span id="slot-scalerange">**scale.range**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>['0', '1']</code> | the opacities, 0 to 1, at the two ends of the domain |

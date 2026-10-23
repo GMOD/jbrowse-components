@@ -4382,7 +4382,7 @@ export const configManifest: ConfigManifest = {
                       "subSlots": [
                         {
                           "name": "field",
-                          "type": "PileupMismatchesOpacityField"
+                          "type": "(PileupMismatchesOpacityField | undefined)"
                         },
                         {
                           "name": "scale",
@@ -4467,7 +4467,7 @@ export const configManifest: ConfigManifest = {
                       "subSlots": [
                         {
                           "name": "field",
-                          "type": "AlignmentsBaseColorField"
+                          "type": "(AlignmentsBaseColorField | undefined)"
                         }
                       ],
                       "schema": "AlignmentsBaseColor",
@@ -4574,7 +4574,7 @@ export const configManifest: ConfigManifest = {
                   "subSlots": [
                     {
                       "name": "field",
-                      "type": "AlignmentsArcColorField"
+                      "type": "(AlignmentsArcColorField | undefined)"
                     }
                   ],
                   "schema": "AlignmentsArcColor",
@@ -5536,7 +5536,7 @@ export const configManifest: ConfigManifest = {
                       "subSlots": [
                         {
                           "name": "field",
-                          "type": "PileupMismatchesOpacityField"
+                          "type": "(PileupMismatchesOpacityField | undefined)"
                         },
                         {
                           "name": "scale",
@@ -5651,7 +5651,7 @@ export const configManifest: ConfigManifest = {
                   "subSlots": [
                     {
                       "name": "field",
-                      "type": "AlignmentsArcColorField"
+                      "type": "(AlignmentsArcColorField | undefined)"
                     }
                   ],
                   "schema": "AlignmentsArcColor",

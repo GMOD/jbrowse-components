@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { dropEmptyField } from '../shared/dropEmptyField.ts'
 import { BASE_COLOR_FIELDS } from '../shared/types.ts'
 
 /**
@@ -29,15 +30,19 @@ export const alignmentsBaseColorConfigSchema = ConfigurationSchema(
      * #slot field
      */
     field: {
-      type: 'stringEnum',
+      type: 'maybeStringEnum',
       model: types.enumeration('AlignmentsBaseColorField', [
-        '',
         ...BASE_COLOR_FIELDS,
       ]),
-      defaultValue: '',
       description:
-        'the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; empty draws none',
+        'the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; unset paints none',
     },
   },
-  { shorthand: 'field', writes: 'whole', closed: true, plot: true },
+  {
+    shorthand: 'field',
+    writes: 'whole',
+    closed: true,
+    plot: true,
+    preProcessSnapshot: dropEmptyField,
+  },
 )

@@ -6867,8 +6867,7 @@
       "anyOf": [
         {
           "description": "Shorthand for `{ \"field\": ... }`.",
-          "default": "",
-          "enum": ["", "baseQuality"],
+          "const": "baseQuality",
           "type": "string"
         },
         {
@@ -6877,13 +6876,12 @@
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "baseQuality fades each mismatched base by its Phred quality; empty draws them opaque.",
-              "default": "",
+              "description": "baseQuality fades each mismatched base by its Phred quality; unset draws them opaque.",
               "if": {
                 "type": "null"
               },
               "else": {
-                "enum": ["", "baseQuality"]
+                "const": "baseQuality"
               }
             },
             "scale": {
@@ -6997,8 +6995,7 @@
       "anyOf": [
         {
           "description": "Shorthand for `{ \"field\": ... }`.",
-          "default": "",
-          "enum": ["", "baseQuality", "base", "modifications", "bisulfite"],
+          "enum": ["baseQuality", "base", "modifications", "bisulfite"],
           "type": "string"
         },
         {
@@ -7007,19 +7004,12 @@
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; empty draws none.",
-              "default": "",
+              "description": "the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; unset paints none.",
               "if": {
                 "type": "null"
               },
               "else": {
-                "enum": [
-                  "",
-                  "baseQuality",
-                  "base",
-                  "modifications",
-                  "bisulfite"
-                ]
+                "enum": ["baseQuality", "base", "modifications", "bisulfite"]
               }
             }
           },
@@ -7211,13 +7201,7 @@
       "anyOf": [
         {
           "description": "Shorthand for `{ \"field\": ... }`.",
-          "default": "",
-          "enum": [
-            "",
-            "insertSizeAndOrientation",
-            "insertSize",
-            "pairOrientation"
-          ],
+          "enum": ["insertSizeAndOrientation", "insertSize", "pairOrientation"],
           "type": "string"
         },
         {
@@ -7226,14 +7210,12 @@
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; empty takes the reads' color field where an arc paints it.",
-              "default": "",
+              "description": "the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; unset takes the reads' color field where an arc paints it.",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
-                  "",
                   "insertSizeAndOrientation",
                   "insertSize",
                   "pairOrientation"
