@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
+import { retiredDisplayColor } from '@jbrowse/display-kit/retiredSettings'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -310,6 +311,7 @@ export default function configSchemaFactory() {
         inverted: () => ({}),
         numStdDev: () => ({}),
         minimalTicks: () => ({}),
+        ...retiredDisplayColor,
       },
     },
   )

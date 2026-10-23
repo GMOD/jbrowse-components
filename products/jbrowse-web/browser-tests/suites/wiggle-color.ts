@@ -50,13 +50,13 @@ const suite: TestSuite = {
         await plotItem.click()
         await delay(500)
 
-        // the color is one object written as JSON; a string is the constant
+        // the color is `encoding.color`, written as JSON
         const plotField = await findByTestId(page, 'plot-json', 10000)
         await plotField.click({ count: 3 })
         await page.keyboard.down('Control')
         await page.keyboard.press('KeyA')
         await page.keyboard.up('Control')
-        await plotField.type('{"color": "red"}')
+        await plotField.type('{"encoding": {"color": {"value": "red"}}}')
         await delay(500)
 
         const submitBtn = await page.waitForSelector('button[type="submit"]', {

@@ -24,6 +24,11 @@ test('value is the constant, and a bare color is refused with its spelling', () 
   )
 })
 
+test("v4's display color is the channel's constant", () => {
+  const conf = create({ color: 'darkgreen' })
+  expect(readConfObject(conf, [...COLOR, 'value'])).toBe('darkgreen')
+})
+
 // The channel colors the score it plots, and a subtrack's color is
 // `rowColor`'s, so it names no field at all.
 test('the channel takes no field', () => {

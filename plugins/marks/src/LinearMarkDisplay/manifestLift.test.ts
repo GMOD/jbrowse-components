@@ -87,13 +87,10 @@ const EVERY_SPELLING: Record<string, unknown> = {
       mark: { type: 'link', interpolate: 'arc' },
       encoding: {
         x2: { chrom: 'mate.refName', pos: 'mate.start' },
-        size: {
+        strokeWidth: {
           value: 3,
           field: 'score',
-          scale: 'log',
-          domainMin: 1,
-          domainMax: 100,
-          range: [1, 8],
+          scale: { type: 'log', domainMin: 1, domainMax: 100, range: [1, 8] },
         },
       },
       transform: [{ type: 'mate' }],

@@ -55,7 +55,7 @@ const GESTURES = ALL_GESTURES.filter(
 )
 
 type Mode = (typeof ALL_MODES)[number]
-// The `baseColor` field each mode writes; an empty field draws no layer.
+// The `pileup.bases` color field each mode writes; an empty field draws no layer.
 const COLOR_FIELD: Record<Mode, string> = {
   normal: '',
   perBaseQuality: 'baseQuality',
@@ -362,7 +362,14 @@ async function runOne(
           tracks: [
             {
               trackId: fixture.trackId,
-              displaySnapshot: { baseColor: { field: COLOR_FIELD[mode] } },
+              displaySnapshot: {
+                pileup: {
+                  bases: {
+                    show: true,
+                    encoding: { color: { field: COLOR_FIELD[mode] } },
+                  },
+                },
+              },
             },
           ],
         },

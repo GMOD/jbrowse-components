@@ -99,7 +99,7 @@ try {
           tracks: ['peach_grape_minimap2'],
           filter: [{ field: 'length', gte: 2000 }],
           mark: { interpolate: 'bump' },
-          color: { field: 'query' },
+          encoding: { color: { field: 'query' } },
           levelHeights: [350],
           views: [{ assembly: 'grape' }, { assembly: 'peach' }],
         },

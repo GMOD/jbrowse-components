@@ -223,6 +223,20 @@ test('the header names what the figure leaves out, and an unreadable track does 
   expect(script).toContain('#   - Opened: it reads a file opened')
 })
 
+test('a read colored by its mate’s contig says the figure hashes the contigs', () => {
+  const { notes } = exportTracksToR({
+    regions: ONE,
+    tracks: [
+      track('volvox_alignments', 'LinearAlignmentsDisplay', {
+        encoding: { color: { field: 'mateRefName' } },
+      }),
+    ],
+  })
+  expect(notes).toEqual([
+    expect.stringContaining('mateRefName colors each contig by its hash'),
+  ])
+})
+
 test('a config value crosses as the R literal ggjbrowse hands the engine', () => {
   expect(
     rValue({ a: [1, 2], b: [], c: [{ x: 'y' }], 'd-e': true, f: null }),

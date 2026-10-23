@@ -292,3 +292,12 @@ describe('rowColor config object', () => {
     expect(readConfObject(config, ['rowColor', 'field'])).toBe('population')
   })
 })
+
+test('the flat color hosted hub configs write lifts to encoding.color', () => {
+  const config = configSchemaFactory().create({
+    type: 'LinearMultiSampleVariantDisplay',
+    displayId: 'test-flat-color',
+    color: { field: 'svType' },
+  })
+  expect(readConfObject(config, ['encoding', 'color', 'field'])).toBe('svType')
+})

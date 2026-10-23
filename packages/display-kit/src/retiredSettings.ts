@@ -168,7 +168,7 @@ export function liftFlatColor(
   const parts: Record<'scale' | 'legend', Snapshot> = { scale: {}, legend: {} }
   for (const [key, value] of Object.entries(color as Snapshot)) {
     const at = FLAT_COLOR_MEMBERS[key]
-    if (!at) {
+    if (!at || (key === 'scale' && isRecord(value))) {
       out[key] = value
     } else if (value !== undefined) {
       parts[at[0]][at[1]] =
@@ -177,7 +177,8 @@ export function liftFlatColor(
   }
   for (const part of ['scale', 'legend'] as const) {
     if (Object.keys(parts[part]).length > 0) {
-      out[part] = parts[part]
+      const nested = out[part]
+      out[part] = { ...parts[part], ...(isRecord(nested) ? nested : {}) }
     }
   }
   return out

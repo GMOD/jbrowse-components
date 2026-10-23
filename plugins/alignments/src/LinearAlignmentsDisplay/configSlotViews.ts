@@ -4,7 +4,10 @@ import { filterMembersNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
-import { strokeWidthScale } from '../features/arcs/arcLineWidth.ts'
+import {
+  arcStrokeScale,
+  strokeWidthScale,
+} from '../features/arcs/arcLineWidth.ts'
 import { ordinaryPairsShown } from '../features/arcs/arcTypes.ts'
 import {
   ALIGNMENTS_FIELD_PRESETS,
@@ -685,14 +688,16 @@ export function configSlotActions(self: ConfigSlotSelf) {
 
     /**
      * #action
-     * Stroke every connection `width` px, whatever its reads; undefined
-     * returns to mapping each connection's reads.
+     * Stroke a one-read connection `width` px, widening with its reads as the
+     * default curve does; undefined returns to the default 1 px.
      */
     setReadConnectionsLineWidth(width?: number) {
       setConf(
         self,
         ['readConnections', 'encoding', 'strokeWidth'],
-        width === undefined ? {} : { value: width },
+        width === undefined
+          ? {}
+          : { scale: { range: arcStrokeScale(width).range.map(String) } },
       )
     },
 
