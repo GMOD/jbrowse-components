@@ -227,9 +227,10 @@ the same assembly:
 
 A circular RNA joins the end of an exon back to the start of an upstream one. A
 short read across that joint aligns in two pieces, and the aligner writes the
-second piece into the read's `SA` tag. JBrowse counts each read whose later
-piece lies upstream of its earlier one, and draws that back-splice as a purple
-arc under the coverage, below the ordinary splice arcs.
+second piece into the read's `SA` tag. The sashimi band counts split-read
+junctions by class beside the N-gap splices, one arc per junction, in the color
+the read connections give that class. A back-splice is a duplication-type split,
+drawn in the teal of an RL pair.
 
 STAR writes those `SA` tags only in chimeric mode. With its defaults it
 soft-clips the joint, and no back-splice arc appears:
@@ -250,7 +251,7 @@ holds HeLa RNA-seq treated with RNase R, which digests linear RNA and leaves the
 circles, aligned that way on hg38, and STAR's own back-splice table beside it.
 At _ZKSCAN1_ the circle spans two exons:
 
-<Figure caption="ZKSCAN1: the STAR back-splice table above the reads, then a splice arc over the coverage and the back-splice arc under it." src="/img/circrna/zkscan1_backsplice.png" links="Open this view=circrna/zkscan1_backsplice" />
+<Figure caption="ZKSCAN1: the STAR back-splice table above the reads, and a splice arc and the teal back-splice arc over the coverage." src="/img/circrna/zkscan1_backsplice.png" links="Open this view=circrna/zkscan1_backsplice" />
 
 ## Loading STAR, regtools and portcullis junction tables
 

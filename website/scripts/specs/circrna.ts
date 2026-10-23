@@ -9,8 +9,9 @@ const CIRCRNA_CONFIG = 'https://jbrowse.org/demos/circrna/config.json'
 
 const READS = 'hela_rnaser_reads'
 
-// The sashimi band draws a back-splice in this purple (features/sashimi/bandFeed.ts).
-const BACK_SPLICE_PURPLE = '#9e2eb0'
+// A duplication-type split junction takes its read arc twin's color, the RL
+// pair teal (`colorPairRL` in packages/core/src/ui/palette.ts).
+const DUPLICATION_TYPE_TEAL = '#0099bb'
 
 export const circrnaSpecs: ScreenshotSpec[] = [
   {
@@ -31,7 +32,12 @@ export const circrnaSpecs: ScreenshotSpec[] = [
       {
         type: 'legend',
         fontSize: 18,
-        entries: [{ label: 'Back-splice junction', color: BACK_SPLICE_PURPLE }],
+        entries: [
+          {
+            label: 'Back-splice (duplication-type split)',
+            color: DUPLICATION_TYPE_TEAL,
+          },
+        ],
         anchor: { trackId: READS, loc: 'chr7:100,025,300', fracY: 0.1 },
       },
     ],
