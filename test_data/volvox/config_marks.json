@@ -1262,7 +1262,7 @@
               }
             }
           ],
-          "showTree": true
+          "axis": { "tree": true }
         }
       ]
     },

@@ -117,10 +117,19 @@ test('the variant lane toggle is a multi-sample Show... row', () => {
 })
 
 test('branch lengths are the toggle beside Tree', () => {
-  expect(stepPaths('showBranchLength', false, 'LinearMafDisplay')).toEqual([
+  expect(stepPaths('axis.branchLength', false, 'LinearMafDisplay')).toEqual([
     'Track menu → Show... → Tree branch lengths (unchecked)',
   ])
-  expect(stepPaths('showBranchLength', false, 'LinearBasicDisplay')).toEqual([])
+  expect(stepPaths('axis.branchLength', false, 'LinearBasicDisplay')).toEqual([])
+})
+
+test('the tree and row separator toggles are Show... rows', () => {
+  expect(stepPaths('axis.tree', false, 'LinearMafDisplay')).toEqual([
+    'Track menu → Show... → Tree (unchecked)',
+  ])
+  expect(
+    stepPaths('axis.grid', true, 'LinearMultiRowFeatureDisplay'),
+  ).toEqual(['Track menu → Show... → Row separators (checked)'])
 })
 
 test('a row color table is the arrangement dialog, and a column name stays a Samples row', () => {

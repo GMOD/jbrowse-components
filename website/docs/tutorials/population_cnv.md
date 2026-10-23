@@ -146,7 +146,7 @@ samples together, since rows otherwise stay in file order.
 
 The full list is the `pur_copynumber_1000g` track in
 https://jbrowse.org/code/jb2/main/test_data/config_demo.json, so
-[the panel opens on a copy-number-polymorphic window of chr3](https://jbrowse.org/code/jb2/main/?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr3%3A162%2C275%2C163-163%2C360%2C944%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22pur_copynumber_1000g%22%2C%22height%22%3A420%2C%22mark%22%3A%22span%22%2C%22encoding%22%3A%7B%22y%22%3A%7B%22scale%22%3A%7B%22fenceQuantile%22%3A1%7D%7D%7D%2C%22showTree%22%3Afalse%7D%5D%7D%5D%7D&sessionName=Screenshot)
+[the panel opens on a copy-number-polymorphic window of chr3](https://jbrowse.org/code/jb2/main/?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr3%3A162%2C275%2C163-163%2C360%2C944%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22pur_copynumber_1000g%22%2C%22height%22%3A420%2C%22mark%22%3A%22span%22%2C%22encoding%22%3A%7B%22y%22%3A%7B%22scale%22%3A%7B%22fenceQuantile%22%3A1%7D%7D%7D%2C%22axis%22%3A%7B%22tree%22%3Afalse%7D%7D%5D%7D%5D%7D&sessionName=Screenshot)
 with these settings already applied.
 
 ## Individuals' copy-number profiles at CCL3L1

@@ -1110,6 +1110,14 @@ test('an allele segment is shown where its share of the depth reaches coverage.m
   expect(t.alleleCoverage.shown).toContain(false)
 })
 
+const AXIS_DEFAULTS = {
+  tree: true,
+  branchLength: true,
+  labels: true,
+  width: 80,
+  grid: false,
+}
+
 test('config is the display’s resolved config, the slots the call set and the defaults it left', async () => {
   const t = await engine.alignments({
     ...BAM,
@@ -1130,7 +1138,7 @@ test('config is the display’s resolved config, the slots the call set and the 
       'data',
       { resolution: 1 },
     ],
-    [await engine.variants({ ...DOG_VCF, display }), 'showTree', true],
+    [await engine.variants({ ...DOG_VCF, display }), 'axis', AXIS_DEFAULTS],
   ] as const
   for (const [tables, slot, value] of others) {
     expect(tables.config.height).toBe(150)

@@ -284,7 +284,7 @@ per group.
   "displayDefaults": {
     "height": 260,
     "encoding": { "y": { "scale": { "domainMin": 0, "domainMax": 100 } } },
-    "showRowSeparators": true
+    "axis": { "grid": true }
   }
 }
 ```

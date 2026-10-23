@@ -28,11 +28,12 @@
     "./clusterProvenance": "./src/clusterProvenance.ts",
     "./clusterUtils": "./src/clusterUtils.ts",
     "./hierarchy": "./src/hierarchy.ts",
+    "./rowAxisConfigSchema": "./src/rowAxisConfigSchema.ts",
+    "./rowAxisWithGridConfigSchema": "./src/rowAxisWithGridConfigSchema.ts",
     "./rowColorChoice": "./src/rowColorChoice.ts",
     "./rowColorScale": "./src/rowColorScale.ts",
     "./rowHeightConfigSchemaFields": "./src/rowHeight/rowHeightConfigSchemaFields.ts",
     "./rowSortColumn": "./src/rowSortColumn.ts",
-    "./treeSidebarConfigSchemaFields": "./src/treeSidebarConfigSchemaFields.ts",
     "./treeSidebarGeometry": "./src/treeSidebarGeometry.ts"
   },
   "files": [
@@ -78,11 +79,12 @@
       "./clusterProvenance": "./esm/clusterProvenance.js",
       "./clusterUtils": "./esm/clusterUtils.js",
       "./hierarchy": "./esm/hierarchy.js",
+      "./rowAxisConfigSchema": "./esm/rowAxisConfigSchema.js",
+      "./rowAxisWithGridConfigSchema": "./esm/rowAxisWithGridConfigSchema.js",
       "./rowColorChoice": "./esm/rowColorChoice.js",
       "./rowColorScale": "./esm/rowColorScale.js",
       "./rowHeightConfigSchemaFields": "./esm/rowHeight/rowHeightConfigSchemaFields.js",
       "./rowSortColumn": "./esm/rowSortColumn.js",
-      "./treeSidebarConfigSchemaFields": "./esm/treeSidebarConfigSchemaFields.js",
       "./treeSidebarGeometry": "./esm/treeSidebarGeometry.js"
     }
   },

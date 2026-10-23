@@ -42,8 +42,7 @@ const confNode = (self: object) => self as RowHeightHost
  * `RowHeightModel` and `types.ts`'s `TreeDrawingModel` restates
  * `effectiveRowHeight`, so a display wiring in the shared menu and spelling one
  * of them differently would compile and then fail at the first click. Slots and
- * accessors move together, matching `treeSidebarConfigSchemaFields` +
- * `TreeSidebarMixin`.
+ * accessors move together, matching `rowAxisConfigSchema` + `TreeSidebarMixin`.
  *
  * **What stays per display is the value, not the declaration.** The per-display
  * members are `autoRowHeight`, because the height available to rows is a different

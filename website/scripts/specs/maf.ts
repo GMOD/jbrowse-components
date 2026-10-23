@@ -478,7 +478,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               runClustering: true,
               // Most distances here are zero, so a phylogram collapses the
               // branches against the rows.
-              showBranchLength: false,
+              axis: { branchLength: false },
               alignments: { rowProportion: 1 },
             },
             graphTrack('hprc_minigraph_segments', {

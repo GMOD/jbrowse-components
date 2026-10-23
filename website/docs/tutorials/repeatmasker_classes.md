@@ -141,7 +141,7 @@ its `domain` with a color in its `range`.
           ]
         }
       },
-      "showRowSeparators": true
+      "axis": { "grid": true }
     }
   ]
 }

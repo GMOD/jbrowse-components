@@ -320,9 +320,9 @@ test.each([
     1,
   ],
   ['LinearReadCloudDisplay', ['pileup', 'mismatches', 'show'], false],
-  ['MultiLinearVariantDisplay', 'showRowLabels', true],
+  ['MultiLinearVariantDisplay', ['axis', 'labels'], true],
   ['MultiLinearVariantDisplay', 'referenceDrawingMode', 'draw'],
-  ['LinearVariantMatrixDisplay', 'showRowLabels', false],
+  ['LinearVariantMatrixDisplay', ['axis', 'labels'], false],
   ['LDTrackDisplay', 'heightMode', 'fit'],
   ['LDTrackDisplay', 'variantLayout', 'columns'],
 ] as const)('%s: a v4 key lands on %s', (type, slot, value) => {

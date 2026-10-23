@@ -8,9 +8,9 @@ import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  rowSeparatorsConfigSchemaFields,
-  treeSidebarConfigSchemaFields,
-} from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
+  retiredRowAxisWithGridSpellings,
+  rowAxisWithGridConfigSchema,
+} from '@jbrowse/tree-sidebar/rowAxisWithGridConfigSchema'
 
 import { rowGroupConfigSchema } from './rowGroupConfigSchema.ts'
 
@@ -179,7 +179,6 @@ export default function configSchemaF() {
         description: 'fraction of the row height each block fills',
         advanced: true,
       },
-      ...rowSeparatorsConfigSchemaFields(),
       /**
        * #slot legend
        * The color key, which appears only while a field paints the blocks —
@@ -227,10 +226,12 @@ export default function configSchemaF() {
        * ```
        */
       facet: facetConfigSchema,
-      ...treeSidebarConfigSchemaFields({
-        tree: 'show the cluster tree sidebar',
-        rowLabels: 'draw the row name over the left of each row',
-      }),
+      /**
+       * #slot axis
+       * The guide down the left of the rows: the cluster tree, each row's
+       * name and the lines between rows.
+       */
+      axis: rowAxisWithGridConfigSchema,
       /**
        * #slot
        * The byte axis is the only gate this display has: it paints into fixed
@@ -246,7 +247,10 @@ export default function configSchemaF() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
-      retired: retiredDisplayColor,
+      retired: {
+        ...retiredDisplayColor,
+        ...retiredRowAxisWithGridSpellings,
+      },
     },
   )
 }

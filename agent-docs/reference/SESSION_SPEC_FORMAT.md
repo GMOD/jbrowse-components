@@ -86,6 +86,6 @@ layout pass applies on every relayout (`sortLayout.ts`, main-thread,
 [ADR-053](../architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md)),
 while `sortRowsBy` is a one-shot launch spec that clears itself
 (`packages/tree-sidebar/src/rowSortAutorun.ts`). The pair that is just two
-spellings (`showTree` / `showRowLabels`) is a rename through `legacyKeys` in a
-`preProcessSnapshot` and needs no grammar.
+spellings (`showTree` / `showRowLabels`, now `axis.tree` / `axis.labels`) is a
+rename through `retired` lifts and needs no grammar.
 

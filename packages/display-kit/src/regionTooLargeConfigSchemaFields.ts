@@ -50,7 +50,7 @@ export const regionTooLargeConfigSchemaFields = {
   // The prose is in `description` rather than in the JSDoc above it, and that
   // is the difference a spread table makes: the config-doc generator renders a
   // spread slot's `description` and never its JSDoc (same as
-  // `treeSidebarConfigSchemaFields`), so prose written up there reaches
+  // `rowHeightConfigSchemaFields`), so prose written up there reaches
   // neither the docs page nor the config editor.
   forceLoad: {
     type: 'boolean',

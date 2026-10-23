@@ -7,11 +7,11 @@ import { retiredDisplayColor } from '@jbrowse/display-kit/retiredSettings'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
-import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import {
-  rowSeparatorsConfigSchemaFields,
-  treeSidebarConfigSchemaFields,
-} from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
+  retiredRowAxisWithGridSpellings,
+  rowAxisWithGridConfigSchema,
+} from '@jbrowse/tree-sidebar/rowAxisWithGridConfigSchema'
+import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 
 import {
   MULTI_SAMPLE_VARIANT_DISPLAY,
@@ -165,10 +165,12 @@ export default function configSchemaFactory() {
        */
       filter: fieldPredicateList(),
       ...rowHeightConfigSchemaFields(),
-      ...treeSidebarConfigSchemaFields({
-        tree: 'Show the sample clustering tree in the sidebar',
-        rowLabels: 'Show the per-sample row labels in the sidebar',
-      }),
+      /**
+       * #slot axis
+       * The guide down the left of the sample rows: the clustering tree, each
+       * sample's name and the lines between rows.
+       */
+      axis: rowAxisWithGridConfigSchema,
       /**
        * #slot rows
        * The rows are the file's samples, and the object is the arrangement a
@@ -179,7 +181,6 @@ export default function configSchemaFactory() {
        * Written whole, as every display's `rows` is.
        */
       rows: sampleRowsConfigSchema,
-      ...rowSeparatorsConfigSchemaFields(),
       /**
        * #slot
        * Show the hover tooltip naming the genotype, the sample and the record
@@ -302,7 +303,8 @@ export default function configSchemaFactory() {
         renderingMode: (v: unknown) => ({
           unit: v === 'phased' ? 'haplotype' : 'sample',
         }),
-        showSidebarLabels: (showRowLabels: unknown) => ({ showRowLabels }),
+        showSidebarLabels: (labels: unknown) => ({ axis: { labels } }),
+        ...retiredRowAxisWithGridSpellings,
         showReferenceAlleles: (draw: unknown) => ({
           referenceDrawingMode: draw ? 'draw' : 'skip',
         }),

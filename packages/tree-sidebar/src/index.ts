@@ -111,9 +111,13 @@ export {
   treeBranchLengthMenuItem,
 } from './treeMenuItems.ts'
 export {
-  rowSeparatorsConfigSchemaFields,
-  treeSidebarConfigSchemaFields,
-} from './treeSidebarConfigSchemaFields.ts'
+  retiredRowAxisSpellings,
+  rowAxisConfigSchema,
+} from './rowAxisConfigSchema.ts'
+export {
+  retiredRowAxisWithGridSpellings,
+  rowAxisWithGridConfigSchema,
+} from './rowAxisWithGridConfigSchema.ts'
 export {
   rowArrangementMenuItem,
   rowOrderMenuItems,

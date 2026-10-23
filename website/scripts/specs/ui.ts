@@ -315,7 +315,7 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
             },
             height: 330,
             runClustering: true,
-            showTree: false,
+            axis: { tree: false },
           },
           {
             trackId: 'kgp_sv_records',
@@ -1818,7 +1818,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               type: 'LinearMultiRowFeatureDisplay',
               // No rowColor: the figure shows what the menu path produces.
               rows: 'repClass',
-              showRowSeparators: true,
+              axis: { grid: true },
               height: 260,
             },
           ],

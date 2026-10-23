@@ -213,7 +213,7 @@ export default function stateModelFactory(
        * #getter
        */
       get showRowSeparators(): boolean {
-        return getConf(self, 'showRowSeparators')
+        return getConf(self, ['axis', 'grid'])
       },
     }))
     .views(self => ({
@@ -972,7 +972,7 @@ export default function stateModelFactory(
          * #action
          */
         setShowRowSeparators(f: boolean) {
-          setConf(self, 'showRowSeparators', f)
+          setConf(self, ['axis', 'grid'], f)
         },
         /**
          * #action

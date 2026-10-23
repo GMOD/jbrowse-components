@@ -12,8 +12,11 @@ import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
+import {
+  retiredRowAxisSpellings,
+  rowAxisConfigSchema,
+} from '@jbrowse/tree-sidebar/rowAxisConfigSchema'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
-import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 import {
   retiredScalesSpelling,
   yChannelSchema,
@@ -460,10 +463,12 @@ export function configSchemaFactory() {
        * `scale.domain`/`scale.range`, which the arrangement dialog writes.
        */
       rowColor: rowColorConfigSchema,
-      ...treeSidebarConfigSchemaFields({
-        tree: 'show the cluster tree beside the rows',
-        rowLabels: 'draw the row value over the left of each row',
-      }),
+      /**
+       * #slot axis
+       * The row axis down the left of the rows `rows` draws: the cluster tree
+       * and each row's value. The value axis is `encoding.y.axis`.
+       */
+      axis: rowAxisConfigSchema,
       ...rowHeightConfigSchemaFields({
         rowHeight:
           'per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them',
@@ -473,7 +478,8 @@ export function configSchemaFactory() {
        * The channels the marks are read through, owned by the display rather
        * than by a mark: `y` alone, a [YChannel](../ychannel) every mark's
        * `encoding.y` shares. It names no field, since each mark names its
-       * own, so a bare string here is refused.
+       * own, so a bare string here is refused. `encoding.y.axis` is the value
+       * axis; the row axis beside `rows` is `axis`.
        * #example
        * ```js
        * { encoding: { y: { scale: { type: 'log' }, axis: { title: 'depth' } } } }
@@ -522,6 +528,7 @@ export function configSchemaFactory() {
       retired: {
         scales: retiredScalesSpelling(MARK_Y_PATHS.members),
         ...retiredBaseDisplaySpellings,
+        ...retiredRowAxisSpellings,
       },
       preProcessSnapshot: checkMarks,
     },

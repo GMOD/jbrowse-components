@@ -56,9 +56,6 @@ Git history has each landing.
 2. **The band layers' thresholds as layer filters** (ADR-240 step 3c):
    `coverage.alleles`, `coverage.interbase` and the modification layer, each
    into its layer's `filter`, percents becoming fractions.
-3. **The tree sidebar's `axis`** beside `rows` (`showTree`, `showBranchLength`,
-   `showRowLabels`, `showRowSeparators`, `treeAreaWidth`), on wiggle, MAF, the
-   mark display, the multi-sample variant display and multi-row canvas.
 5. **The comparative `indels` part** takes over `cigarMode` and `drawCigar`,
    after the alignments `show` parts.
 6. **The height step** (ADR-240 step 4): `pileup.readHeight` becomes

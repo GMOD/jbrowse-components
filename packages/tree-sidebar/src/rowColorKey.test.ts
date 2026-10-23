@@ -6,14 +6,11 @@ import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
+import { rowAxisConfigSchema } from './rowAxisConfigSchema.ts'
 import { dealValueColors } from './rowColorScale.ts'
-import { treeSidebarConfigSchemaFields } from './treeSidebarConfigSchemaFields.ts'
 
 const configSchema = ConfigurationSchema('RowColorKeyDisplay', {
-  ...treeSidebarConfigSchemaFields({
-    tree: 'show the tree',
-    rowLabels: 'draw each row name',
-  }),
+  axis: rowAxisConfigSchema,
   rows: rowArrangementConfigSchema,
   rowColor: rowColorConfigSchema,
 })

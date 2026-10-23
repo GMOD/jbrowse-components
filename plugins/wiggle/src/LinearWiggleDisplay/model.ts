@@ -584,7 +584,7 @@ export default function stateModelFactory(
       },
 
       get showRowSeparators(): boolean {
-        return getConf(self, 'showRowSeparators')
+        return getConf(self, ['axis', 'grid'])
       },
 
       /**
@@ -711,7 +711,7 @@ export default function stateModelFactory(
       },
 
       setShowRowSeparators(arg: boolean) {
-        setConf(self, 'showRowSeparators', arg)
+        setConf(self, ['axis', 'grid'], arg)
       },
 
       /**

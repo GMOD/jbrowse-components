@@ -193,7 +193,7 @@ cfg['tracks'].append({
     'displayDefaults': {
         'height': 260,
         'encoding': {'y': {'scale': {'domainMin': 0, 'domainMax': 100}}},
-        'showRowSeparators': True,
+        'axis': {'grid': True},
     },
 })
 

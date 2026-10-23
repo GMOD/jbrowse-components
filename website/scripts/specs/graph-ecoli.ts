@@ -419,7 +419,7 @@ function pggbLocusSession(
                 {
                   trackId: PGGB_MAF_TRACK,
                   rows: { sort: PGGB_STRAIN_ROWS },
-                  showTree: true,
+                  axis: { tree: true },
                   height: 150,
                 },
               ]

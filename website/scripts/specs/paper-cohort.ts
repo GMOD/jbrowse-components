@@ -110,8 +110,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               height: 220,
               runClustering: true,
-              showTree: false,
-              showRowLabels: false,
+              axis: { tree: false, labels: false },
             },
             graphTrack('hprc_minigraph_segments', {
               layoutMode: 'force',

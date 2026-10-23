@@ -101,7 +101,7 @@ default display, so preset its slots in a `displays` array; they are listed on
       "type": "LinearMultiSampleVariantDisplay",
       "referenceDrawingMode": "draw",
       "filter": [{ "field": "minorAlleleFrequency", "gte": 0.05 }],
-      "showRowLabels": true,
+      "axis": { "labels": true },
       "unit": "sample"
     }
   ]

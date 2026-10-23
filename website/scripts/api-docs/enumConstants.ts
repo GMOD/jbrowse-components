@@ -92,18 +92,18 @@ const slotFieldsIndex = new Map<string, [string, string][] | null>()
 // The same table, one indirection further out: a slot table written as a
 // *function* of its per-display prose.
 //
-//   export function treeSidebarConfigSchemaFields({ tree, rowLabels }) {
-//     return { showTree: { type: 'boolean', description: tree }, ... } as const
+//   export function rowHeightConfigSchemaFields({ rowHeight = '…' }) {
+//     return { rowHeight: { type: 'number', description: rowHeight }, ... } as const
 //   }
-//   ConfigurationSchema('LinearMafDisplay', { ...treeSidebarConfigSchemaFields({ tree: '…' }) })
+//   ConfigurationSchema('LinearMarkDisplay', { ...rowHeightConfigSchemaFields({ rowHeight: '…' }) })
 //
 // A mixin's slots are shared in their types and defaults while their
 // descriptions genuinely differ per display — a MAF row is a species, a
 // multi-wiggle row a subtrack — so the shared table takes the sentences as
 // arguments. The const form above cannot express that, and every such factory
-// was therefore invisible here: `treeSidebarConfigSchemaFields` alone took
-// `showTree`, `showBranchLength` and `showRowLabels` off **five** display pages
-// while all five schemas really declared them.
+// was therefore invisible here: the tree sidebar's factory alone once took
+// three toggles off **five** display pages while all five schemas really
+// declared them.
 //
 // A factory's recorded slot sources still name its parameters
 // (`description: tree`), so the pairs are only meaningful once a call site's
@@ -118,9 +118,9 @@ interface SlotFieldParam {
   prop: string
   /**
    * Source of the parameter's default, where it declares one. A default is a
-   * real answer rather than a fallback: `treeSidebarConfigSchemaFields`'s
-   * `branchLength` sentence is display-independent and no caller passes it, so
-   * reading the default is the only way that slot's prose reaches the page.
+   * real answer rather than a fallback: `rowHeightConfigSchemaFields`'s
+   * `rowHeight` sentence is display-independent and most callers omit it, so
+   * reading the default is the only way that slot's prose reaches their pages.
    */
   fallback: string | undefined
 }
@@ -636,7 +636,7 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
   const slotParts = new Map<string, SlotPart[] | null>()
   for (const sf of sourceFiles) {
     // Cheap prefilter. `function` is in it for the slot-table factories, whose
-    // files hold nothing else — `treeSidebarConfigSchemaFields.ts` has no
+    // files hold nothing else — `rowHeightConfigSchemaFields.ts` has no
     // top-level `const` at all, so a const-only guard skipped the file and the
     // factory arm below would never have run. A `:` admits a typed const,
     // `const DEFAULT_BIN_AS: readonly [string, string] = ...`.
@@ -761,7 +761,7 @@ export function slotFieldConstantPairs(name: string) {
 
 /**
  * The same, for a slot table spread as a **call** —
- * `...treeSidebarConfigSchemaFields({ tree: '…', rowLabels: '…' })` — with the
+ * `...rowHeightConfigSchemaFields({ rowHeight: '…' })` — with the
  * call's own arguments substituted for the factory's parameters, so each slot
  * carries the description this display passed rather than the parameter name.
  *

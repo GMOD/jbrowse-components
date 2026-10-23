@@ -1613,7 +1613,7 @@ export const trackFields: Record<string, FieldRecipe> = {
             note: `Clustering is scoped to the region it was run over — this figure clustered on ${value}, which is what the row order reflects even after navigating elsewhere.`,
           }
         : [],
-  showRowSeparators: (value, { displayType }) =>
+  'axis.grid': (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType === 'LinearMultiRowFeatureDisplay'
       ? {
@@ -1686,7 +1686,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     const steps = [layout, arrangement].filter(step => step !== undefined)
     return steps.length ? steps : undefined
   },
-  showRowLabels: (value, { displayType }) =>
+  'axis.labels': (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearWiggleDisplay'
       ? {
           path: `${TRACK_MENU} → Show... → Row labels (${value ? 'checked' : 'unchecked'})`,
@@ -1695,7 +1695,7 @@ export const trackFields: Record<string, FieldRecipe> = {
             : 'The labels only become worth turning off once the rows are too short to carry text, which is where they fall back to a bare column of color swatches.',
         }
       : undefined,
-  showBranchLength: (value, { displayType }) =>
+  'axis.branchLength': (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType &&
     TREE_SIDEBAR_DISPLAYS.has(displayType)
@@ -1895,7 +1895,7 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  showTree: (value, { displayType }) => {
+  'axis.tree': (value, { displayType }) => {
     if (typeof value !== 'boolean' || !displayType) {
       return undefined
     }

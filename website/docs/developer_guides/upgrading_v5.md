@@ -432,7 +432,7 @@ row order** brings it back, and a clustering run's tree in `rows.tree` replaces
 it. `rowColor: { scale: { domain, range } }` pairs species with the label tint a
 reader set, over the adapter's `samples[].color`. A session saved with
 jbrowse-plugin-mafviewer opens with its `subtreeFilter` in `rows.kept` and its
-`treeAreaWidth` on the display config.
+`treeAreaWidth` in `axis.width`.
 
 ## The wiggle color is one `encoding.color` object
 
@@ -561,6 +561,22 @@ LGVSynteny and MAF displays at `coverage.encoding.y`.
   `COVERAGE_Y_PATHS` from `@jbrowse/alignments-core/coverageBandConfigSchema` is
   the coverage band's.
 - `minimalTicks` left display-ui's `ValueScale` and `computeYTicks`' options.
+
+## The tree sidebar's settings are one `axis` object
+
+The wiggle, MAF, mark, multi-sample variant and multi-row feature displays
+configure the guide down the left of their rows as `axis`, beside `rows`
+([](/docs/config/rowaxis)).
+
+- `showTree` is `axis.tree`, `showBranchLength` is `axis.branchLength`,
+  `showRowLabels` is `axis.labels` and `treeAreaWidth` is `axis.width`.
+- `showRowSeparators` is `axis.grid`, on every one of them but MAF and the mark
+  display.
+- **A config or session in the old spellings lifts when it loads.** Code that
+  reads one with `getConf` needs updating; the model getters keep their names.
+- `@jbrowse/tree-sidebar` exports `rowAxisConfigSchema` and
+  `rowAxisWithGridConfigSchema` in place of `treeSidebarConfigSchemaFields` and
+  `rowSeparatorsConfigSchemaFields`.
 
 ## An embedded view's track catalog is plain configs
 

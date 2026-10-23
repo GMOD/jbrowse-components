@@ -175,6 +175,19 @@ its only value scale is `coverage.encoding.y`.
   display keeps `facet`, `rows` and `encoding.row` as three words, and its
   per-category band is Vega-Lite's `row` channel over a shared `y`, not a
   `band`-scale `y`. This replaces the Rows bullet below.
+  - **Members** (`RowAxis`, from tree-sidebar): `tree`, `branchLength`,
+    `labels` and `width`. Wiggle, the multi-sample variant and the multi-row
+    feature displays add `grid` (`RowAxisWithGrid`); MAF and the mark display
+    draw no row separators.
+  - `tree`, `labels` and `grid` are Vega-Lite's axis booleans, each naming
+    the part it draws. `rows` holds what the axis draws (`rows.tree` the
+    newick, `rows.labels` the text) and `axis` whether it draws it.
+  - `grid` means the lines an axis carries across the plot, as on the views'
+    `axis` and on `encoding.y.axis`; on a row axis they fall between rows.
+  - `width`, not `extent`: wiggle's `extent` is the min-max band. A display's
+    `encoding.y.axis` is the value axis and its top-level `axis` the row axis.
+  - The model getters keep their names (`showTree`, `treeAreaWidth`), as
+    `showLegend` reads `legend.show`. The old five names lift on each display.
 - **Tables output names stay.** The tables' `type`, `scaleType` and
   `symlogConstant` are the R-facing contract; the exports map from the
   config's words.

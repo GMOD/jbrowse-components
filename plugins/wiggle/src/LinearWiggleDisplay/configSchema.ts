@@ -4,9 +4,9 @@ import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import {
-  rowSeparatorsConfigSchemaFields,
-  treeSidebarConfigSchemaFields,
-} from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
+  retiredRowAxisWithGridSpellings,
+  rowAxisWithGridConfigSchema,
+} from '@jbrowse/tree-sidebar/rowAxisWithGridConfigSchema'
 import {
   retiredAxisSpellings,
   retiredScaleSpellings,
@@ -160,7 +160,8 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * about the `origin`, which a heatmap fades to from white there, and
      * several sources in one plot box each paint their row color.
      * `encoding.y` is the field plotted and the value axis it is drawn
-     * through: `field`, `scale`, `axis` and `rules`.
+     * through: `field`, `scale`, `axis` and `rules`. The row axis beside
+     * `rows` is `axis`.
      * #example
      * ```json
      * {
@@ -190,11 +191,13 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      */
     legend: legendConfigSchema,
     ...extentConfigSchemaFields({ extent: 'min-max' }),
-    ...treeSidebarConfigSchemaFields({
-      tree: 'Show the subtrack clustering tree in the sidebar',
-      rowLabels: 'Name each subtrack row down the left edge',
-    }),
-    ...rowSeparatorsConfigSchemaFields(),
+    /**
+     * #slot axis
+     * The row axis down the left of the subtrack rows: the clustering tree,
+     * each subtrack's name and the lines between rows. The value axis is
+     * `encoding.y.axis`.
+     */
+    axis: rowAxisWithGridConfigSchema,
   },
   {
     explicitlyTyped: true,
@@ -206,6 +209,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       ...retiredAxisSpellings(WIGGLE_Y_PATHS.members),
       ...retiredScaleSpellings(WIGGLE_Y_PATHS.members),
       ...retiredConfigSpellings,
+      ...retiredRowAxisWithGridSpellings,
       defaultRendering: rendering => {
         if (rendering === null) {
           return { mark: null }

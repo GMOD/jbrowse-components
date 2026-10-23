@@ -487,7 +487,7 @@ const ECOLI_MAF_ROWS = sessionSpec(
           // at the default height each strain row is too thin to aim a drag at
           {
             trackId: 'ecoli_pggb_maf',
-            showTree: true,
+            axis: { tree: true },
             height: 150,
           },
         ],

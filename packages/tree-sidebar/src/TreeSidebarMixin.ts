@@ -48,12 +48,12 @@ import type {
   UnlistedRowsSort,
 } from './arrangeRows.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
+import type { TreeSidebarConfigModel } from './rowAxisConfigSchema.ts'
 import type { RowColorSnapshot } from './rowColorChoice.ts'
 import type { RowColorKeyInputs, RowColorSetting } from './rowColorScale.ts'
 import type { RowSortSpec } from './rowSortAutorun.ts'
 import type { TreeSpatialIndex } from './spatialIndex.ts'
 import type { SvgSidebarProps } from './svgSidebarWidth.ts'
-import type { TreeSidebarConfigModel } from './treeSidebarConfigSchemaFields.ts'
 import type {
   ClusterHierarchyNode,
   HoveredTreeNode,
@@ -263,7 +263,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * Whether the dendrogram sidebar is drawn.
        */
       get showTree(): boolean {
-        return getConf(host(self), 'showTree')
+        return getConf(host(self), ['axis', 'tree'])
       },
       /**
        * #getter
@@ -271,14 +271,14 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * evenly by topology (cladogram).
        */
       get showBranchLength(): boolean {
-        return getConf(host(self), 'showBranchLength')
+        return getConf(host(self), ['axis', 'branchLength'])
       },
       /**
        * #getter
        * Whether each row's name is drawn over the left of the plot.
        */
       get showRowLabels(): boolean {
-        return getConf(host(self), 'showRowLabels')
+        return getConf(host(self), ['axis', 'labels'])
       },
       /**
        * #getter
@@ -288,7 +288,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * unticking and reticking the track.
        */
       get treeAreaWidth(): number {
-        return getConf(host(self), 'treeAreaWidth')
+        return getConf(host(self), ['axis', 'width'])
       },
       /**
        * #getter
@@ -1054,22 +1054,22 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * #action
        */
       setShowTree(arg: boolean) {
-        setConf(host(self), 'showTree', arg)
+        setConf(host(self), ['axis', 'tree'], arg)
       },
       /**
        * #action
        */
       setShowBranchLength(arg: boolean) {
-        setConf(host(self), 'showBranchLength', arg)
+        setConf(host(self), ['axis', 'branchLength'], arg)
       },
       /**
        * #action
        */
       setShowRowLabels(arg: boolean) {
-        setConf(host(self), 'showRowLabels', arg)
+        setConf(host(self), ['axis', 'labels'], arg)
       },
       setTreeAreaWidth(width: number) {
-        setConf(host(self), 'treeAreaWidth', width)
+        setConf(host(self), ['axis', 'width'], width)
       },
       setRunClustering(arg?: boolean) {
         self.runClustering = arg

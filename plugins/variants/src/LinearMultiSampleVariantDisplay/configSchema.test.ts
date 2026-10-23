@@ -44,41 +44,34 @@ describe('the display config schema', () => {
     })
   })
 
-  describe('showRowLabels config slot', () => {
-    it('has default value of true', () => {
-      const config = configSchema.create({
+  describe('axis', () => {
+    const make = (snap: Record<string, unknown> = {}) =>
+      configSchema.create({
         type: 'LinearMultiSampleVariantDisplay',
-        displayId: 'test-3',
+        displayId: 'test-axis',
+        ...snap,
       })
-      expect(readConfObject(config, 'showRowLabels')).toBe(true)
+
+    it('draws the tree and labels and no grid by default', () => {
+      const config = make()
+      expect(readConfObject(config, ['axis', 'tree'])).toBe(true)
+      expect(readConfObject(config, ['axis', 'labels'])).toBe(true)
+      expect(readConfObject(config, ['axis', 'grid'])).toBe(false)
+      expect(readConfObject(config, ['axis', 'width'])).toBe(80)
     })
 
-    it('can be set to false', () => {
-      const config = configSchema.create({
-        type: 'LinearMultiSampleVariantDisplay',
-        displayId: 'test-4',
-        showRowLabels: false,
-      })
-      expect(readConfObject(config, 'showRowLabels')).toBe(false)
-    })
-  })
-
-  describe('showTree config slot', () => {
-    it('has default value of true', () => {
-      const config = configSchema.create({
-        type: 'LinearMultiSampleVariantDisplay',
-        displayId: 'test-5',
-      })
-      expect(readConfObject(config, 'showTree')).toBe(true)
-    })
-
-    it('can be set to false', () => {
-      const config = configSchema.create({
-        type: 'LinearMultiSampleVariantDisplay',
-        displayId: 'test-6',
-        showTree: false,
-      })
-      expect(readConfObject(config, 'showTree')).toBe(false)
+    it.each([
+      [{ showTree: false }, 'tree', false],
+      [{ showBranchLength: false }, 'branchLength', false],
+      [{ showRowLabels: false }, 'labels', false],
+      [{ showSidebarLabels: false }, 'labels', false],
+      [{ showRowSeparators: true }, 'grid', true],
+      [{ treeAreaWidth: 140 }, 'width', 140],
+    ])('lifts %j onto axis.%s', (snap, member, value) => {
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+      expect(readConfObject(make(snap), ['axis', member])).toBe(value)
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
     })
   })
 

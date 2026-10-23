@@ -8,8 +8,11 @@ import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
+import {
+  retiredRowAxisSpellings,
+  rowAxisConfigSchema,
+} from '@jbrowse/tree-sidebar/rowAxisConfigSchema'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
-import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 import { retiredScalesSpelling } from '@jbrowse/wiggle-core'
 
 import { DEFAULTS } from './displayDefaults.ts'
@@ -27,7 +30,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * The v4 mafviewer plugin's row settings, top-level there. Letters now follow
  * `encoding.color` and keep the file's case, so the two letter settings lift
  * to nothing. v5's `y` and `scales.y` moved under `encoding.y` and
- * `coverage.encoding.y`.
+ * `coverage.encoding.y`, and its sidebar toggles into `axis`.
  */
 const retiredMafSpellings: Record<string, RetiredSpelling> = {
   rowProportion: v => ({ alignments: { rowProportion: v } }),
@@ -35,6 +38,7 @@ const retiredMafSpellings: Record<string, RetiredSpelling> = {
   showAsUpperCase: () => ({}),
   y: field => ({ encoding: { y: { field } } }),
   scales: retiredScalesSpelling(COVERAGE_Y_PATHS.members),
+  ...retiredRowAxisSpellings,
 }
 
 /**
@@ -62,7 +66,7 @@ const retiredMafSpellings: Record<string, RetiredSpelling> = {
  *   displayDefaults: {
  *     rowHeight: 12,
  *     conservation: { show: true, height: 40 },
- *     showRowLabels: true,
+ *     axis: { labels: true },
  *   },
  * }
  * ```
@@ -101,10 +105,13 @@ export default function configSchemaF() {
        * ```
        */
       encoding: mafEncodingConfigSchema,
-      ...treeSidebarConfigSchemaFields({
-        tree: 'show the species tree sidebar',
-        rowLabels: 'draw the species name over the left of each row',
-      }),
+      /**
+       * #slot axis
+       * The guide down the left of the species rows: the species tree and
+       * each species' name. No `grid`: the rows keep a gap instead. The
+       * coverage band's value axis is `coverage.encoding.y.axis`.
+       */
+      axis: rowAxisConfigSchema,
       /**
        * #slot rows
        * The arrangement a reader gives the species rows, each member by row

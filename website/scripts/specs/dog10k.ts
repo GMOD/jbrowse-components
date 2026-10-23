@@ -414,7 +414,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           height: 700,
           // Rows are haplotype pairs; without separators the row count cannot
           // be read.
-          showRowSeparators: true,
+          axis: { grid: true },
         },
       ],
     }),

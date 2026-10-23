@@ -162,7 +162,7 @@ export const cookbookSpecs: ScreenshotSpec[] = [
                   ],
                 },
               },
-              showRowSeparators: true,
+              axis: { grid: true },
               height: 260,
             },
           ],

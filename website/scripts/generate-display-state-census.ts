@@ -28,7 +28,7 @@
 //     The base lives inside the one directory, so the directory rule keeps them
 //     together.
 //   - Slots contributed by a shared fields file outside every display directory
-//     (`heightModeConfigSchemaFields.ts`, `treeSidebarConfigSchemaFields.ts`)
+//     (`heightModeConfigSchemaFields.ts`, `rowHeightConfigSchemaFields.ts`)
 //     are in nobody's row. They belong to whichever schemas splice them in,
 //     which is a compose-graph question this table does not ask.
 //

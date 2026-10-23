@@ -355,10 +355,10 @@ row type carrying the color under any other name type-checks and paints
 nothing, which is how MAF once shipped a per-sample color reaching no
 renderer.
 
-`treeSidebarConfigSchemaFields` is the matching slot set (`showTree` /
-`showBranchLength` / `showRowLabels` / `treeAreaWidth`), taking only the
-per-display descriptions, so a display cannot ship three of the four. The
-declared row order is not in it: every row display declares a `rows` object, and
+`rowAxisConfigSchema` is the matching `axis` object (`tree` / `branchLength` /
+`labels` / `width`), one sub-schema every row display declares, so a display
+cannot ship three of the four. `rowAxisWithGridConfigSchema` adds `grid`, the
+row separators, on the three displays that draw them. The declared row order is not in it: every row display declares a `rows` object, and
 the mixin reads its `sort` as `rowSort`. **The mixin declares the accessors over those slots**, so a display
 composes both halves or neither. Hand-written `getConf` / `setConf` one-liners
 beside slots this package's own code reads are how the labels toggle came to be
@@ -485,11 +485,11 @@ tree alone.
   scales with the export's font size, with each band's name written up its
   rows, cut short with an ellipsis where it does not fit and whole on hover. `RowLabelsOverlay` and `SvgTreeSidebar` both take `bands` and
   shift the row labels past the strip, so the screen and the export draw one
-  strip; it draws whatever `showRowLabels` says, and nothing hides it.
+  strip; it draws whatever `axis.labels` says, and nothing hides it.
 
 ## SVG export: `SvgTreeSidebar`, never `SvgRowLabels` alone
 
-Labels are offset right by `treeAreaWidth`, so rendering them without the tree
+Labels are offset right by `axis.width`, so rendering them without the tree
 leaves a blank gutter; `SvgTreeSidebar` owns the single gate driving both.
 
 **That gate is `treeIsShowing`, not `showTree && hierarchy`.** The gutter is

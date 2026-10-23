@@ -12,7 +12,10 @@ import { autorun } from 'mobx'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 import { getLeafNames } from './clusterUtils.ts'
-import { treeSidebarConfigSchemaFields } from './treeSidebarConfigSchemaFields.ts'
+import {
+  retiredRowAxisSpellings,
+  rowAxisConfigSchema,
+} from './rowAxisConfigSchema.ts'
 import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
 
 import type { TreeSidebarHost } from './TreeSidebarMixin.ts'
@@ -30,7 +33,11 @@ test('the host type checks the slot names the mixin reads through it', () => {
   const host = {} as TreeSidebarHost
   const read = () => {
     // @ts-expect-error
-    return getConf(host, 'showTrea')
+    return getConf(host, 'showTree')
+  }
+  const readAxis = () => {
+    // @ts-expect-error
+    return getConf(host, ['axis', 'trea'])
   }
   const readMember = () => {
     // @ts-expect-error
@@ -48,17 +55,25 @@ test('the host type checks the slot names the mixin reads through it', () => {
     // @ts-expect-error
     setConf(host, ['rowColor', 'domains'], [])
   }
-  expect([read, readMember, write, readColor, writeColor]).toHaveLength(5)
+  expect([
+    read,
+    readAxis,
+    readMember,
+    write,
+    readColor,
+    writeColor,
+  ]).toHaveLength(6)
 })
 
-const configSchema = ConfigurationSchema('TestTreeDisplay', {
-  ...treeSidebarConfigSchemaFields({
-    tree: 'show the tree',
-    rowLabels: 'draw each row name',
-  }),
-  rows: rowArrangementConfigSchema,
-  rowColor: rowColorConfigSchema,
-})
+const configSchema = ConfigurationSchema(
+  'TestTreeDisplay',
+  {
+    axis: rowAxisConfigSchema,
+    rows: rowArrangementConfigSchema,
+    rowColor: rowColorConfigSchema,
+  },
+  { retired: retiredRowAxisSpellings },
+)
 
 function makeDisplay(configuration: Record<string, unknown> = {}) {
   return types
@@ -80,21 +95,24 @@ function makeDisplay(configuration: Record<string, unknown> = {}) {
 // 3,698 tests across the four composing plugins green.
 describe('the tree toggles', () => {
   const toggles = [
-    ['showTree', 'setShowTree'],
-    ['showBranchLength', 'setShowBranchLength'],
-    ['showRowLabels', 'setShowRowLabels'],
+    ['showTree', 'setShowTree', 'tree'],
+    ['showBranchLength', 'setShowBranchLength', 'branchLength'],
+    ['showRowLabels', 'setShowRowLabels', 'labels'],
   ] as const
 
   const others = (slot: string) => toggles.filter(([n]) => n !== slot)
 
-  it.each(toggles)('%s defaults on and reads its own slot', slot => {
-    expect(makeDisplay()[slot]).toBe(true)
-    const off = makeDisplay({ [slot]: false })
-    expect(off[slot]).toBe(false)
-    for (const [other] of others(slot)) {
-      expect(off[other]).toBe(true)
-    }
-  })
+  it.each(toggles)(
+    '%s defaults on and reads its axis member',
+    (slot, _setter, member) => {
+      expect(makeDisplay()[slot]).toBe(true)
+      const off = makeDisplay({ axis: { [member]: false } })
+      expect(off[slot]).toBe(false)
+      for (const [other] of others(slot)) {
+        expect(off[other]).toBe(true)
+      }
+    },
+  )
 
   it.each(toggles)('%s is written by its own setter', (slot, setter) => {
     const m = makeDisplay()
@@ -103,6 +121,28 @@ describe('the tree toggles', () => {
     for (const [other] of others(slot)) {
       expect(m[other]).toBe(true)
     }
+  })
+
+  it('reads the v5 beta spellings as axis members', () => {
+    const m = makeDisplay({
+      showTree: false,
+      showBranchLength: false,
+      showRowLabels: false,
+      treeAreaWidth: 120,
+    })
+    expect(getSnapshot(m.configuration).axis).toEqual({
+      tree: false,
+      branchLength: false,
+      labels: false,
+      width: 120,
+    })
+  })
+
+  it('writes the width to axis.width', () => {
+    const m = makeDisplay()
+    m.setTreeAreaWidth(150)
+    expect(getConf(m, ['axis', 'width'])).toBe(150)
+    expect(m.treeAreaWidth).toBe(150)
   })
 })
 

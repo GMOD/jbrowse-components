@@ -451,7 +451,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           // clip clamps the amplifications near 2.2.
           encoding: { y: { scale: { fenceQuantile: 1 } } },
           // a dendrogram would imply a phylogeny
-          showTree: false,
+          axis: { tree: false },
         },
       ],
     }),
