@@ -180,15 +180,14 @@ const BAND_OBJECTS = new Set([
   'ribbons',
 ])
 
-// A band's `show` and `mark` are one radio on the read connections ("None",
-// "Read arcs", "Read cloud"), so they come out as the one `readConnections`
-// entry that radio writes.
+// A band's `show` and `mark` are the "Read arcs" and "Read cloud" checkboxes,
+// which tick one at a time, so they come out as one `readConnections` entry.
 function bandEntries(
   band: string,
   members: Record<string, unknown>,
 ): [string, unknown][] {
   const { show, mark, ...rest } = members
-  // The overlay radio's rows are the menu's words: a `rule` is the read cloud,
+  // The checkboxes are the menu's words: a `rule` is the read cloud,
   // a `link` (the default) the arcs.
   const markType = isPlainObject(mark) ? mark.type : mark
   const drawn: [string, unknown][] =

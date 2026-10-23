@@ -1012,9 +1012,9 @@ const SASHIMI_PLACEMENT: Record<string, string> = {
 }
 
 // the two band checkboxes in getReadConnectionsMenuItem
-// (plugins/alignments/src/LinearAlignmentsDisplay/menus/readConnections.ts);
-// 'off' is the default, so it needs no step
+// (plugins/alignments/src/LinearAlignmentsDisplay/menus/readConnections.ts)
 const READ_CONNECTIONS: Record<string, string> = {
+  off: 'Read arcs (unchecked)',
   arc: 'Read arcs (checked)',
   cloud: 'Read cloud (checked)',
 }

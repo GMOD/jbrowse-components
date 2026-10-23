@@ -154,13 +154,13 @@ test('a size preset needs no display type, since only the canvas base declares i
   ).toEqual([])
 })
 
-test('read connections are the band checkboxes, off being the default', () => {
+test('read connections are the band checkboxes', () => {
   expect(
     stepPaths('readConnections', 'cloud', 'LinearAlignmentsDisplay'),
   ).toEqual(['Track menu → Read connections → Read cloud (checked)'])
   expect(
     stepPaths('readConnections', 'off', 'LinearAlignmentsDisplay'),
-  ).toEqual([])
+  ).toEqual(['Track menu → Read connections → Read arcs (unchecked)'])
 })
 
 test("a filter list's entries are the rows that write them", () => {
