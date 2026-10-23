@@ -26,7 +26,7 @@
 // Deliberately NOT here: `pnpm test-related`, which answers a different
 // question — what the change broke rather than whether it is well-formed.
 
-import { spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { existsSync, lstatSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -49,6 +49,9 @@ interface Gate {
   optionalBinary?: string
   // Costs minutes; only under --full.
   slow?: boolean
+  // Holds no heavy slot, so it runs alongside the gates that do, its output
+  // held until the end.
+  concurrent?: boolean
 }
 
 const pnpm = (script: string) => ['pnpm', script]
@@ -71,8 +74,10 @@ function scoped(
 
 const GATES: Gate[] = [
   // Cheapest first, so the common failure is also the fastest to hear about.
+  // The concurrent ones report as they finish, the rest in this order.
   {
     name: 'format',
+    concurrent: true,
     argv: scoped(pnpm('check-format'), files => [
       bin('oxfmt'),
       '--check',
@@ -82,6 +87,7 @@ const GATES: Gate[] = [
   },
   {
     name: 'format (astro)',
+    concurrent: true,
     argv: scoped([], files => {
       // prettier refuses a symlink named on its command line, and the shared
       // layouts symlinked into each examples-site are checked at their target
@@ -96,9 +102,14 @@ const GATES: Gate[] = [
   // Milliseconds, and it is the only gate that sees a case-only module
   // collision at all: `typecheck` runs --noEmit, so nothing collides there, and
   // `build:esm` is not a gate here. See the script's header.
-  { name: 'case collisions', argv: nodeScript('check-case-collisions.ts') },
+  {
+    name: 'case collisions',
+    concurrent: true,
+    argv: nodeScript('check-case-collisions.ts'),
+  },
   {
     name: 'spelling',
+    concurrent: true,
     argv: scoped(['typos'], files => ['typos', '--force-exclude', ...files]),
     optionalBinary: 'typos',
   },
@@ -116,6 +127,7 @@ const GATES: Gate[] = [
   },
   {
     name: 'lint (eslint)',
+    concurrent: true,
     argv: scoped(pnpm('lint:eslint'), files => {
       const lintable = files.filter(f => ESLINT_FILES.test(f))
       return lintable.length > 0
@@ -168,6 +180,38 @@ if (!all) {
 
 const failed: string[] = []
 const skipped: string[] = []
+const running: Promise<void>[] = []
+// A held gate's report waits here while an inherited one has the terminal.
+const reports: string[] = []
+
+function run(argv: string[], held: boolean) {
+  return new Promise<{ status: number | null; output: string }>(resolve => {
+    const output: Buffer[] = []
+    const child = spawn(argv[0]!, argv.slice(1), {
+      cwd: root,
+      stdio: held ? 'pipe' : 'inherit',
+      shell: process.platform === 'win32',
+    })
+    child.stdout?.on('data', (b: Buffer) => {
+      output.push(b)
+    })
+    child.stderr?.on('data', (b: Buffer) => {
+      output.push(b)
+    })
+    child.on('error', e => {
+      output.push(Buffer.from(`${e}\n`))
+    })
+    child.on('close', status => {
+      resolve({ status, output: Buffer.concat(output).toString() })
+    })
+  })
+}
+
+function flushReports() {
+  for (const report of reports.splice(0)) {
+    process.stdout.write(report)
+  }
+}
 
 for (const gate of GATES) {
   if (gate.slow && !full) {
@@ -190,16 +234,27 @@ for (const gate of GATES) {
     skipped.push(gate.name)
     continue
   }
-  console.log(`\n=== ${gate.name}`)
-  const { status } = spawnSync(argv[0]!, argv.slice(1), {
-    cwd: root,
-    stdio: 'inherit',
-    shell: process.platform === 'win32',
-  })
+  const { name } = gate
+  if (gate.concurrent) {
+    running.push(
+      run(argv, true).then(({ status, output }) => {
+        reports.push(`\n=== ${name}\n${output}`)
+        if (status !== 0) {
+          failed.push(name)
+        }
+      }),
+    )
+    continue
+  }
+  flushReports()
+  console.log(`\n=== ${name}`)
+  const { status } = await run(argv, false)
   if (status !== 0) {
-    failed.push(gate.name)
+    failed.push(name)
   }
 }
+await Promise.all(running)
+flushReports()
 
 if (!full) {
   console.log(
