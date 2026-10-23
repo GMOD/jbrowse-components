@@ -1,8 +1,11 @@
 import { TrackOverlayContext } from '@jbrowse/display-ui'
-import { render } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import { observable, runInAction } from 'mobx'
 
 import TreeSidebar from './TreeSidebar.tsx'
 import { buildTree } from './clusterUtils.ts'
+import { clusterLayout } from './hierarchy.ts'
+import { buildSpatialIndex } from './spatialIndex.ts'
 import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
 
 import type { TreeSidebarModel } from './types.ts'
@@ -110,5 +113,31 @@ describe('TreeSidebar', () => {
     expect(renderedTop(chip) + SIDEBAR_HINT_LINE_PX).toBe(
       renderedTop(getByTestId('tree_sidebar_dendrogram')),
     )
+  })
+
+  it('keeps the subtree menu open while the tree goes stale', () => {
+    const hierarchy = clusterLayout(buildTree('(a,b);'), 200, 80)
+    const sidebar = observable(
+      model({ hierarchy, spatialIndex: buildSpatialIndex(hierarchy) }),
+      {},
+      { deep: false },
+    )
+    const { container } = render(
+      <TrackOverlayContext value={null}>
+        <TreeSidebar model={sidebar} />
+      </TrackOverlayContext>,
+    )
+    fireEvent.click(
+      container.querySelector<HTMLElement>('div[style*="cursor: pointer"]')!,
+      { clientX: hierarchy.y, clientY: hierarchy.x },
+    )
+    expect(screen.getByText('Show only subtree (2 rows)')).toBeTruthy()
+
+    act(() => {
+      runInAction(() => {
+        sidebar.hierarchy = undefined
+      })
+    })
+    expect(screen.getByText('Show only subtree (2 rows)')).toBeTruthy()
   })
 })
