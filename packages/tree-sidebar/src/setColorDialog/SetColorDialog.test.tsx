@@ -17,6 +17,7 @@ import type { TreeLayoutModel } from './SetColorDialog.tsx'
 
 interface Src {
   name: string
+  label?: string
   color?: string
   rowColor?: string
   group?: string
