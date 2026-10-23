@@ -6854,6 +6854,39 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "type": "boolean"
           }
+        },
+        "filter": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FieldPredicate"
+            }
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "CoverageAlleles": {
+      "title": "CoverageAlleles",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "filter": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FieldPredicate"
+            }
+          }
         }
       },
       "patternProperties": {
@@ -6866,6 +6899,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "x-closed": true,
       "properties": {
+        "minAlleleFraction": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "show": {
           "description": "draw the coverage band.",
           "default": true,
@@ -6902,9 +6939,28 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/CoverageInterbase"
           }
         },
-        "minAlleleFraction": {
-          "description": "an allele segment colors only with at least this share of its position's depth; 0 colors every mismatch, sequencing errors included.",
-          "default": 0,
+        "alleles": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CoverageAlleles"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "PileupMark": {
+      "title": "PileupMark",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "height": {
+          "description": "height of each read in pixels.",
+          "default": 7,
           "if": {
             "type": "null"
           },
@@ -7214,6 +7270,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/PileupBasesEncoding"
           }
+        },
+        "filter": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FieldPredicate"
+            }
+          }
         }
       },
       "patternProperties": {
@@ -7226,6 +7293,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "x-closed": true,
       "properties": {
+        "readHeight": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "show": {
           "description": "draw the pileup band.",
           "default": true,
@@ -7236,14 +7307,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "readHeight": {
-          "description": "height of each read in pixels.",
-          "default": 7,
+        "mark": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "number"
+            "$ref": "#/$defs/PileupMark"
           }
         },
         "maxLayoutHeight": {
@@ -7603,14 +7672,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "threshold": {
-          "description": "hide a call whose probability is under this percent in the by-type view; the two-color view cuts at 50 and the methylation fill paints every cytosine.",
-          "default": 10,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "cytosineContext": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "shownModifications": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "unmodified": {
           "description": "unmodified sites painted blue: 'hidden' none, 'calls' the calls more likely unmodified, under modifications and bisulfite alike, and 'all' every cytosine in the context as well, the ones the basecaller left implicit included; 'all' is the methylation view.",
@@ -7624,33 +7695,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "calls",
               "all"
             ]
-          }
-        },
-        "cytosineContext": {
-          "description": "cytosine context the methylation fill and bisulfite paint: CG, CHG, CHH or all.",
-          "default": "CG",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "CG",
-              "CHG",
-              "CHH",
-              "all"
-            ]
-          }
-        },
-        "shownModifications": {
-          "description": "the modification type codes drawn (m, h, a, ...); empty draws every type present in the reads.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
           }
         }
       },
@@ -7767,7 +7811,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "heightMode": {
-          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (the menu sets \`fit\` from \\"Read height → Fit to track height\\" and \`grow\` from \\"Advanced → Autogrow track height\\"). \`fixed\` (the default) keeps \`pileup.readHeight\` and scrolls; \`grow\` expands the track to show every read at that height; \`fit\` squeezes reads so every uncollapsed section fills the display without scrolling.",
+          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (the menu sets \`fit\` from \\"Read height → Fit to track height\\" and \`grow\` from \\"Advanced → Autogrow track height\\"). \`fixed\` (the default) keeps \`pileup.mark.height\` and scrolls; \`grow\` expands the track to show every read at that height; \`fit\` squeezes reads so every uncollapsed section fills the display without scrolling.",
           "default": "fixed",
           "if": {
             "type": "null"
@@ -8628,6 +8672,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "x-closed": true,
       "properties": {
+        "minAlleleFraction": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "show": {
           "description": "draw the coverage band.",
           "default": false,
@@ -8664,14 +8712,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/CoverageInterbase"
           }
         },
-        "minAlleleFraction": {
-          "description": "an allele segment colors only with at least this share of its position's depth; 0 colors every mismatch, sequencing errors included.",
-          "default": 0,
+        "alleles": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "number"
+            "$ref": "#/$defs/CoverageAlleles"
           }
         }
       },
@@ -8685,6 +8731,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "x-closed": true,
       "properties": {
+        "readHeight": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "show": {
           "description": "draw the pileup band.",
           "default": true,
@@ -8695,14 +8745,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "readHeight": {
-          "description": "height of each read in pixels.",
-          "default": 7,
+        "mark": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "number"
+            "$ref": "#/$defs/PileupMark"
           }
         },
         "maxLayoutHeight": {
@@ -8814,7 +8862,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "heightMode": {
-          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (the menu sets \`fit\` from \\"Read height → Fit to track height\\" and \`grow\` from \\"Advanced → Autogrow track height\\"). \`fixed\` (the default) keeps \`pileup.readHeight\` and scrolls; \`grow\` expands the track to show every read at that height; \`fit\` squeezes reads so every uncollapsed section fills the display without scrolling.",
+          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (the menu sets \`fit\` from \\"Read height → Fit to track height\\" and \`grow\` from \\"Advanced → Autogrow track height\\"). \`fixed\` (the default) keeps \`pileup.mark.height\` and scrolls; \`grow\` expands the track to show every read at that height; \`fit\` squeezes reads so every uncollapsed section fills the display without scrolling.",
           "default": "fixed",
           "if": {
             "type": "null"
@@ -27746,6 +27794,83 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "SyntenyIndelsOpacity": {
+      "title": "SyntenyIndelsOpacity",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "type": "number"
+        },
+        {
+          "title": "SyntenyIndelsOpacity",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "value": {
+              "description": "0 leaves each indel a gap; unset, or any other value, paints it in its operation's color.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "SyntenyIndelsEncoding": {
+      "title": "SyntenyIndelsEncoding",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "opacity": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/SyntenyIndelsOpacity"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "SyntenyIndels": {
+      "title": "SyntenyIndels",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the indels inside each alignment; off draws each alignment as one block.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "encoding": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/SyntenyIndelsEncoding"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "DotplotAxis": {
       "title": "DotplotAxis",
       "type": "object",
@@ -27949,8 +28074,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "string"
           }
         },
-        "drawCigar": {
-          "type": "boolean"
+        "indels": {
+          "$ref": "#/$defs/SyntenyIndels"
         },
         "axis": {
           "$ref": "#/$defs/DotplotAxis"
@@ -28045,6 +28170,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         },
         "color": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "cigarMode": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "drawCigar": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }
@@ -28304,12 +28437,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "render": {
           "$ref": "#/$defs/SyntenyRender"
         },
-        "cigarMode": {
-          "enum": [
-            "off",
-            "matches",
-            "full"
-          ]
+        "indels": {
+          "$ref": "#/$defs/SyntenyIndels"
         },
         "mark": {
           "$ref": "#/$defs/SyntenyMark"
@@ -28442,6 +28571,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         },
         "color": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "cigarMode": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "drawCigar": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }

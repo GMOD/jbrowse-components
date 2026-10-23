@@ -3042,8 +3042,10 @@
       "package": "@jbrowse/core",
       "names": [
         "compilePredicates",
+        "floorOf",
         "isExpressionEntry",
         "lowerBoundOf",
+        "passesFloor",
         "predicatesOf",
         "replaceField",
         "testsSomething",

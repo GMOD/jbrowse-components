@@ -1001,7 +1001,7 @@ go on `--view`:
 | `encoding.opacity=0.4`                       | Ribbon opacity (0–1); lower values reveal overlap density       |
 | `mark.interpolate=bump`                      | Curved ribbons instead of straight trapezoids                   |
 | `levelHeights=300` or `levelHeights=300,200` | Pixel height of every level, or of each level in turn           |
-| `cigarMode=matches`                          | CIGAR indels drawn see-through; `off` draws one solid block     |
+| `indels.encoding.opacity=0`                  | CIGAR indels left as gaps; `indels.show=false` draws one block  |
 
 > **Query vs. target orientation.** PAF/BLAST list the query first, so the
 > assembly written _above_ the alignment is the query. A chain/delta liftover
@@ -1061,7 +1061,7 @@ the web, so the example reproduces with only the public chain:
 jb2export synteny --chromSizes data/comparative/hs1.chrom.sizes \
   --chain https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz \
   --chromSizes data/comparative/mm39.chrom.sizes \
-  --view filter.0.field=length filter.0.gte=500000 autoDiagonalize=true encoding.color.field=query encoding.opacity=0.4 levelHeights=350 mark.interpolate=bump cigarMode=matches \
+  --view filter.0.field=length filter.0.gte=500000 autoDiagonalize=true encoding.color.field=query encoding.opacity=0.4 levelHeights=350 mark.interpolate=bump indels.encoding.opacity=0 \
   --width 1400 --out hs1_mm39_synteny.png
 ```
 
@@ -1081,7 +1081,7 @@ jb2export synteny --chromSizes data/comparative/hg38.chrom.sizes \
   --chromSizes data/comparative/hs1.chrom.sizes \
   --chain https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz \
   --chromSizes data/comparative/mm39.chrom.sizes \
-  --view filter.0.field=length filter.0.gte=500000 autoDiagonalize=true encoding.color.field=query encoding.opacity=0.4 levelHeights=300 mark.interpolate=bump cigarMode=matches \
+  --view filter.0.field=length filter.0.gte=500000 autoDiagonalize=true encoding.color.field=query encoding.opacity=0.4 levelHeights=300 mark.interpolate=bump indels.encoding.opacity=0 \
   --width 1400 --out hg38_hs1_mm39_synteny.png
 ```
 

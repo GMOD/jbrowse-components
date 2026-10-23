@@ -92,7 +92,7 @@ and `targetRegion`.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, query, target, view }: SyntenyTablesArgs) => Promise<{ config: {…}; field: string; alpha: number; fadeThin: boolean; assemblyNames: string[]; hasCigar: boolean; legend: {…}; legendTitle: string; ramps: {…}[]; alignments: {…}; ribbons: {…}; offscreen: {…}; offscreenContigs: {…}; offscreenStrip: { marks: {…}; labels: { label: string[]; x: number[]; y: number[]; color: string[]; alpha: number[]; halo: string[]; axis: ("query" | "target")[]; }; fontPx: number; }; }>
+(pluginManager: PluginManager, { adapterConfig, query, target, view: written }: SyntenyTablesArgs) => Promise<{ config: {…}; field: string; alpha: number; fadeThin: boolean; assemblyNames: string[]; hasCigar: boolean; legend: {…}; legendTitle: string; ramps: {…}[]; alignments: {…}; ribbons: {…}; offscreen: {…}; offscreenContigs: {…}; offscreenStrip: { marks: {…}; labels: { label: string[]; x: number[]; y: number[]; color: string[]; alpha: number[]; halo: string[]; axis: ("query" | "target")[]; }; fontPx: number; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/tables.ts)

@@ -31,5 +31,5 @@ A setting written to it names members one by one: a member left out stays as it 
 | <span class="slot-group">Inherited from [CoverageBand](../coverageband)</span> | <span class="slot-group-count">4 slots</span> |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>45</code> | height of the coverage band in pixels |
 | <span id="slot-encoding">**encoding**</span><br>[CoverageEncoding](../coverageencoding) | The depth axis, `encoding.y`: its `scale`, `axis` and `rules`. |
-| <span id="slot-interbase">**interbase**</span><br>[CoverageInterbase](../coverageinterbase) | The insertion and clip marks between bases: `show`. |
-| <span id="slot-minallelefraction">**minAlleleFraction**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | A color rule, beside the pileup's `fadeLowFrequency`, which fades its marks by the same per-base share through a depth-dependent threshold. The band's grey depth bar shows through where a segment is not colored. |
+| <span id="slot-interbase">**interbase**</span><br>[CoverageInterbase](../coverageinterbase) | The insertion and clip marks between bases: `show`, and the `filter` deciding which positions get an indicator triangle. |
+| <span id="slot-alleles">**alleles**</span><br>[CoverageAlleles](../coveragealleles) | The colored allele segments: the `filter` on each one's `fraction`. |

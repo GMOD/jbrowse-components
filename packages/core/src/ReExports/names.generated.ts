@@ -303,7 +303,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/fetchContext': ['fanOutStatus', 'makeFetchContext'],
   '@jbrowse/core/util/fetchHub': ['fetchHub', 'hubUrl'],
   '@jbrowse/core/util/fetchPhases': [],
-  '@jbrowse/core/util/fieldPredicate': ['compilePredicates', 'isExpressionEntry', 'lowerBoundOf', 'predicatesOf', 'replaceField', 'testsSomething', 'upperBoundOf', 'withLowerBound', 'withUpperBound'],
+  '@jbrowse/core/util/fieldPredicate': ['compilePredicates', 'floorOf', 'isExpressionEntry', 'lowerBoundOf', 'passesFloor', 'predicatesOf', 'replaceField', 'testsSomething', 'upperBoundOf', 'withLowerBound', 'withUpperBound'],
   '@jbrowse/core/util/fieldReader': ['fieldReader', 'isConstantJexl', 'isPlainFieldRef', 'plainFieldName'],
   '@jbrowse/core/util/fileHandleStore': ['getFileHandle', 'isFileSystemAccessSupported', 'staleHandleIds', 'storeFileHandle', 'verifyPermission'],
   '@jbrowse/core/util/FileSaver': ['saveAs'],

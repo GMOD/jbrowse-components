@@ -3359,6 +3359,9 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
+          "legacyKeys": [
+            "domain"
+          ],
           "schema": "SectionFacet",
           "writes": "whole",
           "shorthand": {
@@ -3532,6 +3535,9 @@ export const configManifest: ConfigManifest = {
               "name": "field",
               "type": "string"
             }
+          ],
+          "legacyKeys": [
+            "domain"
           ],
           "schema": "Rows",
           "writes": "whole",
@@ -3729,6 +3735,9 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
+          "legacyKeys": [
+            "domain"
+          ],
           "schema": "Facet",
           "writes": "whole",
           "shorthand": {
@@ -3888,6 +3897,9 @@ export const configManifest: ConfigManifest = {
               "type": "string[]",
               "liftsNumbers": true
             }
+          ],
+          "legacyKeys": [
+            "domain"
           ],
           "schema": "SectionFacet",
           "writes": "whole",
@@ -4224,15 +4236,106 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "show",
                   "type": "boolean"
+                },
+                {
+                  "name": "filter",
+                  "type": "FieldPredicateConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "field",
+                      "type": "PredicateField"
+                    },
+                    {
+                      "name": "equal",
+                      "type": "((string | number | boolean) | undefined)"
+                    },
+                    {
+                      "name": "lt",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "lte",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "gt",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "gte",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "oneOf",
+                      "type": "((string | number | boolean)[] | undefined)"
+                    },
+                    {
+                      "name": "valid",
+                      "type": "(boolean | undefined)"
+                    }
+                  ],
+                  "schema": "FieldPredicate",
+                  "shorthand": {
+                    "string": "field"
+                  }
                 }
               ],
               "schema": "CoverageInterbase",
               "writes": "members"
             },
             {
-              "name": "minAlleleFraction",
-              "type": "number"
+              "name": "alleles",
+              "type": "CoverageAllelesConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "filter",
+                  "type": "FieldPredicateConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "field",
+                      "type": "PredicateField"
+                    },
+                    {
+                      "name": "equal",
+                      "type": "((string | number | boolean) | undefined)"
+                    },
+                    {
+                      "name": "lt",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "lte",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "gt",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "gte",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "oneOf",
+                      "type": "((string | number | boolean)[] | undefined)"
+                    },
+                    {
+                      "name": "valid",
+                      "type": "(boolean | undefined)"
+                    }
+                  ],
+                  "schema": "FieldPredicate",
+                  "shorthand": {
+                    "string": "field"
+                  }
+                }
+              ],
+              "schema": "CoverageAlleles",
+              "writes": "members"
             }
+          ],
+          "legacyKeys": [
+            "minAlleleFraction"
           ],
           "schema": "CoverageBand",
           "writes": "members"
@@ -4246,8 +4349,16 @@ export const configManifest: ConfigManifest = {
               "type": "boolean"
             },
             {
-              "name": "readHeight",
-              "type": "number"
+              "name": "mark",
+              "type": "PileupMarkConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "height",
+                  "type": "number"
+                }
+              ],
+              "schema": "PileupMark",
+              "writes": "members"
             },
             {
               "name": "maxLayoutHeight",
@@ -4368,11 +4479,56 @@ export const configManifest: ConfigManifest = {
                   ],
                   "schema": "PileupBasesEncoding",
                   "writes": "members"
+                },
+                {
+                  "name": "filter",
+                  "type": "FieldPredicateConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "field",
+                      "type": "PredicateField"
+                    },
+                    {
+                      "name": "equal",
+                      "type": "((string | number | boolean) | undefined)"
+                    },
+                    {
+                      "name": "lt",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "lte",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "gt",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "gte",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "oneOf",
+                      "type": "((string | number | boolean)[] | undefined)"
+                    },
+                    {
+                      "name": "valid",
+                      "type": "(boolean | undefined)"
+                    }
+                  ],
+                  "schema": "FieldPredicate",
+                  "shorthand": {
+                    "string": "field"
+                  }
                 }
               ],
               "schema": "PileupBases",
               "writes": "members"
             }
+          ],
+          "legacyKeys": [
+            "readHeight"
           ],
           "schema": "ReadsPileup",
           "writes": "members"
@@ -4489,21 +4645,14 @@ export const configManifest: ConfigManifest = {
           "type": "AlignmentsModificationsConfigurationSchema",
           "subSlots": [
             {
-              "name": "threshold",
-              "type": "number"
-            },
-            {
               "name": "unmodified",
               "type": "ModificationUnmodified"
-            },
-            {
-              "name": "cytosineContext",
-              "type": "CytosineContext"
-            },
-            {
-              "name": "shownModifications",
-              "type": "string[]"
             }
+          ],
+          "legacyKeys": [
+            "threshold",
+            "cytosineContext",
+            "shownModifications"
           ],
           "schema": "AlignmentsModifications",
           "writes": "members"
@@ -4902,6 +5051,9 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
+          "legacyKeys": [
+            "domain"
+          ],
           "schema": "SectionFacet",
           "writes": "whole",
           "shorthand": {
@@ -5238,15 +5390,106 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "show",
                   "type": "boolean"
+                },
+                {
+                  "name": "filter",
+                  "type": "FieldPredicateConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "field",
+                      "type": "PredicateField"
+                    },
+                    {
+                      "name": "equal",
+                      "type": "((string | number | boolean) | undefined)"
+                    },
+                    {
+                      "name": "lt",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "lte",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "gt",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "gte",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "oneOf",
+                      "type": "((string | number | boolean)[] | undefined)"
+                    },
+                    {
+                      "name": "valid",
+                      "type": "(boolean | undefined)"
+                    }
+                  ],
+                  "schema": "FieldPredicate",
+                  "shorthand": {
+                    "string": "field"
+                  }
                 }
               ],
               "schema": "CoverageInterbase",
               "writes": "members"
             },
             {
-              "name": "minAlleleFraction",
-              "type": "number"
+              "name": "alleles",
+              "type": "CoverageAllelesConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "filter",
+                  "type": "FieldPredicateConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "field",
+                      "type": "PredicateField"
+                    },
+                    {
+                      "name": "equal",
+                      "type": "((string | number | boolean) | undefined)"
+                    },
+                    {
+                      "name": "lt",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "lte",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "gt",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "gte",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "oneOf",
+                      "type": "((string | number | boolean)[] | undefined)"
+                    },
+                    {
+                      "name": "valid",
+                      "type": "(boolean | undefined)"
+                    }
+                  ],
+                  "schema": "FieldPredicate",
+                  "shorthand": {
+                    "string": "field"
+                  }
+                }
+              ],
+              "schema": "CoverageAlleles",
+              "writes": "members"
             }
+          ],
+          "legacyKeys": [
+            "minAlleleFraction"
           ],
           "schema": "LGVSyntenyCoverage",
           "writes": "members"
@@ -5260,8 +5503,16 @@ export const configManifest: ConfigManifest = {
               "type": "boolean"
             },
             {
-              "name": "readHeight",
-              "type": "number"
+              "name": "mark",
+              "type": "PileupMarkConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "height",
+                  "type": "number"
+                }
+              ],
+              "schema": "PileupMark",
+              "writes": "members"
             },
             {
               "name": "maxLayoutHeight",
@@ -5352,6 +5603,9 @@ export const configManifest: ConfigManifest = {
               "name": "fadeLowFrequency",
               "type": "boolean"
             }
+          ],
+          "legacyKeys": [
+            "readHeight"
           ],
           "schema": "Pileup",
           "writes": "members"
@@ -5674,6 +5928,9 @@ export const configManifest: ConfigManifest = {
               "name": "field",
               "type": "LaneRowsField"
             }
+          ],
+          "legacyKeys": [
+            "domain"
           ],
           "schema": "LaneRows",
           "writes": "whole",
@@ -6642,6 +6899,9 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
+          "legacyKeys": [
+            "domain"
+          ],
           "schema": "SectionFacet",
           "writes": "whole",
           "shorthand": {
@@ -6846,6 +7106,9 @@ export const configManifest: ConfigManifest = {
               "type": "SampleRowsField"
             }
           ],
+          "legacyKeys": [
+            "domain"
+          ],
           "schema": "SampleRows",
           "writes": "whole",
           "shorthand": {
@@ -7009,6 +7272,9 @@ export const configManifest: ConfigManifest = {
               "type": "string[]",
               "liftsNumbers": true
             }
+          ],
+          "legacyKeys": [
+            "domain"
           ],
           "schema": "Facet",
           "writes": "whole",
@@ -7335,6 +7601,9 @@ export const configManifest: ConfigManifest = {
               "name": "field",
               "type": "QuantitativeRowsField"
             }
+          ],
+          "legacyKeys": [
+            "domain"
           ],
           "schema": "QuantitativeRows",
           "writes": "whole",
@@ -7941,6 +8210,9 @@ export const configManifest: ConfigManifest = {
               "type": "SampleRowsField"
             }
           ],
+          "legacyKeys": [
+            "domain"
+          ],
           "schema": "SampleRows",
           "writes": "whole",
           "shorthand": {
@@ -8105,15 +8377,106 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "show",
                   "type": "boolean"
+                },
+                {
+                  "name": "filter",
+                  "type": "FieldPredicateConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "field",
+                      "type": "PredicateField"
+                    },
+                    {
+                      "name": "equal",
+                      "type": "((string | number | boolean) | undefined)"
+                    },
+                    {
+                      "name": "lt",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "lte",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "gt",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "gte",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "oneOf",
+                      "type": "((string | number | boolean)[] | undefined)"
+                    },
+                    {
+                      "name": "valid",
+                      "type": "(boolean | undefined)"
+                    }
+                  ],
+                  "schema": "FieldPredicate",
+                  "shorthand": {
+                    "string": "field"
+                  }
                 }
               ],
               "schema": "CoverageInterbase",
               "writes": "members"
             },
             {
-              "name": "minAlleleFraction",
-              "type": "number"
+              "name": "alleles",
+              "type": "CoverageAllelesConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "filter",
+                  "type": "FieldPredicateConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "field",
+                      "type": "PredicateField"
+                    },
+                    {
+                      "name": "equal",
+                      "type": "((string | number | boolean) | undefined)"
+                    },
+                    {
+                      "name": "lt",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "lte",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "gt",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "gte",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "oneOf",
+                      "type": "((string | number | boolean)[] | undefined)"
+                    },
+                    {
+                      "name": "valid",
+                      "type": "(boolean | undefined)"
+                    }
+                  ],
+                  "schema": "FieldPredicate",
+                  "shorthand": {
+                    "string": "field"
+                  }
+                }
+              ],
+              "schema": "CoverageAlleles",
+              "writes": "members"
             }
+          ],
+          "legacyKeys": [
+            "minAlleleFraction"
           ],
           "schema": "CoverageBand",
           "writes": "members"
@@ -8816,6 +9179,9 @@ export const configManifest: ConfigManifest = {
               "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | windowConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             }
           ],
+          "legacyKeys": [
+            "domain"
+          ],
           "schema": "MarkFacet",
           "writes": "whole",
           "shorthand": {
@@ -8852,6 +9218,9 @@ export const configManifest: ConfigManifest = {
               "name": "field",
               "type": "string"
             }
+          ],
+          "legacyKeys": [
+            "domain"
           ],
           "schema": "Rows",
           "writes": "whole",
@@ -9516,6 +9885,9 @@ export const configManifest: ConfigManifest = {
               "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | windowConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             }
           ],
+          "legacyKeys": [
+            "domain"
+          ],
           "schema": "MarkFacet",
           "writes": "whole",
           "shorthand": {
@@ -9552,6 +9924,9 @@ export const configManifest: ConfigManifest = {
               "name": "field",
               "type": "string"
             }
+          ],
+          "legacyKeys": [
+            "domain"
           ],
           "schema": "Rows",
           "writes": "whole",
@@ -10301,7 +10676,7 @@ export const configManifest: ConfigManifest = {
         "height",
         "trackSelectorType",
         "assemblyNames",
-        "drawCigar",
+        "indels",
         "axis",
         "coord",
         "lineWidth",
@@ -10318,8 +10693,10 @@ export const configManifest: ConfigManifest = {
       ],
       "passThrough": [
         "alpha",
+        "cigarMode",
         "color",
-        "colorBy"
+        "colorBy",
+        "drawCigar"
       ]
     },
     "LinearSyntenyView": {
@@ -10334,7 +10711,7 @@ export const configManifest: ConfigManifest = {
         "data",
         "render",
         "type",
-        "cigarMode",
+        "indels",
         "mark",
         "axis",
         "offscreen",
@@ -10357,8 +10734,10 @@ export const configManifest: ConfigManifest = {
       ],
       "passThrough": [
         "alpha",
+        "cigarMode",
         "color",
-        "colorBy"
+        "colorBy",
+        "drawCigar"
       ]
     },
     "SpreadsheetView": {

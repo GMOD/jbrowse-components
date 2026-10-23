@@ -313,7 +313,7 @@ accepts them.
 
 ```js
 // type signature
-readonly ["colorBy", "alpha", "color"]
+readonly ["colorBy", "alpha", "color", "cigarMode", "drawCigar"]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftSyntenyViewSettings.ts)
@@ -326,7 +326,8 @@ synteny display, and land as `encoding.color`, `encoding.opacity` and a
 `filter` predicate on `length`.
 An older genomes-portal launch link puts the mode string on the view
 itself, which lifts the same way, and a jb2hubs desktop link writes the
-view's `color`, which lands as `encoding.color`.
+view's `color`, which lands as `encoding.color`. The view's own
+`cigarMode` and `drawCigar` land as the `indels` part.
 
 ```js
 // type signature

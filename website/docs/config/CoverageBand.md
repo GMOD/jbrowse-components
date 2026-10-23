@@ -1,7 +1,7 @@
 ---
 id: coverageband
 title: CoverageBand
-description: "The coverage histogram band of the alignments and MAF displays, their coverage setting: whether it draws, its height, the insertion and clip marks drawn in it, which allele segments it colors, and…"
+description: "The coverage histogram band of the alignments and MAF displays, their coverage setting: whether it draws, its height, the insertion and clip marks drawn in it (interbase), which allele segments it…"
 sidebar_label: Display -> CoverageBand
 ---
 
@@ -9,8 +9,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 The coverage histogram band of the alignments and MAF displays, their
 `coverage` setting: whether it draws, its height, the insertion and clip
-marks drawn in it, which allele segments it colors, and its depth axis,
-`encoding.y`.
+marks drawn in it (`interbase`), which allele segments it colors
+(`alleles`), and its depth axis, `encoding.y`.
 
 ## Example usage
 
@@ -36,5 +36,5 @@ A setting written to it names members one by one: a member left out stays as it 
 | <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the coverage band |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>45</code> | height of the coverage band in pixels |
 | <span id="slot-encoding">**encoding**</span><br>[CoverageEncoding](../coverageencoding) | The depth axis, `encoding.y`: its `scale`, `axis` and `rules`. |
-| <span id="slot-interbase">**interbase**</span><br>[CoverageInterbase](../coverageinterbase) | The insertion and clip marks between bases: `show`. |
-| <span id="slot-minallelefraction">**minAlleleFraction**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | A color rule, beside the pileup's `fadeLowFrequency`, which fades its marks by the same per-base share through a depth-dependent threshold. The band's grey depth bar shows through where a segment is not colored. |
+| <span id="slot-interbase">**interbase**</span><br>[CoverageInterbase](../coverageinterbase) | The insertion and clip marks between bases: `show`, and the `filter` deciding which positions get an indicator triangle. |
+| <span id="slot-alleles">**alleles**</span><br>[CoverageAlleles](../coveragealleles) | The colored allele segments: the `filter` on each one's `fraction`. |
