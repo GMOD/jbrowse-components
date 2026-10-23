@@ -2,7 +2,10 @@
 //
 //   pnpm verify          the fast gates over what this branch changed (seconds)
 //   pnpm verify --all    the fast gates over the whole tree, as CI runs them
-//   pnpm verify --full   adds `autogen --check`, `check-docs`, `build:esm` (~5 min)
+//   pnpm verify --full   adds `check-docs` and `build:esm`
+//
+// Not `autogen --check`: pre-push regenerates and commits stale artifacts, so
+// checking them here only costs the ~30s whole-repo doc program.
 //   --no-cache           reruns gates that already passed on this exact tree
 //                        (`scripts/gatePassCache.ts`)
 //
@@ -145,11 +148,6 @@ const GATES: Gate[] = [
     }),
   },
   { name: 'typecheck', argv: nodeScript('typecheck.ts') },
-  {
-    name: 'generated artifacts',
-    argv: ['pnpm', 'autogen', '--check'],
-    slow: true,
-  },
   { name: 'docs', argv: pnpm('check-docs'), slow: true },
   // Last: `build:esm` is the only thing that compiles what we PUBLISH — each
   // package's own tsconfig, without node types and without the React compiler
@@ -278,9 +276,9 @@ if (cached.length > 0) {
 
 if (!full) {
   console.log(
-    `\nSkipped the slow gates (generated artifacts, docs, esm build). ` +
-      `Run \`pnpm verify --full\` before pushing something that touched a doc, ` +
-      `a JSDoc tag, or anything a generator reads.`,
+    `\nSkipped the slow gates (docs, esm build). ` +
+      `Run \`pnpm verify --full\` before landing something that touched a doc ` +
+      `or an exported type.`,
   )
 }
 

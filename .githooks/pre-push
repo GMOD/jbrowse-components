@@ -64,10 +64,9 @@
 # WHAT IT COSTS. Measured warm on 2026-09-01, on a machine at load 6-12 with
 # other agents running, before the fixers were scoped:
 #   pnpm figures:check       1.5s
-#   pnpm autogen --check     5.4s  with `--skip-whole-repo-program`; 22.5s
-#                                  without it, because `config/model/api docs`
-#                                  alone is 21s and the other 29 generators
-#                                  hide behind it in the pool
+#   pnpm autogen --check    22.5s  `config/model/api docs` alone is 21s and
+#                                  the other 29 generators hide behind it in
+#                                  the pool
 #   pnpm check-docs          9.2s  31s of validators, pooled four at a time.
 #                                  Now the longest single gate here
 #   pnpm lint               10.1s  type-aware oxlint over the tree; scoped to
@@ -336,31 +335,17 @@ fi
 # the autogen cost; on the push where something is, the rewrite is the three
 # tables that drifted rather than all thirty generators.
 #
-# `--skip-whole-repo-program` DROPS THE ONE GENERATOR THIS HOOK CANNOT AFFORD.
-# `config/model/api docs` builds a TypeScript program over every source in the
-# tree to read the tags off it, which is 21s whatever the push contains and
-# cannot be narrowed to the changed files — it was 22.5s of the 24s autogen
-# spent here, and the other 29 generators simply hid behind it in the pool.
-# Without it the check is 5.4s.
-#
-# IT IS NOT UNWATCHED AFTERWARDS, which is what makes the drop cheap rather
-# than a hole. Two things still ask:
-#
-#   - post-merge runs the whole `pnpm autogen --check`, the program included,
-#     in the BACKGROUND after every land, and leaves `autogen-stale` for
-#     pre-commit to print. So a stale config or model page still reaches
-#     whoever is about to edit the same tree, at no interactive cost — it just
-#     arrives after the land instead of blocking the push before it.
-#   - push.yml's `generated` job runs a bare `pnpm autogen --check` and, on
-#     failure, runs the rewrite and uploads it as `autogen.patch`, so the fix
-#     is `git apply` rather than reproducing the generation locally.
-#
-# What the drop actually costs, then, is that a stale config, model or API page
-# can land on main and be named minutes later rather than seconds earlier. The
-# marker-block tables are not part of that bet at all: `marker tables` covers
-# those, needs no program, and still runs on every push at 4s.
+# EVERY GENERATOR, the whole-repo program included. This is the one place
+# autogen runs: post-merge and `pnpm verify --full` dropped it on 2026-10-23
+# (Colin: "autogen only needs to run prepush"), after agents spent 12h in four
+# days in those two. `config/model/api docs` builds a TypeScript program over
+# every source to read the tags off it, ~25s whatever the push contains, and
+# the other generators run pooled behind it. Skipping it here left stale config
+# and model pages for post-merge to name after the land; now the push that
+# carries the change regenerates them. push.yml's `generated` job still runs a
+# bare `pnpm autogen --check` and uploads the rewrite as `autogen.patch`.
 astatus=0
-eval "$cmd_autogen --fix-stale --skip-whole-repo-program $autogen_flags" \
+eval "$cmd_autogen --fix-stale $autogen_flags" \
   >"$tmp/autogen.log" 2>&1 || astatus=$?
 if [ "$astatus" != 0 ]; then
   echo >&2

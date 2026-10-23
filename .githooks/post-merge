@@ -2,17 +2,14 @@
 # Answers "did that land leave main red" at the moment work actually enters main
 # here, which is `git merge --ff-only`, not `git push`.
 #
-# WHICH GATES, and why these. A generated artifact going stale is the
-# oldest of the failures this catches and it is not the only one that lands
-# unseen. On 2026-08-22 main took four separate breakages in a day and only two
-# were artifacts: the others were a TS4058 in
+# WHICH GATES, and why these. On 2026-08-22 main took four separate breakages
+# in a day: two stale artifacts, and a TS4058 in
 # `products/jbrowse-web/src/sessionModel/index.ts` -- production code, invisible
 # to `pnpm test` because jest strips types -- and an eslint error on git's
 # `^{commit}` peel syntax. Neither had ANY local gate. pre-push does not run
 # typecheck at all, and its `build:esm` compiles only what we publish, so it
 # never reaches `products/`.
 #
-#   pnpm autogen --check    ~34s
 #   pnpm typecheck           ~2s warm
 #   pnpm lint                ~7s
 #   pnpm lint:eslint         ~29s
@@ -22,7 +19,7 @@
 #
 # Typecheck warm is 2s (scripts/typecheck.ts measures it: 1.8s default, 2.3s at
 # --checkers 1, against 45-60s cold), so the gate that caught the worst of that
-# day costs a rounding error on a run that was already 34s. eslint is the
+# day costs next to nothing. eslint is the
 # expensive one and earns it by owning the syntactic guards oxlint cannot do,
 # which is the class that reaches main without anyone noticing. oxlint is here
 # despite pre-commit running it because pre-commit only ever sees the paths in
@@ -43,6 +40,10 @@
 # fail a merge either -- post-merge runs after the fact and git ignores its exit
 # status -- which is the right shape: a landed commit is not something to
 # refuse, only something to report on.
+#
+# NOT autogen, since 2026-10-23: pre-push runs every generator, regenerates
+# what is stale and commits it (Colin: "autogen only needs to run prepush").
+# Its ~34s here ran after every land and loaded every other agent.
 #
 # HOW YOU HEAR ABOUT IT. The background run leaves `autogen-stale` in the common
 # git dir -- named for the check it started as, kept because that path is what
@@ -76,8 +77,8 @@
 # work in worktrees, which have their own.
 #
 # WHAT IT CANNOT TELL APART. Every gate reads the working tree, so uncommitted
-# source in the shared checkout counts toward the answer. A stale artifact it
-# names may be another agent's in-flight edit rather than the land -- the
+# source in the shared checkout counts toward the answer. An error it names
+# may be another agent's in-flight edit rather than the land -- the
 # marker says so rather than pretending otherwise.
 set -eu
 
@@ -95,10 +96,8 @@ command -v pnpm >/dev/null 2>&1 || exit 0
 # scope, so check anyway rather than silently passing.
 range=$(git diff --name-only ORIG_HEAD HEAD 2>/dev/null || true)
 if [ -n "$range" ]; then
-  # The sources the generated artifacts come out of, same broad set pre-push
-  # uses: model and config docs are derived from plugin and package sources, so
-  # a land touching only code can still leave a doc table stale. A land that is
-  # purely CI config matches nothing and skips.
+  # The sources these gates read. A land that is purely CI config matches
+  # nothing and skips.
   printf '%s' "$range" | grep -Eq \
     '^(website/|products/|plugins/|packages/|agent-docs/|scripts/|figures\.lock)' ||
     exit 0
@@ -113,7 +112,7 @@ since=$common/autogen-stale-since
 lock=$common/autogen-check.lock
 
 # One check at a time. Several agents landing in the same minute would otherwise
-# each start a 34s run, and they would all reach the same answer. mkdir is the
+# each start a run, and they would all reach the same answer. mkdir is the
 # atomic test-and-set; a lock older than 10 minutes is a crashed run, not a live
 # one.
 if [ -d "$lock" ]; then
@@ -128,23 +127,6 @@ mkdir "$lock" 2>/dev/null || exit 0
 (
   trap 'rm -rf "$lock"' EXIT
 
-  # The figure-dependent generators derive from the corpus on disk while CI
-  # derives from figures.lock, so they answer a different question whenever the
-  # two disagree -- which on a machine that shoots figures is the normal state,
-  # not the exception. Drop those rather than report a difference that is
-  # about the corpus. Same reasoning, and the same two cases, as pre-push.
-  flags=
-  if [ ! -d website/static/img ] || [ ! -d products/jbrowse-img/img ] ||
-    ! pnpm figures:check >/dev/null 2>&1; then
-    flags=--skip-figure-dependent
-  fi
-
-  # Split, because autogen's stderr IS its failure summary and nothing else:
-  # every generator's own output is captured and echoed to stdout, and the
-  # summary names each failed generator with the tail of its diagnostic. That
-  # is what the marker quotes, so it needs no filter over the run's whole log.
-  agen_err=$lock/autogen.err
-  out=$(pnpm autogen --check $flags 2>"$agen_err") && agen=0 || agen=$?
   # 2s warm, and the only gate here that sees a type error in `products/`.
   tsc=$(pnpm typecheck 2>&1) && tsc_status=0 || tsc_status=$?
   cfg=$(pnpm check-config-read-types 2>&1) && cfg_status=0 || cfg_status=$?
@@ -153,15 +135,15 @@ mkdir "$lock" 2>/dev/null || exit 0
   esl=$(pnpm lint:eslint 2>&1) && esl_status=0 || esl_status=$?
   oxl=$(pnpm lint 2>&1) && oxl_status=0 || oxl_status=$?
 
-  if [ "$agen" = 0 ] && [ "$tsc_status" = 0 ] && [ "$cfg_status" = 0 ] &&
+  if [ "$tsc_status" = 0 ] && [ "$cfg_status" = 0 ] &&
     [ "$esl_status" = 0 ] && [ "$oxl_status" = 0 ]; then
     rm -f "$marker" "$since"
   else
     head=$(git rev-parse --short HEAD)
 
     # How long this has been failing. The previous head is kept only while the
-    # marker is; a first failure records this one. Not "which commit staled the
-    # artifact" -- nothing here can know that -- but it is the difference
+    # marker is; a first failure records this one. Not "which commit broke
+    # it" -- nothing here can know that -- but it is the difference
     # between a drift this land introduced and one it merely re-reported, which
     # is the first thing a reader needs and the message used to get wrong by
     # stamping the current head either way.
@@ -180,9 +162,6 @@ mkdir "$lock" 2>/dev/null || exit 0
     # `if`, not `[ ... ] && x=y`: under `set -e` a false test makes the list
     # return 1 and would take this subshell with it, losing the marker.
     failed=
-    if [ "$agen" != 0 ]; then
-      failed="${failed:+$failed, }a stale generated artifact"
-    fi
     if [ "$tsc_status" != 0 ]; then
       failed="${failed:+$failed, }typecheck"
     fi
@@ -210,37 +189,14 @@ mkdir "$lock" 2>/dev/null || exit 0
       echo "an uncommitted edit rather than the commit that landed.)"
       # Naming the count is the difference between "suspect the land" and
       # "suspect whoever is editing here": typecheck and eslint see in-flight
-      # source that `autogen --check` mostly did not, so a dirty checkout is now
-      # the first thing to rule out rather than a footnote.
+      # source, so a dirty checkout is the first thing to rule out.
       dirty=$(git status --porcelain 2>/dev/null | grep -c '^' || true)
       if [ "${dirty:-0}" != 0 ]; then
         echo "This checkout has $dirty uncommitted path(s). Rule those out first."
       fi
       echo
-      if [ "$agen" != 0 ]; then
-        # Quoted whole, not grepped. This used to pull the summary out of the
-        # combined log by matching two phrases the runner printed -- "generated
-        # artifact(s) out of date" and "did not run to completion" -- and
-        # 315fe92ba3 stopped printing both on 2026-09-01. Nothing said so: the
-        # fallback tail still produced a plausible-looking marker, so the fence
-        # ratchet failed on main for 61 commits while this reported "doc
-        # snippets (exited 1)" and no reason at all. A phrase this file does not
-        # own is not something to match on.
-        if [ -s "$agen_err" ]; then
-          cat "$agen_err"
-        else
-          printf '%s\n' "$out" | tail -20
-        fi
-        echo
-        echo "To find what staled one: git log -1 -- <its path> is the last"
-        echo "regeneration, and the commits touching its inputs since then are"
-        echo "the suspects."
-        echo
-      fi
-
-      # Both of these print their own file:line, so they are quoted rather
-      # than summarized -- there is no per-checker fix line to dig out the
-      # way there is for a stale artifact, and the error IS the instruction.
+      # Each prints its own file:line, so they are quoted rather than
+      # summarized: the error IS the instruction.
       if [ "$tsc_status" != 0 ]; then
         echo "Typecheck. A green \`pnpm test\` says nothing about this --"
         echo "jest strips types -- and \`build:esm\` compiles only what we"
