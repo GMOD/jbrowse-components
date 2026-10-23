@@ -65,6 +65,41 @@ test('formula writes a field every later step reads', () => {
   expect(out[0]!.toJSON()).toMatchObject({ twice: 8, score: 4, start: 0 })
 })
 
+test('a filter of predicates keeps the rows passing every one', () => {
+  const out = runTransforms(
+    [
+      feature(0, 5, { score: 4, name: 'a' }),
+      feature(0, 50, { score: 4, name: 'a' }),
+      feature(0, 5, { score: 1, name: 'a' }),
+      feature(0, 5, { score: 4, name: 'c' }),
+    ],
+    [
+      {
+        type: 'filter',
+        predicates: [
+          { field: 'score', gte: 3 },
+          { field: 'name', oneOf: ['a', 'b'] },
+          { field: 'jexl:feature.end - feature.start', lt: 10 },
+        ],
+      },
+    ],
+    jexl,
+  )
+  expect(rows(out, 'end', 'score', 'name')).toEqual([[5, 4, 'a']])
+})
+
+test('a filter of predicates reads the columns a step wrote', () => {
+  const out = runTransforms(
+    [feature(5, 8), feature(12, 13), feature(14, 15)],
+    [
+      { type: 'bin', step: 10 },
+      { type: 'aggregate', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
+      { type: 'filter', predicates: [{ field: 'count', gte: 2 }] },
+    ],
+  )
+  expect(rows(out, 'start', 'count')).toEqual([[10, 2]])
+})
+
 test('bin snaps start and end to the genome-aligned bin, and aggregate counts per bin', () => {
   const out = runTransforms(
     [

@@ -217,6 +217,31 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
   ])
 })
 
+test('the filter list reaches the worker: each expression a step, the field tests one step', () => {
+  const { display } = createTestEnvironment(
+    [{ mark: 'point', encoding: { y: 'score' } }],
+    REGION,
+    'BedAdapter',
+    {
+      filter: [
+        { field: 'score', gte: 5 },
+        "jexl:get(feature,'name') != 'x'",
+        { field: 'strand', equal: 1 },
+      ],
+    },
+  ).createDisplay()
+  expect(display.plotRequest().transform).toEqual([
+    { type: 'filter', expr: "jexl:get(feature,'name') != 'x'" },
+    {
+      type: 'filter',
+      predicates: [
+        { field: 'score', gte: 5 },
+        { field: 'strand', equal: 1 },
+      ],
+    },
+  ])
+})
+
 test('a text mark asks the worker for the text lane and no hit index, and takes no place in the mark list', () => {
   const { createDisplay } = createTestEnvironment([
     { mark: 'text', encoding: { y: 'score' } },

@@ -17,6 +17,10 @@ import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { rampDomain } from '@jbrowse/core/util/colorRamp'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
+import {
+  isExpressionEntry,
+  predicatesOf,
+} from '@jbrowse/core/util/fieldPredicate'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import {
   installPrerequisiteFetch,
@@ -529,6 +533,23 @@ export function stateModelFactory(
          */
         get configuredFilters() {
           return () => configuredJexlFilters(self)
+        },
+        /**
+         * #getter
+         * The `filter` list as the worker's steps: each expression its own
+         * step, and the field tests one step of predicates.
+         */
+        get filterSteps(): TransformStep[] {
+          const entries = predicatesOf(self.configuration.filter)
+          const predicates = entries.filter(p => !isExpressionEntry(p))
+          return [
+            ...entries
+              .filter(isExpressionEntry)
+              .map(p => ({ type: 'filter' as const, expr: p.field })),
+            ...(predicates.length > 0
+              ? [{ type: 'filter' as const, predicates }]
+              : []),
+          ]
         },
         /**
          * #getter
@@ -1083,10 +1104,7 @@ export function stateModelFactory(
           return {
             layers: self.layerRequests,
             transform: [
-              ...self.configuredFilters().map(expr => ({
-                type: 'filter' as const,
-                expr,
-              })),
+              ...self.filterSteps,
               ...stepsOf(self.conf.transform, self.host.bpPerPx),
               ...(self.facet ? [] : self.facetSteps),
             ],

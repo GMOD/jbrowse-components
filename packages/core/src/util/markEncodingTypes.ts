@@ -8,6 +8,7 @@
 
 import type { ZoomRange } from '../data_adapters/BaseAdapter/zoomRange.ts'
 import type { ColorSchemeName } from './colorSchemes.ts'
+import type { FieldPredicate } from './fieldPredicate.ts'
 import type { ShapeName } from './shapeNameList.ts'
 import type { AggregateOpName } from './stepOutputs.ts'
 
@@ -481,12 +482,13 @@ export interface EncodedLayersResult {
 
 /**
  * #api
- * Keep the features a `jexl:` expression over `feature` admits.
+ * Keep the features a `jexl:` expression over `feature` admits, or the ones
+ * that pass every field predicate of `predicates` (ADR-238), Vega-Lite's two
+ * forms of its `filter` transform.
  */
-export interface FilterStep {
-  type: 'filter'
-  expr: string
-}
+export type FilterStep =
+  | { type: 'filter'; expr: string }
+  | { type: 'filter'; predicates: FieldPredicate[] }
 
 /**
  * #api

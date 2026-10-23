@@ -18,6 +18,7 @@ import {
   valueAt,
   withColumns,
 } from './featureTable.ts'
+import { compilePredicates } from './fieldPredicate.ts'
 import { fieldReader, isPlainFieldRef } from './fieldReader.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
@@ -48,6 +49,7 @@ import { junctionEnds, svClassOfAlt, svClassOfToken } from './svAlt.ts'
 import { windowStep } from './windowStep.ts'
 
 import type { Column, FeatureTable, ListColumn } from './featureTable.ts'
+import type { FieldPredicate, PredicateLane } from './fieldPredicate.ts'
 import type { JexlInstance } from './jexlStrings.ts'
 import type {
   AggregateOp,
@@ -110,6 +112,51 @@ function filter(
   const kept = new RowsBuilder()
   for (let i = 0; i < table.length; i++) {
     if (compiled.eval(buildJexlContext({ feature: table.row(i) }))) {
+      kept.push(i)
+    }
+  }
+  const parentRow = kept.finish()
+  return {
+    table: selectRows(table, parentRow),
+    bounds: boundsThrough(bounds, parentRow),
+  }
+}
+
+// a typed column tests as a lane; anything else, a `jexl:` field included,
+// reads off the row
+function predicateLane(
+  table: FeatureTable,
+  field: string,
+  jexl: JexlInstance | undefined,
+): PredicateLane {
+  const column = isJexl(field) ? NO_COLUMN : table.column(field)
+  if (column.kind === 'number' && !column.at) {
+    return { kind: 'number', values: column.values }
+  }
+  if (column.kind === 'category' && !column.at) {
+    return { kind: 'labels', ids: column.codes, labels: column.labels }
+  }
+  if (column.kind !== 'none') {
+    return { kind: 'get', get: i => valueAt(column, i) }
+  }
+  const read = fieldReader(field, jexl)
+  return { kind: 'get', get: i => read(table.row(i)) }
+}
+
+function filterByPredicates(
+  { table, bounds }: Staged,
+  predicates: readonly FieldPredicate[],
+  jexl: JexlInstance | undefined,
+): Staged {
+  const keeps = compilePredicates(predicates, field =>
+    predicateLane(table, field, jexl),
+  )
+  if (!keeps) {
+    return { table, bounds }
+  }
+  const kept = new RowsBuilder()
+  for (let i = 0; i < table.length; i++) {
+    if (keeps(i)) {
       kept.push(i)
     }
   }
@@ -1018,7 +1065,9 @@ function runStep(
 ): Staged {
   switch (step.type) {
     case 'filter': {
-      return filter(staged, step.expr, jexl)
+      return 'predicates' in step
+        ? filterByPredicates(staged, step.predicates, jexl)
+        : filter(staged, step.expr, jexl)
     }
     case 'formula': {
       return formula(staged, step.expr, step.as, jexl)
