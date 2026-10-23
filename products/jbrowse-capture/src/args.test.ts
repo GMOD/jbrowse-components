@@ -219,9 +219,13 @@ test('--loc takes several regions, unquoted', () => {
 })
 
 test('a flag given twice is an error, not the last one winning', () => {
-  expect(() => parseArgs(['--genome', 'hg38', '--genome', 'mm39'])).toThrow(
-    '--genome is given more than once',
-  )
+  expect(() =>
+    parseArgs(['--genome', 'hg38', '--loc', 'chr1', '--loc', 'chr2']),
+  ).toThrow('--loc is given more than once')
+  // a second --genome is a synteny row, except in a linear view
+  expect(() =>
+    parseArgs(['lgv', '--genome', 'hg38', '--genome', 'mm39']),
+  ).toThrow('--genome is given more than once')
 })
 
 test('a word after a value applies to nothing, so it is an error', () => {

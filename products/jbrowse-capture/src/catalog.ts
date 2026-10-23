@@ -1,7 +1,8 @@
 import { genomeConfigUrl, resolveTrackId } from '@jbrowse/launch-args'
 
 import { fetchJson } from './genome.ts'
-import { instanceUrl, needsSpec } from './url.ts'
+import { resolveHostedComparative } from './hostedComparative.ts'
+import { assertCoherentOptions, instanceUrl, needsSpec } from './url.ts'
 
 import type { JBrowseUrlOptions } from './url.ts'
 import type { Track } from '@jbrowse/launch-args'
@@ -75,6 +76,10 @@ async function fetchCatalog({
 export async function resolveAgainstConfig(
   options: JBrowseUrlOptions,
 ): Promise<JBrowseUrlOptions> {
+  if (options.comparative) {
+    assertCoherentOptions(options)
+    return resolveHostedComparative(options.comparative, options)
+  }
   const { genome, assembly, tracks, spec, session } = options
   const wanted = assembly ?? genome
   if (spec || session || (!wanted && !tracks?.length && !needsSpec(options))) {

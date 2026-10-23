@@ -3,6 +3,8 @@ import { genomeConfigUrl } from '@jbrowse/launch-args'
 import { savedSessionParam, sessionSpecParam } from './session.ts'
 import { version } from './version.ts'
 
+import type { HostedComparative } from './hostedComparative.ts'
+
 /** A session spec's track entry: a trackId, or one beside display settings. */
 export type SpecTrack = string | ({ trackId: string } & Record<string, unknown>)
 
@@ -48,6 +50,11 @@ export interface JBrowseUrlOptions {
   /** A session spec, for what the fields above cannot say, such as several views. */
   spec?: object
   /**
+   * A synteny view or dotplot of hosted genomes, one per row. `resolveAgainstConfig`
+   * turns it into a `genome` and a `spec`, so `jbrowseUrl` takes it resolved.
+   */
+  comparative?: HostedComparative
+  /**
    * A session saved with "Export session...": the `{ session: {...} }`
    * document, or the snapshot inside it.
    */
@@ -72,7 +79,21 @@ export function assertCoherentOptions({
   loc,
   tracks,
   view,
+  comparative,
 }: JBrowseUrlOptions) {
+  if (comparative) {
+    const linear = Object.entries({ config, assembly, loc, spec, session })
+      .filter(([, value]) => value)
+      .map(([key]) => `--${key}`)
+    if (tracks?.length) {
+      linear.push('--track')
+    }
+    if (linear.length) {
+      throw new Error(
+        `a synteny view or dotplot opens one row per --genome, at its loc:; ${linear.join(', ')} ${linear.length > 1 ? 'apply' : 'applies'} to a linear view`,
+      )
+    }
+  }
   if (genome && config) {
     throw new Error(
       'pass a hosted genome or a config URL, not both (--genome, --config); name the assembly with --assembly',
@@ -158,7 +179,13 @@ export function jbrowseUrl({
   session,
   sessionName,
   instance,
+  comparative,
 }: JBrowseUrlOptions) {
+  if (comparative) {
+    throw new Error(
+      'a hosted comparative view needs its configs fetched: pass the options through resolveAgainstConfig first',
+    )
+  }
   const options = { genome, config, spec, session, assembly, loc, tracks, view }
   assertCoherentOptions(options)
   const params = new URLSearchParams()

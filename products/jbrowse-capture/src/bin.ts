@@ -18,6 +18,9 @@ USAGE
   jb2capture batch <json|path|-> [flags] screenshot many views from one browser
   jb2capture url [flags]                 print the URL instead of launching a browser
   jb2capture list [genome] [filter]      list hosted genomes, or one genome's trackIds
+  jb2capture synteny|dotplot --genome <name> [loc:<region>] --genome <name> ...
+                                         compare hosted genomes, one row per
+                                         --genome, joined by their liftOvers
 
 WHAT TO SHOW
   --genome <name>       a genomes.jbrowse.org genome: a UCSC db name (hg38, mm39)
@@ -98,6 +101,7 @@ EXAMPLES
 function urlOptions(args: ParsedArgs) {
   return {
     genome: args.genome,
+    comparative: args.comparative,
     config: args.config,
     assembly: args.assembly,
     loc: args.loc,

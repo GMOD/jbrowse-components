@@ -275,7 +275,12 @@ In a script, `captureBatch(captures, { concurrency })` takes an array of
 ```bash
 jb2capture list hg38 conservation   # trackIds matching a filter
 jb2capture url --genome hg38 --loc BRCA1   # just print the link, no browser
+jb2capture synteny --genome hg38 loc:HOXA1 --genome mm39 loc:Hoxa1 -o hoxa.png
 ```
+
+A second `--genome`, or `synteny`/`dotplot` as the first word, opens a
+comparative view with one row per genome, at its `loc:`. The rows join through
+the liftOver comparisons the hosted configs list, as jb2export draws them.
 
 ## See also
 

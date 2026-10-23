@@ -1,6 +1,9 @@
 import {
   FILE_FLAG,
+  buildComparative,
+  hasComparativeArgs,
   isDataFile,
+  launchViewType,
   parseArgv,
   standardizeArgv,
   takesFile,
@@ -8,12 +11,15 @@ import {
 } from '@jbrowse/launch-args'
 import { checkModifiers } from '@jbrowse/launch-args/displaySettings'
 
+import type { HostedComparative } from './hostedComparative.ts'
 import type { SpecTrack } from './url.ts'
-import type { Entry } from '@jbrowse/launch-args'
+import type { Entry, LaunchViewType } from '@jbrowse/launch-args'
 
 export interface ParsedArgs {
   command: 'capture' | 'batch' | 'url' | 'list'
   genome?: string
+  /** a synteny view or dotplot, whose `--genome`s are its rows */
+  comparative?: HostedComparative
   config?: string
   assembly?: string
   loc?: string
@@ -193,12 +199,38 @@ function batchArgs(tokens: string[]) {
     : { entries: tokenize(tokens), positionals: [] }
 }
 
+// a view word first (`synteny`, `dotplot`, `lgv`) picks the view, as in
+// jb2export and Desktop
 function captureArgs(tokens: string[]) {
-  const [first] = tokens
+  const [first, ...rest] = tokens
+  const viewType = first === undefined ? undefined : launchViewType(first)
+  if (viewType) {
+    return { entries: tokenize(rest), positionals: [], viewType }
+  }
   if (first !== undefined && !first.startsWith('-') && !isDataFile(first)) {
     throw new Error(`Unexpected argument '${first}'`)
   }
   return { entries: tokenize(tokens), positionals: [] }
+}
+
+// The rows of a synteny view or dotplot: the view a word named, or a synteny
+// view for a line naming a second genome.
+function hostedComparativeOf(
+  named: Entry[],
+  viewType: LaunchViewType | undefined,
+): HostedComparative | undefined {
+  const type =
+    viewType ?? (hasComparativeArgs(named) ? 'LinearSyntenyView' : undefined)
+  if (type === undefined || type === 'LinearGenomeView') {
+    return undefined
+  }
+  const { rows, hosted } = buildComparative(named)
+  if (type === 'DotplotView' ? rows.length !== 2 : rows.length < 2) {
+    throw new Error(
+      `${type === 'DotplotView' ? 'a dotplot compares two genomes' : 'a synteny view compares two genomes or more'}, and this command line names ${rows.length}; give one --genome per row`,
+    )
+  }
+  return { type, rows, hosted }
 }
 
 /**
@@ -212,7 +244,11 @@ export function parseArgs(argv: string[]): ParsedArgs {
   const [word, ...afterCommand] = argv
   const command =
     word === 'list' || word === 'url' || word === 'batch' ? word : 'capture'
-  const { entries, positionals } =
+  const {
+    entries,
+    positionals,
+    viewType,
+  }: { entries: Entry[]; positionals: string[]; viewType?: LaunchViewType } =
     command === 'list'
       ? listArgs(afterCommand)
       : command === 'batch'
@@ -222,10 +258,11 @@ export function parseArgs(argv: string[]): ParsedArgs {
     const flag = checkFlag(command, entry)
     return [flag, entry[1]] satisfies Entry
   })
+  const comparative = hostedComparativeOf(named, viewType)
   const { trackList: _, ...values } = standardizeArgv(
     named.filter(([key]) => key !== 'track'),
     [],
-    { repeatable: [], withModifiers: ['view'] },
+    { repeatable: comparative ? ['genome'] : [], withModifiers: ['view'] },
   )
   const string = (flag: (typeof STRINGS)[number]) =>
     values[flag] as string | undefined
@@ -252,6 +289,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
   return {
     command,
     genome: string('genome'),
+    comparative,
     config: string('config'),
     assembly: string('assembly'),
     loc: string('loc'),
