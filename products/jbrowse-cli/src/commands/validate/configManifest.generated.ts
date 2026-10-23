@@ -3398,8 +3398,16 @@ export const configManifest: ConfigManifest = {
           "type": "subfeatureLabels"
         },
         {
-          "name": "showChevrons",
-          "type": "boolean"
+          "name": "chevrons",
+          "type": "FeatureChevronsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "FeatureChevrons",
+          "writes": "members"
         },
         {
           "name": "transcriptTypes",
@@ -3434,6 +3442,7 @@ export const configManifest: ConfigManifest = {
         "impliedUTRs",
         "renderer",
         "color",
+        "showChevrons",
         "showDescriptions"
       ],
       "droppedKeys": [
@@ -7153,8 +7162,16 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "showVerticalGuides",
-          "type": "boolean"
+          "name": "guides",
+          "type": "LDGuidesConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "LDGuides",
+          "writes": "members"
         },
         {
           "name": "showLabels",
@@ -7177,6 +7194,7 @@ export const configManifest: ConfigManifest = {
         "jexlFilters",
         "ldMetric",
         "showLegend",
+        "showVerticalGuides",
         "fitToHeight",
         "useGenomicPositions",
         "maxHeight",

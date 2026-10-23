@@ -74,7 +74,7 @@ test('the display settings reach the tables', async () => {
   const shown = await engine.features({ ...GFF3, display: GROW })
   const bare = await engine.features({
     ...GFF3,
-    display: { ...GROW, showLabels: 'none', showChevrons: false },
+    display: { ...GROW, showLabels: 'none', chevrons: { show: false } },
   })
   expect(bare.labels.text).toEqual([])
   expect(bare.chevrons.position).toEqual([])

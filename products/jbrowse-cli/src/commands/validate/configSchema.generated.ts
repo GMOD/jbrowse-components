@@ -5244,6 +5244,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "FeatureChevrons": {
+      "title": "FeatureChevrons",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw chevrons on intron lines pointing the way the feature reads.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearBasicDisplaySlots": {
       "type": "object",
       "properties": {
@@ -5515,14 +5536,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             ]
           }
         },
-        "showChevrons": {
-          "description": "draw chevrons on intron lines pointing the way the feature reads.",
-          "default": true,
+        "chevrons": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/FeatureChevrons"
           }
         },
         "transcriptTypes": {
@@ -5638,6 +5657,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "color": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showChevrons": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -12662,6 +12685,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "LDGuides": {
+      "title": "LDGuides",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "on hover, draw guides across the view at the pair's genomic positions.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LDTrackDisplaySlots": {
       "type": "object",
       "properties": {
@@ -12714,14 +12758,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/HiddenLegend"
           }
         },
-        "showVerticalGuides": {
-          "description": "on hover, draw guides across the view at the pair's genomic positions.",
-          "default": true,
+        "guides": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/LDGuides"
           }
         },
         "showLabels": {
@@ -12796,6 +12838,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "showLegend": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showVerticalGuides": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -15930,8 +15976,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "subfeatureLabels": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/subfeatureLabels"
             },
-            "showChevrons": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showChevrons"
+            "chevrons": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/chevrons"
             },
             "transcriptTypes": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/transcriptTypes"
@@ -16022,6 +16068,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
                 }
               ]
+            },
+            "showChevrons": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showChevrons"
             },
             "showDescriptions": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions"
@@ -17609,8 +17658,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "legend": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/legend"
             },
-            "showVerticalGuides": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showVerticalGuides"
+            "guides": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/guides"
             },
             "showLabels": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLabels"
@@ -17641,6 +17690,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showLegend": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLegend"
+            },
+            "showVerticalGuides": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showVerticalGuides"
             },
             "fitToHeight": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/fitToHeight"

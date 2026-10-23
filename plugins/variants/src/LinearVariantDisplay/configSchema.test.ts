@@ -18,7 +18,7 @@ test('a variant display carries none of the gene-glyph slots', () => {
   for (const gene of [
     ...Object.keys(GENE_GLYPH_DEFAULTS),
     'geneGlyphMode',
-    'showChevrons',
+    'chevrons',
   ]) {
     expect(slots).not.toContain(gene)
   }

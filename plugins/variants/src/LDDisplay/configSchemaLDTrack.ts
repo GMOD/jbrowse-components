@@ -70,15 +70,26 @@ export default function ldTrackDisplayConfigSchema() {
        */
       legend: hiddenLegendConfigSchema,
       /**
-       * #slot
+       * #slot guides
+       * The guides a hovered cell draws across the view at its pair's
+       * genomic positions.
        */
-      showVerticalGuides: {
-        type: 'boolean',
-        defaultValue: true,
-        description:
-          "on hover, draw guides across the view at the pair's genomic positions",
-        advanced: true,
-      },
+      guides: ConfigurationSchema(
+        'LDGuides',
+        {
+          /**
+           * #slot guides.show
+           */
+          show: {
+            type: 'boolean',
+            defaultValue: true,
+            description:
+              "on hover, draw guides across the view at the pair's genomic positions",
+            advanced: true,
+          },
+        },
+        { closed: true },
+      ),
       /**
        * #slot
        */
@@ -124,6 +135,7 @@ export default function ldTrackDisplayConfigSchema() {
         ...retiredBaseDisplaySpellings,
         ldMetric: field => ({ encoding: { color: { field } } }),
         showLegend: show => ({ legend: { show } }),
+        showVerticalGuides: show => ({ guides: { show } }),
         fitToHeight: fit => ({ heightMode: fit ? 'fit' : 'fixed' }),
         // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- the retired slot's own name
         useGenomicPositions: genomic => ({

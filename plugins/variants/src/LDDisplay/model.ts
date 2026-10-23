@@ -129,7 +129,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        * #action
        */
       setShowVerticalGuides(show: boolean) {
-        setConf(self, 'showVerticalGuides', show)
+        setConf(self, ['guides', 'show'], show)
       },
       /**
        * #action
@@ -171,7 +171,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        * #getter
        */
       get showVerticalGuides(): boolean {
-        return getConf(self, 'showVerticalGuides')
+        return getConf(self, ['guides', 'show'])
       },
       /**
        * #getter

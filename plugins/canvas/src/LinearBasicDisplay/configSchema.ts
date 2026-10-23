@@ -98,14 +98,24 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         defaultValue: GENE_GLYPH_DEFAULTS.subfeatureLabels,
       },
       /**
-       * #slot
+       * #slot chevrons
+       * The arrows on a feature's intron lines.
        */
-      showChevrons: {
-        type: 'boolean',
-        description:
-          'draw chevrons on intron lines pointing the way the feature reads',
-        defaultValue: true,
-      },
+      chevrons: ConfigurationSchema(
+        'FeatureChevrons',
+        {
+          /**
+           * #slot chevrons.show
+           */
+          show: {
+            type: 'boolean',
+            description:
+              'draw chevrons on intron lines pointing the way the feature reads',
+            defaultValue: true,
+          },
+        },
+        { closed: true },
+      ),
       /**
        * #slot
        * feature types the `geneLike` filter field counts beside
@@ -163,6 +173,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
        */
       baseConfiguration: baseConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
+      retired: { showChevrons: show => ({ chevrons: { show } }) },
     },
   )
 }

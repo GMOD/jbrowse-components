@@ -109,7 +109,7 @@ export default function stateModelFactory(
       },
 
       get showChevrons(): boolean {
-        return getConf(self, 'showChevrons')
+        return getConf(self, ['chevrons', 'show'])
       },
 
       // Raw slot rather than getConf: a jexl
@@ -235,7 +235,7 @@ export default function stateModelFactory(
       },
 
       setShowChevrons(value: boolean) {
-        setConf(self, 'showChevrons', value)
+        setConf(self, ['chevrons', 'show'], value)
       },
 
       setUtrColor(color?: string) {

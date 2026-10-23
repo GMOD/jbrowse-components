@@ -62,7 +62,7 @@ section's `label`. A section `facet.hidden` lists leaves every table.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, regions, display, bpPerPx, colorByFrame, aminoAcids, geneticCodeId, byteLimit, }: FeatureTablesArgs) => Promise<{ sections: {…}; legend: {…}; legendTitle: string; ramps: {…}[]; glyph: {…}; bpPerPx: number; config: Record<…>; height: number; truncated: number; subfeatures: {…} & {…}; labels: {…} & {…}; features: {…} & {…}; rects: {…} & {…}; lines: {…} & {…}; chevrons: {…} & {…}; arrows: {…} & {…}; aminoAcids: {…} & { region: number[]; }; }>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, regions, display, bpPerPx, colorByFrame, aminoAcids, geneticCodeId, byteLimit, }: FeatureTablesArgs) => Promise<{ sections: {…}; legend: {…}; legendTitle: string; ramps: {…}[]; glyph: {…}; bpPerPx: number; config: Record<…>; height: number; truncated: number; subfeatures: {…} & {…}; labels: {…} & {…}; features: {…} & {…}; chevrons: {…} & {…}; rects: {…} & {…}; lines: {…} & {…}; arrows: {…} & {…}; aminoAcids: {…} & { region: number[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/tables.ts)
