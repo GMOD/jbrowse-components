@@ -162,7 +162,10 @@ describe('the guide tree draws while a rotation of it lists `rows.sort`', () => 
   it('draws a run tree over the guide tree, and a reset returns to it', () => {
     const display = treedDisplay()
     const runTree = '((hg38,mm10),panTro4);'
-    display.setRowOrder(named(['hg38', 'mm10', 'panTro4']), { tree: runTree })
+    display.setRowOrder(named(['hg38', 'mm10', 'panTro4']), {
+      tree: runTree,
+      provenance: { regions: [{ refName: 'ctgA', start: 0, end: 100 }] },
+    })
 
     expect(display.rowTree).toBe(runTree)
     expect(display.hierarchy).toBeDefined()

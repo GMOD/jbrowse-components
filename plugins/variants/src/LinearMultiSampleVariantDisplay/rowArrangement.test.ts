@@ -17,11 +17,14 @@ const SOURCES = [
 // `toNewick`'s leaf order, which is what makes leaf i land on row i).
 const CLUSTERED = [{ name: 'S2' }, { name: 'S0' }, { name: 'S1' }]
 const CLUSTERED_TREE = '((S2,S0),S1);'
+const RUN = {
+  provenance: { regions: [{ refName: 'ctgA', start: 0, end: 100 }] },
+}
 
 function clusteredDisplay() {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources(SOURCES)
-  display.setRowOrder(CLUSTERED, { tree: CLUSTERED_TREE })
+  display.setRowOrder(CLUSTERED, { tree: CLUSTERED_TREE, ...RUN })
   return display
 }
 
@@ -120,6 +123,7 @@ describe('the facet bands over the arranged order', () => {
     display.setSources(SOURCES)
     display.setRowOrder([{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }], {
       tree: '((S0,S1),S2);',
+      ...RUN,
     })
     display.facetByField('population')
 
