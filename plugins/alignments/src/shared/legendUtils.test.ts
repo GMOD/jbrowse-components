@@ -20,8 +20,8 @@ import {
   getAlignmentsColorScales,
   getArcLegendItems,
   getReadDisplayLegendItems,
+  sashimiLegend,
   sashimiLegendItems,
-  sashimiLegendTitle,
 } from './legendUtils.ts'
 import { splitSchemeForTest } from './splitSchemeForTest.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from './types.ts'
@@ -966,7 +966,7 @@ describe('getAlignmentsColorScales', () => {
     arcLegendTitle: 'Arc colors',
     arcLegendItems: () => arcs,
     connectionLegendItems: () => [],
-    sashimiLegendItems: [],
+    sashimiLegend: { strands: [], splits: [] },
   })
   const entries = (scale: ColorScale | undefined) =>
     scale?.kind === 'categorical' ? scale.entries : []
@@ -1171,7 +1171,7 @@ describe('getAlignmentsColorScales', () => {
         { color: '#aaa', label: 'Normal' },
         { color: '#ff3a8c', label: 'Short insert' },
       ],
-      sashimiLegendItems: [],
+      sashimiLegend: { strands: [], splits: [] },
       connectionLegendItems: () => [
         // the arc's half of the merged short-insert row, verbatim
         { color: '#ff3a8c', label: 'Short insert' },
@@ -1212,7 +1212,7 @@ describe('getAlignmentsColorScales', () => {
       ],
       arcLegendTitle: 'Arc colors',
       arcLegendItems: () => [],
-      sashimiLegendItems: [],
+      sashimiLegend: { strands: [], splits: [] },
       connectionLegendItems: () => [
         // the verbatim repeat
         { color: '#5555bb', label: 'RR - Both mates reverse strand' },
@@ -1371,27 +1371,26 @@ describe('the fill view keys the types drawn beside the methylation states', () 
 describe('sashimiLegendItems', () => {
   test('keys the junction strands drawn, in strand order', () => {
     expect(
-      sashimiLegendItems(new Set([0, 1]), { pairLR: '#d3d3d3' }).map(
-        i => i.label,
-      ),
+      sashimiLegendItems(
+        sashimiLegend(new Set([0, 1]), { pairLR: '#d3d3d3' }),
+      ).map(i => i.label),
     ).toEqual(['Forward transcript strand', 'Transcript strand unknown'])
   })
 
   test('takes the neutral from the theme it is given', () => {
-    expect(sashimiLegendItems(new Set([0]), { pairLR: '#b0b0b0' })).toEqual([
-      { color: '#b0b0b0', label: 'Transcript strand unknown' },
-    ])
+    expect(
+      sashimiLegendItems(sashimiLegend(new Set([0]), { pairLR: '#b0b0b0' })),
+    ).toEqual([{ color: '#b0b0b0', label: 'Transcript strand unknown' }])
   })
 
-  test('keys each split class drawn as the read arcs key it', () => {
+  test('keys each split class drawn in its read arc color, by its junction name', () => {
     const palette = makeTestPalette()
     const items = sashimiLegendItems(
-      new Set([1]),
-      { pairLR: '#d3d3d3' },
-      {
-        classes: new Set(['splitBack', 'splitForward']),
-        palette,
-      },
+      sashimiLegend(
+        new Set([1]),
+        { pairLR: '#d3d3d3' },
+        { classes: new Set(['splitBack', 'splitForward']), palette },
+      ),
     )
     const arcRows = getArcLegendItems(
       new Set(['splitForward', 'splitBack']),
@@ -1400,28 +1399,93 @@ describe('sashimiLegendItems', () => {
     )
     expect(items.map(i => i.label)).toEqual([
       'Forward transcript strand',
-      'Split read (deletion-type)',
-      'Split read (duplication-type)',
+      'Split junction (deletion-type)',
+      'Split junction (duplication-type)',
     ])
-    expect(items.slice(1)).toEqual(arcRows)
-    expect(sashimiLegendTitle(items)).toBe('Junctions')
-    expect(sashimiLegendTitle(items.slice(0, 1))).toBe('Splice junctions')
+    expect(items.slice(1).map(i => i.color)).toEqual(arcRows.map(i => i.color))
   })
+})
 
-  test('lands in its own section', () => {
-    const scales = getAlignmentsColorScales({
+describe('the sashimi section', () => {
+  const palette = makeTestPalette({
+    readCategoryColors: {
+      pairLR: [0.6, 0.6, 0.6],
+      pairRL: [0, 0.5, 0.5],
+      splitDeletion: [0.9, 0.7, 0],
+    },
+  })
+  const junctions = sashimiLegend(
+    new Set([-1]),
+    { pairLR: '#d3d3d3' },
+    { classes: new Set(['splitBack', 'splitForward']), palette },
+  )
+  const scalesWith = (arcs: LegendItem[]) =>
+    getAlignmentsColorScales({
+      legendItems: () => [],
+      arcLegendTitle: 'Arc colors',
+      arcLegendItems: () => arcs,
+      connectionLegendItems: () => [],
+      sashimiLegend: junctions,
+    })
+  const rows = (scales: ColorScale[], id: string) => {
+    const scale = scales.find(s => s.id === id)
+    return scale?.kind === 'categorical'
+      ? scale.entries.map(e => [e.label, e.color])
+      : []
+  }
+
+  test('is headed as the menu names the band, with or without split junctions', () => {
+    expect(scalesWith([]).at(-1)?.title).toBe('Sashimi arcs')
+    const strandsOnly = getAlignmentsColorScales({
       legendItems: () => [],
       arcLegendTitle: 'Arc colors',
       arcLegendItems: () => [],
       connectionLegendItems: () => [],
-      sashimiLegendItems: sashimiLegendItems(new Set([-1]), {
-        pairLR: '#d3d3d3',
-      }),
+      sashimiLegend: sashimiLegend(new Set([-1]), { pairLR: '#d3d3d3' }),
     })
-    expect(scales.at(-1)).toMatchObject({
+    expect(strandsOnly.at(-1)).toMatchObject({
       id: 'sashimi',
-      title: 'Splice junctions',
+      title: 'Sashimi arcs',
       entries: [{ label: 'Reverse transcript strand' }],
     })
+  })
+
+  test('keys every split class itself while the read arcs are off', () => {
+    expect(rows(scalesWith([]), 'sashimi').map(([label]) => label)).toEqual([
+      'Reverse transcript strand',
+      'Split junction (deletion-type)',
+      'Split junction (duplication-type)',
+    ])
+  })
+
+  test('adds no row of a color the read arcs key already', () => {
+    const arcs = getArcLegendItems(
+      new Set(['pairRL', 'splitForward']),
+      palette,
+      false,
+    )
+    const scales = scalesWith(arcs)
+    const back = junctions.splits.find(s => s.split === 'splitBack')!.color
+    const forward = junctions.splits.find(
+      s => s.split === 'splitForward',
+    )!.color
+    expect(rows(scales, 'sashimi')).toEqual([
+      ['Reverse transcript strand', expect.any(String)],
+    ])
+    const arcRows = rows(scales, 'arcs')
+    expect(arcRows).toContainEqual(['RL pair or duplication-type split', back])
+    expect(arcRows.filter(([, color]) => color === back)).toHaveLength(1)
+    expect(arcRows.filter(([, color]) => color === forward)).toEqual([
+      ['Split read (deletion-type)', forward],
+    ])
+  })
+
+  test('keeps a split class the read arcs paint in no color of theirs', () => {
+    const arcs = getArcLegendItems(new Set(['pairLR']), palette, false)
+    expect(rows(scalesWith(arcs), 'sashimi').map(([label]) => label)).toEqual([
+      'Reverse transcript strand',
+      'Split junction (deletion-type)',
+      'Split junction (duplication-type)',
+    ])
   })
 })

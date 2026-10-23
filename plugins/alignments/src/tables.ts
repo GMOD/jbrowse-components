@@ -170,7 +170,8 @@ import {
   getArcLegendItems,
   getReadDisplayLegendItems,
   sashimiLegendItems,
-  sashimiLegendTitle,
+  SASHIMI_LEGEND_TITLE,
+  sashimiLegend,
 } from './shared/legendUtils.ts'
 import { getModificationName } from './shared/modificationData.ts'
 import {
@@ -1704,14 +1705,16 @@ function markLegends(
   ])
   const keyedBases = paint.muted ? [] : BASES.filter(b => bases.has(b))
   const junctionKey = sashimiLegendItems(
-    new Set(
-      tables.junctions.strand.filter(
-        (_, i) =>
-          tables.junctions.shown[i] && tables.junctions.source[i] === 'gap',
+    sashimiLegend(
+      new Set(
+        tables.junctions.strand.filter(
+          (_, i) =>
+            tables.junctions.shown[i] && tables.junctions.source[i] === 'gap',
+        ),
       ),
+      resolvePalette().alignmentFill,
+      { classes: shownSplits, palette: paint.palette },
     ),
-    resolvePalette().alignmentFill,
-    { classes: shownSplits, palette: paint.palette },
   )
   const events = new Set([
     ...tables.interbaseCoverage.type,
@@ -1730,7 +1733,7 @@ function markLegends(
       label: junctionKey.map(item => item.label),
       color: junctionKey.map(item => cssColorToHex(item.color!)),
     },
-    junctionLegendTitle: sashimiLegendTitle(junctionKey),
+    junctionLegendTitle: SASHIMI_LEGEND_TITLE,
     interbaseLegend: {
       label: keyedEvents.map(t => INTERBASE_LABELS[t]),
       color: keyedEvents.map(t => paint.interbase[t]),

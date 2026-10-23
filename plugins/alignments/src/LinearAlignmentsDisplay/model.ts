@@ -107,7 +107,7 @@ import {
   getReadDisplayLegendItems,
   readCategoryLabelOverrides,
   readColorCategoryLabel,
-  sashimiLegendItems,
+  sashimiLegend,
 } from '../shared/legendUtils.ts'
 import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
@@ -2527,7 +2527,7 @@ export default function stateModelFactory(
               arcLegendTitle: self.arcLegendTitle,
               arcLegendItems: () => self.arcLegendItems(palette),
               connectionLegendItems: () => self.connectionLegendItems(palette),
-              sashimiLegendItems: sashimiLegendItems(
+              sashimiLegend: sashimiLegend(
                 self.sashimiLegendStrands,
                 theme.alignmentFill,
                 { classes: self.sashimiLegendSplitClasses, palette },
