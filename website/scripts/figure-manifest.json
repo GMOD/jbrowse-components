@@ -1039,6 +1039,11 @@
     "type": "jbrowse-img",
     "docs": ["docs/jbrowse-img.md"]
   },
+  "jbrowse-img/hosted_synteny": {
+    "name": "jbrowse-img/hosted_synteny",
+    "type": "jbrowse-img",
+    "docs": ["docs/jbrowse-img.md"]
+  },
   "jbrowse-img/hs1_mm39_synteny": {
     "name": "jbrowse-img/hs1_mm39_synteny",
     "type": "jbrowse-img",

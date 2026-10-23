@@ -52,13 +52,13 @@ export function isSyntenyFlag(key: string): key is SyntenyFlag {
 }
 
 /**
- * What an entry is to a comparative view: a genome (`--fasta`, `--chromSizes`
- * or a bare genome file), a comparison (a comparison flag or a bare file the
- * format table reads as a SyntenyTrack), or neither. A bare file's role comes
- * from its name alone.
+ * What an entry is to a comparative view: a genome (`--genome`, `--fasta`,
+ * `--chromSizes` or a bare genome file), a comparison (a comparison flag or a
+ * bare file the format table reads as a SyntenyTrack), or neither. A bare
+ * file's role comes from its name alone.
  */
 export function comparativeRole([key, [file]]: Entry) {
-  if (isGenomeFlag(key)) {
+  if (key === 'genome' || isGenomeFlag(key)) {
     return 'genome'
   } else if (isSyntenyFlag(key)) {
     return 'synteny'
@@ -120,8 +120,13 @@ export interface ComparativeRow {
 }
 
 export interface ComparativeData {
-  /** each genome once, in the order the command line first names it */
+  /** each genome file once, in the order the command line first names it */
   assemblies: Assembly[]
+  /**
+   * each `--genome` once, whose assembly and comparisons come from its hosted
+   * config: see `hostedComparative`
+   */
+  hosted: string[]
   /** in stacking order: the first is the top row and a dotplot's x axis */
   rows: ComparativeRow[]
   syntenyTracks: Track[]
@@ -150,6 +155,8 @@ function changes(firstMods: string[], mods: string[], key: string) {
  *   `cytobands:`, named after its file, and two files of one name throw.
  * - One file named twice is a self-comparison, two rows of one assembly that
  *   take its `aliases:` and `cytobands:` from the first row.
+ * - A `--genome` opens a row of a hosted genome, at its `loc:` or whole, and
+ *   throws on a genome file of the same name.
  * - A comparison file binds to the gap between the genome before it and the
  *   next one; a trailing one, written after both, clamps to the last gap.
  * - A comparison takes `name:`; any other modifier, on it or on a genome,
@@ -158,14 +165,37 @@ function changes(firstMods: string[], mods: string[], key: string) {
 export function buildComparative(entries: Entry[]): ComparativeData {
   const assemblies: Assembly[] = []
   const genomes = new Map<string, { file: string; mods: string[] }>()
+  const hosted = new Set<string>()
   const rows: ComparativeRow[] = []
   const comparisons: { entry: Entry; before: number }[] = []
+  const pushRow = (assembly: string, mods: string[]) => {
+    const loc = modifierValue(mods, 'loc')
+    rows.push(loc ? { assembly, loc } : { assembly })
+  }
   for (const entry of entries) {
     const [key, vals] = entry
     const [file = '', ...mods] = vals
     const role = comparativeRole(entry)
     const label = key === FILE_FLAG ? file : `--${key} ${file}`
-    if (role === 'genome') {
+    if (key === 'genome') {
+      if (!file) {
+        throw new Error('--genome requires a genome name, such as hg38')
+      }
+      const extra = mods.filter(mod => splitModifier(mod)?.[0] !== 'loc')
+      if (extra.length) {
+        throw new Error(
+          `${label} takes loc:, not ${extra.join(' ')}; its hosted config supplies the rest`,
+        )
+      }
+      const sameName = genomes.get(file)
+      if (sameName) {
+        throw new Error(
+          `${sameName.file} and --genome ${file} are both named ${file}; rename or link the file`,
+        )
+      }
+      hosted.add(file)
+      pushRow(file, mods)
+    } else if (role === 'genome') {
       const { assembly, unused } = genomeAssembly(
         key,
         vals,
@@ -178,7 +208,11 @@ export function buildComparative(entries: Entry[]): ComparativeData {
         )
       }
       const first = genomes.get(assembly.name)
-      if (!first) {
+      if (hosted.has(assembly.name)) {
+        throw new Error(
+          `--genome ${assembly.name} and ${file} are both named ${assembly.name}; rename or link the file`,
+        )
+      } else if (!first) {
         genomes.set(assembly.name, { file, mods })
         assemblies.push(assembly)
       } else if (!sameFile(first.file, file)) {
@@ -192,10 +226,7 @@ export function buildComparative(entries: Entry[]): ComparativeData {
           `${label} repeats ${assembly.name}, which takes its aliases: and cytobands: on its first row; a repeat row takes loc:, or restates them unchanged`,
         )
       }
-      const loc = modifierValue(mods, 'loc')
-      rows.push(
-        loc ? { assembly: assembly.name, loc } : { assembly: assembly.name },
-      )
+      pushRow(assembly.name, mods)
     } else if (role === 'synteny') {
       if (!file) {
         throw new Error(`--${key} requires a file argument`)
@@ -213,7 +244,7 @@ export function buildComparative(entries: Entry[]): ComparativeData {
     const [key, [file = '', ...mods]] = entry
     if (numLevels < 1) {
       throw new Error(
-        `${file} compares two genomes, and this command line names one; add another FASTA, 2bit or .chrom.sizes`,
+        `${file} compares two genomes, and this command line names one; add another FASTA, 2bit, .chrom.sizes or --genome`,
       )
     }
     const level = Math.min(Math.max(before - 1, 0), numLevels - 1)
@@ -229,5 +260,5 @@ export function buildComparative(entries: Entry[]): ComparativeData {
     )
   })
 
-  return { assemblies, rows, syntenyTracks }
+  return { assemblies, hosted: [...hosted], rows, syntenyTracks }
 }

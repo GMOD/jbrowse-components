@@ -2,6 +2,7 @@ import fs from 'node:fs'
 
 import {
   exportBooleanFlags,
+  hasComparativeArgs,
   isDataFile,
   parseArgv,
   standardizeArgv,
@@ -74,6 +75,7 @@ async function main() {
     console.log(version)
   } else {
     const parsed = parseArgv(args, { booleans: exportBooleanFlags })
+    // a comparative view's --genome rows are read from the entries
     const { trackList, ...rest } = standardizeArgv(
       parsed,
       [...trackTypes, ...syntenyTrackTypes],
@@ -83,6 +85,7 @@ async function main() {
           'fasta',
           'chromSizes',
           ...(mode === 'breakpoint' ? ['loc'] : []),
+          ...(hasComparativeArgs(parsed) ? ['genome'] : []),
         ],
       },
     )

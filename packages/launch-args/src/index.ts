@@ -19,6 +19,7 @@ export {
   trackFlags,
 } from './fileInput.ts'
 export { genomeConfigUrl } from './genome.ts'
+export { type HostedConfig, hostedComparative } from './hostedGenomes.ts'
 export { mergeSettings, viewSettings } from './slotPath.ts'
 export { parseBool } from './modifierValues.ts'
 export {

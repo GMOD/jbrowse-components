@@ -214,9 +214,12 @@ comparison files between them, as `jb2export synteny` draws them:
 jbrowse-desktop a.fa loc:chr1 a_vs_b.paf b.fa --view mark.interpolate=bump
 jbrowse-desktop --chromSizes hs1.chrom.sizes --chain hs1ToMm39.over.chain.gz --chromSizes mm39.chrom.sizes
 jbrowse-desktop dotplot a.fa b.fa a_vs_b.paf
+jbrowse-desktop --genome hg38 loc:chr7:27000000-27300000 --genome mm39
 ```
 
 - Each genome is a row, in command-line order, at its `loc:` or whole.
+- A `--genome` row opens a hosted genome, and the gap beside it takes a liftOver
+  comparison its config lists, unless a comparison file fills it.
 - A comparison file sits between the genome before it and the one after; one
   written after both goes in the last gap. JBrowse types a `.paf`, `.chain`,
   `.delta`, `.pif.gz` or MashMap `.out` by its name, and `--paf`, `--chain`,

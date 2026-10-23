@@ -10,6 +10,7 @@ import {
   readSessionFromDynamo,
   shareEndpoint,
 } from '@jbrowse/core/util'
+import { hostedComparative } from '@jbrowse/launch-args/hostedGenomes'
 import { resolveTrackId } from '@jbrowse/launch-args/trackIds'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { decodeSessionFromUrl } from '@jbrowse/product-core'
@@ -23,6 +24,7 @@ import type { JBrowseConfig, JBrowseConfigInput } from './types.ts'
 import type { ParsedSessionSnapshotUrl } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
+import type { HostedConfig } from '@jbrowse/launch-args/hostedGenomes'
 
 // Turns a JBrowse Web link into a Desktop session. Web resolves these out of its
 // address bar; Desktop gets the same result by parsing the link, loading the
@@ -204,22 +206,33 @@ export async function launchFromPlan(
   return pluginManager
 }
 
-// every genome comes from a file, so no config is fetched
+// the view takes a hosted genome's assembly and comparisons from its config and
+// nothing else, so it opens on session assemblies and tracks alone
 async function launchComparativePlan(
   plan: ComparativeLaunchPlanJson,
-  { createPluginManager }: LaunchFromPlanDeps,
+  { fetchConfig, createPluginManager }: LaunchFromPlanDeps,
 ) {
-  const pluginManager = await createPluginManager(undefined)
+  const configs = new Map<string, HostedConfig>(
+    await Promise.all(
+      plan.hosted.map(
+        async ({ name, config }) =>
+          [name, (await fetchConfig(config)) as HostedConfig] as const,
+      ),
+    ),
+  )
+  const hosted = hostedComparative(plan.views, plan.tracks, configs)
+  const tracks = [...plan.tracks, ...hosted.tracks]
   const view = {
     ...plan.view,
     type: plan.type,
     views: plan.views,
-    tracks: plan.tracks.map(track => track.trackId),
+    tracks: tracks.map(track => track.trackId),
   }
+  const pluginManager = await createPluginManager(undefined)
   await loadSessionSpec(
     {
-      sessionAssemblies: plan.assemblies,
-      sessionTracks: plan.tracks,
+      sessionAssemblies: [...plan.assemblies, ...hosted.assemblies],
+      sessionTracks: tracks,
       views: [view],
     },
     pluginManager,

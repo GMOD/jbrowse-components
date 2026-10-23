@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
 import {
+  buildComparative,
   comparativeRole,
   hasComparativeArgs,
   resolveTrackId,
@@ -35,7 +36,7 @@ import { readsJoiningRegions } from './joinedReads.ts'
 import { modeDescriptors, subcommandForViewType } from './modes.ts'
 import { DEFAULT_FONT_FAMILY, DEFAULT_WIDTH } from './options.ts'
 import { readData } from './readData.ts'
-import { resolveConfigObject } from './resolveHub.ts'
+import { fetchHostedGenomes, resolveConfigObject } from './resolveHub.ts'
 import {
   parseSpec,
   specMode,
@@ -932,11 +933,18 @@ export async function renderRegionReport(
   opts: Opts,
   configObject?: Config,
 ): Promise<Rendered> {
-  const data = readData(opts, configObject ?? (await resolveConfigObject(opts)))
+  const argv = opts.argv ?? []
+  const data = readData(
+    opts,
+    configObject ?? (await resolveConfigObject(opts)),
+    await fetchHostedGenomes(
+      hasComparativeArgs(argv) ? buildComparative(argv).hosted : [],
+    ),
+  )
   const spec = opts.spec ? parseSpec(opts.spec) : undefined
   // before the model is built, so a subcommand that cannot draw the --spec is
   // reported rather than left to fail against a view it never asked for
-  const mode = resolveMode(opts.mode, spec, hasComparativeArgs(opts.argv ?? []))
+  const mode = resolveMode(opts.mode, spec, hasComparativeArgs(argv))
   warnLinearOnlyOptions(mode, opts)
   const model = await createModel(data)
   // Set the theme on the session up front: worker-side label/feature colors

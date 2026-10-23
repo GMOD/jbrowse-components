@@ -1072,6 +1072,28 @@ jb2export synteny --chromSizes data/comparative/hg38.chrom.sizes \
 
 ![Three-level synteny stack: hg38, hs1, and mm39](https://jbrowse.org/jb2-figures/jbrowse-img/hg38_hs1_mm39_synteny.229bf6f58287.png)
 
+### Hosted genomes
+
+A `--genome` is a row too, so genomes from
+[genomes.jbrowse.org](https://genomes.jbrowse.org) stack with no files. Each
+hosted config lists the liftOver comparisons between its genome and others, and
+`jb2export` draws one for each pair of adjacent rows:
+
+<!-- jb2export: hosted_synteny -->
+
+```bash
+jb2export synteny --genome hg38 loc:chr7:27000000-27300000 \
+  --genome mm39 loc:chr6:52000000-52300000 --view mark.interpolate=bump \
+  --width 1400 --out hosted_synteny.png
+```
+
+![Synteny between the HOXA cluster in hg38 and mm39, from the hosted liftOver track](https://jbrowse.org/jb2-figures/jbrowse-img/hosted_synteny.bc64e5ee3cf5.png)
+
+- A `--genome` row takes `loc:`; its hosted config supplies the rest.
+- Genome files and `--genome` rows mix in one stack. A comparison file between
+  two rows replaces the hosted comparison, and a pair no hosted config covers
+  needs one.
+
 ### All-vs-all alignments (PGGB, minimap2 -X)
 
 The stacks above take one alignment file per gap. An all-vs-all PAF holds every

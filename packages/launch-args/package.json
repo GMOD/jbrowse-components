@@ -22,6 +22,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./trackIds": "./src/trackIds.ts",
+    "./hostedGenomes": "./src/hostedGenomes.ts",
     "./displaySettings": "./src/displaySettings.ts"
   },
   "files": [
@@ -49,6 +50,7 @@
     "exports": {
       ".": "./esm/index.js",
       "./trackIds": "./esm/trackIds.js",
+      "./hostedGenomes": "./esm/hostedGenomes.js",
       "./displaySettings": "./esm/displaySettings.js"
     }
   },
