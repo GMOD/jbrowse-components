@@ -101,10 +101,6 @@ the first two. Codon 61 sits in the Switch II region. The protein view's **From
 the alignment** rows list the same sites along the sequence, one row each, with
 the hovered residue as a vertical line.
 
-[Part 1](/docs/tutorials/protein_variants_sickle_cell) found the opposite at
-_HBB_ codon 7: the sickle position lies outside the globin domain and every
-site, and the orthologs vary there.
-
 ## Your own gene
 
 - any gene the protein browser opens takes the same steps, and a residue in the

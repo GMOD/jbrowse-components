@@ -95,10 +95,6 @@ Codons 248 and 273 both sit inside NCBI's DNA binding site of the P53 domain,
 and on the structure both side chains reach the DNA. Arg175, the third hotspot,
 sits in none of the sites and away from the DNA.
 
-[Part 1](/docs/tutorials/protein_variants_sickle_cell) found the opposite at
-_HBB_ codon 7: the sickle position lies outside the globin domain and every
-site, and the orthologs vary there.
-
 ## Your own gene
 
 - any gene the protein browser opens takes the same steps, and the chain picker

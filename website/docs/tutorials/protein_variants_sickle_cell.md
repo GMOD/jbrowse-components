@@ -5,8 +5,8 @@ title:
 sidebar_label: Proteins (variants pt 1, sickle cell)
 description:
   Follow the sickle cell allele of HBB from its GWAS Catalog associations and
-  its distribution across 1000 Genomes ancestries to the residue it changes in
-  the crystal structure of sickle haemoglobin
+  its 1000 Genomes genotypes to the residue it changes in the crystal structure
+  of sickle haemoglobin
 guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 tutorial_subcategory: Variants on protein structures
@@ -15,15 +15,15 @@ tutorial_subcategory: Variants on protein structures
 Sickle cell disease comes from one base change in _HBB_, the gene for the β
 chain of haemoglobin. Codon 7 changes from GAG to GTG, so glutamate 6 of the
 mature protein becomes valine. The variant, rs334, turns up again and again in
-genome-wide association studies, and its frequency differs sharply between
-ancestries. We put all of that in one JBrowse session beside the residue it
-changes, in a crystal structure of sickle haemoglobin. We'll:
+genome-wide association studies, and population callsets show who carries one
+copy and who carries two. We put all of that in one JBrowse session beside the
+residue it changes, in a crystal structure of sickle haemoglobin. We'll:
 
 - open _HBB_ on codon 7 in the protein browser, with structure 2HBS, and hover
   the codon's alignment column to find its residue
 - add the GWAS Catalog, then a copy filtered to rs334's strongest record for
   each trait tied to sickle cell trait, and read what each record reports
-- add 1000 Genomes genotypes grouped by ancestry, with a common synonymous
+- add 1000 Genomes genotypes, one row per genome, with a common synonymous
   variant four codons upstream as the control
 - color the genome, the alignment and the structure by the alignment's protein
   domains
@@ -42,13 +42,12 @@ below read these files by URL. _Your own gene_ covers a gene of your own.
 <details>
 <summary>The files</summary>
 
-| What it is                                                                                                    | File                                                                                                                                                                              |
-| ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sickle haemoglobin, deoxy form, PDB 2HBS                                                                      | [2HBS.cif](https://files.rcsb.org/download/2HBS.cif)                                                                                                                              |
-| The NHGRI-EBI GWAS Catalog, which UCSC distributes as its GWAS Catalog track and the hosted hg38 config loads | [gwas/](https://www.ebi.ac.uk/gwas/)                                                                                                                                              |
-| The 1000 Genomes 30x callset for chr11, 3,202 genomes                                                         | [20220422_3202_phased_SNV_INDEL_SV/](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/)             |
-| The population and superpopulation of each of those genomes                                                   | [20130606_g1k_3202_samples_ped_population.txt](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt) |
-| NCBI's ortholog report, the rows of the alignment                                                             | [rest-api/](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/rest-api/)                                                                                               |
+| What it is                                                                                                    | File                                                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sickle haemoglobin, deoxy form, PDB 2HBS                                                                      | [2HBS.cif](https://files.rcsb.org/download/2HBS.cif)                                                                                                                  |
+| The NHGRI-EBI GWAS Catalog, which UCSC distributes as its GWAS Catalog track and the hosted hg38 config loads | [gwas/](https://www.ebi.ac.uk/gwas/)                                                                                                                                  |
+| The 1000 Genomes 30x callset for chr11, 3,202 genomes                                                         | [20220422_3202_phased_SNV_INDEL_SV/](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/) |
+| NCBI's ortholog report, the rows of the alignment                                                             | [rest-api/](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/rest-api/)                                                                                   |
 
 </details>
 
@@ -134,20 +133,10 @@ menu edits to keep other traits.
 
 <Figure src="/img/protein/hbb_gwas_catalog.png" caption="The GWAS Catalog under HBB, and the copy filtered to rs334's strongest record for each trait, labeled with its trait." />
 
-## Sickle allele by ancestry in 1000 Genomes
+## Sickle allele in 1000 Genomes
 
-The 1000 Genomes callset is a VCF with a column per genome, and JBrowse can draw
-one row per genome, colored by a column of a sample sheet. The release's ped
-file holds each genome's population and superpopulation. This turns it into the
-sheet JBrowse reads, sorted so each superpopulation is one block of rows:
-
-```bash
-awk 'BEGIN{OFS="\t"} NR>1 {print $2,$6,$7}' samples_ped_population.txt \
-  | sort -t$'\t' -k3,3 -k2,2 \
-  | (printf 'name\tpopulation\tsuperpopulation\n'; cat) > samples.tsv
-```
-
-Add the callset as a track, with a hosted copy of that sheet:
+The 1000 Genomes callset is a VCF with a column per genome, which JBrowse draws
+as one row per genome:
 
 ```json addtrack loc=chr11:5226956-5227046
 {
@@ -164,27 +153,25 @@ Add the callset as a track, with a hosted copy of that sheet:
       "location": {
         "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr11.filtered.SNV_INDEL_SV_phased_panel.vcf.gz.tbi"
       }
-    },
-    "samplesTsvLocation": {
-      "uri": "https://jbrowse.org/demos/1000g/1kgp_3202_superpopulations.tsv"
     }
   },
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "displayId": "kgp3202_chr11_snv-LinearMultiSampleVariantDisplay",
-      "rowColor": "superpopulation"
+      "displayId": "kgp3202_chr11_snv-LinearMultiSampleVariantDisplay"
     }
   ]
 }
 ```
 
-Read two columns. rs334 sits under the highlighted codon, and rs713040, a
-synonymous change in the His3 codon four codons upstream, sits to its left on
-screen. HbC, rs33930165, a second allele of the same codon, shares the
-highlighted column.
+rs334 sits under the highlighted codon. Right-click its column and pick **Sort
+rows by genotype here**, which gathers its carriers into one block. Nearly all
+of them carry one copy. rs713040, a synonymous change in the His3 codon four
+codons upstream, sits to its left on screen as the control: common, and carried
+as one copy or two. HbC, rs33930165, a second allele of the same codon, shares
+the highlighted column.
 
-<Figure src="/img/protein/hbb_1000_genomes.png" caption="1000 Genomes genotypes under HBB, one row per genome, colored down the left edge by superpopulation." />
+<Figure src="/img/protein/hbb_1000_genomes.png" caption="1000 Genomes genotypes under HBB, one row per genome, sorted by genotype at rs334." />
 
 ## The domains across all three views
 
@@ -213,11 +200,9 @@ a time:
 1. the GWAS records tie the allele to malaria and to haemolytic anaemia and
    kidney disease: one copy protects against severe malaria, and two copies
    cause sickle cell disease
-2. the 1000 Genomes carriers sit in the African-ancestry block of rows, nearly
-   all with one copy, since malaria favoured carriers there
+2. nearly every 1000 Genomes carrier has one copy, the protected genotype
 3. the alignment and the domain track mark no heme-binding or tetramer-interface
-   site at residue 6, so the change breaks none of the sites NCBI
-   records[^domain]
+   site at Glu6, which sits on the protein's surface[^domain]
 4. on the structure, the hydrophobic valine 6 of the second tetramer's chain H
    fills a pocket of Phe85 and Leu88 on the first tetramer's chain B.
    Deoxygenated haemoglobin S stacks into fibres through this contact, and the
@@ -242,8 +227,8 @@ Each step on this page works on any gene the protein browser opens:
 - **Launch protein view** in a gene's right-click menu picks the structure
   yourself, and its **File or URL** tab takes a PDB or mmCIF of your own, such
   as a ColabFold or AlphaFold model
-- any VCF with a sample sheet adds the population layer, colored by whichever
-  column of the sheet you name in `rowColor`
+- any multi-sample VCF adds the genotype layer, and **Sort rows by genotype
+  here** gathers the carriers of whichever variant you right-click
 
 ## See also
 

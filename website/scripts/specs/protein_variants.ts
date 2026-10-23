@@ -13,9 +13,9 @@ import type {
 } from '../screenshot-spec-types.ts'
 
 // Captions name a direction; these numbers, read off the tracks' files, back it:
-//   HBB rs334 (codon 7 GAG>GTG): AF_AFR 0.100, AF_AMR 0.005, other
-//   superpopulations 0; rs713040 (His3, synonymous) 0.50-0.88 in all. The GWAS
-//   filter keeps one row per trait at the codon.
+//   HBB rs334 (codon 7 GAG>GTG): 182 het, 1 hom of 3,202 genomes; rs713040
+//   (His3, synonymous) 1,143 het, 1,725 hom. The GWAS filter keeps one row per
+//   trait at the codon.
 //   SOD1 E40K (canFam4): no wolf or coyote carries it; 198 of 1,987 dogs do.
 //   AGL11 codon 197: Arg in Pinot Noir, Leu in A0A217EJJ0 (cv. Sultanina);
 //   AlphaFold pLDDT 57.6 there.
@@ -210,6 +210,12 @@ const GWAS_SUBSET = 'gwasCatalog_sickle_cell_traits'
 const GWAS_SUBSET_TRACK = pageTrack(SICKLE_CELL_PAGE, GWAS_SUBSET)
 const RS334 = 'chr11:5,227,002'
 const RS713040 = 'chr11:5,227,013'
+const KG_SORTED = {
+  trackId: KG,
+  type: 'LinearMultiSampleVariantDisplay',
+  height: 330,
+  sortRowsBy: { refName: 'chr11', pos: 5_227_001 },
+}
 const HBB_GENE_TRACK = { trackId: HBB_GENES, height: 60 }
 const HBB_DOMAINS = 'msaview-domains-msa-HBB'
 const HBB_CODON_7 = 'chr11:5226956-5227046[rev]'
@@ -258,9 +264,8 @@ function hbbSession({
 
 const HBB_FONT_SIZE = 23
 const SICKLE_CODON = 'The sickle-cell change: GAG to GTG'
-const SICKLE_CARRIERS =
-  'Sickle allele, carried mostly by African-ancestry genomes'
-const RS713040_CONTROL = 'A harmless nearby variant, common in every population'
+const SICKLE_CARRIERS = 'Sickle allele: carriers nearly all have one copy'
+const RS713040_CONTROL = 'A common synonymous variant nearby'
 
 // The codon column's px width follows the figure's zoom, so each figure passes
 // its own `controlDx`.
@@ -664,7 +669,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       tracks: [
         HBB_GENE_TRACK,
         { trackId: GWAS_SUBSET, height: 170 },
-        { trackId: KG, type: 'LinearMultiSampleVariantDisplay', height: 330 },
+        KG_SORTED,
       ],
       sessionTracks: [GWAS_SUBSET_TRACK, KG_TRACK],
       msaHeight: 300,
@@ -681,7 +686,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       tracks: [
         HBB_GENE_TRACK,
         { trackId: GWAS_SUBSET, height: 170 },
-        { trackId: KG, type: 'LinearMultiSampleVariantDisplay', height: 330 },
+        KG_SORTED,
       ],
       sessionTracks: [GWAS_SUBSET_TRACK, KG_TRACK],
       loc: `${HBB_CODON_7} ${HBB_EXON_2_START}`,
@@ -718,7 +723,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: '2  Carriers are African-ancestry genomes, nearly all with one copy',
+        text: '2  Carriers nearly all have one copy, the genotype that protects',
         fontSize: HBB_FONT_SIZE,
         maxWidth: 300,
         leader: true,
@@ -728,7 +733,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: '3  No heme or interface site here: glutamate 6 sits on the surface',
+        text: '3  No heme or interface site at glutamate 6, which sits on the surface',
         fontSize: HBB_FONT_SIZE,
         maxWidth: 340,
         leader: true,
