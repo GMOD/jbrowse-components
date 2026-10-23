@@ -85,21 +85,18 @@
     },
     {
       "type": "AlignmentsTrack",
-      "trackId": "hela_rnaser_split_reads",
-      "name": "HeLa RNase R+ split reads only",
+      "trackId": "hela_control_reads",
+      "name": "HeLa ribominus RNA-seq, no RNase R (SRR1637089)",
       "assemblyNames": ["hg38"],
       "category": ["circRNA"],
       "adapter": {
         "type": "BamAdapter",
-        "uri": "https://jbrowse.org/demos/circrna/SRR1636985.slice.bam"
+        "uri": "https://jbrowse.org/demos/circrna/SRR1637089.slice.bam"
       },
       "displayDefaults": {
-        "height": 200,
-        "readConnections": { "show": true },
-        "filter": [
-          { "field": "mapq", "gte": 1 },
-          { "field": "split", "equal": true }
-        ]
+        "height": 300,
+        "sashimi": { "labels": { "show": true } },
+        "filter": [{ "field": "mapq", "gte": 1 }]
       }
     }
   ],
@@ -113,7 +110,8 @@
         "tracks": [
           "ncbi_refseq_genes",
           "hela_rnaser_backsplice",
-          "hela_rnaser_reads"
+          "hela_rnaser_reads",
+          "hela_control_reads"
         ]
       }
     ]
