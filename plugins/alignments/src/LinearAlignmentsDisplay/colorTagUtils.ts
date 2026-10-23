@@ -2,8 +2,6 @@ import { hashString, refNameColor } from '@jbrowse/core/ui/colors'
 import { tagColorPalette } from '@jbrowse/core/ui/palette'
 import { relight } from '@jbrowse/core/util/color'
 
-import type { ColorBy } from '../shared/types.ts'
-
 /**
  * Where a refName sits in its assembly's own chromosome order, for chromosome
  * painting — the display's `paintedRefNamePosition`, which canonicalizes the
@@ -88,11 +86,11 @@ function tagValueColor(value: string) {
  * here claiming the two matched was written before that.
  */
 export function bakedValueColor(
-  colorBy: ColorBy,
+  colorField: string,
   value: string,
   refNamePosition?: RefNamePosition,
 ) {
-  return colorBy.type === 'mateRefName'
+  return colorField === 'mateRefName'
     ? refNameColor(value, refNamePosition?.(value))
     : tagValueColor(value)
 }

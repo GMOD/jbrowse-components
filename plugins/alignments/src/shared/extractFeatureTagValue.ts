@@ -8,7 +8,7 @@ import type { Feature } from '@jbrowse/core/util'
 //
 // The fallback is why: `get('tags')` runs the full decode — a Record allocation
 // plus every unrelated tag on the read (NM/AS/ms/de/…, often ~10) — to answer
-// one, and this is on the adapter hot path, called per read for colorBy.tag,
+// one, and this is on the adapter hot path, called per read for a color tag,
 // sortTag and the `hasSA` group predicate. A record carrying the accessor always
 // has a tag block (`_computeTags` returns an object even when empty), so the
 // fallback never applied to it; it exists for the flagless features that share

@@ -5,7 +5,6 @@ import {
   extractFeatureArrays,
 } from './extractFeatureArrays.ts'
 
-import type { ReadColorBy } from './types.ts'
 import type { FeatureData } from './webglRpcTypes.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -59,9 +58,9 @@ const buildFeatureData = (f: Feature): FeatureData => ({
   strand: f.get('strand') ?? 0,
 })
 
-function extract(features: Feature[], colorBy: ReadColorBy) {
+function extract(features: Feature[], colorField: string) {
   return extractFeatureArrays(features, buildFeatureData, {
-    colorBy,
+    colorField,
     showSoftClipping: false,
     region,
     perBaseBinBp: 1,
@@ -73,29 +72,26 @@ describe('mateRefName extraction', () => {
     expect(
       extract(
         [syntenyFeature('ctgA', 'ctgB'), syntenyFeature('ctgA', 'ctgC')],
-        { type: 'mateRefName' },
+        'mateRefName',
       ).tagColorValues,
     ).toEqual(['ctgB', 'ctgC'])
   })
 
   test('a BAM read falls back to its mate reference', () => {
-    expect(
-      extract([bamRead('ctgB')], { type: 'mateRefName' }).tagColorValues,
-    ).toEqual(['ctgB'])
+    expect(extract([bamRead('ctgB')], 'mateRefName').tagColorValues).toEqual([
+      'ctgB',
+    ])
   })
 
   test('a feature with neither mate nor next_ref reports no name', () => {
-    expect(
-      extract([bamRead('')], { type: 'mateRefName' }).tagColorValues,
-    ).toEqual([''])
+    expect(extract([bamRead('')], 'mateRefName').tagColorValues).toEqual([''])
   })
 
   // The channel is shared with tag coloring, so it must stay empty for every
   // other scheme — a stray value would bake a color over the shader's own.
   test('the channel is empty under other color schemes', () => {
     expect(
-      extract([syntenyFeature('ctgA', 'ctgB')], { type: 'strand' })
-        .tagColorValues,
+      extract([syntenyFeature('ctgA', 'ctgB')], 'strand').tagColorValues,
     ).toEqual([])
   })
 })
@@ -106,24 +102,19 @@ describe('mateRefName extraction', () => {
 describe('attribute color extraction', () => {
   test('a path field reads into the feature', () => {
     expect(
-      extract([syntenyFeature('ctgA', 'ctgB')], {
-        type: 'tag',
-        attribute: 'mate.assemblyName',
-      }).tagColorValues,
+      extract([syntenyFeature('ctgA', 'ctgB')], 'mate.assemblyName')
+        .tagColorValues,
     ).toEqual(['volvox_random'])
   })
 
   test('a read dimension paints its facet values', () => {
     expect(
-      extract([syntenyFeature('ctgA', 'ctgB'), bamRead('ctgB')], {
-        type: 'tag',
-        attribute: 'mateAssembly',
-      }).tagColorValues,
-    ).toEqual(['volvox_random', ''])
-    expect(
-      extract([bamRead('ctgB')], { type: 'tag', attribute: 'split' })
+      extract([syntenyFeature('ctgA', 'ctgB'), bamRead('ctgB')], 'mateAssembly')
         .tagColorValues,
-    ).toEqual(['unsplit'])
+    ).toEqual(['volvox_random', ''])
+    expect(extract([bamRead('ctgB')], 'split').tagColorValues).toEqual([
+      'unsplit',
+    ])
   })
 })
 
@@ -153,9 +144,8 @@ describe('SA tags are extracted whatever the display is drawing', () => {
 
   test('a read carrying one reports it, with no setting asked about', () => {
     expect(
-      extract([splitRead('a', SA), splitRead('b', undefined)], {
-        type: 'strand',
-      }).suppAlignments,
+      extract([splitRead('a', SA), splitRead('b', undefined)], 'strand')
+        .suppAlignments,
     ).toEqual([SA, ''])
   })
 
@@ -163,9 +153,8 @@ describe('SA tags are extracted whatever the display is drawing', () => {
   // not one SA tag between them.
   test('a group with none anywhere ships nothing rather than a string per read', () => {
     expect(
-      extract([splitRead('a', undefined), splitRead('b', undefined)], {
-        type: 'strand',
-      }).suppAlignments,
+      extract([splitRead('a', undefined), splitRead('b', undefined)], 'strand')
+        .suppAlignments,
     ).toBeUndefined()
   })
 })
@@ -189,7 +178,7 @@ describe('tag sort values', () => {
       [tagged('1', 'a'), tagged('2', 'b')],
       buildFeatureData,
       {
-        colorBy: { type: 'tag', tag: 'HP' },
+        colorField: 'tags.HP',
         showSoftClipping: false,
         region,
         perBaseBinBp: 1,
@@ -224,31 +213,27 @@ describe('CIGAR-only features', () => {
   }
 
   test('an insertion is extracted at its reference position', () => {
-    const { insertions } = extract([alleleFeature('2062M63348I')], {
-      type: 'strand',
-    })
+    const { insertions } = extract([alleleFeature('2062M63348I')], 'strand')
     expect(insertions).toHaveLength(1)
     expect(insertions[0]!.position).toBe(3062)
     expect(insertions[0]!.length).toBe(63348)
   })
 
   test('a deletion is extracted as a gap over the reference it skips', () => {
-    const { gaps } = extract([alleleFeature('48M3217D')], { type: 'strand' })
+    const { gaps } = extract([alleleFeature('48M3217D')], 'strand')
     expect(gaps).toHaveLength(1)
     expect(gaps[0]!.start).toBe(1048)
     expect(gaps[0]!.end).toBe(4265)
   })
 
   test('a plain match contributes nothing', () => {
-    const { insertions, gaps } = extract([alleleFeature('100M')], {
-      type: 'strand',
-    })
+    const { insertions, gaps } = extract([alleleFeature('100M')], 'strand')
     expect(insertions).toHaveLength(0)
     expect(gaps).toHaveLength(0)
   })
 
   test('a feature with no CIGAR is skipped rather than throwing', () => {
-    expect(() => extract([bamRead('')], { type: 'strand' })).not.toThrow()
+    expect(() => extract([bamRead('')], 'strand')).not.toThrow()
   })
 })
 
@@ -266,7 +251,7 @@ describe('an intron that only touches a region edge', () => {
   })
   const skipsIn = (start: number, end: number) =>
     extractFeatureArrays([spliced], buildFeatureData, {
-      colorBy: { type: 'normal' },
+      colorField: '',
       showSoftClipping: false,
       region: { refName: 'ctgA', start, end, assemblyName: 'volvox' },
       perBaseBinBp: 1,
@@ -302,7 +287,7 @@ describe('modification type detection', () => {
     baseLayer?: { type: 'modifications' },
   ) =>
     extractFeatureArrays(features, buildFeatureData, {
-      colorBy: { type: 'normal' },
+      colorField: '',
       baseLayer,
       showSoftClipping: false,
       region,
@@ -341,7 +326,7 @@ describe('the SA lookup', () => {
   }
   const saOf = (read: Read) =>
     extractFeatureArrays([read], buildFeatureData, {
-      colorBy: { type: 'normal' },
+      colorField: '',
       showSoftClipping: false,
       region,
       perBaseBinBp: 1,

@@ -29,7 +29,7 @@ import {
   packedCigarOps,
 } from '../alignedBaseWalk.ts'
 
-import type { ColorBy, ModificationColorBy } from '../../shared/types.ts'
+import type { BaseLayer, ModificationColorBy } from '../../shared/types.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type {
@@ -75,7 +75,7 @@ export function extractModifications(
   // re-narrow it for `getModPositions`.
   strand: -1 | 0 | 1,
   region: Pick<Region, 'start' | 'end'>,
-  colorBy: ColorBy | undefined,
+  layer: BaseLayer | undefined,
   detectedModifications: Set<string>,
   seenModTypes: Map<string, ModificationType>,
   modificationsData: ModificationEntry[],
@@ -107,7 +107,7 @@ export function extractModifications(
   // sequence, which makes BAM decode SEQ for the read), to populate the menu
   // above. That is the ungated cost the old comment on `packedCigarOps`
   // describes, and it is now gated.
-  if (colorBy?.type !== 'modifications') {
+  if (layer?.type !== 'modifications') {
     return
   }
 
@@ -136,7 +136,7 @@ export function extractModifications(
     window.readStart,
     window.readEnd,
   )
-  const mods = colorBy.modifications
+  const mods = layer.modifications
   const twoColor = paintsUnmodifiedCalls(mods)
 
   // The 2-color view hands 5mC/5hmC to extractMethylation, which weighs them

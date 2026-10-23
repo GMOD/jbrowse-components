@@ -656,9 +656,9 @@ describe('FetchVisibleRegions autorun', () => {
   })
 
   // Only the schemes the worker extracts different data for are in rpcProps
-  // (see workerColorBy) — per-base overlays, modifications, bisulfite, and the
+  // (see workerColorField) — per-base overlays, modifications, bisulfite, and the
   // CPU-baked tag/mateRefName strings.
-  it('refetches when colorBy changes to a scheme the worker extracts for', async () => {
+  it('refetches when the color field changes to one the worker extracts for', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
@@ -738,7 +738,7 @@ describe('FetchVisibleRegions autorun', () => {
   })
 
   // The shader decides these from arrays every fetch already produces, so
-  // switching between them is a repaint. Sending the raw colorBy made each of
+  // switching between them is a repaint. Sending every field made each of
   // these hops drop rpcDataMap and re-read the region for identical data.
   it('does NOT refetch when switching between shader-only color schemes', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
@@ -765,7 +765,7 @@ describe('FetchVisibleRegions autorun', () => {
 
     expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
     // ...and the reads still repaint, because the scheme index is render state
-    expect(display.colorBy.type).toBe('normal')
+    expect(display.colorField).toBe('')
   })
 
   // Chain identity is joined on the main thread, so the toggle is a relayout.

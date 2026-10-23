@@ -270,7 +270,7 @@ export async function executeRenderAlignmentData({
     sequenceAdapter,
     regions,
     filter,
-    colorBy,
+    colorField,
     baseLayer,
     sortTag,
     facet,
@@ -345,7 +345,7 @@ export async function executeRenderAlignmentData({
   const buildFeatureData = (f: Feature) => buildBaseFeatureData(f, readIdPrefix)
   const extractOpts = {
     jexl: pluginManager.jexl,
-    colorBy,
+    colorField,
     baseLayer,
     showSoftClipping,
     region,

@@ -17,9 +17,9 @@ import {
   alignmentsColorProblems,
   baseLayerOf,
   bodyColorScheme,
-  colorByOf,
-  colorFieldOf,
   pinnedInsertSizeBand,
+  readColorByOf,
+  readColorFieldOf,
 } from '../shared/alignmentsColor.ts'
 import {
   connectionEntries,
@@ -463,17 +463,17 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * The read fill `encoding.color` selects.
-     */
-    get colorBy(): ReadColorBy {
-      return colorByOf(this.colorEncoding)
-    },
-    /**
-     * #getter
      * The field the read fill paints by, `''` for the plain fill.
      */
     get colorField(): string {
-      return colorFieldOf(this.colorBy)
+      return readColorFieldOf(this.colorEncoding)
+    },
+    /**
+     * #getter
+     * @deprecated read `colorField`, the field itself.
+     */
+    get colorBy(): ReadColorBy {
+      return readColorByOf(this.colorField)
     },
     /**
      * #getter
@@ -512,11 +512,11 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * What the read body paints as: `colorBy`, or the modification layer's
+     * What the read body paints as: `colorField`'s scheme, or the modification layer's
      * own pale strand tint while the fill is plain.
      */
     get bodyColorScheme(): ColorSchemeType {
-      return bodyColorScheme(this.colorBy, this.baseLayer)
+      return bodyColorScheme(this.colorField, this.baseLayer)
     },
     /**
      * #getter

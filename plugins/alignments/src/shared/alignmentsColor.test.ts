@@ -9,25 +9,25 @@ import {
   alignmentsColorEncoding,
   baseLayerOf,
   bodyColorScheme,
-  colorByOf,
-  colorFieldOf,
   pinnedInsertSizeBand,
+  readColorByOf,
+  readColorFieldOf,
 } from './alignmentsColor.ts'
+import { colorSchemeOf } from './colorSchemes.ts'
 import { colorSettingOf } from './colorSettingFixture.ts'
 import { FACET_LABELS } from './facetLabels.ts'
 
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 
 function readFill(field: string) {
-  return colorByOf(alignmentsColorEncoding(colorSettingOf({ field })))
+  return readColorFieldOf(alignmentsColorEncoding(colorSettingOf({ field })))
 }
 
-describe('colorByOf', () => {
-  test('every preset field selects the scheme of its name and names it back', () => {
+describe('readColorFieldOf', () => {
+  test('every preset field selects the scheme of its name', () => {
     for (const field of COLOR_FIELDS) {
-      const colorBy = readFill(field)
-      expect(colorBy.type).toBe(field)
-      expect(colorFieldOf(colorBy)).toBe(field)
+      expect(readFill(field)).toBe(field)
+      expect(colorSchemeOf(readFill(field))).toBe(field)
     }
   })
 
@@ -39,25 +39,29 @@ describe('colorByOf', () => {
     }
   })
 
-  test('tags.XX reads a SAM tag and any other name a feature attribute', () => {
-    expect(readFill('tags.HP')).toEqual({
-      type: 'tag',
-      tag: 'HP',
-    })
-    expect(readFill('score')).toEqual({
-      type: 'tag',
-      attribute: 'score',
-    })
+  test('tags.XX and any other name paint through the per-read bake', () => {
+    expect(colorSchemeOf(readFill('tags.HP'))).toBe('tag')
+    expect(colorSchemeOf(readFill('score'))).toBe('tag')
   })
 
   test('no field paints the plain fill', () => {
-    expect(readFill('').type).toBe('normal')
+    expect(readFill('')).toBe('')
+    expect(colorSchemeOf('')).toBe('normal')
   })
 
   test('a per-base field is no read fill, and costs no attribute lookup', () => {
     for (const field of BASE_COLOR_FIELDS) {
-      expect(readFill(field)).toEqual({ type: 'normal' })
+      expect(readFill(field)).toBe('')
     }
+  })
+})
+
+describe('readColorByOf', () => {
+  test('restates a field as the deprecated scheme object', () => {
+    expect(readColorByOf('')).toEqual({ type: 'normal' })
+    expect(readColorByOf('mapq')).toEqual({ type: 'mapq' })
+    expect(readColorByOf('tags.HP')).toEqual({ type: 'tag', tag: 'HP' })
+    expect(readColorByOf('score')).toEqual({ type: 'tag', attribute: 'score' })
   })
 })
 
@@ -94,10 +98,10 @@ describe('baseLayerOf', () => {
 describe('bodyColorScheme', () => {
   test('a modification layer tints the plain fill and yields to a read field', () => {
     const mods = { type: 'modifications' } as const
-    expect(bodyColorScheme({ type: 'normal' }, mods)).toBe('modifications')
-    expect(bodyColorScheme({ type: 'tag', tag: 'HP' }, mods)).toBe('tag')
-    expect(bodyColorScheme({ type: 'normal' }, { type: 'base' })).toBe('normal')
-    expect(bodyColorScheme({ type: 'strand' }, undefined)).toBe('strand')
+    expect(bodyColorScheme('', mods)).toBe('modifications')
+    expect(bodyColorScheme('tags.HP', mods)).toBe('tag')
+    expect(bodyColorScheme('', { type: 'base' })).toBe('normal')
+    expect(bodyColorScheme('strand', undefined)).toBe('strand')
   })
 })
 

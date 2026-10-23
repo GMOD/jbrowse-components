@@ -1,7 +1,6 @@
-import { colorFieldOf } from './alignmentsColor.ts'
 import { sectionOrder } from './groupFeatures.ts'
 
-import type { ColorBy, Facet } from './types.ts'
+import type { Facet } from './types.ts'
 
 /**
  * The sections' order for the color key, where the facet reads the field the
@@ -9,10 +8,8 @@ import type { ColorBy, Facet } from './types.ts'
  * Not over `mapq`, whose sections are bins and whose key is its bins or its
  * raw values.
  */
-export function keySectionOrder(facet: Facet | undefined, colorBy: ColorBy) {
-  return facet &&
-    facet.field === colorFieldOf(colorBy) &&
-    colorBy.type !== 'mapq'
+export function keySectionOrder(facet: Facet | undefined, colorField: string) {
+  return facet && facet.field === colorField && colorField !== 'mapq'
     ? sectionOrder(facet.field, facet.sort)
     : undefined
 }

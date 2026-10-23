@@ -298,28 +298,28 @@ describe('alignments fit-to-display-height split', () => {
   })
 })
 
-describe('alignments colorBy', () => {
+describe('alignments colorField', () => {
   it('is normal with no config', () => {
     const { display } = createDisplay()
-    expect(display.colorBy).toEqual({ type: 'normal' })
+    expect(display.colorField).toBe('')
   })
 
   it('takes an explicit per-track scheme', () => {
     const { display } = createDisplay({
       encoding: { color: { field: 'strand' } },
     })
-    expect(display.colorBy).toEqual({ type: 'strand' })
+    expect(display.colorField).toBe('strand')
   })
 
   it('reads a tag and an attribute off the config', () => {
     expect(
       createDisplay({ encoding: { color: { field: 'tags.HP' } } }).display
-        .colorBy,
-    ).toEqual({ type: 'tag', tag: 'HP' })
+        .colorField,
+    ).toBe('tags.HP')
     expect(
       createDisplay({ encoding: { color: { field: 'score' } } }).display
-        .colorBy,
-    ).toEqual({ type: 'tag', attribute: 'score' })
+        .colorField,
+    ).toBe('score')
   })
 
   it('draws a per-base layer beside whatever fills the reads', () => {
@@ -328,7 +328,7 @@ describe('alignments colorBy', () => {
       pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
       modifications: { threshold: 50 },
     })
-    expect(display.colorBy).toEqual({ type: 'tag', tag: 'HP' })
+    expect(display.colorField).toBe('tags.HP')
     expect(display.baseLayer).toEqual({
       type: 'modifications',
       modifications: { threshold: 50 },
@@ -336,7 +336,7 @@ describe('alignments colorBy', () => {
     expect(display.bodyColorScheme).toBe('tag')
     expect(display.showModifications).toBe(true)
     expect(display.rpcProps()).toMatchObject({
-      colorBy: { type: 'tag', tag: 'HP' },
+      colorField: 'tags.HP',
       baseLayer: { type: 'modifications' },
     })
   })
@@ -348,7 +348,7 @@ describe('alignments colorBy', () => {
     })
     expect(display.showModifications).toBe(true)
     expect(display.rpcProps()).toMatchObject({
-      colorBy: undefined,
+      colorField: undefined,
       baseLayer: {
         type: 'modifications',
         modifications: { unmodified: 'all' },
@@ -360,8 +360,8 @@ describe('alignments colorBy', () => {
     const { display } = createDisplay({
       encoding: { color: { field: 'modifications' } },
     })
-    expect(display.colorBy).toEqual({ type: 'normal' })
-    expect(display.rpcProps()).toMatchObject({ colorBy: undefined })
+    expect(display.colorField).toBe('')
+    expect(display.rpcProps()).toMatchObject({ colorField: undefined })
   })
 
   it('a per-base layer names one of its four variables', () => {
@@ -378,7 +378,7 @@ describe('alignments colorBy', () => {
         bases: { show: true, encoding: { color: { field: 'bisulfite' } } },
       },
     })
-    expect(display.colorBy).toEqual({ type: 'normal' })
+    expect(display.colorField).toBe('')
     expect(display.bodyColorScheme).toBe('bisulfite')
   })
 
@@ -389,7 +389,7 @@ describe('alignments colorBy', () => {
     display.colorByField('strand')
     expect(display.baseLayer?.type).toBe('modifications')
     display.setBaseLayer({ type: 'baseQuality' })
-    expect(display.colorBy).toEqual({ type: 'strand' })
+    expect(display.colorField).toBe('strand')
     expect(display.showPerBaseQuality).toBe(true)
     display.setBaseLayer()
     expect(display.baseLayer).toBeUndefined()
@@ -438,15 +438,15 @@ describe('alignments colorBy', () => {
 
   it('a string is the field, and value the constant read fill', () => {
     expect(
-      createDisplay({ encoding: { color: 'strand' } }).display.colorBy,
-    ).toEqual({ type: 'strand' })
+      createDisplay({ encoding: { color: 'strand' } }).display.colorField,
+    ).toBe('strand')
     expect(() =>
       createDisplay({ encoding: { color: 'rgb(0, 0, 255)' } }),
     ).toThrow(/is a color, and a bare string is the field/)
     const { display } = createDisplay({
       encoding: { color: { value: 'rgb(0, 0, 255)' } },
     })
-    expect(display.colorBy).toEqual({ type: 'normal' })
+    expect(display.colorField).toBe('')
     expect(display.colorSetting.value).toBe('rgb(0, 0, 255)')
   })
 
@@ -457,7 +457,7 @@ describe('alignments colorBy', () => {
       },
     })
     display.colorByField('')
-    expect(display.colorBy).toEqual({ type: 'normal' })
+    expect(display.colorField).toBe('')
     expect(display.parkedColor?.field).toBe('tags.HP')
     display.colorByField('tags.HP')
     expect(display.colorSetting.scale.range).toEqual(['red', 'blue'])
@@ -531,7 +531,7 @@ describe('alignments colorBy', () => {
     })
     display.setUnit('chain')
     display.setUnit('read')
-    expect(display.colorBy).toEqual({ type: 'normal' })
+    expect(display.colorField).toBe('')
     display.setUnit('chain')
     expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
   })
@@ -579,13 +579,13 @@ describe('alignments colorBy', () => {
   })
 
   // Leaving pairs mode discards the now-meaningless pairing scheme.
-  it('leaving pairs resets colorBy to normal', () => {
+  it('leaving pairs resets the color field to the plain fill', () => {
     const { display } = createDisplay()
     display.setUnit('chain')
-    expect(display.colorBy.type).toBe('insertSizeAndOrientation')
+    expect(display.colorField).toBe('insertSizeAndOrientation')
 
     display.setUnit('read')
-    expect(display.colorBy).toEqual({ type: 'normal' })
+    expect(display.colorField).toBe('')
   })
 })
 

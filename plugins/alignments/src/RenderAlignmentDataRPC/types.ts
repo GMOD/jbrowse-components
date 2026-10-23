@@ -8,7 +8,7 @@
  */
 
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
-import type { BaseLayer, ReadColorBy, WorkerFacet } from '../shared/types'
+import type { BaseLayer, WorkerFacet } from '../shared/types'
 import type { ReadKeys } from '@jbrowse/alignments-core'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
@@ -25,8 +25,10 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
   filter?: FieldPredicate[]
-  colorBy?: ReadColorBy
-  // the per-base layer, which extracts beside whatever `colorBy` fills reads with
+  // `encoding.color.field`, which ships a value per read under a tag, an
+  // attribute or `mateRefName` and is read by no other field
+  colorField?: string
+  // the per-base layer, which extracts beside whatever fills the reads
   baseLayer?: BaseLayer
   // Tag name for tag-sort. Only the tag is sent to the worker (not the
   // full SortColumn), so changing sort position within a tag sort doesn't
@@ -226,7 +228,7 @@ export interface WorkerPileupData {
   // Per-position modification aggregates for the coverage tooltip, as flat
   // transferable arrays (shared/modTooltipIndex.ts, which owns the layout and
   // says why it is not a Record). Read one position at a time by
-  // `modTooltipEntriesAt`; zero-length when colorBy is not
+  // `modTooltipEntriesAt`; zero-length when the per-base layer is not
   // modifications/methylation.
   modTooltipPositions: Uint32Array
   modTooltipOffsets: Uint32Array

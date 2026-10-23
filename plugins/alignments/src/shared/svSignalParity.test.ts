@@ -110,7 +110,6 @@ const extraction = extractFeatureArrays(
   features,
   f => buildBaseFeatureData(f, undefined),
   {
-    colorBy: undefined,
     showSoftClipping: false,
     region: { assemblyName: 'hg', refName: 'chr1', start: 0, end: 10_000 },
     perBaseBinBp: 1,

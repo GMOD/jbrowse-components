@@ -15,6 +15,7 @@ import {
 } from '@jbrowse/core/util/thresholdScale'
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
+import { colorSchemeOf } from '../shared/colorSchemes.ts'
 import { bakedValueColor } from './colorTagUtils.ts'
 import {
   mapqExtentAcrossGroups,
@@ -22,7 +23,6 @@ import {
 } from './qualitySpans.ts'
 
 import type { AlignmentsColorEncoding } from '../shared/alignmentsColor.ts'
-import type { ColorBy } from '../shared/types.ts'
 import type { RefNamePosition } from './colorTagUtils.ts'
 import type { LaidOutByGroup } from './groupLayout.ts'
 import type { RampStop } from '@jbrowse/core/ui'
@@ -152,13 +152,13 @@ function withoutNoValue(
  * unread beside a mate reference, whose values are sequence names.
  */
 export function bakedColorScale(
-  colorBy: ColorBy,
+  colorField: string,
   encoding: AlignmentsColorEncoding,
   refNamePosition: RefNamePosition | undefined,
   extent: NumericExtent | undefined,
 ): BakedColorScale {
   const scaled = typeof encoding === 'object' ? encoding : undefined
-  const numeric = colorBy.type === 'tag' || colorBy.type === 'mapq'
+  const numeric = colorField === 'mapq' || colorSchemeOf(colorField) === 'tag'
   if (numeric && scaled?.scale === 'linear') {
     return linearScale(
       scaled,
@@ -188,7 +188,7 @@ export function bakedColorScale(
     kind: 'categorical',
     declared: false,
     domain,
-    color: value => bakedValueColor(colorBy, value, refNamePosition),
+    color: value => bakedValueColor(colorField, value, refNamePosition),
   }
 }
 
@@ -247,14 +247,14 @@ export function numericExtentAcrossGroups<D>(
  */
 export function linearFieldExtent(
   encoding: AlignmentsColorEncoding,
-  colorBy: ColorBy,
+  colorField: string,
   byGroup: LaidOutByGroup,
 ): NumericExtent | undefined {
   return typeof encoding !== 'object' || encoding.scale !== 'linear'
     ? undefined
-    : colorBy.type === 'mapq'
+    : colorField === 'mapq'
       ? mapqExtentAcrossGroups(byGroup)
-      : colorBy.type === 'tag'
+      : colorSchemeOf(colorField) === 'tag'
         ? numericExtentAcrossGroups(byGroup, d => d.readTagValues)
         : undefined
 }
@@ -267,7 +267,7 @@ export function linearFieldExtent(
  */
 export function bakedColorExtent(
   encoding: AlignmentsColorEncoding,
-  colorBy: ColorBy,
+  colorField: string,
   byGroup: LaidOutByGroup,
 ): NumericExtent | undefined {
   if (
@@ -278,12 +278,12 @@ export function bakedColorExtent(
     return undefined
   }
   const quantile = encoding.domainQuantile ?? 1
-  if (colorBy.type === 'tag') {
+  if (colorSchemeOf(colorField) === 'tag') {
     return quantile < 1
       ? quantileExtentAcrossGroups(byGroup, d => d.readTagValues, quantile)
       : numericExtentAcrossGroups(byGroup, d => d.readTagValues)
   }
-  if (colorBy.type === 'mapq') {
+  if (colorField === 'mapq') {
     return quantile < 1
       ? mapqQuantileExtentAcrossGroups(byGroup, quantile)
       : mapqExtentAcrossGroups(byGroup)

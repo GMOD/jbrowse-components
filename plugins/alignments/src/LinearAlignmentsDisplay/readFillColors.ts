@@ -1,7 +1,8 @@
 import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
-import { isBakedScheme } from '../shared/alignmentsColor.ts'
+import { isBakedField } from '../shared/alignmentsColor.ts'
+import { fieldTag } from '../shared/facetLabels.ts'
 import { MAPQ_UNAVAILABLE } from '../shared/util.ts'
 
 import type {
@@ -9,7 +10,6 @@ import type {
   FillColoredPileupData,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
-import type { ColorBy } from '../shared/types.ts'
 import type { BakedColorScale } from './bakedColorScale.ts'
 
 type ColorRgbTuple = [number, number, number]
@@ -38,15 +38,14 @@ const NO_FILL_COLORS = new Uint32Array(0)
 // loop and the cache is reused across every region rather than rebuilt per
 // region.
 function makeColorResolver(
-  colorBy: ColorBy,
+  colorField: string,
   scale: BakedColorScale,
 ): ColorResolver {
-  // The strand tags first, and they have to be: they are `type: 'tag'` like any
+  // The strand tags first, and they have to be: they are tags like any
   // other, but encode a strand rather than a categorical value, so they take
   // the fixed strand colors instead of a per-value one. A value that is neither
   // strand packs 0, the same neutral fallback as an absent tag below.
-  const tag =
-    colorBy.type === 'tag' && !scale.declared ? colorBy.tag : undefined
+  const tag = scale.declared ? undefined : fieldTag(colorField)
   if (tag === 'XS' || tag === 'TS') {
     return val => (val === '-' ? revStrand : val === '+' ? fwdStrand : 0)
   }
@@ -89,7 +88,7 @@ function applyResolver(
   const tagValues = data.readTagValues
   const strands = data.readStrands
   // No values to bake from — a region fetched under a scheme that extracts none,
-  // which the mid-switch window leaves laid out while the new colorBy is already
+  // which the mid-switch window leaves laid out while the new field is already
   // applied. Shares NO_FILL_COLORS rather than minting an empty array, for the
   // reason that constant exists: a fresh one reports a recolor by identity and
   // rewrites the read pass.
@@ -111,10 +110,10 @@ function applyResolver(
 // reads `uint tagColor` and unpacks; 0 means "no color" (palette fallback).
 export function buildReadFillColors(
   data: WorkerPileupData,
-  colorBy: ColorBy,
+  colorField: string,
   scale: BakedColorScale,
 ): Uint32Array {
-  return bakerFor(colorBy, scale)(data)
+  return bakerFor(colorField, scale)(data)
 }
 
 // MAPQ has 255 scores worth a color, so the scale is evaluated once per score
@@ -137,12 +136,12 @@ function applyMapqTable(data: WorkerPileupData, table: Uint32Array) {
   return out
 }
 
-function bakerFor(colorBy: ColorBy, scale: BakedColorScale) {
-  if (colorBy.type === 'mapq') {
+function bakerFor(colorField: string, scale: BakedColorScale) {
+  if (colorField === 'mapq') {
     const table = mapqColorTable(scale)
     return (data: WorkerPileupData) => applyMapqTable(data, table)
   }
-  const resolve = makeColorResolver(colorBy, scale)
+  const resolve = makeColorResolver(colorField, scale)
   return (data: WorkerPileupData) => applyResolver(data, resolve)
 }
 
@@ -159,13 +158,11 @@ function bakerFor(colorBy: ColorBy, scale: BakedColorScale) {
 // never went through here.
 export function overlayReadFillColors(
   map: Map<number, LaidOutPileupData>,
-  colorBy: ColorBy | undefined,
+  colorField: string,
   scale: BakedColorScale | undefined,
 ): Map<number, FillColoredPileupData> {
   const bake =
-    colorBy && scale && isBakedScheme(colorBy)
-      ? bakerFor(colorBy, scale)
-      : undefined
+    scale && isBakedField(colorField) ? bakerFor(colorField, scale) : undefined
   const out = new Map<number, FillColoredPileupData>()
   for (const [idx, data] of map) {
     out.set(idx, {

@@ -35,16 +35,16 @@ function mapqRegion(written: { domain?: string[] } = {}) {
     segmentReadIndices: Uint32Array.from({ length: n }, (_, i) => i),
     segmentEdgeFlags: new Uint8Array(n),
   }
-  const colorBy = { type: 'mapq' } as const
+  const colorField = 'mapq'
   const scale = bakedColorScale(
-    colorBy,
+    colorField,
     alignmentsColorEncoding(colorSettingOf({ field: 'mapq', scale: written })),
     undefined,
     undefined,
   )
   const readFillColors = buildReadFillColors(
     { ...baseWorkerPileupData(n), readMapqs: base.readMapqs },
-    colorBy,
+    colorField,
     scale,
   )
   const colored = { ...base, readFillColors }

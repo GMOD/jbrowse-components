@@ -16,7 +16,7 @@ import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/render
 import type { PerBaseLetterUploadData } from './types.ts'
 
 // Every aligned base in its nucleotide color: a `cell` mark on one pileup row,
-// drawn for each visible base of each read when `colorBy` is per-base lettering.
+// drawn for each visible base of each read when `pileup.bases` paints `base`.
 // Per-base lettering IS "draw every aligned base like a mismatch base", which is
 // why it shares mismatch.slang — and why this mark is `MISMATCH_MARK`'s shape
 // with the wall's seam fudge and neither of its two fades.

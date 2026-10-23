@@ -66,7 +66,7 @@ import {
 } from '../src/features/modification/extract.ts'
 import { getStrand } from '../src/shared/util.ts'
 
-import type { ColorBy } from '../src/shared/types.ts'
+import type { BaseLayer } from '../src/shared/types.ts'
 import type { ModificationEntry } from '../src/shared/webglRpcTypes.ts'
 import type { Region } from '@jbrowse/core/util'
 
@@ -179,11 +179,11 @@ async function loadOld(ref: string): Promise<Arm> {
   }
 }
 
-const marksColorBy: ColorBy = {
+const marksColorBy: BaseLayer = {
   type: 'modifications',
   modifications: { threshold: 50 },
 }
-const fillColorBy: ColorBy = {
+const fillColorBy: BaseLayer = {
   type: 'modifications',
   modifications: { unmodified: 'all' },
 }
@@ -198,7 +198,7 @@ interface Reads {
 
 // Three drivers written out longhand, deliberately: one shared driver makes the
 // extract call site polymorphic across arms (BENCHMARKING.md).
-function driveOld(arm: Arm, reads: Reads, region: Region, c: ColorBy) {
+function driveOld(arm: Arm, reads: Reads, region: Region, c: BaseLayer) {
   const { features, strands } = reads
   const out: ModificationEntry[] = []
   const detected = new Set<string>()
@@ -215,7 +215,7 @@ function driveOld(arm: Arm, reads: Reads, region: Region, c: ColorBy) {
   return out
 }
 
-function driveBounded(arm: Arm, reads: Reads, region: Region, c: ColorBy) {
+function driveBounded(arm: Arm, reads: Reads, region: Region, c: BaseLayer) {
   const { features, strands } = reads
   const out: ModificationEntry[] = []
   const detected = new Set<string>()
@@ -232,7 +232,7 @@ function driveBounded(arm: Arm, reads: Reads, region: Region, c: ColorBy) {
   return out
 }
 
-function driveControl(arm: Arm, reads: Reads, region: Region, c: ColorBy) {
+function driveControl(arm: Arm, reads: Reads, region: Region, c: BaseLayer) {
   const { features, strands } = reads
   const out: ModificationEntry[] = []
   const detected = new Set<string>()

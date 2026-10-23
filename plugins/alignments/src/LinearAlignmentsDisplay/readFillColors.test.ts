@@ -3,20 +3,16 @@ import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
-import {
-  alignmentsColorEncoding,
-  colorFieldOf,
-} from '../shared/alignmentsColor.ts'
+import { alignmentsColorEncoding } from '../shared/alignmentsColor.ts'
 import { colorSettingOf } from '../shared/colorSettingFixture.ts'
 import { bakedColorScale } from './bakedColorScale.ts'
 import { bakedValueColor } from './colorTagUtils.ts'
 import { buildReadFillColors, overlayReadFillColors } from './readFillColors.ts'
 
-import type { ColorBy } from '../shared/types.ts'
 import type { RefNamePosition } from './colorTagUtils.ts'
 import type { ColorScaleSlots } from '@jbrowse/core/util/colorScale'
 
-const TAG: ColorBy = { type: 'tag', tag: 'HP' }
+const TAG = 'tags.HP'
 
 // Laid out, because that is what the overlay takes: the tag bake runs after
 // placement and spreads over its result.
@@ -27,20 +23,18 @@ function pileupWith(readTagValues: string[]) {
   })
 }
 
-function encodingFor(colorBy: ColorBy, declared: ColorScaleSlots = {}) {
-  return alignmentsColorEncoding(
-    colorSettingOf({ field: colorFieldOf(colorBy), scale: declared }),
-  )
+function encodingFor(field: string, declared: ColorScaleSlots = {}) {
+  return alignmentsColorEncoding(colorSettingOf({ field, scale: declared }))
 }
 
 function scaleFor(
-  colorBy: ColorBy,
+  field: string,
   declared: ColorScaleSlots = {},
   position?: RefNamePosition,
 ) {
   return bakedColorScale(
-    colorBy,
-    encodingFor(colorBy, declared),
+    field,
+    encodingFor(field, declared),
     position,
     undefined,
   )
@@ -58,14 +52,14 @@ describe('mateRefName (chromosome painting) colors', () => {
   ) =>
     buildReadFillColors(
       pileupWith(names),
-      { type: 'mateRefName' },
-      scaleFor({ type: 'mateRefName' }, {}, position),
+      'mateRefName',
+      scaleFor('mateRefName', {}, position),
     )
 
   test('bakes each mate refName the color its own value resolves', () => {
     expect([...build(['chr1', 'chr2'])]).toEqual([
-      packed(bakedValueColor({ type: 'mateRefName' }, 'chr1')),
-      packed(bakedValueColor({ type: 'mateRefName' }, 'chr2')),
+      packed(bakedValueColor('mateRefName', 'chr1')),
+      packed(bakedValueColor('mateRefName', 'chr2')),
     ])
   })
 
@@ -92,7 +86,7 @@ describe('mateRefName (chromosome painting) colors', () => {
 
   test('a feature with no mate falls back to the palette rather than coloring an empty name', () => {
     expect([...build([''])]).toEqual([0])
-    expect(packed(bakedValueColor({ type: 'mateRefName' }, ''))).not.toBe(0)
+    expect(packed(bakedValueColor('mateRefName', ''))).not.toBe(0)
   })
 
   test('every read is colored', () => {
@@ -142,11 +136,11 @@ describe('categorical tag colors', () => {
 
 describe('strand tag colors', () => {
   test('a value that is neither strand packs the palette fallback', () => {
-    const colorBy: ColorBy = { type: 'tag', tag: 'XS' }
+    const field = 'tags.XS'
     const [fwd, rev, dot, absent] = buildReadFillColors(
       pileupWith(['+', '-', '.', '']),
-      colorBy,
-      scaleFor(colorBy),
+      field,
+      scaleFor(field),
     )
     expect(fwd).toBe(packed(colorFwdStrand))
     expect(rev).toBe(packed(colorRevStrand))
@@ -155,32 +149,31 @@ describe('strand tag colors', () => {
 })
 
 describe('overlayReadFillColors', () => {
-  const overlay = (colorBy: Parameters<typeof overlayReadFillColors>[1]) =>
+  const overlay = (field: string) =>
     overlayReadFillColors(
       new Map([[0, pileupWith(['chr1'])]]),
-      colorBy,
-      colorBy && scaleFor(colorBy),
+      field,
+      scaleFor(field),
     ).get(0)!.readFillColors.length
 
   test('bakes colors for mateRefName', () => {
-    expect(overlay({ type: 'mateRefName' })).toBe(1)
+    expect(overlay('mateRefName')).toBe(1)
   })
 
-  test('bakes colors for a tag scheme with a tag', () => {
-    expect(overlay({ type: 'tag', tag: 'HP' })).toBe(1)
+  test('bakes colors for a tag', () => {
+    expect(overlay('tags.HP')).toBe(1)
   })
 
   // The worker only fills readTagValues for the baked schemes, so any other
   // scheme must leave the array empty and the shader on its palette path.
   test('bakes nothing for schemes the shader colors itself', () => {
-    expect(overlay({ type: 'strand' })).toBe(0)
-    expect(overlay({ type: 'tag' })).toBe(0)
-    expect(overlay(undefined)).toBe(0)
+    expect(overlay('strand')).toBe(0)
+    expect(overlay('')).toBe(0)
   })
 })
 
 describe('a declared scale', () => {
-  const NM: ColorBy = { type: 'tag', tag: 'NM' }
+  const NM = 'tags.NM'
 
   test('a domain and range hand the listed values their colors in order', () => {
     const scale = scaleFor(TAG, {
@@ -279,7 +272,7 @@ describe('a declared scale', () => {
   })
 
   test('a domain and range reach a mate reference too', () => {
-    const MATE: ColorBy = { type: 'mateRefName' }
+    const MATE = 'mateRefName'
     const scale = scaleFor(MATE, { domain: ['chr2'], range: ['#ff0000'] })
     expect(scale.declared).toBe(true)
     expect(scale.color('chr2')).toBe('#ff0000')
@@ -298,7 +291,7 @@ describe('a declared scale', () => {
   })
 
   test('a declared scale over a strand tag replaces the strand vocabulary', () => {
-    const XS: ColorBy = { type: 'tag', tag: 'XS' }
+    const XS = 'tags.XS'
     const scale = scaleFor(XS, { domain: ['+'], range: ['#123456'] })
     expect(buildReadFillColors(pileupWith(['+']), XS, scale)[0]).toBe(
       packed('#123456'),

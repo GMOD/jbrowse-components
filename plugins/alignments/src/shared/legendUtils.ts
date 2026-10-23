@@ -34,9 +34,13 @@ import {
 } from '../features/sashimi/junctionClass.ts'
 import { arcCategoryColor } from '../shaders/palettes.ts'
 import { OVERLAP_ALPHA } from '../shaders/slang/overlap.consts.generated.ts'
-import { colorFieldOf, isBakedScheme, levelKeysOf } from './alignmentsColor.ts'
-import { paintsModifications } from './colorSchemes.ts'
-import { FACET_LABELS, FIRST_OF_PAIR_STRAND_LABELS } from './facetLabels.ts'
+import { isBakedField, levelKeysOf } from './alignmentsColor.ts'
+import { colorSchemeOf, paintsModifications } from './colorSchemes.ts'
+import {
+  FACET_LABELS,
+  FIRST_OF_PAIR_STRAND_LABELS,
+  fieldTag,
+} from './facetLabels.ts'
 import { isReadDimension } from './groupFeatures.ts'
 import { getModificationName, modificationData } from './modificationData.ts'
 import { BASE_QUALITY_RAMP_MAX, qualityRampScale } from './qualityRamps.ts'
@@ -57,7 +61,7 @@ import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { ColorPalette, PaletteColorKey } from '../shaders/colors.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
 import type { DeclaredReadLabels } from './alignmentsColor.ts'
-import type { BaseLayer, ColorBy, ColorSchemeType } from './types.ts'
+import type { BaseLayer } from './types.ts'
 import type { LegendItem, LegendSwatch } from '@jbrowse/core/ui'
 import type {
   CategoricalScale,
@@ -537,10 +541,10 @@ const FIRST_OF_PAIR_LABELS: Partial<Record<SwatchCategory, string>> = {
 // Per-scheme relabeling of the shared fwd/rev-strand swatches: the fragment
 // strand under `firstOfPairStrand`, a split segment against its molecule under
 // the orientation fields, and the read's own strand under `strand`.
-function strandLabelOverrides(colorType: ColorSchemeType | undefined) {
-  return colorType === 'firstOfPairStrand'
+function strandLabelOverrides(colorField: string) {
+  return colorField === 'firstOfPairStrand'
     ? FIRST_OF_PAIR_LABELS
-    : colorType === 'strand'
+    : colorField === 'strand'
       ? undefined
       : SPLIT_STRAND_LABELS
 }
@@ -552,15 +556,14 @@ function strandLabelOverrides(colorType: ColorSchemeType | undefined) {
 // `declared` is `encoding.color.scale.names` by bucket (`declaredReadLabels`), which names a
 // bucket over every wording here.
 export function readCategoryLabelOverrides(
-  colorBy: ColorBy | undefined,
+  colorField: string,
   declared: Partial<Record<ReadColorCategory, string>> = {},
 ): Partial<Record<ReadColorCategory, string>> {
+  const tag = fieldTag(colorField)
   return {
-    ...strandLabelOverrides(colorBy?.type),
-    ...(colorBy?.type === 'mateRefName' ? { noTagValue: 'No mate' } : {}),
-    ...(colorBy?.type === 'tag' && colorBy.tag !== undefined
-      ? { noTagValue: `No ${colorBy.tag} value` }
-      : {}),
+    ...strandLabelOverrides(colorField),
+    ...(colorField === 'mateRefName' ? { noTagValue: 'No mate' } : {}),
+    ...(tag === undefined ? {} : { noTagValue: `No ${tag} value` }),
     ...declared,
   }
 }
@@ -596,10 +599,10 @@ const METHYLATION_STATES = [
 // modified state, so key it unconditionally instead — before `keyed`, which for
 // the same reason has nothing to say about it.
 function methylationLegend(
-  colorBy: ColorBy,
+  layer: BaseLayer,
   keyed: ReadonlyMap<string, string>,
 ): LegendItem[] {
-  if (colorBy.type === 'bisulfite') {
+  if (layer.type === 'bisulfite') {
     return [{ color: methylated5mC, label: '5mC methylated' }]
   }
   return [
@@ -657,7 +660,7 @@ function modificationRank(type: string) {
 // has today rather than gaining an alphabetical one. A code absent from that
 // table sorts last, by code, since there is nothing else to rank it by.
 function keyedModifications(
-  colorBy: ColorBy,
+  layer: BaseLayer,
   detectedModifications: ReadonlyMap<string, string>,
   present: ReadonlySet<string> | undefined,
 ) {
@@ -665,7 +668,7 @@ function keyedModifications(
     [...detectedModifications]
       .filter(
         ([type]) =>
-          isModificationTypeVisible(colorBy.modifications, type) &&
+          isModificationTypeVisible(layer.modifications, type) &&
           (present === undefined || present.has(type)),
       )
       .sort(
@@ -853,18 +856,18 @@ export function getArcLegendItems(
 // too — it previously showed only the 6mA swatch, leaving its blue marks
 // unexplained.
 function modificationLegend(
-  colorBy: ColorBy,
+  layer: BaseLayer,
   detectedModifications: ReadonlyMap<string, string>,
   presentModifications: ReadonlySet<string> | undefined,
 ): LegendItem[] {
   const keyed = keyedModifications(
-    colorBy,
+    layer,
     detectedModifications,
     presentModifications,
   )
-  const isMethylation = usesMethylationLegend(colorBy)
+  const isMethylation = usesMethylationLegend(layer)
   const items = isMethylation
-    ? methylationLegend(colorBy, keyed)
+    ? methylationLegend(layer, keyed)
     : [...keyed].map(([type, color]) => ({
         color,
         label: getModificationName(type),
@@ -877,7 +880,7 @@ function modificationLegend(
   const onlyCytosineIsBlue = [...keyed.keys()].every(isMethylationFillType)
   return [
     ...items,
-    ...(paintsUnmodifiedState(colorBy)
+    ...(paintsUnmodifiedState(layer)
       ? [
           {
             color: unmethylated5mC,
@@ -910,7 +913,7 @@ function modificationLegend(
 // neutral fallback rather than a value's color, and `noTagValue` is what keys
 // that neutral — under a name.
 function bakedValueLegend(
-  colorBy: ColorBy,
+  field: string,
   present: ReadonlySet<string> | undefined,
   refNamePosition: RefNamePosition | undefined,
   scale: BakedColorScale | undefined,
@@ -918,7 +921,6 @@ function bakedValueLegend(
   names: ReadonlyMap<string, string> = new Map(),
   descending = false,
 ): LegendItem[] {
-  const field = colorFieldOf(colorBy)
   if (scale?.kind === 'linear') {
     return []
   }
@@ -934,21 +936,20 @@ function bakedValueLegend(
     ? [...values].sort(sectionOrder)
     : scale?.declared
       ? [...values].sort(groupKeyComparator(scale.domain))
-      : sortedBakedValues(values, colorBy, refNamePosition)
+      : sortedBakedValues(values, field, refNamePosition)
   return sorted.map(value => ({
     color:
-      scale?.color(value) ?? bakedValueColor(colorBy, value, refNamePosition),
+      scale?.color(value) ?? bakedValueColor(field, value, refNamePosition),
     label: names.get(value) ?? value,
   }))
 }
 
 /** The key of a tag, attribute or MAPQ painted through a linear ramp. */
 export function bakedRampScale(
-  colorBy: ColorBy,
+  field: string,
   scale: BakedColorScale | undefined,
   extent?: readonly [number, number],
 ): RampScale | undefined {
-  const field = colorFieldOf(colorBy)
   return scale?.kind === 'linear'
     ? {
         kind: 'ramp',
@@ -969,20 +970,19 @@ type Extent = readonly [number, number] | undefined
  * past.
  */
 export function colorRampScales({
-  colorBy,
+  colorField,
   baseLayer,
   bakedScale,
   linearFieldExtent,
   baseQualityExtent,
 }: {
-  colorBy: ColorBy | undefined
+  colorField: string
   baseLayer: BaseLayer | undefined
   bakedScale: BakedColorScale | undefined
   linearFieldExtent: Extent
   baseQualityExtent: Extent
 }): RampScale[] {
-  const readRamp =
-    colorBy && bakedRampScale(colorBy, bakedScale, linearFieldExtent)
+  const readRamp = bakedRampScale(colorField, bakedScale, linearFieldExtent)
   return [
     ...(baseLayer?.type === 'baseQuality'
       ? [
@@ -1016,11 +1016,11 @@ function valueCompare(values: string[]) {
 // and sorts after the placed ones.
 function sortedBakedValues(
   values: string[],
-  colorBy: ColorBy,
+  field: string,
   refNamePosition: RefNamePosition | undefined,
 ) {
   const compare = valueCompare(values)
-  const position = colorBy.type === 'mateRefName' ? refNamePosition : undefined
+  const position = field === 'mateRefName' ? refNamePosition : undefined
   return position === undefined
     ? [...values].sort(compare)
     : [...values].sort((a, b) => {
@@ -1038,12 +1038,9 @@ function sortedBakedValues(
 
 // XS/TS/ts encode strand rather than a categorical value, so they are keyed by
 // the strand pair rather than by discovered values.
-function isStrandTag(colorBy: ColorBy | undefined) {
-  return (
-    colorBy?.type === 'tag' &&
-    colorBy.tag !== undefined &&
-    STRAND_TAGS.has(colorBy.tag)
-  )
+function isStrandTag(colorField: string) {
+  const tag = fieldTag(colorField)
+  return tag !== undefined && STRAND_TAGS.has(tag)
 }
 
 // The scheme's own key, before the cross-cutting buckets are appended. Every
@@ -1054,7 +1051,7 @@ function isStrandTag(colorBy: ColorBy | undefined) {
 // the alternative, and three of them are the same shape.
 type SchemeLegendArgs = Pick<
   ReadDisplayLegendArgs,
-  | 'colorBy'
+  | 'colorField'
   | 'baseLayer'
   | 'detectedModifications'
   | 'presentModifications'
@@ -1102,7 +1099,7 @@ function baseLayerLegend({
 }
 
 function schemeLegend({
-  colorBy,
+  colorField,
   palette,
   presentTagValues,
   refNamePosition,
@@ -1115,15 +1112,7 @@ function schemeLegend({
   // The normal scheme paints every read one flat color ('plain'),
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
   // legend would be empty and "Show legend" would render nothing.
-  //
-  // A `tag` scheme with no tag chosen yet paints that same flat color
-  // (`categoryColor`'s tag branch, with nothing baked to look up), so it keys
-  // the same row rather than an empty box.
-  if (
-    colorBy === undefined ||
-    colorBy.type === 'normal' ||
-    (colorBy.type === 'tag' && !isBakedScheme(colorBy))
-  ) {
+  if (colorField === '') {
     // Under a modification layer the plain fill is that layer's strand tint,
     // which the buckets key.
     return paintsModifications(baseLayer)
@@ -1135,37 +1124,32 @@ function schemeLegend({
           },
         ]
   }
-  const colorType = colorBy.type
-  if (isStrandTag(colorBy) && !bakedScale?.declared) {
+  if (isStrandTag(colorField) && !bakedScale?.declared) {
     return [
       { color: rgb255(palette.colorFwdStrand), label: 'Forward strand' },
       { color: rgb255(palette.colorRevStrand), label: 'Reverse strand' },
     ]
   }
-  if (
-    colorType === 'tag' ||
-    colorType === 'mateRefName' ||
-    colorType === 'mapq'
-  ) {
-    return bakedValueLegend(
-      colorBy,
-      presentTagValues,
-      refNamePosition,
-      bakedScale,
-      sectionOrder,
-      labels?.values,
-      descending,
-    )
-  }
-  // The strand, insert-size and orientation schemes add only the buckets that
+  // The strand, insert-size and orientation fields add only the buckets that
   // occurred.
-  return []
+  return isBakedField(colorField)
+    ? bakedValueLegend(
+        colorField,
+        presentTagValues,
+        refNamePosition,
+        bakedScale,
+        sectionOrder,
+        labels?.values,
+        descending,
+      )
+    : []
 }
 
 // The display-supplied half of the legend's inputs — everything but the live
 // palette and the bucket scan, which the two consumers below split differently.
 interface ReadDisplayLegendArgs {
-  colorBy: ColorBy | undefined
+  // `encoding.color.field`, `''` for the plain fill
+  colorField: string
   // `encoding.color.scale.names` against what it names (`declaredReadLabels`)
   labels?: DeclaredReadLabels
   // A threshold key lists its highest interval first (`colorKeyDescending`).
@@ -1215,7 +1199,7 @@ interface ReadDisplayLegendArgs {
  * (`colorRampScales`), keying only its unavailable bucket here.
  */
 export function getReadDisplayLegendItems({
-  colorBy,
+  colorField,
   baseLayer,
   presentCategories,
   palette,
@@ -1236,7 +1220,7 @@ export function getReadDisplayLegendItems({
   // A strand tag keys fwd/rev itself, in those exact colors, so drop them from
   // the cross-cutting tail rather than listing the same two swatches again
   // under split-read wording.
-  const categories = isStrandTag(colorBy)
+  const categories = isStrandTag(colorField)
     ? new Set(
         [...presentCategories].filter(
           c => c !== 'fwdStrand' && c !== 'revStrand',
@@ -1244,7 +1228,7 @@ export function getReadDisplayLegendItems({
       )
     : presentCategories
   const scheme = {
-    colorBy,
+    colorField,
     baseLayer,
     palette,
     detectedModifications,
@@ -1263,8 +1247,8 @@ export function getReadDisplayLegendItems({
     ...bucketItems(
       categories,
       palette,
-      readCategoryLabelOverrides(colorBy, labels?.categories),
-      colorBy ? levelKeysOf(colorBy.type) : undefined,
+      readCategoryLabelOverrides(colorField, labels?.categories),
+      levelKeysOf(colorSchemeOf(colorField)),
       sectionOrder,
     ),
     ...(overlaps === undefined

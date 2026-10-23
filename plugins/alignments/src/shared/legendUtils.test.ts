@@ -29,12 +29,13 @@ import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from './types.ts'
 import type { BakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
 import type { RefNamePosition } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
-import type { BaseLayer, ColorBy, ColorSchemeType } from './types.ts'
+import type { BaseLayer } from './types.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
 import type { ColorScale, RampScale } from '@jbrowse/core/ui/colorScale'
 
+// A read fill field, or a per-base layer with its settings.
 function legendFor(
-  colorBy: ColorBy,
+  scheme: string | BaseLayer,
   categories: ReadColorCategory[],
   rest?: {
     detectedModifications?: Map<string, string>
@@ -48,7 +49,9 @@ function legendFor(
   },
 ) {
   return getReadDisplayLegendItems({
-    ...splitSchemeForTest(colorBy),
+    ...(typeof scheme === 'string'
+      ? splitSchemeForTest(scheme)
+      : splitSchemeForTest(scheme.type, scheme.modifications)),
     presentCategories: new Set(categories),
     palette: makeTestPalette(),
     ...rest,
@@ -56,20 +59,20 @@ function legendFor(
 }
 
 function labels(
-  type: ColorSchemeType,
+  field: string,
   categories: ReadColorCategory[],
   detectedModifications?: Map<string, string>,
 ) {
-  return legendFor({ type }, categories, { detectedModifications }).map(
+  return legendFor(field, categories, { detectedModifications }).map(
     i => i.label,
   )
 }
 
 function tagLabels(
-  colorBy: { type: 'tag'; tag: string },
+  field: `tags.${string}`,
   presentTagValues?: ReadonlySet<string>,
 ) {
-  return legendFor(colorBy, ['tag'], { presentTagValues }).map(i => i.label)
+  return legendFor(field, ['tag'], { presentTagValues }).map(i => i.label)
 }
 
 describe('getReadDisplayLegendItems', () => {
@@ -132,9 +135,9 @@ describe('getReadDisplayLegendItems', () => {
 
   test('normal scheme shows a base-reads swatch plus any cross-cutting buckets', () => {
     // a single "Reads" entry so "Show legend" is never a silent no-op
-    expect(labels('normal', ['plain'])).toEqual(['Reads'])
+    expect(labels('', ['plain'])).toEqual(['Reads'])
     // chain mode still surfaces the unmapped-mate bucket after the base swatch
-    expect(labels('normal', ['plain', 'unmappedMate'])).toEqual([
+    expect(labels('', ['plain', 'unmappedMate'])).toEqual([
       'Reads',
       'Unmapped mate',
     ])
@@ -145,7 +148,7 @@ describe('getReadDisplayLegendItems', () => {
     // ordinary reads stay grey; a fwd/rev bucket here can only be a split, so it
     // must not read as a plain "Forward strand" — and the color frames the
     // segment against its chain primary, so it must not name a strand either.
-    expect(labels('normal', ['plain', 'fwdStrand', 'revStrand'])).toEqual([
+    expect(labels('', ['plain', 'fwdStrand', 'revStrand'])).toEqual([
       'Reads',
       'Split segment (same strand)',
       'Split segment (inverted)',
@@ -179,7 +182,7 @@ describe('getReadDisplayLegendItems', () => {
         idx => READ_COLOR_CATEGORY_BY_INDEX[idx]!,
       )
       expect(categories).toEqual(['plain'])
-      expect(legendFor({ type }, categories).map(i => i.label)).toEqual(
+      expect(legendFor(type, categories).map(i => i.label)).toEqual(
         labels(type, ['plain']),
       )
     },
@@ -191,9 +194,9 @@ describe('getReadDisplayLegendItems', () => {
   test('per-base schemes name the read body under their marks', () => {
     expect(labels('baseQuality', ['plain'])).toEqual(['Read'])
     expect(labels('base', ['plain'])).toEqual(['A', 'C', 'G', 'T', 'N', 'Read'])
-    const plainFill = legendFor({ type: 'normal' }, ['plain'])[0]!.color
+    const plainFill = legendFor('', ['plain'])[0]!.color
     for (const type of ['baseQuality', 'base'] as const) {
-      const body = legendFor({ type }, ['plain']).find(i => i.label === 'Read')
+      const body = legendFor(type, ['plain']).find(i => i.label === 'Read')
       expect(body?.color).toBe(plainFill)
     }
   })
@@ -260,39 +263,28 @@ describe('getReadDisplayLegendItems', () => {
     )
   })
 
-  // Picking "Tag" leaves the scheme set with no tag until the dialog resolves
-  // one, and a saved session can carry that shape. Every read paints the flat
-  // fallback then, so the box names it rather than rendering empty.
-  test('a tag scheme with no tag chosen keys the flat read fill', () => {
-    expect(legendFor({ type: 'tag' }, ['tag']).map(i => i.label)).toEqual([
-      'Reads',
-    ])
-    expect(legendFor({ type: 'tag' }, ['tag'])[0]!.color).toBe(
-      legendFor({ type: 'normal' }, ['plain'])[0]!.color,
-    )
-  })
-
   test('value tag scheme lists the values on screen, sorted', () => {
-    expect(tagLabels({ type: 'tag', tag: 'HP' }, new Set(['2', '1']))).toEqual([
+    expect(tagLabels('tags.HP', new Set(['2', '1']))).toEqual(['1', '2'])
+    // a numeric tag counts, rather than reading '10' as a word starting in '1'
+    expect(tagLabels('tags.HP', new Set(['10', '2', '1']))).toEqual([
       '1',
       '2',
+      '10',
     ])
-    // a numeric tag counts, rather than reading '10' as a word starting in '1'
-    expect(
-      tagLabels({ type: 'tag', tag: 'HP' }, new Set(['10', '2', '1'])),
-    ).toEqual(['1', '2', '10'])
     // one non-integer and the whole vocabulary is text again, in one order
-    expect(
-      tagLabels({ type: 'tag', tag: 'RG' }, new Set(['10', '2', 'sampleA'])),
-    ).toEqual(['10', '2', 'sampleA'])
+    expect(tagLabels('tags.RG', new Set(['10', '2', 'sampleA']))).toEqual([
+      '10',
+      '2',
+      'sampleA',
+    ])
     // empty until reads carrying the tag are laid out
-    expect(tagLabels({ type: 'tag', tag: 'HP' }, new Set())).toEqual([])
-    expect(tagLabels({ type: 'tag', tag: 'HP' })).toEqual([])
+    expect(tagLabels('tags.HP', new Set())).toEqual([])
+    expect(tagLabels('tags.HP')).toEqual([])
   })
 
   test('a facet on the color field orders the key as the sections stack', () => {
     const labelsIn = (order?: (a: string, b: string) => number) =>
-      legendFor({ type: 'tag', tag: 'HP' }, ['tag'], {
+      legendFor('tags.HP', ['tag'], {
         presentTagValues: new Set(['1', '2', '']),
         sectionOrder: order,
       }).map(i => i.label)
@@ -302,31 +294,30 @@ describe('getReadDisplayLegendItems', () => {
 
   test('a facet on a read dimension orders its buckets as the sections stack', () => {
     const labelsIn = (
-      colorBy: ColorBy,
+      field: string,
       categories: ReadColorCategory[],
       order?: (a: string, b: string) => number,
-    ) =>
-      legendFor(colorBy, categories, { sectionOrder: order }).map(i => i.label)
+    ) => legendFor(field, categories, { sectionOrder: order }).map(i => i.label)
     const strands: ReadColorCategory[] = ['fwdStrand', 'revStrand']
-    expect(labelsIn({ type: 'strand' }, strands)).toEqual([
+    expect(labelsIn('strand', strands)).toEqual([
       'Forward strand',
       'Reverse strand',
     ])
-    expect(
-      labelsIn({ type: 'strand' }, strands, sectionOrder('strand', ['-1'])),
-    ).toEqual(['Reverse strand', 'Forward strand'])
+    expect(labelsIn('strand', strands, sectionOrder('strand', ['-1']))).toEqual(
+      ['Reverse strand', 'Forward strand'],
+    )
     expect(
       labelsIn(
-        { type: 'firstOfPairStrand' },
+        'firstOfPairStrand',
         strands,
         sectionOrder('firstOfPairStrand', ['-1']),
       ),
     ).toEqual(['First-of-pair reverse', 'First-of-pair forward'])
     const pairs: ReadColorCategory[] = ['pairLR', 'pairRL', 'pairLL']
-    const [lr, rl, ll] = labelsIn({ type: 'pairOrientation' }, pairs)
+    const [lr, rl, ll] = labelsIn('pairOrientation', pairs)
     expect(
       labelsIn(
-        { type: 'pairOrientation' },
+        'pairOrientation',
         pairs,
         sectionOrder('pairOrientation', ['LL', 'RL']),
       ),
@@ -337,7 +328,7 @@ describe('getReadDisplayLegendItems', () => {
   // per read, so it is the color drawn rather than a second table agreeing with
   // it. There used to be that second table (`colorTagMap`).
   test('a declared scale keys its own order, ramp and bins in the painted colors', () => {
-    const HP: ColorBy = { type: 'tag', tag: 'HP' }
+    const HP = 'tags.HP'
     const ordered = bakedColorScale(
       HP,
       alignmentsColorEncoding(
@@ -359,7 +350,7 @@ describe('getReadDisplayLegendItems', () => {
       { color: '#0000ff', label: '1' },
     ])
 
-    const NM: ColorBy = { type: 'tag', tag: 'NM' }
+    const NM = 'tags.NM'
     const ramp = bakedColorScale(
       NM,
       alignmentsColorEncoding(
@@ -404,7 +395,7 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   test('a translucent ramp paints the reads and the key the same opaque colors', () => {
-    const NM: ColorBy = { type: 'tag', tag: 'NM' }
+    const NM = 'tags.NM'
     const ramp = bakedColorScale(
       NM,
       alignmentsColorEncoding(
@@ -431,12 +422,12 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   test('value tag swatches are the color the reads are painted', () => {
-    const items = legendFor({ type: 'tag', tag: 'HP' }, ['tag'], {
+    const items = legendFor('tags.HP', ['tag'], {
       presentTagValues: new Set(['1', '2']),
     })
     expect(items).toEqual([
-      { color: bakedValueColor({ type: 'tag', tag: 'HP' }, '1'), label: '1' },
-      { color: bakedValueColor({ type: 'tag', tag: 'HP' }, '2'), label: '2' },
+      { color: bakedValueColor('tags.HP', '1'), label: '1' },
+      { color: bakedValueColor('tags.HP', '2'), label: '2' },
     ])
   })
 
@@ -444,9 +435,7 @@ describe('getReadDisplayLegendItems', () => {
   // it rides in on `presentTagValues` — and must not become a nameless swatch.
   // `noTagValue` is what keys that neutral, under a name.
   test('the no-value reads do not open a blank row', () => {
-    expect(tagLabels({ type: 'tag', tag: 'HP' }, new Set(['1', '']))).toEqual([
-      '1',
-    ])
+    expect(tagLabels('tags.HP', new Set(['1', '']))).toEqual(['1'])
   })
 
   // The reads take their color from the same position (`refNameColor`), so the
@@ -458,7 +447,7 @@ describe('getReadDisplayLegendItems', () => {
       ['chr10', 9],
     ])
     expect(
-      legendFor({ type: 'mateRefName' }, ['tag'], {
+      legendFor('mateRefName', ['tag'], {
         presentTagValues: new Set(['chr10', 'chr1', 'chr2']),
         refNamePosition: name => order.get(name),
       }).map(i => i.label),
@@ -468,33 +457,32 @@ describe('getReadDisplayLegendItems', () => {
   test('…and puts the names it cannot place after the ones it can', () => {
     const order = new Map([['chr2', 1]])
     expect(
-      legendFor({ type: 'mateRefName' }, ['tag'], {
+      legendFor('mateRefName', ['tag'], {
         presentTagValues: new Set(['chrUn', 'chrM', 'chr2']),
         refNamePosition: name => order.get(name),
       }).map(i => i.label),
     ).toEqual(['chr2', 'chrM', 'chrUn'])
     // no assembly to ask (still loading) is the same fallback for every name
     expect(
-      legendFor({ type: 'mateRefName' }, ['tag'], {
+      legendFor('mateRefName', ['tag'], {
         presentTagValues: new Set(['chr10', 'chr2']),
       }).map(i => i.label),
     ).toEqual(['chr10', 'chr2'])
   })
 
   test('strand-encoding tags (XS/TS/ts) show the strand key, not a value list', () => {
-    expect(
-      tagLabels({ type: 'tag', tag: 'ts' }, new Set(['foo'])),
-    ).not.toContain('foo')
-    expect(
-      tagLabels({ type: 'tag', tag: 'XS' }, new Set(['+', '-', ''])),
-    ).toEqual(['Forward strand', 'Reverse strand'])
+    expect(tagLabels('tags.ts', new Set(['foo']))).not.toContain('foo')
+    expect(tagLabels('tags.XS', new Set(['+', '-', '']))).toEqual([
+      'Forward strand',
+      'Reverse strand',
+    ])
   })
 
   // A tag value that is neither '+' nor '-' packs 0, so the read classifies as
   // `noTagValue` and the tail keys it in the neutral grey, like any untagged read.
   test('a read with no strand tag value is keyed through noTagValue', () => {
     const items = getReadDisplayLegendItems({
-      colorBy: { type: 'tag', tag: 'XS' },
+      colorField: 'tags.XS',
       presentCategories: new Set<ReadColorCategory>(['tag', 'noTagValue']),
       palette: makeTestPalette({ colorPairLR: [0.5, 0.5, 0.5] }),
       presentTagValues: new Set(['+', '-', '']),
@@ -511,11 +499,9 @@ describe('getReadDisplayLegendItems', () => {
     // The strand pair is the tag's own key, so it must not be repeated as a
     // split-read swatch — but an unmapped mate still gets its own.
     expect(
-      legendFor({ type: 'tag', tag: 'XS' }, [
-        'fwdStrand',
-        'revStrand',
-        'unmappedMate',
-      ]).map(i => i.label),
+      legendFor('tags.XS', ['fwdStrand', 'revStrand', 'unmappedMate']).map(
+        i => i.label,
+      ),
     ).toEqual(['Forward strand', 'Reverse strand', 'Unmapped mate'])
   })
 
@@ -524,37 +510,35 @@ describe('getReadDisplayLegendItems', () => {
   // value" means a missing tag under one and a mateless block under the other.
   test('the unvalued bucket is named for the scheme that produced it', () => {
     expect(
-      legendFor({ type: 'tag', tag: 'HP' }, ['tag', 'noTagValue'], {
+      legendFor('tags.HP', ['tag', 'noTagValue'], {
         presentTagValues: new Set(['1']),
       }).map(i => i.label),
     ).toEqual(['1', 'No HP value'])
     expect(
-      legendFor({ type: 'mateRefName' }, ['tag', 'noTagValue'], {
+      legendFor('mateRefName', ['tag', 'noTagValue'], {
         presentTagValues: new Set(['ctgA']),
       }).map(i => i.label),
     ).toEqual(['ctgA', 'No mate'])
   })
 
   test('the unvalued bucket is omitted when every read resolved a color', () => {
-    expect(tagLabels({ type: 'tag', tag: 'HP' }, new Set(['1']))).not.toContain(
-      'No HP value',
-    )
+    expect(tagLabels('tags.HP', new Set(['1']))).not.toContain('No HP value')
   })
 
   // Chromosome painting rides the same CPU-baked color path as tag coloring, so
   // it keys the mate refNames on screen. It listed nothing at all before.
   test('chromosome painting keys each mate refName in view', () => {
     expect(
-      legendFor({ type: 'mateRefName' }, ['tag'], {
+      legendFor('mateRefName', ['tag'], {
         presentTagValues: new Set(['ctgB', 'ctgA']),
       }),
     ).toEqual([
       {
-        color: bakedValueColor({ type: 'mateRefName' }, 'ctgA'),
+        color: bakedValueColor('mateRefName', 'ctgA'),
         label: 'ctgA',
       },
       {
-        color: bakedValueColor({ type: 'mateRefName' }, 'ctgB'),
+        color: bakedValueColor('mateRefName', 'ctgB'),
         label: 'ctgB',
       },
     ])
@@ -566,14 +550,14 @@ describe('getReadDisplayLegendItems', () => {
   // still listed ctgB until the narrowing was bolted on.
   test('baked-value swatches are exactly the values on screen', () => {
     expect(
-      legendFor({ type: 'mateRefName' }, ['tag'], {
+      legendFor('mateRefName', ['tag'], {
         presentTagValues: new Set(['ctgA']),
       }).map(i => i.label),
     ).toEqual(['ctgA'])
     // the empty set is a real state: the scheme has values, none are drawn
-    expect(tagLabels({ type: 'tag', tag: 'HP' }, new Set())).toEqual([])
+    expect(tagLabels('tags.HP', new Set())).toEqual([])
     // undefined is "the caller can't tell", which keys none
-    expect(tagLabels({ type: 'tag', tag: 'HP' })).toEqual([])
+    expect(tagLabels('tags.HP')).toEqual([])
   })
 
   test('mapping quality lists no rows of its own beside its color bar', () => {
@@ -591,7 +575,7 @@ describe('getReadDisplayLegendItems', () => {
 
   test('base quality unavailable is keyed only when a drawn base carries it', () => {
     const rows = (baseQualityUnavailable: boolean) =>
-      legendFor({ type: 'normal' }, ['plain'], {
+      legendFor('', ['plain'], {
         baseLayer: { type: 'baseQuality' },
         baseQualityUnavailable,
       })
@@ -763,7 +747,7 @@ describe('getReadDisplayLegendItems', () => {
       colorUnmappedMate: [0, 1, 0],
     })
     const items = getReadDisplayLegendItems({
-      colorBy: { type: 'strand' },
+      colorField: 'strand',
       presentCategories: new Set<ReadColorCategory>([
         'fwdStrand',
         'unmappedMate',
@@ -873,7 +857,7 @@ describe('colorRampScales', () => {
     baseQualityExtent: undefined,
   }
   const mapqRamp = bakedColorScale(
-    { type: 'mapq' },
+    'mapq',
     {
       field: 'mapq',
       scale: 'linear',
@@ -894,7 +878,7 @@ describe('colorRampScales', () => {
   test('a linear MAPQ keys a color bar from the scale the reads bake through', () => {
     const [mapq, ...rest] = colorRampScales({
       ...noExtents,
-      colorBy: { type: 'mapq' },
+      colorField: 'mapq',
       baseLayer: undefined,
       bakedScale: mapqRamp,
       linearFieldExtent: [0, 70],
@@ -915,7 +899,7 @@ describe('colorRampScales', () => {
     expect(
       colorRampScales({
         ...noExtents,
-        colorBy: { type: 'mapq' },
+        colorField: 'mapq',
         baseLayer: undefined,
       }),
     ).toEqual([])
@@ -924,7 +908,7 @@ describe('colorRampScales', () => {
   test('base quality keys a color bar from the table the cells paint, ahead of the read fill', () => {
     const [baseQuality, mapq] = colorRampScales({
       ...noExtents,
-      colorBy: { type: 'mapq' },
+      colorField: 'mapq',
       baseLayer: { type: 'baseQuality' },
       bakedScale: mapqRamp,
       baseQualityExtent: [2, 38],
@@ -950,7 +934,7 @@ describe('colorRampScales', () => {
     expect(
       colorRampScales({
         ...noExtents,
-        colorBy: { type: 'normal' },
+        colorField: '',
         baseLayer: { type: 'base' },
       }),
     ).toEqual([])
@@ -1255,7 +1239,7 @@ describe('getAlignmentsColorScales', () => {
 describe('the overlap row', () => {
   const items = (overlaps?: 'chain' | 'collapsed') =>
     getReadDisplayLegendItems({
-      colorBy: { type: 'normal' },
+      colorField: '',
       presentCategories: new Set<ReadColorCategory>(['pairLR']),
       palette: makeTestPalette({
         colorPairLR: [1, 1, 1],

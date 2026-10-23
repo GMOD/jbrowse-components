@@ -14,6 +14,7 @@ import {
 } from '../features/modification/extract.ts'
 import { extractPerBaseLetter } from '../features/perBaseLetter/extract.ts'
 import { extractPerBaseQuality } from '../features/perBaseQuality/extract.ts'
+import { colorSchemeOf } from './colorSchemes.ts'
 import {
   cigarCategoryBitsOf,
   extractCigarFeatures,
@@ -21,12 +22,13 @@ import {
   isMismatchFeature,
 } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
+import { fieldTag } from './facetLabels.ts'
 import { fieldValueReader } from './groupFeatures.ts'
 import { mateMapqOf } from './splitAlignment.ts'
 import { isMethylationView, paintsUnmodifiedCalls } from './types.ts'
 import { getMappingQuality, getMateRefName, getStrand } from './util.ts'
 
-import type { BaseLayer, ReadColorBy } from './types.ts'
+import type { BaseLayer } from './types.ts'
 import type {
   FeatureData,
   GapData,
@@ -41,7 +43,7 @@ import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { ModificationType } from '@jbrowse/modifications-utils'
 
 interface ExtractOpts {
-  colorBy: ReadColorBy | undefined
+  colorField?: string
   baseLayer?: BaseLayer
   showSoftClipping: boolean
   region: Region
@@ -72,7 +74,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   report?: ProgressReporter,
 ) {
   const {
-    colorBy,
+    colorField = '',
     baseLayer,
     showSoftClipping,
     region,
@@ -130,9 +132,9 @@ export function extractFeatureArrays<T extends FeatureData>(
   // lets the main thread chain split segments in true read order rather than
   // genomic order. Synteny features have no CIGAR and contribute 0.
   const clipAtStart: number[] = []
-  const isTagColorMode = colorBy?.type === 'tag' && !!colorBy.tag
+  const colorTag = fieldTag(colorField)
   const colorAttribute =
-    colorBy?.type === 'tag' && !colorBy.tag ? colorBy.attribute : undefined
+    colorSchemeOf(colorField) === 'tag' && !colorTag ? colorField : undefined
   const readColorAttribute =
     colorAttribute === undefined
       ? undefined
@@ -143,11 +145,11 @@ export function extractFeatureArrays<T extends FeatureData>(
   // parallel array. The `?? ''` is a feature with neither of the two sources
   // `getMateRefName` reads — a synteny block's `mate`, a BAM read's `next_ref`
   // — which is uncolored rather than a hash of the empty string.
-  const isMateRefNameMode = colorBy?.type === 'mateRefName'
+  const isMateRefNameMode = colorField === 'mateRefName'
   const paintsModificationMarks = baseLayer?.type === 'modifications'
   // A sort on the tag the reads are colored by shares their column, which
   // structured clone then ships once
-  const sortsByColorTag = isTagColorMode && colorBy.tag === sortTag
+  const sortsByColorTag = !!colorTag && colorTag === sortTag
   const sortTagValues: string[] | undefined = !sortTag
     ? undefined
     : sortsByColorTag
@@ -202,8 +204,8 @@ export function extractFeatureArrays<T extends FeatureData>(
         : getClip(cigarString, strand),
     )
 
-    if (isTagColorMode) {
-      tagColorValues.push(extractFeatureTagValue(feature, colorBy.tag!))
+    if (colorTag) {
+      tagColorValues.push(extractFeatureTagValue(feature, colorTag))
     } else if (readColorAttribute) {
       tagColorValues.push(readColorAttribute(feature))
     } else if (isMateRefNameMode) {

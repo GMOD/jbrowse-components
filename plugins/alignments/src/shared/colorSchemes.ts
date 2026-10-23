@@ -1,10 +1,11 @@
 import { FACET_LABELS, INSERT_SIZE_LABELS } from './facetLabels.ts'
+import { COLOR_FIELDS } from './types.ts'
 
 import type {
   BaseLayer,
-  ColorSchemeType,
-  ReadColorBy,
   BodyScheme,
+  ColorSchemeType,
+  ReadColorSchemeType,
 } from './types.ts'
 
 export type ColorGroup = 'basic' | 'pairedEnd'
@@ -37,11 +38,11 @@ export interface ColorSchemeDef {
   // The worker extracts different DATA for this scheme — per-base arrays,
   // modification marks, per-read tag strings, a reference-sequence fetch. Every
   // other scheme is decided entirely in the shader from arrays the worker always
-  // produces, so switching between those must not refetch: `workerColorBy`
+  // produces, so switching between those must not refetch: `workerColorField`
   // collapses them to one value, keeping `rpcProps` (and therefore the fetched
   // data) identical across the switch. Under-declaring this renders stale data,
   // so a new scheme's flag is asserted against what the worker actually reads —
-  // see workerColorBy.test.ts.
+  // see workerColorField.test.ts.
   workerExtracts?: boolean
 }
 
@@ -197,20 +198,33 @@ export function paintsEveryBase(layer: BaseLayer | undefined) {
   return layer !== undefined && isPerBaseScheme(layer.type)
 }
 
-// The part of `colorBy` the RPC worker actually reads, for `rpcProps`. A scheme
-// the shader decides on its own (strand, mapping quality, insert size, pair
+const PRESET_FIELDS = new Set<string>(COLOR_FIELDS)
+
+/**
+ * The scheme a read fill's field paints through: `''` the plain fill, a
+ * preset field its own, and a tag (`tags.HP`) or any other attribute the
+ * per-read bake.
+ */
+export function colorSchemeOf(field: string): ReadColorSchemeType {
+  return field === ''
+    ? 'normal'
+    : PRESET_FIELDS.has(field)
+      ? (field as ReadColorSchemeType)
+      : 'tag'
+}
+
+// The read fill field as the RPC worker reads it, for `rpcProps`. A field the
+// shader decides on its own (strand, mapping quality, insert size, pair
 // orientation …) needs no worker data at all — the arrays it colors from are
 // produced on every fetch — so every one of them projects to `undefined` and
 // switching between them leaves `rpcProps` unchanged. That makes those switches
-// a redraw (the read categories rebake) instead of dropping
-// `rpcDataMap` and re-reading the region, which is what sending the raw
-// `colorBy` did: flipping strand → mapping quality → insert size cost three
-// full refetches to paint arrays that were already in memory.
+// a redraw (the read categories rebake) instead of dropping `rpcDataMap` and
+// re-reading the region: sending every field cost flipping strand → mapping
+// quality → insert size three full refetches of arrays already in memory.
 //
-// The worker treats a missing colorBy exactly as it treats a shader-only one:
-// modification TYPES are still detected on every fetch (the detection loop in
-// extractModifications is ungated, so the Modifications menu still populates),
+// Modification TYPES are still detected on every fetch (the detection loop in
+// extractModifications is ungated, so the Modifications menu still populates);
 // only the paint/extract passes are gated.
-export function workerColorBy(colorBy: ReadColorBy): ReadColorBy | undefined {
-  return COLOR_SCHEMES[colorBy.type].workerExtracts ? colorBy : undefined
+export function workerColorField(field: string) {
+  return COLOR_SCHEMES[colorSchemeOf(field)].workerExtracts ? field : undefined
 }

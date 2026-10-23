@@ -6,7 +6,7 @@ import { MAX_GROUPS } from '../../shared/groupFeatures.ts'
 import GroupByDialog from './GroupByDialog.tsx'
 import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
-import type { BaseLayer, ColorBy, Facet } from '../../shared/types.ts'
+import type { BaseLayer, Facet } from '../../shared/types.ts'
 import type { GroupByDialogModel } from './GroupByDialog.tsx'
 
 beforeEach(() => {
@@ -24,7 +24,7 @@ afterEach(() => {
 // and without it the grouping is the one the menu would have applied anyway. The
 // verdict itself is unit-tested below.
 function renderDialog(state: {
-  colorBy: ColorBy
+  colorField: string
   baseLayer?: BaseLayer
   facet?: Facet
 }) {
@@ -32,7 +32,7 @@ function renderDialog(state: {
   const colorByField = jest.fn()
   const model = {
     id: 'display1',
-    colorBy: state.colorBy,
+    colorField: state.colorField,
     baseLayer: state.baseLayer,
     facet: state.facet,
     readFilter: {},
@@ -78,7 +78,7 @@ function submit() {
 // this tag", so submitting reset the HP coloring the user could see.
 test('typing the tag the reads are already colored by keeps that coloring', async () => {
   const { facetByField, colorByField } = renderDialog({
-    colorBy: { type: 'tag', tag: 'HP' },
+    colorField: 'tags.HP',
   })
   expect(checkbox().checked).toBe(false)
   typeTag('HP')
@@ -93,7 +93,7 @@ test('typing the tag the reads are already colored by keeps that coloring', asyn
 // replace them and does nothing unless taken.
 test('a different tag coloring leaves the box unticked and untouched', async () => {
   const { colorByField } = renderDialog({
-    colorBy: { type: 'tag', tag: 'RG' },
+    colorField: 'tags.RG',
   })
   typeTag('HP')
   expect(checkbox().checked).toBe(false)
@@ -107,7 +107,7 @@ test('a different tag coloring leaves the box unticked and untouched', async () 
 // Submit.
 test('a non-tag color scheme is not replaced by default', async () => {
   const { colorByField } = renderDialog({
-    colorBy: { type: 'insertSize' },
+    colorField: 'insertSize',
   })
   typeTag('HP')
   expect(checkbox().checked).toBe(false)
@@ -120,7 +120,7 @@ test('a non-tag color scheme is not replaced by default', async () => {
 // against, and the tag palette's blue and pink collide with the calls'.
 test('the plain fill under a per-base layer is not replaced by default', async () => {
   const { colorByField } = renderDialog({
-    colorBy: { type: 'normal' },
+    colorField: '',
     baseLayer: { type: 'modifications' },
   })
   typeTag('HP')
@@ -133,7 +133,7 @@ test('the plain fill under a per-base layer is not replaced by default', async (
 // The guard this dialog exists for reads a scan that has not landed yet, so a
 // click before it settles applied a grouping nothing had vetted.
 test('Submit is held until the scan settles', async () => {
-  renderDialog({ colorBy: { type: 'normal' } })
+  renderDialog({ colorField: '' })
   typeTag('HP')
   expect(submitButton().disabled).toBe(true)
   await settleScan()
@@ -143,7 +143,7 @@ test('Submit is held until the scan settles', async () => {
 // Grouping by a tag usually pairs with coloring by it, so an uncolored track
 // opts in by default.
 test('an uncolored track defaults to coloring by the grouped tag', async () => {
-  const { colorByField } = renderDialog({ colorBy: { type: 'normal' } })
+  const { colorByField } = renderDialog({ colorField: '' })
   typeTag('HP')
   expect(checkbox().checked).toBe(true)
   await settleScan()
@@ -155,7 +155,7 @@ test('an uncolored track defaults to coloring by the grouped tag', async () => {
 // pins: the default no longer re-ticks the box as the tag is edited.
 test('unticking drops the matching coloring and stays unticked', async () => {
   const { colorByField } = renderDialog({
-    colorBy: { type: 'tag', tag: 'HP' },
+    colorField: 'tags.HP',
     facet: { field: 'tags.HP' },
   })
   expect(checkbox().checked).toBe(true)

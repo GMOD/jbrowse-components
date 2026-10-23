@@ -62,8 +62,6 @@ import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import { bakedValueColor } from '../src/LinearAlignmentsDisplay/colorTagUtils.ts'
 
-import type { ColorBy } from '../src/shared/types.ts'
-
 const arg = (name: string, dflt: string) =>
   process.argv
     .find(a => a.startsWith(`--${name}=`))
@@ -79,7 +77,7 @@ function packRgb(color: string) {
 
 // ARM 1: pure — what ships. The `=== ''` test and the miss branch are the two
 // things this arm pays per read that the map arm does not.
-function bakePure(values: string[], colorBy: ColorBy) {
+function bakePure(values: string[], colorBy: string) {
   const cache = new Map<string, number>()
   const out = new Uint32Array(values.length)
   for (let i = 0; i < values.length; i++) {
@@ -118,7 +116,7 @@ function bakeMap(
 // ARM 3: control — a separately-declared copy of `bakePure`. Whatever this
 // scores against arm 1 is what the harness could resolve; a row whose control
 // is far from 1.00 measured nothing. The duplication is deliberate.
-function bakeControl(values: string[], colorBy: ColorBy) {
+function bakeControl(values: string[], colorBy: string) {
   const cache = new Map<string, number>()
   const out = new Uint32Array(values.length)
   for (let i = 0; i < values.length; i++) {
@@ -158,15 +156,15 @@ function firstDifference(a: Uint32Array, b: Uint32Array) {
 
 interface Fixture {
   name: string
-  colorBy: ColorBy
+  colorBy: string
   // the values the reads on screen carry, cycled
   onScreen: string[]
   // how many values the accumulated map had grown to, on-screen ones included
   mapSize: number
 }
 
-const HP: ColorBy = { type: 'tag', tag: 'HP' }
-const MATE: ColorBy = { type: 'mateRefName' }
+const HP = 'tags.HP'
+const MATE = 'mateRefName'
 
 const chrom = (i: number) => `chr${i + 1}`
 

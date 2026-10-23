@@ -47,8 +47,8 @@ export function packColorCells(
 }
 
 // One aligned base, colored by its Phred score: a `cell` mark on one pileup
-// row, drawn for every visible base of every read when `colorBy` is
-// per-base-quality. Same pivot as `MISMATCH_MARK` and the same reason for it,
+// row, drawn for every visible base of every read when `pileup.bases` paints
+// `baseQuality`. Same pivot as `MISMATCH_MARK` and the same reason for it,
 // with the seam fudge on, because this layer paints an unbroken wall.
 //
 // Opaque on both backends: `packedColorQuad.slang` has no fade of any kind and

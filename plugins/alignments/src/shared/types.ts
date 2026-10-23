@@ -46,7 +46,7 @@ export function paintsUnmodifiedCalls(mods: ModificationColorBy | undefined) {
   return mods?.unmodified === 'calls' || mods?.unmodified === 'all'
 }
 
-// Single source for "is this modification type visible?" given a colorBy.
+// Single source for "is this modification type visible?" given the layer.
 // Shared by the worker extract filter, the legend, and the color-by menu — the
 // type checkboxes render straight off this predicate, so what is ticked and what
 // is drawn cannot disagree.
@@ -117,16 +117,19 @@ export type ColorSchemeType =
 
 export type ReadColorSchemeType = Exclude<ColorSchemeType, BaseLayerType>
 
-// A scheme by name with what it reads, for the code either half passes through.
+/**
+ * @deprecated The read fill is `encoding.color.field`, which the display reads
+ * as `colorField` and `colorSchemeOf` classifies. Kept for plugins that name
+ * `display.colorBy`.
+ */
 export interface ColorBy {
   type: ColorSchemeType
   tag?: string
-  // a feature attribute read through `feature.get`, where `tag` names a SAM tag
   attribute?: string
   modifications?: ModificationColorBy
 }
 
-/** What fills a read: the display's `encoding.color` as a scheme. */
+/** @deprecated See {@link ColorBy}. */
 export interface ReadColorBy extends ColorBy {
   type: ReadColorSchemeType
   modifications?: undefined
@@ -135,39 +138,37 @@ export interface ReadColorBy extends ColorBy {
 /** How a read tag colors: a color per value, or a gradient over its numbers. */
 export type TagColorScale = 'ordinal' | 'linear'
 
-/** The per-base layer: `pileup.bases` as a scheme. */
-export interface BaseLayer extends ColorBy {
+/** The per-base layer: `pileup.bases` with the modification settings it reads. */
+export interface BaseLayer {
   type: BaseLayerType
-  tag?: undefined
-  attribute?: undefined
+  modifications?: ModificationColorBy
 }
 
 // True for the modifications 2-color view, at either `unmodified` level, where
 // extractMethylation paints each cytosine's most likely state among 5mC, 5hmC
 // and unmodified. `unmodified: 'all'` also fills the cytosines the basecaller
-// left implicit. Reads only reach this through `colorByOf`, so the retired
-// `methylation` name is never seen here.
-export function isMethylationView(colorBy: ColorBy | undefined) {
+// left implicit.
+export function isMethylationView(layer: BaseLayer | undefined) {
   return (
-    colorBy?.type === 'modifications' &&
-    paintsUnmodifiedCalls(colorBy.modifications)
+    layer?.type === 'modifications' &&
+    paintsUnmodifiedCalls(layer.modifications)
   )
 }
 
 // True when the mode keys the methylated/unmethylated legend (5mC/5hmC named)
 // rather than the per-type MM palette, as extractMethylation and
 // extractBisulfite paint.
-export function usesMethylationLegend(colorBy: ColorBy | undefined) {
-  return isMethylationView(colorBy) || colorBy?.type === 'bisulfite'
+export function usesMethylationLegend(layer: BaseLayer | undefined) {
+  return isMethylationView(layer) || layer?.type === 'bisulfite'
 }
 
 // True when the mode actually paints the explicit "not modified" (blue) state,
 // gating that legend swatch — including two-color over a non-cytosine mod,
 // which paints blue low-probability 6mA calls (extract.ts).
-export function paintsUnmodifiedState(colorBy: ColorBy | undefined) {
+export function paintsUnmodifiedState(layer: BaseLayer | undefined) {
   return (
-    (colorBy?.type === 'modifications' || colorBy?.type === 'bisulfite') &&
-    paintsUnmodifiedCalls(colorBy.modifications)
+    (layer?.type === 'modifications' || layer?.type === 'bisulfite') &&
+    paintsUnmodifiedCalls(layer.modifications)
   )
 }
 

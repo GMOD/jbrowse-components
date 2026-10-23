@@ -69,7 +69,7 @@ async function syntenyDisplay() {
   // displays[0] is `any`, so annotate to keep phantom getters from typechecking
   const display = session.views[0].tracks[0].displays[0] as {
     trackMenuItems: () => MenuItem[]
-    colorBy: { type: string }
+    colorField: string
     colorByField: (field: string) => void
   }
   return display
@@ -102,11 +102,11 @@ test('drops the read-oriented schemes it inherits from the alignments model', as
 })
 
 test('colors by strand until a config says otherwise', async () => {
-  expect((await syntenyDisplay()).colorBy).toEqual({ type: 'strand' })
+  expect((await syntenyDisplay()).colorField).toBe('strand')
 })
 
 test('picking Query stores the scheme through the config slot', async () => {
   const display = await syntenyDisplay()
   display.colorByField('mateRefName')
-  expect(display.colorBy).toEqual({ type: 'mateRefName' })
+  expect(display.colorField).toBe('mateRefName')
 })

@@ -13,6 +13,8 @@ import {
   SAME_AS_READS_LABEL,
 } from '../../shared/arcColorOptions.ts'
 import { radioColorFieldOptions } from '../../shared/colorFieldOptions.ts'
+import { colorSchemeOf } from '../../shared/colorSchemes.ts'
+import { fieldTag } from '../../shared/facetLabels.ts'
 import { bisulfiteItem } from './bisulfiteMenu.ts'
 import { modificationsMenu } from './modificationsMenu.ts'
 
@@ -22,7 +24,6 @@ import type {
   ArcColorField,
   BaseLayer,
   ModificationColorBy,
-  ReadColorBy,
   TagColorScale,
 } from '../../shared/types.ts'
 import type { ModificationsMenuModel } from './modificationsMenu.ts'
@@ -33,7 +34,6 @@ import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 const TagDialog = lazy(() => import('../dialogs/TagDialog.tsx'))
 
 interface ColorByModel {
-  colorBy: ReadColorBy
   colorField: string
   colorEncoding: AlignmentsColorEncoding
   writtenColor: ColorSlots
@@ -145,10 +145,10 @@ function perBaseItem(
 }
 
 function tagColorScaleOf({
-  colorBy,
+  colorField,
   colorEncoding,
 }: AnyColorByModel): TagColorScale {
-  return colorBy.type === 'tag' &&
+  return colorSchemeOf(colorField) === 'tag' &&
     typeof colorEncoding === 'object' &&
     colorEncoding.scale === 'linear'
     ? 'linear'
@@ -159,19 +159,19 @@ function tagColorScaleOf({
 // the only scheme whose choice has a parameter, and it was previously invisible
 // without reopening the dialog.
 function tagItem(model: AnyColorByModel): MenuItem {
-  const { colorBy } = model
-  const named =
-    colorBy.type === 'tag' ? (colorBy.tag ?? colorBy.attribute) : undefined
+  const { colorField } = model
+  const isTag = colorSchemeOf(colorField) === 'tag'
+  const tag = fieldTag(colorField)
   return radioItem(
-    named === undefined ? 'Tag...' : `Tag (${named})...`,
-    colorBy.type === 'tag',
+    isTag ? `Tag (${tag ?? colorField})...` : 'Tag...',
+    isTag,
     () => {
       getDialogHost(model).queueDialog((handleClose: () => void) => [
         TagDialog,
         {
           title: 'Color by tag',
           prompt: 'Pick or enter a tag to color by:',
-          initialTag: colorBy.tag,
+          initialTag: tag,
           colorScale: tagColorScaleOf(model),
           onSubmit: (tag: string, scale: TagColorScale | undefined) => {
             const color = tagColorFor(

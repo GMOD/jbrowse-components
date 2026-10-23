@@ -1,13 +1,8 @@
-import { alignmentsColorEncoding, colorByOf } from './alignmentsColor.ts'
-import { workerColorBy } from './colorSchemes.ts'
-import { colorSettingOf } from './colorSettingFixture.ts'
+import { colorSchemeOf, workerColorField } from './colorSchemes.ts'
 
 test('a field naming no scheme reads as an attribute rather than reaching a lookup that throws', () => {
   for (const field of ['perBaseLettering', 'toString', 'constructor']) {
-    const colorBy = colorByOf(
-      alignmentsColorEncoding(colorSettingOf({ field })),
-    )
-    expect(colorBy).toEqual({ type: 'tag', attribute: field })
-    expect(() => workerColorBy(colorBy)).not.toThrow()
+    expect(colorSchemeOf(field)).toBe('tag')
+    expect(workerColorField(field)).toBe(field)
   }
 })

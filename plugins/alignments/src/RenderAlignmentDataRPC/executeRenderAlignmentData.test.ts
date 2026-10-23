@@ -16,7 +16,6 @@ import { executeRenderAlignmentData } from './executeRenderAlignmentData.ts'
 
 import type * as ReadBaseCounts from '../features/modCoverage/readBaseCounts.ts'
 import type { BaseLayer, WorkerFacet } from '../shared/types.ts'
-import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
@@ -78,10 +77,10 @@ function run(
       adapterConfig: { type: 'BamAdapter' },
       sequenceAdapter: { type: 'TwoBitAdapter' },
       regions: [region],
-      colorBy: { type: 'normal' },
+      colorField: '',
       statusCallback: undefined,
       ...settings,
-    } as unknown as RpcExecuteArgs<'RenderAlignmentData'>,
+    },
   })
 }
 

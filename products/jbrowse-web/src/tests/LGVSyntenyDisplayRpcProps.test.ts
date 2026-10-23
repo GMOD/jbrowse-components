@@ -127,22 +127,22 @@ test('the override still carries the inherited alignments fields', async () => {
   const { display } = await syntenyDisplay(tiered())
   // sortTag is the one the base reads off a sibling view, so it is the field
   // that regressed; the rest pin that nothing else was dropped by the override.
-  // Keys, not values: sortTag and colorBy are legitimately undefined here (the
+  // Keys, not values: sortTag and colorField are legitimately undefined here (the
   // synteny default scheme is 'strand', which the shader decides on its own, so
-  // workerColorBy projects it away), and toMatchObject would pass on a dropped
+  // workerColorField projects it away), and toMatchObject would pass on a dropped
   // key just as happily as on a present-but-undefined one.
   expect(Object.keys(display.rpcProps())).toEqual(
     expect.arrayContaining([
       'sortTag',
       'filter',
-      'colorBy',
+      'colorField',
       'showSoftClipping',
       'showCoverage',
     ]),
   )
   expect(display.rpcProps()).toMatchObject({
     sortTag: undefined,
-    colorBy: undefined,
+    colorField: undefined,
     filter: expect.anything(),
     showSoftClipping: expect.any(Boolean),
     showCoverage: expect.any(Boolean),

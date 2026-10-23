@@ -17,7 +17,7 @@ import {
   impliedFieldOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
-import { COLOR_SCHEMES } from './colorSchemes.ts'
+import { COLOR_SCHEMES, colorSchemeOf } from './colorSchemes.ts'
 import { TAG_FIELD_PREFIX, fieldTag } from './facetLabels.ts'
 import {
   INSERT_SIZE_LEVELS,
@@ -35,7 +35,6 @@ import type { RGBColor } from '../shaders/colors.ts'
 import type {
   BaseLayer,
   BaseLayerType,
-  ColorBy,
   ColorSchemeType,
   ModificationColorBy,
   ReadColorBy,
@@ -91,13 +90,6 @@ export function alignmentsColorSnapshotOf(
 
 export { BASE_COLOR_FIELDS, COLOR_FIELDS }
 
-type PresetScheme = (typeof COLOR_FIELDS)[number]
-
-function isPresetField(field: string): field is PresetScheme {
-  const fields: readonly string[] = COLOR_FIELDS
-  return fields.includes(field)
-}
-
 /** The per-base layer `field` draws, if it names one. */
 export function baseLayerOfField(field: string) {
   const fields: readonly string[] = BASE_COLOR_FIELDS
@@ -149,37 +141,28 @@ export function alignmentsColorProblems(setting: AlignmentsColorSetting) {
 
 export type AlignmentsColorEncoding = ReturnType<typeof alignmentsColorEncoding>
 
-/** The field a read scheme paints, `''` for the plain fill. */
-export function colorFieldOf(colorBy: ColorBy) {
-  return colorBy.type === 'tag'
-    ? colorBy.tag
-      ? `${TAG_FIELD_PREFIX}${colorBy.tag}`
-      : (colorBy.attribute ?? '')
-    : colorBy.type === 'normal'
-      ? ''
-      : colorBy.type
-}
-
 /**
- * The read scheme a resolved `encoding.color` selects: a preset field its own
- * scheme, `tags.XX` the tag scheme, any other name a feature attribute through
- * the same per-read bake. A constant, a per-base variable, which `pileup.bases`
- * draws, or a read category only a facet answers paints the plain fill.
+ * The field a resolved `encoding.color` fills reads by, `''` for the plain
+ * fill: a constant, a per-base variable, which `pileup.bases` draws, and a
+ * read category only a facet answers paint none.
  */
-export function colorByOf(encoding: AlignmentsColorEncoding): ReadColorBy {
-  if (
-    typeof encoding !== 'object' ||
+export function readColorFieldOf(encoding: AlignmentsColorEncoding) {
+  return typeof encoding !== 'object' ||
     baseLayerOfField(encoding.field) ||
     FACET_ONLY_FIELDS.has(encoding.field)
-  ) {
-    return { type: 'normal' }
-  }
-  const { field } = encoding
-  if (isPresetField(field)) {
-    return { type: field }
-  }
+    ? ''
+    : encoding.field
+}
+
+/** @deprecated The {@link ReadColorBy} a read fill field restates. */
+export function readColorByOf(field: string): ReadColorBy {
+  const type = colorSchemeOf(field)
   const tag = fieldTag(field)
-  return tag ? { type: 'tag', tag } : { type: 'tag', attribute: field }
+  return type !== 'tag'
+    ? { type }
+    : tag
+      ? { type, tag }
+      : { type, attribute: field }
 }
 
 /**
@@ -203,27 +186,23 @@ export function baseLayerOf(
  * modification layer's own body, a pale strand tint the marks read against.
  */
 export function bodyColorScheme(
-  colorBy: ReadColorBy,
+  colorField: string,
   baseLayer: BaseLayer | undefined,
 ): ColorSchemeType {
-  return colorBy.type === 'normal' &&
+  return colorField === '' &&
     baseLayer &&
     READS_MODIFICATION_SETTINGS.has(baseLayer.type)
     ? baseLayer.type
-    : colorBy.type
+    : colorSchemeOf(colorField)
 }
 
 /**
  * Whether the main thread bakes a color per read through the `encoding.color`
- * scale:
- * from a value the worker ships, or from the read's MAPQ.
+ * scale: from a value the worker ships, or from the read's MAPQ.
  */
-export function isBakedScheme(colorBy: ColorBy) {
-  return (
-    colorBy.type === 'mapq' ||
-    colorBy.type === 'mateRefName' ||
-    (colorBy.type === 'tag' && !!(colorBy.tag ?? colorBy.attribute))
-  )
+export function isBakedField(colorField: string) {
+  const scheme = colorSchemeOf(colorField)
+  return scheme === 'mapq' || scheme === 'mateRefName' || scheme === 'tag'
 }
 
 type ReadColorLevel = readonly [value: string, category: ReadColorCategory]
@@ -332,7 +311,7 @@ export const ALIGNMENTS_FIELD_PRESETS: FieldPresets = {
       field,
       INSERT_SIZE_FIELDS.has(field)
         ? { scale: { type: 'threshold' } }
-        : isBakedScheme({ type: field })
+        : isBakedField(field)
           ? { scale: { type: 'ordinal' } }
           : {
               scale: {
@@ -359,7 +338,7 @@ function levelNotices(encoding: AlignmentsColorEncoding): string[] {
   if (typeof encoding !== 'object') {
     return []
   }
-  const { type } = colorByOf(encoding)
+  const type = colorSchemeOf(readColorFieldOf(encoding))
   if (!LEVEL_SCHEMES.has(type)) {
     return []
   }
@@ -409,10 +388,10 @@ function declaredOrder(
 function declaredLevels(
   encoding: Exclude<AlignmentsColorEncoding, string | undefined>,
 ) {
-  const colorBy = colorByOf(encoding)
-  const levels = paintedLevels(colorBy.type)
+  const field = readColorFieldOf(encoding)
+  const levels = paintedLevels(colorSchemeOf(field))
   return {
-    order: declaredOrder(encoding, levels, isBakedScheme(colorBy)),
+    order: declaredOrder(encoding, levels, isBakedField(field)),
     categoryOf: new Map(levels),
   }
 }
@@ -502,7 +481,7 @@ export function declaredReadLabels(
   }
   return {
     categories,
-    values: isBakedScheme(colorByOf(encoding))
+    values: isBakedField(readColorFieldOf(encoding))
       ? keyNames(bakedKeys(encoding), labels)
       : new Map(),
   }

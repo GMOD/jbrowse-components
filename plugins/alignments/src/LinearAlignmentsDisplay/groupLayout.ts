@@ -23,7 +23,6 @@ import type {
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { GroupConnectors } from '../features/linkedReads/computeOverlay.ts'
 import type {
-  ColorBy,
   ColorSchemeType,
   LayoutOrder,
   SortColumn,
@@ -210,11 +209,10 @@ function layoutOneGroup(
 // too, so the GPU, the Canvas2D fallback and the legend all read one
 // classification.
 export interface ReadColorContext {
-  // The scheme itself, not a shader index off it: that index collapses the two
-  // per-base schemes onto `normal` (`framesUnpairedChainStrand`).
-  colorBy: ColorBy
-  // What the body paints as: `colorBy`, or the modification layer's own tint
-  // under the plain fill (`bodyColorScheme`).
+  // The `encoding.color` field the bake reads, `''` for the plain fill.
+  colorField: string
+  // What the body paints as: `colorField`'s scheme, or the modification
+  // layer's own tint under the plain fill (`bodyColorScheme`).
   bodyScheme: ColorSchemeType
   readColorOpts: ReadColorOpts
   // Required-but-nullable, so dropping it from the model's context is a compile
@@ -332,7 +330,7 @@ export function applyReadColorsByGroup(
     out.set(
       key,
       overlayReadColorCategories(
-        overlayReadFillColors(map, ctx.colorBy, ctx.bakedScale),
+        overlayReadFillColors(map, ctx.colorField, ctx.bakedScale),
         ctx.bodyScheme,
         ctx.readColorOpts,
       ),

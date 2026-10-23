@@ -235,7 +235,7 @@ describe('formatReadTooltip names the color bucket', () => {
 
   it('reports the wording the legend uses, not the raw table', () => {
     const tip = readTip(framed, 0, 'chr1', c =>
-      readColorCategoryLabel(c, readCategoryLabelOverrides(undefined)),
+      readColorCategoryLabel(c, readCategoryLabelOverrides('')),
     )
     // the confusing pair, and the reason the row exists: a reverse-MAPPED
     // segment painted "same strand", because "same" is against the chain's

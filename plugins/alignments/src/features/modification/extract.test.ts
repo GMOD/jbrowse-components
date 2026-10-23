@@ -10,7 +10,7 @@ import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 import { isMethylationView } from '../../shared/types.ts'
 import { extractMethylation, extractModifications } from './extract.ts'
 
-import type { ColorBy } from '../../shared/types.ts'
+import type { BaseLayer } from '../../shared/types.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { ModificationType } from '@jbrowse/modifications-utils'
@@ -33,7 +33,7 @@ function makeFeature() {
 // Both extractors, gated the way `extractFeatureArrays` gates them
 function drive(
   feature: SimpleFeature,
-  colorBy: ColorBy,
+  colorBy: BaseLayer,
   region: Region,
   detected = new Set<string>(),
   seenModTypes = new Map<string, ModificationType>(),
@@ -56,7 +56,7 @@ function drive(
   return out
 }
 
-function run(colorBy: ColorBy) {
+function run(colorBy: BaseLayer) {
   const detected = new Set<string>()
   const seenModTypes = new Map<string, ModificationType>()
   const out = drive(
@@ -168,7 +168,7 @@ describe('extractModifications', () => {
         ML: [230, 10, 20, 200, 10, 10, 220, 5],
       },
     })
-    const colorBy: ColorBy = {
+    const colorBy: BaseLayer = {
       type: 'modifications',
       modifications: { unmodified: 'all' },
     }
@@ -217,7 +217,7 @@ describe('extractModifications', () => {
 // The fill view, driven the way `extractFeatureArrays` drives it: the MM/ML
 // paint and the cytosine walk are two calls that between them cover a read's
 // types once each. Both bugs below were in the seam between them.
-function runFill(feature: SimpleFeature, colorBy: ColorBy) {
+function runFill(feature: SimpleFeature, colorBy: BaseLayer) {
   return drive(feature, colorBy, {
     refName: 'ctgA',
     start: 100,
@@ -260,7 +260,7 @@ describe('the fill view honours the modification-type filter', () => {
     expect(unfiltered.map(m => m.modType)).toEqual(['m', 'm', 'h', 'm'])
   })
 
-  // The bug: extractMethylation read no colorBy, so the checkboxes were inert
+  // The bug: extractMethylation read no layer settings, so the checkboxes were inert
   // here while the legend read the same predicate and dropped the swatch — a
   // magenta mark on screen with nothing keying it.
   test('unticking 5hmC leaves no 5hmC mark', () => {
@@ -513,7 +513,7 @@ describe('an extract cut to a region matches the whole-read extract cut after', 
     mm: string,
     strand: -1 | 1,
     region: { start: number; end: number },
-    colorBy: ColorBy,
+    colorBy: BaseLayer,
   ) {
     const feature = new SimpleFeature({
       uniqueId: 'cut',
@@ -557,7 +557,7 @@ describe('an extract cut to a region matches the whole-read extract cut after', 
     ['C+mh,0,1,0,2,1,0;A+a,1,0,2,0;', 1],
     ['C+mh,0,1,0,2,1,0;A+a,1,0,2,0;', -1],
   ] as const)('%s on strand %d', (mm, strand) => {
-    const modes: ColorBy[] = [
+    const modes: BaseLayer[] = [
       { type: 'modifications', modifications: { threshold: 0 } },
       { type: 'modifications', modifications: { unmodified: 'all' } },
     ]

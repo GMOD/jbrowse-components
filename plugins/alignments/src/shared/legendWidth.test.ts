@@ -12,7 +12,7 @@ import {
 import { modificationData } from './modificationData.ts'
 import { splitSchemeForTest } from './splitSchemeForTest.ts'
 
-import type { ColorBy, ModificationColorBy } from './types.ts'
+import type { ModificationColorBy } from './types.ts'
 
 // FloatingLegend's own geometry, which decides how much of `LEGEND_MAX_WIDTH` a
 // label actually gets: 1px border either side, 3px left padding, the 20px
@@ -47,10 +47,16 @@ const MODIFICATION_MODES: (ModificationColorBy | undefined)[] = [
   { unmodified: 'calls' },
   { unmodified: 'all' },
 ]
-const COLOR_BYS: ColorBy[] = Object.values(COLOR_SCHEMES).flatMap(({ type }) =>
-  isModificationScheme(type)
-    ? MODIFICATION_MODES.map(modifications => ({ type, modifications }))
-    : [{ type }],
+const FIELDS = Object.values(COLOR_SCHEMES).flatMap(
+  ({ type }): [string, ModificationColorBy | undefined][] =>
+    isModificationScheme(type)
+      ? MODIFICATION_MODES.map(modifications => [type, modifications])
+      : [
+          [
+            type === 'normal' ? '' : type === 'tag' ? 'tags.HP' : type,
+            undefined,
+          ],
+        ],
 )
 
 // Every bucket at once — not a realistic frame, but the union is what has to
@@ -77,11 +83,11 @@ const OVERLAPS = [undefined, 'chain', 'collapsed'] as const
 
 function everyLabel() {
   const out = new Set<string>()
-  for (const colorBy of COLOR_BYS) {
+  for (const [field, modifications] of FIELDS) {
     for (const overlaps of OVERLAPS) {
       for (const detectedModifications of DETECTED_MODIFICATIONS) {
         for (const item of getReadDisplayLegendItems({
-          ...splitSchemeForTest(colorBy),
+          ...splitSchemeForTest(field, modifications),
           presentCategories: ALL,
           palette: makeTestPalette(),
           detectedModifications,

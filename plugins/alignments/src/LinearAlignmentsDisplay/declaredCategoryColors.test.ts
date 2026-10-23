@@ -7,7 +7,7 @@ import {
   ALIGNMENTS_FIELD_PRESETS,
   alignmentsColorEncoding,
   alignmentsColorProblems,
-  colorByOf,
+  readColorFieldOf,
   writtenReadCategoryColors,
 } from '../shared/alignmentsColor.ts'
 import { colorSettingOf } from '../shared/colorSettingFixture.ts'
@@ -101,7 +101,7 @@ describe('a declared range on a preset field', () => {
 
   test('the key names RR in the declared color and LR in its default', () => {
     const items = getReadDisplayLegendItems({
-      colorBy: { type: 'pairOrientation' },
+      colorField: 'pairOrientation',
       palette,
       presentCategories: new Set<ReadColorCategory>(['pairLR', 'pairRR']),
     })
@@ -236,10 +236,8 @@ describe('a domain that names no level says so', () => {
         `encoding.color.field: ${field} colors nothing, since reads keep their arcs' colors; facet: "${field}" sections the reads by it`,
       ])
       expect(
-        colorByOf(alignmentsColorEncoding(colorSettingOf({ field }))),
-      ).toEqual({
-        type: 'normal',
-      })
+        readColorFieldOf(alignmentsColorEncoding(colorSettingOf({ field }))),
+      ).toBe('')
     },
   )
 

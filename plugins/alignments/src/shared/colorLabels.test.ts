@@ -9,9 +9,9 @@ import {
 import { bezierConnectionLegendItems } from '../features/linkedReads/computeOverlay.ts'
 import {
   alignmentsColorEncoding,
-  colorByOf,
+  readColorFieldOf,
   declaredReadLabels,
-  isBakedScheme,
+  isBakedField,
 } from './alignmentsColor.ts'
 import { colorSettingOf } from './colorSettingFixture.ts'
 import {
@@ -35,24 +35,24 @@ function keyOf(
   presentTagValues?: ReadonlySet<string>,
 ) {
   const encoding = alignmentsColorEncoding(colorSettingOf(color))
-  const colorBy = colorByOf(encoding)
+  const colorField = readColorFieldOf(encoding)
   const declared = declaredReadLabels(encoding, labels)
   return {
     declared,
     labels: getReadDisplayLegendItems({
-      colorBy,
+      colorField,
       palette: makeTestPalette(),
       presentCategories: new Set(present),
       presentTagValues,
-      bakedScale: isBakedScheme(colorBy)
-        ? bakedColorScale(colorBy, encoding, undefined, undefined)
+      bakedScale: isBakedField(colorField)
+        ? bakedColorScale(colorField, encoding, undefined, undefined)
         : undefined,
       labels: declared,
     }).map(i => i.label),
     hover: (c: ReadColorCategory) =>
       readColorCategoryLabel(
         c,
-        readCategoryLabelOverrides(colorBy, declared.categories),
+        readCategoryLabelOverrides(colorField, declared.categories),
       ),
   }
 }
@@ -188,10 +188,10 @@ describe('legend.title heads the key the color channel draws', () => {
 
   test('a ramp fill takes the title on its bar and leaves the read rows theirs', () => {
     const ramps = colorRampScales({
-      colorBy: { type: 'tag', tag: 'NM' },
+      colorField: 'tags.NM',
       baseLayer: undefined,
       bakedScale: bakedColorScale(
-        { type: 'tag', tag: 'NM' },
+        'tags.NM',
         { field: 'tags.NM', scale: 'linear', reverse: false },
         undefined,
         [0, 10],

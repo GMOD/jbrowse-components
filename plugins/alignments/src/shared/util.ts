@@ -221,7 +221,7 @@ export function getContrastBaseMap(palette: JBrowsePalette) {
 
 // Returns contrast colors for mismatch/softclip/per-base letters. The rects
 // under these letters are always drawn in the base palette (baseColors.ts),
-// independent of colorBy.type — only showModifications mutes them to a uniform
+// independent of the color field — only showModifications mutes them to a uniform
 // grey. So contrast text is meaningful in every color mode except when
 // modifications collapse the rects to grey, where black reads best and the
 // empty map makes drawAlignmentLabels fall back to it.

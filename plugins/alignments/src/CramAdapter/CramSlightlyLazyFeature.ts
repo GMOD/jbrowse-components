@@ -153,7 +153,7 @@ export default class CramSlightlyLazyFeature
    *
    * `extractFeatureTagValue` duck-types this method and only falls back to
    * `get('tags')` without it, which is the full decode — so before CRAM records
-   * grew a `getTag`, every read on the colorBy.tag / sortTag / hasSA paths paid
+   * grew a `getTag`, every read on the color tag / sortTag / hasSA paths paid
    * for every unrelated tag on the read to answer for one. `@gmod/cram` measures
    * the targeted read at 3.8-7.8x the object's.
    *

@@ -45,18 +45,18 @@ test('the feature height menu greys out while the alignments are hidden', () => 
 // constant, so a written `value` is the fill and a written field wins over it.
 test('a written value is the constant fill, over the strand default', () => {
   const display = createDisplay()
-  expect(display.colorBy).toEqual({ type: 'strand' })
+  expect(display.colorField).toBe('strand')
   display.applyPlot({ encoding: { color: { value: 'steelblue' } } })
-  expect(display.colorBy).toEqual({ type: 'normal' })
+  expect(display.colorField).toBe('')
   expect(display.colorSetting.value).toBe('steelblue')
   display.colorByField('strand')
-  expect(display.colorBy).toEqual({ type: 'strand' })
+  expect(display.colorField).toBe('strand')
   display.applyPlot({
     encoding: { color: { value: 'steelblue', field: 'strand' } },
   })
-  expect(display.colorBy).toEqual({ type: 'strand' })
+  expect(display.colorField).toBe('strand')
   display.applyPlot({ encoding: { color: 'mapq' } })
-  expect(display.colorBy).toEqual({ type: 'mapq' })
+  expect(display.colorField).toBe('mapq')
 })
 
 // An all-vs-all track stacks one section per mate assembly, so this display

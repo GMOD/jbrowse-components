@@ -22,7 +22,6 @@ import {
 import { connectorColorShift } from '../features/arcs/arcColors.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../shaders/slang/alignmentsUniforms.js.generated.ts'
-import { colorFieldOf } from '../shared/alignmentsColor.ts'
 import { mergeFilter } from '../shared/alignmentsFilter.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from '../shared/types.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
@@ -41,7 +40,7 @@ import {
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 import type { ResolvedBlock } from '../shared/hitTestTypes.ts'
-import type { BaseLayer, ReadColorBy } from '../shared/types.ts'
+import type { BaseLayer } from '../shared/types.ts'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 
 // The block a right-click resolves. Only refName is read by the menu items
@@ -340,15 +339,15 @@ describe('keySectionOrder', () => {
 
 // Toggling "view as pairs" auto-switches coloring for the common case but must
 // not stomp on a color scheme the user picked deliberately (regression guard —
-// the auto-switch previously overwrote colorBy unconditionally).
+// the auto-switch previously overwrote the color field unconditionally).
 describe('setUnit color scheme preservation', () => {
   test('entering pairs nudges the plain default to insert-size-and-orientation', () => {
     const display = createDisplay()
-    expect(display.colorBy.type).toBe('normal')
+    expect(display.colorField).toBe('')
 
     display.setUnit('chain')
     expect(display.unit).toBe('chain')
-    expect(display.colorBy.type).toBe('insertSizeAndOrientation')
+    expect(display.colorField).toBe('insertSizeAndOrientation')
   })
 
   test('entering pairs leaves the plain fill under a per-base layer', () => {
@@ -356,7 +355,7 @@ describe('setUnit color scheme preservation', () => {
     display.setBaseLayer({ type: 'modifications' })
 
     display.setUnit('chain')
-    expect(display.colorBy.type).toBe('normal')
+    expect(display.colorField).toBe('')
     expect(display.bodyColorScheme).toBe('modifications')
   })
 
@@ -365,18 +364,17 @@ describe('setUnit color scheme preservation', () => {
     display.colorByField('tags.HP')
 
     display.setUnit('chain')
-    expect(display.colorBy.type).toBe('tag')
-    expect(display.colorBy.tag).toBe('HP')
+    expect(display.colorField).toBe('tags.HP')
   })
 
   test('leaving pairs swaps the SV-signal fill back to normal', () => {
     const display = createDisplay()
     display.setUnit('chain')
-    expect(display.colorBy.type).toBe('insertSizeAndOrientation')
+    expect(display.colorField).toBe('insertSizeAndOrientation')
 
     display.setUnit('read')
     expect(display.unit).toBe('read')
-    expect(display.colorBy.type).toBe('normal')
+    expect(display.colorField).toBe('')
   })
 
   // A first-of-pair strand fill is the usual stranded RNA-seq pileup, picked
@@ -387,7 +385,7 @@ describe('setUnit color scheme preservation', () => {
 
     display.setUnit('chain')
     display.setUnit('read')
-    expect(display.colorBy.type).toBe('firstOfPairStrand')
+    expect(display.colorField).toBe('firstOfPairStrand')
   })
 
   test('leaving pairs preserves an explicit non-pairing color scheme', () => {
@@ -397,8 +395,7 @@ describe('setUnit color scheme preservation', () => {
 
     display.setUnit('read')
     expect(display.unit).toBe('read')
-    expect(display.colorBy.type).toBe('tag')
-    expect(display.colorBy.tag).toBe('HP')
+    expect(display.colorField).toBe('tags.HP')
   })
 })
 
@@ -1575,7 +1572,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
   function displayWithOneRead(color: ColorSlots = { field: 'tags.HP' }) {
     const display = createDisplay()
     // Tag coloring is the CPU-baked scheme `colorTagMap` feeds; set it before
-    // seeding, since colorBy is an rpcProps (tier-1) setting and clears data.
+    // seeding, since the color field is an rpcProps (tier-1) setting and clears data.
     display.applyPlot({ encoding: { color } })
     display.setRpcData(
       0,
@@ -2010,13 +2007,7 @@ describe('a selection is the chrome guide, not the canvas', () => {
 // A reverse segment under a reverse frame bakes `fwdStrand` only when the
 // framing runs, so it reads the bake's answer off the display's own context.
 describe('chain-strand framing: the gate, the bake and the key agree', () => {
-  const fills: ReadColorBy[] = [
-    { type: 'normal' },
-    { type: 'strand' },
-    { type: 'insertSize' },
-    { type: 'pairOrientation' },
-    { type: 'tag', tag: 'HP' },
-  ]
+  const fills = ['', 'strand', 'insertSize', 'pairOrientation', 'tags.HP']
   const layers: (BaseLayer | undefined)[] = [
     undefined,
     { type: 'baseQuality' },
@@ -2030,12 +2021,12 @@ describe('chain-strand framing: the gate, the bake and the key agree', () => {
 
   test.each(
     fills.flatMap(fill =>
-      layers.map(layer => [fill.type, layer?.type, fill, layer] as const),
+      layers.map(layer => [fill, layer?.type, fill, layer] as const),
     ),
   )('%s fill under the %s layer', (_fill, _layer, fill, layer) => {
     const display = createDisplay()
     display.setUnit('chain')
-    display.colorByField(colorFieldOf(fill))
+    display.colorByField(fill)
     display.setBaseLayer(layer)
     const baked = applyReadColorsByGroup(
       new Map([['', new Map([[0, splitSegment]])]]),
@@ -2046,7 +2037,7 @@ describe('chain-strand framing: the gate, the bake and the key agree', () => {
         baked.get('')!.get(0)!.readColorCategories[0]!
       ]
     expect(category === 'fwdStrand').toBe(display.framesChainStrand)
-    expect(display.framesChainStrand).toBe(fill.type === 'pairOrientation')
+    expect(display.framesChainStrand).toBe(fill === 'pairOrientation')
   })
 })
 

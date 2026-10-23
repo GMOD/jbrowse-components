@@ -1,11 +1,11 @@
 import { CIGAR_M } from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { COLOR_SCHEMES, workerColorBy } from './colorSchemes.ts'
+import { COLOR_SCHEMES, workerColorField } from './colorSchemes.ts'
 import { extractFeatureArrays } from './extractFeatureArrays.ts'
 import { splitSchemeForTest } from './splitSchemeForTest.ts'
 
-import type { ColorBy, ColorSchemeType, ReadColorBy } from './types.ts'
+import type { ColorSchemeType } from './types.ts'
 import type { FeatureData } from './webglRpcTypes.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -49,11 +49,11 @@ const buildFeatureData = (f: Feature): FeatureData => ({
   strand: f.get('strand') ?? 0,
 })
 
-// Everything the worker's extraction produces that depends on colorBy. The
-// reference sequence is supplied so the bisulfite path can run.
-function extracted(colorBy: ColorBy | undefined) {
+// Everything the worker's extraction produces that depends on the color
+// field. The reference sequence is supplied so the bisulfite path can run.
+function extracted(field: string) {
   const out = extractFeatureArrays([makeFeature()], buildFeatureData, {
-    ...splitSchemeForTest(colorBy),
+    ...splitSchemeForTest(field),
     showSoftClipping: false,
     region,
     perBaseBinBp: 1,
@@ -70,27 +70,27 @@ function extracted(colorBy: ColorBy | undefined) {
 }
 
 // A scheme with no worker-side extraction must produce byte-identical output to
-// no scheme at all — that is exactly the condition under which `workerColorBy`
-// may collapse it and skip the refetch.
-const baseline = JSON.stringify(extracted(undefined))
+// no scheme at all — that is exactly the condition under which
+// `workerColorField` may collapse it and skip the refetch.
+const baseline = JSON.stringify(extracted(''))
 
-const sample: Record<ColorSchemeType, ColorBy> = {
-  normal: { type: 'normal' },
-  strand: { type: 'strand' },
-  mapq: { type: 'mapq' },
-  baseQuality: { type: 'baseQuality' },
-  base: { type: 'base' },
-  insertSize: { type: 'insertSize' },
-  firstOfPairStrand: { type: 'firstOfPairStrand' },
-  pairOrientation: { type: 'pairOrientation' },
-  insertSizeAndOrientation: { type: 'insertSizeAndOrientation' },
-  tag: { type: 'tag', tag: 'HP' },
-  mateRefName: { type: 'mateRefName' },
-  modifications: { type: 'modifications' },
-  bisulfite: { type: 'bisulfite' },
+const sample: Record<ColorSchemeType, string> = {
+  normal: '',
+  strand: 'strand',
+  mapq: 'mapq',
+  baseQuality: 'baseQuality',
+  base: 'base',
+  insertSize: 'insertSize',
+  firstOfPairStrand: 'firstOfPairStrand',
+  pairOrientation: 'pairOrientation',
+  insertSizeAndOrientation: 'insertSizeAndOrientation',
+  tag: 'tags.HP',
+  mateRefName: 'mateRefName',
+  modifications: 'modifications',
+  bisulfite: 'bisulfite',
 }
 
-describe('workerColorBy', () => {
+describe('workerColorField', () => {
   // The oracle for the `workerExtracts` registry flag: rather than re-spelling
   // the list, run the worker's extraction under every registered scheme and
   // compare it to running with no scheme. Declaring a scheme shader-only when
@@ -104,18 +104,16 @@ describe('workerColorBy', () => {
     },
   )
 
-  test('shader-only schemes collapse to one value, so switching them refetches nothing', () => {
-    expect(workerColorBy({ type: 'strand' })).toBeUndefined()
-    expect(workerColorBy({ type: 'mapq' })).toBeUndefined()
-    expect(workerColorBy({ type: 'insertSizeAndOrientation' })).toBeUndefined()
+  test('shader-only fields collapse to one value, so switching them refetches nothing', () => {
+    expect(workerColorField('')).toBeUndefined()
+    expect(workerColorField('strand')).toBeUndefined()
+    expect(workerColorField('mapq')).toBeUndefined()
+    expect(workerColorField('insertSizeAndOrientation')).toBeUndefined()
   })
 
-  test('an extracting scheme passes through whole, config and all', () => {
-    const colorBy: ReadColorBy = { type: 'tag', tag: 'HP', attribute: 'x' }
-    expect(workerColorBy(colorBy)).toBe(colorBy)
-    expect(workerColorBy({ type: 'tag', tag: 'HP' })).toEqual({
-      type: 'tag',
-      tag: 'HP',
-    })
+  test('an extracting field passes through', () => {
+    expect(workerColorField('tags.HP')).toBe('tags.HP')
+    expect(workerColorField('score')).toBe('score')
+    expect(workerColorField('mateRefName')).toBe('mateRefName')
   })
 })

@@ -7,9 +7,12 @@ import {
   COLOR_FIELDS,
   alignmentsColorEncoding,
   baseLayerOf,
-  colorByOf,
+  readColorFieldOf,
 } from '../../../../plugins/alignments/src/shared/alignmentsColor.ts'
-import { COLOR_SCHEMES } from '../../../../plugins/alignments/src/shared/colorSchemes.ts'
+import {
+  COLOR_SCHEMES,
+  colorSchemeOf,
+} from '../../../../plugins/alignments/src/shared/colorSchemes.ts'
 import { READ_CATEGORIES } from '../../../../plugins/alignments/src/shared/readCategoryFilters.ts'
 import { cytosineContextOptions } from '../../../../plugins/alignments/src/shared/modificationData.ts'
 import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
@@ -182,36 +185,38 @@ const UNSET_COLOR = {
 }
 
 // The alignments displays' `encoding.color`: the field names the scheme
-// (`colorByOf`), and a scheme's place in the menu is COLOR_SCHEMES'. A declared
+// (`colorSchemeOf`), and a scheme's place in the menu is COLOR_SCHEMES'. A declared
 // scale has no menu row, and neither has a feature attribute or a constant.
 function alignmentsColorStep(value: unknown): FieldStep | undefined {
   const color = channelOf(value)
   if (!color) {
     return undefined
   }
-  const colorBy = colorByOf(
+  const field = readColorFieldOf(
     alignmentsColorEncoding({
       ...UNSET_COLOR,
       field: asString(color.field) ?? '',
     }),
   )
-  if (colorBy.type === 'normal' || colorBy.attribute !== undefined) {
+  const scheme = colorSchemeOf(field)
+  const tag = fieldTag(field)
+  if (scheme === 'normal' || (scheme === 'tag' && !tag)) {
     return undefined
   }
-  const { menu } = COLOR_SCHEMES[colorBy.type]
+  const { menu } = COLOR_SCHEMES[scheme]
   const path = [
     TRACK_MENU,
     'Color by...',
     ...(menu.kind === 'radio' && menu.group === 'pairedEnd'
       ? ['Paired end']
       : []),
-    SPECIAL_COLOR_MENUS[colorBy.type] ?? menu.label,
+    SPECIAL_COLOR_MENUS[scheme] ?? menu.label,
   ].join(' → ')
   const scale = scaleOf(color)
   const declared =
     asList(scale.domain) ?? asList(scale.range) ?? asString(scale.type)
   return {
-    path: colorBy.tag ? `${path} → enter tag "${colorBy.tag}"` : path,
+    path: tag ? `${path} → enter tag "${tag}"` : path,
     note: declared
       ? "This figure also declares the color scale's domain, range or scale, which only the config sets."
       : undefined,

@@ -13,13 +13,12 @@ import { useFetch } from '@jbrowse/core/util/useFetch'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { colorFieldOf } from '../../shared/alignmentsColor.ts'
 import { COMMON_READ_TAG_PICKS } from '../../shared/commonTags.ts'
 import { TAG_FIELD_PREFIX, fieldTag } from '../../shared/facetLabels.ts'
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
 import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
-import type { BaseLayer, Facet, ReadColorBy } from '../../shared/types.ts'
+import type { BaseLayer, Facet } from '../../shared/types.ts'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -39,7 +38,7 @@ export interface GroupByDialogModel extends IStateTreeNode {
   // scan IS the render fetch's download, so it is measured against the render
   // fetch's budget rather than running unbounded beside a refused track.
   resolvedByteLimit: () => number | undefined
-  colorBy: ReadColorBy
+  colorField: string
   baseLayer: BaseLayer | undefined
   facet?: Facet
   facetByField: (field: string) => void
@@ -47,8 +46,8 @@ export interface GroupByDialogModel extends IStateTreeNode {
 }
 
 // Reads are currently colored by exactly this tag.
-function isColoringByTag(colorBy: ReadColorBy, tag: string) {
-  return colorBy.type === 'tag' && colorBy.tag === tag
+function isColoringByTag(colorField: string, tag: string) {
+  return fieldTag(colorField) === tag
 }
 
 // Whether "also color by this tag" should be ticked, absent an explicit click:
@@ -65,23 +64,23 @@ function isColoringByTag(colorBy: ReadColorBy, tag: string) {
 // means "don't color by this tag", submitting turned those colors off.
 function defaultColorByTag(model: GroupByDialogModel, tag: string) {
   return (
-    (model.colorBy.type === 'normal' && !model.baseLayer) ||
-    isColoringByTag(model.colorBy, tag)
+    (model.colorField === '' && !model.baseLayer) ||
+    isColoringByTag(model.colorField, tag)
   )
 }
 
-// The scheme to apply after grouping by `tag`: color by it when checked; when
+// The color field to apply after grouping by `tag`: the tag when checked; when
 // unchecked, undo only the coloring this dialog set (same tag), else leave the
-// existing scheme (undefined) alone.
-function nextColorScheme(
-  colorBy: ReadColorBy,
+// existing field (undefined) alone.
+function nextColorField(
+  colorField: string,
   tag: string,
   alsoColorByTag: boolean,
-): ReadColorBy | undefined {
+) {
   return alsoColorByTag
-    ? { type: 'tag', tag }
-    : isColoringByTag(colorBy, tag)
-      ? { type: 'normal' }
+    ? `${TAG_FIELD_PREFIX}${tag}`
+    : isColoringByTag(colorField, tag)
+      ? ''
       : undefined
 }
 
@@ -148,9 +147,9 @@ const GroupByDialog = observer(function GroupByDialog(props: {
 
   const handleSubmit = () => {
     model.facetByField(`${TAG_FIELD_PREFIX}${groupByTag}`)
-    const scheme = nextColorScheme(model.colorBy, groupByTag, colorByTag)
-    if (scheme) {
-      model.colorByField(colorFieldOf(scheme))
+    const field = nextColorField(model.colorField, groupByTag, colorByTag)
+    if (field !== undefined) {
+      model.colorByField(field)
     }
     handleClose()
   }

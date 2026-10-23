@@ -7,10 +7,8 @@ import { tagColorPalette } from '@jbrowse/core/ui/palette'
 
 import { bakedValueColor } from './colorTagUtils.ts'
 
-import type { ColorBy } from '../shared/types.ts'
-
-const TAG: ColorBy = { type: 'tag', tag: 'HP' }
-const MATE: ColorBy = { type: 'mateRefName' }
+const TAG = 'tags.HP'
+const MATE = 'mateRefName'
 const tagColor = (value: string) => bakedValueColor(TAG, value)
 
 // Values stream in as regions load, so a color derived from discovery order made

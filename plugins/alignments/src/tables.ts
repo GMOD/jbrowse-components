@@ -144,11 +144,10 @@ import {
   alignmentsColorSnapshotOf,
   baseLayerOf,
   bodyColorScheme,
-  colorByOf,
-  colorFieldOf,
   declaredReadLabels,
-  isBakedScheme,
+  isBakedField,
   pinnedInsertSizeBand,
+  readColorFieldOf,
   writtenReadCategoryColors,
 } from './shared/alignmentsColor.ts'
 import {
@@ -459,7 +458,7 @@ function colorReads(
 ) {
   const setting = alignmentsColorSnapshotOf(node)
   const encoding = alignmentsColorEncoding(setting)
-  const colorBy = colorByOf(encoding)
+  const colorField = readColorFieldOf(encoding)
   const band = pinnedInsertSizeBand(encoding)
   const byGroup = new Map(
     [...laidByGroup].map(([key, map]) => [
@@ -472,17 +471,17 @@ function colorReads(
       ),
     ]),
   )
-  const bakedScale = isBakedScheme(colorBy)
+  const bakedScale = isBakedField(colorField)
     ? bakedColorScale(
-        colorBy,
+        colorField,
         encoding,
         refNamePosition,
-        bakedColorExtent(encoding, colorBy, byGroup),
+        bakedColorExtent(encoding, colorField, byGroup),
       )
     : undefined
   const colored = applyReadColorsByGroup(byGroup, {
-    colorBy,
-    bodyScheme: bodyColorScheme(colorBy, baseLayer),
+    colorField,
+    bodyScheme: bodyColorScheme(colorField, baseLayer),
     readColorOpts,
     bakedScale,
   })
@@ -514,9 +513,9 @@ function colorReads(
     ]),
   )
   const declared = declaredReadLabels(encoding, setting.scale.names ?? [])
-  const presentTagValues = !isBakedScheme(colorBy)
+  const presentTagValues = !isBakedField(colorField)
     ? undefined
-    : colorBy.type === 'mapq'
+    : colorField === 'mapq'
       ? presentMapqs(colored)
       : collectAcrossGroups(colored, d => d.readTagValues)
   const detectedModifications = new Map(
@@ -526,7 +525,7 @@ function colorReads(
   )
   const legend = getReadDisplayLegendItems({
     overlaps,
-    colorBy,
+    colorField,
     baseLayer,
     detectedModifications,
     presentModifications: collectAcrossGroups(
@@ -542,16 +541,16 @@ function colorReads(
     presentTagValues,
     refNamePosition,
     bakedScale,
-    sectionOrder: keySectionOrder(facet, colorBy),
+    sectionOrder: keySectionOrder(facet, colorField),
     labels: declared,
     descending: withPreset(setting, ALIGNMENTS_FIELD_PRESETS).legend.descending,
   }).filter(item => item.color !== undefined)
   const colorTitle = withPreset(setting, ALIGNMENTS_FIELD_PRESETS).legend.title
   const ramps = colorRampScales({
-    colorBy,
+    colorField,
     baseLayer,
     bakedScale,
-    linearFieldExtent: linearFieldExtent(encoding, colorBy, byGroup),
+    linearFieldExtent: linearFieldExtent(encoding, colorField, byGroup),
     baseQualityExtent:
       baseLayer?.type === 'baseQuality'
         ? baseQualitySpanAcrossGroups(byGroup).extent
@@ -562,7 +561,7 @@ function colorReads(
     sections,
     palette,
     declared,
-    readField: colorFieldOf(colorBy),
+    readField: colorField,
     insertSizeBand: band,
     legend: {
       label: legend.map(item => item.label),
@@ -1324,7 +1323,7 @@ export async function alignmentTables(
     type: 'LinearAlignmentsDisplay',
     displayId: 'tables',
   })
-  const colorBy = colorByOf(
+  const colorField = readColorFieldOf(
     alignmentsColorEncoding(alignmentsColorSettingOf(conf.encoding.color)),
   )
   const baseLayer = baseLayerFor(conf)
@@ -1354,7 +1353,7 @@ export async function alignmentTables(
     sequenceAdapter,
     regions: fetchRegions,
     filter: readPredicatesOf(filterOf(conf)),
-    colorBy,
+    colorField,
     baseLayer,
     sortTag: chain ? undefined : sortTag,
     facet: workerFacet(facetSetting, chain ? 'chain' : 'read'),
@@ -1409,7 +1408,7 @@ export async function alignmentTables(
   const dataFor = (key: string, idx: number) =>
     chained ? chained.get(key)!.get(idx)! : sectionData.get(key)!.get(idx)!
   const framesChainStrand = framesUnpairedChainStrand(
-    bodyColorScheme(colorBy, baseLayer),
+    bodyColorScheme(colorField, baseLayer),
     chain,
   )
   const laidByGroup = chain
@@ -1449,7 +1448,7 @@ export async function alignmentTables(
     laidByGroup,
     chain ? { chainMode: true, framesChainStrand } : {},
     facetSetting,
-    colorBy.type === 'mateRefName'
+    colorField === 'mateRefName'
       ? positionIn(refNames ?? (await dataAdapter.getRefNames()))
       : undefined,
     drawsOverlaps &&

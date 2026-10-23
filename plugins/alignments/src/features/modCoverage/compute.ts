@@ -209,7 +209,7 @@ function stackCoverageBars(
 }
 
 /**
- * modBAM base-modification coverage (colorBy modifications/methylation). Each
+ * modBAM base-modification coverage (the `modifications` layer). Each
  * mod's bar height mirrors IGV's BaseModificationCoverageRenderer:
  * `(modifiable/depth)` scales the above-threshold read count down to the reads
  * that even carry the base, and dividing by `detectable` (not `depth`) corrects
@@ -247,7 +247,7 @@ export function computeModificationCoverage(
 }
 
 /**
- * Bisulfite/EM-seq methylation coverage (colorBy bisulfite). A cytosine reads as
+ * Bisulfite/EM-seq methylation coverage (the `bisulfite` layer). A cytosine reads as
  * a binary C-vs-T call, so the bar is a per-position methylation level: each
  * state takes its share of the calls made there and they fill the WHOLE bar
  * (meth + unmeth = 1), like a mini methylation track — matching IGV's

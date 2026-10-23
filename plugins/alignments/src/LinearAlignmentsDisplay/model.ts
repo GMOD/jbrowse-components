@@ -85,12 +85,12 @@ import { arcSlotCategory } from '../shaders/palettes.ts'
 import {
   writtenReadCategoryColors,
   declaredReadLabels,
-  isBakedScheme,
+  isBakedField,
 } from '../shared/alignmentsColor.ts'
 import {
   paintsEveryBase,
   paintsModifications,
-  workerColorBy,
+  workerColorField,
 } from '../shared/colorSchemes.ts'
 import { fieldTag } from '../shared/facetLabels.ts'
 import {
@@ -931,10 +931,10 @@ export default function stateModelFactory(
            * O(reads).
            */
           get presentTagValues(): ReadonlySet<string> | undefined {
-            if (!self.showLegend || !isBakedScheme(self.colorBy)) {
+            if (!self.showLegend || !isBakedField(self.colorField)) {
               return undefined
             }
-            return self.colorBy.type === 'mapq'
+            return self.colorField === 'mapq'
               ? presentMapqs(this.laidOutByGroup)
               : collectAcrossGroups(this.laidOutByGroup, d => d.readTagValues)
           },
@@ -1023,7 +1023,7 @@ export default function stateModelFactory(
            * or its raw values.
            */
           get keySectionOrder() {
-            return keySectionOrder(this.effectiveFacet, self.colorBy)
+            return keySectionOrder(this.effectiveFacet, self.colorField)
           },
 
           /**
@@ -1032,7 +1032,7 @@ export default function stateModelFactory(
           legendItems(palette: ColorPalette) {
             return getReadDisplayLegendItems({
               overlaps: this.overlapLegendKind,
-              colorBy: self.colorBy,
+              colorField: self.colorField,
               baseLayer: self.baseLayer,
               presentCategories: this.colorLegendCategories,
               palette,
@@ -1413,7 +1413,7 @@ export default function stateModelFactory(
            */
           get readColorContext() {
             return {
-              colorBy: self.colorBy,
+              colorField: self.colorField,
               bodyScheme: self.bodyColorScheme,
               readColorOpts: this.readColorOpts,
               bakedScale: this.bakedColorScale,
@@ -1431,7 +1431,7 @@ export default function stateModelFactory(
           get bakedColorExtent(): NumericExtent | undefined {
             return bakedColorExtent(
               self.colorEncoding,
-              self.colorBy,
+              self.colorField,
               this.laidOutByGroupFramed,
             )
           },
@@ -1444,7 +1444,7 @@ export default function stateModelFactory(
           get linearFieldExtent(): NumericExtent | undefined {
             return linearFieldExtent(
               self.colorEncoding,
-              self.colorBy,
+              self.colorField,
               this.laidOutByGroupFramed,
             )
           },
@@ -1467,9 +1467,9 @@ export default function stateModelFactory(
            * category table paints.
            */
           get bakedColorScale() {
-            return isBakedScheme(self.colorBy)
+            return isBakedField(self.colorField)
               ? bakedColorScale(
-                  self.colorBy,
+                  self.colorField,
                   self.colorEncoding,
                   this.paintedRefNamePosition,
                   this.bakedColorExtent,
@@ -1488,7 +1488,7 @@ export default function stateModelFactory(
            */
           get paintedRefNamePosition() {
             const assembly =
-              self.colorBy.type === 'mateRefName'
+              self.colorField === 'mateRefName'
                 ? self.loadedAssembly
                 : undefined
             return assembly?.getRefNamePosition
@@ -2201,7 +2201,7 @@ export default function stateModelFactory(
          */
         get readCategoryLabel() {
           const overrides = readCategoryLabelOverrides(
-            self.colorBy,
+            self.colorField,
             self.declaredReadLabels.categories,
           )
           return (c: ReadColorCategory) => readColorCategoryLabel(c, overrides)
@@ -2519,7 +2519,7 @@ export default function stateModelFactory(
             const palette = colorsIn(theme)
             return getAlignmentsColorScales({
               ramps: colorRampScales({
-                colorBy: self.colorBy,
+                colorField: self.colorField,
                 baseLayer: self.baseLayer,
                 bakedScale: self.bakedColorScale,
                 linearFieldExtent: self.linearFieldExtent,
@@ -2879,10 +2879,10 @@ export default function stateModelFactory(
         rpcProps() {
           return {
             filter: self.readPredicates,
-            // Only the part the worker reads, so switching between
-            // shader-decided schemes leaves these props identical and repaints
+            // Only a field the worker reads, so switching between
+            // shader-decided fields leaves these props identical and repaints
             // without a refetch.
-            colorBy: workerColorBy(self.colorBy),
+            colorField: workerColorField(self.colorField),
             baseLayer: self.baseLayer,
             // Chain layout reads neither the sort tag nor soft-clipped bases,
             // so chain mode sends neither and "Show soft clipping" stays live

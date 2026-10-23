@@ -9,7 +9,6 @@ import type {
   BaseLayer,
   BaseLayerType,
   ModificationColorBy,
-  ReadColorBy,
 } from '../../shared/types.ts'
 import type { Plot } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -18,7 +17,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // "defined" whenever modificationsReady is set, even to false).
 function makeModel() {
   return {
-    colorBy: { type: 'normal' } as ReadColorBy,
     colorField: '',
     colorEncoding: undefined,
     writtenColor: {},
@@ -103,7 +101,7 @@ describe('color by menu', () => {
         .map(i => ('label' in i ? String(i.label) : ''))
         .filter(l => l.startsWith('Tag'))
     expect(labels(model)).toEqual(['Tag...'])
-    model.colorBy = { type: 'tag', tag: 'HP' }
+    model.colorField = 'tags.HP'
     expect(labels(model)).toEqual(['Tag (HP)...'])
   })
 
