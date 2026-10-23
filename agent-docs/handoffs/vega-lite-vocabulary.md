@@ -95,10 +95,10 @@ Step 2b (the quality fade as opacity) and the internal `ColorBy` object are in
   `liftFlatColor` and `retiredDisplayColor`, the multi-sample variant
   display's `retired`, `liftViewColor`, and `retiredOrderSpelling` (when
   jb2hubs' `HOST_VERSIONS` floor reads `sort`).
-- **jb2hubs:** `drawCurves: true` in `website/src/components/orthologSearchUtils.ts`,
+- **jb2hubs:** `drawCurves: true` in its `orthologSearchUtils.ts`,
   `SyntenySelector.tsx` and `jbrowseLinks.ts` has no lift, so synteny drops
   it. Row orders write `domain` beside `sort` for released hosts.
-- **ggjbrowse:** `scripts/gallery.R` passes `showLegend`, which launch-args no
+- **ggjbrowse:** its `gallery.R` passes `showLegend`, which launch-args no
   longer declares. Re-knit the published pages at a new pin (memory
   `a-config-rename-reaches-ggjbrowse`); `dog10k_lof` waits on the callset
   host's certificate.
