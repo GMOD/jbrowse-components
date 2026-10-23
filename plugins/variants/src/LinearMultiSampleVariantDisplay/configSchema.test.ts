@@ -67,7 +67,7 @@ describe('the display config schema', () => {
       [{ showSidebarLabels: false }, 'labels', false],
       [{ showRowSeparators: true }, 'grid', true],
       [{ treeAreaWidth: 140 }, 'width', 140],
-    ])('lifts %j onto axis.%s', (snap, member, value) => {
+    ] as const)('lifts %j onto axis.%s', (snap, member, value) => {
       const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
       expect(readConfObject(make(snap), ['axis', member])).toBe(value)
       expect(warn).not.toHaveBeenCalled()
