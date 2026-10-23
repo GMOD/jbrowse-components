@@ -1,6 +1,6 @@
 ---
 name: vega-lite-vocabulary
-description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A) and the y channel (Pass B). Open: Pass B's jb2hubs, ggjbrowse and lift cleanup, the band layers' filters, the tree sidebar's axis, wiggle and Hi-C `data`, the comparative indels part, and the writers. Read before adding or renaming any display or view setting."
+description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A) and the y channel (Pass B). Open: Pass B's jb2hubs, ggjbrowse and lift cleanup, the band layers' filters, the tree sidebar's axis, the comparative indels part, and the writers. Read before adding or renaming any display or view setting."
 ---
 
 # Vega-Lite vocabulary: what is left
@@ -41,9 +41,14 @@ Git history has each landing.
      wiggle and mark displays, and the `y` lift on wiggle and MAF. Until then
      `jbrowse validate` warns on an old `scales`, in a display entry or a
      `displayDefaults`.
-   - **ggjbrowse:** its unpushed `pass-b-respell` branch respells
-     `encoding.y`, `legend.show` and `encoding.color` and re-pins the engine
-     at a main commit carrying `encoding.y`; it waits on a push.
+   - **ggjbrowse:** the unpushed `pass-b-respell` branch holds the
+     `encoding.y`, `legend.show` and `encoding.color` respell and an engine
+     re-pinned at a pushed main commit with `encoding.y`. Push it, and re-pin
+     again once wiggle's `data.resolution` lands. The R export writes
+     the display config as written (`rScript.ts`), so a stepped wiggle exports
+     `data = list(resolution = ...)`. By the closed-schema rule, a bundle
+     whose wiggle schema lacks `data` drops it silently; nobody has run that
+     case.
    - **Demos:** `demos/{cgiab,dtu,read_marks}/config.json` are respelled and
      not deployed (`scripts/deploy-demo.sh`).
    - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
@@ -67,13 +72,13 @@ Layout, the multi-way leftovers and settings with no step are in
 - **Lifts to drop once hosted configs regenerate:** display-kit's
   `liftFlatColor` and `retiredDisplayColor`, the multi-sample variant
   display's `retired`, `liftViewColor`, `retiredOrderSpelling` (when
-  jb2hubs' `HOST_VERSIONS` floor reads `sort`), and the y channel's lifts
-  (item 1).
+  jb2hubs' `HOST_VERSIONS` floor reads `sort`), the y channel's lifts
+  (item 1), Hi-C's `resolutionBias` and `selectedNormalization` lifts, and
+  wiggle's `resolution` lift and `retiredState` key.
 - **jb2hubs:** its unpushed branch `synteny-mark-interpolate` writes the
   synteny view's `mark: { interpolate: 'bump' }` for `drawCurves: true`. Row
   orders write `domain` beside `sort` for released hosts.
-- **ggjbrowse:** its `gallery.R` passes `showLegend`, which launch-args no
-  longer declares. Re-knit the published pages at a new pin (memory
+- **ggjbrowse:** Re-knit the published pages at a new pin (memory
   `a-config-rename-reaches-ggjbrowse`); `dog10k_lof` waits on the callset
   host's certificate.
 - **Figure specs:** [screenshot-spec-elegance.md](screenshot-spec-elegance.md)
