@@ -422,21 +422,25 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "color": {
-            "domain": [
-              "rgb(227,26,28)",
-              "rgb(31,120,180)",
-              "rgb(170,170,170)",
-            ],
-            "labels": [
-              "Maternal",
-              "Paternal",
-              "Unknown",
-            ],
-            "scale": "identity",
-            "value": "jexl:'rgb('+get(feature,'itemRgb')+')'",
-          },
           "displayId": "volvox_mouse_inheritance_painting-LinearMultiRowFeatureDisplay",
+          "encoding": {
+            "color": {
+              "scale": {
+                "domain": [
+                  "rgb(227,26,28)",
+                  "rgb(31,120,180)",
+                  "rgb(170,170,170)",
+                ],
+                "names": [
+                  "Maternal",
+                  "Paternal",
+                  "Unknown",
+                ],
+                "type": "identity",
+              },
+              "value": "jexl:'rgb('+get(feature,'itemRgb')+')'",
+            },
+          },
           "height": 400,
           "rows": "sample",
           "type": "LinearMultiRowFeatureDisplay",
@@ -484,14 +488,16 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_mouse_inheritance_rows-LinearMultiRowFeatureDisplay",
           "facet": "group",
           "rowColor": {
-            "domain": [
-              "mom",
-              "offspring03",
-            ],
-            "range": [
-              "#222222",
-              "#bbbbbb",
-            ],
+            "scale": {
+              "domain": [
+                "mom",
+                "offspring03",
+              ],
+              "range": [
+                "#222222",
+                "#bbbbbb",
+              ],
+            },
           },
           "rowGroups": [
             {
@@ -651,13 +657,13 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "color": {
-            "field": "mapq",
-          },
           "coverage": {
             "show": false,
           },
           "displayId": "volvox_cram_pileup_pileup",
+          "encoding": {
+            "color": "mapq",
+          },
           "height": 400,
           "sashimi": {
             "show": false,
@@ -817,10 +823,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "color": {
-            "field": "mapq",
-          },
           "displayId": "volvox_alignments_alignments",
+          "encoding": {
+            "color": "mapq",
+          },
           "height": 600,
           "type": "LinearAlignmentsDisplay",
         },
@@ -1416,7 +1422,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "color": "#C8B414",
+          "encoding": {
+            "color": {
+              "value": "#C8B414",
+            },
+          },
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -1891,8 +1901,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "color": "jexl:feature.type=='CDS'?'#d62728':feature.type=='exon'?'#2ca02c':'#1f77b4'",
           "displayId": "gff3tabix_genes_jexl_color_linear",
+          "encoding": {
+            "color": {
+              "value": "jexl:feature.type=='CDS'?'#d62728':feature.type=='exon'?'#2ca02c':'#1f77b4'",
+            },
+          },
           "type": "LinearBasicDisplay",
         },
       ],
@@ -1925,8 +1939,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "color": "jexl:feature.strand==1?'#1f77b4':'#d62728'",
           "displayId": "gff3tabix_genes_jexl_color_and_label_linear",
+          "encoding": {
+            "color": {
+              "value": "jexl:feature.strand==1?'#1f77b4':'#d62728'",
+            },
+          },
           "labels": {
             "name": "jexl:feature.name+' ['+feature.type+']'",
           },
@@ -1961,7 +1979,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "Shorthand examples",
       ],
       "displayDefaults": {
-        "color": "#6a3d9a",
+        "encoding": {
+          "color": {
+            "value": "#6a3d9a",
+          },
+        },
       },
       "metadata": {
         "skipTextIndex": true,
@@ -1991,7 +2013,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "Shorthand examples",
       ],
       "displayDefaults": {
-        "color": "jexl:feature.strand==1?'#1f77b4':'#d62728'",
+        "encoding": {
+          "color": {
+            "value": "jexl:feature.strand==1?'#1f77b4':'#d62728'",
+          },
+        },
         "labels": {
           "name": "jexl:feature.name+' ['+feature.type+']'",
         },
@@ -2024,7 +2050,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "Shorthand examples",
       ],
       "displayDefaults": {
-        "color": "#1f78b4",
+        "encoding": {
+          "color": {
+            "value": "#1f78b4",
+          },
+        },
       },
       "metadata": {
         "skipTextIndex": true,
@@ -2568,8 +2598,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "ChordVariantDisplay",
         },
         {
-          "color": "jexl:feature.type=='SNV'?'green':'purple'",
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
+          "encoding": {
+            "color": {
+              "value": "jexl:feature.type=='SNV'?'green':'purple'",
+            },
+          },
           "maxFeatureScreenDensity": 0.0006,
           "type": "LinearVariantDisplay",
         },
@@ -2834,13 +2868,15 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "marks": [
             {
               "encoding": {
-                "size": {
+                "strokeWidth": {
                   "field": "score",
-                  "range": [
-                    1,
-                    8,
-                  ],
-                  "scale": "log",
+                  "scale": {
+                    "range": [
+                      1,
+                      8,
+                    ],
+                    "type": "log",
+                  },
                 },
               },
               "mark": "link",
@@ -3454,7 +3490,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
                 "color": {
                   "value": "#a65628",
                 },
-                "size": 3,
+                "strokeWidth": 3,
               },
               "mark": "link",
               "transform": [
@@ -3494,7 +3530,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
                 "color": {
                   "value": "#a65628",
                 },
-                "size": 3,
+                "strokeWidth": 3,
               },
               "mark": "link",
               "transform": [
@@ -3835,8 +3871,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "color": "jexl:feature.start>5000?'darkgreen':'red'",
           "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
+          "encoding": {
+            "color": {
+              "value": "jexl:feature.start>5000?'darkgreen':'red'",
+            },
+          },
           "filter": [
             "jexl:feature.start<8000",
           ],
