@@ -41,7 +41,7 @@ export interface JunctionReference {
 export function computeSashimiJunctions(
   gaps: CoverageGap[],
   reference?: JunctionReference,
-  splitJunctions?: ReadonlyMap<string, SplitJunction>,
+  splitJunctions?: readonly SplitJunction[],
 ) {
   const junctions = new Map<
     string,
@@ -69,7 +69,7 @@ export function computeSashimiJunctions(
     j.total++
   }
 
-  const n = junctions.size + (splitJunctions?.size ?? 0)
+  const n = junctions.size + (splitJunctions?.length ?? 0)
   const sashimiX1 = new Uint32Array(n)
   const sashimiX2 = new Uint32Array(n)
   const sashimiCounts = new Uint32Array(n)
@@ -98,7 +98,7 @@ export function computeSashimiJunctions(
     sashimiAcceptors[i] = acceptor
     i++
   }
-  for (const j of splitJunctions?.values() ?? []) {
+  for (const j of splitJunctions ?? []) {
     sashimiX1[i] = j.start
     sashimiX2[i] = j.end
     sashimiCounts[i] = j.n

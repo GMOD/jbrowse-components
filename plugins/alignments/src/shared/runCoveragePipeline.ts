@@ -89,7 +89,7 @@ export async function runCoveragePipeline({
   // Reference bases for the junctions' splice motifs; fetched by the executor
   // only when the region carries a skip gap, so DNA-seq never pays for it.
   junctionReference?: JunctionReference
-  splitJunctions?: ReadonlyMap<string, SplitJunction>
+  splitJunctions?: readonly SplitJunction[]
   statusCallback: StatusCallback | undefined
   signal?: AbortSignal
 }) {
@@ -200,7 +200,7 @@ function computeCoverageBand({
   simplexModifications: ReadonlySet<string>
   modCoverage?: ModCoverageKind
   junctionReference?: JunctionReference
-  splitJunctions?: ReadonlyMap<string, SplitJunction>
+  splitJunctions?: readonly SplitJunction[]
 }) {
   const snpCoverage = computeSNPCoverage(
     mismatchArrays.mismatchPositions,

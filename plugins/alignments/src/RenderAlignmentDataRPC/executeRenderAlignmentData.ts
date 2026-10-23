@@ -7,7 +7,10 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
 import { computeReadBaseCounts } from '../features/modCoverage/readBaseCounts.ts'
-import { computeSplitJunctions } from '../features/sashimi/splitJunctions.ts'
+import {
+  computeSplitJunctions,
+  fetchedSplitSegments,
+} from '../features/sashimi/splitJunctions.ts'
 import { buildAlignmentDetailArrays } from '../shared/buildAlignmentDetailArrays.ts'
 import { buildBaseFeatureData } from '../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
@@ -27,11 +30,13 @@ import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 import { sampleFeatures, selectChains } from './filterChainFeatures.ts'
 
 import type { JunctionReference } from '../features/sashimi/compute.ts'
+import type { FetchedSegments } from '../features/sashimi/splitJunctions.ts'
 import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ModCoverageKind } from '../shared/runCoveragePipeline.ts'
 import type { ModificationEntry } from '../shared/webglRpcTypes.ts'
 import type { AlignmentGroup, WorkerPileupData } from './types.ts'
+import type { ReadNames } from '@jbrowse/alignments-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
@@ -57,6 +62,8 @@ interface GroupContext {
   // The region's reference bases, for the junctions' splice motifs. Fetched
   // once for the whole fetch and only when some group carries a skip gap.
   junctionReference: JunctionReference | undefined
+  // Every group's split segments, so a split junction counts once per region.
+  fetchedSegments: FetchedSegments
   detectedSimplexModifications: ReadonlySet<string>
   // One insert-size color scale for every section, from the sample before the
   // category filters (see computePairedInsertSizeStats).
@@ -87,6 +94,7 @@ async function buildGroupResult(
   // Raw reads for this group, needed to tally per-strand read bases at modified
   // positions (the reference-free mod-coverage denominator).
   rawFeatures: Feature[],
+  readNames: ReadNames,
   ctx: GroupContext,
 ): Promise<WorkerPileupData> {
   const {
@@ -116,6 +124,7 @@ async function buildGroupResult(
     junctions,
     modCoverage,
     junctionReference,
+    fetchedSegments,
     detectedSimplexModifications,
     insertSizeStats,
     statusCallback,
@@ -126,11 +135,6 @@ async function buildGroupResult(
   // thread's — see `PileupLayoutArrays` and `ChainFields`.
   const { readArrays } = buildBaseReadArrays(features, readIdPrefix)
 
-  // From the RAW features, not the extracted ones: BAM hands over its QNAME
-  // bytes and the block is decoded in one call, so no name string is ever built
-  // per read. `extractFeatureArrays` is 1:1 with its input, so index i is the
-  // same read in both.
-  const readNames = buildReadNameBlock(rawFeatures)
   // Both modes, off the raw features, for the same reason the name block is:
   // the mate's reference is a NUMBER on the record and only becomes a string
   // through `refIdToName`. See shared/readNextRefs.ts.
@@ -196,6 +200,7 @@ async function buildGroupResult(
           suppAlignments,
           clipAtStart,
           readNames,
+          fetched: fetchedSegments,
         })
       : undefined,
     statusCallback,
@@ -413,6 +418,19 @@ export async function executeRenderAlignmentData({
       ? undefined
       : { sequence: regionSequence, start: regionSequenceStart }
 
+  // From the RAW features, not the extracted ones: BAM hands over its QNAME
+  // bytes and the block is decoded in one call, so no name string is ever built
+  // per read. `extractFeatureArrays` is 1:1 with its input, so index i is the
+  // same read in both.
+  const readNamesByGroup = featureGroups.map(g =>
+    buildReadNameBlock(g.features),
+  )
+  const fetchedSegments = junctions
+    ? fetchedSplitSegments(
+        extractions.map((e, i) => ({ ...e, readNames: readNamesByGroup[i]! })),
+      )
+    : new Map()
+
   const ctx: GroupContext = {
     readIdPrefix,
     region,
@@ -421,6 +439,7 @@ export async function executeRenderAlignmentData({
     junctions,
     modCoverage,
     junctionReference,
+    fetchedSegments,
     detectedSimplexModifications,
     insertSizeStats,
     statusCallback,
@@ -430,7 +449,12 @@ export async function executeRenderAlignmentData({
   const groups: AlignmentGroup[] = []
   for (let i = 0; i < featureGroups.length; i++) {
     const fg = featureGroups[i]!
-    const data = await buildGroupResult(extractions[i]!, fg.features, ctx)
+    const data = await buildGroupResult(
+      extractions[i]!,
+      fg.features,
+      readNamesByGroup[i]!,
+      ctx,
+    )
     groups.push({
       key: fg.key,
       label: fg.label,

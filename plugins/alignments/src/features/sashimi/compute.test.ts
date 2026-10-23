@@ -62,13 +62,9 @@ test('emits one arc per junction, counting reads on every strand', () => {
 test('emits the split junctions after the N gaps, each with its class', () => {
   const back = splitClassCode('splitBack')
   const { sashimiX1, sashimiX2, sashimiCounts, sashimiClass, sashimiDonors } =
-    computeSashimiJunctions(
-      skips(rep(4, 100, 1100, 1)),
-      undefined,
-      new Map([
-        ['100:1100:2', { start: 100, end: 1100, splitClass: back, n: 3 }],
-      ]),
-    )
+    computeSashimiJunctions(skips(rep(4, 100, 1100, 1)), undefined, [
+      { start: 100, end: 1100, splitClass: back, n: 3 },
+    ])
   expect([...sashimiX1]).toEqual([100, 100])
   expect([...sashimiX2]).toEqual([1100, 1100])
   expect([...sashimiCounts]).toEqual([4, 3])

@@ -73,7 +73,8 @@ function splitReads(
       reads.push(read)
     }
   }
-  for (const [i, sa] of readSuppAlignments.entries()) {
+  for (let i = 0; i < readSuppAlignments.length; i++) {
+    const sa = readSuppAlignments[i]
     if (sa && !(data.readFlags[i]! & SAM_FLAG_SECONDARY)) {
       read = i
       forEachSplitJunction(
