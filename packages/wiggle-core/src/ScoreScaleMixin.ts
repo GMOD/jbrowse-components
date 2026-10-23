@@ -77,11 +77,13 @@ function writeAxis(
 /**
  * #stateModel ScoreScaleMixin
  * #category display
- * #crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleZero` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the Y axis row and its drawer widget consume
+ * #crossCuttingMixin Value scale, written in `scales.y` or a `YScalePaths` map's paths (the coverage band's `coverage.encoding.y`). `valueScaleSchema` / `scalesSchema` / `yChannelSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleZero` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the Y axis row and its drawer widget consume
  *
- * The value scale of every quantitative display: wiggle, the alignments
- * coverage band and the mark display, Manhattan among them, each declare
- * `scales.y` through {@link valueScaleSchema} and compose this. It backs
+ * The value scale of every quantitative display: wiggle and the mark
+ * display, Manhattan among them, declare `scales.y` through
+ * {@link valueScaleSchema}, and the alignments, LGVSynteny and MAF coverage
+ * band `coverage.encoding.y` through {@link yChannelSchema}; each composes
+ * this with the map to its members. It backs
  * {@link ScoreAxisMixin}'s three overridable members off that object and adds
  * the setters that write it, so composing this is how a display satisfies
  * {@link ScoreScaleModel} in `scoreMenuItems.ts` — the interface the Y axis

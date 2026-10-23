@@ -77,7 +77,7 @@ heatmap's ramp, and bars under any other coloring draw in one color.
 
 In a display config **Color by...** is `encoding.color` (`mismatch`, `base`,
 `identity`, and the `chromosome` and `codon` options below) and the X-Y plot is
-`y: "identity"`.
+`encoding.y: "identity"`.
 
 The heatmap's ramp runs from 0 to 100% identity, and
 [`encoding.color`](/docs/config/mafcolor) can move it. Close relatives all sit

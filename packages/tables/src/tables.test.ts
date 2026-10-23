@@ -561,7 +561,7 @@ test('the interbase histogram counts the reads\u2019 insertions and clips, and t
   expect(indicated).toBeGreaterThan(0)
 })
 
-test('the coverage band\u2019s depth axis is the display\u2019s: nice-rounded over every section, under scales.y', async () => {
+test('the coverage band\u2019s depth axis is the display\u2019s: nice-rounded over every section, under coverage.encoding.y', async () => {
   const plain = await engine.alignments(BAM)
   const peak = Math.max(...plain.coverage.depth)
   const [min, max] = plain.coverageScale.domain
@@ -573,12 +573,13 @@ test('the coverage band\u2019s depth axis is the display\u2019s: nice-rounded ov
 
   const pinned = await engine.alignments({
     ...BAM,
-    display: { scales: { y: { domainMax: 15 } } },
+    display: { coverage: { encoding: { y: { scale: { domainMax: 15 } } } } },
   })
   expect(pinned.coverageScale.domain).toEqual([0, 15])
 
   const log = await engine.alignments({
     ...BAM,
+    // the spelling before coverage.encoding.y, which still lifts
     display: { scales: { y: { type: 'log' } } },
   })
   expect(log.coverageScale.type).toBe('log')
@@ -587,7 +588,11 @@ test('the coverage band\u2019s depth axis is the display\u2019s: nice-rounded ov
   // 0 asks for the constant the domain gives, which the display resolves
   const symlog = await engine.alignments({
     ...BAM,
-    display: { scales: { y: { type: 'symlog', symlogConstant: 0 } } },
+    display: {
+      coverage: {
+        encoding: { y: { scale: { type: 'symlog', constant: 0 } } },
+      },
+    },
   })
   expect(symlog.coverageScale.symlogConstant).toBeGreaterThan(0)
 

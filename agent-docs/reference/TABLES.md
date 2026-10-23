@@ -296,7 +296,7 @@ The bundle serves it as `jbrowse.alignmentMarkAlpha`, beside
 `variantDensityAlpha`.
 
 `coverageScale` is the band's depth axis as the display autoscales it:
-`domain` over every shown section's visible depths under `scales.y` (quantile,
+`domain` over every shown section's visible depths under `coverage.encoding.y` (fence,
 rules, bounds, nice rounding, a log scale floored at one read), its `type`,
 the `symlogConstant` it resolves from that domain, and the `ticks` the display
 labels at `coverage.height`. Every section shares it.

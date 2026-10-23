@@ -180,7 +180,12 @@ const readEvidence = ({
               height: arcsHeight,
             },
             ...(coverageMax
-              ? { scales: { y: { domainMax: coverageMax } } }
+              ? {
+                  coverage: {
+                    ...illuminaPairs.coverage,
+                    encoding: { y: { scale: { domainMax: coverageMax } } },
+                  },
+                }
               : {}),
             height: arcsHeight + 70,
           },

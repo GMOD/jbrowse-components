@@ -658,7 +658,10 @@ export const uiSpecs: ScreenshotSpec[] = [
               trackId: `${s}.final`,
               forceLoad: true,
               pileup: { show: false },
-              coverage: { height: 190 },
+              coverage: {
+                height: 190,
+                encoding: { y: { scale: { group: 'depth' } } },
+              },
               readConnections: {
                 // No mate-pair band: the RHD deletion is NAHR between the
                 // Rhesus boxes and leaves no read-pair signal, so the arcs
@@ -668,7 +671,6 @@ export const uiSpecs: ScreenshotSpec[] = [
                 show: false,
               },
               height: 200,
-              scales: { y: { autoscaleGroup: 'depth' } },
             })),
           ],
         },

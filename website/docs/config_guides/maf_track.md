@@ -195,8 +195,9 @@ Three display settings work over the species rows.
 lists species to lead, and the guide tree rotates to that order where its
 topology allows. [`rowColor`](/docs/config/linearmafdisplay/#slot-rowcolor)
 paints the bar beside each species label, over the color its `samples` entry
-gives. [`y`](/docs/config/linearmafdisplay/#slot-y) set to `identity` draws each
-row as a bar chart of its identity to the reference in place of a band of cells:
+gives. [`encoding.y`](/docs/config/mafencoding/#slot-y) set to `identity` draws
+each row as a bar chart of its identity to the reference in place of a band of
+cells:
 
 ```json addtrack
 {
@@ -214,7 +215,7 @@ row as a bar chart of its identity to the reference in place of a band of cells:
     "rowColor": {
       "scale": { "domain": ["microvolvox"], "range": ["#f28e2b"] }
     },
-    "y": "identity"
+    "encoding": { "y": "identity" }
   }
 }
 ```

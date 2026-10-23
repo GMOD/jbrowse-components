@@ -512,16 +512,16 @@ them; a color's `scale.range` gives the listed values their colors, as ggplot2's
 its cut points, one fewer than the colors in `scale.range`, and a gradient pins
 its ends with `scale.domainMin` and `scale.domainMax`.
 
-| Setting          | What it does                                                                                                                                 | Track types                                                                  |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `encoding.color` | a CSS color as `{ "value" }`, or `{ "field", "scale": { "domain", "range" } }` painting by a field, with a key ([Colors](#colors))           | feature, variant, alignments, quantitative, synteny, mark display (per mark) |
-| `facet`          | one labelled section per value of a field; `sort` stacks the listed values first                                                             | feature, variant, alignments, synteny, mark display                          |
-| `rows`           | one row per source or sample; `sort` puts the listed rows first                                                                              | quantitative, multi-row feature, multi-sample variant, MAF, mark display     |
-| `scales.y`       | the value axis: `type`, `domainMin`/`domainMax`, `domainQuantile`, `autoscaleGroup`, and the guides `rules`, `grid`, `title`, `minimalTicks` | quantitative, alignments coverage, synteny, mark display, GWAS               |
+| Setting               | What it does                                                                                                                                 | Track types                                                                  |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `encoding.color`      | a CSS color as `{ "value" }`, or `{ "field", "scale": { "domain", "range" } }` painting by a field, with a key ([Colors](#colors))           | feature, variant, alignments, quantitative, synteny, mark display (per mark) |
+| `facet`               | one labelled section per value of a field; `sort` stacks the listed values first                                                             | feature, variant, alignments, synteny, mark display                          |
+| `rows`                | one row per source or sample; `sort` puts the listed rows first                                                                              | quantitative, multi-row feature, multi-sample variant, MAF, mark display     |
+| `scales.y`            | the value axis: `type`, `domainMin`/`domainMax`, `domainQuantile`, `autoscaleGroup`, and the guides `rules`, `grid`, `title`, `minimalTicks` | quantitative, mark display, GWAS                                             |
+| `coverage.encoding.y` | the coverage band's depth axis: `scale` (`type`, `domainMin`/`domainMax`, `fenceQuantile`, `group`), `axis` (`title`, `grid`) and `rules`    | alignments, synteny, MAF                                                     |
 
-A `scales.y` object works the same way on each of those track types. This one
-captions an alignments track's coverage band, rules it at every tick and draws a
-labelled line at 20x:
+A `coverage.encoding.y` channel captions an alignments track's coverage band,
+rules it at every tick and draws a labelled line at 20x:
 
 ```json addtrack
 {
@@ -531,11 +531,12 @@ labelled line at 20x:
   "assemblyNames": ["volvox"],
   "adapter": { "type": "BamAdapter", "uri": "volvox-sorted.bam" },
   "displayDefaults": {
-    "scales": {
-      "y": {
-        "title": "depth",
-        "grid": true,
-        "rules": [{ "value": 20, "color": "#d62728", "label": "20x" }]
+    "coverage": {
+      "encoding": {
+        "y": {
+          "axis": { "title": "depth", "grid": true },
+          "rules": [{ "value": 20, "color": "#d62728", "label": "20x" }]
+        }
       }
     }
   }

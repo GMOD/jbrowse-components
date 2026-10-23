@@ -28,8 +28,8 @@ index resolves automatically. Coloring, height, and filtering are slots on the
 - **CRAM decodes against the reference**, and both adapters take their
   `sequenceAdapter` from the enclosing assembly, so the track names none
   ([](/docs/config/bamadapter), [](/docs/config/cramadapter))
-- **`encoding.color`, `height`, `filter`, the coverage band's `scales.y` and the
-  four bands, `coverage`, `pileup`, `sashimi` and `readConnections`,** are
+- **`encoding.color`, `height`, `filter`, the coverage band's `encoding.y` and
+  the four bands, `coverage`, `pileup`, `sashimi` and `readConnections`,** are
   [`LinearAlignmentsDisplay`](/docs/config/linearalignmentsdisplay) slots; each
   band object holds whether it draws and its height, and
   [`filter`](/docs/config/baselinearalignmentsdisplay/#slot-filter) is one list

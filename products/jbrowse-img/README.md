@@ -295,19 +295,19 @@ jb2export https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz aliases:htt
 
 `sashimi:auto` overlays splice-junction arcs on the coverage band, sized by the
 number of reads spanning each junction. `coverage.height=` makes the
-coverage/sashimi band tall so the arcs are legible, and `scales.y.type=log` puts
-every exon on the plot, because RNA-seq depth here spans three orders of
-magnitude, so on a linear axis the tallest exon is the only one with any height
-and the arcs sit over a flat line. This strand-specific paired-end RNA-seq
-(hg19, public) over `B2M` shows the long first intron as one big arc and the
-closely-spaced downstream exons as smaller arcs, with the spliced read pairs
-(green mate lines) below:
+coverage/sashimi band tall so the arcs are legible, and
+`coverage.encoding.y.scale.type=log` puts every exon on the plot, because
+RNA-seq depth here spans three orders of magnitude, so on a linear axis the
+tallest exon is the only one with any height and the arcs sit over a flat line.
+This strand-specific paired-end RNA-seq (hg19, public) over `B2M` shows the long
+first intron as one big arc and the closely-spaced downstream exons as smaller
+arcs, with the spliced read pairs (green mate lines) below:
 
 <!-- jb2export: sashimi_junctions -->
 
 ```bash
 jb2export --genome hg19 --track hg19-ncbiRefSeqCurated height:90 \
-  --bam https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam sashimi:auto coverage.height=170 scales.y.type=log featureHeight:super-compact height:420 \
+  --bam https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam sashimi:auto coverage.height=170 coverage.encoding.y.scale.type=log featureHeight:super-compact height:420 \
   --loc B2M --width 1400 --out sashimi_junctions.png
 ```
 
@@ -772,9 +772,10 @@ to both. `facet=<field>` stacks the track into one labelled section per value:
 
 **BigWig tracks**
 
-A BigWig's score axis is the `scales.y` setting, which also applies to a
-BAM/CRAM track's coverage band, where `scales.y.type=log` is the usual setting
-for RNA-seq. `mark` names how the scores draw: `bar`, `point`, `line` or `span`.
+A BigWig's score axis is the `scales.y` setting. A BAM/CRAM track's coverage
+band spells its axis `coverage.encoding.y`, where
+`coverage.encoding.y.scale.type=log` is the usual setting for RNA-seq. `mark`
+names how the scores draw: `bar`, `point`, `line` or `span`.
 
 | Write                                           | Description                              |
 | ----------------------------------------------- | ---------------------------------------- |
@@ -814,7 +815,7 @@ jb2export --fasta ref.fa --bam reads.bam encoding.color.field=tags.NM \
 ## haplotype in two declared colors, methylation over it, a log coverage axis
 jb2export --fasta ref.fa --bam reads.bam encoding.color.field=tags.HP \
   encoding.color.scale.domain=1,2 encoding.color.scale.range=#d9c9a3,#b7c4b1 \
-  baseColor:methylation scales.y.type=log \
+  baseColor:methylation coverage.encoding.y.scale.type=log \
   --loc chr1:1-10000 --out out.svg
 ```
 

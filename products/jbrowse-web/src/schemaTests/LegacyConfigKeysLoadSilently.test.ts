@@ -304,8 +304,16 @@ const byDisplay = (type: string) =>
 test.each([
   ['LinearAlignmentsDisplay', ['pileup', 'maxLayoutHeight'], 10],
   ['LinearAlignmentsDisplay', ['coverage', 'height'], 40],
-  ['LinearSNPCoverageDisplay', ['scales', 'y', 'domainMin'], 0],
-  ['LinearSNPCoverageDisplay', ['scales', 'y', 'domainMax'], 100],
+  [
+    'LinearSNPCoverageDisplay',
+    ['coverage', 'encoding', 'y', 'scale', 'domainMin'],
+    0,
+  ],
+  [
+    'LinearSNPCoverageDisplay',
+    ['coverage', 'encoding', 'y', 'scale', 'domainMax'],
+    100,
+  ],
   [
     'LinearReadArcsDisplay',
     ['readConnections', 'encoding', 'strokeWidth', 'value'],

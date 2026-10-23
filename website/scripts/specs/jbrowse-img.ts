@@ -390,7 +390,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'coverage.height=170',
     // junction depth spans three orders of magnitude; a linear axis flattens
     // every exon but the last
-    'scales.y.type=log',
+    'coverage.encoding.y.scale.type=log',
     'featureHeight:super-compact',
     'height:420',
     '--loc',

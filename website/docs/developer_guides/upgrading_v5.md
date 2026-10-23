@@ -541,6 +541,14 @@ left unset autoscales.
 
 [](/docs/config/valuescale) lists the members each display has.
 
+The coverage band of the alignments, LGVSynteny and MAF displays writes its axis
+as Vega-Lite's `coverage.encoding.y` instead ([](/docs/config/ychannel)):
+`scale` holds `type`, `domainMin`, `domainMax`, `zero`, `fenceQuantile` (was
+`domainQuantile`), `constant` (was `symlogConstant`) and `group` (was
+`autoscaleGroup`), `axis` holds `title` and `grid`, and `rules` sits beside
+them. `minimalTicks` went. MAF's `y` is `encoding.y`. A config or session
+writing `scales.y` on these displays, or MAF's `y`, lifts when it loads.
+
 ## An embedded view's track catalog is plain configs
 
 `session.tracks` in `@jbrowse/react-linear-genome-view2` and

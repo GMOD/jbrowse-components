@@ -95,7 +95,7 @@ const panel = (loc: string) => ({
       // click the banner.
       forceLoad: true,
       // A collapsed-repeat pile-up otherwise runs the coverage axis to 1,600.
-      scales: { y: { domainQuantile: 0.99 } },
+      coverage: { encoding: { y: { scale: { fenceQuantile: 0.99 } } } },
     },
   ],
 })
@@ -146,7 +146,7 @@ export const qcSpecs: ScreenshotSpec[] = [
               encoding: { color: 'mapq' },
               legend: { show: true },
               forceLoad: true,
-              scales: { y: { domainQuantile: 0.99 } },
+              coverage: { encoding: { y: { scale: { fenceQuantile: 0.99 } } } },
               // A smaller featureHeight at 464 bp/px reaches the sparse tail of
               // the pack and breaks the MAPQ block into a picket fence.
               height: 260,
@@ -264,7 +264,7 @@ export const qcSpecs: ScreenshotSpec[] = [
               encoding: { color: 'mapq' },
               legend: { show: true },
               forceLoad: true,
-              scales: { y: { domainQuantile: 0.99 } },
+              coverage: { encoding: { y: { scale: { fenceQuantile: 0.99 } } } },
               height: 260,
             },
           ],

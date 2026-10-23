@@ -98,11 +98,11 @@ function strandSpecificSpec(): ScreenshotSpec {
           coverage: {
             // a log axis prints a tick per power of two; below 120 they overlap
             height: 120,
+            // RPL7A runs ~100x the surfeit genes, which flatten on a linear axis
+            encoding: { y: { scale: { type: 'log' } } },
           },
           pileup: { maxLayoutHeight: 2000 },
           filter: [{ field: 'junction.reads', gte: 3 }],
-          // RPL7A runs ~100x the surfeit genes, which flatten on a linear axis
-          scales: { y: { type: 'log' } },
           height: 330,
         },
       ],
@@ -557,7 +557,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // the display drops one added here
           sashimi: { labels: { show: true }, placement: 'auto' },
           pileup: { readHeight: 1 },
-          scales: { y: { type: 'log' } },
+          coverage: { encoding: { y: { scale: { type: 'log' } } } },
         },
       ],
     }),
