@@ -44,11 +44,13 @@ export default function JexlF(/* config?: any*/) {
   j.addFunction('cast', (arg: unknown) => arg)
 
   // jexl's own list-aware min and max take varargs too; a Math.min
-  // registration would replace them
+  // registration would replace them, as an addBinaryOp('&') would jexl's &
   /**
    * #jexlFunction Math functions | max(0, 2)
    * #jexlFunction Math functions | min(feature.INFO.AF)
    * #jexlFunction Math functions | sqrt(4)
+   * #jexlFunction Binary operators | feature.flags & 2 | bitwise and to check if BAM or CRAM feature flags has 2 set
+   * #jexlFunction Binary operators | (feature.flags & 16) == 0 | true on the forward strand
    */
   j.addFunction('sqrt', Math.sqrt)
   /** #jexlFunction Math functions | ceil(0.5) */
@@ -203,9 +205,6 @@ export default function JexlF(/* config?: any*/) {
     console.log(thing) // eslint-disable-line no-console
     return thing
   })
-
-  /** #jexlFunction Binary operators | feature.flags & 2 | bitwise and to check if BAM or CRAM feature flags has 2 set */
-  j.addBinaryOp('&', 15, (a: number, b: number) => a & b)
 
   return j
 }

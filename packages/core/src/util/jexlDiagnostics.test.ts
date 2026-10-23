@@ -1,5 +1,6 @@
 import createJexlInstance from './jexl.ts'
 import {
+  expressionKind,
   jexlProblemText,
   jexlProblems,
   registeredFunctions,
@@ -67,4 +68,14 @@ test('a schema finds an undeclared category, a call any argument count', () => {
       message: expect.stringContaining("did you mean 'gene'?"),
     },
   ])
+})
+
+// & is jexl's own, so every parser reads it, and it binds tighter than ==
+test('a flag test reads as it is written, in every reader', () => {
+  const flags = (value: number) =>
+    jexl.eval('feature.flags & 16 == 0', { feature: { flags: value } })
+  expect(flags(16)).toBe(false)
+  expect(flags(2)).toBe(true)
+  expect(jexlProblems('jexl:feature.flags & 2', jexl)).toEqual([])
+  expect(expressionKind('jexl:feature.flags & 2')).toBe('numeric')
 })

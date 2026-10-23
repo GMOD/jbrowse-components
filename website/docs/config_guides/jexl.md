@@ -78,6 +78,13 @@ jexl: parseInt('2')
 jexl: parseFloat('2.054')
 ```
 
+**Binary operators**
+
+```js
+jexl: feature.flags & 2 // bitwise and to check if BAM or CRAM feature flags has 2 set
+jexl: (feature.flags & 16) == 0 // true on the forward strand
+```
+
 **String functions**
 
 ```js
@@ -126,12 +133,6 @@ jexl: colorString('green') // normalizes a color name or value to a hex string
 
 ```js
 jexl: log(feature) // console.logs output and returns value
-```
-
-**Binary operators**
-
-```js
-jexl: feature.flags & 2 // bitwise and to check if BAM or CRAM feature flags has 2 set
 ```
 
 **Slot defaults from plugins**
