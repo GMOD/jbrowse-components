@@ -30,41 +30,74 @@ Git history has each landing.
    LGVSynteny inherits), MAF, wiggle and the mark display (which Manhattan
    inherits, with the mark display's defaults). Land in this order, each green
    on its own:
-   1. **A per-display `YScalePaths` map, no config path changes.** It lives in
-      `packages/wiggle-core/src/yScalePaths.ts` with type imports only:
-      `members` maps each of `type`, `zero`, `domainMin`, `domainMax`,
-      `fence`, `constant`, `group`, `title`, `grid`, `minimalTicks` and `rules`
-      to a config path (all still under `['scales', 'y']`), and `reset` lists
-      the sub-objects Reset rewrites, since resetting `encoding.y` on wiggle
-      would also revert the plotted field. Each map is typed against its
-      schema with `satisfies`, and `ScoreScaleMixin(paths)` takes it, with the
-      three composers (alignments `model.ts`, MAF `stateModel.ts`, marks
-      `model.ts`) passing theirs.
-      - **Model side reads the map:** `ScoreScaleMixin.ts` (including the two
-        direct reads of `scales.y`), `WiggleScoreConfigMixin.ts`,
-        `ResetAxisButton.tsx`, `plotEdit.ts`'s `AXIS_MEMBERS`, and the tables
-        exports.
-      - **Config side finds the scale by schema identity, not by path:** core
-        `plot.ts` walks for the value-scale schema as `channelsOf` does for
-        color, and the CLI's `validateConfig.ts` walks the manifest's
-        `subSlots` by schema name. The spec-recipe's `scalesStep` becomes a
-        `yStep` registered under each y path. `check-doc-slots.ts` stays, as a
-        canary on the generated slot name.
-      - **Lifts take a target path:** `valueScaleOf`, `retiredScaleSpellings`
-        and `retiredAxisSpellings`.
-      - Gate: `pnpm verify --full`, `pnpm check-config-read-types` (CI runs it,
-        `pnpm verify` does not), then `npx jest` on `ScoreScaleMixin`,
-        `scoreMenuItems`, `ScoreAxisWidget` and `plot`.
+   1. **A per-display `YScalePaths` map, no config path changes.** The type
+      `YScalePaths<Schema>` lives in `packages/wiggle-core/src/yScalePaths.ts`
+      with type imports only, and each display's map beside its own config
+      schema, written `as const satisfies YScalePaths<ItsSchema>`.
+      - `members` maps each of `type`, `zero`, `domainMin`, `domainMax`,
+        `fence`, `constant`, `group`, `title`, `grid`, `minimalTicks`
+        (optional, since 1.2 drops it from the coverage band) and `rules` to a
+        config path, all still under `['scales', 'y']`. `reset` lists the
+        sub-objects a reset rewrites, since resetting `encoding.y` on wiggle
+        would also revert the plotted field.
+      - `ScoreScaleMixin(paths)` takes it. Wiggle is a fourth composer, through
+        `WiggleCommonMixin`, `YFieldConfigMixin` and `WiggleScoreConfigMixin`,
+        all zero-argument factories; give the parameter a default of wiggle's
+        map for this commit. The test models in `ScoreAxisWidget.test.tsx` and
+        `scoreMenuItems.test.ts` call it too.
+      - **Reads lose their name checks.** A read through `paths.members.x` is
+        a `readonly string[]`, so `ScoreScaleHost` widens to
+        `AnyConfigurationModel` and `getConf` returns `any`. `satisfies` still
+        catches a mistyped path of two or more segments, not `zero` mapped to
+        the `grid` path. `pnpm check-config-read-types` counts only
+        string-literal slot arguments, so it cannot see this. Replace the
+        `@ts-expect-error` pins in `ScoreScaleMixin.test.ts` and
+        `WiggleScoreConfigMixin.test.ts` with a pin on a misspelled map path.
+      - **Model side reads the map:** `ScoreScaleMixin.ts`, `plotEdit.ts`'s
+        `AXIS_MEMBERS` and both tables exports, each importing its own display's
+        map. `WiggleScoreConfigMixin.ts` only passes it through. The mixin's
+        two direct node reads (`clipQuantile`, `scoreRules`) need a local
+        `confNodeAt`, since `getConf.ts`'s `writeConfPath` is private. The
+        mixin gains a `resetYScale()` action that walks `reset`, and
+        `ResetAxisButton` calls it.
+      - **Config side finds the scale by a schema option**, as `channelsOf`
+        finds color through `fieldPresets`: the node that holds the scale's
+        ends carries the option. Core's `plot.ts` walks for it, labelling the
+        notice with the walked path, and `plot.test.ts`'s `PlotTestAxis`
+        fixture gains it. A name match would put a plugin's string in core, and
+        a shape match would report ramps twice (`colorProblems` already runs
+        `scaleEndProblems` on them). The generator emits the option into the
+        manifest (`SlotEntry` gains a field), and the CLI walks `subSlots` for
+        it in `checkScaleSlots` and `checkMarkDisplay`. The spec-recipe's
+        `scalesStep` becomes a `yStep` registered under each y path.
+        `check-doc-slots.ts` stays, as a canary on the generated slot name.
+      - **Lifts take the `members` map, not a path:** the coverage target
+        splits the ends under `scale` and renames the fence, which a prefix
+        cannot say. `valueScaleOf`, `retiredScaleSpellings` and
+        `retiredAxisSpellings` become functions of the map; the three spread
+        sites are alignments `retired.ts`, wiggle `configSchema.ts` and wiggle
+        `retired.ts`.
+      - Gate: `pnpm verify --full`, `pnpm check-config-read-types`, then
+        `npx jest` on `ScoreScaleMixin`, `WiggleScoreConfigMixin`,
+        `scoreMenuItems`, `ScoreAxisWidget`, `plot`, `plotEdit`,
+        `validateConfig`, `markDisplays`, both `retired` tests and the
+        spec-recipe's `trackFieldSteps`. About 25 files and 350 to 450 lines.
    2. **The shared coverage band** (`coverageBandConfigSchema`) gains
       `encoding.y`, so alignments, MAF and LGVSynteny move together, MAF's `y`
-      with them (a `y` → `encoding.y.field` lift). Rename the members in this
-      commit and make the shared `scaleEndsOf` in core `util/colorScale.ts`
-      read both `domainQuantile` and `fenceQuantile`, or the rename waits for
-      commit 3. The coverage band drops `minimalTicks` here. Each display
-      declares a `scales` lift, and every in-repo writer is respelled.
-      Gate: `pnpm verify --full --all`, the schema tests with
-      `ConfigSlotDefaults -u` reviewed, both `legacySessions` tests and the
-      `retired` tests.
+      with them (a `y` → `encoding.y.field` lift). The commit renames schema
+      members only; the model names (`domainQuantile`, `setDomainQuantile`,
+      `clipQuantile`, `unclippedQuantile`) are shared by all four displays and
+      wait for commit 3. `scaleEndProblems` takes the slot name as an argument
+      instead of hard-coding `domainQuantile`, and `scaleEndsOf` reads both
+      spellings, so the corner notice and the CLI name a key the schema has.
+      Core and the CLI recognise two shapes in this window, the old scale
+      whose `y` holds the ends and the new channel whose `y.scale` does, and
+      the schema option marks whichever node holds them. The coverage band
+      drops `minimalTicks`. Each display declares a `scales` lift, and every
+      in-repo writer is respelled. Gate: `pnpm verify --full --all`, the
+      schema tests with `ConfigSlotDefaults -u` reviewed, both
+      `legacySessions` tests and the `retired` tests. About 40 to 80 files
+      plus regenerated manifests.
    3. **Wiggle, the mark display and Manhattan** (its `plotExamples.ts` writes
       `{ "scales": null }`). The y channel becomes a factory, since the fence
       defaults to 0.99 on wiggle and 1 elsewhere and the coverage band's
@@ -77,6 +110,9 @@ Git history has each landing.
       since every doc writing `displayDefaults: { scales }` goes red
       (`hic_track.md`, `quantitative_track.md`, `cookbook.md`, `bisulfite.md`,
       `bxd_qtl.md`, `cnv_cgiab.md`).
+   - **Marks reads for commit 3:** `markPlot.ts` (`snapshot.scales`),
+     `markProblems.ts` (`ScalesSnapshot` and the `scales.y.${slot}` label) and
+     the CLI's generated copies.
    - **Wiggle's lifts merge:** `retired.ts` spreads `valueScaleOf`, `colorOf`
      and `summaryOf` into one object. Once each returns `encoding`, the last
      spread wins, so merge them, or leave the state lift writing `scales` for
