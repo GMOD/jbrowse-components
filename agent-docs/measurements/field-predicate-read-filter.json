@@ -5,12 +5,23 @@
   "source": {
     "kind": "bench",
     "repro": "node packages/core/benches/fieldPredicate.bench.ts --rounds=15 --reads=2000000",
-    "notes": "ADR-238's compiled predicate list against the alignments display's hand-written read test, the default flag exclusion (unmapped, QC-failed, duplicate) plus a MAPQ floor of 20, over two million BAM-shaped records, arms interleaved in one process, min of 15 rounds, on ada. The first compiler (a closure per flag bit, a coercion per compare, Array.every) measured 5.5x on the laptop; the fused compiler (one mask compare for the flag bits, a typed number bound, an unrolled list, lanes over the record in hand) is the row below. For scale, @gmod/bam 10.0.1 fetches, inflates and decodes a volvox read in 359 ns on ada before any extraction, so the remaining gap is about 0.6% of decode alone. The whole-fetch rows are ADR-240 step 3a's gate (node --experimental-transform-types plugins/alignments/benches/readFilterFetch.bench.ts --rounds=15, measured 2026-10-22): 1000x.shortread.bam chr22_mask:124000-143000 opened afresh each round, 153,677 records, the same four entries per record, on ada; a second run read 129.7 and 127.5 ms. The list costs nothing measurable there, so the worker runs it."
+    "notes": "ADR-238's compiled predicate list against the alignments display's hand-written read test, the default flag exclusion (unmapped, QC-failed, duplicate) plus a MAPQ floor of 20, over two million BAM-shaped records, arms interleaved in one process, min of 15 rounds, on ada. The first compiler (a closure per flag bit, a coercion per compare, Array.every) measured 5.5x on the laptop; the fused compiler (one mask compare for the flag bits, a typed number bound, an unrolled list, lanes over the record in hand) is the row below. For scale, @gmod/bam 10.0.1 fetches, inflates and decodes a volvox read in 359 ns on ada before any extraction, so the remaining gap is about 0.6% of decode alone. The whole-fetch rows are ADR-240 step 3a's gate (node --experimental-transform-types plugins/alignments/benches/readFilterFetch.bench.ts --rounds=15, measured 2026-10-22): 1000x.shortread.bam chr22_mask:124000-143000 opened afresh each round, 153,677 records, the same four entries per record, on ada; a second run read 129.7 and 127.5 ms. The list costs nothing measurable there, so the worker runs it. The display rows are ADR-240 step 3's other displays, measured 2026-10-22 on the laptop on AC power. Variant site test (node plugins/variants/benches/siteFilter.bench.ts --rounds=15): the 1000 Genomes chr1 slice, 1342 records x 2504 samples, a MAF floor of 0.01 and a missingness ceiling of 0.1; the test alone runs 100 passes over the precomputed allele summaries, about 16 ns a site, and the whole path counts alleles first, which is the cost a fetch pays. Feature filter chain (node packages/core/benches/filterChain.bench.ts --rounds=25 --features=200000): one expression over 200,000 SimpleFeatures through SerializableFilterChain; the hand column is the chain as it stood before the list, and three runs spread 200-300 ns a feature for both the old chain and an expression entry, so they are one cost. The field-test row runs the same filter as `{ field: 'score', gt: 5 }` with no jexl."
   },
   "columns": [
-    { "key": "arm", "label": "arm" },
-    { "key": "handMs", "label": "hand-written", "format": "ms" },
-    { "key": "compiledMs", "label": "compiled list", "format": "ms" },
+    {
+      "key": "arm",
+      "label": "arm"
+    },
+    {
+      "key": "handMs",
+      "label": "hand-written",
+      "format": "ms"
+    },
+    {
+      "key": "compiledMs",
+      "label": "compiled list",
+      "format": "ms"
+    },
     {
       "key": "ratio",
       "label": "compiled vs hand",
@@ -38,6 +49,34 @@
         "arm": "1000x whole fetch, filter loop alone, ada",
         "handMs": 4.77,
         "compiledMs": 4.83
+      }
+    },
+    {
+      "values": {
+        "arm": "1342 sites, site test alone x100, laptop",
+        "handMs": 1.34,
+        "compiledMs": 2.11
+      }
+    },
+    {
+      "values": {
+        "arm": "1342 sites, allele counts + site test, laptop",
+        "handMs": 117.9,
+        "compiledMs": 110.2
+      }
+    },
+    {
+      "values": {
+        "arm": "200k features, jexl expression entry, laptop",
+        "handMs": 55.8,
+        "compiledMs": 56.0
+      }
+    },
+    {
+      "values": {
+        "arm": "200k features, the same filter as a field test, laptop",
+        "handMs": 55.8,
+        "compiledMs": 10.4
       }
     }
   ]
