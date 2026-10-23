@@ -4083,84 +4083,6 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "scales",
-          "type": "ScalesConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "y",
-              "type": "ValueScaleConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "type",
-                  "type": "ValueScaleType"
-                },
-                {
-                  "name": "domainMin",
-                  "type": "(number | undefined)"
-                },
-                {
-                  "name": "domainMax",
-                  "type": "(number | undefined)"
-                },
-                {
-                  "name": "zero",
-                  "type": "boolean"
-                },
-                {
-                  "name": "autoscaleGroup",
-                  "type": "(string | undefined)"
-                },
-                {
-                  "name": "symlogConstant",
-                  "type": "number"
-                },
-                {
-                  "name": "domainQuantile",
-                  "type": "number"
-                },
-                {
-                  "name": "grid",
-                  "type": "boolean"
-                },
-                {
-                  "name": "minimalTicks",
-                  "type": "boolean"
-                },
-                {
-                  "name": "title",
-                  "type": "(string | undefined)"
-                },
-                {
-                  "name": "rules",
-                  "type": "ValueScaleRuleConfigurationSchema[]",
-                  "subSlots": [
-                    {
-                      "name": "value",
-                      "type": "number"
-                    },
-                    {
-                      "name": "color",
-                      "type": "(CssColor | undefined)"
-                    },
-                    {
-                      "name": "label",
-                      "type": "string"
-                    }
-                  ],
-                  "schema": "ValueScaleRule",
-                  "shorthand": {
-                    "number": "value"
-                  }
-                }
-              ],
-              "schema": "ValueScale",
-              "writes": "members"
-            }
-          ],
-          "schema": "Scales",
-          "writes": "members"
-        },
-        {
           "name": "legend",
           "type": "HiddenLegendConfigurationSchema",
           "subSlots": [
@@ -4183,6 +4105,97 @@ export const configManifest: ConfigManifest = {
             {
               "name": "height",
               "type": "number"
+            },
+            {
+              "name": "encoding",
+              "type": "CoverageEncodingConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "y",
+                  "type": "YChannelConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "scale",
+                      "type": "YScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "YScaleType"
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "zero",
+                          "type": "boolean"
+                        },
+                        {
+                          "name": "fenceQuantile",
+                          "type": "number"
+                        },
+                        {
+                          "name": "constant",
+                          "type": "number"
+                        },
+                        {
+                          "name": "group",
+                          "type": "(string | undefined)"
+                        }
+                      ],
+                      "schema": "YScale",
+                      "writes": "members",
+                      "scaleFence": "fenceQuantile"
+                    },
+                    {
+                      "name": "axis",
+                      "type": "YAxisConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "title",
+                          "type": "(string | undefined)"
+                        },
+                        {
+                          "name": "grid",
+                          "type": "boolean"
+                        }
+                      ],
+                      "schema": "YAxis",
+                      "writes": "members"
+                    },
+                    {
+                      "name": "rules",
+                      "type": "ValueScaleRuleConfigurationSchema[]",
+                      "subSlots": [
+                        {
+                          "name": "value",
+                          "type": "number"
+                        },
+                        {
+                          "name": "color",
+                          "type": "(CssColor | undefined)"
+                        },
+                        {
+                          "name": "label",
+                          "type": "string"
+                        }
+                      ],
+                      "schema": "ValueScaleRule",
+                      "shorthand": {
+                        "number": "value"
+                      }
+                    }
+                  ],
+                  "schema": "YChannel",
+                  "writes": "members"
+                }
+              ],
+              "schema": "CoverageEncoding",
+              "writes": "members"
             },
             {
               "name": "interbase",
@@ -4524,6 +4537,7 @@ export const configManifest: ConfigManifest = {
         "maxScore",
         "numStdDev",
         "inverted",
+        "scales",
         "multiTicks",
         "jitter",
         "lineWidth",
@@ -5091,84 +5105,6 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "scales",
-          "type": "ScalesConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "y",
-              "type": "ValueScaleConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "type",
-                  "type": "ValueScaleType"
-                },
-                {
-                  "name": "domainMin",
-                  "type": "(number | undefined)"
-                },
-                {
-                  "name": "domainMax",
-                  "type": "(number | undefined)"
-                },
-                {
-                  "name": "zero",
-                  "type": "boolean"
-                },
-                {
-                  "name": "autoscaleGroup",
-                  "type": "(string | undefined)"
-                },
-                {
-                  "name": "symlogConstant",
-                  "type": "number"
-                },
-                {
-                  "name": "domainQuantile",
-                  "type": "number"
-                },
-                {
-                  "name": "grid",
-                  "type": "boolean"
-                },
-                {
-                  "name": "minimalTicks",
-                  "type": "boolean"
-                },
-                {
-                  "name": "title",
-                  "type": "(string | undefined)"
-                },
-                {
-                  "name": "rules",
-                  "type": "ValueScaleRuleConfigurationSchema[]",
-                  "subSlots": [
-                    {
-                      "name": "value",
-                      "type": "number"
-                    },
-                    {
-                      "name": "color",
-                      "type": "(CssColor | undefined)"
-                    },
-                    {
-                      "name": "label",
-                      "type": "string"
-                    }
-                  ],
-                  "schema": "ValueScaleRule",
-                  "shorthand": {
-                    "number": "value"
-                  }
-                }
-              ],
-              "schema": "ValueScale",
-              "writes": "members"
-            }
-          ],
-          "schema": "Scales",
-          "writes": "members"
-        },
-        {
           "name": "legend",
           "type": "HiddenLegendConfigurationSchema",
           "subSlots": [
@@ -5191,6 +5127,97 @@ export const configManifest: ConfigManifest = {
             {
               "name": "height",
               "type": "number"
+            },
+            {
+              "name": "encoding",
+              "type": "CoverageEncodingConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "y",
+                  "type": "YChannelConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "scale",
+                      "type": "YScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "YScaleType"
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "zero",
+                          "type": "boolean"
+                        },
+                        {
+                          "name": "fenceQuantile",
+                          "type": "number"
+                        },
+                        {
+                          "name": "constant",
+                          "type": "number"
+                        },
+                        {
+                          "name": "group",
+                          "type": "(string | undefined)"
+                        }
+                      ],
+                      "schema": "YScale",
+                      "writes": "members",
+                      "scaleFence": "fenceQuantile"
+                    },
+                    {
+                      "name": "axis",
+                      "type": "YAxisConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "title",
+                          "type": "(string | undefined)"
+                        },
+                        {
+                          "name": "grid",
+                          "type": "boolean"
+                        }
+                      ],
+                      "schema": "YAxis",
+                      "writes": "members"
+                    },
+                    {
+                      "name": "rules",
+                      "type": "ValueScaleRuleConfigurationSchema[]",
+                      "subSlots": [
+                        {
+                          "name": "value",
+                          "type": "number"
+                        },
+                        {
+                          "name": "color",
+                          "type": "(CssColor | undefined)"
+                        },
+                        {
+                          "name": "label",
+                          "type": "string"
+                        }
+                      ],
+                      "schema": "ValueScaleRule",
+                      "shorthand": {
+                        "number": "value"
+                      }
+                    }
+                  ],
+                  "schema": "YChannel",
+                  "writes": "members"
+                }
+              ],
+              "schema": "CoverageEncoding",
+              "writes": "members"
             },
             {
               "name": "interbase",
@@ -5453,6 +5480,7 @@ export const configManifest: ConfigManifest = {
         "maxScore",
         "numStdDev",
         "inverted",
+        "scales",
         "multiTicks",
         "jitter",
         "lineWidth",
@@ -7450,7 +7478,8 @@ export const configManifest: ConfigManifest = {
                 }
               ],
               "schema": "ValueScale",
-              "writes": "members"
+              "writes": "members",
+              "scaleFence": "domainQuantile"
             }
           ],
           "schema": "Scales",
@@ -7728,14 +7757,25 @@ export const configManifest: ConfigManifest = {
                 }
               },
               "fieldDefault": "mismatch"
+            },
+            {
+              "name": "y",
+              "type": "MafYConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "(MafYField | undefined)"
+                }
+              ],
+              "schema": "MafY",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              }
             }
           ],
           "schema": "MafEncoding",
           "writes": "members"
-        },
-        {
-          "name": "y",
-          "type": "(MafYField | undefined)"
         },
         {
           "name": "showTree",
@@ -7851,6 +7891,97 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             },
             {
+              "name": "encoding",
+              "type": "CoverageEncodingConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "y",
+                  "type": "YChannelConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "scale",
+                      "type": "YScaleConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "type",
+                          "type": "YScaleType"
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "zero",
+                          "type": "boolean"
+                        },
+                        {
+                          "name": "fenceQuantile",
+                          "type": "number"
+                        },
+                        {
+                          "name": "constant",
+                          "type": "number"
+                        },
+                        {
+                          "name": "group",
+                          "type": "(string | undefined)"
+                        }
+                      ],
+                      "schema": "YScale",
+                      "writes": "members",
+                      "scaleFence": "fenceQuantile"
+                    },
+                    {
+                      "name": "axis",
+                      "type": "YAxisConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "title",
+                          "type": "(string | undefined)"
+                        },
+                        {
+                          "name": "grid",
+                          "type": "boolean"
+                        }
+                      ],
+                      "schema": "YAxis",
+                      "writes": "members"
+                    },
+                    {
+                      "name": "rules",
+                      "type": "ValueScaleRuleConfigurationSchema[]",
+                      "subSlots": [
+                        {
+                          "name": "value",
+                          "type": "number"
+                        },
+                        {
+                          "name": "color",
+                          "type": "(CssColor | undefined)"
+                        },
+                        {
+                          "name": "label",
+                          "type": "string"
+                        }
+                      ],
+                      "schema": "ValueScaleRule",
+                      "shorthand": {
+                        "number": "value"
+                      }
+                    }
+                  ],
+                  "schema": "YChannel",
+                  "writes": "members"
+                }
+              ],
+              "schema": "CoverageEncoding",
+              "writes": "members"
+            },
+            {
               "name": "interbase",
               "type": "CoverageInterbaseConfigurationSchema",
               "subSlots": [
@@ -7923,84 +8054,6 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "scales",
-          "type": "ScalesConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "y",
-              "type": "ValueScaleConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "type",
-                  "type": "ValueScaleType"
-                },
-                {
-                  "name": "domainMin",
-                  "type": "(number | undefined)"
-                },
-                {
-                  "name": "domainMax",
-                  "type": "(number | undefined)"
-                },
-                {
-                  "name": "zero",
-                  "type": "boolean"
-                },
-                {
-                  "name": "autoscaleGroup",
-                  "type": "(string | undefined)"
-                },
-                {
-                  "name": "symlogConstant",
-                  "type": "number"
-                },
-                {
-                  "name": "domainQuantile",
-                  "type": "number"
-                },
-                {
-                  "name": "grid",
-                  "type": "boolean"
-                },
-                {
-                  "name": "minimalTicks",
-                  "type": "boolean"
-                },
-                {
-                  "name": "title",
-                  "type": "(string | undefined)"
-                },
-                {
-                  "name": "rules",
-                  "type": "ValueScaleRuleConfigurationSchema[]",
-                  "subSlots": [
-                    {
-                      "name": "value",
-                      "type": "number"
-                    },
-                    {
-                      "name": "color",
-                      "type": "(CssColor | undefined)"
-                    },
-                    {
-                      "name": "label",
-                      "type": "string"
-                    }
-                  ],
-                  "schema": "ValueScaleRule",
-                  "shorthand": {
-                    "number": "value"
-                  }
-                }
-              ],
-              "schema": "ValueScale",
-              "writes": "members"
-            }
-          ],
-          "schema": "Scales",
-          "writes": "members"
-        },
-        {
           "name": "conservation",
           "type": "MafConservationConfigurationSchema",
           "subSlots": [
@@ -8028,7 +8081,9 @@ export const configManifest: ConfigManifest = {
         "jexlFilters",
         "rowProportion",
         "showAllLetters",
-        "showAsUpperCase"
+        "showAsUpperCase",
+        "y",
+        "scales"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -8801,7 +8856,8 @@ export const configManifest: ConfigManifest = {
                 }
               ],
               "schema": "ValueScale",
-              "writes": "members"
+              "writes": "members",
+              "scaleFence": "domainQuantile"
             }
           ],
           "schema": "Scales",
@@ -9475,7 +9531,8 @@ export const configManifest: ConfigManifest = {
                 }
               ],
               "schema": "ValueScale",
-              "writes": "members"
+              "writes": "members",
+              "scaleFence": "domainQuantile"
             }
           ],
           "schema": "Scales",

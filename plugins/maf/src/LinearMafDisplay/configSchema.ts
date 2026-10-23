@@ -1,33 +1,40 @@
-import { coverageBandConfigSchema } from '@jbrowse/alignments-core/coverageBandConfigSchema'
+import {
+  COVERAGE_Y_PATHS,
+  coverageBandConfigSchema,
+} from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
-import { types } from '@jbrowse/mobx-state-tree'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
-import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
+import { retiredScalesSpelling } from '@jbrowse/wiggle-core'
 
 import { DEFAULTS } from './displayDefaults.ts'
 import { mafAlignmentsConfigSchema } from './mafAlignmentsConfigSchema.ts'
 import { mafConservationConfigSchema } from './mafConservationConfigSchema.ts'
 import { mafEncodingConfigSchema } from './mafEncodingConfigSchema.ts'
-import { MAF_Y_FIELDS } from './rowRenderings.ts'
 
-import type { RetiredSpelling } from '@jbrowse/core/configuration'
+import type {
+  ConfigurationSlotPath,
+  RetiredSpelling,
+} from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * The v4 mafviewer plugin's row settings, top-level there. Letters now follow
  * `encoding.color` and keep the file's case, so the two letter settings lift
- * to nothing.
+ * to nothing. v5's `y` and `scales.y` moved under `encoding.y` and
+ * `coverage.encoding.y`.
  */
 const retiredMafSpellings: Record<string, RetiredSpelling> = {
   rowProportion: v => ({ alignments: { rowProportion: v } }),
   showAllLetters: () => ({}),
   showAsUpperCase: () => ({}),
+  y: field => ({ encoding: { y: { field } } }),
+  scales: retiredScalesSpelling(COVERAGE_Y_PATHS.members),
 }
 
 /**
@@ -85,7 +92,8 @@ export default function configSchemaF() {
       /**
        * #slot encoding
        * The channels the aligned cells paint through: `encoding.color`, the
-       * field that colors them; see [MafColor](../mafcolor).
+       * field that colors them (see [MafColor](../mafcolor)), and
+       * `encoding.y`, the field a row's bar height shows.
        *
        * #example
        * ```js
@@ -93,19 +101,6 @@ export default function configSchemaF() {
        * ```
        */
       encoding: mafEncodingConfigSchema,
-      /**
-       * #slot
-       * Unset, each row is one band of cells. `identity` draws each row as a
-       * bar chart of its identity to the reference, the bars painted by
-       * `encoding.color` where it is `identity` and in one color otherwise.
-       */
-      y: {
-        type: 'maybeStringEnum',
-        model: types.enumeration('MafYField', [...MAF_Y_FIELDS]),
-        description:
-          "the value a row's bar height shows: identity, or unset for none",
-        plot: true,
-      },
       ...treeSidebarConfigSchemaFields({
         tree: 'show the species tree sidebar',
         rowLabels: 'draw the species name over the left of each row',
@@ -147,7 +142,7 @@ export default function configSchemaF() {
       legend: legendConfigSchema,
       /**
        * #slot coverage
-       * The coverage band: `show`, `height`, `interbase` and
+       * The coverage band: `show`, `height`, `encoding.y`, `interbase` and
        * `minAlleleFraction`, as the alignments display spells it.
        */
       coverage: coverageBandConfigSchema,
@@ -158,16 +153,6 @@ export default function configSchemaF() {
        * `reference` parts.
        */
       alignments: mafAlignmentsConfigSchema,
-      /**
-       * #slot
-       * The coverage band's value scale, spelled as the alignments display's:
-       * `symlogConstant` 1 makes symlog `log(depth+1)`.
-       */
-      scales: scalesSchema(
-        valueScaleSchema({
-          symlogConstant: 1,
-        }),
-      ),
       /**
        * #slot conservation
        * The band of identity to the reference: `show` (default off),
@@ -187,6 +172,10 @@ export default function configSchemaF() {
     // #endregion
   )
 }
+
+Object.values(
+  COVERAGE_Y_PATHS.members,
+) satisfies readonly ConfigurationSlotPath<ReturnType<typeof configSchemaF>>[]
 
 export type LinearMafDisplayConfigModel = ReturnType<typeof configSchemaF>
 export type LinearMafDisplayConfig = Instance<LinearMafDisplayConfigModel>

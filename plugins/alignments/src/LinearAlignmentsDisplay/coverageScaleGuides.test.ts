@@ -67,10 +67,14 @@ function coverageAxis(display: ReturnType<typeof coverageDisplay>) {
 test('a rule lands on the tick of the same depth, under symlog too', () => {
   for (const type of ['linear', 'log', 'symlog']) {
     const display = coverageDisplay(100)
-    setConf(display, ['scales', 'y'], { type, domainMin: 0, domainMax: 100 })
+    setConf(display, ['coverage', 'encoding', 'y', 'scale'], {
+      type,
+      domainMin: 0,
+      domainMax: 100,
+    })
     const { ticks } = coverageAxis(display)
     const tick = ticks.items.find(t => t.value !== 100 && t.value > 1)!
-    setConf(display, ['scales', 'y', 'rules'], [tick.value])
+    setConf(display, ['coverage', 'encoding', 'y', 'rules'], [tick.value])
     expect(coverageAxis(display).ruleMarks?.[0]?.y).toBeCloseTo(tick.y, 6)
   }
 })
@@ -80,19 +84,9 @@ test('an autoscaled axis widens to a rule above the data, never below 0', () => 
   const top = () => coverageAxis(display).domain[1]
   const bottom = () => coverageAxis(display).domain[0]
   expect(top()).toBeLessThan(40)
-  setConf(display, ['scales', 'y', 'rules'], [40, -5])
+  setConf(display, ['coverage', 'encoding', 'y', 'rules'], [40, -5])
   expect(top()).toBeGreaterThanOrEqual(40)
   expect(bottom()).toBe(0)
-})
-
-test('minimalTicks labels only the ends of the coverage axis', () => {
-  const display = coverageDisplay(100)
-  expect(coverageAxis(display).ticks.items.length).toBeGreaterThan(2)
-  setConf(display, ['scales', 'y', 'minimalTicks'], true)
-  expect(coverageAxis(display).ticks.items.map(t => t.value)).toEqual([
-    0,
-    coverageAxis(display).domain[1],
-  ])
 })
 
 // The Coverage axis widget's Grid lines box writes this setter.

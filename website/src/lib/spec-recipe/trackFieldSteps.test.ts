@@ -21,11 +21,32 @@ test('a row height is the shared Row height menu, with each display its presets'
 
 test('an autoscale group is the axis widget of the display it is on', () => {
   expect(
-    scalePaths({ y: { autoscaleGroup: 'depth' } }, 'LinearAlignmentsDisplay'),
+    stepPaths(
+      'coverage.encoding.y',
+      { scale: { group: 'depth' } },
+      'LinearAlignmentsDisplay',
+    ),
   ).toEqual(['Track menu → Coverage axis... → Share axis with'])
   expect(
     scalePaths({ y: { autoscaleGroup: 'depth' } }, 'LinearWiggleDisplay'),
   ).toEqual(['Track menu → Y axis... → Share axis with'])
+})
+
+test("a y channel's scale and axis members are the same axis widget rows as scales.y's", () => {
+  expect(
+    stepPaths(
+      'coverage.encoding.y',
+      { scale: { type: 'log', fenceQuantile: 0.99 }, axis: { grid: true } },
+      'LinearAlignmentsDisplay',
+    ),
+  ).toEqual([
+    'Track menu → Coverage axis... → Scale → Log',
+    'Track menu → Coverage axis... → Clip extreme outliers (checked)',
+    'Track menu → Coverage axis... → Grid lines (checked)',
+  ])
+  expect(stepPaths('encoding.y', 'identity', 'LinearMafDisplay')).toEqual([
+    'Track menu → Plot type → Identity X-Y plot',
+  ])
 })
 
 test('clustering over a narrower window names that window in its step', () => {

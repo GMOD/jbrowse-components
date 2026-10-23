@@ -2,6 +2,9 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { DEFAULT_CLIP_QUANTILE } from '@jbrowse/core/util/quantileExtent'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { SCALES_Y_PATHS } from './yScalePaths.ts'
+
+import type { YMember, YScalePaths } from './yScalePaths.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export const VALUE_SCALE_TYPES = ['linear', 'log', 'symlog'] as const
@@ -13,7 +16,7 @@ export interface ValueScaleOptions {
   symlogConstant?: number
 }
 
-function valueScaleRuleSchema() {
+export function valueScaleRuleSchema() {
   return ConfigurationSchema(
     'ValueScaleRule',
     {
@@ -279,69 +282,111 @@ export function valueScaleSchema({
        */
       rules: types.array(valueScaleRuleSchema()),
     },
-    { closed: true },
+    { closed: true, scaleFence: 'domainQuantile' },
   )
 }
 
 export type ValueScaleConfigSchema = ReturnType<typeof valueScaleSchema>
 
-/**
- * The axis guides v4 spelt on the display, as `retired` declares them on each
- * display whose scale took them over.
- */
-export const retiredAxisSpellings = {
-  displayCrossHatches: (grid: unknown) => ({ scales: { y: { grid } } }),
-  minimalTicks: (minimalTicks: unknown) => ({
-    scales: { y: { minimalTicks } },
-  }),
-}
+type YMembers = YScalePaths['members']
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === 'object' && !Array.isArray(v)
 
-/**
- * v4's display-level scale settings as the `scales.y` members they became.
- * `localpercentile` is a clip; `local`, `localsd`, `global` and `globalsd`
- * all follow the extremes closely enough to become one.
- */
-export function valueScaleOf({
-  scale,
-  autoscale,
-  constraints,
-}: Record<string, unknown>) {
-  const y = {
-    ...(typeof scale === 'string' ? { type: scale } : {}),
-    ...(typeof autoscale === 'string'
-      ? {
-          domainQuantile:
-            autoscale === 'localpercentile' ? DEFAULT_CLIP_QUANTILE : 1,
-        }
-      : {}),
-    ...(isRecord(constraints) && typeof constraints.min === 'number'
-      ? { domainMin: constraints.min }
-      : {}),
-    ...(isRecord(constraints) && typeof constraints.max === 'number'
-      ? { domainMax: constraints.max }
-      : {}),
+// each value at its path, as one nested object; `{}` for none
+function nestedAt(entries: (readonly [readonly string[], unknown])[]) {
+  const out: Record<string, unknown> = {}
+  for (const [path, value] of entries) {
+    let node = out
+    for (const segment of path.slice(0, -1)) {
+      node = (node[segment] ??= {}) as Record<string, unknown>
+    }
+    node[path.at(-1)!] = value
   }
-  return Object.keys(y).length > 0 ? { scales: { y } } : {}
+  return out
+}
+
+/**
+ * The axis guides v4 spelt on the display, as `retired` declares them on each
+ * display whose scale took them over, at that display's member paths. A map
+ * with no `minimalTicks` drops it.
+ */
+export function retiredAxisSpellings(members: YMembers) {
+  return {
+    displayCrossHatches: (grid: unknown) => nestedAt([[members.grid, grid]]),
+    minimalTicks: (minimalTicks: unknown) =>
+      nestedAt(
+        members.minimalTicks ? [[members.minimalTicks, minimalTicks]] : [],
+      ),
+  }
+}
+
+/**
+ * v4's display-level scale settings as the y scale members they became, at
+ * the display's member paths. `localpercentile` is a clip; `local`,
+ * `localsd`, `global` and `globalsd` all follow the extremes closely enough to
+ * become one.
+ */
+export function valueScaleOf(members: YMembers) {
+  return ({ scale, autoscale, constraints }: Record<string, unknown>) =>
+    nestedAt([
+      ...(typeof scale === 'string' ? [[members.type, scale] as const] : []),
+      ...(typeof autoscale === 'string'
+        ? [
+            [
+              members.fence,
+              autoscale === 'localpercentile' ? DEFAULT_CLIP_QUANTILE : 1,
+            ] as const,
+          ]
+        : []),
+      ...(isRecord(constraints) && typeof constraints.min === 'number'
+        ? [[members.domainMin, constraints.min] as const]
+        : []),
+      ...(isRecord(constraints) && typeof constraints.max === 'number'
+        ? [[members.domainMax, constraints.max] as const]
+        : []),
+    ])
 }
 
 /**
  * The scale slots v4 declared on a display, as `retired` declares them on
- * each display whose `scales.y` took them over. `minScore` and `maxScore`
- * were unset at v4's own sentinels; `numStdDev` and `inverted` have no
- * successor and are let go.
+ * each display whose y scale took them over, at its member paths. `minScore`
+ * and `maxScore` were unset at v4's own sentinels; `numStdDev` and `inverted`
+ * have no successor and are let go.
  */
-export const retiredScaleSpellings = {
-  scaleType: (scale: unknown) => valueScaleOf({ scale }),
-  autoscale: (autoscale: unknown) => valueScaleOf({ autoscale }),
-  minScore: (min: unknown) =>
-    min === Number.MIN_VALUE ? {} : valueScaleOf({ constraints: { min } }),
-  maxScore: (max: unknown) =>
-    max === Number.MAX_VALUE ? {} : valueScaleOf({ constraints: { max } }),
-  numStdDev: () => ({}),
-  inverted: () => ({}),
+export function retiredScaleSpellings(members: YMembers) {
+  const lift = valueScaleOf(members)
+  return {
+    scaleType: (scale: unknown) => lift({ scale }),
+    autoscale: (autoscale: unknown) => lift({ autoscale }),
+    minScore: (min: unknown) =>
+      min === Number.MIN_VALUE ? {} : lift({ constraints: { min } }),
+    maxScore: (max: unknown) =>
+      max === Number.MAX_VALUE ? {} : lift({ constraints: { max } }),
+    numStdDev: () => ({}),
+    inverted: () => ({}),
+  }
+}
+
+/**
+ * `scales.y` as the members a display moved off it, at its member paths:
+ * `domainQuantile` becomes the `fence` member, `symlogConstant` the
+ * `constant` and `autoscaleGroup` the `group`. A member the map has no path
+ * for, the coverage band's `minimalTicks`, is let go.
+ */
+export function retiredScalesSpelling(members: YMembers) {
+  return (scales: unknown) => {
+    const y = isRecord(scales) ? scales.y : undefined
+    return isRecord(y)
+      ? nestedAt(
+          Object.entries(SCALES_Y_PATHS.members).flatMap(([member, from]) => {
+            const to = members[member as YMember]
+            const name = from.at(-1)!
+            return to && name in y ? [[to, y[name]] as const] : []
+          }),
+        )
+      : {}
+  }
 }
 
 /**

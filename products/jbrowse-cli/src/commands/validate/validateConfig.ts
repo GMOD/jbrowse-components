@@ -563,7 +563,10 @@ function checkMarkDisplay(
   if (!slots || !isRecord(lifted)) {
     return
   }
-  const { facet, rows, scales } = lifted
+  const { facet, rows } = lifted
+  const [axis] = slots.flatMap(slot =>
+    valueAxesOf(lifted[slot.name], slot, slot.name),
+  )
   for (const { level, rule, mark, slot, message } of markProblems({
     marks: declaredEntries<MarkSnapshot>(lifted, display, 'marks', slots),
     facet: isRecord(facet) ? facet : undefined,
@@ -574,7 +577,7 @@ function checkMarkDisplay(
       slots,
     ),
     rows: isRecord(rows) ? rows : undefined,
-    scales: isRecord(scales) ? scalesOf(scales) : undefined,
+    scales: axis ? { y: scaleEndsOf(name => axis.ends[name]) } : undefined,
   })) {
     pushOnce(report, {
       level,
@@ -597,9 +600,21 @@ function pushOnce(report: Report, problem: Problem) {
   }
 }
 
-function scalesOf(scales: Record<string, unknown>) {
-  const { y } = scales
-  return isRecord(y) ? { y: scaleEndsOf(name => y[name]) } : {}
+// Each value axis's ends under `slot`, at any depth (`scales.y`,
+// `coverage.encoding.y.scale`): the node whose schema names a `scaleFence`.
+function valueAxesOf(
+  written: unknown,
+  slot: SlotEntry,
+  where: string,
+): { where: string; ends: Record<string, unknown>; fence: string }[] {
+  if (!isRecord(written)) {
+    return []
+  }
+  return slot.scaleFence
+    ? [{ where, ends: written, fence: slot.scaleFence }]
+    : (slot.subSlots ?? []).flatMap(sub =>
+        valueAxesOf(written[sub.name], sub, `${where}.${sub.name}`),
+      )
 }
 
 // A written channel's member by path, a bare string being its field. A
@@ -677,10 +692,12 @@ function checkScaleSlots(
       continue
     }
     checkChannels(written, slot, `${where}.${slot.name}`, warn)
-    const y = isRecord(written) ? written.y : undefined
-    if (slot.name === 'scales' && isRecord(y)) {
-      for (const problem of scaleEndProblems(scaleEndsOf(name => y[name]))) {
-        warn(`${where}.scales.y`, problem)
+    for (const axis of valueAxesOf(written, slot, `${where}.${slot.name}`)) {
+      for (const problem of scaleEndProblems(
+        scaleEndsOf(name => axis.ends[name]),
+        { fence: axis.fence },
+      )) {
+        warn(axis.where, problem)
       }
     }
   }

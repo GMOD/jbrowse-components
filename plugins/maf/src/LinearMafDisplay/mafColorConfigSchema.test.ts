@@ -85,11 +85,12 @@ test('the legend is on until hidden, as legend.show', () => {
 })
 
 test('the plot reaches the bar height, so Edit plot can draw the X-Y plot', () => {
-  const conf = make({ encoding: { color: 'identity' }, y: 'identity' })
-  expect(plotKeysOf(conf)).toContain('y')
+  const conf = make({ encoding: { color: 'identity', y: 'identity' } })
   expect(plotOf(conf)).toEqual({
-    encoding: { color: 'identity' },
-    y: 'identity',
+    encoding: { color: 'identity', y: 'identity' },
+  })
+  expect(plotOf(make({ y: 'identity' }))).toEqual({
+    encoding: { y: 'identity' },
   })
 })
 

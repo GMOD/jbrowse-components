@@ -5,6 +5,7 @@ import {
   stepWrites,
   stepsOutput,
 } from '@jbrowse/core/util/stepOutputs'
+import { SCALES_Y_PATHS } from '@jbrowse/wiggle-core'
 
 import { AUTO_BIN } from './autoBin.ts'
 import {
@@ -24,6 +25,7 @@ import type { StepSnapshot } from './markProblems.ts'
 import type { AggregateOpName, LineInterpolation } from './markVocabulary.ts'
 import type { PlotFields } from './scanPlotFields.ts'
 import type { FieldKind } from '@jbrowse/core/util/stepOutputs'
+import type { YMember, YScalePaths } from '@jbrowse/wiggle-core'
 
 type Snapshot = Record<string, unknown>
 
@@ -97,31 +99,49 @@ export function withSplitOrder(
   }
 }
 
-/** The axis members the form edits, off `scales.y`. */
+/** The axis members the form edits, at the mark display's y paths. */
 export const AXIS_MEMBERS = [
   'title',
   'type',
   'domainMin',
   'domainMax',
   'grid',
-] as const
+] as const satisfies readonly YMember[]
 export type AxisMember = (typeof AXIS_MEMBERS)[number]
 
-function scaleY(plot: MarkPlot): Snapshot {
-  const scales = isRecord(plot.scales) ? plot.scales : undefined
-  return isRecord(scales?.y) ? scales.y : {}
+const Y_PATHS: YScalePaths = SCALES_Y_PATHS
+
+function valueAt(plot: Snapshot, path: readonly string[]) {
+  return path.reduce<unknown>(
+    (node, key) => (isRecord(node) ? node[key] : undefined),
+    plot,
+  )
 }
 
-/** One `scales.y` member as a control holds it: text, never a number. */
+// `node` with `value` at `path`, the objects on the way copied; `undefined`
+// drops the member
+function withValueAt(
+  node: Snapshot,
+  [head = '', ...rest]: readonly string[],
+  value: unknown,
+): Snapshot {
+  const { [head]: held, ...others } = node
+  const next = rest.length
+    ? withValueAt(isRecord(held) ? held : {}, rest, value)
+    : value
+  return next === undefined ? others : { ...others, [head]: next }
+}
+
+/** One axis member as a control holds it: text, never a number. */
 export function axisMember(plot: MarkPlot, member: AxisMember): string {
-  const held = scaleY(plot)[member]
+  const held = valueAt(plot, Y_PATHS.members[member])
   return held === undefined || held === false || held === null
     ? ''
     : String(held)
 }
 
 /**
- * The plot with one `scales.y` member written; an empty value clears it, so a
+ * The plot with one axis member written; an empty value clears it, so a
  * cleared end autoscales again.
  */
 export function withAxisMember(
@@ -137,17 +157,7 @@ export function withAxisMember(
         : member === 'domainMin' || member === 'domainMax'
           ? Number(value)
           : value
-  const y = { ...scaleY(plot), [member]: written }
-  const scales = isRecord(plot.scales) ? plot.scales : {}
-  return {
-    ...plot,
-    scales: {
-      ...scales,
-      y: Object.fromEntries(
-        Object.entries(y).filter(([, v]) => v !== undefined),
-      ),
-    },
-  }
+  return withValueAt(plot, Y_PATHS.members[member], written)
 }
 
 /** A step to add, named as the list offers it. */

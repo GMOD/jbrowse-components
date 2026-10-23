@@ -1,10 +1,16 @@
 export {
   retiredAxisSpellings,
   retiredScaleSpellings,
+  retiredScalesSpelling,
   scalesSchema,
   valueScaleOf,
   valueScaleSchema,
 } from './valueScaleConfigSchema.ts'
+export { yChannelSchema } from './yChannelConfigSchema.ts'
+export type {
+  YChannelConfigSchema,
+  YChannelOptions,
+} from './yChannelConfigSchema.ts'
 export type {
   ScalesConfigSchema,
   ValueScaleConfigSchema,
@@ -96,6 +102,7 @@ export type {
 export { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 export { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 export { SCALES_Y_PATHS } from './yScalePaths.ts'
+export { readYMember, yRuleNodes } from './yScaleRead.ts'
 export type { YMember, YScalePaths } from './yScalePaths.ts'
 export type { ScoreScaleHost, ScoreScaleHostPath } from './ScoreScaleMixin.ts'
 export { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'

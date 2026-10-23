@@ -6544,6 +6544,139 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "HiddenLegend": {
+      "title": "HiddenLegend",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the key.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "YScale": {
+      "title": "YScale",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "type": {
+          "description": "linear or log or symlog.",
+          "default": "linear",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "linear",
+              "log",
+              "symlog"
+            ]
+          }
+        },
+        "domainMin": {
+          "description": "pinned bottom of the axis; unset autoscales.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "domainMax": {
+          "description": "pinned top of the axis; unset autoscales.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "zero": {
+          "description": "an autoscaled linear or symlog axis reaches 0; off, it spans the loaded values.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "fenceQuantile": {
+          "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there.",
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "constant": {
+          "description": "width of symlog's linear region around zero.",
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "group": {
+          "description": "tracks naming one group autoscale together.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "YAxis": {
+      "title": "YAxis",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "title": {
+          "description": "axis caption; unset draws none.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "grid": {
+          "description": "rule the plot at the tick positions.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "ValueScaleRule": {
       "title": "ValueScaleRule",
       "anyOf": [
@@ -6594,109 +6727,25 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "ValueScale": {
-      "title": "ValueScale",
+    "YChannel": {
+      "title": "YChannel",
       "type": "object",
       "x-closed": true,
       "properties": {
-        "type": {
-          "description": "linear or log or symlog.",
-          "default": "linear",
+        "scale": {
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "linear",
-              "log",
-              "symlog"
-            ]
+            "$ref": "#/$defs/YScale"
           }
         },
-        "domainMin": {
-          "description": "pinned bottom of the axis; unset autoscales.",
+        "axis": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "number"
-          }
-        },
-        "domainMax": {
-          "description": "pinned top of the axis; unset autoscales.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "zero": {
-          "description": "an autoscaled linear or symlog axis reaches 0; off, it spans the loaded values.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "autoscaleGroup": {
-          "description": "tracks naming one group autoscale together.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "symlogConstant": {
-          "description": "width of symlog's linear region around zero.",
-          "default": 1,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "domainQuantile": {
-          "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there.",
-          "default": 1,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "grid": {
-          "description": "rule the plot at the tick positions.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "minimalTicks": {
-          "description": "label only the ends of the axis.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "title": {
-          "description": "axis caption; unset draws none.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
+            "$ref": "#/$defs/YAxis"
           }
         },
         "rules": {
@@ -6716,8 +6765,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "Scales": {
-      "title": "Scales",
+    "CoverageEncoding": {
+      "title": "CoverageEncoding",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -6726,28 +6775,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/ValueScale"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "HiddenLegend": {
-      "title": "HiddenLegend",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "show": {
-          "description": "draw the key.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/YChannel"
           }
         }
       },
@@ -6800,6 +6828,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "type": "number"
+          }
+        },
+        "encoding": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CoverageEncoding"
           }
         },
         "interbase": {
@@ -7756,14 +7792,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/AlignmentsEncoding"
           }
         },
-        "scales": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/Scales"
-          }
-        },
         "legend": {
           "if": {
             "type": "null"
@@ -7869,6 +7897,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "inverted": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "scales": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -8593,6 +8625,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
+        "encoding": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CoverageEncoding"
+          }
+        },
         "interbase": {
           "if": {
             "type": "null"
@@ -8832,14 +8872,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/LGVSyntenyEncoding"
           }
         },
-        "scales": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/Scales"
-          }
-        },
         "legend": {
           "if": {
             "type": "null"
@@ -8937,6 +8969,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "inverted": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "scales": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -13184,8 +13220,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "ValueScale2": {
-      "title": "ValueScale2",
+    "ValueScale": {
+      "title": "ValueScale",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -13306,8 +13342,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "Scales2": {
-      "title": "Scales2",
+    "Scales": {
+      "title": "Scales",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -13316,7 +13352,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/ValueScale2"
+            "$ref": "#/$defs/ValueScale"
           }
         }
       },
@@ -13424,7 +13460,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Scales2"
+            "$ref": "#/$defs/Scales"
           }
         },
         "legend": {
@@ -13810,6 +13846,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "MafY": {
+      "title": "MafY",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "const": "identity",
+          "type": "string"
+        },
+        {
+          "title": "MafY",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "the value a row's bar height shows: identity, or unset for none.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "const": "identity"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "MafEncoding": {
       "title": "MafEncoding",
       "type": "object",
@@ -13821,6 +13887,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/MafColor"
+          }
+        },
+        "y": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MafY"
           }
         }
       },
@@ -14021,15 +14095,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/MafEncoding"
           }
         },
-        "y": {
-          "description": "the value a row's bar height shows: identity, or unset for none.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "const": "identity"
-          }
-        },
         "showTree": {
           "description": "show the species tree sidebar.",
           "default": true,
@@ -14110,14 +14175,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/MafAlignments"
           }
         },
-        "scales": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/Scales"
-          }
-        },
         "conservation": {
           "if": {
             "type": "null"
@@ -14151,6 +14208,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "showAsUpperCase": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "y": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "scales": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -14578,8 +14643,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "ValueScale3": {
-      "title": "ValueScale3",
+    "ValueScale2": {
+      "title": "ValueScale2",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -14700,8 +14765,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "Scales3": {
-      "title": "Scales3",
+    "Scales2": {
+      "title": "Scales2",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -14710,7 +14775,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/ValueScale3"
+            "$ref": "#/$defs/ValueScale2"
           }
         }
       },
@@ -14853,7 +14918,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Scales3"
+            "$ref": "#/$defs/Scales2"
           }
         },
         "origin": {
@@ -15072,7 +15137,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Scales3"
+            "$ref": "#/$defs/Scales2"
           }
         },
         "origin": {
@@ -16394,16 +16459,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "encoding": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/encoding"
             },
-            "scales": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scales"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
-                }
-              ]
-            },
             "legend": {
               "anyOf": [
                 {
@@ -16501,6 +16556,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "inverted": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/inverted"
+            },
+            "scales": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
             },
             "multiTicks": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/multiTicks"
@@ -18862,9 +18927,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "encoding": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/encoding"
             },
-            "y": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/y"
-            },
             "showTree": {
               "anyOf": [
                 {
@@ -18941,16 +19003,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "alignments": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/alignments"
             },
-            "scales": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/scales"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
-                }
-              ]
-            },
             "conservation": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/conservation"
             },
@@ -19002,6 +19054,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showAsUpperCase": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAsUpperCase"
+            },
+            "y": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/y"
+            },
+            "scales": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -19518,16 +19583,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "scales": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scales"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
-                }
-              ]
-            },
             "legend": {
               "anyOf": [
                 {
@@ -19644,6 +19699,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "inverted": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/inverted"
+            },
+            "scales": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
             },
             "multiTicks": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/multiTicks"

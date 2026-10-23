@@ -27,7 +27,7 @@ const Axis = ConfigurationSchema(
     domainMin: { type: 'maybeNumber' },
     domainMax: { type: 'maybeNumber' },
   },
-  { closed: true },
+  { closed: true, scaleFence: 'domainQuantile' },
 )
 
 const Scales = ConfigurationSchema(
@@ -211,5 +211,44 @@ test("a lifted plot's color is judged under its schema's presets and defaults, i
       /^encoding\.color\.scale\.domain: threshold cuts are distinct/,
     ),
     expect.stringMatching(/^scales\.y\.domainMax: domainMax is below/),
+  ])
+})
+
+const Band = ConfigurationSchema(
+  'PlotTestBand',
+  {
+    encoding: ConfigurationSchema('PlotTestBandEncoding', {
+      y: ConfigurationSchema('PlotTestY', {
+        scale: ConfigurationSchema(
+          'PlotTestYScale',
+          {
+            domainMin: { type: 'maybeNumber' },
+            fenceQuantile: { type: 'number', defaultValue: 1 },
+          },
+          { closed: true, scaleFence: 'fenceQuantile' },
+        ),
+      }),
+    }),
+  },
+  { plot: true },
+)
+
+test("a band's y channel is judged by its ends under the path that walks to it, naming its own fence slot", () => {
+  const BandDisplay = ConfigurationSchema(
+    'PlotTestBandDisplay',
+    { band: Band },
+    { explicitIdentifier: 'displayId' },
+  )
+  const conf = BandDisplay.create({ displayId: 'd' })
+  expect(
+    schemaPlotProblems(
+      liftPlot(conf, {
+        band: { encoding: { y: { scale: { fenceQuantile: 99 } } } },
+      }),
+    ),
+  ).toEqual([
+    expect.stringMatching(
+      /^band\.encoding\.y\.scale\.fenceQuantile: fenceQuantile is a fraction/,
+    ),
   ])
 })

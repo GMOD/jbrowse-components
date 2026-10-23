@@ -646,6 +646,28 @@ describe('validateConfig', () => {
         `domain-ends ${at}.domainMax`,
         `domain-quantile ${at}.domainQuantile`,
       ])
+      const coverage = 'tracks[0].displays[0].coverage.encoding.y.scale'
+      expect(
+        found({
+          type: 'AlignmentsTrack',
+          adapter: { type: 'BamAdapter', uri: 'x.bam' },
+          displays: [
+            {
+              type: 'LinearAlignmentsDisplay',
+              coverage: {
+                encoding: {
+                  y: {
+                    scale: { domainMin: 10, domainMax: 1, fenceQuantile: 99 },
+                  },
+                },
+              },
+            },
+          ],
+        }),
+      ).toEqual([
+        `domain-ends ${coverage}.domainMax`,
+        `domain-quantile ${coverage}.fenceQuantile`,
+      ])
     })
 
     it('checks scale.names and scale.domainQuantile as the display does', () => {

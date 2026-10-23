@@ -11,7 +11,7 @@ export const MAF_PLOT_EXAMPLES: PlotExample[] = [
     description: 'the identity ramp spread over close relatives',
   },
   {
-    plot: '{ "y": "identity" }',
+    plot: '{ "encoding": { "y": "identity" } }',
     description: 'each row a bar chart of its identity to the reference',
   },
   {

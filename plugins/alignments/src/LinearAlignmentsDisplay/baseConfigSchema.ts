@@ -1,4 +1,7 @@
-import { coverageBandConfigSchema } from '@jbrowse/alignments-core/coverageBandConfigSchema'
+import {
+  COVERAGE_Y_PATHS,
+  coverageBandConfigSchema,
+} from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
@@ -6,7 +9,6 @@ import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeCon
 import { hiddenLegendConfigSchema } from '@jbrowse/display-kit/hiddenLegendConfigSchema'
 import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
-import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { alignmentsEncodingConfigSchema } from './alignmentsEncodingConfigSchema.ts'
 import { alignmentsSortConfigSchema } from './alignmentsSortConfigSchema.ts'
@@ -15,6 +17,7 @@ import { pileupConfigSchema } from './pileupConfigSchema.ts'
 import { readConnectionsConfigSchema } from './readConnectionsConfigSchema.ts'
 import { liftV4Filter, retiredConfigSpellings } from './retired.ts'
 
+import type { ConfigurationSlotPath } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -120,23 +123,6 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      */
     encoding: alignmentsEncodingConfigSchema,
     /**
-     * #slot scales
-     * The coverage band's value scale. The read cloud's insert-size axis is
-     * a fixed log scale (`arcBandYScale`) no setting reaches, and the pileup
-     * has no value. `symlogConstant` starts at 1 rather than the wiggle
-     * family's 0, which makes symlog exactly `log(depth+1)`: the knee sits at
-     * one read, the smallest depth there is. `domainQuantile` stays at 1, the
-     * deepest base in view; the Coverage axis panel's Clip extreme outliers
-     * writes 0.99, which stops the axis at twice the 99th percentile of the
-     * covered bins' peaks, and misses a collapsed-repeat pile-up once it
-     * covers more than 1% of the view.
-     */
-    scales: scalesSchema(
-      valueScaleSchema({
-        symlogConstant: 1,
-      }),
-    ),
-    /**
      * #slot legend
      * The display's key: `show`, off by default.
      */
@@ -144,9 +130,10 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
     /**
      * #slot coverage
      * The coverage histogram band: `show`, `height` (default 45),
-     * `interbase` and `minAlleleFraction`, a flat floor
-     * on each allele segment's share of its position's depth, distinct from
-     * `pileup.fadeLowFrequency`.
+     * `encoding.y`, its depth axis, `interbase` and `minAlleleFraction`, a
+     * flat floor on each allele segment's share of its position's depth,
+     * distinct from `pileup.fadeLowFrequency`. The read cloud's insert-size
+     * axis is a fixed log scale (`arcBandYScale`) no setting reaches.
      */
     coverage: coverageBandConfigSchema,
     /**
@@ -173,6 +160,12 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
     preProcessSnapshot: liftV4Filter,
   },
 )
+
+Object.values(
+  COVERAGE_Y_PATHS.members,
+) satisfies readonly ConfigurationSlotPath<
+  typeof baseLinearAlignmentsDisplayConfigSchema
+>[]
 
 export type BaseLinearAlignmentsDisplayConfigSchema =
   typeof baseLinearAlignmentsDisplayConfigSchema

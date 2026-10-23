@@ -6,6 +6,7 @@ import {
   computeVisibleCoverageDomain,
   computeVisibleCoverageStats,
 } from '@jbrowse/alignments-core'
+import { COVERAGE_Y_PATHS } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { getCoverageMenuItems } from '@jbrowse/alignments-core/coverageMenuItems'
 import {
   ConfigurationReference,
@@ -398,7 +399,7 @@ export default function stateModelFactory(
         BaseDisplay,
         HeightModeMixin(),
         MultiRegionDisplayMixin(),
-        ScoreScaleMixin(),
+        ScoreScaleMixin(COVERAGE_Y_PATHS),
         LegendMixin(),
         ColorWritesMixin(),
         FacetWritesMixin(),
@@ -853,7 +854,7 @@ export default function stateModelFactory(
            * #getter
            * Depth has a floor of 0 while the axis reaches it, so an unpinned
            * bottom stays there whatever a rule below it asks for; with
-           * `scales.y.zero` off it spans the depths in view.
+           * `coverage.encoding.y.scale.zero` off it spans the depths in view.
            */
           get defaultScoreDomain(): [number | undefined, number | undefined] {
             return [self.scaleZero ? 0 : undefined, undefined]
@@ -885,7 +886,7 @@ export default function stateModelFactory(
            * #getter
            * The coverage band's own ladder (`computeCoverageTicks`), which
            * `valueScales` hands the chrome in place of the mixin's. Takes the
-           * raw `scales.y.symlogConstant`, resolved from the same domain as
+           * raw `coverage.encoding.y.scale.constant`, resolved from the same domain as
            * `renderState`, so the labels sit on the bars.
            */
           get coverageTicks() {
@@ -895,7 +896,6 @@ export default function stateModelFactory(
                   this.bandHeights.coverageHeight,
                   self.scaleType,
                   self.symlogConstant,
-                  self.minimalTicks,
                 )
               : undefined
           },
@@ -2805,7 +2805,7 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Overrides `ScoreScaleMixin`'s: `scales.y.rules` are depths, so they
+         * Overrides `ScoreScaleMixin`'s: `coverage.encoding.y.rules` are depths, so they
          * draw on the coverage band.
          */
         get scoreRulesDrawn(): boolean {

@@ -1,3 +1,4 @@
+import { COVERAGE_Y_PATHS } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { baseLinearAlignmentsDisplayConfigSchema } from '@jbrowse/plugin-alignments'
 import { syntenyDataConfigSchema } from '@jbrowse/synteny-core'
@@ -5,6 +6,8 @@ import { syntenyDataConfigSchema } from '@jbrowse/synteny-core'
 import { lgvSyntenyCoverageConfigSchema } from './lgvSyntenyCoverageConfigSchema.ts'
 import { lgvSyntenyEncodingConfigSchema } from './lgvSyntenyEncodingConfigSchema.ts'
 import { lgvSyntenySortConfigSchema } from './lgvSyntenySortConfigSchema.ts'
+
+import type { ConfigurationSlotPath } from '@jbrowse/core/configuration'
 
 /**
  * #config LGVSyntenyDisplay
@@ -92,5 +95,9 @@ export default function configSchemaF() {
     },
   )
 }
+
+Object.values(
+  COVERAGE_Y_PATHS.members,
+) satisfies readonly ConfigurationSlotPath<ReturnType<typeof configSchemaF>>[]
 
 export type LGVSyntenyDisplayConfigModel = ReturnType<typeof configSchemaF>

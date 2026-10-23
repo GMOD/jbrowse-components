@@ -5,6 +5,7 @@ import {
   coverageDepthDomain,
   hitCoverageBand,
 } from '@jbrowse/alignments-core'
+import { COVERAGE_Y_PATHS } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import {
   ConfigurationReference,
   getConf,
@@ -258,7 +259,7 @@ export default function stateModelFactory(
         RowHeightMixin(),
         TreeSidebarMixin<MafSource>(),
         ContextMenuMixin<MafContextMenuInfo>(),
-        ScoreScaleMixin(),
+        ScoreScaleMixin(COVERAGE_Y_PATHS),
         types.model({
           /**
            * #property
@@ -1099,7 +1100,7 @@ export default function stateModelFactory(
          * #getter
          * `ScoreScaleMixin`'s hook: the depth range over the visible content
          * blocks, from the worker-shipped `coverage.coverageDepths`, widened
-         * to the `scales.y` rules.
+         * to the `coverage.encoding.y` rules.
          */
         get autoscaleRange(): [number, number] | undefined {
           return visibleStatsRange({
@@ -1143,7 +1144,7 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Overrides `ScoreScaleMixin`'s: `scales.y.rules` are depths, so they
+         * Overrides `ScoreScaleMixin`'s: `coverage.encoding.y.rules` are depths, so they
          * draw on the coverage band, never on the fixed conservation scale.
          */
         get scoreRulesDrawn(): boolean {
@@ -1162,7 +1163,6 @@ export default function stateModelFactory(
             conservationActive: self.conservationBandActive,
             scaleType: self.scaleType,
             symlogConstant: self.symlogConstant,
-            minimalTicks: self.minimalTicks,
             caption: self.scaleTitle,
             rules: self.scoreRules,
             grid: self.grid,

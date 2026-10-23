@@ -10,11 +10,9 @@ import { rulesABand } from '@jbrowse/display-ui/axisPlacement'
 
 import { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 import { SCALES_Y_PATHS } from './yScalePaths.ts'
+import { confNodeAt, readYMember, yRuleNodes } from './yScaleRead.ts'
 
-import type {
-  ValueScaleRuleConfig,
-  scalesSchema,
-} from './valueScaleConfigSchema.ts'
+import type { scalesSchema } from './valueScaleConfigSchema.ts'
 import type { YMember, YScalePaths } from './yScalePaths.ts'
 import type {
   AnyConfigurationModel,
@@ -50,16 +48,7 @@ const confOf = (self: object) =>
   (self as { configuration: AnyConfigurationModel }).configuration
 
 function readY(self: object, paths: YScalePaths, member: YMember) {
-  const path = paths.members[member]
-  return path && readConfObject(confOf(self), [...path])
-}
-
-// the config node a path ends on, for what a snapshot read cannot give
-function nodeAt(conf: AnyConfigurationModel, path: readonly string[]) {
-  return path.reduce<unknown>(
-    (node, segment) => (node as Record<string, unknown>)[segment],
-    conf,
-  ) as AnyConfigurationModel
+  return readYMember(confOf(self), paths, member)
 }
 
 function valueAt(root: unknown, path: readonly string[]) {
@@ -142,7 +131,7 @@ export function ScoreScaleMixin(paths: YScalePaths = SCALES_Y_PATHS) {
           self.unclippedQuantile ??
           clipQuantileOf(
             getSlotDefinition(
-              nodeAt(confOf(self), paths.members.fence.slice(0, -1)),
+              confNodeAt(confOf(self), paths.members.fence.slice(0, -1)),
               paths.members.fence.at(-1)!,
             ).defaultValue,
           )
@@ -210,15 +199,10 @@ export function ScoreScaleMixin(paths: YScalePaths = SCALES_Y_PATHS) {
       },
       /**
        * #getter
-       * `scales.y.rules`, read off the live nodes: a snapshot strips a slot at
-       * its default, and a rule at 0 is one.
+       * `scales.y.rules`, read off the live nodes.
        */
       get scoreRules(): ValueScaleRule[] {
-        const rules = nodeAt(
-          confOf(self),
-          paths.members.rules,
-        ) as unknown as ValueScaleRuleConfig[]
-        return rules.map((rule: ValueScaleRuleConfig) => {
+        return yRuleNodes(confOf(self), paths).map(rule => {
           const label = readConfObject(rule, 'label')
           const color = readConfObject(rule, 'color')
           return {

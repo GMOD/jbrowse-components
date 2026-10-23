@@ -16,8 +16,11 @@ import {
   resolveRowColors,
 } from '@jbrowse/tree-sidebar/rowColorScale'
 import {
+  SCALES_Y_PATHS,
   computeAutoscaleDomain,
+  readYMember,
   summaryFieldOf,
+  yRuleNodes,
   getNiceDomain,
   resolveRenderState,
   resolveSymlogConstant,
@@ -48,7 +51,6 @@ import { centerLinksToPrevious } from './shared/wiggleComponentUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { ValueScaleRuleConfig } from '@jbrowse/wiggle-core'
 
 /** Registers the adapters `wiggleTables` reads through, BigWig and multi-wiggle. */
 export function registerWiggleAdapters(pluginManager: PluginManager) {
@@ -159,16 +161,15 @@ export async function wiggleTables(
     origin,
   )
 
-  const scale = conf.scales.y
-  const scaleType: string = readConfObject(scale, 'type')
-  const zero = readConfObject(scale, 'zero') && !density
-  const rules = scale.rules.map((rule: ValueScaleRuleConfig) => ({
+  const scaleType: string = readYMember(conf, SCALES_Y_PATHS, 'type')
+  const zero = readYMember(conf, SCALES_Y_PATHS, 'zero') && !density
+  const rules = yRuleNodes(conf, SCALES_Y_PATHS).map(rule => ({
     value: readConfObject(rule, 'value'),
     color: cssColorToHex(readConfObject(rule, 'color') ?? DEFAULT_RULE_COLOR),
     label: readConfObject(rule, 'label'),
   }))
   const range = computeAutoscaleDomain(
-    readConfObject(scale, 'domainQuantile'),
+    readYMember(conf, SCALES_Y_PATHS, 'fence'),
     summaryField,
     results.flatMap((result, i) =>
       result.sources.map(source => ({
@@ -188,8 +189,10 @@ export async function wiggleTables(
           density ? [] : rules.map(r => r.value),
         ),
         bounds: [
-          readConfObject(scale, 'domainMin') ?? data.valueDomain?.[0],
-          readConfObject(scale, 'domainMax') ?? data.valueDomain?.[1],
+          readYMember(conf, SCALES_Y_PATHS, 'domainMin') ??
+            data.valueDomain?.[0],
+          readYMember(conf, SCALES_Y_PATHS, 'domainMax') ??
+            data.valueDomain?.[1],
         ],
         scaleType,
         zero,
@@ -199,7 +202,7 @@ export async function wiggleTables(
   const symlogConstant = resolveSymlogConstant(
     domain[0],
     domain[1],
-    readConfObject(scale, 'symlogConstant'),
+    readYMember(conf, SCALES_Y_PATHS, 'constant'),
   )
 
   const rowLayout = !!rowsSettingOf({
@@ -235,9 +238,9 @@ export async function wiggleTables(
           scoreRampScale(
             domain,
             scaleType,
-            readConfObject(scale, 'symlogConstant'),
+            readYMember(conf, SCALES_Y_PATHS, 'constant'),
             { rampLut, rampMid },
-            readConfObject(scale, 'title') || 'Score',
+            readYMember(conf, SCALES_Y_PATHS, 'title') || 'Score',
           ),
         )
       : undefined

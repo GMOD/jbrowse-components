@@ -1,14 +1,17 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { coverageEncodingConfigSchema } from './coverageEncodingConfigSchema.ts'
 import { coverageInterbaseConfigSchema } from './coverageInterbaseConfigSchema.ts'
+
+import type { YScalePaths } from '@jbrowse/wiggle-core'
 
 /**
  * #config CoverageBand
  * #category display
  * The coverage histogram band of the alignments and MAF displays, their
  * `coverage` setting: whether it draws, its height, the insertion and clip
- * marks drawn in it, and which allele segments it colors. Its value axis is
- * the display's `scales`.
+ * marks drawn in it, which allele segments it colors, and its depth axis,
+ * `encoding.y`.
  *
  * #example
  * ```js
@@ -38,6 +41,11 @@ export const coverageBandConfigSchema = ConfigurationSchema(
       description: 'height of the coverage band in pixels',
     },
     /**
+     * #slot encoding
+     * The depth axis, `encoding.y`: its `scale`, `axis` and `rules`.
+     */
+    encoding: coverageEncodingConfigSchema,
+    /**
      * #slot interbase
      * The insertion and clip marks between bases: `show`.
      */
@@ -57,3 +65,25 @@ export const coverageBandConfigSchema = ConfigurationSchema(
   },
   { closed: true, plot: true },
 )
+
+const Y = ['coverage', 'encoding', 'y'] as const
+
+/**
+ * Where the y scale's members live on a display mounting this band at
+ * `coverage`. Each such display checks the paths against its own schema.
+ */
+export const COVERAGE_Y_PATHS = {
+  members: {
+    type: [...Y, 'scale', 'type'],
+    zero: [...Y, 'scale', 'zero'],
+    domainMin: [...Y, 'scale', 'domainMin'],
+    domainMax: [...Y, 'scale', 'domainMax'],
+    fence: [...Y, 'scale', 'fenceQuantile'],
+    constant: [...Y, 'scale', 'constant'],
+    group: [...Y, 'scale', 'group'],
+    title: [...Y, 'axis', 'title'],
+    grid: [...Y, 'axis', 'grid'],
+    rules: [...Y, 'rules'],
+  },
+  reset: [Y],
+} as const satisfies YScalePaths

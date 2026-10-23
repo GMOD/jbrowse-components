@@ -8,6 +8,7 @@ import {
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 import {
+  SCALES_Y_PATHS,
   retiredAxisSpellings,
   retiredScaleSpellings,
 } from '@jbrowse/wiggle-core'
@@ -199,8 +200,8 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     explicitIdentifier: 'displayId',
     retired: {
       ...retiredBaseDisplaySpellings,
-      ...retiredAxisSpellings,
-      ...retiredScaleSpellings,
+      ...retiredAxisSpellings(SCALES_Y_PATHS.members),
+      ...retiredScaleSpellings(SCALES_Y_PATHS.members),
       ...retiredConfigSpellings,
       defaultRendering: rendering => {
         const mark =

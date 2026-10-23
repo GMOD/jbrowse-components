@@ -186,6 +186,9 @@ function slotsOf(type) {
         ? subMeta.definition?.field?.defaultValue || undefined
         : undefined,
       impliedField: subOptions?.impliedField,
+      // a value axis's scale and its fence slot, which the validator's scale
+      // rules find the axis's ends by
+      scaleFence: subOptions?.scaleFence,
       liftsString: lifts.string || undefined,
       liftsNumbers: lifts.numbers || undefined,
       liftsUri: lifts.uri || undefined,

@@ -2,7 +2,7 @@ import {
   RETIRED_ROW_STATE_KEYS,
   liftRetiredRowState,
 } from '@jbrowse/display-kit/retiredSettings'
-import { valueScaleOf } from '@jbrowse/wiggle-core'
+import { SCALES_Y_PATHS, valueScaleOf } from '@jbrowse/wiggle-core'
 
 import {
   WIGGLE_NEG_COLOR_DEFAULT,
@@ -157,7 +157,7 @@ export const retiredState: RetiredDisplayState = {
     ...(typeof instance.rendererTypeNameState === 'string'
       ? { defaultRendering: instance.rendererTypeNameState }
       : {}),
-    ...valueScaleOf(instance),
+    ...valueScaleOf(SCALES_Y_PATHS.members)(instance),
     ...colorOf(instance),
     ...summaryOf(instance.summaryScoreMode),
     ...Object.fromEntries(

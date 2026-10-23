@@ -20,6 +20,7 @@ import {
   readModCovSegments,
   readSnpSegments,
 } from '@jbrowse/alignments-core'
+import { COVERAGE_Y_PATHS } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import {
   fullConfSnapshot,
   readConfObject,
@@ -47,8 +48,10 @@ import { linkStrokeWidthPx } from '@jbrowse/render-core/shaders/linkMark'
 import { LINK_SIZE_SCALED } from '@jbrowse/render-core/shaders/linkMarkConsts'
 import {
   getNiceDomain,
+  readYMember,
   resolveSymlogConstant,
   widenRangeToRules,
+  yRuleNodes,
 } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
@@ -217,7 +220,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ValueScaleRuleConfig } from '@jbrowse/wiggle-core'
 
 /**
  * #api
@@ -1207,9 +1209,9 @@ function rowsAt<T extends Record<string, ArrayLike<unknown>>>(
 
 /**
  * The coverage band's depth axis as the display autoscales it: every shown
- * section's visible depths in every region under `scales.y`'s quantile, rules
- * and bounds, nice-rounded, with a log scale floored at one read, and the
- * ticks the display labels it with at its height.
+ * section's visible depths in every region under `coverage.encoding.y`'s
+ * fence, rules and bounds, nice-rounded, with a log scale floored at one
+ * read, and the ticks the display labels it with at its height.
  */
 function coverageScale(
   conf: DisplayConf,
@@ -1218,9 +1220,8 @@ function coverageScale(
     region: { start: number; end: number }
   }[],
 ) {
-  const scale = conf.scales.y
-  const type: string = readConfObject(scale, 'type')
-  const zero: boolean = readConfObject(scale, 'zero')
+  const type: string = readYMember(conf, COVERAGE_Y_PATHS, 'type')
+  const zero: boolean = readYMember(conf, COVERAGE_Y_PATHS, 'zero')
   const entries = sections.map(({ data, region }) => ({
     visStart: Math.floor(region.start),
     visEnd: Math.ceil(region.end),
@@ -1232,10 +1233,10 @@ function coverageScale(
     widenRangeToRules(
       computeVisibleCoverageDomain({
         stats,
-        quantile: readConfObject(scale, 'domainQuantile'),
+        quantile: readYMember(conf, COVERAGE_Y_PATHS, 'fence'),
         entries,
       }),
-      scale.rules.map((rule: ValueScaleRuleConfig) =>
+      yRuleNodes(conf, COVERAGE_Y_PATHS).map(rule =>
         readConfObject(rule, 'value'),
       ),
     )
@@ -1244,8 +1245,9 @@ function coverageScale(
       ? getNiceDomain({
           domain: range,
           bounds: [
-            readConfObject(scale, 'domainMin') ?? (zero ? 0 : undefined),
-            readConfObject(scale, 'domainMax'),
+            readYMember(conf, COVERAGE_Y_PATHS, 'domainMin') ??
+              (zero ? 0 : undefined),
+            readYMember(conf, COVERAGE_Y_PATHS, 'domainMax'),
           ],
           scaleType: type,
           zero,
@@ -1253,7 +1255,7 @@ function coverageScale(
       : [0, 0],
     type,
   )
-  const symlogConstant: number = readConfObject(scale, 'symlogConstant')
+  const symlogConstant: number = readYMember(conf, COVERAGE_Y_PATHS, 'constant')
   return {
     domain,
     type,
@@ -1263,7 +1265,6 @@ function coverageScale(
       readConfObject(conf, ['coverage', 'height']),
       type,
       symlogConstant,
-      readConfObject(scale, 'minimalTicks'),
     ).items.map(tick => tick.value),
   }
 }

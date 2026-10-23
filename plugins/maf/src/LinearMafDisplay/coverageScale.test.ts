@@ -11,7 +11,7 @@ import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // The coverage band reads the alignments display's scale and band settings:
-// `scales.y` and the `coverage` band's filter and interbase marks.
+// `coverage.encoding.y` and the band's filter and interbase marks.
 function displayWith(displayConfig: Record<string, unknown> = {}) {
   const { display } = createMafTestEnvironment({
     displayConfig,
@@ -47,8 +47,11 @@ test('a default band is linear from zero, every mismatch and insertion drawn', (
   expect(display.axes[0]!.domain).toEqual(domain)
 })
 
-test('scales.y reaches the band, its axis and its marks alike', () => {
-  const display = displayWith({ scales: { y: { type: 'log' } } })
+test.each([
+  { coverage: { encoding: { y: { scale: { type: 'log' } } } } },
+  { scales: { y: { type: 'log' } } },
+])('the y scale reaches the band, its axis and its marks alike', config => {
+  const display = displayWith(config)
   const domain = display.coverageDepthDomain!
   expect(domain[0]).toBeGreaterThanOrEqual(1)
   expect(display.coverageBandState.scaleType).toBe(scaleTypeCode('log'))

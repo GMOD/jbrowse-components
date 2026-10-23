@@ -803,57 +803,96 @@ function ruleValues(rules: unknown[]) {
     : `Horizontal lines at ${values.map(String).join(' and ')}`
 }
 
-// `scales.y` is one spec key edited in one drawer widget, so it answers with a
-// step per member the figure names, each a control in that widget.
-const scalesStep: FieldRecipe = (value, { displayType }) => {
+// A value axis's members by what they do, whichever spelling the spec uses.
+interface YMembers {
+  type?: unknown
+  domainMin?: unknown
+  domainMax?: unknown
+  zero?: unknown
+  fence?: unknown
+  group?: unknown
+  grid?: unknown
+  rules?: unknown
+}
+
+// `scales.y`, every member flat
+function scalesYMembers(value: unknown): YMembers | undefined {
   const y = asRecord(asRecord(value)?.y)
-  if (!y) {
-    return undefined
+  return y && {
+    ...y,
+    fence: y.domainQuantile,
+    group: y.autoscaleGroup,
   }
-  const axis = `${TRACK_MENU} → ${(displayType && SCORE_MENUS[displayType]) ?? 'Y axis...'}`
-  const scaleType = asString(y.type)
-  const ends = [
-    typeof y.domainMin === 'number' && `Min ${y.domainMin}`,
-    typeof y.domainMax === 'number' && `Max ${y.domainMax}`,
-  ].filter(Boolean)
-  const steps = [
-    scaleType && SCALE_TYPES[scaleType]
-      ? { path: `${axis} → Scale → ${SCALE_TYPES[scaleType]}` }
-      : undefined,
-    ends.length
-      ? {
-          path: `${axis} → Range`,
-          note: `Pins the axis: ${ends.join(' and ')}. A field left empty follows the data in view.`,
-        }
-      : undefined,
-    typeof y.zero === 'boolean'
-      ? { path: `${axis} → Include 0 (${checked(y.zero)})` }
-      : undefined,
-    typeof y.domainQuantile === 'number'
-      ? {
-          path: `${axis} → Clip extreme outliers (${checked(y.domainQuantile < 1)})`,
-        }
-      : undefined,
-    typeof y.autoscaleGroup === 'string'
-      ? {
-          path: `${axis} → Share axis with`,
-          note: `Tick the tracks that share this axis, here every one in group "${y.autoscaleGroup}".`,
-        }
-      : undefined,
-    typeof y.grid === 'boolean'
-      ? {
-          path: `${axis} → Grid lines (${checked(y.grid)})`,
-          note: 'Absent in the density plot types, where score maps to color rather than height and a line would mark nothing.',
-        }
-      : undefined,
-    Array.isArray(y.rules) && y.rules.length
-      ? {
-          path: `${axis} → Reference lines`,
-          note: `${ruleValues(y.rules)}, on the same scale as the plot. Each row takes a value, a label and a color; removing every row removes every line.`,
-        }
-      : undefined,
-  ].filter(step => step !== undefined)
-  return steps.length ? steps : undefined
+}
+
+// a y channel, `coverage.encoding.y`: the ends under `scale`, the guides
+// under `axis`
+function channelYMembers(value: unknown): YMembers | undefined {
+  const y = asRecord(value)
+  const scale = asRecord(y?.scale) ?? {}
+  return y && {
+    ...scale,
+    ...asRecord(y.axis),
+    fence: scale.fenceQuantile,
+    rules: y.rules,
+  }
+}
+
+// A value axis is edited in one drawer widget, so it answers with a step per
+// member the figure names, each a control in that widget.
+function yStep(
+  membersOf: (value: unknown) => YMembers | undefined,
+): FieldRecipe {
+  return (value, { displayType }) => {
+    const y = membersOf(value)
+    if (!y) {
+      return undefined
+    }
+    const axis = `${TRACK_MENU} → ${(displayType && SCORE_MENUS[displayType]) ?? 'Y axis...'}`
+    const scaleType = asString(y.type)
+    const ends = [
+      typeof y.domainMin === 'number' && `Min ${y.domainMin}`,
+      typeof y.domainMax === 'number' && `Max ${y.domainMax}`,
+    ].filter(Boolean)
+    const steps = [
+      scaleType && SCALE_TYPES[scaleType]
+        ? { path: `${axis} → Scale → ${SCALE_TYPES[scaleType]}` }
+        : undefined,
+      ends.length
+        ? {
+            path: `${axis} → Range`,
+            note: `Pins the axis: ${ends.join(' and ')}. A field left empty follows the data in view.`,
+          }
+        : undefined,
+      typeof y.zero === 'boolean'
+        ? { path: `${axis} → Include 0 (${checked(y.zero)})` }
+        : undefined,
+      typeof y.fence === 'number'
+        ? {
+            path: `${axis} → Clip extreme outliers (${checked(y.fence < 1)})`,
+          }
+        : undefined,
+      typeof y.group === 'string'
+        ? {
+            path: `${axis} → Share axis with`,
+            note: `Tick the tracks that share this axis, here every one in group "${y.group}".`,
+          }
+        : undefined,
+      typeof y.grid === 'boolean'
+        ? {
+            path: `${axis} → Grid lines (${checked(y.grid)})`,
+            note: 'Absent in the density plot types, where score maps to color rather than height and a line would mark nothing.',
+          }
+        : undefined,
+      Array.isArray(y.rules) && y.rules.length
+        ? {
+            path: `${axis} → Reference lines`,
+            note: `${ruleValues(y.rules)}, on the same scale as the plot. Each row takes a value, a label and a color; removing every row removes every line.`,
+          }
+        : undefined,
+    ].filter(step => step !== undefined)
+    return steps.length ? steps : undefined
+  }
 }
 
 // Every display that filters names the item 'Filter by...' — the canvas base
@@ -1793,15 +1832,17 @@ export const trackFields: Record<string, FieldRecipe> = {
           path: `${TRACK_MENU} → Show... → Gene labels (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
-  scales: scalesStep,
+  scales: yStep(scalesYMembers),
+  'coverage.encoding.y': yStep(channelYMembers),
   y: (value, context) =>
-    context.displayType === 'LinearMafDisplay'
-      ? value === 'identity'
-        ? { path: `${TRACK_MENU} → Plot type → Identity X-Y plot` }
-        : undefined
-      : context.displayType === 'LinearWiggleDisplay'
-        ? fromTable('Resolution → Bin summary', BIN_SUMMARIES)(value, context)
-        : undefined,
+    context.displayType === 'LinearWiggleDisplay'
+      ? fromTable('Resolution → Bin summary', BIN_SUMMARIES)(value, context)
+      : undefined,
+  'encoding.y': (value, { displayType }) =>
+    displayType === 'LinearMafDisplay' &&
+    (value === 'identity' || asRecord(value)?.field === 'identity')
+      ? { path: `${TRACK_MENU} → Plot type → Identity X-Y plot` }
+      : undefined,
   'conservation.show': (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearMafDisplay'
       ? {

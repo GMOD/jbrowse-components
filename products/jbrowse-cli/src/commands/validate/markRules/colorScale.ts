@@ -390,15 +390,19 @@ export interface ScaleEnds {
 /**
  * What a quantitative scale's ends say together that neither can refuse
  * alone: a `domainMax` below its `domainMin`, which every such scale draws in
- * order either way, and a `domainQuantile` outside 0.5 to 1, where the quantile
- * an open end follows is clamped; and a log scale's `domainMin` at or below 0,
+ * order either way, and a quantile outside 0.5 to 1, where the quantile an
+ * open end follows is clamped; and a log scale's `domainMin` at or below 0,
  * which no log scale can hold, so the end floors above it. `reverse` is whether
  * the scale turns round by a member of its own, which is then the spelling to
- * point at.
+ * point at. `fence` names the quantile's slot: a ramp's and `scales.y`'s
+ * `domainQuantile`, `encoding.y.scale`'s `fenceQuantile`.
  */
 export function scaleEndProblems(
   { domainMin, domainMax, domainQuantile, type }: ScaleEnds,
-  { reverse = false }: { reverse?: boolean } = {},
+  {
+    reverse = false,
+    fence = 'domainQuantile',
+  }: { reverse?: boolean; fence?: string } = {},
 ): ScaleProblem[] {
   return [
     ...(type === 'log' && domainMin !== undefined && domainMin <= 0
@@ -426,9 +430,8 @@ export function scaleEndProblems(
       ? [
           {
             rule: 'domain-quantile' as const,
-            slot: 'domainQuantile',
-            message:
-              'domainQuantile is a fraction from 0.5 to 1, not a percent: 1 follows the extremes and 0.99 clips the outermost 1% at each end; above 1 reads as 1 and below 0.5 as 0.5',
+            slot: fence,
+            message: `${fence} is a fraction from 0.5 to 1, not a percent: 1 follows the extremes and 0.99 clips the outermost 1% at each end; above 1 reads as 1 and below 0.5 as 0.5`,
           },
         ]
       : []),
@@ -455,12 +458,17 @@ function listOf(value: unknown) {
   return Array.isArray(value) ? (value as unknown[]) : undefined
 }
 
-/** A quantitative scale's ends among the members `member` reads, each a number or unset. */
+/**
+ * A quantitative scale's ends among the members `member` reads, each a number
+ * or unset. The quantile is `domainQuantile`, or a y scale's `fenceQuantile`.
+ */
 export function scaleEndsOf(member: (name: string) => unknown): ScaleEnds {
   return {
     domainMin: numberOf(member('domainMin')),
     domainMax: numberOf(member('domainMax')),
-    domainQuantile: numberOf(member('domainQuantile')),
+    domainQuantile: numberOf(
+      member('domainQuantile') ?? member('fenceQuantile'),
+    ),
     type: stringOf(member('type')),
   }
 }

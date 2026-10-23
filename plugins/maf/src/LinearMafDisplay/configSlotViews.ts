@@ -161,7 +161,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get yField(): MafYField | undefined {
-      return getConf(self, 'y')
+      return getConf(self, ['encoding', 'y', 'field'])
     },
     /**
      * #getter
@@ -248,7 +248,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setYField(field: MafYField | undefined) {
-      setConf(self, 'y', field)
+      setConf(self, ['encoding', 'y', 'field'], field)
     },
     /**
      * #action

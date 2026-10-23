@@ -20,7 +20,6 @@ function inputs(
     conservationActive: active.conservation,
     scaleType: 'linear',
     symlogConstant: 1,
-    minimalTicks: false,
     caption: 'Depth',
     rules: undefined,
     grid: false,

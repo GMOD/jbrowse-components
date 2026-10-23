@@ -151,6 +151,14 @@ export interface ConfigurationSchemaOptions<
    * (`withImpliedField`).
    */
   impliedField?: string
+  /**
+   * Marks the node holding a value axis's ends (`type`, `domainMin`,
+   * `domainMax`) and names its outlier-fence slot, which `scaleEndProblems`
+   * judges: `scales.y`'s `domainQuantile`, `encoding.y.scale`'s
+   * `fenceQuantile`. A color ramp's scale carries none, since
+   * `colorProblems` judges its ends.
+   */
+  scaleFence?: string
   preProcessSnapshot?: (
     snapshot: Record<string, unknown>,
   ) => Record<string, unknown>

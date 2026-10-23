@@ -31,7 +31,7 @@ describe('row coloring is the color field and the bar height', () => {
 
   it('takes a color and a bar height a config names together', () => {
     const { display, view } = createMafTestEnvironment({
-      displayConfig: { encoding: { color: 'identity' }, y: 'identity' },
+      displayConfig: { encoding: { color: 'identity', y: 'identity' } },
     }).createDisplay()
     zoomPastBaseLevel(view)
     expect(display.selectedColorField).toBe('identity')
@@ -164,7 +164,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
 
   it('yields the bar height to the color field at base level', () => {
     const { display, view } = createMafTestEnvironment({
-      displayConfig: { encoding: { color: 'base' }, y: 'identity' },
+      displayConfig: { encoding: { color: 'base', y: 'identity' } },
     }).createDisplay()
     zoomAndSettle(view, 100)
     expect(display.activeRowRendering).toBe('xyplot')

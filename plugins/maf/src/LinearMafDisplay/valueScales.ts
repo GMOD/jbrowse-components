@@ -12,7 +12,6 @@ export interface MafValueScaleInputs {
   conservationActive: boolean
   scaleType: string
   symlogConstant: number
-  minimalTicks: boolean
   caption: ValueScale['caption']
   rules: ValueScale['rules']
   grid: ValueScale['grid']
@@ -25,7 +24,6 @@ export function mafValueScales({
   conservationActive,
   scaleType,
   symlogConstant,
-  minimalTicks,
   caption,
   rules,
   grid,
@@ -42,7 +40,6 @@ export function mafValueScales({
         height,
         scaleType,
         symlogConstant,
-        minimalTicks,
       ),
       symlogConstant,
       caption,
