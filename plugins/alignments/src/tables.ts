@@ -364,7 +364,7 @@ const INTERBASE_LABELS: Record<InterbaseTypeName, string> = {
  * palette: each base through `effectiveBaseColors`, so a modifications or
  * bisulfite layer mutes them, the interbase histogram in its band variants,
  * and a splice junction in its transcript strand's, a split junction in its
- * read arc's.
+ * class's read-arc color.
  */
 function markColors(palette: ColorPalette, baseLayer: BaseLayer | undefined) {
   const muted = paintsModifications(baseLayer)

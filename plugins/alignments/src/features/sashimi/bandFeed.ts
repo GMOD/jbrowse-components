@@ -111,8 +111,8 @@ export type SashimiColors = Pick<
 >
 
 // A splice junction is tinted like the reads supporting it, and an unstranded
-// one takes the unpaired-read grey. A split junction takes the color the read
-// arc over the same join paints.
+// one takes the unpaired-read grey. A split junction takes its class's read-arc
+// color in every `readConnections` color field (`sashimiConfigSchema`).
 function junctionColor(j: MergedJunction, colors: SashimiColors) {
   return normalizedRgbToABGR(
     ...(j.split

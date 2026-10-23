@@ -337,7 +337,7 @@ export const SASHIMI_LEGEND_TITLE = 'Sashimi arcs'
 
 /**
  * The junction strands and the split classes the sashimi band draws, each
- * split class in its read arc's color.
+ * split class in its read-arc color.
  */
 export interface SashimiLegend {
   strands: LegendItem[]

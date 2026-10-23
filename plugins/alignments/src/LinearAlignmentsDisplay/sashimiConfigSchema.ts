@@ -12,8 +12,11 @@ import { sashimiLabelsConfigSchema } from './sashimiLabelsConfigSchema.ts'
  * `coverage.show` is off. The band counts each splice junction from the reads'
  * N gaps and each same-reference join of a split read's segments by its class
  * (`junction.class`: `deletion`, `duplication`, which a circRNA back-splice
- * is, or `inversion`). Which junctions draw is the display's `filter`, by its
- * `junction` fields.
+ * is, or `inversion`), once per pair of read-adjacent segments as the read
+ * arcs count support. A split junction always takes its class's read-arc
+ * color, though `readConnections` paints its own split arcs grey under the
+ * `insertSize` color field. Which junctions draw is the display's `filter`,
+ * by its `junction` fields.
  *
  * #example
  * ```js

@@ -66,7 +66,8 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * other samtools flag names, `mapq` (MAPQ 255, none reported, passes a
      * floor), `name`, `tags.HP` and any other tag, and the read categories
      * `spliced`, `svSignal`, `alone` and `split`. `junction.reads`,
-     * `junction.canonical`, `junction.class` (`splice` for an N gap, or a
+     * `junction.canonical` (a split junction reads no motif and counts as
+     * canonical, so `equal: false` hides it), `junction.class` (`splice` for an N gap, or a
      * split read's `deletion`, `duplication` or `inversion`) and
      * `junction.source` (`gap` or `split`) test the sashimi junctions, and
      * `connection.interchrom`, `connection.offscreen` and `breakpoint.reads`
