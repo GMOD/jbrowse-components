@@ -130,9 +130,7 @@ Move a concept everywhere in one pass, so it never has two spellings at once:
    The same pass moves each band's layer thresholds into its layers'
    `filter` (ADR-238 "Layers inside a part"): `coverage.alleles`,
    `coverage.interbase`, the modification layer.
-   **Claimed 2026-10-22, built but unlanded** on branch
-   `worktree-alignments-filter-predicates` (worktree
-   `.claude/worktrees/alignments-filter-predicates`): every display's
+   **Claimed 2026-10-22, built on an unlanded branch**: every display's
    `filter` is one predicate list, landing as one fast-forward.
    - **Built:** the alignments and LGVSynteny lists (ADR-240 steps 3a, 3b,
      merge by field), then canvas (`genes` is the `geneLike` field), mark,
