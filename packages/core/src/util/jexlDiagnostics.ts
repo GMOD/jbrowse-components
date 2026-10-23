@@ -1,8 +1,8 @@
-import { JexlSyntaxError, check } from '@jbrowse/jexl'
+import { Jexl, JexlSyntaxError, check } from '@jbrowse/jexl'
 
 import { stripJexlPrefix } from './jexlFilterFields.ts'
 
-import type { FieldSchema, Jexl, Severity, Signature } from '@jbrowse/jexl'
+import type { FieldSchema, Severity, Signature, Type } from '@jbrowse/jexl'
 
 export interface JexlProblem {
   severity: Severity
@@ -63,6 +63,41 @@ export function jexlProblems(
     accessors: { get: [] },
     row: 'feature',
   }).diagnostics.map(({ severity, message }) => ({ severity, message }))
+}
+
+const parser = new Jexl()
+
+function kindOf(type: Type): 'numeric' | 'categorical' | 'unknown' {
+  switch (type.kind) {
+    case 'number': {
+      return 'numeric'
+    }
+    case 'string':
+    case 'boolean': {
+      return 'categorical'
+    }
+    case 'union': {
+      const kinds = new Set(type.of.map(kindOf))
+      return kinds.size === 1 ? [...kinds][0]! : 'unknown'
+    }
+    default: {
+      return 'unknown'
+    }
+  }
+}
+
+/**
+ * Whether a jexl expression over `feature` answers a number, text or a truth
+ * value, as `check` infers it from the expression alone: `feature.score * 2`
+ * is numeric, `` `${feature.type}!` `` categorical, `feature.score` unknown.
+ */
+export function expressionKind(text: string) {
+  try {
+    const ast = parser.parse(stripJexlPrefix(text.trim()))
+    return ast ? kindOf(check(ast, { row: 'feature' }).type) : 'unknown'
+  } catch {
+    return 'unknown'
+  }
 }
 
 /** A problem as one line, `where` naming the line or setting it is in. */

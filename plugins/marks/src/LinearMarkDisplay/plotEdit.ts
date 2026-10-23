@@ -1,5 +1,10 @@
 import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
-import { POSITION_FIELDS, stepsOutput } from '@jbrowse/core/util/stepOutputs'
+import { expressionKind } from '@jbrowse/core/util/jexlDiagnostics'
+import {
+  POSITION_FIELDS,
+  stepWrites,
+  stepsOutput,
+} from '@jbrowse/core/util/stepOutputs'
 
 import { AUTO_BIN } from './autoBin.ts'
 import {
@@ -338,8 +343,10 @@ export function stepFields(
 ): PlotFields {
   const { written, surviving } = stepsOutput(steps)
   const survives = (field: string) => !surviving || surviving.has(field)
+  const computed = formulaKinds(steps)
   const kindOf = new Map(
     written
+      .map(w => ({ ...w, kind: computed.get(w.field) ?? w.kind }))
       .filter(w => w.kind !== 'unknown' && !POSITIONS.has(w.field))
       .map(w => [w.field, w.kind]),
   )
@@ -356,6 +363,27 @@ export function stepFields(
     categorical: offered(scanned.categorical, 'categorical'),
     ...(sparse ? { sparse } : {}),
   }
+}
+
+// What each field a formula wrote last holds, where its expression makes that
+// plain; a later step's write of the field takes over, as in stepsOutput.
+function formulaKinds(steps: readonly StepSnapshot[]) {
+  const kinds = new Map<string, FieldKind>()
+  for (const step of steps) {
+    for (const { field, kind } of stepWrites(step)) {
+      if (step.type === 'formula') {
+        const inferred = step.expr ? expressionKind(step.expr) : 'unknown'
+        if (inferred === 'unknown') {
+          kinds.delete(field)
+        } else {
+          kinds.set(field, inferred)
+        }
+      } else if (kind !== 'unknown') {
+        kinds.delete(field)
+      }
+    }
+  }
+  return kinds
 }
 
 /** The zoom a density takes over at, in bp per px. */

@@ -39,6 +39,27 @@ test('the picker offers what survives an aggregate, and the edges a bin renamed'
   expect(grouped.categorical).toEqual(['strand'])
 })
 
+test("a formula's field is offered as what its expression answers", () => {
+  const scanned = { numeric: ['score'], categorical: ['type'] }
+  const kinds = (expr: string) => {
+    const fields = stepFields(scanned, [{ type: 'formula', expr, as: 'out' }])
+    return [fields.numeric.includes('out'), fields.categorical.includes('out')]
+  }
+  expect(kinds('jexl:feature.score * 2')).toEqual([true, false])
+  expect(kinds("jexl:feature.type + '!'")).toEqual([false, true])
+  expect(kinds('jexl:feature.score > 10')).toEqual([false, true])
+  expect(kinds("jexl:feature.score > 10 ? 'high' : 'low'")).toEqual([
+    false,
+    true,
+  ])
+  expect(kinds('jexl:feature.score')).toEqual([true, false])
+  const overwritten = stepFields(scanned, [
+    { type: 'formula', expr: "jexl:feature.type + '!'", as: 'count' },
+    { type: 'aggregate', ops: [{ op: 'count' }] },
+  ])
+  expect(overwritten.numeric).toContain('count')
+})
+
 test('a split field retyped through empty keeps the order and the steps the setting held', () => {
   const facet = {
     field: 'HP',
