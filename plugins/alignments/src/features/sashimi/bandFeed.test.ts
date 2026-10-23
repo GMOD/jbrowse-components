@@ -40,7 +40,7 @@ test('a split junction paints its read arc color, a splice junction its strand',
     colors,
   })
   const feed = feeds.get(0)!
-  expect([...feed.up.color]).toEqual([
+  expect([...(feed.up.color as Uint32Array)]).toEqual([
     normalizedRgbToABGR(...colors.colorRevStrand),
     normalizedRgbToABGR(...arcCategoryColor(colors, 'splitBack')),
     normalizedRgbToABGR(...arcCategoryColor(colors, 'splitForward')),

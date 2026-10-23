@@ -181,6 +181,7 @@ export type {
   ReadColorBy,
   ConnectionFilter,
   JunctionFilter,
+  JunctionFilterPatch,
   SortColumn,
   TagColorScale,
   WorkerFacet,

@@ -49,6 +49,8 @@ function makeModel(
     setShowSashimi: jest.fn(),
     showSashimiCounts: false,
     setShowSashimiCounts: jest.fn(),
+    junctionFilter: { minReads: 2 },
+    setJunctionFilter: jest.fn(),
     ...overrides,
   }
 }
