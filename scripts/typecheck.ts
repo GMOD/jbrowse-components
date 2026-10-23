@@ -28,7 +28,9 @@ function resolveCheckers() {
 const { value: checkers, source } = resolveCheckers()
 const checkerArgs = ['--checkers', checkers]
 
-console.error(`typecheck: --checkers ${checkers} (${source})`)
+if (!process.env.JB_TYPECHECK_IN_SLOT) {
+  console.error(`typecheck: --checkers ${checkers} (${source})`)
+}
 
 // The groups `pnpm typecheck` runs, named so package.json spells each list
 // once. Any other bare argument is a project path, and an argument starting
@@ -72,13 +74,23 @@ if (flags.some(f => f === '--watch' || f === '-w')) {
 } else {
   // A per-run checker count cannot cap the machine: each checkout picks its
   // count as though it were alone, and the checkouts cannot see each other. The slot
-  // is machine-wide so they queue instead.
-  for (const project of projects) {
+  // is machine-wide so they queue instead. The script re-runs itself inside one
+  // slot, so a contended run queues once rather than once per project.
+  if (!process.env.JB_TYPECHECK_IN_SLOT) {
     const { status } = spawnSync(
       'scripts/heavy-run-slot.sh',
-      [process.execPath, ...tscArgs(project)],
-      { stdio: 'inherit' },
+      [process.execPath, ...process.execArgv, import.meta.filename, ...args],
+      {
+        stdio: 'inherit',
+        env: { ...process.env, JB_TYPECHECK_IN_SLOT: '1' },
+      },
     )
+    process.exit(status ?? 1)
+  }
+  for (const project of projects) {
+    const { status } = spawnSync(process.execPath, tscArgs(project), {
+      stdio: 'inherit',
+    })
     if (status !== 0) {
       process.exit(status ?? 1)
     }
