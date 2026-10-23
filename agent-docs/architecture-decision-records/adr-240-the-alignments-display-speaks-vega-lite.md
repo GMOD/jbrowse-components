@@ -7,13 +7,15 @@ summary: "ADR-238's end state for LinearAlignmentsDisplay and LGVSyntenyDisplay,
 
 ## Status
 
-Accepted (2026-10-22), with three calls open (below). The alignments stage of
+Accepted (2026-10-22), with one call open (below). The alignments stage of
 [ADR-238](adr-238-every-display-speaks-vega-lite.md), whose order of work this
 follows. Amended the same day: a ramp's quantile is `scale.domainQuantile`,
 not `{ quantile }`, which no slot type holds and which reads as d3's
 `type: 'quantile'`. Amended again when the channel object landed on every
 display: the categorical `scale.type` is Vega-Lite's `ordinal`, and a missing
 value's color is `scale.invalid`, Vega-Lite's member for null and NaN inputs.
+Amended 2026-10-23: open calls 2 and 3 closed as written, their proposals
+moved to Rejected after five Opus reviews (two cold reads, one adversarial).
 
 Five reviews shaped it: an Opus design pass from ADR-238 and the schemas, two
 Opus arbiters on its calls (one on Vega-Lite fidelity, one on authors, writers
@@ -198,11 +200,6 @@ them in its own stage:
 1. **Legend precedence.** The display-wide `legend.show` above, or only the
    per-channel one, as Vega-Lite has. The display-wide switch saves an author
    three nested writes and gates real scans.
-2. **`unmodified` as a code** (`code: oneOf ['m', 'h', 'unmodified']`) in place of
-   `bases.unmodified.show`, which removes a boolean. The data picks implicit or
-   called sites, so a methylation owner confirms MM `?`-mode data first.
-3. **`pileup.connectors` beside `readConnections`.** Both draw mate links and
-   differ in where; one of the two names changes.
 
 ## Rejected
 
@@ -216,6 +213,8 @@ them in its own stage:
 | `ordinaryPairs` as a filter predicate | "Ordinary" is modal insert size for the cloud and a concordant, baseline-colored pair for arcs, and in `filter.connections` it would drop the pileup connectors too |
 | `facet.hidden` as a predicate | A hidden section is main-thread, and coverage still counts its reads |
 | `hideSelfAlignments` as a view-assembly token in `facet.hidden` | A token in a value list is templating; `facetForField` wipes it on a field change. LGVSyntenyDisplay's own stage decides |
+| `unmodified` as a code (`code: oneOf ['m', 'h', 'unmodified']`) | `code: ['unmodified']` alone draws nothing on a 5mC-only read (`extract.test.ts`), the type checkboxes never offer it since no read declares it, and an empty `code` list, meaning every type, would turn the two-color view on. `?`-mode data needs no switch: `getMethBins` fills no site a `?` group leaves out |
+| Renaming `pileup.connectors` or `readConnections` | Both draw one molecule's connections, read one `connection.*` filter and one `readConnections.encoding.color`, and the path says where. `links` is a mark type, `mates` and `pairs` miss split segments, `curves` misses straight pairs, and nesting the connectors under `readConnections` breaks ADR-238's layer-under-its-part rule. The confusion a cold reader found came from the slot descriptions, which now name each other |
 | `bases.impute` for `unmodified: 'all'` | `'all'` runs another extraction path, and a probability default would break the two-color view, where no threshold applies |
 | `legend.labels` | `labels` already means a boolean on `axis` and a text layer on `sashimi` |
 | `legend.descending` as the channel's `sort` | Amendment 6 |
@@ -250,5 +249,4 @@ ADR-120 freezes only config paths, so these can follow later.
 
 - An author who writes `filter: [{ field: 'mapq', gte: 20 }]` keeps the duplicate
   exclusion and both floors.
-- `pileup.connectors` or `readConnections` changes name once Open 3 is settled.
 - `breakpoint` is a new row namespace beside `junction` and `connection`.

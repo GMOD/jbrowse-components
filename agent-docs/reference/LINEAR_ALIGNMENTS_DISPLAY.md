@@ -229,7 +229,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   junctions ride with the arcs.
 - **A per-block pass cannot join two displayed regions**, since it maps bp
   through its own block. The read-connection band's links do, drawing over the
-  whole canvas through the view's region table (ADR-170), and so do the curved
+  whole canvas through the view's region table (ADR-170), and so do the pileup
   connectors (ADR-225). Which pairs those draw is `bezierArcScope`, the one
   place deciding between `all`, `crossRegion` and `none`; read the getter,
   never `showConnectors`.

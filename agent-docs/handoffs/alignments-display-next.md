@@ -1,62 +1,60 @@
 ---
 name: alignments-display-next
-description: "What is left of the 2026-10-22 LinearAlignmentsDisplay review after its bug fixes, ADR-240, that ADR's steps 1 and 5 and the internal cleanups landed: two ADR-240 calls only Colin makes (unmodified as a modification code, which connector setting renames), the ADR-240 steps the vocabulary handoff orders, the internal ColorBy scheme object (waits on step 2's pass A), two small behaviour questions (sized lanes shrinking the fit budget, a connector's right-click), and ggjbrowse's unpushed respell and stale published pages."
+description: "What is left of the 2026-10-22 LinearAlignmentsDisplay review now that ADR-240's open calls 2 and 3 are closed: the quality fade as opacity (step 2b), the internal ColorBy scheme object, a connector's right-click (waits on the SA-hops gesture call), a 5hmC fill edge case under mixed MM skip flags, and ggjbrowse's stale published pages. The other ADR-240 steps are ordered in vega-lite-vocabulary.md."
 ---
 
 # LinearAlignmentsDisplay: next steps
 
-The review that opened this thread fixed six bugs and settled the display's
-end state as
+The display's end state is
 [ADR-240](../architecture-decision-records/adr-240-the-alignments-display-speaks-vega-lite.md).
-The order of ADR-238 work across every display, ADR-240's steps included, is
+Its remaining steps (pass B's `coverage.encoding.y`, 3c's layer filters, the
+height step's `pileup.mark.height`) are ordered in
 [vega-lite-vocabulary.md](vega-lite-vocabulary.md); claim a step there before
 starting it.
 
-## Calls only Colin makes
+## ADR-240 work outside the vocabulary handoff
 
-- **ADR-240 open 2: `unmodified` as a code.** `pileup.bases.unmodified.show`,
-  or `code: oneOf ['m', 'h', 'unmodified']` in the layer's filter. The data
-  picks implicit or called sites today (`modificationsMenu.ts`), so a
-  methylation owner checks MM `?`-mode data first.
-- **ADR-240 open 3: `pileup.connectors` beside `readConnections`.** Both draw
-  mate links and differ in where; one name changes. `pileup.showConnectors`
-  waits on this before it becomes a `{ show }` part, as step 1 left it.
-
-## ADR-240 steps not landed
-
-- **Step 2, the channel object:** ADR-241 landed its step 0 (`scale: 'none'`
-  gone). Pass A and pass B are next in the vocabulary handoff; they carry
-  `encoding.color`, `scale.names`, `scale.group`, the missing-value member,
-  `pileup.bases` and `coverage.encoding.y`.
 - **Step 2b, the quality fade as opacity:** `pileup.mismatches.encoding.opacity`
   over `baseQuality`; two uniforms and a subtract, checked by one run of the
   mismatch bench.
-- **Step 3, filters as predicates:** waits on the whole-fetch A/B on
-  `1000x.shortread.bam` on ada. `breakpoint.reads` is a new row namespace.
-- **Step 4:** `pileup.readHeight` to `pileup.mark.height`.
-
-## Internal cleanup
-
 - **The internal `ColorBy` scheme object** (`shared/types.ts`,
   `shared/alignmentsColor.ts` `colorByOf` / `colorFieldOf`) restates
   `color.field` in v4's scheme names, and the RPC arguments are still
   `filterBy` and `colorBy`. One field classifier serving color, facet, sort and
-  predicates removes the translation. It changes no config path but rewrites
-  the readers step 2's pass A rewrites, so it goes after or with that pass.
+  predicates removes the translation. It changes no config path.
 
-## Behaviour questions
+## A connector's right-click
 
-- **A sized or expanded lane still shrinks its siblings' fit slices:**
-  `resolvedFitDefaultCap` counts it in `visibleGroupCount` though it lays out
-  under its own cap. Whether it should is unmeasured.
-- **A curved connector's right-click opens the browser menu.** ADR-225 chose
-  that; the left click on the same connector selects a read, so whether to
-  offer that read's menu is a product call.
+Right-clicking a pileup connector opens the browser's menu
+(`contextMenuTargetForHit`). Colin's call, and it waits on the gesture the
+SA-hops idea needs (`ideas/waiting-on-a-call/sa-hops-in-the-bezier-overlay.md`):
+giving the right-click to the nearer read's menu uses it up.
+
+- Within `ARC_HIT_SLOP_PX` of a connector crossing a read, the connector
+  outranks the read (`useAlignmentsBase.ts`), so that read's own menu is
+  unreachable there.
+- `ContextMenuHit` requires a block and `ConnectorMarkHit` has none; under the
+  gap a cross-region connector spans, `runHitTest` finds no fetched block
+  either. `hitTestPipeline.test.ts` pins "no menu".
+
+## Settled, not to re-open
+
+- **A sized lane keeps its siblings' equal slice.** Fit mode refuses lane
+  sizing (`canSizeGroupHeights`), so only fixed and grow see an override. The
+  drag handle sizes one lane without touching the others
+  (`GroupResizeHandles`); the cost is blank space under a stack whose lane was
+  shrunk, while a truncated sibling keeps its slice and its expand button.
+
+## Edge case
+
+- **`C+m.;C+h?` fills unlisted cytosines as unmodified.** `getMethBins` checks
+  only the `m` groups' skip flag, so a site whose 5hmC status the tag calls
+  unknown still paints the two-color view's blue. Untested, and no file in
+  `test_data/` mixes the flags.
 
 ## ggjbrowse
 
-- Its local main holds the respell and engine pins for steps 1 and 5
-  (`ca0b603`); nobody has pushed them.
 - Its published tutorial pages still show `showSoftClipping` and
   `mark = "cloud"` until they are re-knit at a new `tutorials/JBROWSE_COMPONENTS`
-  pin (memory `a-config-rename-reaches-ggjbrowse`).
+  pin (memory `a-config-rename-reaches-ggjbrowse`). `pileup.connectors` joins
+  them.

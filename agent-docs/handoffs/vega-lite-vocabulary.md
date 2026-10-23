@@ -65,9 +65,9 @@ spelling, not a new house word. That means no new `min*`, `max*`, `show*` or
   `pileup.softClips`, `sashimi.labels` and `readConnections.ordinaryPairs`,
   which replaced `showInterbaseIndicators`, `showMismatches`,
   `showSoftClipping`, `showCounts` and `showOrdinaryPairs`;
-  `pileup.showOutline` went, the outline following `unit`. Left for their
-  own calls: `pileup.showConnectors` (ADR-240 open 3) and `baseColor` (step 0
-  below).
+  `pileup.showOutline` went, the outline following `unit`.
+  `pileup.connectors` followed once ADR-240 rejected a rename. Left for its
+  own call: `baseColor` (step 0 below).
 - MAF's `alignments.inversions`, `.frames` and `.reference` as `{ show }`
   parts, which replaced `showInversions`, `showAnnotations` and the top-level
   `showReferenceRow`. `rowIdentityAutoZoom`, `showAllLetters` and
