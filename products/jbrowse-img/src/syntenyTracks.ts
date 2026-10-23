@@ -9,6 +9,13 @@ function syntenyTracks(data: Config) {
   return data.tracks.filter(track => track.type === 'SyntenyTrack')
 }
 
+/** The rows the command line stacked, top first, or else every assembly whole. */
+export function stackedRows(data: Config) {
+  return (
+    data.comparativeRows ?? data.assemblies.map(asm => ({ assembly: asm.name }))
+  )
+}
+
 // Whether a SyntenyTrack compares this pair of assemblies. Order-free: a track's
 // assemblyNames are [query, target] and which side is which follows the file
 // format (a chain's query is the LOWER assembly), not the stacking order. A
@@ -37,7 +44,7 @@ export function pairSyntenyTrackIds(data: Config, a: string, b: string) {
 // alignment is the ordinary way to get one, and the view would report it as an
 // error and fail the render.
 export function stackSyntenyTrackIds(data: Config) {
-  const order = data.assemblies.map(asm => asm.name)
+  const order = stackedRows(data).map(row => row.assembly)
   return syntenyTracks(data)
     .filter(track => {
       const placed = order

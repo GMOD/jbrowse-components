@@ -206,6 +206,12 @@ export function guessTrack({
   return { adapter: { type: typeOverride ?? 'UNKNOWN' }, files: [] }
 }
 
+/** The adapter a file's name says, without looking for its index. */
+export function adapterTypeByName(file: string) {
+  const spec = matchFormat(fileNameOf(file))?.spec
+  return spec && 'adapterType' in spec ? spec.adapterType : undefined
+}
+
 export function guessTrackType(adapterType: string, location?: string): string {
   return (
     trackTypeForAdapter(adapterType, location && fileNameOf(location)) ||

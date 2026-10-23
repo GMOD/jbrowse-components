@@ -21,7 +21,7 @@ export interface RowSortSpec {
 // `setupRunClusteringAutorun` and LinearGenomeView's `init`: a session or figure
 // sets `sortRowsBy`, the sort applies as soon as the region containing that
 // position is loaded, and the flag clears so a saved session never re-triggers
-// it (the `layout` it produced persists on its own).
+// it (the order it produced persists on its own).
 //
 // Gating on the region being loaded is the substance here. Sorting before the
 // data at `pos` arrives is a silent no-op — every row reads "no value", the

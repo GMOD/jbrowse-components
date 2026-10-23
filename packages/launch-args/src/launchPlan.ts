@@ -4,15 +4,16 @@ import {
   buildComparative,
   comparativeRole,
   hasComparativeArgs,
-  stackedViews,
+  isSyntenyFlag,
   syntenyFlags,
 } from './comparative.ts'
 import { checkModifiers } from './displaySettings.ts'
 import {
-  fileAdapter,
   fileTrack,
   genomeAssembly,
-  isSequenceAdapter,
+  genomeFlags,
+  isGenomeFlag,
+  isTrackFlag,
   trackFlags,
 } from './fileInput.ts'
 import { genomeConfigUrl } from './genome.ts'
@@ -111,8 +112,7 @@ export const launchFlags: ReadonlySet<string> = new Set([
   'loc',
   'view',
   'track',
-  'fasta',
-  'chromSizes',
+  ...genomeFlags,
   FILE_FLAG,
   ...trackFlags,
   ...syntenyFlags,
@@ -135,21 +135,13 @@ export const exportBooleanFlags: ReadonlySet<string> = new Set([
 
 const PATH_MODIFIERS = new Set(['index', 'aliases', 'cytobands'])
 
-function isTrackFlag(key: string) {
-  return key === FILE_FLAG || (trackFlags as string[]).includes(key)
+function opensTrack(key: string) {
+  return key === FILE_FLAG || isTrackFlag(key)
 }
 
-function takesFile(key: string) {
-  return (
-    isTrackFlag(key) ||
-    key === 'fasta' ||
-    key === 'chromSizes' ||
-    (syntenyFlags as string[]).includes(key)
-  )
-}
-
-function modifierName(mod: string) {
-  return splitModifier(mod)?.[0] ?? ''
+/** Whether a flag opens a data file, as a track, genome or comparison flag does. */
+export function takesFile(key: string) {
+  return opensTrack(key) || isGenomeFlag(key) || isSyntenyFlag(key)
 }
 
 /**
@@ -183,10 +175,10 @@ export function launchPlan(
   viewType?: LaunchViewType,
 ): LaunchPlan {
   const abs = (file: string) => (isUrl(file) ? file : path.resolve(cwd, file))
-  const absMod = (mod: string) =>
-    PATH_MODIFIERS.has(modifierName(mod))
-      ? `${modifierName(mod)}:${abs(mod.slice(mod.indexOf(':') + 1))}`
-      : mod
+  const absMod = (mod: string) => {
+    const [name, value] = splitModifier(mod) ?? []
+    return name && PATH_MODIFIERS.has(name) ? `${name}:${abs(value!)}` : mod
+  }
   const resolved = entries.map(([key, values]): Entry => {
     const [file, ...mods] = values
     if (!takesFile(key)) {
@@ -230,7 +222,7 @@ function comparativePlan(
     )
   }
   const data = buildComparative(entries)
-  const count = data.assemblies.length
+  const count = data.rows.length
   if (type === 'DotplotView' ? count !== 2 : count < 2) {
     throw new Error(
       `${viewName} compares ${type === 'DotplotView' ? 'two genomes' : 'two genomes or more'}, and this command line names ${count}`,
@@ -243,7 +235,7 @@ function comparativePlan(
   return {
     type,
     assemblies: data.assemblies,
-    views: stackedViews(data),
+    views: data.rows,
     tracks: data.syntenyTracks,
     view: viewSettings(givenOnce(entries, 'view') ?? []),
     unapplied: entries
@@ -274,14 +266,10 @@ function linearPlan(
       ? abs(config)
       : undefined
 
-  const comparison = resolved.find(
-    entry => comparativeRole(entry) === 'synteny',
-  )
+  const roles = resolved.map(comparativeRole)
+  const comparison = resolved.find((_, i) => roles[i] === 'synteny')
   const [genomeFile, otherGenome] = resolved.filter(
-    ([key, [file = '']]) =>
-      key === 'fasta' ||
-      key === 'chromSizes' ||
-      (key === FILE_FLAG && isSequenceAdapter(fileAdapter(file))),
+    (_, i) => roles[i] === 'genome',
   )
   const genomePath = genomeFile?.[1][0]
   if (comparison) {
@@ -306,13 +294,10 @@ function linearPlan(
     )
   }
 
-  const unapplied: string[] = []
-  let assembly: Assembly | undefined
-  if (genomeFile) {
-    const built = genomeAssembly(genomeFile[0], genomeFile[1])
-    assembly = built.assembly
-    unapplied.push(...built.unused.map(mod => `${assembly!.name} ${mod}`))
-  }
+  const built = genomeFile && genomeAssembly(genomeFile[0], genomeFile[1])
+  const assembly = built?.assembly
+  const unapplied =
+    built?.unused.map(mod => `${built.assembly.name} ${mod}`) ?? []
   const assemblyName = assembly?.name ?? one('assembly')
 
   const used = new Set<string>()
@@ -327,7 +312,7 @@ function linearPlan(
         throw new Error('--track requires a trackId')
       }
       show.push(showTrack(first, mods))
-    } else if (isTrackFlag(key)) {
+    } else if (opensTrack(key)) {
       const track = fileTrack(key, entry[1], assemblyName)
       track.trackId = uniqueId(used, track.trackId)
       tracks.push(track)

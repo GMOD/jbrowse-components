@@ -233,7 +233,10 @@ describe('a reorder over the rows a window holds', () => {
   it('drops the tree only when a shown row moves', () => {
     const display = declared()
     display.setRpcData(0, regionData(['b', 'd'], [], 'sample'), ctgA)
-    display.setRowOrder([{ name: 'd' }, { name: 'b' }], { tree: '(d,b);' })
+    display.setRowOrder([{ name: 'd' }, { name: 'b' }], {
+      tree: '(d,b);',
+      provenance: { regions: [{ refName: 'ctgA', start: 0, end: 100 }] },
+    })
     expect(display.rowSort).toEqual(['d', 'b', 'a', 'c'])
     expect(display.rowOrderWillDropTree([{ name: 'd' }, { name: 'b' }])).toBe(
       false,

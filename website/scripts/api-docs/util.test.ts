@@ -18,6 +18,7 @@ import {
   section,
   sortUnionMembers,
   stripPropertyName,
+  unreadableSignature,
 } from './util.ts'
 
 describe('lastTaggedLine', () => {
@@ -499,6 +500,33 @@ describe('elideSignature', () => {
   test('reads past a bracket inside a string literal', () => {
     const sig = `(a: "<" | ">", b: Map<string, ${'x'.repeat(200)}>) => void`
     expect(elideSignature(sig, 180)).toBe('(a: "<" | ">", b: Map<…>) => void')
+  })
+})
+
+describe('unreadableSignature', () => {
+  test('flags an MST expansion on any line of an overload', () => {
+    expect(
+      unreadableSignature(
+        '(a: string) => void\n(b: number) => ModelInstanceTypeProps<…> & {…}',
+      ),
+    ).toBe(true)
+  })
+
+  test('flags a type or a return that collapsed to its outer name', () => {
+    expect(unreadableSignature('Record<…>')).toBe(true)
+    expect(unreadableSignature('(x: string) => Promise<{…}>')).toBe(true)
+    expect(unreadableSignature('() => Promise<{…}> | undefined')).toBe(true)
+  })
+
+  test('passes an IStateTreeNode an API takes, and a partly elided type', () => {
+    expect(
+      unreadableSignature(
+        '<Self extends IStateTreeNode>(self: Self, load: () => Promise<(self: Self) => void>) => void',
+      ),
+    ).toBe(false)
+    expect(
+      unreadableSignature('() => Promise<{ sections: {…}; legend: {…} }>'),
+    ).toBe(false)
   })
 })
 

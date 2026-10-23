@@ -51,6 +51,12 @@ describe('fileTrack', () => {
     })
   })
 
+  test("a URL's query stays out of its trackId and name", () => {
+    expect(
+      fileTrack('file', ['https://x.test/reads.bam?X-Amz-Signature=abc']),
+    ).toMatchObject({ trackId: 'reads.bam', name: 'reads.bam' })
+  })
+
   test('a bare file is typed by its name, the same as its flag', () => {
     expect(fileTrack('file', ['reads.bam'], 'testAsm')).toEqual(
       fileTrack('bam', ['reads.bam'], 'testAsm'),

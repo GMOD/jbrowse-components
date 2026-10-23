@@ -1,21 +1,20 @@
 #!/usr/bin/env bash
 #
 # Reproducibly build the pairwise grape vs peach MCScan anchors synteny view
-# shown in website/docs/tutorials/mcscan_synteny_grape_peach.md, then wire up
-# a runnable JBrowse.
+# shown in website/docs/tutorials/mcscan_synteny_grape_peach.md, and a JBrowse
+# config that loads it.
 #
-# It downloads the grape and peach genomes (dna, CDS, GFF3) from Ensembl Plants
-# release 58, runs the jcvi ortholog pipeline to produce grape.peach.anchors and
-# grape.peach.anchors.simple, downloads JBrowse, and writes a config.json with
-# the two assemblies, per-genome gene tracks, both MCScan synteny tracks, and a
-# default session opening them together in a linear synteny view.
+# Grape and peach are the RefSeq accessions the three-genome page uses
+# (scripts/build_grape_peach_cacao_synteny.sh), fetched, filtered and keyed the
+# same way, so the two pages draw one grape and one peach and the BEDs written
+# here are the ones that build hosts. Its `catalog ortholog grape peach` step
+# writes these same two anchor files.
 #
-# Everything is pinned (fixed release, fixed jcvi thresholds), so re-running
-# reproduces the same view. The three-genome .blocks variant of this pipeline is
-# scripts/build_grape_peach_cacao_synteny.sh.
+# The assemblies and their gene tracks are the genomes' GenArk hubs on
+# genomes.jbrowse.org, taken verbatim but for the label.
 #
-# Requires: jcvi + the LAST aligner, samtools, bgzip/tabix (htslib), wget, and
-#           node (JBrowse CLI, fetched via npx unless `jbrowse` is on PATH).
+# Requires: the NCBI `datasets` CLI, jcvi + the LAST aligner, gffread, samtools,
+#           curl, python3
 # Usage:    bash scripts/build_grape_peach_anchors.sh [outdir]
 #
 set -euo pipefail
@@ -24,189 +23,178 @@ OUTDIR="${1:-grape_peach_anchors_build}"
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
-BASE=http://ftp.ensemblgenomes.org/pub/plants/release-58
+# Short name, RefSeq accession
+SPECIES='
+grape  GCF_030704535.1
+peach  GCF_000346465.2
+'
 
-# ── Fetch genome (dna), CDS, GFF3 per species; index each FASTA ──────────────
-# Heredoc columns: short name, Ensembl species name, assembly version.
-while read -r name prefix asm; do
-  species=$(echo "$prefix" | tr '[:upper:]' '[:lower:]')
-  [ -f "$name.dna.fa.gz" ] || wget -O "$name.dna.fa.gz" "$BASE/fasta/$species/dna/$prefix.$asm.dna.toplevel.fa.gz"
-  [ -f "$name.cds.fa.gz" ] || wget -O "$name.cds.fa.gz" "$BASE/fasta/$species/cds/$prefix.$asm.cds.all.fa.gz"
-  [ -f "$name.gff3.gz" ]   || wget -O "$name.gff3.gz"   "$BASE/gff3/$species/$prefix.$asm.58.gff3.gz"
-  [ -f "$name.fa" ]        || gunzip -c "$name.dna.fa.gz" > "$name.fa"
-  [ -f "$name.fa.fai" ]    || samtools faidx "$name.fa"   # add-assembly needs the .fai
-done <<'EOF'
-grape  Vitis_vinifera   PN40024.v4
-peach  Prunus_persica   Prunus_persica_NCBIv2
-EOF
+# ── Fetch genome + annotation + sequence report, one accession per species ───
+while read -r name acc; do
+  [ -z "$name" ] && continue
+  if [ ! -d "dl_$name" ]; then
+    datasets download genome accession "$acc" \
+      --include genome,gff3,seq-report --filename "$name.zip"
+    unzip -oq "$name.zip" -d "dl_$name"
+    rm -f "$name.zip"
+  fi
+  d="dl_$name/ncbi_dataset/data/$acc"
+  [ -f "$name.fa" ]     || cp "$d"/*_genomic.fna "$name.fa"
+  [ -f "$name.fa.fai" ] || samtools faidx "$name.fa"
+  [ -f "$name.seqreport.jsonl" ] || cp "$d/sequence_report.jsonl" \
+    "$name.seqreport.jsonl"
+  # Organelle genes and `?`-strand genes are dropped before gffread reads the
+  # GFF3, which treats both as fatal: see build_grape_peach_cacao_synteny.sh.
+  if [ ! -f "$name.gff3" ]; then
+    python3 -c "
+import json, sys
+sp = sys.argv[1]
+drop = set()
+for line in open(sp + '.seqreport.jsonl'):
+    d = json.loads(line)
+    if d.get('assignedMoleculeLocationType') in (
+            'Mitochondrion', 'Chloroplast', 'Plastid', 'Apicoplast'):
+        a = d.get('refseqAccession') or d.get('genbankAccession')
+        if a:
+            drop.add(a)
+open(sp + '.organelles.txt', 'w').write('\\n'.join(sorted(drop)) + '\\n')
+" "$name"
+    awk -F'\t' -v drops="$name.organelles.txt" 'BEGIN{OFS="\t"
+        while ((getline l < drops) > 0) if (l != "") skip[l]=1 }
+      /^#/{print;next} !($1 in skip) && ($7=="+"||$7=="-"){print}' \
+      "$d/genomic.gff" > "$name.gff3"
+  fi
+done <<<"$SPECIES"
 
-# ── jcvi: GFF3 -> BED (one primary isoform/gene) + CDS matching the BED names ─
+# ── BED + CDS, keyed identically ─────────────────────────────────────────────
+# gffread names each CDS after its mRNA's GFF3 `ID` (`rna-XM_...`), and jcvi's
+# `--key=ID` writes the same string into BED column 4. On an NCBI GFF3,
+# `--key=transcript_id` and `--key=Name` fall back to generated `mrna_NNNNNN`
+# names that join nothing.
 for sp in grape peach; do
-  [ -f "$sp.bed" ] || python -m jcvi.formats.gff bed --type=mRNA \
-    --key=transcript_id --primary_only "$sp.gff3.gz" -o "$sp.bed"
-  [ -f "$sp.cds" ] || python -m jcvi.formats.fasta format "$sp.cds.fa.gz" "$sp.cds"
+  [ -f "$sp.cds.fa" ] || gffread "$sp.gff3" -g "$sp.fa" -x "$sp.cds.fa"
+  [ -f "$sp.bed" ] || python -m jcvi.formats.gff bed --type=mRNA --key=ID \
+    --primary_only "$sp.gff3" -o "$sp.bed"
+  [ -f "$sp.cds" ] || python -m jcvi.formats.fasta format "$sp.cds.fa" "$sp.cds"
 done
 
-# ── jcvi: one ortholog run writes both anchor files ──────────────────────────
+# ── jcvi: the ortholog run writes the gene pairs, screen the blocks ──────────
 # --no_strip_names keeps the gene ids byte-identical to the BEDs. Without it the
 # adapters drop every row whose gene neither BED has, which for a whole-file
-# suffix mismatch is every row, and the track fails with "none of the N rows
-# ... name genes present in both BED files".
+# suffix mismatch is every row. --no_dotplot skips jcvi's own PDF, which needs a
+# LaTeX install and nothing here reads.
 #
 # Guarded like every other step, because this one is the LAST alignment and by
-# far the longest: an unguarded re-run paid for it again before reaching the
-# config steps below.
+# far the longest.
 [ -f grape.peach.anchors ] || \
-  python -m jcvi.compara.catalog ortholog --no_strip_names grape peach
+  python -m jcvi.compara.catalog ortholog --no_strip_names --no_dotplot grape peach
+# screen --simple writes grape.peach.anchors.simple, one line per block, beside
+# the screened copy; --minspan=30 keeps blocks spanning 30 genes or more
+[ -f grape.peach.anchors.simple ] || \
+  python -m jcvi.compara.synteny screen --minspan=30 --simple \
+    grape.peach.anchors grape.peach.anchors.new
 
 # ── Compress anchors + BEDs (the adapters read plain or gzipped) ─────────────
 gzip -kf grape.peach.anchors grape.peach.anchors.simple grape.bed peach.bed
 
-# ── How many grape chromosomes does each peach chromosome answer to? ─────────
-# The dotplot's own claim, read off the file instead of off the picture: resolve
-# each block's first gene on each side through the BEDs, and count blocks and
-# anchors per chromosome pair. A peach chromosome with one strong grape partner
-# would put its blocks on the diagonal once the axes are ordered; several strong
-# partners is a column crossing several rows, which no ordering removes.
-python3 - <<'PY'
-import collections
-import gzip
+# ── The hub each assembly is taken from ──────────────────────────────────────
+# A RefSeq genome is a GenArk hub on genomes.jbrowse.org under its accession,
+# whose path is the accession cut into GCF/000/346/465/<accession>.
+mkdir -p hubs
+while read -r name acc; do
+  [ -z "$name" ] && continue
+  base="https://jbrowse.org/hubs/genark/${acc:0:3}/${acc:4:3}/${acc:7:3}/${acc:10:3}/$acc"
+  echo "$base" > "hubs/$acc.base"
+  [ -s "hubs/$acc.config.json" ] || curl -fsS -o "hubs/$acc.config.json" "$base/config.json"
+done <<<"$SPECIES"
+
+# ── The JBrowse config ───────────────────────────────────────────────────────
+# Each assembly and its gene track are the hub's, with the short name as an
+# alias so a session can still say `grape`. Both anchor tracks name the
+# assemblies grape first, the order of the anchor files' columns.
+python3 - "$SPECIES" <<'PY'
+import json, sys
+
+accession = dict(line.split() for line in sys.argv[1].strip().splitlines())
+
+uri_keys = {'uri', 'chromSizes'}
+gene_track_order = ['ncbiRefSeq', 'ncbiRefSeqCurated', 'ncbiGene']
 
 
-def bed(path):
-    with gzip.open(path, 'rt') as fh:
-        rows = (line.split('\t') for line in fh)
-        return {r[3].strip(): r[0] for r in rows if len(r) > 3}
+def absolutize(node, base):
+    if isinstance(node, dict):
+        return {
+            k: f'{base}/{v}' if k in uri_keys and isinstance(v, str) and '://' not in v
+            else absolutize(v, base)
+            for k, v in node.items()
+        }
+    return [absolutize(x, base) for x in node] if isinstance(node, list) else node
 
 
-grape, peach = bed('grape.bed.gz'), bed('peach.bed.gz')
-anchors = collections.Counter()
-with gzip.open('grape.peach.anchors.simple.gz', 'rt') as fh:
-    for line in fh:
-        f = line.rstrip('\n').split('\t')
-        if len(f) >= 6 and f[0] in grape and f[2] in peach:
-            anchors[(peach[f[2]], grape[f[0]])] += int(f[4])
+def hub_parts(name):
+    acc = accession[name]
+    config = json.load(open(f'hubs/{acc}.config.json'))
+    base = open(f'hubs/{acc}.base').read().strip()
+    assembly = next(a for a in config['assemblies'] if a['name'] == acc)
+    by_id = {t['trackId']: t for t in config['tracks']}
+    gene_id = next(f'{acc}-{k}' for k in gene_track_order if f'{acc}-{k}' in by_id)
+    assembly = {**absolutize(assembly, base), 'displayName': name, 'aliases': [name]}
+    return assembly, absolutize(by_id[gene_id], base)
 
-partners = collections.defaultdict(list)
-for (pp, gr), n in anchors.items():
-    partners[pp].append((n, gr))
-print()
-print('grape chromosomes each peach chromosome shares blocks with:')
-for pp in sorted(partners):
-    strong = sorted((t for t in partners[pp] if t[0] >= 100), reverse=True)
-    named = ', '.join(f'{gr} ({n} anchors)' for n, gr in strong)
-    print(f'  {pp:6s} {len(strong):2d} partners over 100 anchors: {named}')
+
+grape, peach = accession['grape'], accession['peach']
+parts = {n: hub_parts(n) for n in accession}
+
+
+def anchors_track(track_id, name, adapter, uri):
+    return {
+        'type': 'SyntenyTrack',
+        'trackId': track_id,
+        'name': name,
+        'assemblyNames': [grape, peach],
+        'adapter': {
+            'type': adapter,
+            'uri': uri,
+            'bed1': 'grape.bed.gz',
+            'bed2': 'peach.bed.gz',
+            'assemblyNames': [grape, peach],
+        },
+    }
+
+
+config = {
+    'assemblies': [parts[n][0] for n in accession],
+    'tracks': [parts[n][1] for n in accession] + [
+        anchors_track('grape_peach_anchors', 'Grape peach synteny (MCScan, anchors)',
+                      'MCScanAnchorsAdapter', 'grape.peach.anchors.gz'),
+        anchors_track('grape_peach_anchors_simple',
+                      'Grape peach synteny (MCScan, simple anchors)',
+                      'MCScanSimpleAnchorsAdapter', 'grape.peach.anchors.simple.gz'),
+    ],
+    'defaultSession': {
+        'name': 'Grape vs Peach MCScan anchors',
+        'views': [{
+            'type': 'LinearSyntenyView',
+            'displayName': 'Peach - Grape (MCScan anchors)',
+            'views': [{'assembly': peach}, {'assembly': grape}],
+            'tracks': [['grape_peach_anchors', 'grape_peach_anchors_simple']],
+            'mark': {'interpolate': 'bump'},
+            'autoDiagonalize': True,
+        }],
+    },
+}
+with open('config.json', 'w') as fh:
+    fh.write(json.dumps(config, indent=2) + '\n')
 PY
 
-# ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ────────
-if command -v jbrowse >/dev/null 2>&1; then
-  jb() { jbrowse "$@"; }
-else
-  jb() { npx -y @jbrowse/cli "$@"; }
-fi
+cat <<EOF
 
-APP=jbrowse2
-[ -f "$APP/index.html" ] || jb create "$APP"
+built in $(pwd):
+  config.json                    the two hub assemblies, their gene tracks,
+                                 both MCScan anchor tracks and a default session
+  grape.peach.anchors.gz         gene pairs, $(grep -vc '^#' grape.peach.anchors) rows
+  grape.peach.anchors.simple.gz  blocks, $(wc -l < grape.peach.anchors.simple) rows
+  grape.bed.gz, peach.bed.gz     gene placements
 
-# The anchors + BEDs must sit beside config.json (add-track-json won't copy them)
-cp grape.peach.anchors.gz grape.peach.anchors.simple.gz \
-   grape.bed.gz peach.bed.gz "$APP"/
-
-# One assembly per genome (copies each .fa + .fa.fai into the app dir)
-for sp in grape peach; do
-  jb add-assembly "$sp.fa" --name "$sp" --load copy --force --out "$APP"
-done
-
-# Per-genome gene tracks, so "Only genes" has something to draw
-for sp in grape peach; do
-  if [ ! -f "$sp.sorted.gff3.gz.tbi" ]; then
-    gunzip -c "$sp.gff3.gz" | jb sort-gff | bgzip > "$sp.sorted.gff3.gz"
-    tabix -f -p gff "$sp.sorted.gff3.gz"
-  fi
-  jb add-track "$sp.sorted.gff3.gz" -a "$sp" --name "$sp genes" \
-    --trackId "${sp}_genes" --load copy --force --out "$APP"
-done
-
-# The gene-pair track (ribbons) and the block track (one feature per block).
-# --update, so a second run overwrites each track rather than failing the build
-# on "a track with that trackId already exists"
-cat > anchors_track.json <<'JSON'
-{
-  "type": "SyntenyTrack",
-  "trackId": "grape_peach_anchors",
-  "name": "Grape peach synteny (MCScan, anchors)",
-  "assemblyNames": ["grape", "peach"],
-  "adapter": {
-    "type": "MCScanAnchorsAdapter",
-    "uri": "grape.peach.anchors.gz",
-    "bed1": "grape.bed.gz",
-    "bed2": "peach.bed.gz",
-    "assemblyNames": ["grape", "peach"]
-  }
-}
-JSON
-jb add-track-json anchors_track.json --update --out "$APP"
-
-cat > anchors_simple_track.json <<'JSON'
-{
-  "type": "SyntenyTrack",
-  "trackId": "grape_peach_anchors_simple",
-  "name": "Grape peach synteny (MCScan, simple anchors)",
-  "assemblyNames": ["grape", "peach"],
-  "adapter": {
-    "type": "MCScanSimpleAnchorsAdapter",
-    "uri": "grape.peach.anchors.simple.gz",
-    "bed1": "grape.bed.gz",
-    "bed2": "peach.bed.gz",
-    "assemblyNames": ["grape", "peach"]
-  }
-}
-JSON
-jb add-track-json anchors_simple_track.json --update --out "$APP"
-
-# Default session: peach over grape, gene-pair ribbons between the panels and
-# the block track as an LGVSyntenyDisplay row inside each one
-cat > session.json <<'JSON'
-{
-  "name": "Grape vs Peach MCScan anchors",
-  "views": [
-    {
-      "type": "LinearSyntenyView",
-      "displayName": "Peach - Grape (MCScan anchors)",
-      "views": [
-        {
-          "assembly": "peach",
-          "tracks": [
-            {
-              "trackId": "grape_peach_anchors_simple",
-              "type": "LGVSyntenyDisplay",
-              "height": 60
-            }
-          ]
-        },
-        {
-          "assembly": "grape",
-          "tracks": [
-            {
-              "trackId": "grape_peach_anchors_simple",
-              "type": "LGVSyntenyDisplay",
-              "height": 60
-            }
-          ]
-        }
-      ],
-      "tracks": [["grape_peach_anchors", "grape_peach_anchors_simple"]],
-      "mark": { "interpolate": "bump" }
-    }
-  ]
-}
-JSON
-jb set-default-session --session session.json --out "$APP"
-
-echo
-echo "Built $APP/config.json with the grape and peach assemblies, gene tracks,"
-echo "both MCScan anchor synteny tracks, and a default session opening them."
-echo "Serve it and open in a browser, e.g.:"
-echo "  npx serve $(pwd)/$APP"
-echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"
-echo "Open config.json or .jbrowse file... (the same session, no re-adding tracks)."
+serve this directory and open config.json, e.g. npx serve $(pwd)
+EOF

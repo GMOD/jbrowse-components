@@ -238,6 +238,8 @@ test.each([
   ],
   [['--bam', 'reads.bam'], '--bam opens a data file.'],
   [['--fasta', 'ref.fa'], '--fasta opens a data file.'],
+  [['--chromSizes', 'a.sizes'], '--chromSizes opens a data file.'],
+  [['--paf', 'a_b.paf'], '--paf opens a data file.'],
 ])('a data file names the tools that open one (%j)', (argv, start) => {
   expect(() => parseArgs(argv)).toThrow(
     `${start} jb2capture opens the tracks a config lists and cannot serve a data file to its browser. Draw it with jb2export, or open it in JBrowse Desktop, which take the same command line`,

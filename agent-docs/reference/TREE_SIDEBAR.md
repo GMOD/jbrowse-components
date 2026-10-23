@@ -80,6 +80,12 @@ way out would turn a restored session's dendrogram away from the order saved
 beside it and draw nothing at all. The R-paste `applyOrder` path carries no tree
 and rotates nothing: a paste is an explicit order.
 
+**A reorder rotates a supplied tree and drops a computed one.**
+`rotatableRowTree` is a `rows.tree` with no provenance, else the guide tree
+while it draws. A reorder some rotation of it lists keeps it, rotated at parse,
+and any other reorder drops it (`orderDropsRowTree`). A computed tree drops on
+any move, since its run already rotated it.
+
 `writeNewick` is the only thing here that writes the format rather than reading
 it, for that rotated run tree alone. It imports hclust's `quoteName` rather than
 restating the escaping rule, and it keeps whichever `length` encoding it was
@@ -236,8 +242,11 @@ What else the mixin owns:
   None hidden where it equals Auto. An attribute's picks are its value table, each
   value with its color and row count in the key's order; Each row's are the
   row list's swatches, which show every row's color under any choice and edit
-  only there, as the bulk color button does; the bulk editor's `rowColor`
-  column is Each row's whole pick set. None colors no row. A choice opens on
+  only there, as the bulk color button does. The bulk editor sets `label` and
+  `rowColor` alone (`BULK_EDIT_FIELDS`), warns on a pasted column that would
+  change anything else, and its `rowColor` column edits the picks of the rows
+  it names, so a pick for a row the dialog does not show stands. None colors
+  no row. A choice opens on
   the mixin's `rowColorFor` (`startingRowColor` over the live object and the
   config's), and the dialog keeps a draft per choice for the sitting. The rows carry order and labels only, written by `labelEdits`: an
   entry the config holds stands unless the reader relabelled that row, a label
@@ -294,7 +303,9 @@ rest:
 
 Matched without a tree, so a reorder or re-cluster leaves it valid and
 `setRowOrder` keeps it. `resetRowArrangement` clears it; "Clear subtree filter"
-is gated on the filter alone.
+is gated on the filter alone. The tree narrows by the rule the rows do: `root`
+runs `keptRows` over the tree's leaves, so a focus naming a sample keeps its
+haplotypes' clade.
 
 **A focus takes its own line above the rows.** The mixin's `rowsTopOffset` is
 the display's `rowsHeaderHeight` hook (bands, an axis inset) plus

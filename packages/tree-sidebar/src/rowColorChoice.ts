@@ -92,15 +92,13 @@ export function sameRowColor(a: RowColorSetting, b: RowColorSetting) {
 }
 
 /**
- * `setting` with `value` paired to `color`, in place or appended, keeping the
- * spare `range` entries the unpaired values take.
+ * `setting` with `pairs` as its pairs, keeping the spare `range` entries the
+ * unpaired values take.
  */
-export function withPair(
+export function withPairs(
   setting: RowColorSetting,
-  value: string,
-  color: string,
+  pairs: ReadonlyMap<string, string>,
 ): RowColorSetting {
-  const pairs = new Map(pairedColorsOf(setting.scale)).set(value, color)
   return {
     ...setting,
     scale: {
@@ -109,6 +107,18 @@ export function withPair(
       range: [...pairs.values(), ...spareRange(setting.scale)],
     },
   }
+}
+
+/** `setting` with `value` paired to `color`, in place or appended. */
+export function withPair(
+  setting: RowColorSetting,
+  value: string,
+  color: string,
+): RowColorSetting {
+  return withPairs(
+    setting,
+    new Map(pairedColorsOf(setting.scale)).set(value, color),
+  )
 }
 
 /**

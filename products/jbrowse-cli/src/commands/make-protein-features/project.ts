@@ -226,16 +226,17 @@ export function bestOfOverlappingHmmerHits(calls: ProteinCall[]) {
 
 /**
  * The genome blocks under residues `startAa..endAa` (1-based, inclusive, as
- * domain callers report them), in genome order.
+ * domain callers report them), in genome order. Callers run on gffread, NCBI
+ * or Ensembl proteins, which start at the first complete codon.
  */
 export function projectResidues(
   transcript: CodingTranscript,
   startAa: number,
   endAa: number,
 ) {
-  return proteinRangeToGenome(transcript, startAa - 1, endAa).map(
-    ([start, end]) => ({ start, end }),
-  )
+  return proteinRangeToGenome(transcript, startAa - 1, endAa, {
+    partialCodon: 'dropped',
+  }).map(([start, end]) => ({ start, end }))
 }
 
 export const BED_HEADER = [

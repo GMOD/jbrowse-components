@@ -82,6 +82,7 @@ import {
   regionHasPinnedData,
 } from './rowsFields.ts'
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
+import { windowedRegion } from './windowedRegion.ts'
 
 import type {
   LinearMultiRowFeatureDisplayConfig,
@@ -380,13 +381,30 @@ export default function stateModelFactory(
         return rowCountsByField(self)
       },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * Each loaded region narrowed to the features in the settled window
+       * (`windowedRegion`), which the rows and the key are read off. The
+       * window settles once a pan pauses, so rows change once per gesture.
+       */
+      get windowedRegions(): MultiRowRegionData[] {
+        const blocks = self.view.settledDynamicBlocks
+        return [...self.rpcDataMap].map(([idx, data]) =>
+          windowedRegion(
+            data,
+            blocks.filter(b => b.displayedRegionIndex === idx),
+          ),
+        )
+      },
+    }))
     .views(self => {
       // A plain getter hands out a fresh array on every write to `rpcDataMap`,
       // and this list reaches the row table, whose identity has to hold
       // steady.
       const discoveredRows = stableIdentityComputed(() => {
         const values = new Set<string>()
-        for (const data of self.rpcDataMap.values()) {
+        for (const data of self.windowedRegions) {
           for (const v of data.rowValues) {
             values.add(v)
           }
@@ -399,8 +417,8 @@ export default function stateModelFactory(
       return {
         /**
          * #getter
-         * `TreeSidebarMixin`'s hook: the distinct partition values across all
-         * loaded regions, in the order the config.json declares, the rest
+         * `TreeSidebarMixin`'s hook: the distinct partition values of the
+         * features in the window, in the order the config.json declares, the rest
          * sorted.
          */
         get discoveredRows(): RowSource[] {
@@ -579,27 +597,44 @@ export default function stateModelFactory(
     }))
     .views(self => ({
       /**
-       * #getter
-       * Categorical color key: an identity scale's colors, else the one the
-       * color field's scale derives from the values the worker found, else
-       * the one the painted colors derive, each named by the features
-       * that have it. All are gated on there being a painting to key, since a
+       * #method
+       * Categorical color key over `regions`: an identity scale's colors, else
+       * the one the color field's scale derives from the values the worker
+       * found, else the one the painted colors derive, each named by the
+       * features that have it. All are gated on there being a painting to key, since a
        * key describes colors on screen. Empty under a ramp, which
        * paints over all of them.
        */
-      get colorLegend() {
+      colorLegendOf(regions: Iterable<MultiRowRegionData>) {
         if (self.colorRamp) {
           return []
         }
         const identity = self.hasDrawnFeatures ? self.identityLegend : []
         return identity.length
           ? identity
-          : buildColorLegend(self.rpcDataMap.values(), {
+          : buildColorLegend(regions, {
               field: self.paintedColorField,
               domain: self.colorSetting.scale.domain,
               rowIndexByValue: self.rowIndexByValue,
               rowColorsByIndex: self.rowColorsByIndex,
             })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The key over the features in the window.
+       */
+      get colorLegend() {
+        return self.colorLegendOf(self.windowedRegions)
+      },
+      /**
+       * #getter
+       * The key over every loaded feature, so a hidden value stays hidden on
+       * a feature panning in before the window settles.
+       */
+      get loadedColorLegend() {
+        return self.colorLegendOf(self.rpcDataMap.values())
       },
     }))
     .views(self => {
@@ -611,7 +646,7 @@ export default function stateModelFactory(
         }
         const hidden = self.hiddenCategorySet
         return new Set(
-          self.colorLegend
+          [...self.colorLegend, ...self.loadedColorLegend]
             .filter(e => entryHidden(e, hidden))
             .map(e => e.color)
             .sort((a, b) => a - b),

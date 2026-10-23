@@ -144,6 +144,7 @@ describe('featureAt', () => {
       { refName: 'ctgA', start: 0, end: 10_000_000, assemblyName: 'volvox' },
     ])
     view.zoomTo(10_000)
+    view.settleCoarseBlocks()
     expect(view.bpPerPx).toBe(10_000)
     // The 10Mb region is centred in the 800px view at this zoom, so px 500 is
     // over it and px 300 is off its left edge.

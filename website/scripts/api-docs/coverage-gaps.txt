@@ -1394,9 +1394,16 @@ plugins/gccontent/src/GCContentTrack/index.ts window
 # adapters whose #example defaulted to FeatureTrack (0)
 # fix: add #trackType to the adapter’s #config JSDoc
 
-# model members whose type prints as an expanded model (1)
-# fix: tag that model #stateModel (#internal keeps it off the site), or give the member a written type that names it
+# model members and #api exports whose type prints as MST internals or collapses to nothing (8)
+# fix: tag the model it names #stateModel (#internal keeps it off the site), or write the type it should read as
 BaseDisplay.renderingProps
+BaseInternetAccountModel.getPreAuthorizationInformation
+EmbeddedRootModel.jbrowse
+LinearCanvasBaseDisplay.rpcProps
+LinearCanvasBaseDisplay.zoomFetchArgs
+api:alignments.alignmentTables
+api:linear-comparative-view.SyntenyStack
+api:synteny-core.carriedSyntenySettings
 
 # #stateModel tags attached to a declaration that builds no model (0)
 # fix: move the #stateModel JSDoc back onto its factory — a declaration in between takes the tag, and every inherited member row silently disappears

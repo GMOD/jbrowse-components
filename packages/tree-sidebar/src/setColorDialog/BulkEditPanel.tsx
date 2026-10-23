@@ -13,6 +13,7 @@ import {
 import { observer } from 'mobx-react'
 
 import {
+  ignoredColumns,
   mergeParsedRows,
   parseRowsByName,
   toCSV,
@@ -50,6 +51,7 @@ export default observer(function BulkEditPanel<S extends { name: string }>({
   const parseError = parsed instanceof Error ? parsed : undefined
   const byName = parsed instanceof Error ? undefined : parsed
   const unmatched = byName ? unmatchedNames(currLayout, byName) : []
+  const ignored = byName ? ignoredColumns(currLayout, byName) : []
 
   const apply = (replace: boolean) => {
     if (!byName) {
@@ -63,15 +65,22 @@ export default observer(function BulkEditPanel<S extends { name: string }>({
       <DialogContent>
         <Typography>
           Paste CSV or TSV. The first line is the header. A{' '}
-          <strong>name</strong> column joins rows to existing sources.
+          <strong>name</strong> column joins rows to existing sources, and the{' '}
+          <strong>label</strong> and <strong>rowColor</strong> columns set them.
           <br />
-          <strong>Update rows</strong> patches only the pasted fields; existing
-          fields (e.g. rowColor) are preserved. <strong>Replace rows</strong>{' '}
-          drops all fields not in the paste for matched rows — include every
-          field you want to keep.
+          <strong>Update rows</strong> sets only the pasted columns.{' '}
+          <strong>Replace rows</strong> also clears a matched row&apos;s label
+          or rowColor where the paste has no column for it.
         </Typography>
 
         {parseError ? <ErrorBanner error={parseError} /> : null}
+
+        {ignored.length > 0 ? (
+          <Alert severity="warning" style={{ marginTop: 8 }}>
+            Only label and rowColor are set here, so changes to{' '}
+            {ignored.join(', ')} will be ignored
+          </Alert>
+        ) : null}
 
         {unmatched.length > 0 ? (
           <Alert severity="warning" style={{ marginTop: 8 }}>
@@ -87,7 +96,7 @@ export default observer(function BulkEditPanel<S extends { name: string }>({
           multiline
           minRows={5}
           placeholder={
-            'name,rowColor,group\nHG00098,#e41a1c,GBR\nHG00101,,GBR\n…'
+            'name,label,rowColor\nHG00098,,#e41a1c\nHG00101,Mother,\n…'
           }
           maxRows={10}
           fullWidth

@@ -1,13 +1,13 @@
-import path from 'node:path'
+import { fileNameOf } from '@jbrowse/add-track-core'
 
-import { syntenyAdapterTypes } from './fileAdapter.ts'
-import { fileAdapter, genomeAssembly, isSequenceAdapter } from './fileInput.ts'
+import { adapterTypeByName, syntenyAdapterTypes } from './fileAdapter.ts'
 import {
-  FILE_FLAG,
-  isDataFile,
-  modifierValue,
-  splitModifier,
-} from './parseArgv.ts'
+  fileAdapter,
+  genomeAssembly,
+  isGenomeFlag,
+  isSequenceAdapter,
+} from './fileInput.ts'
+import { FILE_FLAG, modifierValue, splitModifier } from './parseArgv.ts'
 
 import type { Adapter } from './fileAdapter.ts'
 import type { Assembly, Track } from './fileInput.ts'
@@ -45,34 +45,30 @@ const upperIsQuery: Record<string, boolean> = {
   DeltaAdapter: false,
 }
 
-function isSyntenyFlag(key: string): key is SyntenyFlag {
-  return key in syntenyFlagAdapters
-}
-
-function isGenomeFlag(key: string) {
-  return key === 'fasta' || key === 'chromSizes'
+export function isSyntenyFlag(key: string): key is SyntenyFlag {
+  return Object.hasOwn(syntenyFlagAdapters, key)
 }
 
 /**
  * What an entry is to a comparative view: a genome (`--fasta`, `--chromSizes`
  * or a bare genome file), a comparison (a comparison flag or a bare file the
- * format table reads as a SyntenyTrack), or neither.
+ * format table reads as a SyntenyTrack), or neither. A bare file's role comes
+ * from its name alone.
  */
 export function comparativeRole([key, [file]]: Entry) {
   if (isGenomeFlag(key)) {
     return 'genome'
   } else if (isSyntenyFlag(key)) {
     return 'synteny'
-  } else if (key === FILE_FLAG && file && isDataFile(file)) {
-    const adapter = fileAdapter(file)
-    return isSequenceAdapter(adapter)
+  }
+  const type = key === FILE_FLAG && file ? adapterTypeByName(file) : undefined
+  return !type
+    ? undefined
+    : isSequenceAdapter({ type })
       ? 'genome'
-      : syntenyAdapterTypes.has(adapter.type)
+      : syntenyAdapterTypes.has(type)
         ? 'synteny'
         : undefined
-  } else {
-    return undefined
-  }
 }
 
 /**
@@ -95,7 +91,7 @@ export function syntenyTrack(
   file: string,
   upperAssembly: string,
   lowerAssembly: string,
-  name = path.basename(file),
+  name = fileNameOf(file),
 ): Track {
   const queryFirst = upperIsQuery[adapter.type]
   if (queryFirst === undefined) {
@@ -107,7 +103,7 @@ export function syntenyTrack(
   const targetAssembly = queryFirst ? lowerAssembly : upperAssembly
   return {
     type: 'SyntenyTrack',
-    trackId: path.basename(file),
+    trackId: fileNameOf(file),
     name,
     // [query, target], as comparative-adapters reads it
     assemblyNames: [queryAssembly, targetAssembly],
@@ -115,22 +111,26 @@ export function syntenyTrack(
   }
 }
 
-export interface ComparativeData {
-  /** in stacking order: the first is the top row and a dotplot's x axis */
-  assemblies: Assembly[]
-  /** each assembly's `loc:`, aligned with `assemblies`; undefined shows it whole */
-  locs: (string | undefined)[]
-  syntenyTracks: Track[]
+/** One row of a comparative view, as a session spec's `views` lists it. */
+export interface ComparativeRow {
+  assembly: string
+  loc?: string
 }
 
-const GENOME_TAKES = new Set(['loc', 'aliases', 'cytobands'])
+export interface ComparativeData {
+  /** each genome once, in the order the command line first names it */
+  assemblies: Assembly[]
+  /** in stacking order: the first is the top row and a dotplot's x axis */
+  rows: ComparativeRow[]
+  syntenyTracks: Track[]
+}
 
 /**
  * The genomes and comparisons of a comparative view, in command-line order.
  *
- * - Each genome opens a row, with its `loc:`, `aliases:` and `cytobands:`,
- *   named after its file; two files of one name throw, and one file twice is
- *   a self-comparison.
+ * - Each genome opens a row, at its `loc:` or whole, with its `aliases:` and
+ *   `cytobands:`, named after its file. Two files of one name throw; one file
+ *   twice is a self-comparison, two rows of one assembly.
  * - A comparison file binds to the gap between the genome before it and the
  *   next one; a trailing one, written after both, clamps to the last gap.
  * - A comparison takes `name:`; any other modifier, on it or on a genome,
@@ -139,36 +139,38 @@ const GENOME_TAKES = new Set(['loc', 'aliases', 'cytobands'])
 export function buildComparative(entries: Entry[]): ComparativeData {
   const assemblies: Assembly[] = []
   const genomeFiles = new Map<string, string>()
-  const locs: (string | undefined)[] = []
+  const rows: ComparativeRow[] = []
   const comparisons: { entry: Entry; before: number }[] = []
   for (const entry of entries) {
     const [key, vals] = entry
-    const [file, ...mods] = vals
+    const [file = '', ...mods] = vals
     const role = comparativeRole(entry)
     const label = key === FILE_FLAG ? file : `--${key} ${file}`
     if (role === 'genome') {
-      const trackId =
-        assemblies.length === 0
-          ? 'refseq'
-          : `${path.basename(file ?? '')}-refseq`
-      const { assembly } = genomeAssembly(key, vals, trackId)
-      const extra = mods.filter(
-        mod => !GENOME_TAKES.has(splitModifier(mod)?.[0] ?? ''),
+      const { assembly, unused } = genomeAssembly(
+        key,
+        vals,
+        assemblies.length === 0 ? 'refseq' : `${fileNameOf(file)}-refseq`,
       )
+      const extra = unused.filter(mod => splitModifier(mod)?.[0] !== 'loc')
       if (extra.length) {
         throw new Error(
           `${label} takes loc:, aliases: and cytobands:, not ${extra.join(' ')}`,
         )
       }
       const sameName = genomeFiles.get(assembly.name)
-      if (sameName !== undefined && sameName !== file) {
+      if (sameName === undefined) {
+        genomeFiles.set(assembly.name, file)
+        assemblies.push(assembly)
+      } else if (sameName !== file) {
         throw new Error(
           `${sameName} and ${file} are both named ${assembly.name}, and a genome takes its file's name; rename or link one of them`,
         )
       }
-      genomeFiles.set(assembly.name, file ?? '')
-      assemblies.push(assembly)
-      locs.push(modifierValue(mods, 'loc'))
+      const loc = modifierValue(mods, 'loc')
+      rows.push(
+        loc ? { assembly: assembly.name, loc } : { assembly: assembly.name },
+      )
     } else if (role === 'synteny') {
       if (!file) {
         throw new Error(`--${key} requires a file argument`)
@@ -177,11 +179,11 @@ export function buildComparative(entries: Entry[]): ComparativeData {
       if (extra.length) {
         throw new Error(`${label} takes name:, not ${extra.join(' ')}`)
       }
-      comparisons.push({ entry, before: assemblies.length })
+      comparisons.push({ entry, before: rows.length })
     }
   }
 
-  const numLevels = assemblies.length - 1
+  const numLevels = rows.length - 1
   const syntenyTracks = comparisons.map(({ entry, before }) => {
     const [key, [file = '', ...mods]] = entry
     if (numLevels < 1) {
@@ -196,25 +198,11 @@ export function buildComparative(entries: Entry[]): ComparativeData {
     return syntenyTrack(
       adapter,
       file,
-      assemblies[level]!.name,
-      assemblies[level + 1]!.name,
+      rows[level]!.assembly,
+      rows[level + 1]!.assembly,
       modifierValue(mods, 'name'),
     )
   })
 
-  return { assemblies, locs, syntenyTracks }
-}
-
-/**
- * A comparative view's rows, as a session spec's `views` lists them: one per
- * genome, at its `loc:` or whole.
- */
-export function stackedViews({
-  assemblies,
-  locs,
-}: Pick<ComparativeData, 'assemblies' | 'locs'>) {
-  return assemblies.map((asm, i) => {
-    const loc = locs[i]
-    return loc ? { assembly: asm.name, loc } : { assembly: asm.name }
-  })
+  return { assemblies, rows, syntenyTracks }
 }

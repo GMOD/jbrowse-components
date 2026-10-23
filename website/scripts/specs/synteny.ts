@@ -38,6 +38,12 @@ const HG38_VERTEBRATES_TREE_ORDER = [
 export const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 export const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
 const AMYLASE_CONFIG = 'test_data/amylase/config.json'
+// scripts/build_grape_peach_cacao_synteny.sh, which also hosts the pairwise
+// grape-peach anchors that mcscan_synteny_grape_peach.md loads
+const GRAPE_PEACH_CONFIG =
+  'https://jbrowse.org/demos/grape_peach_cacao/config.json'
+const GRAPE = 'GCF_030704535.1'
+const PEACH = 'GCF_000346465.2'
 const T2T_APES_CACTUS_CONFIG =
   'https://jbrowse.org/demos/t2t_apes_cactus/config.json'
 const SYRI_CONFIG = 'test_data/syri/config.json'
@@ -335,7 +341,7 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
   const part = (name: string, trackIds: string[], label: string) => ({
     mode: 'url' as const,
     name,
-    url: sessionSpec(DOTPLOT_CONFIG, {
+    url: sessionSpec(GRAPE_PEACH_CONFIG, {
       views: [
         {
           type: 'LinearSyntenyView',
@@ -345,13 +351,13 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
           collapseEmptyRows: true,
           views: [
             {
-              assembly: 'grape',
-              loc: 'chr9:1-7,700,000',
+              assembly: GRAPE,
+              loc: 'chr9:1-11,300,000',
               tracks: [],
             },
             {
-              assembly: 'peach',
-              loc: 'Pp03:2,100,000-6,900,000',
+              assembly: PEACH,
+              loc: 'chrG3:2,150,000-7,300,000',
               tracks: [],
             },
           ],
@@ -375,12 +381,12 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
   return [
     part(
       'mcscan_synteny/anchors',
-      ['grape_peach_synteny_mcscan'],
+      ['grape_peach_anchors'],
       '.anchors open; one ribbon per gene pair',
     ),
     part(
       'mcscan_synteny/anchors_simple',
-      ['grape_peach_synteny_mcscan_simple', 'grape_peach_synteny_mcscan'],
+      ['grape_peach_anchors_simple', 'grape_peach_anchors'],
       '.anchors and .anchors.simple open; one ribbon per gene\nrendered on top of chained synteny blocks',
     ),
   ]
@@ -2405,32 +2411,30 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'mcscan_anchors',
-    url: sessionSpec(DOTPLOT_CONFIG, {
+    url: sessionSpec(GRAPE_PEACH_CONFIG, {
       views: [
         {
           type: 'LinearSyntenyView',
           mark: { interpolate: 'bump' },
-          tracks: [
-            ['grape_peach_synteny_mcscan', 'grape_peach_synteny_mcscan_simple'],
-          ],
+          tracks: [['grape_peach_anchors', 'grape_peach_anchors_simple']],
           levelHeights: [236],
           views: [
             {
-              assembly: 'peach',
-              loc: 'Pp05:7,380,181-14,148,567',
+              assembly: PEACH,
+              loc: 'chrG5:4,700,000-13,000,000',
               tracks: [
                 {
-                  trackId: 'grape_peach_synteny_mcscan_simple',
+                  trackId: 'grape_peach_anchors_simple',
                   height: 60,
                 },
               ],
             },
             {
-              assembly: 'grape',
-              loc: 'chr2:1-7,112,179',
+              assembly: GRAPE,
+              loc: 'chr2:1-8,200,000',
               tracks: [
                 {
-                  trackId: 'grape_peach_synteny_mcscan_simple',
+                  trackId: 'grape_peach_anchors_simple',
                   height: 60,
                 },
               ],
@@ -2454,12 +2458,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'mcscan_synteny/dotplot',
-    url: sessionSpec(DOTPLOT_CONFIG, {
+    url: sessionSpec(GRAPE_PEACH_CONFIG, {
       views: [
         {
           type: 'DotplotView',
-          views: [{ assembly: 'peach' }, { assembly: 'grape' }],
-          tracks: ['grape_peach_synteny_mcscan'],
+          views: [{ assembly: PEACH }, { assembly: GRAPE }],
+          tracks: ['grape_peach_anchors'],
           autoDiagonalize: true,
         },
       ],
@@ -2468,22 +2472,22 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
   },
 
-  // The block's grape and peach spans are both 126 kb, so the ribbons run
-  // parallel, and unpaired genes sit beside the paired ones.
+  // A collinear forward run of 21 pairs, about 140 kb on each side, so the
+  // ribbons run parallel, and unpaired genes sit beside the paired ones.
   {
     mode: 'url',
     name: 'mcscan_synteny/gene_level',
-    url: sessionSpec(DOTPLOT_CONFIG, {
+    url: sessionSpec(GRAPE_PEACH_CONFIG, {
       views: [
         {
           type: 'LinearSyntenyView',
           views: [
             {
-              assembly: 'grape',
-              loc: 'chr19:4,950,000-5,100,000',
+              assembly: GRAPE,
+              loc: 'chr13:1,190,000-1,345,000',
               tracks: [
                 {
-                  trackId: 'grape_genes',
+                  trackId: `${GRAPE}-ncbiRefSeq`,
                   filter: { genes: 'only' },
                   displayMode: 'compact',
                   showLabels: 'auto',
@@ -2492,11 +2496,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
               ],
             },
             {
-              assembly: 'peach',
-              loc: 'Pp04:11,975,000-12,125,000',
+              assembly: PEACH,
+              loc: 'chrG2:26,925,000-27,075,000',
               tracks: [
                 {
-                  trackId: 'peach_genes',
+                  trackId: `${PEACH}-ncbiRefSeq`,
                   filter: { genes: 'only' },
                   displayMode: 'compact',
                   showLabels: 'auto',
@@ -2505,7 +2509,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               ],
             },
           ],
-          tracks: [['grape_peach_synteny_mcscan']],
+          tracks: [['grape_peach_anchors']],
           mark: { interpolate: 'linear' },
           levelHeights: [220],
         },
@@ -2517,22 +2521,22 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 616,
   },
 
-  // Both depth-3 tandem arrays keep both ends in frame. Grape starts past
-  // VIT_201s0011g01710, whose peach mate at 5,822 kb is off the window.
+  // One-to-one pairs beside depth-2 and depth-3 ones in one window, so the
+  // grey and both oranges are all in frame.
   {
     mode: 'url',
     name: 'mcscan_synteny/syntenic_depth',
-    url: sessionSpec(DOTPLOT_CONFIG, {
+    url: sessionSpec(GRAPE_PEACH_CONFIG, {
       views: [
         {
           type: 'LinearSyntenyView',
           views: [
             {
-              assembly: 'grape',
-              loc: 'chr1:1,537,000-1,670,000',
+              assembly: GRAPE,
+              loc: 'chr3:2,825,000-2,970,000',
               tracks: [
                 {
-                  trackId: 'grape_genes',
+                  trackId: `${GRAPE}-ncbiRefSeq`,
                   filter: { genes: 'only' },
                   displayMode: 'compact',
                   showLabels: 'auto',
@@ -2541,11 +2545,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
               ],
             },
             {
-              assembly: 'peach',
-              loc: 'Pp04:5,858,000-5,935,000',
+              assembly: PEACH,
+              loc: 'chrG8:18,055,000-18,225,000',
               tracks: [
                 {
-                  trackId: 'peach_genes',
+                  trackId: `${PEACH}-ncbiRefSeq`,
                   filter: { genes: 'only' },
                   displayMode: 'compact',
                   showLabels: 'auto',
@@ -2554,7 +2558,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               ],
             },
           ],
-          tracks: [['grape_peach_synteny_mcscan']],
+          tracks: [['grape_peach_anchors']],
           mark: { interpolate: 'linear' },
           levelHeights: [220],
           encoding: { color: 'syntenicDepth' },
@@ -3483,12 +3487,12 @@ export const syntenyVideoFixtures = {
   liftoverBlock: 'chr11:1,925,000',
   // `mcscan_synteny/dotplot` minus `autoDiagonalize`, so the reorder is still
   // to happen on camera
-  unorderedDotplot: sessionSpec(DOTPLOT_CONFIG, {
+  unorderedDotplot: sessionSpec(GRAPE_PEACH_CONFIG, {
     views: [
       {
         type: 'DotplotView',
-        views: [{ assembly: 'peach' }, { assembly: 'grape' }],
-        tracks: ['grape_peach_synteny_mcscan'],
+        views: [{ assembly: PEACH }, { assembly: GRAPE }],
+        tracks: ['grape_peach_anchors'],
       },
     ],
   }),

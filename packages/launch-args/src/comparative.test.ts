@@ -1,7 +1,7 @@
 import {
   buildComparative,
+  comparativeRole,
   hasComparativeArgs,
-  stackedViews,
   syntenyTrack,
 } from './comparative.ts'
 import { fileAdapter } from './fileInput.ts'
@@ -55,11 +55,10 @@ describe('buildComparative', () => {
     const data = buildComparative(
       entries('--fasta a.fa loc:chr1 aliases:a.txt --paf a_b.paf --fasta b.fa'),
     )
-    expect(data.locs).toEqual(['chr1', undefined])
     expect(data.assemblies[0]!.refNameAliases?.adapter).toMatchObject({
       location: { localPath: 'a.txt' },
     })
-    expect(stackedViews(data)).toEqual([
+    expect(data.rows).toEqual([
       { assembly: 'a.fa', loc: 'chr1' },
       { assembly: 'b.fa' },
     ])
@@ -103,18 +102,41 @@ describe('buildComparative', () => {
     ).toThrow(/a\.sizes and a\.chrom\.sizes are both named a/)
   })
 
-  test('one genome file twice is a self-comparison', () => {
-    expect(
-      buildComparative(entries('a.fa a_a.paf a.fa')).syntenyTracks[0]
-        ?.assemblyNames,
-    ).toEqual(['a.fa', 'a.fa'])
+  // an assembly's name is its config identifier, so a second `a.fa` assembly
+  // makes every reference to it ambiguous
+  test('one genome file twice is a self-comparison of one assembly', () => {
+    const data = buildComparative(entries('a.fa loc:chr1 a_a.paf a.fa'))
+    expect(data.assemblies.map(a => a.name)).toEqual(['a.fa'])
+    expect(data.rows).toEqual([
+      { assembly: 'a.fa', loc: 'chr1' },
+      { assembly: 'a.fa' },
+    ])
+    expect(data.syntenyTracks[0]?.assemblyNames).toEqual(['a.fa', 'a.fa'])
   })
 
-  test('an MCScan file cannot be placed from the command line', () => {
-    expect(() => buildComparative(entries('a.fa a_b.anchors b.fa'))).toThrow(
-      /cannot place/,
+  test('a URL names its genome and comparison without the query', () => {
+    const data = buildComparative(
+      entries('https://x.test/a.fa?t=1 https://x.test/a_b.paf?t=1 b.fa'),
     )
+    expect(data.assemblies.map(a => a.name)).toEqual(['a.fa', 'b.fa'])
+    expect(data.syntenyTracks[0]).toMatchObject({
+      trackId: 'a_b.paf',
+      name: 'a_b.paf',
+    })
   })
+})
+
+describe('comparativeRole', () => {
+  test("an Object.prototype member's name is no comparison flag", () => {
+    expect(comparativeRole(['toString', ['x']])).toBeUndefined()
+    expect(comparativeRole(['constructor', ['x']])).toBeUndefined()
+  })
+})
+
+test('an MCScan file cannot be placed from the command line', () => {
+  expect(() => buildComparative(entries('a.fa a_b.anchors b.fa'))).toThrow(
+    /cannot place/,
+  )
 })
 
 describe('syntenyTrack', () => {

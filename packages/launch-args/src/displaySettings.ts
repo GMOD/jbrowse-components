@@ -271,10 +271,14 @@ const displayTypeAliases: Record<
   },
 }
 
+function displayAlias(name: string) {
+  return lookup(displayTypeAliases, name) ?? { type: name }
+}
+
 /** The display a `display:` modifier asks for; the last one given wins. */
 export function requestedDisplayType(modifiers: string[]) {
   const name = modifiers.findLast(mod => mod.startsWith('display:'))?.slice(8)
-  return name ? (lookup(displayTypeAliases, name)?.type ?? name) : undefined
+  return name ? displayAlias(name).type : undefined
 }
 
 // `sort:basePair` is the spelling before the slot named the field `base`.
@@ -369,10 +373,11 @@ const modifiers: Record<string, Modifier> = {
   display: {
     on: ALL_CATEGORIES,
     apply: (r, v) => {
-      const name = parseStr('display', v, 'display name')
-      const alias = lookup(displayTypeAliases, name)
-      r.displayType = alias?.type ?? name
-      Object.assign(r.snap, alias?.settings)
+      const { type, settings } = displayAlias(
+        parseStr('display', v, 'display name'),
+      )
+      r.displayType = type
+      Object.assign(r.snap, settings)
     },
   },
   // consumed while building the track's config

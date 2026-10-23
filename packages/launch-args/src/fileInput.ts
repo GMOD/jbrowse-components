@@ -1,6 +1,6 @@
-import path from 'node:path'
+import { fileNameOf } from '@jbrowse/add-track-core'
 
-import { guessTrack, guessTrackType } from './fileAdapter.ts'
+import { adapterTypeByName, guessTrack, guessTrackType } from './fileAdapter.ts'
 import {
   FILE_FLAG,
   isDataFile,
@@ -66,13 +66,15 @@ export type TrackFlag = keyof typeof trackFlagFormats
 
 export const trackFlags = Object.keys(trackFlagFormats) as TrackFlag[]
 
-/** The adapters each typed track flag opens. */
-export const trackFlagAdapters = Object.fromEntries(
-  trackFlags.map(flag => [flag, trackFlagFormats[flag].flat()]),
-) as Record<TrackFlag, string[]>
-
-function isTrackFlag(flag: string): flag is TrackFlag {
+export function isTrackFlag(flag: string): flag is TrackFlag {
   return Object.hasOwn(trackFlagFormats, flag)
+}
+
+/** The flags that open a genome file. */
+export const genomeFlags = ['fasta', 'chromSizes'] as const
+
+export function isGenomeFlag(flag: string) {
+  return (genomeFlags as readonly string[]).includes(flag)
 }
 
 const allFormats = trackFlags.flatMap<readonly string[]>(
@@ -90,8 +92,7 @@ function formatOf(
 // of the track flags' formats; then its tabix adapter for a `.gz` name or a
 // named index. Undefined leaves a bare file to the adapter its name says.
 function chosenAdapterType(flag: string, file: string, index?: string) {
-  const byName = guessTrack({ location: file, mapLocation: makeLocation })
-    .adapter.type
+  const byName = adapterTypeByName(file) ?? ''
   const own = isTrackFlag(flag) ? trackFlagFormats[flag] : allFormats
   const other = trackFlags.find(
     f => f !== flag && formatOf(trackFlagFormats[f], byName),
@@ -136,8 +137,8 @@ export function fileAdapter(
   return adapter
 }
 
-export function isSequenceAdapter(adapter: Adapter) {
-  return guessTrackType(adapter.type) === SEQUENCE_TRACK
+export function isSequenceAdapter({ type }: { type: string }) {
+  return guessTrackType(type) === SEQUENCE_TRACK
 }
 
 /**
@@ -154,7 +155,7 @@ export function sequenceAssembly(
   }: { aliases?: string; cytobands?: string; trackId?: string } = {},
 ): Assembly {
   return {
-    name: path.basename(file).replace(/\.(chrom\.)?sizes$/i, ''),
+    name: fileNameOf(file).replace(/\.(chrom\.)?sizes$/i, ''),
     sequence: { type: SEQUENCE_TRACK, trackId, adapter },
     ...(aliases
       ? {
@@ -249,8 +250,8 @@ export function fileTrack(
   }
   return {
     type: guessTrackType(adapter.type, file),
-    trackId: path.basename(file),
-    name: modifierValue(mods, 'name') ?? path.basename(file),
+    trackId: fileNameOf(file),
+    name: modifierValue(mods, 'name') ?? fileNameOf(file),
     ...(assemblyName ? { assemblyNames: [assemblyName] } : {}),
     adapter,
   }

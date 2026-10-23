@@ -111,6 +111,10 @@ function liveArrangement(self: object): Arrangement {
   return getSnapshot(host(self).configuration.rows) as Arrangement
 }
 
+function storedTree(self: object): string | undefined {
+  return getConf(host(self), ['rows', 'tree'])
+}
+
 /**
  * The order a reorder writes: the rows it named lead, and the names the
  * current order carries beyond them follow in their current order, so a
@@ -160,6 +164,11 @@ function listsInOrder(leaves: readonly string[], order: readonly string[]) {
     }
   }
   return true
+}
+
+/** Whether some rotation of `newick` lists `order`'s names in its order. */
+function rotationLists(newick: string, order: readonly string[]) {
+  return listsInOrder(getLeafNames(buildTree(newick, order)), order)
 }
 
 /**
@@ -475,7 +484,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       get rowTree(): string | undefined {
         return (
-          getConf(host(self), ['rows', 'tree']) ??
+          storedTree(self) ??
           (this.guideTreeHonoursDomain ? self.guideTreeNewick : undefined)
         )
       },
@@ -809,27 +818,55 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * `rows.sort` here, and the guide tree is `guideTree`'s parse.
        */
       get parsedTree() {
-        const tree: string | undefined = getConf(host(self), ['rows', 'tree'])
+        const tree = storedTree(self)
         if (tree) {
           return buildTree(tree, self.rowTreeProvenance ? [] : self.rowSort)
         }
         return self.guideTreeHonoursDomain ? self.guideTree : undefined
       },
       /**
+       * #getter
+       * The tree a reorder rotates rather than drops, as newick: a supplied
+       * `rows.tree`, one with no provenance, else the guide tree while
+       * `guideTreeHonoursDomain`. A computed tree is never one, since its run
+       * rotated it already.
+       */
+      get rotatableRowTree(): string | undefined {
+        const tree = storedTree(self)
+        return tree
+          ? self.rowTreeProvenance
+            ? undefined
+            : tree
+          : self.guideTreeHonoursDomain
+            ? self.guideTreeNewick
+            : undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Whether ordering the rows as `order` drops the tree: one a reorder
+       * rotates drops only for an order no rotation of it lists, and any
+       * other drops for any change.
+       */
+      orderDropsRowTree(order: readonly string[]) {
+        const rotatable = self.rotatableRowTree
+        return rotatable
+          ? !rotationLists(rotatable, order)
+          : orderDropsTree(self.rowTree, self.rowSort, order)
+      },
+    }))
+    .views(self => ({
+      /**
        * #method
        * Whether the arrangement dialog's submit of `next` drops the tree: an
-       * order that moves no row is not written, so it drops nothing, and the
-       * guide tree drops only for an order no rotation of it lists.
+       * order that moves no row is not written, so it drops nothing.
        */
       rowOrderWillDropTree(next: readonly { name: string }[]) {
-        const order = orderOver(self.rowSort, next)
-        const guide = self.guideTreeNewick
-        return guide &&
-          !getConf(host(self), ['rows', 'tree']) &&
-          self.guideTreeHonoursDomain
-          ? !listsInOrder(getLeafNames(buildTree(guide, order)), order)
-          : !movesNoRow(next, self.editableSources) &&
-              orderDropsTree(self.rowTree, self.rowSort, order)
+        return (
+          !movesNoRow(next, self.editableSources) &&
+          self.orderDropsRowTree(orderOver(self.rowSort, next))
+        )
       },
     }))
     .views(self => ({
@@ -838,9 +875,18 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * The parsed tree narrowed to the focus.
        */
       get root() {
-        return self.parsedTree
-          ? treeOfLeaves(self.parsedTree, self.rowFocus)
-          : undefined
+        const tree = self.parsedTree
+        const focus = self.rowFocus
+        return tree && focus
+          ? treeOfLeaves(
+              tree,
+              keptRows(
+                getLeafNames(tree).map(name => ({ name })),
+                focus,
+                self.rowAlias,
+              ).map(leaf => leaf.name),
+            )
+          : tree
       },
       /**
        * #getter
@@ -1062,8 +1108,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       }
       function writeOrder(rows: readonly { name: string }[], run?: ClusterRun) {
         const domain = orderOver(self.rowSort, rows)
-        const dropTree =
-          !run && orderDropsTree(self.rowTree, self.rowSort, domain)
+        const dropTree = !run && self.orderDropsRowTree(domain)
         write('sort', domain)
         if (run) {
           writeTree(run)

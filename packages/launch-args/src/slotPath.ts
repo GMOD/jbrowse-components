@@ -234,14 +234,11 @@ export function viewSettings(tokens: string[]) {
   const settings: Record<string, unknown> = {}
   for (const token of tokens) {
     if (token.startsWith('{')) {
-      let parsed: unknown
+      let parsed: Record<string, unknown>
       try {
-        parsed = JSON.parse(token)
+        parsed = JSON.parse(token) as Record<string, unknown>
       } catch (e) {
         throw new Error(`--view ${token} is not valid JSON`, { cause: e })
-      }
-      if (!isPlainObject(parsed)) {
-        throw new Error(`--view ${token} is not a JSON object`)
       }
       mergeSettings(settings, parsed)
     } else if (isSlotPathOption(token)) {
