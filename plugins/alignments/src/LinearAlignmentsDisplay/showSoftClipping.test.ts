@@ -349,8 +349,13 @@ describe('alignments colorField', () => {
   it('draws a per-base layer beside whatever fills the reads', () => {
     const { display } = createDisplay({
       encoding: { color: { field: 'tags.HP' } },
-      pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
-      modifications: { threshold: 50 },
+      pileup: {
+        bases: {
+          show: true,
+          encoding: { color: 'modifications' },
+          filter: [{ field: 'probability', gte: 0.5 }],
+        },
+      },
     })
     expect(display.colorField).toBe('tags.HP')
     expect(display.baseLayer).toEqual({
@@ -655,4 +660,19 @@ describe('alignments readConnections (arcs)', () => {
     expect(display.drawnReadConnections).toBe('off')
     expect(display.readConnectionsMark).toBe('cloud')
   })
+})
+
+test('the interbase filter reaches the worker, each field over its default', () => {
+  const { display } = createDisplay({
+    coverage: { interbase: { filter: [{ field: 'depth', gte: 2 }] } },
+  })
+  expect(display.rpcProps().interbaseIndicators).toEqual({
+    minDepth: 2,
+    minFraction: 0.3,
+  })
+  display.setCoverageMinAlleleFraction(0.05)
+  expect(display.coverageMinAlleleFraction).toBe(0.05)
+  expect(
+    readConfObject(display.configuration, ['coverage', 'alleles', 'filter']),
+  ).toMatchObject([{ field: 'fraction', gte: 0.05 }])
 })

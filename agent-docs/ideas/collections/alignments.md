@@ -56,7 +56,7 @@ already answers "is there a real SNP in this bp range" against the local depth â
 it exists for the hover tooltip at wide bpPerPx â€” so wiring it to a menu item and
 a keyboard shortcut gives variant-to-variant navigation off data already on the
 main thread. Its threshold is the caller's, so this should read the same
-`coverage.minAlleleFraction` the band's colors now do rather than inventing a
+`coverage.alleles.filter` the band's colors now do rather than inventing a
 second notion of significant. Bounded by the fetched region, which is the honest
 limit and worth saying in the UI: "next in view", not "next in the genome".
 

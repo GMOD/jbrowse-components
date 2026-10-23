@@ -12,12 +12,15 @@
  * used by the hit test and by tests.
  */
 import { interbaseDepthAt } from './coverageDownsampling.ts'
+import { DEFAULT_INTERBASE_INDICATOR_RULE } from './coverageInterbaseConfigSchema.ts'
 import {
   INSTANCE_OFFSET_F32 as SEGMENT_F32,
   INSTANCE_OFFSET_U32 as SEGMENT_U32,
   INSTANCE_STRIDE_BYTES as SEGMENT_STRIDE_BYTES,
   INSTANCE_STRIDE_WORDS as SEGMENT_STRIDE,
 } from './interbaseHistogramLayout.generated.ts'
+
+import type { InterbaseIndicatorRule } from './coverageInterbaseConfigSchema.ts'
 
 export interface InsertionEntry {
   position: number
@@ -29,9 +32,6 @@ export interface ClipEntry {
   position: number
   length: number
 }
-
-const MINIMUM_INDICATOR_READ_DEPTH = 8
-const INDICATOR_THRESHOLD = 0.3
 
 interface InterbaseBucket {
   insertion: number
@@ -68,6 +68,7 @@ function indicatorTypeFor(
   position: number,
   coverageDepths: Float32Array,
   coverageStartPos: number,
+  { minDepth, minFraction }: InterbaseIndicatorRule,
 ) {
   const total = entry.insertion + entry.softclip + entry.hardclip
   const localDepth = interbaseDepthAt(
@@ -76,10 +77,7 @@ function indicatorTypeFor(
     position,
   )
   let dominantType = 0
-  if (
-    localDepth >= MINIMUM_INDICATOR_READ_DEPTH &&
-    total > localDepth * INDICATOR_THRESHOLD
-  ) {
+  if (localDepth >= minDepth && total > localDepth * minFraction) {
     dominantType = 1
     let dominantCount = entry.insertion
     if (entry.softclip > dominantCount) {
@@ -109,6 +107,7 @@ export function computeInterbaseCoverage(
   softclips: ClipEntry[],
   hardclips: ClipEntry[],
   coverage: { depths: Float32Array; maxDepth: number; startPos: number },
+  indicatorRule: InterbaseIndicatorRule = DEFAULT_INTERBASE_INDICATOR_RULE,
 ) {
   const {
     depths: coverageDepths,
@@ -158,6 +157,7 @@ export function computeInterbaseCoverage(
       position,
       coverageDepths,
       coverageStartPos,
+      indicatorRule,
     )
     if (entry.indicatorType !== 0) {
       indicatorCount++

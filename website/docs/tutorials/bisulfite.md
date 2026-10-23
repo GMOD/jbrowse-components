@@ -265,18 +265,18 @@ opens on, and the track menu switches it afterwards:
     "pileup": {
       "bases": {
         "show": true,
-        "encoding": { "color": "bisulfite" }
+        "encoding": { "color": "bisulfite" },
+        "filter": [{ "field": "context", "oneOf": ["CG"] }]
       }
-    },
-    "modifications": { "cytosineContext": "CG" }
+    }
   }
 }
 ```
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `pileup.bases`
-is a color channel for each base, here set from the `bisulfite` field.
-[`cytosineContext`](/docs/config/linearalignmentsdisplay/#slot-modifications)
-takes `CG`, `CHG`, `CHH` or `all`.
+is a color channel for each base, here set from the `bisulfite` field. The
+`context` entry in its [`filter`](/docs/config/pileupbases/#slot-filter) takes
+`CG`, `CHG` or `CHH`, and `{ "field": "context" }` paints every context.
 
 ## Coloring the reads by cytosine context
 
@@ -331,7 +331,7 @@ short simple repeats in the window drop out and the LTR element stays.
 The figure below shows the three contexts side by side as three tracks that
 share one file and differ in `trackId` and in the context their
 `displayDefaults` pin. The CHG copy looks like this; the CpG and CHH copies
-change the `trackId`, the name and `cytosineContext`:
+change the `trackId`, the name and the `context` entry:
 
 ```json addtrack
 {
@@ -343,10 +343,10 @@ change the `trackId`, the name and `cytosineContext`:
     "pileup": {
       "bases": {
         "show": true,
-        "encoding": { "color": "bisulfite" }
+        "encoding": { "color": "bisulfite" },
+        "filter": [{ "field": "context", "oneOf": ["CHG"] }]
       }
     },
-    "modifications": { "cytosineContext": "CHG" },
     "coverage": { "show": false }
   }
 }

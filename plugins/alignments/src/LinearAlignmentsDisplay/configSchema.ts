@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { liftModificationThresholds } from '../shared/basesFilter.ts'
 import { alignmentsModificationsConfigSchema } from './alignmentsModificationsConfigSchema.ts'
 import { baseLinearAlignmentsDisplayConfigSchema } from './baseConfigSchema.ts'
 import { readsPileupConfigSchema } from './readsPileupConfigSchema.ts'
@@ -109,9 +110,8 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       pileup: readsPileupConfigSchema,
       /**
        * #slot modifications
-       * Settings for the `modifications` and `bisulfite` color fields:
-       * `threshold` (percent, default 10), `unmodified`,
-       * `cytosineContext` and `shownModifications`.
+       * The `modifications` and `bisulfite` color fields' `unmodified`;
+       * `pileup.bases.filter` picks the calls they draw.
        */
       // Beside `pileup.bases` rather than inside its channel: a channel is
       // written whole, so a menu pick of `bisulfite` would reset these.
@@ -130,6 +130,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       baseConfiguration: baseLinearAlignmentsDisplayConfigSchema,
       explicitlyTyped: true,
+      preProcessSnapshot: liftModificationThresholds,
     },
   )
 }

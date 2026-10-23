@@ -237,13 +237,32 @@ const basesStep: FieldRecipe = value => {
     return undefined
   }
   const { menu } = COLOR_SCHEMES[layer.type]
-  return {
-    path: `${TRACK_MENU} → Color by... → ${SPECIAL_COLOR_MENUS[layer.type] ?? menu.label}`,
-    note:
-      layer.type === 'modifications'
-        ? 'Needs MM/ML modification tags in your BAM/CRAM.'
-        : undefined,
-  }
+  const filter = Array.isArray(bases?.filter) ? bases.filter.map(asRecord) : []
+  const contexts = filter.find(p => p?.field === 'context')?.oneOf
+  // The bisulfite submenu leads with its cytosine-context radios, whose labels
+  // are importable ('CpG' is not the 'CG' the spec stores).
+  const context = Array.isArray(contexts)
+    ? cytosineContextOptions.find(o => o.value === asString(contexts[0]))
+    : undefined
+  return [
+    {
+      path: `${TRACK_MENU} → Color by... → ${SPECIAL_COLOR_MENUS[layer.type] ?? menu.label}`,
+      note:
+        layer.type === 'modifications'
+          ? filter.some(p => p?.field === 'code')
+            ? 'Needs MM/ML modification tags in your BAM/CRAM. This figure also narrows the drawn types under Modifications → Modification types.'
+            : 'Needs MM/ML modification tags in your BAM/CRAM.'
+          : undefined,
+    },
+    ...(context
+      ? [
+          {
+            path: `${TRACK_MENU} → Color by... → Per-base coloring → Bisulfite / EM-seq → ${context.label}`,
+            note: 'Under the bisulfite color field only.',
+          },
+        ]
+      : []),
+  ]
 }
 
 // A track entry with no display type still says its color is the alignments
@@ -261,34 +280,15 @@ function namesAlignmentsColor(value: unknown) {
 // or `bisulfite`: which radio inside that submenu the figure picked.
 const modificationsStep: FieldRecipe = value => {
   const mods = asRecord(value)
-  if (!mods) {
-    return undefined
-  }
-  // The bisulfite submenu leads with its cytosine-context radios, whose labels
-  // are importable ('CpG' is not the 'CG' the spec stores).
-  const context = cytosineContextOptions.find(
-    o => o.value === asString(mods.cytosineContext),
-  )
-  return [
-    {
-      path: `${TRACK_MENU} → Color by... → Per-base coloring → Modifications → ${
-        mods.unmodified === 'calls' || mods.unmodified === 'all'
-          ? MODIFICATION_TWO_COLOR
-          : MODIFICATION_BY_TYPE
-      }`,
-      note: Array.isArray(mods.shownModifications)
-        ? 'This figure also narrows the drawn types under Modifications → Modification types.'
-        : undefined,
-    },
-    ...(context
-      ? [
-          {
-            path: `${TRACK_MENU} → Color by... → Per-base coloring → Bisulfite / EM-seq → ${context.label}`,
-            note: 'Under the bisulfite color field only.',
-          },
-        ]
-      : []),
-  ]
+  return mods
+    ? {
+        path: `${TRACK_MENU} → Color by... → Per-base coloring → Modifications → ${
+          mods.unmodified === 'calls' || mods.unmodified === 'all'
+            ? MODIFICATION_TWO_COLOR
+            : MODIFICATION_BY_TYPE
+        }`,
+      }
+    : undefined
 }
 
 // The alignments display and LGVSyntenyDisplay build their "Group by..." submenu
@@ -1991,9 +1991,14 @@ export const trackFields: Record<string, FieldRecipe> = {
   // A radio list of five fractions rather than a number entry
   // (alignments-core coverageMenuItems.ts), so the recipe names the row and
   // not the value.
-  'coverage.minAlleleFraction': value => {
+  'coverage.alleles': value => {
+    const filter = asRecord(value)?.filter
+    const entry = Array.isArray(filter)
+      ? filter.map(asRecord).find(p => p?.field === 'fraction')
+      : undefined
+    const floor = entry?.gte ?? entry?.gt
     const row =
-      typeof value === 'number' ? SNP_FREQUENCY_ROWS[String(value)] : undefined
+      typeof floor === 'number' ? SNP_FREQUENCY_ROWS[String(floor)] : undefined
     return row
       ? {
           path: `${TRACK_MENU} → Color SNPs above... → ${row}`,

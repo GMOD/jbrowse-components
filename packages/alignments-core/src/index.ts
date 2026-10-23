@@ -177,6 +177,7 @@ export {
   emptyInterbaseCoverage,
 } from './interbaseCoverage.ts'
 export type { ClipEntry, InsertionEntry } from './interbaseCoverage.ts'
+export type { InterbaseIndicatorRule } from './coverageInterbaseConfigSchema.ts'
 export { readInterbaseSegments, recordsWithin } from './interbaseSegments.ts'
 export type { InterbaseSegmentReader } from './interbaseSegments.ts'
 export { computeSNPCoverage, emptySnpCoverage } from './snpCoverage.ts'

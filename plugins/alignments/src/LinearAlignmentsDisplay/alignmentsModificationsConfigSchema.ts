@@ -3,56 +3,35 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { MODIFICATION_UNMODIFIED } from '../shared/types.ts'
 
-import type { CytosineContext } from '@jbrowse/modifications-utils'
-
-// Spelled out so the slot's type is the literal union and not the alias: a
-// display in another plugin composing this schema cannot name the alias in its
-// declaration emit without a dependency of its own on modifications-utils.
-const CYTOSINE_CONTEXTS = [
-  'CG',
-  'CHG',
-  'CHH',
-  'all',
-] as const satisfies readonly CytosineContext[]
-
 /**
  * #config AlignmentsModifications
  * #category display
  * The alignments displays' `modifications` setting configures the
  * `modifications` and `bisulfite` fields of
- * [AlignmentsBaseColor](../alignmentsbasecolor). The by-type view paints each MM/ML call its type's color above
- * `threshold`; `unmodified: 'calls'` paints the unmodified side blue as well,
- * and `unmodified: 'all'` paints every cytosine in `cytosineContext` whether
- * the basecaller listed it or not, which is the methylation view.
+ * [AlignmentsBaseColor](../alignmentsbasecolor): `unmodified: 'calls'` paints
+ * the unmodified side blue as well, and `unmodified: 'all'` paints every
+ * cytosine in the `pileup.bases.filter` context whether the basecaller listed
+ * it or not, which is the methylation view. Which calls draw is
+ * `pileup.bases.filter`'s.
  *
  * #example
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
- *   modifications: { unmodified: 'all', cytosineContext: 'CHG' },
- * }
- * ```
- * ```js
- * {
- *   type: 'LinearAlignmentsDisplay',
- *   pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
- *   modifications: { shownModifications: ['a'], threshold: 50 },
+ *   pileup: {
+ *     bases: {
+ *       show: true,
+ *       encoding: { color: 'modifications' },
+ *       filter: [{ field: 'context', oneOf: ['CHG'] }],
+ *     },
+ *   },
+ *   modifications: { unmodified: 'all' },
  * }
  * ```
  */
 export const alignmentsModificationsConfigSchema = ConfigurationSchema(
   'AlignmentsModifications',
   {
-    /**
-     * #slot
-     */
-    threshold: {
-      type: 'number',
-      defaultValue: 10,
-      description:
-        'hide a call whose probability is under this percent in the by-type view; the two-color view cuts at 50 and the methylation fill paints every cytosine',
-    },
     /**
      * #slot
      */
@@ -64,25 +43,6 @@ export const alignmentsModificationsConfigSchema = ConfigurationSchema(
       defaultValue: 'hidden',
       description:
         "unmodified sites painted blue: 'hidden' none, 'calls' the calls more likely unmodified, under modifications and bisulfite alike, and 'all' every cytosine in the context as well, the ones the basecaller left implicit included; 'all' is the methylation view",
-    },
-    /**
-     * #slot
-     */
-    cytosineContext: {
-      type: 'stringEnum',
-      model: types.enumeration('CytosineContext', [...CYTOSINE_CONTEXTS]),
-      defaultValue: 'CG',
-      description:
-        'cytosine context the methylation fill and bisulfite paint: CG, CHG, CHH or all',
-    },
-    /**
-     * #slot
-     */
-    shownModifications: {
-      type: 'stringArray',
-      defaultValue: [],
-      description:
-        'the modification type codes drawn (m, h, a, ...); empty draws every type present in the reads',
     },
   },
   { closed: true, plot: true },

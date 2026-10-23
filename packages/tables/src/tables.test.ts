@@ -1094,12 +1094,14 @@ test('a junction says whether the display shows it, its arc height and its strok
   })
 })
 
-test('an allele segment is shown where its share of the depth reaches coverage.minAlleleFraction', async () => {
+test('an allele segment is shown where its share of the depth passes coverage.alleles.filter', async () => {
   const all = await engine.alignments(BAM)
   expect(all.alleleCoverage.shown.every(Boolean)).toBe(true)
   const t = await engine.alignments({
     ...BAM,
-    display: { coverage: { minAlleleFraction: 0.5 } },
+    display: {
+      coverage: { alleles: { filter: [{ field: 'fraction', gte: 0.5 }] } },
+    },
   })
   expect(t.alleleCoverage.shown).toEqual(
     t.alleleCoverage.from.map(

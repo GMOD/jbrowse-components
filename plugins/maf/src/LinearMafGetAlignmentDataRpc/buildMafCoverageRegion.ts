@@ -10,6 +10,7 @@ import { computeMafCoverage } from './computeMafCoverage.ts'
 
 import type { MafCoverageRegion } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafWireBlocksInput } from './computeMafCoverage.ts'
+import type { InterbaseIndicatorRule } from '@jbrowse/alignments-core'
 
 /**
  * Build the packed coverage region (depth bars + SNP segments + interbase
@@ -28,6 +29,7 @@ export function buildMafCoverageRegion(
   regionStart: number,
   regionEnd: number,
   refSampleId?: string,
+  interbaseIndicators?: InterbaseIndicatorRule,
 ): MafCoverageRegion {
   const mafCov = computeMafCoverage(packed, regionStart, regionEnd, refSampleId)
   const coverageForSnp = {
@@ -52,6 +54,7 @@ export function buildMafCoverageRegion(
     [],
     [],
     coverageForSnp,
+    interbaseIndicators,
   )
 
   // Ascending by position, which `countInterbaseAtPosition` requires: it

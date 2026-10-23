@@ -10,6 +10,7 @@ import { MafRegionSink } from './mafRegionSink.ts'
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { BaseMafRpcArgs, MafSource } from '../types.ts'
+import type { InterbaseIndicatorRule } from '@jbrowse/alignments-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
@@ -19,6 +20,8 @@ export interface LinearMafGetAlignmentDataArgs extends BaseMafRpcArgs {
   // scores) only the genomes it draws. No order travels with it: rows name
   // their species and the client places them (see `placeMafRegionData`).
   rowFocus?: string[]
+  // `coverage.interbase.filter`, resolved: which positions earn a triangle.
+  interbaseIndicators?: InterbaseIndicatorRule
 }
 
 export interface LinearMafGetAlignmentDataResult {
@@ -69,6 +72,7 @@ export async function executeMafAlignmentData({
     adapterConfig,
     sessionId,
     rowFocus,
+    interbaseIndicators,
     byteLimit,
     signal,
     statusCallback,
@@ -129,6 +133,7 @@ export async function executeMafAlignmentData({
     region.start,
     region.end,
     isVisible(refRowId) ? refRowId : undefined,
+    interbaseIndicators,
   )
 
   // rpcResult wraps value + transfer list; the RPC framework unwraps it before

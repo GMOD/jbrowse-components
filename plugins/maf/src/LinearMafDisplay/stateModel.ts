@@ -1092,7 +1092,10 @@ export default function stateModelFactory(
          * fetch-derived state belongs here (`singleFetchPerRegion.test.ts`).
          */
         rpcProps() {
-          return { rowFocus: self.rowFocusKey }
+          return {
+            rowFocus: self.rowFocusKey,
+            interbaseIndicators: self.interbaseIndicatorRule,
+          }
         },
       }))
       .views(self => ({

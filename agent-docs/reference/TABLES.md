@@ -128,7 +128,7 @@ copied.
   (the browser counts a junction whose motif it never read as canonical), `arcHeight`
   (`sashimiArcHeightFraction`) and `strokeWidth` (`sashimiStrokeWidth`, in
   px). `alleleCoverage` has `shown`, true where the allele's share of the
-  depth reaches `coverage.minAlleleFraction`, the coverageSnp shader's
+  depth passes `coverage.alleles.filter`, the coverageSnp shader's
   test.
 - `readPitch` gives the read height (`pileup.mark.height`) and the gap below a read
   (`featureSpacingForHeight`). Under `heightMode: 'fit'` the browser

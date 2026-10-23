@@ -23,6 +23,10 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
   "rowFocusKey": undefined,
   "rowTree": "(mm10,(hg38,panTro4));",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -87,6 +91,10 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
   "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -138,6 +146,10 @@ exports[`a cluster run rotates towards the declared order 1`] = `
   "rowFocusKey": undefined,
   "rowTree": "((panTro4,hg38),mm10);",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -189,6 +201,10 @@ exports[`a declared order leads with no tree 1`] = `
   "rowFocusKey": undefined,
   "rowTree": undefined,
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -236,6 +252,10 @@ exports[`a declared order rotates a supplied tree 1`] = `
   "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -287,6 +307,10 @@ exports[`a declared order rotates a supplied tree 2`] = `
   "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -338,6 +362,10 @@ exports[`a dialog recolor over an adapter color, in place 1`] = `
   "rowFocusKey": undefined,
   "rowTree": undefined,
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -385,6 +413,10 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
   "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -436,6 +468,10 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
   "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -492,6 +528,10 @@ exports[`a discovered row joins after a reorder 1`] = `
   "rowFocusKey": undefined,
   "rowTree": undefined,
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -547,6 +587,10 @@ exports[`a focus narrows the rows and the fetch key 1`] = `
   ],
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": [
       "hg38",
       "panTro4",
@@ -598,6 +642,10 @@ exports[`a focus narrows the rows and the fetch key 2`] = `
   ],
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": [
       "hg38",
       "mm10",
@@ -646,6 +694,10 @@ exports[`a focus narrows the rows and the fetch key 3`] = `
   "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -700,6 +752,10 @@ exports[`a focused cluster run keeps the hidden row after the clade 1`] = `
   ],
   "rowTree": "(panTro4,hg38);",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": [
       "hg38",
       "panTro4",
@@ -748,6 +804,10 @@ exports[`a focused cluster run keeps the hidden row after the clade 2`] = `
   "rowFocusKey": undefined,
   "rowTree": "(panTro4,hg38);",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -798,6 +858,10 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
   "rowFocusKey": undefined,
   "rowTree": undefined,
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -845,6 +909,10 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
   "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -896,6 +964,10 @@ exports[`a supplied guide tree leads the rows 1`] = `
   "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -947,6 +1019,10 @@ exports[`adapter labels and colors are the rows own 1`] = `
   "rowFocusKey": undefined,
   "rowTree": undefined,
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -994,6 +1070,10 @@ exports[`hiding the reference row prunes it from the rows and the tree 1`] = `
   "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [
@@ -1043,6 +1123,10 @@ exports[`hiding the reference row prunes it from the rows and the tree 2`] = `
   ],
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": [
       "hg38",
       "panTro4",
@@ -1086,6 +1170,10 @@ exports[`sort at a column orders the rows by base and drops the supplied tree 1`
   "rowFocusKey": undefined,
   "rowTree": undefined,
   "rpcProps": {
+    "interbaseIndicators": {
+      "minDepth": 8,
+      "minFraction": 0.3,
+    },
     "rowFocus": undefined,
   },
   "sources": [

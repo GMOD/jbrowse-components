@@ -9,7 +9,7 @@
 
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { BaseLayer, WorkerFacet } from '../shared/types'
-import type { ReadKeys } from '@jbrowse/alignments-core'
+import type { InterbaseIndicatorRule, ReadKeys } from '@jbrowse/alignments-core'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
@@ -42,6 +42,8 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   // The pileup's low-frequency mismatch/indel fade is unaffected (frequencies
   // are computed from the full depth sweep regardless). Defaults true.
   showCoverage?: boolean
+  // `coverage.interbase.filter`, resolved: which positions earn a triangle.
+  interbaseIndicators?: InterbaseIndicatorRule
   // Whether the reply carries the splice junctions and fetches their motifs:
   // `coverage.show || sashimi.show`, so with coverage shown a sashimi toggle
   // refetches nothing, and with both off no RNA-seq fetch reads sequence for

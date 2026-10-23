@@ -501,7 +501,7 @@ describe('color routing', () => {
       buildDisplaySnapshot('alignments', [
         'color:mapq',
         'encoding.color.scale.domain=1,2',
-        'modifications.threshold=50',
+        'modifications.unmodified=all',
         'showOutline=false',
       ]).snap,
     ).toEqual({ encoding: { color: 'mapq' }, showOutline: false })

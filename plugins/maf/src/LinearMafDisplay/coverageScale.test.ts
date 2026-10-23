@@ -67,7 +67,7 @@ test('a pinned maximum pins the band', () => {
 
 test('the SNP floor and the interbase toggle reach the band', () => {
   const display = displayWith({
-    coverage: { minAlleleFraction: 0.2 },
+    coverage: { alleles: { filter: [{ field: 'fraction', gte: 0.2 }] } },
   })
   expect(display.coverageBandState.minAlleleFraction).toBe(0.2)
   display.setShowInterbaseIndicators(false)
@@ -76,7 +76,9 @@ test('the SNP floor and the interbase toggle reach the band', () => {
 
 test('the zoomed-out tooltip snaps past a SNP under the floor, as the band skips it', () => {
   const { display } = createMafTestEnvironment({
-    displayConfig: { coverage: { minAlleleFraction: 0.2 } },
+    displayConfig: {
+      coverage: { alleles: { filter: [{ field: 'fraction', gte: 0.2 }] } },
+    },
   }).createDisplay()
   const A = 'A'.charCodeAt(0)
   stageDetailRegion(display, 0, {

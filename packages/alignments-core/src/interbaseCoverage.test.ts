@@ -1,3 +1,4 @@
+import { interbaseIndicatorRuleOf } from './coverageInterbaseConfigSchema.ts'
 import { computeInterbaseCoverage } from './interbaseCoverage.ts'
 import { readInterbaseSegments } from './interbaseSegments.ts'
 
@@ -137,6 +138,32 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
       cov(new Float32Array(20).fill(8), 8),
     )
     expect(result.indicatorCount).toBe(1)
+  })
+
+  it('takes its depth and share from the interbase filter', () => {
+    const insertions = Array.from({ length: 5 }, () => ({
+      position: 105,
+      length: 5,
+    }))
+    const shallow = cov(new Float32Array(20).fill(7), 7)
+    const rule = interbaseIndicatorRuleOf([{ field: 'depth', gte: 4 }])
+    expect(rule).toEqual({ minDepth: 4, minFraction: 0.3 })
+    expect(
+      computeInterbaseCoverage(insertions, [], [], shallow, rule)
+        .indicatorCount,
+    ).toBe(1)
+    const strict = interbaseIndicatorRuleOf([
+      { field: 'depth', gte: 4 },
+      { field: 'fraction', gt: 0.9 },
+    ])
+    expect(
+      computeInterbaseCoverage(insertions, [], [], shallow, strict)
+        .indicatorCount,
+    ).toBe(0)
+    expect(interbaseIndicatorRuleOf([{ field: 'depth' }])).toEqual({
+      minDepth: 0,
+      minFraction: 0.3,
+    })
   })
 
   it('stacks one segment per non-empty type, accumulating yOffset', () => {

@@ -88,6 +88,7 @@ import {
   declaredReadLabels,
   isBakedField,
 } from '../shared/alignmentsColor.ts'
+import { basesFilterOf } from '../shared/basesFilter.ts'
 import {
   paintsEveryBase,
   paintsModifications,
@@ -2895,6 +2896,7 @@ export default function stateModelFactory(
             // per-bp GPU depth buffer that overflows the device limit at
             // chromosome scale, when the band is off.
             showCoverage: self.showCoverage,
+            interbaseIndicators: self.interbaseIndicatorRule,
             // The junctions ride with coverage, so a sashimi toggle with the
             // band shown refetches nothing; without it they ride with the arcs.
             // A display without the sashimi band fetches none.
@@ -3168,7 +3170,14 @@ export default function stateModelFactory(
                 colorForField(writtenColorOf(color), layer?.type ?? ''),
               )
               if (layer?.modifications) {
-                setConf(conf, 'modifications', layer.modifications)
+                setConf(conf, 'modifications', {
+                  unmodified: layer.modifications.unmodified,
+                })
+                setConf(
+                  conf,
+                  ['pileup', 'bases', 'filter'],
+                  basesFilterOf(layer.modifications),
+                )
               }
             }
           },

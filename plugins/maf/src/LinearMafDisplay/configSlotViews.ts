@@ -1,3 +1,8 @@
+import {
+  alleleFloorOf,
+  interbaseIndicatorRuleOf,
+  withAlleleFloor,
+} from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import {
@@ -14,6 +19,7 @@ import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
 import type { ConservationUnit } from './conservationUnits.ts'
 import type { MafColorField, MafYField } from './rowRenderings.ts'
+import type { InterbaseIndicatorRule } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type {
@@ -56,7 +62,16 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get coverageMinAlleleFraction(): number {
-      return getConf(self, ['coverage', 'minAlleleFraction'])
+      return alleleFloorOf(self.configuration.coverage.alleles.filter)
+    },
+    /**
+     * #getter
+     * `coverage.interbase.filter` as the worker's triangle rule.
+     */
+    get interbaseIndicatorRule(): InterbaseIndicatorRule {
+      return interbaseIndicatorRuleOf(
+        self.configuration.coverage.interbase.filter,
+      )
     },
     /**
      * #getter
@@ -218,7 +233,11 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setCoverageMinAlleleFraction(fraction: number) {
-      setConf(self, ['coverage', 'minAlleleFraction'], fraction)
+      setConf(
+        self,
+        ['coverage', 'alleles', 'filter'],
+        withAlleleFloor(self.configuration.coverage.alleles.filter, fraction),
+      )
     },
     /**
      * #action

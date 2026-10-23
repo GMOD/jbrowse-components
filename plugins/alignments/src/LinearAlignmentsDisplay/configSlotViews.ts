@@ -1,3 +1,8 @@
+import {
+  alleleFloorOf,
+  interbaseIndicatorRuleOf,
+  withAlleleFloor,
+} from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
@@ -34,6 +39,7 @@ import {
   withFields,
 } from '../shared/alignmentsFilter.ts'
 import { arcColorFieldOf } from '../shared/arcColorOptions.ts'
+import { modificationFiltersOf } from '../shared/basesFilter.ts'
 import { facetUnitNotices } from '../shared/groupFeatures.ts'
 import { sortOf, sortProblems } from './alignmentsSortConfigSchema.ts'
 import {
@@ -72,6 +78,7 @@ import type {
   ReadConnectionsPlacement,
   SashimiPlacement,
 } from './constants.ts'
+import type { InterbaseIndicatorRule } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import type { Reversible } from '@jbrowse/core/ui/filterMenuItems'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -199,7 +206,16 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get coverageMinAlleleFraction(): number {
-      return getConf(self, ['coverage', 'minAlleleFraction'])
+      return alleleFloorOf(self.configuration.coverage.alleles.filter)
+    },
+    /**
+     * #getter
+     * `coverage.interbase.filter` as the worker's triangle rule.
+     */
+    get interbaseIndicatorRule(): InterbaseIndicatorRule {
+      return interbaseIndicatorRuleOf(
+        self.configuration.coverage.interbase.filter,
+      )
     },
     /** #getter */
     get showPileup(): boolean {
@@ -499,7 +515,12 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get modificationSettings(): ModificationColorBy {
       const conf = readsConfOf(self.configuration)
-      return conf ? readConfObject(conf, 'modifications') : {}
+      return conf
+        ? {
+            ...readConfObject(conf, 'modifications'),
+            ...modificationFiltersOf(conf.pileup.bases.filter),
+          }
+        : {}
     },
     /**
      * #getter
@@ -646,7 +667,11 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setCoverageMinAlleleFraction(fraction: number) {
-      setConf(self, ['coverage', 'minAlleleFraction'], fraction)
+      setConf(
+        self,
+        ['coverage', 'alleles', 'filter'],
+        withAlleleFloor(self.configuration.coverage.alleles.filter, fraction),
+      )
     },
 
     /**

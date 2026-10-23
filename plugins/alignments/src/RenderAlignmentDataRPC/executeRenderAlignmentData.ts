@@ -36,7 +36,10 @@ import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ModCoverageKind } from '../shared/runCoveragePipeline.ts'
 import type { ModificationEntry } from '../shared/webglRpcTypes.ts'
 import type { AlignmentGroup, WorkerPileupData } from './types.ts'
-import type { ReadNames } from '@jbrowse/alignments-core'
+import type {
+  InterbaseIndicatorRule,
+  ReadNames,
+} from '@jbrowse/alignments-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
@@ -54,6 +57,7 @@ interface GroupContext {
   region: Region
   showSoftClipping: boolean
   showCoverage: boolean
+  interbaseIndicators: InterbaseIndicatorRule | undefined
   junctions: boolean
   // Which modification coverage the band stacks: modBAM calls over a read-base
   // pileup, or bisulfite's C->T-derived methylation level. Undefined outside the
@@ -121,6 +125,7 @@ async function buildGroupResult(
     region,
     showSoftClipping,
     showCoverage,
+    interbaseIndicators,
     junctions,
     modCoverage,
     junctionReference,
@@ -190,6 +195,7 @@ async function buildGroupResult(
     interbaseArrays,
     gapArrays,
     showCoverage,
+    interbaseIndicators,
     junctions,
     modCoverage,
     junctionReference,
@@ -277,6 +283,7 @@ export async function executeRenderAlignmentData({
     lodTier,
     showSoftClipping = false,
     showCoverage = true,
+    interbaseIndicators,
     junctions = true,
     byteLimit,
     perBaseBinBp = 1,
@@ -436,6 +443,7 @@ export async function executeRenderAlignmentData({
     region,
     showSoftClipping,
     showCoverage,
+    interbaseIndicators,
     junctions,
     modCoverage,
     junctionReference,

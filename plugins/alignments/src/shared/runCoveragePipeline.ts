@@ -29,6 +29,7 @@ import type {
   ModificationEntry,
   SoftclipData,
 } from './webglRpcTypes.ts'
+import type { InterbaseIndicatorRule } from '@jbrowse/alignments-core'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 
 /**
@@ -61,6 +62,7 @@ export async function runCoveragePipeline({
   interbaseArrays,
   gapArrays,
   showCoverage,
+  interbaseIndicators,
   junctions = true,
   modCoverage,
   junctionReference,
@@ -82,6 +84,7 @@ export async function runCoveragePipeline({
   interbaseArrays: Parameters<typeof computeFrequenciesAndThresholds>[1]
   gapArrays: Parameters<typeof computeFrequenciesAndThresholds>[2]
   showCoverage: boolean
+  interbaseIndicators?: InterbaseIndicatorRule
   // The sashimi junctions, which draw over the band or in a strip of their
   // own without it; true wherever coverage is shown
   junctions?: boolean
@@ -139,6 +142,7 @@ export async function runCoveragePipeline({
         bisulfiteCallCounts,
         simplexModifications,
         modCoverage,
+        interbaseIndicators,
         junctionReference,
         splitJunctions,
       })
@@ -185,6 +189,7 @@ function computeCoverageBand({
   bisulfiteCallCounts,
   simplexModifications,
   modCoverage,
+  interbaseIndicators,
   junctionReference,
   splitJunctions,
 }: {
@@ -199,6 +204,7 @@ function computeCoverageBand({
   bisulfiteCallCounts: ReadonlyMap<number, number>
   simplexModifications: ReadonlySet<string>
   modCoverage?: ModCoverageKind
+  interbaseIndicators?: InterbaseIndicatorRule
   junctionReference?: JunctionReference
   splitJunctions?: readonly SplitJunction[]
 }) {
@@ -212,6 +218,7 @@ function computeCoverageBand({
     softclips,
     hardclips,
     coverage,
+    interbaseIndicators,
   )
 
   const modCoverageResult =

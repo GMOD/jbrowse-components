@@ -44,13 +44,16 @@ function wgbsContextTrack(
     },
     display: {
       trackId: `arabidopsis_wgbs_${context.toLowerCase()}`,
-      modifications: { cytosineContext: context },
       coverage: {
         show: false,
       },
       pileup: {
         mark: { height: 3 },
-        bases: { show: true, encoding: { color: 'bisulfite' } },
+        bases: {
+          show: true,
+          encoding: { color: 'bisulfite' },
+          filter: [{ field: 'context', oneOf: [context] }],
+        },
       },
       heightMode: 'fixed',
       height: 90,
@@ -196,7 +199,6 @@ export const bisulfiteVideoFixtures = {
       ...ARABIDOPSIS_CONTEXT_LANES,
       {
         trackId: 'arabidopsis_wgbs',
-        modifications: { cytosineContext: 'CG' },
         coverage: { show: false },
         pileup: {
           mark: { height: 5 },
@@ -314,25 +316,31 @@ export const methylationSpecs: ScreenshotSpec[] = [
               trackId: 'PAY22766-nanopore',
               // Past the BAM byte budget; without forceLoad both lanes banner.
               forceLoad: true,
-              // The basecaller also emits 5mC/5hmC; the allow-list keeps 6mA.
-              modifications: { shownModifications: ['a'] },
+              // The basecaller also emits 5mC/5hmC; the filter keeps 6mA.
               // displayMode is not a slot on this display; fixed height and
               // mark.height make the rows compact.
               heightMode: 'fixed',
               pileup: {
                 mark: { height: 3 },
-                bases: { show: true, encoding: { color: 'modifications' } },
+                bases: {
+                  show: true,
+                  encoding: { color: 'modifications' },
+                  filter: [{ field: 'code', oneOf: ['a'] }],
+                },
               },
               legend: { show: true },
             },
             {
               trackId: 'PBA15131-nanopore',
               forceLoad: true,
-              modifications: { shownModifications: ['a'] },
               heightMode: 'fixed',
               pileup: {
                 mark: { height: 3 },
-                bases: { show: true, encoding: { color: 'modifications' } },
+                bases: {
+                  show: true,
+                  encoding: { color: 'modifications' },
+                  filter: [{ field: 'code', oneOf: ['a'] }],
+                },
               },
             },
           ],

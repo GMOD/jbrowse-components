@@ -99,6 +99,30 @@ test('a beta pileup.readHeight lifts into pileup.mark.height', () => {
   expect(readConfObject(conf, ['pileup', 'mark', 'height'])).toBe(2)
 })
 
+test('a beta coverage.minAlleleFraction lifts into the alleles filter', () => {
+  const conf = create({ coverage: { minAlleleFraction: 0.2 } })
+  expect(predicatesOf(conf.coverage.alleles.filter)).toEqual([
+    { field: 'fraction', gte: 0.2 },
+  ])
+})
+
+test('beta modifications thresholds lift into pileup.bases.filter', () => {
+  const conf = create({
+    modifications: {
+      threshold: 50,
+      cytosineContext: 'CHG',
+      shownModifications: ['a'],
+      unmodified: 'all',
+    },
+  })
+  expect(predicatesOf(conf.pileup.bases.filter)).toEqual([
+    { field: 'probability', gte: 0.5 },
+    { field: 'context', oneOf: ['CHG'] },
+    { field: 'code', oneOf: ['a'] },
+  ])
+  expect(readConfObject(conf, ['modifications', 'unmodified'])).toBe('all')
+})
+
 test("a display's own v4 read size beats its renderer's", () => {
   const conf = create({
     featureHeight: 3,

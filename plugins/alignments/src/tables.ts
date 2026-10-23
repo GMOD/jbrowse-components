@@ -20,7 +20,11 @@ import {
   readModCovSegments,
   readSnpSegments,
 } from '@jbrowse/alignments-core'
-import { COVERAGE_Y_PATHS } from '@jbrowse/alignments-core/coverageBandConfigSchema'
+import {
+  COVERAGE_Y_PATHS,
+  alleleFloorOf,
+  interbaseIndicatorRuleOf,
+} from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import {
   fullConfSnapshot,
   readConfObject,
@@ -166,6 +170,7 @@ import {
   readPredicatesOf,
 } from './shared/alignmentsFilter.ts'
 import { arcColorFieldOf } from './shared/arcColorOptions.ts'
+import { modificationFiltersOf } from './shared/basesFilter.ts'
 import { paintsModifications } from './shared/colorSchemes.ts'
 import { fieldTag } from './shared/facetLabels.ts'
 import { sectionOrder, workerFacet } from './shared/groupFeatures.ts'
@@ -428,12 +433,9 @@ function positionIn(refNames: readonly string[]): RefNamePosition {
 
 /** The display's per-base layer, from its `pileup.bases` and `modifications` objects. */
 function baseLayerFor(conf: DisplayConf) {
-  const mods = conf.modifications
   const settings: ModificationColorBy = {
-    threshold: readConfObject(mods, 'threshold'),
-    unmodified: readConfObject(mods, 'unmodified'),
-    cytosineContext: readConfObject(mods, 'cytosineContext'),
-    shownModifications: readConfObject(mods, 'shownModifications'),
+    ...readConfObject(conf, 'modifications'),
+    ...modificationFiltersOf(conf.pileup.bases.filter),
   }
   return baseLayerOf(
     {
@@ -1370,6 +1372,9 @@ export async function alignmentTables(
     sortTag: chain ? undefined : sortTag,
     facet: workerFacet(facetSetting, chain ? 'chain' : 'read'),
     showSoftClipping,
+    interbaseIndicators: interbaseIndicatorRuleOf(
+      conf.coverage.interbase.filter,
+    ),
     statusCallback: () => {},
   }
   // the worker reads one region a call
@@ -1473,7 +1478,7 @@ export async function alignmentTables(
   const paint = markColors(colors.palette, baseLayer)
   const shownSplits = new Set<ArcSplitCategory>()
   const thresholds: MarkThresholds = {
-    minAlleleFraction: readConfObject(conf, ['coverage', 'minAlleleFraction']),
+    minAlleleFraction: alleleFloorOf(conf.coverage.alleles.filter),
     junctions: junctionFilterOf(filterOf(conf)),
   }
   const band = colors.insertSizeBand

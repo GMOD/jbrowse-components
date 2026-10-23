@@ -1,17 +1,28 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { coverageAllelesConfigSchema } from './coverageAllelesConfigSchema.ts'
 import { coverageEncodingConfigSchema } from './coverageEncodingConfigSchema.ts'
 import { coverageInterbaseConfigSchema } from './coverageInterbaseConfigSchema.ts'
 
 import type { YScalePaths } from '@jbrowse/wiggle-core'
+
+export {
+  alleleFloorOf,
+  withAlleleFloor,
+} from './coverageAllelesConfigSchema.ts'
+export {
+  DEFAULT_INTERBASE_INDICATOR_RULE,
+  interbaseIndicatorRuleOf,
+} from './coverageInterbaseConfigSchema.ts'
+export type { InterbaseIndicatorRule } from './coverageInterbaseConfigSchema.ts'
 
 /**
  * #config CoverageBand
  * #category display
  * The coverage histogram band of the alignments and MAF displays, their
  * `coverage` setting: whether it draws, its height, the insertion and clip
- * marks drawn in it, which allele segments it colors, and its depth axis,
- * `encoding.y`.
+ * marks drawn in it (`interbase`), which allele segments it colors
+ * (`alleles`), and its depth axis, `encoding.y`.
  *
  * #example
  * ```js
@@ -47,23 +58,25 @@ export const coverageBandConfigSchema = ConfigurationSchema(
     encoding: coverageEncodingConfigSchema,
     /**
      * #slot interbase
-     * The insertion and clip marks between bases: `show`.
+     * The insertion and clip marks between bases: `show`, and the `filter`
+     * deciding which positions get an indicator triangle.
      */
     interbase: coverageInterbaseConfigSchema,
     /**
-     * #slot
-     * A color rule, beside the pileup's `fadeLowFrequency`, which fades its
-     * marks by the same per-base share through a depth-dependent threshold.
-     * The band's grey depth bar shows through where a segment is not colored.
+     * #slot alleles
+     * The colored allele segments: the `filter` on each one's `fraction`.
      */
-    minAlleleFraction: {
-      type: 'number',
-      defaultValue: 0,
-      description:
-        "an allele segment colors only with at least this share of its position's depth; 0 colors every mismatch, sequencing errors included",
+    alleles: coverageAllelesConfigSchema,
+  },
+  {
+    closed: true,
+    plot: true,
+    retired: {
+      minAlleleFraction: gte => ({
+        alleles: { filter: [{ field: 'fraction', gte }] },
+      }),
     },
   },
-  { closed: true, plot: true },
 )
 
 const Y = ['coverage', 'encoding', 'y'] as const

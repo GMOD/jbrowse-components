@@ -41,6 +41,7 @@
   "dependencies": {
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
+    "@jbrowse/display-kit": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
     "@jbrowse/wiggle-core": "workspace:^",
     "mobx": "^7.1.0",

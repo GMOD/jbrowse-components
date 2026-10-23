@@ -56,13 +56,11 @@
               "pileup": {
                 "bases": {
                   "show": true,
-                  "encoding": { "color": "modifications" }
+                  "encoding": { "color": "modifications" },
+                  "filter": [{ "field": "context", "oneOf": ["CHH"] }]
                 }
               },
-              "modifications": {
-                "unmodified": "all",
-                "cytosineContext": "CHH"
-              }
+              "modifications": { "unmodified": "all" }
             }
           }
         ]
