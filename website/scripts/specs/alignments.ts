@@ -980,7 +980,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         annotations: [{ type: 'box', anchor: { text: 'Read arcs' } }],
       },
       {
-        // a radio row keeps the menu open
+        // a checkbox row keeps the menu open
         actions: [
           { type: 'click', text: 'Read arcs' },
           { type: 'press', key: 'Escape' },

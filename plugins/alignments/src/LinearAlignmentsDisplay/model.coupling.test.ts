@@ -2071,3 +2071,41 @@ describe('chain-strand framing: the gate, the bake and the key agree', () => {
     expect(display.framesChainStrand).toBe(fill.type === 'pairOrientation')
   })
 })
+
+describe('rows the connection and sashimi menus hand to other menus', () => {
+  function labelsUnder(
+    display: ReturnType<typeof createDisplay>,
+    menu: string,
+  ) {
+    return menuSubItems(display.trackMenuItems(), menu).flatMap(i =>
+      'label' in i ? [i.label] : [],
+    )
+  }
+
+  test('reach "Filter by..." and "Advanced" once their layer draws', () => {
+    const display = createDisplay()
+    display.setShowSashimi(false)
+    expect(labelsUnder(display, 'Filter by...')).not.toContain(
+      'Inter-chromosomal pairs',
+    )
+    expect(labelsUnder(display, 'Advanced')).toEqual(['Edit plot...'])
+
+    display.setDrawnReadConnections('arc')
+    display.setShowSashimi(true)
+    expect(labelsUnder(display, 'Filter by...')).toEqual(
+      expect.arrayContaining([
+        'Off-screen mate connections',
+        'Inter-chromosomal pairs',
+        'Min reads at a breakpoint',
+        'Non-canonical junctions',
+        'Min reads at a junction',
+      ]),
+    )
+    expect(labelsUnder(display, 'Advanced')).toEqual([
+      'Edit plot...',
+      'Read connections placement',
+      'Read connections line width',
+      'Sashimi placement',
+    ])
+  })
+})

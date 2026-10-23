@@ -685,8 +685,8 @@ export function configSlotActions(self: ConfigSlotSelf) {
 
     /**
      * #action
-     * What the "Connection overlay" radio writes: 'off' hides the band and
-     * keeps its mark for the way back.
+     * What the "Read arcs" and "Read cloud" checkboxes write: 'off' hides the
+     * band and keeps its mark for the way back.
      */
     setDrawnReadConnections(mode: ReadConnectionsMode) {
       if (mode === 'off') {
