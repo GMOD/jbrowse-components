@@ -28,58 +28,62 @@ have diverged too far to align base by base. We:
 - Or, in place of jcvi, an existing
   [MCScanX](https://github.com/wyp1125/MCScanX) run:
   [converting one](#coming-from-mcscanx) needs only python3
+- the NCBI
+  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+  CLI
+- [gffread](https://github.com/gpertea/gffread)
 - `samtools`
-- htslib (`bgzip`, `tabix`)
-- `wget`
-- `node`, for the [JBrowse CLI](/docs/cli)
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,jcvi,last START -->
+<!-- TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last START -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install samtools tabix nodejs last-align
+sudo apt install samtools gffread last-align
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge samtools htslib nodejs last
+conda install -c bioconda -c conda-forge samtools gffread ncbi-datasets-cli \
+  last
+# or Linux x86_64 binaries for the tools apt lacks
+wget -P ~/.local/bin \
+  https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/datasets \
+  https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/dataformat
+chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 # any platform
 pip install jcvi
-npm install -g @jbrowse/cli
 ```
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,jcvi,last END -->
+<!-- TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last END -->
 
 ## The data
 
 Grape ([Jaillon et al. 2007](https://doi.org/10.1038/nature06148)) and peach
-genomes and gene annotations, Ensembl Plants release 58.
+RefSeq assemblies and annotations, each fetched by accession with the `datasets`
+CLI: the same two genomes [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
+stacks with cacao.
 
-The tracks below read local files that the
-[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-run _Producing the BEDs and anchor files with jcvi_ on a GFF3 and a CDS FASTA
-per genome of your own. The script fetches everything itself.
+The tracks below read hosted copies of the files the
+[build script](#reproduce-it-end-to-end) writes from these, so you don't need
+these files to follow the page; run _Producing the BEDs and anchor files with
+jcvi_ on a GFF3 and a genome FASTA per genome of your own.
 
-| What it is                                                         | File                                                                                         |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| Grape (Vitis_vinifera, PN40024.v4) genome and CDS FASTA            | [vitis_vinifera/](http://ftp.ensemblgenomes.org/pub/plants/release-58/fasta/vitis_vinifera/) |
-| Grape gene annotation                                              | [vitis_vinifera/](http://ftp.ensemblgenomes.org/pub/plants/release-58/gff3/vitis_vinifera/)  |
-| Peach (Prunus_persica, Prunus_persica_NCBIv2) genome and CDS FASTA | [prunus_persica/](http://ftp.ensemblgenomes.org/pub/plants/release-58/fasta/prunus_persica/) |
-| Peach gene annotation                                              | [prunus_persica/](http://ftp.ensemblgenomes.org/pub/plants/release-58/gff3/prunus_persica/)  |
+| What it is | File                                                                                                                                      |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Grape      | [GCF_030704535.1_ASM3070453v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/030/704/535/GCF_030704535.1_ASM3070453v1/)                   |
+| Peach      | [GCF_000346465.2_Prunus_persica_NCBIv2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/346/465/GCF_000346465.2_Prunus_persica_NCBIv2/) |
 
 ## What `.anchors` and `.anchors.simple` hold
 
 The run writes two files that JBrowse loads as separate synteny tracks.
 `.anchors`, via `MCScanAnchorsAdapter`, is the gene-pair level: each line is one
 orthologous pair and its alignment score, with `###` separating synteny blocks.
-The sample lines and the figures below come from a Phytozome annotation of the
-same genomes, so their gene ids and chromosome names differ from the ones the
-script writes:
+Each id is an NCBI mRNA, grape first:
 
 ```text
 ###
-VIT_201s0011g00070.1	Prupe.1G290900.1	1430
-VIT_201s0011g00080.1	Prupe.1G290800.1	446
-VIT_201s0011g00090.1	Prupe.1G290700.1	147
+rna-XM_019221872.2	rna-XM_007222072.2	1120
+rna-XM_010651756.3	rna-XM_020568908.1	526
+rna-XM_010651744.3	rna-XM_007225432.2	2020
 ```
 
 `.anchors.simple`, via `MCScanSimpleAnchorsAdapter`, is the same run reduced to
@@ -87,9 +91,9 @@ one line per block: the first and last gene of the block on each side, a score,
 and the block's orientation:
 
 ```text
-VIT_201s0011g00070.1	VIT_201s0011g00910.1	Prupe.1G281700.1	Prupe.1G290900.1	149	-
-VIT_201s0011g02000.1	VIT_201s0011g02280.2	Prupe.1G345900.1	Prupe.1G348100.1	53	-
-VIT_201s0011g02300.1	VIT_201s0011g02530.1	Prupe.1G299800.1	Prupe.1G303200.1	39	+
+rna-XM_019221872.2	rna-XM_010651102.3	rna-XM_007225348.2	rna-XM_007222072.2	86	-
+rna-XM_002279913.5	rna-XM_002285264.5	rna-XM_007227461.2	rna-XM_007222578.2	370	+
+rna-XM_002281938.5	rna-XM_010652331.3	rna-XM_007222787.2	rna-XM_020562574.1	39	+
 ```
 
 `.anchors.simple` draws one ribbon per block where `.anchors` draws one per gene
@@ -102,11 +106,12 @@ read the first six columns, and column 4 must match the anchor gene ids byte for
 byte:
 
 ```text
-chr1	12836	26777	VIT_201s0011g00010.1	0	+
-chr1	33170	35791	VIT_201s0011g00030.1	0	+
+NC_081805.1	37288	41411	rna-XM_019221872.2	0	+
+NC_081805.1	53914	63050	rna-XM_010651756.3	0	+
 ```
 
-Column 1 must use the same reference sequence names as the JBrowse assembly.
+Column 1 must name a sequence the JBrowse assembly knows, directly or through
+its alias table: the hub assemblies below resolve `NC_081805.1` to grape `chr1`.
 
 A gene id in the anchors file that no BED names breaks the join, and some such
 mismatches load with no error; the
@@ -117,57 +122,70 @@ section passes.
 
 ## Producing the BEDs and anchor files with jcvi {#producing-the-data}
 
-The BEDs come from each GFF3, and one jcvi command then writes both anchor
-files:
+gffread extracts each genome's CDS from its GFF3 and FASTA, and jcvi writes the
+BED with the same ids:
 
 <!-- from: scripts/build_grape_peach_anchors.sh -->
 
 ```bash
-# --key=transcript_id names each mRNA by Ensembl's transcript id, which the CDS
-# FASTA uses too; an NCBI GFF3 needs --key=ID instead
-python -m jcvi.formats.gff bed --type=mRNA --key=transcript_id \
-  --primary_only grape.gff3.gz -o grape.bed
-python -m jcvi.formats.gff bed --type=mRNA --key=transcript_id \
-  --primary_only peach.gff3.gz -o peach.bed
-python -m jcvi.formats.fasta format grape.cds.fa.gz grape.cds
-python -m jcvi.formats.fasta format peach.cds.fa.gz peach.cds
-
-python -m jcvi.compara.catalog ortholog --no_strip_names grape peach
+gffread grape.gff3 -g grape.fa -x grape.cds.fa
+# --key=ID writes each mRNA's GFF3 ID into BED column 4, the name gffread gave
+# its CDS; --primary_only keeps one transcript per gene
+python -m jcvi.formats.gff bed --type=mRNA --key=ID --primary_only \
+  grape.gff3 -o grape.bed
+python -m jcvi.formats.fasta format grape.cds.fa grape.cds
 ```
 
-The command writes `grape.peach.anchors` and `grape.peach.anchors.simple` to the
-working directory. The adapters read anchors and BED files plain or gzipped. The
-configs below name gzipped copies, which `gzip -k` makes of each of the four
-files; drop `.gz` from a `uri` to read the plain file.
+Peach goes through the same three commands. One ortholog run then writes the
+gene pairs, and `screen --simple` reduces them to blocks:
 
-## Loading the grape and peach assemblies and gene tracks
+<!-- from: scripts/build_grape_peach_anchors.sh -->
 
-We'll load the two genomes the BEDs describe. `samtools faidx` writes each
-`.fai` the assembly needs beside its FASTA.
-
-```json addassembly
-{ "name": "grape", "uri": "grape.fa" }
+```bash
+# --no_strip_names keeps the ids matching the BEDs; --no_dotplot skips jcvi's
+# own PDF, which needs LaTeX
+python -m jcvi.compara.catalog ortholog --no_strip_names --no_dotplot grape peach
+# --simple writes grape.peach.anchors.simple; --minspan=30 keeps blocks of 30
+# genes or more
+python -m jcvi.compara.synteny screen --minspan=30 --simple \
+  grape.peach.anchors grape.peach.anchors.new
 ```
 
+The adapters read anchors and BED files plain or gzipped. The configs below name
+gzipped copies, which `gzip -k` makes of each of the four files; drop `.gz` from
+a `uri` to read the plain file.
+
+## Setting up the grape and peach assemblies
+
+Grape and peach are each a genome hub on
+[genomes.jbrowse.org](https://genomes.jbrowse.org) under the RefSeq accession
+the BEDs were built from, and the build takes each assembly entry and NCBI
+RefSeq gene track from there, as
+[the three-genome page](/docs/tutorials/multiway_synteny_grape_peach_cacao#setting-up-the-grape-peach-and-cacao-assemblies)
+shows. Each entry carries the short name as an alias, so a session can still say
+`grape`.
+
+A genome of your own loads from its FASTA, with a `.fai` from `samtools faidx`
+beside it:
+
 ```json addassembly
-{ "name": "peach", "uri": "peach.fa" }
+{ "name": "myGenome", "uri": "myGenome.fa" }
 ```
 
 Each genome also gets a gene track, which the
 [close-up](#what-an-anchor-looks-like-up-close) below turns to **Show only
-genes**. Add the same track with `peach.sorted.gff3.gz` under `peach`. Swap the
-`uri` for your own GFF3, bgzipped and tabix-indexed
-([prep](/docs/quickstart_web)).
+genes**. Swap the `uri` for your own GFF3, bgzipped and tabix-indexed
+([prep](/docs/quickstart_web)):
 
 ```json addtrack
 {
   "type": "FeatureTrack",
-  "trackId": "grape_genes",
-  "name": "grape genes",
-  "assemblyNames": ["grape"],
+  "trackId": "myGenome_genes",
+  "name": "myGenome genes",
+  "assemblyNames": ["myGenome"],
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "uri": "grape.sorted.gff3.gz"
+    "uri": "myGenome.sorted.gff3.gz"
   }
 }
 ```
@@ -175,20 +193,21 @@ genes**. Add the same track with `peach.sorted.gff3.gz` under `peach`. Swap the
 ## Loading the .anchors and .anchors.simple tracks {#loading-both-tracks}
 
 Each adapter takes the anchor file plus the two BEDs, and `assemblyNames` lists
-the genomes in the order the anchor columns are in (column 1's genome first):
+the genomes in the order the anchor columns are in (column 1's genome first,
+grape here):
 
 ```json addtrack
 {
   "type": "SyntenyTrack",
   "trackId": "grape_peach_anchors",
   "name": "Grape peach synteny (MCScan, anchors)",
-  "assemblyNames": ["grape", "peach"],
+  "assemblyNames": ["GCF_030704535.1", "GCF_000346465.2"],
   "adapter": {
     "type": "MCScanAnchorsAdapter",
     "uri": "grape.peach.anchors.gz",
     "bed1": "grape.bed.gz",
     "bed2": "peach.bed.gz",
-    "assemblyNames": ["grape", "peach"]
+    "assemblyNames": ["GCF_030704535.1", "GCF_000346465.2"]
   }
 }
 ```
@@ -201,13 +220,13 @@ swapped:
   "type": "SyntenyTrack",
   "trackId": "grape_peach_anchors_simple",
   "name": "Grape peach synteny (MCScan, simple anchors)",
-  "assemblyNames": ["grape", "peach"],
+  "assemblyNames": ["GCF_030704535.1", "GCF_000346465.2"],
   "adapter": {
     "type": "MCScanSimpleAnchorsAdapter",
     "uri": "grape.peach.anchors.simple.gz",
     "bed1": "grape.bed.gz",
     "bed2": "peach.bed.gz",
-    "assemblyNames": ["grape", "peach"]
+    "assemblyNames": ["GCF_030704535.1", "GCF_000346465.2"]
   }
 }
 ```
@@ -234,13 +253,13 @@ name needs the full `displays` array:
   "type": "SyntenyTrack",
   "trackId": "grape_peach_anchors_simple",
   "name": "Grape peach synteny (MCScan, simple anchors)",
-  "assemblyNames": ["grape", "peach"],
+  "assemblyNames": ["GCF_030704535.1", "GCF_000346465.2"],
   "adapter": {
     "type": "MCScanSimpleAnchorsAdapter",
     "uri": "grape.peach.anchors.simple.gz",
     "bed1": "grape.bed.gz",
     "bed2": "peach.bed.gz",
-    "assemblyNames": ["grape", "peach"]
+    "assemblyNames": ["GCF_030704535.1", "GCF_000346465.2"]
   },
   "displays": [
     {
@@ -251,7 +270,7 @@ name needs the full `displays` array:
 }
 ```
 
-<Figure src="/img/mcscan_synteny/anchors_vs_simple.png" links="Gene pairs=mcscan_synteny/anchors,Blocks=mcscan_synteny/anchors_simple" caption="MCScan blocks on grape chr9 against peach Pp03. Top: .anchors alone. Bottom: both files on one band." />
+<Figure src="/img/mcscan_synteny/anchors_vs_simple.png" links="Gene pairs=mcscan_synteny/anchors,Blocks=mcscan_synteny/anchors_simple" caption="MCScan blocks on grape chr9 against peach chrG3. Top: .anchors alone. Bottom: both files on one band." />
 
 ## A single gene pair up close {#what-an-anchor-looks-like-up-close}
 
@@ -267,11 +286,10 @@ ribbon.
 
 Pick **Color by value → Syntenic depth** on the palette button in the view
 header. A ribbon stays grey where its two genes pair only with each other, and
-turns orange where several genes share one ortholog, which is often a tandem
-array. The count covers the whole `.anchors` file, so a gene whose other copies
-are off screen still takes color.
+turns orange where several genes share one ortholog. The count covers the whole
+`.anchors` file, so a gene whose other copies are off screen still takes color.
 
-<Figure caption="Grape chr1 against peach Pp04, the .anchors track colored by syntenic depth." src="/img/mcscan_synteny/syntenic_depth.png" />
+<Figure caption="Grape chr3 against peach chrG8, the .anchors track colored by syntenic depth." src="/img/mcscan_synteny/syntenic_depth.png" />
 
 ## Viewing the gene pairs as a dotplot
 
@@ -286,9 +304,7 @@ one.
 <Figure caption="Peach against grape after Re-order chromosomes, every point one .anchors gene pair." src="/img/mcscan_synteny/dotplot.png" />
 
 **Re-order chromosomes** puts each peach chromosome's strongest grape partner on
-the diagonal, and its other partners stay off it. The
-[script](#reproduce-it-end-to-end) prints the same pairings off
-`.anchors.simple`.
+the diagonal, and its other partners stay off it.
 
 ## Converting an MCScanX run {#coming-from-mcscanx}
 
@@ -310,7 +326,7 @@ The track configs [above](#loading-both-tracks) load the converted files
 unchanged. `--species` order is the anchors column order, so it has to match the
 track's `assemblyNames`. Two options decide whether the result draws:
 
-- `--chr-prefix peach=Pp0` prepends to the refNames, and `--keep-chr-tag` keeps
+- `--chr-prefix peach=chrG` prepends to the refNames, and `--keep-chr-tag` keeps
   MCScanX's tag, stripped by default (`vv1` becomes `1`)
 - `--strand-gff3 peach=peach.gff3.gz` recovers strand from the annotation, so an
   inverted `.anchors` pair draws as inverted
@@ -333,19 +349,18 @@ The number of `--species` names sets what the run writes:
 runs everything above and writes a `config.json` with both assemblies, gene
 tracks, both MCScan tracks and a default session opening them together:
 
-1. Download the grape and peach genomes, annotations and CDS from Ensembl
-   Plants.
-2. Write a BED and a CDS file per genome keyed on transcript ids, and run jcvi
-   with `--no_strip_names` so the anchor ids match the BEDs.
-3. Count anchors per peach-grape chromosome pair off `.anchors.simple`, the
-   pairing the reordered dotplot shows.
-4. Write the config with both assemblies, gene tracks, both MCScan tracks and a
-   session.
+1. Download the grape and peach RefSeq genomes and annotations by accession,
+   dropping organelle genes, which gffread rejects.
+2. Write a BED and a CDS file per genome keyed on the mRNA ID, and run jcvi with
+   `--no_strip_names` so the anchor ids match the BEDs.
+3. Screen the gene pairs into blocks for `.anchors.simple`.
+4. Write the config with both hub assemblies and gene tracks, both MCScan tracks
+   and a session.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_grape_peach_anchors.sh
 bash build_grape_peach_anchors.sh
-npx --yes serve grape_peach_anchors_build/jbrowse2  # then open the printed URL
+npx --yes serve grape_peach_anchors_build  # then open config.json there
 ```
 
 ## See also
